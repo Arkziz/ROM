@@ -40,11 +40,13 @@ cursor.execute("""
                    bonus
                    INTEGER,
                    item_type
+                   TEXT,
+                   rarity
                    TEXT
                )
                """)
 
-# додаткові колонки
+# колонки
 for column in [
     "exp INTEGER DEFAULT 0",
     "in_fight INTEGER DEFAULT 0",
@@ -58,20 +60,42 @@ for column in [
     except:
         pass
 
+try:
+    cursor.execute("ALTER TABLE inventory ADD COLUMN rarity TEXT DEFAULT '⚪ Common'")
+except:
+    pass
+
 conn.commit()
 
 from telebot import types
 
 
-# 🔧 допоміжні функції
+# 🎨 генерація предмета
+def generate_item():
+    roll = random.randint(1, 100)
+
+    if roll <= 50:
+        return "⚪ Common", random.randint(1, 2)
+    elif roll <= 80:
+        return "🟢 Uncommon", random.randint(2, 3)
+    elif roll <= 95:
+        return "🔵 Rare", random.randint(3, 5)
+    else:
+        return "🟣 Epic", random.randint(5, 8)
+
+
+# 📊 бонус предмета
 def get_item_bonus(item_id):
     if not item_id:
         return ("Немає", 0)
+
     cursor.execute("SELECT item_name, bonus FROM inventory WHERE id=?", (item_id,))
     row = cursor.fetchone()
+
     return row if row else ("Немає", 0)
 
 
+# ⚔️ атака
 def get_total_attack(user_id):
     cursor.execute("""
                    SELECT base_attack, equipped_weapon, equipped_armor
@@ -80,13 +104,13 @@ def get_total_attack(user_id):
                    """, (user_id,))
     base, w_id, a_id = cursor.fetchone()
 
-    w_name, w_bonus = get_item_bonus(w_id)
-    a_name, a_bonus = get_item_bonus(a_id)
+    _, w_bonus = get_item_bonus(w_id)
+    _, a_bonus = get_item_bonus(a_id)
 
     return base + w_bonus + a_bonus
 
 
-# 🎛 кнопки
+# кнопки
 def main_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.add("🔎 Пошук", "🎒 Інвентар", "👤 Профіль")
@@ -100,8 +124,8 @@ def fight_kb():
     return kb
 
 
-# 🚀 старт
-@bot.message_handler(commands=['start'])
+# старт
+@bot.message_handler(commands=["start"])
 def start(message):
     user_id = message.from_user.id
 
@@ -113,10 +137,10 @@ def start(message):
                        """, (user_id, 100, 10, 1, 0, 0, 0, 0, 0, 0))
         conn.commit()
 
-    bot.send_message(message.chat.id, "👋 Старт гри", reply_markup=main_kb())
+    bot.send_message(message.chat.id, "👋 Гра почалась!", reply_markup=main_kb())
 
 
-# 👤 профіль (норм UX)
+# профіль
 @bot.message_handler(func=lambda m: m.text and "проф" in m.text.lower())
 def profile(message):
     user_id = message.from_user.id
@@ -138,7 +162,6 @@ def profile(message):
                      f"👤 Профіль\n\n"
                      f"❤️ HP: {hp}\n"
                      f"⚔️ Атака: {total}\n\n"
-                     f"🔹 База: {base}\n"
                      f"🗡️ {w_name}: +{w_bonus}\n"
                      f"🛡 {a_name}: +{a_bonus}\n\n"
                      f"🏆 Level: {lvl}\n"
@@ -152,7 +175,7 @@ def inventory(message):
     user_id = message.from_user.id
 
     cursor.execute("""
-                   SELECT id, item_name, bonus, item_type
+                   SELECT id, item_name, bonus, item_type, rarity
                    FROM inventory
                    WHERE user_id = ?
                    """, (user_id,))
@@ -171,40 +194,29 @@ def inventory(message):
 
     kb = types.InlineKeyboardMarkup()
 
-    for item in items:
-        item_id, name, bonus, t = item
+    for item_id, name, bonus, t, rarity in items:
+        is_eq = (t == "weapon" and item_id == eq_w) or (t == "armor" and item_id == eq_a)
 
         emoji = "🗡️" if t == "weapon" else "🛡"
-
-        is_equipped = (
-                (t == "weapon" and item_id == eq_w) or
-                (t == "armor" and item_id == eq_a)
-        )
-
-        label = f"{emoji} {name} (+{bonus})"
-        if is_equipped:
+        label = f"{rarity} {emoji} {name} (+{bonus})"
+        if is_eq:
             label += " ✅"
 
         kb.add(types.InlineKeyboardButton(
-            text=label,
+            label,
             callback_data=f"equip_{item_id}"
         ))
 
     bot.send_message(message.chat.id, "🎒 Інвентар:", reply_markup=kb)
 
 
-# ⚔️ екіп
+# екіп
 @bot.callback_query_handler(func=lambda call: call.data.startswith("equip_"))
 def equip(call):
     user_id = call.from_user.id
     item_id = int(call.data.split("_")[1])
 
-    cursor.execute("""
-                   SELECT item_type
-                   FROM inventory
-                   WHERE id = ?
-                     AND user_id = ?
-                   """, (item_id, user_id))
+    cursor.execute("SELECT item_type FROM inventory WHERE id=? AND user_id=?", (item_id, user_id))
     row = cursor.fetchone()
 
     if not row:
@@ -260,14 +272,13 @@ def search(message):
     atk = get_total_attack(user_id)
 
     bot.send_message(message.chat.id,
-                     f"🔎 Ти знайшов монстра!\n\n"
-                     f"👤 Ти:\n❤️ {hp} HP\n⚔️ {atk}\n\n"
-                     f"👹 Монстр:\n❤️ {mob_hp} HP\n⚔️ {mob_attack}",
+                     f"👤 ❤️ {hp} ⚔️ {atk}\n"
+                     f"👹 ❤️ {mob_hp} ⚔️ {mob_attack}",
                      reply_markup=fight_kb()
                      )
 
 
-# ⚔️ БІЙ (ПОВЕРНУТО І ВИПРАВЛЕНО)
+# ⚔️ бій
 @bot.message_handler(func=lambda m: m.text and "атак" in m.text.lower())
 def attack(message):
     user_id = message.from_user.id
@@ -277,15 +288,9 @@ def attack(message):
                    FROM users
                    WHERE user_id = ?
                    """, (user_id,))
-    data = cursor.fetchone()
-
-    if not data:
-        return
-
-    hp, lvl, exp, mob_hp, mob_attack, in_fight = data
+    hp, lvl, exp, mob_hp, mob_attack, in_fight = cursor.fetchone()
 
     if not in_fight:
-        bot.send_message(message.chat.id, "❗ Спочатку натисни Пошук")
         return
 
     player_attack = get_total_attack(user_id)
@@ -297,18 +302,15 @@ def attack(message):
         exp_gain = random.randint(15, 30)
         exp += exp_gain
 
-        text = f"🗡️ Ти вдарив: {dmg}\n\n🎉 Перемога! +{exp_gain} EXP\n"
+        rarity, bonus = generate_item()
+        item_type = random.choice(["weapon", "armor"])
 
-        if random.randint(1, 100) <= 50:
-            t = random.choice(["weapon", "armor"])
-            bonus = random.randint(1, 5)
+        cursor.execute("""
+                       INSERT INTO inventory (user_id, item_name, bonus, item_type, rarity)
+                       VALUES (?, ?, ?, ?, ?)
+                       """, (user_id, item_type, bonus, item_type, rarity))
 
-            cursor.execute("""
-                           INSERT INTO inventory (user_id, item_name, bonus, item_type)
-                           VALUES (?, ?, ?, ?)
-                           """, (user_id, t, bonus, t))
-
-            text += f"📦 Новий {t} +{bonus}\n"
+        text = f"🎉 Перемога!\n+{exp_gain} EXP\n\n{rarity} {item_type} +{bonus}"
 
         if exp >= lvl * 50:
             exp = 0
@@ -316,13 +318,8 @@ def attack(message):
             cursor.execute("UPDATE users SET base_attack = base_attack + 2 WHERE user_id=?", (user_id,))
             text += f"\n🏆 Level {lvl}"
 
-        cursor.execute("""
-                       UPDATE users
-                       SET exp=?,
-                           level=?,
-                           in_fight=0
-                       WHERE user_id = ?
-                       """, (exp, lvl, user_id))
+        cursor.execute("UPDATE users SET exp=?, level=?, in_fight=0 WHERE user_id=?",
+                       (exp, lvl, user_id))
 
         conn.commit()
 
@@ -332,12 +329,7 @@ def attack(message):
     mob_dmg = max(1, random.randint(mob_attack - 2, mob_attack + 3))
     hp -= mob_dmg
 
-    text = (
-        f"🗡️ Ти вдарив: {dmg}\n"
-        f"👹 Монстр вдарив: {mob_dmg}\n\n"
-        f"❤️ Твоє HP: {hp}\n"
-        f"👹 HP монстра: {mob_hp}"
-    )
+    text = f"🗡️ {dmg}\n👹 {mob_dmg}\n❤️ {hp} / 👹 {mob_hp}"
 
     if hp <= 0:
         cursor.execute("UPDATE users SET hp=100, in_fight=0 WHERE user_id=?", (user_id,))
@@ -346,12 +338,7 @@ def attack(message):
         bot.send_message(message.chat.id, "💀 Ти помер", reply_markup=main_kb())
         return
 
-    cursor.execute("""
-                   UPDATE users
-                   SET hp=?,
-                       mob_hp=?
-                   WHERE user_id = ?
-                   """, (hp, mob_hp, user_id))
+    cursor.execute("UPDATE users SET hp=?, mob_hp=? WHERE user_id=?", (hp, mob_hp, user_id))
     conn.commit()
 
     bot.send_message(message.chat.id, text, reply_markup=fight_kb())
