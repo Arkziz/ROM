@@ -1,30 +1,12 @@
 import sqlite3
 
-
-
-#@bot.message_handler(commands=['equip']) delete
-def equip(message):
-    user_id = message.from_user.id
-
-    parts = message.text.split()
-
-    if len(parts) < 2:
-        bot.send_message(message.chat.id, "❗ /equip ID")
-        return
-
-    item_id = int(parts[1])
-
-    result = equip_item(user_id, item_id)
-
-    bot.send_message(message.chat.id, result)
-
-# підключення
+# 🔌 підключення
 conn = sqlite3.connect("game.db", check_same_thread=False)
 cursor = conn.cursor()
 
 
+# ✅ ІНІЦІАЛІЗАЦІЯ БД
 def init_db():
-    # 👤 USERS
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS users (
         user_id INTEGER PRIMARY KEY,
@@ -35,15 +17,15 @@ def init_db():
 
         str INTEGER,
         dex INTEGER,
-        int INTEGER,
+        intelligence INTEGER,
         wis INTEGER,
+        sta INTEGER,
 
         equipped_weapon INTEGER,
         equipped_armor INTEGER
     )
     """)
 
-    # 🎒 INVENTORY
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS inventory (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,7 +34,6 @@ def init_db():
     )
     """)
 
-    # 🧱 ITEMS (найважливіша таблиця)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS items (
         id INTEGER PRIMARY KEY,
@@ -70,6 +51,7 @@ def init_db():
     conn.commit()
 
 
+# ✅ СТВОРЕННЯ ПРЕДМЕТІВ
 def seed_items():
     items = [
         (1, "⚪ Старий меч", "weapon", "common", 1, 0, 0, 0),
@@ -92,19 +74,30 @@ def seed_items():
 
     conn.commit()
 
+
+# ✅ КОРИСТУВАЧ
+def create_user(user_id):
+    cursor.execute("""
+    INSERT OR IGNORE INTO users
+    (user_id, hp, max_hp, level, exp, str, dex, intelligence, wis, sta, equipped_weapon, equipped_armor)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        user_id,
+        100, 100,
+        1, 0,
+        10, 10, 10, 10, 10,
+        None, None
+    ))
+    conn.commit()
+
+
+# ✅ ІНВЕНТАР
 def get_inventory(user_id):
     cursor.execute("""
     SELECT item_id FROM inventory WHERE user_id=?
     """, (user_id,))
     return cursor.fetchall()
 
-def get_item(item_id):
-    cursor.execute("""
-    SELECT id, name, type, rarity,
-           bonus_str, bonus_dex, bonus_int, bonus_wis
-    FROM items WHERE id=?
-    """, (item_id,))
-    return cursor.fetchone()
 
 def add_item(user_id, item_id):
     cursor.execute("""
@@ -114,6 +107,17 @@ def add_item(user_id, item_id):
     conn.commit()
 
 
+# ✅ ПРЕДМЕТИ
+def get_item(item_id):
+    cursor.execute("""
+    SELECT id, name, type, rarity,
+           bonus_str, bonus_dex, bonus_int, bonus_wis
+    FROM items WHERE id=?
+    """, (item_id,))
+    return cursor.fetchone()
+
+
+# ✅ ЕКІПІРОВКА
 def equip_item(user_id, item_id):
     item = get_item(item_id)
 
@@ -123,38 +127,30 @@ def equip_item(user_id, item_id):
     _, name, type_, *_ = item
 
     if type_ == "weapon":
-        cursor.execute("""
-        UPDATE users SET equipped_weapon=?
-        WHERE user_id=?
-        """, (item_id, user_id))
+        cursor.execute("UPDATE users SET equipped_weapon=? WHERE user_id=?", (item_id, user_id))
 
     elif type_ == "armor":
-        cursor.execute("""
-        UPDATE users SET equipped_armor=?
-        WHERE user_id=?
-        """, (item_id, user_id))
+        cursor.execute("UPDATE users SET equipped_armor=? WHERE user_id=?", (item_id, user_id))
+
     else:
         return "❌ Не можна одягти"
 
     conn.commit()
     return f"✅ Одягнув {name}"
 
-#отримати статси з предметів
+
+# ✅ ОТРИМАННЯ СТАТІВ
 def get_equipped_items(user_id):
     cursor.execute("""
-    SELECT equipped_weapon, equipped_armor FROM users
-    WHERE user_id=?
+    SELECT equipped_weapon, equipped_armor FROM users WHERE user_id=?
     """, (user_id,))
     return cursor.fetchone()
 
-#бонуси від екіпу
+
 def get_item_bonuses(user_id):
     eq = get_equipped_items(user_id)
 
-    total_str = 0
-    total_dex = 0
-    total_int = 0
-    total_wis = 0
+    total_str = total_dex = total_int = total_wis = 0
 
     for item_id in eq:
         if not item_id:
@@ -173,11 +169,10 @@ def get_item_bonuses(user_id):
 
     return total_str, total_dex, total_int, total_wis
 
-#отримати повні статси
+
 def get_player_stats(user_id):
     cursor.execute("""
-    SELECT str, dex, int, wis FROM users
-    WHERE user_id=?
+    SELECT str, dex, intelligence, wis, sta, level FROM users WHERE user_id=?
     """, (user_id,))
 
     row = cursor.fetchone()
@@ -185,40 +180,43 @@ def get_player_stats(user_id):
     if not row:
         return None
 
-    base_str, base_dex, base_int, base_wis = row
+    base_str, base_dex, base_int, base_wis, base_sta, lvl = row
 
     item_str, item_dex, item_int, item_wis = get_item_bonuses(user_id)
 
-    total_str = base_str + item_str
-    total_dex = base_dex + item_dex
-    total_int = base_int + item_int
-    total_wis = base_wis + item_wis
+    return (
+        base_str + item_str,
+        base_dex + item_dex,
+        base_int + item_int,
+        base_wis + item_wis,
+        base_sta,
+        lvl
+    )
 
-    return total_str, total_dex, total_int, total_wis
 
-#атака з урахуванням предметів
+# ✅ БОЙОВІ СТАТИ
 def get_attack(user_id):
+    stats = get_player_stats(user_id)
+    return stats[0] if stats else 0
+
+
+def get_max_hp(user_id):
+    stats = get_player_stats(user_id)
+
+    if not stats:
+        return 100
+
+    _, _, _, _, sta, lvl = stats
+
+    return 100 + (lvl * 20) + (sta * 5)
+
+
+def get_defense(user_id):
     stats = get_player_stats(user_id)
 
     if not stats:
         return 0
 
-    total_str = stats[0]
+    _, _, _, _, sta, _ = stats
 
-    # поки проста формула
-    return total_str
-
-#створення персонажа
-def create_user(user_id):
-    cursor.execute("""
-    INSERT OR IGNORE INTO users
-    (user_id, hp, max_hp, level, exp, str, dex, int, wis, equipped_weapon, equipped_armor)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        user_id,
-        100, 100,   # hp
-        1, 0,       # level, exp
-        10, 10, 10, 10,  # стати
-        None, None
-    ))
-    conn.commit()
+    return int(sta * 0.2)
