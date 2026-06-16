@@ -19,6 +19,21 @@ bot = telebot.TeleBot(TOKEN)
 init_db()
 seed_items()
 
+# ==================
+# 🎮 UI КНОПКИ
+# ==================
+def main_kb():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("🔎 Полювання", "⚔️ Атака")
+    kb.add("🎒 Інвентар", "👤 Профіль")
+    return kb
+
+def fight_kb():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("⚔️ Атакувати")
+    kb.add("🏃 Втекти")
+    return kb
+
 
 # ==================
 # START
@@ -26,14 +41,20 @@ seed_items()
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = message.from_user.id
+
     create_user(user_id)
-    bot.send_message(message.chat.id, "👤 Персонаж створено ✅")
+
+    bot.send_message(
+        message.chat.id,
+        "👤 Персонаж створено ✅",
+        reply_markup=main_kb()
+    )
 
 
 # ==================
 # PROFILE
 # ==================
-@bot.message_handler(commands=['me'])
+@bot.message_handler(func=lambda m: m.text == "👤 Профіль")
 def profile(message):
     user_id = message.from_user.id
 
@@ -62,11 +83,11 @@ def profile(message):
         f"⚔️ Атака: {atk}"
     )
 
-    bot.send_message(message.chat.id, text)
+    bot.send_message(message.chat.id, text, reply_markup=main_kb())
 
 
 # ==================
-# GIVE ITEM
+# 🎁 TEST LOOT
 # ==================
 @bot.message_handler(commands=['give'])
 def give_item(message):
@@ -75,20 +96,20 @@ def give_item(message):
     item_id = random.randint(1, 7)
     add_item(user_id, item_id)
 
-    bot.send_message(message.chat.id, f"🎁 отримав {item_id}")
+    bot.send_message(message.chat.id, f"🎁 отримав item {item_id}", reply_markup=main_kb())
 
 
 # ==================
 # INVENTORY
 # ==================
-@bot.message_handler(commands=['inv'])
+@bot.message_handler(func=lambda m: m.text == "🎒 Інвентар")
 def show_inventory(message):
     user_id = message.from_user.id
 
     items = get_inventory(user_id)
 
     if not items:
-        bot.send_message(message.chat.id, "🎒 Інвентар порожній")
+        bot.send_message(message.chat.id, "🎒 Порожньо", reply_markup=main_kb())
         return
 
     kb = types.InlineKeyboardMarkup()
@@ -121,7 +142,7 @@ def handle_equip(call):
     result = equip_item(user_id, item_id)
 
     bot.answer_callback_query(call.id)
-    bot.send_message(call.message.chat.id, result)
+    bot.send_message(call.message.chat.id, result, reply_markup=main_kb())
 
 
 # ==================
@@ -137,9 +158,9 @@ def generate_mob():
 
 
 # ==================
-# HUNT (з норм UI)
+# HUNT
 # ==================
-@bot.message_handler(commands=['hunt'])
+@bot.message_handler(func=lambda m: m.text == "🔎 Полювання")
 def hunt(message):
     user_id = message.from_user.id
 
@@ -158,38 +179,42 @@ def hunt(message):
     text = (
         f"🔎 Ти зустрів {mob['name']}\n\n"
         f"======================\n\n"
+
         f"👤 ТИ\n"
         f"❤️ HP: {hp}\n"
         f"⚔️ Атака: {atk}\n"
         f"🛡 Захист: {pdef}\n\n"
+
         f"💪 STR {str_} | 🎯 DEX {dex_}\n"
         f"🔮 INT {int_} | 🦉 WIS {wis_}\n"
         f"🛡 STA {sta_}\n\n"
+
         f"----------------------\n\n"
+
         f"👹 ВОРОГ\n"
         f"❤️ HP: {mob['hp']}\n"
         f"⚔️ Атака: {mob['attack']}\n"
         f"🛡 Захист: {mob['def']}\n\n"
+
         f"⚔️ Бій починається!"
     )
 
-    bot.send_message(message.chat.id, text)
+    bot.send_message(message.chat.id, text, reply_markup=fight_kb())
 
 
 # ==================
-# ATTACK (FIXED + CRIT)
+# ATTACK
 # ==================
-@bot.message_handler(commands=['attack'])
+@bot.message_handler(func=lambda m: m.text == "⚔️ Атакувати")
 def attack(message):
     user_id = message.from_user.id
 
     if not hasattr(bot, "user_data") or user_id not in bot.user_data:
-        bot.send_message(message.chat.id, "❗ Спочатку /hunt")
+        bot.send_message(message.chat.id, "❗ Спочатку Полювання", reply_markup=main_kb())
         return
 
     mob = bot.user_data[user_id]
 
-    # ✅ ВАЖЛИВО — тепер беремо stats
     stats = get_player_stats(user_id)
     str_, dex_, int_, wis_, sta_, lvl = stats
 
@@ -199,7 +224,7 @@ def attack(message):
     cursor.execute("SELECT hp FROM users WHERE user_id=?", (user_id,))
     player_hp = cursor.fetchone()[0]
 
-    # 🎯 CRIT
+    # PLAYER CRIT
     crit_chance = dex_ * 0.5
     is_crit = random.randint(1, 100) <= crit_chance
 
@@ -211,21 +236,31 @@ def attack(message):
     mob["hp"] -= dmg
 
     if mob["hp"] <= 0:
-        bot.send_message(message.chat.id,
-            f"🎉 Перемога!\n{'💥 КРИТ!\n' if is_crit else ''}Урон: {dmg}")
         del bot.user_data[user_id]
+
+        bot.send_message(
+            message.chat.id,
+            f"🎉 Перемога!\n{'💥 КРИТ!\n' if is_crit else ''}Урон: {dmg}",
+            reply_markup=main_kb()
+        )
         return
 
-    # 👹 анти-крит
+    # DODGE
+    dodge_chance = dex_ * 0.4
+    is_dodge = random.randint(1, 100) <= dodge_chance
+
+    # ANTI-CRIT
     anti_crit = sta_ // 25
     mob_crit_chance = max(0, 10 - anti_crit)
 
     mob_is_crit = random.randint(1, 100) <= mob_crit_chance
 
-    mob_dmg = max(1, mob["attack"] - player_def + random.randint(-2, 2))
-
-    if mob_is_crit:
-        mob_dmg *= 2
+    if is_dodge:
+        mob_dmg = 0
+    else:
+        mob_dmg = max(1, mob["attack"] - player_def + random.randint(-2, 2))
+        if mob_is_crit:
+            mob_dmg *= 2
 
     player_hp -= mob_dmg
 
@@ -238,8 +273,11 @@ def attack(message):
 
         del bot.user_data[user_id]
 
-        bot.send_message(message.chat.id,
-            "💀 ТИ ЗАГИНУВ\n❤️ HP відновлено")
+        bot.send_message(
+            message.chat.id,
+            "💀 ТИ ЗАГИНУВ\n❤️ HP відновлено",
+            reply_markup=main_kb()
+        )
         return
 
     cursor.execute(
@@ -251,14 +289,33 @@ def attack(message):
     text = "⚔️ БІЙ\n\n"
 
     text += f"{'💥 КРИТ! ' if is_crit else ''}🗡️ Ти: {dmg}\n"
-    text += f"{'💥 КРИТ ВОРОГА! ' if mob_is_crit else ''}👹 Ворог: {mob_dmg}\n\n"
+
+    if is_dodge:
+        text += "💨 УХИЛ! Ти уникнув атаки\n\n"
+    elif mob_is_crit:
+        text += f"💥 КРИТ ВОРОГА! {mob_dmg}\n\n"
+    else:
+        text += f"👹 Ворог: {mob_dmg}\n\n"
 
     text += (
         f"❤️ Твоє HP: {player_hp}\n"
         f"👹 HP ворога: {mob['hp']}"
     )
 
-    bot.send_message(message.chat.id, text)
+    bot.send_message(message.chat.id, text, reply_markup=fight_kb())
+
+
+# ==================
+# ESCAPE
+# ==================
+@bot.message_handler(func=lambda m: m.text == "🏃 Втекти")
+def escape(message):
+    user_id = message.from_user.id
+
+    if hasattr(bot, "user_data") and user_id in bot.user_data:
+        del bot.user_data[user_id]
+
+    bot.send_message(message.chat.id, "🏃 Ти втік", reply_markup=main_kb())
 
 
 print("✅ BOT STARTED")
