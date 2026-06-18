@@ -1,4 +1,12 @@
-from db import get_player_stats, get_attack, get_defense, get_max_hp, get_current_hp
+from db import (
+    get_player_stats,
+    get_attack,
+    get_physical_defense,
+    get_magic_defense,
+    get_max_hp,
+    get_current_hp
+)
+
 from keyboards import main_kb
 from utils import hp_bar
 
@@ -24,20 +32,23 @@ def register_profile_handlers(bot):
         atk = get_attack(user_id)
         current_hp = get_current_hp(user_id)
         max_hp = get_max_hp(user_id)
-        pdef = get_defense(user_id)
+
+        pdef = get_physical_defense(user_id)
+        mdef = get_magic_defense(user_id)
 
         text = (
             f"👤 Персонаж\n\n"
             f"🏆 Рівень: {lvl}\n\n"
-            f"💪 STR: {str_}\n"
-            f"🎯 DEX: {dex_}\n"
-            f"🔮 INT: {int_}\n"
-            f"🦉 WIS: {wis_}\n"
-            f"🛡 STA: {sta_}\n\n"
-            f"❤️ HP: {current_hp}/{max_hp}\n"
+            f"💪 Сила: {str_}\n"
+            f"🎯 Спритність: {dex_}\n"
+            f"🔮 Інтелект: {int_}\n"
+            f"🦉 Мудрість: {wis_}\n"
+            f"🛡 Витривалість: {sta_}\n\n"
+            f"❤️ Здоров’я: {current_hp}/{max_hp}\n"
             f"{hp_bar(current_hp, max_hp)}\n\n"
-            f"🛡 DEF: {pdef}\n"
-            f"⚔️ Атака: {atk}"
+            f"⚔️ Атака: {atk}\n"
+            f"🛡 Фіз. захист: {pdef}\n"
+            f"🔮 Маг. захист: {mdef}"
         )
 
         bot.send_message(

@@ -39,18 +39,36 @@ def register_dev_handlers(bot):
 
         add_item(user_id, item_id)
 
-        _, name, type_, rarity, b_str, b_dex, b_int, b_wis = item
+        (
+            _,
+            name,
+            type_,
+            rarity,
+            b_str,
+            b_dex,
+            b_int,
+            b_wis,
+            b_sta,
+            pdef,
+            mdef
+        ) = item
 
         bonuses = []
 
         if b_str:
-            bonuses.append(f"STR+{b_str}")
+            bonuses.append(f"Сила +{b_str}")
         if b_dex:
-            bonuses.append(f"DEX+{b_dex}")
+            bonuses.append(f"Спритність +{b_dex}")
         if b_int:
-            bonuses.append(f"INT+{b_int}")
+            bonuses.append(f"Інтелект +{b_int}")
         if b_wis:
-            bonuses.append(f"WIS+{b_wis}")
+            bonuses.append(f"Мудрість +{b_wis}")
+        if b_sta:
+            bonuses.append(f"Витривалість +{b_sta}")
+        if pdef:
+            bonuses.append(f"Фіз. захист +{pdef}")
+        if mdef:
+            bonuses.append(f"Маг. захист +{mdef}")
 
         bonus_text = ""
         if bonuses:

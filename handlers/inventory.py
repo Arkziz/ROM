@@ -30,7 +30,20 @@ def register_inventory_handlers(bot):
         kb = types.InlineKeyboardMarkup()
 
         for item in items:
-            inv_id, item_id, name, type_, rarity, b_str, b_dex, b_int, b_wis = item
+            (
+                inv_id,
+                item_id,
+                name,
+                type_,
+                rarity,
+                b_str,
+                b_dex,
+                b_int,
+                b_wis,
+                b_sta,
+                pdef,
+                mdef
+            ) = item
 
             equipped = (
                 (type_ == "weapon" and inv_id == eq_weapon) or
@@ -42,13 +55,19 @@ def register_inventory_handlers(bot):
             bonuses = []
 
             if b_str:
-                bonuses.append(f"STR+{b_str}")
+                bonuses.append(f"Сила +{b_str}")
             if b_dex:
-                bonuses.append(f"DEX+{b_dex}")
+                bonuses.append(f"Спритність +{b_dex}")
             if b_int:
-                bonuses.append(f"INT+{b_int}")
+                bonuses.append(f"Інтелект +{b_int}")
             if b_wis:
-                bonuses.append(f"WIS+{b_wis}")
+                bonuses.append(f"Мудрість +{b_wis}")
+            if b_sta:
+                bonuses.append(f"Витривалість +{b_sta}")
+            if pdef:
+                bonuses.append(f"Фіз. захист +{pdef}")
+            if mdef:
+                bonuses.append(f"Маг. захист +{mdef}")
 
             if bonuses:
                 label += " | " + ", ".join(bonuses)
