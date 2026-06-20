@@ -1,15 +1,11 @@
 import sqlite3
 
-# ==============================
-# 🔌 ПІДКЛЮЧЕННЯ ДО БАЗИ
-# ==============================
-
 conn = sqlite3.connect("game.db", check_same_thread=False)
 cursor = conn.cursor()
 
 
 # ==============================
-# ✅ ІНІЦІАЛІЗАЦІЯ БД
+# DB INIT
 # ==============================
 
 def init_db():
@@ -21,6 +17,9 @@ def init_db():
         max_hp INTEGER,
         level INTEGER,
         exp INTEGER,
+        gold REAL,
+        kills INTEGER,
+        bag_slots INTEGER,
 
         str INTEGER,
         dex INTEGER,
@@ -37,7 +36,9 @@ def init_db():
     CREATE TABLE IF NOT EXISTS inventory (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
-        item_id INTEGER
+        item_id INTEGER,
+        quantity INTEGER,
+        durability INTEGER
     )
     """)
 
@@ -47,6 +48,10 @@ def init_db():
         name TEXT,
         type TEXT,
         rarity TEXT,
+        category TEXT,
+
+        max_stack INTEGER,
+        sell_price REAL,
 
         bonus_str INTEGER,
         bonus_dex INTEGER,
@@ -63,34 +68,49 @@ def init_db():
 
 
 # ==============================
-# ✅ СТАРТОВІ ПРЕДМЕТИ
+# SEED ITEMS
 # ==============================
 
 def seed_items():
     items = [
-        # id, name, type, rarity, str, dex, int, wis, sta, pdef, mdef
+        # id, name, type, rarity, category, max_stack, sell_price,
+        # str, dex, int, wis, sta, pdef, mdef
 
         # WEAPONS
-        (1, "⚪ Старий меч", "weapon", "common", 1, 0, 0, 0, 0, 0, 0),
-        (2, "🟢 Залізний меч", "weapon", "uncommon", 2, 0, 0, 0, 0, 0, 0),
-        (3, "🔵 Меч воїна", "weapon", "rare", 4, 0, 0, 0, 0, 0, 0),
-        (4, "🟣 Епічний клинок", "weapon", "epic", 7, 0, 0, 0, 0, 0, 0),
+        (1, "⚪ Старий меч", "weapon", "common", "equipment", 1, 1.00, 1, 0, 0, 0, 0, 0, 0),
+        (2, "🟢 Залізний меч", "weapon", "uncommon", "equipment", 1, 3.00, 2, 0, 0, 0, 0, 0, 0),
+        (3, "🔵 Меч воїна", "weapon", "rare", "equipment", 1, 8.00, 4, 0, 0, 0, 0, 0, 0),
+        (4, "🟣 Епічний клинок", "weapon", "epic", "equipment", 1, 25.00, 7, 0, 0, 0, 0, 0, 0),
 
         # ARMOR
-        (5, "⚪ Стара броня", "armor", "common", 0, 0, 0, 1, 1, 2, 0),
-        (6, "🟢 Шкіряна броня", "armor", "uncommon", 0, 1, 0, 2, 2, 4, 1),
-        (7, "🔵 Лицарська броня", "armor", "rare", 0, 2, 0, 3, 4, 8, 2),
+        (5, "⚪ Стара броня", "armor", "common", "equipment", 1, 1.00, 0, 0, 0, 1, 1, 2, 0),
+        (6, "🟢 Шкіряна броня", "armor", "uncommon", "equipment", 1, 3.00, 0, 1, 0, 2, 2, 4, 1),
+        (7, "🔵 Лицарська броня", "armor", "rare", "equipment", 1, 8.00, 0, 2, 0, 3, 4, 8, 2),
+
+        # TRASH
+        (101, "🐾 Густа вовча шкура", "trash", "grey", "trash", 20, 0.50, 0, 0, 0, 0, 0, 0, 0),
+        (102, "🐗 Жорстка щетина", "trash", "grey", "trash", 20, 0.15, 0, 0, 0, 0, 0, 0, 0),
+        (103, "👹 Гоблінська сережка", "trash", "grey", "trash", 20, 0.35, 0, 0, 0, 0, 0, 0, 0),
+        (104, "🔮 Тріснутий магічний уламок", "trash", "grey", "trash", 20, 0.75, 0, 0, 0, 0, 0, 0, 0),
+
+        # POTIONS
+        (201, "🧪 Мале зілля здоров’я", "potion_hp", "common", "potion", 10, 0.50, 0, 0, 0, 0, 0, 0, 0),
+        (202, "🔵 Мале зілля мани", "potion_mp", "common", "potion", 10, 0.50, 0, 0, 0, 0, 0, 0, 0),
+
+        # RUNES placeholder
+        (301, "💎 Руна Сили I", "rune_str", "common", "rune", 5, 1.00, 1, 0, 0, 0, 0, 0, 0),
     ]
 
     for item in items:
         try:
             cursor.execute("""
             INSERT INTO items (
-                id, name, type, rarity,
+                id, name, type, rarity, category,
+                max_stack, sell_price,
                 bonus_str, bonus_dex, bonus_int, bonus_wis, bonus_sta,
                 pdef, mdef
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, item)
         except:
             pass
@@ -99,15 +119,10 @@ def seed_items():
 
 
 # ==============================
-# ✅ КОРИСТУВАЧ
+# USER
 # ==============================
 
 def create_user(user_id):
-    # Стартові параметри:
-    # level = 1
-    # sta = 10
-    # max_hp = 100 + (1 * 20) + (10 * 5) = 170
-
     cursor.execute("""
     INSERT OR IGNORE INTO users (
         user_id,
@@ -115,6 +130,9 @@ def create_user(user_id):
         max_hp,
         level,
         exp,
+        gold,
+        kills,
+        bag_slots,
         str,
         dex,
         intelligence,
@@ -123,13 +141,16 @@ def create_user(user_id):
         equipped_weapon,
         equipped_armor
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         user_id,
         170,
         170,
         1,
         0,
+        0.0,
+        0,
+        20,
         10,
         10,
         10,
@@ -143,12 +164,12 @@ def create_user(user_id):
 
 
 # ==============================
-# ✅ ITEMS
+# ITEMS
 # ==============================
 
 def get_item(item_id):
     cursor.execute("""
-    SELECT 
+    SELECT
         id,
         name,
         type,
@@ -167,48 +188,206 @@ def get_item(item_id):
     return cursor.fetchone()
 
 
-# ==============================
-# ✅ INVENTORY BASIC
-# ==============================
-
-def add_item(user_id, item_id):
+def get_item_full(item_id):
     cursor.execute("""
-    INSERT INTO inventory (user_id, item_id)
-    VALUES (?, ?)
-    """, (user_id, item_id))
+    SELECT
+        id,
+        name,
+        type,
+        rarity,
+        category,
+        max_stack,
+        sell_price,
+        bonus_str,
+        bonus_dex,
+        bonus_int,
+        bonus_wis,
+        bonus_sta,
+        pdef,
+        mdef
+    FROM items
+    WHERE id=?
+    """, (item_id,))
 
-    conn.commit()
+    return cursor.fetchone()
 
 
-def get_inventory(user_id):
+# ==============================
+# INVENTORY CAPACITY
+# ==============================
+
+def get_bag_capacity(user_id):
     cursor.execute("""
-    SELECT item_id
+    SELECT bag_slots
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return 20
+
+    return row[0]
+
+
+def get_inventory_used_slots(user_id):
+    cursor.execute("""
+    SELECT COUNT(*)
     FROM inventory
     WHERE user_id=?
     """, (user_id,))
 
-    return cursor.fetchall()
+    return cursor.fetchone()[0]
 
 
 # ==============================
-# ✅ INVENTORY DETAILED
+# ADD ITEM WITH STACKING
+# ==============================
+
+def add_item(user_id, item_id, quantity=1):
+    item = get_item_full(item_id)
+
+    if not item:
+        return {
+            "success": False,
+            "added": 0,
+            "lost": quantity,
+            "message": "❌ Предмет не знайдено"
+        }
+
+    (
+        _,
+        name,
+        type_,
+        rarity,
+        category,
+        max_stack,
+        sell_price,
+        b_str,
+        b_dex,
+        b_int,
+        b_wis,
+        b_sta,
+        pdef,
+        mdef
+    ) = item
+
+    capacity = get_bag_capacity(user_id)
+    added = 0
+    lost = 0
+
+    # Equipment never stacks
+    if max_stack <= 1:
+        for _ in range(quantity):
+            used = get_inventory_used_slots(user_id)
+
+            if used >= capacity:
+                lost += 1
+                continue
+
+            cursor.execute("""
+            INSERT INTO inventory (user_id, item_id, quantity, durability)
+            VALUES (?, ?, ?, ?)
+            """, (user_id, item_id, 1, 100))
+
+            added += 1
+
+        conn.commit()
+
+        return {
+            "success": added > 0,
+            "added": added,
+            "lost": lost,
+            "name": name,
+            "used_slots": get_inventory_used_slots(user_id),
+            "capacity": capacity
+        }
+
+    # Stackable items
+    remaining = quantity
+
+    # Fill existing stacks first
+    cursor.execute("""
+    SELECT id, quantity
+    FROM inventory
+    WHERE user_id=? AND item_id=? AND quantity < ?
+    ORDER BY id ASC
+    """, (user_id, item_id, max_stack))
+
+    stacks = cursor.fetchall()
+
+    for inv_id, current_qty in stacks:
+        if remaining <= 0:
+            break
+
+        space = max_stack - current_qty
+        to_add = min(space, remaining)
+
+        cursor.execute("""
+        UPDATE inventory
+        SET quantity = quantity + ?
+        WHERE id=?
+        """, (to_add, inv_id))
+
+        remaining -= to_add
+        added += to_add
+
+    # Open new stacks if needed
+    while remaining > 0:
+        used = get_inventory_used_slots(user_id)
+
+        if used >= capacity:
+            lost += remaining
+            remaining = 0
+            break
+
+        to_add = min(max_stack, remaining)
+
+        cursor.execute("""
+        INSERT INTO inventory (user_id, item_id, quantity, durability)
+        VALUES (?, ?, ?, ?)
+        """, (user_id, item_id, to_add, None))
+
+        remaining -= to_add
+        added += to_add
+
+    conn.commit()
+
+    return {
+        "success": added > 0,
+        "added": added,
+        "lost": lost,
+        "name": name,
+        "used_slots": get_inventory_used_slots(user_id),
+        "capacity": capacity
+    }
+
+
+# ==============================
+# INVENTORY DETAILED
 # ==============================
 
 def get_inventory_detailed(user_id):
     cursor.execute("""
-    SELECT 
+    SELECT
         inventory.id,
         inventory.item_id,
         items.name,
         items.type,
         items.rarity,
+        items.category,
+        inventory.quantity,
+        items.max_stack,
+        inventory.durability,
         items.bonus_str,
         items.bonus_dex,
         items.bonus_int,
         items.bonus_wis,
         items.bonus_sta,
         items.pdef,
-        items.mdef
+        items.mdef,
+        items.sell_price
     FROM inventory
     JOIN items ON inventory.item_id = items.id
     WHERE inventory.user_id=?
@@ -220,19 +399,24 @@ def get_inventory_detailed(user_id):
 
 def get_item_by_inventory_id(inventory_id):
     cursor.execute("""
-    SELECT 
+    SELECT
         inventory.id,
         inventory.item_id,
         items.name,
         items.type,
         items.rarity,
+        items.category,
+        inventory.quantity,
+        items.max_stack,
+        inventory.durability,
         items.bonus_str,
         items.bonus_dex,
         items.bonus_int,
         items.bonus_wis,
         items.bonus_sta,
         items.pdef,
-        items.mdef
+        items.mdef,
+        items.sell_price
     FROM inventory
     JOIN items ON inventory.item_id = items.id
     WHERE inventory.id=?
@@ -242,7 +426,7 @@ def get_item_by_inventory_id(inventory_id):
 
 
 # ==============================
-# ✅ EQUIPMENT
+# EQUIPMENT
 # ==============================
 
 def get_equipped_inventory_ids(user_id):
@@ -266,7 +450,28 @@ def equip_inventory_item(user_id, inventory_id):
     if not item:
         return "❌ Предмет не знайдено"
 
-    inv_id, item_id, name, type_, rarity, b_str, b_dex, b_int, b_wis, b_sta, pdef, mdef = item
+    (
+        inv_id,
+        item_id,
+        name,
+        type_,
+        rarity,
+        category,
+        quantity,
+        max_stack,
+        durability,
+        b_str,
+        b_dex,
+        b_int,
+        b_wis,
+        b_sta,
+        pdef,
+        mdef,
+        sell_price
+    ) = item
+
+    if category != "equipment":
+        return "❌ Цей предмет не можна одягти"
 
     if type_ == "weapon":
         cursor.execute("""
@@ -290,15 +495,7 @@ def equip_inventory_item(user_id, inventory_id):
     return f"✅ Одягнуто: {name}"
 
 
-# Старий метод залишаємо для сумісності
 def equip_item(user_id, item_id):
-    item = get_item(item_id)
-
-    if not item:
-        return "❌ Предмет не знайдено"
-
-    _, name, type_, *_ = item
-
     cursor.execute("""
     SELECT id
     FROM inventory
@@ -312,13 +509,11 @@ def equip_item(user_id, item_id):
     if not row:
         return "❌ Такого предмета немає в інвентарі"
 
-    inventory_id = row[0]
-
-    return equip_inventory_item(user_id, inventory_id)
+    return equip_inventory_item(user_id, row[0])
 
 
 # ==============================
-# ✅ BONUSES FROM EQUIPPED ITEMS
+# BONUSES
 # ==============================
 
 def get_item_bonuses(user_id):
@@ -339,7 +534,25 @@ def get_item_bonuses(user_id):
         if not item:
             continue
 
-        _, _, _, _, _, b_str, b_dex, b_int, b_wis, b_sta, pdef, mdef = item
+        (
+            inv_id,
+            item_id,
+            name,
+            type_,
+            rarity,
+            category,
+            quantity,
+            max_stack,
+            durability,
+            b_str,
+            b_dex,
+            b_int,
+            b_wis,
+            b_sta,
+            pdef,
+            mdef,
+            sell_price
+        ) = item
 
         total_str += b_str or 0
         total_dex += b_dex or 0
@@ -365,7 +578,25 @@ def get_equipped_item_defenses(user_id):
         if not item:
             continue
 
-        _, _, _, _, _, b_str, b_dex, b_int, b_wis, b_sta, pdef, mdef = item
+        (
+            inv_id,
+            item_id,
+            name,
+            type_,
+            rarity,
+            category,
+            quantity,
+            max_stack,
+            durability,
+            b_str,
+            b_dex,
+            b_int,
+            b_wis,
+            b_sta,
+            pdef,
+            mdef,
+            sell_price
+        ) = item
 
         total_pdef += pdef or 0
         total_mdef += mdef or 0
@@ -374,12 +605,12 @@ def get_equipped_item_defenses(user_id):
 
 
 # ==============================
-# ✅ PLAYER STATS
+# PLAYER STATS
 # ==============================
 
 def get_player_stats(user_id):
     cursor.execute("""
-    SELECT 
+    SELECT
         str,
         dex,
         intelligence,
@@ -399,24 +630,121 @@ def get_player_stats(user_id):
 
     item_str, item_dex, item_int, item_wis, item_sta = get_item_bonuses(user_id)
 
-    total_str = base_str + item_str
-    total_dex = base_dex + item_dex
-    total_int = base_int + item_int
-    total_wis = base_wis + item_wis
-    total_sta = base_sta + item_sta
-
     return (
-        total_str,
-        total_dex,
-        total_int,
-        total_wis,
-        total_sta,
+        base_str + item_str,
+        base_dex + item_dex,
+        base_int + item_int,
+        base_wis + item_wis,
+        base_sta + item_sta,
         lvl
     )
 
 
 # ==============================
-# ✅ COMBAT STATS
+# EXP / GOLD
+# ==============================
+
+def get_exp_to_next_level(level):
+    return int(100 * level)
+
+
+def add_exp(user_id, amount):
+    cursor.execute("""
+    SELECT level, exp, hp
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return None
+
+    level, exp, hp = row
+    exp += int(amount)
+
+    level_ups = 0
+
+    while exp >= get_exp_to_next_level(level):
+        exp -= get_exp_to_next_level(level)
+        level += 1
+        level_ups += 1
+
+        # Тимчасова авто-прогресія без класів
+        cursor.execute("""
+        UPDATE users
+        SET
+            str = str + 1,
+            dex = dex + 1,
+            intelligence = intelligence + 1,
+            wis = wis + 1,
+            sta = sta + 1
+        WHERE user_id=?
+        """, (user_id,))
+
+    cursor.execute("""
+    UPDATE users
+    SET level=?, exp=?
+    WHERE user_id=?
+    """, (level, exp, user_id))
+
+    conn.commit()
+
+    max_hp = get_max_hp(user_id)
+
+    cursor.execute("""
+    UPDATE users
+    SET max_hp=?
+    WHERE user_id=?
+    """, (max_hp, user_id))
+
+    conn.commit()
+
+    return {
+        "level": level,
+        "exp": exp,
+        "exp_to_next": get_exp_to_next_level(level),
+        "level_ups": level_ups
+    }
+
+
+def add_gold(user_id, amount):
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold + ?
+    WHERE user_id=?
+    """, (float(amount), user_id))
+
+    conn.commit()
+
+
+def add_kill(user_id):
+    cursor.execute("""
+    UPDATE users
+    SET kills = kills + 1
+    WHERE user_id=?
+    """, (user_id,))
+
+    conn.commit()
+
+
+def get_wallet(user_id):
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return 0.0
+
+    return row[0]
+
+
+# ==============================
+# COMBAT STATS
 # ==============================
 
 def get_attack(user_id):
@@ -427,7 +755,6 @@ def get_attack(user_id):
 
     total_str, total_dex, total_int, total_wis, total_sta, lvl = stats
 
-    # Поки фізична атака = Сила
     return total_str
 
 
@@ -439,7 +766,6 @@ def get_magic_attack(user_id):
 
     total_str, total_dex, total_int, total_wis, total_sta, lvl = stats
 
-    # Поки магічна атака = Інтелект
     return total_int
 
 
@@ -451,7 +777,6 @@ def get_max_hp(user_id):
 
     total_str, total_dex, total_int, total_wis, total_sta, lvl = stats
 
-    # MaxHP = 100 + (Level * 20) + (STA * 5)
     return 100 + (lvl * 20) + (total_sta * 5)
 
 
@@ -462,11 +787,8 @@ def get_physical_defense(user_id):
         return 0
 
     total_str, total_dex, total_int, total_wis, total_sta, lvl = stats
-
     item_pdef, item_mdef = get_equipped_item_defenses(user_id)
 
-    # PDEF = PDEF_шмоту + STA * 0.2 + заточка
-    # Заточки поки немає
     return int(item_pdef + (total_sta * 0.2))
 
 
@@ -477,21 +799,17 @@ def get_magic_defense(user_id):
         return 0
 
     total_str, total_dex, total_int, total_wis, total_sta, lvl = stats
-
     item_pdef, item_mdef = get_equipped_item_defenses(user_id)
 
-    # MDEF = MDEF_шмоту + WIS * 1 + заточка
-    # Заточки поки немає
     return int(item_mdef + (total_wis * 1))
 
 
-# Старий alias, щоб нічого не зламати
 def get_defense(user_id):
     return get_physical_defense(user_id)
 
 
 # ==============================
-# ✅ CURRENT HP
+# HP
 # ==============================
 
 def get_current_hp(user_id):

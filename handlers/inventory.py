@@ -29,6 +29,8 @@ def register_inventory_handlers(bot):
 
         kb = types.InlineKeyboardMarkup()
 
+        text = "🎒 Інвентар:\n\n"
+
         for item in items:
             (
                 inv_id,
@@ -36,13 +38,18 @@ def register_inventory_handlers(bot):
                 name,
                 type_,
                 rarity,
+                category,
+                quantity,
+                max_stack,
+                durability,
                 b_str,
                 b_dex,
                 b_int,
                 b_wis,
                 b_sta,
                 pdef,
-                mdef
+                mdef,
+                sell_price
             ) = item
 
             equipped = (
@@ -51,6 +58,9 @@ def register_inventory_handlers(bot):
             )
 
             label = name
+
+            if max_stack > 1:
+                label += f" x{quantity}"
 
             bonuses = []
 
@@ -75,15 +85,18 @@ def register_inventory_handlers(bot):
             if equipped:
                 label += " ✅"
 
-            kb.add(types.InlineKeyboardButton(
-                text=label,
-                callback_data=f"equip_{inv_id}"
-            ))
+            text += f"• {label}\n"
+
+            if category == "equipment":
+                kb.add(types.InlineKeyboardButton(
+                    text=label,
+                    callback_data=f"equip_{inv_id}"
+                ))
 
         bot.send_message(
             message.chat.id,
-            "🎒 Обери предмет:",
-            reply_markup=kb
+            text,
+            reply_markup=kb if kb.keyboard else None
         )
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("equip_"))
