@@ -645,7 +645,24 @@ def get_player_stats(user_id):
 # ==============================
 
 def get_exp_to_next_level(level):
-    return int(100 * level)
+    exp_table = {
+        1: 500,
+        2: 900,
+        3: 1500,
+        4: 2400,
+        5: 3600,
+        6: 5200,
+        7: 7500,
+        8: 10500,
+        9: 14500,
+        10: 20000
+    }
+
+    if level in exp_table:
+        return exp_table[level]
+
+    # після 10 рівня тимчасова формула
+    return int(20000 * (1.35 ** (level - 10)))
 
 
 def add_exp(user_id, amount):
@@ -742,6 +759,27 @@ def get_wallet(user_id):
 
     return row[0]
 
+def get_user_progress(user_id):
+    cursor.execute("""
+    SELECT level, exp, gold, kills
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return None
+
+    level, exp, gold, kills = row
+
+    return {
+        "level": level,
+        "exp": exp,
+        "exp_to_next": get_exp_to_next_level(level),
+        "gold": gold,
+        "kills": kills
+    }
 
 # ==============================
 # COMBAT STATS

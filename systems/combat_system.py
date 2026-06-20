@@ -1,83 +1,91 @@
 import random
 
+from data.mobs import LOCATION_1_MOBS
+
+
+# ==============================
+# ✅ HELPERS
+# ==============================
 
 def clamp(value, min_value, max_value):
     return max(min_value, min(max_value, value))
 
 
 # ==============================
-# MOB GENERATION
+# ✅ MOB GENERATION
 # ==============================
 
-def generate_mob():
-    mobs = [
-        {
-            "name": "🐺 Агресивний вовк",
-            "level": 4,
-            "hp": random.randint(35, 50),
-            "attack": random.randint(6, 10),
-            "def": random.randint(2, 5),
-            "dex": random.randint(10, 14),
-            "attack_type": "physical",
-            "base_exp": 22,
-            "trash_item_id": 101,
-            "trash_chance": 85,
-            "potion_item_id": 201,
-            "potion_chance": 15,
-            "is_boss": False
-        },
-        {
-            "name": "🐗 Дикий кабан",
-            "level": 2,
-            "hp": random.randint(40, 60),
-            "attack": random.randint(5, 9),
-            "def": random.randint(3, 6),
-            "dex": random.randint(6, 10),
-            "attack_type": "physical",
-            "base_exp": 14,
-            "trash_item_id": 102,
-            "trash_chance": 90,
-            "potion_item_id": 201,
-            "potion_chance": 15,
-            "is_boss": False
-        },
-        {
-            "name": "👹 Гоблін",
-            "level": 5,
-            "hp": random.randint(30, 45),
-            "attack": random.randint(7, 11),
-            "def": random.randint(2, 4),
-            "dex": random.randint(9, 13),
-            "attack_type": "physical",
-            "base_exp": 30,
-            "trash_item_id": 103,
-            "trash_chance": 80,
-            "potion_item_id": 201,
-            "potion_chance": 10,
-            "is_boss": False
-        },
-        {
-            "name": "🔮 Гоблін-маг",
-            "level": 6,
-            "hp": random.randint(25, 40),
-            "attack": random.randint(8, 13),
-            "def": random.randint(1, 3),
-            "dex": random.randint(6, 10),
-            "attack_type": "magical",
-            "base_exp": 42,
-            "trash_item_id": 104,
-            "trash_chance": 75,
-            "potion_item_id": 202,
-            "potion_chance": 25,
-            "is_boss": False
-        }
+def build_mob(mob_template):
+    return {
+        "name": mob_template["name"],
+        "level": mob_template["level"],
+
+        "hp": random.randint(
+            mob_template["hp_min"],
+            mob_template["hp_max"]
+        ),
+
+        "attack": random.randint(
+            mob_template["attack_min"],
+            mob_template["attack_max"]
+        ),
+
+        "def": random.randint(
+            mob_template["def_min"],
+            mob_template["def_max"]
+        ),
+
+        "dex": random.randint(
+            mob_template["dex_min"],
+            mob_template["dex_max"]
+        ),
+
+        "attack_type": mob_template["attack_type"],
+
+        "base_exp": mob_template.get("base_exp", 0),
+        "trash_item_id": mob_template.get("trash_item_id"),
+        "trash_chance": mob_template.get("trash_chance", 80),
+        "potion_item_id": mob_template.get("potion_item_id"),
+        "potion_chance": mob_template.get("potion_chance", 0),
+        "is_boss": mob_template.get("is_boss", False)
+    }
+
+
+def generate_mob(player_level):
+    """
+    Генерація моба з урахуванням рівня гравця.
+
+    Правило:
+    - гравець бачить тільки мобів, у яких min_player_level <= player_level;
+    - пріоритет мають моби близькі до рівня гравця;
+    - гравець 1 рівня більше не зустріне моба 6 рівня.
+    """
+
+    unlocked = [
+        mob for mob in LOCATION_1_MOBS
+        if mob["min_player_level"] <= player_level
     ]
 
-    return random.choice(mobs)
+    if not unlocked:
+        unlocked = [LOCATION_1_MOBS[0]]
+
+    # Основний пул: моби від -1 до +1 рівня від гравця
+    near_level = [
+        mob for mob in unlocked
+        if player_level - 1 <= mob["level"] <= player_level + 1
+    ]
+
+    # Якщо таких немає — беремо всіх відкритих
+    if not near_level:
+        near_level = unlocked
+
+    selected_template = random.choice(near_level)
+
+    return build_mob(selected_template)
 
 
 # ==============================
-# CRIT
+# ✅ CRIT FORMULAS
 # ==============================
 
 def get_physical_crit_chance(dex, level):
@@ -85,7 +93,6 @@ def get_physical_crit_chance(dex, level):
         level = 1
 
     crit_chance = (dex / (level * 40)) * 100
-
     return clamp(crit_chance, 0, 50)
 
 
@@ -94,12 +101,11 @@ def get_magical_crit_chance(wis, level):
         level = 1
 
     crit_chance = (wis / (level * 50)) * 100
-
     return clamp(crit_chance, 0, 50)
 
 
 # ==============================
-# DODGE
+# ✅ DODGE FORMULA
 # ==============================
 
 def get_dodge_chance(player_dex, mob_dex, level):
@@ -107,16 +113,28 @@ def get_dodge_chance(player_dex, mob_dex, level):
         level = 1
 
     dodge_chance = ((player_dex - mob_dex) / (level * 2)) + 5
-
     return clamp(dodge_chance, 0, 30)
 
 
 # ==============================
-# PLAYER ATTACK
+# ✅ PLAYER ATTACK
 # ==============================
 
-def calculate_player_attack(player_atk, mob_def, dex, wis, level, attack_type="physical"):
-    base_damage = max(1, int(player_atk - (mob_def * 0.5) + random.randint(-2, 3)))
+def calculate_player_attack(
+    player_atk,
+    mob_def,
+    dex,
+    wis,
+    level,
+    attack_type="physical"
+):
+    # Поки гравець бʼє фізично.
+    # Але підтримка magical вже закладена на майбутнє.
+
+    base_damage = max(
+        1,
+        int(player_atk - (mob_def * 0.5) + random.randint(-2, 3))
+    )
 
     if attack_type == "magical":
         crit_chance = get_magical_crit_chance(wis, level)
@@ -135,7 +153,7 @@ def calculate_player_attack(player_atk, mob_def, dex, wis, level, attack_type="p
 
 
 # ==============================
-# MOB ATTACK
+# ✅ MOB ATTACK
 # ==============================
 
 def calculate_mob_attack(
@@ -148,8 +166,13 @@ def calculate_mob_attack(
     level,
     attack_type="physical"
 ):
+    # ==============================
+    # DODGE
+    # ==============================
+
     is_dodge = False
 
+    # Ухил працює тільки проти фізичних атак
     if attack_type == "physical":
         dodge_chance = get_dodge_chance(player_dex, mob_dex, level)
         is_dodge = random.uniform(0, 100) <= dodge_chance
@@ -165,14 +188,28 @@ def calculate_mob_attack(
             "crit_chance": 0
         }
 
+    # ==============================
+    # DEFENSE LAYER
+    # ==============================
+
     if attack_type == "magical":
         defense = player_mdef
     else:
         defense = player_pdef
 
-    damage = max(1, int(mob_attack - (defense * 0.5) + random.randint(-2, 2)))
+    # Damage = ATK - (DEF * 0.5), мінімум 1
+    damage = max(
+        1,
+        int(mob_attack - (defense * 0.5) + random.randint(-2, 2))
+    )
+
+    # ==============================
+    # MOB CRIT
+    # ==============================
 
     base_mob_crit_chance = 10
+
+    # STA зменшує шанс криту моба
     anti_crit = sta // 25
     mob_crit_chance = max(0, base_mob_crit_chance - anti_crit)
 

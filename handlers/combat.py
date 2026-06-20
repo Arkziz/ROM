@@ -36,7 +36,9 @@ def register_combat_handlers(bot):
             )
             return
 
-        mob = generate_mob()
+        str_, dex_, int_, wis_, sta_, lvl = stats
+
+        mob = generate_mob(player_level=lvl)
         mob["max_hp"] = mob["hp"]
 
         bot.user_data = getattr(bot, "user_data", {})
@@ -61,6 +63,7 @@ def register_combat_handlers(bot):
             f"🔮 Маг. захист: {player_mdef}\n\n"
             f"----------------------\n\n"
             f"👹 ВОРОГ\n"
+            f"🏷 Рівень: {mob['level']}\n"
             f"❤️ Здоров’я: {mob['hp']}/{mob['max_hp']}\n"
             f"{hp_bar(mob['hp'], mob['max_hp'])}\n"
             f"⚔️ Атака: {mob['attack']}\n"

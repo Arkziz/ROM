@@ -6,7 +6,8 @@ from db import (
     add_kill,
     add_item,
     get_inventory_used_slots,
-    get_bag_capacity
+    get_bag_capacity,
+    get_exp_to_next_level
 )
 
 
@@ -14,10 +15,22 @@ from db import (
 # EXP
 # ==============================
 
-def calculate_exp_reward(player_level, mob_level, base_exp):
+def get_base_exp_for_mob_level(mob_level):
+    """
+    Базове правило:
+    моб твого рівня дає приблизно 1/45 шкали рівня.
+    Тобто для апу треба ~40–50 мобів твого рівня.
+    """
+    exp_to_next = get_exp_to_next_level(mob_level)
+    return max(1, int(exp_to_next / 45))
+
+
+def calculate_exp_reward(player_level, mob_level):
+    base_exp = get_base_exp_for_mob_level(mob_level)
+
     diff = player_level - mob_level
 
-    # Сірі моби
+    # Сірі моби: якщо моб молодший на 5+ рівнів
     if diff >= 5:
         return 0
 
@@ -39,9 +52,7 @@ def calculate_exp_reward(player_level, mob_level, base_exp):
 
 def calculate_gold_reward(mob_level):
     base_gold = mob_level * 0.2
-
     gold = random.uniform(base_gold * 0.8, base_gold * 1.2)
-
     return round(gold, 2)
 
 
@@ -80,20 +91,18 @@ def roll_loot(user_id, mob):
 
     # 3. Equipment loot
     equipment_roll = random.randint(1, 100)
-
     equipment_item_id = None
 
     is_boss = mob.get("is_boss", False)
 
     if is_boss:
-        # Пізніше зробимо окремий boss loot pool
         equipment_item_id = random.choice([2, 3, 6, 7])
     else:
         if equipment_roll <= 1:
-            # Green
+            # 1% зелена річ
             equipment_item_id = random.choice([2, 6])
         elif equipment_roll <= 6:
-            # White
+            # 5% біла річ
             equipment_item_id = random.choice([1, 5])
 
     if equipment_item_id:
@@ -114,9 +123,8 @@ def roll_loot(user_id, mob):
 
 def process_victory_reward(user_id, player_level, mob):
     mob_level = mob.get("level", 1)
-    base_exp = mob.get("base_exp", 20)
 
-    exp_reward = calculate_exp_reward(player_level, mob_level, base_exp)
+    exp_reward = calculate_exp_reward(player_level, mob_level)
     gold_reward = calculate_gold_reward(mob_level)
 
     exp_result = add_exp(user_id, exp_reward)
