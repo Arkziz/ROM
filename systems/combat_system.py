@@ -3,16 +3,12 @@ import random
 from data.mobs import LOCATION_1_MOBS
 
 
-# ==============================
-# ✅ HELPERS
-# ==============================
-
 def clamp(value, min_value, max_value):
     return max(min_value, min(max_value, value))
 
 
 # ==============================
-# ✅ MOB GENERATION
+# MOB GENERATION
 # ==============================
 
 def build_mob(mob_template):
@@ -42,7 +38,6 @@ def build_mob(mob_template):
 
         "attack_type": mob_template["attack_type"],
 
-        "base_exp": mob_template.get("base_exp", 0),
         "trash_item_id": mob_template.get("trash_item_id"),
         "trash_chance": mob_template.get("trash_chance", 80),
         "potion_item_id": mob_template.get("potion_item_id"),
@@ -51,31 +46,25 @@ def build_mob(mob_template):
     }
 
 
-def generate_mob(player_level):
-    """
-    Генерація моба з урахуванням рівня гравця.
-
-    Правило:
-    - гравець бачить тільки мобів, у яких min_player_level <= player_level;
-    - пріоритет мають моби близькі до рівня гравця;
-    - гравець 1 рівня більше не зустріне моба 6 рівня.
-    """
+def generate_mob(player_level, location_id="start_path"):
+    if location_id == "start_path":
+        location_mobs = LOCATION_1_MOBS
+    else:
+        location_mobs = LOCATION_1_MOBS
 
     unlocked = [
-        mob for mob in LOCATION_1_MOBS
+        mob for mob in location_mobs
         if mob["min_player_level"] <= player_level
     ]
 
     if not unlocked:
-        unlocked = [LOCATION_1_MOBS[0]]
+        unlocked = [location_mobs[0]]
 
-    # Основний пул: моби від -1 до +1 рівня від гравця
     near_level = [
         mob for mob in unlocked
         if player_level - 1 <= mob["level"] <= player_level + 1
     ]
 
-    # Якщо таких немає — беремо всіх відкритих
     if not near_level:
         near_level = unlocked
 
@@ -85,7 +74,7 @@ def generate_mob(player_level):
 
 
 # ==============================
-# ✅ CRIT FORMULAS
+# CRIT
 # ==============================
 
 def get_physical_crit_chance(dex, level):
@@ -105,7 +94,7 @@ def get_magical_crit_chance(wis, level):
 
 
 # ==============================
-# ✅ DODGE FORMULA
+# DODGE
 # ==============================
 
 def get_dodge_chance(player_dex, mob_dex, level):
@@ -117,7 +106,7 @@ def get_dodge_chance(player_dex, mob_dex, level):
 
 
 # ==============================
-# ✅ PLAYER ATTACK
+# PLAYER ATTACK
 # ==============================
 
 def calculate_player_attack(
@@ -128,9 +117,6 @@ def calculate_player_attack(
     level,
     attack_type="physical"
 ):
-    # Поки гравець бʼє фізично.
-    # Але підтримка magical вже закладена на майбутнє.
-
     base_damage = max(
         1,
         int(player_atk - (mob_def * 0.5) + random.randint(-2, 3))
@@ -153,7 +139,7 @@ def calculate_player_attack(
 
 
 # ==============================
-# ✅ MOB ATTACK
+# MOB ATTACK
 # ==============================
 
 def calculate_mob_attack(
@@ -166,13 +152,8 @@ def calculate_mob_attack(
     level,
     attack_type="physical"
 ):
-    # ==============================
-    # DODGE
-    # ==============================
-
     is_dodge = False
 
-    # Ухил працює тільки проти фізичних атак
     if attack_type == "physical":
         dodge_chance = get_dodge_chance(player_dex, mob_dex, level)
         is_dodge = random.uniform(0, 100) <= dodge_chance
@@ -188,28 +169,17 @@ def calculate_mob_attack(
             "crit_chance": 0
         }
 
-    # ==============================
-    # DEFENSE LAYER
-    # ==============================
-
     if attack_type == "magical":
         defense = player_mdef
     else:
         defense = player_pdef
 
-    # Damage = ATK - (DEF * 0.5), мінімум 1
     damage = max(
         1,
         int(mob_attack - (defense * 0.5) + random.randint(-2, 2))
     )
 
-    # ==============================
-    # MOB CRIT
-    # ==============================
-
     base_mob_crit_chance = 10
-
-    # STA зменшує шанс криту моба
     anti_crit = sta // 25
     mob_crit_chance = max(0, base_mob_crit_chance - anti_crit)
 

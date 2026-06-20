@@ -1,11 +1,15 @@
 import sqlite3
 
+# ==============================
+# 🔌 ПІДКЛЮЧЕННЯ ДО БАЗИ
+# ==============================
+
 conn = sqlite3.connect("game.db", check_same_thread=False)
 cursor = conn.cursor()
 
 
 # ==============================
-# DB INIT
+# ✅ DB INIT
 # ==============================
 
 def init_db():
@@ -20,6 +24,7 @@ def init_db():
         gold REAL,
         kills INTEGER,
         bag_slots INTEGER,
+        current_location TEXT,
 
         str INTEGER,
         dex INTEGER,
@@ -64,11 +69,63 @@ def init_db():
     )
     """)
 
+    migrations = [
+        ("users", "gold", "REAL DEFAULT 0"),
+        ("users", "kills", "INTEGER DEFAULT 0"),
+        ("users", "bag_slots", "INTEGER DEFAULT 20"),
+        ("users", "current_location", "TEXT DEFAULT 'start_path'"),
+
+        ("inventory", "quantity", "INTEGER DEFAULT 1"),
+        ("inventory", "durability", "INTEGER DEFAULT NULL"),
+
+        ("items", "category", "TEXT DEFAULT 'equipment'"),
+        ("items", "max_stack", "INTEGER DEFAULT 1"),
+        ("items", "sell_price", "REAL DEFAULT 0"),
+        ("items", "bonus_sta", "INTEGER DEFAULT 0"),
+        ("items", "pdef", "INTEGER DEFAULT 0"),
+        ("items", "mdef", "INTEGER DEFAULT 0"),
+    ]
+
+    for table, column, column_type in migrations:
+        try:
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
+
+        # ==============================
+        # REPAIR OLD USERS
+        # ==============================
+
+        cursor.execute("""
+                       UPDATE users
+                       SET bag_slots = 20
+                       WHERE bag_slots IS NULL
+                       """)
+
+        cursor.execute("""
+                       UPDATE users
+                       SET current_location = 'start_path'
+                       WHERE current_location IS NULL
+                          OR current_location = ''
+                       """)
+
+        cursor.execute("""
+                       UPDATE users
+                       SET gold = 0
+                       WHERE gold IS NULL
+                       """)
+
+        cursor.execute("""
+                       UPDATE users
+                       SET kills = 0
+                       WHERE kills IS NULL
+                       """)
+
     conn.commit()
 
 
 # ==============================
-# SEED ITEMS
+# ✅ SEED ITEMS
 # ==============================
 
 def seed_items():
@@ -90,36 +147,35 @@ def seed_items():
         # TRASH
         (101, "🐾 Густа вовча шкура", "trash", "grey", "trash", 20, 0.50, 0, 0, 0, 0, 0, 0, 0),
         (102, "🐗 Жорстка щетина", "trash", "grey", "trash", 20, 0.15, 0, 0, 0, 0, 0, 0, 0),
-        (103, "👹 Гоблінська сережка", "trash", "grey", "trash", 20, 0.35, 0, 0, 0, 0, 0, 0, 0),
-        (104, "🔮 Тріснутий магічний уламок", "trash", "grey", "trash", 20, 0.75, 0, 0, 0, 0, 0, 0, 0),
+        (103, "🦡 Борсучий жир", "trash", "grey", "trash", 20, 0.25, 0, 0, 0, 0, 0, 0, 0),
+        (104, "👹 Гоблінська сережка", "trash", "grey", "trash", 20, 0.35, 0, 0, 0, 0, 0, 0, 0),
+        (105, "🕷️ Липка павутина", "trash", "grey", "trash", 20, 0.60, 0, 0, 0, 0, 0, 0, 0),
+        (106, "💎 Тріснутий рунічний уламок", "trash", "grey", "trash", 20, 0.75, 0, 0, 0, 0, 0, 0, 0),
 
         # POTIONS
         (201, "🧪 Мале зілля здоров’я", "potion_hp", "common", "potion", 10, 0.50, 0, 0, 0, 0, 0, 0, 0),
         (202, "🔵 Мале зілля мани", "potion_mp", "common", "potion", 10, 0.50, 0, 0, 0, 0, 0, 0, 0),
 
-        # RUNES placeholder
+        # RUNES
         (301, "💎 Руна Сили I", "rune_str", "common", "rune", 5, 1.00, 1, 0, 0, 0, 0, 0, 0),
     ]
 
     for item in items:
-        try:
-            cursor.execute("""
-            INSERT INTO items (
-                id, name, type, rarity, category,
-                max_stack, sell_price,
-                bonus_str, bonus_dex, bonus_int, bonus_wis, bonus_sta,
-                pdef, mdef
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, item)
-        except:
-            pass
+        cursor.execute("""
+        INSERT OR REPLACE INTO items (
+            id, name, type, rarity, category,
+            max_stack, sell_price,
+            bonus_str, bonus_dex, bonus_int, bonus_wis, bonus_sta,
+            pdef, mdef
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, item)
 
     conn.commit()
 
 
 # ==============================
-# USER
+# ✅ USER
 # ==============================
 
 def create_user(user_id):
@@ -133,6 +189,7 @@ def create_user(user_id):
         gold,
         kills,
         bag_slots,
+        current_location,
         str,
         dex,
         intelligence,
@@ -141,7 +198,7 @@ def create_user(user_id):
         equipped_weapon,
         equipped_armor
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         user_id,
         170,
@@ -151,6 +208,7 @@ def create_user(user_id):
         0.0,
         0,
         20,
+        "start_path",
         10,
         10,
         10,
@@ -164,7 +222,38 @@ def create_user(user_id):
 
 
 # ==============================
-# ITEMS
+# ✅ LOCATION
+# ==============================
+
+def get_current_location(user_id):
+    cursor.execute("""
+    SELECT current_location
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return "start_path"
+
+    if not row or not row[0]:
+        return 20
+
+
+
+def set_current_location(user_id, location_id):
+    cursor.execute("""
+    UPDATE users
+    SET current_location=?
+    WHERE user_id=?
+    """, (location_id, user_id))
+
+    conn.commit()
+
+
+# ==============================
+# ✅ ITEMS
 # ==============================
 
 def get_item(item_id):
@@ -213,7 +302,7 @@ def get_item_full(item_id):
 
 
 # ==============================
-# INVENTORY CAPACITY
+# ✅ INVENTORY CAPACITY
 # ==============================
 
 def get_bag_capacity(user_id):
@@ -226,6 +315,9 @@ def get_bag_capacity(user_id):
     row = cursor.fetchone()
 
     if not row:
+        return 20
+
+    if row[0] is None:
         return 20
 
     return row[0]
@@ -242,7 +334,7 @@ def get_inventory_used_slots(user_id):
 
 
 # ==============================
-# ADD ITEM WITH STACKING
+# ✅ ADD ITEM WITH STACKING
 # ==============================
 
 def add_item(user_id, item_id, quantity=1):
@@ -277,7 +369,7 @@ def add_item(user_id, item_id, quantity=1):
     added = 0
     lost = 0
 
-    # Equipment never stacks
+    # НЕ СТАКУЄТЬСЯ
     if max_stack <= 1:
         for _ in range(quantity):
             used = get_inventory_used_slots(user_id)
@@ -304,10 +396,9 @@ def add_item(user_id, item_id, quantity=1):
             "capacity": capacity
         }
 
-    # Stackable items
+    # СТАКУЄТЬСЯ
     remaining = quantity
 
-    # Fill existing stacks first
     cursor.execute("""
     SELECT id, quantity
     FROM inventory
@@ -333,7 +424,6 @@ def add_item(user_id, item_id, quantity=1):
         remaining -= to_add
         added += to_add
 
-    # Open new stacks if needed
     while remaining > 0:
         used = get_inventory_used_slots(user_id)
 
@@ -365,8 +455,18 @@ def add_item(user_id, item_id, quantity=1):
 
 
 # ==============================
-# INVENTORY DETAILED
+# ✅ INVENTORY READ
 # ==============================
+
+def get_inventory(user_id):
+    cursor.execute("""
+    SELECT item_id
+    FROM inventory
+    WHERE user_id=?
+    """, (user_id,))
+
+    return cursor.fetchall()
+
 
 def get_inventory_detailed(user_id):
     cursor.execute("""
@@ -426,7 +526,7 @@ def get_item_by_inventory_id(inventory_id):
 
 
 # ==============================
-# EQUIPMENT
+# ✅ EQUIPMENT
 # ==============================
 
 def get_equipped_inventory_ids(user_id):
@@ -513,7 +613,7 @@ def equip_item(user_id, item_id):
 
 
 # ==============================
-# BONUSES
+# ✅ BONUSES
 # ==============================
 
 def get_item_bonuses(user_id):
@@ -605,7 +705,7 @@ def get_equipped_item_defenses(user_id):
 
 
 # ==============================
-# PLAYER STATS
+# ✅ PLAYER STATS
 # ==============================
 
 def get_player_stats(user_id):
@@ -641,7 +741,7 @@ def get_player_stats(user_id):
 
 
 # ==============================
-# EXP / GOLD
+# ✅ EXP / GOLD
 # ==============================
 
 def get_exp_to_next_level(level):
@@ -661,13 +761,12 @@ def get_exp_to_next_level(level):
     if level in exp_table:
         return exp_table[level]
 
-    # після 10 рівня тимчасова формула
     return int(20000 * (1.35 ** (level - 10)))
 
 
 def add_exp(user_id, amount):
     cursor.execute("""
-    SELECT level, exp, hp
+    SELECT level, exp
     FROM users
     WHERE user_id=?
     """, (user_id,))
@@ -677,7 +776,7 @@ def add_exp(user_id, amount):
     if not row:
         return None
 
-    level, exp, hp = row
+    level, exp = row
     exp += int(amount)
 
     level_ups = 0
@@ -687,7 +786,6 @@ def add_exp(user_id, amount):
         level += 1
         level_ups += 1
 
-        # Тимчасова авто-прогресія без класів
         cursor.execute("""
         UPDATE users
         SET
@@ -759,6 +857,7 @@ def get_wallet(user_id):
 
     return row[0]
 
+
 def get_user_progress(user_id):
     cursor.execute("""
     SELECT level, exp, gold, kills
@@ -781,8 +880,9 @@ def get_user_progress(user_id):
         "kills": kills
     }
 
+
 # ==============================
-# COMBAT STATS
+# ✅ COMBAT STATS
 # ==============================
 
 def get_attack(user_id):
@@ -847,7 +947,7 @@ def get_defense(user_id):
 
 
 # ==============================
-# HP
+# ✅ HP
 # ==============================
 
 def get_current_hp(user_id):

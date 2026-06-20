@@ -1,11 +1,8 @@
 # ==============================
-# 🗺️ ЛОКАЦІЯ 1: ПОЧАТОК ШЛЯХУ
+# 🗺️ ЛОКАЦІЯ 1: 🌿 ПОЧАТОК ШЛЯХУ
 # ==============================
 
 LOCATION_1_MOBS = [
-    # ==============================
-    # РІВНІ 1–2
-    # ==============================
     {
         "name": "🐗 Дикий кабан",
         "level": 1,
@@ -19,7 +16,6 @@ LOCATION_1_MOBS = [
         "dex_min": 5,
         "dex_max": 8,
         "attack_type": "physical",
-        "base_exp": 0,
         "trash_item_id": 102,
         "trash_chance": 90,
         "potion_item_id": 201,
@@ -39,17 +35,12 @@ LOCATION_1_MOBS = [
         "dex_min": 6,
         "dex_max": 9,
         "attack_type": "physical",
-        "base_exp": 0,
-        "trash_item_id": 102,
+        "trash_item_id": 103,
         "trash_chance": 85,
         "potion_item_id": 201,
         "potion_chance": 10,
         "is_boss": False
     },
-
-    # ==============================
-    # РІВНІ 3–4
-    # ==============================
     {
         "name": "🐺 Агресивний вовк",
         "level": 3,
@@ -63,7 +54,6 @@ LOCATION_1_MOBS = [
         "dex_min": 10,
         "dex_max": 14,
         "attack_type": "physical",
-        "base_exp": 0,
         "trash_item_id": 101,
         "trash_chance": 85,
         "potion_item_id": 201,
@@ -83,17 +73,12 @@ LOCATION_1_MOBS = [
         "dex_min": 5,
         "dex_max": 8,
         "attack_type": "physical",
-        "base_exp": 0,
         "trash_item_id": 101,
         "trash_chance": 80,
         "potion_item_id": 201,
         "potion_chance": 15,
         "is_boss": False
     },
-
-    # ==============================
-    # РІВНІ 5–6
-    # ==============================
     {
         "name": "🧝‍♂️ Гоблін-розвідник",
         "level": 5,
@@ -107,8 +92,7 @@ LOCATION_1_MOBS = [
         "dex_min": 13,
         "dex_max": 18,
         "attack_type": "physical",
-        "base_exp": 0,
-        "trash_item_id": 103,
+        "trash_item_id": 104,
         "trash_chance": 80,
         "potion_item_id": 201,
         "potion_chance": 12,
@@ -127,17 +111,12 @@ LOCATION_1_MOBS = [
         "dex_min": 15,
         "dex_max": 20,
         "attack_type": "physical",
-        "base_exp": 0,
-        "trash_item_id": 103,
+        "trash_item_id": 104,
         "trash_chance": 75,
         "potion_item_id": 201,
         "potion_chance": 12,
         "is_boss": False
     },
-
-    # ==============================
-    # РІВНІ 7–9
-    # ==============================
     {
         "name": "🕷️ Печерний павук",
         "level": 7,
@@ -151,8 +130,7 @@ LOCATION_1_MOBS = [
         "dex_min": 12,
         "dex_max": 16,
         "attack_type": "physical",
-        "base_exp": 0,
-        "trash_item_id": 104,
+        "trash_item_id": 105,
         "trash_chance": 80,
         "potion_item_id": 201,
         "potion_chance": 15,
@@ -171,11 +149,10 @@ LOCATION_1_MOBS = [
         "dex_min": 4,
         "dex_max": 8,
         "attack_type": "magical",
-        "base_exp": 0,
-        "trash_item_id": 104,
+        "trash_item_id": 106,
         "trash_chance": 90,
         "potion_item_id": 202,
         "potion_chance": 25,
         "is_boss": False
-    },
+    }
 ]

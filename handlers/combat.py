@@ -1,3 +1,5 @@
+from data.locations import LOCATIONS
+
 from db import (
     get_player_stats,
     get_attack,
@@ -5,7 +7,8 @@ from db import (
     get_magic_defense,
     get_max_hp,
     get_current_hp,
-    set_current_hp
+    set_current_hp,
+    get_current_location
 )
 
 from keyboards import main_kb, fight_kb
@@ -38,7 +41,10 @@ def register_combat_handlers(bot):
 
         str_, dex_, int_, wis_, sta_, lvl = stats
 
-        mob = generate_mob(player_level=lvl)
+        location_id = get_current_location(user_id)
+        location = LOCATIONS.get(location_id, LOCATIONS["start_path"])
+
+        mob = generate_mob(player_level=lvl, location_id=location_id)
         mob["max_hp"] = mob["hp"]
 
         bot.user_data = getattr(bot, "user_data", {})
@@ -53,6 +59,7 @@ def register_combat_handlers(bot):
         attack_type_text = "Фізична" if mob["attack_type"] == "physical" else "Магічна"
 
         text = (
+            f"📍 Мапа: {location['name']}\n"
             f"🔎 Ти зустрів {mob['name']}\n\n"
             f"======================\n\n"
             f"👤 ТИ\n"
@@ -129,10 +136,6 @@ def register_combat_handlers(bot):
 
         mob["hp"] -= dmg
 
-        # ==============================
-        # VICTORY
-        # ==============================
-
         if mob["hp"] <= 0:
             del bot.user_data[user_id]
 
@@ -166,9 +169,7 @@ def register_combat_handlers(bot):
             else:
                 text += "\n🎒 Лут не знайдено.\n"
 
-            text += (
-                f"\n🎒 Сумка: {reward['used_slots']}/{reward['capacity']} слотів"
-            )
+            text += f"\n🎒 Сумка: {reward['used_slots']}/{reward['capacity']} слотів"
 
             bot.send_message(
                 message.chat.id,

@@ -8,20 +8,20 @@ from handlers.profile import register_profile_handlers
 from handlers.inventory import register_inventory_handlers
 from handlers.combat import register_combat_handlers
 from handlers.dev import register_dev_handlers
+from handlers.map import register_map_handlers
 
 
 bot = telebot.TeleBot(TOKEN)
 
-# ✅ Ініціалізація БД
 init_db()
 seed_items()
 
-# ✅ Реєстрація handlers
 register_start_handlers(bot)
 register_profile_handlers(bot)
 register_inventory_handlers(bot)
 register_combat_handlers(bot)
 register_dev_handlers(bot)
+register_map_handlers(bot)
 
 print("✅ BOT STARTED")
 bot.infinity_polling()
