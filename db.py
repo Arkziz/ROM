@@ -92,34 +92,24 @@ def init_db():
         except Exception:
             pass
 
-        # ==============================
-        # REPAIR OLD USERS
-        # ==============================
+    # repair старих користувачів
+    cursor.execute("UPDATE users SET gold = 0 WHERE gold IS NULL")
+    cursor.execute("UPDATE users SET kills = 0 WHERE kills IS NULL")
+    cursor.execute("UPDATE users SET bag_slots = 20 WHERE bag_slots IS NULL")
+    cursor.execute("""
+    UPDATE users
+    SET current_location = 'start_path'
+    WHERE current_location IS NULL OR current_location = ''
+    """)
 
-        cursor.execute("""
-                       UPDATE users
-                       SET bag_slots = 20
-                       WHERE bag_slots IS NULL
-                       """)
-
-        cursor.execute("""
-                       UPDATE users
-                       SET current_location = 'start_path'
-                       WHERE current_location IS NULL
-                          OR current_location = ''
-                       """)
-
-        cursor.execute("""
-                       UPDATE users
-                       SET gold = 0
-                       WHERE gold IS NULL
-                       """)
-
-        cursor.execute("""
-                       UPDATE users
-                       SET kills = 0
-                       WHERE kills IS NULL
-                       """)
+    # repair старого інвентаря
+    cursor.execute("UPDATE inventory SET quantity = 1 WHERE quantity IS NULL")
+    cursor.execute("""
+    UPDATE inventory
+    SET durability = 100
+    WHERE durability IS NULL
+      AND item_id IN (SELECT id FROM items WHERE category = 'equipment')
+    """)
 
     conn.commit()
 
@@ -237,9 +227,10 @@ def get_current_location(user_id):
     if not row:
         return "start_path"
 
-    if not row or not row[0]:
-        return 20
+    if row[0] is None or row[0] == "":
+        return "start_path"
 
+    return row[0]
 
 
 def set_current_location(user_id, location_id):
@@ -878,6 +869,68 @@ def get_user_progress(user_id):
         "exp_to_next": get_exp_to_next_level(level),
         "gold": gold,
         "kills": kills
+    }
+
+
+# ==============================
+# ✅ SELL TRASH
+# ==============================
+
+def sell_all_trash(user_id):
+    cursor.execute("""
+    SELECT
+        inventory.id,
+        items.name,
+        inventory.quantity,
+        items.sell_price
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.user_id=?
+      AND items.category='trash'
+    """, (user_id,))
+
+    rows = cursor.fetchall()
+
+    if not rows:
+        return {
+            "sold_items_count": 0,
+            "gold_earned": 0.0,
+            "freed_slots": 0,
+            "details": []
+        }
+
+    total_gold = 0.0
+    freed_slots = 0
+    details = []
+
+    for inv_id, name, quantity, sell_price in rows:
+        quantity = quantity or 1
+        sell_price = sell_price or 0
+
+        earned = quantity * sell_price
+        total_gold += earned
+        freed_slots += 1
+
+        details.append(f"{name} x{quantity} = {earned:.2f} золота")
+
+        cursor.execute("""
+        DELETE FROM inventory
+        WHERE id=?
+        """, (inv_id,))
+
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold + ?
+    WHERE user_id=?
+    """, (total_gold, user_id))
+
+    conn.commit()
+
+    return {
+        "sold_items_count": len(rows),
+        "gold_earned": total_gold,
+        "freed_slots": freed_slots,
+        "details": details
     }
 
 
