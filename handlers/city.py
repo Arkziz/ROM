@@ -1,6 +1,6 @@
 from data.locations import LOCATIONS
 from db import get_current_location, sell_all_trash
-from keyboards import main_kb, city_kb, trader_kb
+from keyboards import city_kb, trader_kb, main_kb
 
 
 def register_city_handlers(bot):
@@ -17,6 +17,7 @@ def register_city_handlers(bot):
             f"📍 Регіон:\n"
             f"{location['name']}\n\n"
             f"🏕️ Табір мандрівників\n\n"
+            f"Тут можна відпочити, продати лут і підготуватися до наступного полювання.\n\n"
             f"Доступні місця:\n"
             f"• 🛒 Торговець"
         )
@@ -31,7 +32,7 @@ def register_city_handlers(bot):
     def show_trader(message):
         text = (
             f"🛒 Торговець\n\n"
-            f"Тут можна продати непотрібний сірий лут.\n\n"
+            f"Торговець скуповує сірий лут, здобутий у бою.\n\n"
             f"Доступні дії:\n"
             f"• 🪙 Продати весь хлам"
         )
@@ -74,25 +75,7 @@ def register_city_handlers(bot):
 
     @bot.message_handler(func=lambda m: m.text == "🔙 Місто")
     def back_to_city(message):
-        user_id = message.from_user.id
-
-        location_id = get_current_location(user_id)
-        location = LOCATIONS.get(location_id, LOCATIONS["start_path"])
-
-        text = (
-            f"🏙️ Місто\n\n"
-            f"📍 Регіон:\n"
-            f"{location['name']}\n\n"
-            f"🏕️ Табір мандрівників\n\n"
-            f"Доступні місця:\n"
-            f"• 🛒 Торговець"
-        )
-
-        bot.send_message(
-            message.chat.id,
-            text,
-            reply_markup=city_kb()
-        )
+        show_city(message)
 
     @bot.message_handler(func=lambda m: m.text == "🔙 Назад")
     def back_to_main(message):

@@ -8,7 +8,7 @@ from db import (
     get_user_progress
 )
 
-from keyboards import main_kb
+from keyboards import profile_kb
 from utils import hp_bar
 
 
@@ -25,7 +25,7 @@ def register_profile_handlers(bot):
             bot.send_message(
                 message.chat.id,
                 "❗ Немає персонажа. Натисни /start",
-                reply_markup=main_kb()
+                reply_markup=profile_kb()
             )
             return
 
@@ -67,11 +67,14 @@ def register_profile_handlers(bot):
             f"👹 Вбито мобів: {kills}\n\n"
 
             f"— Гаманець —\n"
-            f"🪙 Золото: {gold:.2f}"
+            f"🪙 Золото: {gold:.2f}\n\n"
+
+            f"Доступні дії персонажа:\n"
+            f"🎒 Інвентар"
         )
 
         bot.send_message(
             message.chat.id,
             text,
-            reply_markup=main_kb()
+            reply_markup=profile_kb()
         )

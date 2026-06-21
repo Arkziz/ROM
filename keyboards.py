@@ -4,8 +4,21 @@ from telebot import types
 def main_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.add("🔎 Полювання", "🗺️ Мапа")
-    kb.add("🏙️ Місто", "🎒 Інвентар")
     kb.add("👤 Профіль")
+    return kb
+
+
+def map_kb():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("🏙️ Місто")
+    kb.add("🔙 Назад")
+    return kb
+
+
+def profile_kb():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("🎒 Інвентар")
+    kb.add("🔙 Назад")
     return kb
 
 
@@ -19,7 +32,7 @@ def fight_kb():
 def city_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.add("🛒 Торговець")
-    kb.add("🔙 Назад")
+    kb.add("🔙 Мапа")
     return kb
 
 

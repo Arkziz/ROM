@@ -6,7 +6,7 @@ from db import (
     equip_inventory_item
 )
 
-from keyboards import main_kb
+from keyboards import profile_kb
 
 
 def register_inventory_handlers(bot):
@@ -21,7 +21,7 @@ def register_inventory_handlers(bot):
             bot.send_message(
                 message.chat.id,
                 "🎒 Інвентар порожній",
-                reply_markup=main_kb()
+                reply_markup=profile_kb()
             )
             return
 
@@ -110,5 +110,5 @@ def register_inventory_handlers(bot):
         bot.send_message(
             call.message.chat.id,
             result,
-            reply_markup=main_kb()
+            reply_markup=profile_kb()
         )
