@@ -1,3 +1,5 @@
+from telebot import types
+
 from data.locations import LOCATIONS
 
 from db import (
@@ -8,7 +10,8 @@ from db import (
     get_max_hp,
     get_current_hp,
     set_current_hp,
-    get_current_location
+    get_current_location,
+    get_inventory_detailed
 )
 
 from keyboards import main_kb, fight_kb
@@ -21,10 +24,63 @@ from systems.combat_system import (
 )
 
 from systems.reward_system import process_victory_reward
-from systems.potion_system import use_first_hp_potion
+from systems.potion_system import use_potion_from_inventory
+
+
+# ==============================
+# POTION SELECT IN COMBAT
+# ==============================
+
+def build_combat_potion_kb(user_id):
+    items = get_inventory_detailed(user_id)
+
+    kb = types.InlineKeyboardMarkup()
+    found = False
+
+    for item in items:
+        (
+            inv_id,
+            item_id,
+            name,
+            type_,
+            rarity,
+            category,
+            quantity,
+            max_stack,
+            durability,
+            b_str,
+            b_dex,
+            b_int,
+            b_wis,
+            b_sta,
+            pdef,
+            mdef,
+            sell_price
+        ) = item
+
+        if category == "potion" and type_ in ["potion_hp", "potion_hp_medium"]:
+            found = True
+            kb.add(types.InlineKeyboardButton(
+                text=f"{name} x{quantity}",
+                callback_data=f"combat_potion_{inv_id}"
+            ))
+
+    if not found:
+        return None
+
+    kb.add(types.InlineKeyboardButton(
+        text="⬅️ Назад до бою",
+        callback_data="combat_back"
+    ))
+
+    return kb
 
 
 def register_combat_handlers(bot):
+
+    # ==============================
+    # HUNT
+    # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "🔎 Полювання")
     def hunt(message):
@@ -92,6 +148,10 @@ def register_combat_handlers(bot):
             reply_markup=fight_kb()
         )
 
+    # ==============================
+    # ATTACK
+    # ==============================
+
     @bot.message_handler(func=lambda m: m.text == "⚔️ Атакувати")
     def attack(message):
         user_id = message.from_user.id
@@ -128,10 +188,7 @@ def register_combat_handlers(bot):
         if "max_hp" not in mob:
             mob["max_hp"] = mob["hp"]
 
-        # ==============================
-        # УДАР ГРАВЦЯ
-        # ==============================
-
+        # PLAYER ATTACK
         player_attack_result = calculate_player_attack(
             player_atk=player_atk,
             mob_def=mob["def"],
@@ -146,10 +203,7 @@ def register_combat_handlers(bot):
 
         mob["hp"] -= dmg
 
-        # ==============================
-        # ПЕРЕМОГА
-        # ==============================
-
+        # VICTORY
         if mob["hp"] <= 0:
             del bot.user_data[user_id]
 
@@ -192,10 +246,7 @@ def register_combat_handlers(bot):
             )
             return
 
-        # ==============================
-        # УДАР МОБА
-        # ==============================
-
+        # MOB ATTACK
         mob_attack_result = calculate_mob_attack(
             mob_attack=mob["attack"],
             player_pdef=player_pdef,
@@ -213,10 +264,7 @@ def register_combat_handlers(bot):
 
         player_hp -= mob_dmg
 
-        # ==============================
-        # СМЕРТЬ
-        # ==============================
-
+        # DEATH
         if player_hp <= 0:
             set_current_hp(user_id, player_max_hp)
 
@@ -229,18 +277,10 @@ def register_combat_handlers(bot):
             )
             return
 
-        # ==============================
-        # ЗБЕРЕГТИ HP
-        # ==============================
-
         set_current_hp(user_id, player_hp)
 
         if mob.get("potion_cooldown", 0) > 0:
             mob["potion_cooldown"] -= 1
-
-        # ==============================
-        # ТЕКСТ БОЮ
-        # ==============================
 
         text = "⚔️ БІЙ\n\n"
 
@@ -272,8 +312,12 @@ def register_combat_handlers(bot):
             reply_markup=fight_kb()
         )
 
+    # ==============================
+    # POTION BUTTON
+    # ==============================
+
     @bot.message_handler(func=lambda m: m.text == "🧪 Зілля")
-    def use_potion_in_combat(message):
+    def choose_potion_in_combat(message):
         user_id = message.from_user.id
 
         if not hasattr(bot, "user_data") or user_id not in bot.user_data:
@@ -296,11 +340,69 @@ def register_combat_handlers(bot):
             )
             return
 
+        kb = build_combat_potion_kb(user_id)
+
+        if not kb:
+            bot.send_message(
+                message.chat.id,
+                "❌ У тебе немає зілля здоров’я",
+                reply_markup=fight_kb()
+            )
+            return
+
+        bot.send_message(
+            message.chat.id,
+            "🧪 Обери зілля, яке хочеш випити:",
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "combat_back")
+    def combat_back(call):
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            "⚔️ Повернення до бою",
+            reply_markup=fight_kb()
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("combat_potion_"))
+    def use_selected_potion_in_combat(call):
+        user_id = call.from_user.id
+
+        if not hasattr(bot, "user_data") or user_id not in bot.user_data:
+            bot.answer_callback_query(call.id)
+
+            bot.send_message(
+                call.message.chat.id,
+                "❗ Бій уже завершено",
+                reply_markup=main_kb()
+            )
+            return
+
+        mob = bot.user_data[user_id]
+
+        cooldown = mob.get("potion_cooldown", 0)
+
+        if cooldown > 0:
+            bot.answer_callback_query(call.id)
+
+            bot.send_message(
+                call.message.chat.id,
+                f"🔴 Повний шлунок: зілля можна буде випити через {cooldown} ход.",
+                reply_markup=fight_kb()
+            )
+            return
+
+        inventory_id = int(call.data.split("_")[2])
+
         stats = get_player_stats(user_id)
 
         if not stats:
+            bot.answer_callback_query(call.id)
+
             bot.send_message(
-                message.chat.id,
+                call.message.chat.id,
                 "❗ Персонажа не знайдено",
                 reply_markup=main_kb()
             )
@@ -308,17 +410,20 @@ def register_combat_handlers(bot):
 
         str_, dex_, int_, wis_, sta_, lvl = stats
 
-        potion_result = use_first_hp_potion(user_id)
+        potion_result = use_potion_from_inventory(user_id, inventory_id)
 
         if not potion_result["success"]:
+            bot.answer_callback_query(call.id)
+
             bot.send_message(
-                message.chat.id,
+                call.message.chat.id,
                 potion_result["message"],
                 reply_markup=fight_kb()
             )
             return
 
-        # Після використання зілля ставимо кулдаун
+        bot.answer_callback_query(call.id)
+
         mob["potion_cooldown"] = 3
 
         player_hp = potion_result["new_hp"]
@@ -327,7 +432,7 @@ def register_combat_handlers(bot):
         player_pdef = get_physical_defense(user_id)
         player_mdef = get_magic_defense(user_id)
 
-        # Моб бʼє у відповідь, бо зілля = повноцінний хід
+        # Моб бʼє у відповідь, бо зілля = хід
         mob_attack_result = calculate_mob_attack(
             mob_attack=mob["attack"],
             player_pdef=player_pdef,
@@ -351,7 +456,7 @@ def register_combat_handlers(bot):
             del bot.user_data[user_id]
 
             bot.send_message(
-                message.chat.id,
+                call.message.chat.id,
                 "💀 ТИ ЗАГИНУВ\n❤️ Здоров’я відновлено",
                 reply_markup=main_kb()
             )
@@ -380,10 +485,14 @@ def register_combat_handlers(bot):
         )
 
         bot.send_message(
-            message.chat.id,
+            call.message.chat.id,
             text,
             reply_markup=fight_kb()
         )
+
+    # ==============================
+    # ESCAPE
+    # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "🏃 Втекти")
     def escape(message):

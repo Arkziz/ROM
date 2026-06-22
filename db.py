@@ -69,6 +69,10 @@ def init_db():
     )
     """)
 
+    # ==============================
+    # МІГРАЦІЇ ДЛЯ СТАРИХ game.db
+    # ==============================
+
     migrations = [
         ("users", "gold", "REAL DEFAULT 0"),
         ("users", "kills", "INTEGER DEFAULT 0"),
@@ -92,7 +96,10 @@ def init_db():
         except Exception:
             pass
 
-    # repair старих користувачів
+    # ==============================
+    # REPAIR OLD USERS
+    # ==============================
+
     cursor.execute("UPDATE users SET gold = 0 WHERE gold IS NULL")
     cursor.execute("UPDATE users SET kills = 0 WHERE kills IS NULL")
     cursor.execute("UPDATE users SET bag_slots = 20 WHERE bag_slots IS NULL")
@@ -102,13 +109,19 @@ def init_db():
     WHERE current_location IS NULL OR current_location = ''
     """)
 
-    # repair старого інвентаря
+    # ==============================
+    # REPAIR OLD INVENTORY
+    # ==============================
+
     cursor.execute("UPDATE inventory SET quantity = 1 WHERE quantity IS NULL")
+
     cursor.execute("""
     UPDATE inventory
     SET durability = 100
     WHERE durability IS NULL
-      AND item_id IN (SELECT id FROM items WHERE category = 'equipment')
+      AND item_id IN (
+          SELECT id FROM items WHERE category = 'equipment'
+      )
     """)
 
     conn.commit()
@@ -123,18 +136,24 @@ def seed_items():
         # id, name, type, rarity, category, max_stack, sell_price,
         # str, dex, int, wis, sta, pdef, mdef
 
+        # ==============================
         # WEAPONS
+        # ==============================
         (1, "⚪ Старий меч", "weapon", "common", "equipment", 1, 1.00, 1, 0, 0, 0, 0, 0, 0),
         (2, "🟢 Залізний меч", "weapon", "uncommon", "equipment", 1, 3.00, 2, 0, 0, 0, 0, 0, 0),
         (3, "🔵 Меч воїна", "weapon", "rare", "equipment", 1, 8.00, 4, 0, 0, 0, 0, 0, 0),
         (4, "🟣 Епічний клинок", "weapon", "epic", "equipment", 1, 25.00, 7, 0, 0, 0, 0, 0, 0),
 
+        # ==============================
         # ARMOR
+        # ==============================
         (5, "⚪ Стара броня", "armor", "common", "equipment", 1, 1.00, 0, 0, 0, 1, 1, 2, 0),
         (6, "🟢 Шкіряна броня", "armor", "uncommon", "equipment", 1, 3.00, 0, 1, 0, 2, 2, 4, 1),
         (7, "🔵 Лицарська броня", "armor", "rare", "equipment", 1, 8.00, 0, 2, 0, 3, 4, 8, 2),
 
+        # ==============================
         # TRASH
+        # ==============================
         (101, "🐾 Густа вовча шкура", "trash", "grey", "trash", 20, 0.50, 0, 0, 0, 0, 0, 0, 0),
         (102, "🐗 Жорстка щетина", "trash", "grey", "trash", 20, 0.15, 0, 0, 0, 0, 0, 0, 0),
         (103, "🦡 Борсучий жир", "trash", "grey", "trash", 20, 0.25, 0, 0, 0, 0, 0, 0, 0),
@@ -142,14 +161,18 @@ def seed_items():
         (105, "🕷️ Липка павутина", "trash", "grey", "trash", 20, 0.60, 0, 0, 0, 0, 0, 0, 0),
         (106, "💎 Тріснутий рунічний уламок", "trash", "grey", "trash", 20, 0.75, 0, 0, 0, 0, 0, 0, 0),
 
+        # ==============================
         # POTIONS
         # sell_price = ціна продажу гравцем торговцю
+        # ==============================
         (201, "🔴 Мале зілля здоров’я", "potion_hp", "common", "potion", 10, 1.00, 0, 0, 0, 0, 0, 0, 0),
         (202, "🔵 Мале зілля мани", "potion_mp", "common", "potion", 10, 1.20, 0, 0, 0, 0, 0, 0, 0),
         (203, "🔴 Середнє зілля здоров’я", "potion_hp_medium", "common", "potion", 10, 3.00, 0, 0, 0, 0, 0, 0, 0),
         (204, "🔵 Середнє зілля мани", "potion_mp_medium", "common", "potion", 10, 3.60, 0, 0, 0, 0, 0, 0, 0),
 
+        # ==============================
         # RUNES
+        # ==============================
         (301, "💎 Руна Сили I", "rune_str", "common", "rune", 5, 1.00, 1, 0, 0, 0, 0, 0, 0),
     ]
 
@@ -363,7 +386,9 @@ def add_item(user_id, item_id, quantity=1):
     added = 0
     lost = 0
 
+    # ==============================
     # НЕ СТАКУЄТЬСЯ
+    # ==============================
     if max_stack <= 1:
         for _ in range(quantity):
             used = get_inventory_used_slots(user_id)
@@ -390,7 +415,9 @@ def add_item(user_id, item_id, quantity=1):
             "capacity": capacity
         }
 
+    # ==============================
     # СТАКУЄТЬСЯ
+    # ==============================
     remaining = quantity
 
     cursor.execute("""
@@ -656,6 +683,41 @@ def equip_inventory_item(user_id, inventory_id):
     conn.commit()
 
     return f"✅ Одягнуто: {name}"
+
+
+def unequip_inventory_item(user_id, inventory_id):
+    cursor.execute("""
+    SELECT equipped_weapon, equipped_armor
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return "❌ Персонажа не знайдено"
+
+    equipped_weapon, equipped_armor = row
+
+    if equipped_weapon == inventory_id:
+        cursor.execute("""
+        UPDATE users
+        SET equipped_weapon=NULL
+        WHERE user_id=?
+        """, (user_id,))
+        conn.commit()
+        return "✅ Зброю знято"
+
+    if equipped_armor == inventory_id:
+        cursor.execute("""
+        UPDATE users
+        SET equipped_armor=NULL
+        WHERE user_id=?
+        """, (user_id,))
+        conn.commit()
+        return "✅ Обладунок знято"
+
+    return "❌ Цей предмет не вдягнений"
 
 
 def equip_item(user_id, item_id):
