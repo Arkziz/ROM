@@ -17,7 +17,7 @@ def map_kb():
 
 def profile_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.add("🎒 Інвентар")
+    kb.add("🎒 Інвентар", "📊 Параметри")
     kb.add("🔙 Назад")
     return kb
 

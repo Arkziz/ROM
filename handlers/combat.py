@@ -25,6 +25,10 @@ from systems.reward_system import process_victory_reward
 
 def register_combat_handlers(bot):
 
+    # ==============================
+    # 🔎 ПОЛЮВАННЯ
+    # ==============================
+
     @bot.message_handler(func=lambda m: m.text == "🔎 Полювання")
     def hunt(message):
         user_id = message.from_user.id
@@ -61,14 +65,18 @@ def register_combat_handlers(bot):
         text = (
             f"📍 Мапа: {location['name']}\n"
             f"🔎 Ти зустрів {mob['name']}\n\n"
+
             f"======================\n\n"
+
             f"👤 ТИ\n"
             f"❤️ Здоров’я: {current_hp}/{max_hp}\n"
             f"{hp_bar(current_hp, max_hp)}\n"
             f"⚔️ Атака: {atk}\n"
             f"🛡 Фіз. захист: {player_pdef}\n"
             f"🔮 Маг. захист: {player_mdef}\n\n"
+
             f"----------------------\n\n"
+
             f"👹 ВОРОГ\n"
             f"🏷 Рівень: {mob['level']}\n"
             f"❤️ Здоров’я: {mob['hp']}/{mob['max_hp']}\n"
@@ -76,6 +84,7 @@ def register_combat_handlers(bot):
             f"⚔️ Атака: {mob['attack']}\n"
             f"🛡 Захист: {mob['def']}\n"
             f"🎯 Тип атаки: {attack_type_text}\n\n"
+
             f"⚔️ Бій починається!"
         )
 
@@ -84,6 +93,10 @@ def register_combat_handlers(bot):
             text,
             reply_markup=fight_kb()
         )
+
+    # ==============================
+    # ⚔️ АТАКА
+    # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "⚔️ Атакувати")
     def attack(message):
@@ -121,6 +134,10 @@ def register_combat_handlers(bot):
         if "max_hp" not in mob:
             mob["max_hp"] = mob["hp"]
 
+        # ==============================
+        # УДАР ГРАВЦЯ
+        # ==============================
+
         player_attack_result = calculate_player_attack(
             player_atk=player_atk,
             mob_def=mob["def"],
@@ -132,9 +149,12 @@ def register_combat_handlers(bot):
 
         dmg = player_attack_result["damage"]
         is_player_crit = player_attack_result["is_crit"]
-        player_crit_chance = player_attack_result["crit_chance"]
 
         mob["hp"] -= dmg
+
+        # ==============================
+        # ПЕРЕМОГА
+        # ==============================
 
         if mob["hp"] <= 0:
             del bot.user_data[user_id]
@@ -178,6 +198,10 @@ def register_combat_handlers(bot):
             )
             return
 
+        # ==============================
+        # УДАР МОБА
+        # ==============================
+
         mob_attack_result = calculate_mob_attack(
             mob_attack=mob["attack"],
             player_pdef=player_pdef,
@@ -192,10 +216,12 @@ def register_combat_handlers(bot):
         mob_dmg = mob_attack_result["damage"]
         is_mob_crit = mob_attack_result["is_crit"]
         is_dodge = mob_attack_result["is_dodge"]
-        dodge_chance = mob_attack_result["dodge_chance"]
-        mob_crit_chance = mob_attack_result["crit_chance"]
 
         player_hp -= mob_dmg
+
+        # ==============================
+        # СМЕРТЬ
+        # ==============================
 
         if player_hp <= 0:
             set_current_hp(user_id, player_max_hp)
@@ -209,7 +235,15 @@ def register_combat_handlers(bot):
             )
             return
 
+        # ==============================
+        # ЗБЕРЕГТИ HP
+        # ==============================
+
         set_current_hp(user_id, player_hp)
+
+        # ==============================
+        # ТЕКСТ БОЮ
+        # ==============================
 
         text = "⚔️ БІЙ\n\n"
 
@@ -229,11 +263,7 @@ def register_combat_handlers(bot):
             f"❤️ Твоє здоров’я: {player_hp}/{player_max_hp}\n"
             f"{hp_bar(player_hp, player_max_hp)}\n\n"
             f"👹 Здоров’я ворога: {mob['hp']}/{mob['max_hp']}\n"
-            f"{hp_bar(mob['hp'], mob['max_hp'])}\n\n"
-            f"— Шанси —\n"
-            f"🎯 Твій крит: {player_crit_chance}%\n"
-            f"💨 Твій ухил: {dodge_chance}%\n"
-            f"💥 Крит ворога: {mob_crit_chance}%"
+            f"{hp_bar(mob['hp'], mob['max_hp'])}"
         )
 
         bot.send_message(
@@ -241,6 +271,10 @@ def register_combat_handlers(bot):
             text,
             reply_markup=fight_kb()
         )
+
+    # ==============================
+    # 🏃 ВТЕЧА
+    # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "🏃 Втекти")
     def escape(message):
