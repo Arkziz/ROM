@@ -21,13 +21,10 @@ from systems.combat_system import (
 )
 
 from systems.reward_system import process_victory_reward
+from systems.potion_system import use_first_hp_potion
 
 
 def register_combat_handlers(bot):
-
-    # ==============================
-    # 🔎 ПОЛЮВАННЯ
-    # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "🔎 Полювання")
     def hunt(message):
@@ -50,6 +47,7 @@ def register_combat_handlers(bot):
 
         mob = generate_mob(player_level=lvl, location_id=location_id)
         mob["max_hp"] = mob["hp"]
+        mob["potion_cooldown"] = 0
 
         bot.user_data = getattr(bot, "user_data", {})
         bot.user_data[user_id] = mob
@@ -93,10 +91,6 @@ def register_combat_handlers(bot):
             text,
             reply_markup=fight_kb()
         )
-
-    # ==============================
-    # ⚔️ АТАКА
-    # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "⚔️ Атакувати")
     def attack(message):
@@ -241,6 +235,9 @@ def register_combat_handlers(bot):
 
         set_current_hp(user_id, player_hp)
 
+        if mob.get("potion_cooldown", 0) > 0:
+            mob["potion_cooldown"] -= 1
+
         # ==============================
         # ТЕКСТ БОЮ
         # ==============================
@@ -266,15 +263,127 @@ def register_combat_handlers(bot):
             f"{hp_bar(mob['hp'], mob['max_hp'])}"
         )
 
+        if mob.get("potion_cooldown", 0) > 0:
+            text += f"\n\n🔴 Повний шлунок: {mob['potion_cooldown']} ход."
+
         bot.send_message(
             message.chat.id,
             text,
             reply_markup=fight_kb()
         )
 
-    # ==============================
-    # 🏃 ВТЕЧА
-    # ==============================
+    @bot.message_handler(func=lambda m: m.text == "🧪 Зілля")
+    def use_potion_in_combat(message):
+        user_id = message.from_user.id
+
+        if not hasattr(bot, "user_data") or user_id not in bot.user_data:
+            bot.send_message(
+                message.chat.id,
+                "❗ Ти не в бою",
+                reply_markup=main_kb()
+            )
+            return
+
+        mob = bot.user_data[user_id]
+
+        cooldown = mob.get("potion_cooldown", 0)
+
+        if cooldown > 0:
+            bot.send_message(
+                message.chat.id,
+                f"🔴 Повний шлунок: зілля можна буде випити через {cooldown} ход.",
+                reply_markup=fight_kb()
+            )
+            return
+
+        stats = get_player_stats(user_id)
+
+        if not stats:
+            bot.send_message(
+                message.chat.id,
+                "❗ Персонажа не знайдено",
+                reply_markup=main_kb()
+            )
+            return
+
+        str_, dex_, int_, wis_, sta_, lvl = stats
+
+        potion_result = use_first_hp_potion(user_id)
+
+        if not potion_result["success"]:
+            bot.send_message(
+                message.chat.id,
+                potion_result["message"],
+                reply_markup=fight_kb()
+            )
+            return
+
+        # Після використання зілля ставимо кулдаун
+        mob["potion_cooldown"] = 3
+
+        player_hp = potion_result["new_hp"]
+        player_max_hp = potion_result["max_hp"]
+
+        player_pdef = get_physical_defense(user_id)
+        player_mdef = get_magic_defense(user_id)
+
+        # Моб бʼє у відповідь, бо зілля = повноцінний хід
+        mob_attack_result = calculate_mob_attack(
+            mob_attack=mob["attack"],
+            player_pdef=player_pdef,
+            player_mdef=player_mdef,
+            player_dex=dex_,
+            mob_dex=mob["dex"],
+            sta=sta_,
+            level=lvl,
+            attack_type=mob["attack_type"]
+        )
+
+        mob_dmg = mob_attack_result["damage"]
+        is_mob_crit = mob_attack_result["is_crit"]
+        is_dodge = mob_attack_result["is_dodge"]
+
+        player_hp -= mob_dmg
+
+        if player_hp <= 0:
+            set_current_hp(user_id, player_max_hp)
+
+            del bot.user_data[user_id]
+
+            bot.send_message(
+                message.chat.id,
+                "💀 ТИ ЗАГИНУВ\n❤️ Здоров’я відновлено",
+                reply_markup=main_kb()
+            )
+            return
+
+        set_current_hp(user_id, player_hp)
+
+        text = (
+            f"🧪 ЗІЛЛЯ\n\n"
+            f"{potion_result['message']}\n\n"
+        )
+
+        if is_dodge:
+            text += "💨 УХИЛ! Ти уникнув атаки ворога\n\n"
+        elif is_mob_crit:
+            text += f"💥 КРИТ ВОРОГА! Ти отримав {mob_dmg} шкоди\n\n"
+        else:
+            text += f"👹 Ворог завдав {mob_dmg} шкоди\n\n"
+
+        text += (
+            f"❤️ Твоє здоров’я: {player_hp}/{player_max_hp}\n"
+            f"{hp_bar(player_hp, player_max_hp)}\n\n"
+            f"👹 Здоров’я ворога: {mob['hp']}/{mob['max_hp']}\n"
+            f"{hp_bar(mob['hp'], mob['max_hp'])}\n\n"
+            f"🔴 Повний шлунок: 3 ход."
+        )
+
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=fight_kb()
+        )
 
     @bot.message_handler(func=lambda m: m.text == "🏃 Втекти")
     def escape(message):

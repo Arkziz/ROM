@@ -7,6 +7,7 @@ from db import (
 )
 
 from keyboards import profile_kb
+from systems.potion_system import use_potion_from_inventory
 
 
 def build_inventory_message(user_id):
@@ -83,6 +84,12 @@ def build_inventory_message(user_id):
                 callback_data=f"equip_{inv_id}"
             ))
 
+        if category == "potion":
+            kb.add(types.InlineKeyboardButton(
+                text=f"🧪 Використати: {label}",
+                callback_data=f"use_potion_{inv_id}"
+            ))
+
     return text, kb
 
 
@@ -115,6 +122,28 @@ def register_inventory_handlers(bot):
             call.message.chat.id,
             result
         )
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb if kb else profile_kb()
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("use_potion_"))
+    def handle_use_potion(call):
+        user_id = call.from_user.id
+        inventory_id = int(call.data.split("_")[2])
+
+        result = use_potion_from_inventory(user_id, inventory_id)
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            result["message"]
+        )
+
+        text, kb = build_inventory_message(user_id)
 
         bot.send_message(
             call.message.chat.id,

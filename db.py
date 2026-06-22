@@ -143,8 +143,11 @@ def seed_items():
         (106, "💎 Тріснутий рунічний уламок", "trash", "grey", "trash", 20, 0.75, 0, 0, 0, 0, 0, 0, 0),
 
         # POTIONS
-        (201, "🧪 Мале зілля здоров’я", "potion_hp", "common", "potion", 10, 0.50, 0, 0, 0, 0, 0, 0, 0),
-        (202, "🔵 Мале зілля мани", "potion_mp", "common", "potion", 10, 0.50, 0, 0, 0, 0, 0, 0, 0),
+        # sell_price = ціна продажу гравцем торговцю
+        (201, "🔴 Мале зілля здоров’я", "potion_hp", "common", "potion", 10, 1.00, 0, 0, 0, 0, 0, 0, 0),
+        (202, "🔵 Мале зілля мани", "potion_mp", "common", "potion", 10, 1.20, 0, 0, 0, 0, 0, 0, 0),
+        (203, "🔴 Середнє зілля здоров’я", "potion_hp_medium", "common", "potion", 10, 3.00, 0, 0, 0, 0, 0, 0, 0),
+        (204, "🔵 Середнє зілля мани", "potion_mp_medium", "common", "potion", 10, 3.60, 0, 0, 0, 0, 0, 0, 0),
 
         # RUNES
         (301, "💎 Руна Сили I", "rune_str", "common", "rune", 5, 1.00, 1, 0, 0, 0, 0, 0, 0),
@@ -514,6 +517,75 @@ def get_item_by_inventory_id(inventory_id):
     """, (inventory_id,))
 
     return cursor.fetchone()
+
+
+def get_inventory_entry(user_id, inventory_id):
+    cursor.execute("""
+    SELECT
+        inventory.id,
+        inventory.item_id,
+        items.name,
+        items.type,
+        items.category,
+        inventory.quantity
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.id=? AND inventory.user_id=?
+    """, (inventory_id, user_id))
+
+    return cursor.fetchone()
+
+
+def consume_inventory_item(user_id, inventory_id, quantity=1):
+    entry = get_inventory_entry(user_id, inventory_id)
+
+    if not entry:
+        return False
+
+    inv_id, item_id, name, type_, category, current_quantity = entry
+
+    if current_quantity is None:
+        current_quantity = 1
+
+    if current_quantity < quantity:
+        return False
+
+    new_quantity = current_quantity - quantity
+
+    if new_quantity <= 0:
+        cursor.execute("""
+        DELETE FROM inventory
+        WHERE id=? AND user_id=?
+        """, (inventory_id, user_id))
+    else:
+        cursor.execute("""
+        UPDATE inventory
+        SET quantity=?
+        WHERE id=? AND user_id=?
+        """, (new_quantity, inventory_id, user_id))
+
+    conn.commit()
+    return True
+
+
+def find_first_item_stack_by_type(user_id, item_type):
+    cursor.execute("""
+    SELECT inventory.id
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.user_id=?
+      AND items.type=?
+      AND inventory.quantity > 0
+    ORDER BY inventory.id ASC
+    LIMIT 1
+    """, (user_id, item_type))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return None
+
+    return row[0]
 
 
 # ==============================
