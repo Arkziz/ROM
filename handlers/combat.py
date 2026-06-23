@@ -11,7 +11,8 @@ from db import (
     get_current_hp,
     set_current_hp,
     get_current_location,
-    get_inventory_detailed
+    get_inventory_detailed,
+    damage_equipped_items_on_death
 )
 
 from keyboards import main_kb, fight_kb
@@ -28,7 +29,7 @@ from systems.potion_system import use_potion_from_inventory
 
 
 # ==============================
-# POTION SELECT IN COMBAT
+# 🧪 POTION SELECT IN COMBAT
 # ==============================
 
 def build_combat_potion_kb(user_id):
@@ -76,10 +77,27 @@ def build_combat_potion_kb(user_id):
     return kb
 
 
+def build_death_text(user_id, durability_damage):
+    text = (
+        "💀 ТИ ЗАГИНУВ\n"
+        "❤️ Здоров’я відновлено\n"
+        "🧱 Одягнене спорядження втратило 10 міцності\n"
+    )
+
+    if durability_damage:
+        text += "\n📉 Стан спорядження:\n"
+
+        for item in durability_damage:
+            broken_text = " ⚠️ ЗЛАМАНО" if item["broken"] else ""
+            text += f"• {item['name']}: {item['old']} → {item['new']}/100{broken_text}\n"
+
+    return text
+
+
 def register_combat_handlers(bot):
 
     # ==============================
-    # HUNT
+    # 🔎 HUNT
     # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "🔎 Полювання")
@@ -149,7 +167,7 @@ def register_combat_handlers(bot):
         )
 
     # ==============================
-    # ATTACK
+    # ⚔️ ATTACK
     # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "⚔️ Атакувати")
@@ -188,7 +206,10 @@ def register_combat_handlers(bot):
         if "max_hp" not in mob:
             mob["max_hp"] = mob["hp"]
 
+        # ==============================
         # PLAYER ATTACK
+        # ==============================
+
         player_attack_result = calculate_player_attack(
             player_atk=player_atk,
             mob_def=mob["def"],
@@ -203,7 +224,10 @@ def register_combat_handlers(bot):
 
         mob["hp"] -= dmg
 
+        # ==============================
         # VICTORY
+        # ==============================
+
         if mob["hp"] <= 0:
             del bot.user_data[user_id]
 
@@ -246,7 +270,10 @@ def register_combat_handlers(bot):
             )
             return
 
+        # ==============================
         # MOB ATTACK
+        # ==============================
+
         mob_attack_result = calculate_mob_attack(
             mob_attack=mob["attack"],
             player_pdef=player_pdef,
@@ -264,23 +291,38 @@ def register_combat_handlers(bot):
 
         player_hp -= mob_dmg
 
+        # ==============================
         # DEATH
+        # ==============================
+
         if player_hp <= 0:
+            durability_damage = damage_equipped_items_on_death(user_id, amount=10)
+
             set_current_hp(user_id, player_max_hp)
 
             del bot.user_data[user_id]
 
+            text = build_death_text(user_id, durability_damage)
+
             bot.send_message(
                 message.chat.id,
-                "💀 ТИ ЗАГИНУВ\n❤️ Здоров’я відновлено",
+                text,
                 reply_markup=main_kb()
             )
             return
+
+        # ==============================
+        # SAVE HP
+        # ==============================
 
         set_current_hp(user_id, player_hp)
 
         if mob.get("potion_cooldown", 0) > 0:
             mob["potion_cooldown"] -= 1
+
+        # ==============================
+        # TEXT
+        # ==============================
 
         text = "⚔️ БІЙ\n\n"
 
@@ -313,7 +355,7 @@ def register_combat_handlers(bot):
         )
 
     # ==============================
-    # POTION BUTTON
+    # 🧪 POTION BUTTON
     # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "🧪 Зілля")
@@ -450,14 +492,22 @@ def register_combat_handlers(bot):
 
         player_hp -= mob_dmg
 
+        # ==============================
+        # DEATH AFTER POTION
+        # ==============================
+
         if player_hp <= 0:
+            durability_damage = damage_equipped_items_on_death(user_id, amount=10)
+
             set_current_hp(user_id, player_max_hp)
 
             del bot.user_data[user_id]
 
+            text = build_death_text(user_id, durability_damage)
+
             bot.send_message(
                 call.message.chat.id,
-                "💀 ТИ ЗАГИНУВ\n❤️ Здоров’я відновлено",
+                text,
                 reply_markup=main_kb()
             )
             return
@@ -491,7 +541,7 @@ def register_combat_handlers(bot):
         )
 
     # ==============================
-    # ESCAPE
+    # 🏃 ESCAPE CONFIRM
     # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "🏃 Втекти")

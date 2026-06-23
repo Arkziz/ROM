@@ -92,7 +92,10 @@ def init_db():
         except Exception:
             pass
 
-    # repair старих користувачів
+    # ==============================
+    # REPAIR OLD USERS
+    # ==============================
+
     cursor.execute("UPDATE users SET gold = 0 WHERE gold IS NULL")
     cursor.execute("UPDATE users SET kills = 0 WHERE kills IS NULL")
     cursor.execute("UPDATE users SET bag_slots = 20 WHERE bag_slots IS NULL")
@@ -102,7 +105,10 @@ def init_db():
     WHERE current_location IS NULL OR current_location = ''
     """)
 
-    # repair старого інвентаря
+    # ==============================
+    # REPAIR OLD INVENTORY
+    # ==============================
+
     cursor.execute("UPDATE inventory SET quantity = 1 WHERE quantity IS NULL")
 
     cursor.execute("""
@@ -126,24 +132,18 @@ def seed_items():
         # id, name, type, rarity, category, max_stack, sell_price,
         # str, dex, int, wis, sta, pdef, mdef
 
-        # ==============================
         # WEAPONS
-        # ==============================
         (1, "⚪ Старий меч", "weapon", "common", "equipment", 1, 1.00, 1, 0, 0, 0, 0, 0, 0),
         (2, "🟢 Залізний меч", "weapon", "uncommon", "equipment", 1, 3.00, 2, 0, 0, 0, 0, 0, 0),
         (3, "🔵 Меч воїна", "weapon", "rare", "equipment", 1, 8.00, 4, 0, 0, 0, 0, 0, 0),
         (4, "🟣 Епічний клинок", "weapon", "epic", "equipment", 1, 25.00, 7, 0, 0, 0, 0, 0, 0),
 
-        # ==============================
         # ARMOR
-        # ==============================
         (5, "⚪ Стара броня", "armor", "common", "equipment", 1, 1.00, 0, 0, 0, 1, 1, 2, 0),
         (6, "🟢 Шкіряна броня", "armor", "uncommon", "equipment", 1, 3.00, 0, 1, 0, 2, 2, 4, 1),
         (7, "🔵 Лицарська броня", "armor", "rare", "equipment", 1, 8.00, 0, 2, 0, 3, 4, 8, 2),
 
-        # ==============================
         # TRASH
-        # ==============================
         (101, "🐾 Густа вовча шкура", "trash", "grey", "trash", 20, 0.50, 0, 0, 0, 0, 0, 0, 0),
         (102, "🐗 Жорстка щетина", "trash", "grey", "trash", 20, 0.15, 0, 0, 0, 0, 0, 0, 0),
         (103, "🦡 Борсучий жир", "trash", "grey", "trash", 20, 0.25, 0, 0, 0, 0, 0, 0, 0),
@@ -151,18 +151,13 @@ def seed_items():
         (105, "🕷️ Липка павутина", "trash", "grey", "trash", 20, 0.60, 0, 0, 0, 0, 0, 0, 0),
         (106, "💎 Тріснутий рунічний уламок", "trash", "grey", "trash", 20, 0.75, 0, 0, 0, 0, 0, 0, 0),
 
-        # ==============================
         # POTIONS
-        # sell_price = ціна продажу гравцем торговцю
-        # ==============================
         (201, "🔴 Мале зілля здоров’я", "potion_hp", "common", "potion", 10, 1.00, 0, 0, 0, 0, 0, 0, 0),
         (202, "🔵 Мале зілля мани", "potion_mp", "common", "potion", 10, 1.20, 0, 0, 0, 0, 0, 0, 0),
         (203, "🔴 Середнє зілля здоров’я", "potion_hp_medium", "common", "potion", 10, 3.00, 0, 0, 0, 0, 0, 0, 0),
         (204, "🔵 Середнє зілля мани", "potion_mp_medium", "common", "potion", 10, 3.60, 0, 0, 0, 0, 0, 0, 0),
 
-        # ==============================
         # RUNES
-        # ==============================
         (301, "💎 Руна Сили I", "rune_str", "common", "rune", 5, 1.00, 1, 0, 0, 0, 0, 0, 0),
     ]
 
@@ -382,9 +377,6 @@ def add_item(user_id, item_id, quantity=1):
     added = 0
     lost = 0
 
-    # ==============================
-    # НЕ СТАКУЄТЬСЯ
-    # ==============================
     if max_stack <= 1:
         for _ in range(quantity):
             used = get_inventory_used_slots(user_id)
@@ -411,9 +403,6 @@ def add_item(user_id, item_id, quantity=1):
             "capacity": capacity
         }
 
-    # ==============================
-    # СТАКУЄТЬСЯ
-    # ==============================
     remaining = quantity
 
     cursor.execute("""
@@ -776,6 +765,9 @@ def get_item_bonuses(user_id):
             sell_price
         ) = item
 
+        if durability is not None and durability <= 0:
+            continue
+
         total_str += b_str or 0
         total_dex += b_dex or 0
         total_int += b_int or 0
@@ -819,6 +811,9 @@ def get_equipped_item_defenses(user_id):
             mdef,
             sell_price
         ) = item
+
+        if durability is not None and durability <= 0:
+            continue
 
         total_pdef += pdef or 0
         total_mdef += mdef or 0
@@ -1144,6 +1139,256 @@ def buy_item_for_gold(user_id, item_id, price, quantity=1):
         "lost": lost,
         "gold_left": new_gold
     }
+
+
+# ==============================
+# ✅ BLACKSMITH / REPAIR SYSTEM
+# ==============================
+
+RARITY_REPAIR_MULTIPLIERS = {
+    "common": 1.0,
+    "uncommon": 3.0,
+    "rare": 10.0,
+    "epic": 25.0
+}
+
+
+def get_rarity_repair_multiplier(rarity):
+    return RARITY_REPAIR_MULTIPLIERS.get(rarity, 1.0)
+
+
+def calculate_repair_cost(durability, rarity):
+    if durability is None:
+        durability = 100
+
+    durability = max(0, min(100, durability))
+
+    if durability >= 100:
+        return 0.0
+
+    multiplier = get_rarity_repair_multiplier(rarity)
+
+    return round((100 - durability) * multiplier * 0.05, 2)
+
+
+def get_equipped_items_for_repair(user_id):
+    equipped_weapon, equipped_armor = get_equipped_inventory_ids(user_id)
+
+    equipped_items = []
+
+    slots = [
+        ("⚔️ Зброя", equipped_weapon),
+        ("🛡 Обладунок", equipped_armor)
+    ]
+
+    for slot_name, inventory_id in slots:
+        if not inventory_id:
+            equipped_items.append({
+                "slot": slot_name,
+                "inventory_id": None,
+                "name": "Порожньо",
+                "rarity": None,
+                "durability": None,
+                "repair_cost": 0.0,
+                "is_broken": False
+            })
+            continue
+
+        item = get_item_by_inventory_id(inventory_id)
+
+        if not item:
+            equipped_items.append({
+                "slot": slot_name,
+                "inventory_id": inventory_id,
+                "name": "Предмет не знайдено",
+                "rarity": None,
+                "durability": None,
+                "repair_cost": 0.0,
+                "is_broken": False
+            })
+            continue
+
+        (
+            inv_id,
+            item_id,
+            name,
+            type_,
+            rarity,
+            category,
+            quantity,
+            max_stack,
+            durability,
+            b_str,
+            b_dex,
+            b_int,
+            b_wis,
+            b_sta,
+            pdef,
+            mdef,
+            sell_price
+        ) = item
+
+        if durability is None:
+            durability = 100
+
+        repair_cost = calculate_repair_cost(durability, rarity)
+
+        equipped_items.append({
+            "slot": slot_name,
+            "inventory_id": inv_id,
+            "name": name,
+            "rarity": rarity,
+            "durability": durability,
+            "repair_cost": repair_cost,
+            "is_broken": durability <= 0
+        })
+
+    return equipped_items
+
+
+def get_total_repair_cost(user_id):
+    equipped_items = get_equipped_items_for_repair(user_id)
+    total = 0.0
+
+    for item in equipped_items:
+        total += item["repair_cost"]
+
+    return round(total, 2)
+
+
+def repair_all_equipped(user_id):
+    equipped_items = get_equipped_items_for_repair(user_id)
+    total_cost = get_total_repair_cost(user_id)
+
+    if total_cost <= 0:
+        return {
+            "success": False,
+            "message": "🛠️ Усе спорядження вже має повну міцність.",
+            "total_cost": 0.0
+        }
+
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "success": False,
+            "message": "❌ Персонажа не знайдено.",
+            "total_cost": total_cost
+        }
+
+    gold = row[0] or 0.0
+
+    if gold < total_cost:
+        return {
+            "success": False,
+            "message": (
+                f"❌ Недостатньо золота для ремонту.\n"
+                f"💳 Потрібно: {total_cost:.2f} 🪙\n"
+                f"💰 У тебе: {gold:.2f} 🪙"
+            ),
+            "total_cost": total_cost
+        }
+
+    repaired_count = 0
+
+    for item in equipped_items:
+        inventory_id = item["inventory_id"]
+
+        if not inventory_id:
+            continue
+
+        if item["repair_cost"] <= 0:
+            continue
+
+        cursor.execute("""
+        UPDATE inventory
+        SET durability=100
+        WHERE id=?
+        """, (inventory_id,))
+
+        repaired_count += 1
+
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold - ?
+    WHERE user_id=?
+    """, (total_cost, user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": (
+            f"✅ Спорядження відремонтовано.\n"
+            f"🛠️ Відремонтовано речей: {repaired_count}\n"
+            f"💳 Сплачено: {total_cost:.2f} 🪙"
+        ),
+        "total_cost": total_cost,
+        "repaired_count": repaired_count
+    }
+
+
+def damage_equipped_items_on_death(user_id, amount=10):
+    equipped_weapon, equipped_armor = get_equipped_inventory_ids(user_id)
+
+    damaged = []
+
+    for inventory_id in [equipped_weapon, equipped_armor]:
+        if not inventory_id:
+            continue
+
+        item = get_item_by_inventory_id(inventory_id)
+
+        if not item:
+            continue
+
+        (
+            inv_id,
+            item_id,
+            name,
+            type_,
+            rarity,
+            category,
+            quantity,
+            max_stack,
+            durability,
+            b_str,
+            b_dex,
+            b_int,
+            b_wis,
+            b_sta,
+            pdef,
+            mdef,
+            sell_price
+        ) = item
+
+        if durability is None:
+            durability = 100
+
+        new_durability = max(0, durability - amount)
+
+        cursor.execute("""
+        UPDATE inventory
+        SET durability=?
+        WHERE id=?
+        """, (new_durability, inventory_id))
+
+        damaged.append({
+            "name": name,
+            "old": durability,
+            "new": new_durability,
+            "broken": new_durability <= 0
+        })
+
+    conn.commit()
+
+    return damaged
 
 
 # ==============================

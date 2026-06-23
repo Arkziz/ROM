@@ -1,23 +1,28 @@
 from telebot import types
 
 from data.locations import LOCATIONS
+
 from db import (
     get_current_location,
     sell_all_trash,
-    buy_item_for_gold
+    buy_item_for_gold,
+    get_equipped_items_for_repair,
+    get_total_repair_cost,
+    repair_all_equipped,
+    get_wallet
 )
 
 from keyboards import (
     city_kb,
     trader_kb,
     alchemist_kb,
+    blacksmith_kb,
     main_kb
 )
 
 from systems.potion_system import (
     POTIONS,
-    ALCHEMIST_SHOP,
-    get_potion_description
+    ALCHEMIST_SHOP
 )
 
 
@@ -34,10 +39,12 @@ def build_city_text(user_id):
         f"📍 Регіон:\n"
         f"{location['name']}\n\n"
         f"🏕️ Табір мандрівників\n\n"
-        f"Тут можна продати лут, купити зілля і підготуватися до наступного полювання.\n\n"
+        f"Тут можна продати лут, купити зілля, відремонтувати спорядження "
+        f"і підготуватися до наступного полювання.\n\n"
         f"Доступні місця:\n"
         f"• 🛒 Торговець\n"
-        f"• 🧪 Алхімік"
+        f"• 🧪 Алхімік\n"
+        f"• ⚒️ Коваль"
     )
 
 
@@ -74,6 +81,58 @@ def build_alchemist_catalog():
         f"⚠️ Мана ще не реалізована, тому сині зілля можна купити на майбутнє, "
         f"але використати поки не можна."
     )
+
+    return text, kb
+
+
+def build_blacksmith_text(user_id):
+    equipped_items = get_equipped_items_for_repair(user_id)
+    total_cost = get_total_repair_cost(user_id)
+    gold = get_wallet(user_id)
+
+    text = (
+        f"⚒️ КОВАЛЬ: РЕМОНТ ТА КУЗНЯ\n\n"
+        f"📦 Стан твого спорядження:\n\n"
+    )
+
+    for item in equipped_items:
+        slot = item["slot"]
+        name = item["name"]
+        durability = item["durability"]
+        repair_cost = item["repair_cost"]
+        is_broken = item["is_broken"]
+
+        if item["inventory_id"] is None:
+            text += f"{slot}: порожньо\n\n"
+            continue
+
+        broken_text = " ⚠️ [ЗЛАМАНО]" if is_broken else ""
+
+        text += (
+            f"{slot}: {name}\n"
+            f"🛠️ Міцність: {durability}/100{broken_text}\n"
+            f"💰 Ремонт: {repair_cost:.2f} 🪙\n\n"
+        )
+
+    text += (
+        f"💳 Разом до сплати: {total_cost:.2f} 🪙\n"
+        f"💰 Твій баланс: {gold:.2f} 🪙\n\n"
+    )
+
+    if total_cost <= 0:
+        text += "✅ Усе спорядження вже в ідеальному стані."
+    elif gold < total_cost:
+        text += "❌ Недостатньо золота для повного ремонту."
+    else:
+        text += "👇 Можна полагодити все спорядження однією дією."
+
+    kb = types.InlineKeyboardMarkup()
+
+    if total_cost > 0:
+        kb.add(types.InlineKeyboardButton(
+            text=f"🛠️ Полагодити все за {total_cost:.2f} 🪙",
+            callback_data="repair_all_equipped"
+        ))
 
     return text, kb
 
@@ -141,7 +200,6 @@ def register_city_handlers(bot):
 
     @bot.message_handler(func=lambda m: m.text == "🧪 Алхімік")
     def show_alchemist(message):
-        # Окремим повідомленням ставимо нижню клавіатуру Алхіміка
         bot.send_message(
             message.chat.id,
             "🧪 Ти підійшов до Алхіміка.",
@@ -187,8 +245,47 @@ def register_city_handlers(bot):
             reply_markup=alchemist_kb()
         )
 
-        # Після покупки знову показуємо каталог
         text, kb = build_alchemist_catalog()
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "⚒️ Коваль")
+    def show_blacksmith(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            "⚒️ Ти підійшов до Коваля.",
+            reply_markup=blacksmith_kb()
+        )
+
+        text, kb = build_blacksmith_text(user_id)
+
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "repair_all_equipped")
+    def repair_all(call):
+        user_id = call.from_user.id
+
+        result = repair_all_equipped(user_id)
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            result["message"],
+            reply_markup=blacksmith_kb()
+        )
+
+        text, kb = build_blacksmith_text(user_id)
 
         bot.send_message(
             call.message.chat.id,
