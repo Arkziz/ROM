@@ -9,6 +9,7 @@ from db import (
     get_equipped_items_for_repair,
     get_total_repair_cost,
     repair_all_equipped,
+    repair_equipped_item,
     get_wallet
 )
 
@@ -95,14 +96,17 @@ def build_blacksmith_text(user_id):
         f"📦 Стан твого спорядження:\n\n"
     )
 
+    kb = types.InlineKeyboardMarkup()
+
     for item in equipped_items:
         slot = item["slot"]
         name = item["name"]
         durability = item["durability"]
         repair_cost = item["repair_cost"]
         is_broken = item["is_broken"]
+        inventory_id = item["inventory_id"]
 
-        if item["inventory_id"] is None:
+        if inventory_id is None:
             text += f"{slot}: порожньо\n\n"
             continue
 
@@ -114,19 +118,26 @@ def build_blacksmith_text(user_id):
             f"💰 Ремонт: {repair_cost:.2f} 🪙\n\n"
         )
 
+        if repair_cost > 0:
+            kb.add(types.InlineKeyboardButton(
+                text=f"🛠️ Ремонт: {name} — {repair_cost:.2f} 🪙",
+                callback_data=f"repair_one_{inventory_id}"
+            ))
+
     text += (
-        f"💳 Разом до сплати: {total_cost:.2f} 🪙\n"
+        f"💳 Разом за повний ремонт: {total_cost:.2f} 🪙\n"
         f"💰 Твій баланс: {gold:.2f} 🪙\n\n"
     )
 
     if total_cost <= 0:
         text += "✅ Усе спорядження вже в ідеальному стані."
     elif gold < total_cost:
-        text += "❌ Недостатньо золота для повного ремонту."
+        text += (
+            "❌ Недостатньо золота для повного ремонту.\n"
+            "ℹ️ Можеш відремонтувати окрему річ, якщо вистачає золота."
+        )
     else:
-        text += "👇 Можна полагодити все спорядження однією дією."
-
-    kb = types.InlineKeyboardMarkup()
+        text += "👇 Можна полагодити все або окрему річ."
 
     if total_cost > 0:
         kb.add(types.InlineKeyboardButton(
@@ -276,6 +287,29 @@ def register_city_handlers(bot):
         user_id = call.from_user.id
 
         result = repair_all_equipped(user_id)
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            result["message"],
+            reply_markup=blacksmith_kb()
+        )
+
+        text, kb = build_blacksmith_text(user_id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("repair_one_"))
+    def repair_one(call):
+        user_id = call.from_user.id
+        inventory_id = int(call.data.split("_")[2])
+
+        result = repair_equipped_item(user_id, inventory_id)
 
         bot.answer_callback_query(call.id)
 

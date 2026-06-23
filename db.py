@@ -1171,6 +1171,12 @@ def calculate_repair_cost(durability, rarity):
     return round((100 - durability) * multiplier * 0.05, 2)
 
 
+def is_inventory_item_equipped(user_id, inventory_id):
+    equipped_weapon, equipped_armor = get_equipped_inventory_ids(user_id)
+
+    return inventory_id in [equipped_weapon, equipped_armor]
+
+
 def get_equipped_items_for_repair(user_id):
     equipped_weapon, equipped_armor = get_equipped_inventory_ids(user_id)
 
@@ -1256,6 +1262,111 @@ def get_total_repair_cost(user_id):
     return round(total, 2)
 
 
+def repair_equipped_item(user_id, inventory_id):
+    if not is_inventory_item_equipped(user_id, inventory_id):
+        return {
+            "success": False,
+            "message": "❌ Цей предмет не вдягнений."
+        }
+
+    item = get_item_by_inventory_id(inventory_id)
+
+    if not item:
+        return {
+            "success": False,
+            "message": "❌ Предмет не знайдено."
+        }
+
+    (
+        inv_id,
+        item_id,
+        name,
+        type_,
+        rarity,
+        category,
+        quantity,
+        max_stack,
+        durability,
+        b_str,
+        b_dex,
+        b_int,
+        b_wis,
+        b_sta,
+        pdef,
+        mdef,
+        sell_price
+    ) = item
+
+    if category != "equipment":
+        return {
+            "success": False,
+            "message": "❌ Цей предмет не є спорядженням."
+        }
+
+    if durability is None:
+        durability = 100
+
+    repair_cost = calculate_repair_cost(durability, rarity)
+
+    if repair_cost <= 0:
+        return {
+            "success": False,
+            "message": f"🛠️ {name} вже має повну міцність."
+        }
+
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "success": False,
+            "message": "❌ Персонажа не знайдено."
+        }
+
+    gold = row[0] or 0.0
+
+    if gold < repair_cost:
+        return {
+            "success": False,
+            "message": (
+                f"❌ Недостатньо золота для ремонту.\n\n"
+                f"📦 Предмет: {name}\n"
+                f"💳 Потрібно: {repair_cost:.2f} 🪙\n"
+                f"💰 У тебе: {gold:.2f} 🪙"
+            )
+        }
+
+    cursor.execute("""
+    UPDATE inventory
+    SET durability=100
+    WHERE id=?
+    """, (inventory_id,))
+
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold - ?
+    WHERE user_id=?
+    """, (repair_cost, user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": (
+            f"✅ Предмет відремонтовано.\n\n"
+            f"📦 {name}\n"
+            f"🛠️ Міцність: {durability}/100 → 100/100\n"
+            f"💳 Сплачено: {repair_cost:.2f} 🪙"
+        ),
+        "repair_cost": repair_cost
+    }
+
+
 def repair_all_equipped(user_id):
     equipped_items = get_equipped_items_for_repair(user_id)
     total_cost = get_total_repair_cost(user_id)
@@ -1288,9 +1399,10 @@ def repair_all_equipped(user_id):
         return {
             "success": False,
             "message": (
-                f"❌ Недостатньо золота для ремонту.\n"
+                f"❌ Недостатньо золота для повного ремонту.\n\n"
                 f"💳 Потрібно: {total_cost:.2f} 🪙\n"
-                f"💰 У тебе: {gold:.2f} 🪙"
+                f"💰 У тебе: {gold:.2f} 🪙\n\n"
+                f"ℹ️ Можеш відремонтувати окремі речі нижче."
             ),
             "total_cost": total_cost
         }
