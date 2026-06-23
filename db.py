@@ -69,10 +69,6 @@ def init_db():
     )
     """)
 
-    # ==============================
-    # МІГРАЦІЇ ДЛЯ СТАРИХ game.db
-    # ==============================
-
     migrations = [
         ("users", "gold", "REAL DEFAULT 0"),
         ("users", "kills", "INTEGER DEFAULT 0"),
@@ -96,10 +92,7 @@ def init_db():
         except Exception:
             pass
 
-    # ==============================
-    # REPAIR OLD USERS
-    # ==============================
-
+    # repair старих користувачів
     cursor.execute("UPDATE users SET gold = 0 WHERE gold IS NULL")
     cursor.execute("UPDATE users SET kills = 0 WHERE kills IS NULL")
     cursor.execute("UPDATE users SET bag_slots = 20 WHERE bag_slots IS NULL")
@@ -109,10 +102,7 @@ def init_db():
     WHERE current_location IS NULL OR current_location = ''
     """)
 
-    # ==============================
-    # REPAIR OLD INVENTORY
-    # ==============================
-
+    # repair старого інвентаря
     cursor.execute("UPDATE inventory SET quantity = 1 WHERE quantity IS NULL")
 
     cursor.execute("""
@@ -347,7 +337,12 @@ def get_inventory_used_slots(user_id):
     WHERE user_id=?
     """, (user_id,))
 
-    return cursor.fetchone()[0]
+    row = cursor.fetchone()
+
+    if not row:
+        return 0
+
+    return row[0]
 
 
 # ==============================
@@ -382,6 +377,7 @@ def add_item(user_id, item_id, quantity=1):
         mdef
     ) = item
 
+    max_stack = max_stack or 1
     capacity = get_bag_capacity(user_id)
     added = 0
     lost = 0
@@ -433,6 +429,7 @@ def add_item(user_id, item_id, quantity=1):
         if remaining <= 0:
             break
 
+        current_qty = current_qty or 0
         space = max_stack - current_qty
         to_add = min(space, remaining)
 
@@ -1065,6 +1062,87 @@ def sell_all_trash(user_id):
         "gold_earned": total_gold,
         "freed_slots": freed_slots,
         "details": details
+    }
+
+
+# ==============================
+# ✅ BUY ITEM FOR GOLD
+# ==============================
+
+def buy_item_for_gold(user_id, item_id, price, quantity=1):
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "success": False,
+            "message": "❌ Персонажа не знайдено"
+        }
+
+    gold = row[0] or 0
+    total_price = float(price) * quantity
+
+    if gold < total_price:
+        return {
+            "success": False,
+            "message": (
+                f"❌ Недостатньо золота.\n"
+                f"Потрібно: {total_price:.2f}\n"
+                f"У тебе: {gold:.2f}"
+            )
+        }
+
+    add_result = add_item(user_id, item_id, quantity)
+
+    added = add_result.get("added", 0)
+    lost = add_result.get("lost", 0)
+    name = add_result.get("name", "Предмет")
+
+    if added <= 0:
+        return {
+            "success": False,
+            "message": "🎒 Сумка переповнена. Предмет не куплено."
+        }
+
+    actual_price = float(price) * added
+
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold - ?
+    WHERE user_id=?
+    """, (actual_price, user_id))
+
+    conn.commit()
+
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    new_gold_row = cursor.fetchone()
+    new_gold = new_gold_row[0] if new_gold_row else 0
+
+    message = (
+        f"✅ Куплено: {name} x{added}\n"
+        f"🪙 Витрачено: {actual_price:.2f}\n"
+        f"🪙 Залишилось золота: {new_gold:.2f}"
+    )
+
+    if lost > 0:
+        message += f"\n⚠️ Не влізло в сумку: x{lost}"
+
+    return {
+        "success": True,
+        "message": message,
+        "added": added,
+        "lost": lost,
+        "gold_left": new_gold
     }
 
 

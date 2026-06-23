@@ -48,6 +48,31 @@ POTIONS = {
 }
 
 
+ALCHEMIST_SHOP = [201, 203, 202, 204]
+
+
+def get_potion_description(item_id):
+    potion = POTIONS.get(item_id)
+
+    if not potion:
+        return "Невідоме зілля"
+
+    if potion["type"] == "hp":
+        effect = f"відновлює {potion['restore']} HP"
+    elif potion["type"] == "mp":
+        effect = f"відновлює {potion['restore']} MP"
+    else:
+        effect = "невідомий ефект"
+
+    return (
+        f"{potion['name']}\n"
+        f"Ефект: {effect}\n"
+        f"Ціна купівлі: {potion['buy_price']:.2f} золота\n"
+        f"Ціна продажу: {potion['sell_price']:.2f} золота\n"
+        f"Макс. стак: {potion['max_stack']}"
+    )
+
+
 # ==============================
 # ✅ USE POTION FROM INVENTORY
 # ==============================
@@ -124,10 +149,8 @@ def use_potion_from_inventory(user_id, inventory_id):
 # ==============================
 
 def use_first_hp_potion(user_id):
-    # Спочатку шукаємо мале зілля HP
     inventory_id = find_first_item_stack_by_type(user_id, "potion_hp")
 
-    # Якщо малого немає — шукаємо середнє
     if inventory_id is None:
         inventory_id = find_first_item_stack_by_type(user_id, "potion_hp_medium")
 
