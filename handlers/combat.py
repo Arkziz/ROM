@@ -498,11 +498,53 @@ def register_combat_handlers(bot):
     def escape(message):
         user_id = message.from_user.id
 
-        if hasattr(bot, "user_data") and user_id in bot.user_data:
-            del bot.user_data[user_id]
+        if not hasattr(bot, "user_data") or user_id not in bot.user_data:
+            bot.send_message(
+                message.chat.id,
+                "❗ Ти не в бою",
+                reply_markup=main_kb()
+            )
+            return
+
+        kb = types.InlineKeyboardMarkup()
+        kb.add(
+            types.InlineKeyboardButton(
+                text="✅ Так, втекти",
+                callback_data="escape_yes"
+            ),
+            types.InlineKeyboardButton(
+                text="❌ Ні, залишитись",
+                callback_data="escape_no"
+            )
+        )
 
         bot.send_message(
             message.chat.id,
+            "🏃 Ти точно хочеш втекти з бою?",
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "escape_yes")
+    def escape_yes(call):
+        user_id = call.from_user.id
+
+        if hasattr(bot, "user_data") and user_id in bot.user_data:
+            del bot.user_data[user_id]
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
             "🏃 Ти втік з бою",
             reply_markup=main_kb()
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "escape_no")
+    def escape_no(call):
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            "⚔️ Ти залишився в бою",
+            reply_markup=fight_kb()
         )

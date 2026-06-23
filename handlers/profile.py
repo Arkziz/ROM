@@ -60,6 +60,10 @@ def build_profile_text(user_id):
     gold = progress["gold"]
     kills = progress["kills"]
 
+    exp_percent = 0
+    if exp_to_next > 0:
+        exp_percent = (exp / exp_to_next) * 100
+
     text = (
         f"👤 Персонаж\n\n"
         f"🏆 Рівень: {lvl}\n\n"
@@ -75,7 +79,7 @@ def build_profile_text(user_id):
         f"🛡 Витривалість: {sta_}\n\n"
 
         f"— Прогрес —\n"
-        f"✨ Досвід: {exp}/{exp_to_next}\n"
+        f"✨ Досвід: {exp}/{exp_to_next} ({exp_percent:.1f}%)\n"
         f"👹 Вбито мобів: {kills}\n\n"
 
         f"— Гаманець —\n"
