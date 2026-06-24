@@ -194,10 +194,10 @@ def build_params_text(user_id):
         f"🔮 Маг. захист: {mdef}\n\n"
 
         f"— Шанси —\n"
-        f"🎯 Фіз. крит: {physical_crit}%\n"
-        f"🔮 Маг. крит: {magical_crit}%\n"
-        f"💨 Базовий ухил: {base_dodge}%\n"
-        f"💥 Крит ворога по тобі: {enemy_crit}%\n\n"
+        f"🎯 Фіз. крит: {physical_crit:.2f}%\n"
+        f"🔮 Маг. крит: {magical_crit:.2f}%\n"
+        f"💨 Базовий ухил: {base_dodge:.2f}%\n"
+        f"💥 Крит ворога по тобі: {enemy_crit:.2f}%\n\n"
 
         f"ℹ️ Ухил у реальному бою залежить від спритності конкретного ворога."
     )
@@ -208,7 +208,6 @@ def build_params_text(user_id):
 def build_equipment_text(user_id):
     equipped_items = get_all_equipped_items(user_id)
 
-    # Перевіряємо, чи main_hand є дворучним
     main_hand_two_handed = False
 
     for equipped in equipped_items:
@@ -235,7 +234,6 @@ def build_equipment_text(user_id):
         slot_name = equipped["slot_name"]
         item = equipped["item"]
 
-        # Якщо друга рука заблокована дворучною зброєю
         if slot_key == "off_hand" and main_hand_two_handed and not item:
             text += (
                 f"{slot_name}: 🔒 Заблоковано\n"
@@ -332,14 +330,12 @@ def register_profile_handlers(bot):
             )
             return
 
-        # 1) Ставимо нижню клавіатуру профілю
         bot.send_message(
             message.chat.id,
             "👤 Розділ персонажа відкрито",
             reply_markup=profile_kb()
         )
 
-        # 2) Показуємо профіль з inline-кнопками
         bot.send_message(
             message.chat.id,
             text,
