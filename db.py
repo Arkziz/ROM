@@ -1,4 +1,5 @@
 import sqlite3
+import random
 
 # ==============================
 # 🔌 ПІДКЛЮЧЕННЯ ДО БАЗИ
@@ -516,7 +517,6 @@ def get_equipped_inventory_ids(user_id):
 
 def is_inventory_item_equipped(user_id, inventory_id):
     equipped_slots = get_all_equipped_slots(user_id)
-
     return inventory_id in equipped_slots.values()
 
 
@@ -1816,6 +1816,113 @@ def damage_equipped_items_on_death(user_id, amount=10):
     conn.commit()
 
     return damaged
+
+
+# ==============================
+# ✅ NATURAL DURABILITY WEAR ON VICTORY
+# ==============================
+
+def apply_random_durability_wear_on_victory(user_id, chance_percent=25):
+    """
+    Природний знос спорядження після перемоги.
+
+    Правила:
+    - після перемоги є chance_percent шанс, що знос спрацює;
+    - якщо спрацював, випадкова одягнена річ втрачає -1 durability;
+    - природний знос НЕ може опустити durability нижче 1;
+    - до 0 предмет може добити тільки смерть.
+    """
+
+    roll = random.randint(1, 100)
+
+    if roll > chance_percent:
+        return {
+            "triggered": False,
+            "message": None
+        }
+
+    equipped_items = get_all_equipped_items(user_id)
+
+    candidates = []
+
+    for equipped in equipped_items:
+        inventory_id = equipped["inventory_id"]
+        item = equipped["item"]
+        slot_name = equipped["slot_name"]
+
+        if not inventory_id or not item:
+            continue
+
+        (
+            inv_id,
+            item_id,
+            name,
+            type_,
+            rarity,
+            category,
+            slot_key,
+            weapon_hands,
+            quantity,
+            max_stack,
+            durability,
+            b_str,
+            b_dex,
+            b_int,
+            b_wis,
+            b_sta,
+            pdef,
+            mdef,
+            sell_price
+        ) = item
+
+        if category != "equipment":
+            continue
+
+        if durability is None:
+            durability = 100
+
+        # Природний знос не може зняти останню одиницю міцності
+        if durability <= 1:
+            continue
+
+        candidates.append({
+            "inventory_id": inventory_id,
+            "slot_name": slot_name,
+            "name": name,
+            "old_durability": durability
+        })
+
+    if not candidates:
+        return {
+            "triggered": False,
+            "message": None
+        }
+
+    selected = random.choice(candidates)
+
+    old_durability = selected["old_durability"]
+    new_durability = max(1, old_durability - 1)
+
+    cursor.execute("""
+    UPDATE inventory
+    SET durability=?
+    WHERE id=?
+    """, (new_durability, selected["inventory_id"]))
+
+    conn.commit()
+
+    return {
+        "triggered": True,
+        "slot_name": selected["slot_name"],
+        "name": selected["name"],
+        "old_durability": old_durability,
+        "new_durability": new_durability,
+        "message": (
+            f"🧱 Знос спорядження:\n"
+            f"• {selected['slot_name']}: {selected['name']} "
+            f"{old_durability} → {new_durability}/100"
+        )
+    }
 
 
 # ==============================

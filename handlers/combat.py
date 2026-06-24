@@ -12,7 +12,8 @@ from db import (
     set_current_hp,
     get_current_location,
     get_inventory_detailed,
-    damage_equipped_items_on_death
+    damage_equipped_items_on_death,
+    apply_random_durability_wear_on_victory
 )
 
 from keyboards import main_kb, fight_kb
@@ -237,6 +238,11 @@ def register_combat_handlers(bot):
                 mob=mob
             )
 
+            wear_result = apply_random_durability_wear_on_victory(
+                user_id=user_id,
+                chance_percent=25
+            )
+
             exp_result = reward["exp_result"]
 
             text = (
@@ -260,6 +266,9 @@ def register_combat_handlers(bot):
                     text += f"• {loot}\n"
             else:
                 text += "\n🎒 Лут не знайдено.\n"
+
+            if wear_result and wear_result.get("triggered"):
+                text += f"\n{wear_result['message']}\n"
 
             text += f"\n🎒 Сумка: {reward['used_slots']}/{reward['capacity']} слотів"
 
