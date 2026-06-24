@@ -1,6 +1,8 @@
 from telebot import types
 
 from db import (
+    EQUIPMENT_SLOTS,
+    SLOT_ORDER,
     get_player_stats,
     get_attack,
     get_magic_attack,
@@ -8,7 +10,8 @@ from db import (
     get_magic_defense,
     get_max_hp,
     get_current_hp,
-    get_user_progress
+    get_user_progress,
+    get_all_equipped_items
 )
 
 from keyboards import profile_kb, main_kb
@@ -21,13 +24,23 @@ from systems.combat_system import (
 )
 
 
+# ==============================
+# INLINE KEYBOARDS
+# ==============================
+
 def profile_inline_kb():
     kb = types.InlineKeyboardMarkup()
 
-    kb.add(types.InlineKeyboardButton(
-        text="📊 Параметри",
-        callback_data="profile_params"
-    ))
+    kb.add(
+        types.InlineKeyboardButton(
+            text="📊 Параметри",
+            callback_data="profile_params"
+        ),
+        types.InlineKeyboardButton(
+            text="🧰 Екіпірування",
+            callback_data="profile_equipment"
+        )
+    )
 
     return kb
 
@@ -35,13 +48,65 @@ def profile_inline_kb():
 def params_inline_kb():
     kb = types.InlineKeyboardMarkup()
 
-    kb.add(types.InlineKeyboardButton(
-        text="👤 До профілю",
-        callback_data="profile_overview"
-    ))
+    kb.add(
+        types.InlineKeyboardButton(
+            text="👤 До профілю",
+            callback_data="profile_overview"
+        ),
+        types.InlineKeyboardButton(
+            text="🧰 Екіпірування",
+            callback_data="profile_equipment"
+        )
+    )
 
     return kb
 
+
+def equipment_inline_kb():
+    kb = types.InlineKeyboardMarkup()
+
+    kb.add(
+        types.InlineKeyboardButton(
+            text="👤 До профілю",
+            callback_data="profile_overview"
+        ),
+        types.InlineKeyboardButton(
+            text="📊 Параметри",
+            callback_data="profile_params"
+        )
+    )
+
+    return kb
+
+
+# ==============================
+# FORMAT HELPERS
+# ==============================
+
+def format_item_bonuses(b_str, b_dex, b_int, b_wis, b_sta, pdef, mdef):
+    bonuses = []
+
+    if b_str:
+        bonuses.append(f"💪 Сила +{b_str}")
+    if b_dex:
+        bonuses.append(f"🎯 Спритність +{b_dex}")
+    if b_int:
+        bonuses.append(f"🔮 Інтелект +{b_int}")
+    if b_wis:
+        bonuses.append(f"🦉 Мудрість +{b_wis}")
+    if b_sta:
+        bonuses.append(f"🛡 Витривалість +{b_sta}")
+    if pdef:
+        bonuses.append(f"🛡 Фіз. захист +{pdef}")
+    if mdef:
+        bonuses.append(f"🔮 Маг. захист +{mdef}")
+
+    return bonuses
+
+
+# ==============================
+# TEXT BUILDERS
+# ==============================
 
 def build_profile_text(user_id):
     stats = get_player_stats(user_id)
@@ -61,6 +126,7 @@ def build_profile_text(user_id):
     kills = progress["kills"]
 
     exp_percent = 0
+
     if exp_to_next > 0:
         exp_percent = (exp / exp_to_next) * 100
 
@@ -106,7 +172,7 @@ def build_params_text(user_id):
     physical_crit = get_physical_crit_chance(dex_, lvl)
     magical_crit = get_magical_crit_chance(wis_, lvl)
 
-    # Орієнтовний базовий ухил.
+    # Базовий орієнтир.
     # У реальному бою ухил залежить від DEX конкретного ворога.
     base_dodge = get_dodge_chance(
         player_dex=dex_,
@@ -139,6 +205,117 @@ def build_params_text(user_id):
     return text
 
 
+def build_equipment_text(user_id):
+    equipped_items = get_all_equipped_items(user_id)
+
+    # Перевіряємо, чи main_hand є дворучним
+    main_hand_two_handed = False
+
+    for equipped in equipped_items:
+        if equipped["slot_key"] != "main_hand":
+            continue
+
+        item = equipped["item"]
+
+        if not item:
+            continue
+
+        weapon_hands = item[7]
+
+        if weapon_hands == 2:
+            main_hand_two_handed = True
+
+    text = (
+        f"🧰 Екіпірування персонажа\n\n"
+        f"Стан активних слотів:\n\n"
+    )
+
+    for equipped in equipped_items:
+        slot_key = equipped["slot_key"]
+        slot_name = equipped["slot_name"]
+        item = equipped["item"]
+
+        # Якщо друга рука заблокована дворучною зброєю
+        if slot_key == "off_hand" and main_hand_two_handed and not item:
+            text += (
+                f"{slot_name}: 🔒 Заблоковано\n"
+                f"ℹ️ Дворучна зброя у слоті 🗡️ Зброя блокує другу руку.\n\n"
+            )
+            continue
+
+        if not item:
+            text += f"{slot_name}: порожньо\n\n"
+            continue
+
+        (
+            inv_id,
+            item_id,
+            name,
+            type_,
+            rarity,
+            category,
+            item_slot_key,
+            weapon_hands,
+            quantity,
+            max_stack,
+            durability,
+            b_str,
+            b_dex,
+            b_int,
+            b_wis,
+            b_sta,
+            pdef,
+            mdef,
+            sell_price
+        ) = item
+
+        if durability is None:
+            durability = 100
+
+        broken = durability <= 0
+        broken_text = " ⚠️ [ЗЛАМАНО]" if broken else ""
+
+        text += (
+            f"{slot_name}: {name}\n"
+            f"🧱 Міцність: {durability}/100{broken_text}\n"
+        )
+
+        if slot_key == "main_hand":
+            if weapon_hands == 2:
+                text += "👐 Тип зброї: дворучна\n"
+            else:
+                text += "✋ Тип зброї: одноручна\n"
+
+        bonuses = format_item_bonuses(
+            b_str,
+            b_dex,
+            b_int,
+            b_wis,
+            b_sta,
+            pdef,
+            mdef
+        )
+
+        if bonuses:
+            text += "📊 Бонуси:\n"
+
+            for bonus in bonuses:
+                text += f"• {bonus}\n"
+        else:
+            text += "📊 Бонуси: немає\n"
+
+        if broken:
+            text += "⚠️ Предмет зламаний і не дає бонусів до ремонту.\n"
+
+        text += "\n"
+
+    return text
+
+
+# ==============================
+# HANDLERS
+# ==============================
+
 def register_profile_handlers(bot):
 
     @bot.message_handler(func=lambda m: m.text == "👤 Профіль")
@@ -162,10 +339,35 @@ def register_profile_handlers(bot):
             reply_markup=profile_kb()
         )
 
-        # 2) Показуємо профіль з inline-кнопкою "Параметри"
+        # 2) Показуємо профіль з inline-кнопками
         bot.send_message(
             message.chat.id,
             text,
+            reply_markup=profile_inline_kb()
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "profile_overview")
+    def profile_overview_callback(call):
+        user_id = call.from_user.id
+
+        text = build_profile_text(user_id)
+
+        if not text:
+            bot.answer_callback_query(call.id)
+
+            bot.send_message(
+                call.message.chat.id,
+                "❗ Немає персонажа. Натисни /start",
+                reply_markup=main_kb()
+            )
+            return
+
+        bot.answer_callback_query(call.id)
+
+        bot.edit_message_text(
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            text=text,
             reply_markup=profile_inline_kb()
         )
 
@@ -177,6 +379,7 @@ def register_profile_handlers(bot):
 
         if not text:
             bot.answer_callback_query(call.id)
+
             bot.send_message(
                 call.message.chat.id,
                 "❗ Немає персонажа. Натисни /start",
@@ -193,20 +396,11 @@ def register_profile_handlers(bot):
             reply_markup=params_inline_kb()
         )
 
-    @bot.callback_query_handler(func=lambda call: call.data == "profile_overview")
-    def profile_overview_callback(call):
+    @bot.callback_query_handler(func=lambda call: call.data == "profile_equipment")
+    def profile_equipment_callback(call):
         user_id = call.from_user.id
 
-        text = build_profile_text(user_id)
-
-        if not text:
-            bot.answer_callback_query(call.id)
-            bot.send_message(
-                call.message.chat.id,
-                "❗ Немає персонажа. Натисни /start",
-                reply_markup=main_kb()
-            )
-            return
+        text = build_equipment_text(user_id)
 
         bot.answer_callback_query(call.id)
 
@@ -214,5 +408,5 @@ def register_profile_handlers(bot):
             chat_id=call.message.chat.id,
             message_id=call.message.message_id,
             text=text,
-            reply_markup=profile_inline_kb()
+            reply_markup=equipment_inline_kb()
         )
