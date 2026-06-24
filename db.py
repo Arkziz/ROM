@@ -9,6 +9,46 @@ cursor = conn.cursor()
 
 
 # ==============================
+# ✅ EQUIPMENT CONFIG
+# ==============================
+
+EQUIPMENT_SLOTS = {
+    "main_hand": "🗡️ Зброя",
+    "off_hand": "🛡️ Друга рука",
+    "helmet": "🪖 Голова",
+    "shoulders": "🦾 Плечі",
+    "chest": "🦹 Тіло",
+    "gloves": "🧤 Руки",
+    "legs": "👖 Ноги",
+    "boots": "👟 Взуття",
+    "necklace": "📿 Шия",
+    "ring": "💍 Кільце"
+}
+
+
+SLOT_ORDER = [
+    "main_hand",
+    "off_hand",
+    "helmet",
+    "shoulders",
+    "chest",
+    "gloves",
+    "legs",
+    "boots",
+    "necklace",
+    "ring"
+]
+
+
+RARITY_REPAIR_MULTIPLIERS = {
+    "common": 1.0,
+    "uncommon": 3.0,
+    "rare": 10.0,
+    "epic": 25.0
+}
+
+
+# ==============================
 # ✅ DB INIT
 # ==============================
 
@@ -55,6 +95,9 @@ def init_db():
         rarity TEXT,
         category TEXT,
 
+        slot_key TEXT,
+        weapon_hands INTEGER,
+
         max_stack INTEGER,
         sell_price REAL,
 
@@ -69,6 +112,15 @@ def init_db():
     )
     """)
 
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS equipment_slots (
+        user_id INTEGER,
+        slot_key TEXT,
+        inventory_id INTEGER,
+        PRIMARY KEY (user_id, slot_key)
+    )
+    """)
+
     migrations = [
         ("users", "gold", "REAL DEFAULT 0"),
         ("users", "kills", "INTEGER DEFAULT 0"),
@@ -79,6 +131,8 @@ def init_db():
         ("inventory", "durability", "INTEGER DEFAULT NULL"),
 
         ("items", "category", "TEXT DEFAULT 'equipment'"),
+        ("items", "slot_key", "TEXT DEFAULT NULL"),
+        ("items", "weapon_hands", "INTEGER DEFAULT 1"),
         ("items", "max_stack", "INTEGER DEFAULT 1"),
         ("items", "sell_price", "REAL DEFAULT 0"),
         ("items", "bonus_sta", "INTEGER DEFAULT 0"),
@@ -129,47 +183,110 @@ def init_db():
 
 def seed_items():
     items = [
-        # id, name, type, rarity, category, max_stack, sell_price,
+        # id, name, type, rarity, category, slot_key, weapon_hands,
+        # max_stack, sell_price,
         # str, dex, int, wis, sta, pdef, mdef
 
-        # WEAPONS
-        (1, "⚪ Старий меч", "weapon", "common", "equipment", 1, 1.00, 1, 0, 0, 0, 0, 0, 0),
-        (2, "🟢 Залізний меч", "weapon", "uncommon", "equipment", 1, 3.00, 2, 0, 0, 0, 0, 0, 0),
-        (3, "🔵 Меч воїна", "weapon", "rare", "equipment", 1, 8.00, 4, 0, 0, 0, 0, 0, 0),
-        (4, "🟣 Епічний клинок", "weapon", "epic", "equipment", 1, 25.00, 7, 0, 0, 0, 0, 0, 0),
+        # ==============================
+        # MAIN HAND
+        # ==============================
+        (1, "⚪ Старий меч", "weapon", "common", "equipment", "main_hand", 1, 1, 1.00, 1, 0, 0, 0, 0, 0, 0),
+        (2, "🟢 Залізний меч", "weapon", "uncommon", "equipment", "main_hand", 1, 1, 3.00, 2, 0, 0, 0, 0, 0, 0),
+        (3, "🔵 Меч воїна", "weapon", "rare", "equipment", "main_hand", 1, 1, 8.00, 4, 0, 0, 0, 0, 0, 0),
+        (4, "🟣 Епічний клинок", "weapon", "epic", "equipment", "main_hand", 2, 1, 25.00, 7, 0, 0, 0, 0, 0, 0),
 
-        # ARMOR
-        (5, "⚪ Стара броня", "armor", "common", "equipment", 1, 1.00, 0, 0, 0, 1, 1, 2, 0),
-        (6, "🟢 Шкіряна броня", "armor", "uncommon", "equipment", 1, 3.00, 0, 1, 0, 2, 2, 4, 1),
-        (7, "🔵 Лицарська броня", "armor", "rare", "equipment", 1, 8.00, 0, 2, 0, 3, 4, 8, 2),
+        # ==============================
+        # OFF HAND
+        # ==============================
+        (8, "⚪ Деревʼяний щит", "offhand", "common", "equipment", "off_hand", 1, 1, 1.00, 0, 0, 0, 0, 1, 2, 0),
+        (9, "🟢 Малий круглий щит", "offhand", "uncommon", "equipment", "off_hand", 1, 1, 3.00, 0, 0, 0, 0, 2, 4, 0),
+        (10, "🔵 Рунічна сфера", "offhand", "rare", "equipment", "off_hand", 1, 1, 8.00, 0, 0, 1, 3, 0, 0, 5),
 
+        # ==============================
+        # HELMET
+        # ==============================
+        (11, "⚪ Старий шолом", "helmet", "common", "equipment", "helmet", 1, 1, 1.00, 0, 0, 0, 0, 1, 2, 0),
+        (12, "🟢 Шкіряний капюшон", "helmet", "uncommon", "equipment", "helmet", 1, 1, 3.00, 0, 1, 0, 1, 1, 3, 1),
+
+        # ==============================
+        # SHOULDERS
+        # ==============================
+        (13, "⚪ Потерті наплічники", "shoulders", "common", "equipment", "shoulders", 1, 1, 1.00, 0, 0, 0, 0, 1, 2, 0),
+        (14, "🟢 Наплічники слідопита", "shoulders", "uncommon", "equipment", "shoulders", 1, 1, 3.00, 0, 1, 0, 0, 2, 4, 0),
+
+        # ==============================
+        # CHEST
+        # ==============================
+        (5, "⚪ Стара броня", "armor", "common", "equipment", "chest", 1, 1, 1.00, 0, 0, 0, 1, 1, 2, 0),
+        (6, "🟢 Шкіряна броня", "armor", "uncommon", "equipment", "chest", 1, 1, 3.00, 0, 1, 0, 2, 2, 4, 1),
+        (7, "🔵 Лицарська броня", "armor", "rare", "equipment", "chest", 1, 1, 8.00, 0, 2, 0, 3, 4, 8, 2),
+
+        # ==============================
+        # GLOVES
+        # ==============================
+        (15, "⚪ Старі рукавиці", "gloves", "common", "equipment", "gloves", 1, 1, 1.00, 0, 0, 0, 0, 1, 1, 0),
+        (16, "🟢 Рукавиці мисливця", "gloves", "uncommon", "equipment", "gloves", 1, 1, 3.00, 1, 1, 0, 0, 1, 2, 0),
+
+        # ==============================
+        # LEGS
+        # ==============================
+        (17, "⚪ Старі поножі", "legs", "common", "equipment", "legs", 1, 1, 1.00, 0, 0, 0, 0, 1, 2, 0),
+        (18, "🟢 Шкіряні поножі", "legs", "uncommon", "equipment", "legs", 1, 1, 3.00, 0, 1, 0, 0, 2, 4, 0),
+
+        # ==============================
+        # BOOTS
+        # ==============================
+        (19, "⚪ Старі чоботи", "boots", "common", "equipment", "boots", 1, 1, 1.00, 0, 1, 0, 0, 0, 1, 0),
+        (20, "🟢 Чоботи слідопита", "boots", "uncommon", "equipment", "boots", 1, 1, 3.00, 0, 2, 0, 0, 1, 2, 0),
+
+        # ==============================
+        # NECKLACE
+        # ==============================
+        (21, "⚪ Простий амулет", "necklace", "common", "equipment", "necklace", 1, 1, 1.00, 0, 0, 0, 1, 0, 0, 2),
+        (22, "🟢 Амулет мудрості", "necklace", "uncommon", "equipment", "necklace", 1, 1, 3.00, 0, 0, 0, 3, 0, 0, 5),
+        (23, "🔵 Рунічне намисто", "necklace", "rare", "equipment", "necklace", 1, 1, 8.00, 0, 0, 1, 5, 0, 0, 10),
+
+        # ==============================
+        # RING
+        # ==============================
+        (24, "⚪ Мідне кільце", "ring", "common", "equipment", "ring", 1, 1, 1.00, 1, 0, 0, 0, 0, 0, 0),
+        (25, "🟢 Перстень спритності", "ring", "uncommon", "equipment", "ring", 1, 1, 3.00, 0, 3, 0, 0, 0, 0, 0),
+        (26, "🔵 Перстень сили", "ring", "rare", "equipment", "ring", 1, 1, 8.00, 5, 0, 0, 0, 0, 0, 0),
+
+        # ==============================
         # TRASH
-        (101, "🐾 Густа вовча шкура", "trash", "grey", "trash", 20, 0.50, 0, 0, 0, 0, 0, 0, 0),
-        (102, "🐗 Жорстка щетина", "trash", "grey", "trash", 20, 0.15, 0, 0, 0, 0, 0, 0, 0),
-        (103, "🦡 Борсучий жир", "trash", "grey", "trash", 20, 0.25, 0, 0, 0, 0, 0, 0, 0),
-        (104, "👹 Гоблінська сережка", "trash", "grey", "trash", 20, 0.35, 0, 0, 0, 0, 0, 0, 0),
-        (105, "🕷️ Липка павутина", "trash", "grey", "trash", 20, 0.60, 0, 0, 0, 0, 0, 0, 0),
-        (106, "💎 Тріснутий рунічний уламок", "trash", "grey", "trash", 20, 0.75, 0, 0, 0, 0, 0, 0, 0),
+        # ==============================
+        (101, "🐾 Густа вовча шкура", "trash", "grey", "trash", None, 1, 20, 0.50, 0, 0, 0, 0, 0, 0, 0),
+        (102, "🐗 Жорстка щетина", "trash", "grey", "trash", None, 1, 20, 0.15, 0, 0, 0, 0, 0, 0, 0),
+        (103, "🦡 Борсучий жир", "trash", "grey", "trash", None, 1, 20, 0.25, 0, 0, 0, 0, 0, 0, 0),
+        (104, "👹 Гоблінська сережка", "trash", "grey", "trash", None, 1, 20, 0.35, 0, 0, 0, 0, 0, 0, 0),
+        (105, "🕷️ Липка павутина", "trash", "grey", "trash", None, 1, 20, 0.60, 0, 0, 0, 0, 0, 0, 0),
+        (106, "💎 Тріснутий рунічний уламок", "trash", "grey", "trash", None, 1, 20, 0.75, 0, 0, 0, 0, 0, 0, 0),
 
+        # ==============================
         # POTIONS
-        (201, "🔴 Мале зілля здоров’я", "potion_hp", "common", "potion", 10, 1.00, 0, 0, 0, 0, 0, 0, 0),
-        (202, "🔵 Мале зілля мани", "potion_mp", "common", "potion", 10, 1.20, 0, 0, 0, 0, 0, 0, 0),
-        (203, "🔴 Середнє зілля здоров’я", "potion_hp_medium", "common", "potion", 10, 3.00, 0, 0, 0, 0, 0, 0, 0),
-        (204, "🔵 Середнє зілля мани", "potion_mp_medium", "common", "potion", 10, 3.60, 0, 0, 0, 0, 0, 0, 0),
+        # ==============================
+        (201, "🔴 Мале зілля здоров’я", "potion_hp", "common", "potion", None, 1, 10, 1.00, 0, 0, 0, 0, 0, 0, 0),
+        (202, "🔵 Мале зілля мани", "potion_mp", "common", "potion", None, 1, 10, 1.20, 0, 0, 0, 0, 0, 0, 0),
+        (203, "🔴 Середнє зілля здоров’я", "potion_hp_medium", "common", "potion", None, 1, 10, 3.00, 0, 0, 0, 0, 0, 0, 0),
+        (204, "🔵 Середнє зілля мани", "potion_mp_medium", "common", "potion", None, 1, 10, 3.60, 0, 0, 0, 0, 0, 0, 0),
 
+        # ==============================
         # RUNES
-        (301, "💎 Руна Сили I", "rune_str", "common", "rune", 5, 1.00, 1, 0, 0, 0, 0, 0, 0),
+        # ==============================
+        (301, "💎 Руна Сили I", "rune_str", "common", "rune", None, 1, 5, 1.00, 1, 0, 0, 0, 0, 0, 0),
     ]
 
     for item in items:
         cursor.execute("""
         INSERT OR REPLACE INTO items (
             id, name, type, rarity, category,
+            slot_key, weapon_hands,
             max_stack, sell_price,
             bonus_str, bonus_dex, bonus_int, bonus_wis, bonus_sta,
             pdef, mdef
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, item)
 
     conn.commit()
@@ -220,6 +337,197 @@ def create_user(user_id):
     ))
 
     conn.commit()
+
+    ensure_equipment_slots(user_id)
+    migrate_legacy_equipment_to_slots(user_id)
+
+
+# ==============================
+# ✅ EQUIPMENT SLOTS CORE
+# ==============================
+
+def ensure_equipment_slots(user_id):
+    for slot_key in SLOT_ORDER:
+        cursor.execute("""
+        INSERT OR IGNORE INTO equipment_slots (
+            user_id,
+            slot_key,
+            inventory_id
+        )
+        VALUES (?, ?, NULL)
+        """, (user_id, slot_key))
+
+    conn.commit()
+
+
+def migrate_legacy_equipment_to_slots(user_id):
+    cursor.execute("""
+    SELECT equipped_weapon, equipped_armor
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return
+
+    equipped_weapon, equipped_armor = row
+
+    if equipped_weapon:
+        cursor.execute("""
+        UPDATE equipment_slots
+        SET inventory_id=?
+        WHERE user_id=? AND slot_key='main_hand'
+        """, (equipped_weapon, user_id))
+
+    if equipped_armor:
+        cursor.execute("""
+        UPDATE equipment_slots
+        SET inventory_id=?
+        WHERE user_id=? AND slot_key='chest'
+        """, (equipped_armor, user_id))
+
+    conn.commit()
+
+
+def get_equipped_slot(user_id, slot_key):
+    ensure_equipment_slots(user_id)
+
+    cursor.execute("""
+    SELECT inventory_id
+    FROM equipment_slots
+    WHERE user_id=? AND slot_key=?
+    """, (user_id, slot_key))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return None
+
+    return row[0]
+
+
+def set_equipped_slot(user_id, slot_key, inventory_id):
+    ensure_equipment_slots(user_id)
+
+    cursor.execute("""
+    UPDATE equipment_slots
+    SET inventory_id=?
+    WHERE user_id=? AND slot_key=?
+    """, (inventory_id, user_id, slot_key))
+
+    # legacy compatibility
+    if slot_key == "main_hand":
+        cursor.execute("""
+        UPDATE users
+        SET equipped_weapon=?
+        WHERE user_id=?
+        """, (inventory_id, user_id))
+
+    if slot_key == "chest":
+        cursor.execute("""
+        UPDATE users
+        SET equipped_armor=?
+        WHERE user_id=?
+        """, (inventory_id, user_id))
+
+    conn.commit()
+
+
+def unequip_slot(user_id, slot_key):
+    ensure_equipment_slots(user_id)
+
+    cursor.execute("""
+    UPDATE equipment_slots
+    SET inventory_id=NULL
+    WHERE user_id=? AND slot_key=?
+    """, (user_id, slot_key))
+
+    # legacy compatibility
+    if slot_key == "main_hand":
+        cursor.execute("""
+        UPDATE users
+        SET equipped_weapon=NULL
+        WHERE user_id=?
+        """, (user_id,))
+
+    if slot_key == "chest":
+        cursor.execute("""
+        UPDATE users
+        SET equipped_armor=NULL
+        WHERE user_id=?
+        """, (user_id,))
+
+    conn.commit()
+
+
+def get_all_equipped_slots(user_id):
+    ensure_equipment_slots(user_id)
+
+    cursor.execute("""
+    SELECT slot_key, inventory_id
+    FROM equipment_slots
+    WHERE user_id=?
+    """, (user_id,))
+
+    rows = cursor.fetchall()
+
+    result = {}
+
+    for slot_key, inventory_id in rows:
+        result[slot_key] = inventory_id
+
+    for slot_key in SLOT_ORDER:
+        result.setdefault(slot_key, None)
+
+    return result
+
+
+def get_all_equipped_items(user_id):
+    equipped_slots = get_all_equipped_slots(user_id)
+
+    result = []
+
+    for slot_key in SLOT_ORDER:
+        inventory_id = equipped_slots.get(slot_key)
+
+        item = None
+
+        if inventory_id:
+            item = get_item_by_inventory_id_full(inventory_id)
+
+        result.append({
+            "slot_key": slot_key,
+            "slot_name": EQUIPMENT_SLOTS[slot_key],
+            "inventory_id": inventory_id,
+            "item": item
+        })
+
+    return result
+
+
+def get_equipped_inventory_ids(user_id):
+    # compatibility function for old handlers
+    main_hand = get_equipped_slot(user_id, "main_hand")
+    chest = get_equipped_slot(user_id, "chest")
+    return main_hand, chest
+
+
+def is_inventory_item_equipped(user_id, inventory_id):
+    equipped_slots = get_all_equipped_slots(user_id)
+
+    return inventory_id in equipped_slots.values()
+
+
+def find_equipped_slot_by_inventory_id(user_id, inventory_id):
+    equipped_slots = get_all_equipped_slots(user_id)
+
+    for slot_key, equipped_inventory_id in equipped_slots.items():
+        if equipped_inventory_id == inventory_id:
+            return slot_key
+
+    return None
 
 
 # ==============================
@@ -287,6 +595,8 @@ def get_item_full(item_id):
         type,
         rarity,
         category,
+        slot_key,
+        weapon_hands,
         max_stack,
         sell_price,
         bonus_str,
@@ -361,6 +671,8 @@ def add_item(user_id, item_id, quantity=1):
         type_,
         rarity,
         category,
+        slot_key,
+        weapon_hands,
         max_stack,
         sell_price,
         b_str,
@@ -385,10 +697,12 @@ def add_item(user_id, item_id, quantity=1):
                 lost += 1
                 continue
 
+            durability = 100 if category == "equipment" else None
+
             cursor.execute("""
             INSERT INTO inventory (user_id, item_id, quantity, durability)
             VALUES (?, ?, ?, ?)
-            """, (user_id, item_id, 1, 100))
+            """, (user_id, item_id, 1, durability))
 
             added += 1
 
@@ -476,6 +790,7 @@ def get_inventory(user_id):
 
 
 def get_inventory_detailed(user_id):
+    # compatibility return shape: 17 fields
     cursor.execute("""
     SELECT
         inventory.id,
@@ -505,6 +820,7 @@ def get_inventory_detailed(user_id):
 
 
 def get_item_by_inventory_id(inventory_id):
+    # compatibility return shape: 17 fields
     cursor.execute("""
     SELECT
         inventory.id,
@@ -513,6 +829,36 @@ def get_item_by_inventory_id(inventory_id):
         items.type,
         items.rarity,
         items.category,
+        inventory.quantity,
+        items.max_stack,
+        inventory.durability,
+        items.bonus_str,
+        items.bonus_dex,
+        items.bonus_int,
+        items.bonus_wis,
+        items.bonus_sta,
+        items.pdef,
+        items.mdef,
+        items.sell_price
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.id=?
+    """, (inventory_id,))
+
+    return cursor.fetchone()
+
+
+def get_item_by_inventory_id_full(inventory_id):
+    cursor.execute("""
+    SELECT
+        inventory.id,
+        inventory.item_id,
+        items.name,
+        items.type,
+        items.rarity,
+        items.category,
+        items.slot_key,
+        items.weapon_hands,
         inventory.quantity,
         items.max_stack,
         inventory.durability,
@@ -605,23 +951,28 @@ def find_first_item_stack_by_type(user_id, item_type):
 # ✅ EQUIPMENT
 # ==============================
 
-def get_equipped_inventory_ids(user_id):
-    cursor.execute("""
-    SELECT equipped_weapon, equipped_armor
-    FROM users
-    WHERE user_id=?
-    """, (user_id,))
+def get_main_hand_item(user_id):
+    main_hand_id = get_equipped_slot(user_id, "main_hand")
 
-    row = cursor.fetchone()
+    if not main_hand_id:
+        return None
 
-    if not row:
-        return None, None
+    return get_item_by_inventory_id_full(main_hand_id)
 
-    return row[0], row[1]
+
+def is_main_hand_two_handed(user_id):
+    item = get_main_hand_item(user_id)
+
+    if not item:
+        return False
+
+    weapon_hands = item[7]
+
+    return weapon_hands == 2
 
 
 def equip_inventory_item(user_id, inventory_id):
-    item = get_item_by_inventory_id(inventory_id)
+    item = get_item_by_inventory_id_full(inventory_id)
 
     if not item:
         return "❌ Предмет не знайдено"
@@ -633,6 +984,8 @@ def equip_inventory_item(user_id, inventory_id):
         type_,
         rarity,
         category,
+        slot_key,
+        weapon_hands,
         quantity,
         max_stack,
         durability,
@@ -649,61 +1002,34 @@ def equip_inventory_item(user_id, inventory_id):
     if category != "equipment":
         return "❌ Цей предмет не можна одягти"
 
-    if type_ == "weapon":
-        cursor.execute("""
-        UPDATE users
-        SET equipped_weapon=?
-        WHERE user_id=?
-        """, (inventory_id, user_id))
+    if not slot_key:
+        return "❌ Для цього предмета не вказано слот"
 
-    elif type_ == "armor":
-        cursor.execute("""
-        UPDATE users
-        SET equipped_armor=?
-        WHERE user_id=?
-        """, (inventory_id, user_id))
+    if slot_key not in EQUIPMENT_SLOTS:
+        return "❌ Невідомий слот екіпірування"
 
-    else:
-        return "❌ Цей предмет не можна одягти"
+    # Якщо пробуємо вдягнути off_hand, але main_hand дворучний
+    if slot_key == "off_hand" and is_main_hand_two_handed(user_id):
+        return "❌ Неможливо: дворучна зброя блокує другу руку"
 
-    conn.commit()
+    # Якщо вдягаємо дворучну зброю — очищаємо off_hand
+    if slot_key == "main_hand" and weapon_hands == 2:
+        unequip_slot(user_id, "off_hand")
+
+    set_equipped_slot(user_id, slot_key, inventory_id)
 
     return f"✅ Одягнуто: {name}"
 
 
 def unequip_inventory_item(user_id, inventory_id):
-    cursor.execute("""
-    SELECT equipped_weapon, equipped_armor
-    FROM users
-    WHERE user_id=?
-    """, (user_id,))
+    slot_key = find_equipped_slot_by_inventory_id(user_id, inventory_id)
 
-    row = cursor.fetchone()
+    if not slot_key:
+        return "❌ Цей предмет не вдягнений"
 
-    if not row:
-        return "❌ Персонажа не знайдено"
+    unequip_slot(user_id, slot_key)
 
-    equipped_weapon, equipped_armor = row
-
-    if equipped_weapon == inventory_id:
-        cursor.execute("""
-        UPDATE users
-        SET equipped_weapon=NULL
-        WHERE user_id=?
-        """, (user_id,))
-        conn.commit()
-        return "✅ Зброю знято"
-
-    if equipped_armor == inventory_id:
-        cursor.execute("""
-        UPDATE users
-        SET equipped_armor=NULL
-        WHERE user_id=?
-        """, (user_id,))
-        conn.commit()
-        return "✅ Обладунок знято"
-
-    return "❌ Цей предмет не вдягнений"
+    return f"✅ Знято зі слота: {EQUIPMENT_SLOTS.get(slot_key, slot_key)}"
 
 
 def equip_item(user_id, item_id):
@@ -728,7 +1054,7 @@ def equip_item(user_id, item_id):
 # ==============================
 
 def get_item_bonuses(user_id):
-    equipped_weapon, equipped_armor = get_equipped_inventory_ids(user_id)
+    equipped_items = get_all_equipped_items(user_id)
 
     total_str = 0
     total_dex = 0
@@ -736,11 +1062,8 @@ def get_item_bonuses(user_id):
     total_wis = 0
     total_sta = 0
 
-    for inventory_id in [equipped_weapon, equipped_armor]:
-        if not inventory_id:
-            continue
-
-        item = get_item_by_inventory_id(inventory_id)
+    for equipped in equipped_items:
+        item = equipped["item"]
 
         if not item:
             continue
@@ -752,6 +1075,8 @@ def get_item_bonuses(user_id):
             type_,
             rarity,
             category,
+            slot_key,
+            weapon_hands,
             quantity,
             max_stack,
             durability,
@@ -778,16 +1103,13 @@ def get_item_bonuses(user_id):
 
 
 def get_equipped_item_defenses(user_id):
-    equipped_weapon, equipped_armor = get_equipped_inventory_ids(user_id)
+    equipped_items = get_all_equipped_items(user_id)
 
     total_pdef = 0
     total_mdef = 0
 
-    for inventory_id in [equipped_weapon, equipped_armor]:
-        if not inventory_id:
-            continue
-
-        item = get_item_by_inventory_id(inventory_id)
+    for equipped in equipped_items:
+        item = equipped["item"]
 
         if not item:
             continue
@@ -799,6 +1121,8 @@ def get_equipped_item_defenses(user_id):
             type_,
             rarity,
             category,
+            slot_key,
+            weapon_hands,
             quantity,
             max_stack,
             durability,
@@ -1145,14 +1469,6 @@ def buy_item_for_gold(user_id, item_id, price, quantity=1):
 # ✅ BLACKSMITH / REPAIR SYSTEM
 # ==============================
 
-RARITY_REPAIR_MULTIPLIERS = {
-    "common": 1.0,
-    "uncommon": 3.0,
-    "rare": 10.0,
-    "epic": 25.0
-}
-
-
 def get_rarity_repair_multiplier(rarity):
     return RARITY_REPAIR_MULTIPLIERS.get(rarity, 1.0)
 
@@ -1171,26 +1487,21 @@ def calculate_repair_cost(durability, rarity):
     return round((100 - durability) * multiplier * 0.05, 2)
 
 
-def is_inventory_item_equipped(user_id, inventory_id):
-    equipped_weapon, equipped_armor = get_equipped_inventory_ids(user_id)
-
-    return inventory_id in [equipped_weapon, equipped_armor]
-
-
 def get_equipped_items_for_repair(user_id):
-    equipped_weapon, equipped_armor = get_equipped_inventory_ids(user_id)
+    equipped_items = get_all_equipped_items(user_id)
 
-    equipped_items = []
+    result = []
 
-    slots = [
-        ("⚔️ Зброя", equipped_weapon),
-        ("🛡 Обладунок", equipped_armor)
-    ]
+    for equipped in equipped_items:
+        slot_key = equipped["slot_key"]
+        slot_name = equipped["slot_name"]
+        inventory_id = equipped["inventory_id"]
+        item = equipped["item"]
 
-    for slot_name, inventory_id in slots:
         if not inventory_id:
-            equipped_items.append({
+            result.append({
                 "slot": slot_name,
+                "slot_key": slot_key,
                 "inventory_id": None,
                 "name": "Порожньо",
                 "rarity": None,
@@ -1200,11 +1511,10 @@ def get_equipped_items_for_repair(user_id):
             })
             continue
 
-        item = get_item_by_inventory_id(inventory_id)
-
         if not item:
-            equipped_items.append({
+            result.append({
                 "slot": slot_name,
+                "slot_key": slot_key,
                 "inventory_id": inventory_id,
                 "name": "Предмет не знайдено",
                 "rarity": None,
@@ -1221,6 +1531,8 @@ def get_equipped_items_for_repair(user_id):
             type_,
             rarity,
             category,
+            item_slot_key,
+            weapon_hands,
             quantity,
             max_stack,
             durability,
@@ -1239,8 +1551,9 @@ def get_equipped_items_for_repair(user_id):
 
         repair_cost = calculate_repair_cost(durability, rarity)
 
-        equipped_items.append({
+        result.append({
             "slot": slot_name,
+            "slot_key": slot_key,
             "inventory_id": inv_id,
             "name": name,
             "rarity": rarity,
@@ -1249,7 +1562,7 @@ def get_equipped_items_for_repair(user_id):
             "is_broken": durability <= 0
         })
 
-    return equipped_items
+    return result
 
 
 def get_total_repair_cost(user_id):
@@ -1269,7 +1582,7 @@ def repair_equipped_item(user_id, inventory_id):
             "message": "❌ Цей предмет не вдягнений."
         }
 
-    item = get_item_by_inventory_id(inventory_id)
+    item = get_item_by_inventory_id_full(inventory_id)
 
     if not item:
         return {
@@ -1284,6 +1597,8 @@ def repair_equipped_item(user_id, inventory_id):
         type_,
         rarity,
         category,
+        slot_key,
+        weapon_hands,
         quantity,
         max_stack,
         durability,
@@ -1447,17 +1762,15 @@ def repair_all_equipped(user_id):
 
 
 def damage_equipped_items_on_death(user_id, amount=10):
-    equipped_weapon, equipped_armor = get_equipped_inventory_ids(user_id)
+    equipped_items = get_all_equipped_items(user_id)
 
     damaged = []
 
-    for inventory_id in [equipped_weapon, equipped_armor]:
-        if not inventory_id:
-            continue
+    for equipped in equipped_items:
+        inventory_id = equipped["inventory_id"]
+        item = equipped["item"]
 
-        item = get_item_by_inventory_id(inventory_id)
-
-        if not item:
+        if not inventory_id or not item:
             continue
 
         (
@@ -1467,6 +1780,8 @@ def damage_equipped_items_on_death(user_id, amount=10):
             type_,
             rarity,
             category,
+            slot_key,
+            weapon_hands,
             quantity,
             max_stack,
             durability,

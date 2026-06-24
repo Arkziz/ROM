@@ -98,6 +98,8 @@ def build_blacksmith_text(user_id):
 
     kb = types.InlineKeyboardMarkup()
 
+    damaged_count = 0
+
     for item in equipped_items:
         slot = item["slot"]
         name = item["name"]
@@ -119,6 +121,8 @@ def build_blacksmith_text(user_id):
         )
 
         if repair_cost > 0:
+            damaged_count += 1
+
             kb.add(types.InlineKeyboardButton(
                 text=f"🛠️ Ремонт: {name} — {repair_cost:.2f} 🪙",
                 callback_data=f"repair_one_{inventory_id}"
@@ -129,7 +133,7 @@ def build_blacksmith_text(user_id):
         f"💰 Твій баланс: {gold:.2f} 🪙\n\n"
     )
 
-    if total_cost <= 0:
+    if damaged_count <= 0:
         text += "✅ Усе спорядження вже в ідеальному стані."
     elif gold < total_cost:
         text += (

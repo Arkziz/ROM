@@ -1,13 +1,17 @@
 from telebot import types
 
 from db import (
+    EQUIPMENT_SLOTS,
     get_inventory_detailed,
     get_equipped_inventory_ids,
     get_item_by_inventory_id,
+    get_item_by_inventory_id_full,
     equip_inventory_item,
     unequip_inventory_item,
     get_inventory_used_slots,
-    get_bag_capacity
+    get_bag_capacity,
+    is_inventory_item_equipped,
+    find_equipped_slot_by_inventory_id
 )
 
 from keyboards import profile_kb
@@ -42,6 +46,13 @@ def format_item_bonuses(b_str, b_dex, b_int, b_wis, b_sta, pdef, mdef):
     return bonuses
 
 
+def get_slot_label(slot_key):
+    if not slot_key:
+        return "Немає слота"
+
+    return EQUIPMENT_SLOTS.get(slot_key, slot_key)
+
+
 def build_inventory_list(user_id, page=0):
     items = get_inventory_detailed(user_id)
 
@@ -68,8 +79,6 @@ def build_inventory_list(user_id, page=0):
     start = page * ITEMS_PER_PAGE
     end = start + ITEMS_PER_PAGE
     page_items = items[start:end]
-
-    eq_weapon, eq_armor = get_equipped_inventory_ids(user_id)
 
     kb = types.InlineKeyboardMarkup()
 
@@ -102,25 +111,23 @@ def build_inventory_list(user_id, page=0):
             sell_price
         ) = item
 
-        equipped = (
-            (type_ == "weapon" and inv_id == eq_weapon) or
-            (type_ == "armor" and inv_id == eq_armor)
-        )
+        equipped = is_inventory_item_equipped(user_id, inv_id)
 
         label = name
 
-        if max_stack > 1:
+        if max_stack and max_stack > 1:
             label += f" x{quantity}"
 
         if equipped:
-            label += " ✅"
+            slot_key = find_equipped_slot_by_inventory_id(user_id, inv_id)
+            slot_label = get_slot_label(slot_key)
+            label += f" ✅ {slot_label}"
 
         kb.add(types.InlineKeyboardButton(
             text=label,
             callback_data=f"item_{inv_id}_{page}"
         ))
 
-    # Навігація сторінками
     nav_buttons = []
 
     if page > 0:
@@ -142,9 +149,9 @@ def build_inventory_list(user_id, page=0):
 
 
 def build_item_details(user_id, inventory_id, page=0):
-    item = get_item_by_inventory_id(inventory_id)
+    item_full = get_item_by_inventory_id_full(inventory_id)
 
-    if not item:
+    if not item_full:
         return "❌ Предмет не знайдено", None
 
     (
@@ -154,6 +161,8 @@ def build_item_details(user_id, inventory_id, page=0):
         type_,
         rarity,
         category,
+        slot_key,
+        weapon_hands,
         quantity,
         max_stack,
         durability,
@@ -165,17 +174,19 @@ def build_item_details(user_id, inventory_id, page=0):
         pdef,
         mdef,
         sell_price
-    ) = item
+    ) = item_full
 
-    eq_weapon, eq_armor = get_equipped_inventory_ids(user_id)
-
-    equipped = (
-        (type_ == "weapon" and inv_id == eq_weapon) or
-        (type_ == "armor" and inv_id == eq_armor)
-    )
+    equipped = is_inventory_item_equipped(user_id, inv_id)
+    equipped_slot_key = find_equipped_slot_by_inventory_id(user_id, inv_id)
 
     bonuses = format_item_bonuses(
-        b_str, b_dex, b_int, b_wis, b_sta, pdef, mdef
+        b_str,
+        b_dex,
+        b_int,
+        b_wis,
+        b_sta,
+        pdef,
+        mdef
     )
 
     kb = types.InlineKeyboardMarkup()
@@ -229,34 +240,52 @@ def build_item_details(user_id, inventory_id, page=0):
     # ==============================
 
     elif category == "equipment":
-        text += "🧰 Тип: спорядження\n"
+        slot_label = get_slot_label(slot_key)
 
-        if type_ == "weapon":
-            text += "⚔️ Слот: зброя\n"
-        elif type_ == "armor":
-            text += "🛡 Слот: обладунок\n"
+        text += (
+            f"🧰 Тип: спорядження\n"
+            f"🎯 Слот: {slot_label}\n"
+        )
+
+        if slot_key == "main_hand":
+            if weapon_hands == 2:
+                text += "👐 Тип зброї: дворучна\n"
+                text += "⚠️ Дворучна зброя блокує другу руку.\n"
+            else:
+                text += "✋ Тип зброї: одноручна\n"
 
         if durability is not None:
-            text += f"🧱 Міцність: {durability}/100\n"
+            broken_text = " ⚠️ [ЗЛАМАНО]" if durability <= 0 else ""
+            text += f"🧱 Міцність: {durability}/100{broken_text}\n"
 
         if bonuses:
             text += "\n📊 Бонуси:\n"
+
             for bonus in bonuses:
                 text += f"• {bonus}\n"
         else:
             text += "\n📊 Бонуси: немає\n"
 
+        if durability is not None and durability <= 0:
+            text += "\n⚠️ Предмет зламаний і не дає бонусів до ремонту.\n"
+
         if equipped:
-            text += "\n✅ Зараз вдягнено."
+            equipped_slot_label = get_slot_label(equipped_slot_key)
+            text += f"\n✅ Зараз вдягнено у слот: {equipped_slot_label}"
+
             kb.add(types.InlineKeyboardButton(
                 text="❌ Зняти",
                 callback_data=f"unequip_{inv_id}_{page}"
             ))
         else:
             kb.add(types.InlineKeyboardButton(
-                text="✅ Вдягнути",
+                text=f"✅ Вдягнути у слот: {slot_label}",
                 callback_data=f"equip_{inv_id}_{page}"
             ))
+
+    # ==============================
+    # OTHER
+    # ==============================
 
     else:
         text += (
