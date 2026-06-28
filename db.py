@@ -1185,24 +1185,125 @@ def get_player_stats(user_id):
 # ✅ EXP / GOLD
 # ==============================
 
+# EXP за моба свого рівня.
+# Це базова шкала, під яку рахується вся прогресія.
+BASE_EXP_BY_LEVEL = {
+    1: 10,
+    2: 12,
+    3: 15,
+    4: 18,
+    5: 25,
+    6: 30,
+    7: 35,
+    8: 45,
+    9: 60,
+    10: 65,
+    11: 75,
+    12: 85,
+    13: 95,
+    14: 110,
+    15: 120,
+    16: 135,
+    17: 150,
+    18: 170,
+    19: 190,
+    20: 220,
+    21: 240,
+    22: 270,
+    23: 300,
+    24: 340,
+    25: 380,
+    26: 420,
+    27: 460,
+    28: 520,
+    29: 600,
+    30: 600
+}
+
+
+# Скільки "умовних мобів" потрібно на перехід між рівнями.
+CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL = {
+    1: 50,
+    2: 150,
+    3: 300,
+    4: 500,
+    5: 1200,
+    6: 1800,
+    7: 2500,
+    8: 3500,
+    9: 4500,
+    10: 5000,
+    11: 5500,
+    12: 6000,
+    13: 6000,
+    14: 6000,
+    15: 7000,
+    16: 7000,
+    17: 7000,
+    18: 8000,
+    19: 8000,
+    20: 8500,
+    21: 8500,
+    22: 9500,
+    23: 9500,
+    24: 9500,
+    25: 10500,
+    26: 10500,
+    27: 10500,
+    28: 12000,
+    29: 12000,
+    30: 14000
+}
+
+
+CONTRACT_MOBS_EQUIVALENT = 20
+
+
+def get_base_exp_for_level(level):
+    """
+    EXP за моба рівня level.
+    Для 1–30 використовується ручна таблиця.
+    Після 30 рівня — м'яке масштабування.
+    """
+
+    level = int(level)
+
+    if level in BASE_EXP_BY_LEVEL:
+        return BASE_EXP_BY_LEVEL[level]
+
+    if level > 30:
+        return int(BASE_EXP_BY_LEVEL[30] * (1.12 ** (level - 30)))
+
+    return BASE_EXP_BY_LEVEL[1]
+
+
+def get_contract_exp_for_level(level):
+    """
+    EXP за 1 щоденний контракт.
+    Затверджено: 1 контракт = 20 умовних мобів поточного рівня.
+    """
+
+    return get_base_exp_for_level(level) * CONTRACT_MOBS_EQUIVALENT
+
+
 def get_exp_to_next_level(level):
-    exp_table = {
-        1: 500,
-        2: 900,
-        3: 1500,
-        4: 2400,
-        5: 3600,
-        6: 5200,
-        7: 7500,
-        8: 10500,
-        9: 14500,
-        10: 20000
-    }
+    """
+    EXP для переходу з level на level + 1.
+    Формула:
+    EXP_to_next = base_exp_for_level * conditional_mobs_to_next
+    """
 
-    if level in exp_table:
-        return exp_table[level]
+    level = int(level)
 
-    return int(20000 * (1.35 ** (level - 10)))
+    base_exp = get_base_exp_for_level(level)
+
+    if level in CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL:
+        mobs_required = CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL[level]
+        return int(base_exp * mobs_required)
+
+    # Після 30 рівня — тимчасова м'яка прогресія.
+    mobs_required = int(CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL[30] * (1.10 ** (level - 30)))
+    return int(base_exp * mobs_required)
 
 
 def add_exp(user_id, amount):
@@ -1320,8 +1421,6 @@ def get_user_progress(user_id):
         "gold": gold,
         "kills": kills
     }
-
-
 # ==============================
 # ✅ SELL TRASH
 # ==============================
@@ -2017,3 +2116,466 @@ def set_current_hp(user_id, hp):
     """, (hp, user_id))
 
     conn.commit()
+
+# ==============================
+# ✅ MERCENARY CONTRACTS SYSTEM
+# ==============================
+
+CONTRACTS_UNLOCK_LEVEL = 5
+DAILY_CONTRACT_LIMIT = 5
+CONTRACT_TARGET_KILLS = 10
+CONTRACT_MOBS_EQUIVALENT = 20
+
+
+def get_today_str():
+    from datetime import date
+    return date.today().isoformat()
+
+
+def init_contract_system():
+    """
+    Лінива ініціалізація системи контрактів.
+    Викликається з функцій контрактів, тому не потребує окремої міграції вручну.
+    """
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS user_active_contracts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        created_date TEXT,
+        player_level INTEGER,
+        target_min_level INTEGER,
+        target_max_level INTEGER,
+        target_kills INTEGER,
+        current_kills INTEGER,
+        reward_exp INTEGER
+    )
+    """)
+
+    migrations = [
+        ("users", "daily_contracts_completed", "INTEGER DEFAULT 0"),
+        ("users", "daily_contract_date", "TEXT DEFAULT ''"),
+    ]
+
+    for table, column, column_type in migrations:
+        try:
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
+
+    conn.commit()
+
+
+def reset_daily_contracts_if_needed(user_id):
+    init_contract_system()
+
+    today = get_today_str()
+
+    cursor.execute("""
+    SELECT daily_contract_date
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return
+
+    current_date = row[0] or ""
+
+    if current_date != today:
+        cursor.execute("""
+        UPDATE users
+        SET daily_contracts_completed=0,
+            daily_contract_date=?
+        WHERE user_id=?
+        """, (today, user_id))
+
+        cursor.execute("""
+        DELETE FROM user_active_contracts
+        WHERE user_id=?
+        """, (user_id,))
+
+        conn.commit()
+
+
+def get_active_contract(user_id):
+    reset_daily_contracts_if_needed(user_id)
+
+    cursor.execute("""
+    SELECT
+        id,
+        user_id,
+        created_date,
+        player_level,
+        target_min_level,
+        target_max_level,
+        target_kills,
+        current_kills,
+        reward_exp
+    FROM user_active_contracts
+    WHERE user_id=?
+    ORDER BY id DESC
+    LIMIT 1
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return None
+
+    (
+        contract_id,
+        row_user_id,
+        created_date,
+        player_level,
+        target_min_level,
+        target_max_level,
+        target_kills,
+        current_kills,
+        reward_exp
+    ) = row
+
+    return {
+        "id": contract_id,
+        "user_id": row_user_id,
+        "created_date": created_date,
+        "player_level": player_level,
+        "target_min_level": target_min_level,
+        "target_max_level": target_max_level,
+        "target_kills": target_kills,
+        "current_kills": current_kills,
+        "reward_exp": reward_exp
+    }
+
+
+def get_contract_status(user_id):
+    reset_daily_contracts_if_needed(user_id)
+
+    cursor.execute("""
+    SELECT level, daily_contracts_completed
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "exists": False,
+            "message": "❌ Персонажа не знайдено"
+        }
+
+    level, completed_today = row
+    completed_today = completed_today or 0
+
+    active_contract = get_active_contract(user_id)
+
+    return {
+        "exists": True,
+        "level": level,
+        "unlocked": level >= CONTRACTS_UNLOCK_LEVEL,
+        "completed_today": completed_today,
+        "daily_limit": DAILY_CONTRACT_LIMIT,
+        "active_contract": active_contract
+    }
+
+
+def create_daily_contract(user_id):
+    reset_daily_contracts_if_needed(user_id)
+
+    status = get_contract_status(user_id)
+
+    if not status["exists"]:
+        return {
+            "success": False,
+            "message": "❌ Персонажа не знайдено"
+        }
+
+    level = status["level"]
+
+    if level < CONTRACTS_UNLOCK_LEVEL:
+        return {
+            "success": False,
+            "message": (
+                f"🔒 Контракти відкриються з {CONTRACTS_UNLOCK_LEVEL} рівня.\n"
+                f"Твій рівень: {level}"
+            )
+        }
+
+    if status["completed_today"] >= DAILY_CONTRACT_LIMIT:
+        return {
+            "success": False,
+            "message": (
+                f"📜 Ліміт контрактів на сьогодні виконано.\n"
+                f"✅ Виконано: {status['completed_today']}/{DAILY_CONTRACT_LIMIT}"
+            )
+        }
+
+    if status["active_contract"]:
+        return {
+            "success": False,
+            "message": "📜 У тебе вже є активний контракт."
+        }
+
+    target_min_level = max(1, level - 1)
+    target_max_level = level + 1
+    target_kills = CONTRACT_TARGET_KILLS
+    reward_exp = get_contract_exp_for_level(level)
+
+    cursor.execute("""
+    INSERT INTO user_active_contracts (
+        user_id,
+        created_date,
+        player_level,
+        target_min_level,
+        target_max_level,
+        target_kills,
+        current_kills,
+        reward_exp
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        user_id,
+        get_today_str(),
+        level,
+        target_min_level,
+        target_max_level,
+        target_kills,
+        0,
+        reward_exp
+    ))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": (
+            f"📜 Контракт прийнято!\n\n"
+            f"🎯 Завдання:\n"
+            f"Вбий {target_kills} мобів рівня {target_min_level}–{target_max_level}.\n\n"
+            f"✨ Нагорода: {reward_exp} EXP"
+        )
+    }
+
+
+def abandon_active_contract(user_id):
+    reset_daily_contracts_if_needed(user_id)
+
+    active_contract = get_active_contract(user_id)
+
+    if not active_contract:
+        return {
+            "success": False,
+            "message": "📜 У тебе немає активного контракту."
+        }
+
+    cursor.execute("""
+    DELETE FROM user_active_contracts
+    WHERE user_id=?
+    """, (user_id,))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": "📜 Активний контракт скасовано."
+    }
+
+
+def process_contract_progress_on_kill(user_id, mob):
+    """
+    Викликається після перемоги над мобом.
+
+    Якщо є активний контракт і рівень моба входить у діапазон,
+    прогрес контракту збільшується на 1.
+
+    Якщо контракт завершено:
+    - видається EXP;
+    - збільшується daily_contracts_completed;
+    - активний контракт видаляється.
+    """
+
+    reset_daily_contracts_if_needed(user_id)
+
+    active_contract = get_active_contract(user_id)
+
+    if not active_contract:
+        return {
+            "updated": False,
+            "completed": False,
+            "message": None
+        }
+
+    mob_level = int(mob.get("level", active_contract["player_level"]))
+
+    if mob_level < active_contract["target_min_level"] or mob_level > active_contract["target_max_level"]:
+        return {
+            "updated": False,
+            "completed": False,
+            "message": None
+        }
+
+    new_progress = active_contract["current_kills"] + 1
+
+    if new_progress >= active_contract["target_kills"]:
+        reward_exp = active_contract["reward_exp"]
+
+        exp_result = add_exp(user_id, reward_exp)
+
+        cursor.execute("""
+        UPDATE users
+        SET daily_contracts_completed = daily_contracts_completed + 1
+        WHERE user_id=?
+        """, (user_id,))
+
+        cursor.execute("""
+        DELETE FROM user_active_contracts
+        WHERE id=?
+        """, (active_contract["id"],))
+
+        conn.commit()
+
+        message = (
+            f"📜 Контракт виконано!\n"
+            f"✅ Прогрес: {active_contract['target_kills']}/{active_contract['target_kills']}\n"
+            f"✨ Нагорода контракту: +{reward_exp} EXP"
+        )
+
+        if exp_result and exp_result.get("level_ups", 0) > 0:
+            message += f"\n🏆 Новий рівень: {exp_result['level']}!"
+
+        return {
+            "updated": True,
+            "completed": True,
+            "reward_exp": reward_exp,
+            "exp_result": exp_result,
+            "message": message
+        }
+
+    cursor.execute("""
+    UPDATE user_active_contracts
+    SET current_kills=?
+    WHERE id=?
+    """, (new_progress, active_contract["id"]))
+
+    conn.commit()
+
+    return {
+        "updated": True,
+        "completed": False,
+        "message": (
+            f"📜 Контракт: {new_progress}/{active_contract['target_kills']}"
+        )
+    }
+
+# ==============================
+# ✅ DEV / TEST LEVEL TOOLS
+# ==============================
+
+def set_player_level_for_test(user_id, target_level):
+    """
+    DEV-функція для тестування.
+    Встановлює рівень персонажа вручну.
+
+    Правила:
+    - level = target_level
+    - exp = 0
+    - базові характеристики = 10 + (level - 1)
+    - max_hp перераховується
+    - hp відновлюється до max_hp
+    - інвентар, золото, екіпірування не чіпає
+    """
+
+    try:
+        target_level = int(target_level)
+    except Exception:
+        return {
+            "success": False,
+            "message": "❌ Рівень має бути числом."
+        }
+
+    if target_level < 1:
+        target_level = 1
+
+    if target_level > 30:
+        target_level = 30
+
+    cursor.execute("""
+    SELECT user_id
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "success": False,
+            "message": "❌ Персонажа не знайдено. Спочатку натисни /start."
+        }
+
+    base_stat = 10 + (target_level - 1)
+
+    cursor.execute("""
+    UPDATE users
+    SET
+        level=?,
+        exp=0,
+        str=?,
+        dex=?,
+        intelligence=?,
+        wis=?,
+        sta=?
+    WHERE user_id=?
+    """, (
+        target_level,
+        base_stat,
+        base_stat,
+        base_stat,
+        base_stat,
+        base_stat,
+        user_id
+    ))
+
+    conn.commit()
+
+    new_max_hp = get_max_hp(user_id)
+
+    cursor.execute("""
+    UPDATE users
+    SET
+        max_hp=?,
+        hp=?
+    WHERE user_id=?
+    """, (
+        new_max_hp,
+        new_max_hp,
+        user_id
+    ))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "level": target_level,
+        "base_stat": base_stat,
+        "max_hp": new_max_hp,
+        "message": (
+            f"✅ DEV: рівень персонажа встановлено.\n\n"
+            f"🏆 Рівень: {target_level}\n"
+            f"✨ Досвід: 0/{get_exp_to_next_level(target_level)}\n"
+            f"💪 Базові характеристики: {base_stat}\n"
+            f"❤️ HP: {new_max_hp}/{new_max_hp}"
+        )
+    }
+
+
+def reset_player_level_for_test(user_id):
+    """
+    DEV-функція.
+    Повертає персонажа на 1 рівень.
+    """
+
+    return set_player_level_for_test(user_id, 1)

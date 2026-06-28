@@ -1,87 +1,191 @@
-import random
+from db import (
+    add_item,
+    set_player_level_for_test,
+    reset_player_level_for_test,
+    get_user_progress
+)
 
-from db import add_item, get_item
 from keyboards import main_kb
+
+
+# ==============================
+# DEV CONFIG
+# ==============================
+
+DEV_MODE = True
 
 
 def register_dev_handlers(bot):
 
-    @bot.message_handler(commands=['give'])
+    # ==============================
+    # /give item_id quantity
+    # ==============================
+
+    @bot.message_handler(commands=["give"])
     def give_item(message):
+        if not DEV_MODE:
+            return
+
         user_id = message.from_user.id
 
-        # Якщо написати /give 3 — дасть конкретний item_id 3
         parts = message.text.split()
 
-        if len(parts) >= 2:
-            try:
-                item_id = int(parts[1])
-            except:
-                bot.send_message(
-                    message.chat.id,
-                    "❗ Використання: /give або /give ID",
-                    reply_markup=main_kb()
-                )
-                return
-        else:
-            # Випадковий предмет із тестових 1–7
-            item_id = random.randint(1, 7)
-
-        item = get_item(item_id)
-
-        if not item:
+        if len(parts) < 2:
             bot.send_message(
                 message.chat.id,
-                f"❌ Предмет з ID {item_id} не знайдено",
+                "❌ Формат: /give item_id [quantity]\nНаприклад: /give 201 5",
                 reply_markup=main_kb()
             )
             return
 
-        add_item(user_id, item_id)
+        try:
+            item_id = int(parts[1])
+            quantity = int(parts[2]) if len(parts) >= 3 else 1
+        except Exception:
+            bot.send_message(
+                message.chat.id,
+                "❌ item_id і quantity мають бути числами.",
+                reply_markup=main_kb()
+            )
+            return
 
-        (
-            _,
-            name,
-            type_,
-            rarity,
-            b_str,
-            b_dex,
-            b_int,
-            b_wis,
-            b_sta,
-            pdef,
-            mdef
-        ) = item
+        if quantity < 1:
+            quantity = 1
 
-        bonuses = []
+        result = add_item(user_id, item_id, quantity)
 
-        if b_str:
-            bonuses.append(f"Сила +{b_str}")
-        if b_dex:
-            bonuses.append(f"Спритність +{b_dex}")
-        if b_int:
-            bonuses.append(f"Інтелект +{b_int}")
-        if b_wis:
-            bonuses.append(f"Мудрість +{b_wis}")
-        if b_sta:
-            bonuses.append(f"Витривалість +{b_sta}")
-        if pdef:
-            bonuses.append(f"Фіз. захист +{pdef}")
-        if mdef:
-            bonuses.append(f"Маг. захист +{mdef}")
-
-        bonus_text = ""
-        if bonuses:
-            bonus_text = "\n📊 " + ", ".join(bonuses)
+        if not result.get("success"):
+            bot.send_message(
+                message.chat.id,
+                result.get("message", "❌ Не вдалося видати предмет."),
+                reply_markup=main_kb()
+            )
+            return
 
         text = (
-            f"🎁 Тестовий предмет додано!\n\n"
-            f"{name}"
-            f"{bonus_text}"
+            f"✅ DEV: предмет видано.\n\n"
+            f"📦 {result.get('name', 'Предмет')} x{result.get('added', 0)}\n"
+            f"🎒 Сумка: {result.get('used_slots', 0)}/{result.get('capacity', 20)}"
+        )
+
+        if result.get("lost", 0) > 0:
+            text += f"\n⚠️ Не влізло: x{result.get('lost', 0)}"
+
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=main_kb()
+        )
+
+    # ==============================
+    # /setlevel N
+    # /lvl N
+    # /level N
+    # ==============================
+
+    @bot.message_handler(commands=["setlevel", "lvl", "level"])
+    def set_level(message):
+        if not DEV_MODE:
+            return
+
+        user_id = message.from_user.id
+
+        parts = message.text.split()
+
+        if len(parts) < 2:
+            bot.send_message(
+                message.chat.id,
+                "❌ Формат: /setlevel 5\nАбо: /lvl 5",
+                reply_markup=main_kb()
+            )
+            return
+
+        target_level = parts[1]
+
+        result = set_player_level_for_test(user_id, target_level)
+
+        bot.send_message(
+            message.chat.id,
+            result["message"],
+            reply_markup=main_kb()
+        )
+
+    # ==============================
+    # /resetlevel
+    # ==============================
+
+    @bot.message_handler(commands=["resetlevel"])
+    def reset_level(message):
+        if not DEV_MODE:
+            return
+
+        user_id = message.from_user.id
+
+        result = reset_player_level_for_test(user_id)
+
+        bot.send_message(
+            message.chat.id,
+            result["message"],
+            reply_markup=main_kb()
+        )
+
+    # ==============================
+    # /progress
+    # ==============================
+
+    @bot.message_handler(commands=["progress"])
+    def progress(message):
+        if not DEV_MODE:
+            return
+
+        user_id = message.from_user.id
+
+        progress_data = get_user_progress(user_id)
+
+        if not progress_data:
+            bot.send_message(
+                message.chat.id,
+                "❌ Персонажа не знайдено. Натисни /start.",
+                reply_markup=main_kb()
+            )
+            return
+
+        level = progress_data["level"]
+        exp = progress_data["exp"]
+        exp_to_next = progress_data["exp_to_next"]
+        gold = progress_data["gold"]
+        kills = progress_data["kills"]
+
+        percent = 0
+
+        if exp_to_next > 0:
+            percent = (exp / exp_to_next) * 100
+
+        text = (
+            f"📊 DEV Progress\n\n"
+            f"🏆 Рівень: {level}\n"
+            f"✨ EXP: {exp}/{exp_to_next} ({percent:.2f}%)\n"
+            f"🪙 Золото: {gold:.2f}\n"
+            f"👹 Вбито мобів: {kills}"
         )
 
         bot.send_message(
             message.chat.id,
             text,
+            reply_markup=main_kb()
+        )
+
+    # ==============================
+    # /myid
+    # ==============================
+
+    @bot.message_handler(commands=["myid"])
+    def my_id(message):
+        if not DEV_MODE:
+            return
+
+        bot.send_message(
+            message.chat.id,
+            f"🆔 Твій Telegram user_id:\n{message.from_user.id}",
             reply_markup=main_kb()
         )

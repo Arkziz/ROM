@@ -10,6 +10,7 @@ from handlers.combat import register_combat_handlers
 from handlers.dev import register_dev_handlers
 from handlers.map import register_map_handlers
 from handlers.city import register_city_handlers
+from handlers.contracts import register_contract_handlers
 
 
 bot = telebot.TeleBot(TOKEN)
@@ -24,6 +25,7 @@ register_combat_handlers(bot)
 register_dev_handlers(bot)
 register_map_handlers(bot)
 register_city_handlers(bot)
+register_contract_handlers(bot)
 
 print("✅ BOT STARTED")
 bot.infinity_polling()

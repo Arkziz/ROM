@@ -32,7 +32,7 @@ def fight_kb():
 def city_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.add("🛒 Торговець", "🧪 Алхімік")
-    kb.add("⚒️ Коваль")
+    kb.add("⚒️ Коваль", "📜 Контракти")
     kb.add("🔙 Мапа")
     return kb
 

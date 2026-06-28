@@ -13,7 +13,8 @@ from db import (
     get_current_location,
     get_inventory_detailed,
     damage_equipped_items_on_death,
-    apply_random_durability_wear_on_victory
+    apply_random_durability_wear_on_victory,
+    process_contract_progress_on_kill
 )
 
 from keyboards import main_kb, fight_kb
@@ -78,7 +79,7 @@ def build_combat_potion_kb(user_id):
     return kb
 
 
-def build_death_text(user_id, durability_damage):
+def build_death_text(durability_damage):
     text = (
         "💀 ТИ ЗАГИНУВ\n"
         "❤️ Здоров’я відновлено\n"
@@ -243,6 +244,11 @@ def register_combat_handlers(bot):
                 chance_percent=25
             )
 
+            contract_result = process_contract_progress_on_kill(
+                user_id=user_id,
+                mob=mob
+            )
+
             exp_result = reward["exp_result"]
 
             text = (
@@ -262,6 +268,7 @@ def register_combat_handlers(bot):
 
             if reward["loot_messages"]:
                 text += "\n🎒 Знайдений лут:\n"
+
                 for loot in reward["loot_messages"]:
                     text += f"• {loot}\n"
             else:
@@ -269,6 +276,9 @@ def register_combat_handlers(bot):
 
             if wear_result and wear_result.get("triggered"):
                 text += f"\n{wear_result['message']}\n"
+
+            if contract_result and contract_result.get("message"):
+                text += f"\n{contract_result['message']}\n"
 
             text += f"\n🎒 Сумка: {reward['used_slots']}/{reward['capacity']} слотів"
 
@@ -305,13 +315,17 @@ def register_combat_handlers(bot):
         # ==============================
 
         if player_hp <= 0:
-            durability_damage = damage_equipped_items_on_death(user_id, amount=10)
+            durability_damage = damage_equipped_items_on_death(
+                user_id=user_id,
+                amount=10
+            )
 
             set_current_hp(user_id, player_max_hp)
 
-            del bot.user_data[user_id]
+            if user_id in bot.user_data:
+                del bot.user_data[user_id]
 
-            text = build_death_text(user_id, durability_damage)
+            text = build_death_text(durability_damage)
 
             bot.send_message(
                 message.chat.id,
@@ -506,13 +520,17 @@ def register_combat_handlers(bot):
         # ==============================
 
         if player_hp <= 0:
-            durability_damage = damage_equipped_items_on_death(user_id, amount=10)
+            durability_damage = damage_equipped_items_on_death(
+                user_id=user_id,
+                amount=10
+            )
 
             set_current_hp(user_id, player_max_hp)
 
-            del bot.user_data[user_id]
+            if user_id in bot.user_data:
+                del bot.user_data[user_id]
 
-            text = build_death_text(user_id, durability_damage)
+            text = build_death_text(durability_damage)
 
             bot.send_message(
                 call.message.chat.id,
