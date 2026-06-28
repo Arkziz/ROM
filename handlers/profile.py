@@ -11,7 +11,8 @@ from db import (
     get_max_hp,
     get_current_hp,
     get_user_progress,
-    get_all_equipped_items
+    get_all_equipped_items,
+    get_user_energy
 )
 
 from keyboards import profile_kb, main_kb
@@ -119,6 +120,9 @@ def build_profile_text(user_id):
 
     current_hp = get_current_hp(user_id)
     max_hp = get_max_hp(user_id)
+    energy_data = get_user_energy(user_id)
+    energy = energy_data["energy"]
+    max_energy = energy_data["max_energy"]
 
     exp = progress["exp"]
     exp_to_next = progress["exp_to_next"]
@@ -136,6 +140,7 @@ def build_profile_text(user_id):
 
         f"❤️ Здоров’я: {current_hp}/{max_hp}\n"
         f"{hp_bar(current_hp, max_hp)}\n\n"
+        f"🔋 Енергія: {energy}/{max_energy}\n\n"
 
         f"— Характеристики —\n"
         f"💪 Сила: {str_}\n"

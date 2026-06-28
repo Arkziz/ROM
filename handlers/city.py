@@ -16,7 +16,8 @@ from db import (
     get_total_repair_cost,
     repair_all_equipped,
     repair_equipped_item,
-    get_wallet
+    get_wallet,
+    get_user_energy
 )
 
 from keyboards import (
@@ -86,6 +87,9 @@ def build_main_menu_text(user_id):
 
     current_hp = get_current_hp(user_id)
     max_hp = get_max_hp(user_id)
+    energy_data = get_user_energy(user_id)
+    energy = energy_data["energy"]
+    max_energy = energy_data["max_energy"]
 
     used_slots = get_inventory_used_slots(user_id)
     capacity = get_bag_capacity(user_id)
@@ -112,6 +116,7 @@ def build_main_menu_text(user_id):
 
         f"👤 Твій рівень: {lvl}\n"
         f"❤️ Здоров’я: {current_hp}/{max_hp}\n"
+        f"🔋 Енергія: {energy}/{max_energy}\n"
         f"🎒 Сумка: {used_slots}/{capacity}\n\n"
 
         f"👀 Поблизу твого рівня можна зустріти:\n"

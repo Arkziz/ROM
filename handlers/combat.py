@@ -14,7 +14,8 @@ from db import (
     get_inventory_detailed,
     damage_equipped_items_on_death,
     apply_random_durability_wear_on_victory,
-    process_contract_progress_on_kill
+    process_contract_progress_on_kill,
+    consume_energy_for_hunt
 )
 
 from keyboards import main_kb, fight_kb
@@ -116,6 +117,20 @@ def register_combat_handlers(bot):
             )
             return
 
+        # ==============================
+        # ENERGY CHECK
+        # ==============================
+
+        energy_result = consume_energy_for_hunt(user_id)
+
+        if not energy_result["success"]:
+            bot.send_message(
+                message.chat.id,
+                energy_result["message"],
+                reply_markup=main_kb()
+            )
+            return
+
         str_, dex_, int_, wis_, sta_, lvl = stats
 
         location_id = get_current_location(user_id)
@@ -139,6 +154,8 @@ def register_combat_handlers(bot):
         text = (
             f"📍 Мапа: {location['name']}\n"
             f"🔎 Ти зустрів {mob['name']}\n\n"
+
+            f"🔋 Енергія: {energy_result['energy']}/{energy_result['max_energy']}\n\n"
 
             f"======================\n\n"
 
@@ -207,10 +224,6 @@ def register_combat_handlers(bot):
 
         if "max_hp" not in mob:
             mob["max_hp"] = mob["hp"]
-
-        # ==============================
-        # PLAYER ATTACK
-        # ==============================
 
         player_attack_result = calculate_player_attack(
             player_atk=player_atk,
@@ -310,10 +323,6 @@ def register_combat_handlers(bot):
 
         player_hp -= mob_dmg
 
-        # ==============================
-        # DEATH
-        # ==============================
-
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(
                 user_id=user_id,
@@ -334,18 +343,10 @@ def register_combat_handlers(bot):
             )
             return
 
-        # ==============================
-        # SAVE HP
-        # ==============================
-
         set_current_hp(user_id, player_hp)
 
         if mob.get("potion_cooldown", 0) > 0:
             mob["potion_cooldown"] -= 1
-
-        # ==============================
-        # TEXT
-        # ==============================
 
         text = "⚔️ БІЙ\n\n"
 
@@ -497,7 +498,6 @@ def register_combat_handlers(bot):
         player_pdef = get_physical_defense(user_id)
         player_mdef = get_magic_defense(user_id)
 
-        # Моб бʼє у відповідь, бо зілля = хід
         mob_attack_result = calculate_mob_attack(
             mob_attack=mob["attack"],
             player_pdef=player_pdef,
@@ -514,10 +514,6 @@ def register_combat_handlers(bot):
         is_dodge = mob_attack_result["is_dodge"]
 
         player_hp -= mob_dmg
-
-        # ==============================
-        # DEATH AFTER POTION
-        # ==============================
 
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(

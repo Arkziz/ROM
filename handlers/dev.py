@@ -2,7 +2,9 @@ from db import (
     add_item,
     set_player_level_for_test,
     reset_player_level_for_test,
-    get_user_progress
+    get_user_progress,
+    restore_energy_for_test,
+    get_user_energy
 )
 
 from keyboards import main_kb
@@ -156,6 +158,10 @@ def register_dev_handlers(bot):
         gold = progress_data["gold"]
         kills = progress_data["kills"]
 
+        energy_data = get_user_energy(user_id)
+        energy = energy_data["energy"]
+        max_energy = energy_data["max_energy"]
+
         percent = 0
 
         if exp_to_next > 0:
@@ -165,6 +171,7 @@ def register_dev_handlers(bot):
             f"📊 DEV Progress\n\n"
             f"🏆 Рівень: {level}\n"
             f"✨ EXP: {exp}/{exp_to_next} ({percent:.2f}%)\n"
+            f"🔋 Енергія: {energy}/{max_energy}\n"
             f"🪙 Золото: {gold:.2f}\n"
             f"👹 Вбито мобів: {kills}"
         )
@@ -172,6 +179,53 @@ def register_dev_handlers(bot):
         bot.send_message(
             message.chat.id,
             text,
+            reply_markup=main_kb()
+        )
+
+    # ==============================
+    # /energy N
+    # ==============================
+
+    @bot.message_handler(commands=["energy"])
+    def set_energy(message):
+        if not DEV_MODE:
+            return
+
+        user_id = message.from_user.id
+
+        parts = message.text.split()
+
+        if len(parts) < 2:
+            energy_data = get_user_energy(user_id)
+
+            bot.send_message(
+                message.chat.id,
+                (
+                    f"🔋 Поточна енергія: "
+                    f"{energy_data['energy']}/{energy_data['max_energy']}\n\n"
+                    f"Формат:\n"
+                    f"/energy 100\n"
+                    f"/energy 0"
+                ),
+                reply_markup=main_kb()
+            )
+            return
+
+        try:
+            amount = int(parts[1])
+        except Exception:
+            bot.send_message(
+                message.chat.id,
+                "❌ Формат: /energy 100 або /energy 0",
+                reply_markup=main_kb()
+            )
+            return
+
+        result = restore_energy_for_test(user_id, amount)
+
+        bot.send_message(
+            message.chat.id,
+            result["message"],
             reply_markup=main_kb()
         )
 

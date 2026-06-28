@@ -2579,3 +2579,188 @@ def reset_player_level_for_test(user_id):
     """
 
     return set_player_level_for_test(user_id, 1)
+
+# ==============================
+# ✅ ENERGY SYSTEM
+# ==============================
+
+ENERGY_MAX = 100
+ENERGY_REGEN_MINUTES = 5
+
+
+def init_energy_system():
+    """
+    Лінива ініціалізація енергії.
+    Додає поля в users, якщо їх ще немає.
+    """
+
+    migrations = [
+        ("users", "energy", "INTEGER DEFAULT 100"),
+        ("users", "last_energy_update", "TEXT DEFAULT ''"),
+    ]
+
+    for table, column, column_type in migrations:
+        try:
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
+
+    conn.commit()
+
+
+def get_user_energy(user_id):
+    """
+    Повертає актуальну енергію з урахуванням пасивної регенерації.
+
+    Правила:
+    - максимум 100
+    - +1 енергія кожні 5 хвилин
+    """
+
+    from datetime import datetime, timedelta
+
+    init_energy_system()
+
+    cursor.execute("""
+    SELECT energy, last_energy_update
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "energy": 0,
+            "max_energy": ENERGY_MAX,
+            "next_energy_minutes": ENERGY_REGEN_MINUTES
+        }
+
+    energy, last_update = row
+
+    if energy is None:
+        energy = ENERGY_MAX
+
+    now = datetime.now()
+
+    if not last_update:
+        last_update_dt = now
+    else:
+        try:
+            last_update_dt = datetime.fromisoformat(last_update)
+        except Exception:
+            last_update_dt = now
+
+    if energy < ENERGY_MAX:
+        diff_seconds = (now - last_update_dt).total_seconds()
+        regen_units = int(diff_seconds // (ENERGY_REGEN_MINUTES * 60))
+
+        if regen_units > 0:
+            energy = min(ENERGY_MAX, energy + regen_units)
+            last_update_dt = last_update_dt + timedelta(
+                minutes=regen_units * ENERGY_REGEN_MINUTES
+            )
+
+            cursor.execute("""
+            UPDATE users
+            SET energy=?, last_energy_update=?
+            WHERE user_id=?
+            """, (energy, last_update_dt.isoformat(), user_id))
+
+            conn.commit()
+
+    else:
+        # Якщо енергія повна — оновлюємо timestamp на зараз,
+        # щоб таймер не накопичувався без потреби.
+        cursor.execute("""
+        UPDATE users
+        SET energy=?, last_energy_update=?
+        WHERE user_id=?
+        """, (ENERGY_MAX, now.isoformat(), user_id))
+
+        conn.commit()
+
+    next_energy_minutes = ENERGY_REGEN_MINUTES
+
+    if energy < ENERGY_MAX:
+        elapsed_seconds = (now - last_update_dt).total_seconds()
+        remaining_seconds = (ENERGY_REGEN_MINUTES * 60) - elapsed_seconds
+        next_energy_minutes = max(1, int(remaining_seconds // 60) + 1)
+
+    return {
+        "energy": energy,
+        "max_energy": ENERGY_MAX,
+        "next_energy_minutes": next_energy_minutes
+    }
+
+
+def consume_energy_for_hunt(user_id):
+    """
+    Списує 1 енергію за полювання.
+    Якщо енергії 0 — не дозволяє бій.
+    """
+
+    from datetime import datetime
+
+    energy_data = get_user_energy(user_id)
+
+    energy = energy_data["energy"]
+
+    if energy <= 0:
+        return {
+            "success": False,
+            "energy": 0,
+            "max_energy": ENERGY_MAX,
+            "message": (
+                "😴 Герой виснажений і не може полювати.\n\n"
+                "Потрібно відпочити та дочекатися відновлення енергії.\n"
+                f"⏳ Наступна енергія приблизно через: "
+                f"{energy_data['next_energy_minutes']} хв."
+            )
+        }
+
+    new_energy = energy - 1
+
+    cursor.execute("""
+    UPDATE users
+    SET energy=?, last_energy_update=?
+    WHERE user_id=?
+    """, (new_energy, datetime.now().isoformat(), user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "energy": new_energy,
+        "max_energy": ENERGY_MAX,
+        "message": None
+    }
+
+
+def restore_energy_for_test(user_id, amount=ENERGY_MAX):
+    """
+    DEV-функція на майбутнє.
+    Відновлює енергію вручну.
+    """
+
+    from datetime import datetime
+
+    init_energy_system()
+
+    amount = int(amount)
+    amount = max(0, min(ENERGY_MAX, amount))
+
+    cursor.execute("""
+    UPDATE users
+    SET energy=?, last_energy_update=?
+    WHERE user_id=?
+    """, (amount, datetime.now().isoformat(), user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "energy": amount,
+        "max_energy": ENERGY_MAX,
+        "message": f"✅ DEV: енергію встановлено {amount}/{ENERGY_MAX}"
+    }
