@@ -1,7 +1,11 @@
 import telebot
 
 from config import TOKEN
-from db import init_db, seed_items
+
+from db import (
+    init_db,
+    seed_items
+)
 
 from handlers.start import register_start_handlers
 from handlers.profile import register_profile_handlers
@@ -11,6 +15,8 @@ from handlers.dev import register_dev_handlers
 from handlers.map import register_map_handlers
 from handlers.city import register_city_handlers
 from handlers.contracts import register_contract_handlers
+
+from systems.notifications import start_notification_worker
 
 
 bot = telebot.TeleBot(TOKEN)
@@ -26,6 +32,8 @@ register_dev_handlers(bot)
 register_map_handlers(bot)
 register_city_handlers(bot)
 register_contract_handlers(bot)
+
+start_notification_worker(bot)
 
 print("✅ BOT STARTED")
 bot.infinity_polling()

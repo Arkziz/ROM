@@ -117,6 +117,33 @@ def register_combat_handlers(bot):
             )
             return
 
+        str_, dex_, int_, wis_, sta_, lvl = stats
+
+        current_hp = get_current_hp(user_id)
+        max_hp = get_max_hp(user_id)
+
+        hp_percent = 0
+
+        if max_hp > 0:
+            hp_percent = (current_hp / max_hp) * 100
+
+        # ==============================
+        # HP HUNT THRESHOLD
+        # ==============================
+
+        if hp_percent <= 25:
+            bot.send_message(
+                message.chat.id,
+                (
+                    "😴 Ви занадто слабкі для полювання.\n\n"
+                    f"❤️ Здоров’я: {current_hp}/{max_hp} ({hp_percent:.1f}%)\n"
+                    "Ваше здоров’я нижче або дорівнює 25%.\n\n"
+                    "Відпочиньте або використайте зілля!"
+                ),
+                reply_markup=main_kb()
+            )
+            return
+
         # ==============================
         # ENERGY CHECK
         # ==============================
@@ -131,8 +158,6 @@ def register_combat_handlers(bot):
             )
             return
 
-        str_, dex_, int_, wis_, sta_, lvl = stats
-
         location_id = get_current_location(user_id)
         location = LOCATIONS.get(location_id, LOCATIONS["start_path"])
 
@@ -144,8 +169,6 @@ def register_combat_handlers(bot):
         bot.user_data[user_id] = mob
 
         atk = get_attack(user_id)
-        current_hp = get_current_hp(user_id)
-        max_hp = get_max_hp(user_id)
         player_pdef = get_physical_defense(user_id)
         player_mdef = get_magic_defense(user_id)
 

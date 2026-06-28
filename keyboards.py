@@ -4,7 +4,7 @@ from telebot import types
 def main_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.add("🔎 Полювання", "🗺️ Мапа")
-    kb.add("👤 Профіль")
+    kb.add("👤 Профіль", "👀 Роззирнутися")
     return kb
 
 

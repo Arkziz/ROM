@@ -2584,7 +2584,7 @@ def reset_player_level_for_test(user_id):
 # ✅ ENERGY SYSTEM
 # ==============================
 
-ENERGY_MAX = 100
+ENERGY_MAX = 40
 ENERGY_REGEN_MINUTES = 5
 
 
@@ -2597,6 +2597,7 @@ def init_energy_system():
     migrations = [
         ("users", "energy", "INTEGER DEFAULT 100"),
         ("users", "last_energy_update", "TEXT DEFAULT ''"),
+        ("users", "energy_full_notified", "INTEGER DEFAULT 1"),
     ]
 
     for table, column, column_type in migrations:
@@ -2604,6 +2605,20 @@ def init_energy_system():
             cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
         except Exception:
             pass
+
+    # Щоб після додавання поля не засипати старих гравців повідомленнями при старті бота
+    cursor.execute("""
+    UPDATE users
+    SET energy_full_notified = 1
+    WHERE energy IS NULL OR energy >= ?
+    """, (ENERGY_MAX,))
+
+    cursor.execute("""
+    UPDATE users
+    SET energy = ?
+    WHERE energy IS NULL
+    OR energy > ?
+    """, (ENERGY_MAX, ENERGY_MAX))
 
     conn.commit()
 
@@ -2670,8 +2685,6 @@ def get_user_energy(user_id):
             conn.commit()
 
     else:
-        # Якщо енергія повна — оновлюємо timestamp на зараз,
-        # щоб таймер не накопичувався без потреби.
         cursor.execute("""
         UPDATE users
         SET energy=?, last_energy_update=?
@@ -2703,7 +2716,6 @@ def consume_energy_for_hunt(user_id):
     from datetime import datetime
 
     energy_data = get_user_energy(user_id)
-
     energy = energy_data["energy"]
 
     if energy <= 0:
@@ -2723,7 +2735,9 @@ def consume_energy_for_hunt(user_id):
 
     cursor.execute("""
     UPDATE users
-    SET energy=?, last_energy_update=?
+    SET energy=?,
+        last_energy_update=?,
+        energy_full_notified=0
     WHERE user_id=?
     """, (new_energy, datetime.now().isoformat(), user_id))
 
@@ -2739,22 +2753,34 @@ def consume_energy_for_hunt(user_id):
 
 def restore_energy_for_test(user_id, amount=ENERGY_MAX):
     """
-    DEV-функція на майбутнє.
-    Відновлює енергію вручну.
+    DEV-функція.
+    Встановлює енергію вручну.
+    Приклади:
+    /energy 100
+    /energy 0
     """
 
     from datetime import datetime
 
     init_energy_system()
 
-    amount = int(amount)
+    try:
+        amount = int(amount)
+    except Exception:
+        amount = ENERGY_MAX
+
     amount = max(0, min(ENERGY_MAX, amount))
+
+    # Якщо ставимо 100 вручну — дозволяємо тестове повідомлення
+    notified = 0 if amount >= ENERGY_MAX else 0
 
     cursor.execute("""
     UPDATE users
-    SET energy=?, last_energy_update=?
+    SET energy=?,
+        last_energy_update=?,
+        energy_full_notified=?
     WHERE user_id=?
-    """, (amount, datetime.now().isoformat(), user_id))
+    """, (amount, datetime.now().isoformat(), notified, user_id))
 
     conn.commit()
 
@@ -2764,3 +2790,284 @@ def restore_energy_for_test(user_id, amount=ENERGY_MAX):
         "max_energy": ENERGY_MAX,
         "message": f"✅ DEV: енергію встановлено {amount}/{ENERGY_MAX}"
     }
+
+
+def get_users_for_energy_full_notification():
+    """
+    Перевіряє всіх користувачів.
+    Якщо енергія стала 100/100 і повідомлення ще не надсилалось —
+    повертає user_id для повідомлення.
+    """
+
+    init_energy_system()
+
+    cursor.execute("""
+    SELECT user_id
+    FROM users
+    """)
+
+    users = cursor.fetchall()
+
+    notify_users = []
+
+    for row in users:
+        user_id = row[0]
+
+        energy_data = get_user_energy(user_id)
+        energy = energy_data["energy"]
+        max_energy = energy_data["max_energy"]
+
+        cursor.execute("""
+        SELECT energy_full_notified
+        FROM users
+        WHERE user_id=?
+        """, (user_id,))
+
+        notified_row = cursor.fetchone()
+        notified = notified_row[0] if notified_row else 0
+
+        if energy >= max_energy and not notified:
+            notify_users.append(user_id)
+
+            cursor.execute("""
+            UPDATE users
+            SET energy_full_notified=1
+            WHERE user_id=?
+            """, (user_id,))
+
+        elif energy < max_energy and notified:
+            cursor.execute("""
+            UPDATE users
+            SET energy_full_notified=0
+            WHERE user_id=?
+            """, (user_id,))
+
+    conn.commit()
+
+    return notify_users
+
+# ==============================
+# ✅ PASSIVE HP REGEN SYSTEM
+# ==============================
+
+HP_REGEN_PERCENT = 0.10
+HP_REGEN_MINUTES = 1
+
+
+def init_hp_regen_system():
+    """
+    Лінива ініціалізація пасивного відновлення HP.
+    """
+
+    migrations = [
+        ("users", "last_hp_regen_update", "TEXT DEFAULT ''"),
+        ("users", "hp_full_notified", "INTEGER DEFAULT 1"),
+    ]
+
+    for table, column, column_type in migrations:
+        try:
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
+
+    conn.commit()
+
+
+def apply_passive_hp_regen(user_id):
+    """
+    Пасивне відновлення HP поза боєм.
+
+    Правила:
+    - +10% від max_hp кожні 2 хвилини;
+    - не вище max_hp;
+    - якщо HP повне, таймер оновлюється;
+    - працює автоматично при читанні HP.
+    """
+
+    from datetime import datetime, timedelta
+
+    init_hp_regen_system()
+
+    cursor.execute("""
+    SELECT hp, last_hp_regen_update
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return 0
+
+    hp, last_update = row
+
+    max_hp = get_max_hp(user_id)
+
+    if hp is None:
+        hp = max_hp
+
+    now = datetime.now()
+
+    if not last_update:
+        last_update_dt = now
+
+        cursor.execute("""
+        UPDATE users
+        SET last_hp_regen_update=?
+        WHERE user_id=?
+        """, (last_update_dt.isoformat(), user_id))
+
+        conn.commit()
+        return hp
+
+    try:
+        last_update_dt = datetime.fromisoformat(last_update)
+    except Exception:
+        last_update_dt = now
+
+    if hp >= max_hp:
+        cursor.execute("""
+        UPDATE users
+        SET hp=?,
+            last_hp_regen_update=?,
+            hp_full_notified=1
+        WHERE user_id=?
+        """, (max_hp, now.isoformat(), user_id))
+
+        conn.commit()
+        return max_hp
+
+    diff_seconds = (now - last_update_dt).total_seconds()
+    regen_ticks = int(diff_seconds // (HP_REGEN_MINUTES * 60))
+
+    if regen_ticks <= 0:
+        return hp
+
+    heal_per_tick = max(1, int(max_hp * HP_REGEN_PERCENT))
+    total_heal = heal_per_tick * regen_ticks
+
+    new_hp = min(max_hp, hp + total_heal)
+
+    new_update_dt = last_update_dt + timedelta(
+        minutes=regen_ticks * HP_REGEN_MINUTES
+    )
+
+    # Якщо HP стало повним пасивно — notification worker потім надішле повідомлення
+    hp_full_notified = 0 if new_hp >= max_hp else 0
+
+    cursor.execute("""
+    UPDATE users
+    SET hp=?,
+        last_hp_regen_update=?,
+        hp_full_notified=?
+    WHERE user_id=?
+    """, (
+        new_hp,
+        new_update_dt.isoformat(),
+        hp_full_notified,
+        user_id
+    ))
+
+    conn.commit()
+
+    return new_hp
+
+
+def get_users_for_hp_full_notification():
+    """
+    Повертає user_id гравців, у яких HP стало 100%,
+    але повідомлення ще не надсилалося.
+    """
+
+    init_hp_regen_system()
+
+    cursor.execute("""
+    SELECT user_id
+    FROM users
+    """)
+
+    rows = cursor.fetchall()
+
+    notify_users = []
+
+    for row in rows:
+        user_id = row[0]
+
+        hp = apply_passive_hp_regen(user_id)
+        max_hp = get_max_hp(user_id)
+
+        cursor.execute("""
+        SELECT hp_full_notified
+        FROM users
+        WHERE user_id=?
+        """, (user_id,))
+
+        notified_row = cursor.fetchone()
+        notified = notified_row[0] if notified_row else 1
+
+        if hp >= max_hp and not notified:
+            notify_users.append(user_id)
+
+            cursor.execute("""
+            UPDATE users
+            SET hp_full_notified=1
+            WHERE user_id=?
+            """, (user_id,))
+
+        elif hp < max_hp and notified:
+            cursor.execute("""
+            UPDATE users
+            SET hp_full_notified=0
+            WHERE user_id=?
+            """, (user_id,))
+
+    conn.commit()
+
+    return notify_users
+
+
+# ==============================
+# ✅ OVERRIDE HP FUNCTIONS WITH REGEN SUPPORT
+# ==============================
+
+def get_current_hp(user_id):
+    """
+    Повертає актуальне HP з урахуванням пасивної регенерації.
+    """
+
+    return apply_passive_hp_regen(user_id)
+
+
+def set_current_hp(user_id, hp):
+    """
+    Встановлює HP вручну.
+    Після будь-якої зміни HP таймер регенерації стартує заново.
+    """
+
+    from datetime import datetime
+
+    init_hp_regen_system()
+
+    max_hp = get_max_hp(user_id)
+
+    hp = int(hp)
+    hp = max(0, min(max_hp, hp))
+
+    # Якщо HP повне через смерть/банку/ручний сет — не треба слати notification.
+    # Якщо HP нижче максимуму — дозволяємо notification, коли пасивно відновиться.
+    hp_full_notified = 1 if hp >= max_hp else 0
+
+    cursor.execute("""
+    UPDATE users
+    SET hp=?,
+        last_hp_regen_update=?,
+        hp_full_notified=?
+    WHERE user_id=?
+    """, (
+        hp,
+        datetime.now().isoformat(),
+        hp_full_notified,
+        user_id
+    ))
+
+    conn.commit()

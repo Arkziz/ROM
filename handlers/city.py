@@ -423,6 +423,16 @@ def register_city_handlers(bot):
             reply_markup=city_kb()
         )
 
+    @bot.message_handler(func=lambda m: m.text == "👀 Роззирнутися")
+    def look_around(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            build_main_menu_text(user_id),
+            reply_markup=main_kb()
+        )
+
     @bot.message_handler(func=lambda m: m.text == "🔙 Назад")
     def back_to_main(message):
         user_id = message.from_user.id
