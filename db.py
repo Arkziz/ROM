@@ -2135,7 +2135,6 @@ def get_today_str():
 def init_contract_system():
     """
     Лінива ініціалізація системи контрактів.
-    Викликається з функцій контрактів, тому не потребує окремої міграції вручну.
     """
 
     cursor.execute("""
@@ -2144,8 +2143,13 @@ def init_contract_system():
         user_id INTEGER,
         created_date TEXT,
         player_level INTEGER,
+
+        target_mob_name TEXT,
+        target_mob_level INTEGER,
+
         target_min_level INTEGER,
         target_max_level INTEGER,
+
         target_kills INTEGER,
         current_kills INTEGER,
         reward_exp INTEGER
@@ -2155,6 +2159,11 @@ def init_contract_system():
     migrations = [
         ("users", "daily_contracts_completed", "INTEGER DEFAULT 0"),
         ("users", "daily_contract_date", "TEXT DEFAULT ''"),
+
+        ("user_active_contracts", "target_mob_name", "TEXT DEFAULT ''"),
+        ("user_active_contracts", "target_mob_level", "INTEGER DEFAULT 0"),
+        ("user_active_contracts", "target_min_level", "INTEGER DEFAULT 0"),
+        ("user_active_contracts", "target_max_level", "INTEGER DEFAULT 0"),
     ]
 
     for table, column, column_type in migrations:
@@ -2162,6 +2171,16 @@ def init_contract_system():
             cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
         except Exception:
             pass
+
+    # Старі активні контракти без конкретного моба прибираємо,
+    # бо нова система вже працює за конкретною ціллю.
+    try:
+        cursor.execute("""
+        DELETE FROM user_active_contracts
+        WHERE target_mob_name IS NULL OR target_mob_name = ''
+        """)
+    except Exception:
+        pass
 
     conn.commit()
 
@@ -2209,6 +2228,8 @@ def get_active_contract(user_id):
         user_id,
         created_date,
         player_level,
+        target_mob_name,
+        target_mob_level,
         target_min_level,
         target_max_level,
         target_kills,
@@ -2230,6 +2251,8 @@ def get_active_contract(user_id):
         row_user_id,
         created_date,
         player_level,
+        target_mob_name,
+        target_mob_level,
         target_min_level,
         target_max_level,
         target_kills,
@@ -2237,11 +2260,16 @@ def get_active_contract(user_id):
         reward_exp
     ) = row
 
+    if not target_mob_name:
+        return None
+
     return {
         "id": contract_id,
         "user_id": row_user_id,
         "created_date": created_date,
         "player_level": player_level,
+        "target_mob_name": target_mob_name,
+        "target_mob_level": target_mob_level,
         "target_min_level": target_min_level,
         "target_max_level": target_max_level,
         "target_kills": target_kills,
@@ -2282,7 +2310,21 @@ def get_contract_status(user_id):
     }
 
 
-def create_daily_contract(user_id):
+def create_daily_contract(
+    user_id,
+    target_mob_name,
+    target_mob_level,
+    target_kills=CONTRACT_TARGET_KILLS
+):
+    """
+    Створює контракт на конкретного моба.
+
+    Правило:
+    - 1 контракт = EXP за 20 умовних мобів поточного рівня.
+    - target_mob_name вибирається у handlers/contracts.py
+      з доступних мобів для рівня гравця.
+    """
+
     reset_daily_contracts_if_needed(user_id)
 
     status = get_contract_status(user_id)
@@ -2319,30 +2361,34 @@ def create_daily_contract(user_id):
             "message": "📜 У тебе вже є активний контракт."
         }
 
+    reward_exp = get_contract_exp_for_level(level)
+
     target_min_level = max(1, level - 1)
     target_max_level = level + 1
-    target_kills = CONTRACT_TARGET_KILLS
-    reward_exp = get_contract_exp_for_level(level)
 
     cursor.execute("""
     INSERT INTO user_active_contracts (
         user_id,
         created_date,
         player_level,
+        target_mob_name,
+        target_mob_level,
         target_min_level,
         target_max_level,
         target_kills,
         current_kills,
         reward_exp
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         user_id,
         get_today_str(),
         level,
+        target_mob_name,
+        int(target_mob_level),
         target_min_level,
         target_max_level,
-        target_kills,
+        int(target_kills),
         0,
         reward_exp
     ))
@@ -2354,7 +2400,8 @@ def create_daily_contract(user_id):
         "message": (
             f"📜 Контракт прийнято!\n\n"
             f"🎯 Завдання:\n"
-            f"Вбий {target_kills} мобів рівня {target_min_level}–{target_max_level}.\n\n"
+            f"Вбий {target_kills} × {target_mob_name} "
+            f"(рівень {target_mob_level}).\n\n"
             f"✨ Нагорода: {reward_exp} EXP"
         )
     }
@@ -2388,13 +2435,10 @@ def process_contract_progress_on_kill(user_id, mob):
     """
     Викликається після перемоги над мобом.
 
-    Якщо є активний контракт і рівень моба входить у діапазон,
-    прогрес контракту збільшується на 1.
-
-    Якщо контракт завершено:
-    - видається EXP;
-    - збільшується daily_contracts_completed;
-    - активний контракт видаляється.
+    Нова логіка:
+    - контракт має конкретну ціль: target_mob_name;
+    - прогрес рахується тільки якщо вбитий саме цей моб;
+    - рівень також перевіряємо, щоб уникнути збігів назв у майбутньому.
     """
 
     reset_daily_contracts_if_needed(user_id)
@@ -2408,9 +2452,13 @@ def process_contract_progress_on_kill(user_id, mob):
             "message": None
         }
 
-    mob_level = int(mob.get("level", active_contract["player_level"]))
+    mob_name = mob.get("name", "")
+    mob_level = int(mob.get("level", active_contract["target_mob_level"]))
 
-    if mob_level < active_contract["target_min_level"] or mob_level > active_contract["target_max_level"]:
+    target_name = active_contract["target_mob_name"]
+    target_level = int(active_contract["target_mob_level"])
+
+    if mob_name != target_name or mob_level != target_level:
         return {
             "updated": False,
             "completed": False,
@@ -2439,6 +2487,7 @@ def process_contract_progress_on_kill(user_id, mob):
 
         message = (
             f"📜 Контракт виконано!\n"
+            f"🎯 Ціль: {target_name}\n"
             f"✅ Прогрес: {active_contract['target_kills']}/{active_contract['target_kills']}\n"
             f"✨ Нагорода контракту: +{reward_exp} EXP"
         )
@@ -2466,7 +2515,8 @@ def process_contract_progress_on_kill(user_id, mob):
         "updated": True,
         "completed": False,
         "message": (
-            f"📜 Контракт: {new_progress}/{active_contract['target_kills']}"
+            f"📜 Контракт: {target_name} "
+            f"{new_progress}/{active_contract['target_kills']}"
         )
     }
 

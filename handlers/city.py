@@ -8,16 +8,19 @@ from db import (
     get_player_stats,
     get_current_hp,
     get_max_hp,
+    get_user_energy,
     get_inventory_used_slots,
     get_bag_capacity,
+
+    get_contract_status,
+
     sell_all_trash,
     buy_item_for_gold,
     get_equipped_items_for_repair,
     get_total_repair_cost,
     repair_all_equipped,
     repair_equipped_item,
-    get_wallet,
-    get_user_energy
+    get_wallet
 )
 
 from keyboards import (
@@ -52,7 +55,8 @@ def build_city_text(user_id):
         f"Доступні місця:\n"
         f"• 🛒 Торговець\n"
         f"• 🧪 Алхімік\n"
-        f"• ⚒️ Коваль"
+        f"• ⚒️ Коваль\n"
+        f"• 📜 Контракти"
     )
 
 
@@ -60,18 +64,43 @@ def get_nearby_mobs_for_level(player_level):
     available = []
 
     for mob in LOCATION_1_MOBS:
-        mob_level = mob.get("level", 1)
-        min_player_level = mob.get("min_player_level", 1)
+        mob_level = int(mob.get("level", 1))
+        min_player_level = int(mob.get("min_player_level", 1))
 
         if min_player_level <= player_level and player_level - 1 <= mob_level <= player_level + 1:
             available.append(mob)
 
     if not available:
         for mob in LOCATION_1_MOBS:
-            if mob.get("min_player_level", 1) <= player_level:
+            if int(mob.get("min_player_level", 1)) <= player_level:
                 available.append(mob)
 
     return available[:5]
+
+
+def build_contracts_short_status(user_id):
+    status = get_contract_status(user_id)
+
+    if not status["exists"]:
+        return "📜 Контракти: недоступно\n"
+
+    if not status["unlocked"]:
+        return "📜 Контракти: 🔒 з 5 рівня\n"
+
+    completed = status["completed_today"]
+    daily_limit = status["daily_limit"]
+    active = status["active_contract"]
+
+    text = f"📜 Контракти: {completed}/{daily_limit}\n"
+
+    if active:
+        text += (
+            f"📌 Активний контракт: "
+            f"{active['target_mob_name']} "
+            f"{active['current_kills']}/{active['target_kills']}\n"
+        )
+
+    return text
 
 
 def build_main_menu_text(user_id):
@@ -87,12 +116,15 @@ def build_main_menu_text(user_id):
 
     current_hp = get_current_hp(user_id)
     max_hp = get_max_hp(user_id)
+
     energy_data = get_user_energy(user_id)
     energy = energy_data["energy"]
     max_energy = energy_data["max_energy"]
 
     used_slots = get_inventory_used_slots(user_id)
     capacity = get_bag_capacity(user_id)
+
+    contracts_text = build_contracts_short_status(user_id)
 
     nearby_mobs = get_nearby_mobs_for_level(lvl)
 
@@ -117,7 +149,8 @@ def build_main_menu_text(user_id):
         f"👤 Твій рівень: {lvl}\n"
         f"❤️ Здоров’я: {current_hp}/{max_hp}\n"
         f"🔋 Енергія: {energy}/{max_energy}\n"
-        f"🎒 Сумка: {used_slots}/{capacity}\n\n"
+        f"🎒 Сумка: {used_slots}/{capacity}\n"
+        f"{contracts_text}\n"
 
         f"👀 Поблизу твого рівня можна зустріти:\n"
         f"{mobs_text}\n"
@@ -125,7 +158,8 @@ def build_main_menu_text(user_id):
         f"Доступні дії:\n"
         f"🔎 Полювання — вийти за межі табору\n"
         f"🗺️ Мапа — переглянути напрямки та місто\n"
-        f"👤 Профіль — персонаж, інвентар і спорядження"
+        f"👤 Профіль — персонаж, інвентар і спорядження\n"
+        f"👀 Роззирнутися — оновити стан персонажа"
     )
 
     return text
@@ -248,6 +282,16 @@ def register_city_handlers(bot):
             message.chat.id,
             build_city_text(user_id),
             reply_markup=city_kb()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "👀 Роззирнутися")
+    def look_around(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            build_main_menu_text(user_id),
+            reply_markup=main_kb()
         )
 
     @bot.message_handler(func=lambda m: m.text == "🛒 Торговець")
@@ -421,16 +465,6 @@ def register_city_handlers(bot):
             message.chat.id,
             build_city_text(user_id),
             reply_markup=city_kb()
-        )
-
-    @bot.message_handler(func=lambda m: m.text == "👀 Роззирнутися")
-    def look_around(message):
-        user_id = message.from_user.id
-
-        bot.send_message(
-            message.chat.id,
-            build_main_menu_text(user_id),
-            reply_markup=main_kb()
         )
 
     @bot.message_handler(func=lambda m: m.text == "🔙 Назад")
