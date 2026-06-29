@@ -4,7 +4,9 @@ from db import (
     reset_player_level_for_test,
     get_user_progress,
     restore_energy_for_test,
-    get_user_energy
+    get_user_energy,
+    set_gold_for_test,
+    create_generated_equipment_item
 )
 
 from keyboards import main_kb
@@ -15,6 +17,29 @@ from keyboards import main_kb
 # ==============================
 
 DEV_MODE = True
+
+
+VALID_DROP_RARITIES = {
+    "common": "common",
+    "white": "common",
+    "білий": "common",
+    "bilyi": "common",
+
+    "uncommon": "uncommon",
+    "green": "uncommon",
+    "зелений": "uncommon",
+    "zelenyi": "uncommon",
+
+    "rare": "rare",
+    "blue": "rare",
+    "синій": "rare",
+    "synii": "rare",
+
+    "epic": "epic",
+    "purple": "epic",
+    "фіолетовий": "epic",
+    "fioletovyi": "epic"
+}
 
 
 def register_dev_handlers(bot):
@@ -29,13 +54,17 @@ def register_dev_handlers(bot):
             return
 
         user_id = message.from_user.id
-
         parts = message.text.split()
 
         if len(parts) < 2:
             bot.send_message(
                 message.chat.id,
-                "❌ Формат: /give item_id [quantity]\nНаприклад: /give 201 5",
+                (
+                    "❌ Формат:\n"
+                    "/give item_id [quantity]\n\n"
+                    "Приклад:\n"
+                    "/give 201 5"
+                ),
                 reply_markup=main_kb()
             )
             return
@@ -91,19 +120,22 @@ def register_dev_handlers(bot):
             return
 
         user_id = message.from_user.id
-
         parts = message.text.split()
 
         if len(parts) < 2:
             bot.send_message(
                 message.chat.id,
-                "❌ Формат: /setlevel 5\nАбо: /lvl 5",
+                (
+                    "❌ Формат:\n"
+                    "/setlevel 5\n"
+                    "/lvl 5\n"
+                    "/level 5"
+                ),
                 reply_markup=main_kb()
             )
             return
 
         target_level = parts[1]
-
         result = set_player_level_for_test(user_id, target_level)
 
         bot.send_message(
@@ -122,7 +154,6 @@ def register_dev_handlers(bot):
             return
 
         user_id = message.from_user.id
-
         result = reset_player_level_for_test(user_id)
 
         bot.send_message(
@@ -141,7 +172,6 @@ def register_dev_handlers(bot):
             return
 
         user_id = message.from_user.id
-
         progress_data = get_user_progress(user_id)
 
         if not progress_data:
@@ -184,6 +214,7 @@ def register_dev_handlers(bot):
 
     # ==============================
     # /energy N
+    # /energy
     # ==============================
 
     @bot.message_handler(commands=["energy"])
@@ -192,7 +223,6 @@ def register_dev_handlers(bot):
             return
 
         user_id = message.from_user.id
-
         parts = message.text.split()
 
         if len(parts) < 2:
@@ -204,7 +234,7 @@ def register_dev_handlers(bot):
                     f"🔋 Поточна енергія: "
                     f"{energy_data['energy']}/{energy_data['max_energy']}\n\n"
                     f"Формат:\n"
-                    f"/energy 100\n"
+                    f"/energy 40\n"
                     f"/energy 0"
                 ),
                 reply_markup=main_kb()
@@ -216,7 +246,7 @@ def register_dev_handlers(bot):
         except Exception:
             bot.send_message(
                 message.chat.id,
-                "❌ Формат: /energy 100 або /energy 0",
+                "❌ Формат: /energy 40 або /energy 0",
                 reply_markup=main_kb()
             )
             return
@@ -226,6 +256,141 @@ def register_dev_handlers(bot):
         bot.send_message(
             message.chat.id,
             result["message"],
+            reply_markup=main_kb()
+        )
+
+    # ==============================
+    # /gold N
+    # ==============================
+
+    @bot.message_handler(commands=["gold"])
+    def set_gold(message):
+        if not DEV_MODE:
+            return
+
+        user_id = message.from_user.id
+        parts = message.text.split()
+
+        if len(parts) < 2:
+            bot.send_message(
+                message.chat.id,
+                (
+                    "❌ Формат:\n"
+                    "/gold 100\n"
+                    "/gold 0\n"
+                    "/gold 1000"
+                ),
+                reply_markup=main_kb()
+            )
+            return
+
+        result = set_gold_for_test(user_id, parts[1])
+
+        bot.send_message(
+            message.chat.id,
+            result["message"],
+            reply_markup=main_kb()
+        )
+
+    # ==============================
+    # /drop rarity level
+    # ==============================
+
+    @bot.message_handler(commands=["drop"])
+    def generate_drop(message):
+        if not DEV_MODE:
+            return
+
+        user_id = message.from_user.id
+        parts = message.text.split()
+
+        if len(parts) < 3:
+            bot.send_message(
+                message.chat.id,
+                (
+                    "❌ Формат:\n"
+                    "/drop rarity level\n\n"
+                    "Приклади:\n"
+                    "/drop common 5\n"
+                    "/drop uncommon 7\n"
+                    "/drop rare 9\n"
+                    "/drop epic 10\n\n"
+                    "Також можна:\n"
+                    "/drop білий 5\n"
+                    "/drop зелений 7\n"
+                    "/drop синій 9\n"
+                    "/drop фіолетовий 10"
+                ),
+                reply_markup=main_kb()
+            )
+            return
+
+        rarity_input = parts[1].lower()
+        level_input = parts[2]
+
+        rarity = VALID_DROP_RARITIES.get(rarity_input)
+
+        if not rarity:
+            bot.send_message(
+                message.chat.id,
+                (
+                    "❌ Невідома рідкість.\n\n"
+                    "Доступні:\n"
+                    "common / uncommon / rare / epic\n"
+                    "білий / зелений / синій / фіолетовий"
+                ),
+                reply_markup=main_kb()
+            )
+            return
+
+        try:
+            item_level = int(level_input)
+        except Exception:
+            bot.send_message(
+                message.chat.id,
+                "❌ Рівень предмета має бути числом.",
+                reply_markup=main_kb()
+            )
+            return
+
+        if item_level < 1:
+            item_level = 1
+
+        if item_level > 30:
+            item_level = 30
+
+        result = create_generated_equipment_item(
+            user_id=user_id,
+            item_level=item_level,
+            rarity=rarity
+        )
+
+        if not result.get("success"):
+            bot.send_message(
+                message.chat.id,
+                result.get("message", "❌ Не вдалося створити предмет."),
+                reply_markup=main_kb()
+            )
+            return
+
+        rarity_icon = {
+            "common": "⚪",
+            "uncommon": "🟢",
+            "rare": "🔵",
+            "epic": "🟣"
+        }.get(rarity, "⚪")
+
+        text = (
+            f"✅ DEV: згенеровано спорядження.\n\n"
+            f"{rarity_icon} Рідкість: {rarity}\n"
+            f"🏷 Рівень предмета: {item_level}\n"
+            f"📦 Предмет: {result['name']}\n"
+            f"🎒 Додано в інвентар."
+        )
+
+        bot.send_message(
+            message.chat.id,
+            text,
             reply_markup=main_kb()
         )
 
@@ -241,5 +406,54 @@ def register_dev_handlers(bot):
         bot.send_message(
             message.chat.id,
             f"🆔 Твій Telegram user_id:\n{message.from_user.id}",
+            reply_markup=main_kb()
+        )
+
+    # ==============================
+    # /devhelp
+    # ==============================
+
+    @bot.message_handler(commands=["devhelp"])
+    def dev_help(message):
+        if not DEV_MODE:
+            return
+
+        text = (
+            "🛠 DEV-команди\n\n"
+            "📦 Предмети:\n"
+            "/give item_id [quantity]\n"
+            "/drop rarity level\n\n"
+
+            "🏆 Рівень:\n"
+            "/setlevel N\n"
+            "/lvl N\n"
+            "/level N\n"
+            "/resetlevel\n\n"
+
+            "📊 Прогрес:\n"
+            "/progress\n\n"
+
+            "🔋 Енергія:\n"
+            "/energy\n"
+            "/energy N\n\n"
+
+            "🪙 Золото:\n"
+            "/gold N\n\n"
+
+            "🆔 Інше:\n"
+            "/myid\n"
+            "/devhelp\n\n"
+
+            "Приклади:\n"
+            "/lvl 5\n"
+            "/energy 40\n"
+            "/gold 100\n"
+            "/drop uncommon 7\n"
+            "/drop rare 10"
+        )
+
+        bot.send_message(
+            message.chat.id,
+            text,
             reply_markup=main_kb()
         )

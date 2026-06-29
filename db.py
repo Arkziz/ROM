@@ -2278,16 +2278,21 @@ def generate_dynamic_equipment_stats(slot_key, item_level, rarity, weapon_hands=
 
     if rarity in ["uncommon", "rare", "epic"]:
         bonus_count = 1
+        min_bonus = 2
 
         if rarity == "rare":
             bonus_count = 2
+            min_bonus = 3
 
         if rarity == "epic":
             bonus_count = 3
+            min_bonus = 4
 
         for _ in range(bonus_count):
             bonus_type = random.choice(["str", "dex", "int", "wis", "sta"])
+
             bonus_value = get_dynamic_stat_value(item_level, rarity, 0.30)
+            bonus_value = max(min_bonus, bonus_value)
 
             if bonus_type == "str":
                 b_str += bonus_value
@@ -3689,3 +3694,55 @@ def set_player_level_for_test(user_id, target_level):
 
 def reset_player_level_for_test(user_id):
     return set_player_level_for_test(user_id, 1)
+
+# ==============================
+# ✅ DEV GOLD TOOL
+# ==============================
+
+def set_gold_for_test(user_id, amount):
+    """
+    DEV-функція.
+    Встановлює золото вручну.
+    Приклади:
+    /gold 100
+    /gold 0
+    """
+
+    try:
+        amount = float(amount)
+    except Exception:
+        return {
+            "success": False,
+            "message": "❌ Значення золота має бути числом."
+        }
+
+    if amount < 0:
+        amount = 0
+
+    cursor.execute("""
+    SELECT user_id
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "success": False,
+            "message": "❌ Персонажа не знайдено. Спочатку натисни /start."
+        }
+
+    cursor.execute("""
+    UPDATE users
+    SET gold=?
+    WHERE user_id=?
+    """, (amount, user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "gold": amount,
+        "message": f"✅ DEV: золото встановлено {amount:.2f} 🪙"
+    }
