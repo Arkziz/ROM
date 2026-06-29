@@ -16,11 +16,15 @@ from db import (
 
     sell_all_trash,
     buy_item_for_gold,
+
     get_equipped_items_for_repair,
     get_total_repair_cost,
     repair_all_equipped,
     repair_equipped_item,
-    get_wallet
+    get_wallet,
+
+    get_common_equipment_shop_offer,
+    buy_common_equipment_from_trader
 )
 
 from keyboards import (
@@ -268,11 +272,46 @@ def build_blacksmith_text(user_id):
     return text, kb
 
 
+def build_common_equipment_shop_text(user_id):
+    offers = get_common_equipment_shop_offer(user_id)
+
+    text = (
+        f"⚪ Базове спорядження\n\n"
+        f"Торговець продає прості білі речі поточного рівня персонажа.\n"
+        f"Це не найкращий шмот, але він допоможе закрити порожні слоти "
+        f"або замінити зламану річ.\n\n"
+        f"Оберіть слот:"
+    )
+
+    kb = types.InlineKeyboardMarkup(row_width=1)
+
+    for offer in offers:
+        kb.add(types.InlineKeyboardButton(
+            text=(
+                f"{offer['slot_name']} — "
+                f"{offer['price']:.2f} 🪙 "
+                f"(рівень {offer['item_level']})"
+            ),
+            callback_data=f"buy_common_equipment:{offer['slot_key']}"
+        ))
+
+    kb.add(types.InlineKeyboardButton(
+        text="⬅️ До торговця",
+        callback_data="back_to_trader"
+    ))
+
+    return text, kb
+
+
 # ==============================
 # HANDLERS
 # ==============================
 
 def register_city_handlers(bot):
+
+    # ==============================
+    # CITY
+    # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "🏙️ Місто")
     def show_city(message):
@@ -294,13 +333,19 @@ def register_city_handlers(bot):
             reply_markup=main_kb()
         )
 
+    # ==============================
+    # TRADER
+    # ==============================
+
     @bot.message_handler(func=lambda m: m.text == "🛒 Торговець")
     def show_trader(message):
         text = (
             f"🛒 Торговець\n\n"
-            f"Торговець скуповує сірий лут, здобутий у бою.\n\n"
+            f"Торговець скуповує сірий лут, здобутий у бою, "
+            f"а також продає просте базове спорядження.\n\n"
             f"Доступні дії:\n"
-            f"• 🪙 Продати весь хлам"
+            f"• 🪙 Продати весь хлам\n"
+            f"• ⚪ Базове спорядження"
         )
 
         bot.send_message(
@@ -339,6 +384,67 @@ def register_city_handlers(bot):
             reply_markup=trader_kb()
         )
 
+    @bot.message_handler(func=lambda m: m.text == "⚪ Базове спорядження")
+    def show_common_equipment_shop(message):
+        user_id = message.from_user.id
+
+        text, kb = build_common_equipment_shop_text(user_id)
+
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("buy_common_equipment:"))
+    def buy_common_equipment(call):
+        user_id = call.from_user.id
+        slot_key = call.data.split(":")[1]
+
+        result = buy_common_equipment_from_trader(
+            user_id=user_id,
+            slot_key=slot_key
+        )
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            result["message"],
+            reply_markup=trader_kb()
+        )
+
+        text, kb = build_common_equipment_shop_text(user_id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "back_to_trader")
+    def back_to_trader_callback(call):
+        bot.answer_callback_query(call.id)
+
+        text = (
+            f"🛒 Торговець\n\n"
+            f"Торговець скуповує сірий лут, здобутий у бою, "
+            f"а також продає просте базове спорядження.\n\n"
+            f"Доступні дії:\n"
+            f"• 🪙 Продати весь хлам\n"
+            f"• ⚪ Базове спорядження"
+        )
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=trader_kb()
+        )
+
+    # ==============================
+    # ALCHEMIST
+    # ==============================
+
     @bot.message_handler(func=lambda m: m.text == "🧪 Алхімік")
     def show_alchemist(message):
         bot.send_message(
@@ -364,6 +470,7 @@ def register_city_handlers(bot):
 
         if not potion:
             bot.answer_callback_query(call.id)
+
             bot.send_message(
                 call.message.chat.id,
                 "❌ Такого зілля немає в магазині.",
@@ -393,6 +500,10 @@ def register_city_handlers(bot):
             text,
             reply_markup=kb
         )
+
+    # ==============================
+    # BLACKSMITH
+    # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "⚒️ Коваль")
     def show_blacksmith(message):
@@ -456,6 +567,10 @@ def register_city_handlers(bot):
             text,
             reply_markup=kb
         )
+
+    # ==============================
+    # BACK BUTTONS
+    # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "🔙 Місто")
     def back_to_city(message):

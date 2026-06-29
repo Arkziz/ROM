@@ -3597,3 +3597,245 @@ def get_item_required_level_by_inventory_id(inventory_id):
 
     except Exception:
         return 1
+
+# ==============================
+# ✅ COMMON EQUIPMENT TRADER SHOP
+# ==============================
+
+COMMON_SHOP_PRICE_MULTIPLIERS = {
+    "main_hand": 3.0,
+    "off_hand": 2.5,
+    "helmet": 1.5,
+    "shoulders": 1.5,
+    "chest": 2.5,
+    "gloves": 1.3,
+    "legs": 1.8,
+    "boots": 1.3,
+    "necklace": 2.0,
+    "ring": 2.0
+}
+
+
+def get_common_equipment_price_for_slot(item_level, slot_key):
+    multiplier = COMMON_SHOP_PRICE_MULTIPLIERS.get(slot_key, 1.5)
+
+    return round(max(1.0, item_level * multiplier), 2)
+
+
+def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_key):
+    """
+    Створює згенерований предмет у конкретний слот.
+    Використовується торговцем для білих речей.
+    """
+
+    init_dynamic_equipment_system()
+
+    if slot_key not in SLOT_ORDER:
+        return {
+            "success": False,
+            "message": "❌ Невідомий слот спорядження."
+        }
+
+    item_level = int(item_level)
+    item_level = max(1, item_level)
+
+    if rarity not in ["common", "uncommon", "rare", "epic"]:
+        rarity = "common"
+
+    capacity = get_bag_capacity(user_id)
+    used_slots = get_inventory_used_slots(user_id)
+
+    if used_slots >= capacity:
+        return {
+            "success": False,
+            "lost": 1,
+            "message": "🎒 Сумка переповнена. Предмет не куплено."
+        }
+
+    weapon_hands = 1
+
+    if slot_key == "main_hand":
+        # У торговця може випасти як одноручна, так і дворучна базова зброя.
+        weapon_hands = 2 if random.random() < 0.35 else 1
+        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands)
+        type_ = "weapon"
+
+    elif slot_key == "off_hand":
+        weapon_hands = 1
+        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands)
+        type_ = "offhand"
+
+    else:
+        weapon_hands = 1
+        name = get_dynamic_armor_name(slot_key, rarity)
+        type_ = slot_key
+
+    name = f"{name} {item_level} рівня"
+
+    stats = generate_dynamic_equipment_stats(
+        slot_key=slot_key,
+        item_level=item_level,
+        rarity=rarity,
+        weapon_hands=weapon_hands
+    )
+
+    sell_price = get_dynamic_sell_price(item_level, rarity)
+
+    cursor.execute("""
+    INSERT INTO items (
+        name,
+        type,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        max_stack,
+        sell_price,
+        bonus_str,
+        bonus_dex,
+        bonus_int,
+        bonus_wis,
+        bonus_sta,
+        pdef,
+        mdef,
+        item_level,
+        is_generated
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        name,
+        type_,
+        rarity,
+        "equipment",
+        slot_key,
+        weapon_hands,
+        1,
+        sell_price,
+        stats["bonus_str"],
+        stats["bonus_dex"],
+        stats["bonus_int"],
+        stats["bonus_wis"],
+        stats["bonus_sta"],
+        stats["pdef"],
+        stats["mdef"],
+        item_level,
+        1
+    ))
+
+    item_id = cursor.lastrowid
+
+    cursor.execute("""
+    INSERT INTO inventory (
+        user_id,
+        item_id,
+        quantity,
+        durability
+    )
+    VALUES (?, ?, ?, ?)
+    """, (
+        user_id,
+        item_id,
+        1,
+        100
+    ))
+
+    inventory_id = cursor.lastrowid
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "name": name,
+        "item_id": item_id,
+        "inventory_id": inventory_id,
+        "slot_key": slot_key,
+        "item_level": item_level
+    }
+
+
+def get_common_equipment_shop_offer(user_id):
+    """
+    Повертає список білих речей, які торговець може згенерувати для поточного рівня.
+    """
+
+    player_level = get_player_level(user_id)
+
+    offers = []
+
+    for slot_key in SLOT_ORDER:
+        slot_name = EQUIPMENT_SLOTS.get(slot_key, slot_key)
+        price = get_common_equipment_price_for_slot(player_level, slot_key)
+
+        offers.append({
+            "slot_key": slot_key,
+            "slot_name": slot_name,
+            "item_level": player_level,
+            "price": price
+        })
+
+    return offers
+
+
+def buy_common_equipment_from_trader(user_id, slot_key):
+    if slot_key not in SLOT_ORDER:
+        return {
+            "success": False,
+            "message": "❌ Невідомий слот спорядження."
+        }
+
+    player_level = get_player_level(user_id)
+    price = get_common_equipment_price_for_slot(player_level, slot_key)
+
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "success": False,
+            "message": "❌ Персонажа не знайдено."
+        }
+
+    gold = row[0] or 0.0
+
+    if gold < price:
+        return {
+            "success": False,
+            "message": (
+                f"❌ Недостатньо золота.\n\n"
+                f"💳 Потрібно: {price:.2f} 🪙\n"
+                f"💰 У тебе: {gold:.2f} 🪙"
+            )
+        }
+
+    result = create_generated_equipment_item_for_slot(
+        user_id=user_id,
+        item_level=player_level,
+        rarity="common",
+        slot_key=slot_key
+    )
+
+    if not result.get("success"):
+        return result
+
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold - ?
+    WHERE user_id=?
+    """, (price, user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": (
+            f"✅ Куплено базове спорядження.\n\n"
+            f"📦 {result['name']}\n"
+            f"🏷 Рівень предмета: {player_level}\n"
+            f"💳 Сплачено: {price:.2f} 🪙"
+        )
+    }

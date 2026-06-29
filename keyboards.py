@@ -40,6 +40,7 @@ def city_kb():
 def trader_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.add("🪙 Продати весь хлам")
+    kb.add("⚪ Базове спорядження")
     kb.add("🔙 Місто")
     return kb
 
