@@ -2430,7 +2430,6 @@ def abandon_active_contract(user_id):
         "message": "📜 Активний контракт скасовано."
     }
 
-
 def process_contract_progress_on_kill(user_id, mob):
     """
     Викликається після перемоги над мобом.
@@ -2438,6 +2437,7 @@ def process_contract_progress_on_kill(user_id, mob):
     Нова логіка:
     - контракт має конкретну ціль: target_mob_name;
     - прогрес рахується тільки якщо вбитий саме цей моб;
+    - елітна версія цього ж моба також зараховується;
     - рівень також перевіряємо, щоб уникнути збігів назв у майбутньому.
     """
 
@@ -2453,12 +2453,13 @@ def process_contract_progress_on_kill(user_id, mob):
         }
 
     mob_name = mob.get("name", "")
+    mob_base_name = mob.get("base_name", mob_name)
     mob_level = int(mob.get("level", active_contract["target_mob_level"]))
 
     target_name = active_contract["target_mob_name"]
     target_level = int(active_contract["target_mob_level"])
 
-    if mob_name != target_name or mob_level != target_level:
+    if mob_base_name != target_name or mob_level != target_level:
         return {
             "updated": False,
             "completed": False,
@@ -2511,12 +2512,18 @@ def process_contract_progress_on_kill(user_id, mob):
 
     conn.commit()
 
+    elite_note = ""
+
+    if mob.get("is_elite"):
+        elite_note = " ⭐ Елітна ціль зарахована!"
+
     return {
         "updated": True,
         "completed": False,
         "message": (
             f"📜 Контракт: {target_name} "
             f"{new_progress}/{active_contract['target_kills']}"
+            f"{elite_note}"
         )
     }
 

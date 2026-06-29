@@ -16,19 +16,6 @@ from db import (
 # ==============================
 
 def get_level_difference_multiplier(player_level, mob_level):
-    """
-    Δ = mob_level - player_level
-
-    Таблиця:
-    Δ <= -3: x0.3
-    Δ = -2: x0.5
-    Δ = -1: x0.8
-    Δ = 0: x1.0
-    Δ = +1: x1.2
-    Δ = +2: x1.5
-    Δ >= +3: x1.8
-    """
-
     delta = int(mob_level) - int(player_level)
 
     if delta <= -3:
@@ -57,22 +44,20 @@ def get_level_difference_multiplier(player_level, mob_level):
 # ==============================
 
 def calculate_exp_reward(player_level, mob):
-    """
-    Нова EXP-система.
-
-    BaseEXP береться з таблиці db.BASE_EXP_BY_LEVEL.
-    Якщо моб рівня гравця — дає BaseEXP цього рівня.
-    Якщо моб слабший/сильніший — працює multiplier_delta.
-    """
-
     mob_level = int(mob.get("level", player_level))
 
     base_exp = get_base_exp_for_level(mob_level)
-    multiplier = get_level_difference_multiplier(player_level, mob_level)
-
+    level_multiplier = get_level_difference_multiplier(player_level, mob_level)
     random_factor = random.uniform(0.9, 1.1)
 
-    exp = round(base_exp * multiplier * random_factor)
+    elite_multiplier = float(mob.get("elite_exp_multiplier", 1.0))
+
+    exp = round(
+        base_exp
+        * level_multiplier
+        * random_factor
+        * elite_multiplier
+    )
 
     if exp < 1:
         exp = 1
@@ -85,28 +70,25 @@ def calculate_exp_reward(player_level, mob):
 # ==============================
 
 def calculate_gold_reward(player_level, mob):
-    """
-    Обережна базова формула золота.
-    Якщо у моба явно задані gold/min_gold/max_gold — використовуємо їх.
-    Інакше даємо невелике золото від рівня моба.
-    """
-
     mob_level = int(mob.get("level", player_level))
 
     if "gold" in mob:
-        return round(float(mob["gold"]), 2)
+        gold = float(mob["gold"])
+    elif "gold_reward" in mob:
+        gold = float(mob["gold_reward"])
+    elif "min_gold" in mob and "max_gold" in mob:
+        gold = random.uniform(
+            float(mob["min_gold"]),
+            float(mob["max_gold"])
+        )
+    else:
+        min_gold = max(0.05, mob_level * 0.08)
+        max_gold = max(0.10, mob_level * 0.18)
+        gold = random.uniform(min_gold, max_gold)
 
-    if "gold_reward" in mob:
-        return round(float(mob["gold_reward"]), 2)
+    elite_multiplier = float(mob.get("elite_gold_multiplier", 1.0))
 
-    if "min_gold" in mob and "max_gold" in mob:
-        return round(random.uniform(float(mob["min_gold"]), float(mob["max_gold"])), 2)
-
-    # fallback
-    min_gold = max(0.05, mob_level * 0.08)
-    max_gold = max(0.10, mob_level * 0.18)
-
-    return round(random.uniform(min_gold, max_gold), 2)
+    return round(gold * elite_multiplier, 2)
 
 
 # ==============================
@@ -114,12 +96,6 @@ def calculate_gold_reward(player_level, mob):
 # ==============================
 
 def get_random_quantity(value):
-    """
-    Підтримка:
-    quantity: 1
-    quantity: [1, 3]
-    """
-
     if isinstance(value, list) or isinstance(value, tuple):
         if len(value) >= 2:
             return random.randint(int(value[0]), int(value[1]))
@@ -159,15 +135,6 @@ def roll_loot_from_loot_table(user_id, loot_table):
 
 
 def roll_loot_from_simple_keys(user_id, mob):
-    """
-    Сумісність із різними старими структурами мобів.
-    Підтримує:
-    - trash_item_id
-    - trash_items
-    - trash_drops
-    - loot_item_id
-    """
-
     messages = []
 
     possible_items = []
@@ -187,8 +154,12 @@ def roll_loot_from_simple_keys(user_id, mob):
     if not possible_items:
         return messages
 
-    # базовий шанс луту
     loot_chance = mob.get("loot_chance", 0.45)
+
+    # Елітний моб поки не має окремого equipment-дропу,
+    # але залишаємо трохи більший шанс на звичайний ресурсний лут.
+    if mob.get("is_elite"):
+        loot_chance = min(1.0, loot_chance + 0.20)
 
     if random.random() > loot_chance:
         return messages
@@ -213,12 +184,6 @@ def roll_loot_from_simple_keys(user_id, mob):
 
 
 def roll_loot(user_id, mob):
-    """
-    Гнучкий лут, щоб не ламати старі data/mobs.py.
-    Якщо є loot_table — використовує її.
-    Якщо ні — пробує старі ключі.
-    """
-
     if "loot_table" in mob and isinstance(mob["loot_table"], list):
         return roll_loot_from_loot_table(user_id, mob["loot_table"])
 
@@ -233,11 +198,6 @@ def roll_loot(user_id, mob):
 # ==============================
 
 def process_victory_reward(user_id, player_level, mob):
-    """
-    Основна функція нагороди за перемогу.
-    Її викликає handlers/combat.py.
-    """
-
     exp = calculate_exp_reward(
         player_level=player_level,
         mob=mob
