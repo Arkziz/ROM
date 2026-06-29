@@ -7,8 +7,47 @@ from db import (
     add_item,
     get_inventory_used_slots,
     get_bag_capacity,
-    get_base_exp_for_level
+    get_base_exp_for_level,
+    create_generated_equipment_item
 )
+
+
+# ==============================
+# ✅ EQUIPMENT DROP CONFIG
+# ==============================
+
+NORMAL_EQUIPMENT_DROP_CHANCE = 0.20
+ELITE_EQUIPMENT_DROP_CHANCE = 0.45
+
+
+def roll_normal_equipment_rarity():
+    """
+    Звичайний моб:
+    80% common
+    20% uncommon
+    """
+
+    roll = random.random()
+
+    if roll <= 0.80:
+        return "common"
+
+    return "uncommon"
+
+
+def roll_elite_equipment_rarity():
+    """
+    Елітний моб:
+    75% uncommon
+    25% rare
+    """
+
+    roll = random.random()
+
+    if roll <= 0.75:
+        return "uncommon"
+
+    return "rare"
 
 
 # ==============================
@@ -74,13 +113,16 @@ def calculate_gold_reward(player_level, mob):
 
     if "gold" in mob:
         gold = float(mob["gold"])
+
     elif "gold_reward" in mob:
         gold = float(mob["gold_reward"])
+
     elif "min_gold" in mob and "max_gold" in mob:
         gold = random.uniform(
             float(mob["min_gold"]),
             float(mob["max_gold"])
         )
+
     else:
         min_gold = max(0.05, mob_level * 0.08)
         max_gold = max(0.10, mob_level * 0.18)
@@ -92,7 +134,62 @@ def calculate_gold_reward(player_level, mob):
 
 
 # ==============================
-# ✅ LOOT
+# ✅ EQUIPMENT DROP
+# ==============================
+
+def roll_equipment_drop(user_id, mob):
+    """
+    Динамічний дроп екіпірування.
+
+    Звичайний моб:
+    - 20% шанс предмета
+    - 80% common / 20% uncommon
+
+    Елітний моб:
+    - 45% шанс предмета
+    - 75% uncommon / 25% rare
+    """
+
+    mob_level = int(mob.get("level", 1))
+    is_elite = bool(mob.get("is_elite", False))
+
+    if is_elite:
+        drop_chance = ELITE_EQUIPMENT_DROP_CHANCE
+    else:
+        drop_chance = NORMAL_EQUIPMENT_DROP_CHANCE
+
+    if random.random() > drop_chance:
+        return None
+
+    if is_elite:
+        rarity = roll_elite_equipment_rarity()
+    else:
+        rarity = roll_normal_equipment_rarity()
+
+    result = create_generated_equipment_item(
+        user_id=user_id,
+        item_level=mob_level,
+        rarity=rarity
+    )
+
+    if not result.get("success"):
+        return result.get("message", "🎒 Екіпірування не влізло в сумку.")
+
+    rarity_text = {
+        "common": "⚪",
+        "uncommon": "🟢",
+        "rare": "🔵",
+        "epic": "🟣"
+    }.get(rarity, "⚪")
+
+    if is_elite:
+        return f"{rarity_text} Елітний трофей: {result['name']}"
+
+    return f"{rarity_text} Знайдено спорядження: {result['name']}"
+
+
+# ==============================
+# ✅ SIMPLE LOOT
 # ==============================
 
 def get_random_quantity(value):
@@ -156,8 +253,7 @@ def roll_loot_from_simple_keys(user_id, mob):
 
     loot_chance = mob.get("loot_chance", 0.45)
 
-    # Елітний моб поки не має окремого equipment-дропу,
-    # але залишаємо трохи більший шанс на звичайний ресурсний лут.
+    # Елітний моб має трохи більший шанс на ресурсний/сірий лут.
     if mob.get("is_elite"):
         loot_chance = min(1.0, loot_chance + 0.20)
 
@@ -184,13 +280,25 @@ def roll_loot_from_simple_keys(user_id, mob):
 
 
 def roll_loot(user_id, mob):
+    messages = []
+
+    # 1. Сірий/ресурсний лут
     if "loot_table" in mob and isinstance(mob["loot_table"], list):
-        return roll_loot_from_loot_table(user_id, mob["loot_table"])
+        messages.extend(roll_loot_from_loot_table(user_id, mob["loot_table"]))
 
-    if "loot" in mob and isinstance(mob["loot"], list):
-        return roll_loot_from_loot_table(user_id, mob["loot"])
+    elif "loot" in mob and isinstance(mob["loot"], list):
+        messages.extend(roll_loot_from_loot_table(user_id, mob["loot"]))
 
-    return roll_loot_from_simple_keys(user_id, mob)
+    else:
+        messages.extend(roll_loot_from_simple_keys(user_id, mob))
+
+    # 2. Динамічний дроп екіпірування
+    equipment_message = roll_equipment_drop(user_id, mob)
+
+    if equipment_message:
+        messages.append(equipment_message)
+
+    return messages
 
 
 # ==============================

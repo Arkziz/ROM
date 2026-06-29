@@ -3128,3 +3128,409 @@ def set_current_hp(user_id, hp):
     ))
 
     conn.commit()
+
+
+# ==============================
+# ✅ DYNAMIC EQUIPMENT GENERATOR
+# ==============================
+
+DYNAMIC_RARITY_ICONS = {
+    "common": "⚪",
+    "uncommon": "🟢",
+    "rare": "🔵",
+    "epic": "🟣"
+}
+
+
+DYNAMIC_RARITY_NAMES = {
+    "common": "Звичайний",
+    "uncommon": "Незвичайний",
+    "rare": "Рідкісний",
+    "epic": "Епічний"
+}
+
+
+DYNAMIC_STAT_MULTIPLIERS = {
+    "common": 1.0,
+    "uncommon": 1.5,
+    "rare": 2.3,
+    "epic": 3.5
+}
+
+
+DYNAMIC_SELL_MULTIPLIERS = {
+    "common": 0.40,
+    "uncommon": 1.20,
+    "rare": 3.00,
+    "epic": 8.00
+}
+
+
+DYNAMIC_SLOT_NAMES = {
+    "main_hand": "Зброя",
+    "off_hand": "Друга рука",
+    "helmet": "Шолом",
+    "shoulders": "Наплічники",
+    "chest": "Обладунок",
+    "gloves": "Рукавиці",
+    "legs": "Поножі",
+    "boots": "Чоботи",
+    "necklace": "Амулет",
+    "ring": "Кільце"
+}
+
+
+def init_dynamic_equipment_system():
+    """
+    Додає службові поля для динамічних предметів.
+    Старі handlers не залежать від цих полів, але вони корисні для майбутнього:
+    - item_level
+    - is_generated
+    """
+
+    migrations = [
+        ("items", "item_level", "INTEGER DEFAULT 1"),
+        ("items", "is_generated", "INTEGER DEFAULT 0"),
+    ]
+
+    for table, column, column_type in migrations:
+        try:
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
+
+    conn.commit()
+
+
+def get_dynamic_slot_key():
+    return random.choice(SLOT_ORDER)
+
+
+def get_dynamic_stat_value(item_level, rarity, base=1.0):
+    multiplier = DYNAMIC_STAT_MULTIPLIERS.get(rarity, 1.0)
+    value = int(round(item_level * base * multiplier))
+
+    return max(1, value)
+
+
+def get_dynamic_sell_price(item_level, rarity):
+    multiplier = DYNAMIC_SELL_MULTIPLIERS.get(rarity, 0.40)
+
+    return round(max(0.10, item_level * multiplier), 2)
+
+
+def get_dynamic_weapon_name(slot_key, rarity, weapon_hands):
+    icon = DYNAMIC_RARITY_ICONS.get(rarity, "⚪")
+
+    if slot_key == "main_hand":
+        variants_1h = [
+            "Одноручний меч",
+            "Одноручний посох"
+        ]
+
+        variants_2h = [
+            "Дворучний меч",
+            "Дворучний посох",
+            "Лук",
+            "Арбалет"
+        ]
+
+        if weapon_hands == 2:
+            base_name = random.choice(variants_2h)
+        else:
+            base_name = random.choice(variants_1h)
+
+        return f"{icon} {base_name}"
+
+    if slot_key == "off_hand":
+        variants = [
+            "Щит",
+            "Магічний талісман",
+            "Кинджал для другої руки"
+        ]
+
+        return f"{icon} {random.choice(variants)}"
+
+    return f"{icon} Зброя"
+
+
+def get_dynamic_armor_name(slot_key, rarity):
+    icon = DYNAMIC_RARITY_ICONS.get(rarity, "⚪")
+    base_name = DYNAMIC_SLOT_NAMES.get(slot_key, "Річ")
+
+    return f"{icon} {base_name}"
+
+
+def generate_dynamic_equipment_stats(slot_key, item_level, rarity, weapon_hands=1):
+    """
+    Генерує бонуси під нашу поточну систему:
+    bonus_str, bonus_dex, bonus_int, bonus_wis, bonus_sta, pdef, mdef
+
+    Поки без класів і без armor_type.
+    """
+
+    b_str = 0
+    b_dex = 0
+    b_int = 0
+    b_wis = 0
+    b_sta = 0
+    pdef = 0
+    mdef = 0
+
+    # ==============================
+    # MAIN HAND
+    # ==============================
+
+    if slot_key == "main_hand":
+        # Частина зброї фізична, частина магічна.
+        # Поки без класів — повний рандом.
+        if random.random() < 0.55:
+            b_str = get_dynamic_stat_value(item_level, rarity, 1.0)
+
+            if weapon_hands == 2:
+                b_str = int(round(b_str * 1.35))
+        else:
+            b_int = get_dynamic_stat_value(item_level, rarity, 1.0)
+
+            if weapon_hands == 2:
+                b_int = int(round(b_int * 1.35))
+
+    # ==============================
+    # OFF HAND
+    # ==============================
+
+    elif slot_key == "off_hand":
+        choice = random.choice(["shield", "talisman", "dagger"])
+
+        if choice == "shield":
+            pdef = get_dynamic_stat_value(item_level, rarity, 1.2)
+            b_sta = get_dynamic_stat_value(item_level, rarity, 0.4)
+
+        elif choice == "talisman":
+            mdef = get_dynamic_stat_value(item_level, rarity, 1.2)
+            b_wis = get_dynamic_stat_value(item_level, rarity, 0.5)
+
+        else:
+            b_dex = get_dynamic_stat_value(item_level, rarity, 0.8)
+
+    # ==============================
+    # ARMOR SLOTS
+    # ==============================
+
+    elif slot_key in ["helmet", "shoulders", "chest", "gloves", "legs", "boots"]:
+        if slot_key == "chest":
+            pdef = get_dynamic_stat_value(item_level, rarity, 1.6)
+            b_sta = get_dynamic_stat_value(item_level, rarity, 0.6)
+
+        elif slot_key in ["helmet", "shoulders", "legs"]:
+            pdef = get_dynamic_stat_value(item_level, rarity, 1.0)
+            mdef = get_dynamic_stat_value(item_level, rarity, 0.4)
+
+        elif slot_key == "gloves":
+            pdef = get_dynamic_stat_value(item_level, rarity, 0.7)
+            b_dex = get_dynamic_stat_value(item_level, rarity, 0.5)
+
+        elif slot_key == "boots":
+            pdef = get_dynamic_stat_value(item_level, rarity, 0.6)
+            b_dex = get_dynamic_stat_value(item_level, rarity, 0.8)
+
+    # ==============================
+    # JEWELRY
+    # ==============================
+
+    elif slot_key == "necklace":
+        mdef = get_dynamic_stat_value(item_level, rarity, 1.3)
+        b_wis = get_dynamic_stat_value(item_level, rarity, 0.8)
+
+    elif slot_key == "ring":
+        stat_choice = random.choice(["str", "dex", "int", "wis", "sta"])
+
+        value = get_dynamic_stat_value(item_level, rarity, 0.9)
+
+        if stat_choice == "str":
+            b_str = value
+        elif stat_choice == "dex":
+            b_dex = value
+        elif stat_choice == "int":
+            b_int = value
+        elif stat_choice == "wis":
+            b_wis = value
+        elif stat_choice == "sta":
+            b_sta = value
+
+    # ==============================
+    # EXTRA BONUSES BY RARITY
+    # ==============================
+
+    if rarity in ["uncommon", "rare", "epic"]:
+        bonus_count = 1
+
+        if rarity == "rare":
+            bonus_count = 2
+
+        if rarity == "epic":
+            bonus_count = 3
+
+        for _ in range(bonus_count):
+            bonus_type = random.choice(["str", "dex", "int", "wis", "sta"])
+
+            bonus_value = get_dynamic_stat_value(item_level, rarity, 0.35)
+
+            if bonus_type == "str":
+                b_str += bonus_value
+            elif bonus_type == "dex":
+                b_dex += bonus_value
+            elif bonus_type == "int":
+                b_int += bonus_value
+            elif bonus_type == "wis":
+                b_wis += bonus_value
+            elif bonus_type == "sta":
+                b_sta += bonus_value
+
+    return {
+        "bonus_str": b_str,
+        "bonus_dex": b_dex,
+        "bonus_int": b_int,
+        "bonus_wis": b_wis,
+        "bonus_sta": b_sta,
+        "pdef": pdef,
+        "mdef": mdef
+    }
+
+
+def create_generated_equipment_item(user_id, item_level, rarity):
+    """
+    Створює нову випадкову річ у таблиці items
+    і кладе її в inventory гравця.
+
+    Повертає структуру:
+    {
+        success,
+        name,
+        inventory_id,
+        item_id,
+        lost,
+        message
+    }
+    """
+
+    init_dynamic_equipment_system()
+
+    item_level = int(item_level)
+    item_level = max(1, item_level)
+
+    if rarity not in ["common", "uncommon", "rare", "epic"]:
+        rarity = "common"
+
+    capacity = get_bag_capacity(user_id)
+    used_slots = get_inventory_used_slots(user_id)
+
+    if used_slots >= capacity:
+        return {
+            "success": False,
+            "lost": 1,
+            "message": "🎒 Сумка переповнена. Екіпірування не влізло."
+        }
+
+    slot_key = get_dynamic_slot_key()
+
+    weapon_hands = 1
+
+    if slot_key == "main_hand":
+        weapon_hands = 2 if random.random() < 0.45 else 1
+        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands)
+        type_ = "weapon"
+
+    elif slot_key == "off_hand":
+        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands)
+        type_ = "offhand"
+
+    else:
+        name = get_dynamic_armor_name(slot_key, rarity)
+        type_ = slot_key
+
+    rarity_name = DYNAMIC_RARITY_NAMES.get(rarity, "Звичайний")
+    name = f"{name} {item_level} рівня"
+
+    stats = generate_dynamic_equipment_stats(
+        slot_key=slot_key,
+        item_level=item_level,
+        rarity=rarity,
+        weapon_hands=weapon_hands
+    )
+
+    sell_price = get_dynamic_sell_price(item_level, rarity)
+
+    cursor.execute("""
+    INSERT INTO items (
+        name,
+        type,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        max_stack,
+        sell_price,
+        bonus_str,
+        bonus_dex,
+        bonus_int,
+        bonus_wis,
+        bonus_sta,
+        pdef,
+        mdef,
+        item_level,
+        is_generated
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        name,
+        type_,
+        rarity,
+        "equipment",
+        slot_key,
+        weapon_hands,
+        1,
+        sell_price,
+        stats["bonus_str"],
+        stats["bonus_dex"],
+        stats["bonus_int"],
+        stats["bonus_wis"],
+        stats["bonus_sta"],
+        stats["pdef"],
+        stats["mdef"],
+        item_level,
+        1
+    ))
+
+    item_id = cursor.lastrowid
+
+    cursor.execute("""
+    INSERT INTO inventory (
+        user_id,
+        item_id,
+        quantity,
+        durability
+    )
+    VALUES (?, ?, ?, ?)
+    """, (
+        user_id,
+        item_id,
+        1,
+        100
+    ))
+
+    inventory_id = cursor.lastrowid
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "lost": 0,
+        "name": name,
+        "rarity": rarity,
+        "rarity_name": rarity_name,
+        "slot_key": slot_key,
+        "item_id": item_id,
+        "inventory_id": inventory_id,
+        "message": f"{name}"
+    }
