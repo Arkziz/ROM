@@ -32,7 +32,7 @@ INVENTORY_CATEGORIES = [
     ("off_hand", "🛡️ Друга рука"),
     ("helmet", "🪖 Голова"),
     ("shoulders", "🦾 Плечі"),
-    ("chest", "🦹 Тіло"),
+    ("chest", "🥋 Тіло"),
     ("gloves", "🧤 Руки"),
     ("legs", "👖 Ноги"),
     ("boots", "👟 Взуття"),

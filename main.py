@@ -19,7 +19,9 @@ from handlers.contracts import register_contract_handlers
 from systems.notifications import start_notification_worker
 
 
-bot = telebot.TeleBot(TOKEN)
+# Важливо:
+# threaded=False зменшує ризик конфліктів SQLite з кількома потоками.
+bot = telebot.TeleBot(TOKEN, threaded=False)
 
 init_db()
 seed_items()

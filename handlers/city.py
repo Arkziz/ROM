@@ -24,12 +24,20 @@ from db import (
     get_wallet,
 
     get_common_equipment_shop_offer,
-    buy_common_equipment_from_trader
+    buy_common_equipment_from_trader,
+
+    get_sellable_equipment_items,
+    sell_inventory_item_to_trader,
+    get_item_by_inventory_id_full
 )
 
 from keyboards import (
     city_kb,
     trader_kb,
+    craft_kb,
+    guild_kb,
+    townhall_kb,
+    tavern_kb,
     alchemist_kb,
     blacksmith_kb,
     main_kb
@@ -41,8 +49,11 @@ from systems.potion_system import (
 )
 
 
+SELL_EQUIPMENT_ITEMS_PER_PAGE = 10
+
+
 # ==============================
-# HELPERS
+# HELPERS: CITY TEXTS
 # ==============================
 
 def build_city_text(user_id):
@@ -53,14 +64,107 @@ def build_city_text(user_id):
         f"🏙️ Місто\n\n"
         f"📍 Регіон:\n"
         f"{location['name']}\n\n"
-        f"🏕️ Табір мандрівників\n\n"
-        f"Тут можна продати лут, купити зілля, відремонтувати спорядження "
-        f"і підготуватися до наступного полювання.\n\n"
+        f"Ти стоїш на центральній площі табору мандрівників. "
+        f"Навколо чути дзвін ковадла, запах трав від лавки алхіміка "
+        f"та гомін найманців біля дошки контрактів.\n\n"
+        f"Куди підеш?\n\n"
+        f"• 🛒 Торговий ряд — купівля та продаж\n"
+        f"• ⚒️ Ремісничий квартал — коваль і алхімік\n"
+        f"• 📜 Гільдія Найманців — щоденні контракти\n"
+        f"• 🏛️ Ратуша — майбутні міські доручення\n"
+        f"• 🍺 Таверна — відпочинок і чутки"
+    )
+
+
+def build_trade_district_text():
+    return (
+        f"🛒 Торговий ряд\n\n"
+        f"Вузька вулиця заставлена возами, ящиками та прилавками. "
+        f"Торговці скуповують сірий лут, непотрібне спорядження "
+        f"і продають прості речі для мандрівників.\n\n"
+        f"Доступні дії:\n"
+        f"• 🪙 Продати весь хлам\n"
+        f"• 🧰 Продати спорядження\n"
+        f"• ⚪ Базове спорядження"
+    )
+
+
+def build_craft_district_text():
+    return (
+        f"⚒️ Ремісничий квартал\n\n"
+        f"Тут пахне вугіллям, розпеченим металом і настоями трав. "
+        f"Коваль лагодить спорядження, а алхімік продає зілля "
+        f"для тих, хто збирається повернутися на полювання.\n\n"
         f"Доступні місця:\n"
-        f"• 🛒 Торговець\n"
-        f"• 🧪 Алхімік\n"
-        f"• ⚒️ Коваль\n"
-        f"• 📜 Контракти"
+        f"• ⚒️ Коваль — ремонт спорядження\n"
+        f"• 🧪 Алхімік — купівля зілля"
+    )
+
+
+def build_guild_district_text(user_id):
+    status = get_contract_status(user_id)
+
+    text = (
+        f"📜 Гільдія Найманців\n\n"
+        f"На старій дошці висять замовлення від варти, торговців "
+        f"і мандрівників. Тут беруть роботу ті, хто не боїться "
+        f"вийти за межі табору.\n\n"
+    )
+
+    if not status["exists"]:
+        text += "❌ Персонажа не знайдено."
+        return text
+
+    if not status["unlocked"]:
+        text += (
+            f"🔒 Контракти відкриються з 5 рівня.\n"
+            f"👤 Твій рівень: {status['level']}\n"
+        )
+        return text
+
+    text += (
+        f"📆 Сьогодні виконано: "
+        f"{status['completed_today']}/{status['daily_limit']}\n"
+    )
+
+    active = status["active_contract"]
+
+    if active:
+        text += (
+            f"\n📌 Активний контракт:\n"
+            f"🎯 Ціль: {active['target_mob_name']}\n"
+            f"📈 Прогрес: {active['current_kills']}/{active['target_kills']}\n"
+            f"✨ Нагорода: {active['reward_exp']} EXP\n"
+        )
+    else:
+        text += "\n✅ Можна переглянути дошку контрактів."
+
+    return text
+
+
+def build_townhall_text():
+    return (
+        f"🏛️ Ратуша\n\n"
+        f"Усередині тихо. На стінах висять старі карти околиць, "
+        f"а за великим столом лежать списки податків, звіти варти "
+        f"та прохання мешканців.\n\n"
+        f"Староста міста поки не має для тебе особливих доручень.\n\n"
+        f"ℹ️ У майбутньому тут з’являться міські квести, сюжетні доручення "
+        f"та завдання від старости."
+    )
+
+
+def build_tavern_text():
+    return (
+        f"🍺 Таверна\n\n"
+        f"Усередині тепло, пахне юшкою, свіжим хлібом і димом від каміна. "
+        f"Мандрівники обмінюються чутками про небезпечних істот, "
+        f"елітних ворогів і старі руїни за межами табору.\n\n"
+        f"Поки що таверна працює як атмосферне місце для майбутніх функцій.\n\n"
+        f"ℹ️ Пізніше тут можна буде додати:\n"
+        f"• 🛏️ Відпочинок для прискорення відновлення HP\n"
+        f"• 🍲 Їжу з тимчасовими бонусами\n"
+        f"• 🗣️ Чутки про елітних мобів або босів"
     )
 
 
@@ -168,6 +272,10 @@ def build_main_menu_text(user_id):
 
     return text
 
+
+# ==============================
+# HELPERS: SERVICES
+# ==============================
 
 def build_alchemist_catalog():
     kb = types.InlineKeyboardMarkup()
@@ -296,8 +404,178 @@ def build_common_equipment_shop_text(user_id):
         ))
 
     kb.add(types.InlineKeyboardButton(
-        text="⬅️ До торговця",
-        callback_data="back_to_trader"
+        text="⬅️ До торгового ряду",
+        callback_data="back_to_trade_district"
+    ))
+
+    return text, kb
+
+
+def build_sell_equipment_list_text(user_id, page=0):
+    items = get_sellable_equipment_items(user_id)
+
+    if not items:
+        text = (
+            f"🧰 Продаж спорядження\n\n"
+            f"У тебе немає невдягненого спорядження для продажу.\n\n"
+            f"ℹ️ Вдягнені речі не показуються у цьому списку."
+        )
+
+        kb = types.InlineKeyboardMarkup()
+        kb.add(types.InlineKeyboardButton(
+            text="⬅️ До торгового ряду",
+            callback_data="back_to_trade_district"
+        ))
+
+        return text, kb
+
+    total_items = len(items)
+    total_pages = max(1, (total_items + SELL_EQUIPMENT_ITEMS_PER_PAGE - 1) // SELL_EQUIPMENT_ITEMS_PER_PAGE)
+
+    if page < 0:
+        page = 0
+
+    if page >= total_pages:
+        page = total_pages - 1
+
+    start = page * SELL_EQUIPMENT_ITEMS_PER_PAGE
+    end = start + SELL_EQUIPMENT_ITEMS_PER_PAGE
+    page_items = items[start:end]
+
+    text = (
+        f"🧰 Продаж спорядження\n\n"
+        f"Торговець готовий купити невдягнені речі з твого інвентаря.\n"
+        f"Вдягнене спорядження продавати не можна.\n\n"
+        f"📄 Сторінка: {page + 1}/{total_pages}\n\n"
+        f"Оберіть предмет:"
+    )
+
+    kb = types.InlineKeyboardMarkup()
+
+    for item in page_items:
+        (
+            inv_id,
+            item_id,
+            name,
+            type_,
+            rarity,
+            category,
+            slot_key,
+            weapon_hands,
+            quantity,
+            max_stack,
+            durability,
+            b_str,
+            b_dex,
+            b_int,
+            b_wis,
+            b_sta,
+            pdef,
+            mdef,
+            sell_price
+        ) = item
+
+        quantity = quantity or 1
+        sell_price = sell_price or 0
+        total_price = round(quantity * sell_price, 2)
+
+        durability_text = ""
+
+        if durability is not None:
+            durability_text = f" [{durability}/100]"
+
+        kb.add(types.InlineKeyboardButton(
+            text=f"{name}{durability_text} — {total_price:.2f} 🪙",
+            callback_data=f"sell_eq_confirm:{inv_id}:{page}"
+        ))
+
+    nav_buttons = []
+
+    if page > 0:
+        nav_buttons.append(types.InlineKeyboardButton(
+            text="⬅️ Назад",
+            callback_data=f"sell_eq_page:{page - 1}"
+        ))
+
+    if page < total_pages - 1:
+        nav_buttons.append(types.InlineKeyboardButton(
+            text="➡️ Далі",
+            callback_data=f"sell_eq_page:{page + 1}"
+        ))
+
+    if nav_buttons:
+        kb.add(*nav_buttons)
+
+    kb.add(types.InlineKeyboardButton(
+        text="⬅️ До торгового ряду",
+        callback_data="back_to_trade_district"
+    ))
+
+    return text, kb
+
+
+def build_sell_equipment_confirm_text(user_id, inventory_id, page=0):
+    item = get_item_by_inventory_id_full(inventory_id)
+
+    if not item:
+        text = "❌ Предмет не знайдено."
+
+        kb = types.InlineKeyboardMarkup()
+        kb.add(types.InlineKeyboardButton(
+            text="⬅️ Назад",
+            callback_data=f"sell_eq_page:{page}"
+        ))
+
+        return text, kb
+
+    (
+        inv_id,
+        item_id,
+        name,
+        type_,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        quantity,
+        max_stack,
+        durability,
+        b_str,
+        b_dex,
+        b_int,
+        b_wis,
+        b_sta,
+        pdef,
+        mdef,
+        sell_price
+    ) = item
+
+    quantity = quantity or 1
+    sell_price = sell_price or 0
+    total_price = round(quantity * sell_price, 2)
+
+    text = (
+        f"🪙 Підтвердження продажу\n\n"
+        f"Ти точно хочеш продати цей предмет торговцю?\n\n"
+        f"📦 {name} x{quantity}\n"
+        f"💰 Ціна: {total_price:.2f} 🪙\n"
+    )
+
+    if durability is not None:
+        text += f"🛠️ Міцність: {durability}/100\n"
+
+    text += "\n⚠️ Після продажу предмет зникне з інвентаря."
+
+    kb = types.InlineKeyboardMarkup()
+
+    kb.add(types.InlineKeyboardButton(
+        text=f"✅ Продати за {total_price:.2f} 🪙",
+        callback_data=f"sell_eq_do:{inventory_id}:{page}"
+    ))
+
+    kb.add(types.InlineKeyboardButton(
+        text="❌ Назад",
+        callback_data=f"sell_eq_page:{page}"
     ))
 
     return text, kb
@@ -310,7 +588,7 @@ def build_common_equipment_shop_text(user_id):
 def register_city_handlers(bot):
 
     # ==============================
-    # CITY
+    # CITY ROOT
     # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "🏙️ Місто")
@@ -333,26 +611,95 @@ def register_city_handlers(bot):
             reply_markup=main_kb()
         )
 
-    # ==============================
-    # TRADER
-    # ==============================
-
-    @bot.message_handler(func=lambda m: m.text == "🛒 Торговець")
-    def show_trader(message):
-        text = (
-            f"🛒 Торговець\n\n"
-            f"Торговець скуповує сірий лут, здобутий у бою, "
-            f"а також продає просте базове спорядження.\n\n"
-            f"Доступні дії:\n"
-            f"• 🪙 Продати весь хлам\n"
-            f"• ⚪ Базове спорядження"
-        )
+    @bot.message_handler(func=lambda m: m.text == "🔙 Місто")
+    def back_to_city(message):
+        user_id = message.from_user.id
 
         bot.send_message(
             message.chat.id,
-            text,
+            build_city_text(user_id),
+            reply_markup=city_kb()
+        )
+
+    # ==============================
+    # DISTRICTS
+    # ==============================
+
+    @bot.message_handler(func=lambda m: m.text == "🛒 Торговий ряд")
+    def show_trade_district(message):
+        bot.send_message(
+            message.chat.id,
+            build_trade_district_text(),
             reply_markup=trader_kb()
         )
+
+    @bot.message_handler(func=lambda m: m.text == "⚒️ Ремісничий квартал")
+    def show_craft_district(message):
+        bot.send_message(
+            message.chat.id,
+            build_craft_district_text(),
+            reply_markup=craft_kb()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "📜 Гільдія Найманців")
+    def show_guild_district(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            build_guild_district_text(user_id),
+            reply_markup=guild_kb()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "🏛️ Ратуша")
+    def show_townhall(message):
+        bot.send_message(
+            message.chat.id,
+            build_townhall_text(),
+            reply_markup=townhall_kb()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "🍺 Таверна")
+    def show_tavern(message):
+        bot.send_message(
+            message.chat.id,
+            build_tavern_text(),
+            reply_markup=tavern_kb()
+        )
+
+    # ==============================
+    # DISTRICT BACK BUTTONS
+    # ==============================
+
+    @bot.message_handler(func=lambda m: m.text == "🔙 Торговий ряд")
+    def back_to_trade_district_message(message):
+        bot.send_message(
+            message.chat.id,
+            build_trade_district_text(),
+            reply_markup=trader_kb()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "🔙 Ремісничий квартал")
+    def back_to_craft_district_message(message):
+        bot.send_message(
+            message.chat.id,
+            build_craft_district_text(),
+            reply_markup=craft_kb()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "🔙 Гільдія Найманців")
+    def back_to_guild_district_message(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            build_guild_district_text(user_id),
+            reply_markup=guild_kb()
+        )
+
+    # ==============================
+    # TRADING DISTRICT
+    # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "🪙 Продати весь хлам")
     def sell_trash(message):
@@ -382,6 +729,84 @@ def register_city_handlers(bot):
             message.chat.id,
             text,
             reply_markup=trader_kb()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "🧰 Продати спорядження")
+    def show_sell_equipment(message):
+        user_id = message.from_user.id
+
+        text, kb = build_sell_equipment_list_text(user_id, page=0)
+
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("sell_eq_page:"))
+    def sell_equipment_page(call):
+        user_id = call.from_user.id
+        page = int(call.data.split(":")[1])
+
+        text, kb = build_sell_equipment_list_text(user_id, page=page)
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("sell_eq_confirm:"))
+    def sell_equipment_confirm(call):
+        user_id = call.from_user.id
+
+        parts = call.data.split(":")
+        inventory_id = int(parts[1])
+        page = int(parts[2]) if len(parts) > 2 else 0
+
+        text, kb = build_sell_equipment_confirm_text(
+            user_id=user_id,
+            inventory_id=inventory_id,
+            page=page
+        )
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("sell_eq_do:"))
+    def sell_equipment_do(call):
+        user_id = call.from_user.id
+
+        parts = call.data.split(":")
+        inventory_id = int(parts[1])
+        page = int(parts[2]) if len(parts) > 2 else 0
+
+        result = sell_inventory_item_to_trader(
+            user_id=user_id,
+            inventory_id=inventory_id
+        )
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            result["message"],
+            reply_markup=trader_kb()
+        )
+
+        text, kb = build_sell_equipment_list_text(user_id, page=page)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
         )
 
     @bot.message_handler(func=lambda m: m.text == "⚪ Базове спорядження")
@@ -422,27 +847,28 @@ def register_city_handlers(bot):
             reply_markup=kb
         )
 
+    @bot.callback_query_handler(func=lambda call: call.data == "back_to_trade_district")
+    def back_to_trade_district(call):
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            build_trade_district_text(),
+            reply_markup=trader_kb()
+        )
+
     @bot.callback_query_handler(func=lambda call: call.data == "back_to_trader")
     def back_to_trader_callback(call):
         bot.answer_callback_query(call.id)
 
-        text = (
-            f"🛒 Торговець\n\n"
-            f"Торговець скуповує сірий лут, здобутий у бою, "
-            f"а також продає просте базове спорядження.\n\n"
-            f"Доступні дії:\n"
-            f"• 🪙 Продати весь хлам\n"
-            f"• ⚪ Базове спорядження"
-        )
-
         bot.send_message(
             call.message.chat.id,
-            text,
+            build_trade_district_text(),
             reply_markup=trader_kb()
         )
 
     # ==============================
-    # ALCHEMIST
+    # CRAFT DISTRICT: ALCHEMIST
     # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "🧪 Алхімік")
@@ -502,7 +928,7 @@ def register_city_handlers(bot):
         )
 
     # ==============================
-    # BLACKSMITH
+    # CRAFT DISTRICT: BLACKSMITH
     # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "⚒️ Коваль")
@@ -569,18 +995,8 @@ def register_city_handlers(bot):
         )
 
     # ==============================
-    # BACK BUTTONS
+    # BACK TO MAIN
     # ==============================
-
-    @bot.message_handler(func=lambda m: m.text == "🔙 Місто")
-    def back_to_city(message):
-        user_id = message.from_user.id
-
-        bot.send_message(
-            message.chat.id,
-            build_city_text(user_id),
-            reply_markup=city_kb()
-        )
 
     @bot.message_handler(func=lambda m: m.text == "🔙 Назад")
     def back_to_main(message):

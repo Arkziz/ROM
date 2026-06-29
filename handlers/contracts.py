@@ -10,7 +10,7 @@ from db import (
     abandon_active_contract
 )
 
-from keyboards import city_kb
+from keyboards import contracts_kb
 
 
 # ==============================
@@ -21,7 +21,7 @@ def get_available_contract_mobs(player_level):
     """
     Повертає мобів, які реально доступні гравцю для контракту.
 
-    Базове правило:
+    Правило:
     - моб має бути відкритий за min_player_level;
     - рівень моба має бути у діапазоні PlayerLevel ± 1.
 
@@ -74,9 +74,9 @@ def build_contracts_text(user_id):
     active_contract = status["active_contract"]
 
     text = (
-        f"📜 Гільдія Найманців\n\n"
-        f"На старій дошці висять свіжі замовлення від мандрівників, "
-        f"торговців і варти табору.\n\n"
+        f"📜 Дошка контрактів\n\n"
+        f"На дошці висять замовлення від варти, торговців і мандрівників.\n"
+        f"Тут можна взяти щоденне завдання на конкретну істоту.\n\n"
         f"📆 Сьогодні виконано: {completed_today}/{daily_limit}\n"
     )
 
@@ -100,7 +100,8 @@ def build_contracts_text(user_id):
             f"📈 Прогрес: "
             f"{active_contract['current_kills']}/{active_contract['target_kills']}\n"
             f"✨ Нагорода: {active_contract['reward_exp']} EXP\n\n"
-            f"ℹ️ Прогрес зараховується тільки за вбивство саме цієї істоти."
+            f"ℹ️ Прогрес зараховується тільки за вбивство саме цієї істоти.\n"
+            f"⭐ Елітна версія цієї істоти також зараховується."
         )
 
         kb.add(types.InlineKeyboardButton(
@@ -145,7 +146,7 @@ def register_contract_handlers(bot):
         bot.send_message(
             message.chat.id,
             "📜 Ти підійшов до дошки контрактів.",
-            reply_markup=city_kb()
+            reply_markup=contracts_kb()
         )
 
         text, kb = build_contracts_text(user_id)
@@ -168,7 +169,7 @@ def register_contract_handlers(bot):
             bot.send_message(
                 call.message.chat.id,
                 status["message"],
-                reply_markup=city_kb()
+                reply_markup=contracts_kb()
             )
             return
 
@@ -181,7 +182,7 @@ def register_contract_handlers(bot):
                     f"🔒 Контракти відкриються з 5 рівня.\n"
                     f"👤 Твій рівень: {status['level']}"
                 ),
-                reply_markup=city_kb()
+                reply_markup=contracts_kb()
             )
             return
 
@@ -193,7 +194,7 @@ def register_contract_handlers(bot):
             bot.send_message(
                 call.message.chat.id,
                 "❌ Не вдалося знайти доступного моба для контракту.",
-                reply_markup=city_kb()
+                reply_markup=contracts_kb()
             )
             return
 
@@ -211,7 +212,7 @@ def register_contract_handlers(bot):
         bot.send_message(
             call.message.chat.id,
             result["message"],
-            reply_markup=city_kb()
+            reply_markup=contracts_kb()
         )
 
         text, kb = build_contracts_text(user_id)
@@ -233,7 +234,7 @@ def register_contract_handlers(bot):
         bot.send_message(
             call.message.chat.id,
             result["message"],
-            reply_markup=city_kb()
+            reply_markup=contracts_kb()
         )
 
         text, kb = build_contracts_text(user_id)

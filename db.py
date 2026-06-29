@@ -18,7 +18,7 @@ EQUIPMENT_SLOTS = {
     "off_hand": "🛡️ Друга рука",
     "helmet": "🪖 Голова",
     "shoulders": "🦾 Плечі",
-    "chest": "🦹 Тіло",
+    "chest": "🥋 Тіло",
     "gloves": "🧤 Руки",
     "legs": "👖 Ноги",
     "boots": "👟 Взуття",
@@ -3838,4 +3838,147 @@ def buy_common_equipment_from_trader(user_id, slot_key):
             f"🏷 Рівень предмета: {player_level}\n"
             f"💳 Сплачено: {price:.2f} 🪙"
         )
+    }
+
+# ==============================
+# ✅ SELL EQUIPMENT TO TRADER
+# ==============================
+
+def get_sellable_equipment_items(user_id):
+    """
+    Повертає невдягнене спорядження, яке можна продати торговцю.
+    Вдягнені речі не показуються.
+    """
+
+    equipped_slots = get_all_equipped_slots(user_id)
+    equipped_inventory_ids = set()
+
+    for slot_key, inventory_id in equipped_slots.items():
+        if inventory_id:
+            equipped_inventory_ids.add(inventory_id)
+
+    cursor.execute("""
+    SELECT
+        inventory.id,
+        inventory.item_id,
+        items.name,
+        items.type,
+        items.rarity,
+        items.category,
+        items.slot_key,
+        items.weapon_hands,
+        inventory.quantity,
+        items.max_stack,
+        inventory.durability,
+        items.bonus_str,
+        items.bonus_dex,
+        items.bonus_int,
+        items.bonus_wis,
+        items.bonus_sta,
+        items.pdef,
+        items.mdef,
+        items.sell_price
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.user_id=?
+      AND items.category='equipment'
+    ORDER BY inventory.id ASC
+    """, (user_id,))
+
+    rows = cursor.fetchall()
+
+    result = []
+
+    for row in rows:
+        inventory_id = row[0]
+
+        if inventory_id in equipped_inventory_ids:
+            continue
+
+        result.append(row)
+
+    return result
+
+
+def sell_inventory_item_to_trader(user_id, inventory_id):
+    """
+    Продає один предмет торговцю.
+
+    Правила:
+    - продавати можна тільки у Торговця;
+    - вдягнений предмет продати не можна;
+    - предмет видаляється з інвентаря;
+    - гравець отримує золото за sell_price.
+    """
+
+    if is_inventory_item_equipped(user_id, inventory_id):
+        return {
+            "success": False,
+            "message": (
+                "❌ Неможливо продати вдягнений предмет.\n\n"
+                "Спочатку зніми його з персонажа."
+            )
+        }
+
+    cursor.execute("""
+    SELECT
+        inventory.id,
+        inventory.item_id,
+        items.name,
+        items.category,
+        inventory.quantity,
+        items.sell_price
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.id=? AND inventory.user_id=?
+    """, (inventory_id, user_id))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "success": False,
+            "message": "❌ Предмет не знайдено в інвентарі."
+        }
+
+    inv_id, item_id, name, category, quantity, sell_price = row
+
+    quantity = quantity or 1
+    sell_price = sell_price or 0
+
+    if category != "equipment":
+        return {
+            "success": False,
+            "message": "❌ Через це меню можна продавати тільки спорядження."
+        }
+
+    if sell_price <= 0:
+        return {
+            "success": False,
+            "message": "❌ Цей предмет не має ціни продажу."
+        }
+
+    total_gold = round(quantity * sell_price, 2)
+
+    cursor.execute("""
+    DELETE FROM inventory
+    WHERE id=? AND user_id=?
+    """, (inventory_id, user_id))
+
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold + ?
+    WHERE user_id=?
+    """, (total_gold, user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": (
+            f"🪙 Спорядження продано торговцю.\n\n"
+            f"📦 {name} x{quantity}\n"
+            f"💰 Отримано: {total_gold:.2f} 🪙"
+        ),
+        "gold_earned": total_gold
     }
