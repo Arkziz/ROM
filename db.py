@@ -43,9 +43,9 @@ SLOT_ORDER = [
 
 RARITY_REPAIR_MULTIPLIERS = {
     "common": 1.0,
-    "uncommon": 3.0,
-    "rare": 10.0,
-    "epic": 25.0
+    "uncommon": 2.5,
+    "rare": 7.0,
+    "epic": 18.0
 }
 
 
@@ -139,6 +139,18 @@ def init_db():
         ("items", "bonus_sta", "INTEGER DEFAULT 0"),
         ("items", "pdef", "INTEGER DEFAULT 0"),
         ("items", "mdef", "INTEGER DEFAULT 0"),
+        ("items", "item_level", "INTEGER DEFAULT 1"),
+        ("items", "is_generated", "INTEGER DEFAULT 0"),
+
+        ("users", "daily_contracts_completed", "INTEGER DEFAULT 0"),
+        ("users", "daily_contract_date", "TEXT DEFAULT ''"),
+
+        ("users", "energy", "INTEGER DEFAULT 40"),
+        ("users", "last_energy_update", "TEXT DEFAULT ''"),
+        ("users", "energy_full_notified", "INTEGER DEFAULT 1"),
+
+        ("users", "last_hp_regen_update", "TEXT DEFAULT ''"),
+        ("users", "hp_full_notified", "INTEGER DEFAULT 1"),
     ]
 
     for table, column, column_type in migrations:
@@ -147,22 +159,15 @@ def init_db():
         except Exception:
             pass
 
-    # ==============================
-    # REPAIR OLD USERS
-    # ==============================
-
     cursor.execute("UPDATE users SET gold = 0 WHERE gold IS NULL")
     cursor.execute("UPDATE users SET kills = 0 WHERE kills IS NULL")
     cursor.execute("UPDATE users SET bag_slots = 20 WHERE bag_slots IS NULL")
+
     cursor.execute("""
     UPDATE users
     SET current_location = 'start_path'
     WHERE current_location IS NULL OR current_location = ''
     """)
-
-    # ==============================
-    # REPAIR OLD INVENTORY
-    # ==============================
 
     cursor.execute("UPDATE inventory SET quantity = 1 WHERE quantity IS NULL")
 
@@ -184,79 +189,42 @@ def init_db():
 
 def seed_items():
     items = [
-        # id, name, type, rarity, category, slot_key, weapon_hands,
-        # max_stack, sell_price,
-        # str, dex, int, wis, sta, pdef, mdef
-
-        # ==============================
-        # MAIN HAND
-        # ==============================
         (1, "⚪ Старий меч", "weapon", "common", "equipment", "main_hand", 1, 1, 1.00, 1, 0, 0, 0, 0, 0, 0),
         (2, "🟢 Залізний меч", "weapon", "uncommon", "equipment", "main_hand", 1, 1, 3.00, 2, 0, 0, 0, 0, 0, 0),
         (3, "🔵 Меч воїна", "weapon", "rare", "equipment", "main_hand", 1, 1, 8.00, 4, 0, 0, 0, 0, 0, 0),
         (4, "🟣 Епічний клинок", "weapon", "epic", "equipment", "main_hand", 2, 1, 25.00, 7, 0, 0, 0, 0, 0, 0),
 
-        # ==============================
-        # OFF HAND
-        # ==============================
         (8, "⚪ Деревʼяний щит", "offhand", "common", "equipment", "off_hand", 1, 1, 1.00, 0, 0, 0, 0, 1, 2, 0),
         (9, "🟢 Малий круглий щит", "offhand", "uncommon", "equipment", "off_hand", 1, 1, 3.00, 0, 0, 0, 0, 2, 4, 0),
         (10, "🔵 Рунічна сфера", "offhand", "rare", "equipment", "off_hand", 1, 1, 8.00, 0, 0, 1, 3, 0, 0, 5),
 
-        # ==============================
-        # HELMET
-        # ==============================
         (11, "⚪ Старий шолом", "helmet", "common", "equipment", "helmet", 1, 1, 1.00, 0, 0, 0, 0, 1, 2, 0),
         (12, "🟢 Шкіряний капюшон", "helmet", "uncommon", "equipment", "helmet", 1, 1, 3.00, 0, 1, 0, 1, 1, 3, 1),
 
-        # ==============================
-        # SHOULDERS
-        # ==============================
         (13, "⚪ Потерті наплічники", "shoulders", "common", "equipment", "shoulders", 1, 1, 1.00, 0, 0, 0, 0, 1, 2, 0),
         (14, "🟢 Наплічники слідопита", "shoulders", "uncommon", "equipment", "shoulders", 1, 1, 3.00, 0, 1, 0, 0, 2, 4, 0),
 
-        # ==============================
-        # CHEST
-        # ==============================
         (5, "⚪ Стара броня", "armor", "common", "equipment", "chest", 1, 1, 1.00, 0, 0, 0, 1, 1, 2, 0),
         (6, "🟢 Шкіряна броня", "armor", "uncommon", "equipment", "chest", 1, 1, 3.00, 0, 1, 0, 2, 2, 4, 1),
         (7, "🔵 Лицарська броня", "armor", "rare", "equipment", "chest", 1, 1, 8.00, 0, 2, 0, 3, 4, 8, 2),
 
-        # ==============================
-        # GLOVES
-        # ==============================
         (15, "⚪ Старі рукавиці", "gloves", "common", "equipment", "gloves", 1, 1, 1.00, 0, 0, 0, 0, 1, 1, 0),
         (16, "🟢 Рукавиці мисливця", "gloves", "uncommon", "equipment", "gloves", 1, 1, 3.00, 1, 1, 0, 0, 1, 2, 0),
 
-        # ==============================
-        # LEGS
-        # ==============================
         (17, "⚪ Старі поножі", "legs", "common", "equipment", "legs", 1, 1, 1.00, 0, 0, 0, 0, 1, 2, 0),
         (18, "🟢 Шкіряні поножі", "legs", "uncommon", "equipment", "legs", 1, 1, 3.00, 0, 1, 0, 0, 2, 4, 0),
 
-        # ==============================
-        # BOOTS
-        # ==============================
         (19, "⚪ Старі чоботи", "boots", "common", "equipment", "boots", 1, 1, 1.00, 0, 1, 0, 0, 0, 1, 0),
         (20, "🟢 Чоботи слідопита", "boots", "uncommon", "equipment", "boots", 1, 1, 3.00, 0, 2, 0, 0, 1, 2, 0),
 
-        # ==============================
-        # NECKLACE
-        # ==============================
         (21, "⚪ Простий амулет", "necklace", "common", "equipment", "necklace", 1, 1, 1.00, 0, 0, 0, 1, 0, 0, 2),
         (22, "🟢 Амулет мудрості", "necklace", "uncommon", "equipment", "necklace", 1, 1, 3.00, 0, 0, 0, 3, 0, 0, 5),
         (23, "🔵 Рунічне намисто", "necklace", "rare", "equipment", "necklace", 1, 1, 8.00, 0, 0, 1, 5, 0, 0, 10),
 
-        # ==============================
-        # RING
-        # ==============================
         (24, "⚪ Мідне кільце", "ring", "common", "equipment", "ring", 1, 1, 1.00, 1, 0, 0, 0, 0, 0, 0),
         (25, "🟢 Перстень спритності", "ring", "uncommon", "equipment", "ring", 1, 1, 3.00, 0, 3, 0, 0, 0, 0, 0),
         (26, "🔵 Перстень сили", "ring", "rare", "equipment", "ring", 1, 1, 8.00, 5, 0, 0, 0, 0, 0, 0),
 
-        # ==============================
-        # TRASH
-        # ==============================
         (101, "🐾 Густа вовча шкура", "trash", "grey", "trash", None, 1, 20, 0.50, 0, 0, 0, 0, 0, 0, 0),
         (102, "🐗 Жорстка щетина", "trash", "grey", "trash", None, 1, 20, 0.15, 0, 0, 0, 0, 0, 0, 0),
         (103, "🦡 Борсучий жир", "trash", "grey", "trash", None, 1, 20, 0.25, 0, 0, 0, 0, 0, 0, 0),
@@ -264,17 +232,11 @@ def seed_items():
         (105, "🕷️ Липка павутина", "trash", "grey", "trash", None, 1, 20, 0.60, 0, 0, 0, 0, 0, 0, 0),
         (106, "💎 Тріснутий рунічний уламок", "trash", "grey", "trash", None, 1, 20, 0.75, 0, 0, 0, 0, 0, 0, 0),
 
-        # ==============================
-        # POTIONS
-        # ==============================
         (201, "🔴 Мале зілля здоров’я", "potion_hp", "common", "potion", None, 1, 10, 1.00, 0, 0, 0, 0, 0, 0, 0),
         (202, "🔵 Мале зілля мани", "potion_mp", "common", "potion", None, 1, 10, 1.20, 0, 0, 0, 0, 0, 0, 0),
         (203, "🔴 Середнє зілля здоров’я", "potion_hp_medium", "common", "potion", None, 1, 10, 3.00, 0, 0, 0, 0, 0, 0, 0),
         (204, "🔵 Середнє зілля мани", "potion_mp_medium", "common", "potion", None, 1, 10, 3.60, 0, 0, 0, 0, 0, 0, 0),
 
-        # ==============================
-        # RUNES
-        # ==============================
         (301, "💎 Руна Сили I", "rune_str", "common", "rune", None, 1, 5, 1.00, 1, 0, 0, 0, 0, 0, 0),
     ]
 
@@ -418,7 +380,6 @@ def set_equipped_slot(user_id, slot_key, inventory_id):
     WHERE user_id=? AND slot_key=?
     """, (inventory_id, user_id, slot_key))
 
-    # legacy compatibility
     if slot_key == "main_hand":
         cursor.execute("""
         UPDATE users
@@ -445,7 +406,6 @@ def unequip_slot(user_id, slot_key):
     WHERE user_id=? AND slot_key=?
     """, (user_id, slot_key))
 
-    # legacy compatibility
     if slot_key == "main_hand":
         cursor.execute("""
         UPDATE users
@@ -473,7 +433,6 @@ def get_all_equipped_slots(user_id):
     """, (user_id,))
 
     rows = cursor.fetchall()
-
     result = {}
 
     for slot_key, inventory_id in rows:
@@ -487,7 +446,6 @@ def get_all_equipped_slots(user_id):
 
 def get_all_equipped_items(user_id):
     equipped_slots = get_all_equipped_slots(user_id)
-
     result = []
 
     for slot_key in SLOT_ORDER:
@@ -509,7 +467,6 @@ def get_all_equipped_items(user_id):
 
 
 def get_equipped_inventory_ids(user_id):
-    # compatibility function for old handlers
     main_hand = get_equipped_slot(user_id, "main_hand")
     chest = get_equipped_slot(user_id, "chest")
     return main_hand, chest
@@ -626,10 +583,7 @@ def get_bag_capacity(user_id):
 
     row = cursor.fetchone()
 
-    if not row:
-        return 20
-
-    if row[0] is None:
+    if not row or row[0] is None:
         return 20
 
     return row[0]
@@ -790,7 +744,6 @@ def get_inventory(user_id):
 
 
 def get_inventory_detailed(user_id):
-    # compatibility return shape: 17 fields
     cursor.execute("""
     SELECT
         inventory.id,
@@ -820,7 +773,6 @@ def get_inventory_detailed(user_id):
 
 
 def get_item_by_inventory_id(inventory_id):
-    # compatibility return shape: 17 fields
     cursor.execute("""
     SELECT
         inventory.id,
@@ -948,6 +900,50 @@ def find_first_item_stack_by_type(user_id, item_type):
 
 
 # ==============================
+# ✅ ITEM LEVEL REQUIREMENT
+# ==============================
+
+def get_player_level(user_id):
+    cursor.execute("""
+    SELECT level
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return 1
+
+    return row[0] or 1
+
+
+def get_item_required_level_by_inventory_id(inventory_id):
+    try:
+        init_dynamic_equipment_system()
+    except Exception:
+        pass
+
+    try:
+        cursor.execute("""
+        SELECT items.item_level
+        FROM inventory
+        JOIN items ON inventory.item_id = items.id
+        WHERE inventory.id=?
+        """, (inventory_id,))
+
+        row = cursor.fetchone()
+
+        if not row:
+            return 1
+
+        return row[0] or 1
+
+    except Exception:
+        return 1
+
+
+# ==============================
 # ✅ EQUIPMENT
 # ==============================
 
@@ -1002,10 +998,6 @@ def equip_inventory_item(user_id, inventory_id):
     if category != "equipment":
         return "❌ Цей предмет не можна одягти"
 
-    # ==============================
-    # LEVEL REQUIREMENT CHECK
-    # ==============================
-
     player_level = get_player_level(user_id)
     required_level = get_item_required_level_by_inventory_id(inventory_id)
 
@@ -1023,11 +1015,9 @@ def equip_inventory_item(user_id, inventory_id):
     if slot_key not in EQUIPMENT_SLOTS:
         return "❌ Невідомий слот екіпірування"
 
-    # Якщо пробуємо вдягнути off_hand, але main_hand дворучний
     if slot_key == "off_hand" and is_main_hand_two_handed(user_id):
         return "❌ Неможливо: дворучна зброя блокує другу руку"
 
-    # Якщо вдягаємо дворучну зброю — очищаємо off_hand
     if slot_key == "main_hand" and weapon_hands == 2:
         unequip_slot(user_id, "off_hand")
 
@@ -1200,8 +1190,6 @@ def get_player_stats(user_id):
 # ✅ EXP / GOLD
 # ==============================
 
-# EXP за моба свого рівня.
-# Це базова шкала, під яку рахується вся прогресія.
 BASE_EXP_BY_LEVEL = {
     1: 10,
     2: 12,
@@ -1236,7 +1224,6 @@ BASE_EXP_BY_LEVEL = {
 }
 
 
-# Скільки "умовних мобів" потрібно на перехід між рівнями.
 CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL = {
     1: 50,
     2: 150,
@@ -1275,12 +1262,6 @@ CONTRACT_MOBS_EQUIVALENT = 20
 
 
 def get_base_exp_for_level(level):
-    """
-    EXP за моба рівня level.
-    Для 1–30 використовується ручна таблиця.
-    Після 30 рівня — м'яке масштабування.
-    """
-
     level = int(level)
 
     if level in BASE_EXP_BY_LEVEL:
@@ -1293,30 +1274,17 @@ def get_base_exp_for_level(level):
 
 
 def get_contract_exp_for_level(level):
-    """
-    EXP за 1 щоденний контракт.
-    Затверджено: 1 контракт = 20 умовних мобів поточного рівня.
-    """
-
     return get_base_exp_for_level(level) * CONTRACT_MOBS_EQUIVALENT
 
 
 def get_exp_to_next_level(level):
-    """
-    EXP для переходу з level на level + 1.
-    Формула:
-    EXP_to_next = base_exp_for_level * conditional_mobs_to_next
-    """
-
     level = int(level)
-
     base_exp = get_base_exp_for_level(level)
 
     if level in CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL:
         mobs_required = CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL[level]
         return int(base_exp * mobs_required)
 
-    # Після 30 рівня — тимчасова м'яка прогресія.
     mobs_required = int(CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL[30] * (1.10 ** (level - 30)))
     return int(base_exp * mobs_required)
 
@@ -1436,6 +1404,8 @@ def get_user_progress(user_id):
         "gold": gold,
         "kills": kills
     }
+
+
 # ==============================
 # ✅ SELL TRASH
 # ==============================
@@ -1603,7 +1573,6 @@ def calculate_repair_cost(durability, rarity):
 
 def get_equipped_items_for_repair(user_id):
     equipped_items = get_all_equipped_items(user_id)
-
     result = []
 
     for equipped in equipped_items:
@@ -1875,9 +1844,8 @@ def repair_all_equipped(user_id):
     }
 
 
-def damage_equipped_items_on_death(user_id, amount=10):
+def damage_equipped_items_on_death(user_id, amount=5):
     equipped_items = get_all_equipped_items(user_id)
-
     damaged = []
 
     for equipped in equipped_items:
@@ -1937,16 +1905,6 @@ def damage_equipped_items_on_death(user_id, amount=10):
 # ==============================
 
 def apply_random_durability_wear_on_victory(user_id, chance_percent=25):
-    """
-    Природний знос спорядження після перемоги.
-
-    Правила:
-    - після перемоги є chance_percent шанс, що знос спрацює;
-    - якщо спрацював, випадкова одягнена річ втрачає -1 durability;
-    - природний знос НЕ може опустити durability нижче 1;
-    - до 0 предмет може добити тільки смерть.
-    """
-
     roll = random.randint(1, 100)
 
     if roll > chance_percent:
@@ -1956,7 +1914,6 @@ def apply_random_durability_wear_on_victory(user_id, chance_percent=25):
         }
 
     equipped_items = get_all_equipped_items(user_id)
-
     candidates = []
 
     for equipped in equipped_items:
@@ -1995,7 +1952,6 @@ def apply_random_durability_wear_on_victory(user_id, chance_percent=25):
         if durability is None:
             durability = 100
 
-        # Природний знос не може зняти останню одиницю міцності
         if durability <= 1:
             continue
 
@@ -2105,12 +2061,557 @@ def get_defense(user_id):
 
 
 # ==============================
-# ✅ HP
+# ✅ DYNAMIC EQUIPMENT GENERATOR
 # ==============================
 
-def get_current_hp(user_id):
+DYNAMIC_RARITY_ICONS = {
+    "common": "⚪",
+    "uncommon": "🟢",
+    "rare": "🔵",
+    "epic": "🟣"
+}
+
+
+DYNAMIC_RARITY_NAMES = {
+    "common": "Звичайний",
+    "uncommon": "Незвичайний",
+    "rare": "Рідкісний",
+    "epic": "Епічний"
+}
+
+
+DYNAMIC_STAT_MULTIPLIERS = {
+    "common": 1.0,
+    "uncommon": 1.35,
+    "rare": 1.85,
+    "epic": 2.60
+}
+
+
+DYNAMIC_SELL_MULTIPLIERS = {
+    "common": 0.30,
+    "uncommon": 0.90,
+    "rare": 2.25,
+    "epic": 6.00
+}
+
+
+DYNAMIC_SLOT_NAMES = {
+    "main_hand": "Зброя",
+    "off_hand": "Друга рука",
+    "helmet": "Шолом",
+    "shoulders": "Наплічники",
+    "chest": "Обладунок",
+    "gloves": "Рукавиці",
+    "legs": "Поножі",
+    "boots": "Чоботи",
+    "necklace": "Амулет",
+    "ring": "Кільце"
+}
+
+
+def init_dynamic_equipment_system():
+    migrations = [
+        ("items", "item_level", "INTEGER DEFAULT 1"),
+        ("items", "is_generated", "INTEGER DEFAULT 0"),
+    ]
+
+    for table, column, column_type in migrations:
+        try:
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
+
+    conn.commit()
+
+
+def get_dynamic_slot_key():
+    return random.choice(SLOT_ORDER)
+
+
+def get_dynamic_stat_value(item_level, rarity, base=1.0):
+    multiplier = DYNAMIC_STAT_MULTIPLIERS.get(rarity, 1.0)
+    value = int(round(item_level * base * multiplier))
+
+    return max(1, value)
+
+
+def get_dynamic_sell_price(item_level, rarity):
+    multiplier = DYNAMIC_SELL_MULTIPLIERS.get(rarity, 0.30)
+
+    return round(max(0.10, item_level * multiplier), 2)
+
+
+def get_dynamic_weapon_name(slot_key, rarity, weapon_hands):
+    icon = DYNAMIC_RARITY_ICONS.get(rarity, "⚪")
+
+    if slot_key == "main_hand":
+        variants_1h = [
+            "Одноручний меч",
+            "Одноручний посох"
+        ]
+
+        variants_2h = [
+            "Дворучний меч",
+            "Дворучний посох",
+            "Лук",
+            "Арбалет"
+        ]
+
+        if weapon_hands == 2:
+            base_name = random.choice(variants_2h)
+        else:
+            base_name = random.choice(variants_1h)
+
+        return f"{icon} {base_name}"
+
+    if slot_key == "off_hand":
+        variants = [
+            "Щит",
+            "Магічний талісман",
+            "Кинджал для другої руки"
+        ]
+
+        return f"{icon} {random.choice(variants)}"
+
+    return f"{icon} Зброя"
+
+
+def get_dynamic_armor_name(slot_key, rarity):
+    icon = DYNAMIC_RARITY_ICONS.get(rarity, "⚪")
+    base_name = DYNAMIC_SLOT_NAMES.get(slot_key, "Річ")
+
+    return f"{icon} {base_name}"
+
+
+def generate_dynamic_equipment_stats(slot_key, item_level, rarity, weapon_hands=1):
+    b_str = 0
+    b_dex = 0
+    b_int = 0
+    b_wis = 0
+    b_sta = 0
+    pdef = 0
+    mdef = 0
+
+    if slot_key == "main_hand":
+        if random.random() < 0.55:
+            b_str = get_dynamic_stat_value(item_level, rarity, 1.00)
+
+            if weapon_hands == 2:
+                b_str = int(round(b_str * 1.35))
+        else:
+            b_int = get_dynamic_stat_value(item_level, rarity, 1.00)
+
+            if weapon_hands == 2:
+                b_int = int(round(b_int * 1.35))
+
+    elif slot_key == "off_hand":
+        choice = random.choice(["shield", "talisman", "dagger"])
+
+        if choice == "shield":
+            pdef = get_dynamic_stat_value(item_level, rarity, 1.30)
+            b_sta = get_dynamic_stat_value(item_level, rarity, 0.45)
+
+        elif choice == "talisman":
+            mdef = get_dynamic_stat_value(item_level, rarity, 1.30)
+            b_wis = get_dynamic_stat_value(item_level, rarity, 0.55)
+
+        else:
+            b_dex = get_dynamic_stat_value(item_level, rarity, 0.90)
+
+    elif slot_key == "helmet":
+        pdef = get_dynamic_stat_value(item_level, rarity, 0.80)
+        mdef = get_dynamic_stat_value(item_level, rarity, 0.40)
+
+        bonus = random.choice(["sta", "wis", "dex"])
+        value = get_dynamic_stat_value(item_level, rarity, 0.25)
+
+        if bonus == "sta":
+            b_sta += value
+        elif bonus == "wis":
+            b_wis += value
+        else:
+            b_dex += value
+
+    elif slot_key == "shoulders":
+        pdef = get_dynamic_stat_value(item_level, rarity, 1.00)
+        mdef = get_dynamic_stat_value(item_level, rarity, 0.25)
+
+    elif slot_key == "chest":
+        pdef = get_dynamic_stat_value(item_level, rarity, 1.60)
+        mdef = get_dynamic_stat_value(item_level, rarity, 0.35)
+        b_sta = get_dynamic_stat_value(item_level, rarity, 0.55)
+
+    elif slot_key == "gloves":
+        pdef = get_dynamic_stat_value(item_level, rarity, 0.55)
+        mdef = get_dynamic_stat_value(item_level, rarity, 0.20)
+        b_dex = get_dynamic_stat_value(item_level, rarity, 0.60)
+
+    elif slot_key == "legs":
+        pdef = get_dynamic_stat_value(item_level, rarity, 1.20)
+        mdef = get_dynamic_stat_value(item_level, rarity, 0.30)
+        b_sta = get_dynamic_stat_value(item_level, rarity, 0.45)
+
+    elif slot_key == "boots":
+        pdef = get_dynamic_stat_value(item_level, rarity, 0.45)
+        mdef = get_dynamic_stat_value(item_level, rarity, 0.20)
+        b_dex = get_dynamic_stat_value(item_level, rarity, 0.80)
+
+    elif slot_key == "necklace":
+        mdef = get_dynamic_stat_value(item_level, rarity, 1.30)
+        b_wis = get_dynamic_stat_value(item_level, rarity, 0.80)
+
+    elif slot_key == "ring":
+        stat_choice = random.choice(["str", "dex", "int", "wis", "sta"])
+        value = get_dynamic_stat_value(item_level, rarity, 0.90)
+
+        if stat_choice == "str":
+            b_str = value
+        elif stat_choice == "dex":
+            b_dex = value
+        elif stat_choice == "int":
+            b_int = value
+        elif stat_choice == "wis":
+            b_wis = value
+        elif stat_choice == "sta":
+            b_sta = value
+
+    if rarity in ["uncommon", "rare", "epic"]:
+        bonus_count = 1
+
+        if rarity == "rare":
+            bonus_count = 2
+
+        if rarity == "epic":
+            bonus_count = 3
+
+        for _ in range(bonus_count):
+            bonus_type = random.choice(["str", "dex", "int", "wis", "sta"])
+            bonus_value = get_dynamic_stat_value(item_level, rarity, 0.30)
+
+            if bonus_type == "str":
+                b_str += bonus_value
+            elif bonus_type == "dex":
+                b_dex += bonus_value
+            elif bonus_type == "int":
+                b_int += bonus_value
+            elif bonus_type == "wis":
+                b_wis += bonus_value
+            elif bonus_type == "sta":
+                b_sta += bonus_value
+
+    return {
+        "bonus_str": b_str,
+        "bonus_dex": b_dex,
+        "bonus_int": b_int,
+        "bonus_wis": b_wis,
+        "bonus_sta": b_sta,
+        "pdef": pdef,
+        "mdef": mdef
+    }
+
+
+def create_generated_equipment_item(user_id, item_level, rarity):
+    init_dynamic_equipment_system()
+
+    item_level = int(item_level)
+    item_level = max(1, item_level)
+
+    if rarity not in ["common", "uncommon", "rare", "epic"]:
+        rarity = "common"
+
+    capacity = get_bag_capacity(user_id)
+    used_slots = get_inventory_used_slots(user_id)
+
+    if used_slots >= capacity:
+        return {
+            "success": False,
+            "lost": 1,
+            "message": "🎒 Сумка переповнена. Екіпірування не влізло."
+        }
+
+    slot_key = get_dynamic_slot_key()
+    weapon_hands = 1
+
+    if slot_key == "main_hand":
+        weapon_hands = 2 if random.random() < 0.45 else 1
+        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands)
+        type_ = "weapon"
+
+    elif slot_key == "off_hand":
+        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands)
+        type_ = "offhand"
+
+    else:
+        name = get_dynamic_armor_name(slot_key, rarity)
+        type_ = slot_key
+
+    rarity_name = DYNAMIC_RARITY_NAMES.get(rarity, "Звичайний")
+    name = f"{name} {item_level} рівня"
+
+    stats = generate_dynamic_equipment_stats(
+        slot_key=slot_key,
+        item_level=item_level,
+        rarity=rarity,
+        weapon_hands=weapon_hands
+    )
+
+    sell_price = get_dynamic_sell_price(item_level, rarity)
+
     cursor.execute("""
-    SELECT hp
+    INSERT INTO items (
+        name,
+        type,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        max_stack,
+        sell_price,
+        bonus_str,
+        bonus_dex,
+        bonus_int,
+        bonus_wis,
+        bonus_sta,
+        pdef,
+        mdef,
+        item_level,
+        is_generated
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        name,
+        type_,
+        rarity,
+        "equipment",
+        slot_key,
+        weapon_hands,
+        1,
+        sell_price,
+        stats["bonus_str"],
+        stats["bonus_dex"],
+        stats["bonus_int"],
+        stats["bonus_wis"],
+        stats["bonus_sta"],
+        stats["pdef"],
+        stats["mdef"],
+        item_level,
+        1
+    ))
+
+    item_id = cursor.lastrowid
+
+    cursor.execute("""
+    INSERT INTO inventory (
+        user_id,
+        item_id,
+        quantity,
+        durability
+    )
+    VALUES (?, ?, ?, ?)
+    """, (
+        user_id,
+        item_id,
+        1,
+        100
+    ))
+
+    inventory_id = cursor.lastrowid
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "lost": 0,
+        "name": name,
+        "rarity": rarity,
+        "rarity_name": rarity_name,
+        "slot_key": slot_key,
+        "item_id": item_id,
+        "inventory_id": inventory_id,
+        "message": f"{name}"
+    }
+
+
+# ==============================
+# ✅ COMMON EQUIPMENT TRADER SHOP
+# ==============================
+
+COMMON_SHOP_PRICE_MULTIPLIERS = {
+    "main_hand": 3.0,
+    "off_hand": 2.5,
+    "helmet": 1.5,
+    "shoulders": 1.5,
+    "chest": 2.5,
+    "gloves": 1.3,
+    "legs": 1.8,
+    "boots": 1.3,
+    "necklace": 2.0,
+    "ring": 2.0
+}
+
+
+def get_common_equipment_price_for_slot(item_level, slot_key):
+    multiplier = COMMON_SHOP_PRICE_MULTIPLIERS.get(slot_key, 1.5)
+
+    return round(max(1.0, item_level * multiplier), 2)
+
+
+def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_key):
+    init_dynamic_equipment_system()
+
+    if slot_key not in SLOT_ORDER:
+        return {
+            "success": False,
+            "message": "❌ Невідомий слот спорядження."
+        }
+
+    item_level = int(item_level)
+    item_level = max(1, item_level)
+
+    if rarity not in ["common", "uncommon", "rare", "epic"]:
+        rarity = "common"
+
+    capacity = get_bag_capacity(user_id)
+    used_slots = get_inventory_used_slots(user_id)
+
+    if used_slots >= capacity:
+        return {
+            "success": False,
+            "lost": 1,
+            "message": "🎒 Сумка переповнена. Предмет не куплено."
+        }
+
+    weapon_hands = 1
+
+    if slot_key == "main_hand":
+        weapon_hands = 2 if random.random() < 0.35 else 1
+        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands)
+        type_ = "weapon"
+
+    elif slot_key == "off_hand":
+        weapon_hands = 1
+        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands)
+        type_ = "offhand"
+
+    else:
+        weapon_hands = 1
+        name = get_dynamic_armor_name(slot_key, rarity)
+        type_ = slot_key
+
+    name = f"{name} {item_level} рівня"
+
+    stats = generate_dynamic_equipment_stats(
+        slot_key=slot_key,
+        item_level=item_level,
+        rarity=rarity,
+        weapon_hands=weapon_hands
+    )
+
+    sell_price = get_dynamic_sell_price(item_level, rarity)
+
+    cursor.execute("""
+    INSERT INTO items (
+        name,
+        type,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        max_stack,
+        sell_price,
+        bonus_str,
+        bonus_dex,
+        bonus_int,
+        bonus_wis,
+        bonus_sta,
+        pdef,
+        mdef,
+        item_level,
+        is_generated
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        name,
+        type_,
+        rarity,
+        "equipment",
+        slot_key,
+        weapon_hands,
+        1,
+        sell_price,
+        stats["bonus_str"],
+        stats["bonus_dex"],
+        stats["bonus_int"],
+        stats["bonus_wis"],
+        stats["bonus_sta"],
+        stats["pdef"],
+        stats["mdef"],
+        item_level,
+        1
+    ))
+
+    item_id = cursor.lastrowid
+
+    cursor.execute("""
+    INSERT INTO inventory (
+        user_id,
+        item_id,
+        quantity,
+        durability
+    )
+    VALUES (?, ?, ?, ?)
+    """, (
+        user_id,
+        item_id,
+        1,
+        100
+    ))
+
+    inventory_id = cursor.lastrowid
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "name": name,
+        "item_id": item_id,
+        "inventory_id": inventory_id,
+        "slot_key": slot_key,
+        "item_level": item_level
+    }
+
+
+def get_common_equipment_shop_offer(user_id):
+    player_level = get_player_level(user_id)
+    offers = []
+
+    for slot_key in SLOT_ORDER:
+        slot_name = EQUIPMENT_SLOTS.get(slot_key, slot_key)
+        price = get_common_equipment_price_for_slot(player_level, slot_key)
+
+        offers.append({
+            "slot_key": slot_key,
+            "slot_name": slot_name,
+            "item_level": player_level,
+            "price": price
+        })
+
+    return offers
+
+
+def buy_common_equipment_from_trader(user_id, slot_key):
+    if slot_key not in SLOT_ORDER:
+        return {
+            "success": False,
+            "message": "❌ Невідомий слот спорядження."
+        }
+
+    player_level = get_player_level(user_id)
+    price = get_common_equipment_price_for_slot(player_level, slot_key)
+
+    cursor.execute("""
+    SELECT gold
     FROM users
     WHERE user_id=?
     """, (user_id,))
@@ -2118,19 +2619,179 @@ def get_current_hp(user_id):
     row = cursor.fetchone()
 
     if not row:
-        return 0
+        return {
+            "success": False,
+            "message": "❌ Персонажа не знайдено."
+        }
 
-    return row[0]
+    gold = row[0] or 0.0
 
+    if gold < price:
+        return {
+            "success": False,
+            "message": (
+                f"❌ Недостатньо золота.\n\n"
+                f"💳 Потрібно: {price:.2f} 🪙\n"
+                f"💰 У тебе: {gold:.2f} 🪙"
+            )
+        }
 
-def set_current_hp(user_id, hp):
+    result = create_generated_equipment_item_for_slot(
+        user_id=user_id,
+        item_level=player_level,
+        rarity="common",
+        slot_key=slot_key
+    )
+
+    if not result.get("success"):
+        return result
+
     cursor.execute("""
     UPDATE users
-    SET hp=?
+    SET gold = gold - ?
     WHERE user_id=?
-    """, (hp, user_id))
+    """, (price, user_id))
 
     conn.commit()
+
+    return {
+        "success": True,
+        "message": (
+            f"✅ Куплено базове спорядження.\n\n"
+            f"📦 {result['name']}\n"
+            f"🏷 Рівень предмета: {player_level}\n"
+            f"💳 Сплачено: {price:.2f} 🪙"
+        )
+    }
+
+
+# ==============================
+# ✅ SELL EQUIPMENT TO TRADER
+# ==============================
+
+def get_sellable_equipment_items(user_id):
+    equipped_slots = get_all_equipped_slots(user_id)
+    equipped_inventory_ids = set()
+
+    for slot_key, inventory_id in equipped_slots.items():
+        if inventory_id:
+            equipped_inventory_ids.add(inventory_id)
+
+    cursor.execute("""
+    SELECT
+        inventory.id,
+        inventory.item_id,
+        items.name,
+        items.type,
+        items.rarity,
+        items.category,
+        items.slot_key,
+        items.weapon_hands,
+        inventory.quantity,
+        items.max_stack,
+        inventory.durability,
+        items.bonus_str,
+        items.bonus_dex,
+        items.bonus_int,
+        items.bonus_wis,
+        items.bonus_sta,
+        items.pdef,
+        items.mdef,
+        items.sell_price
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.user_id=?
+      AND items.category='equipment'
+    ORDER BY inventory.id ASC
+    """, (user_id,))
+
+    rows = cursor.fetchall()
+    result = []
+
+    for row in rows:
+        inventory_id = row[0]
+
+        if inventory_id in equipped_inventory_ids:
+            continue
+
+        result.append(row)
+
+    return result
+
+
+def sell_inventory_item_to_trader(user_id, inventory_id):
+    if is_inventory_item_equipped(user_id, inventory_id):
+        return {
+            "success": False,
+            "message": (
+                "❌ Неможливо продати вдягнений предмет.\n\n"
+                "Спочатку зніми його з персонажа."
+            )
+        }
+
+    cursor.execute("""
+    SELECT
+        inventory.id,
+        inventory.item_id,
+        items.name,
+        items.category,
+        inventory.quantity,
+        items.sell_price
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.id=? AND inventory.user_id=?
+    """, (inventory_id, user_id))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "success": False,
+            "message": "❌ Предмет не знайдено в інвентарі."
+        }
+
+    inv_id, item_id, name, category, quantity, sell_price = row
+
+    quantity = quantity or 1
+    sell_price = sell_price or 0
+
+    if category != "equipment":
+        return {
+            "success": False,
+            "message": "❌ Через це меню можна продавати тільки спорядження."
+        }
+
+    if sell_price <= 0:
+        return {
+            "success": False,
+            "message": "❌ Цей предмет не має ціни продажу."
+        }
+
+    total_gold = round(quantity * sell_price, 2)
+
+    cursor.execute("""
+    DELETE FROM inventory
+    WHERE id=? AND user_id=?
+    """, (inventory_id, user_id))
+
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold + ?
+    WHERE user_id=?
+    """, (total_gold, user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": (
+            f"🪙 Спорядження продано торговцю.\n\n"
+            f"📦 {name} x{quantity}\n"
+            f"💰 Отримано: {total_gold:.2f} 🪙"
+        ),
+        "gold_earned": total_gold
+    }
+
 
 # ==============================
 # ✅ MERCENARY CONTRACTS SYSTEM
@@ -2139,7 +2800,6 @@ def set_current_hp(user_id, hp):
 CONTRACTS_UNLOCK_LEVEL = 5
 DAILY_CONTRACT_LIMIT = 5
 CONTRACT_TARGET_KILLS = 10
-CONTRACT_MOBS_EQUIVALENT = 20
 
 
 def get_today_str():
@@ -2148,10 +2808,6 @@ def get_today_str():
 
 
 def init_contract_system():
-    """
-    Лінива ініціалізація системи контрактів.
-    """
-
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS user_active_contracts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -2187,8 +2843,6 @@ def init_contract_system():
         except Exception:
             pass
 
-    # Старі активні контракти без конкретного моба прибираємо,
-    # бо нова система вже працює за конкретною ціллю.
     try:
         cursor.execute("""
         DELETE FROM user_active_contracts
@@ -2202,7 +2856,6 @@ def init_contract_system():
 
 def reset_daily_contracts_if_needed(user_id):
     init_contract_system()
-
     today = get_today_str()
 
     cursor.execute("""
@@ -2331,15 +2984,6 @@ def create_daily_contract(
     target_mob_level,
     target_kills=CONTRACT_TARGET_KILLS
 ):
-    """
-    Створює контракт на конкретного моба.
-
-    Правило:
-    - 1 контракт = EXP за 20 умовних мобів поточного рівня.
-    - target_mob_name вибирається у handlers/contracts.py
-      з доступних мобів для рівня гравця.
-    """
-
     reset_daily_contracts_if_needed(user_id)
 
     status = get_contract_status(user_id)
@@ -2445,17 +3089,8 @@ def abandon_active_contract(user_id):
         "message": "📜 Активний контракт скасовано."
     }
 
+
 def process_contract_progress_on_kill(user_id, mob):
-    """
-    Викликається після перемоги над мобом.
-
-    Нова логіка:
-    - контракт має конкретну ціль: target_mob_name;
-    - прогрес рахується тільки якщо вбитий саме цей моб;
-    - елітна версія цього ж моба також зараховується;
-    - рівень також перевіряємо, щоб уникнути збігів назв у майбутньому.
-    """
-
     reset_daily_contracts_if_needed(user_id)
 
     active_contract = get_active_contract(user_id)
@@ -2542,24 +3177,432 @@ def process_contract_progress_on_kill(user_id, mob):
         )
     }
 
+
+# ==============================
+# ✅ ENERGY SYSTEM
+# ==============================
+
+ENERGY_MAX = 40
+ENERGY_REGEN_MINUTES = 5
+
+
+def init_energy_system():
+    migrations = [
+        ("users", "energy", "INTEGER DEFAULT 40"),
+        ("users", "last_energy_update", "TEXT DEFAULT ''"),
+        ("users", "energy_full_notified", "INTEGER DEFAULT 1"),
+    ]
+
+    for table, column, column_type in migrations:
+        try:
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
+
+    cursor.execute("""
+    UPDATE users
+    SET energy_full_notified = 1
+    WHERE energy IS NULL OR energy >= ?
+    """, (ENERGY_MAX,))
+
+    cursor.execute("""
+    UPDATE users
+    SET energy = ?
+    WHERE energy IS NULL OR energy > ?
+    """, (ENERGY_MAX, ENERGY_MAX))
+
+    conn.commit()
+
+
+def get_user_energy(user_id):
+    from datetime import datetime, timedelta
+
+    init_energy_system()
+
+    cursor.execute("""
+    SELECT energy, last_energy_update
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "energy": 0,
+            "max_energy": ENERGY_MAX,
+            "next_energy_minutes": ENERGY_REGEN_MINUTES
+        }
+
+    energy, last_update = row
+
+    if energy is None:
+        energy = ENERGY_MAX
+
+    now = datetime.now()
+
+    if not last_update:
+        last_update_dt = now
+    else:
+        try:
+            last_update_dt = datetime.fromisoformat(last_update)
+        except Exception:
+            last_update_dt = now
+
+    if energy < ENERGY_MAX:
+        diff_seconds = (now - last_update_dt).total_seconds()
+        regen_units = int(diff_seconds // (ENERGY_REGEN_MINUTES * 60))
+
+        if regen_units > 0:
+            energy = min(ENERGY_MAX, energy + regen_units)
+            last_update_dt = last_update_dt + timedelta(
+                minutes=regen_units * ENERGY_REGEN_MINUTES
+            )
+
+            cursor.execute("""
+            UPDATE users
+            SET energy=?, last_energy_update=?
+            WHERE user_id=?
+            """, (energy, last_update_dt.isoformat(), user_id))
+
+            conn.commit()
+
+    else:
+        cursor.execute("""
+        UPDATE users
+        SET energy=?, last_energy_update=?
+        WHERE user_id=?
+        """, (ENERGY_MAX, now.isoformat(), user_id))
+
+        conn.commit()
+
+    next_energy_minutes = ENERGY_REGEN_MINUTES
+
+    if energy < ENERGY_MAX:
+        elapsed_seconds = (now - last_update_dt).total_seconds()
+        remaining_seconds = (ENERGY_REGEN_MINUTES * 60) - elapsed_seconds
+        next_energy_minutes = max(1, int(remaining_seconds // 60) + 1)
+
+    return {
+        "energy": energy,
+        "max_energy": ENERGY_MAX,
+        "next_energy_minutes": next_energy_minutes
+    }
+
+
+def consume_energy_for_hunt(user_id):
+    from datetime import datetime
+
+    energy_data = get_user_energy(user_id)
+    energy = energy_data["energy"]
+
+    if energy <= 0:
+        return {
+            "success": False,
+            "energy": 0,
+            "max_energy": ENERGY_MAX,
+            "message": (
+                "😴 Герой виснажений і не може полювати.\n\n"
+                "Потрібно відпочити та дочекатися відновлення енергії.\n"
+                f"⏳ Наступна енергія приблизно через: "
+                f"{energy_data['next_energy_minutes']} хв."
+            )
+        }
+
+    new_energy = energy - 1
+
+    cursor.execute("""
+    UPDATE users
+    SET energy=?,
+        last_energy_update=?,
+        energy_full_notified=0
+    WHERE user_id=?
+    """, (new_energy, datetime.now().isoformat(), user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "energy": new_energy,
+        "max_energy": ENERGY_MAX,
+        "message": None
+    }
+
+
+def restore_energy_for_test(user_id, amount=ENERGY_MAX):
+    from datetime import datetime
+
+    init_energy_system()
+
+    try:
+        amount = int(amount)
+    except Exception:
+        amount = ENERGY_MAX
+
+    amount = max(0, min(ENERGY_MAX, amount))
+    notified = 0
+
+    cursor.execute("""
+    UPDATE users
+    SET energy=?,
+        last_energy_update=?,
+        energy_full_notified=?
+    WHERE user_id=?
+    """, (amount, datetime.now().isoformat(), notified, user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "energy": amount,
+        "max_energy": ENERGY_MAX,
+        "message": f"✅ DEV: енергію встановлено {amount}/{ENERGY_MAX}"
+    }
+
+
+def get_users_for_energy_full_notification():
+    init_energy_system()
+
+    cursor.execute("""
+    SELECT user_id
+    FROM users
+    """)
+
+    users = cursor.fetchall()
+    notify_users = []
+
+    for row in users:
+        user_id = row[0]
+
+        energy_data = get_user_energy(user_id)
+        energy = energy_data["energy"]
+        max_energy = energy_data["max_energy"]
+
+        cursor.execute("""
+        SELECT energy_full_notified
+        FROM users
+        WHERE user_id=?
+        """, (user_id,))
+
+        notified_row = cursor.fetchone()
+        notified = notified_row[0] if notified_row else 0
+
+        if energy >= max_energy and not notified:
+            notify_users.append(user_id)
+
+            cursor.execute("""
+            UPDATE users
+            SET energy_full_notified=1
+            WHERE user_id=?
+            """, (user_id,))
+
+        elif energy < max_energy and notified:
+            cursor.execute("""
+            UPDATE users
+            SET energy_full_notified=0
+            WHERE user_id=?
+            """, (user_id,))
+
+    conn.commit()
+
+    return notify_users
+
+
+# ==============================
+# ✅ PASSIVE HP REGEN SYSTEM
+# ==============================
+
+HP_REGEN_PERCENT = 0.10
+HP_REGEN_MINUTES = 1
+
+
+def init_hp_regen_system():
+    migrations = [
+        ("users", "last_hp_regen_update", "TEXT DEFAULT ''"),
+        ("users", "hp_full_notified", "INTEGER DEFAULT 1"),
+    ]
+
+    for table, column, column_type in migrations:
+        try:
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
+
+    conn.commit()
+
+
+def apply_passive_hp_regen(user_id):
+    from datetime import datetime, timedelta
+
+    init_hp_regen_system()
+
+    cursor.execute("""
+    SELECT hp, last_hp_regen_update
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return 0
+
+    hp, last_update = row
+    max_hp = get_max_hp(user_id)
+
+    if hp is None:
+        hp = max_hp
+
+    now = datetime.now()
+
+    if not last_update:
+        last_update_dt = now
+
+        cursor.execute("""
+        UPDATE users
+        SET last_hp_regen_update=?
+        WHERE user_id=?
+        """, (last_update_dt.isoformat(), user_id))
+
+        conn.commit()
+        return hp
+
+    try:
+        last_update_dt = datetime.fromisoformat(last_update)
+    except Exception:
+        last_update_dt = now
+
+    if hp >= max_hp:
+        cursor.execute("""
+        UPDATE users
+        SET hp=?,
+            last_hp_regen_update=?,
+            hp_full_notified=1
+        WHERE user_id=?
+        """, (max_hp, now.isoformat(), user_id))
+
+        conn.commit()
+        return max_hp
+
+    diff_seconds = (now - last_update_dt).total_seconds()
+    regen_ticks = int(diff_seconds // (HP_REGEN_MINUTES * 60))
+
+    if regen_ticks <= 0:
+        return hp
+
+    heal_per_tick = max(1, int(max_hp * HP_REGEN_PERCENT))
+    total_heal = heal_per_tick * regen_ticks
+
+    new_hp = min(max_hp, hp + total_heal)
+
+    new_update_dt = last_update_dt + timedelta(
+        minutes=regen_ticks * HP_REGEN_MINUTES
+    )
+
+    hp_full_notified = 0 if new_hp >= max_hp else 0
+
+    cursor.execute("""
+    UPDATE users
+    SET hp=?,
+        last_hp_regen_update=?,
+        hp_full_notified=?
+    WHERE user_id=?
+    """, (
+        new_hp,
+        new_update_dt.isoformat(),
+        hp_full_notified,
+        user_id
+    ))
+
+    conn.commit()
+
+    return new_hp
+
+
+def get_users_for_hp_full_notification():
+    init_hp_regen_system()
+
+    cursor.execute("""
+    SELECT user_id
+    FROM users
+    """)
+
+    rows = cursor.fetchall()
+    notify_users = []
+
+    for row in rows:
+        user_id = row[0]
+
+        hp = apply_passive_hp_regen(user_id)
+        max_hp = get_max_hp(user_id)
+
+        cursor.execute("""
+        SELECT hp_full_notified
+        FROM users
+        WHERE user_id=?
+        """, (user_id,))
+
+        notified_row = cursor.fetchone()
+        notified = notified_row[0] if notified_row else 1
+
+        if hp >= max_hp and not notified:
+            notify_users.append(user_id)
+
+            cursor.execute("""
+            UPDATE users
+            SET hp_full_notified=1
+            WHERE user_id=?
+            """, (user_id,))
+
+        elif hp < max_hp and notified:
+            cursor.execute("""
+            UPDATE users
+            SET hp_full_notified=0
+            WHERE user_id=?
+            """, (user_id,))
+
+    conn.commit()
+
+    return notify_users
+
+
+def get_current_hp(user_id):
+    return apply_passive_hp_regen(user_id)
+
+
+def set_current_hp(user_id, hp):
+    from datetime import datetime
+
+    init_hp_regen_system()
+
+    max_hp = get_max_hp(user_id)
+
+    hp = int(hp)
+    hp = max(0, min(max_hp, hp))
+
+    hp_full_notified = 1 if hp >= max_hp else 0
+
+    cursor.execute("""
+    UPDATE users
+    SET hp=?,
+        last_hp_regen_update=?,
+        hp_full_notified=?
+    WHERE user_id=?
+    """, (
+        hp,
+        datetime.now().isoformat(),
+        hp_full_notified,
+        user_id
+    ))
+
+    conn.commit()
+
+
 # ==============================
 # ✅ DEV / TEST LEVEL TOOLS
 # ==============================
 
 def set_player_level_for_test(user_id, target_level):
-    """
-    DEV-функція для тестування.
-    Встановлює рівень персонажа вручну.
-
-    Правила:
-    - level = target_level
-    - exp = 0
-    - базові характеристики = 10 + (level - 1)
-    - max_hp перераховується
-    - hp відновлюється до max_hp
-    - інвентар, золото, екіпірування не чіпає
-    """
-
     try:
         target_level = int(target_level)
     except Exception:
@@ -2645,1340 +3688,4 @@ def set_player_level_for_test(user_id, target_level):
 
 
 def reset_player_level_for_test(user_id):
-    """
-    DEV-функція.
-    Повертає персонажа на 1 рівень.
-    """
-
     return set_player_level_for_test(user_id, 1)
-
-# ==============================
-# ✅ ENERGY SYSTEM
-# ==============================
-
-ENERGY_MAX = 40
-ENERGY_REGEN_MINUTES = 5
-
-
-def init_energy_system():
-    """
-    Лінива ініціалізація енергії.
-    Додає поля в users, якщо їх ще немає.
-    """
-
-    migrations = [
-        ("users", "energy", "INTEGER DEFAULT 100"),
-        ("users", "last_energy_update", "TEXT DEFAULT ''"),
-        ("users", "energy_full_notified", "INTEGER DEFAULT 1"),
-    ]
-
-    for table, column, column_type in migrations:
-        try:
-            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
-        except Exception:
-            pass
-
-    # Щоб після додавання поля не засипати старих гравців повідомленнями при старті бота
-    cursor.execute("""
-    UPDATE users
-    SET energy_full_notified = 1
-    WHERE energy IS NULL OR energy >= ?
-    """, (ENERGY_MAX,))
-
-    cursor.execute("""
-    UPDATE users
-    SET energy = ?
-    WHERE energy IS NULL
-    OR energy > ?
-    """, (ENERGY_MAX, ENERGY_MAX))
-
-    conn.commit()
-
-
-def get_user_energy(user_id):
-    """
-    Повертає актуальну енергію з урахуванням пасивної регенерації.
-
-    Правила:
-    - максимум 100
-    - +1 енергія кожні 5 хвилин
-    """
-
-    from datetime import datetime, timedelta
-
-    init_energy_system()
-
-    cursor.execute("""
-    SELECT energy, last_energy_update
-    FROM users
-    WHERE user_id=?
-    """, (user_id,))
-
-    row = cursor.fetchone()
-
-    if not row:
-        return {
-            "energy": 0,
-            "max_energy": ENERGY_MAX,
-            "next_energy_minutes": ENERGY_REGEN_MINUTES
-        }
-
-    energy, last_update = row
-
-    if energy is None:
-        energy = ENERGY_MAX
-
-    now = datetime.now()
-
-    if not last_update:
-        last_update_dt = now
-    else:
-        try:
-            last_update_dt = datetime.fromisoformat(last_update)
-        except Exception:
-            last_update_dt = now
-
-    if energy < ENERGY_MAX:
-        diff_seconds = (now - last_update_dt).total_seconds()
-        regen_units = int(diff_seconds // (ENERGY_REGEN_MINUTES * 60))
-
-        if regen_units > 0:
-            energy = min(ENERGY_MAX, energy + regen_units)
-            last_update_dt = last_update_dt + timedelta(
-                minutes=regen_units * ENERGY_REGEN_MINUTES
-            )
-
-            cursor.execute("""
-            UPDATE users
-            SET energy=?, last_energy_update=?
-            WHERE user_id=?
-            """, (energy, last_update_dt.isoformat(), user_id))
-
-            conn.commit()
-
-    else:
-        cursor.execute("""
-        UPDATE users
-        SET energy=?, last_energy_update=?
-        WHERE user_id=?
-        """, (ENERGY_MAX, now.isoformat(), user_id))
-
-        conn.commit()
-
-    next_energy_minutes = ENERGY_REGEN_MINUTES
-
-    if energy < ENERGY_MAX:
-        elapsed_seconds = (now - last_update_dt).total_seconds()
-        remaining_seconds = (ENERGY_REGEN_MINUTES * 60) - elapsed_seconds
-        next_energy_minutes = max(1, int(remaining_seconds // 60) + 1)
-
-    return {
-        "energy": energy,
-        "max_energy": ENERGY_MAX,
-        "next_energy_minutes": next_energy_minutes
-    }
-
-
-def consume_energy_for_hunt(user_id):
-    """
-    Списує 1 енергію за полювання.
-    Якщо енергії 0 — не дозволяє бій.
-    """
-
-    from datetime import datetime
-
-    energy_data = get_user_energy(user_id)
-    energy = energy_data["energy"]
-
-    if energy <= 0:
-        return {
-            "success": False,
-            "energy": 0,
-            "max_energy": ENERGY_MAX,
-            "message": (
-                "😴 Герой виснажений і не може полювати.\n\n"
-                "Потрібно відпочити та дочекатися відновлення енергії.\n"
-                f"⏳ Наступна енергія приблизно через: "
-                f"{energy_data['next_energy_minutes']} хв."
-            )
-        }
-
-    new_energy = energy - 1
-
-    cursor.execute("""
-    UPDATE users
-    SET energy=?,
-        last_energy_update=?,
-        energy_full_notified=0
-    WHERE user_id=?
-    """, (new_energy, datetime.now().isoformat(), user_id))
-
-    conn.commit()
-
-    return {
-        "success": True,
-        "energy": new_energy,
-        "max_energy": ENERGY_MAX,
-        "message": None
-    }
-
-
-def restore_energy_for_test(user_id, amount=ENERGY_MAX):
-    """
-    DEV-функція.
-    Встановлює енергію вручну.
-    Приклади:
-    /energy 100
-    /energy 0
-    """
-
-    from datetime import datetime
-
-    init_energy_system()
-
-    try:
-        amount = int(amount)
-    except Exception:
-        amount = ENERGY_MAX
-
-    amount = max(0, min(ENERGY_MAX, amount))
-
-    # Якщо ставимо 100 вручну — дозволяємо тестове повідомлення
-    notified = 0 if amount >= ENERGY_MAX else 0
-
-    cursor.execute("""
-    UPDATE users
-    SET energy=?,
-        last_energy_update=?,
-        energy_full_notified=?
-    WHERE user_id=?
-    """, (amount, datetime.now().isoformat(), notified, user_id))
-
-    conn.commit()
-
-    return {
-        "success": True,
-        "energy": amount,
-        "max_energy": ENERGY_MAX,
-        "message": f"✅ DEV: енергію встановлено {amount}/{ENERGY_MAX}"
-    }
-
-
-def get_users_for_energy_full_notification():
-    """
-    Перевіряє всіх користувачів.
-    Якщо енергія стала 100/100 і повідомлення ще не надсилалось —
-    повертає user_id для повідомлення.
-    """
-
-    init_energy_system()
-
-    cursor.execute("""
-    SELECT user_id
-    FROM users
-    """)
-
-    users = cursor.fetchall()
-
-    notify_users = []
-
-    for row in users:
-        user_id = row[0]
-
-        energy_data = get_user_energy(user_id)
-        energy = energy_data["energy"]
-        max_energy = energy_data["max_energy"]
-
-        cursor.execute("""
-        SELECT energy_full_notified
-        FROM users
-        WHERE user_id=?
-        """, (user_id,))
-
-        notified_row = cursor.fetchone()
-        notified = notified_row[0] if notified_row else 0
-
-        if energy >= max_energy and not notified:
-            notify_users.append(user_id)
-
-            cursor.execute("""
-            UPDATE users
-            SET energy_full_notified=1
-            WHERE user_id=?
-            """, (user_id,))
-
-        elif energy < max_energy and notified:
-            cursor.execute("""
-            UPDATE users
-            SET energy_full_notified=0
-            WHERE user_id=?
-            """, (user_id,))
-
-    conn.commit()
-
-    return notify_users
-
-# ==============================
-# ✅ PASSIVE HP REGEN SYSTEM
-# ==============================
-
-HP_REGEN_PERCENT = 0.10
-HP_REGEN_MINUTES = 1
-
-
-def init_hp_regen_system():
-    """
-    Лінива ініціалізація пасивного відновлення HP.
-    """
-
-    migrations = [
-        ("users", "last_hp_regen_update", "TEXT DEFAULT ''"),
-        ("users", "hp_full_notified", "INTEGER DEFAULT 1"),
-    ]
-
-    for table, column, column_type in migrations:
-        try:
-            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
-        except Exception:
-            pass
-
-    conn.commit()
-
-
-def apply_passive_hp_regen(user_id):
-    """
-    Пасивне відновлення HP поза боєм.
-
-    Правила:
-    - +10% від max_hp кожні 2 хвилини;
-    - не вище max_hp;
-    - якщо HP повне, таймер оновлюється;
-    - працює автоматично при читанні HP.
-    """
-
-    from datetime import datetime, timedelta
-
-    init_hp_regen_system()
-
-    cursor.execute("""
-    SELECT hp, last_hp_regen_update
-    FROM users
-    WHERE user_id=?
-    """, (user_id,))
-
-    row = cursor.fetchone()
-
-    if not row:
-        return 0
-
-    hp, last_update = row
-
-    max_hp = get_max_hp(user_id)
-
-    if hp is None:
-        hp = max_hp
-
-    now = datetime.now()
-
-    if not last_update:
-        last_update_dt = now
-
-        cursor.execute("""
-        UPDATE users
-        SET last_hp_regen_update=?
-        WHERE user_id=?
-        """, (last_update_dt.isoformat(), user_id))
-
-        conn.commit()
-        return hp
-
-    try:
-        last_update_dt = datetime.fromisoformat(last_update)
-    except Exception:
-        last_update_dt = now
-
-    if hp >= max_hp:
-        cursor.execute("""
-        UPDATE users
-        SET hp=?,
-            last_hp_regen_update=?,
-            hp_full_notified=1
-        WHERE user_id=?
-        """, (max_hp, now.isoformat(), user_id))
-
-        conn.commit()
-        return max_hp
-
-    diff_seconds = (now - last_update_dt).total_seconds()
-    regen_ticks = int(diff_seconds // (HP_REGEN_MINUTES * 60))
-
-    if regen_ticks <= 0:
-        return hp
-
-    heal_per_tick = max(1, int(max_hp * HP_REGEN_PERCENT))
-    total_heal = heal_per_tick * regen_ticks
-
-    new_hp = min(max_hp, hp + total_heal)
-
-    new_update_dt = last_update_dt + timedelta(
-        minutes=regen_ticks * HP_REGEN_MINUTES
-    )
-
-    # Якщо HP стало повним пасивно — notification worker потім надішле повідомлення
-    hp_full_notified = 0 if new_hp >= max_hp else 0
-
-    cursor.execute("""
-    UPDATE users
-    SET hp=?,
-        last_hp_regen_update=?,
-        hp_full_notified=?
-    WHERE user_id=?
-    """, (
-        new_hp,
-        new_update_dt.isoformat(),
-        hp_full_notified,
-        user_id
-    ))
-
-    conn.commit()
-
-    return new_hp
-
-
-def get_users_for_hp_full_notification():
-    """
-    Повертає user_id гравців, у яких HP стало 100%,
-    але повідомлення ще не надсилалося.
-    """
-
-    init_hp_regen_system()
-
-    cursor.execute("""
-    SELECT user_id
-    FROM users
-    """)
-
-    rows = cursor.fetchall()
-
-    notify_users = []
-
-    for row in rows:
-        user_id = row[0]
-
-        hp = apply_passive_hp_regen(user_id)
-        max_hp = get_max_hp(user_id)
-
-        cursor.execute("""
-        SELECT hp_full_notified
-        FROM users
-        WHERE user_id=?
-        """, (user_id,))
-
-        notified_row = cursor.fetchone()
-        notified = notified_row[0] if notified_row else 1
-
-        if hp >= max_hp and not notified:
-            notify_users.append(user_id)
-
-            cursor.execute("""
-            UPDATE users
-            SET hp_full_notified=1
-            WHERE user_id=?
-            """, (user_id,))
-
-        elif hp < max_hp and notified:
-            cursor.execute("""
-            UPDATE users
-            SET hp_full_notified=0
-            WHERE user_id=?
-            """, (user_id,))
-
-    conn.commit()
-
-    return notify_users
-
-
-# ==============================
-# ✅ OVERRIDE HP FUNCTIONS WITH REGEN SUPPORT
-# ==============================
-
-def get_current_hp(user_id):
-    """
-    Повертає актуальне HP з урахуванням пасивної регенерації.
-    """
-
-    return apply_passive_hp_regen(user_id)
-
-
-def set_current_hp(user_id, hp):
-    """
-    Встановлює HP вручну.
-    Після будь-якої зміни HP таймер регенерації стартує заново.
-    """
-
-    from datetime import datetime
-
-    init_hp_regen_system()
-
-    max_hp = get_max_hp(user_id)
-
-    hp = int(hp)
-    hp = max(0, min(max_hp, hp))
-
-    # Якщо HP повне через смерть/банку/ручний сет — не треба слати notification.
-    # Якщо HP нижче максимуму — дозволяємо notification, коли пасивно відновиться.
-    hp_full_notified = 1 if hp >= max_hp else 0
-
-    cursor.execute("""
-    UPDATE users
-    SET hp=?,
-        last_hp_regen_update=?,
-        hp_full_notified=?
-    WHERE user_id=?
-    """, (
-        hp,
-        datetime.now().isoformat(),
-        hp_full_notified,
-        user_id
-    ))
-
-    conn.commit()
-
-
-# ==============================
-# ✅ DYNAMIC EQUIPMENT GENERATOR
-# ==============================
-
-DYNAMIC_RARITY_ICONS = {
-    "common": "⚪",
-    "uncommon": "🟢",
-    "rare": "🔵",
-    "epic": "🟣"
-}
-
-
-DYNAMIC_RARITY_NAMES = {
-    "common": "Звичайний",
-    "uncommon": "Незвичайний",
-    "rare": "Рідкісний",
-    "epic": "Епічний"
-}
-
-
-DYNAMIC_STAT_MULTIPLIERS = {
-    "common": 1.0,
-    "uncommon": 1.5,
-    "rare": 2.3,
-    "epic": 3.5
-}
-
-
-DYNAMIC_SELL_MULTIPLIERS = {
-    "common": 0.40,
-    "uncommon": 1.20,
-    "rare": 3.00,
-    "epic": 8.00
-}
-
-
-DYNAMIC_SLOT_NAMES = {
-    "main_hand": "Зброя",
-    "off_hand": "Друга рука",
-    "helmet": "Шолом",
-    "shoulders": "Наплічники",
-    "chest": "Обладунок",
-    "gloves": "Рукавиці",
-    "legs": "Поножі",
-    "boots": "Чоботи",
-    "necklace": "Амулет",
-    "ring": "Кільце"
-}
-
-
-def init_dynamic_equipment_system():
-    """
-    Додає службові поля для динамічних предметів.
-    Старі handlers не залежать від цих полів, але вони корисні для майбутнього:
-    - item_level
-    - is_generated
-    """
-
-    migrations = [
-        ("items", "item_level", "INTEGER DEFAULT 1"),
-        ("items", "is_generated", "INTEGER DEFAULT 0"),
-    ]
-
-    for table, column, column_type in migrations:
-        try:
-            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
-        except Exception:
-            pass
-
-    conn.commit()
-
-
-def get_dynamic_slot_key():
-    return random.choice(SLOT_ORDER)
-
-
-def get_dynamic_stat_value(item_level, rarity, base=1.0):
-    multiplier = DYNAMIC_STAT_MULTIPLIERS.get(rarity, 1.0)
-    value = int(round(item_level * base * multiplier))
-
-    return max(1, value)
-
-
-def get_dynamic_sell_price(item_level, rarity):
-    multiplier = DYNAMIC_SELL_MULTIPLIERS.get(rarity, 0.40)
-
-    return round(max(0.10, item_level * multiplier), 2)
-
-
-def get_dynamic_weapon_name(slot_key, rarity, weapon_hands):
-    icon = DYNAMIC_RARITY_ICONS.get(rarity, "⚪")
-
-    if slot_key == "main_hand":
-        variants_1h = [
-            "Одноручний меч",
-            "Одноручний посох"
-        ]
-
-        variants_2h = [
-            "Дворучний меч",
-            "Дворучний посох",
-            "Лук",
-            "Арбалет"
-        ]
-
-        if weapon_hands == 2:
-            base_name = random.choice(variants_2h)
-        else:
-            base_name = random.choice(variants_1h)
-
-        return f"{icon} {base_name}"
-
-    if slot_key == "off_hand":
-        variants = [
-            "Щит",
-            "Магічний талісман",
-            "Кинджал для другої руки"
-        ]
-
-        return f"{icon} {random.choice(variants)}"
-
-    return f"{icon} Зброя"
-
-
-def get_dynamic_armor_name(slot_key, rarity):
-    icon = DYNAMIC_RARITY_ICONS.get(rarity, "⚪")
-    base_name = DYNAMIC_SLOT_NAMES.get(slot_key, "Річ")
-
-    return f"{icon} {base_name}"
-
-
-def generate_dynamic_equipment_stats(slot_key, item_level, rarity, weapon_hands=1):
-    """
-    Генерує бонуси під нашу поточну систему:
-    bonus_str, bonus_dex, bonus_int, bonus_wis, bonus_sta, pdef, mdef
-
-    Поки без класів і без armor_type.
-    """
-
-    b_str = 0
-    b_dex = 0
-    b_int = 0
-    b_wis = 0
-    b_sta = 0
-    pdef = 0
-    mdef = 0
-
-    # ==============================
-    # MAIN HAND
-    # ==============================
-
-    if slot_key == "main_hand":
-        # Частина зброї фізична, частина магічна.
-        # Поки без класів — повний рандом.
-        if random.random() < 0.55:
-            b_str = get_dynamic_stat_value(item_level, rarity, 1.0)
-
-            if weapon_hands == 2:
-                b_str = int(round(b_str * 1.35))
-        else:
-            b_int = get_dynamic_stat_value(item_level, rarity, 1.0)
-
-            if weapon_hands == 2:
-                b_int = int(round(b_int * 1.35))
-
-    # ==============================
-    # OFF HAND
-    # ==============================
-
-    elif slot_key == "off_hand":
-        choice = random.choice(["shield", "talisman", "dagger"])
-
-        if choice == "shield":
-            pdef = get_dynamic_stat_value(item_level, rarity, 1.2)
-            b_sta = get_dynamic_stat_value(item_level, rarity, 0.4)
-
-        elif choice == "talisman":
-            mdef = get_dynamic_stat_value(item_level, rarity, 1.2)
-            b_wis = get_dynamic_stat_value(item_level, rarity, 0.5)
-
-        else:
-            b_dex = get_dynamic_stat_value(item_level, rarity, 0.8)
-
-    # ==============================
-    # ARMOR SLOTS
-    # ==============================
-
-    elif slot_key in ["helmet", "shoulders", "chest", "gloves", "legs", "boots"]:
-        if slot_key == "chest":
-            pdef = get_dynamic_stat_value(item_level, rarity, 1.6)
-            b_sta = get_dynamic_stat_value(item_level, rarity, 0.6)
-
-        elif slot_key in ["helmet", "shoulders", "legs"]:
-            pdef = get_dynamic_stat_value(item_level, rarity, 1.0)
-            mdef = get_dynamic_stat_value(item_level, rarity, 0.4)
-
-        elif slot_key == "gloves":
-            pdef = get_dynamic_stat_value(item_level, rarity, 0.7)
-            b_dex = get_dynamic_stat_value(item_level, rarity, 0.5)
-
-        elif slot_key == "boots":
-            pdef = get_dynamic_stat_value(item_level, rarity, 0.6)
-            b_dex = get_dynamic_stat_value(item_level, rarity, 0.8)
-
-    # ==============================
-    # JEWELRY
-    # ==============================
-
-    elif slot_key == "necklace":
-        mdef = get_dynamic_stat_value(item_level, rarity, 1.3)
-        b_wis = get_dynamic_stat_value(item_level, rarity, 0.8)
-
-    elif slot_key == "ring":
-        stat_choice = random.choice(["str", "dex", "int", "wis", "sta"])
-
-        value = get_dynamic_stat_value(item_level, rarity, 0.9)
-
-        if stat_choice == "str":
-            b_str = value
-        elif stat_choice == "dex":
-            b_dex = value
-        elif stat_choice == "int":
-            b_int = value
-        elif stat_choice == "wis":
-            b_wis = value
-        elif stat_choice == "sta":
-            b_sta = value
-
-    # ==============================
-    # EXTRA BONUSES BY RARITY
-    # ==============================
-
-    if rarity in ["uncommon", "rare", "epic"]:
-        bonus_count = 1
-
-        if rarity == "rare":
-            bonus_count = 2
-
-        if rarity == "epic":
-            bonus_count = 3
-
-        for _ in range(bonus_count):
-            bonus_type = random.choice(["str", "dex", "int", "wis", "sta"])
-
-            bonus_value = get_dynamic_stat_value(item_level, rarity, 0.35)
-
-            if bonus_type == "str":
-                b_str += bonus_value
-            elif bonus_type == "dex":
-                b_dex += bonus_value
-            elif bonus_type == "int":
-                b_int += bonus_value
-            elif bonus_type == "wis":
-                b_wis += bonus_value
-            elif bonus_type == "sta":
-                b_sta += bonus_value
-
-    return {
-        "bonus_str": b_str,
-        "bonus_dex": b_dex,
-        "bonus_int": b_int,
-        "bonus_wis": b_wis,
-        "bonus_sta": b_sta,
-        "pdef": pdef,
-        "mdef": mdef
-    }
-
-
-def create_generated_equipment_item(user_id, item_level, rarity):
-    """
-    Створює нову випадкову річ у таблиці items
-    і кладе її в inventory гравця.
-
-    Повертає структуру:
-    {
-        success,
-        name,
-        inventory_id,
-        item_id,
-        lost,
-        message
-    }
-    """
-
-    init_dynamic_equipment_system()
-
-    item_level = int(item_level)
-    item_level = max(1, item_level)
-
-    if rarity not in ["common", "uncommon", "rare", "epic"]:
-        rarity = "common"
-
-    capacity = get_bag_capacity(user_id)
-    used_slots = get_inventory_used_slots(user_id)
-
-    if used_slots >= capacity:
-        return {
-            "success": False,
-            "lost": 1,
-            "message": "🎒 Сумка переповнена. Екіпірування не влізло."
-        }
-
-    slot_key = get_dynamic_slot_key()
-
-    weapon_hands = 1
-
-    if slot_key == "main_hand":
-        weapon_hands = 2 if random.random() < 0.45 else 1
-        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands)
-        type_ = "weapon"
-
-    elif slot_key == "off_hand":
-        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands)
-        type_ = "offhand"
-
-    else:
-        name = get_dynamic_armor_name(slot_key, rarity)
-        type_ = slot_key
-
-    rarity_name = DYNAMIC_RARITY_NAMES.get(rarity, "Звичайний")
-    name = f"{name} {item_level} рівня"
-
-    stats = generate_dynamic_equipment_stats(
-        slot_key=slot_key,
-        item_level=item_level,
-        rarity=rarity,
-        weapon_hands=weapon_hands
-    )
-
-    sell_price = get_dynamic_sell_price(item_level, rarity)
-
-    cursor.execute("""
-    INSERT INTO items (
-        name,
-        type,
-        rarity,
-        category,
-        slot_key,
-        weapon_hands,
-        max_stack,
-        sell_price,
-        bonus_str,
-        bonus_dex,
-        bonus_int,
-        bonus_wis,
-        bonus_sta,
-        pdef,
-        mdef,
-        item_level,
-        is_generated
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        name,
-        type_,
-        rarity,
-        "equipment",
-        slot_key,
-        weapon_hands,
-        1,
-        sell_price,
-        stats["bonus_str"],
-        stats["bonus_dex"],
-        stats["bonus_int"],
-        stats["bonus_wis"],
-        stats["bonus_sta"],
-        stats["pdef"],
-        stats["mdef"],
-        item_level,
-        1
-    ))
-
-    item_id = cursor.lastrowid
-
-    cursor.execute("""
-    INSERT INTO inventory (
-        user_id,
-        item_id,
-        quantity,
-        durability
-    )
-    VALUES (?, ?, ?, ?)
-    """, (
-        user_id,
-        item_id,
-        1,
-        100
-    ))
-
-    inventory_id = cursor.lastrowid
-
-    conn.commit()
-
-    return {
-        "success": True,
-        "lost": 0,
-        "name": name,
-        "rarity": rarity,
-        "rarity_name": rarity_name,
-        "slot_key": slot_key,
-        "item_id": item_id,
-        "inventory_id": inventory_id,
-        "message": f"{name}"
-    }
-
-# ==============================
-# ✅ ITEM LEVEL REQUIREMENT
-# ==============================
-
-def get_player_level(user_id):
-    cursor.execute("""
-    SELECT level
-    FROM users
-    WHERE user_id=?
-    """, (user_id,))
-
-    row = cursor.fetchone()
-
-    if not row:
-        return 1
-
-    return row[0] or 1
-
-
-def get_item_required_level_by_inventory_id(inventory_id):
-    """
-    Повертає рівень предмета.
-    Для старих предметів без item_level повертає 1.
-    """
-
-    try:
-        init_dynamic_equipment_system()
-    except Exception:
-        pass
-
-    try:
-        cursor.execute("""
-        SELECT items.item_level
-        FROM inventory
-        JOIN items ON inventory.item_id = items.id
-        WHERE inventory.id=?
-        """, (inventory_id,))
-
-        row = cursor.fetchone()
-
-        if not row:
-            return 1
-
-        return row[0] or 1
-
-    except Exception:
-        return 1
-
-# ==============================
-# ✅ COMMON EQUIPMENT TRADER SHOP
-# ==============================
-
-COMMON_SHOP_PRICE_MULTIPLIERS = {
-    "main_hand": 3.0,
-    "off_hand": 2.5,
-    "helmet": 1.5,
-    "shoulders": 1.5,
-    "chest": 2.5,
-    "gloves": 1.3,
-    "legs": 1.8,
-    "boots": 1.3,
-    "necklace": 2.0,
-    "ring": 2.0
-}
-
-
-def get_common_equipment_price_for_slot(item_level, slot_key):
-    multiplier = COMMON_SHOP_PRICE_MULTIPLIERS.get(slot_key, 1.5)
-
-    return round(max(1.0, item_level * multiplier), 2)
-
-
-def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_key):
-    """
-    Створює згенерований предмет у конкретний слот.
-    Використовується торговцем для білих речей.
-    """
-
-    init_dynamic_equipment_system()
-
-    if slot_key not in SLOT_ORDER:
-        return {
-            "success": False,
-            "message": "❌ Невідомий слот спорядження."
-        }
-
-    item_level = int(item_level)
-    item_level = max(1, item_level)
-
-    if rarity not in ["common", "uncommon", "rare", "epic"]:
-        rarity = "common"
-
-    capacity = get_bag_capacity(user_id)
-    used_slots = get_inventory_used_slots(user_id)
-
-    if used_slots >= capacity:
-        return {
-            "success": False,
-            "lost": 1,
-            "message": "🎒 Сумка переповнена. Предмет не куплено."
-        }
-
-    weapon_hands = 1
-
-    if slot_key == "main_hand":
-        # У торговця може випасти як одноручна, так і дворучна базова зброя.
-        weapon_hands = 2 if random.random() < 0.35 else 1
-        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands)
-        type_ = "weapon"
-
-    elif slot_key == "off_hand":
-        weapon_hands = 1
-        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands)
-        type_ = "offhand"
-
-    else:
-        weapon_hands = 1
-        name = get_dynamic_armor_name(slot_key, rarity)
-        type_ = slot_key
-
-    name = f"{name} {item_level} рівня"
-
-    stats = generate_dynamic_equipment_stats(
-        slot_key=slot_key,
-        item_level=item_level,
-        rarity=rarity,
-        weapon_hands=weapon_hands
-    )
-
-    sell_price = get_dynamic_sell_price(item_level, rarity)
-
-    cursor.execute("""
-    INSERT INTO items (
-        name,
-        type,
-        rarity,
-        category,
-        slot_key,
-        weapon_hands,
-        max_stack,
-        sell_price,
-        bonus_str,
-        bonus_dex,
-        bonus_int,
-        bonus_wis,
-        bonus_sta,
-        pdef,
-        mdef,
-        item_level,
-        is_generated
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        name,
-        type_,
-        rarity,
-        "equipment",
-        slot_key,
-        weapon_hands,
-        1,
-        sell_price,
-        stats["bonus_str"],
-        stats["bonus_dex"],
-        stats["bonus_int"],
-        stats["bonus_wis"],
-        stats["bonus_sta"],
-        stats["pdef"],
-        stats["mdef"],
-        item_level,
-        1
-    ))
-
-    item_id = cursor.lastrowid
-
-    cursor.execute("""
-    INSERT INTO inventory (
-        user_id,
-        item_id,
-        quantity,
-        durability
-    )
-    VALUES (?, ?, ?, ?)
-    """, (
-        user_id,
-        item_id,
-        1,
-        100
-    ))
-
-    inventory_id = cursor.lastrowid
-
-    conn.commit()
-
-    return {
-        "success": True,
-        "name": name,
-        "item_id": item_id,
-        "inventory_id": inventory_id,
-        "slot_key": slot_key,
-        "item_level": item_level
-    }
-
-
-def get_common_equipment_shop_offer(user_id):
-    """
-    Повертає список білих речей, які торговець може згенерувати для поточного рівня.
-    """
-
-    player_level = get_player_level(user_id)
-
-    offers = []
-
-    for slot_key in SLOT_ORDER:
-        slot_name = EQUIPMENT_SLOTS.get(slot_key, slot_key)
-        price = get_common_equipment_price_for_slot(player_level, slot_key)
-
-        offers.append({
-            "slot_key": slot_key,
-            "slot_name": slot_name,
-            "item_level": player_level,
-            "price": price
-        })
-
-    return offers
-
-
-def buy_common_equipment_from_trader(user_id, slot_key):
-    if slot_key not in SLOT_ORDER:
-        return {
-            "success": False,
-            "message": "❌ Невідомий слот спорядження."
-        }
-
-    player_level = get_player_level(user_id)
-    price = get_common_equipment_price_for_slot(player_level, slot_key)
-
-    cursor.execute("""
-    SELECT gold
-    FROM users
-    WHERE user_id=?
-    """, (user_id,))
-
-    row = cursor.fetchone()
-
-    if not row:
-        return {
-            "success": False,
-            "message": "❌ Персонажа не знайдено."
-        }
-
-    gold = row[0] or 0.0
-
-    if gold < price:
-        return {
-            "success": False,
-            "message": (
-                f"❌ Недостатньо золота.\n\n"
-                f"💳 Потрібно: {price:.2f} 🪙\n"
-                f"💰 У тебе: {gold:.2f} 🪙"
-            )
-        }
-
-    result = create_generated_equipment_item_for_slot(
-        user_id=user_id,
-        item_level=player_level,
-        rarity="common",
-        slot_key=slot_key
-    )
-
-    if not result.get("success"):
-        return result
-
-    cursor.execute("""
-    UPDATE users
-    SET gold = gold - ?
-    WHERE user_id=?
-    """, (price, user_id))
-
-    conn.commit()
-
-    return {
-        "success": True,
-        "message": (
-            f"✅ Куплено базове спорядження.\n\n"
-            f"📦 {result['name']}\n"
-            f"🏷 Рівень предмета: {player_level}\n"
-            f"💳 Сплачено: {price:.2f} 🪙"
-        )
-    }
-
-# ==============================
-# ✅ SELL EQUIPMENT TO TRADER
-# ==============================
-
-def get_sellable_equipment_items(user_id):
-    """
-    Повертає невдягнене спорядження, яке можна продати торговцю.
-    Вдягнені речі не показуються.
-    """
-
-    equipped_slots = get_all_equipped_slots(user_id)
-    equipped_inventory_ids = set()
-
-    for slot_key, inventory_id in equipped_slots.items():
-        if inventory_id:
-            equipped_inventory_ids.add(inventory_id)
-
-    cursor.execute("""
-    SELECT
-        inventory.id,
-        inventory.item_id,
-        items.name,
-        items.type,
-        items.rarity,
-        items.category,
-        items.slot_key,
-        items.weapon_hands,
-        inventory.quantity,
-        items.max_stack,
-        inventory.durability,
-        items.bonus_str,
-        items.bonus_dex,
-        items.bonus_int,
-        items.bonus_wis,
-        items.bonus_sta,
-        items.pdef,
-        items.mdef,
-        items.sell_price
-    FROM inventory
-    JOIN items ON inventory.item_id = items.id
-    WHERE inventory.user_id=?
-      AND items.category='equipment'
-    ORDER BY inventory.id ASC
-    """, (user_id,))
-
-    rows = cursor.fetchall()
-
-    result = []
-
-    for row in rows:
-        inventory_id = row[0]
-
-        if inventory_id in equipped_inventory_ids:
-            continue
-
-        result.append(row)
-
-    return result
-
-
-def sell_inventory_item_to_trader(user_id, inventory_id):
-    """
-    Продає один предмет торговцю.
-
-    Правила:
-    - продавати можна тільки у Торговця;
-    - вдягнений предмет продати не можна;
-    - предмет видаляється з інвентаря;
-    - гравець отримує золото за sell_price.
-    """
-
-    if is_inventory_item_equipped(user_id, inventory_id):
-        return {
-            "success": False,
-            "message": (
-                "❌ Неможливо продати вдягнений предмет.\n\n"
-                "Спочатку зніми його з персонажа."
-            )
-        }
-
-    cursor.execute("""
-    SELECT
-        inventory.id,
-        inventory.item_id,
-        items.name,
-        items.category,
-        inventory.quantity,
-        items.sell_price
-    FROM inventory
-    JOIN items ON inventory.item_id = items.id
-    WHERE inventory.id=? AND inventory.user_id=?
-    """, (inventory_id, user_id))
-
-    row = cursor.fetchone()
-
-    if not row:
-        return {
-            "success": False,
-            "message": "❌ Предмет не знайдено в інвентарі."
-        }
-
-    inv_id, item_id, name, category, quantity, sell_price = row
-
-    quantity = quantity or 1
-    sell_price = sell_price or 0
-
-    if category != "equipment":
-        return {
-            "success": False,
-            "message": "❌ Через це меню можна продавати тільки спорядження."
-        }
-
-    if sell_price <= 0:
-        return {
-            "success": False,
-            "message": "❌ Цей предмет не має ціни продажу."
-        }
-
-    total_gold = round(quantity * sell_price, 2)
-
-    cursor.execute("""
-    DELETE FROM inventory
-    WHERE id=? AND user_id=?
-    """, (inventory_id, user_id))
-
-    cursor.execute("""
-    UPDATE users
-    SET gold = gold + ?
-    WHERE user_id=?
-    """, (total_gold, user_id))
-
-    conn.commit()
-
-    return {
-        "success": True,
-        "message": (
-            f"🪙 Спорядження продано торговцю.\n\n"
-            f"📦 {name} x{quantity}\n"
-            f"💰 Отримано: {total_gold:.2f} 🪙"
-        ),
-        "gold_earned": total_gold
-    }

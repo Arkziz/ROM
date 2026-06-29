@@ -84,7 +84,7 @@ def build_death_text(durability_damage):
     text = (
         "💀 ТИ ЗАГИНУВ\n"
         "❤️ Здоров’я відновлено\n"
-        "🧱 Одягнене спорядження втратило 10 міцності\n"
+        "🧱 Одягнене спорядження втратило 5 міцності\n"
     )
 
     if durability_damage:
@@ -127,10 +127,6 @@ def register_combat_handlers(bot):
         if max_hp > 0:
             hp_percent = (current_hp / max_hp) * 100
 
-        # ==============================
-        # HP HUNT THRESHOLD
-        # ==============================
-
         if hp_percent <= 25:
             bot.send_message(
                 message.chat.id,
@@ -143,10 +139,6 @@ def register_combat_handlers(bot):
                 reply_markup=main_kb()
             )
             return
-
-        # ==============================
-        # ENERGY CHECK
-        # ==============================
 
         energy_result = consume_energy_for_hunt(user_id)
 
@@ -174,10 +166,18 @@ def register_combat_handlers(bot):
 
         attack_type_text = "Фізична" if mob["attack_type"] == "physical" else "Магічна"
 
+        elite_text = ""
+
+        if mob.get("is_elite"):
+            elite_text = (
+                "⭐ ЕЛІТНИЙ ВОРОГ!\n"
+                "Ця істота значно сильніша за звичайну.\n\n"
+            )
+
         text = (
             f"📍 Мапа: {location['name']}\n"
             f"🔎 Ти зустрів {mob['name']}\n\n"
-
+            f"{elite_text}"
             f"🔋 Енергія: {energy_result['energy']}/{energy_result['max_energy']}\n\n"
 
             f"======================\n\n"
@@ -287,8 +287,13 @@ def register_combat_handlers(bot):
 
             exp_result = reward["exp_result"]
 
+            victory_title = "🏆 ВИ ПЕРЕМОГЛИ!"
+
+            if mob.get("is_elite"):
+                victory_title = "🏆 ВИ ПЕРЕМОГЛИ ЕЛІТНОГО ВОРОГА!"
+
             text = (
-                f"🏆 ВИ ПЕРЕМОГЛИ!\n\n"
+                f"{victory_title}\n\n"
                 f"{mob['name']} повалений на землю.\n\n"
                 f"📈 Нагорода:\n"
                 f"✨ Досвід: +{reward['exp']} EXP"
@@ -346,10 +351,14 @@ def register_combat_handlers(bot):
 
         player_hp -= mob_dmg
 
+        # ==============================
+        # DEATH
+        # ==============================
+
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(
                 user_id=user_id,
-                amount=10
+                amount=5
             )
 
             set_current_hp(user_id, player_max_hp)
@@ -541,7 +550,7 @@ def register_combat_handlers(bot):
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(
                 user_id=user_id,
-                amount=10
+                amount=5
             )
 
             set_current_hp(user_id, player_max_hp)
