@@ -11,7 +11,9 @@ from db import (
     get_bag_capacity,
     is_inventory_item_equipped,
     find_equipped_slot_by_inventory_id,
-    get_all_equipped_slots
+    get_all_equipped_slots,
+    get_player_stats,
+    get_item_required_level_by_inventory_id
 )
 
 from keyboards import profile_kb
@@ -74,8 +76,14 @@ def format_item_bonuses(b_str, b_dex, b_int, b_wis, b_sta, pdef, mdef):
     return bonuses
 
 
-def unpack_full_item(item_full):
-    return item_full
+def get_player_level(user_id):
+    stats = get_player_stats(user_id)
+
+    if stats:
+        _, _, _, _, _, player_level = stats
+        return player_level
+
+    return 1
 
 
 def get_inventory_full_items(user_id):
@@ -181,6 +189,10 @@ def build_item_button_label(user_id, item):
     return label
 
 
+# ==============================
+# INVENTORY HOME
+# ==============================
+
 def build_inventory_home(user_id):
     used_slots = get_inventory_used_slots(user_id)
     capacity = get_bag_capacity(user_id)
@@ -200,7 +212,6 @@ def build_inventory_home(user_id):
     for category_key, label in INVENTORY_CATEGORIES:
         count = get_category_count(user_id, category_key)
 
-        # Для "Переглянути все" показуємо загальну кількість слотів
         if category_key == "all":
             button_text = f"{label} ({used_slots})"
         else:
@@ -220,6 +231,10 @@ def build_inventory_home(user_id):
 
     return text, kb
 
+
+# ==============================
+# CATEGORY LIST
+# ==============================
 
 def build_category_list(user_id, category_key, page=0):
     items = get_category_items(user_id, category_key)
@@ -316,6 +331,10 @@ def build_category_list(user_id, category_key, page=0):
     return text, kb
 
 
+# ==============================
+# ITEM DETAILS
+# ==============================
+
 def build_item_details(user_id, inventory_id, back_category="all", page=0):
     item = get_item_by_inventory_id_full(inventory_id)
 
@@ -351,6 +370,10 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
         mdef,
         sell_price
     ) = item
+
+    player_level = get_player_level(user_id)
+    required_level = get_item_required_level_by_inventory_id(inv_id)
+    level_ok = player_level >= required_level
 
     equipped = is_inventory_item_equipped(user_id, inv_id)
     equipped_slot_key = find_equipped_slot_by_inventory_id(user_id, inv_id)
@@ -413,6 +436,16 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
             f"🎯 Слот: {slot_label}\n"
         )
 
+        level_text = "✅" if level_ok else "🔒"
+
+        text += (
+            f"🏷 Рівень предмета: {required_level} {level_text}\n"
+            f"👤 Твій рівень: {player_level}\n"
+        )
+
+        if not level_ok:
+            text += f"⚠️ Цей предмет можна буде вдягнути з {required_level} рівня.\n"
+
         if slot_key == "main_hand":
             if weapon_hands == 2:
                 text += "👐 Тип зброї: дворучна\n"
@@ -454,10 +487,13 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
                 callback_data=f"unequip:{inv_id}:{back_category}:{page}"
             ))
         else:
-            kb.add(types.InlineKeyboardButton(
-                text=f"✅ Вдягнути у слот: {slot_label}",
-                callback_data=f"equip:{inv_id}:{back_category}:{page}"
-            ))
+            if level_ok:
+                kb.add(types.InlineKeyboardButton(
+                    text=f"✅ Вдягнути у слот: {slot_label}",
+                    callback_data=f"equip:{inv_id}:{back_category}:{page}"
+                ))
+            else:
+                text += "\n🔒 Кнопка вдягання недоступна через недостатній рівень.\n"
 
     # ==============================
     # OTHER

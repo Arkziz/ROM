@@ -1002,6 +1002,21 @@ def equip_inventory_item(user_id, inventory_id):
     if category != "equipment":
         return "❌ Цей предмет не можна одягти"
 
+    # ==============================
+    # LEVEL REQUIREMENT CHECK
+    # ==============================
+
+    player_level = get_player_level(user_id)
+    required_level = get_item_required_level_by_inventory_id(inventory_id)
+
+    if player_level < required_level:
+        return (
+            f"🔒 Ти ще не можеш одягти цей предмет.\n\n"
+            f"📦 Предмет: {name}\n"
+            f"🏷 Потрібний рівень: {required_level}\n"
+            f"👤 Твій рівень: {player_level}"
+        )
+
     if not slot_key:
         return "❌ Для цього предмета не вказано слот"
 
@@ -3534,3 +3549,51 @@ def create_generated_equipment_item(user_id, item_level, rarity):
         "inventory_id": inventory_id,
         "message": f"{name}"
     }
+
+# ==============================
+# ✅ ITEM LEVEL REQUIREMENT
+# ==============================
+
+def get_player_level(user_id):
+    cursor.execute("""
+    SELECT level
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return 1
+
+    return row[0] or 1
+
+
+def get_item_required_level_by_inventory_id(inventory_id):
+    """
+    Повертає рівень предмета.
+    Для старих предметів без item_level повертає 1.
+    """
+
+    try:
+        init_dynamic_equipment_system()
+    except Exception:
+        pass
+
+    try:
+        cursor.execute("""
+        SELECT items.item_level
+        FROM inventory
+        JOIN items ON inventory.item_id = items.id
+        WHERE inventory.id=?
+        """, (inventory_id,))
+
+        row = cursor.fetchone()
+
+        if not row:
+            return 1
+
+        return row[0] or 1
+
+    except Exception:
+        return 1
