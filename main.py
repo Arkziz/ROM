@@ -20,11 +20,26 @@ from handlers.daily import register_daily_handlers
 from systems.notifications import start_notification_worker
 
 
-# threaded=False зменшує ризик конфліктів SQLite з потоками.
+# ==============================
+# BOT CONFIG
+# ==============================
+
+# threaded=False зменшує ризик конфліктів SQLite у handlers.
+# Notification worker має окреме SQLite-підключення.
 bot = telebot.TeleBot(TOKEN, threaded=False)
+
+
+# ==============================
+# DB INIT
+# ==============================
 
 init_db()
 seed_items()
+
+
+# ==============================
+# HANDLERS
+# ==============================
 
 register_start_handlers(bot)
 register_profile_handlers(bot)
@@ -36,7 +51,17 @@ register_city_handlers(bot)
 register_contract_handlers(bot)
 register_daily_handlers(bot)
 
+
+# ==============================
+# NOTIFICATIONS
+# ==============================
+
 start_notification_worker(bot)
+
+
+# ==============================
+# START BOT
+# ==============================
 
 print("✅ BOT STARTED")
 bot.infinity_polling()

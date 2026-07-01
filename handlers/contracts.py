@@ -7,7 +7,8 @@ from data.mobs import LOCATION_1_MOBS
 from db import (
     get_contract_status,
     create_daily_contract,
-    abandon_active_contract
+    abandon_active_contract,
+    claim_contract_reward
 )
 
 from keyboards import contracts_kb
@@ -18,17 +19,6 @@ from keyboards import contracts_kb
 # ==============================
 
 def get_available_contract_mobs(player_level):
-    """
-    Повертає мобів, які реально доступні гравцю для контракту.
-
-    Правило:
-    - моб має бути відкритий за min_player_level;
-    - рівень моба має бути у діапазоні PlayerLevel ± 1.
-
-    Якщо таких немає — fallback:
-    - усі моби, які вже доступні за min_player_level.
-    """
-
     available = []
 
     for mob in LOCATION_1_MOBS:
@@ -77,7 +67,7 @@ def build_contracts_text(user_id):
         f"📜 Дошка контрактів\n\n"
         f"На дошці висять замовлення від варти, торговців і мандрівників.\n"
         f"Тут можна взяти щоденне завдання на конкретну істоту.\n\n"
-        f"📆 Сьогодні виконано: {completed_today}/{daily_limit}\n"
+        f"📆 Сьогодні здано контрактів: {completed_today}/{daily_limit}\n"
     )
 
     kb = types.InlineKeyboardMarkup()
@@ -93,13 +83,34 @@ def build_contracts_text(user_id):
         return text, kb
 
     if active_contract:
+        completed = active_contract.get("completed", False)
+
+        if completed:
+            text += (
+                f"\n✅ Контракт виконано!\n\n"
+                f"📌 Контракт готовий до здачі:\n"
+                f"🎯 Ціль: {active_contract['target_mob_name']}\n"
+                f"🏷 Рівень цілі: {active_contract['target_mob_level']}\n"
+                f"📈 Прогрес: "
+                f"{active_contract['current_kills']}/{active_contract['target_kills']}\n"
+                f"✨ Нагорода: {active_contract['reward_exp']} EXP\n\n"
+                f"Повернення до Гільдії Найманців підтверджує виконання контракту."
+            )
+
+            kb.add(types.InlineKeyboardButton(
+                text="🎁 Здати контракт",
+                callback_data="contract_claim"
+            ))
+
+            return text, kb
+
         text += (
             f"\n📌 Активний контракт:\n"
             f"🎯 Ціль: {active_contract['target_mob_name']}\n"
             f"🏷 Рівень цілі: {active_contract['target_mob_level']}\n"
             f"📈 Прогрес: "
             f"{active_contract['current_kills']}/{active_contract['target_kills']}\n"
-            f"✨ Нагорода: {active_contract['reward_exp']} EXP\n\n"
+            f"✨ Нагорода після здачі: {active_contract['reward_exp']} EXP\n\n"
             f"ℹ️ Прогрес зараховується тільки за вбивство саме цієї істоти.\n"
             f"⭐ Елітна версія цієї істоти також зараховується."
         )
@@ -206,6 +217,28 @@ def register_contract_handlers(bot):
             target_mob_name=target_mob_name,
             target_mob_level=target_mob_level
         )
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            result["message"],
+            reply_markup=contracts_kb()
+        )
+
+        text, kb = build_contracts_text(user_id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "contract_claim")
+    def claim_contract(call):
+        user_id = call.from_user.id
+
+        result = claim_contract_reward(user_id)
 
         bot.answer_callback_query(call.id)
 

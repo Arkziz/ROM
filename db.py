@@ -2805,6 +2805,7 @@ def sell_inventory_item_to_trader(user_id, inventory_id):
 CONTRACTS_UNLOCK_LEVEL = 5
 DAILY_CONTRACT_LIMIT = 5
 CONTRACT_TARGET_KILLS = 10
+CONTRACT_MOBS_EQUIVALENT = 20
 
 
 def get_today_str():
@@ -2828,7 +2829,10 @@ def init_contract_system():
 
         target_kills INTEGER,
         current_kills INTEGER,
-        reward_exp INTEGER
+        reward_exp INTEGER,
+
+        completed INTEGER DEFAULT 0,
+        reward_claimed INTEGER DEFAULT 0
     )
     """)
 
@@ -2840,6 +2844,8 @@ def init_contract_system():
         ("user_active_contracts", "target_mob_level", "INTEGER DEFAULT 0"),
         ("user_active_contracts", "target_min_level", "INTEGER DEFAULT 0"),
         ("user_active_contracts", "target_max_level", "INTEGER DEFAULT 0"),
+        ("user_active_contracts", "completed", "INTEGER DEFAULT 0"),
+        ("user_active_contracts", "reward_claimed", "INTEGER DEFAULT 0"),
     ]
 
     for table, column, column_type in migrations:
@@ -2861,6 +2867,7 @@ def init_contract_system():
 
 def reset_daily_contracts_if_needed(user_id):
     init_contract_system()
+
     today = get_today_str()
 
     cursor.execute("""
@@ -2907,7 +2914,9 @@ def get_active_contract(user_id):
         target_max_level,
         target_kills,
         current_kills,
-        reward_exp
+        reward_exp,
+        completed,
+        reward_claimed
     FROM user_active_contracts
     WHERE user_id=?
     ORDER BY id DESC
@@ -2930,7 +2939,9 @@ def get_active_contract(user_id):
         target_max_level,
         target_kills,
         current_kills,
-        reward_exp
+        reward_exp,
+        completed,
+        reward_claimed
     ) = row
 
     if not target_mob_name:
@@ -2947,7 +2958,9 @@ def get_active_contract(user_id):
         "target_max_level": target_max_level,
         "target_kills": target_kills,
         "current_kills": current_kills,
-        "reward_exp": reward_exp
+        "reward_exp": reward_exp,
+        "completed": bool(completed),
+        "reward_claimed": bool(reward_claimed)
     }
 
 
@@ -3020,6 +3033,18 @@ def create_daily_contract(
         }
 
     if status["active_contract"]:
+        active = status["active_contract"]
+
+        if active.get("completed"):
+            return {
+                "success": False,
+                "message": (
+                    "📜 У тебе вже є виконаний контракт.\n\n"
+                    "Повернися до Гільдії Найманців і здай його, "
+                    "щоб отримати нагороду."
+                )
+            }
+
         return {
             "success": False,
             "message": "📜 У тебе вже є активний контракт."
@@ -3041,9 +3066,11 @@ def create_daily_contract(
         target_max_level,
         target_kills,
         current_kills,
-        reward_exp
+        reward_exp,
+        completed,
+        reward_claimed
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         user_id,
         get_today_str(),
@@ -3054,7 +3081,9 @@ def create_daily_contract(
         target_max_level,
         int(target_kills),
         0,
-        reward_exp
+        reward_exp,
+        0,
+        0
     ))
 
     conn.commit()
@@ -3066,7 +3095,7 @@ def create_daily_contract(
             f"🎯 Завдання:\n"
             f"Вбий {target_kills} × {target_mob_name} "
             f"(рівень {target_mob_level}).\n\n"
-            f"✨ Нагорода: {reward_exp} EXP"
+            f"✨ Нагорода після здачі: {reward_exp} EXP"
         )
     }
 
@@ -3107,6 +3136,20 @@ def process_contract_progress_on_kill(user_id, mob):
             "message": None
         }
 
+    if active_contract.get("reward_claimed"):
+        return {
+            "updated": False,
+            "completed": False,
+            "message": None
+        }
+
+    if active_contract.get("completed"):
+        return {
+            "updated": False,
+            "completed": True,
+            "message": None
+        }
+
     mob_name = mob.get("name", "")
     mob_base_name = mob.get("base_name", mob_name)
     mob_level = int(mob.get("level", active_contract["target_mob_level"]))
@@ -3124,39 +3167,27 @@ def process_contract_progress_on_kill(user_id, mob):
     new_progress = active_contract["current_kills"] + 1
 
     if new_progress >= active_contract["target_kills"]:
-        reward_exp = active_contract["reward_exp"]
-
-        exp_result = add_exp(user_id, reward_exp)
-
         cursor.execute("""
-        UPDATE users
-        SET daily_contracts_completed = daily_contracts_completed + 1
-        WHERE user_id=?
-        """, (user_id,))
-
-        cursor.execute("""
-        DELETE FROM user_active_contracts
+        UPDATE user_active_contracts
+        SET current_kills=?,
+            completed=1
         WHERE id=?
-        """, (active_contract["id"],))
+        """, (
+            active_contract["target_kills"],
+            active_contract["id"]
+        ))
 
         conn.commit()
-
-        message = (
-            f"📜 Контракт виконано!\n"
-            f"🎯 Ціль: {target_name}\n"
-            f"✅ Прогрес: {active_contract['target_kills']}/{active_contract['target_kills']}\n"
-            f"✨ Нагорода контракту: +{reward_exp} EXP"
-        )
-
-        if exp_result and exp_result.get("level_ups", 0) > 0:
-            message += f"\n🏆 Новий рівень: {exp_result['level']}!"
 
         return {
             "updated": True,
             "completed": True,
-            "reward_exp": reward_exp,
-            "exp_result": exp_result,
-            "message": message
+            "message": (
+                f"📜 Контракт виконано!\n"
+                f"🎯 Ціль: {target_name}\n"
+                f"✅ Прогрес: {active_contract['target_kills']}/{active_contract['target_kills']}\n"
+                f"🏛️ Поверніться до Гільдії Найманців, щоб здати контракт і отримати нагороду."
+            )
         }
 
     cursor.execute("""
@@ -3182,6 +3213,72 @@ def process_contract_progress_on_kill(user_id, mob):
         )
     }
 
+
+def claim_contract_reward(user_id):
+    reset_daily_contracts_if_needed(user_id)
+
+    active_contract = get_active_contract(user_id)
+
+    if not active_contract:
+        return {
+            "success": False,
+            "message": "📜 У тебе немає контракту для здачі."
+        }
+
+    if not active_contract.get("completed"):
+        return {
+            "success": False,
+            "message": (
+                "❌ Контракт ще не виконано.\n\n"
+                f"🎯 Ціль: {active_contract['target_mob_name']}\n"
+                f"📈 Прогрес: {active_contract['current_kills']}/{active_contract['target_kills']}"
+            )
+        }
+
+    if active_contract.get("reward_claimed"):
+        return {
+            "success": False,
+            "message": "✅ Нагороду за цей контракт уже отримано."
+        }
+
+    reward_exp = active_contract["reward_exp"]
+
+    exp_result = add_exp(user_id, reward_exp)
+
+    cursor.execute("""
+    UPDATE users
+    SET daily_contracts_completed = daily_contracts_completed + 1
+    WHERE user_id=?
+    """, (user_id,))
+
+    cursor.execute("""
+    UPDATE user_active_contracts
+    SET reward_claimed=1
+    WHERE id=?
+    """, (active_contract["id"],))
+
+    cursor.execute("""
+    DELETE FROM user_active_contracts
+    WHERE id=?
+    """, (active_contract["id"],))
+
+    conn.commit()
+
+    message = (
+        f"🎁 Контракт здано!\n\n"
+        f"🎯 Ціль: {active_contract['target_mob_name']}\n"
+        f"✨ Нагорода: +{reward_exp} EXP"
+    )
+
+    if exp_result and exp_result.get("level_ups", 0) > 0:
+        message += f"\n🏆 Новий рівень: {exp_result['level']}!"
+
+    return {
+        "success": True,
+        "message": message,
+        "reward_exp": reward_exp,
+        "exp_result": exp_result
+    }
 
 # ==============================
 # ✅ ENERGY SYSTEM
