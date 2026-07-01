@@ -15,6 +15,7 @@ from db import (
     damage_equipped_items_on_death,
     apply_random_durability_wear_on_victory,
     process_contract_progress_on_kill,
+    process_daily_quest_progress_on_kill,
     consume_energy_for_hunt
 )
 
@@ -127,6 +128,10 @@ def register_combat_handlers(bot):
         if max_hp > 0:
             hp_percent = (current_hp / max_hp) * 100
 
+        # ==============================
+        # HP HUNT THRESHOLD
+        # ==============================
+
         if hp_percent <= 25:
             bot.send_message(
                 message.chat.id,
@@ -139,6 +144,10 @@ def register_combat_handlers(bot):
                 reply_markup=main_kb()
             )
             return
+
+        # ==============================
+        # ENERGY CHECK
+        # ==============================
 
         energy_result = consume_energy_for_hunt(user_id)
 
@@ -248,6 +257,10 @@ def register_combat_handlers(bot):
         if "max_hp" not in mob:
             mob["max_hp"] = mob["hp"]
 
+        # ==============================
+        # PLAYER ATTACK
+        # ==============================
+
         player_attack_result = calculate_player_attack(
             player_atk=player_atk,
             mob_def=mob["def"],
@@ -281,6 +294,11 @@ def register_combat_handlers(bot):
             )
 
             contract_result = process_contract_progress_on_kill(
+                user_id=user_id,
+                mob=mob
+            )
+
+            daily_result = process_daily_quest_progress_on_kill(
                 user_id=user_id,
                 mob=mob
             )
@@ -320,6 +338,9 @@ def register_combat_handlers(bot):
 
             if contract_result and contract_result.get("message"):
                 text += f"\n{contract_result['message']}\n"
+
+            if daily_result and daily_result.get("message"):
+                text += f"\n{daily_result['message']}\n"
 
             text += f"\n🎒 Сумка: {reward['used_slots']}/{reward['capacity']} слотів"
 
@@ -375,10 +396,18 @@ def register_combat_handlers(bot):
             )
             return
 
+        # ==============================
+        # SAVE HP
+        # ==============================
+
         set_current_hp(user_id, player_hp)
 
         if mob.get("potion_cooldown", 0) > 0:
             mob["potion_cooldown"] -= 1
+
+        # ==============================
+        # TEXT
+        # ==============================
 
         text = "⚔️ БІЙ\n\n"
 
@@ -546,6 +575,10 @@ def register_combat_handlers(bot):
         is_dodge = mob_attack_result["is_dodge"]
 
         player_hp -= mob_dmg
+
+        # ==============================
+        # DEATH AFTER POTION
+        # ==============================
 
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(

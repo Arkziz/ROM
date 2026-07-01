@@ -86,6 +86,7 @@ def contracts_kb():
 
 def townhall_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("📆 Щоденне завдання")
     kb.add("🔙 Місто")
     return kb
 

@@ -3746,3 +3746,287 @@ def set_gold_for_test(user_id, amount):
         "gold": amount,
         "message": f"✅ DEV: золото встановлено {amount:.2f} 🪙"
     }
+
+# ==============================
+# ✅ DAILY QUEST SYSTEM
+# ==============================
+
+DAILY_QUEST_ID_KILL_MONSTERS = "kill_25_monsters"
+DAILY_QUEST_TARGET_KILLS = 25
+DAILY_QUEST_REWARD_ITEM_ID = 201  # 🔴 Мале зілля здоров’я
+DAILY_QUEST_REWARD_QUANTITY = 3
+
+
+def get_daily_today_str():
+    from datetime import date
+    return date.today().isoformat()
+
+
+def init_daily_quest_system():
+    """
+    Щоденні завдання v1.
+
+    Поточна версія:
+    - 1 завдання на день
+    - вбити 25 монстрів
+    - нагорода: Мале зілля здоров’я x3
+    """
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS user_daily_quests (
+        user_id INTEGER PRIMARY KEY,
+        quest_date TEXT,
+        quest_id TEXT,
+        progress INTEGER,
+        target_count INTEGER,
+        completed INTEGER,
+        reward_claimed INTEGER
+    )
+    """)
+
+    conn.commit()
+
+
+def reset_daily_quest_if_needed(user_id):
+    init_daily_quest_system()
+
+    today = get_daily_today_str()
+
+    cursor.execute("""
+    SELECT quest_date
+    FROM user_daily_quests
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        cursor.execute("""
+        INSERT INTO user_daily_quests (
+            user_id,
+            quest_date,
+            quest_id,
+            progress,
+            target_count,
+            completed,
+            reward_claimed
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            user_id,
+            today,
+            DAILY_QUEST_ID_KILL_MONSTERS,
+            0,
+            DAILY_QUEST_TARGET_KILLS,
+            0,
+            0
+        ))
+
+        conn.commit()
+        return
+
+    quest_date = row[0] or ""
+
+    if quest_date != today:
+        cursor.execute("""
+        UPDATE user_daily_quests
+        SET
+            quest_date=?,
+            quest_id=?,
+            progress=0,
+            target_count=?,
+            completed=0,
+            reward_claimed=0
+        WHERE user_id=?
+        """, (
+            today,
+            DAILY_QUEST_ID_KILL_MONSTERS,
+            DAILY_QUEST_TARGET_KILLS,
+            user_id
+        ))
+
+        conn.commit()
+
+
+def get_daily_quest_status(user_id):
+    reset_daily_quest_if_needed(user_id)
+
+    cursor.execute("""
+    SELECT
+        quest_date,
+        quest_id,
+        progress,
+        target_count,
+        completed,
+        reward_claimed
+    FROM user_daily_quests
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "exists": False,
+            "message": "❌ Щоденне завдання не знайдено."
+        }
+
+    (
+        quest_date,
+        quest_id,
+        progress,
+        target_count,
+        completed,
+        reward_claimed
+    ) = row
+
+    return {
+        "exists": True,
+        "quest_date": quest_date,
+        "quest_id": quest_id,
+        "progress": progress or 0,
+        "target_count": target_count or DAILY_QUEST_TARGET_KILLS,
+        "completed": bool(completed),
+        "reward_claimed": bool(reward_claimed),
+        "reward_item_id": DAILY_QUEST_REWARD_ITEM_ID,
+        "reward_quantity": DAILY_QUEST_REWARD_QUANTITY
+    }
+
+
+def process_daily_quest_progress_on_kill(user_id, mob=None):
+    """
+    Викликається після перемоги над будь-яким монстром.
+
+    Враховуються:
+    - звичайні монстри
+    - елітні монстри
+    - боси, коли вони будуть реалізовані
+    """
+
+    reset_daily_quest_if_needed(user_id)
+
+    status = get_daily_quest_status(user_id)
+
+    if not status["exists"]:
+        return {
+            "updated": False,
+            "completed": False,
+            "message": None
+        }
+
+    if status["reward_claimed"]:
+        return {
+            "updated": False,
+            "completed": False,
+            "message": None
+        }
+
+    if status["completed"]:
+        return {
+            "updated": False,
+            "completed": True,
+            "message": None
+        }
+
+    progress = status["progress"]
+    target_count = status["target_count"]
+
+    new_progress = min(target_count, progress + 1)
+    completed = 1 if new_progress >= target_count else 0
+
+    cursor.execute("""
+    UPDATE user_daily_quests
+    SET progress=?,
+        completed=?
+    WHERE user_id=?
+    """, (
+        new_progress,
+        completed,
+        user_id
+    ))
+
+    conn.commit()
+
+    if completed:
+        return {
+            "updated": True,
+            "completed": True,
+            "message": (
+                "📆 Щоденне завдання виконано!\n"
+                "✅ Прогрес: 25/25\n"
+                "🏛️ Поверніться до Ратуші за нагородою."
+            )
+        }
+
+    return {
+        "updated": True,
+        "completed": False,
+        "message": f"📆 Щоденне завдання: {new_progress}/{target_count}"
+    }
+
+
+def claim_daily_quest_reward(user_id):
+    reset_daily_quest_if_needed(user_id)
+
+    status = get_daily_quest_status(user_id)
+
+    if not status["exists"]:
+        return {
+            "success": False,
+            "message": "❌ Щоденне завдання не знайдено."
+        }
+
+    if not status["completed"]:
+        return {
+            "success": False,
+            "message": (
+                "❌ Щоденне завдання ще не виконано.\n\n"
+                f"📈 Прогрес: {status['progress']}/{status['target_count']}"
+            )
+        }
+
+    if status["reward_claimed"]:
+        return {
+            "success": False,
+            "message": "✅ Нагороду за сьогодні вже отримано."
+        }
+
+    result = add_item(
+        user_id=user_id,
+        item_id=DAILY_QUEST_REWARD_ITEM_ID,
+        quantity=DAILY_QUEST_REWARD_QUANTITY
+    )
+
+    added = result.get("added", 0)
+    lost = result.get("lost", 0)
+    name = result.get("name", "Предмет")
+
+    if added <= 0:
+        return {
+            "success": False,
+            "message": (
+                "🎒 Сумка переповнена.\n\n"
+                "Звільни місце в інвентарі та спробуй забрати нагороду ще раз."
+            )
+        }
+
+    cursor.execute("""
+    UPDATE user_daily_quests
+    SET reward_claimed=1
+    WHERE user_id=?
+    """, (user_id,))
+
+    conn.commit()
+
+    message = (
+        "🎁 Ви отримали нагороду за щоденне завдання!\n\n"
+        f"📦 {name} x{added}"
+    )
+
+    if lost > 0:
+        message += f"\n⚠️ Не влізло в сумку: x{lost}"
+
+    return {
+        "success": True,
+        "message": message
+    }
