@@ -4127,3 +4127,364 @@ def claim_daily_quest_reward(user_id):
         "success": True,
         "message": message
     }
+
+# ==============================
+# ✅ WEAPON DAMAGE SYSTEM V1
+# ==============================
+
+def init_weapon_damage_system():
+    """
+    Додає службові поля для майбутнього збереження damage на зброї.
+
+    Поточна v1 може рахувати damage динамічно з:
+    - item_level
+    - rarity
+    - weapon_hands
+    - назви зброї
+
+    Але поля залишаємо в БД для майбутньої заточки.
+    """
+
+    migrations = [
+        ("items", "weapon_min_damage", "INTEGER DEFAULT 0"),
+        ("items", "weapon_max_damage", "INTEGER DEFAULT 0"),
+        ("items", "weapon_min_magic_damage", "INTEGER DEFAULT 0"),
+        ("items", "weapon_max_magic_damage", "INTEGER DEFAULT 0"),
+        ("items", "weapon_attack_type", "TEXT DEFAULT ''"),
+    ]
+
+    for table, column, column_type in migrations:
+        try:
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
+
+    conn.commit()
+
+
+def is_weapon_name_magical(name):
+    """
+    Тимчасова логіка до класів/типів зброї.
+
+    Посох = magical.
+    Все інше = physical.
+    """
+
+    if not name:
+        return False
+
+    name_lower = name.lower()
+
+    if "посох" in name_lower:
+        return True
+
+    return False
+
+
+def calculate_weapon_damage_by_values(item_level, rarity, weapon_hands=1):
+    """
+    Базова формула Weapon Damage v1.
+
+    1H:
+    min = level × 0.8 × rarity_multiplier
+    max = level × 1.2 × rarity_multiplier
+
+    2H:
+    додатково ×1.35
+    """
+
+    init_dynamic_equipment_system()
+    init_weapon_damage_system()
+
+    item_level = int(item_level or 1)
+    item_level = max(1, item_level)
+
+    rarity_multiplier = DYNAMIC_STAT_MULTIPLIERS.get(rarity, 1.0)
+
+    hand_multiplier = 1.0
+
+    if int(weapon_hands or 1) == 2:
+        hand_multiplier = 1.35
+
+    min_damage = int(round(item_level * 0.8 * rarity_multiplier * hand_multiplier))
+    max_damage = int(round(item_level * 1.2 * rarity_multiplier * hand_multiplier))
+
+    min_damage = max(1, min_damage)
+    max_damage = max(min_damage, max_damage)
+
+    return min_damage, max_damage
+
+
+def get_weapon_damage_by_inventory_id(inventory_id):
+    """
+    Повертає damage профіль предмета.
+
+    Якщо предмет не є main_hand зброєю — повертає нулі.
+    """
+
+    init_dynamic_equipment_system()
+    init_weapon_damage_system()
+
+    cursor.execute("""
+    SELECT
+        items.name,
+        items.category,
+        items.slot_key,
+        items.weapon_hands,
+        items.rarity,
+        items.item_level,
+        items.weapon_min_damage,
+        items.weapon_max_damage,
+        items.weapon_min_magic_damage,
+        items.weapon_max_magic_damage,
+        items.weapon_attack_type
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.id=?
+    """, (inventory_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "is_weapon": False,
+            "attack_type": "physical",
+            "physical_min": 0,
+            "physical_max": 0,
+            "magic_min": 0,
+            "magic_max": 0,
+            "text": None
+        }
+
+    (
+        name,
+        category,
+        slot_key,
+        weapon_hands,
+        rarity,
+        item_level,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type
+    ) = row
+
+    if category != "equipment" or slot_key != "main_hand":
+        return {
+            "is_weapon": False,
+            "attack_type": "physical",
+            "physical_min": 0,
+            "physical_max": 0,
+            "magic_min": 0,
+            "magic_max": 0,
+            "text": None
+        }
+
+    is_magical = is_weapon_name_magical(name)
+
+    attack_type = "magical" if is_magical else "physical"
+
+    # Якщо в майбутньому damage буде записаний у БД — використовуємо його.
+    if is_magical:
+        if weapon_min_magic_damage and weapon_max_magic_damage:
+            min_dmg = weapon_min_magic_damage
+            max_dmg = weapon_max_magic_damage
+        else:
+            min_dmg, max_dmg = calculate_weapon_damage_by_values(
+                item_level=item_level,
+                rarity=rarity,
+                weapon_hands=weapon_hands
+            )
+
+        return {
+            "is_weapon": True,
+            "attack_type": attack_type,
+            "physical_min": 0,
+            "physical_max": 0,
+            "magic_min": min_dmg,
+            "magic_max": max_dmg,
+            "text": f"🔮 Маг. урон: {min_dmg}-{max_dmg}"
+        }
+
+    if weapon_min_damage and weapon_max_damage:
+        min_dmg = weapon_min_damage
+        max_dmg = weapon_max_damage
+    else:
+        min_dmg, max_dmg = calculate_weapon_damage_by_values(
+            item_level=item_level,
+            rarity=rarity,
+            weapon_hands=weapon_hands
+        )
+
+    return {
+        "is_weapon": True,
+        "attack_type": attack_type,
+        "physical_min": min_dmg,
+        "physical_max": max_dmg,
+        "magic_min": 0,
+        "magic_max": 0,
+        "text": f"⚔️ Урон: {min_dmg}-{max_dmg}"
+    }
+
+
+def get_player_attack_profile(user_id):
+    """
+    Повертає повний профіль атаки гравця для бою.
+
+    v1:
+    physical:
+        damage = random weapon damage + STR - DEF × 0.5
+
+    magical:
+        damage = random magic weapon damage + INT - DEF × 0.5
+    """
+
+    stats = get_player_stats(user_id)
+
+    if not stats:
+        return {
+            "attack_type": "physical",
+            "stat_attack": 0,
+            "weapon_min_damage": 0,
+            "weapon_max_damage": 0,
+            "display_attack": 0,
+            "weapon_text": "Без зброї"
+        }
+
+    total_str, total_dex, total_int, total_wis, total_sta, lvl = stats
+
+    main_hand_id = get_equipped_slot(user_id, "main_hand")
+
+    if not main_hand_id:
+        return {
+            "attack_type": "physical",
+            "stat_attack": total_str,
+            "weapon_min_damage": 0,
+            "weapon_max_damage": 0,
+            "display_attack": total_str,
+            "weapon_text": "Без зброї"
+        }
+
+    weapon_data = get_weapon_damage_by_inventory_id(main_hand_id)
+
+    if not weapon_data.get("is_weapon"):
+        return {
+            "attack_type": "physical",
+            "stat_attack": total_str,
+            "weapon_min_damage": 0,
+            "weapon_max_damage": 0,
+            "display_attack": total_str,
+            "weapon_text": "Без зброї"
+        }
+
+    attack_type = weapon_data["attack_type"]
+
+    if attack_type == "magical":
+        stat_attack = total_int
+        weapon_min = weapon_data["magic_min"]
+        weapon_max = weapon_data["magic_max"]
+    else:
+        stat_attack = total_str
+        weapon_min = weapon_data["physical_min"]
+        weapon_max = weapon_data["physical_max"]
+
+    display_attack = stat_attack + weapon_max
+
+    return {
+        "attack_type": attack_type,
+        "stat_attack": stat_attack,
+        "weapon_min_damage": weapon_min,
+        "weapon_max_damage": weapon_max,
+        "display_attack": display_attack,
+        "weapon_text": weapon_data.get("text")
+    }
+
+
+def get_inventory_weapon_damage_display(inventory_id):
+    """
+    Для інвентаря.
+    Повертає текст damage зброї або None.
+    """
+
+    weapon_data = get_weapon_damage_by_inventory_id(inventory_id)
+
+    if not weapon_data.get("is_weapon"):
+        return None
+
+    return weapon_data.get("text")
+
+# ==============================
+# ✅ DEV RESET HERO TOOL
+# ==============================
+
+def reset_hero_for_test(user_id):
+    """
+    DEV-функція.
+    Повністю видаляє прогрес героя і створює персонажа заново.
+
+    Видаляє:
+    - users
+    - inventory
+    - equipment_slots
+    - active contracts
+    - daily quests
+
+    Потім викликає create_user(user_id).
+    """
+
+    try:
+        cursor.execute("""
+        DELETE FROM inventory
+        WHERE user_id=?
+        """, (user_id,))
+
+        cursor.execute("""
+        DELETE FROM equipment_slots
+        WHERE user_id=?
+        """, (user_id,))
+
+        try:
+            cursor.execute("""
+            DELETE FROM user_active_contracts
+            WHERE user_id=?
+            """, (user_id,))
+        except Exception:
+            pass
+
+        try:
+            cursor.execute("""
+            DELETE FROM user_daily_quests
+            WHERE user_id=?
+            """, (user_id,))
+        except Exception:
+            pass
+
+        cursor.execute("""
+        DELETE FROM users
+        WHERE user_id=?
+        """, (user_id,))
+
+        conn.commit()
+
+        create_user(user_id)
+
+        return {
+            "success": True,
+            "message": (
+                "✅ DEV: герой повністю скинутий.\n\n"
+                "Створено нового персонажа з нуля:\n"
+                "🏆 Рівень: 1\n"
+                "✨ EXP: 0\n"
+                "🪙 Золото: 0\n"
+                "🎒 Інвентар очищено\n"
+                "📜 Контракти очищено\n"
+                "📆 Щоденні завдання очищено"
+            )
+        }
+
+    except Exception as error:
+        return {
+            "success": False,
+            "message": f"❌ DEV reset error: {error}"
+        }

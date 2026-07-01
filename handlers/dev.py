@@ -6,7 +6,8 @@ from db import (
     restore_energy_for_test,
     get_user_energy,
     set_gold_for_test,
-    create_generated_equipment_item
+    create_generated_equipment_item,
+    reset_hero_for_test
 )
 
 from keyboards import main_kb
@@ -155,6 +156,45 @@ def register_dev_handlers(bot):
 
         user_id = message.from_user.id
         result = reset_player_level_for_test(user_id)
+
+        bot.send_message(
+            message.chat.id,
+            result["message"],
+            reply_markup=main_kb()
+        )
+
+    # ==============================
+    # /resethero CONFIRM
+    # ==============================
+
+    @bot.message_handler(commands=["resethero"])
+    def reset_hero(message):
+        if not DEV_MODE:
+            return
+
+        user_id = message.from_user.id
+        parts = message.text.split()
+
+        if len(parts) < 2 or parts[1] != "CONFIRM":
+            bot.send_message(
+                message.chat.id,
+                (
+                    "⚠️ Повне скидання героя\n\n"
+                    "Ця команда видалить:\n"
+                    "• рівень і EXP\n"
+                    "• золото\n"
+                    "• інвентар\n"
+                    "• екіпірування\n"
+                    "• контракти\n"
+                    "• щоденні завдання\n\n"
+                    "Щоб підтвердити, введи:\n"
+                    "/resethero CONFIRM"
+                ),
+                reply_markup=main_kb()
+            )
+            return
+
+        result = reset_hero_for_test(user_id)
 
         bot.send_message(
             message.chat.id,
@@ -428,7 +468,8 @@ def register_dev_handlers(bot):
             "/setlevel N\n"
             "/lvl N\n"
             "/level N\n"
-            "/resetlevel\n\n"
+            "/resetlevel\n"
+            "/resethero CONFIRM\n\n"
 
             "📊 Прогрес:\n"
             "/progress\n\n"
@@ -449,7 +490,8 @@ def register_dev_handlers(bot):
             "/energy 40\n"
             "/gold 100\n"
             "/drop uncommon 7\n"
-            "/drop rare 10"
+            "/drop rare 10\n"
+            "/resethero CONFIRM"
         )
 
         bot.send_message(

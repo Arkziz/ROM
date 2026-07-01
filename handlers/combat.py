@@ -4,7 +4,7 @@ from data.locations import LOCATIONS
 
 from db import (
     get_player_stats,
-    get_attack,
+    get_player_attack_profile,
     get_physical_defense,
     get_magic_defense,
     get_max_hp,
@@ -128,10 +128,6 @@ def register_combat_handlers(bot):
         if max_hp > 0:
             hp_percent = (current_hp / max_hp) * 100
 
-        # ==============================
-        # HP HUNT THRESHOLD
-        # ==============================
-
         if hp_percent <= 25:
             bot.send_message(
                 message.chat.id,
@@ -144,10 +140,6 @@ def register_combat_handlers(bot):
                 reply_markup=main_kb()
             )
             return
-
-        # ==============================
-        # ENERGY CHECK
-        # ==============================
 
         energy_result = consume_energy_for_hunt(user_id)
 
@@ -169,11 +161,13 @@ def register_combat_handlers(bot):
         bot.user_data = getattr(bot, "user_data", {})
         bot.user_data[user_id] = mob
 
-        atk = get_attack(user_id)
+        attack_profile = get_player_attack_profile(user_id)
+
         player_pdef = get_physical_defense(user_id)
         player_mdef = get_magic_defense(user_id)
 
         attack_type_text = "Фізична" if mob["attack_type"] == "physical" else "Магічна"
+        player_attack_type_text = "Фізична" if attack_profile["attack_type"] == "physical" else "Магічна"
 
         elite_text = ""
 
@@ -182,6 +176,8 @@ def register_combat_handlers(bot):
                 "⭐ ЕЛІТНИЙ ВОРОГ!\n"
                 "Ця істота значно сильніша за звичайну.\n\n"
             )
+
+        weapon_text = attack_profile.get("weapon_text") or "Без зброї"
 
         text = (
             f"📍 Мапа: {location['name']}\n"
@@ -194,7 +190,9 @@ def register_combat_handlers(bot):
             f"👤 ТИ\n"
             f"❤️ Здоров’я: {current_hp}/{max_hp}\n"
             f"{hp_bar(current_hp, max_hp)}\n"
-            f"⚔️ Атака: {atk}\n"
+            f"⚔️ Тип атаки: {player_attack_type_text}\n"
+            f"🗡️ Зброя: {weapon_text}\n"
+            f"💥 Атака: {attack_profile['display_attack']}\n"
             f"🛡 Фіз. захист: {player_pdef}\n"
             f"🔮 Маг. захист: {player_mdef}\n\n"
 
@@ -247,7 +245,8 @@ def register_combat_handlers(bot):
 
         str_, dex_, int_, wis_, sta_, lvl = stats
 
-        player_atk = get_attack(user_id)
+        attack_profile = get_player_attack_profile(user_id)
+
         player_pdef = get_physical_defense(user_id)
         player_mdef = get_magic_defense(user_id)
 
@@ -257,21 +256,20 @@ def register_combat_handlers(bot):
         if "max_hp" not in mob:
             mob["max_hp"] = mob["hp"]
 
-        # ==============================
-        # PLAYER ATTACK
-        # ==============================
-
         player_attack_result = calculate_player_attack(
-            player_atk=player_atk,
+            player_stat_attack=attack_profile["stat_attack"],
             mob_def=mob["def"],
             dex=dex_,
             wis=wis_,
             level=lvl,
-            attack_type="physical"
+            attack_type=attack_profile["attack_type"],
+            weapon_min_damage=attack_profile["weapon_min_damage"],
+            weapon_max_damage=attack_profile["weapon_max_damage"]
         )
 
         dmg = player_attack_result["damage"]
         is_player_crit = player_attack_result["is_crit"]
+        weapon_damage = player_attack_result.get("weapon_damage", 0)
 
         mob["hp"] -= dmg
 
@@ -372,10 +370,6 @@ def register_combat_handlers(bot):
 
         player_hp -= mob_dmg
 
-        # ==============================
-        # DEATH
-        # ==============================
-
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(
                 user_id=user_id,
@@ -396,25 +390,22 @@ def register_combat_handlers(bot):
             )
             return
 
-        # ==============================
-        # SAVE HP
-        # ==============================
-
         set_current_hp(user_id, player_hp)
 
         if mob.get("potion_cooldown", 0) > 0:
             mob["potion_cooldown"] -= 1
 
-        # ==============================
-        # TEXT
-        # ==============================
-
         text = "⚔️ БІЙ\n\n"
 
         if is_player_crit:
-            text += f"💥 КРИТ! Ти завдав {dmg} шкоди\n"
+            text += f"💥 КРИТ! Ти завдав {dmg} шкоди"
         else:
-            text += f"🗡️ Ти завдав {dmg} шкоди\n"
+            text += f"🗡️ Ти завдав {dmg} шкоди"
+
+        if weapon_damage > 0:
+            text += f" (зброя: {weapon_damage})"
+
+        text += "\n"
 
         if is_dodge:
             text += "💨 УХИЛ! Ти уникнув атаки ворога\n\n"
@@ -575,10 +566,6 @@ def register_combat_handlers(bot):
         is_dodge = mob_attack_result["is_dodge"]
 
         player_hp -= mob_dmg
-
-        # ==============================
-        # DEATH AFTER POTION
-        # ==============================
 
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(

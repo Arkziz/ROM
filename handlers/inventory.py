@@ -13,7 +13,8 @@ from db import (
     find_equipped_slot_by_inventory_id,
     get_all_equipped_slots,
     get_player_stats,
-    get_item_required_level_by_inventory_id
+    get_item_required_level_by_inventory_id,
+    get_inventory_weapon_damage_display
 )
 
 from keyboards import profile_kb
@@ -452,6 +453,11 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
                 text += "⚠️ Дворучна зброя блокує другу руку.\n"
             else:
                 text += "✋ Тип зброї: одноручна\n"
+
+            weapon_damage_text = get_inventory_weapon_damage_display(inv_id)
+
+            if weapon_damage_text:
+                text += f"{weapon_damage_text}\n"
 
         if durability is not None:
             broken_text = " ⚠️ [ЗЛАМАНО]" if durability <= 0 else ""

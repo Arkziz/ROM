@@ -8,8 +8,8 @@ LOCATION_1_MOBS = [
         "level": 1,
         "min_player_level": 1,
 
-        "hp_min": 40,
-        "hp_max": 50,
+        "hp_min": 45,
+        "hp_max": 55,
 
         "attack_min": 7,
         "attack_max": 9,
@@ -34,11 +34,11 @@ LOCATION_1_MOBS = [
         "level": 2,
         "min_player_level": 1,
 
-        "hp_min": 55,
-        "hp_max": 65,
+        "hp_min": 65,
+        "hp_max": 78,
 
         "attack_min": 9,
-        "attack_max": 11,
+        "attack_max": 12,
 
         "def_min": 2,
         "def_max": 4,
@@ -60,11 +60,11 @@ LOCATION_1_MOBS = [
         "level": 3,
         "min_player_level": 2,
 
-        "hp_min": 75,
-        "hp_max": 85,
+        "hp_min": 90,
+        "hp_max": 105,
 
-        "attack_min": 12,
-        "attack_max": 14,
+        "attack_min": 13,
+        "attack_max": 16,
 
         "def_min": 3,
         "def_max": 5,
@@ -86,14 +86,14 @@ LOCATION_1_MOBS = [
         "level": 4,
         "min_player_level": 3,
 
-        "hp_min": 85,
-        "hp_max": 100,
+        "hp_min": 110,
+        "hp_max": 130,
 
-        "attack_min": 14,
-        "attack_max": 16,
+        "attack_min": 15,
+        "attack_max": 18,
 
-        "def_min": 3,
-        "def_max": 5,
+        "def_min": 4,
+        "def_max": 6,
 
         "dex_min": 10,
         "dex_max": 12,
@@ -112,14 +112,14 @@ LOCATION_1_MOBS = [
         "level": 5,
         "min_player_level": 4,
 
-        "hp_min": 105,
-        "hp_max": 125,
+        "hp_min": 140,
+        "hp_max": 165,
 
-        "attack_min": 17,
-        "attack_max": 20,
+        "attack_min": 19,
+        "attack_max": 23,
 
-        "def_min": 5,
-        "def_max": 7,
+        "def_min": 6,
+        "def_max": 8,
 
         "dex_min": 11,
         "dex_max": 13,
@@ -138,14 +138,14 @@ LOCATION_1_MOBS = [
         "level": 6,
         "min_player_level": 5,
 
-        "hp_min": 120,
-        "hp_max": 140,
+        "hp_min": 165,
+        "hp_max": 195,
 
-        "attack_min": 19,
-        "attack_max": 22,
+        "attack_min": 22,
+        "attack_max": 26,
 
-        "def_min": 4,
-        "def_max": 6,
+        "def_min": 5,
+        "def_max": 7,
 
         "dex_min": 7,
         "dex_max": 9,
@@ -164,14 +164,14 @@ LOCATION_1_MOBS = [
         "level": 7,
         "min_player_level": 6,
 
-        "hp_min": 155,
-        "hp_max": 175,
+        "hp_min": 215,
+        "hp_max": 250,
 
-        "attack_min": 23,
-        "attack_max": 27,
+        "attack_min": 27,
+        "attack_max": 32,
 
-        "def_min": 7,
-        "def_max": 9,
+        "def_min": 8,
+        "def_max": 10,
 
         "dex_min": 13,
         "dex_max": 15,
@@ -190,14 +190,14 @@ LOCATION_1_MOBS = [
         "level": 8,
         "min_player_level": 7,
 
-        "hp_min": 165,
-        "hp_max": 185,
+        "hp_min": 235,
+        "hp_max": 275,
 
-        "attack_min": 27,
-        "attack_max": 31,
+        "attack_min": 31,
+        "attack_max": 37,
 
-        "def_min": 6,
-        "def_max": 8,
+        "def_min": 7,
+        "def_max": 9,
 
         "dex_min": 10,
         "dex_max": 12,
@@ -216,14 +216,14 @@ LOCATION_1_MOBS = [
         "level": 9,
         "min_player_level": 8,
 
-        "hp_min": 230,
-        "hp_max": 250,
+        "hp_min": 320,
+        "hp_max": 365,
 
-        "attack_min": 32,
-        "attack_max": 36,
+        "attack_min": 37,
+        "attack_max": 43,
 
-        "def_min": 11,
-        "def_max": 13,
+        "def_min": 12,
+        "def_max": 15,
 
         "dex_min": 13,
         "dex_max": 15,
@@ -242,14 +242,14 @@ LOCATION_1_MOBS = [
         "level": 10,
         "min_player_level": 9,
 
-        "hp_min": 210,
-        "hp_max": 235,
+        "hp_min": 300,
+        "hp_max": 350,
 
-        "attack_min": 36,
-        "attack_max": 40,
+        "attack_min": 42,
+        "attack_max": 48,
 
-        "def_min": 8,
-        "def_max": 10,
+        "def_min": 9,
+        "def_max": 12,
 
         "dex_min": 11,
         "dex_max": 13,

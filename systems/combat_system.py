@@ -124,9 +124,7 @@ def apply_elite_modifier(mob):
 
 
 def get_available_mobs(player_level, location_id="start_path"):
-    # Поки у нас одна локація.
     mobs = LOCATION_1_MOBS
-
     available = []
 
     for mob in mobs:
@@ -174,14 +172,39 @@ def generate_mob(player_level, location_id="start_path"):
 # ==============================
 
 def calculate_player_attack(
-    player_atk,
+    player_stat_attack,
     mob_def,
     dex,
     wis,
     level,
-    attack_type="physical"
+    attack_type="physical",
+    weapon_min_damage=0,
+    weapon_max_damage=0
 ):
-    base_damage = player_atk - (mob_def * 0.5)
+    """
+    Weapon Damage v1.
+
+    physical:
+        Damage = Random(weapon_min, weapon_max) + STR - DEF × 0.5
+
+    magical:
+        Damage = Random(weapon_min_magic, weapon_max_magic) + INT - DEF × 0.5
+
+    Поки НЕ використовуємо STR × 2 / INT × 2.
+    """
+
+    weapon_min_damage = int(weapon_min_damage or 0)
+    weapon_max_damage = int(weapon_max_damage or 0)
+
+    if weapon_max_damage < weapon_min_damage:
+        weapon_max_damage = weapon_min_damage
+
+    weapon_damage = 0
+
+    if weapon_max_damage > 0:
+        weapon_damage = random.randint(weapon_min_damage, weapon_max_damage)
+
+    base_damage = weapon_damage + player_stat_attack - (mob_def * 0.5)
 
     if base_damage < 1:
         base_damage = 1
@@ -201,7 +224,9 @@ def calculate_player_attack(
     return {
         "damage": damage,
         "is_crit": is_crit,
-        "crit_chance": crit_chance
+        "crit_chance": crit_chance,
+        "weapon_damage": weapon_damage,
+        "attack_type": attack_type
     }
 
 
