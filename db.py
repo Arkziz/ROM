@@ -5427,3 +5427,95 @@ def buy_common_equipment_from_trader(user_id, slot_key, item_profile=None):
             f"💳 Сплачено: {price:.2f} 🪙"
         )
     }
+
+# ==============================
+# ✅ PATCH: MAIN HAND DAGGER PROFILE
+# ==============================
+
+MAIN_HAND_PROFILES = {
+    "sword_1h": {
+        "name": "Одноручний меч",
+        "hands": 1,
+        "attack_type": "physical",
+        "main_stats": ["str"],
+        "extra_stats": ["str", "sta"]
+    },
+    "dagger_1h": {
+        "name": "Кинджал",
+        "hands": 1,
+        "attack_type": "physical",
+        "main_stats": ["dex"],
+        "extra_stats": ["dex", "str"]
+    },
+    "wand_1h": {
+        "name": "Жезл",
+        "hands": 1,
+        "attack_type": "magical",
+        "main_stats": ["int"],
+        "extra_stats": ["int", "wis"]
+    },
+    "sword_2h": {
+        "name": "Дворучний меч",
+        "hands": 2,
+        "attack_type": "physical",
+        "main_stats": ["str"],
+        "extra_stats": ["str", "sta"]
+    },
+    "staff_2h": {
+        "name": "Дворучний посох",
+        "hands": 2,
+        "attack_type": "magical",
+        "main_stats": ["int"],
+        "extra_stats": ["int", "wis"]
+    },
+    "bow_2h": {
+        "name": "Лук",
+        "hands": 2,
+        "attack_type": "physical",
+        "main_stats": ["dex"],
+        "extra_stats": ["dex", "str"]
+    },
+    "crossbow_2h": {
+        "name": "Арбалет",
+        "hands": 2,
+        "attack_type": "physical",
+        "main_stats": ["dex"],
+        "extra_stats": ["dex", "str"]
+    }
+}
+
+
+def detect_weapon_profile_from_name(name):
+    if not name:
+        return ""
+
+    lowered = name.lower()
+
+    if "дворучний посох" in lowered:
+        return "staff_2h"
+
+    if "жезл" in lowered or "одноручний посох" in lowered:
+        return "wand_1h"
+
+    if "дворучний меч" in lowered:
+        return "sword_2h"
+
+    if "кинджал" in lowered:
+        return "dagger_1h"
+
+    if "лук" in lowered:
+        return "bow_2h"
+
+    if "арбалет" in lowered:
+        return "crossbow_2h"
+
+    if "меч" in lowered:
+        return "sword_1h"
+
+    if "щит" in lowered:
+        return "shield"
+
+    if "талісман" in lowered:
+        return "talisman"
+
+    return ""

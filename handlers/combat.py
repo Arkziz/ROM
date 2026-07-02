@@ -12,6 +12,7 @@ from db import (
     set_current_hp,
     get_current_location,
     get_inventory_detailed,
+    get_item_by_inventory_id_full,
     damage_equipped_items_on_death,
     apply_random_durability_wear_on_victory,
     process_contract_progress_on_kill,
@@ -30,6 +31,47 @@ from systems.combat_system import (
 
 from systems.reward_system import process_victory_reward
 from systems.potion_system import use_potion_from_inventory
+
+
+# ==============================
+# 🧪 POTION COOLDOWN
+# ==============================
+
+def get_potion_cooldown_turns_by_inventory_id(inventory_id):
+    item = get_item_by_inventory_id_full(inventory_id)
+
+    if not item:
+        return 3
+
+    (
+        inv_id,
+        item_id,
+        name,
+        type_,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        quantity,
+        max_stack,
+        durability,
+        b_str,
+        b_dex,
+        b_int,
+        b_wis,
+        b_sta,
+        pdef,
+        mdef,
+        sell_price
+    ) = item
+
+    if type_ == "potion_hp_medium":
+        return 5
+
+    if type_ == "potion_hp":
+        return 3
+
+    return 3
 
 
 # ==============================
@@ -65,8 +107,14 @@ def build_combat_potion_kb(user_id):
 
         if category == "potion" and type_ in ["potion_hp", "potion_hp_medium"]:
             found = True
+
+            cooldown = 3
+
+            if type_ == "potion_hp_medium":
+                cooldown = 5
+
             kb.add(types.InlineKeyboardButton(
-                text=f"{name} x{quantity}",
+                text=f"{name} x{quantity} — cooldown {cooldown} ход.",
                 callback_data=f"combat_potion_{inv_id}"
             ))
 
@@ -392,6 +440,7 @@ def register_combat_handlers(bot):
 
         set_current_hp(user_id, player_hp)
 
+        # cooldown зілля зменшується тільки після реального бойового ходу
         if mob.get("potion_cooldown", 0) > 0:
             mob["potion_cooldown"] -= 1
 
@@ -513,20 +562,7 @@ def register_combat_handlers(bot):
             return
 
         inventory_id = int(call.data.split("_")[2])
-
-        stats = get_player_stats(user_id)
-
-        if not stats:
-            bot.answer_callback_query(call.id)
-
-            bot.send_message(
-                call.message.chat.id,
-                "❗ Персонажа не знайдено",
-                reply_markup=main_kb()
-            )
-            return
-
-        str_, dex_, int_, wis_, sta_, lvl = stats
+        cooldown_turns = get_potion_cooldown_turns_by_inventory_id(inventory_id)
 
         potion_result = use_potion_from_inventory(user_id, inventory_id)
 
@@ -542,71 +578,23 @@ def register_combat_handlers(bot):
 
         bot.answer_callback_query(call.id)
 
-        mob["potion_cooldown"] = 3
+        # ВАЖЛИВО:
+        # Зілля більше НЕ витрачає хід.
+        # Ворог НЕ атакує після використання зілля.
+        mob["potion_cooldown"] = cooldown_turns
 
         player_hp = potion_result["new_hp"]
         player_max_hp = potion_result["max_hp"]
 
-        player_pdef = get_physical_defense(user_id)
-        player_mdef = get_magic_defense(user_id)
-
-        mob_attack_result = calculate_mob_attack(
-            mob_attack=mob["attack"],
-            player_pdef=player_pdef,
-            player_mdef=player_mdef,
-            player_dex=dex_,
-            mob_dex=mob["dex"],
-            sta=sta_,
-            level=lvl,
-            attack_type=mob["attack_type"]
-        )
-
-        mob_dmg = mob_attack_result["damage"]
-        is_mob_crit = mob_attack_result["is_crit"]
-        is_dodge = mob_attack_result["is_dodge"]
-
-        player_hp -= mob_dmg
-
-        if player_hp <= 0:
-            durability_damage = damage_equipped_items_on_death(
-                user_id=user_id,
-                amount=5
-            )
-
-            set_current_hp(user_id, player_max_hp)
-
-            if user_id in bot.user_data:
-                del bot.user_data[user_id]
-
-            text = build_death_text(durability_damage)
-
-            bot.send_message(
-                call.message.chat.id,
-                text,
-                reply_markup=main_kb()
-            )
-            return
-
-        set_current_hp(user_id, player_hp)
-
         text = (
             f"🧪 ЗІЛЛЯ\n\n"
             f"{potion_result['message']}\n\n"
-        )
-
-        if is_dodge:
-            text += "💨 УХИЛ! Ти уникнув атаки ворога\n\n"
-        elif is_mob_crit:
-            text += f"💥 КРИТ ВОРОГА! Ти отримав {mob_dmg} шкоди\n\n"
-        else:
-            text += f"👹 Ворог завдав {mob_dmg} шкоди\n\n"
-
-        text += (
+            f"✅ Хід не витрачено — ворог не атакує після використання зілля.\n"
+            f"🔴 Повний шлунок: {cooldown_turns} ход.\n\n"
             f"❤️ Твоє здоров’я: {player_hp}/{player_max_hp}\n"
             f"{hp_bar(player_hp, player_max_hp)}\n\n"
             f"👹 Здоров’я ворога: {mob['hp']}/{mob['max_hp']}\n"
-            f"{hp_bar(mob['hp'], mob['max_hp'])}\n\n"
-            f"🔴 Повний шлунок: 3 ход."
+            f"{hp_bar(mob['hp'], mob['max_hp'])}"
         )
 
         bot.send_message(
