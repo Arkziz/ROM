@@ -24,6 +24,7 @@ from db import (
     get_wallet,
 
     get_common_equipment_shop_offer,
+    get_common_equipment_shop_suboffers,
     buy_common_equipment_from_trader,
 
     get_sellable_equipment_items,
@@ -71,7 +72,7 @@ def build_city_text(user_id):
         f"• 🛒 Торговий ряд — купівля та продаж\n"
         f"• ⚒️ Ремісничий квартал — коваль і алхімік\n"
         f"• 📜 Гільдія Найманців — щоденні контракти\n"
-        f"• 🏛️ Ратуша — майбутні міські доручення\n"
+        f"• 🏛️ Ратуша — щоденні й майбутні міські доручення\n"
         f"• 🍺 Таверна — відпочинок і чутки"
     )
 
@@ -123,19 +124,28 @@ def build_guild_district_text(user_id):
         return text
 
     text += (
-        f"📆 Сьогодні виконано: "
+        f"📆 Сьогодні здано контрактів: "
         f"{status['completed_today']}/{status['daily_limit']}\n"
     )
 
     active = status["active_contract"]
 
     if active:
-        text += (
-            f"\n📌 Активний контракт:\n"
-            f"🎯 Ціль: {active['target_mob_name']}\n"
-            f"📈 Прогрес: {active['current_kills']}/{active['target_kills']}\n"
-            f"✨ Нагорода: {active['reward_exp']} EXP\n"
-        )
+        if active.get("completed"):
+            text += (
+                f"\n✅ Виконаний контракт очікує здачі:\n"
+                f"🎯 Ціль: {active['target_mob_name']}\n"
+                f"📈 Прогрес: {active['current_kills']}/{active['target_kills']}\n"
+                f"✨ Нагорода: {active['reward_exp']} EXP\n\n"
+                f"Зайди до дошки контрактів, щоб здати його."
+            )
+        else:
+            text += (
+                f"\n📌 Активний контракт:\n"
+                f"🎯 Ціль: {active['target_mob_name']}\n"
+                f"📈 Прогрес: {active['current_kills']}/{active['target_kills']}\n"
+                f"✨ Нагорода після здачі: {active['reward_exp']} EXP\n"
+            )
     else:
         text += "\n✅ Можна переглянути дошку контрактів."
 
@@ -148,9 +158,9 @@ def build_townhall_text():
         f"Усередині тихо. На стінах висять старі карти околиць, "
         f"а за великим столом лежать списки податків, звіти варти "
         f"та прохання мешканців.\n\n"
-        f"Староста міста поки не має для тебе особливих доручень.\n\n"
-        f"ℹ️ У майбутньому тут з’являться міські квести, сюжетні доручення "
-        f"та завдання від старости."
+        f"Тут можна отримати щоденне завдання від місцевих жителів.\n\n"
+        f"Доступні дії:\n"
+        f"• 📆 Щоденне завдання"
     )
 
 
@@ -202,11 +212,18 @@ def build_contracts_short_status(user_id):
     text = f"📜 Контракти: {completed}/{daily_limit}\n"
 
     if active:
-        text += (
-            f"📌 Активний контракт: "
-            f"{active['target_mob_name']} "
-            f"{active['current_kills']}/{active['target_kills']}\n"
-        )
+        if active.get("completed"):
+            text += (
+                f"✅ Контракт виконано: "
+                f"{active['target_mob_name']} "
+                f"{active['current_kills']}/{active['target_kills']} — здати в Гільдії\n"
+            )
+        else:
+            text += (
+                f"📌 Активний контракт: "
+                f"{active['target_mob_name']} "
+                f"{active['current_kills']}/{active['target_kills']}\n"
+            )
 
     return text
 
@@ -386,22 +403,91 @@ def build_common_equipment_shop_text(user_id):
     text = (
         f"⚪ Базове спорядження\n\n"
         f"Торговець продає прості білі речі поточного рівня персонажа.\n"
-        f"Це не найкращий шмот, але він допоможе закрити порожні слоти "
-        f"або замінити зламану річ.\n\n"
+        f"Одяг поки має універсальний тип, але для зброї та другої руки "
+        f"можна вибрати конкретний вид предмета.\n\n"
         f"Оберіть слот:"
     )
 
     kb = types.InlineKeyboardMarkup(row_width=1)
 
     for offer in offers:
+        slot_key = offer["slot_key"]
+
+        if slot_key in ["main_hand", "off_hand"]:
+            callback_data = f"common_equipment_slot:{slot_key}"
+        else:
+            callback_data = f"buy_common_equipment:{slot_key}:"
+
         kb.add(types.InlineKeyboardButton(
             text=(
                 f"{offer['slot_name']} — "
                 f"{offer['price']:.2f} 🪙 "
                 f"(рівень {offer['item_level']})"
             ),
-            callback_data=f"buy_common_equipment:{offer['slot_key']}"
+            callback_data=callback_data
         ))
+
+    kb.add(types.InlineKeyboardButton(
+        text="⬅️ До торгового ряду",
+        callback_data="back_to_trade_district"
+    ))
+
+    return text, kb
+
+
+def build_common_equipment_slot_choice_text(user_id, slot_key):
+    offers = get_common_equipment_shop_suboffers(user_id, slot_key)
+
+    if slot_key == "main_hand":
+        title = "🗡️ Вибір зброї"
+        description = (
+            "Оберіть конкретний тип базової зброї.\n\n"
+            "Фізична зброя використовує STR або DEX.\n"
+            "Магічна зброя використовує INT/WIS і магічний урон.\n"
+            "Дворучна зброя блокує другу руку."
+        )
+    elif slot_key == "off_hand":
+        title = "🛡️ Вибір другої руки"
+        description = (
+            "Оберіть конкретний предмет для другої руки.\n\n"
+            "Щит дає PDEF і STA.\n"
+            "Талісман дає MDEF і WIS.\n"
+            "Кинджал дає DEX/STR і не є танковим предметом."
+        )
+    else:
+        title = "⚪ Базове спорядження"
+        description = "Оберіть предмет."
+
+    text = (
+        f"{title}\n\n"
+        f"{description}\n\n"
+        f"Доступні варіанти:"
+    )
+
+    kb = types.InlineKeyboardMarkup(row_width=1)
+
+    for offer in offers:
+        hands_text = ""
+
+        if slot_key == "main_hand":
+            if offer["hands"] == 2:
+                hands_text = " — дворучна"
+            else:
+                hands_text = " — одноручна"
+
+        kb.add(types.InlineKeyboardButton(
+            text=(
+                f"{offer['name']}{hands_text} — "
+                f"{offer['price']:.2f} 🪙 "
+                f"(рівень {offer['item_level']})"
+            ),
+            callback_data=f"buy_common_equipment:{slot_key}:{offer['profile_key']}"
+        ))
+
+    kb.add(types.InlineKeyboardButton(
+        text="⬅️ Назад до слотів",
+        callback_data="common_equipment_back_to_slots"
+    ))
 
     kb.add(types.InlineKeyboardButton(
         text="⬅️ До торгового ряду",
@@ -809,6 +895,10 @@ def register_city_handlers(bot):
             reply_markup=kb
         )
 
+    # ==============================
+    # COMMON EQUIPMENT SHOP
+    # ==============================
+
     @bot.message_handler(func=lambda m: m.text == "⚪ Базове спорядження")
     def show_common_equipment_shop(message):
         user_id = message.from_user.id
@@ -821,14 +911,47 @@ def register_city_handlers(bot):
             reply_markup=kb
         )
 
-    @bot.callback_query_handler(func=lambda call: call.data.startswith("buy_common_equipment:"))
-    def buy_common_equipment(call):
+    @bot.callback_query_handler(func=lambda call: call.data == "common_equipment_back_to_slots")
+    def common_equipment_back_to_slots(call):
+        user_id = call.from_user.id
+
+        text, kb = build_common_equipment_shop_text(user_id)
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("common_equipment_slot:"))
+    def common_equipment_slot_choice(call):
         user_id = call.from_user.id
         slot_key = call.data.split(":")[1]
 
+        text, kb = build_common_equipment_slot_choice_text(user_id, slot_key)
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("buy_common_equipment:"))
+    def buy_common_equipment(call):
+        user_id = call.from_user.id
+
+        parts = call.data.split(":")
+        slot_key = parts[1]
+        item_profile = parts[2] if len(parts) > 2 and parts[2] else None
+
         result = buy_common_equipment_from_trader(
             user_id=user_id,
-            slot_key=slot_key
+            slot_key=slot_key,
+            item_profile=item_profile
         )
 
         bot.answer_callback_query(call.id)

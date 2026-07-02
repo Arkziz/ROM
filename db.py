@@ -4488,3 +4488,942 @@ def reset_hero_for_test(user_id):
             "success": False,
             "message": f"❌ DEV reset error: {error}"
         }
+
+# ==============================
+# ✅ ROLE-BASED EQUIPMENT GENERATION V1
+# ==============================
+
+MAIN_HAND_PROFILES = {
+    "sword_1h": {
+        "name": "Одноручний меч",
+        "hands": 1,
+        "attack_type": "physical",
+        "main_stats": ["str"],
+        "extra_stats": ["str", "sta"]
+    },
+    "wand_1h": {
+        "name": "Жезл",
+        "hands": 1,
+        "attack_type": "magical",
+        "main_stats": ["int"],
+        "extra_stats": ["int", "wis"]
+    },
+    "sword_2h": {
+        "name": "Дворучний меч",
+        "hands": 2,
+        "attack_type": "physical",
+        "main_stats": ["str"],
+        "extra_stats": ["str", "sta"]
+    },
+    "staff_2h": {
+        "name": "Дворучний посох",
+        "hands": 2,
+        "attack_type": "magical",
+        "main_stats": ["int"],
+        "extra_stats": ["int", "wis"]
+    },
+    "bow_2h": {
+        "name": "Лук",
+        "hands": 2,
+        "attack_type": "physical",
+        "main_stats": ["dex"],
+        "extra_stats": ["dex", "str"]
+    },
+    "crossbow_2h": {
+        "name": "Арбалет",
+        "hands": 2,
+        "attack_type": "physical",
+        "main_stats": ["dex"],
+        "extra_stats": ["dex", "str"]
+    }
+}
+
+
+OFF_HAND_PROFILES = {
+    "shield": {
+        "name": "Щит",
+        "attack_type": "defense",
+        "main_stats": ["sta"],
+        "extra_stats": ["sta", "wis"]
+    },
+    "talisman": {
+        "name": "Магічний талісман",
+        "attack_type": "magical",
+        "main_stats": ["wis"],
+        "extra_stats": ["wis", "int"]
+    },
+    "dagger": {
+        "name": "Кинджал для другої руки",
+        "attack_type": "physical",
+        "main_stats": ["dex"],
+        "extra_stats": ["dex", "str"]
+    }
+}
+
+
+ARMOR_EXTRA_STATS_BY_SLOT = {
+    "helmet": ["sta", "wis", "dex"],
+    "shoulders": ["sta", "str"],
+    "chest": ["sta"],
+    "gloves": ["dex", "str"],
+    "legs": ["sta", "dex"],
+    "boots": ["dex"],
+    "necklace": ["wis", "int"],
+    "ring": ["str", "dex", "int", "wis", "sta"]
+}
+
+
+def init_dynamic_equipment_system():
+    migrations = [
+        ("items", "item_level", "INTEGER DEFAULT 1"),
+        ("items", "is_generated", "INTEGER DEFAULT 0"),
+        ("items", "item_subtype", "TEXT DEFAULT ''"),
+    ]
+
+    for table, column, column_type in migrations:
+        try:
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
+
+    conn.commit()
+
+
+def init_weapon_damage_system():
+    migrations = [
+        ("items", "weapon_min_damage", "INTEGER DEFAULT 0"),
+        ("items", "weapon_max_damage", "INTEGER DEFAULT 0"),
+        ("items", "weapon_min_magic_damage", "INTEGER DEFAULT 0"),
+        ("items", "weapon_max_magic_damage", "INTEGER DEFAULT 0"),
+        ("items", "weapon_attack_type", "TEXT DEFAULT ''"),
+        ("items", "item_subtype", "TEXT DEFAULT ''"),
+    ]
+
+    for table, column, column_type in migrations:
+        try:
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
+
+    conn.commit()
+
+
+def add_stat_value(stats, stat_key, value):
+    if stat_key == "str":
+        stats["bonus_str"] += value
+    elif stat_key == "dex":
+        stats["bonus_dex"] += value
+    elif stat_key == "int":
+        stats["bonus_int"] += value
+    elif stat_key == "wis":
+        stats["bonus_wis"] += value
+    elif stat_key == "sta":
+        stats["bonus_sta"] += value
+
+
+def get_random_main_hand_profile():
+    return random.choice(list(MAIN_HAND_PROFILES.keys()))
+
+
+def get_random_off_hand_profile():
+    return random.choice(list(OFF_HAND_PROFILES.keys()))
+
+
+def get_profile_for_generated_item(slot_key, item_profile=None):
+    if slot_key == "main_hand":
+        if item_profile in MAIN_HAND_PROFILES:
+            return item_profile
+
+        return get_random_main_hand_profile()
+
+    if slot_key == "off_hand":
+        if item_profile in OFF_HAND_PROFILES:
+            return item_profile
+
+        return get_random_off_hand_profile()
+
+    return ""
+
+
+def get_dynamic_weapon_name(slot_key, rarity, weapon_hands=1, item_profile=None):
+    icon = DYNAMIC_RARITY_ICONS.get(rarity, "⚪")
+
+    if slot_key == "main_hand":
+        profile_key = get_profile_for_generated_item(slot_key, item_profile)
+        profile = MAIN_HAND_PROFILES.get(profile_key, MAIN_HAND_PROFILES["sword_1h"])
+        return f"{icon} {profile['name']}"
+
+    if slot_key == "off_hand":
+        profile_key = get_profile_for_generated_item(slot_key, item_profile)
+        profile = OFF_HAND_PROFILES.get(profile_key, OFF_HAND_PROFILES["shield"])
+        return f"{icon} {profile['name']}"
+
+    return f"{icon} Зброя"
+
+
+def generate_dynamic_equipment_stats(slot_key, item_level, rarity, weapon_hands=1, item_profile=None):
+    stats = {
+        "bonus_str": 0,
+        "bonus_dex": 0,
+        "bonus_int": 0,
+        "bonus_wis": 0,
+        "bonus_sta": 0,
+        "pdef": 0,
+        "mdef": 0
+    }
+
+    # ==============================
+    # MAIN HAND
+    # ==============================
+
+    if slot_key == "main_hand":
+        profile_key = get_profile_for_generated_item(slot_key, item_profile)
+        profile = MAIN_HAND_PROFILES.get(profile_key, MAIN_HAND_PROFILES["sword_1h"])
+
+        main_stat = profile["main_stats"][0]
+        base_multiplier = 1.00
+
+        if profile["hands"] == 2:
+            base_multiplier = 1.20
+
+        value = get_dynamic_stat_value(item_level, rarity, base_multiplier)
+        add_stat_value(stats, main_stat, value)
+
+        extra_pool = profile["extra_stats"]
+
+    # ==============================
+    # OFF HAND
+    # ==============================
+
+    elif slot_key == "off_hand":
+        profile_key = get_profile_for_generated_item(slot_key, item_profile)
+        profile = OFF_HAND_PROFILES.get(profile_key, OFF_HAND_PROFILES["shield"])
+
+        if profile_key == "shield":
+            stats["pdef"] = get_dynamic_stat_value(item_level, rarity, 1.35)
+            stats["bonus_sta"] = get_dynamic_stat_value(item_level, rarity, 0.55)
+
+        elif profile_key == "talisman":
+            stats["mdef"] = get_dynamic_stat_value(item_level, rarity, 1.35)
+            stats["bonus_wis"] = get_dynamic_stat_value(item_level, rarity, 0.65)
+
+        elif profile_key == "dagger":
+            stats["bonus_dex"] = get_dynamic_stat_value(item_level, rarity, 0.95)
+            stats["bonus_str"] = get_dynamic_stat_value(item_level, rarity, 0.35)
+
+        extra_pool = profile["extra_stats"]
+
+    # ==============================
+    # ARMOR SLOTS
+    # ==============================
+
+    elif slot_key == "helmet":
+        stats["pdef"] = get_dynamic_stat_value(item_level, rarity, 0.80)
+        stats["mdef"] = get_dynamic_stat_value(item_level, rarity, 0.40)
+
+        bonus = random.choice(["sta", "wis", "dex"])
+        value = get_dynamic_stat_value(item_level, rarity, 0.25)
+        add_stat_value(stats, bonus, value)
+
+        extra_pool = ARMOR_EXTRA_STATS_BY_SLOT.get(slot_key, ["sta"])
+
+    elif slot_key == "shoulders":
+        stats["pdef"] = get_dynamic_stat_value(item_level, rarity, 1.00)
+        stats["mdef"] = get_dynamic_stat_value(item_level, rarity, 0.25)
+
+        extra_pool = ARMOR_EXTRA_STATS_BY_SLOT.get(slot_key, ["sta"])
+
+    elif slot_key == "chest":
+        stats["pdef"] = get_dynamic_stat_value(item_level, rarity, 1.60)
+        stats["mdef"] = get_dynamic_stat_value(item_level, rarity, 0.35)
+        stats["bonus_sta"] = get_dynamic_stat_value(item_level, rarity, 0.55)
+
+        extra_pool = ARMOR_EXTRA_STATS_BY_SLOT.get(slot_key, ["sta"])
+
+    elif slot_key == "gloves":
+        stats["pdef"] = get_dynamic_stat_value(item_level, rarity, 0.55)
+        stats["mdef"] = get_dynamic_stat_value(item_level, rarity, 0.20)
+        stats["bonus_dex"] = get_dynamic_stat_value(item_level, rarity, 0.60)
+
+        extra_pool = ARMOR_EXTRA_STATS_BY_SLOT.get(slot_key, ["dex"])
+
+    elif slot_key == "legs":
+        stats["pdef"] = get_dynamic_stat_value(item_level, rarity, 1.20)
+        stats["mdef"] = get_dynamic_stat_value(item_level, rarity, 0.30)
+        stats["bonus_sta"] = get_dynamic_stat_value(item_level, rarity, 0.45)
+
+        extra_pool = ARMOR_EXTRA_STATS_BY_SLOT.get(slot_key, ["sta"])
+
+    elif slot_key == "boots":
+        stats["pdef"] = get_dynamic_stat_value(item_level, rarity, 0.45)
+        stats["mdef"] = get_dynamic_stat_value(item_level, rarity, 0.20)
+        stats["bonus_dex"] = get_dynamic_stat_value(item_level, rarity, 0.80)
+
+        extra_pool = ARMOR_EXTRA_STATS_BY_SLOT.get(slot_key, ["dex"])
+
+    # ==============================
+    # JEWELRY
+    # ==============================
+
+    elif slot_key == "necklace":
+        stats["mdef"] = get_dynamic_stat_value(item_level, rarity, 1.30)
+        stats["bonus_wis"] = get_dynamic_stat_value(item_level, rarity, 0.80)
+
+        extra_pool = ARMOR_EXTRA_STATS_BY_SLOT.get(slot_key, ["wis", "int"])
+
+    elif slot_key == "ring":
+        stat_choice = random.choice(["str", "dex", "int", "wis", "sta"])
+        value = get_dynamic_stat_value(item_level, rarity, 0.90)
+        add_stat_value(stats, stat_choice, value)
+
+        extra_pool = ARMOR_EXTRA_STATS_BY_SLOT.get(slot_key, ["str", "dex", "int", "wis", "sta"])
+
+    else:
+        extra_pool = ["str", "dex", "int", "wis", "sta"]
+
+    # ==============================
+    # EXTRA BONUSES BY RARITY
+    # ==============================
+
+    if rarity in ["uncommon", "rare", "epic"]:
+        bonus_count = 1
+        min_bonus = 2
+
+        if rarity == "rare":
+            bonus_count = 2
+            min_bonus = 3
+
+        if rarity == "epic":
+            bonus_count = 3
+            min_bonus = 4
+
+        for _ in range(bonus_count):
+            bonus_type = random.choice(extra_pool)
+
+            bonus_value = get_dynamic_stat_value(item_level, rarity, 0.30)
+            bonus_value = max(min_bonus, bonus_value)
+
+            add_stat_value(stats, bonus_type, bonus_value)
+
+    return stats
+
+
+def calculate_weapon_damage_by_values(item_level, rarity, weapon_hands=1):
+    init_dynamic_equipment_system()
+    init_weapon_damage_system()
+
+    item_level = int(item_level or 1)
+    item_level = max(1, item_level)
+
+    rarity_multiplier = DYNAMIC_STAT_MULTIPLIERS.get(rarity, 1.0)
+
+    hand_multiplier = 1.0
+
+    if int(weapon_hands or 1) == 2:
+        hand_multiplier = 1.35
+
+    min_damage = int(round(item_level * 0.8 * rarity_multiplier * hand_multiplier))
+    max_damage = int(round(item_level * 1.2 * rarity_multiplier * hand_multiplier))
+
+    min_damage = max(1, min_damage)
+    max_damage = max(min_damage, max_damage)
+
+    return min_damage, max_damage
+
+
+def detect_weapon_profile_from_name(name):
+    if not name:
+        return ""
+
+    lowered = name.lower()
+
+    if "дворучний посох" in lowered:
+        return "staff_2h"
+
+    if "жезл" in lowered or "одноручний посох" in lowered:
+        return "wand_1h"
+
+    if "дворучний меч" in lowered:
+        return "sword_2h"
+
+    if "лук" in lowered:
+        return "bow_2h"
+
+    if "арбалет" in lowered:
+        return "crossbow_2h"
+
+    if "меч" in lowered:
+        return "sword_1h"
+
+    if "щит" in lowered:
+        return "shield"
+
+    if "талісман" in lowered:
+        return "talisman"
+
+    if "кинджал" in lowered:
+        return "dagger"
+
+    return ""
+
+
+def is_weapon_profile_magical(profile_key):
+    if profile_key in MAIN_HAND_PROFILES:
+        return MAIN_HAND_PROFILES[profile_key]["attack_type"] == "magical"
+
+    return False
+
+
+def get_weapon_damage_by_inventory_id(inventory_id):
+    init_dynamic_equipment_system()
+    init_weapon_damage_system()
+
+    cursor.execute("""
+    SELECT
+        items.name,
+        items.category,
+        items.slot_key,
+        items.weapon_hands,
+        items.rarity,
+        items.item_level,
+        items.weapon_min_damage,
+        items.weapon_max_damage,
+        items.weapon_min_magic_damage,
+        items.weapon_max_magic_damage,
+        items.weapon_attack_type,
+        items.item_subtype
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.id=?
+    """, (inventory_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "is_weapon": False,
+            "attack_type": "physical",
+            "physical_min": 0,
+            "physical_max": 0,
+            "magic_min": 0,
+            "magic_max": 0,
+            "text": None
+        }
+
+    (
+        name,
+        category,
+        slot_key,
+        weapon_hands,
+        rarity,
+        item_level,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type,
+        item_subtype
+    ) = row
+
+    if category != "equipment" or slot_key != "main_hand":
+        return {
+            "is_weapon": False,
+            "attack_type": "physical",
+            "physical_min": 0,
+            "physical_max": 0,
+            "magic_min": 0,
+            "magic_max": 0,
+            "text": None
+        }
+
+    profile_key = item_subtype or detect_weapon_profile_from_name(name)
+
+    if profile_key not in MAIN_HAND_PROFILES:
+        profile_key = detect_weapon_profile_from_name(name)
+
+    is_magical = is_weapon_profile_magical(profile_key)
+    attack_type = "magical" if is_magical else "physical"
+
+    if is_magical:
+        if weapon_min_magic_damage and weapon_max_magic_damage:
+            min_dmg = weapon_min_magic_damage
+            max_dmg = weapon_max_magic_damage
+        else:
+            min_dmg, max_dmg = calculate_weapon_damage_by_values(
+                item_level=item_level,
+                rarity=rarity,
+                weapon_hands=weapon_hands
+            )
+
+        return {
+            "is_weapon": True,
+            "attack_type": attack_type,
+            "physical_min": 0,
+            "physical_max": 0,
+            "magic_min": min_dmg,
+            "magic_max": max_dmg,
+            "text": f"🔮 Маг. урон: {min_dmg}-{max_dmg}"
+        }
+
+    if weapon_min_damage and weapon_max_damage:
+        min_dmg = weapon_min_damage
+        max_dmg = weapon_max_damage
+    else:
+        min_dmg, max_dmg = calculate_weapon_damage_by_values(
+            item_level=item_level,
+            rarity=rarity,
+            weapon_hands=weapon_hands
+        )
+
+    return {
+        "is_weapon": True,
+        "attack_type": attack_type,
+        "physical_min": min_dmg,
+        "physical_max": max_dmg,
+        "magic_min": 0,
+        "magic_max": 0,
+        "text": f"⚔️ Урон: {min_dmg}-{max_dmg}"
+    }
+
+
+def create_generated_equipment_item(user_id, item_level, rarity):
+    init_dynamic_equipment_system()
+    init_weapon_damage_system()
+
+    item_level = int(item_level)
+    item_level = max(1, item_level)
+
+    if rarity not in ["common", "uncommon", "rare", "epic"]:
+        rarity = "common"
+
+    capacity = get_bag_capacity(user_id)
+    used_slots = get_inventory_used_slots(user_id)
+
+    if used_slots >= capacity:
+        return {
+            "success": False,
+            "lost": 1,
+            "message": "🎒 Сумка переповнена. Екіпірування не влізло."
+        }
+
+    slot_key = get_dynamic_slot_key()
+    item_profile = get_profile_for_generated_item(slot_key)
+    weapon_hands = 1
+    weapon_attack_type = ""
+
+    if slot_key == "main_hand":
+        profile = MAIN_HAND_PROFILES[item_profile]
+        weapon_hands = profile["hands"]
+        weapon_attack_type = profile["attack_type"]
+        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands, item_profile)
+        type_ = "weapon"
+
+    elif slot_key == "off_hand":
+        profile = OFF_HAND_PROFILES[item_profile]
+        weapon_hands = 1
+        weapon_attack_type = profile["attack_type"]
+        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands, item_profile)
+        type_ = "offhand"
+
+    else:
+        item_profile = ""
+        weapon_hands = 1
+        name = get_dynamic_armor_name(slot_key, rarity)
+        type_ = slot_key
+
+    rarity_name = DYNAMIC_RARITY_NAMES.get(rarity, "Звичайний")
+    name = f"{name} {item_level} рівня"
+
+    stats = generate_dynamic_equipment_stats(
+        slot_key=slot_key,
+        item_level=item_level,
+        rarity=rarity,
+        weapon_hands=weapon_hands,
+        item_profile=item_profile
+    )
+
+    sell_price = get_dynamic_sell_price(item_level, rarity)
+
+    weapon_min_damage = 0
+    weapon_max_damage = 0
+    weapon_min_magic_damage = 0
+    weapon_max_magic_damage = 0
+
+    if slot_key == "main_hand":
+        min_dmg, max_dmg = calculate_weapon_damage_by_values(
+            item_level=item_level,
+            rarity=rarity,
+            weapon_hands=weapon_hands
+        )
+
+        if weapon_attack_type == "magical":
+            weapon_min_magic_damage = min_dmg
+            weapon_max_magic_damage = max_dmg
+        else:
+            weapon_min_damage = min_dmg
+            weapon_max_damage = max_dmg
+
+    cursor.execute("""
+    INSERT INTO items (
+        name,
+        type,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        max_stack,
+        sell_price,
+        bonus_str,
+        bonus_dex,
+        bonus_int,
+        bonus_wis,
+        bonus_sta,
+        pdef,
+        mdef,
+        item_level,
+        is_generated,
+        item_subtype,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        name,
+        type_,
+        rarity,
+        "equipment",
+        slot_key,
+        weapon_hands,
+        1,
+        sell_price,
+        stats["bonus_str"],
+        stats["bonus_dex"],
+        stats["bonus_int"],
+        stats["bonus_wis"],
+        stats["bonus_sta"],
+        stats["pdef"],
+        stats["mdef"],
+        item_level,
+        1,
+        item_profile,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type
+    ))
+
+    item_id = cursor.lastrowid
+
+    cursor.execute("""
+    INSERT INTO inventory (
+        user_id,
+        item_id,
+        quantity,
+        durability
+    )
+    VALUES (?, ?, ?, ?)
+    """, (
+        user_id,
+        item_id,
+        1,
+        100
+    ))
+
+    inventory_id = cursor.lastrowid
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "lost": 0,
+        "name": name,
+        "rarity": rarity,
+        "rarity_name": rarity_name,
+        "slot_key": slot_key,
+        "item_id": item_id,
+        "inventory_id": inventory_id,
+        "message": f"{name}"
+    }
+
+
+def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_key, item_profile=None):
+    init_dynamic_equipment_system()
+    init_weapon_damage_system()
+
+    if slot_key not in SLOT_ORDER:
+        return {
+            "success": False,
+            "message": "❌ Невідомий слот спорядження."
+        }
+
+    item_level = int(item_level)
+    item_level = max(1, item_level)
+
+    if rarity not in ["common", "uncommon", "rare", "epic"]:
+        rarity = "common"
+
+    capacity = get_bag_capacity(user_id)
+    used_slots = get_inventory_used_slots(user_id)
+
+    if used_slots >= capacity:
+        return {
+            "success": False,
+            "lost": 1,
+            "message": "🎒 Сумка переповнена. Предмет не куплено."
+        }
+
+    item_profile = get_profile_for_generated_item(slot_key, item_profile)
+
+    weapon_hands = 1
+    weapon_attack_type = ""
+
+    if slot_key == "main_hand":
+        profile = MAIN_HAND_PROFILES[item_profile]
+        weapon_hands = profile["hands"]
+        weapon_attack_type = profile["attack_type"]
+        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands, item_profile)
+        type_ = "weapon"
+
+    elif slot_key == "off_hand":
+        profile = OFF_HAND_PROFILES[item_profile]
+        weapon_hands = 1
+        weapon_attack_type = profile["attack_type"]
+        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands, item_profile)
+        type_ = "offhand"
+
+    else:
+        item_profile = ""
+        weapon_hands = 1
+        name = get_dynamic_armor_name(slot_key, rarity)
+        type_ = slot_key
+
+    name = f"{name} {item_level} рівня"
+
+    stats = generate_dynamic_equipment_stats(
+        slot_key=slot_key,
+        item_level=item_level,
+        rarity=rarity,
+        weapon_hands=weapon_hands,
+        item_profile=item_profile
+    )
+
+    sell_price = get_dynamic_sell_price(item_level, rarity)
+
+    weapon_min_damage = 0
+    weapon_max_damage = 0
+    weapon_min_magic_damage = 0
+    weapon_max_magic_damage = 0
+
+    if slot_key == "main_hand":
+        min_dmg, max_dmg = calculate_weapon_damage_by_values(
+            item_level=item_level,
+            rarity=rarity,
+            weapon_hands=weapon_hands
+        )
+
+        if weapon_attack_type == "magical":
+            weapon_min_magic_damage = min_dmg
+            weapon_max_magic_damage = max_dmg
+        else:
+            weapon_min_damage = min_dmg
+            weapon_max_damage = max_dmg
+
+    cursor.execute("""
+    INSERT INTO items (
+        name,
+        type,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        max_stack,
+        sell_price,
+        bonus_str,
+        bonus_dex,
+        bonus_int,
+        bonus_wis,
+        bonus_sta,
+        pdef,
+        mdef,
+        item_level,
+        is_generated,
+        item_subtype,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        name,
+        type_,
+        rarity,
+        "equipment",
+        slot_key,
+        weapon_hands,
+        1,
+        sell_price,
+        stats["bonus_str"],
+        stats["bonus_dex"],
+        stats["bonus_int"],
+        stats["bonus_wis"],
+        stats["bonus_sta"],
+        stats["pdef"],
+        stats["mdef"],
+        item_level,
+        1,
+        item_profile,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type
+    ))
+
+    item_id = cursor.lastrowid
+
+    cursor.execute("""
+    INSERT INTO inventory (
+        user_id,
+        item_id,
+        quantity,
+        durability
+    )
+    VALUES (?, ?, ?, ?)
+    """, (
+        user_id,
+        item_id,
+        1,
+        100
+    ))
+
+    inventory_id = cursor.lastrowid
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "name": name,
+        "item_id": item_id,
+        "inventory_id": inventory_id,
+        "slot_key": slot_key,
+        "item_level": item_level
+    }
+
+
+def get_common_equipment_shop_suboffers(user_id, slot_key):
+    player_level = get_player_level(user_id)
+    price = get_common_equipment_price_for_slot(player_level, slot_key)
+
+    if slot_key == "main_hand":
+        return [
+            {
+                "slot_key": slot_key,
+                "profile_key": profile_key,
+                "name": profile["name"],
+                "hands": profile["hands"],
+                "attack_type": profile["attack_type"],
+                "item_level": player_level,
+                "price": price
+            }
+            for profile_key, profile in MAIN_HAND_PROFILES.items()
+        ]
+
+    if slot_key == "off_hand":
+        return [
+            {
+                "slot_key": slot_key,
+                "profile_key": profile_key,
+                "name": profile["name"],
+                "hands": 1,
+                "attack_type": profile["attack_type"],
+                "item_level": player_level,
+                "price": price
+            }
+            for profile_key, profile in OFF_HAND_PROFILES.items()
+        ]
+
+    return []
+
+
+def buy_common_equipment_from_trader(user_id, slot_key, item_profile=None):
+    if slot_key not in SLOT_ORDER:
+        return {
+            "success": False,
+            "message": "❌ Невідомий слот спорядження."
+        }
+
+    if slot_key == "main_hand" and item_profile not in MAIN_HAND_PROFILES:
+        return {
+            "success": False,
+            "message": "❌ Невідомий тип зброї."
+        }
+
+    if slot_key == "off_hand" and item_profile not in OFF_HAND_PROFILES:
+        return {
+            "success": False,
+            "message": "❌ Невідомий тип предмета для другої руки."
+        }
+
+    player_level = get_player_level(user_id)
+    price = get_common_equipment_price_for_slot(player_level, slot_key)
+
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "success": False,
+            "message": "❌ Персонажа не знайдено."
+        }
+
+    gold = row[0] or 0.0
+
+    if gold < price:
+        return {
+            "success": False,
+            "message": (
+                f"❌ Недостатньо золота.\n\n"
+                f"💳 Потрібно: {price:.2f} 🪙\n"
+                f"💰 У тебе: {gold:.2f} 🪙"
+            )
+        }
+
+    result = create_generated_equipment_item_for_slot(
+        user_id=user_id,
+        item_level=player_level,
+        rarity="common",
+        slot_key=slot_key,
+        item_profile=item_profile
+    )
+
+    if not result.get("success"):
+        return result
+
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold - ?
+    WHERE user_id=?
+    """, (price, user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": (
+            f"✅ Куплено базове спорядження.\n\n"
+            f"📦 {result['name']}\n"
+            f"🏷 Рівень предмета: {player_level}\n"
+            f"💳 Сплачено: {price:.2f} 🪙"
+        )
+    }
