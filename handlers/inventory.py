@@ -190,6 +190,85 @@ def build_item_button_label(user_id, item):
     return label
 
 
+def build_equipped_comparison_text(user_id, slot_key, current_inventory_id):
+    if not slot_key:
+        return ""
+
+    equipped_slots = get_all_equipped_slots(user_id)
+    equipped_inventory_id = equipped_slots.get(slot_key)
+
+    if not equipped_inventory_id:
+        return ""
+
+    if equipped_inventory_id == current_inventory_id:
+        return ""
+
+    equipped_item = get_item_by_inventory_id_full(equipped_inventory_id)
+
+    if not equipped_item:
+        return ""
+
+    (
+        inv_id,
+        item_id,
+        name,
+        type_,
+        rarity,
+        category,
+        item_slot_key,
+        weapon_hands,
+        quantity,
+        max_stack,
+        durability,
+        b_str,
+        b_dex,
+        b_int,
+        b_wis,
+        b_sta,
+        pdef,
+        mdef,
+        sell_price
+    ) = equipped_item
+
+    text = "\n\n⚖️ Зараз вдягнено для порівняння:\n"
+    text += f"{name}\n"
+
+    if item_slot_key == "main_hand":
+        if weapon_hands == 2:
+            text += "👐 Тип зброї: дворучна\n"
+        else:
+            text += "✋ Тип зброї: одноручна\n"
+
+        weapon_damage_text = get_inventory_weapon_damage_display(inv_id)
+
+        if weapon_damage_text:
+            text += f"{weapon_damage_text}\n"
+
+    if durability is not None:
+        broken_text = " ⚠️ [ЗЛАМАНО]" if durability <= 0 else ""
+        text += f"🧱 Міцність: {durability}/100{broken_text}\n"
+
+    bonuses = format_item_bonuses(
+        b_str,
+        b_dex,
+        b_int,
+        b_wis,
+        b_sta,
+        pdef,
+        mdef
+    )
+
+    if bonuses:
+        text += "📊 Бонуси:\n"
+
+        for bonus in bonuses:
+            text += f"• {bonus}\n"
+    else:
+        text += "📊 Бонуси: немає\n"
+
+    return text
+
+
 # ==============================
 # INVENTORY HOME
 # ==============================
@@ -393,8 +472,8 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
         text += (
             f"🔘 Тип: сірий лут\n"
             f"📦 Кількість: {quantity}/{max_stack}\n"
-            f"🪙 Ціна продажу: {sell_price:.2f} золота за шт.\n"
-            f"🪙 Усього: {total_price:.2f} золота\n\n"
+            f"💰 Ціна продажу: {sell_price:.2f} золота за шт.\n"
+            f"💰 Усього: {total_price:.2f} золота\n\n"
             f"ℹ️ Цей предмет можна продати торговцю в місті."
         )
 
@@ -406,7 +485,7 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
         text += (
             f"🧪 Тип: зілля\n"
             f"📦 Кількість: {quantity}/{max_stack}\n"
-            f"🪙 Ціна продажу: {sell_price:.2f} золота за шт.\n\n"
+            f"💰 Ціна продажу: {sell_price:.2f} золота за шт.\n\n"
         )
 
         if type_ == "potion_hp":
@@ -483,6 +562,15 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
 
         if durability is not None and durability <= 0:
             text += "\n⚠️ Предмет зламаний і не дає бонусів до ремонту.\n"
+
+        comparison_text = build_equipped_comparison_text(
+            user_id=user_id,
+            slot_key=slot_key,
+            current_inventory_id=inv_id
+        )
+
+        if comparison_text:
+            text += comparison_text
 
         if equipped:
             equipped_slot_label = get_slot_label(equipped_slot_key)

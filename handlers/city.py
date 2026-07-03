@@ -4,6 +4,8 @@ from data.locations import LOCATIONS
 from data.mobs import get_mobs_for_location
 
 from db import (
+    EQUIPMENT_SLOTS,
+
     get_current_location,
     get_player_stats,
     get_current_hp,
@@ -26,7 +28,12 @@ from db import (
 
     get_common_equipment_shop_offer,
     get_common_equipment_shop_suboffers,
-    buy_common_equipment_from_trader,
+
+    create_common_equipment_shop_preview,
+    get_shop_preview_item,
+    get_shop_preview_weapon_damage_text,
+    confirm_common_equipment_shop_preview,
+    cancel_common_equipment_shop_preview,
 
     get_sellable_equipment_items,
     sell_inventory_item_to_trader,
@@ -422,6 +429,7 @@ def build_common_equipment_shop_text(user_id):
         f"⚪ Базове спорядження\n\n"
         f"💰 Твоє золото: {format_gold(gold)}\n\n"
         f"Торговець продає прості білі речі поточного рівня персонажа.\n"
+        f"Перед купівлею ти побачиш точні характеристики предмета.\n\n"
         f"Одяг поки має універсальний тип, але для зброї та другої руки "
         f"можна вибрати конкретний вид предмета.\n\n"
         f"Оберіть слот:"
@@ -513,6 +521,132 @@ def build_common_equipment_slot_choice_text(user_id, slot_key):
     kb.add(types.InlineKeyboardButton(
         text="⬅️ До торгового ряду",
         callback_data="back_to_trade_district"
+    ))
+
+    return text, kb
+
+
+def format_shop_preview_bonuses(b_str, b_dex, b_int, b_wis, b_sta, pdef, mdef):
+    bonuses = []
+
+    if b_str:
+        bonuses.append(f"💪 Сила +{b_str}")
+    if b_dex:
+        bonuses.append(f"🎯 Спритність +{b_dex}")
+    if b_int:
+        bonuses.append(f"🔮 Інтелект +{b_int}")
+    if b_wis:
+        bonuses.append(f"🦉 Мудрість +{b_wis}")
+    if b_sta:
+        bonuses.append(f"🛡 Витривалість +{b_sta}")
+    if pdef:
+        bonuses.append(f"🛡 Фіз. захист +{pdef}")
+    if mdef:
+        bonuses.append(f"🔮 Маг. захист +{mdef}")
+
+    return bonuses
+
+
+def build_common_shop_preview_text(user_id, item_id):
+    preview = get_shop_preview_item(item_id, user_id)
+
+    if not preview:
+        text = "❌ Попередній перегляд предмета не знайдено або застарів."
+
+        kb = types.InlineKeyboardMarkup()
+        kb.add(types.InlineKeyboardButton(
+            text="⬅️ Назад до базового спорядження",
+            callback_data="common_equipment_back_to_slots"
+        ))
+
+        return text, kb
+
+    (
+        item_id,
+        name,
+        type_,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        max_stack,
+        sell_price,
+        b_str,
+        b_dex,
+        b_int,
+        b_wis,
+        b_sta,
+        pdef,
+        mdef,
+        item_level,
+        item_subtype,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type,
+        price
+    ) = preview
+
+    gold = get_wallet(user_id)
+    slot_name = EQUIPMENT_SLOTS.get(slot_key, slot_key)
+
+    text = (
+        f"🛒 Перегляд покупки\n\n"
+        f"📦 {name}\n\n"
+        f"🧰 Тип: спорядження\n"
+        f"🎯 Слот: {slot_name}\n"
+        f"🏷 Рівень предмета: {item_level}\n"
+    )
+
+    if slot_key == "main_hand":
+        if weapon_hands == 2:
+            text += "👐 Тип зброї: дворучна\n"
+            text += "⚠️ Дворучна зброя блокує другу руку.\n"
+        else:
+            text += "✋ Тип зброї: одноручна\n"
+
+        weapon_text = get_shop_preview_weapon_damage_text(item_id)
+
+        if weapon_text:
+            text += f"{weapon_text}\n"
+
+    text += "🧱 Міцність: 100/100\n"
+
+    bonuses = format_shop_preview_bonuses(
+        b_str,
+        b_dex,
+        b_int,
+        b_wis,
+        b_sta,
+        pdef,
+        mdef
+    )
+
+    if bonuses:
+        text += "\n📊 Бонуси:\n"
+
+        for bonus in bonuses:
+            text += f"• {bonus}\n"
+    else:
+        text += "\n📊 Бонуси: немає\n"
+
+    text += (
+        f"\n💳 Ціна: {format_gold(price)}\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
+        f"Купити цей предмет?"
+    )
+
+    kb = types.InlineKeyboardMarkup()
+
+    kb.add(types.InlineKeyboardButton(
+        text=f"✅ Купити за {format_gold(price)}",
+        callback_data=f"common_shop_confirm:{item_id}"
+    ))
+
+    kb.add(types.InlineKeyboardButton(
+        text="❌ Скасувати",
+        callback_data=f"common_shop_cancel:{item_id}"
     ))
 
     return text, kb
@@ -973,17 +1107,74 @@ def register_city_handlers(bot):
         )
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("buy_common_equipment:"))
-    def buy_common_equipment(call):
+    def preview_common_equipment(call):
         user_id = call.from_user.id
 
         parts = call.data.split(":")
         slot_key = parts[1]
         item_profile = parts[2] if len(parts) > 2 and parts[2] else None
 
-        result = buy_common_equipment_from_trader(
+        result = create_common_equipment_shop_preview(
             user_id=user_id,
             slot_key=slot_key,
             item_profile=item_profile
+        )
+
+        bot.answer_callback_query(call.id)
+
+        if not result.get("success"):
+            bot.send_message(
+                call.message.chat.id,
+                result["message"],
+                reply_markup=trader_kb()
+            )
+            return
+
+        text, kb = build_common_shop_preview_text(
+            user_id=user_id,
+            item_id=result["item_id"]
+        )
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("common_shop_confirm:"))
+    def confirm_common_shop_purchase(call):
+        user_id = call.from_user.id
+        item_id = int(call.data.split(":")[1])
+
+        result = confirm_common_equipment_shop_preview(
+            user_id=user_id,
+            item_id=item_id
+        )
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            result["message"],
+            reply_markup=trader_kb()
+        )
+
+        text, kb = build_common_equipment_shop_text(user_id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("common_shop_cancel:"))
+    def cancel_common_shop_purchase(call):
+        user_id = call.from_user.id
+        item_id = int(call.data.split(":")[1])
+
+        result = cancel_common_equipment_shop_preview(
+            user_id=user_id,
+            item_id=item_id
         )
 
         bot.answer_callback_query(call.id)

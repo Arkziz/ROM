@@ -6110,3 +6110,394 @@ def repair_all_equipped(user_id):
         "total_cost": total_cost,
         "repaired_count": repaired_count
     }
+
+# ==============================
+# ✅ SHOP PREVIEW PURCHASE SYSTEM
+# ==============================
+
+def init_shop_preview_system():
+    migrations = [
+        ("items", "shop_preview_owner", "INTEGER DEFAULT NULL"),
+        ("items", "shop_preview_price", "REAL DEFAULT 0"),
+    ]
+
+    for table, column, column_type in migrations:
+        try:
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
+
+    conn.commit()
+
+
+def cleanup_shop_previews_for_user(user_id):
+    init_shop_preview_system()
+
+    try:
+        cursor.execute("""
+        DELETE FROM items
+        WHERE shop_preview_owner=?
+          AND id NOT IN (
+              SELECT item_id FROM inventory
+          )
+        """, (user_id,))
+
+        conn.commit()
+    except Exception:
+        pass
+
+
+def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
+    """
+    Створює preview-предмет у таблиці items, але НЕ додає його в інвентар.
+
+    Це потрібно, щоб гравець бачив саме той предмет, який купить.
+    """
+
+    init_dynamic_equipment_system()
+    init_weapon_damage_system()
+    init_shop_preview_system()
+
+    cleanup_shop_previews_for_user(user_id)
+
+    if slot_key not in SLOT_ORDER:
+        return {
+            "success": False,
+            "message": "❌ Невідомий слот спорядження."
+        }
+
+    if slot_key == "main_hand" and item_profile not in MAIN_HAND_PROFILES:
+        return {
+            "success": False,
+            "message": "❌ Невідомий тип зброї."
+        }
+
+    if slot_key == "off_hand" and item_profile not in OFF_HAND_PROFILES:
+        return {
+            "success": False,
+            "message": "❌ Невідомий тип предмета для другої руки."
+        }
+
+    player_level = get_player_level(user_id)
+    item_level = player_level
+    rarity = "common"
+    price = get_common_equipment_price_for_slot(item_level, slot_key)
+
+    item_profile = get_profile_for_generated_item(slot_key, item_profile)
+
+    weapon_hands = 1
+    weapon_attack_type = ""
+
+    if slot_key == "main_hand":
+        profile = MAIN_HAND_PROFILES[item_profile]
+        weapon_hands = profile["hands"]
+        weapon_attack_type = profile["attack_type"]
+        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands, item_profile)
+        type_ = "weapon"
+
+    elif slot_key == "off_hand":
+        profile = OFF_HAND_PROFILES[item_profile]
+        weapon_hands = 1
+        weapon_attack_type = profile["attack_type"]
+        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands, item_profile)
+        type_ = "offhand"
+
+    else:
+        item_profile = ""
+        weapon_hands = 1
+        name = get_dynamic_armor_name(slot_key, rarity)
+        type_ = slot_key
+
+    name = f"{name} {item_level} рівня"
+
+    stats = generate_dynamic_equipment_stats(
+        slot_key=slot_key,
+        item_level=item_level,
+        rarity=rarity,
+        weapon_hands=weapon_hands,
+        item_profile=item_profile
+    )
+
+    sell_price = get_dynamic_sell_price(item_level, rarity)
+
+    weapon_min_damage = 0
+    weapon_max_damage = 0
+    weapon_min_magic_damage = 0
+    weapon_max_magic_damage = 0
+
+    if slot_key == "main_hand":
+        min_dmg, max_dmg = calculate_weapon_damage_by_values(
+            item_level=item_level,
+            rarity=rarity,
+            weapon_hands=weapon_hands
+        )
+
+        if weapon_attack_type == "magical":
+            weapon_min_magic_damage = min_dmg
+            weapon_max_magic_damage = max_dmg
+        else:
+            weapon_min_damage = min_dmg
+            weapon_max_damage = max_dmg
+
+    cursor.execute("""
+    INSERT INTO items (
+        name,
+        type,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        max_stack,
+        sell_price,
+        bonus_str,
+        bonus_dex,
+        bonus_int,
+        bonus_wis,
+        bonus_sta,
+        pdef,
+        mdef,
+        item_level,
+        is_generated,
+        item_subtype,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type,
+        shop_preview_owner,
+        shop_preview_price
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        name,
+        type_,
+        rarity,
+        "equipment",
+        slot_key,
+        weapon_hands,
+        1,
+        sell_price,
+        stats["bonus_str"],
+        stats["bonus_dex"],
+        stats["bonus_int"],
+        stats["bonus_wis"],
+        stats["bonus_sta"],
+        stats["pdef"],
+        stats["mdef"],
+        item_level,
+        1,
+        item_profile,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type,
+        user_id,
+        price
+    ))
+
+    item_id = cursor.lastrowid
+    conn.commit()
+
+    return {
+        "success": True,
+        "item_id": item_id,
+        "price": price,
+        "name": name
+    }
+
+
+def get_shop_preview_item(item_id, user_id):
+    init_shop_preview_system()
+
+    cursor.execute("""
+    SELECT
+        id,
+        name,
+        type,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        max_stack,
+        sell_price,
+        bonus_str,
+        bonus_dex,
+        bonus_int,
+        bonus_wis,
+        bonus_sta,
+        pdef,
+        mdef,
+        item_level,
+        item_subtype,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type,
+        shop_preview_price
+    FROM items
+    WHERE id=?
+      AND shop_preview_owner=?
+    """, (item_id, user_id))
+
+    return cursor.fetchone()
+
+
+def cancel_common_equipment_shop_preview(user_id, item_id):
+    init_shop_preview_system()
+
+    cursor.execute("""
+    DELETE FROM items
+    WHERE id=?
+      AND shop_preview_owner=?
+      AND id NOT IN (
+          SELECT item_id FROM inventory
+      )
+    """, (item_id, user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": "❌ Купівлю скасовано."
+    }
+
+
+def confirm_common_equipment_shop_preview(user_id, item_id):
+    init_shop_preview_system()
+
+    preview = get_shop_preview_item(item_id, user_id)
+
+    if not preview:
+        return {
+            "success": False,
+            "message": "❌ Попередній перегляд предмета не знайдено або застарів."
+        }
+
+    price = preview[23] or 0
+    name = preview[1]
+
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "success": False,
+            "message": "❌ Персонажа не знайдено."
+        }
+
+    gold = row[0] or 0.0
+
+    if gold < price:
+        return {
+            "success": False,
+            "message": (
+                f"❌ Недостатньо золота.\n\n"
+                f"💳 Потрібно: {format_gold(price)}\n"
+                f"💰 У тебе: {format_gold(gold)}"
+            )
+        }
+
+    capacity = get_bag_capacity(user_id)
+    used_slots = get_inventory_used_slots(user_id)
+
+    if used_slots >= capacity:
+        return {
+            "success": False,
+            "message": "🎒 Сумка переповнена. Предмет не куплено."
+        }
+
+    cursor.execute("""
+    INSERT INTO inventory (
+        user_id,
+        item_id,
+        quantity,
+        durability
+    )
+    VALUES (?, ?, ?, ?)
+    """, (
+        user_id,
+        item_id,
+        1,
+        100
+    ))
+
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold - ?
+    WHERE user_id=?
+    """, (price, user_id))
+
+    cursor.execute("""
+    UPDATE items
+    SET shop_preview_owner=NULL,
+        shop_preview_price=0
+    WHERE id=?
+    """, (item_id,))
+
+    conn.commit()
+
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    new_gold_row = cursor.fetchone()
+    new_gold = new_gold_row[0] if new_gold_row else 0
+
+    return {
+        "success": True,
+        "message": (
+            f"✅ Куплено базове спорядження.\n\n"
+            f"📦 {name}\n"
+            f"💳 Сплачено: {format_gold(price)}\n"
+            f"💰 Залишилось: {format_gold(new_gold)}"
+        )
+    }
+
+
+def get_shop_preview_weapon_damage_text(item_id):
+    init_weapon_damage_system()
+
+    cursor.execute("""
+    SELECT
+        name,
+        slot_key,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type
+    FROM items
+    WHERE id=?
+    """, (item_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return None
+
+    (
+        name,
+        slot_key,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type
+    ) = row
+
+    if slot_key != "main_hand":
+        return None
+
+    if weapon_attack_type == "magical":
+        return f"🔮 Маг. урон: {weapon_min_magic_damage}-{weapon_max_magic_damage}"
+
+    return f"⚔️ Урон: {weapon_min_damage}-{weapon_max_damage}"
