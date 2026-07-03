@@ -4,7 +4,9 @@ from config import TOKEN
 
 from db import (
     init_db,
-    seed_items
+    seed_items,
+    seed_location_trash_items,
+    expand_bag_slots_to_40
 )
 
 from handlers.start import register_start_handlers
@@ -35,6 +37,8 @@ bot = telebot.TeleBot(TOKEN, threaded=False)
 
 init_db()
 seed_items()
+seed_location_trash_items()
+expand_bag_slots_to_40()
 
 
 # ==============================

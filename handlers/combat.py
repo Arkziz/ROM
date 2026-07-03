@@ -251,7 +251,8 @@ def register_combat_handlers(bot):
             f"❤️ Здоров’я: {mob['hp']}/{mob['max_hp']}\n"
             f"{hp_bar(mob['hp'], mob['max_hp'])}\n"
             f"⚔️ Атака: {mob['attack']}\n"
-            f"🛡 Захист: {mob['def']}\n"
+            f"🛡 Фіз. захист: {mob.get('pdef', mob.get('def', 0))}\n"
+            f"🔮 Маг. захист: {mob.get('mdef', mob.get('def', 0))}\n"
             f"🎯 Тип атаки: {attack_type_text}\n\n"
 
             f"⚔️ Бій починається!"
@@ -306,7 +307,11 @@ def register_combat_handlers(bot):
 
         player_attack_result = calculate_player_attack(
             player_stat_attack=attack_profile["stat_attack"],
-            mob_def=mob["def"],
+            mob_def=(
+                mob.get("mdef", mob.get("def", 0))
+                if attack_profile["attack_type"] == "magical"
+                else mob.get("pdef", mob.get("def", 0))
+            ),
             dex=dex_,
             wis=wis_,
             level=lvl,

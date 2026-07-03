@@ -1,6 +1,6 @@
 import random
 
-from data.mobs import LOCATION_1_MOBS
+from data.mobs import get_mobs_for_location
 
 
 # ==============================
@@ -66,9 +66,14 @@ def build_mob(mob_template):
         int(mob_template["attack_max"])
     )
 
-    defense = random.randint(
-        int(mob_template["def_min"]),
-        int(mob_template["def_max"])
+    pdef = random.randint(
+        int(mob_template.get("pdef_min", mob_template.get("def_min", 1))),
+        int(mob_template.get("pdef_max", mob_template.get("def_max", 1)))
+    )
+
+    mdef = random.randint(
+        int(mob_template.get("mdef_min", mob_template.get("def_min", 1))),
+        int(mob_template.get("mdef_max", mob_template.get("def_max", 1)))
     )
 
     dex = random.randint(
@@ -81,12 +86,19 @@ def build_mob(mob_template):
         "base_name": mob_template["name"],
 
         "level": int(mob_template["level"]),
+        "location_id": mob_template.get("location_id", "start_path"),
 
         "hp": hp,
         "max_hp": hp,
 
         "attack": attack,
-        "def": defense,
+
+        "pdef": pdef,
+        "mdef": mdef,
+
+        # compatibility
+        "def": pdef if mob_template.get("attack_type", "physical") == "physical" else mdef,
+
         "dex": dex,
 
         "attack_type": mob_template.get("attack_type", "physical"),
@@ -116,6 +128,10 @@ def apply_elite_modifier(mob):
 
     mob["attack"] = int(mob["attack"] * ELITE_ATTACK_MULTIPLIER)
 
+    mob["pdef"] = int(mob["pdef"] * 1.25)
+    mob["mdef"] = int(mob["mdef"] * 1.25)
+    mob["def"] = int(mob["def"] * 1.25)
+
     mob["is_elite"] = True
     mob["elite_exp_multiplier"] = ELITE_EXP_MULTIPLIER
     mob["elite_gold_multiplier"] = ELITE_GOLD_MULTIPLIER
@@ -124,7 +140,7 @@ def apply_elite_modifier(mob):
 
 
 def get_available_mobs(player_level, location_id="start_path"):
-    mobs = LOCATION_1_MOBS
+    mobs = get_mobs_for_location(location_id)
     available = []
 
     for mob in mobs:
@@ -155,7 +171,7 @@ def generate_mob(player_level, location_id="start_path"):
     )
 
     if not available_mobs:
-        selected_template = LOCATION_1_MOBS[0]
+        selected_template = get_mobs_for_location(location_id)[0]
     else:
         selected_template = random.choice(available_mobs)
 
@@ -181,18 +197,6 @@ def calculate_player_attack(
     weapon_min_damage=0,
     weapon_max_damage=0
 ):
-    """
-    Weapon Damage v1.
-
-    physical:
-        Damage = Random(weapon_min, weapon_max) + STR - DEF × 0.5
-
-    magical:
-        Damage = Random(weapon_min_magic, weapon_max_magic) + INT - DEF × 0.5
-
-    Поки НЕ використовуємо STR × 2 / INT × 2.
-    """
-
     weapon_min_damage = int(weapon_min_damage or 0)
     weapon_max_damage = int(weapon_max_damage or 0)
 

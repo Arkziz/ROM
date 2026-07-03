@@ -2,9 +2,11 @@ import random
 
 from telebot import types
 
-from data.mobs import LOCATION_1_MOBS
+from data.locations import LOCATIONS
+from data.mobs import ALL_MOBS
 
 from db import (
+    get_current_location,
     get_contract_status,
     create_daily_contract,
     abandon_active_contract,
@@ -18,12 +20,37 @@ from keyboards import contracts_kb
 # HELPERS
 # ==============================
 
+def get_unlocked_location_ids(player_level):
+    unlocked = []
+
+    for location_id, location in LOCATIONS.items():
+        if player_level >= location["unlock_level"]:
+            unlocked.append(location_id)
+
+    return unlocked
+
+
 def get_available_contract_mobs(player_level):
+    """
+    Контракт не може дати моба з недоступної локації.
+
+    Правила:
+    - локація моба має бути відкрита;
+    - рівень моба в діапазоні player_level ± 1;
+    - min_player_level моба має бути <= player_level.
+    """
+
+    unlocked_locations = get_unlocked_location_ids(player_level)
+
     available = []
 
-    for mob in LOCATION_1_MOBS:
+    for mob in ALL_MOBS:
         mob_level = int(mob.get("level", 1))
         min_player_level = int(mob.get("min_player_level", 1))
+        location_id = mob.get("location_id", "start_path")
+
+        if location_id not in unlocked_locations:
+            continue
 
         if min_player_level <= player_level and player_level - 1 <= mob_level <= player_level + 1:
             available.append(mob)
@@ -33,8 +60,12 @@ def get_available_contract_mobs(player_level):
 
     fallback = []
 
-    for mob in LOCATION_1_MOBS:
+    for mob in ALL_MOBS:
         min_player_level = int(mob.get("min_player_level", 1))
+        location_id = mob.get("location_id", "start_path")
+
+        if location_id not in unlocked_locations:
+            continue
 
         if min_player_level <= player_level:
             fallback.append(mob)
@@ -133,7 +164,8 @@ def build_contracts_text(user_id):
     text += (
         f"\n✅ Можна взяти новий контракт.\n"
         f"ℹ️ 1 контракт = досвід за 20 мобів твого рівня.\n"
-        f"🎯 Ціль буде обрана випадково серед істот, доступних для твого рівня."
+        f"🎯 Ціль буде обрана випадково серед істот, "
+        f"які доступні для твого рівня та відкритих локацій."
     )
 
     kb.add(types.InlineKeyboardButton(

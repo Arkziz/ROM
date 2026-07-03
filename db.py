@@ -5519,3 +5519,133 @@ def detect_weapon_profile_from_name(name):
         return "talisman"
 
     return ""
+
+# ==============================
+# ✅ BAG SIZE 40 + LOCATION TRASH LOOT
+# ==============================
+
+DEFAULT_BAG_SLOTS = 40
+
+
+def expand_bag_slots_to_40():
+    """
+    Робить базовий розмір сумки 40 слотів.
+    Для існуючих персонажів, у кого менше 40, піднімає до 40.
+    """
+
+    try:
+        cursor.execute("""
+        UPDATE users
+        SET bag_slots=?
+        WHERE bag_slots IS NULL OR bag_slots < ?
+        """, (DEFAULT_BAG_SLOTS, DEFAULT_BAG_SLOTS))
+
+        conn.commit()
+    except Exception:
+        pass
+
+
+def seed_location_trash_items():
+    """
+    Сірий лут для нової структури мобів 1–10.
+    Кожен моб має свій унікальний trash item.
+    """
+
+    trash_items = [
+        # 1–5: Початок Шляху
+        (107, "🐗 Ікло дикого кабана", "trash", "grey", "trash", None, 1, 20, 0.12, 0, 0, 0, 0, 0, 0, 0),
+        (108, "🌱 Рунічний пагін", "trash", "grey", "trash", None, 1, 20, 0.14, 0, 0, 0, 0, 0, 0, 0),
+
+        (109, "🦡 Борсучий кіготь", "trash", "grey", "trash", None, 1, 20, 0.18, 0, 0, 0, 0, 0, 0, 0),
+        (110, "💎 Слиз рунічного слимака", "trash", "grey", "trash", None, 1, 20, 0.20, 0, 0, 0, 0, 0, 0, 0),
+
+        (111, "🦇 Крило лісового кажана", "trash", "grey", "trash", None, 1, 20, 0.24, 0, 0, 0, 0, 0, 0, 0),
+        (112, "🩸 Крапля темної крові", "trash", "grey", "trash", None, 1, 20, 0.28, 0, 0, 0, 0, 0, 0, 0),
+
+        (113, "🕷️ Павуча лапка", "trash", "grey", "trash", None, 1, 20, 0.32, 0, 0, 0, 0, 0, 0, 0),
+        (114, "🧪 Кислотна залоза", "trash", "grey", "trash", None, 1, 20, 0.36, 0, 0, 0, 0, 0, 0, 0),
+
+        (115, "🐺 Вовче ікло", "trash", "grey", "trash", None, 1, 20, 0.42, 0, 0, 0, 0, 0, 0, 0),
+        (116, "👻 Примарна шерсть", "trash", "grey", "trash", None, 1, 20, 0.48, 0, 0, 0, 0, 0, 0, 0),
+
+        # 6–10: Темний Бір
+        (117, "👺 Гоблінський зуб", "trash", "grey", "trash", None, 1, 20, 0.55, 0, 0, 0, 0, 0, 0, 0),
+        (118, "🧪 Знахарський амулет", "trash", "grey", "trash", None, 1, 20, 0.62, 0, 0, 0, 0, 0, 0, 0),
+
+        (119, "🗡️ Тупий гоблінський кинджал", "trash", "grey", "trash", None, 1, 20, 0.70, 0, 0, 0, 0, 0, 0, 0),
+        (120, "🧙 Шаманська намистина", "trash", "grey", "trash", None, 1, 20, 0.78, 0, 0, 0, 0, 0, 0, 0),
+
+        (121, "🪓 Уламок сокири берсерка", "trash", "grey", "trash", None, 1, 20, 0.88, 0, 0, 0, 0, 0, 0, 0),
+        (122, "🔥 Обвуглений рунічний попіл", "trash", "grey", "trash", None, 1, 20, 0.95, 0, 0, 0, 0, 0, 0, 0),
+
+        (123, "🛡️ Іржава пластина щита", "trash", "grey", "trash", None, 1, 20, 1.05, 0, 0, 0, 0, 0, 0, 0),
+        (124, "🔮 Рунічний уламок культиста", "trash", "grey", "trash", None, 1, 20, 1.15, 0, 0, 0, 0, 0, 0, 0),
+
+        (125, "🧟 Осквернений уламок обладунку", "trash", "grey", "trash", None, 1, 20, 1.30, 0, 0, 0, 0, 0, 0, 0),
+        (126, "🕯️ Чорна свічка віщуна", "trash", "grey", "trash", None, 1, 20, 1.45, 0, 0, 0, 0, 0, 0, 0),
+    ]
+
+    for item in trash_items:
+        cursor.execute("""
+        INSERT OR REPLACE INTO items (
+            id, name, type, rarity, category,
+            slot_key, weapon_hands,
+            max_stack, sell_price,
+            bonus_str, bonus_dex, bonus_int, bonus_wis, bonus_sta,
+            pdef, mdef
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, item)
+
+    conn.commit()
+
+
+# ==============================
+# ✅ OVERRIDE create_user WITH 40 SLOTS
+# ==============================
+
+def create_user(user_id):
+    cursor.execute("""
+    INSERT OR IGNORE INTO users (
+        user_id,
+        hp,
+        max_hp,
+        level,
+        exp,
+        gold,
+        kills,
+        bag_slots,
+        current_location,
+        str,
+        dex,
+        intelligence,
+        wis,
+        sta,
+        equipped_weapon,
+        equipped_armor
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        user_id,
+        170,
+        170,
+        1,
+        0,
+        0.0,
+        0,
+        DEFAULT_BAG_SLOTS,
+        "start_path",
+        10,
+        10,
+        10,
+        10,
+        10,
+        None,
+        None
+    ))
+
+    conn.commit()
+
+    ensure_equipment_slots(user_id)
+    migrate_legacy_equipment_to_slots(user_id)
+    expand_bag_slots_to_40()

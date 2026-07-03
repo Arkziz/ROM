@@ -10,6 +10,8 @@ def main_kb():
 
 def map_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("🌿 Початок Шляху")
+    kb.add("🌲 Темний Бір")
     kb.add("🏙️ Місто")
     kb.add("🔙 Назад")
     return kb
