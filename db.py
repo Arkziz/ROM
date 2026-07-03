@@ -5649,3 +5649,464 @@ def create_user(user_id):
     ensure_equipment_slots(user_id)
     migrate_legacy_equipment_to_slots(user_id)
     expand_bag_slots_to_40()
+
+# ==============================
+# ✅ GOLD FORMAT HELPERS
+# ==============================
+
+GOLD_ICON = "💰"
+GOLD_NAME = "золото"
+
+
+def format_gold(amount):
+    try:
+        amount = float(amount)
+    except Exception:
+        amount = 0.0
+
+    return f"{amount:.2f} {GOLD_ICON} {GOLD_NAME}"
+
+
+# ==============================
+# ✅ OVERRIDE: BUY ITEM FOR GOLD
+# ==============================
+
+def buy_item_for_gold(user_id, item_id, price, quantity=1):
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "success": False,
+            "message": "❌ Персонажа не знайдено"
+        }
+
+    gold = row[0] or 0
+    total_price = float(price) * quantity
+
+    if gold < total_price:
+        return {
+            "success": False,
+            "message": (
+                f"❌ Недостатньо золота.\n"
+                f"Потрібно: {format_gold(total_price)}\n"
+                f"У тебе: {format_gold(gold)}"
+            )
+        }
+
+    add_result = add_item(user_id, item_id, quantity)
+
+    added = add_result.get("added", 0)
+    lost = add_result.get("lost", 0)
+    name = add_result.get("name", "Предмет")
+
+    if added <= 0:
+        return {
+            "success": False,
+            "message": "🎒 Сумка переповнена. Предмет не куплено."
+        }
+
+    actual_price = float(price) * added
+
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold - ?
+    WHERE user_id=?
+    """, (actual_price, user_id))
+
+    conn.commit()
+
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    new_gold_row = cursor.fetchone()
+    new_gold = new_gold_row[0] if new_gold_row else 0
+
+    message = (
+        f"✅ Куплено: {name} x{added}\n"
+        f"💳 Витрачено: {format_gold(actual_price)}\n"
+        f"💰 Залишилось: {format_gold(new_gold)}"
+    )
+
+    if lost > 0:
+        message += f"\n⚠️ Не влізло в сумку: x{lost}"
+
+    return {
+        "success": True,
+        "message": message,
+        "added": added,
+        "lost": lost,
+        "gold_left": new_gold
+    }
+
+
+# ==============================
+# ✅ OVERRIDE: SELL EQUIPMENT TO TRADER
+# ==============================
+
+def sell_inventory_item_to_trader(user_id, inventory_id):
+    if is_inventory_item_equipped(user_id, inventory_id):
+        return {
+            "success": False,
+            "message": (
+                "❌ Неможливо продати вдягнений предмет.\n\n"
+                "Спочатку зніми його з персонажа."
+            )
+        }
+
+    cursor.execute("""
+    SELECT
+        inventory.id,
+        inventory.item_id,
+        items.name,
+        items.category,
+        inventory.quantity,
+        items.sell_price
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.id=? AND inventory.user_id=?
+    """, (inventory_id, user_id))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "success": False,
+            "message": "❌ Предмет не знайдено в інвентарі."
+        }
+
+    inv_id, item_id, name, category, quantity, sell_price = row
+
+    quantity = quantity or 1
+    sell_price = sell_price or 0
+
+    if category != "equipment":
+        return {
+            "success": False,
+            "message": "❌ Через це меню можна продавати тільки спорядження."
+        }
+
+    if sell_price <= 0:
+        return {
+            "success": False,
+            "message": "❌ Цей предмет не має ціни продажу."
+        }
+
+    total_gold = round(quantity * sell_price, 2)
+
+    cursor.execute("""
+    DELETE FROM inventory
+    WHERE id=? AND user_id=?
+    """, (inventory_id, user_id))
+
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold + ?
+    WHERE user_id=?
+    """, (total_gold, user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": (
+            f"💰 Спорядження продано торговцю.\n\n"
+            f"📦 {name} x{quantity}\n"
+            f"💰 Отримано: {format_gold(total_gold)}"
+        ),
+        "gold_earned": total_gold
+    }
+
+
+# ==============================
+# ✅ OVERRIDE: COMMON EQUIPMENT BUY
+# ==============================
+
+def buy_common_equipment_from_trader(user_id, slot_key, item_profile=None):
+    if slot_key not in SLOT_ORDER:
+        return {
+            "success": False,
+            "message": "❌ Невідомий слот спорядження."
+        }
+
+    if slot_key == "main_hand" and item_profile not in MAIN_HAND_PROFILES:
+        return {
+            "success": False,
+            "message": "❌ Невідомий тип зброї."
+        }
+
+    if slot_key == "off_hand" and item_profile not in OFF_HAND_PROFILES:
+        return {
+            "success": False,
+            "message": "❌ Невідомий тип предмета для другої руки."
+        }
+
+    player_level = get_player_level(user_id)
+    price = get_common_equipment_price_for_slot(player_level, slot_key)
+
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "success": False,
+            "message": "❌ Персонажа не знайдено."
+        }
+
+    gold = row[0] or 0.0
+
+    if gold < price:
+        return {
+            "success": False,
+            "message": (
+                f"❌ Недостатньо золота.\n\n"
+                f"💳 Потрібно: {format_gold(price)}\n"
+                f"💰 У тебе: {format_gold(gold)}"
+            )
+        }
+
+    result = create_generated_equipment_item_for_slot(
+        user_id=user_id,
+        item_level=player_level,
+        rarity="common",
+        slot_key=slot_key,
+        item_profile=item_profile
+    )
+
+    if not result.get("success"):
+        return result
+
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold - ?
+    WHERE user_id=?
+    """, (price, user_id))
+
+    conn.commit()
+
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    new_gold_row = cursor.fetchone()
+    new_gold = new_gold_row[0] if new_gold_row else 0
+
+    return {
+        "success": True,
+        "message": (
+            f"✅ Куплено базове спорядження.\n\n"
+            f"📦 {result['name']}\n"
+            f"🏷 Рівень предмета: {player_level}\n"
+            f"💳 Сплачено: {format_gold(price)}\n"
+            f"💰 Залишилось: {format_gold(new_gold)}"
+        )
+    }
+
+
+# ==============================
+# ✅ OVERRIDE: REPAIR ONE
+# ==============================
+
+def repair_equipped_item(user_id, inventory_id):
+    if not is_inventory_item_equipped(user_id, inventory_id):
+        return {
+            "success": False,
+            "message": "❌ Цей предмет не вдягнений."
+        }
+
+    item = get_item_by_inventory_id_full(inventory_id)
+
+    if not item:
+        return {
+            "success": False,
+            "message": "❌ Предмет не знайдено."
+        }
+
+    (
+        inv_id,
+        item_id,
+        name,
+        type_,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        quantity,
+        max_stack,
+        durability,
+        b_str,
+        b_dex,
+        b_int,
+        b_wis,
+        b_sta,
+        pdef,
+        mdef,
+        sell_price
+    ) = item
+
+    if category != "equipment":
+        return {
+            "success": False,
+            "message": "❌ Цей предмет не є спорядженням."
+        }
+
+    if durability is None:
+        durability = 100
+
+    repair_cost = calculate_repair_cost(durability, rarity)
+
+    if repair_cost <= 0:
+        return {
+            "success": False,
+            "message": f"🛠️ {name} вже має повну міцність."
+        }
+
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "success": False,
+            "message": "❌ Персонажа не знайдено."
+        }
+
+    gold = row[0] or 0.0
+
+    if gold < repair_cost:
+        return {
+            "success": False,
+            "message": (
+                f"❌ Недостатньо золота для ремонту.\n\n"
+                f"📦 Предмет: {name}\n"
+                f"💳 Потрібно: {format_gold(repair_cost)}\n"
+                f"💰 У тебе: {format_gold(gold)}"
+            )
+        }
+
+    cursor.execute("""
+    UPDATE inventory
+    SET durability=100
+    WHERE id=?
+    """, (inventory_id,))
+
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold - ?
+    WHERE user_id=?
+    """, (repair_cost, user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": (
+            f"✅ Предмет відремонтовано.\n\n"
+            f"📦 {name}\n"
+            f"🛠️ Міцність: {durability}/100 → 100/100\n"
+            f"💳 Сплачено: {format_gold(repair_cost)}"
+        ),
+        "repair_cost": repair_cost
+    }
+
+
+# ==============================
+# ✅ OVERRIDE: REPAIR ALL
+# ==============================
+
+def repair_all_equipped(user_id):
+    equipped_items = get_equipped_items_for_repair(user_id)
+    total_cost = get_total_repair_cost(user_id)
+
+    if total_cost <= 0:
+        return {
+            "success": False,
+            "message": "🛠️ Усе спорядження вже має повну міцність.",
+            "total_cost": 0.0
+        }
+
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "success": False,
+            "message": "❌ Персонажа не знайдено.",
+            "total_cost": total_cost
+        }
+
+    gold = row[0] or 0.0
+
+    if gold < total_cost:
+        return {
+            "success": False,
+            "message": (
+                f"❌ Недостатньо золота для повного ремонту.\n\n"
+                f"💳 Потрібно: {format_gold(total_cost)}\n"
+                f"💰 У тебе: {format_gold(gold)}\n\n"
+                f"ℹ️ Можеш відремонтувати окремі речі нижче."
+            ),
+            "total_cost": total_cost
+        }
+
+    repaired_count = 0
+
+    for item in equipped_items:
+        inventory_id = item["inventory_id"]
+
+        if not inventory_id:
+            continue
+
+        if item["repair_cost"] <= 0:
+            continue
+
+        cursor.execute("""
+        UPDATE inventory
+        SET durability=100
+        WHERE id=?
+        """, (inventory_id,))
+
+        repaired_count += 1
+
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold - ?
+    WHERE user_id=?
+    """, (total_cost, user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": (
+            f"✅ Спорядження відремонтовано.\n"
+            f"🛠️ Відремонтовано речей: {repaired_count}\n"
+            f"💳 Сплачено: {format_gold(total_cost)}"
+        ),
+        "total_cost": total_cost,
+        "repaired_count": repaired_count
+    }

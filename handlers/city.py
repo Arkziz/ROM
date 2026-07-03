@@ -1,7 +1,7 @@
 from telebot import types
 
 from data.locations import LOCATIONS
-from data.mobs import LOCATION_1_MOBS
+from data.mobs import get_mobs_for_location
 
 from db import (
     get_current_location,
@@ -22,6 +22,7 @@ from db import (
     repair_all_equipped,
     repair_equipped_item,
     get_wallet,
+    format_gold,
 
     get_common_equipment_shop_offer,
     get_common_equipment_shop_suboffers,
@@ -77,9 +78,12 @@ def build_city_text(user_id):
     )
 
 
-def build_trade_district_text():
+def build_trade_district_text(user_id):
+    gold = get_wallet(user_id)
+
     return (
         f"🛒 Торговий ряд\n\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
         f"Вузька вулиця заставлена возами, ящиками та прилавками. "
         f"Торговці скуповують сірий лут, непотрібне спорядження "
         f"і продають прості речі для мандрівників.\n\n"
@@ -90,9 +94,12 @@ def build_trade_district_text():
     )
 
 
-def build_craft_district_text():
+def build_craft_district_text(user_id):
+    gold = get_wallet(user_id)
+
     return (
         f"⚒️ Ремісничий квартал\n\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
         f"Тут пахне вугіллям, розпеченим металом і настоями трав. "
         f"Коваль лагодить спорядження, а алхімік продає зілля "
         f"для тих, хто збирається повернутися на полювання.\n\n"
@@ -178,10 +185,11 @@ def build_tavern_text():
     )
 
 
-def get_nearby_mobs_for_level(player_level):
+def get_nearby_mobs_for_level(player_level, location_id):
+    mobs = get_mobs_for_location(location_id)
     available = []
 
-    for mob in LOCATION_1_MOBS:
+    for mob in mobs:
         mob_level = int(mob.get("level", 1))
         min_player_level = int(mob.get("min_player_level", 1))
 
@@ -189,11 +197,11 @@ def get_nearby_mobs_for_level(player_level):
             available.append(mob)
 
     if not available:
-        for mob in LOCATION_1_MOBS:
+        for mob in mobs:
             if int(mob.get("min_player_level", 1)) <= player_level:
                 available.append(mob)
 
-    return available[:5]
+    return available
 
 
 def build_contracts_short_status(user_id):
@@ -251,13 +259,18 @@ def build_main_menu_text(user_id):
 
     contracts_text = build_contracts_short_status(user_id)
 
-    nearby_mobs = get_nearby_mobs_for_level(lvl)
+    nearby_mobs = get_nearby_mobs_for_level(lvl, location_id)
 
     mobs_text = ""
 
     if nearby_mobs:
         for mob in nearby_mobs:
-            mobs_text += f"• {mob['name']} — рівень {mob['level']}\n"
+            attack_icon = "⚔️" if mob.get("attack_type") == "physical" else "🔮"
+
+            mobs_text += (
+                f"• {attack_icon} {mob['name']} — "
+                f"рівень {mob['level']}\n"
+            )
     else:
         mobs_text = "• Навколо поки тихо...\n"
 
@@ -294,11 +307,14 @@ def build_main_menu_text(user_id):
 # HELPERS: SERVICES
 # ==============================
 
-def build_alchemist_catalog():
+def build_alchemist_catalog(user_id):
+    gold = get_wallet(user_id)
+
     kb = types.InlineKeyboardMarkup()
 
     text = (
         f"🧪 Алхімік\n\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
         f"Алхімік продає зілля для виживання в бою.\n\n"
         f"Асортимент:\n\n"
     )
@@ -314,12 +330,12 @@ def build_alchemist_catalog():
         text += (
             f"{potion['name']}\n"
             f"Ефект: {effect}\n"
-            f"Ціна: {potion['buy_price']:.2f} золота\n"
+            f"Ціна: {format_gold(potion['buy_price'])}\n"
             f"Стак: {potion['max_stack']}\n\n"
         )
 
         kb.add(types.InlineKeyboardButton(
-            text=f"Купити: {potion['name']} — {potion['buy_price']:.2f} 🪙",
+            text=f"Купити: {potion['name']} — {format_gold(potion['buy_price'])}",
             callback_data=f"buy_potion_{item_id}"
         ))
 
@@ -338,6 +354,7 @@ def build_blacksmith_text(user_id):
 
     text = (
         f"⚒️ КОВАЛЬ: РЕМОНТ ТА КУЗНЯ\n\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
         f"📦 Стан твого спорядження:\n\n"
     )
 
@@ -362,20 +379,20 @@ def build_blacksmith_text(user_id):
         text += (
             f"{slot}: {name}\n"
             f"🛠️ Міцність: {durability}/100{broken_text}\n"
-            f"💰 Ремонт: {repair_cost:.2f} 🪙\n\n"
+            f"💰 Ремонт: {format_gold(repair_cost)}\n\n"
         )
 
         if repair_cost > 0:
             damaged_count += 1
 
             kb.add(types.InlineKeyboardButton(
-                text=f"🛠️ Ремонт: {name} — {repair_cost:.2f} 🪙",
+                text=f"🛠️ Ремонт: {name} — {format_gold(repair_cost)}",
                 callback_data=f"repair_one_{inventory_id}"
             ))
 
     text += (
-        f"💳 Разом за повний ремонт: {total_cost:.2f} 🪙\n"
-        f"💰 Твій баланс: {gold:.2f} 🪙\n\n"
+        f"💳 Разом за повний ремонт: {format_gold(total_cost)}\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
     )
 
     if damaged_count <= 0:
@@ -390,7 +407,7 @@ def build_blacksmith_text(user_id):
 
     if total_cost > 0:
         kb.add(types.InlineKeyboardButton(
-            text=f"🛠️ Полагодити все за {total_cost:.2f} 🪙",
+            text=f"🛠️ Полагодити все за {format_gold(total_cost)}",
             callback_data="repair_all_equipped"
         ))
 
@@ -399,9 +416,11 @@ def build_blacksmith_text(user_id):
 
 def build_common_equipment_shop_text(user_id):
     offers = get_common_equipment_shop_offer(user_id)
+    gold = get_wallet(user_id)
 
     text = (
         f"⚪ Базове спорядження\n\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
         f"Торговець продає прості білі речі поточного рівня персонажа.\n"
         f"Одяг поки має універсальний тип, але для зброї та другої руки "
         f"можна вибрати конкретний вид предмета.\n\n"
@@ -421,7 +440,7 @@ def build_common_equipment_shop_text(user_id):
         kb.add(types.InlineKeyboardButton(
             text=(
                 f"{offer['slot_name']} — "
-                f"{offer['price']:.2f} 🪙 "
+                f"{format_gold(offer['price'])} "
                 f"(рівень {offer['item_level']})"
             ),
             callback_data=callback_data
@@ -437,6 +456,7 @@ def build_common_equipment_shop_text(user_id):
 
 def build_common_equipment_slot_choice_text(user_id, slot_key):
     offers = get_common_equipment_shop_suboffers(user_id, slot_key)
+    gold = get_wallet(user_id)
 
     if slot_key == "main_hand":
         title = "🗡️ Вибір зброї"
@@ -460,6 +480,7 @@ def build_common_equipment_slot_choice_text(user_id, slot_key):
 
     text = (
         f"{title}\n\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
         f"{description}\n\n"
         f"Доступні варіанти:"
     )
@@ -478,7 +499,7 @@ def build_common_equipment_slot_choice_text(user_id, slot_key):
         kb.add(types.InlineKeyboardButton(
             text=(
                 f"{offer['name']}{hands_text} — "
-                f"{offer['price']:.2f} 🪙 "
+                f"{format_gold(offer['price'])} "
                 f"(рівень {offer['item_level']})"
             ),
             callback_data=f"buy_common_equipment:{slot_key}:{offer['profile_key']}"
@@ -499,10 +520,12 @@ def build_common_equipment_slot_choice_text(user_id, slot_key):
 
 def build_sell_equipment_list_text(user_id, page=0):
     items = get_sellable_equipment_items(user_id)
+    gold = get_wallet(user_id)
 
     if not items:
         text = (
             f"🧰 Продаж спорядження\n\n"
+            f"💰 Твоє золото: {format_gold(gold)}\n\n"
             f"У тебе немає невдягненого спорядження для продажу.\n\n"
             f"ℹ️ Вдягнені речі не показуються у цьому списку."
         )
@@ -530,6 +553,7 @@ def build_sell_equipment_list_text(user_id, page=0):
 
     text = (
         f"🧰 Продаж спорядження\n\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
         f"Торговець готовий купити невдягнені речі з твого інвентаря.\n"
         f"Вдягнене спорядження продавати не можна.\n\n"
         f"📄 Сторінка: {page + 1}/{total_pages}\n\n"
@@ -571,7 +595,7 @@ def build_sell_equipment_list_text(user_id, page=0):
             durability_text = f" [{durability}/100]"
 
         kb.add(types.InlineKeyboardButton(
-            text=f"{name}{durability_text} — {total_price:.2f} 🪙",
+            text=f"{name}{durability_text} — {format_gold(total_price)}",
             callback_data=f"sell_eq_confirm:{inv_id}:{page}"
         ))
 
@@ -641,10 +665,10 @@ def build_sell_equipment_confirm_text(user_id, inventory_id, page=0):
     total_price = round(quantity * sell_price, 2)
 
     text = (
-        f"🪙 Підтвердження продажу\n\n"
+        f"💰 Підтвердження продажу\n\n"
         f"Ти точно хочеш продати цей предмет торговцю?\n\n"
         f"📦 {name} x{quantity}\n"
-        f"💰 Ціна: {total_price:.2f} 🪙\n"
+        f"💰 Ціна: {format_gold(total_price)}\n"
     )
 
     if durability is not None:
@@ -655,7 +679,7 @@ def build_sell_equipment_confirm_text(user_id, inventory_id, page=0):
     kb = types.InlineKeyboardMarkup()
 
     kb.add(types.InlineKeyboardButton(
-        text=f"✅ Продати за {total_price:.2f} 🪙",
+        text=f"✅ Продати за {format_gold(total_price)}",
         callback_data=f"sell_eq_do:{inventory_id}:{page}"
     ))
 
@@ -713,17 +737,21 @@ def register_city_handlers(bot):
 
     @bot.message_handler(func=lambda m: m.text == "🛒 Торговий ряд")
     def show_trade_district(message):
+        user_id = message.from_user.id
+
         bot.send_message(
             message.chat.id,
-            build_trade_district_text(),
+            build_trade_district_text(user_id),
             reply_markup=trader_kb()
         )
 
     @bot.message_handler(func=lambda m: m.text == "⚒️ Ремісничий квартал")
     def show_craft_district(message):
+        user_id = message.from_user.id
+
         bot.send_message(
             message.chat.id,
-            build_craft_district_text(),
+            build_craft_district_text(user_id),
             reply_markup=craft_kb()
         )
 
@@ -759,17 +787,21 @@ def register_city_handlers(bot):
 
     @bot.message_handler(func=lambda m: m.text == "🔙 Торговий ряд")
     def back_to_trade_district_message(message):
+        user_id = message.from_user.id
+
         bot.send_message(
             message.chat.id,
-            build_trade_district_text(),
+            build_trade_district_text(user_id),
             reply_markup=trader_kb()
         )
 
     @bot.message_handler(func=lambda m: m.text == "🔙 Ремісничий квартал")
     def back_to_craft_district_message(message):
+        user_id = message.from_user.id
+
         bot.send_message(
             message.chat.id,
-            build_craft_district_text(),
+            build_craft_district_text(user_id),
             reply_markup=craft_kb()
         )
 
@@ -796,18 +828,18 @@ def register_city_handlers(bot):
         if result["sold_items_count"] == 0:
             bot.send_message(
                 message.chat.id,
-                "🪙 У тебе немає сірого луту для продажу.",
+                "💰 У тебе немає сірого луту для продажу.",
                 reply_markup=trader_kb()
             )
             return
 
-        text = "🪙 Продаж сірого луту\n\n"
+        text = "💰 Продаж сірого луту\n\n"
 
         for line in result["details"]:
             text += f"• {line}\n"
 
         text += (
-            f"\n✅ Отримано золота: {result['gold_earned']:.2f}\n"
+            f"\n✅ Отримано золота: {format_gold(result['gold_earned'])}\n"
             f"🎒 Звільнено слотів: {result['freed_slots']}"
         )
 
@@ -972,21 +1004,25 @@ def register_city_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: call.data == "back_to_trade_district")
     def back_to_trade_district(call):
+        user_id = call.from_user.id
+
         bot.answer_callback_query(call.id)
 
         bot.send_message(
             call.message.chat.id,
-            build_trade_district_text(),
+            build_trade_district_text(user_id),
             reply_markup=trader_kb()
         )
 
     @bot.callback_query_handler(func=lambda call: call.data == "back_to_trader")
     def back_to_trader_callback(call):
+        user_id = call.from_user.id
+
         bot.answer_callback_query(call.id)
 
         bot.send_message(
             call.message.chat.id,
-            build_trade_district_text(),
+            build_trade_district_text(user_id),
             reply_markup=trader_kb()
         )
 
@@ -996,13 +1032,15 @@ def register_city_handlers(bot):
 
     @bot.message_handler(func=lambda m: m.text == "🧪 Алхімік")
     def show_alchemist(message):
+        user_id = message.from_user.id
+
         bot.send_message(
             message.chat.id,
             "🧪 Ти підійшов до Алхіміка.",
             reply_markup=alchemist_kb()
         )
 
-        text, kb = build_alchemist_catalog()
+        text, kb = build_alchemist_catalog(user_id)
 
         bot.send_message(
             message.chat.id,
@@ -1042,7 +1080,7 @@ def register_city_handlers(bot):
             reply_markup=alchemist_kb()
         )
 
-        text, kb = build_alchemist_catalog()
+        text, kb = build_alchemist_catalog(user_id)
 
         bot.send_message(
             call.message.chat.id,

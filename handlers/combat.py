@@ -202,6 +202,24 @@ def register_combat_handlers(bot):
         location_id = get_current_location(user_id)
         location = LOCATIONS.get(location_id, LOCATIONS["start_path"])
 
+        # Заборона полювання у локації, яку герой вже переріс.
+        location_max_level = int(location.get("level_max", lvl))
+
+        if lvl > location_max_level:
+            bot.send_message(
+                message.chat.id,
+                (
+                    f"🌿 Ця місцевість більше не становить для тебе виклику.\n\n"
+                    f"📍 Локація: {location['name']}\n"
+                    f"🏷 Рівні локації: {location.get('level_min', 1)}–{location_max_level}\n"
+                    f"👤 Твій рівень: {lvl}\n\n"
+                    f"Ти занадто сильний для полювання тут.\n"
+                    f"Відкрий 🗺️ Мапу та перейди до складнішої локації."
+                ),
+                reply_markup=main_kb()
+            )
+            return
+
         mob = generate_mob(player_level=lvl, location_id=location_id)
         mob["max_hp"] = mob["hp"]
         mob["potion_cooldown"] = 0
