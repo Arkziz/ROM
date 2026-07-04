@@ -6501,3 +6501,722 @@ def get_shop_preview_weapon_damage_text(item_id):
         return f"🔮 Маг. урон: {weapon_min_magic_damage}-{weapon_max_magic_damage}"
 
     return f"⚔️ Урон: {weapon_min_damage}-{weapon_max_damage}"
+
+# ==============================
+# ✅ CHARACTER NAME / CLASS / MP SYSTEM
+# ==============================
+
+CLASS_CONFIGS = {
+    "warrior": {
+        "name": "🛡️ Воїн",
+        "resource": "rage",
+        "description": (
+            "Фізичний боєць ближнього бою.\n"
+            "Основні характеристики: Сила, Витривалість.\n"
+            "Ресурс у бою: 🔴 Лютість."
+        )
+    },
+    "knight": {
+        "name": "⚔️ Лицар",
+        "resource": "rage",
+        "description": (
+            "Захисник із високим фізичним захистом і щитом.\n"
+            "Основні характеристики: Витривалість, Фіз. захист.\n"
+            "Ресурс у бою: 🔴 Лютість."
+        )
+    },
+    "scout": {
+        "name": "🏹 Скаут",
+        "resource": "combat_energy",
+        "description": (
+            "Дистанційний фізичний боєць із пастками та точними пострілами.\n"
+            "Основні характеристики: Спритність, Сила.\n"
+            "Ресурс у бою: 🟡 Енергія."
+        )
+    },
+    "rogue": {
+        "name": "🗡️ Розбійник",
+        "resource": "combat_energy_combo",
+        "description": (
+            "Швидкий боєць ближнього бою з майбутньою механікою комбо.\n"
+            "Основні характеристики: Спритність, Сила.\n"
+            "Ресурс у бою: 🟡 Енергія + комбо-очки."
+        )
+    },
+    "mage": {
+        "name": "🔮 Маг",
+        "resource": "mana",
+        "description": (
+            "Магічний боєць із високим вибуховим уроном.\n"
+            "Основні характеристики: Інтелект, Мудрість.\n"
+            "Ресурс у бою: 🔵 Мана."
+        )
+    },
+    "priest": {
+        "name": "⚕️ Жрець",
+        "resource": "mana",
+        "description": (
+            "Магічний клас підтримки з лікуванням і захистом.\n"
+            "Основні характеристики: Мудрість, Інтелект.\n"
+            "Ресурс у бою: 🔵 Мана."
+        )
+    }
+}
+
+
+CLASS_RESET_SPHERE_ITEM_ID = 301
+
+
+def init_character_class_system():
+    migrations = [
+        ("users", "character_name", "TEXT DEFAULT ''"),
+        ("users", "character_class", "TEXT DEFAULT ''"),
+        ("users", "class_selected_at", "TEXT DEFAULT ''"),
+        ("users", "class_change_available", "INTEGER DEFAULT 0"),
+        ("users", "mp", "INTEGER DEFAULT 0"),
+        ("users", "max_mp", "INTEGER DEFAULT 0"),
+    ]
+
+    for table, column, column_type in migrations:
+        try:
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
+
+    conn.commit()
+
+
+def seed_class_reset_sphere_item():
+    """
+    🔮 Сфера нового шляху.
+    Предмет для майбутньої зміни класу.
+    Зараз додаємо в базу, щоб можна було видавати через DEV і тестувати інвентар.
+    """
+
+    try:
+        cursor.execute("""
+        INSERT OR REPLACE INTO items (
+            id,
+            name,
+            type,
+            rarity,
+            category,
+            slot_key,
+            weapon_hands,
+            max_stack,
+            sell_price,
+            bonus_str,
+            bonus_dex,
+            bonus_int,
+            bonus_wis,
+            bonus_sta,
+            pdef,
+            mdef
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            CLASS_RESET_SPHERE_ITEM_ID,
+            "🔮 Сфера нового шляху",
+            "class_reset",
+            "epic",
+            "potion",
+            None,
+            1,
+            10,
+            0.0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+        ))
+
+        conn.commit()
+    except Exception:
+        pass
+
+
+def get_character_name(user_id):
+    init_character_class_system()
+
+    cursor.execute("""
+    SELECT character_name
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return ""
+
+    return row[0] or ""
+
+
+def get_character_class(user_id):
+    init_character_class_system()
+
+    cursor.execute("""
+    SELECT character_class
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return ""
+
+    return row[0] or ""
+
+
+def get_character_class_display(user_id):
+    class_key = get_character_class(user_id)
+
+    if not class_key:
+        return "Не обрано"
+
+    return CLASS_CONFIGS.get(class_key, {}).get("name", "Невідомий клас")
+
+
+def get_character_resource_type(user_id):
+    class_key = get_character_class(user_id)
+
+    if not class_key:
+        return ""
+
+    return CLASS_CONFIGS.get(class_key, {}).get("resource", "")
+
+
+def normalize_character_name(name):
+    name = (name or "").strip()
+
+    while "  " in name:
+        name = name.replace("  ", " ")
+
+    return name
+
+
+def validate_character_name(name):
+    name = normalize_character_name(name)
+
+    if len(name) < 2:
+        return {
+            "success": False,
+            "message": "❌ Ім’я персонажа має містити щонайменше 2 символи."
+        }
+
+    if len(name) > 24:
+        return {
+            "success": False,
+            "message": "❌ Ім’я персонажа не може бути довшим за 24 символи."
+        }
+
+    forbidden = ["/", "\\", "<", ">", "{", "}", "[", "]", "|"]
+
+    for symbol in forbidden:
+        if symbol in name:
+            return {
+                "success": False,
+                "message": "❌ Ім’я містить недозволені символи."
+            }
+
+    return {
+        "success": True,
+        "name": name
+    }
+
+
+def set_character_name(user_id, name):
+    init_character_class_system()
+
+    validation = validate_character_name(name)
+
+    if not validation["success"]:
+        return validation
+
+    clean_name = validation["name"]
+
+    cursor.execute("""
+    UPDATE users
+    SET character_name=?
+    WHERE user_id=?
+    """, (clean_name, user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "name": clean_name,
+        "message": f"✅ Ім’я персонажа збережено: {clean_name}"
+    }
+
+
+def set_character_class(user_id, class_key):
+    init_character_class_system()
+
+    if class_key not in CLASS_CONFIGS:
+        return {
+            "success": False,
+            "message": "❌ Невідомий клас персонажа."
+        }
+
+    from datetime import datetime
+
+    cursor.execute("""
+    UPDATE users
+    SET character_class=?,
+        class_selected_at=?
+    WHERE user_id=?
+    """, (
+        class_key,
+        datetime.now().isoformat(),
+        user_id
+    ))
+
+    conn.commit()
+
+    refresh_user_mp(user_id)
+
+    return {
+        "success": True,
+        "class_key": class_key,
+        "class_name": CLASS_CONFIGS[class_key]["name"],
+        "message": f"✅ Клас обрано: {CLASS_CONFIGS[class_key]['name']}"
+    }
+
+
+def needs_character_name(user_id):
+    return get_character_name(user_id) == ""
+
+
+def needs_character_class(user_id):
+    return get_character_class(user_id) == ""
+
+
+def get_max_mp(user_id):
+    """
+    Базова формула MP.
+    Поки проста, щоб не ламати баланс:
+
+    max_mp = 50 + INT * 5 + WIS * 3
+
+    Надалі можна буде змінити під класи.
+    """
+
+    stats = get_player_stats(user_id)
+
+    if not stats:
+        return 0
+
+    total_str, total_dex, total_int, total_wis, total_sta, lvl = stats
+
+    max_mp = 50 + (total_int * 5) + (total_wis * 3)
+
+    return max(0, int(max_mp))
+
+
+def refresh_user_mp(user_id):
+    init_character_class_system()
+
+    class_key = get_character_class(user_id)
+    resource_type = CLASS_CONFIGS.get(class_key, {}).get("resource", "")
+
+    if resource_type != "mana":
+        cursor.execute("""
+        UPDATE users
+        SET mp=0,
+            max_mp=0
+        WHERE user_id=?
+        """, (user_id,))
+
+        conn.commit()
+
+        return {
+            "mp": 0,
+            "max_mp": 0
+        }
+
+    max_mp = get_max_mp(user_id)
+
+    cursor.execute("""
+    SELECT mp
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+    current_mp = row[0] if row else max_mp
+
+    if current_mp is None or current_mp <= 0:
+        current_mp = max_mp
+
+    if current_mp > max_mp:
+        current_mp = max_mp
+
+    cursor.execute("""
+    UPDATE users
+    SET mp=?,
+        max_mp=?
+    WHERE user_id=?
+    """, (
+        current_mp,
+        max_mp,
+        user_id
+    ))
+
+    conn.commit()
+
+    return {
+        "mp": current_mp,
+        "max_mp": max_mp
+    }
+
+
+def get_user_mp(user_id):
+    refresh_user_mp(user_id)
+
+    cursor.execute("""
+    SELECT mp, max_mp
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "mp": 0,
+            "max_mp": 0
+        }
+
+    mp, max_mp = row
+
+    return {
+        "mp": mp or 0,
+        "max_mp": max_mp or 0
+    }
+
+
+def get_character_profile_summary(user_id):
+    init_character_class_system()
+
+    return {
+        "name": get_character_name(user_id),
+        "class_key": get_character_class(user_id),
+        "class_name": get_character_class_display(user_id),
+        "resource_type": get_character_resource_type(user_id),
+        "mp_data": get_user_mp(user_id)
+    }
+
+
+def grant_class_change_available(user_id):
+    init_character_class_system()
+
+    cursor.execute("""
+    UPDATE users
+    SET class_change_available=1
+    WHERE user_id=?
+    """, (user_id,))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": "✅ Зміна класу доступна."
+    }
+
+
+def grant_class_change_available(user_id):
+    init_character_class_system()
+
+    cursor.execute("""
+    UPDATE users
+    SET class_change_available=1
+    WHERE user_id=?
+    """, (user_id,))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": "✅ Зміна класу доступна."
+    }
+
+
+def consume_class_change_available(user_id):
+    init_character_class_system()
+
+    cursor.execute("""
+    SELECT class_change_available
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row or not row[0]:
+        return {
+            "success": False,
+            "message": "❌ Зміна класу недоступна."
+        }
+
+    cursor.execute("""
+    UPDATE users
+    SET class_change_available=0
+    WHERE user_id=?
+    """, (user_id,))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": "✅ Дозвіл на зміну класу використано."
+    }
+
+# ==============================
+# ✅ PROFILE DISPLAY HELPERS
+# ==============================
+
+def get_physical_crit_chance_display(user_id):
+    """
+    Шанс фізичного криту для профілю.
+    Формула відповідає логіці combat_system:
+    5 + ((DEX - 10) / level) * 0.5
+    """
+
+    stats = get_player_stats(user_id)
+
+    if not stats:
+        return 5.0
+
+    total_str, total_dex, total_int, total_wis, total_sta, level = stats
+
+    if level <= 0:
+        level = 1
+
+    chance = 5 + ((total_dex - 10) / max(1, level)) * 0.5
+
+    return max(1.0, min(35.0, chance))
+
+
+def get_magical_crit_chance_display(user_id):
+    """
+    Шанс магічного криту для профілю.
+    Формула відповідає логіці combat_system:
+    5 + ((WIS - 10) / level) * 0.5
+    """
+
+    stats = get_player_stats(user_id)
+
+    if not stats:
+        return 5.0
+
+    total_str, total_dex, total_int, total_wis, total_sta, level = stats
+
+    if level <= 0:
+        level = 1
+
+    chance = 5 + ((total_wis - 10) / max(1, level)) * 0.5
+
+    return max(1.0, min(35.0, chance))
+
+
+def get_base_dodge_chance_display(user_id):
+    """
+    Базовий ухил для профілю.
+
+    У реальному бою ухил залежить від DEX гравця і DEX конкретного моба.
+    Тут показуємо базове значення для довідки.
+    """
+
+    return 5.0
+
+
+def get_enemy_crit_chance_against_player(user_id):
+    """
+    Шанс криту ворога по гравцю.
+    Формула відповідає combat_system:
+    max(0, 10 - STA // 25)
+    """
+
+    stats = get_player_stats(user_id)
+
+    if not stats:
+        return 10.0
+
+    total_str, total_dex, total_int, total_wis, total_sta, level = stats
+
+    chance = max(0, 10 - (total_sta // 25))
+
+    return float(chance)
+
+# ==============================
+# ✅ CLASS RESET SPHERE USAGE
+# ==============================
+
+def has_class_change_available(user_id):
+    init_character_class_system()
+
+    cursor.execute("""
+    SELECT class_change_available
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return False
+
+    return bool(row[0])
+
+
+def grant_class_change_available(user_id):
+    init_character_class_system()
+
+    cursor.execute("""
+    UPDATE users
+    SET class_change_available=1
+    WHERE user_id=?
+    """, (user_id,))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": "✅ Зміна класу доступна."
+    }
+
+
+def consume_class_change_available(user_id):
+    init_character_class_system()
+
+    cursor.execute("""
+    SELECT class_change_available
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row or not row:
+        return {
+            "success": False,
+            "message": "❌ Зміна класу недоступна."
+        }
+
+    cursor.execute("""
+    UPDATE users
+    SET class_change_available=0
+    WHERE user_id=?
+    """, (user_id,))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": "✅ Дозвіл на зміну класу використано."
+    }
+
+
+def is_class_reset_sphere_inventory_item(user_id, inventory_id):
+    seed_class_reset_sphere_item()
+
+    cursor.execute("""
+    SELECT
+        inventory.id,
+        inventory.item_id,
+        items.type,
+        items.name
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.id=?
+      AND inventory.user_id=?
+    """, (inventory_id, user_id))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return False
+
+    inv_id, item_id, type_, name = row
+
+    return item_id == CLASS_RESET_SPHERE_ITEM_ID or type_ == "class_reset"
+
+
+def use_class_reset_sphere_from_inventory(user_id, inventory_id):
+    """
+    Використання 🔮 Сфери нового шляху.
+
+    Ефект:
+    - витрачає 1 предмет;
+    - відкриває право на зміну класу;
+    - сам вибір класу виконується в handlers/start.py.
+    """
+
+    init_character_class_system()
+    seed_class_reset_sphere_item()
+
+    cursor.execute("""
+    SELECT
+        inventory.id,
+        inventory.item_id,
+        inventory.quantity,
+        items.name,
+        items.type
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.id=?
+      AND inventory.user_id=?
+    """, (inventory_id, user_id))
+
+    row = cursor.fetchone()
+
+    if not row or not row[0]:
+        return {
+            "success": False,
+            "message": "❌ Предмет не знайдено в інвентарі."
+        }
+
+    inv_id, item_id, quantity, name, type_ = row
+
+    if item_id != CLASS_RESET_SPHERE_ITEM_ID and type_ != "class_reset":
+        return {
+            "success": False,
+            "message": "❌ Це не Сфера нового шляху."
+        }
+
+    quantity = quantity or 1
+
+    if quantity <= 1:
+        cursor.execute("""
+        DELETE FROM inventory
+        WHERE id=?
+          AND user_id=?
+        """, (inventory_id, user_id))
+    else:
+        cursor.execute("""
+        UPDATE inventory
+        SET quantity = quantity - 1
+        WHERE id=?
+          AND user_id=?
+        """, (inventory_id, user_id))
+
+    cursor.execute("""
+    UPDATE users
+    SET class_change_available=1
+    WHERE user_id=?
+    """, (user_id,))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": (
+            "🔮 Сфера нового шляху використана.\n\n"
+            "Ти можеш обрати новий клас персонажа."
+        )
+    }

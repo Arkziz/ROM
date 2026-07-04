@@ -7,7 +7,9 @@ from db import (
     get_user_energy,
     set_gold_for_test,
     create_generated_equipment_item,
-    reset_hero_for_test
+    reset_hero_for_test,
+    CLASS_RESET_SPHERE_ITEM_ID,
+    seed_class_reset_sphere_item
 )
 
 from keyboards import main_kb
@@ -463,6 +465,7 @@ def register_dev_handlers(bot):
             "📦 Предмети:\n"
             "/give item_id [quantity]\n"
             "/drop rarity level\n\n"
+            "/sphere [quantity]\n"
 
             "🏆 Рівень:\n"
             "/setlevel N\n"
@@ -493,6 +496,64 @@ def register_dev_handlers(bot):
             "/drop rare 10\n"
             "/resethero CONFIRM"
         )
+
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=main_kb()
+        )
+
+# ==============================
+    # /sphere [quantity]
+    # DEV: give class reset sphere
+    # ==============================
+
+    @bot.message_handler(commands=["sphere", "classsphere"])
+    def give_class_reset_sphere(message):
+        if not DEV_MODE:
+            return
+
+        user_id = message.from_user.id
+        parts = message.text.split()
+
+        quantity = 1
+
+        if len(parts) >= 2:
+            try:
+                quantity = int(parts[1])
+            except Exception:
+                quantity = 1
+
+        if quantity < 1:
+            quantity = 1
+
+        if quantity > 10:
+            quantity = 10
+
+        seed_class_reset_sphere_item()
+
+        result = add_item(
+            user_id=user_id,
+            item_id=CLASS_RESET_SPHERE_ITEM_ID,
+            quantity=quantity
+        )
+
+        if not result.get("success"):
+            bot.send_message(
+                message.chat.id,
+                result.get("message", "❌ Не вдалося видати Сферу нового шляху."),
+                reply_markup=main_kb()
+            )
+            return
+
+        text = (
+            f"✅ DEV: видано предмет зміни класу.\n\n"
+            f"🔮 Сфера нового шляху x{result.get('added', quantity)}\n"
+            f"🎒 Сумка: {result.get('used_slots', 0)}/{result.get('capacity', 40)}"
+        )
+
+        if result.get("lost", 0) > 0:
+            text += f"\n⚠️ Не влізло: x{result.get('lost', 0)}"
 
         bot.send_message(
             message.chat.id,

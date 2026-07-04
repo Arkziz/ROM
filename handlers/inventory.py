@@ -3,6 +3,8 @@ from telebot import types
 from db import (
     EQUIPMENT_SLOTS,
     SLOT_ORDER,
+    CLASS_RESET_SPHERE_ITEM_ID,
+
     get_inventory_detailed,
     get_item_by_inventory_id_full,
     equip_inventory_item,
@@ -14,7 +16,10 @@ from db import (
     get_all_equipped_slots,
     get_player_stats,
     get_item_required_level_by_inventory_id,
-    get_inventory_weapon_damage_display
+    get_inventory_weapon_damage_display,
+
+    is_class_reset_sphere_inventory_item,
+    use_class_reset_sphere_from_inventory
 )
 
 from keyboards import profile_kb
@@ -478,12 +483,12 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
         )
 
     # ==============================
-    # POTION
+    # POTION / SPECIAL ITEM
     # ==============================
 
     elif category == "potion":
         text += (
-            f"🧪 Тип: зілля\n"
+            f"🧪 Тип: зілля / особливий предмет\n"
             f"📦 Кількість: {quantity}/{max_stack}\n"
             f"💰 Ціна продажу: {sell_price:.2f} золота за шт.\n\n"
         )
@@ -496,8 +501,15 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
             text += "🔵 Ефект: відновлює 40 MP\n"
         elif type_ == "potion_mp_medium":
             text += "🔵 Ефект: відновлює 100 MP\n"
+        elif type_ == "class_reset" or item_id == CLASS_RESET_SPHERE_ITEM_ID:
+            text += (
+                "🔮 Ефект: дозволяє змінити клас персонажа.\n"
+                "Після використання відкриється вибір нового класу.\n"
+            )
+        else:
+            text += "ℹ️ Ефект предмета поки не описаний.\n"
 
-        text += "\nℹ️ Поза боєм зілля використовується миттєво."
+        text += "\nℹ️ Предмет використовується з інвентаря."
 
         kb.add(types.InlineKeyboardButton(
             text="🧪 Використати",
@@ -757,6 +769,37 @@ def register_inventory_handlers(bot):
         back_category = parts[2] if len(parts) > 2 else "potion"
         page = int(parts[3]) if len(parts) > 3 else 0
 
+        # 🔮 Сфера нового шляху
+        if is_class_reset_sphere_inventory_item(user_id, inventory_id):
+            result = use_class_reset_sphere_from_inventory(user_id, inventory_id)
+
+            bot.answer_callback_query(call.id)
+
+            bot.send_message(
+                call.message.chat.id,
+                result["message"]
+            )
+
+            if result.get("success"):
+                from handlers.start import start_class_change_flow
+
+                start_class_change_flow(
+                    bot=bot,
+                    chat_id=call.message.chat.id,
+                    user_id=user_id
+                )
+                return
+
+            text, kb = build_category_list(user_id, back_category, page)
+
+            bot.send_message(
+                call.message.chat.id,
+                text,
+                reply_markup=kb
+            )
+            return
+
+        # Звичайні зілля
         result = use_potion_from_inventory(user_id, inventory_id)
 
         bot.answer_callback_query(call.id)
