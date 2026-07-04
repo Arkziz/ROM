@@ -1,3 +1,5 @@
+from telebot import types
+
 from db import (
     get_player_stats,
     get_current_hp,
@@ -21,6 +23,55 @@ from db import (
 
 from keyboards import profile_kb, main_kb
 from utils import hp_bar
+
+
+# ==============================
+# INLINE PROFILE TABS
+# ==============================
+
+def profile_inline_kb(active_tab="character"):
+    """
+    Inline-навігація між вкладками профілю.
+
+    active_tab:
+    - character
+    - stats
+    - equipment
+
+    Поточна вкладка НЕ показується як кнопка.
+    """
+
+    kb = types.InlineKeyboardMarkup(row_width=2)
+
+    buttons = []
+
+    if active_tab != "character":
+        buttons.append(types.InlineKeyboardButton(
+            text="👤 Персонаж",
+            callback_data="profile_character"
+        ))
+
+    if active_tab != "stats":
+        buttons.append(types.InlineKeyboardButton(
+            text="📊 Параметри",
+            callback_data="profile_stats"
+        ))
+
+    if active_tab != "equipment":
+        buttons.append(types.InlineKeyboardButton(
+            text="🧰 Екіпірування",
+            callback_data="profile_equipment"
+        ))
+
+    if len(buttons) == 1:
+        kb.add(buttons[0])
+    elif len(buttons) == 2:
+        kb.add(buttons[0], buttons[1])
+    elif len(buttons) == 3:
+        kb.add(buttons[0], buttons[1])
+        kb.add(buttons[2])
+
+    return kb
 
 
 # ==============================
@@ -48,6 +99,31 @@ def format_resource_line(profile_summary):
 
     return "Бойовий ресурс: не визначено\n"
 
+
+def format_equipment_bonuses(b_str, b_dex, b_int, b_wis, b_sta, pdef, mdef):
+    bonuses = []
+
+    if b_str:
+        bonuses.append(f"💪 Сила +{b_str}")
+    if b_dex:
+        bonuses.append(f"🎯 Спритність +{b_dex}")
+    if b_int:
+        bonuses.append(f"🔮 Інтелект +{b_int}")
+    if b_wis:
+        bonuses.append(f"🦉 Мудрість +{b_wis}")
+    if b_sta:
+        bonuses.append(f"🛡 Витривалість +{b_sta}")
+    if pdef:
+        bonuses.append(f"🛡 Фіз. захист +{pdef}")
+    if mdef:
+        bonuses.append(f"🔮 Маг. захист +{mdef}")
+
+    return bonuses
+
+
+# ==============================
+# PROFILE TEXT
+# ==============================
 
 def build_character_text(user_id):
     stats = get_player_stats(user_id)
@@ -165,21 +241,14 @@ def build_stats_text(user_id):
 
 
 def build_equipment_text(user_id):
+    from db import SLOT_ORDER, EQUIPMENT_SLOTS
+
     equipped_slots = get_all_equipped_slots(user_id)
 
     text = (
         f"🧰 Екіпірування персонажа\n\n"
         f"Стан активних слотів:\n\n"
     )
-
-    for slot_key, slot_label in equipped_slots.items():
-        # у старій реалізації get_all_equipped_slots може повертати slot_key -> inventory_id
-        pass
-
-    # Безпечний варіант: беремо порядок із db через dict, але виводимо вручну
-    from db import SLOT_ORDER, EQUIPMENT_SLOTS
-
-    equipped_slots = get_all_equipped_slots(user_id)
 
     for slot_key in SLOT_ORDER:
         slot_label = EQUIPMENT_SLOTS.get(slot_key, slot_key)
@@ -234,22 +303,15 @@ def build_equipment_text(user_id):
             if weapon_damage_text:
                 text += f"{weapon_damage_text}\n"
 
-        bonuses = []
-
-        if b_str:
-            bonuses.append(f"💪 Сила +{b_str}")
-        if b_dex:
-            bonuses.append(f"🎯 Спритність +{b_dex}")
-        if b_int:
-            bonuses.append(f"🔮 Інтелект +{b_int}")
-        if b_wis:
-            bonuses.append(f"🦉 Мудрість +{b_wis}")
-        if b_sta:
-            bonuses.append(f"🛡 Витривалість +{b_sta}")
-        if pdef:
-            bonuses.append(f"🛡 Фіз. захист +{pdef}")
-        if mdef:
-            bonuses.append(f"🔮 Маг. захист +{mdef}")
+        bonuses = format_equipment_bonuses(
+            b_str,
+            b_dex,
+            b_int,
+            b_wis,
+            b_sta,
+            pdef,
+            mdef
+        )
 
         if bonuses:
             text += "📊 Бонуси:\n"
@@ -270,6 +332,10 @@ def build_equipment_text(user_id):
 
 def register_profile_handlers(bot):
 
+    # ==============================
+    # PROFILE ROOT
+    # ==============================
+
     @bot.message_handler(func=lambda m: m.text == "👤 Профіль")
     def profile(message):
         user_id = message.from_user.id
@@ -283,8 +349,12 @@ def register_profile_handlers(bot):
         bot.send_message(
             message.chat.id,
             build_character_text(user_id),
-            reply_markup=profile_kb()
+            reply_markup=profile_inline_kb(active_tab="character")
         )
+
+    # ==============================
+    # TEXT BUTTONS
+    # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "📊 Параметри")
     def stats(message):
@@ -293,7 +363,7 @@ def register_profile_handlers(bot):
         bot.send_message(
             message.chat.id,
             build_stats_text(user_id),
-            reply_markup=profile_kb()
+            reply_markup=profile_inline_kb(active_tab="stats")
         )
 
     @bot.message_handler(func=lambda m: m.text == "🧰 Екіпірування")
@@ -303,8 +373,52 @@ def register_profile_handlers(bot):
         bot.send_message(
             message.chat.id,
             build_equipment_text(user_id),
-            reply_markup=profile_kb()
+            reply_markup=profile_inline_kb(active_tab="equipment")
         )
+
+    # ==============================
+    # INLINE CALLBACKS
+    # ==============================
+
+    @bot.callback_query_handler(func=lambda call: call.data == "profile_character")
+    def profile_character_callback(call):
+        user_id = call.from_user.id
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            build_character_text(user_id),
+            reply_markup=profile_inline_kb(active_tab="character")
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "profile_stats")
+    def profile_stats_callback(call):
+        user_id = call.from_user.id
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            build_stats_text(user_id),
+            reply_markup=profile_inline_kb(active_tab="stats")
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "profile_equipment")
+    def profile_equipment_callback(call):
+        user_id = call.from_user.id
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            build_equipment_text(user_id),
+            reply_markup=profile_inline_kb(active_tab="equipment")
+        )
+
+    # ==============================
+    # BACK
+    # ==============================
 
     @bot.message_handler(func=lambda m: m.text == "🔙 Назад")
     def back_from_profile(message):

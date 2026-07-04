@@ -13,11 +13,15 @@ from db import (
     get_current_location,
     get_inventory_detailed,
     get_item_by_inventory_id_full,
+
     damage_equipped_items_on_death,
     apply_random_durability_wear_on_victory,
     process_contract_progress_on_kill,
     process_daily_quest_progress_on_kill,
-    consume_energy_for_hunt
+    consume_energy_for_hunt,
+
+    get_character_profile_summary,
+    get_user_mp
 )
 
 from keyboards import main_kb, fight_kb
@@ -31,6 +35,159 @@ from systems.combat_system import (
 
 from systems.reward_system import process_victory_reward
 from systems.potion_system import use_potion_from_inventory
+
+
+# ==============================
+# ✅ CLASS COMBAT RESOURCE HELPERS
+# ==============================
+
+def init_class_combat_resource(user_id, mob):
+    """
+    Ініціалізація бойового ресурсу класу на старті бою.
+
+    rage:
+        Воїн / Лицар
+        0/100 на старті бою
+
+    combat_energy:
+        Скаут / Розбійник
+        100/100 на старті бою
+
+    mana:
+        Маг / Жрець
+        береться з глобального MP персонажа
+    """
+
+    profile_summary = get_character_profile_summary(user_id)
+    resource_type = profile_summary.get("resource_type", "")
+
+    mob["player_resource_type"] = resource_type
+
+    if resource_type == "rage":
+        mob["player_rage"] = 0
+        mob["player_max_rage"] = 100
+
+    elif resource_type in ["combat_energy", "combat_energy_combo"]:
+        mob["player_combat_energy"] = 100
+        mob["player_max_combat_energy"] = 100
+
+        if resource_type == "combat_energy_combo":
+            mob["player_combo_points"] = 0
+            mob["player_max_combo_points"] = 3
+
+    elif resource_type == "mana":
+        mp_data = get_user_mp(user_id)
+
+        mob["player_mp"] = mp_data.get("mp", 0)
+        mob["player_max_mp"] = mp_data.get("max_mp", 0)
+
+
+def get_class_resource_line(mob):
+    resource_type = mob.get("player_resource_type", "")
+
+    if resource_type == "rage":
+        rage = mob.get("player_rage", 0)
+        max_rage = mob.get("player_max_rage", 100)
+
+        return f"🔴 Лютість: {rage}/{max_rage}\n"
+
+    if resource_type == "combat_energy":
+        energy = mob.get("player_combat_energy", 100)
+        max_energy = mob.get("player_max_combat_energy", 100)
+
+        return f"🟡 Енергія: {energy}/{max_energy}\n"
+
+    if resource_type == "combat_energy_combo":
+        energy = mob.get("player_combat_energy", 100)
+        max_energy = mob.get("player_max_combat_energy", 100)
+        combo = mob.get("player_combo_points", 0)
+        max_combo = mob.get("player_max_combo_points", 3)
+
+        return (
+            f"🟡 Енергія: {energy}/{max_energy}\n"
+            f"⚔️ Комбо: {combo}/{max_combo}\n"
+        )
+
+    if resource_type == "mana":
+        mp = mob.get("player_mp", 0)
+        max_mp = mob.get("player_max_mp", 0)
+
+        return f"🔵 Мана: {mp}/{max_mp}\n"
+
+    return ""
+
+
+def regenerate_class_resource_at_player_turn(mob):
+    """
+    Початок ходу гравця.
+
+    Для Скаута / Розбійника:
+        +20 енергії, максимум 100.
+
+    Для інших класів поки нічого.
+    """
+
+    resource_type = mob.get("player_resource_type", "")
+
+    if resource_type not in ["combat_energy", "combat_energy_combo"]:
+        return ""
+
+    current_energy = mob.get("player_combat_energy", 100)
+    max_energy = mob.get("player_max_combat_energy", 100)
+
+    old_energy = current_energy
+    current_energy = min(max_energy, current_energy + 20)
+
+    mob["player_combat_energy"] = current_energy
+
+    if current_energy > old_energy:
+        return f"🟡 Енергія відновлена: {old_energy} → {current_energy}/{max_energy}\n"
+
+    return ""
+
+
+def add_rage_for_player_attack(mob):
+    """
+    Воїн / Лицар отримують +15 Люті за базову атаку.
+    """
+
+    if mob.get("player_resource_type") != "rage":
+        return ""
+
+    old_rage = mob.get("player_rage", 0)
+    max_rage = mob.get("player_max_rage", 100)
+
+    new_rage = min(max_rage, old_rage + 15)
+    mob["player_rage"] = new_rage
+
+    if new_rage > old_rage:
+        return f"🔴 Лютість: +{new_rage - old_rage} ({new_rage}/{max_rage})\n"
+
+    return ""
+
+
+def add_rage_for_damage_taken(mob, damage):
+    """
+    Воїн / Лицар отримують +10 Люті, якщо ворог реально завдав шкоди.
+    Ухил не дає Лютість.
+    """
+
+    if mob.get("player_resource_type") != "rage":
+        return ""
+
+    if damage <= 0:
+        return ""
+
+    old_rage = mob.get("player_rage", 0)
+    max_rage = mob.get("player_max_rage", 100)
+
+    new_rage = min(max_rage, old_rage + 10)
+    mob["player_rage"] = new_rage
+
+    if new_rage > old_rage:
+        return f"🔴 Лютість за отриману шкоду: +{new_rage - old_rage} ({new_rage}/{max_rage})\n"
+
+    return ""
 
 
 # ==============================
@@ -129,6 +286,10 @@ def build_combat_potion_kb(user_id):
     return kb
 
 
+# ==============================
+# DEATH TEXT
+# ==============================
+
 def build_death_text(durability_damage):
     text = (
         "💀 ТИ ЗАГИНУВ\n"
@@ -145,6 +306,10 @@ def build_death_text(durability_damage):
 
     return text
 
+
+# ==============================
+# REGISTER HANDLERS
+# ==============================
 
 def register_combat_handlers(bot):
 
@@ -189,16 +354,6 @@ def register_combat_handlers(bot):
             )
             return
 
-        energy_result = consume_energy_for_hunt(user_id)
-
-        if not energy_result["success"]:
-            bot.send_message(
-                message.chat.id,
-                energy_result["message"],
-                reply_markup=main_kb()
-            )
-            return
-
         location_id = get_current_location(user_id)
         location = LOCATIONS.get(location_id, LOCATIONS["start_path"])
 
@@ -220,9 +375,21 @@ def register_combat_handlers(bot):
             )
             return
 
+        energy_result = consume_energy_for_hunt(user_id)
+
+        if not energy_result["success"]:
+            bot.send_message(
+                message.chat.id,
+                energy_result["message"],
+                reply_markup=main_kb()
+            )
+            return
+
         mob = generate_mob(player_level=lvl, location_id=location_id)
         mob["max_hp"] = mob["hp"]
         mob["potion_cooldown"] = 0
+
+        init_class_combat_resource(user_id, mob)
 
         bot.user_data = getattr(bot, "user_data", {})
         bot.user_data[user_id] = mob
@@ -244,18 +411,20 @@ def register_combat_handlers(bot):
             )
 
         weapon_text = attack_profile.get("weapon_text") or "Без зброї"
+        class_resource_text = get_class_resource_line(mob)
 
         text = (
             f"📍 Мапа: {location['name']}\n"
             f"🔎 Ти зустрів {mob['name']}\n\n"
             f"{elite_text}"
-            f"🔋 Енергія: {energy_result['energy']}/{energy_result['max_energy']}\n\n"
+            f"🔋 Енергія полювання: {energy_result['energy']}/{energy_result['max_energy']}\n\n"
 
             f"======================\n\n"
 
             f"👤 ТИ\n"
             f"❤️ Здоров’я: {current_hp}/{max_hp}\n"
             f"{hp_bar(current_hp, max_hp)}\n"
+            f"{class_resource_text}"
             f"⚔️ Тип атаки: {player_attack_type_text}\n"
             f"🗡️ Зброя: {weapon_text}\n"
             f"💥 Атака: {attack_profile['display_attack']}\n"
@@ -300,6 +469,8 @@ def register_combat_handlers(bot):
 
         mob = bot.user_data[user_id]
 
+        resource_start_text = regenerate_class_resource_at_player_turn(mob)
+
         stats = get_player_stats(user_id)
 
         if not stats:
@@ -323,13 +494,15 @@ def register_combat_handlers(bot):
         if "max_hp" not in mob:
             mob["max_hp"] = mob["hp"]
 
+        mob_def_for_player_attack = (
+            mob.get("mdef", mob.get("def", 0))
+            if attack_profile["attack_type"] == "magical"
+            else mob.get("pdef", mob.get("def", 0))
+        )
+
         player_attack_result = calculate_player_attack(
             player_stat_attack=attack_profile["stat_attack"],
-            mob_def=(
-                mob.get("mdef", mob.get("def", 0))
-                if attack_profile["attack_type"] == "magical"
-                else mob.get("pdef", mob.get("def", 0))
-            ),
+            mob_def=mob_def_for_player_attack,
             dex=dex_,
             wis=wis_,
             level=lvl,
@@ -343,6 +516,8 @@ def register_combat_handlers(bot):
         weapon_damage = player_attack_result.get("weapon_damage", 0)
 
         mob["hp"] -= dmg
+
+        resource_attack_text = add_rage_for_player_attack(mob)
 
         # ==============================
         # VICTORY
@@ -379,8 +554,14 @@ def register_combat_handlers(bot):
             if mob.get("is_elite"):
                 victory_title = "🏆 ВИ ПЕРЕМОГЛИ ЕЛІТНОГО ВОРОГА!"
 
-            text = (
-                f"{victory_title}\n\n"
+            text = f"{victory_title}\n\n"
+
+            if resource_start_text or resource_attack_text:
+                text += resource_start_text
+                text += resource_attack_text
+                text += "\n"
+
+            text += (
                 f"{mob['name']} повалений на землю.\n\n"
                 f"📈 Нагорода:\n"
                 f"✨ Досвід: +{reward['exp']} EXP"
@@ -392,7 +573,7 @@ def register_combat_handlers(bot):
                 if exp_result["level_ups"] > 0:
                     text += f"\n🏆 Новий рівень: {exp_result['level']}!"
 
-            text += f"\n🪙 Чисте золото: +{reward['gold']}\n"
+            text += f"\n💰 Золото: +{reward['gold']}\n"
 
             if reward["loot_messages"]:
                 text += "\n🎒 Знайдений лут:\n"
@@ -441,6 +622,8 @@ def register_combat_handlers(bot):
 
         player_hp -= mob_dmg
 
+        resource_damage_text = add_rage_for_damage_taken(mob, mob_dmg)
+
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(
                 user_id=user_id,
@@ -469,6 +652,18 @@ def register_combat_handlers(bot):
 
         text = "⚔️ БІЙ\n\n"
 
+        if resource_start_text:
+            text += resource_start_text
+
+        if resource_attack_text:
+            text += resource_attack_text
+
+        if resource_damage_text:
+            text += resource_damage_text
+
+        if resource_start_text or resource_attack_text or resource_damage_text:
+            text += "\n"
+
         if is_player_crit:
             text += f"💥 КРИТ! Ти завдав {dmg} шкоди"
         else:
@@ -486,9 +681,12 @@ def register_combat_handlers(bot):
         else:
             text += f"👹 Ворог завдав {mob_dmg} шкоди\n\n"
 
+        class_resource_text = get_class_resource_line(mob)
+
         text += (
             f"❤️ Твоє здоров’я: {player_hp}/{player_max_hp}\n"
-            f"{hp_bar(player_hp, player_max_hp)}\n\n"
+            f"{hp_bar(player_hp, player_max_hp)}\n"
+            f"{class_resource_text}\n"
             f"👹 Здоров’я ворога: {mob['hp']}/{mob['max_hp']}\n"
             f"{hp_bar(mob['hp'], mob['max_hp'])}"
         )
@@ -609,13 +807,16 @@ def register_combat_handlers(bot):
         player_hp = potion_result["new_hp"]
         player_max_hp = potion_result["max_hp"]
 
+        class_resource_text = get_class_resource_line(mob)
+
         text = (
             f"🧪 ЗІЛЛЯ\n\n"
             f"{potion_result['message']}\n\n"
             f"✅ Хід не витрачено — ворог не атакує після використання зілля.\n"
             f"🔴 Повний шлунок: {cooldown_turns} ход.\n\n"
             f"❤️ Твоє здоров’я: {player_hp}/{player_max_hp}\n"
-            f"{hp_bar(player_hp, player_max_hp)}\n\n"
+            f"{hp_bar(player_hp, player_max_hp)}\n"
+            f"{class_resource_text}\n"
             f"👹 Здоров’я ворога: {mob['hp']}/{mob['max_hp']}\n"
             f"{hp_bar(mob['hp'], mob['max_hp'])}"
         )
