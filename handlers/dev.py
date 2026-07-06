@@ -19,7 +19,12 @@ from keyboards import main_kb
 # DEV CONFIG
 # ==============================
 
-DEV_MODE = True
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+DEV_MODE = os.getenv("DEV_MODE", "false").lower() == "true"
 
 
 VALID_DROP_RARITIES = {
