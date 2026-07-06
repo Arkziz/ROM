@@ -1,1 +1,9 @@
-TOKEN = "8092816446:AAEy0nCCYHDFlFXfxvoVHGUzX3BKo3d60aE"
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+TOKEN = os.getenv("BOT_TOKEN")
+
+if not TOKEN:
+    raise RuntimeError("BOT_TOKEN не знайдено у .env")
