@@ -200,6 +200,94 @@ def add_rage_for_damage_taken(mob, damage):
 
 
 # ==============================
+# ✅ SKILL COOLDOWN HELPERS
+# ==============================
+
+def init_skill_cooldowns(mob):
+    if "skill_cooldowns" not in mob:
+        mob["skill_cooldowns"] = {}
+
+
+def get_skill_cooldown(mob, skill_key):
+    init_skill_cooldowns(mob)
+
+    return int(mob["skill_cooldowns"].get(skill_key, 0) or 0)
+
+
+def set_skill_cooldown(mob, skill_key, cooldown_turns):
+    init_skill_cooldowns(mob)
+
+    cooldown_turns = int(cooldown_turns or 0)
+
+    if cooldown_turns <= 0:
+        mob["skill_cooldowns"].pop(skill_key, None)
+        return ""
+
+    mob["skill_cooldowns"][skill_key] = cooldown_turns
+
+    return f"⏳ Навичка пішла на перезарядку: {cooldown_turns} ход.\n"
+
+
+def tick_skill_cooldowns_at_player_turn(mob):
+    """
+    Зменшує cooldown-и тільки на початку реального ходу гравця.
+
+    Реальний хід:
+    - ⚔️ Атакувати
+    - використання доступної ✨ Навички
+
+    Не реальний хід:
+    - відкриття меню ✨ Навички
+    - натискання заблокованої навички
+    - повернення до бою
+    """
+
+    init_skill_cooldowns(mob)
+
+    if not mob["skill_cooldowns"]:
+        return ""
+
+    expired = []
+
+    for skill_key in list(mob["skill_cooldowns"].keys()):
+        old_value = int(mob["skill_cooldowns"].get(skill_key, 0) or 0)
+        new_value = max(0, old_value - 1)
+
+        if new_value <= 0:
+            expired.append(skill_key)
+            del mob["skill_cooldowns"][skill_key]
+        else:
+            mob["skill_cooldowns"][skill_key] = new_value
+
+    text = ""
+
+    if expired:
+        text += "✅ Деякі навички знову доступні.\n"
+
+    return text
+
+
+def validate_skill_cooldown(mob, skill):
+    skill_key = skill["key"]
+    cooldown = get_skill_cooldown(mob, skill_key)
+
+    if cooldown > 0:
+        return {
+            "success": False,
+            "message": (
+                f"⏳ Навичка ще перезаряджається.\n\n"
+                f"{skill['name']}\n"
+                f"Залишилось: {cooldown} ход."
+            )
+        }
+
+    return {
+        "success": True,
+        "message": ""
+    }
+
+
+# ==============================
 # ✅ CLASS SKILLS V1
 # ==============================
 
@@ -210,6 +298,7 @@ CLASS_SKILLS_V1 = {
         "description": "Завдає 110% фізичної шкоди та додатково дає +10 Люті.",
         "cost_type": "rage",
         "cost": 0,
+        "cooldown": 0,
         "damage_multiplier": 1.10,
         "attack_type": "physical",
         "extra_rage": 10,
@@ -222,6 +311,7 @@ CLASS_SKILLS_V1 = {
         "description": "Витрачає 20 Люті, завдає 90% фізичної шкоди та має 25% шанс оглушити ворога.",
         "cost_type": "rage",
         "cost": 20,
+        "cooldown": 2,
         "damage_multiplier": 0.90,
         "attack_type": "physical",
         "extra_rage": 0,
@@ -234,6 +324,7 @@ CLASS_SKILLS_V1 = {
         "description": "Витрачає 30 Енергії та завдає 140% фізичної шкоди.",
         "cost_type": "combat_energy",
         "cost": 30,
+        "cooldown": 1,
         "damage_multiplier": 1.40,
         "attack_type": "physical",
         "extra_rage": 0,
@@ -246,6 +337,7 @@ CLASS_SKILLS_V1 = {
         "description": "Витрачає 25 Енергії та завдає 130% фізичної шкоди.",
         "cost_type": "combat_energy",
         "cost": 25,
+        "cooldown": 0,
         "damage_multiplier": 1.30,
         "attack_type": "physical",
         "extra_rage": 0,
@@ -258,6 +350,7 @@ CLASS_SKILLS_V1 = {
         "description": "Витрачає 20 MP та завдає 150% магічної шкоди.",
         "cost_type": "mana",
         "cost": 20,
+        "cooldown": 0,
         "damage_multiplier": 1.50,
         "attack_type": "magical",
         "extra_rage": 0,
@@ -270,6 +363,7 @@ CLASS_SKILLS_V1 = {
         "description": "Витрачає 15 MP та завдає 120% магічної шкоди.",
         "cost_type": "mana",
         "cost": 15,
+        "cooldown": 0,
         "damage_multiplier": 1.20,
         "attack_type": "magical",
         "extra_rage": 0,
@@ -298,6 +392,8 @@ def build_skill_menu_text(user_id, mob):
             "❌ Для твого класу ще немає доступної навички."
         ), None
 
+    cooldown = get_skill_cooldown(mob, skill["key"])
+
     text = (
         "✨ Навички\n\n"
         f"{class_resource_text}\n"
@@ -315,11 +411,26 @@ def build_skill_menu_text(user_id, mob):
     else:
         text += "\n"
 
+    if skill.get("cooldown", 0) > 0:
+        text += f"Перезарядка після використання: {skill['cooldown']} ход.\n"
+
+    if cooldown > 0:
+        text += f"\n⏳ Поточна перезарядка: {cooldown} ход."
+    else:
+        text += "\n✅ Навичка доступна."
+
     kb = types.InlineKeyboardMarkup()
 
+    if cooldown > 0:
+        button_text = f"🔒 {skill['name']} — {cooldown} ход."
+        callback_data = f"skill_locked:{skill['key']}"
+    else:
+        button_text = skill["name"]
+        callback_data = f"use_skill:{skill['key']}"
+
     kb.add(types.InlineKeyboardButton(
-        text=skill["name"],
-        callback_data=f"use_skill:{skill['key']}"
+        text=button_text,
+        callback_data=callback_data
     ))
 
     kb.add(types.InlineKeyboardButton(
@@ -641,6 +752,7 @@ def register_combat_handlers(bot):
         mob["max_hp"] = mob["hp"]
         mob["potion_cooldown"] = 0
         mob["stunned_turns"] = 0
+        mob["skill_cooldowns"] = {}
 
         init_class_combat_resource(user_id, mob)
 
@@ -722,6 +834,7 @@ def register_combat_handlers(bot):
 
         mob = bot.user_data[user_id]
 
+        cooldown_start_text = tick_skill_cooldowns_at_player_turn(mob)
         resource_start_text = regenerate_class_resource_at_player_turn(mob)
 
         stats = get_player_stats(user_id)
@@ -811,7 +924,8 @@ def register_combat_handlers(bot):
 
             text = f"{victory_title}\n\n"
 
-            if resource_start_text or resource_attack_text:
+            if cooldown_start_text or resource_start_text or resource_attack_text:
+                text += cooldown_start_text
                 text += resource_start_text
                 text += resource_attack_text
                 text += "\n"
@@ -928,6 +1042,9 @@ def register_combat_handlers(bot):
 
         text = "⚔️ БІЙ\n\n"
 
+        if cooldown_start_text:
+            text += cooldown_start_text
+
         if resource_start_text:
             text += resource_start_text
 
@@ -937,7 +1054,7 @@ def register_combat_handlers(bot):
         if resource_damage_text:
             text += resource_damage_text
 
-        if resource_start_text or resource_attack_text or resource_damage_text:
+        if cooldown_start_text or resource_start_text or resource_attack_text or resource_damage_text:
             text += "\n"
 
         if is_player_crit:
@@ -1005,6 +1122,60 @@ def register_combat_handlers(bot):
         )
 
     # ==============================
+    # 🔒 LOCKED SKILL
+    # ==============================
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("skill_locked:"))
+    def skill_locked(call):
+        user_id = call.from_user.id
+
+        if not hasattr(bot, "user_data") or user_id not in bot.user_data:
+            bot.answer_callback_query(call.id)
+
+            bot.send_message(
+                call.message.chat.id,
+                "❗ Бій уже завершено",
+                reply_markup=main_kb()
+            )
+            return
+
+        mob = bot.user_data[user_id]
+        skill = get_player_class_skill(user_id)
+
+        bot.answer_callback_query(call.id)
+
+        if not skill:
+            bot.send_message(
+                call.message.chat.id,
+                "❌ Навичку не знайдено.",
+                reply_markup=fight_kb()
+            )
+            return
+
+        cooldown = get_skill_cooldown(mob, skill["key"])
+
+        if cooldown <= 0:
+            text, kb = build_skill_menu_text(user_id, mob)
+
+            bot.send_message(
+                call.message.chat.id,
+                text,
+                reply_markup=kb if kb else fight_kb()
+            )
+            return
+
+        bot.send_message(
+            call.message.chat.id,
+            (
+                f"⏳ Навичка ще перезаряджається.\n\n"
+                f"{skill['name']}\n"
+                f"Залишилось: {cooldown} ход.\n\n"
+                f"ℹ️ Виконай реальний хід: атакуй або використай доступну навичку."
+            ),
+            reply_markup=fight_kb()
+        )
+
+    # ==============================
     # ✨ USE SKILL
     # ==============================
 
@@ -1037,6 +1208,24 @@ def register_combat_handlers(bot):
             )
             return
 
+        # ВАЖЛИВО:
+        # Спочатку перевіряємо cooldown.
+        # Натискання на навичку, яка ще перезаряджається, НЕ рахується ходом
+        # і НЕ зменшує cooldown.
+        cooldown_result = validate_skill_cooldown(mob, skill)
+
+        if not cooldown_result["success"]:
+            bot.answer_callback_query(call.id)
+
+            bot.send_message(
+                call.message.chat.id,
+                cooldown_result["message"],
+                reply_markup=fight_kb()
+            )
+            return
+
+        # Тільки якщо навичка реально доступна — це бойовий хід.
+        cooldown_start_text = tick_skill_cooldowns_at_player_turn(mob)
         resource_start_text = regenerate_class_resource_at_player_turn(mob)
 
         pay_result = validate_and_pay_skill_cost(user_id, mob, skill)
@@ -1116,6 +1305,12 @@ def register_combat_handlers(bot):
 
         stun_text = roll_skill_stun(mob, skill)
 
+        cooldown_set_text = set_skill_cooldown(
+            mob,
+            skill["key"],
+            skill.get("cooldown", 0)
+        )
+
         bot.answer_callback_query(call.id)
 
         # ==============================
@@ -1157,9 +1352,11 @@ def register_combat_handlers(bot):
 
             text = f"{victory_title}\n\n"
 
-            if resource_start_text or resource_attack_text:
+            if cooldown_start_text or resource_start_text or resource_attack_text or cooldown_set_text:
+                text += cooldown_start_text
                 text += resource_start_text
                 text += resource_attack_text
+                text += cooldown_set_text
                 text += "\n"
 
             text += (
@@ -1275,16 +1472,22 @@ def register_combat_handlers(bot):
 
         text = "✨ НАВИЧКА\n\n"
 
+        if cooldown_start_text:
+            text += cooldown_start_text
+
         if resource_start_text:
             text += resource_start_text
 
         if resource_attack_text:
             text += resource_attack_text
 
+        if cooldown_set_text:
+            text += cooldown_set_text
+
         if resource_damage_text:
             text += resource_damage_text
 
-        if resource_start_text or resource_attack_text or resource_damage_text:
+        if cooldown_start_text or resource_start_text or resource_attack_text or cooldown_set_text or resource_damage_text:
             text += "\n"
 
         text += f"{skill['name']}\n"
