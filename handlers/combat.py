@@ -162,6 +162,36 @@ def add_rage_for_damage_taken(mob, damage):
 
 
 # ==============================
+# ✅ ROGUE COMBO HELPERS
+# ==============================
+
+def add_rogue_combo_point(mob, amount=1):
+    if mob.get("player_resource_type") != "combat_energy_combo":
+        return ""
+
+    old_combo = mob.get("player_combo_points", 0)
+    max_combo = mob.get("player_max_combo_points", 3)
+
+    new_combo = min(max_combo, old_combo + amount)
+    mob["player_combo_points"] = new_combo
+
+    if new_combo > old_combo:
+        return f"⚔️ Комбо: +{new_combo - old_combo} ({new_combo}/{max_combo})\n"
+
+    return ""
+
+
+def consume_rogue_combo_points(mob):
+    if mob.get("player_resource_type") != "combat_energy_combo":
+        return 0
+
+    combo = mob.get("player_combo_points", 0)
+    mob["player_combo_points"] = 0
+
+    return combo
+
+
+# ==============================
 # ✅ STATUS / EFFECT FRAMEWORK
 # ==============================
 
@@ -499,7 +529,7 @@ def validate_skill_cooldown(mob, skill):
 
 
 # ==============================
-# ✅ CLASS SKILLS V1/V2
+# ✅ CLASS SKILLS
 # ==============================
 
 CLASS_SKILLS_V1 = {
@@ -530,6 +560,21 @@ CLASS_SKILLS_V1 = {
             "stun_chance": 0,
             "no_damage": True,
             "effect": "enemy_pdef_down"
+        },
+        {
+            "key": "warrior_subjugation_strike",
+            "name": "💥 Удар підкорення",
+            "description": "Потребує мінімум 30 Люті, витрачає всю Лють і завдає посилену фізичну шкоду.",
+            "cost_type": "rage_all_min",
+            "cost": 0,
+            "min_cost": 30,
+            "cooldown": 3,
+            "damage_multiplier": 1.00,
+            "attack_type": "physical",
+            "extra_rage": 0,
+            "stun_chance": 0,
+            "no_damage": False,
+            "scales_with_spent_rage": True
         }
     ],
 
@@ -560,6 +605,20 @@ CLASS_SKILLS_V1 = {
             "stun_chance": 0,
             "no_damage": True,
             "effect": "player_shield"
+        },
+        {
+            "key": "knight_judgement",
+            "name": "⚖️ Кара лицаря",
+            "description": "Витрачає 40 Люті та завдає фізичної шкоди, що масштабується від твого фізичного захисту.",
+            "cost_type": "rage",
+            "cost": 40,
+            "cooldown": 3,
+            "damage_multiplier": 1.00,
+            "attack_type": "physical",
+            "extra_rage": 0,
+            "stun_chance": 0,
+            "no_damage": False,
+            "scales_with_player_pdef": True
         }
     ],
 
@@ -590,6 +649,20 @@ CLASS_SKILLS_V1 = {
             "stun_chance": 0,
             "no_damage": True,
             "effect": "enemy_pdef_trap"
+        },
+        {
+            "key": "scout_sting_arrow",
+            "name": "☠️ Стріла-жало",
+            "description": "Витрачає 35 Енергії, завдає 100% фізичної шкоди та накладає отруту на 3 ходи.",
+            "cost_type": "combat_energy",
+            "cost": 35,
+            "cooldown": 2,
+            "damage_multiplier": 1.00,
+            "attack_type": "physical",
+            "extra_rage": 0,
+            "stun_chance": 0,
+            "no_damage": False,
+            "effect": "enemy_poison"
         }
     ],
 
@@ -597,7 +670,7 @@ CLASS_SKILLS_V1 = {
         {
             "key": "rogue_sneak_strike",
             "name": "⚔️ Підступний випад",
-            "description": "Витрачає 25 Енергії та завдає 130% фізичної шкоди.",
+            "description": "Витрачає 25 Енергії, завдає 130% фізичної шкоди та дає 1 комбо.",
             "cost_type": "combat_energy",
             "cost": 25,
             "cooldown": 0,
@@ -605,12 +678,13 @@ CLASS_SKILLS_V1 = {
             "attack_type": "physical",
             "extra_rage": 0,
             "stun_chance": 0,
-            "no_damage": False
+            "no_damage": False,
+            "combo_gain": 1
         },
         {
             "key": "rogue_bleeding_follow",
             "name": "🩸 Криваве слідування",
-            "description": "Витрачає 25 Енергії, завдає 80% фізичної шкоди та накладає кровотечу на 3 ходи.",
+            "description": "Витрачає 25 Енергії, завдає 80% фізичної шкоди, накладає кровотечу та дає 1 комбо.",
             "cost_type": "combat_energy",
             "cost": 25,
             "cooldown": 2,
@@ -619,7 +693,23 @@ CLASS_SKILLS_V1 = {
             "extra_rage": 0,
             "stun_chance": 0,
             "no_damage": False,
-            "effect": "enemy_bleed"
+            "effect": "enemy_bleed",
+            "combo_gain": 1
+        },
+        {
+            "key": "rogue_eviscerate",
+            "name": "🗡️ Потрошіння",
+            "description": "Витрачає 35 Енергії та всі комбо-очки. Чим більше комбо, тим більша шкода.",
+            "cost_type": "combat_energy_combo",
+            "cost": 35,
+            "min_combo": 1,
+            "cooldown": 2,
+            "damage_multiplier": 1.00,
+            "attack_type": "physical",
+            "extra_rage": 0,
+            "stun_chance": 0,
+            "no_damage": False,
+            "scales_with_combo": True
         }
     ],
 
@@ -649,6 +739,20 @@ CLASS_SKILLS_V1 = {
             "extra_rage": 0,
             "stun_chance": 25,
             "no_damage": False
+        },
+        {
+            "key": "mage_arcane_flow",
+            "name": "🔮 Магічний потік",
+            "description": "Не завдає шкоди. Відновлює 35% максимальної Мани в бою.",
+            "cost_type": "mana",
+            "cost": 0,
+            "cooldown": 4,
+            "damage_multiplier": 0,
+            "attack_type": "magical",
+            "extra_rage": 0,
+            "stun_chance": 0,
+            "no_damage": True,
+            "effect": "restore_mana_percent"
         }
     ],
 
@@ -679,6 +783,20 @@ CLASS_SKILLS_V1 = {
             "stun_chance": 0,
             "no_damage": True,
             "effect": "player_hot"
+        },
+        {
+            "key": "priest_purify_faith",
+            "name": "🛡️ Очищення віри",
+            "description": "Витрачає 30 MP, очищає негативні ефекти та підвищує магічний захист на 3 ходи.",
+            "cost_type": "mana",
+            "cost": 30,
+            "cooldown": 4,
+            "damage_multiplier": 0,
+            "attack_type": "magical",
+            "extra_rage": 0,
+            "stun_chance": 0,
+            "no_damage": True,
+            "effect": "player_cleanse_mdef_buff"
         }
     ]
 }
@@ -733,13 +851,17 @@ def build_skill_menu_text(user_id, mob):
         text += (
             f"{skill['name']}\n"
             f"{skill['description']}\n"
-            f"Вартість: {skill['cost']}"
+            f"Вартість: {skill.get('cost', 0)}"
         )
 
         if skill["cost_type"] == "rage":
             text += " Люті\n"
+        elif skill["cost_type"] == "rage_all_min":
+            text += f" Люті, мінімум {skill.get('min_cost', 30)}\n"
         elif skill["cost_type"] == "combat_energy":
             text += " Енергії\n"
+        elif skill["cost_type"] == "combat_energy_combo":
+            text += f" Енергії + мінімум {skill.get('min_combo', 1)} комбо\n"
         elif skill["cost_type"] == "mana":
             text += " MP\n"
         else:
@@ -780,7 +902,10 @@ def build_skill_menu_text(user_id, mob):
 
 def validate_and_pay_skill_cost(user_id, mob, skill):
     cost_type = skill["cost_type"]
-    cost = int(skill["cost"])
+    cost = int(skill.get("cost", 0))
+
+    mob["last_skill_spent_rage"] = 0
+    mob["last_skill_spent_combo"] = 0
 
     if cost_type == "rage":
         current_rage = mob.get("player_rage", 0)
@@ -802,6 +927,28 @@ def validate_and_pay_skill_cost(user_id, mob, skill):
             "message": ""
         }
 
+    if cost_type == "rage_all_min":
+        current_rage = mob.get("player_rage", 0)
+        min_cost = int(skill.get("min_cost", 30))
+
+        if current_rage < min_cost:
+            return {
+                "success": False,
+                "message": (
+                    f"❌ Недостатньо Люті.\n\n"
+                    f"🔴 Потрібно мінімум: {min_cost}\n"
+                    f"🔴 У тебе: {current_rage}/{mob.get('player_max_rage', 100)}"
+                )
+            }
+
+        mob["last_skill_spent_rage"] = current_rage
+        mob["player_rage"] = 0
+
+        return {
+            "success": True,
+            "message": ""
+        }
+
     if cost_type == "combat_energy":
         current_energy = mob.get("player_combat_energy", 0)
 
@@ -816,6 +963,39 @@ def validate_and_pay_skill_cost(user_id, mob, skill):
             }
 
         mob["player_combat_energy"] = max(0, current_energy - cost)
+
+        return {
+            "success": True,
+            "message": ""
+        }
+
+    if cost_type == "combat_energy_combo":
+        current_energy = mob.get("player_combat_energy", 0)
+        current_combo = mob.get("player_combo_points", 0)
+        min_combo = int(skill.get("min_combo", 1))
+
+        if current_energy < cost:
+            return {
+                "success": False,
+                "message": (
+                    f"❌ Недостатньо Енергії.\n\n"
+                    f"🟡 Потрібно: {cost}\n"
+                    f"🟡 У тебе: {current_energy}/{mob.get('player_max_combat_energy', 100)}"
+                )
+            }
+
+        if current_combo < min_combo:
+            return {
+                "success": False,
+                "message": (
+                    f"❌ Недостатньо комбо-очок.\n\n"
+                    f"⚔️ Потрібно мінімум: {min_combo}\n"
+                    f"⚔️ У тебе: {current_combo}/{mob.get('player_max_combo_points', 3)}"
+                )
+            }
+
+        mob["player_combat_energy"] = max(0, current_energy - cost)
+        mob["last_skill_spent_combo"] = consume_rogue_combo_points(mob)
 
         return {
             "success": True,
@@ -969,6 +1149,27 @@ def apply_skill_special_effect(user_id, mob, skill, damage_done):
 
         text += f"🩸 На ворога накладено кровотечу: {bleed_damage} шкоди протягом 3 ходів.\n"
 
+    elif effect_key == "enemy_poison":
+        poison_damage = max(
+            2,
+            int(round(max(1, damage_done) * 0.30))
+        )
+
+        add_enemy_effect(
+            mob,
+            "scout_poison",
+            {
+                "name": "☠️ Отрута",
+                "icon": "☠️",
+                "type": "dot",
+                "turns": 3,
+                "damage": poison_damage,
+                "modifiers": {}
+            }
+        )
+
+        text += f"☠️ Ворог отруєний: {poison_damage} шкоди протягом 3 ходів.\n"
+
     elif effect_key == "player_hot":
         max_hp = get_max_hp(user_id)
 
@@ -990,6 +1191,59 @@ def apply_skill_special_effect(user_id, mob, skill, damage_done):
         )
 
         text += f"🌿 Благословення зцілення: +{heal_per_turn} HP протягом 4 ходів.\n"
+
+    elif effect_key == "restore_mana_percent":
+        mp_data = get_user_mp(user_id)
+
+        current_mp = mp_data.get("mp", 0)
+        max_mp = mp_data.get("max_mp", 0)
+
+        restore_amount = max(
+            1,
+            int(round(max_mp * 0.35))
+        )
+
+        new_mp = min(max_mp, current_mp + restore_amount)
+        restored = new_mp - current_mp
+
+        try:
+            from db import set_user_mp
+            set_user_mp(user_id, new_mp)
+        except Exception:
+            pass
+
+        mob["player_mp"] = new_mp
+        mob["player_max_mp"] = max_mp
+
+        text += f"🔮 Магічний потік відновив {restored} MP ({new_mp}/{max_mp}).\n"
+
+    elif effect_key == "player_cleanse_mdef_buff":
+        cleared = 0
+
+        for key in list(mob.get("player_effects", {}).keys()):
+            effect = mob["player_effects"].get(key, {})
+
+            if effect.get("negative"):
+                remove_player_effect(mob, key)
+                cleared += 1
+
+        add_player_effect(
+            mob,
+            "priest_purify_faith_mdef",
+            {
+                "name": "🛡️ Очищення віри",
+                "type": "buff",
+                "turns": 3,
+                "modifiers": {
+                    "mdef_percent": 30
+                }
+            }
+        )
+
+        if cleared > 0:
+            text += f"🛡️ Очищення віри зняло негативних ефектів: {cleared}.\n"
+
+        text += "🛡️ Магічний захист підвищено на 30% на 3 ходи.\n"
 
     return text
 
@@ -1266,7 +1520,6 @@ def register_combat_handlers(bot):
 
         location_id = get_current_location(user_id)
         location = LOCATIONS.get(location_id, LOCATIONS["start_path"])
-
         location_max_level = int(location.get("level_max", lvl))
 
         if lvl > location_max_level:
@@ -1301,6 +1554,8 @@ def register_combat_handlers(bot):
         mob["skill_cooldowns"] = {}
         mob["enemy_effects"] = {}
         mob["player_effects"] = {}
+        mob["last_skill_spent_rage"] = 0
+        mob["last_skill_spent_combo"] = 0
 
         init_class_combat_resource(user_id, mob)
         init_combat_effects(mob)
@@ -1790,6 +2045,32 @@ def register_combat_handlers(bot):
                 int(round(base_dmg * float(skill.get("damage_multiplier", 1.0))))
             )
 
+            if skill.get("scales_with_spent_rage"):
+                spent_rage = mob.get("last_skill_spent_rage", 0)
+                bonus_multiplier = 1.0 + (spent_rage / 100)
+
+                dmg = max(
+                    1,
+                    int(round(base_dmg * bonus_multiplier))
+                )
+
+            if skill.get("scales_with_player_pdef"):
+                player_pdef, player_mdef = get_effective_player_defenses(user_id, mob)
+
+                dmg = max(
+                    1,
+                    int(round(player_pdef * 1.4))
+                )
+
+            if skill.get("scales_with_combo"):
+                spent_combo = mob.get("last_skill_spent_combo", 0)
+                bonus_multiplier = 1.0 + (spent_combo * 0.45)
+
+                dmg = max(
+                    1,
+                    int(round(base_dmg * bonus_multiplier))
+                )
+
             mob["hp"] -= dmg
 
         resource_attack_text = ""
@@ -1797,6 +2078,11 @@ def register_combat_handlers(bot):
         if not skill.get("no_damage"):
             if mob.get("player_resource_type") == "rage":
                 resource_attack_text += add_rage_for_player_attack(mob)
+
+        combo_gain = int(skill.get("combo_gain", 0))
+
+        if combo_gain > 0:
+            resource_attack_text += add_rogue_combo_point(mob, combo_gain)
 
         resource_attack_text += apply_extra_rage_from_skill(mob, skill)
 
@@ -1832,7 +2118,11 @@ def register_combat_handlers(bot):
                 prefix_text += special_effect_text
 
             prefix_text += f"✨ Навичка: {skill['name']}\n"
-            prefix_text += f"Ти завдав {dmg} шкоди.\n"
+
+            if skill.get("no_damage"):
+                prefix_text += "Навичка застосована.\n"
+            else:
+                prefix_text += f"Ти завдав {dmg} шкоди.\n"
 
             process_victory(
                 bot=bot,
