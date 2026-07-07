@@ -19,7 +19,8 @@ from db import (
     get_inventory_weapon_damage_display,
 
     get_character_profile_summary
-)
+,
+    process_passive_regeneration,)
 
 from keyboards import profile_kb, main_kb
 from utils import hp_bar
@@ -126,6 +127,7 @@ def format_equipment_bonuses(b_str, b_dex, b_int, b_wis, b_sta, pdef, mdef):
 # ==============================
 
 def build_character_text(user_id):
+    process_passive_regeneration(user_id)
     stats = get_player_stats(user_id)
 
     if not stats:

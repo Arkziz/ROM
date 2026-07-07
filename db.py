@@ -6575,6 +6575,7 @@ def init_character_class_system():
         ("users", "class_change_available", "INTEGER DEFAULT 0"),
         ("users", "mp", "INTEGER DEFAULT 0"),
         ("users", "max_mp", "INTEGER DEFAULT 0"),
+        ("users", "last_regen_at", "TEXT DEFAULT ''"),
     ]
 
     for table, column, column_type in migrations:
@@ -7219,4 +7220,190 @@ def use_class_reset_sphere_from_inventory(user_id, inventory_id):
             "🔮 Сфера нового шляху використана.\n\n"
             "Ти можеш обрати новий клас персонажа."
         )
+    }
+
+# ==============================
+# ✅ PASSIVE HP / MP REGEN
+# ==============================
+
+from datetime import datetime
+
+
+def init_passive_regen_system():
+    try:
+        cursor.execute("""
+        ALTER TABLE users
+        ADD COLUMN last_regen_at TEXT DEFAULT ''
+        """)
+    except Exception:
+        pass
+
+    conn.commit()
+
+
+def update_last_regen_timestamp(user_id):
+    init_passive_regen_system()
+
+    cursor.execute("""
+    UPDATE users
+    SET last_regen_at=?
+    WHERE user_id=?
+    """, (
+        datetime.utcnow().isoformat(),
+        user_id
+    ))
+
+    conn.commit()
+
+
+def process_passive_regeneration(user_id):
+    """
+    Пасивне відновлення поза боєм.
+
+    За кожну повну хвилину:
+    - +5% від max HP
+    - +5% від max MP, якщо клас використовує ману
+
+    Важливо:
+    - не використовує колонку current_hp напряму;
+    - бере HP через get_current_hp / get_max_hp;
+    - записує HP через set_current_hp.
+    """
+
+    init_passive_regen_system()
+    init_character_class_system()
+
+    cursor.execute("""
+    SELECT last_regen_at
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "success": False,
+            "message": "❌ Персонажа не знайдено."
+        }
+
+    last_regen_at = row[0]
+    now = datetime.utcnow()
+
+    if not last_regen_at:
+        update_last_regen_timestamp(user_id)
+
+        return {
+            "success": True,
+            "minutes": 0,
+            "hp_restored": 0,
+            "mp_restored": 0
+        }
+
+    try:
+        previous = datetime.fromisoformat(last_regen_at)
+    except Exception:
+        update_last_regen_timestamp(user_id)
+
+        return {
+            "success": True,
+            "minutes": 0,
+            "hp_restored": 0,
+            "mp_restored": 0
+        }
+
+    elapsed_seconds = int((now - previous).total_seconds())
+
+    if elapsed_seconds < 60:
+        return {
+            "success": True,
+            "minutes": 0,
+            "hp_restored": 0,
+            "mp_restored": 0
+        }
+
+    minutes = elapsed_seconds // 60
+
+    # ==============================
+    # HP REGEN
+    # ==============================
+
+    current_hp = get_current_hp(user_id)
+    max_hp = get_max_hp(user_id)
+
+    hp_restored = 0
+
+    if max_hp > 0:
+        hp_regen_per_minute = max(
+            1,
+            int(round(max_hp * 0.05))
+        )
+
+        new_hp = min(
+            max_hp,
+            current_hp + (hp_regen_per_minute * minutes)
+        )
+
+        hp_restored = max(0, new_hp - current_hp)
+
+        if hp_restored > 0:
+            set_current_hp(user_id, new_hp)
+
+    # ==============================
+    # MP REGEN
+    # ==============================
+
+    mp_restored = 0
+
+    profile_summary = get_character_profile_summary(user_id)
+
+    if profile_summary.get("resource_type") == "mana":
+        mp_data = get_user_mp(user_id)
+
+        current_mp = mp_data.get("mp", 0)
+        max_mp = mp_data.get("max_mp", 0)
+
+        if max_mp > 0:
+            mp_regen_per_minute = max(
+                1,
+                int(round(max_mp * 0.05))
+            )
+
+            new_mp = min(
+                max_mp,
+                current_mp + (mp_regen_per_minute * minutes)
+            )
+
+            mp_restored = max(0, new_mp - current_mp)
+
+            if mp_restored > 0:
+                cursor.execute("""
+                UPDATE users
+                SET mp=?
+                WHERE user_id=?
+                """, (
+                    new_mp,
+                    user_id
+                ))
+
+    # ==============================
+    # UPDATE TIMER
+    # ==============================
+
+    cursor.execute("""
+    UPDATE users
+    SET last_regen_at=?
+    WHERE user_id=?
+    """, (
+        now.isoformat(),
+        user_id
+    ))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "minutes": minutes,
+        "hp_restored": hp_restored,
+        "mp_restored": mp_restored
     }

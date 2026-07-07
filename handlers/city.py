@@ -38,7 +38,8 @@ from db import (
     get_sellable_equipment_items,
     sell_inventory_item_to_trader,
     get_item_by_inventory_id_full
-)
+,
+    process_passive_regeneration,)
 
 from keyboards import (
     city_kb,
@@ -244,6 +245,7 @@ def build_contracts_short_status(user_id):
 
 
 def build_main_menu_text(user_id):
+    process_passive_regeneration(user_id)
     location_id = get_current_location(user_id)
     location = LOCATIONS.get(location_id, LOCATIONS["start_path"])
 

@@ -16,7 +16,9 @@ from db import (
     CLASS_CONFIGS,
 
     has_class_change_available,
-    consume_class_change_available
+    consume_class_change_available,
+
+    process_passive_regeneration
 )
 
 from keyboards import main_kb
@@ -102,6 +104,7 @@ def build_class_selection_text(user_id, mode="register"):
 def continue_registration_or_main(bot, chat_id, user_id):
     init_character_class_system()
     create_user(user_id)
+    process_passive_regeneration(user_id)
 
     if needs_character_name(user_id):
         PENDING_CHARACTER_NAME.add(user_id)
