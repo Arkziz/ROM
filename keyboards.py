@@ -26,8 +26,8 @@ def profile_kb():
 
 def fight_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.add("⚔️ Атакувати", "🧪 Зілля")
-    kb.add("🏃 Втекти")
+    kb.add("⚔️ Атакувати", "✨ Навички")
+    kb.add("🧪 Зілля", "🏃 Втекти")
     return kb
 
 

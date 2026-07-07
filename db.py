@@ -7407,3 +7407,249 @@ def process_passive_regeneration(user_id):
         "hp_restored": hp_restored,
         "mp_restored": mp_restored
     }
+
+# ==============================
+# ✅ SAFE MP HELPERS / OVERRIDES
+# ==============================
+
+def refresh_user_mp(user_id):
+    """
+    Оновлює max_mp для mana-класів, але НЕ відновлює поточну MP до максимуму
+    при зміні екіпірування.
+
+    Правила:
+    - якщо персонаж не mana-клас — mp/max_mp = 0;
+    - якщо персонаж тільки вперше став mana-класом — mp = max_mp;
+    - якщо max_mp збільшився через екіпірування — поточна mp НЕ змінюється;
+    - якщо max_mp зменшився — поточна mp обрізається до нового максимуму.
+    """
+
+    init_character_class_system()
+
+    class_key = get_character_class(user_id)
+    resource_type = CLASS_CONFIGS.get(class_key, {}).get("resource", "")
+
+    if resource_type != "mana":
+        cursor.execute("""
+        UPDATE users
+        SET mp=0,
+            max_mp=0
+        WHERE user_id=?
+        """, (user_id,))
+
+        conn.commit()
+
+        return {
+            "mp": 0,
+            "max_mp": 0
+        }
+
+    new_max_mp = get_max_mp(user_id)
+
+    cursor.execute("""
+    SELECT mp, max_mp
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "mp": 0,
+            "max_mp": 0
+        }
+
+    current_mp, old_max_mp = row
+
+    current_mp = current_mp or 0
+    old_max_mp = old_max_mp or 0
+
+    # Перше отримання mana-класу
+    if old_max_mp <= 0 and current_mp <= 0:
+        current_mp = new_max_mp
+
+    # Якщо максимум зменшився — обрізати поточну ману
+    if current_mp > new_max_mp:
+        current_mp = new_max_mp
+
+    if current_mp < 0:
+        current_mp = 0
+
+    cursor.execute("""
+    UPDATE users
+    SET mp=?,
+        max_mp=?
+    WHERE user_id=?
+    """, (
+        current_mp,
+        new_max_mp,
+        user_id
+    ))
+
+    conn.commit()
+
+    return {
+        "mp": current_mp,
+        "max_mp": new_max_mp
+    }
+
+
+def get_user_mp(user_id):
+    refresh_user_mp(user_id)
+
+    cursor.execute("""
+    SELECT mp, max_mp
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return {
+            "mp": 0,
+            "max_mp": 0
+        }
+
+    mp, max_mp = row
+
+    return {
+        "mp": mp or 0,
+        "max_mp": max_mp or 0
+    }
+
+
+def set_user_mp(user_id, amount):
+    """
+    Безпечний запис MP.
+    """
+
+    mp_data = get_user_mp(user_id)
+    max_mp = mp_data.get("max_mp", 0)
+
+    try:
+        amount = int(amount)
+    except Exception:
+        amount = 0
+
+    if amount < 0:
+        amount = 0
+
+    if amount > max_mp:
+        amount = max_mp
+
+    cursor.execute("""
+    UPDATE users
+    SET mp=?
+    WHERE user_id=?
+    """, (
+        amount,
+        user_id
+    ))
+
+    conn.commit()
+
+    return {
+        "mp": amount,
+        "max_mp": max_mp
+    }
+
+
+def spend_user_mp(user_id, amount):
+    """
+    Витрата MP для навичок.
+    """
+
+    mp_data = get_user_mp(user_id)
+
+    current_mp = mp_data.get("mp", 0)
+    max_mp = mp_data.get("max_mp", 0)
+
+    try:
+        amount = int(amount)
+    except Exception:
+        amount = 0
+
+    if amount <= 0:
+        return {
+            "success": True,
+            "mp": current_mp,
+            "max_mp": max_mp
+        }
+
+    if current_mp < amount:
+        return {
+            "success": False,
+            "message": (
+                f"❌ Недостатньо мани.\n\n"
+                f"🔵 Потрібно: {amount} MP\n"
+                f"🔵 У тебе: {current_mp}/{max_mp} MP"
+            ),
+            "mp": current_mp,
+            "max_mp": max_mp
+        }
+
+    new_mp = current_mp - amount
+
+    cursor.execute("""
+    UPDATE users
+    SET mp=?
+    WHERE user_id=?
+    """, (
+        new_mp,
+        user_id
+    ))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "mp": new_mp,
+        "max_mp": max_mp
+    }
+
+# ==============================
+# ✅ RESTORE MP AFTER COMBAT
+# ==============================
+
+def restore_user_mp_to_full(user_id):
+    """
+    Повністю відновлює MP, якщо персонаж використовує ману.
+
+    Для не-mana класів нічого не робить.
+    """
+
+    init_character_class_system()
+
+    class_key = get_character_class(user_id)
+    resource_type = CLASS_CONFIGS.get(class_key, {}).get("resource", "")
+
+    if resource_type != "mana":
+        return {
+            "success": True,
+            "restored": False,
+            "mp": 0,
+            "max_mp": 0
+        }
+
+    mp_data = get_user_mp(user_id)
+    max_mp = mp_data.get("max_mp", 0)
+
+    cursor.execute("""
+    UPDATE users
+    SET mp=?
+    WHERE user_id=?
+    """, (
+        max_mp,
+        user_id
+    ))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "restored": True,
+        "mp": max_mp,
+        "max_mp": max_mp
+    }
