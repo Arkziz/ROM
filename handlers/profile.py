@@ -18,12 +18,17 @@ from db import (
     get_item_by_inventory_id_full,
     get_inventory_weapon_damage_display,
 
-    get_character_profile_summary
+    get_character_profile_summary,
+    get_character_class
 ,
-    process_passive_regeneration,)
+    process_passive_regeneration,
+    reset_daily_hunts_if_needed,)
 
 from keyboards import profile_kb, main_kb
 from utils import hp_bar
+
+# Імпортуємо навички з боєчного модуля, щоб показувати їх у профілі
+from handlers.combat import CLASS_SKILLS_V1
 
 
 # ==============================
@@ -38,6 +43,7 @@ def profile_inline_kb(active_tab="character"):
     - character
     - stats
     - equipment
+    - skills
 
     Поточна вкладка НЕ показується як кнопка.
     """
@@ -64,6 +70,13 @@ def profile_inline_kb(active_tab="character"):
             callback_data="profile_equipment"
         ))
 
+    if active_tab != "skills":
+        buttons.append(types.InlineKeyboardButton(
+            text="✨ Навички",
+            callback_data="profile_skills"
+        ))
+
+    # Розподіл кнопок по рядках
     if len(buttons) == 1:
         kb.add(buttons[0])
     elif len(buttons) == 2:
@@ -71,6 +84,9 @@ def profile_inline_kb(active_tab="character"):
     elif len(buttons) == 3:
         kb.add(buttons[0], buttons[1])
         kb.add(buttons[2])
+    elif len(buttons) == 4:
+        kb.add(buttons[0], buttons[1])
+        kb.add(buttons[2], buttons[3])
 
     return kb
 
@@ -128,6 +144,7 @@ def format_equipment_bonuses(b_str, b_dex, b_int, b_wis, b_sta, pdef, mdef):
 
 def build_character_text(user_id):
     process_passive_regeneration(user_id)
+    reset_daily_hunts_if_needed(user_id)
     stats = get_player_stats(user_id)
 
     if not stats:
@@ -149,11 +166,13 @@ def build_character_text(user_id):
         exp_to_next = progress["exp_to_next"]
         gold = progress["gold"]
         kills = progress["kills"]
+        daily_hunts = progress["daily_hunts"]
     else:
         exp = 0
         exp_to_next = 0
         gold = 0
         kills = 0
+        daily_hunts = 0
 
     exp_percent = 0
 
@@ -173,7 +192,7 @@ def build_character_text(user_id):
         f"🏆 Рівень: {lvl}\n"
         f"❤️ Здоров’я: {current_hp}/{max_hp}\n"
         f"{hp_bar(current_hp, max_hp)}\n"
-        f"🔋 Енергія полювання: {energy}/{max_energy}\n\n"
+        f"😴 Втома: {energy}/{max_energy}\n\n"
 
         f"— Характеристики —\n"
         f"💪 Сила: {str_}\n"
@@ -184,7 +203,8 @@ def build_character_text(user_id):
 
         f"— Прогрес —\n"
         f"✨ Досвід: {exp}/{exp_to_next} ({exp_percent:.1f}%)\n"
-        f"👹 Вбито мобів: {kills}\n\n"
+        f"👹 Вбито мобів: {kills}\n"
+        f"🎯 Кількість полювань: {daily_hunts}\n\n"
 
         f"— Гаманець —\n"
         f"💰 Золото: {gold:.2f}"
@@ -328,6 +348,37 @@ def build_equipment_text(user_id):
     return text
 
 
+def build_skills_text(user_id):
+    class_key = get_character_class(user_id)
+    skills = CLASS_SKILLS_V1.get(class_key, [])
+    profile_summary = get_character_profile_summary(user_id)
+    class_name = profile_summary.get("class_name", "Не обрано")
+    character_name = profile_summary.get("name") or "Без імені"
+
+    text = f"✨ Навички персонажа\n\n"
+    text += f"📝 Ім’я: {character_name}\n"
+    text += f"🧭 Клас: {class_name}\n\n"
+
+    if not skills:
+        text += "Немає доступних навичок"
+    else:
+        for i, skill in enumerate(skills):
+            text += f"{i+1}. {skill['name']}\n"
+            text += f"{skill['description']}\n"
+            if skill.get("cost"):
+                if skill["cost_type"] == "rage":
+                    text += f"💥 Вартість: {skill['cost']} Люті\n"
+                elif skill["cost_type"] == "combat_energy" or skill["cost_type"] == "combat_energy_combo":
+                    text += f"💥 Вартість: {skill['cost']} Енергії\n"
+                elif skill["cost_type"] == "mana":
+                    text += f"💧 Вартість: {skill['cost']} Мани\n"
+            if skill.get("cooldown", 0) > 0:
+                text += f"⏳ Перезарядка: {skill['cooldown']} ходів\n"
+            text += "\n"
+
+    return text
+
+
 # ==============================
 # HANDLERS
 # ==============================
@@ -378,6 +429,16 @@ def register_profile_handlers(bot):
             reply_markup=profile_inline_kb(active_tab="equipment")
         )
 
+    @bot.message_handler(func=lambda m: m.text == "✨ Навички")
+    def skills(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            build_skills_text(user_id),
+            reply_markup=profile_inline_kb(active_tab="skills")
+        )
+
     # ==============================
     # INLINE CALLBACKS
     # ==============================
@@ -416,6 +477,18 @@ def register_profile_handlers(bot):
             call.message.chat.id,
             build_equipment_text(user_id),
             reply_markup=profile_inline_kb(active_tab="equipment")
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "profile_skills")
+    def profile_skills_callback(call):
+        user_id = call.from_user.id
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            build_skills_text(user_id),
+            reply_markup=profile_inline_kb(active_tab="skills")
         )
 
     # ==============================

@@ -248,7 +248,7 @@ def register_dev_handlers(bot):
             f"📊 DEV Progress\n\n"
             f"🏆 Рівень: {level}\n"
             f"✨ EXP: {exp}/{exp_to_next} ({percent:.2f}%)\n"
-            f"🔋 Енергія: {energy}/{max_energy}\n"
+            f"😴 Втома: {energy}/{max_energy}\n"
             f"🪙 Золото: {gold:.2f}\n"
             f"👹 Вбито мобів: {kills}"
         )
@@ -482,7 +482,7 @@ def register_dev_handlers(bot):
             "📊 Прогрес:\n"
             "/progress\n\n"
 
-            "🔋 Енергія:\n"
+            "😴 Втома:\n"
             "/energy\n"
             "/energy N\n\n"
 

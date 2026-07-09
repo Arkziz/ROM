@@ -50,7 +50,7 @@ def create_worker_connection():
 
 def init_energy_columns(conn):
     migrations = [
-        ("users", "energy", "INTEGER DEFAULT 40"),
+        ("users", "energy", "INTEGER DEFAULT 0"),
         ("users", "last_energy_update", "TEXT DEFAULT ''"),
         ("users", "energy_full_notified", "INTEGER DEFAULT 1"),
     ]
@@ -64,15 +64,15 @@ def init_energy_columns(conn):
     conn.execute("""
     UPDATE users
     SET energy = ?
-    WHERE energy IS NULL OR energy > ?
-    """, (ENERGY_MAX, ENERGY_MAX))
+    WHERE energy IS NULL OR energy < 0
+    """, (0,))
 
-    conn.commit()
+    # Видалено небезпечне обнулення - це спричиняло помилки при регенерації energ
 
 
 def apply_energy_regen(conn, user_id):
     """
-    Повертає актуальну енергію з урахуванням регенерації.
+    Повертає актуальну Втому з урахуванням зниження (регенації).
     """
 
     init_energy_columns(conn)
@@ -92,7 +92,7 @@ def apply_energy_regen(conn, user_id):
     energy, last_update = row
 
     if energy is None:
-        energy = ENERGY_MAX
+        energy = 0
 
     now = datetime.now()
 
@@ -104,12 +104,12 @@ def apply_energy_regen(conn, user_id):
         except Exception:
             last_update_dt = now
 
-    if energy < ENERGY_MAX:
+    if energy > 0:
         diff_seconds = (now - last_update_dt).total_seconds()
         regen_units = int(diff_seconds // (ENERGY_REGEN_MINUTES * 60))
 
         if regen_units > 0:
-            energy = min(ENERGY_MAX, energy + regen_units)
+            energy = max(0, energy - regen_units)
             last_update_dt = last_update_dt + timedelta(
                 minutes=regen_units * ENERGY_REGEN_MINUTES
             )
@@ -127,21 +127,7 @@ def apply_energy_regen(conn, user_id):
 
             conn.commit()
 
-    else:
-        energy = ENERGY_MAX
-
-        conn.execute("""
-        UPDATE users
-        SET energy=?,
-            last_energy_update=?
-        WHERE user_id=?
-        """, (
-            ENERGY_MAX,
-            now.isoformat(),
-            user_id
-        ))
-
-        conn.commit()
+    # Коли energy == 0, не потрібно оновлювати таймер (він вже на 0)
 
     return {
         "energy": energy,
@@ -151,7 +137,7 @@ def apply_energy_regen(conn, user_id):
 
 def get_users_for_energy_full_notification_worker(conn):
     """
-    Повертає user_id гравців, у яких енергія стала повною,
+    Повертає user_id гравців, у яких Втома стала 0 (повністю відновлено),
     але повідомлення ще не надсилалося.
     """
 
@@ -179,7 +165,7 @@ def get_users_for_energy_full_notification_worker(conn):
 
         notified = notified_row[0] if notified_row else 0
 
-        if energy >= max_energy and not notified:
+        if energy <= 0 and not notified:
             notify_users.append(user_id)
 
             conn.execute("""
@@ -188,7 +174,7 @@ def get_users_for_energy_full_notification_worker(conn):
             WHERE user_id=?
             """, (user_id,))
 
-        elif energy < max_energy and notified:
+        elif energy > 0 and notified:
             conn.execute("""
             UPDATE users
             SET energy_full_notified=0
@@ -452,8 +438,8 @@ def notify_energy_full(bot_instance, conn):
             bot_instance.send_message(
                 user_id,
                 (
-                    "🔋 Енергія повністю відновлена!\n\n"
-                    "Ти знову маєш повний запас енергії.\n"
+                    "😴 Втома повністю пройшла!\n\n"
+                    "Ти знову повний сил.\n"
                     "Можна вирушати на полювання."
                 )
             )

@@ -295,7 +295,7 @@ def build_main_menu_text(user_id):
 
         f"👤 Твій рівень: {lvl}\n"
         f"❤️ Здоров’я: {current_hp}/{max_hp}\n"
-        f"🔋 Енергія: {energy}/{max_energy}\n"
+        f"😴 Втома: {energy}/{max_energy}\n"
         f"🎒 Сумка: {used_slots}/{capacity}\n"
         f"{contracts_text}\n"
 
@@ -473,7 +473,7 @@ def build_common_equipment_slot_choice_text(user_id, slot_key):
         description = (
             "Оберіть конкретний тип базової зброї.\n\n"
             "Фізична зброя використовує STR або DEX.\n"
-            "Магічна зброя використовує INT/WIS і магічний урон.\n"
+            "Магічна зброя використовує INT/WIS і магічна шкода.\n"
             "Дворучна зброя блокує другу руку."
         )
     elif slot_key == "off_hand":

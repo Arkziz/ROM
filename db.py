@@ -145,12 +145,14 @@ def init_db():
         ("users", "daily_contracts_completed", "INTEGER DEFAULT 0"),
         ("users", "daily_contract_date", "TEXT DEFAULT ''"),
 
-        ("users", "energy", "INTEGER DEFAULT 40"),
+        ("users", "energy", "INTEGER DEFAULT 0"),
         ("users", "last_energy_update", "TEXT DEFAULT ''"),
         ("users", "energy_full_notified", "INTEGER DEFAULT 1"),
 
         ("users", "last_hp_regen_update", "TEXT DEFAULT ''"),
         ("users", "hp_full_notified", "INTEGER DEFAULT 1"),
+        ("users", "daily_hunts", "INTEGER DEFAULT 0"),
+        ("users", "daily_hunts_date", "TEXT DEFAULT ''"),
     ]
 
     for table, column, column_type in migrations:
@@ -1009,14 +1011,29 @@ def equip_inventory_item(user_id, inventory_id):
             f"👤 Твій рівень: {player_level}"
         )
 
-    if not slot_key:
-        return "❌ Для цього предмета не вказано слот"
+        if not slot_key:
+            return "❌ Для цього предмета не вказано слот"
 
-    if slot_key not in EQUIPMENT_SLOTS:
-        return "❌ Невідомий слот екіпірування"
+        if slot_key not in EQUIPMENT_SLOTS:
+            return "❌ Невідомий слот екіпірування"
 
-    if slot_key == "off_hand" and is_main_hand_two_handed(user_id):
-        return "❌ Неможливо: дворучна зброя блокує другу руку"
+        # ==============================
+        # ✅ CLASS EQUIPMENT RESTRICTION CHECK
+        # ==============================
+
+        class_check = can_equip_inventory_item_by_class(
+            user_id=user_id,
+            inventory_id=inventory_id
+        )
+
+        if not class_check.get("success"):
+            return class_check.get(
+                "message",
+                "❌ Цей предмет не підходить твоєму класу."
+            )
+
+        if slot_key == "off_hand" and is_main_hand_two_handed(user_id):
+            return "❌ Неможливо: дворучна зброя блокує другу руку"
 
     if slot_key == "main_hand" and weapon_hands == 2:
         unequip_slot(user_id, "off_hand")
@@ -1385,7 +1402,7 @@ def get_wallet(user_id):
 
 def get_user_progress(user_id):
     cursor.execute("""
-    SELECT level, exp, gold, kills
+    SELECT level, exp, gold, kills, daily_hunts
     FROM users
     WHERE user_id=?
     """, (user_id,))
@@ -1395,14 +1412,15 @@ def get_user_progress(user_id):
     if not row:
         return None
 
-    level, exp, gold, kills = row
+    level, exp, gold, kills, daily_hunts = row
 
     return {
         "level": level,
         "exp": exp,
         "exp_to_next": get_exp_to_next_level(level),
         "gold": gold,
-        "kills": kills
+        "kills": kills,
+        "daily_hunts": daily_hunts or 0
     }
 
 
@@ -2462,14 +2480,35 @@ def get_common_equipment_price_for_slot(item_level, slot_key):
     return round(max(1.0, item_level * multiplier), 2)
 
 
-def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_key):
+def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_key, item_profile=None):
     init_dynamic_equipment_system()
+    init_weapon_damage_system()
+    init_class_equipment_restrictions_system()
 
     if slot_key not in SLOT_ORDER:
         return {
             "success": False,
             "message": "❌ Невідомий слот спорядження."
         }
+
+    if slot_key == "main_hand" and item_profile not in MAIN_HAND_PROFILES:
+        return {
+            "success": False,
+            "message": "❌ Невідомий тип зброї."
+        }
+
+    if slot_key == "off_hand" and item_profile not in OFF_HAND_PROFILES:
+        return {
+            "success": False,
+            "message": "❌ Невідомий тип предмета для другої руки."
+        }
+
+    if slot_key in ["main_hand", "off_hand"]:
+        if not is_shop_profile_allowed_for_user(user_id, slot_key, item_profile):
+            return {
+                "success": False,
+                "message": "❌ Цей предмет не підходить твоєму класу."
+            }
 
     item_level = int(item_level)
     item_level = max(1, item_level)
@@ -2487,20 +2526,30 @@ def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_k
             "message": "🎒 Сумка переповнена. Предмет не куплено."
         }
 
+    item_profile = get_profile_for_generated_item(slot_key, item_profile)
+
     weapon_hands = 1
+    weapon_attack_type = ""
+    armor_type = ""
 
     if slot_key == "main_hand":
-        weapon_hands = 2 if random.random() < 0.35 else 1
-        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands)
+        profile = MAIN_HAND_PROFILES[item_profile]
+        weapon_hands = profile["hands"]
+        weapon_attack_type = profile["attack_type"]
+        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands, item_profile)
         type_ = "weapon"
 
     elif slot_key == "off_hand":
+        profile = OFF_HAND_PROFILES[item_profile]
         weapon_hands = 1
-        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands)
+        weapon_attack_type = profile["attack_type"]
+        name = get_dynamic_weapon_name(slot_key, rarity, weapon_hands, item_profile)
         type_ = "offhand"
 
     else:
+        item_profile = ""
         weapon_hands = 1
+        armor_type = get_shop_armor_type_for_user(user_id)
         name = get_dynamic_armor_name(slot_key, rarity)
         type_ = slot_key
 
@@ -2510,10 +2559,36 @@ def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_k
         slot_key=slot_key,
         item_level=item_level,
         rarity=rarity,
-        weapon_hands=weapon_hands
+        weapon_hands=weapon_hands,
+        item_profile=item_profile
     )
 
+    if is_armor_slot(slot_key):
+        stats = apply_armor_type_defense_profile_to_stats(
+            stats=stats,
+            armor_type=armor_type
+        )
+
     sell_price = get_dynamic_sell_price(item_level, rarity)
+
+    weapon_min_damage = 0
+    weapon_max_damage = 0
+    weapon_min_magic_damage = 0
+    weapon_max_magic_damage = 0
+
+    if slot_key == "main_hand":
+        min_dmg, max_dmg = calculate_weapon_damage_by_values(
+            item_level=item_level,
+            rarity=rarity,
+            weapon_hands=weapon_hands
+        )
+
+        if weapon_attack_type == "magical":
+            weapon_min_magic_damage = min_dmg
+            weapon_max_magic_damage = max_dmg
+        else:
+            weapon_min_damage = min_dmg
+            weapon_max_damage = max_dmg
 
     cursor.execute("""
     INSERT INTO items (
@@ -2533,9 +2608,16 @@ def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_k
         pdef,
         mdef,
         item_level,
-        is_generated
+        is_generated,
+        item_subtype,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type,
+        armor_type
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         name,
         type_,
@@ -2553,7 +2635,14 @@ def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_k
         stats["pdef"],
         stats["mdef"],
         item_level,
-        1
+        1,
+        item_profile,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type,
+        armor_type
     ))
 
     item_id = cursor.lastrowid
@@ -2583,9 +2672,10 @@ def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_k
         "item_id": item_id,
         "inventory_id": inventory_id,
         "slot_key": slot_key,
-        "item_level": item_level
+        "item_level": item_level,
+        "armor_type": armor_type,
+        "item_subtype": item_profile
     }
-
 
 def get_common_equipment_shop_offer(user_id):
     player_level = get_player_level(user_id)
@@ -2895,6 +2985,33 @@ def reset_daily_contracts_if_needed(user_id):
         DELETE FROM user_active_contracts
         WHERE user_id=?
         """, (user_id,))
+
+        conn.commit()
+
+
+def reset_daily_hunts_if_needed(user_id):
+    today = get_today_str()
+
+    cursor.execute("""
+    SELECT daily_hunts_date
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return
+
+    current_date = row[0] or ""
+
+    if current_date != today:
+        cursor.execute("""
+        UPDATE users
+        SET daily_hunts=0,
+            daily_hunts_date=?
+        WHERE user_id=?
+        """, (today, user_id))
 
         conn.commit()
 
@@ -3290,7 +3407,7 @@ ENERGY_REGEN_MINUTES = 5
 
 def init_energy_system():
     migrations = [
-        ("users", "energy", "INTEGER DEFAULT 40"),
+        ("users", "energy", "INTEGER DEFAULT 0"),
         ("users", "last_energy_update", "TEXT DEFAULT ''"),
         ("users", "energy_full_notified", "INTEGER DEFAULT 1"),
     ]
@@ -3304,16 +3421,16 @@ def init_energy_system():
     cursor.execute("""
     UPDATE users
     SET energy_full_notified = 1
-    WHERE energy IS NULL OR energy >= ?
-    """, (ENERGY_MAX,))
+    WHERE energy IS NULL OR energy <= 0
+    """)
 
     cursor.execute("""
     UPDATE users
     SET energy = ?
-    WHERE energy IS NULL OR energy > ?
-    """, (ENERGY_MAX, ENERGY_MAX))
+    WHERE energy IS NULL OR energy < 0
+    """, (0,))
 
-    conn.commit()
+    # Видалено небезпечне обнулення - це спричиняло проблеми при регенерації
 
 
 def get_user_energy(user_id):
@@ -3339,7 +3456,7 @@ def get_user_energy(user_id):
     energy, last_update = row
 
     if energy is None:
-        energy = ENERGY_MAX
+        energy = 0
 
     now = datetime.now()
 
@@ -3351,12 +3468,12 @@ def get_user_energy(user_id):
         except Exception:
             last_update_dt = now
 
-    if energy < ENERGY_MAX:
+    if energy > 0:
         diff_seconds = (now - last_update_dt).total_seconds()
         regen_units = int(diff_seconds // (ENERGY_REGEN_MINUTES * 60))
 
         if regen_units > 0:
-            energy = min(ENERGY_MAX, energy + regen_units)
+            energy = max(0, energy - regen_units)
             last_update_dt = last_update_dt + timedelta(
                 minutes=regen_units * ENERGY_REGEN_MINUTES
             )
@@ -3369,18 +3486,9 @@ def get_user_energy(user_id):
 
             conn.commit()
 
-    else:
-        cursor.execute("""
-        UPDATE users
-        SET energy=?, last_energy_update=?
-        WHERE user_id=?
-        """, (ENERGY_MAX, now.isoformat(), user_id))
-
-        conn.commit()
-
     next_energy_minutes = ENERGY_REGEN_MINUTES
 
-    if energy < ENERGY_MAX:
+    if energy > 0:
         elapsed_seconds = (now - last_update_dt).total_seconds()
         remaining_seconds = (ENERGY_REGEN_MINUTES * 60) - elapsed_seconds
         next_energy_minutes = max(1, int(remaining_seconds // 60) + 1)
@@ -3395,31 +3503,39 @@ def get_user_energy(user_id):
 def consume_energy_for_hunt(user_id):
     from datetime import datetime
 
+    reset_daily_hunts_if_needed(user_id)
     energy_data = get_user_energy(user_id)
     energy = energy_data["energy"]
 
-    if energy <= 0:
+    if energy >= ENERGY_MAX:
         return {
             "success": False,
-            "energy": 0,
+            "energy": ENERGY_MAX,
             "max_energy": ENERGY_MAX,
             "message": (
-                "😴 Герой виснажений і не може полювати.\n\n"
-                "Потрібно відпочити та дочекатися відновлення енергії.\n"
-                f"⏳ Наступна енергія приблизно через: "
+                "😴 Герой дуже втомлений і не може полювати.\n\n"
+                "Потрібно відпочити та дочекатися зниження втоми.\n"
+                f"⏳ Наступне зменшення втоми приблизно через: "
                 f"{energy_data['next_energy_minutes']} хв."
             )
         }
 
-    new_energy = energy - 1
+    new_energy = energy + 1
 
     cursor.execute("""
     UPDATE users
     SET energy=?,
         last_energy_update=?,
-        energy_full_notified=0
+        energy_full_notified=0,
+        daily_hunts=daily_hunts + 1,
+        daily_hunts_date=?
     WHERE user_id=?
-    """, (new_energy, datetime.now().isoformat(), user_id))
+    """, (
+        new_energy,
+        datetime.now().isoformat(),
+        get_today_str(),
+        user_id
+    ))
 
     conn.commit()
 
@@ -3431,7 +3547,7 @@ def consume_energy_for_hunt(user_id):
     }
 
 
-def restore_energy_for_test(user_id, amount=ENERGY_MAX):
+def restore_energy_for_test(user_id, amount=0):
     from datetime import datetime
 
     init_energy_system()
@@ -3439,7 +3555,7 @@ def restore_energy_for_test(user_id, amount=ENERGY_MAX):
     try:
         amount = int(amount)
     except Exception:
-        amount = ENERGY_MAX
+        amount = 0
 
     amount = max(0, min(ENERGY_MAX, amount))
     notified = 0
@@ -3458,7 +3574,7 @@ def restore_energy_for_test(user_id, amount=ENERGY_MAX):
         "success": True,
         "energy": amount,
         "max_energy": ENERGY_MAX,
-        "message": f"✅ DEV: енергію встановлено {amount}/{ENERGY_MAX}"
+        "message": f"✅ DEV: втому встановлено {amount}/{ENERGY_MAX}"
     }
 
 
@@ -3489,7 +3605,7 @@ def get_users_for_energy_full_notification():
         notified_row = cursor.fetchone()
         notified = notified_row[0] if notified_row else 0
 
-        if energy >= max_energy and not notified:
+        if energy <= 0 and not notified:
             notify_users.append(user_id)
 
             cursor.execute("""
@@ -3498,7 +3614,7 @@ def get_users_for_energy_full_notification():
             WHERE user_id=?
             """, (user_id,))
 
-        elif energy < max_energy and notified:
+        elif energy > 0 and notified:
             cursor.execute("""
             UPDATE users
             SET energy_full_notified=0
@@ -3522,6 +3638,8 @@ def init_hp_regen_system():
     migrations = [
         ("users", "last_hp_regen_update", "TEXT DEFAULT ''"),
         ("users", "hp_full_notified", "INTEGER DEFAULT 1"),
+        ("users", "daily_hunts", "INTEGER DEFAULT 0"),
+        ("users", "daily_hunts_date", "TEXT DEFAULT ''"),
     ]
 
     for table, column, column_type in migrations:
@@ -3666,6 +3784,25 @@ def get_users_for_hp_full_notification():
     conn.commit()
 
     return notify_users
+
+
+def get_current_hp_raw(user_id):
+    """Отримати поточне HP без застосування регенерації (для бою тощо)."""
+    init_hp_regen_system()
+    cursor.execute("""
+    SELECT hp
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+    row = cursor.fetchone()
+    max_hp = get_max_hp(user_id)
+
+    if not row or row[0] is None:
+        return max_hp
+
+    hp = int(row[0])
+    hp = max(0, min(max_hp, hp))
+    return hp
 
 
 def get_current_hp(user_id):
@@ -4304,7 +4441,7 @@ def get_weapon_damage_by_inventory_id(inventory_id):
             "physical_max": 0,
             "magic_min": min_dmg,
             "magic_max": max_dmg,
-            "text": f"🔮 Маг. урон: {min_dmg}-{max_dmg}"
+            "text": f"🔮 Маг. шкода: {min_dmg}-{max_dmg}"
         }
 
     if weapon_min_damage and weapon_max_damage:
@@ -4324,7 +4461,7 @@ def get_weapon_damage_by_inventory_id(inventory_id):
         "physical_max": max_dmg,
         "magic_min": 0,
         "magic_max": 0,
-        "text": f"⚔️ Урон: {min_dmg}-{max_dmg}"
+        "text": f"⚔️ Шкода: {min_dmg}-{max_dmg}"
     }
 
 
@@ -4962,7 +5099,7 @@ def get_weapon_damage_by_inventory_id(inventory_id):
             "physical_max": 0,
             "magic_min": min_dmg,
             "magic_max": max_dmg,
-            "text": f"🔮 Маг. урон: {min_dmg}-{max_dmg}"
+            "text": f"🔮 Маг. шкода: {min_dmg}-{max_dmg}"
         }
 
     if weapon_min_damage and weapon_max_damage:
@@ -4982,7 +5119,7 @@ def get_weapon_damage_by_inventory_id(inventory_id):
         "physical_max": max_dmg,
         "magic_min": 0,
         "magic_max": 0,
-        "text": f"⚔️ Урон: {min_dmg}-{max_dmg}"
+        "text": f"⚔️ Шкода: {min_dmg}-{max_dmg}"
     }
 
 
@@ -5321,35 +5458,38 @@ def get_common_equipment_shop_suboffers(user_id, slot_key):
     price = get_common_equipment_price_for_slot(player_level, slot_key)
 
     if slot_key == "main_hand":
+        allowed_profiles = get_allowed_shop_main_hand_profiles(user_id)
+
         return [
             {
                 "slot_key": slot_key,
                 "profile_key": profile_key,
-                "name": profile["name"],
-                "hands": profile["hands"],
-                "attack_type": profile["attack_type"],
+                "name": MAIN_HAND_PROFILES[profile_key]["name"],
+                "hands": MAIN_HAND_PROFILES[profile_key]["hands"],
+                "attack_type": MAIN_HAND_PROFILES[profile_key]["attack_type"],
                 "item_level": player_level,
                 "price": price
             }
-            for profile_key, profile in MAIN_HAND_PROFILES.items()
+            for profile_key in allowed_profiles
         ]
 
     if slot_key == "off_hand":
+        allowed_profiles = get_allowed_shop_off_hand_profiles(user_id)
+
         return [
             {
                 "slot_key": slot_key,
                 "profile_key": profile_key,
-                "name": profile["name"],
+                "name": OFF_HAND_PROFILES[profile_key]["name"],
                 "hands": 1,
-                "attack_type": profile["attack_type"],
+                "attack_type": OFF_HAND_PROFILES[profile_key]["attack_type"],
                 "item_level": player_level,
                 "price": price
             }
-            for profile_key, profile in OFF_HAND_PROFILES.items()
+            for profile_key in allowed_profiles
         ]
 
     return []
-
 
 def buy_common_equipment_from_trader(user_id, slot_key, item_profile=None):
     if slot_key not in SLOT_ORDER:
@@ -6156,6 +6296,7 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
 
     init_dynamic_equipment_system()
     init_weapon_damage_system()
+    init_class_equipment_restrictions_system()
     init_shop_preview_system()
 
     cleanup_shop_previews_for_user(user_id)
@@ -6178,6 +6319,13 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
             "message": "❌ Невідомий тип предмета для другої руки."
         }
 
+    if slot_key in ["main_hand", "off_hand"]:
+        if not is_shop_profile_allowed_for_user(user_id, slot_key, item_profile):
+            return {
+                "success": False,
+                "message": "❌ Цей предмет не підходить твоєму класу."
+            }
+
     player_level = get_player_level(user_id)
     item_level = player_level
     rarity = "common"
@@ -6187,6 +6335,7 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
 
     weapon_hands = 1
     weapon_attack_type = ""
+    armor_type = ""
 
     if slot_key == "main_hand":
         profile = MAIN_HAND_PROFILES[item_profile]
@@ -6205,6 +6354,7 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
     else:
         item_profile = ""
         weapon_hands = 1
+        armor_type = get_shop_armor_type_for_user(user_id)
         name = get_dynamic_armor_name(slot_key, rarity)
         type_ = slot_key
 
@@ -6217,6 +6367,12 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
         weapon_hands=weapon_hands,
         item_profile=item_profile
     )
+
+    if is_armor_slot(slot_key):
+        stats = apply_armor_type_defense_profile_to_stats(
+            stats=stats,
+            armor_type=armor_type
+        )
 
     sell_price = get_dynamic_sell_price(item_level, rarity)
 
@@ -6264,10 +6420,11 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
         weapon_min_magic_damage,
         weapon_max_magic_damage,
         weapon_attack_type,
+        armor_type,
         shop_preview_owner,
         shop_preview_price
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         name,
         type_,
@@ -6292,6 +6449,7 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
         weapon_min_magic_damage,
         weapon_max_magic_damage,
         weapon_attack_type,
+        armor_type,
         user_id,
         price
     ))
@@ -6303,9 +6461,10 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
         "success": True,
         "item_id": item_id,
         "price": price,
-        "name": name
+        "name": name,
+        "armor_type": armor_type,
+        "item_subtype": item_profile
     }
-
 
 def get_shop_preview_item(item_id, user_id):
     init_shop_preview_system()
@@ -6498,9 +6657,9 @@ def get_shop_preview_weapon_damage_text(item_id):
         return None
 
     if weapon_attack_type == "magical":
-        return f"🔮 Маг. урон: {weapon_min_magic_damage}-{weapon_max_magic_damage}"
+        return f"🔮 Маг. шкода: {weapon_min_magic_damage}-{weapon_max_magic_damage}"
 
-    return f"⚔️ Урон: {weapon_min_damage}-{weapon_max_damage}"
+    return f"⚔️ Шкода: {weapon_min_damage}-{weapon_max_damage}"
 
 # ==============================
 # ✅ CHARACTER NAME / CLASS / MP SYSTEM
@@ -6547,7 +6706,7 @@ CLASS_CONFIGS = {
         "name": "🔮 Маг",
         "resource": "mana",
         "description": (
-            "Магічний боєць із високим вибуховим уроном.\n"
+            "Магічний боєць із високим вибуховою шкодою.\n"
             "Основні характеристики: Інтелект, Мудрість.\n"
             "Ресурс у бою: 🔵 Мана."
         )
@@ -6851,7 +7010,7 @@ def refresh_user_mp(user_id):
     row = cursor.fetchone()
     current_mp = row[0] if row else max_mp
 
-    if current_mp is None or current_mp <= 0:
+    if current_mp is None:
         current_mp = max_mp
 
     if current_mp > max_mp:
@@ -7653,3 +7812,603 @@ def restore_user_mp_to_full(user_id):
         "mp": max_mp,
         "max_mp": max_mp
     }
+
+# ==============================
+# ✅ CLASS EQUIPMENT RESTRICTIONS V1
+# ==============================
+
+ARMOR_SLOTS = [
+    "helmet",
+    "shoulders",
+    "chest",
+    "gloves",
+    "legs",
+    "boots"
+]
+
+
+ARMOR_ALLOWED_BY_CLASS = {
+    "mage": "cloth",
+    "priest": "cloth",
+
+    "scout": "leather",
+    "rogue": "leather",
+
+    "warrior": "chain",
+    "knight": "plate"
+}
+
+
+MAIN_HAND_ALLOWED_BY_CLASS = {
+    "mage": ["wand_1h", "staff_2h"],
+    "priest": ["wand_1h", "staff_2h"],
+
+    "scout": ["bow_2h", "crossbow_2h"],
+    "rogue": ["dagger_1h"],
+
+    "warrior": ["sword_1h", "sword_2h"],
+    "knight": ["sword_1h"]
+}
+
+
+OFF_HAND_ALLOWED_BY_CLASS = {
+    "mage": ["talisman"],
+    "priest": ["talisman"],
+
+    "scout": [],
+    "rogue": ["dagger"],
+
+    "warrior": [],
+    "knight": ["shield"]
+}
+
+
+ARMOR_TYPE_LABELS = {
+    "cloth": "Тканина",
+    "leather": "Шкіра",
+    "chain": "Кольчуга",
+    "plate": "Лати",
+    "": "Універсальний"
+}
+
+
+ITEM_SUBTYPE_LABELS = {
+    "sword_1h": "Одноручний меч",
+    "sword_2h": "Дворучний меч",
+    "dagger_1h": "Кинджал",
+    "wand_1h": "Жезл",
+    "staff_2h": "Дворучний посох",
+    "bow_2h": "Лук",
+    "crossbow_2h": "Арбалет",
+
+    "shield": "Щит",
+    "talisman": "Магічний талісман",
+    "dagger": "Кинджал для другої руки",
+
+    "": "Універсальний"
+}
+
+
+def init_class_equipment_restrictions_system():
+    """
+    Додає службове поле armor_type для класових обмежень броні.
+
+    weapon_family окремо НЕ додаємо.
+    У поточній системі роль weapon_family виконує items.item_subtype.
+    """
+
+    migrations = [
+        ("items", "armor_type", "TEXT DEFAULT ''"),
+    ]
+
+    for table, column, column_type in migrations:
+        try:
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
+
+    conn.commit()
+
+
+def normalize_equipment_restriction_value(value):
+    if value is None:
+        return ""
+
+    return str(value).strip()
+
+
+def is_armor_slot(slot_key):
+    return slot_key in ARMOR_SLOTS
+
+
+def get_armor_type_label(armor_type):
+    armor_type = normalize_equipment_restriction_value(armor_type)
+    return ARMOR_TYPE_LABELS.get(armor_type, armor_type or "Універсальний")
+
+
+def get_item_subtype_label(item_subtype):
+    item_subtype = normalize_equipment_restriction_value(item_subtype)
+    return ITEM_SUBTYPE_LABELS.get(item_subtype, item_subtype or "Універсальний")
+
+
+def get_class_display_name_by_key(class_key):
+    try:
+        config = CLASS_CONFIGS.get(class_key, {})
+        return config.get("name", class_key or "Не обрано")
+    except Exception:
+        return class_key or "Не обрано"
+
+
+def get_allowed_armor_type_for_class(class_key):
+    return ARMOR_ALLOWED_BY_CLASS.get(class_key, "")
+
+
+def get_allowed_main_hand_subtypes_for_class(class_key):
+    return MAIN_HAND_ALLOWED_BY_CLASS.get(class_key, [])
+
+
+def get_allowed_off_hand_subtypes_for_class(class_key):
+    return OFF_HAND_ALLOWED_BY_CLASS.get(class_key, [])
+
+
+def format_allowed_armor_for_class(class_key):
+    armor_type = get_allowed_armor_type_for_class(class_key)
+
+    if not armor_type:
+        return "немає"
+
+    return get_armor_type_label(armor_type)
+
+
+def format_allowed_main_hand_for_class(class_key):
+    allowed = get_allowed_main_hand_subtypes_for_class(class_key)
+
+    if not allowed:
+        return "немає"
+
+    return ", ".join(get_item_subtype_label(value) for value in allowed)
+
+
+def format_allowed_off_hand_for_class(class_key):
+    allowed = get_allowed_off_hand_subtypes_for_class(class_key)
+
+    if not allowed:
+        return "немає предметів для другої руки"
+
+    return ", ".join(get_item_subtype_label(value) for value in allowed)
+
+
+def get_item_classification_by_inventory_id(inventory_id):
+    """
+    Повертає класифікацію предмета для перевірки класових обмежень.
+
+    Використовує:
+    - items.armor_type для броні;
+    - items.item_subtype для зброї / off-hand.
+    """
+
+    init_class_equipment_restrictions_system()
+    init_dynamic_equipment_system()
+    init_weapon_damage_system()
+
+    cursor.execute("""
+    SELECT
+        inventory.id,
+        inventory.item_id,
+        items.name,
+        items.type,
+        items.rarity,
+        items.category,
+        items.slot_key,
+        items.weapon_hands,
+        inventory.quantity,
+        inventory.durability,
+        items.armor_type,
+        items.item_subtype,
+        items.weapon_attack_type
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.id=?
+    """, (inventory_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return None
+
+    (
+        inv_id,
+        item_id,
+        name,
+        type_,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        quantity,
+        durability,
+        armor_type,
+        item_subtype,
+        weapon_attack_type
+    ) = row
+
+    return {
+        "inventory_id": inv_id,
+        "item_id": item_id,
+        "name": name,
+        "type": type_,
+        "rarity": rarity,
+        "category": category,
+        "slot_key": slot_key,
+        "weapon_hands": int(weapon_hands or 1),
+        "quantity": quantity,
+        "durability": durability,
+        "armor_type": normalize_equipment_restriction_value(armor_type),
+        "item_subtype": normalize_equipment_restriction_value(item_subtype),
+        "weapon_attack_type": normalize_equipment_restriction_value(weapon_attack_type)
+    }
+
+
+def check_armor_compatibility_for_class(class_key, item_info):
+    slot_key = item_info.get("slot_key", "")
+
+    if not is_armor_slot(slot_key):
+        return {
+            "success": True,
+            "message": ""
+        }
+
+    armor_type = normalize_equipment_restriction_value(
+        item_info.get("armor_type", "")
+    )
+
+    # Старі предмети без armor_type залишаються універсальними.
+    if not armor_type:
+        return {
+            "success": True,
+            "message": ""
+        }
+
+    allowed_armor_type = get_allowed_armor_type_for_class(class_key)
+
+    if armor_type == allowed_armor_type:
+        return {
+            "success": True,
+            "message": ""
+        }
+
+    class_name = get_class_display_name_by_key(class_key)
+    allowed_label = get_armor_type_label(allowed_armor_type)
+    item_label = get_armor_type_label(armor_type)
+
+    return {
+        "success": False,
+        "message": (
+            f"❌ Цей тип броні не підходить твоєму класу.\n\n"
+            f"Твій клас: {class_name}\n"
+            f"Дозволена броня: {allowed_label}\n"
+            f"Предмет: {item_label}"
+        )
+    }
+
+
+def check_main_hand_compatibility_for_class(class_key, item_info):
+    slot_key = item_info.get("slot_key", "")
+
+    if slot_key != "main_hand":
+        return {
+            "success": True,
+            "message": ""
+        }
+
+    item_subtype = normalize_equipment_restriction_value(
+        item_info.get("item_subtype", "")
+    )
+
+    # Старі предмети без item_subtype залишаються універсальними.
+    if not item_subtype:
+        return {
+            "success": True,
+            "message": ""
+        }
+
+    allowed = get_allowed_main_hand_subtypes_for_class(class_key)
+
+    if item_subtype in allowed:
+        return {
+            "success": True,
+            "message": ""
+        }
+
+    class_name = get_class_display_name_by_key(class_key)
+    allowed_text = format_allowed_main_hand_for_class(class_key)
+    item_label = get_item_subtype_label(item_subtype)
+
+    return {
+        "success": False,
+        "message": (
+            f"❌ Цю зброю не може використовувати твій клас.\n\n"
+            f"Твій клас: {class_name}\n"
+            f"Дозволена зброя: {allowed_text}\n"
+            f"Предмет: {item_label}"
+        )
+    }
+
+
+def check_off_hand_compatibility_for_class(class_key, item_info):
+    slot_key = item_info.get("slot_key", "")
+
+    if slot_key != "off_hand":
+        return {
+            "success": True,
+            "message": ""
+        }
+
+    item_subtype = normalize_equipment_restriction_value(
+        item_info.get("item_subtype", "")
+    )
+
+    # Старі предмети без item_subtype залишаються універсальними.
+    if not item_subtype:
+        return {
+            "success": True,
+            "message": ""
+        }
+
+    allowed = get_allowed_off_hand_subtypes_for_class(class_key)
+
+    if item_subtype in allowed:
+        return {
+            "success": True,
+            "message": ""
+        }
+
+    class_name = get_class_display_name_by_key(class_key)
+    allowed_text = format_allowed_off_hand_for_class(class_key)
+    item_label = get_item_subtype_label(item_subtype)
+
+    return {
+        "success": False,
+        "message": (
+            f"❌ Цей предмет для другої руки не підходить твоєму класу.\n\n"
+            f"Твій клас: {class_name}\n"
+            f"Дозволено: {allowed_text}\n"
+            f"Предмет: {item_label}"
+        )
+    }
+
+
+def check_two_handed_conflict_for_equip(user_id, item_info):
+    """
+    Перевіряє тільки випадок:
+    - гравець хоче вдягнути off_hand;
+    - але main_hand уже зайнятий дворучною зброєю.
+
+    Випадок, коли гравець вдягає дворучну зброю і треба зняти off_hand,
+    обробляється у старій equip-логіці окремо.
+    """
+
+    slot_key = item_info.get("slot_key", "")
+
+    if slot_key != "off_hand":
+        return {
+            "success": True,
+            "message": ""
+        }
+
+    main_hand_item = get_main_hand_item(user_id)
+
+    if not main_hand_item:
+        return {
+            "success": True,
+            "message": ""
+        }
+
+    try:
+        (
+            inv_id,
+            item_id,
+            name,
+            type_,
+            rarity,
+            category,
+            slot_key,
+            weapon_hands,
+            quantity,
+            max_stack,
+            durability,
+            b_str,
+            b_dex,
+            b_int,
+            b_wis,
+            b_sta,
+            pdef,
+            mdef,
+            sell_price
+        ) = main_hand_item
+    except Exception:
+        return {
+            "success": True,
+            "message": ""
+        }
+
+    if int(weapon_hands or 1) == 2:
+        return {
+            "success": False,
+            "message": (
+                f"❌ Неможливо вдягнути предмет у другу руку.\n\n"
+                f"У тебе вже вдягнена дворучна зброя:\n"
+                f"{name}"
+            )
+        }
+
+    return {
+        "success": True,
+        "message": ""
+    }
+
+
+def can_equip_item_by_class(user_id, item_info):
+    """
+    Центральна перевірка класової сумісності.
+
+    item_info — dict з get_item_classification_by_inventory_id().
+    """
+
+    if not item_info:
+        return {
+            "success": False,
+            "message": "❌ Предмет не знайдено."
+        }
+
+    if item_info.get("category") != "equipment":
+        return {
+            "success": True,
+            "message": ""
+        }
+
+    class_key = get_character_class(user_id)
+
+    if not class_key:
+        return {
+            "success": False,
+            "message": "❌ Спочатку обери клас персонажа."
+        }
+
+    armor_result = check_armor_compatibility_for_class(class_key, item_info)
+
+    if not armor_result["success"]:
+        return armor_result
+
+    main_hand_result = check_main_hand_compatibility_for_class(class_key, item_info)
+
+    if not main_hand_result["success"]:
+        return main_hand_result
+
+    off_hand_result = check_off_hand_compatibility_for_class(class_key, item_info)
+
+    if not off_hand_result["success"]:
+        return off_hand_result
+
+    two_handed_result = check_two_handed_conflict_for_equip(user_id, item_info)
+
+    if not two_handed_result["success"]:
+        return two_handed_result
+
+    return {
+        "success": True,
+        "message": ""
+    }
+
+
+def can_equip_inventory_item_by_class(user_id, inventory_id):
+    """
+    Зручний wrapper для перевірки інвентарного предмета.
+    """
+
+    item_info = get_item_classification_by_inventory_id(inventory_id)
+
+    return can_equip_item_by_class(user_id, item_info)
+
+
+def is_inventory_item_class_compatible(user_id, inventory_id):
+    """
+    Boolean helper для майбутніх фільтрів / auto-unequip.
+    """
+
+    result = can_equip_inventory_item_by_class(user_id, inventory_id)
+    return bool(result.get("success"))
+
+# ==============================
+# ✅ CLASS SHOP EQUIPMENT GENERATION V1
+# ==============================
+
+ARMOR_DEFENSE_MULTIPLIERS = {
+    "cloth": {
+        "pdef": 0.70,
+        "mdef": 1.30
+    },
+    "leather": {
+        "pdef": 0.95,
+        "mdef": 1.05
+    },
+    "chain": {
+        "pdef": 1.20,
+        "mdef": 0.90
+    },
+    "plate": {
+        "pdef": 1.35,
+        "mdef": 0.75
+    }
+}
+
+
+def get_shop_armor_type_for_user(user_id):
+    """
+    Повертає armor_type для базового магазину за класом гравця.
+    """
+
+    class_key = get_character_class(user_id)
+
+    return get_allowed_armor_type_for_class(class_key)
+
+
+def apply_armor_type_defense_profile_to_stats(stats, armor_type):
+    """
+    Застосовує PDEF/MDEF профіль броні.
+
+    Працює тільки для броні.
+    """
+
+    armor_type = normalize_equipment_restriction_value(armor_type)
+
+    if not armor_type:
+        return stats
+
+    multipliers = ARMOR_DEFENSE_MULTIPLIERS.get(armor_type)
+
+    if not multipliers:
+        return stats
+
+    stats["pdef"] = int(round((stats.get("pdef", 0) or 0) * multipliers["pdef"]))
+    stats["mdef"] = int(round((stats.get("mdef", 0) or 0) * multipliers["mdef"]))
+
+    return stats
+
+
+def get_allowed_shop_main_hand_profiles(user_id):
+    class_key = get_character_class(user_id)
+    allowed = get_allowed_main_hand_subtypes_for_class(class_key)
+
+    return [
+        profile_key
+        for profile_key in allowed
+        if profile_key in MAIN_HAND_PROFILES
+    ]
+
+
+def get_allowed_shop_off_hand_profiles(user_id):
+    class_key = get_character_class(user_id)
+    allowed = get_allowed_off_hand_subtypes_for_class(class_key)
+
+    return [
+        profile_key
+        for profile_key in allowed
+        if profile_key in OFF_HAND_PROFILES
+    ]
+
+
+def is_shop_profile_allowed_for_user(user_id, slot_key, item_profile):
+    """
+    Додатковий захист від ручного callback.
+    Навіть якщо гравець натисне стару/підроблену кнопку, магазин не має продати
+    предмет, який не підходить класу.
+    """
+
+    if slot_key == "main_hand":
+        return item_profile in get_allowed_shop_main_hand_profiles(user_id)
+
+    if slot_key == "off_hand":
+        return item_profile in get_allowed_shop_off_hand_profiles(user_id)
+
+    return True

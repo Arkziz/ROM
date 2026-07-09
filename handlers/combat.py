@@ -9,6 +9,7 @@ from db import (
     get_magic_defense,
     get_max_hp,
     get_current_hp,
+    get_current_hp_raw,
     set_current_hp,
     get_current_location,
     get_inventory_detailed,
@@ -21,13 +22,14 @@ from db import (
     consume_energy_for_hunt,
 
     get_character_profile_summary,
+    get_character_name,
     get_user_mp,
     get_character_class,
     spend_user_mp,
     restore_user_mp_to_full
 )
 
-from keyboards import main_kb, fight_kb
+from keyboards import main_kb, fight_kb, build_combat_inline_kb, combat_placeholder_kb
 from utils import hp_bar
 
 from systems.combat_system import (
@@ -338,8 +340,16 @@ def process_player_turn_start_effects(user_id, mob):
     text = ""
     effects_to_remove = []
 
-    current_hp = get_current_hp(user_id)
-    max_hp = get_max_hp(user_id)
+    if "player_hp" in mob and "player_max_hp" in mob:
+        current_hp = int(mob["player_hp"])
+        max_hp = int(mob["player_max_hp"])
+    else:
+        current_hp = get_current_hp_raw(user_id)
+        max_hp = get_max_hp(user_id)
+        mob["player_hp"] = current_hp
+        mob["player_max_hp"] = max_hp
+
+    initial_hp = current_hp
 
     for key, effect in list(mob["player_effects"].items()):
         effect_type = effect.get("type", "")
@@ -349,9 +359,9 @@ def process_player_turn_start_effects(user_id, mob):
             heal = int(effect.get("heal", 0))
 
             if heal > 0 and current_hp < max_hp:
-                old_hp = current_hp
+                prev_hp = current_hp
                 current_hp = min(max_hp, current_hp + heal)
-                healed = current_hp - old_hp
+                healed = current_hp - prev_hp
 
                 if healed > 0:
                     text += f"🌿 {effect.get('name', 'Лікування')}: +{healed} HP\n"
@@ -362,8 +372,9 @@ def process_player_turn_start_effects(user_id, mob):
         if turns <= 0:
             effects_to_remove.append(key)
 
-    if current_hp != get_current_hp(user_id):
+    if current_hp != initial_hp:
         set_current_hp(user_id, current_hp)
+        mob["player_hp"] = current_hp
 
     for key in effects_to_remove:
         name = mob["player_effects"].get(key, {}).get("name", key)
@@ -609,10 +620,10 @@ CLASS_SKILLS_V1 = {
         {
             "key": "knight_judgement",
             "name": "⚖️ Кара лицаря",
-            "description": "Витрачає 40 Люті та завдає фізичної шкоди, що масштабується від твого фізичного захисту.",
+            "description": "Витрачає 50 Люті та завдає фізичної шкоди, що масштабується від твого фізичного захисту.",
             "cost_type": "rage",
-            "cost": 40,
-            "cooldown": 3,
+            "cost": 50,
+            "cooldown": 4,
             "damage_multiplier": 1.00,
             "attack_type": "physical",
             "extra_rage": 0,
@@ -670,11 +681,11 @@ CLASS_SKILLS_V1 = {
         {
             "key": "rogue_sneak_strike",
             "name": "⚔️ Підступний випад",
-            "description": "Витрачає 25 Енергії, завдає 130% фізичної шкоди та дає 1 комбо.",
+            "description": "Витрачає 25 Енергії, завдає 115% фізичної шкоди та дає 1 комбо.",
             "cost_type": "combat_energy",
             "cost": 25,
             "cooldown": 0,
-            "damage_multiplier": 1.30,
+            "damage_multiplier": 1.15,
             "attack_type": "physical",
             "extra_rage": 0,
             "stun_chance": 0,
@@ -684,11 +695,11 @@ CLASS_SKILLS_V1 = {
         {
             "key": "rogue_bleeding_follow",
             "name": "🩸 Криваве слідування",
-            "description": "Витрачає 25 Енергії, завдає 80% фізичної шкоди, накладає кровотечу та дає 1 комбо.",
+            "description": "Витрачає 25 Енергії, завдає 75% фізичної шкоди, накладає кровотечу та дає 1 комбо.",
             "cost_type": "combat_energy",
             "cost": 25,
             "cooldown": 2,
-            "damage_multiplier": 0.80,
+            "damage_multiplier": 0.75,
             "attack_type": "physical",
             "extra_rage": 0,
             "stun_chance": 0,
@@ -699,16 +710,14 @@ CLASS_SKILLS_V1 = {
         {
             "key": "rogue_eviscerate",
             "name": "🗡️ Потрошіння",
-            "description": "Витрачає 35 Енергії та всі комбо-очки. Чим більше комбо, тим більша шкода.",
+            "description": "Витрачає 40 Енергії та всі комбо-очки. Чим більше комбо, тим більша шкода.",
             "cost_type": "combat_energy_combo",
-            "cost": 35,
+            "cost": 40,
             "min_combo": 1,
             "cooldown": 2,
             "damage_multiplier": 1.00,
             "attack_type": "physical",
             "extra_rage": 0,
-            "stun_chance": 0,
-            "no_damage": False,
             "scales_with_combo": True
         }
     ],
@@ -717,11 +726,11 @@ CLASS_SKILLS_V1 = {
         {
             "key": "mage_fireball",
             "name": "🔥 Вогняна куля",
-            "description": "Витрачає 20 MP та завдає 150% магічної шкоди.",
+            "description": "Витрачає 20 MP та завдає 135% магічної шкоди.",
             "cost_type": "mana",
             "cost": 20,
             "cooldown": 0,
-            "damage_multiplier": 1.50,
+            "damage_multiplier": 1.35,
             "attack_type": "magical",
             "extra_rage": 0,
             "stun_chance": 0,
@@ -730,11 +739,11 @@ CLASS_SKILLS_V1 = {
         {
             "key": "mage_thunder_spell",
             "name": "⚡ Грозове заклинання",
-            "description": "Витрачає 40 MP, завдає 180% магічної шкоди та має 25% шанс оглушити ворога.",
+            "description": "Витрачає 45 MP, завдає 160% магічної шкоди та має 25% шанс оглушити ворога.",
             "cost_type": "mana",
-            "cost": 40,
-            "cooldown": 3,
-            "damage_multiplier": 1.80,
+            "cost": 45,
+            "cooldown": 4,
+            "damage_multiplier": 1.60,
             "attack_type": "magical",
             "extra_rage": 0,
             "stun_chance": 25,
@@ -743,10 +752,10 @@ CLASS_SKILLS_V1 = {
         {
             "key": "mage_arcane_flow",
             "name": "🔮 Магічний потік",
-            "description": "Не завдає шкоди. Відновлює 35% максимальної Мани в бою.",
+            "description": "Не завдає шкоди. Відновлює 25% максимальної Мани в бою.",
             "cost_type": "mana",
             "cost": 0,
-            "cooldown": 4,
+            "cooldown": 5,
             "damage_multiplier": 0,
             "attack_type": "magical",
             "extra_rage": 0,
@@ -760,11 +769,11 @@ CLASS_SKILLS_V1 = {
         {
             "key": "priest_holy_ray",
             "name": "✨ Святий промінь",
-            "description": "Витрачає 15 MP та завдає 120% магічної шкоди.",
+            "description": "Витрачає 12 MP та завдає 115% магічної шкоди.",
             "cost_type": "mana",
-            "cost": 15,
+            "cost": 12,
             "cooldown": 0,
-            "damage_multiplier": 1.20,
+            "damage_multiplier": 1.15,
             "attack_type": "magical",
             "extra_rage": 0,
             "stun_chance": 0,
@@ -773,9 +782,9 @@ CLASS_SKILLS_V1 = {
         {
             "key": "priest_healing_blessing",
             "name": "🌿 Благословення зцілення",
-            "description": "Витрачає 40 MP та відновлює здоров’я протягом 4 ходів.",
+            "description": "Витрачає 30 MP та відновлює здоров’я протягом 4 ходів.",
             "cost_type": "mana",
-            "cost": 40,
+            "cost": 30,
             "cooldown": 3,
             "damage_multiplier": 0,
             "attack_type": "magical",
@@ -787,9 +796,9 @@ CLASS_SKILLS_V1 = {
         {
             "key": "priest_purify_faith",
             "name": "🛡️ Очищення віри",
-            "description": "Витрачає 30 MP, очищає негативні ефекти та підвищує магічний захист на 3 ходи.",
+            "description": "Витрачає 20 MP, очищає негативні ефекти, підвищує магічний захист на 3 ходи та відновлює 15% Мани.",
             "cost_type": "mana",
-            "cost": 30,
+            "cost": 20,
             "cooldown": 4,
             "damage_multiplier": 0,
             "attack_type": "magical",
@@ -1055,7 +1064,7 @@ def roll_skill_stun(mob, skill):
 
     if roll <= stun_chance:
         mob["stunned_turns"] = 1
-        return "💫 Ворог оглушений на 1 хід!\n"
+        return f"💫 {mob['name']} оглушений на 1 хід!\n"
 
     return ""
 
@@ -1082,7 +1091,7 @@ def apply_skill_special_effect(user_id, mob, skill, damage_done):
             }
         )
 
-        text += "🛡️ Ворог пригнічений: фізичний захист знижено на 30% на 3 ходи.\n"
+        text += f"🛡️ {mob['name']} пригнічений: фізичний захист знижено на 30% на 3 ходи.\n"
 
     elif effect_key == "player_shield":
         player_pdef, player_mdef = get_effective_player_defenses(user_id, mob)
@@ -1126,12 +1135,12 @@ def apply_skill_special_effect(user_id, mob, skill, damage_done):
             }
         )
 
-        text += "🪤 Ворог потрапив у пастку: фізичний захист знижено на 50% на 2 ходи.\n"
+        text += f"🪤 {mob['name']} потрапив у пастку: фізичний захист знижено на 50% на 2 ходи.\n"
 
     elif effect_key == "enemy_bleed":
         bleed_damage = max(
             2,
-            int(round(max(1, damage_done) * 0.35))
+            int(round(max(1, damage_done) * 0.30))
         )
 
         add_enemy_effect(
@@ -1147,7 +1156,7 @@ def apply_skill_special_effect(user_id, mob, skill, damage_done):
             }
         )
 
-        text += f"🩸 На ворога накладено кровотечу: {bleed_damage} шкоди протягом 3 ходів.\n"
+        text += f"🩸 На {mob['name']} накладено кровотечу: {bleed_damage} шкоди протягом 3 ходів.\n"
 
     elif effect_key == "enemy_poison":
         poison_damage = max(
@@ -1168,7 +1177,7 @@ def apply_skill_special_effect(user_id, mob, skill, damage_done):
             }
         )
 
-        text += f"☠️ Ворог отруєний: {poison_damage} шкоди протягом 3 ходів.\n"
+        text += f"☠️ {mob['name']} отруєний: {poison_damage} шкоди протягом 3 ходів.\n"
 
     elif effect_key == "player_hot":
         max_hp = get_max_hp(user_id)
@@ -1200,7 +1209,7 @@ def apply_skill_special_effect(user_id, mob, skill, damage_done):
 
         restore_amount = max(
             1,
-            int(round(max_mp * 0.35))
+            int(round(max_mp * 0.25))
         )
 
         new_mp = min(max_mp, current_mp + restore_amount)
@@ -1240,10 +1249,28 @@ def apply_skill_special_effect(user_id, mob, skill, damage_done):
             }
         )
 
+        # Restore 15% max MP
+        mp_data = get_user_mp(user_id)
+        current_mp = mp_data.get("mp", 0)
+        max_mp = mp_data.get("max_mp", 0)
+        restore_amount = max(1, int(round(max_mp * 0.15)))
+        new_mp = min(max_mp, current_mp + restore_amount)
+        restored = new_mp - current_mp
+
+        try:
+            from db import set_user_mp
+            set_user_mp(user_id, new_mp)
+        except Exception:
+            pass
+
+        mob["player_mp"] = new_mp
+        mob["player_max_mp"] = max_mp
+
         if cleared > 0:
             text += f"🛡️ Очищення віри зняло негативних ефектів: {cleared}.\n"
 
         text += "🛡️ Магічний захист підвищено на 30% на 3 ходи.\n"
+        text += f"🛡️ Очищення віри відновило {restored} MP ({new_mp}/{max_mp}).\n"
 
     return text
 
@@ -1389,10 +1416,6 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
 
     text = f"{victory_title}\n\n"
 
-    if prefix_text:
-        text += prefix_text
-        text += "\n"
-
     text += (
         f"{mob['name']} повалений на землю.\n\n"
         f"📈 Нагорода:\n"
@@ -1497,7 +1520,7 @@ def register_combat_handlers(bot):
 
         str_, dex_, int_, wis_, sta_, lvl = stats
 
-        current_hp = get_current_hp(user_id)
+        current_hp = get_current_hp_raw(user_id)
         max_hp = get_max_hp(user_id)
 
         hp_percent = 0
@@ -1556,6 +1579,8 @@ def register_combat_handlers(bot):
         mob["player_effects"] = {}
         mob["last_skill_spent_rage"] = 0
         mob["last_skill_spent_combo"] = 0
+        mob["player_hp"] = current_hp
+        mob["player_max_hp"] = max_hp
 
         init_class_combat_resource(user_id, mob)
         init_combat_effects(mob)
@@ -1580,16 +1605,15 @@ def register_combat_handlers(bot):
 
         weapon_text = attack_profile.get("weapon_text") or "Без зброї"
         class_resource_text = get_class_resource_line(mob)
+        character_name = get_character_name(user_id) or "Без імені"
 
         text = (
             f"📍 Мапа: {location['name']}\n"
             f"🔎 Ти зустрів {mob['name']}\n\n"
             f"{elite_text}"
-            f"🔋 Енергія полювання: {energy_result['energy']}/{energy_result['max_energy']}\n\n"
-
             f"======================\n\n"
 
-            f"👤 ТИ\n"
+            f"👤 {character_name}\n"
             f"❤️ Здоров’я: {current_hp}/{max_hp}\n"
             f"{hp_bar(current_hp, max_hp)}\n"
             f"{class_resource_text}"
@@ -1601,7 +1625,7 @@ def register_combat_handlers(bot):
 
             f"----------------------\n\n"
 
-            f"👹 ВОРОГ\n"
+            f"👹 {mob['name']}\n"
             f"🏷 Рівень: {mob['level']}\n"
             f"❤️ Здоров’я: {mob['hp']}/{mob['max_hp']}\n"
             f"{hp_bar(mob['hp'], mob['max_hp'])}\n"
@@ -1613,11 +1637,36 @@ def register_combat_handlers(bot):
             f"⚔️ Бій починається!"
         )
 
+        # Спочатку показуємо фальшиву клавіатуру, щоб системна не з'являлася
+        bot.send_message(
+            message.chat.id,
+            "⚔️ Бій розпочався!",
+            reply_markup=combat_placeholder_kb()
+        )
+        # Потім показуємо повідомлення про бій з inline меню
         bot.send_message(
             message.chat.id,
             text,
-            reply_markup=fight_kb()
+            reply_markup=build_combat_inline_kb(user_id, mob)
         )
+
+    @bot.message_handler(func=lambda m: m.text == "⚔️ Бій триває...")
+    def combat_placeholder(message):
+        # Обробник для фальшивої кнопки — нічого не робимо, просто відповідаємо
+        user_id = message.from_user.id
+        if hasattr(bot, "user_data") and user_id in bot.user_data:
+            mob = bot.user_data[user_id]
+            bot.send_message(
+                message.chat.id,
+                "Використовуй інлайн кнопки для бою!",
+                reply_markup=combat_placeholder_kb()
+            )
+        else:
+            bot.send_message(
+                message.chat.id,
+                "Ти не в бою!",
+                reply_markup=main_kb()
+            )
 
     @bot.message_handler(func=lambda m: m.text == "⚔️ Атакувати")
     def attack(message):
@@ -1633,6 +1682,7 @@ def register_combat_handlers(bot):
 
         mob = bot.user_data[user_id]
         init_combat_effects(mob)
+        character_name = get_character_name(user_id) or "Без імені"
 
         cooldown_start_text = tick_skill_cooldowns_at_player_turn(mob)
         player_effects_text = process_player_turn_start_effects(user_id, mob)
@@ -1654,8 +1704,15 @@ def register_combat_handlers(bot):
 
         player_pdef, player_mdef = get_effective_player_defenses(user_id, mob)
 
-        player_hp = get_current_hp(user_id)
-        player_max_hp = get_max_hp(user_id)
+        # Використовуємо здоров'я з mob, якщо воно там є, інакше з бази (на випадок старих сесій)
+        if "player_hp" in mob and "player_max_hp" in mob:
+            player_hp = mob["player_hp"]
+            player_max_hp = mob["player_max_hp"]
+        else:
+            player_hp = get_current_hp_raw(user_id)
+            player_max_hp = get_max_hp(user_id)
+            mob["player_hp"] = player_hp
+            mob["player_max_hp"] = player_max_hp
 
         if "max_hp" not in mob:
             mob["max_hp"] = mob["hp"]
@@ -1726,7 +1783,7 @@ def register_combat_handlers(bot):
 
         if mob.get("stunned_turns", 0) > 0:
             mob["stunned_turns"] -= 1
-            enemy_action_text = "💫 Ворог оглушений і пропускає хід.\n\n"
+            enemy_action_text = f"💫 {mob['name']} оглушений і пропускає хід.\n\n"
         else:
             mob_attack_result = calculate_mob_attack(
                 mob_attack=mob["attack"],
@@ -1749,17 +1806,18 @@ def register_combat_handlers(bot):
                 mob_dmg, shield_text = apply_player_shield_absorb(mob, mob_dmg)
 
             player_hp -= mob_dmg
+            mob["player_hp"] = player_hp
 
             resource_damage_text = add_rage_for_damage_taken(mob, mob_dmg)
 
             if is_dodge:
-                enemy_action_text = "💨 УХИЛ! Ти уникнув атаки ворога\n\n"
+                enemy_action_text = f"💨 УХИЛ! {character_name} уникнув атаки {mob['name']}\n\n"
             elif is_mob_crit:
-                enemy_action_text = f"💥 КРИТ ВОРОГА! Ти отримав {mob_dmg} шкоди\n"
+                enemy_action_text = f"💥 КРИТ {mob['name']}! {character_name} отримав {mob_dmg} шкоди\n"
                 enemy_action_text += shield_text
                 enemy_action_text += "\n"
             else:
-                enemy_action_text = f"👹 Ворог завдав {mob_dmg} шкоди\n"
+                enemy_action_text = f"👹 {mob['name']} завдав {character_name} {mob_dmg} шкоди\n"
                 enemy_action_text += shield_text
                 enemy_action_text += "\n"
 
@@ -1815,9 +1873,9 @@ def register_combat_handlers(bot):
             text += "\n"
 
         if is_player_crit:
-            text += f"💥 КРИТ! Ти завдав {dmg} шкоди"
+            text += f"💥 КРИТ! {character_name} завдав {mob['name']} {dmg} шкоди"
         else:
-            text += f"🗡️ Ти завдав {dmg} шкоди"
+            text += f"🗡️ {character_name} завдав {mob['name']} {dmg} шкоди"
 
         if weapon_damage > 0:
             text += f" (зброя: {weapon_damage})"
@@ -1828,10 +1886,10 @@ def register_combat_handlers(bot):
         class_resource_text = get_class_resource_line(mob)
 
         text += (
-            f"❤️ Твоє здоров’я: {player_hp}/{player_max_hp}\n"
+            f"❤️ {character_name}: {player_hp}/{player_max_hp}\n"
             f"{hp_bar(player_hp, player_max_hp)}\n"
             f"{class_resource_text}\n"
-            f"👹 Здоров’я ворога: {mob['hp']}/{mob['max_hp']}\n"
+            f"👹 {mob['name']}: {mob['hp']}/{mob['max_hp']}\n"
             f"{hp_bar(mob['hp'], mob['max_hp'])}"
         )
 
@@ -1840,10 +1898,11 @@ def register_combat_handlers(bot):
         if mob.get("potion_cooldown", 0) > 0:
             text += f"\n\n🔴 Повний шлунок: {mob['potion_cooldown']} ход."
 
+
         bot.send_message(
             message.chat.id,
             text,
-            reply_markup=fight_kb()
+            reply_markup=build_combat_inline_kb(user_id, mob)
         )
 
     @bot.message_handler(func=lambda m: m.text == "✨ Навички")
@@ -1864,10 +1923,11 @@ def register_combat_handlers(bot):
         text, kb = build_skill_menu_text(user_id, mob)
 
         if not kb:
+    
             bot.send_message(
                 message.chat.id,
                 text,
-                reply_markup=fight_kb()
+                reply_markup=build_combat_inline_kb(user_id, mob)
             )
             return
 
@@ -1875,6 +1935,355 @@ def register_combat_handlers(bot):
             message.chat.id,
             text,
             reply_markup=kb
+        )
+        
+    # Старий обробник текстових кнопок скілів (не використовується, тепер використовуємо inline)
+    # @bot.message_handler(func=lambda m: any(
+    #     skill_name in m.text 
+    #     for class_skills in CLASS_SKILLS_V1.values() 
+    #     for skill_name in [s["name"] for s in class_skills]
+    # ))
+    def use_skill_text_button(message):
+        user_id = message.from_user.id
+        
+        if not hasattr(bot, "user_data") or user_id not in bot.user_data:
+            bot.send_message(
+                message.chat.id,
+                "❗ Ти не в бою",
+                reply_markup=main_kb()
+            )
+            return
+            
+        mob = bot.user_data[user_id]
+        init_combat_effects(mob)
+        character_name = get_character_name(user_id) or "Без імені"
+        class_key = get_character_class(user_id)
+        class_skills = CLASS_SKILLS_V1.get(class_key, [])
+        
+        # Знайти навичку за ім'ям
+        skill = None
+        for s in class_skills:
+            if s["name"] == message.text:
+                skill = s
+                break
+        
+        if not skill:
+            class_key = get_character_class(user_id)
+            skills = CLASS_SKILLS_V1.get(class_key, [])
+            bot.send_message(
+                message.chat.id,
+                "❌ Навичку не знайдено.",
+                reply_markup=fight_kb(skills)
+            )
+            return
+            
+        cooldown_result = validate_skill_cooldown(mob, skill)
+        if not cooldown_result["success"]:
+            class_key = get_character_class(user_id)
+            skills = CLASS_SKILLS_V1.get(class_key, [])
+            bot.send_message(
+                message.chat.id,
+                cooldown_result["message"],
+                reply_markup=fight_kb(skills)
+            )
+            return
+            
+        cooldown_start_text = tick_skill_cooldowns_at_player_turn(mob)
+        player_effects_text = process_player_turn_start_effects(user_id, mob)
+        resource_start_text = regenerate_class_resource_at_player_turn(mob)
+        
+        pay_result = validate_and_pay_skill_cost(user_id, mob, skill)
+        if not pay_result["success"]:
+            class_key = get_character_class(user_id)
+            skills = CLASS_SKILLS_V1.get(class_key, [])
+            bot.send_message(
+                message.chat.id,
+                pay_result["message"],
+                reply_markup=fight_kb(skills)
+            )
+            return
+            
+        stats = get_player_stats(user_id)
+        if not stats:
+            bot.send_message(
+                message.chat.id,
+                "❗ Персонажа не знайдено",
+                reply_markup=main_kb()
+            )
+            return
+            
+        str_, dex_, int_, wis_, sta_, lvl = stats
+        attack_profile = get_player_attack_profile(user_id)
+        player_pdef, player_mdef = get_effective_player_defenses(user_id, mob)
+        if "player_hp" in mob and "player_max_hp" in mob:
+            player_hp = mob["player_hp"]
+            player_max_hp = mob["player_max_hp"]
+        else:
+            player_hp = get_current_hp_raw(user_id)
+            player_max_hp = get_max_hp(user_id)
+            mob["player_hp"] = player_hp
+            mob["player_max_hp"] = player_max_hp
+        
+        if "max_hp" not in mob:
+            mob["max_hp"] = mob["hp"]
+            
+        skill_attack_type = skill.get("attack_type", attack_profile["attack_type"])
+        
+        if skill.get("no_damage"):
+            base_dmg = 0
+            dmg = 0
+            is_player_crit = False
+            weapon_damage = 0
+        else:
+            if skill_attack_type == "magical":
+                mob_def_for_player_attack = get_effective_mob_def(mob, "magical")
+                player_stat_attack = int_
+            else:
+                mob_def_for_player_attack = get_effective_mob_def(mob, "physical")
+                player_stat_attack = attack_profile["stat_attack"]
+                
+            player_attack_result = calculate_player_attack(
+                player_stat_attack=player_stat_attack,
+                mob_def=mob_def_for_player_attack,
+                dex=dex_,
+                wis=wis_,
+                level=lvl,
+                attack_type=skill_attack_type,
+                weapon_min_damage=attack_profile["weapon_min_damage"],
+                weapon_max_damage=attack_profile["weapon_max_damage"]
+            )
+            
+            base_dmg = player_attack_result["damage"]
+            is_player_crit = player_attack_result["is_crit"]
+            weapon_damage = player_attack_result.get("weapon_damage", 0)
+            
+            dmg = max(1, int(round(base_dmg * float(skill.get("damage_multiplier", 1.0)))))
+            
+            if skill.get("scales_with_spent_rage"):
+                spent_rage = mob.get("last_skill_spent_rage", 0)
+                bonus_multiplier = 1.0 + (spent_rage / 100)
+                dmg = max(1, int(round(base_dmg * bonus_multiplier)))
+                
+            if skill.get("scales_with_player_pdef"):
+                player_pdef, player_mdef = get_effective_player_defenses(user_id, mob)
+                dmg = max(1, int(round(player_pdef * 0.85)))
+                
+            if skill.get("scales_with_combo"):
+                spent_combo = mob.get("last_skill_spent_combo", 0)
+                bonus_multiplier = 1.0 + (spent_combo * 0.35)
+                dmg = max(1, int(round(base_dmg * bonus_multiplier)))
+                
+            mob["hp"] -= dmg
+            
+        resource_attack_text = ""
+        if not skill.get("no_damage"):
+            if mob.get("player_resource_type") == "rage":
+                resource_attack_text += add_rage_for_player_attack(mob)
+                
+        combo_gain = int(skill.get("combo_gain", 0))
+        if combo_gain > 0:
+            resource_attack_text += add_rogue_combo_point(mob, combo_gain)
+            
+        resource_attack_text += apply_extra_rage_from_skill(mob, skill)
+        
+        stun_text = ""
+        if not skill.get("no_damage"):
+            stun_text = roll_skill_stun(mob, skill)
+            
+        special_effect_text = apply_skill_special_effect(
+            user_id=user_id,
+            mob=mob,
+            skill=skill,
+            damage_done=dmg
+        )
+        
+        cooldown_set_text = set_skill_cooldown(
+            mob,
+            skill["key"],
+            skill.get("cooldown", 0)
+        )
+        
+        if mob["hp"] <= 0:
+            prefix_text = ""
+            if cooldown_start_text or player_effects_text or resource_start_text or resource_attack_text or cooldown_set_text or special_effect_text:
+                prefix_text += cooldown_start_text
+                prefix_text += player_effects_text
+                prefix_text += resource_start_text
+                prefix_text += resource_attack_text
+                prefix_text += cooldown_set_text
+                prefix_text += special_effect_text
+                
+            prefix_text += f"✨ Навичка: {skill['name']}\n"
+            if skill.get("no_damage"):
+                prefix_text += "Навичка застосована.\n"
+            else:
+                prefix_text += f"Ти завдав {dmg} шкоди.\n"
+                
+            process_victory(
+                bot=bot,
+                chat_id=message.chat.id,
+                user_id=user_id,
+                lvl=lvl,
+                mob=mob,
+                prefix_text=prefix_text
+            )
+            return
+            
+        enemy_effect_result = process_enemy_turn_start_effects(mob)
+        enemy_effect_text = enemy_effect_result.get("text", "")
+        
+        if mob["hp"] <= 0:
+            prefix_text = ""
+            if cooldown_start_text or player_effects_text or resource_start_text or resource_attack_text or cooldown_set_text or special_effect_text or enemy_effect_text:
+                prefix_text += cooldown_start_text
+                prefix_text += player_effects_text
+                prefix_text += resource_start_text
+                prefix_text += resource_attack_text
+                prefix_text += cooldown_set_text
+                prefix_text += special_effect_text
+                prefix_text += enemy_effect_text
+                
+            prefix_text += f"✨ Навичка: {skill['name']}\n"
+            prefix_text += "Ворог повалений ефектами.\n"
+            
+            process_victory(
+                bot=bot,
+                chat_id=message.chat.id,
+                user_id=user_id,
+                lvl=lvl,
+                mob=mob,
+                prefix_text=prefix_text
+            )
+            return
+            
+        mob_dmg = 0
+        is_mob_crit = False
+        is_dodge = False
+        resource_damage_text = ""
+        
+        if mob.get("stunned_turns", 0) > 0:
+            mob["stunned_turns"] -= 1
+            enemy_action_text = f"💫 {mob['name']} оглушений і пропускає хід.\n\n"
+        else:
+            mob_attack_result = calculate_mob_attack(
+                mob_attack=mob["attack"],
+                player_pdef=player_pdef,
+                player_mdef=player_mdef,
+                player_dex=dex_,
+                mob_dex=mob["dex"],
+                sta=sta_,
+                level=lvl,
+                attack_type=mob["attack_type"]
+            )
+            
+            mob_dmg = mob_attack_result["damage"]
+            is_mob_crit = mob_attack_result["is_crit"]
+            is_dodge = mob_attack_result["is_dodge"]
+            
+            shield_text = ""
+            if not is_dodge and mob_dmg > 0:
+                mob_dmg, shield_text = apply_player_shield_absorb(mob, mob_dmg)
+                
+            player_hp -= mob_dmg
+            
+            resource_damage_text = add_rage_for_damage_taken(mob, mob_dmg)
+            
+            if is_dodge:
+                enemy_action_text = f"💨 УХИЛ! {character_name} уникнув атаки {mob['name']}\n\n"
+            elif is_mob_crit:
+                enemy_action_text = f"💥 КРИТ {mob['name']}! {character_name} отримав {mob_dmg} шкоди\n"
+                enemy_action_text += shield_text
+                enemy_action_text += "\n"
+            else:
+                enemy_action_text = f"👹 {mob['name']} завдав {character_name} {mob_dmg} шкоди\n"
+                enemy_action_text += shield_text
+                enemy_action_text += "\n"
+                
+        if player_hp <= 0:
+            durability_damage = damage_equipped_items_on_death(
+                user_id=user_id,
+                amount=5
+            )
+            set_current_hp(user_id, player_max_hp)
+            mp_restore_result = restore_user_mp_to_full(user_id)
+            
+            if user_id in bot.user_data:
+                del bot.user_data[user_id]
+                
+            text = build_death_text(durability_damage)
+            text = append_mp_restore_text(text, mp_restore_result)
+            
+            bot.send_message(
+                message.chat.id,
+                text,
+                reply_markup=main_kb()
+            )
+            return
+            
+        set_current_hp(user_id, player_hp)
+        
+        if mob.get("potion_cooldown", 0) > 0:
+            mob["potion_cooldown"] -= 1
+            
+        text = "✨ НАВИЧКА\n\n"
+        if cooldown_start_text:
+            text += cooldown_start_text
+        if player_effects_text:
+            text += player_effects_text
+        if resource_start_text:
+            text += resource_start_text
+        if resource_attack_text:
+            text += resource_attack_text
+        if cooldown_set_text:
+            text += cooldown_set_text
+        if special_effect_text:
+            text += special_effect_text
+        if enemy_effect_text:
+            text += enemy_effect_text
+        if resource_damage_text:
+            text += resource_damage_text
+            
+        if cooldown_start_text or player_effects_text or resource_start_text or resource_attack_text or cooldown_set_text or special_effect_text or enemy_effect_text or resource_damage_text:
+            text += "\n"
+            
+        text += f"{skill['name']}\n"
+        
+        if skill.get("no_damage"):
+            text += "✨ Навичка застосована.\n"
+        else:
+            if is_player_crit:
+                text += f"💥 КРИТ! {character_name} завдав {mob['name']} {dmg} шкоди"
+            else:
+                text += f"✨ {character_name} завдав {mob['name']} {dmg} шкоди"
+                
+            if weapon_damage > 0:
+                text += f" (зброя: {weapon_damage})"
+                
+            text += "\n"
+            
+        text += enemy_action_text
+        class_resource_text = get_class_resource_line(mob)
+        
+        text += (
+            f"❤️ {character_name}: {player_hp}/{player_max_hp}\n"
+            f"{hp_bar(player_hp, player_max_hp)}\n"
+            f"{class_resource_text}\n"
+            f"👹 {mob['name']}: {mob['hp']}/{mob['max_hp']}\n"
+            f"{hp_bar(mob['hp'], mob['max_hp'])}"
+        )
+        
+        text = append_effects_to_combat_text(text, mob)
+        
+        if mob.get("potion_cooldown", 0) > 0:
+            text += f"\n\n🔴 Повний шлунок: {mob['potion_cooldown']} ход."
+            
+        class_key = get_character_class(user_id)
+        skills = CLASS_SKILLS_V1.get(class_key, [])
+        
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=fight_kb(skills)
         )
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("skill_locked:"))
@@ -1898,10 +2307,11 @@ def register_combat_handlers(bot):
         bot.answer_callback_query(call.id)
 
         if not skill:
+    
             bot.send_message(
                 call.message.chat.id,
                 "❌ Навичку не знайдено.",
-                reply_markup=fight_kb()
+                reply_markup=build_combat_inline_kb(user_id, mob)
             )
             return
 
@@ -1909,13 +2319,21 @@ def register_combat_handlers(bot):
 
         if cooldown <= 0:
             text, kb = build_skill_menu_text(user_id, mob)
-
-            bot.send_message(
-                call.message.chat.id,
-                text,
-                reply_markup=kb if kb else fight_kb()
-            )
+            if kb:
+                bot.send_message(
+                    call.message.chat.id,
+                    text,
+                    reply_markup=kb
+                )
+            else:
+        
+                bot.send_message(
+                    call.message.chat.id,
+                    text,
+                    reply_markup=build_combat_inline_kb(user_id, mob)
+                )
             return
+
 
         bot.send_message(
             call.message.chat.id,
@@ -1925,64 +2343,145 @@ def register_combat_handlers(bot):
                 f"Залишилось: {cooldown} ход.\n\n"
                 f"ℹ️ Виконай реальний хід: атакуй або використай доступну навичку."
             ),
-            reply_markup=fight_kb()
+            reply_markup=build_combat_inline_kb(user_id, mob)
         )
 
-    @bot.callback_query_handler(func=lambda call: call.data.startswith("use_skill:"))
-    def use_skill(call):
+    # ==========================================
+    # НОВІ ОБРОБНИКИ INLINE КНОПОК БОЮ
+    # ==========================================
+    
+    @bot.callback_query_handler(func=lambda call: call.data == "combat_attack")
+    def combat_attack_callback(call):
         user_id = call.from_user.id
-        skill_key = call.data.split(":")[1]
-
+        
         if not hasattr(bot, "user_data") or user_id not in bot.user_data:
             bot.answer_callback_query(call.id)
-
             bot.send_message(
                 call.message.chat.id,
-                "❗ Бій уже завершено",
+                "❗ Спочатку почни полювання",
                 reply_markup=main_kb()
             )
             return
+            
+        # Викликаємо вже існуючу логіку атаки
+        class FakeMessage:
+            def __init__(self, chat_id, from_user_id):
+                self.chat = type('obj', (object,), {'id': chat_id})
+                self.from_user = type('obj', (object,), {'id': from_user_id})
+        
+        message = FakeMessage(call.message.chat.id, user_id)
+        attack(message)
+        
+    @bot.callback_query_handler(func=lambda call: call.data == "combat_potion")
+    def combat_potion_callback(call):
+        user_id = call.from_user.id
+        
+        if not hasattr(bot, "user_data") or user_id not in bot.user_data:
+            bot.answer_callback_query(call.id)
+            bot.send_message(
+                call.message.chat.id,
+                "❗ Ти не в бою",
+                reply_markup=main_kb()
+            )
+            return
+            
+        class FakeMessage:
+            def __init__(self, chat_id, from_user_id):
+                self.chat = type('obj', (object,), {'id': chat_id})
+                self.from_user = type('obj', (object,), {'id': from_user_id})
+        
+        message = FakeMessage(call.message.chat.id, user_id)
+        choose_potion_in_combat(message)
 
+    @bot.callback_query_handler(func=lambda call: call.data == "combat_flee")
+    def combat_flee_callback(call):
+        user_id = call.from_user.id
+        
+        if not hasattr(bot, "user_data") or user_id not in bot.user_data:
+            bot.answer_callback_query(call.id)
+            bot.send_message(
+                call.message.chat.id,
+                "❗ Ти не в бою",
+                reply_markup=main_kb()
+            )
+            return
+            
+        class FakeMessage:
+            def __init__(self, chat_id, from_user_id):
+                self.chat = type('obj', (object,), {'id': chat_id})
+                self.from_user = type('obj', (object,), {'id': from_user_id})
+        
+        message = FakeMessage(call.message.chat.id, user_id)
+        escape(message)
+        
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("combat_skill_locked:"))
+    def combat_skill_locked_callback(call):
+        user_id = call.from_user.id
+        skill_key = call.data.split(":")[1]
+        
+        if not hasattr(bot, "user_data") or user_id not in bot.user_data:
+            bot.answer_callback_query(call.id, "❗ Бій вже завершено")
+            return
+            
+        mob = bot.user_data[user_id]
+        skill = get_player_skill_by_key(user_id, skill_key)
+        cooldown = get_skill_cooldown(mob, skill["key"])
+        
+        bot.answer_callback_query(call.id, f"⏳ {skill['name']} ще перезаряджається: {cooldown} ходів")
+        
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("combat_use_skill:"))
+    def combat_use_skill_callback(call):
+        user_id = call.from_user.id
+        skill_key = call.data.split(":")[1]
+        
+        if not hasattr(bot, "user_data") or user_id not in bot.user_data:
+            bot.answer_callback_query(call.id)
+            bot.send_message(
+                call.message.chat.id,
+                "❗ Бій вже завершено",
+                reply_markup=main_kb()
+            )
+            return
+            
         mob = bot.user_data[user_id]
         init_combat_effects(mob)
-
+        character_name = get_character_name(user_id) or "Без імені"
         skill = get_player_skill_by_key(user_id, skill_key)
-
+        class_key = get_character_class(user_id)
+        
         if not skill:
             bot.answer_callback_query(call.id)
-
+    
             bot.send_message(
                 call.message.chat.id,
                 "❌ Навичку не знайдено.",
-                reply_markup=fight_kb()
+                reply_markup=build_combat_inline_kb(user_id, mob)
             )
             return
-
+            
         cooldown_result = validate_skill_cooldown(mob, skill)
-
         if not cooldown_result["success"]:
             bot.answer_callback_query(call.id)
-
+    
             bot.send_message(
                 call.message.chat.id,
                 cooldown_result["message"],
-                reply_markup=fight_kb()
+                reply_markup=build_combat_inline_kb(user_id, mob)
             )
             return
-
+            
         cooldown_start_text = tick_skill_cooldowns_at_player_turn(mob)
         player_effects_text = process_player_turn_start_effects(user_id, mob)
         resource_start_text = regenerate_class_resource_at_player_turn(mob)
-
+        
         pay_result = validate_and_pay_skill_cost(user_id, mob, skill)
-
         if not pay_result["success"]:
             bot.answer_callback_query(call.id)
-
+    
             bot.send_message(
                 call.message.chat.id,
                 pay_result["message"],
-                reply_markup=fight_kb()
+                reply_markup=build_combat_inline_kb(user_id, mob)
             )
             return
 
@@ -2004,8 +2503,15 @@ def register_combat_handlers(bot):
 
         player_pdef, player_mdef = get_effective_player_defenses(user_id, mob)
 
-        player_hp = get_current_hp(user_id)
-        player_max_hp = get_max_hp(user_id)
+        # Використовуємо здоров'я з mob, якщо воно там є, інакше з бази (на випадок старих сесій)
+        if "player_hp" in mob and "player_max_hp" in mob:
+            player_hp = mob["player_hp"]
+            player_max_hp = mob["player_max_hp"]
+        else:
+            player_hp = get_current_hp_raw(user_id)
+            player_max_hp = get_max_hp(user_id)
+            mob["player_hp"] = player_hp
+            mob["player_max_hp"] = player_max_hp
 
         if "max_hp" not in mob:
             mob["max_hp"] = mob["hp"]
@@ -2059,12 +2565,12 @@ def register_combat_handlers(bot):
 
                 dmg = max(
                     1,
-                    int(round(player_pdef * 1.4))
+                    int(round(player_pdef * 0.85))
                 )
 
             if skill.get("scales_with_combo"):
                 spent_combo = mob.get("last_skill_spent_combo", 0)
-                bonus_multiplier = 1.0 + (spent_combo * 0.45)
+                bonus_multiplier = 1.0 + (spent_combo * 0.35)
 
                 dmg = max(
                     1,
@@ -2169,7 +2675,7 @@ def register_combat_handlers(bot):
 
         if mob.get("stunned_turns", 0) > 0:
             mob["stunned_turns"] -= 1
-            enemy_action_text = "💫 Ворог оглушений і пропускає хід.\n\n"
+            enemy_action_text = f"💫 {mob['name']} оглушений і пропускає хід.\n\n"
         else:
             mob_attack_result = calculate_mob_attack(
                 mob_attack=mob["attack"],
@@ -2192,17 +2698,18 @@ def register_combat_handlers(bot):
                 mob_dmg, shield_text = apply_player_shield_absorb(mob, mob_dmg)
 
             player_hp -= mob_dmg
+            mob["player_hp"] = player_hp
 
             resource_damage_text = add_rage_for_damage_taken(mob, mob_dmg)
 
             if is_dodge:
-                enemy_action_text = "💨 УХИЛ! Ти уникнув атаки ворога\n\n"
+                enemy_action_text = f"💨 УХИЛ! {character_name} уникнув атаки {mob['name']}\n\n"
             elif is_mob_crit:
-                enemy_action_text = f"💥 КРИТ ВОРОГА! Ти отримав {mob_dmg} шкоди\n"
+                enemy_action_text = f"💥 КРИТ {mob['name']}! {character_name} отримав {mob_dmg} шкоди\n"
                 enemy_action_text += shield_text
                 enemy_action_text += "\n"
             else:
-                enemy_action_text = f"👹 Ворог завдав {mob_dmg} шкоди\n"
+                enemy_action_text = f"👹 {mob['name']} завдав {character_name} {mob_dmg} шкоди\n"
                 enemy_action_text += shield_text
                 enemy_action_text += "\n"
 
@@ -2269,9 +2776,9 @@ def register_combat_handlers(bot):
             text += "✨ Навичка застосована.\n"
         else:
             if is_player_crit:
-                text += f"💥 КРИТ! Ти завдав {dmg} шкоди"
+                text += f"💥 КРИТ! {character_name} завдав {mob['name']} {dmg} шкоди"
             else:
-                text += f"✨ Ти завдав {dmg} шкоди"
+                text += f"✨ {character_name} завдав {mob['name']} {dmg} шкоди"
 
             if weapon_damage > 0:
                 text += f" (зброя: {weapon_damage})"
@@ -2286,10 +2793,10 @@ def register_combat_handlers(bot):
         class_resource_text = get_class_resource_line(mob)
 
         text += (
-            f"❤️ Твоє здоров’я: {player_hp}/{player_max_hp}\n"
+            f"❤️ {character_name}: {player_hp}/{player_max_hp}\n"
             f"{hp_bar(player_hp, player_max_hp)}\n"
             f"{class_resource_text}\n"
-            f"👹 Здоров’я ворога: {mob['hp']}/{mob['max_hp']}\n"
+            f"👹 {mob['name']}: {mob['hp']}/{mob['max_hp']}\n"
             f"{hp_bar(mob['hp'], mob['max_hp'])}"
         )
 
@@ -2298,10 +2805,11 @@ def register_combat_handlers(bot):
         if mob.get("potion_cooldown", 0) > 0:
             text += f"\n\n🔴 Повний шлунок: {mob['potion_cooldown']} ход."
 
+
         bot.send_message(
             call.message.chat.id,
             text,
-            reply_markup=fight_kb()
+            reply_markup=build_combat_inline_kb(user_id, mob)
         )
 
     @bot.message_handler(func=lambda m: m.text == "🧪 Зілля")
@@ -2317,24 +2825,25 @@ def register_combat_handlers(bot):
             return
 
         mob = bot.user_data[user_id]
-
         cooldown = mob.get("potion_cooldown", 0)
 
         if cooldown > 0:
+    
             bot.send_message(
                 message.chat.id,
                 f"🔴 Повний шлунок: зілля можна буде випити через {cooldown} ход.",
-                reply_markup=fight_kb()
+                reply_markup=build_combat_inline_kb(user_id, mob)
             )
             return
 
         kb = build_combat_potion_kb(user_id)
 
         if not kb:
+    
             bot.send_message(
                 message.chat.id,
                 "❌ У тебе немає зілля здоров’я",
-                reply_markup=fight_kb()
+                reply_markup=build_combat_inline_kb(user_id, mob)
             )
             return
 
@@ -2346,12 +2855,26 @@ def register_combat_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: call.data == "combat_back")
     def combat_back(call):
+        user_id = call.from_user.id
+        
+        if not hasattr(bot, "user_data") or user_id not in bot.user_data:
+            bot.answer_callback_query(call.id)
+            bot.send_message(
+                call.message.chat.id,
+                "❗ Бій вже завершено",
+                reply_markup=main_kb()
+            )
+            return
+            
+        mob = bot.user_data[user_id]
+
+        
         bot.answer_callback_query(call.id)
 
         bot.send_message(
             call.message.chat.id,
             "⚔️ Повернення до бою",
-            reply_markup=fight_kb()
+            reply_markup=build_combat_inline_kb(user_id, mob)
         )
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("combat_potion_"))
@@ -2369,16 +2892,18 @@ def register_combat_handlers(bot):
             return
 
         mob = bot.user_data[user_id]
+        character_name = get_character_name(user_id) or "Без імені"
 
         cooldown = mob.get("potion_cooldown", 0)
 
         if cooldown > 0:
             bot.answer_callback_query(call.id)
+    
 
             bot.send_message(
                 call.message.chat.id,
                 f"🔴 Повний шлунок: зілля можна буде випити через {cooldown} ход.",
-                reply_markup=fight_kb()
+                reply_markup=build_combat_inline_kb(user_id, mob)
             )
             return
 
@@ -2389,11 +2914,12 @@ def register_combat_handlers(bot):
 
         if not potion_result["success"]:
             bot.answer_callback_query(call.id)
+    
 
             bot.send_message(
                 call.message.chat.id,
                 potion_result["message"],
-                reply_markup=fight_kb()
+                reply_markup=build_combat_inline_kb(user_id, mob)
             )
             return
 
@@ -2404,26 +2930,31 @@ def register_combat_handlers(bot):
         player_hp = potion_result["new_hp"]
         player_max_hp = potion_result["max_hp"]
 
+        # Оновлюємо здоров'я в mob
+        mob["player_hp"] = player_hp
+        mob["player_max_hp"] = player_max_hp
+
         class_resource_text = get_class_resource_line(mob)
 
         text = (
             f"🧪 ЗІЛЛЯ\n\n"
             f"{potion_result['message']}\n\n"
-            f"✅ Хід не витрачено — ворог не атакує після використання зілля.\n"
+            f"✅ Хід не витрачено — {mob['name']} не атакує після використання зілля.\n"
             f"🔴 Повний шлунок: {cooldown_turns} ход.\n\n"
-            f"❤️ Твоє здоров’я: {player_hp}/{player_max_hp}\n"
+            f"❤️ {character_name}: {player_hp}/{player_max_hp}\n"
             f"{hp_bar(player_hp, player_max_hp)}\n"
             f"{class_resource_text}\n"
-            f"👹 Здоров’я ворога: {mob['hp']}/{mob['max_hp']}\n"
+            f"👹 {mob['name']}: {mob['hp']}/{mob['max_hp']}\n"
             f"{hp_bar(mob['hp'], mob['max_hp'])}"
         )
 
         text = append_effects_to_combat_text(text, mob)
 
+
         bot.send_message(
             call.message.chat.id,
             text,
-            reply_markup=fight_kb()
+            reply_markup=build_combat_inline_kb(user_id, mob)
         )
 
     @bot.message_handler(func=lambda m: m.text == "🏃 Втекти")
@@ -2460,6 +2991,13 @@ def register_combat_handlers(bot):
     def escape_yes(call):
         user_id = call.from_user.id
 
+        # Зберегти поточне здоров'я в базу перед втечею
+        if hasattr(bot, "user_data") and user_id in bot.user_data:
+            mob = bot.user_data[user_id]
+            # Перевіряємо, чи маємо ми player_hp в mob, але якщо ні, то нічого не робимо
+            if "player_hp" in mob:
+                set_current_hp(user_id, mob["player_hp"])
+
         mp_restore_result = restore_user_mp_to_full(user_id)
 
         if hasattr(bot, "user_data") and user_id in bot.user_data:
@@ -2478,10 +3016,24 @@ def register_combat_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: call.data == "escape_no")
     def escape_no(call):
+        user_id = call.from_user.id
+        
+        if not hasattr(bot, "user_data") or user_id not in bot.user_data:
+            bot.answer_callback_query(call.id)
+            bot.send_message(
+                call.message.chat.id,
+                "❗ Бій вже завершено",
+                reply_markup=main_kb()
+            )
+            return
+            
+        mob = bot.user_data[user_id]
+
+        
         bot.answer_callback_query(call.id)
 
         bot.send_message(
             call.message.chat.id,
             "⚔️ Ти залишився в бою",
-            reply_markup=fight_kb()
+            reply_markup=build_combat_inline_kb(user_id, mob)
         )

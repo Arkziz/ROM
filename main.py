@@ -71,5 +71,19 @@ start_notification_worker(bot)
 # START BOT
 # ==============================
 
+import logging
+
+# Налаштовуємо логування
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+
+logger = logging.getLogger(__name__)
 print("✅ BOT STARTED")
-bot.infinity_polling()
+
+try:
+    bot.infinity_polling()
+except Exception as e:
+    logger.critical(f"Помилка при запуску бота: {e}", exc_info=True)
+    raise
