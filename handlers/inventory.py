@@ -17,6 +17,10 @@ from db import (
     get_player_stats,
     get_item_required_level_by_inventory_id,
     get_inventory_weapon_damage_display,
+    get_item_classification_by_inventory_id,
+    get_armor_type_label,
+    get_item_subtype_label,
+    is_armor_slot,
 
     is_class_reset_sphere_inventory_item,
     use_class_reset_sphere_from_inventory
@@ -537,6 +541,25 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
 
         if not level_ok:
             text += f"⚠️ Цей предмет можна буде вдягнути з {required_level} рівня.\n"
+
+        classification = get_item_classification_by_inventory_id(inv_id)
+
+        if classification:
+            item_slot_key = classification.get("slot_key", "")
+            armor_type = classification.get("armor_type", "")
+            item_subtype = classification.get("item_subtype", "")
+
+            if is_armor_slot(item_slot_key):
+                if armor_type:
+                    text += f"🧵 Тип броні: {get_armor_type_label(armor_type)}\n"
+                else:
+                    text += "🧵 Тип броні: універсальна\n"
+
+            elif item_slot_key in ["main_hand", "off_hand"]:
+                if item_subtype:
+                    text += f"⚔️ Тип предмета: {get_item_subtype_label(item_subtype)}\n"
+                else:
+                    text += "⚔️ Тип предмета: універсальний\n"
 
         if slot_key == "main_hand":
             if weapon_hands == 2:

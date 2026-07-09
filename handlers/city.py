@@ -37,8 +37,10 @@ from db import (
 
     get_sellable_equipment_items,
     sell_inventory_item_to_trader,
-    get_item_by_inventory_id_full
-,
+    get_item_by_inventory_id_full,
+    get_armor_type_label,
+    get_item_subtype_label,
+    is_armor_slot,
     process_passive_regeneration,)
 
 from keyboards import (
@@ -587,6 +589,7 @@ def build_common_shop_preview_text(user_id, item_id):
         weapon_min_magic_damage,
         weapon_max_magic_damage,
         weapon_attack_type,
+        armor_type,
         price
     ) = preview
 
@@ -600,6 +603,18 @@ def build_common_shop_preview_text(user_id, item_id):
         f"🎯 Слот: {slot_name}\n"
         f"🏷 Рівень предмета: {item_level}\n"
     )
+
+    if is_armor_slot(slot_key):
+        text += (
+            f"🧵 Тип броні: {get_armor_type_label(armor_type)}\n"
+            f"✅ Підходить твоєму класу\n"
+        )
+
+    elif slot_key in ["main_hand", "off_hand"]:
+        text += (
+            f"⚔️ Тип предмета: {get_item_subtype_label(item_subtype)}\n"
+            f"✅ Підходить твоєму класу\n"
+        )
 
     if slot_key == "main_hand":
         if weapon_hands == 2:

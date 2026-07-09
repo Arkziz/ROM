@@ -6468,6 +6468,7 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
 
 def get_shop_preview_item(item_id, user_id):
     init_shop_preview_system()
+    init_class_equipment_restrictions_system()
 
     cursor.execute("""
     SELECT
@@ -6494,6 +6495,7 @@ def get_shop_preview_item(item_id, user_id):
         weapon_min_magic_damage,
         weapon_max_magic_damage,
         weapon_attack_type,
+        armor_type,
         shop_preview_price
     FROM items
     WHERE id=?
@@ -6501,7 +6503,6 @@ def get_shop_preview_item(item_id, user_id):
     """, (item_id, user_id))
 
     return cursor.fetchone()
-
 
 def cancel_common_equipment_shop_preview(user_id, item_id):
     init_shop_preview_system()
@@ -6534,7 +6535,7 @@ def confirm_common_equipment_shop_preview(user_id, item_id):
             "message": "❌ Попередній перегляд предмета не знайдено або застарів."
         }
 
-    price = preview[23] or 0
+    price = preview[24] or 0
     name = preview[1]
 
     cursor.execute("""
