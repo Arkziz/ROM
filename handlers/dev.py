@@ -7,6 +7,8 @@ from db import (
     get_user_energy,
     set_gold_for_test,
     create_generated_equipment_item,
+    create_dev_armor_item_for_test,
+    create_dev_weapon_item_for_test,
     reset_hero_for_test,
     CLASS_RESET_SPHERE_ITEM_ID,
     seed_class_reset_sphere_item
@@ -456,6 +458,106 @@ def register_dev_handlers(bot):
             reply_markup=main_kb()
         )
 
+
+    # ==============================
+    # /dev_armor armor_type [slot] [rarity] [level]
+    # ==============================
+
+    @bot.message_handler(commands=["dev_armor"])
+    def dev_armor(message):
+        if not DEV_MODE:
+            return
+
+        user_id = message.from_user.id
+        parts = message.text.split()
+
+        if len(parts) < 2:
+            bot.send_message(
+                message.chat.id,
+                (
+                    "❌ Формат:\n"
+                    "/dev_armor armor_type [slot] [rarity] [level]\n\n"
+                    "armor_type:\n"
+                    "cloth, leather, chain, plate\n\n"
+                    "slot:\n"
+                    "helmet, shoulders, chest, gloves, legs, boots\n\n"
+                    "Приклади:\n"
+                    "/dev_armor plate\n"
+                    "/dev_armor cloth chest rare 5\n"
+                    "/dev_armor leather boots uncommon 3"
+                ),
+                reply_markup=main_kb()
+            )
+            return
+
+        armor_type = parts[1]
+        slot_key = parts[2] if len(parts) >= 3 else "chest"
+        rarity = parts[3] if len(parts) >= 4 else "common"
+        item_level = parts[4] if len(parts) >= 5 else None
+
+        result = create_dev_armor_item_for_test(
+            user_id=user_id,
+            armor_type=armor_type,
+            slot_key=slot_key,
+            item_level=item_level,
+            rarity=rarity
+        )
+
+        bot.send_message(
+            message.chat.id,
+            result.get("message", "❌ Не вдалося створити броню."),
+            reply_markup=main_kb()
+        )
+
+    # ==============================
+    # /dev_weapon item_subtype [rarity] [level]
+    # ==============================
+
+    @bot.message_handler(commands=["dev_weapon"])
+    def dev_weapon(message):
+        if not DEV_MODE:
+            return
+
+        user_id = message.from_user.id
+        parts = message.text.split()
+
+        if len(parts) < 2:
+            bot.send_message(
+                message.chat.id,
+                (
+                    "❌ Формат:\n"
+                    "/dev_weapon item_subtype [rarity] [level]\n\n"
+                    "main_hand:\n"
+                    "sword_1h, dagger_1h, wand_1h, sword_2h, staff_2h, bow_2h, crossbow_2h\n\n"
+                    "off_hand:\n"
+                    "shield, talisman, dagger\n\n"
+                    "Приклади:\n"
+                    "/dev_weapon sword_1h\n"
+                    "/dev_weapon dagger_1h rare 5\n"
+                    "/dev_weapon shield common 3\n"
+                    "/dev_weapon talisman uncommon 4"
+                ),
+                reply_markup=main_kb()
+            )
+            return
+
+        item_profile = parts[1]
+        rarity = parts[2] if len(parts) >= 3 else "common"
+        item_level = parts[3] if len(parts) >= 4 else None
+
+        result = create_dev_weapon_item_for_test(
+            user_id=user_id,
+            item_profile=item_profile,
+            item_level=item_level,
+            rarity=rarity
+        )
+
+        bot.send_message(
+            message.chat.id,
+            result.get("message", "❌ Не вдалося створити зброю."),
+            reply_markup=main_kb()
+        )
+
     # ==============================
     # /devhelp
     # ==============================
@@ -469,7 +571,9 @@ def register_dev_handlers(bot):
             "🛠 DEV-команди\n\n"
             "📦 Предмети:\n"
             "/give item_id [quantity]\n"
-            "/drop rarity level\n\n"
+            "/drop rarity level\n"
+            "/dev_armor armor_type [slot] [rarity] [level]\n"
+            "/dev_weapon item_subtype [rarity] [level]\n\n"
             "/sphere [quantity]\n"
 
             "🏆 Рівень:\n"
@@ -499,6 +603,9 @@ def register_dev_handlers(bot):
             "/gold 100\n"
             "/drop uncommon 7\n"
             "/drop rare 10\n"
+            "/dev_armor plate chest rare 5\n"
+            "/dev_weapon dagger_1h rare 5\n"
+            "/dev_weapon shield common 3\n"
             "/resethero CONFIRM"
         )
 

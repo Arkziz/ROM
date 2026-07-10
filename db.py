@@ -8413,3 +8413,813 @@ def is_shop_profile_allowed_for_user(user_id, slot_key, item_profile):
         return item_profile in get_allowed_shop_off_hand_profiles(user_id)
 
     return True
+
+# ==============================
+# ✅ OVERRIDE: EQUIP ITEM WITH CLASS RESTRICTIONS
+# ==============================
+
+def equip_inventory_item(user_id, inventory_id):
+    item = get_item_by_inventory_id_full(inventory_id)
+
+    if not item:
+        return "❌ Предмет не знайдено"
+
+    (
+        inv_id,
+        item_id,
+        name,
+        type_,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        quantity,
+        max_stack,
+        durability,
+        b_str,
+        b_dex,
+        b_int,
+        b_wis,
+        b_sta,
+        pdef,
+        mdef,
+        sell_price
+    ) = item
+
+    if category != "equipment":
+        return "❌ Цей предмет не можна одягти"
+
+    player_level = get_player_level(user_id)
+    required_level = get_item_required_level_by_inventory_id(inventory_id)
+
+    if player_level < required_level:
+        return (
+            f"🔒 Ти ще не можеш одягти цей предмет.\n\n"
+            f"📦 Предмет: {name}\n"
+            f"🏷 Потрібний рівень: {required_level}\n"
+            f"👤 Твій рівень: {player_level}"
+        )
+
+    if not slot_key:
+        return "❌ Для цього предмета не вказано слот"
+
+    if slot_key not in EQUIPMENT_SLOTS:
+        return "❌ Невідомий слот екіпірування"
+
+    # ==============================
+    # ✅ CLASS EQUIPMENT RESTRICTION CHECK
+    # ==============================
+
+    class_check = can_equip_inventory_item_by_class(
+        user_id=user_id,
+        inventory_id=inventory_id
+    )
+
+    if not class_check.get("success"):
+        return class_check.get(
+            "message",
+            "❌ Цей предмет не підходить твоєму класу."
+        )
+
+    # ==============================
+    # ✅ TWO-HANDED / OFF-HAND RULE
+    # ==============================
+
+    if slot_key == "off_hand" and is_main_hand_two_handed(user_id):
+        return "❌ Неможливо: дворучна зброя блокує другу руку"
+
+    if slot_key == "main_hand" and int(weapon_hands or 1) == 2:
+        old_offhand_id = get_equipped_slot(user_id, "off_hand")
+
+        if old_offhand_id:
+            unequip_slot(user_id, "off_hand")
+
+    set_equipped_slot(user_id, slot_key, inventory_id)
+
+    return f"✅ Одягнуто: {name}"
+
+# ==============================
+# ✅ AUTO UNEQUIP INCOMPATIBLE ITEMS AFTER CLASS CHANGE
+# ==============================
+
+def unequip_incompatible_items_after_class_change(user_id):
+    """
+    Після зміни класу автоматично знімає спорядження,
+    яке більше не підходить новому класу.
+
+    Перевіряє:
+    - armor_type для броні;
+    - item_subtype для main_hand;
+    - item_subtype для off_hand;
+    - правило дворучної зброї для off_hand.
+
+    Старі предмети без armor_type / item_subtype залишаються універсальними.
+    """
+
+    ensure_equipment_slots(user_id)
+    init_class_equipment_restrictions_system()
+    init_dynamic_equipment_system()
+    init_weapon_damage_system()
+
+    removed_items = []
+
+    equipped_slots = get_all_equipped_slots(user_id)
+
+    for slot_key in SLOT_ORDER:
+        inventory_id = equipped_slots.get(slot_key)
+
+        if not inventory_id:
+            continue
+
+        item_info = get_item_classification_by_inventory_id(inventory_id)
+
+        if not item_info:
+            continue
+
+        compatibility = can_equip_item_by_class(
+            user_id=user_id,
+            item_info=item_info
+        )
+
+        if compatibility.get("success"):
+            continue
+
+        item_name = item_info.get("name", "Невідомий предмет")
+
+        unequip_slot(user_id, slot_key)
+
+        removed_items.append({
+            "inventory_id": inventory_id,
+            "slot_key": slot_key,
+            "name": item_name,
+            "reason": compatibility.get("message", "")
+        })
+
+    return {
+        "success": True,
+        "removed_items": removed_items,
+        "removed_count": len(removed_items)
+    }
+
+
+def build_class_change_unequip_text(unequip_result):
+    """
+    Формує текст для повідомлення після зміни класу.
+    """
+
+    if not unequip_result:
+        return ""
+
+    removed_items = unequip_result.get("removed_items", [])
+
+    if not removed_items:
+        return "\n\n✅ Усе спорядження сумісне з новим класом."
+
+    text = "\n\n⚠️ Несумісне спорядження знято:\n"
+
+    for item in removed_items:
+        text += f"• {item.get('name', 'Невідомий предмет')}\n"
+
+    text += "\nПредмети повернуто в інвентар."
+
+    return text
+
+# ==============================
+# ✅ OVERRIDE: DYNAMIC LOOT WITH ARMOR_TYPE / ITEM_SUBTYPE
+# ==============================
+
+def get_random_loot_armor_type():
+    """
+    Випадковий тип броні для дропу з мобів.
+
+    Поки НЕ class-aware:
+    - може впасти тканина
+    - може впасти шкіра
+    - може впасти кольчуга
+    - можуть впасти лати
+    """
+
+    return random.choice([
+        "cloth",
+        "leather",
+        "chain",
+        "plate"
+    ])
+
+
+def create_generated_equipment_item(user_id, item_level, rarity):
+    """
+    Динамічний дроп екіпірування з мобів.
+
+    Важливо:
+    - для броні додає armor_type;
+    - для main_hand/off_hand додає item_subtype;
+    - для броні застосовує PDEF/MDEF профіль armor_type;
+    - поки дроп НЕ підлаштовується під клас гравця;
+    - предмет може бути несумісний із класом, і це нормально для випадкового луту.
+    """
+
+    init_dynamic_equipment_system()
+    init_weapon_damage_system()
+    init_class_equipment_restrictions_system()
+
+    item_level = int(item_level)
+    item_level = max(1, item_level)
+
+    if rarity not in ["common", "uncommon", "rare", "epic"]:
+        rarity = "common"
+
+    capacity = get_bag_capacity(user_id)
+    used_slots = get_inventory_used_slots(user_id)
+
+    if used_slots >= capacity:
+        return {
+            "success": False,
+            "lost": 1,
+            "message": "🎒 Сумка переповнена. Екіпірування не влізло."
+        }
+
+    slot_key = get_dynamic_slot_key()
+    item_profile = get_profile_for_generated_item(slot_key)
+
+    weapon_hands = 1
+    weapon_attack_type = ""
+    armor_type = ""
+
+    # ==============================
+    # MAIN HAND
+    # ==============================
+
+    if slot_key == "main_hand":
+        profile = MAIN_HAND_PROFILES[item_profile]
+
+        weapon_hands = profile["hands"]
+        weapon_attack_type = profile["attack_type"]
+
+        name = get_dynamic_weapon_name(
+            slot_key=slot_key,
+            rarity=rarity,
+            weapon_hands=weapon_hands,
+            item_profile=item_profile
+        )
+
+        type_ = "weapon"
+
+    # ==============================
+    # OFF HAND
+    # ==============================
+
+    elif slot_key == "off_hand":
+        profile = OFF_HAND_PROFILES[item_profile]
+
+        weapon_hands = 1
+        weapon_attack_type = profile["attack_type"]
+
+        name = get_dynamic_weapon_name(
+            slot_key=slot_key,
+            rarity=rarity,
+            weapon_hands=weapon_hands,
+            item_profile=item_profile
+        )
+
+        type_ = "offhand"
+
+    # ==============================
+    # ARMOR / ACCESSORIES
+    # ==============================
+
+    else:
+        item_profile = ""
+        weapon_hands = 1
+
+        if is_armor_slot(slot_key):
+            armor_type = get_random_loot_armor_type()
+
+        name = get_dynamic_armor_name(slot_key, rarity)
+        type_ = slot_key
+
+    rarity_name = DYNAMIC_RARITY_NAMES.get(rarity, "Звичайний")
+    name = f"{name} {item_level} рівня"
+
+    stats = generate_dynamic_equipment_stats(
+        slot_key=slot_key,
+        item_level=item_level,
+        rarity=rarity,
+        weapon_hands=weapon_hands,
+        item_profile=item_profile
+    )
+
+    if is_armor_slot(slot_key):
+        stats = apply_armor_type_defense_profile_to_stats(
+            stats=stats,
+            armor_type=armor_type
+        )
+
+    sell_price = get_dynamic_sell_price(item_level, rarity)
+
+    weapon_min_damage = 0
+    weapon_max_damage = 0
+    weapon_min_magic_damage = 0
+    weapon_max_magic_damage = 0
+
+    if slot_key == "main_hand":
+        min_dmg, max_dmg = calculate_weapon_damage_by_values(
+            item_level=item_level,
+            rarity=rarity,
+            weapon_hands=weapon_hands
+        )
+
+        if weapon_attack_type == "magical":
+            weapon_min_magic_damage = min_dmg
+            weapon_max_magic_damage = max_dmg
+        else:
+            weapon_min_damage = min_dmg
+            weapon_max_damage = max_dmg
+
+    cursor.execute("""
+    INSERT INTO items (
+        name,
+        type,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        max_stack,
+        sell_price,
+        bonus_str,
+        bonus_dex,
+        bonus_int,
+        bonus_wis,
+        bonus_sta,
+        pdef,
+        mdef,
+        item_level,
+        is_generated,
+        item_subtype,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type,
+        armor_type
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        name,
+        type_,
+        rarity,
+        "equipment",
+        slot_key,
+        weapon_hands,
+        1,
+        sell_price,
+        stats["bonus_str"],
+        stats["bonus_dex"],
+        stats["bonus_int"],
+        stats["bonus_wis"],
+        stats["bonus_sta"],
+        stats["pdef"],
+        stats["mdef"],
+        item_level,
+        1,
+        item_profile,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type,
+        armor_type
+    ))
+
+    item_id = cursor.lastrowid
+
+    cursor.execute("""
+    INSERT INTO inventory (
+        user_id,
+        item_id,
+        quantity,
+        durability
+    )
+    VALUES (?, ?, ?, ?)
+    """, (
+        user_id,
+        item_id,
+        1,
+        100
+    ))
+
+    inventory_id = cursor.lastrowid
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "lost": 0,
+        "name": name,
+        "rarity": rarity,
+        "rarity_name": rarity_name,
+        "slot_key": slot_key,
+        "item_id": item_id,
+        "inventory_id": inventory_id,
+        "armor_type": armor_type,
+        "item_subtype": item_profile,
+        "message": f"{name}"
+    }
+
+# ==============================
+# ✅ DEV EQUIPMENT GENERATION HELPERS
+# ==============================
+
+def normalize_dev_rarity(rarity):
+    rarity = (rarity or "common").strip().lower()
+
+    aliases = {
+        "white": "common",
+        "білий": "common",
+        "bilyi": "common",
+
+        "green": "uncommon",
+        "зелений": "uncommon",
+        "zelenyi": "uncommon",
+
+        "blue": "rare",
+        "синій": "rare",
+        "synii": "rare",
+
+        "purple": "epic",
+        "фіолетовий": "epic",
+        "fioletovyi": "epic",
+    }
+
+    rarity = aliases.get(rarity, rarity)
+
+    if rarity not in ["common", "uncommon", "rare", "epic"]:
+        rarity = "common"
+
+    return rarity
+
+
+def create_dev_armor_item_for_test(user_id, armor_type, slot_key="chest", item_level=None, rarity="common"):
+    """
+    DEV-функція.
+    Створює броню конкретного armor_type незалежно від класу.
+
+    Приклад:
+    create_dev_armor_item_for_test(user_id, "plate", "chest", 5, "rare")
+    """
+
+    init_dynamic_equipment_system()
+    init_weapon_damage_system()
+    init_class_equipment_restrictions_system()
+
+    armor_type = normalize_equipment_restriction_value(armor_type)
+    rarity = normalize_dev_rarity(rarity)
+
+    if armor_type not in ["cloth", "leather", "chain", "plate"]:
+        return {
+            "success": False,
+            "message": (
+                "❌ Невідомий тип броні.\n\n"
+                "Доступно:\n"
+                "cloth, leather, chain, plate"
+            )
+        }
+
+    if slot_key not in ARMOR_SLOTS:
+        return {
+            "success": False,
+            "message": (
+                "❌ Невідомий слот броні.\n\n"
+                "Доступно:\n"
+                "helmet, shoulders, chest, gloves, legs, boots"
+            )
+        }
+
+    if item_level is None:
+        item_level = get_player_level(user_id)
+
+    try:
+        item_level = int(item_level)
+    except Exception:
+        item_level = get_player_level(user_id)
+
+    item_level = max(1, item_level)
+
+    capacity = get_bag_capacity(user_id)
+    used_slots = get_inventory_used_slots(user_id)
+
+    if used_slots >= capacity:
+        return {
+            "success": False,
+            "message": "🎒 Сумка переповнена. Предмет не створено."
+        }
+
+    item_profile = ""
+    weapon_hands = 1
+    weapon_attack_type = ""
+
+    base_name = get_dynamic_armor_name(slot_key, rarity)
+    armor_label = get_armor_type_label(armor_type)
+    name = f"{base_name} [{armor_label}] {item_level} рівня"
+
+    stats = generate_dynamic_equipment_stats(
+        slot_key=slot_key,
+        item_level=item_level,
+        rarity=rarity,
+        weapon_hands=weapon_hands,
+        item_profile=item_profile
+    )
+
+    stats = apply_armor_type_defense_profile_to_stats(
+        stats=stats,
+        armor_type=armor_type
+    )
+
+    sell_price = get_dynamic_sell_price(item_level, rarity)
+
+    cursor.execute("""
+    INSERT INTO items (
+        name,
+        type,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        max_stack,
+        sell_price,
+        bonus_str,
+        bonus_dex,
+        bonus_int,
+        bonus_wis,
+        bonus_sta,
+        pdef,
+        mdef,
+        item_level,
+        is_generated,
+        item_subtype,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type,
+        armor_type
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        name,
+        slot_key,
+        rarity,
+        "equipment",
+        slot_key,
+        weapon_hands,
+        1,
+        sell_price,
+        stats["bonus_str"],
+        stats["bonus_dex"],
+        stats["bonus_int"],
+        stats["bonus_wis"],
+        stats["bonus_sta"],
+        stats["pdef"],
+        stats["mdef"],
+        item_level,
+        1,
+        item_profile,
+        0,
+        0,
+        0,
+        0,
+        weapon_attack_type,
+        armor_type
+    ))
+
+    item_id = cursor.lastrowid
+
+    cursor.execute("""
+    INSERT INTO inventory (
+        user_id,
+        item_id,
+        quantity,
+        durability
+    )
+    VALUES (?, ?, ?, ?)
+    """, (
+        user_id,
+        item_id,
+        1,
+        100
+    ))
+
+    inventory_id = cursor.lastrowid
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": (
+            f"✅ DEV: броню створено.\n\n"
+            f"📦 {name}\n"
+            f"🎯 Слот: {EQUIPMENT_SLOTS.get(slot_key, slot_key)}\n"
+            f"🧵 Тип броні: {get_armor_type_label(armor_type)}\n"
+            f"🏷 Рівень: {item_level}\n"
+            f"⭐ Рідкість: {rarity}\n"
+            f"🆔 inventory_id: {inventory_id}"
+        ),
+        "item_id": item_id,
+        "inventory_id": inventory_id,
+        "armor_type": armor_type,
+        "slot_key": slot_key
+    }
+
+
+def create_dev_weapon_item_for_test(user_id, item_profile, item_level=None, rarity="common"):
+    """
+    DEV-функція.
+    Створює зброю або off-hand конкретного item_subtype незалежно від класу.
+
+    Приклади:
+    create_dev_weapon_item_for_test(user_id, "dagger_1h", 5, "rare")
+    create_dev_weapon_item_for_test(user_id, "shield", 5, "common")
+    """
+
+    init_dynamic_equipment_system()
+    init_weapon_damage_system()
+    init_class_equipment_restrictions_system()
+
+    item_profile = normalize_equipment_restriction_value(item_profile)
+    rarity = normalize_dev_rarity(rarity)
+
+    if item_profile in MAIN_HAND_PROFILES:
+        slot_key = "main_hand"
+        profile = MAIN_HAND_PROFILES[item_profile]
+        weapon_hands = profile["hands"]
+        weapon_attack_type = profile["attack_type"]
+        type_ = "weapon"
+
+    elif item_profile in OFF_HAND_PROFILES:
+        slot_key = "off_hand"
+        profile = OFF_HAND_PROFILES[item_profile]
+        weapon_hands = 1
+        weapon_attack_type = profile["attack_type"]
+        type_ = "offhand"
+
+    else:
+        return {
+            "success": False,
+            "message": (
+                "❌ Невідомий тип зброї / off-hand.\n\n"
+                "Main hand:\n"
+                "sword_1h, dagger_1h, wand_1h, sword_2h, staff_2h, bow_2h, crossbow_2h\n\n"
+                "Off hand:\n"
+                "shield, talisman, dagger"
+            )
+        }
+
+    if item_level is None:
+        item_level = get_player_level(user_id)
+
+    try:
+        item_level = int(item_level)
+    except Exception:
+        item_level = get_player_level(user_id)
+
+    item_level = max(1, item_level)
+
+    capacity = get_bag_capacity(user_id)
+    used_slots = get_inventory_used_slots(user_id)
+
+    if used_slots >= capacity:
+        return {
+            "success": False,
+            "message": "🎒 Сумка переповнена. Предмет не створено."
+        }
+
+    name = get_dynamic_weapon_name(
+        slot_key=slot_key,
+        rarity=rarity,
+        weapon_hands=weapon_hands,
+        item_profile=item_profile
+    )
+
+    name = f"{name} {item_level} рівня"
+
+    stats = generate_dynamic_equipment_stats(
+        slot_key=slot_key,
+        item_level=item_level,
+        rarity=rarity,
+        weapon_hands=weapon_hands,
+        item_profile=item_profile
+    )
+
+    sell_price = get_dynamic_sell_price(item_level, rarity)
+
+    weapon_min_damage = 0
+    weapon_max_damage = 0
+    weapon_min_magic_damage = 0
+    weapon_max_magic_damage = 0
+
+    if slot_key == "main_hand":
+        min_dmg, max_dmg = calculate_weapon_damage_by_values(
+            item_level=item_level,
+            rarity=rarity,
+            weapon_hands=weapon_hands
+        )
+
+        if weapon_attack_type == "magical":
+            weapon_min_magic_damage = min_dmg
+            weapon_max_magic_damage = max_dmg
+        else:
+            weapon_min_damage = min_dmg
+            weapon_max_damage = max_dmg
+
+    cursor.execute("""
+    INSERT INTO items (
+        name,
+        type,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        max_stack,
+        sell_price,
+        bonus_str,
+        bonus_dex,
+        bonus_int,
+        bonus_wis,
+        bonus_sta,
+        pdef,
+        mdef,
+        item_level,
+        is_generated,
+        item_subtype,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type,
+        armor_type
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        name,
+        type_,
+        rarity,
+        "equipment",
+        slot_key,
+        weapon_hands,
+        1,
+        sell_price,
+        stats["bonus_str"],
+        stats["bonus_dex"],
+        stats["bonus_int"],
+        stats["bonus_wis"],
+        stats["bonus_sta"],
+        stats["pdef"],
+        stats["mdef"],
+        item_level,
+        1,
+        item_profile,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type,
+        ""
+    ))
+
+    item_id = cursor.lastrowid
+
+    cursor.execute("""
+    INSERT INTO inventory (
+        user_id,
+        item_id,
+        quantity,
+        durability
+    )
+    VALUES (?, ?, ?, ?)
+    """, (
+        user_id,
+        item_id,
+        1,
+        100
+    ))
+
+    inventory_id = cursor.lastrowid
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": (
+            f"✅ DEV: зброю / off-hand створено.\n\n"
+            f"📦 {name}\n"
+            f"🎯 Слот: {EQUIPMENT_SLOTS.get(slot_key, slot_key)}\n"
+            f"⚔️ Тип предмета: {get_item_subtype_label(item_profile)}\n"
+            f"🏷 Рівень: {item_level}\n"
+            f"⭐ Рідкість: {rarity}\n"
+            f"🆔 inventory_id: {inventory_id}"
+        ),
+        "item_id": item_id,
+        "inventory_id": inventory_id,
+        "item_subtype": item_profile,
+        "slot_key": slot_key
+    }

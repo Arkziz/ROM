@@ -65,6 +65,59 @@ def get_slot_label(slot_key):
     return EQUIPMENT_SLOTS.get(slot_key, slot_key)
 
 
+
+def build_item_display_name(user_id, inventory_id, fallback_name):
+    """
+    Повертає назву предмета для списків інвентаря.
+
+    Для броні додає тип у дужках:
+    Чоботи 1 рівня -> Чоботи [Лати] 1 рівня
+
+    Для зброї / off-hand НЕ додає тип у дужках,
+    бо назва вже зазвичай містить сам тип:
+    Кинджал 1 рівня
+    Жезл 1 рівня
+    Магічний талісман 1 рівня
+    """
+
+    classification = get_item_classification_by_inventory_id(inventory_id)
+
+    if not classification:
+        return fallback_name
+
+    slot_key = classification.get("slot_key", "")
+    armor_type = classification.get("armor_type", "")
+
+    # Тип у дужках показуємо тільки для броні.
+    if not is_armor_slot(slot_key):
+        return fallback_name
+
+    if not armor_type:
+        return fallback_name
+
+    type_label = get_armor_type_label(armor_type)
+
+    if not type_label:
+        return fallback_name
+
+    # Якщо назва вже містить цей тип — не дублюємо.
+    if f"[{type_label}]" in fallback_name:
+        return fallback_name
+
+    marker = " рівня"
+
+    if marker in fallback_name:
+        index = fallback_name.rfind(marker)
+        before_level = fallback_name[:index]
+        after_level = fallback_name[index:]
+
+        parts = before_level.rsplit(" ", 1)
+
+        if len(parts) == 2 and parts[1].isdigit():
+            return f"{parts[0]} [{type_label}] {parts[1]}{after_level}"
+
+    return f"{fallback_name} [{type_label}]"
+
 def format_item_bonuses(b_str, b_dex, b_int, b_wis, b_sta, pdef, mdef):
     bonuses = []
 
@@ -183,7 +236,11 @@ def build_item_button_label(user_id, item):
         sell_price
     ) = item
 
-    label = name
+    label = build_item_display_name(
+        user_id=user_id,
+        inventory_id=inv_id,
+        fallback_name=name
+    )
 
     if max_stack and max_stack > 1:
         label += f" x{quantity}"
@@ -239,8 +296,14 @@ def build_equipped_comparison_text(user_id, slot_key, current_inventory_id):
         sell_price
     ) = equipped_item
 
+    display_name = build_item_display_name(
+        user_id=user_id,
+        inventory_id=inv_id,
+        fallback_name=name
+    )
+
     text = "\n\n⚖️ Зараз вдягнено для порівняння:\n"
-    text += f"{name}\n"
+    text += f"{display_name}\n"
 
     if item_slot_key == "main_hand":
         if weapon_hands == 2:
@@ -378,7 +441,13 @@ def build_category_list(user_id, category_key, page=0):
             equipped_item = get_item_by_inventory_id_full(equipped_inventory_id)
 
             if equipped_item:
-                text += f"✅ Зараз вдягнено: {equipped_item[2]}\n\n"
+                equipped_display_name = build_item_display_name(
+                    user_id=user_id,
+                    inventory_id=equipped_inventory_id,
+                    fallback_name=equipped_item[2]
+                )
+
+                text += f"✅ Зараз вдягнено: {equipped_display_name}\n\n"
         else:
             text += "Слот порожній.\n\n"
 
@@ -469,7 +538,13 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
 
     kb = types.InlineKeyboardMarkup()
 
-    text = f"📦 Предмет\n\n{name}\n\n"
+    display_name = build_item_display_name(
+        user_id=user_id,
+        inventory_id=inv_id,
+        fallback_name=name
+    )
+
+    text = f"📦 Предмет\n\n{display_name}\n\n"
 
     # ==============================
     # TRASH
@@ -541,25 +616,6 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
 
         if not level_ok:
             text += f"⚠️ Цей предмет можна буде вдягнути з {required_level} рівня.\n"
-
-        classification = get_item_classification_by_inventory_id(inv_id)
-
-        if classification:
-            item_slot_key = classification.get("slot_key", "")
-            armor_type = classification.get("armor_type", "")
-            item_subtype = classification.get("item_subtype", "")
-
-            if is_armor_slot(item_slot_key):
-                if armor_type:
-                    text += f"🧵 Тип броні: {get_armor_type_label(armor_type)}\n"
-                else:
-                    text += "🧵 Тип броні: універсальна\n"
-
-            elif item_slot_key in ["main_hand", "off_hand"]:
-                if item_subtype:
-                    text += f"⚔️ Тип предмета: {get_item_subtype_label(item_subtype)}\n"
-                else:
-                    text += "⚔️ Тип предмета: універсальний\n"
 
         if slot_key == "main_hand":
             if weapon_hands == 2:

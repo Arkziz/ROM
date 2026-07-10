@@ -18,7 +18,10 @@ from db import (
     has_class_change_available,
     consume_class_change_available,
 
-    process_passive_regeneration
+    process_passive_regeneration,
+
+    unequip_incompatible_items_after_class_change,
+    build_class_change_unequip_text
 )
 
 from keyboards import main_kb
@@ -288,15 +291,18 @@ def register_start_handlers(bot):
             )
             return
 
+        unequip_result = unequip_incompatible_items_after_class_change(user_id)
+        unequip_text = build_class_change_unequip_text(unequip_result)
+
         bot.send_message(
             call.message.chat.id,
             (
                 f"🔮 Клас змінено.\n\n"
                 f"Було: {old_class}\n"
                 f"Стало: {result['class_name']}"
+                f"{unequip_text}"
             )
         )
-
         bot.send_message(
             call.message.chat.id,
             build_main_menu_text(user_id),
