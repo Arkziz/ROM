@@ -9223,3 +9223,486 @@ def create_dev_weapon_item_for_test(user_id, item_profile, item_level=None, rari
         "item_subtype": item_profile,
         "slot_key": slot_key
     }
+
+# ==============================
+# ✅ OVERRIDE: CLASS-AWARE DYNAMIC LOOT
+# ==============================
+
+def get_random_loot_armor_type():
+    """
+    Випадковий armor_type для повністю випадкового дропу.
+    """
+
+    return random.choice([
+        "cloth",
+        "leather",
+        "chain",
+        "plate"
+    ])
+
+
+def get_random_class_aware_equipment_choice(user_id):
+    """
+    Повертає slot_key, item_profile, armor_type для предмета під клас.
+
+    Логіка:
+    - броня під клас;
+    - main_hand під клас;
+    - off_hand під клас, якщо клас має дозволений off_hand.
+    """
+
+    class_key = get_character_class(user_id)
+
+    allowed_armor_type = get_allowed_armor_type_for_class(class_key)
+    allowed_main_hand = get_allowed_main_hand_subtypes_for_class(class_key)
+    allowed_off_hand = get_allowed_off_hand_subtypes_for_class(class_key)
+
+    has_off_hand = len(allowed_off_hand) > 0
+
+    roll = random.random()
+
+    # Якщо клас має off-hand:
+    # 60% броня, 25% main hand, 15% off hand.
+    if has_off_hand:
+        if roll < 0.60:
+            return {
+                "slot_key": random.choice(ARMOR_SLOTS),
+                "item_profile": "",
+                "armor_type": allowed_armor_type
+            }
+
+        if roll < 0.85:
+            return {
+                "slot_key": "main_hand",
+                "item_profile": random.choice(allowed_main_hand),
+                "armor_type": ""
+            }
+
+        return {
+            "slot_key": "off_hand",
+            "item_profile": random.choice(allowed_off_hand),
+            "armor_type": ""
+        }
+
+    # Якщо клас НЕ має off-hand:
+    # 65% броня, 35% main hand.
+    if roll < 0.65:
+        return {
+            "slot_key": random.choice(ARMOR_SLOTS),
+            "item_profile": "",
+            "armor_type": allowed_armor_type
+        }
+
+    return {
+        "slot_key": "main_hand",
+        "item_profile": random.choice(allowed_main_hand),
+        "armor_type": ""
+    }
+
+
+def get_random_unrestricted_equipment_choice():
+    """
+    Повертає slot_key, item_profile, armor_type для повністю випадкового предмета.
+    """
+
+    slot_key = get_dynamic_slot_key()
+    item_profile = get_profile_for_generated_item(slot_key)
+    armor_type = ""
+
+    if is_armor_slot(slot_key):
+        armor_type = get_random_loot_armor_type()
+        item_profile = ""
+
+    return {
+        "slot_key": slot_key,
+        "item_profile": item_profile,
+        "armor_type": armor_type
+    }
+
+
+def create_generated_equipment_item(
+    user_id,
+    item_level,
+    rarity,
+    class_aware_chance=0.0
+):
+    """
+    Динамічний дроп екіпірування з мобів.
+
+    class_aware_chance:
+    - 0.0 = повністю випадковий предмет;
+    - 0.5 = 50% шанс предмета під клас;
+    - 0.7 = 70% шанс предмета під клас.
+
+    Для class-aware предмета:
+    - броня отримує armor_type класу;
+    - зброя отримує item_subtype, дозволений класу;
+    - off-hand отримує item_subtype, дозволений класу.
+
+    Для random предмета:
+    - броня отримує випадковий armor_type;
+    - зброя/off-hand отримує випадковий item_subtype.
+    """
+
+    init_dynamic_equipment_system()
+    init_weapon_damage_system()
+    init_class_equipment_restrictions_system()
+
+    item_level = int(item_level)
+    item_level = max(1, item_level)
+
+    if rarity not in ["common", "uncommon", "rare", "epic"]:
+        rarity = "common"
+
+    capacity = get_bag_capacity(user_id)
+    used_slots = get_inventory_used_slots(user_id)
+
+    if used_slots >= capacity:
+        return {
+            "success": False,
+            "lost": 1,
+            "message": "🎒 Сумка переповнена. Екіпірування не влізло."
+        }
+
+    try:
+        class_aware_chance = float(class_aware_chance or 0.0)
+    except Exception:
+        class_aware_chance = 0.0
+
+    class_aware_chance = max(0.0, min(1.0, class_aware_chance))
+
+    is_class_aware = random.random() <= class_aware_chance
+
+    if is_class_aware:
+        choice = get_random_class_aware_equipment_choice(user_id)
+    else:
+        choice = get_random_unrestricted_equipment_choice()
+
+    slot_key = choice["slot_key"]
+    item_profile = choice.get("item_profile", "")
+    armor_type = choice.get("armor_type", "")
+
+    weapon_hands = 1
+    weapon_attack_type = ""
+
+    # ==============================
+    # MAIN HAND
+    # ==============================
+
+    if slot_key == "main_hand":
+        if item_profile not in MAIN_HAND_PROFILES:
+            item_profile = get_random_main_hand_profile()
+
+        profile = MAIN_HAND_PROFILES[item_profile]
+
+        weapon_hands = profile["hands"]
+        weapon_attack_type = profile["attack_type"]
+
+        name = get_dynamic_weapon_name(
+            slot_key=slot_key,
+            rarity=rarity,
+            weapon_hands=weapon_hands,
+            item_profile=item_profile
+        )
+
+        type_ = "weapon"
+
+    # ==============================
+    # OFF HAND
+    # ==============================
+
+    elif slot_key == "off_hand":
+        if item_profile not in OFF_HAND_PROFILES:
+            item_profile = get_random_off_hand_profile()
+
+        profile = OFF_HAND_PROFILES[item_profile]
+
+        weapon_hands = 1
+        weapon_attack_type = profile["attack_type"]
+
+        name = get_dynamic_weapon_name(
+            slot_key=slot_key,
+            rarity=rarity,
+            weapon_hands=weapon_hands,
+            item_profile=item_profile
+        )
+
+        type_ = "offhand"
+
+    # ==============================
+    # ARMOR / ACCESSORIES
+    # ==============================
+
+    else:
+        item_profile = ""
+        weapon_hands = 1
+
+        if is_armor_slot(slot_key):
+            if not armor_type:
+                armor_type = get_random_loot_armor_type()
+        else:
+            armor_type = ""
+
+        name = get_dynamic_armor_name(slot_key, rarity)
+        type_ = slot_key
+
+    rarity_name = DYNAMIC_RARITY_NAMES.get(rarity, "Звичайний")
+    name = f"{name} {item_level} рівня"
+
+    stats = generate_dynamic_equipment_stats(
+        slot_key=slot_key,
+        item_level=item_level,
+        rarity=rarity,
+        weapon_hands=weapon_hands,
+        item_profile=item_profile
+    )
+
+    if is_armor_slot(slot_key):
+        stats = apply_armor_type_defense_profile_to_stats(
+            stats=stats,
+            armor_type=armor_type
+        )
+
+    sell_price = get_dynamic_sell_price(item_level, rarity)
+
+    weapon_min_damage = 0
+    weapon_max_damage = 0
+    weapon_min_magic_damage = 0
+    weapon_max_magic_damage = 0
+
+    if slot_key == "main_hand":
+        min_dmg, max_dmg = calculate_weapon_damage_by_values(
+            item_level=item_level,
+            rarity=rarity,
+            weapon_hands=weapon_hands
+        )
+
+        if weapon_attack_type == "magical":
+            weapon_min_magic_damage = min_dmg
+            weapon_max_magic_damage = max_dmg
+        else:
+            weapon_min_damage = min_dmg
+            weapon_max_damage = max_dmg
+
+    cursor.execute("""
+    INSERT INTO items (
+        name,
+        type,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        max_stack,
+        sell_price,
+        bonus_str,
+        bonus_dex,
+        bonus_int,
+        bonus_wis,
+        bonus_sta,
+        pdef,
+        mdef,
+        item_level,
+        is_generated,
+        item_subtype,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type,
+        armor_type
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        name,
+        type_,
+        rarity,
+        "equipment",
+        slot_key,
+        weapon_hands,
+        1,
+        sell_price,
+        stats["bonus_str"],
+        stats["bonus_dex"],
+        stats["bonus_int"],
+        stats["bonus_wis"],
+        stats["bonus_sta"],
+        stats["pdef"],
+        stats["mdef"],
+        item_level,
+        1,
+        item_profile,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type,
+        armor_type
+    ))
+
+    item_id = cursor.lastrowid
+
+    cursor.execute("""
+    INSERT INTO inventory (
+        user_id,
+        item_id,
+        quantity,
+        durability
+    )
+    VALUES (?, ?, ?, ?)
+    """, (
+        user_id,
+        item_id,
+        1,
+        100
+    ))
+
+    inventory_id = cursor.lastrowid
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "lost": 0,
+        "name": name,
+        "rarity": rarity,
+        "rarity_name": rarity_name,
+        "slot_key": slot_key,
+        "item_id": item_id,
+        "inventory_id": inventory_id,
+        "armor_type": armor_type,
+        "item_subtype": item_profile,
+        "class_aware": is_class_aware,
+        "message": f"{name}"
+    }
+
+# ==============================
+# ✅ OVERRIDE: SAFE ENERGY INIT + NEW USER ENERGY FIX
+# ==============================
+
+def init_energy_system():
+    """
+    Ініціалізує систему втоми.
+
+    Правильна логіка:
+    - energy = 0 означає герой відпочив і може полювати;
+    - ENERGY_MAX = 40 означає герой повністю втомлений;
+    - новий герой має стартувати з energy = 0/40;
+    - некоректні старі значення energy > ENERGY_MAX треба виправляти.
+    """
+
+    migrations = [
+        ("users", "energy", "INTEGER DEFAULT 0"),
+        ("users", "last_energy_update", "TEXT DEFAULT ''"),
+        ("users", "energy_full_notified", "INTEGER DEFAULT 1"),
+    ]
+
+    for table, column, column_type in migrations:
+        try:
+            cursor.execute(f"ALTER TABLE {table} ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
+
+    # NULL або від’ємна втома — це некоректно, ставимо 0.
+    cursor.execute("""
+    UPDATE users
+    SET energy = 0
+    WHERE energy IS NULL OR energy < 0
+    """)
+
+    # Втома більша за максимум — це баг старої логіки.
+    # Ставимо 0, бо новий/битий персонаж не має бути заблокований.
+    cursor.execute("""
+    UPDATE users
+    SET energy = 0
+    WHERE energy > ?
+    """, (ENERGY_MAX,))
+
+    # Якщо герой вже не втомлений, повідомлення про повне відновлення не потрібно.
+    cursor.execute("""
+    UPDATE users
+    SET energy_full_notified = 1
+    WHERE energy <= 0
+    """)
+
+    conn.commit()
+
+
+def create_user(user_id):
+    """
+    Фінальна версія створення користувача.
+
+    Важливо:
+    новий персонаж має створюватися з втомою 0/40.
+    """
+
+    from datetime import datetime
+
+    init_energy_system()
+
+    cursor.execute("""
+    INSERT OR IGNORE INTO users (
+        user_id,
+        hp,
+        max_hp,
+        level,
+        exp,
+        gold,
+        kills,
+        bag_slots,
+        current_location,
+        str,
+        dex,
+        intelligence,
+        wis,
+        sta,
+        equipped_weapon,
+        equipped_armor,
+        energy,
+        last_energy_update,
+        energy_full_notified
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        user_id,
+        170,
+        170,
+        1,
+        0,
+        0.0,
+        0,
+        DEFAULT_BAG_SLOTS,
+        "start_path",
+        10,
+        10,
+        10,
+        10,
+        10,
+        None,
+        None,
+        0,
+        datetime.now().isoformat(),
+        1
+    ))
+
+    conn.commit()
+
+    # Якщо користувач уже існував, але мав биту втому > 40,
+    # виправляємо окремо.
+    cursor.execute("""
+    UPDATE users
+    SET energy = 0,
+        last_energy_update = ?,
+        energy_full_notified = 1
+    WHERE user_id = ?
+      AND (energy IS NULL OR energy < 0 OR energy > ?)
+    """, (
+        datetime.now().isoformat(),
+        user_id,
+        ENERGY_MAX
+    ))
+
+    conn.commit()
+
+    ensure_equipment_slots(user_id)
+    migrate_legacy_equipment_to_slots(user_id)
+    expand_bag_slots_to_40()

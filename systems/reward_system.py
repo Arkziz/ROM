@@ -19,6 +19,12 @@ from db import (
 NORMAL_EQUIPMENT_DROP_CHANCE = 0.20
 ELITE_EQUIPMENT_DROP_CHANCE = 0.45
 
+# Class-aware шанс саме всередині успішного дропу спорядження.
+# Тобто спочатку ролиться шанс дропу предмета,
+# а потім уже визначається: під клас чи повністю випадковий.
+NORMAL_CLASS_AWARE_EQUIPMENT_CHANCE = 0.50
+ELITE_CLASS_AWARE_EQUIPMENT_CHANCE = 0.70
+
 
 def roll_normal_equipment_rarity():
     """
@@ -144,10 +150,12 @@ def roll_equipment_drop(user_id, mob):
     Звичайний моб:
     - 20% шанс предмета
     - 80% common / 20% uncommon
+    - 50% шанс, що предмет буде під клас
 
     Елітний моб:
     - 45% шанс предмета
     - 75% uncommon / 25% rare
+    - 70% шанс, що предмет буде під клас
     """
 
     mob_level = int(mob.get("level", 1))
@@ -163,13 +171,16 @@ def roll_equipment_drop(user_id, mob):
 
     if is_elite:
         rarity = roll_elite_equipment_rarity()
+        class_aware_chance = ELITE_CLASS_AWARE_EQUIPMENT_CHANCE
     else:
         rarity = roll_normal_equipment_rarity()
+        class_aware_chance = NORMAL_CLASS_AWARE_EQUIPMENT_CHANCE
 
     result = create_generated_equipment_item(
         user_id=user_id,
         item_level=mob_level,
-        rarity=rarity
+        rarity=rarity,
+        class_aware_chance=class_aware_chance
     )
 
     if not result.get("success"):
@@ -182,10 +193,15 @@ def roll_equipment_drop(user_id, mob):
         "epic": "🟣"
     }.get(rarity, "⚪")
 
-    if is_elite:
-        return f"{rarity_text} Елітний трофей: {result['name']}"
+    class_aware_text = ""
 
-    return f"{rarity_text} Знайдено спорядження: {result['name']}"
+    if result.get("class_aware"):
+        class_aware_text = " 🎯"
+
+    if is_elite:
+        return f"{rarity_text}{class_aware_text} Елітний трофей: {result['name']}"
+
+    return f"{rarity_text}{class_aware_text} Знайдено спорядження: {result['name']}"
 
 
 # ==============================
