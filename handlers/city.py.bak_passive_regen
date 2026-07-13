@@ -1,0 +1,1361 @@
+from telebot import types
+
+from data.locations import LOCATIONS
+from data.mobs import get_mobs_for_location
+
+from db import (
+    EQUIPMENT_SLOTS,
+
+    get_current_location,
+    get_player_stats,
+    get_current_hp,
+    get_max_hp,
+    get_user_energy,
+    get_inventory_used_slots,
+    get_bag_capacity,
+
+    get_contract_status,
+
+    sell_all_trash,
+    buy_item_for_gold,
+
+    get_equipped_items_for_repair,
+    get_total_repair_cost,
+    repair_all_equipped,
+    repair_equipped_item,
+    get_wallet,
+    format_gold,
+
+    get_common_equipment_shop_offer,
+    get_common_equipment_shop_suboffers,
+
+    create_common_equipment_shop_preview,
+    get_shop_preview_item,
+    get_shop_preview_weapon_damage_text,
+    confirm_common_equipment_shop_preview,
+    cancel_common_equipment_shop_preview,
+
+    get_sellable_equipment_items,
+    sell_inventory_item_to_trader,
+    get_item_by_inventory_id_full
+)
+
+from keyboards import (
+    city_kb,
+    trader_kb,
+    craft_kb,
+    guild_kb,
+    townhall_kb,
+    tavern_kb,
+    alchemist_kb,
+    blacksmith_kb,
+    main_kb
+)
+
+from systems.potion_system import (
+    POTIONS,
+    ALCHEMIST_SHOP
+)
+
+
+SELL_EQUIPMENT_ITEMS_PER_PAGE = 10
+
+
+# ==============================
+# HELPERS: CITY TEXTS
+# ==============================
+
+def build_city_text(user_id):
+    location_id = get_current_location(user_id)
+    location = LOCATIONS.get(location_id, LOCATIONS["start_path"])
+
+    return (
+        f"🏙️ Місто\n\n"
+        f"📍 Регіон:\n"
+        f"{location['name']}\n\n"
+        f"Ти стоїш на центральній площі табору мандрівників. "
+        f"Навколо чути дзвін ковадла, запах трав від лавки алхіміка "
+        f"та гомін найманців біля дошки контрактів.\n\n"
+        f"Куди підеш?\n\n"
+        f"• 🛒 Торговий ряд — купівля та продаж\n"
+        f"• ⚒️ Ремісничий квартал — коваль і алхімік\n"
+        f"• 📜 Гільдія Найманців — щоденні контракти\n"
+        f"• 🏛️ Ратуша — щоденні й майбутні міські доручення\n"
+        f"• 🍺 Таверна — відпочинок і чутки"
+    )
+
+
+def build_trade_district_text(user_id):
+    gold = get_wallet(user_id)
+
+    return (
+        f"🛒 Торговий ряд\n\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
+        f"Вузька вулиця заставлена возами, ящиками та прилавками. "
+        f"Торговці скуповують сірий лут, непотрібне спорядження "
+        f"і продають прості речі для мандрівників.\n\n"
+        f"Доступні дії:\n"
+        f"• 🪙 Продати весь хлам\n"
+        f"• 🧰 Продати спорядження\n"
+        f"• ⚪ Базове спорядження"
+    )
+
+
+def build_craft_district_text(user_id):
+    gold = get_wallet(user_id)
+
+    return (
+        f"⚒️ Ремісничий квартал\n\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
+        f"Тут пахне вугіллям, розпеченим металом і настоями трав. "
+        f"Коваль лагодить спорядження, а алхімік продає зілля "
+        f"для тих, хто збирається повернутися на полювання.\n\n"
+        f"Доступні місця:\n"
+        f"• ⚒️ Коваль — ремонт спорядження\n"
+        f"• 🧪 Алхімік — купівля зілля"
+    )
+
+
+def build_guild_district_text(user_id):
+    status = get_contract_status(user_id)
+
+    text = (
+        f"📜 Гільдія Найманців\n\n"
+        f"На старій дошці висять замовлення від варти, торговців "
+        f"і мандрівників. Тут беруть роботу ті, хто не боїться "
+        f"вийти за межі табору.\n\n"
+    )
+
+    if not status["exists"]:
+        text += "❌ Персонажа не знайдено."
+        return text
+
+    if not status["unlocked"]:
+        text += (
+            f"🔒 Контракти відкриються з 5 рівня.\n"
+            f"👤 Твій рівень: {status['level']}\n"
+        )
+        return text
+
+    text += (
+        f"📆 Сьогодні здано контрактів: "
+        f"{status['completed_today']}/{status['daily_limit']}\n"
+    )
+
+    active = status["active_contract"]
+
+    if active:
+        if active.get("completed"):
+            text += (
+                f"\n✅ Виконаний контракт очікує здачі:\n"
+                f"🎯 Ціль: {active['target_mob_name']}\n"
+                f"📈 Прогрес: {active['current_kills']}/{active['target_kills']}\n"
+                f"✨ Нагорода: {active['reward_exp']} EXP\n\n"
+                f"Зайди до дошки контрактів, щоб здати його."
+            )
+        else:
+            text += (
+                f"\n📌 Активний контракт:\n"
+                f"🎯 Ціль: {active['target_mob_name']}\n"
+                f"📈 Прогрес: {active['current_kills']}/{active['target_kills']}\n"
+                f"✨ Нагорода після здачі: {active['reward_exp']} EXP\n"
+            )
+    else:
+        text += "\n✅ Можна переглянути дошку контрактів."
+
+    return text
+
+
+def build_townhall_text():
+    return (
+        f"🏛️ Ратуша\n\n"
+        f"Усередині тихо. На стінах висять старі карти околиць, "
+        f"а за великим столом лежать списки податків, звіти варти "
+        f"та прохання мешканців.\n\n"
+        f"Тут можна отримати щоденне завдання від місцевих жителів.\n\n"
+        f"Доступні дії:\n"
+        f"• 📆 Щоденне завдання"
+    )
+
+
+def build_tavern_text():
+    return (
+        f"🍺 Таверна\n\n"
+        f"Усередині тепло, пахне юшкою, свіжим хлібом і димом від каміна. "
+        f"Мандрівники обмінюються чутками про небезпечних істот, "
+        f"елітних ворогів і старі руїни за межами табору.\n\n"
+        f"Поки що таверна працює як атмосферне місце для майбутніх функцій.\n\n"
+        f"ℹ️ Пізніше тут можна буде додати:\n"
+        f"• 🛏️ Відпочинок для прискорення відновлення HP\n"
+        f"• 🍲 Їжу з тимчасовими бонусами\n"
+        f"• 🗣️ Чутки про елітних мобів або босів"
+    )
+
+
+def get_nearby_mobs_for_level(player_level, location_id):
+    mobs = get_mobs_for_location(location_id)
+    available = []
+
+    for mob in mobs:
+        mob_level = int(mob.get("level", 1))
+        min_player_level = int(mob.get("min_player_level", 1))
+
+        if min_player_level <= player_level and player_level - 1 <= mob_level <= player_level + 1:
+            available.append(mob)
+
+    if not available:
+        for mob in mobs:
+            if int(mob.get("min_player_level", 1)) <= player_level:
+                available.append(mob)
+
+    return available
+
+
+def build_contracts_short_status(user_id):
+    status = get_contract_status(user_id)
+
+    if not status["exists"]:
+        return "📜 Контракти: недоступно\n"
+
+    if not status["unlocked"]:
+        return "📜 Контракти: 🔒 з 5 рівня\n"
+
+    completed = status["completed_today"]
+    daily_limit = status["daily_limit"]
+    active = status["active_contract"]
+
+    text = f"📜 Контракти: {completed}/{daily_limit}\n"
+
+    if active:
+        if active.get("completed"):
+            text += (
+                f"✅ Контракт виконано: "
+                f"{active['target_mob_name']} "
+                f"{active['current_kills']}/{active['target_kills']} — здати в Гільдії\n"
+            )
+        else:
+            text += (
+                f"📌 Активний контракт: "
+                f"{active['target_mob_name']} "
+                f"{active['current_kills']}/{active['target_kills']}\n"
+            )
+
+    return text
+
+
+def build_main_menu_text(user_id):
+    location_id = get_current_location(user_id)
+    location = LOCATIONS.get(location_id, LOCATIONS["start_path"])
+
+    stats = get_player_stats(user_id)
+
+    if stats:
+        _, _, _, _, _, lvl = stats
+    else:
+        lvl = 1
+
+    current_hp = get_current_hp(user_id)
+    max_hp = get_max_hp(user_id)
+
+    energy_data = get_user_energy(user_id)
+    energy = energy_data["energy"]
+    max_energy = energy_data["max_energy"]
+
+    used_slots = get_inventory_used_slots(user_id)
+    capacity = get_bag_capacity(user_id)
+
+    contracts_text = build_contracts_short_status(user_id)
+
+    nearby_mobs = get_nearby_mobs_for_level(lvl, location_id)
+
+    mobs_text = ""
+
+    if nearby_mobs:
+        for mob in nearby_mobs:
+            attack_icon = "⚔️" if mob.get("attack_type") == "physical" else "🔮"
+
+            mobs_text += (
+                f"• {attack_icon} {mob['name']} — "
+                f"рівень {mob['level']}\n"
+            )
+    else:
+        mobs_text = "• Навколо поки тихо...\n"
+
+    text = (
+        f"🏕️ Табір мандрівників\n\n"
+        f"📍 Поточна зона:\n"
+        f"{location['name']}\n\n"
+        f"📖 {location['description']}\n\n"
+
+        f"Під ногами волога земля, поруч потріскує багаття, "
+        f"а за межами табору вже чути рух диких звірів. "
+        f"Тут шукачі пригод готуються до наступного полювання.\n\n"
+
+        f"👤 Твій рівень: {lvl}\n"
+        f"❤️ Здоров’я: {current_hp}/{max_hp}\n"
+        f"🔋 Енергія: {energy}/{max_energy}\n"
+        f"🎒 Сумка: {used_slots}/{capacity}\n"
+        f"{contracts_text}\n"
+
+        f"👀 Поблизу твого рівня можна зустріти:\n"
+        f"{mobs_text}\n"
+
+        f"Доступні дії:\n"
+        f"🔎 Полювання — вийти за межі табору\n"
+        f"🗺️ Мапа — переглянути напрямки та місто\n"
+        f"👤 Профіль — персонаж, інвентар і спорядження\n"
+        f"👀 Роззирнутися — оновити стан персонажа"
+    )
+
+    return text
+
+
+# ==============================
+# HELPERS: SERVICES
+# ==============================
+
+def build_alchemist_catalog(user_id):
+    gold = get_wallet(user_id)
+
+    kb = types.InlineKeyboardMarkup()
+
+    text = (
+        f"🧪 Алхімік\n\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
+        f"Алхімік продає зілля для виживання в бою.\n\n"
+        f"Асортимент:\n\n"
+    )
+
+    for item_id in ALCHEMIST_SHOP:
+        potion = POTIONS[item_id]
+
+        if potion["type"] == "hp":
+            effect = f"+{potion['restore']} HP"
+        else:
+            effect = f"+{potion['restore']} MP"
+
+        text += (
+            f"{potion['name']}\n"
+            f"Ефект: {effect}\n"
+            f"Ціна: {format_gold(potion['buy_price'])}\n"
+            f"Стак: {potion['max_stack']}\n\n"
+        )
+
+        kb.add(types.InlineKeyboardButton(
+            text=f"Купити: {potion['name']} — {format_gold(potion['buy_price'])}",
+            callback_data=f"buy_potion_{item_id}"
+        ))
+
+    text += (
+        f"⚠️ Мана ще не реалізована, тому сині зілля можна купити на майбутнє, "
+        f"але використати поки не можна."
+    )
+
+    return text, kb
+
+
+def build_blacksmith_text(user_id):
+    equipped_items = get_equipped_items_for_repair(user_id)
+    total_cost = get_total_repair_cost(user_id)
+    gold = get_wallet(user_id)
+
+    text = (
+        f"⚒️ КОВАЛЬ: РЕМОНТ ТА КУЗНЯ\n\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
+        f"📦 Стан твого спорядження:\n\n"
+    )
+
+    kb = types.InlineKeyboardMarkup()
+
+    damaged_count = 0
+
+    for item in equipped_items:
+        slot = item["slot"]
+        name = item["name"]
+        durability = item["durability"]
+        repair_cost = item["repair_cost"]
+        is_broken = item["is_broken"]
+        inventory_id = item["inventory_id"]
+
+        if inventory_id is None:
+            text += f"{slot}: порожньо\n\n"
+            continue
+
+        broken_text = " ⚠️ [ЗЛАМАНО]" if is_broken else ""
+
+        text += (
+            f"{slot}: {name}\n"
+            f"🛠️ Міцність: {durability}/100{broken_text}\n"
+            f"💰 Ремонт: {format_gold(repair_cost)}\n\n"
+        )
+
+        if repair_cost > 0:
+            damaged_count += 1
+
+            kb.add(types.InlineKeyboardButton(
+                text=f"🛠️ Ремонт: {name} — {format_gold(repair_cost)}",
+                callback_data=f"repair_one_{inventory_id}"
+            ))
+
+    text += (
+        f"💳 Разом за повний ремонт: {format_gold(total_cost)}\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
+    )
+
+    if damaged_count <= 0:
+        text += "✅ Усе спорядження вже в ідеальному стані."
+    elif gold < total_cost:
+        text += (
+            "❌ Недостатньо золота для повного ремонту.\n"
+            "ℹ️ Можеш відремонтувати окрему річ, якщо вистачає золота."
+        )
+    else:
+        text += "👇 Можна полагодити все або окрему річ."
+
+    if total_cost > 0:
+        kb.add(types.InlineKeyboardButton(
+            text=f"🛠️ Полагодити все за {format_gold(total_cost)}",
+            callback_data="repair_all_equipped"
+        ))
+
+    return text, kb
+
+
+def build_common_equipment_shop_text(user_id):
+    offers = get_common_equipment_shop_offer(user_id)
+    gold = get_wallet(user_id)
+
+    text = (
+        f"⚪ Базове спорядження\n\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
+        f"Торговець продає прості білі речі поточного рівня персонажа.\n"
+        f"Перед купівлею ти побачиш точні характеристики предмета.\n\n"
+        f"Одяг поки має універсальний тип, але для зброї та другої руки "
+        f"можна вибрати конкретний вид предмета.\n\n"
+        f"Оберіть слот:"
+    )
+
+    kb = types.InlineKeyboardMarkup(row_width=1)
+
+    for offer in offers:
+        slot_key = offer["slot_key"]
+
+        if slot_key in ["main_hand", "off_hand"]:
+            callback_data = f"common_equipment_slot:{slot_key}"
+        else:
+            callback_data = f"buy_common_equipment:{slot_key}:"
+
+        kb.add(types.InlineKeyboardButton(
+            text=(
+                f"{offer['slot_name']} — "
+                f"{format_gold(offer['price'])} "
+                f"(рівень {offer['item_level']})"
+            ),
+            callback_data=callback_data
+        ))
+
+    kb.add(types.InlineKeyboardButton(
+        text="⬅️ До торгового ряду",
+        callback_data="back_to_trade_district"
+    ))
+
+    return text, kb
+
+
+def build_common_equipment_slot_choice_text(user_id, slot_key):
+    offers = get_common_equipment_shop_suboffers(user_id, slot_key)
+    gold = get_wallet(user_id)
+
+    if slot_key == "main_hand":
+        title = "🗡️ Вибір зброї"
+        description = (
+            "Оберіть конкретний тип базової зброї.\n\n"
+            "Фізична зброя використовує STR або DEX.\n"
+            "Магічна зброя використовує INT/WIS і магічний урон.\n"
+            "Дворучна зброя блокує другу руку."
+        )
+    elif slot_key == "off_hand":
+        title = "🛡️ Вибір другої руки"
+        description = (
+            "Оберіть конкретний предмет для другої руки.\n\n"
+            "Щит дає PDEF і STA.\n"
+            "Талісман дає MDEF і WIS.\n"
+            "Кинджал дає DEX/STR і не є танковим предметом."
+        )
+    else:
+        title = "⚪ Базове спорядження"
+        description = "Оберіть предмет."
+
+    text = (
+        f"{title}\n\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
+        f"{description}\n\n"
+        f"Доступні варіанти:"
+    )
+
+    kb = types.InlineKeyboardMarkup(row_width=1)
+
+    for offer in offers:
+        hands_text = ""
+
+        if slot_key == "main_hand":
+            if offer["hands"] == 2:
+                hands_text = " — дворучна"
+            else:
+                hands_text = " — одноручна"
+
+        kb.add(types.InlineKeyboardButton(
+            text=(
+                f"{offer['name']}{hands_text} — "
+                f"{format_gold(offer['price'])} "
+                f"(рівень {offer['item_level']})"
+            ),
+            callback_data=f"buy_common_equipment:{slot_key}:{offer['profile_key']}"
+        ))
+
+    kb.add(types.InlineKeyboardButton(
+        text="⬅️ Назад до слотів",
+        callback_data="common_equipment_back_to_slots"
+    ))
+
+    kb.add(types.InlineKeyboardButton(
+        text="⬅️ До торгового ряду",
+        callback_data="back_to_trade_district"
+    ))
+
+    return text, kb
+
+
+def format_shop_preview_bonuses(b_str, b_dex, b_int, b_wis, b_sta, pdef, mdef):
+    bonuses = []
+
+    if b_str:
+        bonuses.append(f"💪 Сила +{b_str}")
+    if b_dex:
+        bonuses.append(f"🎯 Спритність +{b_dex}")
+    if b_int:
+        bonuses.append(f"🔮 Інтелект +{b_int}")
+    if b_wis:
+        bonuses.append(f"🦉 Мудрість +{b_wis}")
+    if b_sta:
+        bonuses.append(f"🛡 Витривалість +{b_sta}")
+    if pdef:
+        bonuses.append(f"🛡 Фіз. захист +{pdef}")
+    if mdef:
+        bonuses.append(f"🔮 Маг. захист +{mdef}")
+
+    return bonuses
+
+
+def build_common_shop_preview_text(user_id, item_id):
+    preview = get_shop_preview_item(item_id, user_id)
+
+    if not preview:
+        text = "❌ Попередній перегляд предмета не знайдено або застарів."
+
+        kb = types.InlineKeyboardMarkup()
+        kb.add(types.InlineKeyboardButton(
+            text="⬅️ Назад до базового спорядження",
+            callback_data="common_equipment_back_to_slots"
+        ))
+
+        return text, kb
+
+    (
+        item_id,
+        name,
+        type_,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        max_stack,
+        sell_price,
+        b_str,
+        b_dex,
+        b_int,
+        b_wis,
+        b_sta,
+        pdef,
+        mdef,
+        item_level,
+        item_subtype,
+        weapon_min_damage,
+        weapon_max_damage,
+        weapon_min_magic_damage,
+        weapon_max_magic_damage,
+        weapon_attack_type,
+        price
+    ) = preview
+
+    gold = get_wallet(user_id)
+    slot_name = EQUIPMENT_SLOTS.get(slot_key, slot_key)
+
+    text = (
+        f"🛒 Перегляд покупки\n\n"
+        f"📦 {name}\n\n"
+        f"🧰 Тип: спорядження\n"
+        f"🎯 Слот: {slot_name}\n"
+        f"🏷 Рівень предмета: {item_level}\n"
+    )
+
+    if slot_key == "main_hand":
+        if weapon_hands == 2:
+            text += "👐 Тип зброї: дворучна\n"
+            text += "⚠️ Дворучна зброя блокує другу руку.\n"
+        else:
+            text += "✋ Тип зброї: одноручна\n"
+
+        weapon_text = get_shop_preview_weapon_damage_text(item_id)
+
+        if weapon_text:
+            text += f"{weapon_text}\n"
+
+    text += "🧱 Міцність: 100/100\n"
+
+    bonuses = format_shop_preview_bonuses(
+        b_str,
+        b_dex,
+        b_int,
+        b_wis,
+        b_sta,
+        pdef,
+        mdef
+    )
+
+    if bonuses:
+        text += "\n📊 Бонуси:\n"
+
+        for bonus in bonuses:
+            text += f"• {bonus}\n"
+    else:
+        text += "\n📊 Бонуси: немає\n"
+
+    text += (
+        f"\n💳 Ціна: {format_gold(price)}\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
+        f"Купити цей предмет?"
+    )
+
+    kb = types.InlineKeyboardMarkup()
+
+    kb.add(types.InlineKeyboardButton(
+        text=f"✅ Купити за {format_gold(price)}",
+        callback_data=f"common_shop_confirm:{item_id}"
+    ))
+
+    kb.add(types.InlineKeyboardButton(
+        text="❌ Скасувати",
+        callback_data=f"common_shop_cancel:{item_id}"
+    ))
+
+    return text, kb
+
+
+def build_sell_equipment_list_text(user_id, page=0):
+    items = get_sellable_equipment_items(user_id)
+    gold = get_wallet(user_id)
+
+    if not items:
+        text = (
+            f"🧰 Продаж спорядження\n\n"
+            f"💰 Твоє золото: {format_gold(gold)}\n\n"
+            f"У тебе немає невдягненого спорядження для продажу.\n\n"
+            f"ℹ️ Вдягнені речі не показуються у цьому списку."
+        )
+
+        kb = types.InlineKeyboardMarkup()
+        kb.add(types.InlineKeyboardButton(
+            text="⬅️ До торгового ряду",
+            callback_data="back_to_trade_district"
+        ))
+
+        return text, kb
+
+    total_items = len(items)
+    total_pages = max(1, (total_items + SELL_EQUIPMENT_ITEMS_PER_PAGE - 1) // SELL_EQUIPMENT_ITEMS_PER_PAGE)
+
+    if page < 0:
+        page = 0
+
+    if page >= total_pages:
+        page = total_pages - 1
+
+    start = page * SELL_EQUIPMENT_ITEMS_PER_PAGE
+    end = start + SELL_EQUIPMENT_ITEMS_PER_PAGE
+    page_items = items[start:end]
+
+    text = (
+        f"🧰 Продаж спорядження\n\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
+        f"Торговець готовий купити невдягнені речі з твого інвентаря.\n"
+        f"Вдягнене спорядження продавати не можна.\n\n"
+        f"📄 Сторінка: {page + 1}/{total_pages}\n\n"
+        f"Оберіть предмет:"
+    )
+
+    kb = types.InlineKeyboardMarkup()
+
+    for item in page_items:
+        (
+            inv_id,
+            item_id,
+            name,
+            type_,
+            rarity,
+            category,
+            slot_key,
+            weapon_hands,
+            quantity,
+            max_stack,
+            durability,
+            b_str,
+            b_dex,
+            b_int,
+            b_wis,
+            b_sta,
+            pdef,
+            mdef,
+            sell_price
+        ) = item
+
+        quantity = quantity or 1
+        sell_price = sell_price or 0
+        total_price = round(quantity * sell_price, 2)
+
+        durability_text = ""
+
+        if durability is not None:
+            durability_text = f" [{durability}/100]"
+
+        kb.add(types.InlineKeyboardButton(
+            text=f"{name}{durability_text} — {format_gold(total_price)}",
+            callback_data=f"sell_eq_confirm:{inv_id}:{page}"
+        ))
+
+    nav_buttons = []
+
+    if page > 0:
+        nav_buttons.append(types.InlineKeyboardButton(
+            text="⬅️ Назад",
+            callback_data=f"sell_eq_page:{page - 1}"
+        ))
+
+    if page < total_pages - 1:
+        nav_buttons.append(types.InlineKeyboardButton(
+            text="➡️ Далі",
+            callback_data=f"sell_eq_page:{page + 1}"
+        ))
+
+    if nav_buttons:
+        kb.add(*nav_buttons)
+
+    kb.add(types.InlineKeyboardButton(
+        text="⬅️ До торгового ряду",
+        callback_data="back_to_trade_district"
+    ))
+
+    return text, kb
+
+
+def build_sell_equipment_confirm_text(user_id, inventory_id, page=0):
+    item = get_item_by_inventory_id_full(inventory_id)
+
+    if not item:
+        text = "❌ Предмет не знайдено."
+
+        kb = types.InlineKeyboardMarkup()
+        kb.add(types.InlineKeyboardButton(
+            text="⬅️ Назад",
+            callback_data=f"sell_eq_page:{page}"
+        ))
+
+        return text, kb
+
+    (
+        inv_id,
+        item_id,
+        name,
+        type_,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        quantity,
+        max_stack,
+        durability,
+        b_str,
+        b_dex,
+        b_int,
+        b_wis,
+        b_sta,
+        pdef,
+        mdef,
+        sell_price
+    ) = item
+
+    quantity = quantity or 1
+    sell_price = sell_price or 0
+    total_price = round(quantity * sell_price, 2)
+
+    text = (
+        f"💰 Підтвердження продажу\n\n"
+        f"Ти точно хочеш продати цей предмет торговцю?\n\n"
+        f"📦 {name} x{quantity}\n"
+        f"💰 Ціна: {format_gold(total_price)}\n"
+    )
+
+    if durability is not None:
+        text += f"🛠️ Міцність: {durability}/100\n"
+
+    text += "\n⚠️ Після продажу предмет зникне з інвентаря."
+
+    kb = types.InlineKeyboardMarkup()
+
+    kb.add(types.InlineKeyboardButton(
+        text=f"✅ Продати за {format_gold(total_price)}",
+        callback_data=f"sell_eq_do:{inventory_id}:{page}"
+    ))
+
+    kb.add(types.InlineKeyboardButton(
+        text="❌ Назад",
+        callback_data=f"sell_eq_page:{page}"
+    ))
+
+    return text, kb
+
+
+# ==============================
+# HANDLERS
+# ==============================
+
+def register_city_handlers(bot):
+
+    # ==============================
+    # CITY ROOT
+    # ==============================
+
+    @bot.message_handler(func=lambda m: m.text == "🏙️ Місто")
+    def show_city(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            build_city_text(user_id),
+            reply_markup=city_kb()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "👀 Роззирнутися")
+    def look_around(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            build_main_menu_text(user_id),
+            reply_markup=main_kb()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "🔙 Місто")
+    def back_to_city(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            build_city_text(user_id),
+            reply_markup=city_kb()
+        )
+
+    # ==============================
+    # DISTRICTS
+    # ==============================
+
+    @bot.message_handler(func=lambda m: m.text == "🛒 Торговий ряд")
+    def show_trade_district(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            build_trade_district_text(user_id),
+            reply_markup=trader_kb()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "⚒️ Ремісничий квартал")
+    def show_craft_district(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            build_craft_district_text(user_id),
+            reply_markup=craft_kb()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "📜 Гільдія Найманців")
+    def show_guild_district(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            build_guild_district_text(user_id),
+            reply_markup=guild_kb()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "🏛️ Ратуша")
+    def show_townhall(message):
+        bot.send_message(
+            message.chat.id,
+            build_townhall_text(),
+            reply_markup=townhall_kb()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "🍺 Таверна")
+    def show_tavern(message):
+        bot.send_message(
+            message.chat.id,
+            build_tavern_text(),
+            reply_markup=tavern_kb()
+        )
+
+    # ==============================
+    # DISTRICT BACK BUTTONS
+    # ==============================
+
+    @bot.message_handler(func=lambda m: m.text == "🔙 Торговий ряд")
+    def back_to_trade_district_message(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            build_trade_district_text(user_id),
+            reply_markup=trader_kb()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "🔙 Ремісничий квартал")
+    def back_to_craft_district_message(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            build_craft_district_text(user_id),
+            reply_markup=craft_kb()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "🔙 Гільдія Найманців")
+    def back_to_guild_district_message(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            build_guild_district_text(user_id),
+            reply_markup=guild_kb()
+        )
+
+    # ==============================
+    # TRADING DISTRICT
+    # ==============================
+
+    @bot.message_handler(func=lambda m: m.text == "🪙 Продати весь хлам")
+    def sell_trash(message):
+        user_id = message.from_user.id
+
+        result = sell_all_trash(user_id)
+
+        if result["sold_items_count"] == 0:
+            bot.send_message(
+                message.chat.id,
+                "💰 У тебе немає сірого луту для продажу.",
+                reply_markup=trader_kb()
+            )
+            return
+
+        text = "💰 Продаж сірого луту\n\n"
+
+        for line in result["details"]:
+            text += f"• {line}\n"
+
+        text += (
+            f"\n✅ Отримано золота: {format_gold(result['gold_earned'])}\n"
+            f"🎒 Звільнено слотів: {result['freed_slots']}"
+        )
+
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=trader_kb()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "🧰 Продати спорядження")
+    def show_sell_equipment(message):
+        user_id = message.from_user.id
+
+        text, kb = build_sell_equipment_list_text(user_id, page=0)
+
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("sell_eq_page:"))
+    def sell_equipment_page(call):
+        user_id = call.from_user.id
+        page = int(call.data.split(":")[1])
+
+        text, kb = build_sell_equipment_list_text(user_id, page=page)
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("sell_eq_confirm:"))
+    def sell_equipment_confirm(call):
+        user_id = call.from_user.id
+
+        parts = call.data.split(":")
+        inventory_id = int(parts[1])
+        page = int(parts[2]) if len(parts) > 2 else 0
+
+        text, kb = build_sell_equipment_confirm_text(
+            user_id=user_id,
+            inventory_id=inventory_id,
+            page=page
+        )
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("sell_eq_do:"))
+    def sell_equipment_do(call):
+        user_id = call.from_user.id
+
+        parts = call.data.split(":")
+        inventory_id = int(parts[1])
+        page = int(parts[2]) if len(parts) > 2 else 0
+
+        result = sell_inventory_item_to_trader(
+            user_id=user_id,
+            inventory_id=inventory_id
+        )
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            result["message"],
+            reply_markup=trader_kb()
+        )
+
+        text, kb = build_sell_equipment_list_text(user_id, page=page)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    # ==============================
+    # COMMON EQUIPMENT SHOP
+    # ==============================
+
+    @bot.message_handler(func=lambda m: m.text == "⚪ Базове спорядження")
+    def show_common_equipment_shop(message):
+        user_id = message.from_user.id
+
+        text, kb = build_common_equipment_shop_text(user_id)
+
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "common_equipment_back_to_slots")
+    def common_equipment_back_to_slots(call):
+        user_id = call.from_user.id
+
+        text, kb = build_common_equipment_shop_text(user_id)
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("common_equipment_slot:"))
+    def common_equipment_slot_choice(call):
+        user_id = call.from_user.id
+        slot_key = call.data.split(":")[1]
+
+        text, kb = build_common_equipment_slot_choice_text(user_id, slot_key)
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("buy_common_equipment:"))
+    def preview_common_equipment(call):
+        user_id = call.from_user.id
+
+        parts = call.data.split(":")
+        slot_key = parts[1]
+        item_profile = parts[2] if len(parts) > 2 and parts[2] else None
+
+        result = create_common_equipment_shop_preview(
+            user_id=user_id,
+            slot_key=slot_key,
+            item_profile=item_profile
+        )
+
+        bot.answer_callback_query(call.id)
+
+        if not result.get("success"):
+            bot.send_message(
+                call.message.chat.id,
+                result["message"],
+                reply_markup=trader_kb()
+            )
+            return
+
+        text, kb = build_common_shop_preview_text(
+            user_id=user_id,
+            item_id=result["item_id"]
+        )
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("common_shop_confirm:"))
+    def confirm_common_shop_purchase(call):
+        user_id = call.from_user.id
+        item_id = int(call.data.split(":")[1])
+
+        result = confirm_common_equipment_shop_preview(
+            user_id=user_id,
+            item_id=item_id
+        )
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            result["message"],
+            reply_markup=trader_kb()
+        )
+
+        text, kb = build_common_equipment_shop_text(user_id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("common_shop_cancel:"))
+    def cancel_common_shop_purchase(call):
+        user_id = call.from_user.id
+        item_id = int(call.data.split(":")[1])
+
+        result = cancel_common_equipment_shop_preview(
+            user_id=user_id,
+            item_id=item_id
+        )
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            result["message"],
+            reply_markup=trader_kb()
+        )
+
+        text, kb = build_common_equipment_shop_text(user_id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "back_to_trade_district")
+    def back_to_trade_district(call):
+        user_id = call.from_user.id
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            build_trade_district_text(user_id),
+            reply_markup=trader_kb()
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "back_to_trader")
+    def back_to_trader_callback(call):
+        user_id = call.from_user.id
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            build_trade_district_text(user_id),
+            reply_markup=trader_kb()
+        )
+
+    # ==============================
+    # CRAFT DISTRICT: ALCHEMIST
+    # ==============================
+
+    @bot.message_handler(func=lambda m: m.text == "🧪 Алхімік")
+    def show_alchemist(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            "🧪 Ти підійшов до Алхіміка.",
+            reply_markup=alchemist_kb()
+        )
+
+        text, kb = build_alchemist_catalog(user_id)
+
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("buy_potion_"))
+    def buy_potion(call):
+        user_id = call.from_user.id
+        item_id = int(call.data.split("_")[2])
+
+        potion = POTIONS.get(item_id)
+
+        if not potion:
+            bot.answer_callback_query(call.id)
+
+            bot.send_message(
+                call.message.chat.id,
+                "❌ Такого зілля немає в магазині.",
+                reply_markup=alchemist_kb()
+            )
+            return
+
+        result = buy_item_for_gold(
+            user_id=user_id,
+            item_id=item_id,
+            price=potion["buy_price"],
+            quantity=1
+        )
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            result["message"],
+            reply_markup=alchemist_kb()
+        )
+
+        text, kb = build_alchemist_catalog(user_id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    # ==============================
+    # CRAFT DISTRICT: BLACKSMITH
+    # ==============================
+
+    @bot.message_handler(func=lambda m: m.text == "⚒️ Коваль")
+    def show_blacksmith(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            "⚒️ Ти підійшов до Коваля.",
+            reply_markup=blacksmith_kb()
+        )
+
+        text, kb = build_blacksmith_text(user_id)
+
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "repair_all_equipped")
+    def repair_all(call):
+        user_id = call.from_user.id
+
+        result = repair_all_equipped(user_id)
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            result["message"],
+            reply_markup=blacksmith_kb()
+        )
+
+        text, kb = build_blacksmith_text(user_id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("repair_one_"))
+    def repair_one(call):
+        user_id = call.from_user.id
+        inventory_id = int(call.data.split("_")[2])
+
+        result = repair_equipped_item(user_id, inventory_id)
+
+        bot.answer_callback_query(call.id)
+
+        bot.send_message(
+            call.message.chat.id,
+            result["message"],
+            reply_markup=blacksmith_kb()
+        )
+
+        text, kb = build_blacksmith_text(user_id)
+
+        bot.send_message(
+            call.message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
+    # ==============================
+    # BACK TO MAIN
+    # ==============================
+
+    @bot.message_handler(func=lambda m: m.text == "🔙 Назад")
+    def back_to_main(message):
+        user_id = message.from_user.id
+
+        bot.send_message(
+            message.chat.id,
+            build_main_menu_text(user_id),
+            reply_markup=main_kb()
+        )

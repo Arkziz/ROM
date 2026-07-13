@@ -9706,3 +9706,104 @@ def create_user(user_id):
     ensure_equipment_slots(user_id)
     migrate_legacy_equipment_to_slots(user_id)
     expand_bag_slots_to_40()
+
+
+# ==============================
+# ✅ UNIQUE CHARACTER NAME SYSTEM
+# ==============================
+
+def normalize_character_name_for_unique(name):
+    """
+    Нормалізація імені для перевірки унікальності.
+
+    Важливо:
+    - прибираємо зайві пробіли на краях;
+    - стискаємо багато пробілів усередині до одного;
+    - порівнюємо через casefold(), щоб регістр не мав значення.
+    """
+
+    name = normalize_character_name(name)
+    name = " ".join(name.split())
+
+    return name.casefold()
+
+
+def is_character_name_taken(name, exclude_user_id=None):
+    """
+    Перевіряє, чи зайняте ім’я персонажа іншим користувачем.
+
+    exclude_user_id потрібен на майбутнє, якщо буде перейменування:
+    поточний гравець не має конфліктувати сам із собою.
+    """
+
+    init_character_class_system()
+
+    target_name = normalize_character_name_for_unique(name)
+
+    if not target_name:
+        return False
+
+    cursor.execute("""
+    SELECT user_id, character_name
+    FROM users
+    WHERE character_name IS NOT NULL
+      AND character_name != ''
+    """)
+
+    rows = cursor.fetchall()
+
+    for row in rows:
+        existing_user_id, existing_name = row
+
+        if exclude_user_id is not None:
+            try:
+                if int(existing_user_id) == int(exclude_user_id):
+                    continue
+            except Exception:
+                pass
+
+        existing_normalized = normalize_character_name_for_unique(existing_name)
+
+        if existing_normalized == target_name:
+            return True
+
+    return False
+
+
+def set_character_name(user_id, name):
+    """
+    Фінальна версія встановлення імені персонажа.
+
+    Додає перевірку унікальності імені.
+    """
+
+    init_character_class_system()
+
+    name = normalize_character_name(name)
+
+    validation = validate_character_name(name)
+
+    if not validation["success"]:
+        return validation
+
+    if is_character_name_taken(name, exclude_user_id=user_id):
+        return {
+            "success": False,
+            "message": (
+                "❌ Це ім’я вже зайняте іншим персонажем.\n\n"
+                "Введи інше ім’я."
+            )
+        }
+
+    cursor.execute("""
+    UPDATE users
+    SET character_name=?
+    WHERE user_id=?
+    """, (name, user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "message": f"✅ Ім’я героя збережено: {name}"
+    }
