@@ -8,31 +8,25 @@ from db import (
     get_inventory_used_slots,
     get_bag_capacity,
     get_base_exp_for_level,
-    create_generated_equipment_item
+    create_generated_equipment_item,
 )
 
 
+REWARD_SYSTEM_UI_VERSION = "5.9.3-final-trophy-messages"
+
+
 # ==============================
-# ✅ EQUIPMENT DROP CONFIG
+# EQUIPMENT DROP CONFIG
 # ==============================
 
 NORMAL_EQUIPMENT_DROP_CHANCE = 0.20
 ELITE_EQUIPMENT_DROP_CHANCE = 0.45
 
-# Class-aware шанс саме всередині успішного дропу спорядження.
-# Тобто спочатку ролиться шанс дропу предмета,
-# а потім уже визначається: під клас чи повністю випадковий.
 NORMAL_CLASS_AWARE_EQUIPMENT_CHANCE = 0.50
 ELITE_CLASS_AWARE_EQUIPMENT_CHANCE = 0.70
 
 
 def roll_normal_equipment_rarity():
-    """
-    Звичайний моб:
-    80% common
-    20% uncommon
-    """
-
     roll = random.random()
 
     if roll <= 0.80:
@@ -42,12 +36,6 @@ def roll_normal_equipment_rarity():
 
 
 def roll_elite_equipment_rarity():
-    """
-    Елітний моб:
-    75% uncommon
-    25% rare
-    """
-
     roll = random.random()
 
     if roll <= 0.75:
@@ -57,7 +45,7 @@ def roll_elite_equipment_rarity():
 
 
 # ==============================
-# ✅ LEVEL DIFFERENCE MULTIPLIER
+# LEVEL DIFFERENCE MULTIPLIER
 # ==============================
 
 def get_level_difference_multiplier(player_level, mob_level):
@@ -85,7 +73,7 @@ def get_level_difference_multiplier(player_level, mob_level):
 
 
 # ==============================
-# ✅ EXP CALCULATION
+# EXP CALCULATION
 # ==============================
 
 def calculate_exp_reward(player_level, mob):
@@ -94,7 +82,6 @@ def calculate_exp_reward(player_level, mob):
     base_exp = get_base_exp_for_level(mob_level)
     level_multiplier = get_level_difference_multiplier(player_level, mob_level)
     random_factor = random.uniform(0.9, 1.1)
-
     elite_multiplier = float(mob.get("elite_exp_multiplier", 1.0))
 
     exp = round(
@@ -111,7 +98,7 @@ def calculate_exp_reward(player_level, mob):
 
 
 # ==============================
-# ✅ GOLD CALCULATION
+# GOLD CALCULATION
 # ==============================
 
 def calculate_gold_reward(player_level, mob):
@@ -140,24 +127,132 @@ def calculate_gold_reward(player_level, mob):
 
 
 # ==============================
-# ✅ EQUIPMENT DROP
+# EQUIPMENT TROPHY DISPLAY HELPERS
+# ==============================
+
+def build_trophy_display_name(result):
+    """
+    Формує красиву назву трофея для повідомлення про лут.
+
+    Для броні додає armor_type:
+    Поножі 1 рівня -> Поножі [Тканина] 1 рівня
+
+    Для зброї / off-hand тип у дужках не додається.
+    """
+
+    from db import (
+        get_item_classification_by_inventory_id,
+        get_armor_type_label,
+        is_armor_slot,
+    )
+
+    name = result.get("name", "Трофей")
+    inventory_id = result.get("inventory_id")
+
+    if not inventory_id:
+        return name
+
+    classification = get_item_classification_by_inventory_id(inventory_id)
+
+    if not classification:
+        return name
+
+    slot_key = classification.get("slot_key", "")
+    armor_type = classification.get("armor_type", "")
+
+    if not is_armor_slot(slot_key):
+        return name
+
+    if not armor_type:
+        return name
+
+    armor_label = get_armor_type_label(armor_type)
+
+    if not armor_label:
+        return name
+
+    if f"[{armor_label}]" in name:
+        return name
+
+    marker = " рівня"
+
+    if marker in name:
+        index = name.rfind(marker)
+        before_level = name[:index]
+        after_level = name[index:]
+
+        parts = before_level.rsplit(" ", 1)
+
+        if len(parts) == 2 and parts[1].isdigit():
+            return f"{parts[0]} [{armor_label}] {parts[1]}{after_level}"
+
+    return f"{name} [{armor_label}]"
+
+
+def is_trophy_suitable_for_class(user_id, result):
+    """
+    Перевіряє фактичну сумісність випалого предмета з поточним класом.
+    """
+
+    from db import can_equip_inventory_item_by_class
+
+    inventory_id = result.get("inventory_id")
+
+    if not inventory_id:
+        return False
+
+    check = can_equip_inventory_item_by_class(
+        user_id=user_id,
+        inventory_id=inventory_id,
+    )
+
+    return bool(check.get("success"))
+
+
+def build_trophy_drop_message(user_id, result, rarity, is_elite):
+    rarity_text = {
+        "common": "⚪",
+        "uncommon": "🟢",
+        "rare": "🔵",
+        "epic": "🟣",
+    }.get(rarity, "⚪")
+
+    item_name = build_trophy_display_name(result)
+
+    is_suitable = (
+        bool(result.get("class_aware"))
+        or is_trophy_suitable_for_class(user_id, result)
+    )
+
+    if is_elite:
+        if is_suitable:
+            return (
+                f"{rarity_text} 🎯 Елітний трофей під твій клас:\n"
+                f"  📦 {item_name}"
+            )
+
+        return (
+            f"{rarity_text} Елітний трофей:\n"
+            f"  📦 {item_name}"
+        )
+
+    if is_suitable:
+        return (
+            f"{rarity_text} 🎯 Знайдено трофей під твій клас:\n"
+            f"  📦 {item_name}"
+        )
+
+    return (
+        f"{rarity_text} Знайдено трофей:\n"
+        f"  📦 {item_name}"
+    )
+
+
+# ==============================
+# EQUIPMENT DROP
 # ==============================
 
 def roll_equipment_drop(user_id, mob):
-    """
-    Динамічний дроп екіпірування.
-
-    Звичайний моб:
-    - 20% шанс предмета
-    - 80% common / 20% uncommon
-    - 50% шанс, що предмет буде під клас
-
-    Елітний моб:
-    - 45% шанс предмета
-    - 75% uncommon / 25% rare
-    - 70% шанс, що предмет буде під клас
-    """
-
     mob_level = int(mob.get("level", 1))
     is_elite = bool(mob.get("is_elite", False))
 
@@ -180,32 +275,22 @@ def roll_equipment_drop(user_id, mob):
         user_id=user_id,
         item_level=mob_level,
         rarity=rarity,
-        class_aware_chance=class_aware_chance
+        class_aware_chance=class_aware_chance,
     )
 
     if not result.get("success"):
         return result.get("message", "🎒 Екіпірування не влізло в сумку.")
 
-    rarity_text = {
-        "common": "⚪",
-        "uncommon": "🟢",
-        "rare": "🔵",
-        "epic": "🟣"
-    }.get(rarity, "⚪")
-
-    class_aware_text = ""
-
-    if result.get("class_aware"):
-        class_aware_text = " 🎯"
-
-    if is_elite:
-        return f"{rarity_text}{class_aware_text} Елітний трофей: {result['name']}"
-
-    return f"{rarity_text}{class_aware_text} Знайдено спорядження: {result['name']}"
+    return build_trophy_drop_message(
+        user_id=user_id,
+        result=result,
+        rarity=rarity,
+        is_elite=is_elite,
+    )
 
 
 # ==============================
-# ✅ SIMPLE LOOT
+# SIMPLE LOOT
 # ==============================
 
 def get_random_quantity(value):
@@ -235,13 +320,11 @@ def roll_loot_from_loot_table(user_id, loot_table):
             if result.get("added", 0) > 0:
                 name = result.get("name", "Предмет")
                 added = result.get("added", 0)
-
                 messages.append(f"{name} x{added}")
 
             if result.get("lost", 0) > 0:
                 name = result.get("name", "Предмет")
                 lost = result.get("lost", 0)
-
                 messages.append(f"⚠️ Не влізло в сумку: {name} x{lost}")
 
     return messages
@@ -249,7 +332,6 @@ def roll_loot_from_loot_table(user_id, loot_table):
 
 def roll_loot_from_simple_keys(user_id, mob):
     messages = []
-
     possible_items = []
 
     if "trash_item_id" in mob:
@@ -269,7 +351,6 @@ def roll_loot_from_simple_keys(user_id, mob):
 
     loot_chance = mob.get("loot_chance", 0.45)
 
-    # Елітний моб має трохи більший шанс на ресурсний/сірий лут.
     if mob.get("is_elite"):
         loot_chance = min(1.0, loot_chance + 0.20)
 
@@ -277,19 +358,16 @@ def roll_loot_from_simple_keys(user_id, mob):
         return messages
 
     item_id = random.choice(possible_items)
-
     result = add_item(user_id, item_id, 1)
 
     if result.get("added", 0) > 0:
         name = result.get("name", "Предмет")
         added = result.get("added", 0)
-
         messages.append(f"{name} x{added}")
 
     if result.get("lost", 0) > 0:
         name = result.get("name", "Предмет")
         lost = result.get("lost", 0)
-
         messages.append(f"⚠️ Не влізло в сумку: {name} x{lost}")
 
     return messages
@@ -298,7 +376,6 @@ def roll_loot_from_simple_keys(user_id, mob):
 def roll_loot(user_id, mob):
     messages = []
 
-    # 1. Сірий/ресурсний лут
     if "loot_table" in mob and isinstance(mob["loot_table"], list):
         messages.extend(roll_loot_from_loot_table(user_id, mob["loot_table"]))
 
@@ -308,28 +385,27 @@ def roll_loot(user_id, mob):
     else:
         messages.extend(roll_loot_from_simple_keys(user_id, mob))
 
-    # 2. Динамічний дроп екіпірування
-    equipment_message = roll_equipment_drop(user_id, mob)
+    trophy_message = roll_equipment_drop(user_id, mob)
 
-    if equipment_message:
-        messages.append(equipment_message)
+    if trophy_message:
+        messages.append(trophy_message)
 
     return messages
 
 
 # ==============================
-# ✅ PROCESS VICTORY REWARD
+# PROCESS VICTORY REWARD
 # ==============================
 
 def process_victory_reward(user_id, player_level, mob):
     exp = calculate_exp_reward(
         player_level=player_level,
-        mob=mob
+        mob=mob,
     )
 
     gold = calculate_gold_reward(
         player_level=player_level,
-        mob=mob
+        mob=mob,
     )
 
     exp_result = add_exp(user_id, exp)
@@ -347,5 +423,5 @@ def process_victory_reward(user_id, player_level, mob):
         "exp_result": exp_result,
         "loot_messages": loot_messages,
         "used_slots": used_slots,
-        "capacity": capacity
+        "capacity": capacity,
     }

@@ -551,6 +551,49 @@ def format_shop_preview_bonuses(b_str, b_dex, b_int, b_wis, b_sta, pdef, mdef):
     return bonuses
 
 
+
+def build_shop_preview_display_name(name, slot_key, armor_type):
+    """
+    Повертає красиву назву preview-предмета.
+
+    Для броні додає тип у дужках:
+    Чоботи 5 рівня -> Чоботи [Тканина] 5 рівня
+
+    Для зброї / off-hand тип у дужках не додається,
+    бо назва вже зазвичай містить сам тип:
+    Жезл 5 рівня
+    Кинджал 5 рівня
+    Щит 5 рівня
+    """
+
+    if not is_armor_slot(slot_key):
+        return name
+
+    if not armor_type:
+        return name
+
+    armor_label = get_armor_type_label(armor_type)
+
+    if not armor_label:
+        return name
+
+    if f"[{armor_label}]" in name:
+        return name
+
+    marker = " рівня"
+
+    if marker in name:
+        index = name.rfind(marker)
+        before_level = name[:index]
+        after_level = name[index:]
+        parts = before_level.rsplit(" ", 1)
+
+        if len(parts) == 2 and parts[1].isdigit():
+            return f"{parts[0]} [{armor_label}] {parts[1]}{after_level}"
+
+    return f"{name} [{armor_label}]"
+
+
 def build_common_shop_preview_text(user_id, item_id):
     preview = get_shop_preview_item(item_id, user_id)
 
@@ -595,10 +638,15 @@ def build_common_shop_preview_text(user_id, item_id):
 
     gold = get_wallet(user_id)
     slot_name = EQUIPMENT_SLOTS.get(slot_key, slot_key)
+    display_name = build_shop_preview_display_name(
+        name=name,
+        slot_key=slot_key,
+        armor_type=armor_type
+    )
 
     text = (
         f"🛒 Перегляд покупки\n\n"
-        f"📦 {name}\n\n"
+        f"📦 {display_name}\n\n"
         f"🧰 Тип: спорядження\n"
         f"🎯 Слот: {slot_name}\n"
         f"🏷 Рівень предмета: {item_level}\n"
@@ -607,13 +655,13 @@ def build_common_shop_preview_text(user_id, item_id):
     if is_armor_slot(slot_key):
         text += (
             f"🧵 Тип броні: {get_armor_type_label(armor_type)}\n"
-            f"✅ Підходить твоєму класу\n"
+            f"🧭 Класова сумісність: ✅ Підходить твоєму класу\n"
         )
 
     elif slot_key in ["main_hand", "off_hand"]:
         text += (
             f"⚔️ Тип предмета: {get_item_subtype_label(item_subtype)}\n"
-            f"✅ Підходить твоєму класу\n"
+            f"🧭 Класова сумісність: ✅ Підходить твоєму класу\n"
         )
 
     if slot_key == "main_hand":
