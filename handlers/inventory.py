@@ -21,6 +21,7 @@ from db import (
     get_armor_type_label,
     get_item_subtype_label,
     is_armor_slot,
+    can_equip_inventory_item_by_class,
 
     is_class_reset_sphere_inventory_item,
     use_class_reset_sphere_from_inventory
@@ -117,6 +118,41 @@ def build_item_display_name(user_id, inventory_id, fallback_name):
             return f"{parts[0]} [{type_label}] {parts[1]}{after_level}"
 
     return f"{fallback_name} [{type_label}]"
+
+
+
+def build_item_class_compatibility_text(user_id, inventory_id):
+    """
+    Повертає текст класової сумісності предмета.
+
+    Використовується в деталях предмета.
+    """
+
+    result = can_equip_inventory_item_by_class(
+        user_id=user_id,
+        inventory_id=inventory_id
+    )
+
+    if result.get("success"):
+        return {
+            "success": True,
+            "text": "🧭 Класова сумісність: ✅ Підходить твоєму класу\n"
+        }
+
+    message = result.get(
+        "message",
+        "❌ Цей предмет не підходить твоєму класу."
+    )
+
+    clean_message = message.replace("❌ ", "").strip()
+
+    return {
+        "success": False,
+        "text": (
+            "🧭 Класова сумісність: ❌ Не підходить твоєму класу\n"
+            f"ℹ️ {clean_message}\n"
+        )
+    }
 
 def format_item_bonuses(b_str, b_dex, b_int, b_wis, b_sta, pdef, mdef):
     bonuses = []
@@ -607,6 +643,13 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
             f"🎯 Слот: {slot_label}\n"
         )
 
+        compatibility_result = build_item_class_compatibility_text(
+            user_id=user_id,
+            inventory_id=inv_id
+        )
+
+        text += compatibility_result["text"]
+
         level_text = "✅" if level_ok else "🔒"
 
         text += (
@@ -672,13 +715,17 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
                 callback_data=f"unequip:{inv_id}:{back_category}:{page}"
             ))
         else:
-            if level_ok:
+            if not level_ok:
+                text += "\n🔒 Кнопка вдягання недоступна через недостатній рівень.\n"
+
+            elif not compatibility_result.get("success"):
+                text += "\n🔒 Кнопка вдягання недоступна: предмет не підходить твоєму класу.\n"
+
+            else:
                 kb.add(types.InlineKeyboardButton(
                     text=f"✅ Вдягнути у слот: {slot_label}",
                     callback_data=f"equip:{inv_id}:{back_category}:{page}"
                 ))
-            else:
-                text += "\n🔒 Кнопка вдягання недоступна через недостатній рівень.\n"
 
     # ==============================
     # OTHER
