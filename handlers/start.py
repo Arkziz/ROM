@@ -20,8 +20,7 @@ from db import (
 
     process_passive_regeneration,
 
-    unequip_incompatible_items_after_class_change,
-    build_class_change_unequip_text
+    unequip_incompatible_items_after_class_change
 )
 
 from keyboards import main_kb
@@ -96,6 +95,154 @@ def build_class_selection_text(user_id, mode="register"):
             f"{config['name']}\n"
             f"{config['description']}\n\n"
         )
+
+    return text
+
+
+def build_class_change_unequip_text_local(unequip_result):
+    """
+    Локальна версія повідомлення після зміни класу.
+    Не залежить від build_class_change_unequip_text з db.py.
+
+    Формат:
+    ⚠️ Несумісне спорядження знято:
+    • Обладунок [Шкіра] 3 рівня — броня не підходить класу
+    • Кинджал 3 рівня — зброя не підходить класу
+    """
+
+    def add_armor_type_to_name(name, inventory_id):
+        if not inventory_id:
+            return name
+
+        try:
+            from db import (
+                get_item_classification_by_inventory_id,
+                is_armor_slot,
+                get_armor_type_label
+            )
+
+            classification = get_item_classification_by_inventory_id(inventory_id)
+
+            if not classification:
+                return name
+
+            slot_key = classification.get("slot_key", "")
+            armor_type = classification.get("armor_type", "")
+
+            if not is_armor_slot(slot_key):
+                return name
+
+            if not armor_type:
+                return name
+
+            armor_label = get_armor_type_label(armor_type)
+
+            if not armor_label:
+                return name
+
+            if f"[{armor_label}]" in name:
+                return name
+
+            marker = " рівня"
+
+            if marker in name:
+                index = name.rfind(marker)
+                before_level = name[:index]
+                after_level = name[index:]
+
+                parts = before_level.rsplit(" ", 1)
+
+                if len(parts) == 2 and parts[1].isdigit():
+                    return f"{parts[0]} [{armor_label}] {parts[1]}{after_level}"
+
+            return f"{name} [{armor_label}]"
+
+        except Exception:
+            return name
+
+    def infer_reason(item):
+        reason = item.get("reason", "") or ""
+        reason_lower = reason.lower()
+
+        if "тип броні" in reason_lower or "брон" in reason_lower:
+            return "броня не підходить класу"
+
+        if "збро" in reason_lower or "main_hand" in reason_lower:
+            return "зброя не підходить класу"
+
+        if "другої руки" in reason_lower or "другу руку" in reason_lower:
+            return "предмет для другої руки не підходить класу"
+
+        slot_key = item.get("slot_key", "")
+
+        if slot_key in [
+            "helmet",
+            "shoulders",
+            "chest",
+            "gloves",
+            "legs",
+            "boots"
+        ]:
+            return "броня не підходить класу"
+
+        if slot_key == "main_hand":
+            return "зброя не підходить класу"
+
+        if slot_key == "off_hand":
+            return "предмет для другої руки не підходить класу"
+
+        inventory_id = item.get("inventory_id")
+
+        if inventory_id:
+            try:
+                from db import (
+                    get_item_classification_by_inventory_id,
+                    is_armor_slot
+                )
+
+                classification = get_item_classification_by_inventory_id(inventory_id)
+
+                if classification:
+                    real_slot_key = classification.get("slot_key", "")
+
+                    if is_armor_slot(real_slot_key):
+                        return "броня не підходить класу"
+
+                    if real_slot_key == "main_hand":
+                        return "зброя не підходить класу"
+
+                    if real_slot_key == "off_hand":
+                        return "предмет для другої руки не підходить класу"
+
+            except Exception:
+                pass
+
+        return "не підходить новому класу"
+
+    if not unequip_result:
+        return ""
+
+    removed_items = unequip_result.get("removed_items", [])
+
+    if not removed_items:
+        return "\n\n✅ Усе спорядження сумісне з новим класом."
+
+    text = "\n\n⚠️ Несумісне спорядження знято:\n"
+
+    for item in removed_items:
+        name = item.get("name", "Невідомий предмет")
+        inventory_id = item.get("inventory_id")
+
+        display_name = add_armor_type_to_name(
+            name=name,
+            inventory_id=inventory_id
+        )
+
+        reason = infer_reason(item)
+
+        text += f"• {display_name} — {reason}\n"
+
+    text += "\nПредмети повернуто в інвентар."
 
     return text
 
@@ -292,7 +439,7 @@ def register_start_handlers(bot):
             return
 
         unequip_result = unequip_incompatible_items_after_class_change(user_id)
-        unequip_text = build_class_change_unequip_text(unequip_result)
+        unequip_text = build_class_change_unequip_text_local(unequip_result)
 
         bot.send_message(
             call.message.chat.id,
@@ -303,6 +450,7 @@ def register_start_handlers(bot):
                 f"{unequip_text}"
             )
         )
+
         bot.send_message(
             call.message.chat.id,
             build_main_menu_text(user_id),

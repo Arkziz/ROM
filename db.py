@@ -8564,8 +8564,74 @@ def unequip_incompatible_items_after_class_change(user_id):
 
 def build_class_change_unequip_text(unequip_result):
     """
-    Формує текст для повідомлення після зміни класу.
+    Формує компактне повідомлення після зміни класу.
+
+    Приклад:
+    ⚠️ Несумісне спорядження знято:
+    • Кинджал 5 рівня — зброя не підходить класу
+    • Обладунок [Шкіра] 5 рівня — броня не підходить класу
+
+    Предмети повернуто в інвентар.
     """
+
+    def compact_reason(reason):
+        reason = reason or ""
+
+        if "тип броні" in reason or "броні не підходить" in reason:
+            return "броня не підходить класу"
+
+        if "цю зброю" in reason or "зброю не може" in reason:
+            return "зброя не підходить класу"
+
+        if "другої руки" in reason or "другу руку" in reason:
+            return "предмет для другої руки не підходить класу"
+
+        if "дворучна зброя" in reason:
+            return "конфлікт із дворучною зброєю"
+
+        if "Спочатку обери клас" in reason:
+            return "клас не обрано"
+
+        return "не підходить новому класу"
+
+    def display_removed_item_name(item):
+        name = item.get("name", "Невідомий предмет")
+        inventory_id = item.get("inventory_id")
+
+        if not inventory_id:
+            return name
+
+        try:
+            classification = get_item_classification_by_inventory_id(inventory_id)
+
+            if not classification:
+                return name
+
+            slot_key = classification.get("slot_key", "")
+            armor_type = classification.get("armor_type", "")
+
+            # Для броні додаємо тип у дужках, якщо його ще немає в назві.
+            if is_armor_slot(slot_key) and armor_type:
+                armor_label = get_armor_type_label(armor_type)
+
+                if armor_label and f"[{armor_label}]" not in name:
+                    marker = " рівня"
+
+                    if marker in name:
+                        index = name.rfind(marker)
+                        before_level = name[:index]
+                        after_level = name[index:]
+                        parts = before_level.rsplit(" ", 1)
+
+                        if len(parts) == 2 and parts[1].isdigit():
+                            return f"{parts[0]} [{armor_label}] {parts[1]}{after_level}"
+
+                    return f"{name} [{armor_label}]"
+
+        except Exception:
+            pass
+
+        return name
 
     if not unequip_result:
         return ""
@@ -8578,7 +8644,10 @@ def build_class_change_unequip_text(unequip_result):
     text = "\n\n⚠️ Несумісне спорядження знято:\n"
 
     for item in removed_items:
-        text += f"• {item.get('name', 'Невідомий предмет')}\n"
+        item_name = display_removed_item_name(item)
+        reason = compact_reason(item.get("reason", ""))
+
+        text += f"• {item_name} — {reason}\n"
 
     text += "\nПредмети повернуто в інвентар."
 
@@ -9806,4 +9875,152 @@ def set_character_name(user_id, name):
     return {
         "success": True,
         "message": f"✅ Ім’я героя збережено: {name}"
+    }
+
+# ==============================
+# ✅ OVERRIDE 5.9.5 FINAL: AUTO UNEQUIP WITH READY DISPLAY NAMES
+# ==============================
+
+def unequip_incompatible_items_after_class_change(user_id):
+    """
+    Фінальна версія auto-unequip після зміни класу.
+
+    Важливо:
+    removed_items.name одразу містить:
+    - красиву назву предмета;
+    - armor_type у дужках для броні;
+    - компактну причину.
+
+    Це зроблено спеціально, щоб навіть стара функція build_class_change_unequip_text()
+    показувала правильний текст.
+    """
+
+    def add_armor_type_to_name(name, inventory_id):
+        if not inventory_id:
+            return name
+
+        try:
+            classification = get_item_classification_by_inventory_id(inventory_id)
+
+            if not classification:
+                return name
+
+            slot_key = classification.get("slot_key", "")
+            armor_type = classification.get("armor_type", "")
+
+            if not is_armor_slot(slot_key):
+                return name
+
+            if not armor_type:
+                return name
+
+            armor_label = get_armor_type_label(armor_type)
+
+            if not armor_label:
+                return name
+
+            if f"[{armor_label}]" in name:
+                return name
+
+            marker = " рівня"
+
+            if marker in name:
+                index = name.rfind(marker)
+                before_level = name[:index]
+                after_level = name[index:]
+
+                parts = before_level.rsplit(" ", 1)
+
+                if len(parts) == 2 and parts[1].isdigit():
+                    return f"{parts[0]} [{armor_label}] {parts[1]}{after_level}"
+
+            return f"{name} [{armor_label}]"
+
+        except Exception:
+            return name
+
+    def infer_compact_reason(item_info, compatibility_message=""):
+        reason = compatibility_message or ""
+        reason_lower = reason.lower()
+
+        if "тип броні" in reason_lower or "брон" in reason_lower:
+            return "броня не підходить класу"
+
+        if "цю зброю" in reason_lower or "зброю не може" in reason_lower or "зброя" in reason_lower:
+            return "зброя не підходить класу"
+
+        if "другої руки" in reason_lower or "другу руку" in reason_lower:
+            return "предмет для другої руки не підходить класу"
+
+        if "дворучна зброя" in reason_lower:
+            return "конфлікт із дворучною зброєю"
+
+        slot_key = item_info.get("slot_key", "")
+
+        if is_armor_slot(slot_key):
+            return "броня не підходить класу"
+
+        if slot_key == "main_hand":
+            return "зброя не підходить класу"
+
+        if slot_key == "off_hand":
+            return "предмет для другої руки не підходить класу"
+
+        return "не підходить новому класу"
+
+    ensure_equipment_slots(user_id)
+    init_class_equipment_restrictions_system()
+    init_dynamic_equipment_system()
+    init_weapon_damage_system()
+
+    removed_items = []
+
+    equipped_slots = get_all_equipped_slots(user_id)
+
+    for slot_key in SLOT_ORDER:
+        inventory_id = equipped_slots.get(slot_key)
+
+        if not inventory_id:
+            continue
+
+        item_info = get_item_classification_by_inventory_id(inventory_id)
+
+        if not item_info:
+            continue
+
+        compatibility = can_equip_item_by_class(
+            user_id=user_id,
+            item_info=item_info
+        )
+
+        if compatibility.get("success"):
+            continue
+
+        raw_name = item_info.get("name", "Невідомий предмет")
+
+        display_name = add_armor_type_to_name(
+            name=raw_name,
+            inventory_id=inventory_id
+        )
+
+        compact_reason = infer_compact_reason(
+            item_info=item_info,
+            compatibility_message=compatibility.get("message", "")
+        )
+
+        ready_name = f"{display_name} — {compact_reason}"
+
+        unequip_slot(user_id, slot_key)
+
+        removed_items.append({
+            "inventory_id": inventory_id,
+            "slot_key": slot_key,
+            "name": ready_name,
+            "reason": compact_reason
+        })
+
+    return {
+        "success": True,
+        "removed_items": removed_items,
+        "removed_count": len(removed_items)
     }
