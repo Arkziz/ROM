@@ -8324,22 +8324,33 @@ def is_inventory_item_class_compatible(user_id, inventory_id):
 # ✅ CLASS SHOP EQUIPMENT GENERATION V1
 # ==============================
 
-ARMOR_DEFENSE_MULTIPLIERS = {
+# Важливо: це НЕ прості множники pdef/mdef.
+# Базова генерація броні вже сильно перекошена у фізичний захист,
+# тому для armor_type потрібно перерозподіляти спільний defensive budget.
+ARMOR_DEFENSE_DISTRIBUTION_PROFILES = {
     "cloth": {
-        "pdef": 0.70,
-        "mdef": 1.30
+        # Тканина: мало фізичного, багато магічного.
+        "pdef_share": 0.30,
+        "mdef_share": 0.70,
+        "total_multiplier": 1.00
     },
     "leather": {
-        "pdef": 0.95,
-        "mdef": 1.05
+        # Шкіра: близько до балансу, трохи більше фізичного.
+        "pdef_share": 0.55,
+        "mdef_share": 0.45,
+        "total_multiplier": 1.05
     },
     "chain": {
-        "pdef": 1.20,
-        "mdef": 0.90
+        # Кольчуга: високий фізичний, помітно нижчий магічний.
+        "pdef_share": 0.75,
+        "mdef_share": 0.25,
+        "total_multiplier": 1.10
     },
     "plate": {
-        "pdef": 1.35,
-        "mdef": 0.75
+        # Лати: максимум фізичного, мінімум магічного.
+        "pdef_share": 0.88,
+        "mdef_share": 0.12,
+        "total_multiplier": 1.15
     }
 }
 
@@ -8356,9 +8367,23 @@ def get_shop_armor_type_for_user(user_id):
 
 def apply_armor_type_defense_profile_to_stats(stats, armor_type):
     """
-    Застосовує PDEF/MDEF профіль броні.
+    Перерозподіляє PDEF/MDEF броні залежно від armor_type.
 
-    Працює тільки для броні.
+    Чому так:
+    базова генерація броні, особливо chest/legs/shoulders, уже дає багато PDEF
+    і мало MDEF. Якщо просто множити старі значення, тканина все одно отримує
+    більше фізичного захисту, ніж магічного.
+
+    Тому алгоритм такий:
+    1. Беремо базовий defensive budget = pdef + mdef.
+    2. Множимо budget на total_multiplier типу броні.
+    3. Розподіляємо budget між PDEF і MDEF за pdef_share/mdef_share.
+
+    Результат:
+    cloth   -> MDEF > PDEF
+    leather -> PDEF приблизно близький до MDEF
+    chain   -> PDEF > MDEF
+    plate   -> PDEF сильно > MDEF
     """
 
     armor_type = normalize_equipment_restriction_value(armor_type)
@@ -8366,16 +8391,52 @@ def apply_armor_type_defense_profile_to_stats(stats, armor_type):
     if not armor_type:
         return stats
 
-    multipliers = ARMOR_DEFENSE_MULTIPLIERS.get(armor_type)
+    profile = ARMOR_DEFENSE_DISTRIBUTION_PROFILES.get(armor_type)
 
-    if not multipliers:
+    if not profile:
         return stats
 
-    stats["pdef"] = int(round((stats.get("pdef", 0) or 0) * multipliers["pdef"]))
-    stats["mdef"] = int(round((stats.get("mdef", 0) or 0) * multipliers["mdef"]))
+    base_pdef = int(stats.get("pdef", 0) or 0)
+    base_mdef = int(stats.get("mdef", 0) or 0)
+    base_total = base_pdef + base_mdef
+
+    if base_total <= 0:
+        return stats
+
+    total_multiplier = float(profile.get("total_multiplier", 1.0))
+    pdef_share = float(profile.get("pdef_share", 0.5))
+    mdef_share = float(profile.get("mdef_share", 0.5))
+
+    total_defense = int(round(base_total * total_multiplier))
+
+    if total_defense < 2:
+        total_defense = 2
+
+    new_pdef = int(round(total_defense * pdef_share))
+    new_mdef = int(round(total_defense * mdef_share))
+
+    new_pdef = max(1, new_pdef)
+    new_mdef = max(1, new_mdef)
+
+    # Жорсткі гарантії напрямку, щоб округлення не ламало профіль.
+    if armor_type == "cloth" and new_mdef <= new_pdef:
+        total = max(2, new_pdef + new_mdef)
+        new_mdef = max(1, int(round(total * 0.70)))
+        new_pdef = max(1, total - new_mdef)
+        if new_mdef <= new_pdef:
+            new_mdef = new_pdef + 1
+
+    if armor_type == "plate" and new_pdef <= new_mdef:
+        total = max(2, new_pdef + new_mdef)
+        new_pdef = max(1, int(round(total * 0.88)))
+        new_mdef = max(1, total - new_pdef)
+        if new_pdef <= new_mdef:
+            new_pdef = new_mdef + 1
+
+    stats["pdef"] = new_pdef
+    stats["mdef"] = new_mdef
 
     return stats
-
 
 def get_allowed_shop_main_hand_profiles(user_id):
     class_key = get_character_class(user_id)
