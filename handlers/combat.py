@@ -334,6 +334,10 @@ def get_effective_player_defenses(user_id, mob):
 def process_player_turn_start_effects(user_id, mob):
     init_combat_effects(mob)
 
+    # Скільки HoT вилікував саме на старті поточного ходу.
+    # Якщо цей самий хід завершиться перемогою, process_victory() відкочує цей тик.
+    mob["_turn_start_hot_heal_applied"] = 0
+
     if not mob["player_effects"]:
         return ""
 
@@ -350,6 +354,7 @@ def process_player_turn_start_effects(user_id, mob):
         mob["player_max_hp"] = max_hp
 
     initial_hp = current_hp
+    total_hot_healed = 0
 
     for key, effect in list(mob["player_effects"].items()):
         effect_type = effect.get("type", "")
@@ -364,6 +369,7 @@ def process_player_turn_start_effects(user_id, mob):
                 healed = current_hp - prev_hp
 
                 if healed > 0:
+                    total_hot_healed += healed
                     text += f"🌿 {effect.get('name', 'Лікування')}: +{healed} HP\n"
 
         turns -= 1
@@ -376,13 +382,14 @@ def process_player_turn_start_effects(user_id, mob):
         set_current_hp(user_id, current_hp)
         mob["player_hp"] = current_hp
 
+    mob["_turn_start_hot_heal_applied"] = total_hot_healed
+
     for key in effects_to_remove:
         name = mob["player_effects"].get(key, {}).get("name", key)
         remove_player_effect(mob, key)
         text += f"⌛ Ефект завершився: {name}\n"
 
     return text
-
 
 def process_enemy_turn_start_effects(mob):
     init_combat_effects(mob)
@@ -1455,7 +1462,90 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
     return text
 
 
+
+def rollback_turn_start_hot_heal_on_victory(user_id, mob):
+    """
+    Відкочує HoT, який спрацював на початку ходу,
+    якщо цей самий хід завершився перемогою.
+    """
+
+    if not mob:
+        return
+
+    hot_heal = int(mob.get("_turn_start_hot_heal_applied", 0) or 0)
+
+    if hot_heal <= 0:
+        return
+
+    if "player_hp" in mob and "player_max_hp" in mob:
+        current_hp = int(mob.get("player_hp", 0) or 0)
+        max_hp = int(mob.get("player_max_hp", get_max_hp(user_id)) or get_max_hp(user_id))
+    else:
+        current_hp = get_current_hp_raw(user_id)
+        max_hp = get_max_hp(user_id)
+
+    new_hp = current_hp - hot_heal
+    new_hp = max(1, min(max_hp, new_hp))
+
+    mob["player_hp"] = new_hp
+    mob["player_max_hp"] = max_hp
+    mob["_turn_start_hot_heal_applied"] = 0
+
+    set_current_hp(user_id, new_hp)
+
+
+def finalize_combat_state_before_victory(user_id, mob):
+    """
+    Фіналізує бойовий стан перед перемогою.
+
+    Перед очищенням бойових ефектів відкочує HoT, який спрацював
+    на старті переможного ходу. Потім зберігає поточне HP і очищає
+    тимчасові ефекти бою.
+    """
+
+    if not mob:
+        return
+
+    rollback_turn_start_hot_heal_on_victory(user_id, mob)
+
+    if "player_hp" in mob:
+        try:
+            player_hp = int(mob.get("player_hp", 0) or 0)
+            player_max_hp = int(mob.get("player_max_hp", get_max_hp(user_id)) or get_max_hp(user_id))
+
+            if player_max_hp <= 0:
+                player_max_hp = get_max_hp(user_id)
+
+            player_hp = max(1, min(player_max_hp, player_hp))
+            set_current_hp(user_id, player_hp)
+
+            mob["player_hp"] = player_hp
+            mob["player_max_hp"] = player_max_hp
+
+        except Exception:
+            pass
+
+    mob["player_effects"] = {}
+    mob["enemy_effects"] = {}
+    mob["stunned_turns"] = 0
+    mob["_turn_start_hot_heal_applied"] = 0
+
 def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=""):
+    """
+    Завершення бою перемогою.
+
+    Перед виходом із бою фіксуємо поточне HP з бойового стану
+    і очищаємо тимчасові бойові ефекти.
+
+    Це виправляє кейс, коли жрець наклав HoT у фінальному раунді,
+    а залишкові тіки лікування некоректно доліковували героя після перемоги.
+    """
+
+    finalize_combat_state_before_victory(
+        user_id=user_id,
+        mob=mob
+    )
+
     if hasattr(bot, "user_data") and user_id in bot.user_data:
         del bot.user_data[user_id]
 

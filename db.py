@@ -3810,13 +3810,33 @@ def get_current_hp(user_id):
 
 
 def set_current_hp(user_id, hp):
+    """
+    Безпечно встановлює поточне HP гравця.
+
+    Важливо:
+    після будь-якої ручної зміни HP ми оновлюємо last_hp_regen_update,
+    щоб пасивна регенерація не "наздоганяла" час бою одразу після перемоги.
+
+    Це виправляє ситуацію:
+    - у бою гравець завершив з 142/345 HP;
+    - після перемоги відкрив профіль;
+    - профіль одразу показав +1/+2 тіки пасивної регенерації.
+    """
+
     from datetime import datetime
 
     init_hp_regen_system()
 
     max_hp = get_max_hp(user_id)
 
-    hp = int(hp)
+    try:
+        hp = int(hp)
+    except Exception:
+        hp = max_hp
+
+    if max_hp <= 0:
+        max_hp = 1
+
     hp = max(0, min(max_hp, hp))
 
     hp_full_notified = 1 if hp >= max_hp else 0
@@ -3835,6 +3855,8 @@ def set_current_hp(user_id, hp):
     ))
 
     conn.commit()
+
+    return hp
 
 
 # ==============================
