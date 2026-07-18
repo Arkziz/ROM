@@ -8346,9 +8346,10 @@ def is_inventory_item_class_compatible(user_id, inventory_id):
 # ✅ CLASS SHOP EQUIPMENT GENERATION V1
 # ==============================
 
-# Важливо: це НЕ прості множники pdef/mdef.
-# Базова генерація броні вже сильно перекошена у фізичний захист,
-# тому для armor_type потрібно перерозподіляти спільний defensive budget.
+# ==============================
+# ✅ ARMOR TYPE DEFENSE PROFILES
+# ==============================
+
 ARMOR_DEFENSE_DISTRIBUTION_PROFILES = {
     "cloth": {
         # Тканина: мало фізичного, багато магічного.
@@ -8363,7 +8364,7 @@ ARMOR_DEFENSE_DISTRIBUTION_PROFILES = {
         "total_multiplier": 1.05
     },
     "chain": {
-        # Кольчуга: високий фізичний, помітно нижчий магічний.
+        # Кольчуга: високий фізичний, нижчий магічний.
         "pdef_share": 0.75,
         "mdef_share": 0.25,
         "total_multiplier": 1.10
@@ -8377,24 +8378,14 @@ ARMOR_DEFENSE_DISTRIBUTION_PROFILES = {
 }
 
 
-def get_shop_armor_type_for_user(user_id):
-    """
-    Повертає armor_type для базового магазину за класом гравця.
-    """
-
-    class_key = get_character_class(user_id)
-
-    return get_allowed_armor_type_for_class(class_key)
-
-
 # ==============================
 # ✅ ARMOR TYPE PRIMARY STAT PROFILES
 # ==============================
 
 ARMOR_PRIMARY_STAT_PROFILES = {
+    # Тканина для мага / жерця:
+    # інтелект, мудрість, трохи витривалості.
     "cloth": {
-        # Тканина для мага / жерця:
-        # інтелект, мудрість, трохи витривалості.
         "primary_weights": [
             ("int", 40),
             ("wis", 40),
@@ -8409,9 +8400,9 @@ ARMOR_PRIMARY_STAT_PROFILES = {
         "secondary_multiplier": 0.50
     },
 
+    # Шкіра для скаута / розбійника:
+    # спритність, сила, трохи витривалості.
     "leather": {
-        # Шкіра для скаута / розбійника:
-        # спритність, сила, трохи витривалості.
         "primary_weights": [
             ("dex", 50),
             ("str", 30),
@@ -8426,9 +8417,9 @@ ARMOR_PRIMARY_STAT_PROFILES = {
         "secondary_multiplier": 0.50
     },
 
+    # Кольчуга для воїна:
+    # сила і витривалість.
     "chain": {
-        # Кольчуга для воїна:
-        # сила і витривалість, дуже рідко спритність.
         "primary_weights": [
             ("str", 55),
             ("sta", 40),
@@ -8443,9 +8434,276 @@ ARMOR_PRIMARY_STAT_PROFILES = {
         "secondary_multiplier": 0.50
     },
 
+    # Лати для лицаря:
+    # витривалість головна, сила друга.
     "plate": {
-        # Лати для лицаря:
-        # витривалість головна, сила друга.
+        "primary_weights": [
+            ("sta", 65),
+            ("str", 35)
+        ],
+        "secondary_weights": [
+            ("str", 70),
+            ("sta", 30)
+        ],
+        "main_multiplier": 1.25,
+        "secondary_multiplier": 0.50
+    }
+}
+
+
+def get_shop_armor_type_for_user(user_id):
+    """
+    Повертає armor_type для базового магазину за класом гравця.
+    """
+
+    class_key = get_character_class(user_id)
+
+    return get_allowed_armor_type_for_class(class_key)
+
+
+def pick_weighted_stat(weighted_stats, exclude_stat=None):
+    """
+    Вибирає характеристику за вагами.
+
+    Приклад:
+    [
+        ("int", 40),
+        ("wis", 40),
+        ("sta", 20)
+    ]
+    """
+
+    filtered = []
+
+    for stat_key, weight in weighted_stats:
+        if exclude_stat is not None and stat_key == exclude_stat:
+            continue
+
+        filtered.append((stat_key, weight))
+
+    if not filtered:
+        filtered = weighted_stats
+
+    if not filtered:
+        return ""
+
+    total_weight = sum(weight for _, weight in filtered)
+
+    if total_weight <= 0:
+        return filtered[0][0]
+
+    roll = random.randint(1, total_weight)
+    current = 0
+
+    for stat_key, weight in filtered:
+        current += weight
+
+        if roll <= current:
+            return stat_key
+
+    return filtered[-1][0]
+
+
+def add_primary_stat_to_stats(stats, stat_key, value):
+    """
+    Додає основну характеристику в stats.
+    """
+
+    value = int(value or 0)
+
+    if value <= 0:
+        return
+
+    if stat_key == "str":
+        stats["bonus_str"] += value
+
+    elif stat_key == "dex":
+        stats["bonus_dex"] += value
+
+    elif stat_key == "int":
+        stats["bonus_int"] += value
+
+    elif stat_key == "wis":
+        stats["bonus_wis"] += value
+
+    elif stat_key == "sta":
+        stats["bonus_sta"] += value
+
+
+def get_existing_primary_stat_budget(stats):
+    """
+    Рахує поточний бюджет основних характеристик,
+    який уже згенерував слот.
+
+    Наприклад:
+    chest 8 рівня common може мати:
+    bonus_sta = 4
+
+    Тоді budget = 4.
+    На основі цього budget створюються характеристики під armor_type.
+    """
+
+    return (
+        int(stats.get("bonus_str", 0) or 0)
+        + int(stats.get("bonus_dex", 0) or 0)
+        + int(stats.get("bonus_int", 0) or 0)
+        + int(stats.get("bonus_wis", 0) or 0)
+        + int(stats.get("bonus_sta", 0) or 0)
+    )
+
+
+def clear_primary_stat_bonuses(stats):
+    """
+    Очищає старі slot-based характеристики.
+
+    Це потрібно, щоб:
+    - тканина не давала випадкову Спритність;
+    - лати не давали Інтелект;
+    - шкіра не давала Мудрість тощо.
+    """
+
+    stats["bonus_str"] = 0
+    stats["bonus_dex"] = 0
+    stats["bonus_int"] = 0
+    stats["bonus_wis"] = 0
+    stats["bonus_sta"] = 0
+
+
+def apply_armor_type_primary_stat_profile_to_stats(stats, armor_type):
+    """
+    Перерозподіляє основні характеристики броні залежно від armor_type.
+
+    Логіка:
+    - беремо старий stat budget, який залежав від слоту;
+    - очищаємо старі характеристики;
+    - вибираємо primary stat за вагами armor_type;
+    - вибираємо secondary stat за вагами armor_type;
+    - додаємо ці характеристики назад.
+
+    Напрямок:
+    cloth   -> INT / WIS / STA
+    leather -> DEX / STR / STA
+    chain   -> STR / STA / рідко DEX
+    plate   -> STA / STR
+    """
+
+    armor_type = normalize_equipment_restriction_value(armor_type)
+
+    if not armor_type:
+        return stats
+
+    profile = ARMOR_PRIMARY_STAT_PROFILES.get(armor_type)
+
+    if not profile:
+        return stats
+
+    existing_budget = get_existing_primary_stat_budget(stats)
+
+    if existing_budget <= 0:
+        return stats
+
+    clear_primary_stat_bonuses(stats)
+
+    main_multiplier = float(profile.get("main_multiplier", 1.0))
+    secondary_multiplier = float(profile.get("secondary_multiplier", 0.5))
+
+    primary_value = int(round(existing_budget * main_multiplier))
+    secondary_value = int(round(existing_budget * secondary_multiplier))
+
+    primary_value = max(1, primary_value)
+
+    if existing_budget >= 2:
+        secondary_value = max(1, secondary_value)
+    else:
+        secondary_value = 0
+
+    primary_stat = pick_weighted_stat(
+        profile.get("primary_weights", []),
+        exclude_stat=None
+    )
+
+    secondary_stat = None
+
+    if secondary_value > 0:
+        secondary_stat = pick_weighted_stat(
+            profile.get("secondary_weights", []),
+            exclude_stat=primary_stat
+        )
+
+    add_primary_stat_to_stats(
+        stats=stats,
+        stat_key=primary_stat,
+        value=primary_value
+    )
+
+    if secondary_stat:
+        add_primary_stat_to_stats(
+            stats=stats,
+            stat_key=secondary_stat,
+            value=secondary_value
+        )
+
+    return stats
+
+# ==============================
+# ✅ ARMOR TYPE PRIMARY STAT PROFILES
+# ==============================
+
+ARMOR_PRIMARY_STAT_PROFILES = {
+    # Тканина для мага / жерця:
+    # інтелект, мудрість, трохи витривалості.
+    "cloth": {
+        "primary_weights": [
+            ("int", 40),
+            ("wis", 40),
+            ("sta", 20)
+        ],
+        "secondary_weights": [
+            ("wis", 45),
+            ("int", 45),
+            ("sta", 10)
+        ],
+        "main_multiplier": 1.00,
+        "secondary_multiplier": 0.50
+    },
+
+    # Шкіра для скаута / розбійника:
+    # спритність, сила, трохи витривалості.
+    "leather": {
+        "primary_weights": [
+            ("dex", 50),
+            ("str", 30),
+            ("sta", 20)
+        ],
+        "secondary_weights": [
+            ("sta", 45),
+            ("str", 35),
+            ("dex", 20)
+        ],
+        "main_multiplier": 1.00,
+        "secondary_multiplier": 0.50
+    },
+
+    # Кольчуга для воїна:
+    # сила і витривалість.
+    "chain": {
+        "primary_weights": [
+            ("str", 55),
+            ("sta", 40),
+            ("dex", 5)
+        ],
+        "secondary_weights": [
+            ("sta", 55),
+            ("str", 40),
+            ("dex", 5)
+        ],
+        "main_multiplier": 1.00,
+        "secondary_multiplier": 0.50
+    },
+
+    # Лати для лицаря:
+    # витривалість головна, сила друга.
+    "plate": {
         "primary_weights": [
             ("sta", 65),
             ("str", 35)
@@ -8525,10 +8783,7 @@ def add_primary_stat_to_stats(stats, stat_key, value):
 def get_existing_primary_stat_budget(stats):
     """
     Рахує поточний бюджет основних характеристик.
-
-    Наприклад:
-    chest 8 рівня common старою логікою дає bonus_sta = 4.
-    Значить budget = 4.
+    Наприклад chest 8 common дає bonus_sta = 4, отже budget = 4.
     """
 
     return (
@@ -8620,7 +8875,6 @@ def apply_armor_type_primary_stat_profile_to_stats(stats, armor_type):
 
     return stats
 
-
 def apply_armor_type_defense_profile_to_stats(stats, armor_type):
     """
     Центральна функція профілю броні.
@@ -8693,6 +8947,7 @@ def apply_armor_type_defense_profile_to_stats(stats, armor_type):
     )
 
     return stats
+
 
 def get_allowed_shop_main_hand_profiles(user_id):
     class_key = get_character_class(user_id)
