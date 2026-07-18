@@ -1399,7 +1399,7 @@ def build_combat_potion_kb(user_id):
 def build_death_text(durability_damage):
     text = (
         "💀 ТИ ЗАГИНУВ\n"
-        "❤️ Здоров’я відновлено\n"
+        "❤️ Після поразки у тебе залишилось 1 HP\n"
         "🧱 Одягнене спорядження втратило 5 міцності\n"
     )
 
@@ -1917,7 +1917,7 @@ def register_combat_handlers(bot):
                 amount=5
             )
 
-            set_current_hp(user_id, player_max_hp)
+            set_current_hp(user_id, 1)
 
             mp_restore_result = restore_user_mp_to_full(user_id)
 
@@ -2294,7 +2294,7 @@ def register_combat_handlers(bot):
                 user_id=user_id,
                 amount=5
             )
-            set_current_hp(user_id, player_max_hp)
+            set_current_hp(user_id, 1)
             mp_restore_result = restore_user_mp_to_full(user_id)
             
             if user_id in bot.user_data:
@@ -2809,7 +2809,7 @@ def register_combat_handlers(bot):
                 amount=5
             )
 
-            set_current_hp(user_id, player_max_hp)
+            set_current_hp(user_id, 1)
 
             mp_restore_result = restore_user_mp_to_full(user_id)
 
