@@ -353,6 +353,10 @@ def process_player_turn_start_effects(user_id, mob):
         mob["player_hp"] = current_hp
         mob["player_max_hp"] = max_hp
 
+        # Бій почався: пасивна регенерація HP не має накопичуватись під час бою.
+        # set_current_hp() також оновлює last_hp_regen_update.
+        set_current_hp(user_id, current_hp)
+
     initial_hp = current_hp
     total_hot_healed = 0
 
@@ -1918,6 +1922,11 @@ def register_combat_handlers(bot):
             )
 
             set_current_hp(user_id, 1)
+            try:
+                from db import reset_hp_regen_timers_now
+                reset_hp_regen_timers_now(user_id)
+            except Exception:
+                pass
 
             mp_restore_result = restore_user_mp_to_full(user_id)
 
@@ -2295,6 +2304,11 @@ def register_combat_handlers(bot):
                 amount=5
             )
             set_current_hp(user_id, 1)
+            try:
+                from db import reset_hp_regen_timers_now
+                reset_hp_regen_timers_now(user_id)
+            except Exception:
+                pass
             mp_restore_result = restore_user_mp_to_full(user_id)
             
             if user_id in bot.user_data:
@@ -2810,6 +2824,11 @@ def register_combat_handlers(bot):
             )
 
             set_current_hp(user_id, 1)
+            try:
+                from db import reset_hp_regen_timers_now
+                reset_hp_regen_timers_now(user_id)
+            except Exception:
+                pass
 
             mp_restore_result = restore_user_mp_to_full(user_id)
 

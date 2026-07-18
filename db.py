@@ -10596,3 +10596,213 @@ def unequip_incompatible_items_after_class_change(user_id):
         "removed_items": removed_items,
         "removed_count": len(removed_items)
     }
+
+
+# ==============================
+# ✅ FINAL OVERRIDE: SET CURRENT HP RESETS PASSIVE REGEN TIMER
+# ==============================
+
+def set_current_hp(user_id, hp):
+    """
+    Безпечно встановлює поточне HP гравця.
+
+    Важливо:
+    після будь-якої ручної зміни HP оновлюємо last_hp_regen_update,
+    щоб пасивна регенерація не "наздоганяла" час бою одразу після бою.
+
+    Це потрібно для правил:
+    - під час бою пасивний реген не накопичується;
+    - після смерті герой лишається з 1 HP;
+    - після завершення бою таймер пасивної регенерації стартує заново.
+    """
+
+    from datetime import datetime
+
+    init_hp_regen_system()
+
+    max_hp = get_max_hp(user_id)
+
+    try:
+        hp = int(hp)
+    except Exception:
+        hp = max_hp
+
+    if max_hp <= 0:
+        max_hp = 1
+
+    hp = max(0, min(max_hp, hp))
+
+    hp_full_notified = 1 if hp >= max_hp else 0
+
+    cursor.execute("""
+    UPDATE users
+    SET hp=?,
+        last_hp_regen_update=?,
+        hp_full_notified=?
+    WHERE user_id=?
+    """, (
+        hp,
+        datetime.now().isoformat(),
+        hp_full_notified,
+        user_id
+    ))
+
+    conn.commit()
+
+    return hp
+
+
+# ==============================
+# ✅ FINAL OVERRIDE: HARD HP REGEN TIMER RESET
+# ==============================
+
+def reset_hp_regen_timers_now(user_id):
+    """
+    Жорстко скидає всі відомі таймери HP/пасивної регенерації.
+
+    У проєкті можуть існувати різні поля:
+    - last_hp_regen_update
+    - last_regen_at
+
+    Тому оновлюємо обидва, якщо вони існують.
+    """
+
+    from datetime import datetime
+
+    now = datetime.now().isoformat()
+
+    try:
+        init_hp_regen_system()
+    except Exception:
+        pass
+
+    try:
+        init_passive_regen_system()
+    except Exception:
+        pass
+
+    # last_hp_regen_update
+    try:
+        cursor.execute("""
+        UPDATE users
+        SET last_hp_regen_update=?
+        WHERE user_id=?
+        """, (
+            now,
+            user_id
+        ))
+    except Exception:
+        pass
+
+    # last_regen_at
+    try:
+        cursor.execute("""
+        UPDATE users
+        SET last_regen_at=?
+        WHERE user_id=?
+        """, (
+            now,
+            user_id
+        ))
+    except Exception:
+        pass
+
+    conn.commit()
+
+
+def set_current_hp(user_id, hp):
+    """
+    Фінальна безпечна версія встановлення HP.
+
+    Важливо:
+    після будь-якої ручної зміни HP скидаємо всі таймери регенерації,
+    щоб пасивне відновлення не "наздоганяло" час бою.
+
+    Це потрібно, щоб після смерті:
+    - HP стало 1;
+    - при миттєвому відкритті профілю не додавалось +19/+38 HP.
+    """
+
+    from datetime import datetime
+
+    try:
+        init_hp_regen_system()
+    except Exception:
+        pass
+
+    try:
+        init_passive_regen_system()
+    except Exception:
+        pass
+
+    max_hp = get_max_hp(user_id)
+
+    try:
+        hp = int(hp)
+    except Exception:
+        hp = max_hp
+
+    if max_hp <= 0:
+        max_hp = 1
+
+    hp = max(0, min(max_hp, hp))
+
+    hp_full_notified = 1 if hp >= max_hp else 0
+    now = datetime.now().isoformat()
+
+    # Основний update з усіма можливими полями.
+    try:
+        cursor.execute("""
+        UPDATE users
+        SET hp=?,
+            last_hp_regen_update=?,
+            last_regen_at=?,
+            hp_full_notified=?
+        WHERE user_id=?
+        """, (
+            hp,
+            now,
+            now,
+            hp_full_notified,
+            user_id
+        ))
+
+        conn.commit()
+        return hp
+
+    except Exception:
+        # Fallback для баз, де одного з полів може не бути.
+        pass
+
+    try:
+        cursor.execute("""
+        UPDATE users
+        SET hp=?,
+            last_hp_regen_update=?,
+            hp_full_notified=?
+        WHERE user_id=?
+        """, (
+            hp,
+            now,
+            hp_full_notified,
+            user_id
+        ))
+
+        conn.commit()
+
+    except Exception:
+        cursor.execute("""
+        UPDATE users
+        SET hp=?
+        WHERE user_id=?
+        """, (
+            hp,
+            user_id
+        ))
+
+        conn.commit()
+
+    reset_hp_regen_timers_now(user_id)
+
+    return hp
+
