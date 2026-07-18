@@ -8387,25 +8387,179 @@ def get_shop_armor_type_for_user(user_id):
     return get_allowed_armor_type_for_class(class_key)
 
 
-def apply_armor_type_defense_profile_to_stats(stats, armor_type):
+# ==============================
+# ✅ ARMOR TYPE PRIMARY STAT PROFILES
+# ==============================
+
+ARMOR_PRIMARY_STAT_PROFILES = {
+    "cloth": {
+        # Тканина для мага / жерця:
+        # інтелект, мудрість, трохи витривалості.
+        "primary_weights": [
+            ("int", 40),
+            ("wis", 40),
+            ("sta", 20)
+        ],
+        "secondary_weights": [
+            ("wis", 45),
+            ("int", 45),
+            ("sta", 10)
+        ],
+        "main_multiplier": 1.00,
+        "secondary_multiplier": 0.50
+    },
+
+    "leather": {
+        # Шкіра для скаута / розбійника:
+        # спритність, сила, трохи витривалості.
+        "primary_weights": [
+            ("dex", 50),
+            ("str", 30),
+            ("sta", 20)
+        ],
+        "secondary_weights": [
+            ("sta", 45),
+            ("str", 35),
+            ("dex", 20)
+        ],
+        "main_multiplier": 1.00,
+        "secondary_multiplier": 0.50
+    },
+
+    "chain": {
+        # Кольчуга для воїна:
+        # сила і витривалість, дуже рідко спритність.
+        "primary_weights": [
+            ("str", 55),
+            ("sta", 40),
+            ("dex", 5)
+        ],
+        "secondary_weights": [
+            ("sta", 55),
+            ("str", 40),
+            ("dex", 5)
+        ],
+        "main_multiplier": 1.00,
+        "secondary_multiplier": 0.50
+    },
+
+    "plate": {
+        # Лати для лицаря:
+        # витривалість головна, сила друга.
+        "primary_weights": [
+            ("sta", 65),
+            ("str", 35)
+        ],
+        "secondary_weights": [
+            ("str", 70),
+            ("sta", 30)
+        ],
+        "main_multiplier": 1.25,
+        "secondary_multiplier": 0.50
+    }
+}
+
+
+def pick_weighted_stat(weighted_stats, exclude_stat=None):
     """
-    Перерозподіляє PDEF/MDEF броні залежно від armor_type.
+    Вибирає характеристику за вагами.
+    """
 
-    Чому так:
-    базова генерація броні, особливо chest/legs/shoulders, уже дає багато PDEF
-    і мало MDEF. Якщо просто множити старі значення, тканина все одно отримує
-    більше фізичного захисту, ніж магічного.
+    filtered = []
 
-    Тому алгоритм такий:
-    1. Беремо базовий defensive budget = pdef + mdef.
-    2. Множимо budget на total_multiplier типу броні.
-    3. Розподіляємо budget між PDEF і MDEF за pdef_share/mdef_share.
+    for stat_key, weight in weighted_stats:
+        if exclude_stat is not None and stat_key == exclude_stat:
+            continue
 
-    Результат:
-    cloth   -> MDEF > PDEF
-    leather -> PDEF приблизно близький до MDEF
-    chain   -> PDEF > MDEF
-    plate   -> PDEF сильно > MDEF
+        filtered.append((stat_key, weight))
+
+    if not filtered:
+        filtered = weighted_stats
+
+    if not filtered:
+        return ""
+
+    total_weight = sum(weight for _, weight in filtered)
+
+    if total_weight <= 0:
+        return filtered[0][0]
+
+    roll = random.randint(1, total_weight)
+    current = 0
+
+    for stat_key, weight in filtered:
+        current += weight
+
+        if roll <= current:
+            return stat_key
+
+    return filtered[-1][0]
+
+
+def add_primary_stat_to_stats(stats, stat_key, value):
+    """
+    Додає основну характеристику у stats.
+    """
+
+    value = int(value or 0)
+
+    if value <= 0:
+        return
+
+    if stat_key == "str":
+        stats["bonus_str"] += value
+
+    elif stat_key == "dex":
+        stats["bonus_dex"] += value
+
+    elif stat_key == "int":
+        stats["bonus_int"] += value
+
+    elif stat_key == "wis":
+        stats["bonus_wis"] += value
+
+    elif stat_key == "sta":
+        stats["bonus_sta"] += value
+
+
+def get_existing_primary_stat_budget(stats):
+    """
+    Рахує поточний бюджет основних характеристик.
+
+    Наприклад:
+    chest 8 рівня common старою логікою дає bonus_sta = 4.
+    Значить budget = 4.
+    """
+
+    return (
+        int(stats.get("bonus_str", 0) or 0)
+        + int(stats.get("bonus_dex", 0) or 0)
+        + int(stats.get("bonus_int", 0) or 0)
+        + int(stats.get("bonus_wis", 0) or 0)
+        + int(stats.get("bonus_sta", 0) or 0)
+    )
+
+
+def clear_primary_stat_bonuses(stats):
+    """
+    Очищає старі slot-based характеристики.
+    """
+
+    stats["bonus_str"] = 0
+    stats["bonus_dex"] = 0
+    stats["bonus_int"] = 0
+    stats["bonus_wis"] = 0
+    stats["bonus_sta"] = 0
+
+
+def apply_armor_type_primary_stat_profile_to_stats(stats, armor_type):
+    """
+    Перерозподіляє основні характеристики броні залежно від armor_type.
+
+    cloth   -> INT / WIS / STA
+    leather -> DEX / STR / STA
+    chain   -> STR / STA / рідко DEX
+    plate   -> STA / STR
     """
 
     armor_type = normalize_equipment_restriction_value(armor_type)
@@ -8413,50 +8567,130 @@ def apply_armor_type_defense_profile_to_stats(stats, armor_type):
     if not armor_type:
         return stats
 
-    profile = ARMOR_DEFENSE_DISTRIBUTION_PROFILES.get(armor_type)
+    profile = ARMOR_PRIMARY_STAT_PROFILES.get(armor_type)
 
     if not profile:
         return stats
 
-    base_pdef = int(stats.get("pdef", 0) or 0)
-    base_mdef = int(stats.get("mdef", 0) or 0)
-    base_total = base_pdef + base_mdef
+    existing_budget = get_existing_primary_stat_budget(stats)
 
-    if base_total <= 0:
+    if existing_budget <= 0:
         return stats
 
-    total_multiplier = float(profile.get("total_multiplier", 1.0))
-    pdef_share = float(profile.get("pdef_share", 0.5))
-    mdef_share = float(profile.get("mdef_share", 0.5))
+    clear_primary_stat_bonuses(stats)
 
-    total_defense = int(round(base_total * total_multiplier))
+    main_multiplier = float(profile.get("main_multiplier", 1.0))
+    secondary_multiplier = float(profile.get("secondary_multiplier", 0.5))
 
-    if total_defense < 2:
-        total_defense = 2
+    primary_value = int(round(existing_budget * main_multiplier))
+    secondary_value = int(round(existing_budget * secondary_multiplier))
 
-    new_pdef = int(round(total_defense * pdef_share))
-    new_mdef = int(round(total_defense * mdef_share))
+    primary_value = max(1, primary_value)
 
-    new_pdef = max(1, new_pdef)
-    new_mdef = max(1, new_mdef)
+    if existing_budget >= 2:
+        secondary_value = max(1, secondary_value)
+    else:
+        secondary_value = 0
 
-    # Жорсткі гарантії напрямку, щоб округлення не ламало профіль.
-    if armor_type == "cloth" and new_mdef <= new_pdef:
-        total = max(2, new_pdef + new_mdef)
-        new_mdef = max(1, int(round(total * 0.70)))
-        new_pdef = max(1, total - new_mdef)
-        if new_mdef <= new_pdef:
-            new_mdef = new_pdef + 1
+    primary_stat = pick_weighted_stat(
+        profile.get("primary_weights", []),
+        exclude_stat=None
+    )
 
-    if armor_type == "plate" and new_pdef <= new_mdef:
-        total = max(2, new_pdef + new_mdef)
-        new_pdef = max(1, int(round(total * 0.88)))
-        new_mdef = max(1, total - new_pdef)
-        if new_pdef <= new_mdef:
-            new_pdef = new_mdef + 1
+    secondary_stat = None
 
-    stats["pdef"] = new_pdef
-    stats["mdef"] = new_mdef
+    if secondary_value > 0:
+        secondary_stat = pick_weighted_stat(
+            profile.get("secondary_weights", []),
+            exclude_stat=primary_stat
+        )
+
+    add_primary_stat_to_stats(
+        stats=stats,
+        stat_key=primary_stat,
+        value=primary_value
+    )
+
+    if secondary_stat:
+        add_primary_stat_to_stats(
+            stats=stats,
+            stat_key=secondary_stat,
+            value=secondary_value
+        )
+
+    return stats
+
+
+def apply_armor_type_defense_profile_to_stats(stats, armor_type):
+    """
+    Центральна функція профілю броні.
+
+    Робить 2 речі:
+    1. Перерозподіляє PDEF/MDEF залежно від armor_type.
+    2. Перерозподіляє основні характеристики залежно від armor_type.
+    """
+
+    armor_type = normalize_equipment_restriction_value(armor_type)
+
+    if not armor_type:
+        return stats
+
+    # ==============================
+    # 1. PDEF / MDEF redistribution
+    # ==============================
+
+    defense_profile = ARMOR_DEFENSE_DISTRIBUTION_PROFILES.get(armor_type)
+
+    if defense_profile:
+        base_pdef = int(stats.get("pdef", 0) or 0)
+        base_mdef = int(stats.get("mdef", 0) or 0)
+        base_total = base_pdef + base_mdef
+
+        if base_total > 0:
+            total_multiplier = float(defense_profile.get("total_multiplier", 1.0))
+            pdef_share = float(defense_profile.get("pdef_share", 0.5))
+            mdef_share = float(defense_profile.get("mdef_share", 0.5))
+
+            total_defense = int(round(base_total * total_multiplier))
+
+            if total_defense < 2:
+                total_defense = 2
+
+            new_pdef = int(round(total_defense * pdef_share))
+            new_mdef = int(round(total_defense * mdef_share))
+
+            new_pdef = max(1, new_pdef)
+            new_mdef = max(1, new_mdef)
+
+            # Гарантія: тканина завжди має MDEF > PDEF.
+            if armor_type == "cloth" and new_mdef <= new_pdef:
+                total = max(2, new_pdef + new_mdef)
+                new_mdef = max(1, int(round(total * 0.70)))
+                new_pdef = max(1, total - new_mdef)
+
+                if new_mdef <= new_pdef:
+                    new_mdef = new_pdef + 1
+
+            # Гарантія: лати завжди мають PDEF > MDEF.
+            if armor_type == "plate" and new_pdef <= new_mdef:
+                total = max(2, new_pdef + new_mdef)
+                new_pdef = max(1, int(round(total * 0.88)))
+                new_mdef = max(1, total - new_pdef)
+
+                if new_pdef <= new_mdef:
+                    new_pdef = new_mdef + 1
+
+            stats["pdef"] = new_pdef
+            stats["mdef"] = new_mdef
+
+    # ==============================
+    # 2. Primary stats redistribution
+    # ==============================
+
+    stats = apply_armor_type_primary_stat_profile_to_stats(
+        stats=stats,
+        armor_type=armor_type
+    )
 
     return stats
 
