@@ -10806,3 +10806,884 @@ def set_current_hp(user_id, hp):
 
     return hp
 
+# ==============================
+# ✅ REFINE SYSTEM CORE V1
+# ==============================
+
+REFINE_STONE_ITEM_ID = 401
+SUCCESS_RUNE_ITEM_ID = 402
+
+
+def init_refine_system():
+    """Ініціалізує БД для системи заточки."""
+    try:
+        cursor.execute("""
+        ALTER TABLE inventory
+        ADD COLUMN refine_level INTEGER DEFAULT 0
+        """)
+        conn.commit()
+    except Exception:
+        pass
+    seed_refine_items()
+
+
+def _get_table_columns(table_name):
+    cursor.execute(f"PRAGMA table_info({table_name})")
+    return [row[1] for row in cursor.fetchall()]
+
+
+def _insert_item_dynamic(values_by_column):
+    columns = _get_table_columns("items")
+    insert_columns = []
+    insert_values = []
+    for column in columns:
+        if column in values_by_column:
+            insert_columns.append(column)
+            insert_values.append(values_by_column[column])
+    placeholders = ", ".join(["?"] * len(insert_columns))
+    columns_sql = ", ".join(insert_columns)
+    cursor.execute(f"""
+    INSERT OR IGNORE INTO items ({columns_sql})
+    VALUES ({placeholders})
+    """, insert_values)
+
+
+def seed_refine_items():
+    common_values = {
+        "slot_key": "", "weapon_hands": 1, "max_stack": 999, "bonus_str": 0,
+        "bonus_dex": 0, "bonus_int": 0, "bonus_wis": 0, "bonus_sta": 0,
+        "pdef": 0, "mdef": 0, "item_level": 1, "is_generated": 0,
+        "item_subtype": "", "armor_type": "", "weapon_min_damage": 0,
+        "weapon_max_damage": 0, "weapon_min_magic_damage": 0,
+        "weapon_max_magic_damage": 0, "weapon_attack_type": "",
+        "shop_preview_owner": None, "shop_preview_price": 0,
+    }
+    stone_values = dict(common_values)
+    stone_values.update({"id": REFINE_STONE_ITEM_ID, "name": "🪨 Камінь Посилення", "type": "refine_stone", "rarity": "common", "category": "material", "sell_price": 1.0})
+    rune_values = dict(common_values)
+    rune_values.update({"id": SUCCESS_RUNE_ITEM_ID, "name": "💎 Руна Успіху", "type": "success_rune", "rarity": "rare", "category": "material", "sell_price": 5.0})
+    _insert_item_dynamic(stone_values)
+    _insert_item_dynamic(rune_values)
+    conn.commit()
+
+
+def get_inventory_item_refine_info(inventory_id):
+    init_refine_system()
+    cursor.execute("""
+    SELECT inventory.id, inventory.user_id, inventory.item_id, inventory.quantity,
+           inventory.durability, inventory.refine_level, items.name, items.type,
+           items.rarity, items.category, items.slot_key, items.weapon_hands,
+           items.item_level, items.item_subtype, items.armor_type,
+           items.weapon_min_damage, items.weapon_max_damage,
+           items.weapon_min_magic_damage, items.weapon_max_magic_damage,
+           items.weapon_attack_type
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.id=?
+    """, (inventory_id,))
+    row = cursor.fetchone()
+    if not row:
+        return None
+    return {
+        "inventory_id": row[0], "user_id": row[1], "item_id": row[2],
+        "quantity": row[3], "durability": row[4], "refine_level": row[5],
+        "name": row[6], "type": row[7], "rarity": row[8], "category": row[9],
+        "slot_key": row[10], "weapon_hands": row[11], "item_level": row[12],
+        "item_subtype": row[13], "armor_type": row[14],
+        "weapon_min_damage": row[15], "weapon_max_damage": row[16],
+        "weapon_min_magic_damage": row[17], "weapon_max_magic_damage": row[18],
+        "weapon_attack_type": row[19],
+    }
+
+
+def get_inventory_refine_level(inventory_id):
+    init_refine_system()
+    cursor.execute("SELECT refine_level FROM inventory WHERE id=?", (inventory_id,))
+    row = cursor.fetchone()
+    if not row:
+        return 0
+    try:
+        return int(row[0] or 0)
+    except Exception:
+        return 0
+
+
+def set_inventory_refine_level(inventory_id, refine_level):
+    init_refine_system()
+    try:
+        refine_level = int(refine_level)
+    except Exception:
+        refine_level = 0
+    refine_level = max(0, refine_level)
+    cursor.execute("UPDATE inventory SET refine_level=? WHERE id=?", (refine_level, inventory_id))
+    conn.commit()
+    return refine_level
+
+
+def count_user_item(user_id, item_id):
+    cursor.execute("SELECT COALESCE(SUM(quantity), 0) FROM inventory WHERE user_id=? AND item_id=?", (user_id, item_id))
+    row = cursor.fetchone()
+    try:
+        return int((row[0] if row else 0) or 0)
+    except Exception:
+        return 0
+
+
+def consume_user_item_by_item_id(user_id, item_id, quantity=1):
+    try:
+        quantity = int(quantity)
+    except Exception:
+        quantity = 1
+    if quantity <= 0:
+        return True
+    if count_user_item(user_id, item_id) < quantity:
+        return False
+    remaining = quantity
+    cursor.execute("SELECT id, quantity FROM inventory WHERE user_id=? AND item_id=? ORDER BY id ASC", (user_id, item_id))
+    rows = cursor.fetchall()
+    for inventory_id, stack_quantity in rows:
+        if remaining <= 0:
+            break
+        stack_quantity = int(stack_quantity or 0)
+        take = min(stack_quantity, remaining)
+        new_quantity = stack_quantity - take
+        if new_quantity <= 0:
+            cursor.execute("DELETE FROM inventory WHERE id=?", (inventory_id,))
+        else:
+            cursor.execute("UPDATE inventory SET quantity=? WHERE id=?", (new_quantity, inventory_id))
+        remaining -= take
+    conn.commit()
+    return remaining <= 0
+
+
+def get_refine_resource_counts(user_id):
+    return {"stone": count_user_item(user_id, REFINE_STONE_ITEM_ID), "success_rune": count_user_item(user_id, SUCCESS_RUNE_ITEM_ID)}
+
+
+# ==============================
+# ✅ REFINE EFFECTS V1
+# ==============================
+
+# 6.0.2
+# Підключення заточки до реальних параметрів:
+# - зброя: refine_level збільшує weapon damage;
+# - броня: refine_level додає % до max HP;
+# - PDEF/MDEF/STR/DEX/INT/WIS заточка НЕ змінює.
+
+try:
+    _base_get_max_hp_before_refine_v1 = get_max_hp
+except Exception:
+    _base_get_max_hp_before_refine_v1 = None
+
+try:
+    _base_get_weapon_damage_by_inventory_id_before_refine_v1 = get_weapon_damage_by_inventory_id
+except Exception:
+    _base_get_weapon_damage_by_inventory_id_before_refine_v1 = None
+
+
+def get_refine_total_armor_hp_bonus_percent(user_id):
+    """
+    Повертає сумарний HP% бонус від заточеної броні.
+
+    За ТЗ:
+    - броня точиться до +6;
+    - броня збільшує тільки максимальний HP;
+    - PDEF/MDEF і характеристики не змінюються.
+    """
+
+    from systems.refine_system import get_armor_refine_hp_bonus_percent
+
+    init_refine_system()
+    ensure_equipment_slots(user_id)
+
+    armor_slots = {
+        "helmet",
+        "shoulders",
+        "chest",
+        "gloves",
+        "legs",
+        "boots",
+    }
+
+    equipped_slots = get_all_equipped_slots(user_id)
+    total_bonus = 0.0
+
+    for slot_key, inventory_id in equipped_slots.items():
+        if slot_key not in armor_slots:
+            continue
+
+        if not inventory_id:
+            continue
+
+        cursor.execute("""
+        SELECT
+            inventory.refine_level,
+            items.rarity
+        FROM inventory
+        JOIN items ON inventory.item_id = items.id
+        WHERE inventory.id=? AND inventory.user_id=?
+        """, (inventory_id, user_id))
+
+        row = cursor.fetchone()
+
+        if not row:
+            continue
+
+        refine_level, rarity = row
+
+        try:
+            refine_level = int(refine_level or 0)
+        except Exception:
+            refine_level = 0
+
+        if refine_level <= 0:
+            continue
+
+        total_bonus += float(
+            get_armor_refine_hp_bonus_percent(
+                refine_level=refine_level,
+                rarity=rarity
+            )
+        )
+
+    return round(total_bonus, 2)
+
+
+def get_max_hp(user_id):
+    """
+    FINAL OVERRIDE:
+    max HP з урахуванням refine броні.
+
+    Формула за ТЗ:
+    Final HP = Base HP × (1 + Total_HP_Bonus / 100)
+
+    Важливо:
+    Base HP рахується старою функцією get_max_hp().
+    Refine броні не змінює STA/PDEF/MDEF, а додає тільки HP%.
+    """
+
+    if _base_get_max_hp_before_refine_v1 is None:
+        return 1
+
+    base_hp = int(_base_get_max_hp_before_refine_v1(user_id) or 1)
+
+    if base_hp <= 0:
+        base_hp = 1
+
+    total_bonus = get_refine_total_armor_hp_bonus_percent(user_id)
+
+    if total_bonus <= 0:
+        return base_hp
+
+    final_hp = int(round(base_hp * (1 + total_bonus / 100)))
+
+    return max(1, final_hp)
+
+
+def _apply_refine_multiplier_to_damage_dict(damage_data, refine_level):
+    """
+    Підтримує різні можливі формати dict з damage-полями.
+    """
+
+    from systems.refine_system import apply_weapon_refine_to_damage
+
+    if not isinstance(damage_data, dict):
+        return damage_data
+
+    result = dict(damage_data)
+
+    damage_pairs = [
+        ("weapon_min_damage", "weapon_max_damage"),
+        ("min_damage", "max_damage"),
+        ("physical_min_damage", "physical_max_damage"),
+        ("weapon_min_magic_damage", "weapon_max_magic_damage"),
+        ("min_magic_damage", "max_magic_damage"),
+        ("magic_min_damage", "magic_max_damage"),
+    ]
+
+    for min_key, max_key in damage_pairs:
+        if min_key in result and max_key in result:
+            min_damage = int(result.get(min_key, 0) or 0)
+            max_damage = int(result.get(max_key, 0) or 0)
+
+            if min_damage > 0 or max_damage > 0:
+                refined_min, refined_max = apply_weapon_refine_to_damage(
+                    min_damage=min_damage,
+                    max_damage=max_damage,
+                    refine_level=refine_level
+                )
+
+                result[min_key] = refined_min
+                result[max_key] = refined_max
+
+    result["refine_level"] = refine_level
+    result["refine_applied"] = True
+
+    return result
+
+
+def _apply_refine_multiplier_to_damage_sequence(damage_data, refine_level):
+    """
+    Обережна підтримка tuple/list форматів:
+    - (min, max)
+    - (min_phys, max_phys, min_magic, max_magic)
+    """
+
+    from systems.refine_system import apply_weapon_refine_to_damage
+
+    if not isinstance(damage_data, (tuple, list)):
+        return damage_data
+
+    values = list(damage_data)
+
+    if len(values) >= 2:
+        min_damage = int(values[0] or 0)
+        max_damage = int(values[1] or 0)
+
+        if min_damage > 0 or max_damage > 0:
+            values[0], values[1] = apply_weapon_refine_to_damage(
+                min_damage=min_damage,
+                max_damage=max_damage,
+                refine_level=refine_level
+            )
+
+    if len(values) >= 4:
+        min_magic = int(values[2] or 0)
+        max_magic = int(values[3] or 0)
+
+        if min_magic > 0 or max_magic > 0:
+            values[2], values[3] = apply_weapon_refine_to_damage(
+                min_damage=min_magic,
+                max_damage=max_magic,
+                refine_level=refine_level
+            )
+
+    if isinstance(damage_data, tuple):
+        return tuple(values)
+
+    return values
+
+
+def get_weapon_damage_by_inventory_id(inventory_id):
+    """
+    FINAL OVERRIDE:
+    weapon damage з урахуванням refine_level.
+
+    За ТЗ:
+    Final Min Damage = Base Min Damage × Refine Multiplier
+    Final Max Damage = Base Max Damage × Refine Multiplier
+    """
+
+    if _base_get_weapon_damage_by_inventory_id_before_refine_v1 is None:
+        return None
+
+    base_result = _base_get_weapon_damage_by_inventory_id_before_refine_v1(inventory_id)
+
+    try:
+        refine_level = get_inventory_refine_level(inventory_id)
+    except Exception:
+        refine_level = 0
+
+    try:
+        refine_level = int(refine_level or 0)
+    except Exception:
+        refine_level = 0
+
+    if refine_level <= 0:
+        return base_result
+
+    if isinstance(base_result, dict):
+        return _apply_refine_multiplier_to_damage_dict(base_result, refine_level)
+
+    if isinstance(base_result, (tuple, list)):
+        return _apply_refine_multiplier_to_damage_sequence(base_result, refine_level)
+
+    return base_result
+
+
+def get_refine_effects_summary_for_user(user_id):
+    """
+    Діагностичний helper для тестів.
+    """
+
+    return {
+        "armor_hp_bonus_percent": get_refine_total_armor_hp_bonus_percent(user_id),
+        "max_hp": get_max_hp(user_id),
+    }
+
+
+# ==============================
+# ✅ REFINE EFFECTS V1 HOTFIX: MAGIC/PHYSICAL DAMAGE KEYS
+# ==============================
+
+# 6.0.2a
+# Виправляє випадок, коли get_weapon_damage_by_inventory_id() повертає dict з ключами:
+# - physical_min / physical_max
+# - magic_min / magic_max
+# Старий 6.0.2 обробляв інші назви ключів, тому магічна шкода посоха/жезла могла не збільшуватись.
+
+try:
+    _base_get_weapon_damage_for_refine_hotfix_v1 = _base_get_weapon_damage_by_inventory_id_before_refine_v1
+except Exception:
+    try:
+        _base_get_weapon_damage_for_refine_hotfix_v1 = get_weapon_damage_by_inventory_id
+    except Exception:
+        _base_get_weapon_damage_for_refine_hotfix_v1 = None
+
+
+def _build_refined_weapon_damage_text(damage_data):
+    attack_type = damage_data.get("attack_type", "")
+
+    physical_min = int(damage_data.get("physical_min", 0) or 0)
+    physical_max = int(damage_data.get("physical_max", 0) or 0)
+    magic_min = int(damage_data.get("magic_min", 0) or 0)
+    magic_max = int(damage_data.get("magic_max", 0) or 0)
+
+    if attack_type == "magical" or magic_min > 0 or magic_max > 0:
+        return f"🔮 Маг. шкода: {magic_min}-{magic_max}"
+
+    if attack_type == "physical" or physical_min > 0 or physical_max > 0:
+        return f"⚔️ Фіз. шкода: {physical_min}-{physical_max}"
+
+    return damage_data.get("text", "")
+
+
+def _apply_refine_to_weapon_damage_result_v2(base_result, refine_level):
+    from systems.refine_system import apply_weapon_refine_to_damage
+
+    try:
+        refine_level = int(refine_level or 0)
+    except Exception:
+        refine_level = 0
+
+    if refine_level <= 0:
+        return base_result
+
+    if isinstance(base_result, dict):
+        result = dict(base_result)
+
+        key_pairs = [
+            ("physical_min", "physical_max"),
+            ("magic_min", "magic_max"),
+            ("weapon_min_damage", "weapon_max_damage"),
+            ("weapon_min_magic_damage", "weapon_max_magic_damage"),
+            ("min_damage", "max_damage"),
+            ("min_magic_damage", "max_magic_damage"),
+        ]
+
+        for min_key, max_key in key_pairs:
+            if min_key not in result or max_key not in result:
+                continue
+
+            min_damage = int(result.get(min_key, 0) or 0)
+            max_damage = int(result.get(max_key, 0) or 0)
+
+            if min_damage <= 0 and max_damage <= 0:
+                continue
+
+            refined_min, refined_max = apply_weapon_refine_to_damage(
+                min_damage=min_damage,
+                max_damage=max_damage,
+                refine_level=refine_level,
+            )
+
+            result[min_key] = refined_min
+            result[max_key] = refined_max
+
+        result["refine_level"] = refine_level
+        result["refine_applied"] = True
+        result["text"] = _build_refined_weapon_damage_text(result)
+
+        return result
+
+    if isinstance(base_result, (tuple, list)):
+        values = list(base_result)
+
+        if len(values) >= 2:
+            min_damage = int(values[0] or 0)
+            max_damage = int(values[1] or 0)
+
+            if min_damage > 0 or max_damage > 0:
+                values[0], values[1] = apply_weapon_refine_to_damage(
+                    min_damage=min_damage,
+                    max_damage=max_damage,
+                    refine_level=refine_level,
+                )
+
+        if len(values) >= 4:
+            min_magic = int(values[2] or 0)
+            max_magic = int(values[3] or 0)
+
+            if min_magic > 0 or max_magic > 0:
+                values[2], values[3] = apply_weapon_refine_to_damage(
+                    min_damage=min_magic,
+                    max_damage=max_magic,
+                    refine_level=refine_level,
+                )
+
+        if isinstance(base_result, tuple):
+            return tuple(values)
+
+        return values
+
+    return base_result
+
+
+def get_weapon_damage_by_inventory_id(inventory_id):
+    """
+    FINAL HOTFIX OVERRIDE:
+    weapon damage з урахуванням refine_level для актуального формату dict:
+    - physical_min / physical_max
+    - magic_min / magic_max
+    """
+
+    if _base_get_weapon_damage_for_refine_hotfix_v1 is None:
+        return None
+
+    base_result = _base_get_weapon_damage_for_refine_hotfix_v1(inventory_id)
+
+    try:
+        refine_level = get_inventory_refine_level(inventory_id)
+    except Exception:
+        refine_level = 0
+
+    return _apply_refine_to_weapon_damage_result_v2(
+        base_result=base_result,
+        refine_level=refine_level,
+    )
+
+
+# ==============================
+# ✅ REFINE DISPLAY NAMES V1
+# ==============================
+
+# 6.0.3
+# Відображення [+N] у назвах inventory-предметів.
+# Формат:
+#   ⚪ Дворучний посох 8 рівня [+5]
+#   ⚪ Обладунок [Тканина] 8 рівня [+6]
+
+import re as _refine_display_re
+
+try:
+    _base_get_inventory_detailed_before_refine_display_v1 = get_inventory_detailed
+except Exception:
+    _base_get_inventory_detailed_before_refine_display_v1 = None
+
+try:
+    _base_get_item_by_inventory_id_before_refine_display_v1 = get_item_by_inventory_id
+except Exception:
+    _base_get_item_by_inventory_id_before_refine_display_v1 = None
+
+try:
+    _base_get_item_by_inventory_id_full_before_refine_display_v1 = get_item_by_inventory_id_full
+except Exception:
+    _base_get_item_by_inventory_id_full_before_refine_display_v1 = None
+
+try:
+    _base_get_inventory_entry_before_refine_display_v1 = get_inventory_entry
+except Exception:
+    _base_get_inventory_entry_before_refine_display_v1 = None
+
+try:
+    _base_get_sellable_equipment_items_before_refine_display_v1 = get_sellable_equipment_items
+except Exception:
+    _base_get_sellable_equipment_items_before_refine_display_v1 = None
+
+try:
+    _base_get_equipped_items_for_repair_before_refine_display_v1 = get_equipped_items_for_repair
+except Exception:
+    _base_get_equipped_items_for_repair_before_refine_display_v1 = None
+
+
+def strip_refine_suffix_from_name(name):
+    """
+    Прибирає старий refine suffix, щоб не отримати дублювання:
+    Назва [+3] [+4]
+    """
+
+    name = name or ""
+    return _refine_display_re.sub(r"\s\[\+\d+\]$", "", name).strip()
+
+
+def format_refined_item_name(name, refine_level):
+    """
+    Додає suffix [+N] до назви предмета.
+    Якщо refine_level <= 0 — повертає назву без suffix.
+    """
+
+    name = strip_refine_suffix_from_name(name)
+
+    try:
+        refine_level = int(refine_level or 0)
+    except Exception:
+        refine_level = 0
+
+    if refine_level <= 0:
+        return name
+
+    return f"{name} [+{refine_level}]"
+
+
+def get_inventory_refined_display_name(inventory_id, name=None):
+    """
+    Повертає назву inventory-предмета з [+N].
+    """
+
+    try:
+        refine_level = get_inventory_refine_level(inventory_id)
+    except Exception:
+        refine_level = 0
+
+    if name is None:
+        try:
+            cursor.execute("""
+            SELECT items.name
+            FROM inventory
+            JOIN items ON inventory.item_id = items.id
+            WHERE inventory.id=?
+            """, (inventory_id,))
+            row = cursor.fetchone()
+            name = row[0] if row else "Предмет"
+        except Exception:
+            name = "Предмет"
+
+    return format_refined_item_name(name, refine_level)
+
+
+def get_inventory_refine_display_line(inventory_id):
+    """
+    Текстовий рядок для деталей предмета.
+    Поки не всі handlers його використовують, але helper готовий для UI.
+    """
+
+    try:
+        refine_level = get_inventory_refine_level(inventory_id)
+    except Exception:
+        refine_level = 0
+
+    try:
+        refine_level = int(refine_level or 0)
+    except Exception:
+        refine_level = 0
+
+    if refine_level <= 0:
+        return ""
+
+    return f"✨ Заточка: +{refine_level}\n"
+
+
+def _replace_tuple_name_by_refine(row, inventory_id_index, name_index):
+    if row is None:
+        return row
+
+    try:
+        values = list(row)
+        inventory_id = values[inventory_id_index]
+        name = values[name_index]
+        values[name_index] = get_inventory_refined_display_name(inventory_id, name)
+
+        if isinstance(row, tuple):
+            return tuple(values)
+
+        return values
+
+    except Exception:
+        return row
+
+
+def _replace_dict_name_by_refine(item):
+    if not isinstance(item, dict):
+        return item
+
+    inventory_id = item.get("inventory_id") or item.get("id")
+
+    if not inventory_id:
+        return item
+
+    if "name" not in item:
+        return item
+
+    result = dict(item)
+    result["name"] = get_inventory_refined_display_name(inventory_id, result.get("name"))
+    return result
+
+
+def get_inventory_detailed(user_id):
+    """
+    FINAL OVERRIDE:
+    Інвентар із назвами, які містять [+N].
+
+    Очікуваний базовий формат row:
+    inventory.id, inventory.item_id, items.name, ...
+    """
+
+    if _base_get_inventory_detailed_before_refine_display_v1 is None:
+        return []
+
+    rows = _base_get_inventory_detailed_before_refine_display_v1(user_id)
+
+    if not rows:
+        return rows
+
+    return [
+        _replace_tuple_name_by_refine(row, 0, 2)
+        for row in rows
+    ]
+
+
+def get_item_by_inventory_id(inventory_id):
+    """
+    FINAL OVERRIDE:
+    Деталі inventory item з назвою [+N].
+    """
+
+    if _base_get_item_by_inventory_id_before_refine_display_v1 is None:
+        return None
+
+    row = _base_get_item_by_inventory_id_before_refine_display_v1(inventory_id)
+
+    # Формат: inventory.id, inventory.item_id, items.name, ...
+    return _replace_tuple_name_by_refine(row, 0, 2)
+
+
+def get_item_by_inventory_id_full(inventory_id):
+    """
+    FINAL OVERRIDE:
+    Повні деталі inventory item з назвою [+N].
+    """
+
+    if _base_get_item_by_inventory_id_full_before_refine_display_v1 is None:
+        return None
+
+    row = _base_get_item_by_inventory_id_full_before_refine_display_v1(inventory_id)
+
+    # Формат: inventory.id, inventory.item_id, items.name, ...
+    return _replace_tuple_name_by_refine(row, 0, 2)
+
+
+def get_inventory_entry(user_id, inventory_id):
+    """
+    FINAL OVERRIDE:
+    Короткий inventory entry з назвою [+N].
+    """
+
+    if _base_get_inventory_entry_before_refine_display_v1 is None:
+        return None
+
+    row = _base_get_inventory_entry_before_refine_display_v1(user_id, inventory_id)
+
+    # Формат: inventory.id, inventory.item_id, items.name, ...
+    return _replace_tuple_name_by_refine(row, 0, 2)
+
+
+def get_sellable_equipment_items(user_id):
+    """
+    FINAL OVERRIDE:
+    Список продажу спорядження з назвами [+N], якщо базова функція існує.
+    """
+
+    if _base_get_sellable_equipment_items_before_refine_display_v1 is None:
+        return []
+
+    rows = _base_get_sellable_equipment_items_before_refine_display_v1(user_id)
+
+    if not rows:
+        return rows
+
+    result = []
+
+    for row in rows:
+        if isinstance(row, dict):
+            result.append(_replace_dict_name_by_refine(row))
+        else:
+            # У більшості версій: inventory.id, items.name, ...
+            result.append(_replace_tuple_name_by_refine(row, 0, 1))
+
+    return result
+
+
+def get_equipped_items_for_repair(user_id):
+    """
+    FINAL OVERRIDE:
+    Ремонтний список з назвами [+N], якщо базова функція існує.
+    """
+
+    if _base_get_equipped_items_for_repair_before_refine_display_v1 is None:
+        return []
+
+    items = _base_get_equipped_items_for_repair_before_refine_display_v1(user_id)
+
+    if not items:
+        return items
+
+    result = []
+
+    for item in items:
+        if isinstance(item, dict):
+            result.append(_replace_dict_name_by_refine(item))
+        else:
+            # Обережний fallback: якщо перший елемент inventory_id, другий name.
+            result.append(_replace_tuple_name_by_refine(item, 0, 1))
+
+    return result
+
+
+# ==============================
+# ✅ REFINE MATERIAL STACK FIX V1
+# ==============================
+
+# 6.0.4a
+# Камені/руни заточки мають стакатися великими пачками, а не по 20.
+# ID:
+# 401 — 🪨 Камінь Посилення
+# 402 — 💎 Руна Успіху
+
+REFINE_MATERIAL_MAX_STACK = 999
+
+
+def ensure_refine_material_stack_sizes():
+    """
+    Гарантує, що матеріали заточки стакаються до 999.
+    Безпечно викликати багато разів.
+    """
+
+    try:
+        init_refine_system()
+    except Exception:
+        pass
+
+    cursor.execute("""
+    UPDATE items
+    SET max_stack=?
+    WHERE id IN (401, 402)
+    """, (
+        REFINE_MATERIAL_MAX_STACK,
+    ))
+
+    conn.commit()
+
+
+def get_refine_material_stack_debug():
+    """
+    DEV/helper: повертає поточні max_stack для матеріалів заточки.
+    """
+
+    ensure_refine_material_stack_sizes()
+
+    cursor.execute("""
+    SELECT id, name, max_stack
+    FROM items
+    WHERE id IN (401, 402)
+    ORDER BY id
+    """)
+
+    return cursor.fetchall()
+
+
+# Автоматично фіксимо max_stack при імпорті db.py.
+try:
+    ensure_refine_material_stack_sizes()
+except Exception:
+    pass
+

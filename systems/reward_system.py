@@ -425,3 +425,80 @@ def process_victory_reward(user_id, player_level, mob):
         "used_slots": used_slots,
         "capacity": capacity,
     }
+
+
+# ==============================
+# ✅ REFINE STONE DROP V1
+# ==============================
+
+# 6.0.6
+# 🪨 Камінь Посилення падає з мобів.
+# 💎 Руна Успіху НЕ падає з мобів — буде за кристали пізніше.
+
+REFINE_STONE_ITEM_ID = 401
+NORMAL_REFINE_STONE_DROP_CHANCE = 0.08
+ELITE_REFINE_STONE_DROP_CHANCE = 0.20
+
+try:
+    _base_roll_loot_before_refine_stone_drop_v1 = roll_loot
+except Exception:
+    _base_roll_loot_before_refine_stone_drop_v1 = None
+
+
+def roll_refine_stone_drop(user_id, mob):
+    """
+    Окремий глобальний roll для 🪨 Каменя Посилення.
+
+    Баланс:
+    - звичайний моб: 8%
+    - елітний моб: 20%
+
+    💎 Руна Успіху тут НЕ падає.
+    """
+
+    is_elite = bool(mob.get("is_elite", False))
+
+    if is_elite:
+        chance = ELITE_REFINE_STONE_DROP_CHANCE
+    else:
+        chance = NORMAL_REFINE_STONE_DROP_CHANCE
+
+    if random.random() > chance:
+        return None
+
+    result = add_item(user_id, REFINE_STONE_ITEM_ID, 1)
+
+    if result.get("added", 0) > 0:
+        name = result.get("name", "🪨 Камінь Посилення")
+        added = result.get("added", 1)
+        return f"{name} x{added}"
+
+    if result.get("lost", 0) > 0:
+        name = result.get("name", "🪨 Камінь Посилення")
+        lost = result.get("lost", 1)
+        return f"⚠️ Не влізло в сумку: {name} x{lost}"
+
+    return None
+
+
+def roll_loot(user_id, mob):
+    """
+    FINAL OVERRIDE:
+    Додає шанс дропу 🪨 Каменя Посилення до вже існуючого луту.
+    """
+
+    if _base_roll_loot_before_refine_stone_drop_v1 is not None:
+        messages = _base_roll_loot_before_refine_stone_drop_v1(user_id, mob)
+    else:
+        messages = []
+
+    if messages is None:
+        messages = []
+
+    stone_message = roll_refine_stone_drop(user_id, mob)
+
+    if stone_message:
+        messages.append(stone_message)
+
+    return messages
+

@@ -20,6 +20,8 @@ from handlers.map import register_map_handlers
 from handlers.city import register_city_handlers
 from handlers.contracts import register_contract_handlers
 from handlers.daily import register_daily_handlers
+from handlers.refine import register_refine_handlers
+from handlers.blacksmith_repair_hotfix import register_blacksmith_repair_hotfix_handlers
 
 from systems.notifications import start_notification_worker
 
@@ -55,11 +57,13 @@ register_inventory_handlers(bot)
 register_combat_handlers(bot)
 register_dev_handlers(bot)
 register_map_handlers(bot)
+register_blacksmith_repair_hotfix_handlers(bot)
 register_city_handlers(bot)
 register_contract_handlers(bot)
 register_daily_handlers(bot)
 
 
+register_refine_handlers(bot)
 # ==============================
 # NOTIFICATIONS
 # ==============================

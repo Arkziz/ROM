@@ -3146,3 +3146,69 @@ def register_combat_handlers(bot):
             "⚔️ Ти залишився в бою",
             reply_markup=build_combat_inline_kb(user_id, mob)
         )
+
+
+# ==============================
+# ✅ COMBAT SAFE SEND RATE LIMIT V1
+# ==============================
+
+# Telegram може повернути 429 Too Many Requests, якщо бот надсилає багато повідомлень
+# або якщо старі callback-и обробляються повторно після exception.
+# Цей wrapper не дає polling падати через 429: чекає retry_after і повторює send один раз.
+
+
+def patch_combat_bot_rate_limit_safe_send(bot):
+    if getattr(bot, "_rom_safe_send_patched", False):
+        return
+
+    original_send_message = bot.send_message
+    bot._rom_original_send_message = original_send_message
+
+    def safe_send_message(chat_id, text, *args, **kwargs):
+        try:
+            return original_send_message(chat_id, text, *args, **kwargs)
+        except Exception as error:
+            retry_after = None
+            error_code = getattr(error, "error_code", None)
+            result_json = getattr(error, "result_json", None)
+
+            if isinstance(result_json, dict):
+                parameters = result_json.get("parameters", {}) or {}
+                retry_after = parameters.get("retry_after")
+
+                if error_code is None:
+                    error_code = result_json.get("error_code")
+
+            description = str(error)
+
+            is_rate_limit = (
+                error_code == 429
+                or "Too Many Requests" in description
+                or "retry after" in description
+            )
+
+            if not is_rate_limit:
+                raise
+
+            if retry_after is None:
+                retry_after = 3
+
+            try:
+                retry_after = int(retry_after)
+            except Exception:
+                retry_after = 3
+
+            retry_after = max(1, min(60, retry_after))
+
+            try:
+                import time
+                print(f"⚠️ Telegram rate limit 429. Waiting {retry_after + 1}s before retry send_message.")
+                time.sleep(retry_after + 1)
+                return original_send_message(chat_id, text, *args, **kwargs)
+            except Exception as retry_error:
+                print(f"❌ send_message retry failed after 429: {retry_error}")
+                return None
+
+    bot.send_message = safe_send_message
+    bot._rom_safe_send_patched = True
+

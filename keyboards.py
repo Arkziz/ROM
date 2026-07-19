@@ -66,9 +66,9 @@ def craft_kb():
 
 def blacksmith_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("🛠️ Ремонт", "✨ Заточка")
     kb.add("🔙 Ремісничий квартал")
     return kb
-
 
 def alchemist_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)

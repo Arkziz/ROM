@@ -53,7 +53,8 @@ INVENTORY_CATEGORIES = [
     ("necklace", "📿 Шия"),
     ("ring", "💍 Кільце"),
     ("trash", "🔘 Сірий лут"),
-    ("potion", "🧪 Зілля"),
+    ("material", "🪨 Матеріали"),
+("potion", "🧪 Зілля"),
     ("all", "📦 Переглянути все")
 ]
 
@@ -972,3 +973,152 @@ def register_inventory_handlers(bot):
             text,
             reply_markup=kb
         )
+
+# ==============================
+# ✅ REFINE MATERIALS INVENTORY CATEGORY V1
+# ==============================
+
+# 6.0.4b
+# Окрема категорія інвентаря для матеріалів:
+# - 401 🪨 Камінь Посилення
+# - 402 💎 Руна Успіху
+
+try:
+    if ("material", "🪨 Матеріали") not in INVENTORY_CATEGORIES:
+        # Вставляємо перед "Переглянути все", якщо можливо.
+        insert_index = len(INVENTORY_CATEGORIES)
+        for idx, entry in enumerate(INVENTORY_CATEGORIES):
+            if entry[0] == "all":
+                insert_index = idx
+                break
+        INVENTORY_CATEGORIES.insert(insert_index, ("material", "🪨 Матеріали"))
+except Exception:
+    pass
+
+try:
+    _base_get_category_items_before_materials_v1 = get_category_items
+except Exception:
+    _base_get_category_items_before_materials_v1 = None
+
+
+def get_category_items(user_id, category_key):
+    """
+    FINAL OVERRIDE:
+    Додає коректну підтримку категорії 🪨 Матеріали.
+    """
+
+    if category_key != "material":
+        if _base_get_category_items_before_materials_v1 is not None:
+            return _base_get_category_items_before_materials_v1(user_id, category_key)
+        return []
+
+    items = get_inventory_full_items(user_id)
+    result = []
+
+    for item in items:
+        try:
+            item_id = item[1]
+            category = item[5]
+        except Exception:
+            continue
+
+        if category == "material" or item_id in [401, 402]:
+            result.append(item)
+
+    return result
+
+
+def get_category_count(user_id, category_key):
+    return len(get_category_items(user_id, category_key))
+
+# ==============================
+# ✅ REFINE MATERIAL DESCRIPTIONS V1
+# ==============================
+
+# 6.0.4c
+# Додає корисний опис для матеріалів заточки в деталях предмета.
+
+try:
+    _base_build_item_details_before_refine_material_desc_v1 = build_item_details
+except Exception:
+    _base_build_item_details_before_refine_material_desc_v1 = None
+
+
+def get_refine_material_description_text(item_id):
+    try:
+        item_id = int(item_id)
+    except Exception:
+        return ""
+
+    if item_id == 401:
+        return (
+            "\nℹ️ Опис:\n"
+            "🪨 Камінь Посилення використовується у Коваля для спроби заточки спорядження.\n\n"
+            "Правила:\n"
+            "• витрачається при кожній спробі заточки;\n"
+            "• потрібен для заточки зброї та броні;\n"
+            "• не гарантує успіх;\n"
+            "• шанс успіху залежить від поточного рівня заточки.\n"
+        )
+
+    if item_id == 402:
+        return (
+            "\nℹ️ Опис:\n"
+            "💎 Руна Успіху — особлива руна для безпечної заточки.\n\n"
+            "Ефект:\n"
+            "• при використанні шанс успіху стає 100%;\n"
+            "• витрачається разом із 🪨 Каменем Посилення;\n"
+            "• допомагає уникнути невдалої спроби заточки.\n"
+        )
+
+    return ""
+
+
+def _inject_refine_material_description(text, inventory_id):
+    try:
+        item = get_item_by_inventory_id_full(inventory_id)
+        if not item:
+            return text
+
+        item_id = item[1]
+        description = get_refine_material_description_text(item_id)
+
+        if not description:
+            return text
+
+        if "ℹ️ Опис:" in text:
+            return text
+
+        return text + description
+
+    except Exception:
+        return text
+
+
+def build_item_details(user_id, inventory_id, back_category="all", page=0):
+    if _base_build_item_details_before_refine_material_desc_v1 is None:
+        return "❌ Деталі предмета недоступні.", None
+
+    result = _base_build_item_details_before_refine_material_desc_v1(
+        user_id,
+        inventory_id,
+        back_category,
+        page
+    )
+
+    if isinstance(result, tuple):
+        if len(result) >= 2:
+            text = result[0]
+            kb = result[1]
+            text = _inject_refine_material_description(text, inventory_id)
+            return text, kb
+
+        if len(result) == 1:
+            text = _inject_refine_material_description(result[0], inventory_id)
+            return (text,)
+
+    if isinstance(result, str):
+        return _inject_refine_material_description(result, inventory_id)
+
+    return result
+

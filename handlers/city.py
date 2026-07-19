@@ -358,7 +358,25 @@ def build_alchemist_catalog(user_id):
     return text, kb
 
 
+
+# ==============================
+# ✅ BLACKSMITH MENU TEXT V2
+# ==============================
+
 def build_blacksmith_text(user_id):
+    gold = get_wallet(user_id)
+
+    return (
+        "⚒️ Коваль\n\n"
+        "Біля розпеченого горна працює досвідчений коваль. "
+        "Він може полагодити твоє спорядження або посилити його за допомогою каменів заточки.\n\n"
+        "Доступні дії:\n"
+        "• 🛠️ Ремонт спорядження\n"
+        "• ✨ Заточка спорядження\n\n"
+        f"💰 Твоє золото: {gold:.2f} 💰"
+    )
+
+def build_blacksmith_repair_text(user_id):
     equipped_items = get_equipped_items_for_repair(user_id)
     total_cost = get_total_repair_cost(user_id)
     gold = get_wallet(user_id)
@@ -1424,3 +1442,75 @@ def register_city_handlers(bot):
             build_main_menu_text(user_id),
             reply_markup=main_kb()
         )
+
+# 6.0.4 note: refine UI registered globally. Use /refine or text '✨ Заточка'.
+
+# ✅ REFINE BUTTON CITY FALLBACK V1
+# refine_menu callback is handled by handlers/refine.py
+
+# ==============================
+# ✅ BLACKSMITH REPAIR BUTTON V2
+# ==============================
+
+def register_blacksmith_repair_button_v2(bot):
+    @bot.message_handler(func=lambda message: message.text == "🛠️ Ремонт")
+    def blacksmith_repair_button_v2(message):
+        bot.send_message(
+            message.chat.id,
+            build_blacksmith_repair_text(message.from_user.id),
+            reply_markup=blacksmith_kb()
+        )
+
+# ==============================
+# ✅ BLACKSMITH MENU V2 FINAL TUPLE FIX
+# ==============================
+
+# show_blacksmith() у цьому проєкті очікує:
+#   text, kb = build_blacksmith_text(user_id)
+# Тому build_blacksmith_text() має повертати саме tuple: (text, blacksmith_kb()).
+
+
+def build_blacksmith_text(user_id):
+    gold = get_wallet(user_id)
+
+    text = (
+        "⚒️ Коваль\n\n"
+        "Біля розпеченого горна працює досвідчений коваль. "
+        "Він може полагодити твоє спорядження або посилити його за допомогою каменів заточки.\n\n"
+        "Доступні дії:\n"
+        "• 🛠️ Ремонт спорядження\n"
+        "• ✨ Заточка спорядження\n\n"
+        f"💰 Твоє золото: {gold:.2f} 💰"
+    )
+
+    return text, blacksmith_kb()
+
+
+def _normalize_text_kb_result(result, fallback_kb=None):
+    """
+    Допоміжна функція для старих build_* функцій:
+    - якщо функція повертає (text, kb), залишаємо як є;
+    - якщо повертає тільки text, додаємо fallback_kb.
+    """
+
+    if isinstance(result, tuple):
+        if len(result) >= 2:
+            return result[0], result[1]
+        if len(result) == 1:
+            return result[0], fallback_kb
+
+    return result, fallback_kb
+
+
+def register_blacksmith_repair_button_v2(bot):
+    @bot.message_handler(func=lambda message: message.text == "🛠️ Ремонт")
+    def blacksmith_repair_button_v2(message):
+        result = build_blacksmith_repair_text(message.from_user.id)
+        text, kb = _normalize_text_kb_result(result, blacksmith_kb())
+
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=kb
+        )
+
