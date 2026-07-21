@@ -1,3 +1,4 @@
+from db import get_user_guild_profile_line
 from telebot import types
 
 from db import (
@@ -186,6 +187,8 @@ def build_character_text(user_id):
     text = (
         f"👤 Персонаж\n\n"
         f"📝 Ім’я: {character_name}\n"
+        f"{get_user_guild_profile_line(user_id)}"
+        # ✅ PROFILE GUILD LINE V1
         f"🧭 Клас: {class_name}\n"
         f"{format_resource_line(profile_summary)}\n"
 

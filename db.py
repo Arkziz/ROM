@@ -11687,3 +11687,166 @@ try:
 except Exception:
     pass
 
+
+# ==============================
+# ✅ GUILD CORE DB WRAPPERS V1
+# ==============================
+
+# 7.0.1
+# Легкі wrapper-и для systems.guild_system, щоб майбутні handlers могли імпортувати
+# guild helper-и як через db.py, так і напряму через systems.guild_system.
+
+
+def init_guild_system():
+    from systems.guild_system import init_guild_system as _init_guild_system
+    return _init_guild_system()
+
+
+def get_current_guild_season_key():
+    from systems.guild_system import get_current_guild_season_key as _get_current_guild_season_key
+    return _get_current_guild_season_key()
+
+
+def ensure_all_guild_monthly_seasons():
+    from systems.guild_system import ensure_all_guild_monthly_seasons as _ensure_all_guild_monthly_seasons
+    return _ensure_all_guild_monthly_seasons()
+
+
+def ensure_guild_monthly_season(guild_id):
+    from systems.guild_system import ensure_guild_monthly_season as _ensure_guild_monthly_season
+    return _ensure_guild_monthly_season(guild_id)
+
+
+def create_guild(user_id, name, tag, icon="🏰"):
+    from systems.guild_system import create_guild as _create_guild
+    return _create_guild(user_id=user_id, name=name, tag=tag, icon=icon)
+
+
+def get_user_guild(user_id):
+    from systems.guild_system import get_user_guild as _get_user_guild
+    return _get_user_guild(user_id)
+
+
+def get_user_guild_member(user_id):
+    from systems.guild_system import get_user_guild_member as _get_user_guild_member
+    return _get_user_guild_member(user_id)
+
+
+def get_user_guild_role(user_id):
+    from systems.guild_system import get_user_guild_role as _get_user_guild_role
+    return _get_user_guild_role(user_id)
+
+
+def is_user_in_guild(user_id):
+    from systems.guild_system import is_user_in_guild as _is_user_in_guild
+    return _is_user_in_guild(user_id)
+
+
+def get_guild_by_id(guild_id):
+    from systems.guild_system import get_guild_by_id as _get_guild_by_id
+    return _get_guild_by_id(guild_id)
+
+
+def get_guild_by_name_or_tag(value):
+    from systems.guild_system import get_guild_by_name_or_tag as _get_guild_by_name_or_tag
+    return _get_guild_by_name_or_tag(value)
+
+
+def get_guild_members(guild_id):
+    from systems.guild_system import get_guild_members as _get_guild_members
+    return _get_guild_members(guild_id)
+
+
+def get_guild_member_count(guild_id):
+    from systems.guild_system import get_guild_member_count as _get_guild_member_count
+    return _get_guild_member_count(guild_id)
+
+
+def create_guild_application(user_id, guild_id):
+    from systems.guild_system import create_guild_application as _create_guild_application
+    return _create_guild_application(user_id=user_id, guild_id=guild_id)
+
+
+def get_guild_applications(guild_id, status="pending"):
+    from systems.guild_system import get_guild_applications as _get_guild_applications
+    return _get_guild_applications(guild_id=guild_id, status=status)
+
+
+def can_manage_guild_applications(user_id, guild_id):
+    from systems.guild_system import can_manage_guild_applications as _can_manage_guild_applications
+    return _can_manage_guild_applications(user_id=user_id, guild_id=guild_id)
+
+
+def add_guild_progress(guild_id, exp=0, resource=0, kills=0, contracts=0, user_id=None, reason=""):
+    from systems.guild_system import add_guild_progress as _add_guild_progress
+    return _add_guild_progress(
+        guild_id=guild_id,
+        exp=exp,
+        resource=resource,
+        kills=kills,
+        contracts=contracts,
+        user_id=user_id,
+        reason=reason,
+    )
+
+
+def get_guild_ranking(scope="monthly", limit=10):
+    from systems.guild_system import get_guild_ranking as _get_guild_ranking
+    return _get_guild_ranking(scope=scope, limit=limit)
+
+
+def get_guild_season_history(guild_id=None, season_key=None, limit=20):
+    from systems.guild_system import get_guild_season_history as _get_guild_season_history
+    return _get_guild_season_history(guild_id=guild_id, season_key=season_key, limit=limit)
+
+
+def get_guild_display_name(guild):
+    from systems.guild_system import get_guild_display_name as _get_guild_display_name
+    return _get_guild_display_name(guild)
+
+
+def get_guild_role_label(role):
+    from systems.guild_system import get_guild_role_label as _get_guild_role_label
+    return _get_guild_role_label(role)
+
+
+# ==============================
+# ✅ GUILD PROFILE DISPLAY HELPERS V1
+# ==============================
+
+# 7.0.3b
+# Helper-и для відображення гільдії у профілі персонажа.
+
+
+def get_user_guild_profile_line(user_id):
+    """
+    Рядок для профілю персонажа.
+
+    Формат:
+    🏰 Гільдія: 🍒 [ВВП]
+
+    Якщо гравець не має гільдії:
+    🏰 Гільдія: немає
+    """
+
+    try:
+        guild = get_user_guild(user_id)
+    except Exception:
+        guild = None
+
+    if not guild:
+        return "🏰 Гільдія: немає\n"
+
+    try:
+        icon = guild["icon"] or "🏰"
+        tag = guild["tag"] or "???"
+    except Exception:
+        try:
+            icon = guild[3] or "🏰"
+            tag = guild[3] or "???"
+        except Exception:
+            icon = "🏰"
+            tag = "???"
+
+    return f"🏰 Гільдія: {icon} [{tag}]\n"
+

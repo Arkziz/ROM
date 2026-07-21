@@ -43,10 +43,12 @@ def city_kb():
     kb.add("🛒 Торговий ряд")
     kb.add("⚒️ Ремісничий квартал")
     kb.add("📜 Гільдія Найманців")
+    kb.add("🏰 Зала Гільдій")
     kb.add("🏛️ Ратуша", "🍺 Таверна")
     kb.add("🔙 Мапа")
     return kb
 
+# ✅ GUILD HALL CITY BUTTON REPLY V2
 
 def trader_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
