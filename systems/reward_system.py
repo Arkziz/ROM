@@ -502,3 +502,46 @@ def roll_loot(user_id, mob):
 
     return messages
 
+
+# ==============================
+# ✅ GUILD ELITE MOB REWARD V1
+# ==============================
+
+# 7.0.9
+# Гільдія отримує прогрес за перемогу над елітним мобом.
+# Hook стоїть у roll_loot(), бо roll_loot викликається після перемоги.
+
+try:
+    _base_roll_loot_before_guild_elite_reward_v1 = roll_loot
+except Exception:
+    _base_roll_loot_before_guild_elite_reward_v1 = None
+
+
+def _guild_is_elite_mob_v1(mob):
+    try:
+        return bool(mob.get("is_elite", False) or mob.get("elite", False))
+    except Exception:
+        return False
+
+
+def roll_loot(user_id, mob):
+    if _base_roll_loot_before_guild_elite_reward_v1 is not None:
+        messages = _base_roll_loot_before_guild_elite_reward_v1(user_id, mob)
+    else:
+        messages = []
+
+    if messages is None:
+        messages = []
+
+    if _guild_is_elite_mob_v1(mob):
+        try:
+            from db import award_guild_elite_kill, get_guild_activity_reward_text
+            result = award_guild_elite_kill(user_id, mob)
+            text = get_guild_activity_reward_text(result)
+            if text:
+                messages.append(text)
+        except Exception as error:
+            print(f"⚠️ Guild elite reward failed: {error}")
+
+    return messages
+

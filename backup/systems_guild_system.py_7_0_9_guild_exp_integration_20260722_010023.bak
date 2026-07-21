@@ -1,0 +1,2249 @@
+from datetime import datetime
+
+from db import conn, cursor
+
+
+# ==============================
+# ✅ GUILD SQLITE ROW FACTORY FIX V1
+# ==============================
+
+# 7.0.3a
+# У проєкті sqlite cursor може повертати tuple, а guild_system працює з row["field"].
+# sqlite3.Row підтримує обидва формати доступу:
+# - row["guild_id"]
+# - row[0]
+# Тому це безпечний fix для гільдійних таблиць і сумісний зі старим кодом.
+
+import sqlite3 as _guild_sqlite3
+
+try:
+    conn.row_factory = _guild_sqlite3.Row
+except Exception:
+    pass
+
+try:
+    cursor.row_factory = _guild_sqlite3.Row
+except Exception:
+    pass
+
+
+
+GUILD_CREATE_COST_GOLD = 0
+DEFAULT_GUILD_MEMBER_LIMIT = 30
+GUILD_ROLE_LEADER = "leader"
+GUILD_ROLE_OFFICER = "officer"
+GUILD_ROLE_MEMBER = "member"
+
+GUILD_APPLICATION_PENDING = "pending"
+GUILD_APPLICATION_ACCEPTED = "accepted"
+GUILD_APPLICATION_REJECTED = "rejected"
+GUILD_APPLICATION_CANCELLED = "cancelled"
+
+
+# ==============================
+# ✅ TIME / NORMALIZATION
+# ==============================
+
+def now_iso():
+    return datetime.now().isoformat()
+
+
+def get_current_guild_season_key():
+    """
+    Поточний місячний сезон рейтингу гільдій.
+    Формат: YYYY-MM
+    """
+
+    return datetime.now().strftime("%Y-%m")
+
+
+def normalize_guild_name(value):
+    return (value or "").strip().casefold()
+
+
+def normalize_guild_tag(value):
+    return (value or "").strip().upper()
+
+
+def calculate_guild_score(exp=0, resource=0, kills=0, contracts=0):
+    """
+    Єдина формула score для рейтингу.
+
+    Стартова проста формула:
+    score = exp + resource + kills + contracts * 25
+
+    Її можна буде змінити пізніше без перебудови таблиць.
+    """
+
+    exp = int(exp or 0)
+    resource = int(resource or 0)
+    kills = int(kills or 0)
+    contracts = int(contracts or 0)
+
+    return exp + resource + kills + contracts * 25
+
+
+# ==============================
+# ✅ INIT
+# ==============================
+
+def init_guild_system():
+    """
+    Ініціалізує таблиці гільдій.
+
+    Безпечна для багаторазового виклику.
+    """
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS guilds (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        name_norm TEXT NOT NULL UNIQUE,
+        tag TEXT NOT NULL,
+        tag_norm TEXT NOT NULL UNIQUE,
+        icon TEXT DEFAULT '🏰',
+        leader_user_id INTEGER NOT NULL,
+        level INTEGER DEFAULT 1,
+        exp INTEGER DEFAULT 0,
+        resource INTEGER DEFAULT 0,
+        member_limit INTEGER DEFAULT 30,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+
+        monthly_exp INTEGER DEFAULT 0,
+        monthly_resource INTEGER DEFAULT 0,
+        monthly_kills INTEGER DEFAULT 0,
+        monthly_contracts INTEGER DEFAULT 0,
+        monthly_score INTEGER DEFAULT 0,
+
+        total_exp INTEGER DEFAULT 0,
+        total_resource INTEGER DEFAULT 0,
+        total_kills INTEGER DEFAULT 0,
+        total_contracts INTEGER DEFAULT 0,
+        total_score INTEGER DEFAULT 0,
+
+        season_key TEXT NOT NULL
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS guild_members (
+        guild_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL UNIQUE,
+        role TEXT NOT NULL DEFAULT 'member',
+        joined_at TEXT NOT NULL,
+
+        contribution_exp INTEGER DEFAULT 0,
+        contribution_resource INTEGER DEFAULT 0,
+        contribution_kills INTEGER DEFAULT 0,
+        contribution_contracts INTEGER DEFAULT 0,
+        contribution_score INTEGER DEFAULT 0,
+
+        monthly_contribution_exp INTEGER DEFAULT 0,
+        monthly_contribution_resource INTEGER DEFAULT 0,
+        monthly_contribution_kills INTEGER DEFAULT 0,
+        monthly_contribution_contracts INTEGER DEFAULT 0,
+        monthly_contribution_score INTEGER DEFAULT 0,
+
+        PRIMARY KEY (guild_id, user_id)
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS guild_applications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        guild_id INTEGER NOT NULL,
+        user_id INTEGER NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at TEXT NOT NULL,
+        processed_at TEXT,
+        processed_by INTEGER,
+        UNIQUE (guild_id, user_id, status)
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS guild_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        guild_id INTEGER NOT NULL,
+        event_type TEXT NOT NULL,
+        text TEXT NOT NULL,
+        created_at TEXT NOT NULL
+    )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS guild_season_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        guild_id INTEGER NOT NULL,
+        season_key TEXT NOT NULL,
+        monthly_exp INTEGER DEFAULT 0,
+        monthly_resource INTEGER DEFAULT 0,
+        monthly_kills INTEGER DEFAULT 0,
+        monthly_contracts INTEGER DEFAULT 0,
+        monthly_score INTEGER DEFAULT 0,
+        finished_at TEXT NOT NULL,
+        UNIQUE (guild_id, season_key)
+    )
+    """)
+
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_guilds_monthly_score ON guilds(monthly_score DESC)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_guilds_total_score ON guilds(total_score DESC)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_guild_members_user ON guild_members(user_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_guild_members_guild ON guild_members(guild_id)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_guild_applications_guild_status ON guild_applications(guild_id, status)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_guild_logs_guild_created ON guild_logs(guild_id, created_at DESC)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_guild_season_history_season ON guild_season_history(season_key, monthly_score DESC)")
+
+    conn.commit()
+
+    ensure_all_guild_monthly_seasons()
+
+
+# ==============================
+# ✅ MONTHLY SEASON RESET
+# ==============================
+
+def archive_and_reset_guild_monthly_stats(guild_row, new_season_key=None):
+    """
+    Архівує минулий місяць у guild_season_history і обнуляє monthly counters.
+    """
+
+    if not guild_row:
+        return False
+
+    if new_season_key is None:
+        new_season_key = get_current_guild_season_key()
+
+    guild_id = guild_row["id"]
+    old_season_key = guild_row["season_key"]
+
+    if old_season_key == new_season_key:
+        return False
+
+    finished_at = now_iso()
+
+    cursor.execute("""
+    INSERT OR IGNORE INTO guild_season_history (
+        guild_id,
+        season_key,
+        monthly_exp,
+        monthly_resource,
+        monthly_kills,
+        monthly_contracts,
+        monthly_score,
+        finished_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        guild_id,
+        old_season_key,
+        int(guild_row["monthly_exp"] or 0),
+        int(guild_row["monthly_resource"] or 0),
+        int(guild_row["monthly_kills"] or 0),
+        int(guild_row["monthly_contracts"] or 0),
+        int(guild_row["monthly_score"] or 0),
+        finished_at,
+    ))
+
+    cursor.execute("""
+    UPDATE guilds
+    SET monthly_exp=0,
+        monthly_resource=0,
+        monthly_kills=0,
+        monthly_contracts=0,
+        monthly_score=0,
+        season_key=?,
+        updated_at=?
+    WHERE id=?
+    """, (
+        new_season_key,
+        finished_at,
+        guild_id,
+    ))
+
+    cursor.execute("""
+    UPDATE guild_members
+    SET monthly_contribution_exp=0,
+        monthly_contribution_resource=0,
+        monthly_contribution_kills=0,
+        monthly_contribution_contracts=0,
+        monthly_contribution_score=0
+    WHERE guild_id=?
+    """, (
+        guild_id,
+    ))
+
+    conn.commit()
+
+    add_guild_log(
+        guild_id=guild_id,
+        event_type="season_reset",
+        text=f"Почався новий сезон рейтингу: {new_season_key}. Попередній сезон {old_season_key} збережено в історії."
+    )
+
+    return True
+
+
+def ensure_guild_monthly_season(guild_id):
+    init_guild_system_tables_only()
+
+    current_season = get_current_guild_season_key()
+    guild = get_guild_by_id(guild_id, ensure_season=False)
+
+    if not guild:
+        return False
+
+    return archive_and_reset_guild_monthly_stats(guild, current_season)
+
+
+def ensure_all_guild_monthly_seasons():
+    init_guild_system_tables_only()
+
+    current_season = get_current_guild_season_key()
+
+    cursor.execute("SELECT * FROM guilds WHERE season_key != ?", (current_season,))
+    rows = cursor.fetchall()
+
+    for row in rows:
+        archive_and_reset_guild_monthly_stats(row, current_season)
+
+    return len(rows)
+
+
+def init_guild_system_tables_only():
+    """
+    Легка перевірка, щоб helper-и могли викликатись після першої ініціалізації
+    без рекурсії init_guild_system() -> ensure -> init.
+    """
+
+    # Нічого не робимо: таблиці створюються через init_guild_system().
+    # Функція залишена як явний marker для безпечних викликів.
+    return True
+
+
+# ==============================
+# ✅ GUILD CRUD
+# ==============================
+
+def add_guild_log(guild_id, event_type, text):
+    cursor.execute("""
+    INSERT INTO guild_logs (guild_id, event_type, text, created_at)
+    VALUES (?, ?, ?, ?)
+    """, (
+        guild_id,
+        event_type,
+        text,
+        now_iso(),
+    ))
+
+    conn.commit()
+
+
+def get_guild_by_id(guild_id, ensure_season=True):
+    cursor.execute("SELECT * FROM guilds WHERE id=?", (guild_id,))
+    row = cursor.fetchone()
+
+    if row and ensure_season:
+        if row["season_key"] != get_current_guild_season_key():
+            ensure_guild_monthly_season(guild_id)
+            cursor.execute("SELECT * FROM guilds WHERE id=?", (guild_id,))
+            row = cursor.fetchone()
+
+    return row
+
+
+def get_guild_by_name_or_tag(value):
+    name_norm = normalize_guild_name(value)
+    tag_norm = normalize_guild_tag(value)
+
+    cursor.execute("""
+    SELECT * FROM guilds
+    WHERE name_norm=? OR tag_norm=?
+    """, (
+        name_norm,
+        tag_norm,
+    ))
+
+    return cursor.fetchone()
+
+
+def is_user_in_guild(user_id):
+    cursor.execute("SELECT 1 FROM guild_members WHERE user_id=?", (user_id,))
+    return cursor.fetchone() is not None
+
+
+def get_user_guild_member(user_id):
+    cursor.execute("SELECT * FROM guild_members WHERE user_id=?", (user_id,))
+    return cursor.fetchone()
+
+
+def get_user_guild(user_id):
+    member = get_user_guild_member(user_id)
+
+    if not member:
+        return None
+
+    return get_guild_by_id(member["guild_id"])
+
+
+def get_user_guild_role(user_id):
+    member = get_user_guild_member(user_id)
+
+    if not member:
+        return None
+
+    return member["role"]
+
+
+def validate_guild_create_input(name, tag, icon="🏰"):
+    name = (name or "").strip()
+    tag = normalize_guild_tag(tag)
+    icon = (icon or "🏰").strip() or "🏰"
+
+    if len(name) < 3:
+        return {
+            "success": False,
+            "message": "❌ Назва гільдії має містити мінімум 3 символи."
+        }
+
+    if len(name) > 32:
+        return {
+            "success": False,
+            "message": "❌ Назва гільдії має бути не довша за 32 символи."
+        }
+
+    if len(tag) < 2:
+        return {
+            "success": False,
+            "message": "❌ Абревіатура гільдії має містити мінімум 2 символи."
+        }
+
+    if len(tag) > 5:
+        return {
+            "success": False,
+            "message": "❌ Абревіатура гільдії має бути не довша за 5 символів."
+        }
+
+    existing = get_guild_by_name_or_tag(name)
+
+    if existing:
+        return {
+            "success": False,
+            "message": "❌ Гільдія з такою назвою або абревіатурою вже існує."
+        }
+
+    existing_tag = get_guild_by_name_or_tag(tag)
+
+    if existing_tag:
+        return {
+            "success": False,
+            "message": "❌ Гільдія з такою назвою або абревіатурою вже існує."
+        }
+
+    return {
+        "success": True,
+        "name": name,
+        "tag": tag,
+        "icon": icon,
+    }
+
+
+def create_guild(user_id, name, tag, icon="🏰"):
+    """
+    Створює гільдію.
+
+    На 7.0.1 створення безкоштовне.
+    Вартість можна додати пізніше через GUILD_CREATE_COST_GOLD.
+    """
+
+    init_guild_system()
+
+    if is_user_in_guild(user_id):
+        return {
+            "success": False,
+            "message": "❌ Ти вже перебуваєш у гільдії."
+        }
+
+    validation = validate_guild_create_input(name, tag, icon)
+
+    if not validation.get("success"):
+        return validation
+
+    now = now_iso()
+    season_key = get_current_guild_season_key()
+
+    cursor.execute("""
+    INSERT INTO guilds (
+        name,
+        name_norm,
+        tag,
+        tag_norm,
+        icon,
+        leader_user_id,
+        level,
+        exp,
+        resource,
+        member_limit,
+        created_at,
+        updated_at,
+        season_key
+    ) VALUES (?, ?, ?, ?, ?, ?, 1, 0, 0, ?, ?, ?, ?)
+    """, (
+        validation["name"],
+        normalize_guild_name(validation["name"]),
+        validation["tag"],
+        normalize_guild_tag(validation["tag"]),
+        validation["icon"],
+        user_id,
+        DEFAULT_GUILD_MEMBER_LIMIT,
+        now,
+        now,
+        season_key,
+    ))
+
+    guild_id = cursor.lastrowid
+
+    cursor.execute("""
+    INSERT INTO guild_members (
+        guild_id,
+        user_id,
+        role,
+        joined_at
+    ) VALUES (?, ?, ?, ?)
+    """, (
+        guild_id,
+        user_id,
+        GUILD_ROLE_LEADER,
+        now,
+    ))
+
+    conn.commit()
+
+    add_guild_log(
+        guild_id=guild_id,
+        event_type="guild_created",
+        text=f"Гільдію {validation['icon']} [{validation['tag']}] {validation['name']} створено."
+    )
+
+    return {
+        "success": True,
+        "guild_id": guild_id,
+        "message": f"✅ Гільдію {validation['icon']} [{validation['tag']}] {validation['name']} створено."
+    }
+
+
+# ==============================
+# ✅ MEMBERS
+# ==============================
+
+def get_guild_members(guild_id):
+    ensure_guild_monthly_season(guild_id)
+
+    cursor.execute("""
+    SELECT gm.*,
+           users.character_name,
+           users.level
+    FROM guild_members gm
+    LEFT JOIN users ON users.user_id = gm.user_id
+    WHERE gm.guild_id=?
+    ORDER BY
+        CASE gm.role
+            WHEN 'leader' THEN 1
+            WHEN 'officer' THEN 2
+            ELSE 3
+        END,
+        gm.contribution_score DESC,
+        gm.joined_at ASC
+    """, (
+        guild_id,
+    ))
+
+    return cursor.fetchall()
+
+
+def get_guild_member_count(guild_id):
+    cursor.execute("SELECT COUNT(*) AS cnt FROM guild_members WHERE guild_id=?", (guild_id,))
+    row = cursor.fetchone()
+    return int(row["cnt"] if row else 0)
+
+
+def can_manage_guild_applications(user_id, guild_id):
+    member = get_user_guild_member(user_id)
+
+    if not member:
+        return False
+
+    if int(member["guild_id"]) != int(guild_id):
+        return False
+
+    return member["role"] in [GUILD_ROLE_LEADER, GUILD_ROLE_OFFICER]
+
+
+# ==============================
+# ✅ APPLICATIONS CORE
+# ==============================
+
+def create_guild_application(user_id, guild_id):
+    init_guild_system()
+
+    if is_user_in_guild(user_id):
+        return {
+            "success": False,
+            "message": "❌ Ти вже перебуваєш у гільдії."
+        }
+
+    guild = get_guild_by_id(guild_id)
+
+    if not guild:
+        return {
+            "success": False,
+            "message": "❌ Гільдію не знайдено."
+        }
+
+    cursor.execute("""
+    SELECT * FROM guild_applications
+    WHERE guild_id=? AND user_id=? AND status=?
+    """, (
+        guild_id,
+        user_id,
+        GUILD_APPLICATION_PENDING,
+    ))
+
+    if cursor.fetchone():
+        return {
+            "success": False,
+            "message": "ℹ️ Ти вже подав заявку в цю гільдію."
+        }
+
+    cursor.execute("""
+    INSERT INTO guild_applications (guild_id, user_id, status, created_at)
+    VALUES (?, ?, ?, ?)
+    """, (
+        guild_id,
+        user_id,
+        GUILD_APPLICATION_PENDING,
+        now_iso(),
+    ))
+
+    conn.commit()
+
+    add_guild_log(
+        guild_id=guild_id,
+        event_type="application_created",
+        text=f"Нова заявка до гільдії від user_id={user_id}."
+    )
+
+    return {
+        "success": True,
+        "message": "✅ Заявку до гільдії подано."
+    }
+
+
+def get_guild_applications(guild_id, status=GUILD_APPLICATION_PENDING):
+    cursor.execute("""
+    SELECT ga.*,
+           users.character_name,
+           users.level
+    FROM guild_applications ga
+    LEFT JOIN users ON users.user_id = ga.user_id
+    WHERE ga.guild_id=? AND ga.status=?
+    ORDER BY ga.created_at ASC
+    """, (
+        guild_id,
+        status,
+    ))
+
+    return cursor.fetchall()
+
+
+# ==============================
+# ✅ PROGRESS / SCORE
+# ==============================
+
+def add_guild_progress(guild_id, exp=0, resource=0, kills=0, contracts=0, user_id=None, reason=""):
+    """
+    Додає прогрес гільдії одночасно в monthly і total counters.
+    Також оновлює contribution учасника, якщо передано user_id.
+    """
+
+    init_guild_system()
+    ensure_guild_monthly_season(guild_id)
+
+    exp = int(exp or 0)
+    resource = int(resource or 0)
+    kills = int(kills or 0)
+    contracts = int(contracts or 0)
+    score = calculate_guild_score(exp, resource, kills, contracts)
+
+    if exp == 0 and resource == 0 and kills == 0 and contracts == 0:
+        return {
+            "success": True,
+            "message": "ℹ️ Немає прогресу для додавання."
+        }
+
+    cursor.execute("""
+    UPDATE guilds
+    SET exp = exp + ?,
+        resource = resource + ?,
+        monthly_exp = monthly_exp + ?,
+        monthly_resource = monthly_resource + ?,
+        monthly_kills = monthly_kills + ?,
+        monthly_contracts = monthly_contracts + ?,
+        monthly_score = monthly_score + ?,
+        total_exp = total_exp + ?,
+        total_resource = total_resource + ?,
+        total_kills = total_kills + ?,
+        total_contracts = total_contracts + ?,
+        total_score = total_score + ?,
+        updated_at=?
+    WHERE id=?
+    """, (
+        exp,
+        resource,
+        exp,
+        resource,
+        kills,
+        contracts,
+        score,
+        exp,
+        resource,
+        kills,
+        contracts,
+        score,
+        now_iso(),
+        guild_id,
+    ))
+
+    if user_id is not None:
+        cursor.execute("""
+        UPDATE guild_members
+        SET contribution_exp = contribution_exp + ?,
+            contribution_resource = contribution_resource + ?,
+            contribution_kills = contribution_kills + ?,
+            contribution_contracts = contribution_contracts + ?,
+            contribution_score = contribution_score + ?,
+            monthly_contribution_exp = monthly_contribution_exp + ?,
+            monthly_contribution_resource = monthly_contribution_resource + ?,
+            monthly_contribution_kills = monthly_contribution_kills + ?,
+            monthly_contribution_contracts = monthly_contribution_contracts + ?,
+            monthly_contribution_score = monthly_contribution_score + ?
+        WHERE guild_id=? AND user_id=?
+        """, (
+            exp,
+            resource,
+            kills,
+            contracts,
+            score,
+            exp,
+            resource,
+            kills,
+            contracts,
+            score,
+            guild_id,
+            user_id,
+        ))
+
+    conn.commit()
+
+    if reason:
+        add_guild_log(
+            guild_id=guild_id,
+            event_type="progress",
+            text=reason,
+        )
+
+    return {
+        "success": True,
+        "exp": exp,
+        "resource": resource,
+        "kills": kills,
+        "contracts": contracts,
+        "score": score,
+        "message": "✅ Прогрес гільдії оновлено."
+    }
+
+
+# ==============================
+# ✅ RANKINGS
+# ==============================
+
+def get_guild_ranking(scope="monthly", limit=10):
+    """
+    Рейтинг гільдій.
+
+    scope="monthly": поточний місячний рейтинг.
+    scope="total": рейтинг за весь час.
+
+    Сортування завжди від більшого до меншого.
+    """
+
+    init_guild_system()
+    ensure_all_guild_monthly_seasons()
+
+    try:
+        limit = int(limit)
+    except Exception:
+        limit = 10
+
+    limit = max(1, min(100, limit))
+
+    if scope == "total":
+        cursor.execute("""
+        SELECT *
+        FROM guilds
+        ORDER BY total_score DESC,
+                 total_exp DESC,
+                 level DESC,
+                 created_at ASC
+        LIMIT ?
+        """, (
+            limit,
+        ))
+    else:
+        cursor.execute("""
+        SELECT *
+        FROM guilds
+        ORDER BY monthly_score DESC,
+                 monthly_exp DESC,
+                 total_score DESC,
+                 created_at ASC
+        LIMIT ?
+        """, (
+            limit,
+        ))
+
+    return cursor.fetchall()
+
+
+def get_guild_season_history(guild_id=None, season_key=None, limit=20):
+    init_guild_system()
+
+    try:
+        limit = int(limit)
+    except Exception:
+        limit = 20
+
+    limit = max(1, min(100, limit))
+
+    query = "SELECT * FROM guild_season_history WHERE 1=1"
+    params = []
+
+    if guild_id is not None:
+        query += " AND guild_id=?"
+        params.append(guild_id)
+
+    if season_key is not None:
+        query += " AND season_key=?"
+        params.append(season_key)
+
+    query += " ORDER BY season_key DESC, monthly_score DESC LIMIT ?"
+    params.append(limit)
+
+    cursor.execute(query, params)
+    return cursor.fetchall()
+
+
+# ==============================
+# ✅ DISPLAY HELPERS
+# ==============================
+
+def get_guild_display_name(guild):
+    if not guild:
+        return "Без гільдії"
+
+    icon = guild["icon"] or "🏰"
+    tag = guild["tag"] or "???"
+    name = guild["name"] or "Гільдія"
+
+    return f"{icon} [{tag}] {name}"
+
+
+def get_guild_role_label(role):
+    if role == GUILD_ROLE_LEADER:
+        return "👑 Голова"
+    if role == GUILD_ROLE_OFFICER:
+        return "🛡 Заступник"
+    return "👤 Учасник"
+
+
+# ==============================
+# ✅ GUILD LIST APPLICATIONS CORE V1
+# ==============================
+
+# 7.0.4
+# Список гільдій, перегляд деталей, подача заявки, перегляд моїх заявок.
+
+
+def get_public_guild_list(limit=50, offset=0):
+    """
+    Публічний список гільдій.
+    Сортування від більшого до меншого за total_score, далі level, далі дата створення.
+    """
+
+    init_guild_system()
+    ensure_all_guild_monthly_seasons()
+
+    try:
+        limit = int(limit)
+    except Exception:
+        limit = 50
+
+    try:
+        offset = int(offset)
+    except Exception:
+        offset = 0
+
+    limit = max(1, min(100, limit))
+    offset = max(0, offset)
+
+    cursor.execute("""
+    SELECT g.*,
+           COUNT(gm.user_id) AS member_count
+    FROM guilds g
+    LEFT JOIN guild_members gm ON gm.guild_id = g.id
+    GROUP BY g.id
+    ORDER BY g.total_score DESC,
+             g.level DESC,
+             g.created_at ASC
+    LIMIT ? OFFSET ?
+    """, (
+        limit,
+        offset,
+    ))
+
+    return cursor.fetchall()
+
+
+def get_user_guild_applications(user_id, status=None):
+    """
+    Повертає заявки користувача.
+    Якщо status=None — усі заявки.
+    """
+
+    init_guild_system()
+
+    if status is None:
+        cursor.execute("""
+        SELECT ga.*,
+               g.name AS guild_name,
+               g.tag AS guild_tag,
+               g.icon AS guild_icon
+        FROM guild_applications ga
+        JOIN guilds g ON g.id = ga.guild_id
+        WHERE ga.user_id=?
+        ORDER BY ga.created_at DESC
+        """, (
+            user_id,
+        ))
+    else:
+        cursor.execute("""
+        SELECT ga.*,
+               g.name AS guild_name,
+               g.tag AS guild_tag,
+               g.icon AS guild_icon
+        FROM guild_applications ga
+        JOIN guilds g ON g.id = ga.guild_id
+        WHERE ga.user_id=? AND ga.status=?
+        ORDER BY ga.created_at DESC
+        """, (
+            user_id,
+            status,
+        ))
+
+    return cursor.fetchall()
+
+
+def has_pending_guild_application(user_id, guild_id):
+    cursor.execute("""
+    SELECT 1
+    FROM guild_applications
+    WHERE user_id=? AND guild_id=? AND status=?
+    """, (
+        user_id,
+        guild_id,
+        GUILD_APPLICATION_PENDING,
+    ))
+
+    return cursor.fetchone() is not None
+
+
+def cancel_guild_application(user_id, application_id):
+    """
+    Скасовує pending заявку користувача.
+    Буде корисно для UI пізніше.
+    """
+
+    init_guild_system()
+
+    cursor.execute("""
+    SELECT *
+    FROM guild_applications
+    WHERE id=? AND user_id=? AND status=?
+    """, (
+        application_id,
+        user_id,
+        GUILD_APPLICATION_PENDING,
+    ))
+
+    app = cursor.fetchone()
+
+    if not app:
+        return {
+            "success": False,
+            "message": "❌ Активну заявку не знайдено."
+        }
+
+    cursor.execute("""
+    UPDATE guild_applications
+    SET status=?, processed_at=?, processed_by=?
+    WHERE id=?
+    """, (
+        GUILD_APPLICATION_CANCELLED,
+        now_iso(),
+        user_id,
+        application_id,
+    ))
+
+    conn.commit()
+
+    try:
+        add_guild_log(
+            guild_id=app["guild_id"],
+            event_type="application_cancelled",
+            text=f"Заявку user_id={user_id} скасовано."
+        )
+    except Exception:
+        pass
+
+    return {
+        "success": True,
+        "message": "✅ Заявку скасовано."
+    }
+
+
+# ==============================
+# ✅ UNIQUE GUILD ICON CORE V1
+# ==============================
+
+# 7.0.4a
+# Іконка гільдії має бути унікальною.
+# Якщо в БД вже є дублікати, перша гільдія залишає іконку,
+# інші дублікати отримують резервні унікальні іконки.
+
+GUILD_RESERVED_UNIQUE_ICONS = [
+    "🏰", "🛡️", "⚔️", "🔥", "🌙", "⭐", "🐺", "🐉", "🍀", "💎",
+    "🦅", "🦁", "🐻", "🦊", "🦂", "🦉", "🗡️", "🔱", "🌲", "🌋",
+    "❄️", "⚡", "🌟", "🌹", "🍒", "🌊", "☀️", "🌌", "🪓", "🧿",
+]
+
+
+def normalize_guild_icon(value):
+    icon = (value or "").strip()
+    return icon or "🏰"
+
+
+def get_guild_by_icon(icon):
+    init_guild_system_tables_only()
+    icon = normalize_guild_icon(icon)
+
+    cursor.execute("SELECT * FROM guilds WHERE icon=?", (icon,))
+    return cursor.fetchone()
+
+
+def is_guild_icon_taken(icon, exclude_guild_id=None):
+    init_guild_system_tables_only()
+    icon = normalize_guild_icon(icon)
+
+    if exclude_guild_id is None:
+        cursor.execute("SELECT 1 FROM guilds WHERE icon=?", (icon,))
+    else:
+        cursor.execute("SELECT 1 FROM guilds WHERE icon=? AND id != ?", (icon, exclude_guild_id))
+
+    return cursor.fetchone() is not None
+
+
+def _get_used_guild_icons():
+    cursor.execute("SELECT icon FROM guilds")
+    rows = cursor.fetchall()
+    used = set()
+
+    for row in rows:
+        try:
+            icon = row["icon"]
+        except Exception:
+            icon = row[0]
+        if icon:
+            used.add(icon)
+
+    return used
+
+
+def _pick_unique_guild_icon(used_icons, preferred=None):
+    preferred = normalize_guild_icon(preferred)
+
+    if preferred and preferred not in used_icons:
+        return preferred
+
+    for icon in GUILD_RESERVED_UNIQUE_ICONS:
+        if icon not in used_icons:
+            return icon
+
+    # Very rare fallback if all reserved icons are used.
+    # SQLite UNIQUE only needs unique text; UI validation for new guilds still asks for short emoji.
+    counter = 1
+    while True:
+        candidate = f"🏰{counter}"
+        if candidate not in used_icons:
+            return candidate
+        counter += 1
+
+
+def make_existing_guild_icons_unique():
+    """
+    Виправляє вже існуючі дублікати icon у guilds.
+
+    Правило:
+    - найстаріша/перша гільдія з конкретною іконкою зберігає її;
+    - наступні дублікати отримують резервну унікальну іконку.
+    """
+
+    init_guild_system_tables_only()
+
+    cursor.execute("SELECT id, icon, name, tag FROM guilds ORDER BY id ASC")
+    rows = cursor.fetchall()
+
+    seen = set()
+    used = set()
+    changes = []
+
+    for row in rows:
+        try:
+            guild_id = row["id"]
+            icon = normalize_guild_icon(row["icon"])
+            name = row["name"]
+            tag = row["tag"]
+        except Exception:
+            guild_id = row[0]
+            icon = normalize_guild_icon(row[1])
+            name = row[2] if len(row) > 2 else "Гільдія"
+            tag = row[3] if len(row) > 3 else "???"
+
+        if icon not in seen and icon not in used:
+            seen.add(icon)
+            used.add(icon)
+            continue
+
+        new_icon = _pick_unique_guild_icon(used)
+        used.add(new_icon)
+
+        cursor.execute("UPDATE guilds SET icon=?, updated_at=? WHERE id=?", (new_icon, now_iso(), guild_id))
+        changes.append((guild_id, icon, new_icon, name, tag))
+
+    conn.commit()
+
+    for guild_id, old_icon, new_icon, name, tag in changes:
+        try:
+            add_guild_log(
+                guild_id=guild_id,
+                event_type="icon_auto_changed",
+                text=f"Іконку гільдії [{tag}] {name} автоматично змінено з {old_icon} на {new_icon}, бо іконки гільдій мають бути унікальними."
+            )
+        except Exception:
+            pass
+
+    return changes
+
+
+def ensure_unique_guild_icon_index():
+    """
+    Створює UNIQUE index для guilds.icon після очищення дублікатів.
+    """
+
+    init_guild_system_tables_only()
+    make_existing_guild_icons_unique()
+
+    cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_guilds_icon_unique ON guilds(icon)")
+    conn.commit()
+
+    return True
+
+
+# Override validation from 7.0.1 with icon uniqueness check.
+def validate_guild_create_input(name, tag, icon="🏰"):
+    name = (name or "").strip()
+    tag = normalize_guild_tag(tag)
+    icon = normalize_guild_icon(icon)
+
+    if len(name) < 3:
+        return {
+            "success": False,
+            "message": "❌ Назва гільдії має містити мінімум 3 символи."
+        }
+
+    if len(name) > 32:
+        return {
+            "success": False,
+            "message": "❌ Назва гільдії має бути не довша за 32 символи."
+        }
+
+    if len(tag) < 2:
+        return {
+            "success": False,
+            "message": "❌ Абревіатура гільдії має містити мінімум 2 символи."
+        }
+
+    if len(tag) > 5:
+        return {
+            "success": False,
+            "message": "❌ Абревіатура гільдії має бути не довша за 5 символів."
+        }
+
+    existing = get_guild_by_name_or_tag(name)
+    if existing:
+        return {
+            "success": False,
+            "message": "❌ Гільдія з такою назвою або абревіатурою вже існує."
+        }
+
+    existing_tag = get_guild_by_name_or_tag(tag)
+    if existing_tag:
+        return {
+            "success": False,
+            "message": "❌ Гільдія з такою назвою або абревіатурою вже існує."
+        }
+
+    if is_guild_icon_taken(icon):
+        return {
+            "success": False,
+            "message": "❌ Така іконка вже використовується іншою гільдією. Обери іншу іконку."
+        }
+
+    return {
+        "success": True,
+        "name": name,
+        "tag": tag,
+        "icon": icon,
+    }
+
+
+# Ensure uniqueness whenever module is loaded after the patch.
+try:
+    ensure_unique_guild_icon_index()
+except Exception as _guild_icon_unique_error:
+    print(f"⚠️ Failed to ensure unique guild icon index: {_guild_icon_unique_error}")
+
+
+# ==============================
+# ✅ GUILD APPLICATION REVIEW CORE V1
+# ==============================
+
+# 7.0.5
+# Обробка заявок у гільдію: прийняти / відхилити.
+
+
+def get_guild_application_by_id(application_id):
+    init_guild_system()
+    cursor.execute("SELECT * FROM guild_applications WHERE id=?", (application_id,))
+    return cursor.fetchone()
+
+
+def accept_guild_application(actor_user_id, application_id):
+    """
+    Приймає заявку до гільдії.
+    Доступно тільки leader/officer цієї гільдії.
+    """
+
+    init_guild_system()
+
+    app = get_guild_application_by_id(application_id)
+
+    if not app:
+        return {"success": False, "message": "❌ Заявку не знайдено."}
+
+    if app["status"] != GUILD_APPLICATION_PENDING:
+        return {"success": False, "message": "❌ Ця заявка вже не очікує розгляду."}
+
+    guild_id = app["guild_id"]
+    applicant_user_id = app["user_id"]
+
+    if not can_manage_guild_applications(actor_user_id, guild_id):
+        return {"success": False, "message": "❌ У тебе немає прав для обробки заявок."}
+
+    guild = get_guild_by_id(guild_id)
+    if not guild:
+        return {"success": False, "message": "❌ Гільдію не знайдено."}
+
+    if is_user_in_guild(applicant_user_id):
+        cursor.execute("""
+        UPDATE guild_applications
+        SET status=?, processed_at=?, processed_by=?
+        WHERE id=?
+        """, (
+            GUILD_APPLICATION_REJECTED,
+            now_iso(),
+            actor_user_id,
+            application_id,
+        ))
+        conn.commit()
+        return {"success": False, "message": "❌ Гравець уже перебуває в іншій гільдії. Заявку відхилено."}
+
+    member_count = get_guild_member_count(guild_id)
+    member_limit = int(guild["member_limit"] or DEFAULT_GUILD_MEMBER_LIMIT)
+
+    if member_count >= member_limit:
+        return {"success": False, "message": "❌ У гільдії немає вільних місць."}
+
+    now = now_iso()
+
+    cursor.execute("""
+    INSERT INTO guild_members (guild_id, user_id, role, joined_at)
+    VALUES (?, ?, ?, ?)
+    """, (
+        guild_id,
+        applicant_user_id,
+        GUILD_ROLE_MEMBER,
+        now,
+    ))
+
+    cursor.execute("""
+    UPDATE guild_applications
+    SET status=?, processed_at=?, processed_by=?
+    WHERE id=?
+    """, (
+        GUILD_APPLICATION_ACCEPTED,
+        now,
+        actor_user_id,
+        application_id,
+    ))
+
+    # Інші pending-заявки цього гравця автоматично скасовуємо.
+    cursor.execute("""
+    UPDATE guild_applications
+    SET status=?, processed_at=?, processed_by=?
+    WHERE user_id=? AND status=? AND id != ?
+    """, (
+        GUILD_APPLICATION_CANCELLED,
+        now,
+        actor_user_id,
+        applicant_user_id,
+        GUILD_APPLICATION_PENDING,
+        application_id,
+    ))
+
+    conn.commit()
+
+    applicant_name = f"user_id={applicant_user_id}"
+    try:
+        cursor.execute("SELECT character_name FROM users WHERE user_id=?", (applicant_user_id,))
+        row = cursor.fetchone()
+        if row:
+            try:
+                applicant_name = row["character_name"] or applicant_name
+            except Exception:
+                applicant_name = row[0] or applicant_name
+    except Exception:
+        pass
+
+    add_guild_log(
+        guild_id=guild_id,
+        event_type="application_accepted",
+        text=f"{applicant_name} вступив до гільдії."
+    )
+
+    return {"success": True, "message": f"✅ {applicant_name} прийнято до гільдії."}
+
+
+def reject_guild_application(actor_user_id, application_id):
+    """
+    Відхиляє заявку до гільдії.
+    Доступно тільки leader/officer цієї гільдії.
+    """
+
+    init_guild_system()
+
+    app = get_guild_application_by_id(application_id)
+
+    if not app:
+        return {"success": False, "message": "❌ Заявку не знайдено."}
+
+    if app["status"] != GUILD_APPLICATION_PENDING:
+        return {"success": False, "message": "❌ Ця заявка вже не очікує розгляду."}
+
+    guild_id = app["guild_id"]
+    applicant_user_id = app["user_id"]
+
+    if not can_manage_guild_applications(actor_user_id, guild_id):
+        return {"success": False, "message": "❌ У тебе немає прав для обробки заявок."}
+
+    now = now_iso()
+
+    cursor.execute("""
+    UPDATE guild_applications
+    SET status=?, processed_at=?, processed_by=?
+    WHERE id=?
+    """, (
+        GUILD_APPLICATION_REJECTED,
+        now,
+        actor_user_id,
+        application_id,
+    ))
+
+    conn.commit()
+
+    applicant_name = f"user_id={applicant_user_id}"
+    try:
+        cursor.execute("SELECT character_name FROM users WHERE user_id=?", (applicant_user_id,))
+        row = cursor.fetchone()
+        if row:
+            try:
+                applicant_name = row["character_name"] or applicant_name
+            except Exception:
+                applicant_name = row[0] or applicant_name
+    except Exception:
+        pass
+
+    add_guild_log(
+        guild_id=guild_id,
+        event_type="application_rejected",
+        text=f"Заявку від {applicant_name} відхилено."
+    )
+
+    return {"success": True, "message": f"✅ Заявку від {applicant_name} відхилено."}
+
+
+# ==============================
+# ✅ GUILD MEMBERS ROLES CORE V1
+# ==============================
+
+# 7.0.6
+# Керування учасниками гільдії:
+# - призначити заступника
+# - зняти заступника
+# - виключити учасника
+
+
+def get_guild_member(guild_id, user_id):
+    init_guild_system()
+    cursor.execute(
+        "SELECT * FROM guild_members WHERE guild_id=? AND user_id=?",
+        (guild_id, user_id)
+    )
+    return cursor.fetchone()
+
+
+def get_character_name_by_user_id(user_id):
+    try:
+        cursor.execute("SELECT character_name FROM users WHERE user_id=?", (user_id,))
+        row = cursor.fetchone()
+        if not row:
+            return f"user_id={user_id}"
+        try:
+            return row["character_name"] or f"user_id={user_id}"
+        except Exception:
+            return row[0] or f"user_id={user_id}"
+    except Exception:
+        return f"user_id={user_id}"
+
+
+def is_guild_leader(user_id, guild_id):
+    member = get_guild_member(guild_id, user_id)
+    return bool(member and member["role"] == GUILD_ROLE_LEADER)
+
+
+def is_guild_officer(user_id, guild_id):
+    member = get_guild_member(guild_id, user_id)
+    return bool(member and member["role"] == GUILD_ROLE_OFFICER)
+
+
+def promote_guild_member_to_officer(actor_user_id, target_user_id):
+    """
+    Призначити заступника.
+    Дозволено тільки голові гільдії.
+    """
+
+    init_guild_system()
+    actor_member = get_user_guild_member(actor_user_id)
+    target_member = get_user_guild_member(target_user_id)
+
+    if not actor_member:
+        return {"success": False, "message": "❌ Ти не перебуваєш у гільдії."}
+
+    if not target_member or int(target_member["guild_id"]) != int(actor_member["guild_id"]):
+        return {"success": False, "message": "❌ Цей гравець не перебуває у твоїй гільдії."}
+
+    guild_id = actor_member["guild_id"]
+
+    if actor_member["role"] != GUILD_ROLE_LEADER:
+        return {"success": False, "message": "❌ Призначати заступників може тільки 👑 Голова гільдії."}
+
+    if target_member["role"] == GUILD_ROLE_LEADER:
+        return {"success": False, "message": "❌ Голова гільдії вже має найвищу роль."}
+
+    if target_member["role"] == GUILD_ROLE_OFFICER:
+        return {"success": False, "message": "ℹ️ Цей гравець уже є 🛡 Заступником."}
+
+    cursor.execute(
+        "UPDATE guild_members SET role=? WHERE guild_id=? AND user_id=?",
+        (GUILD_ROLE_OFFICER, guild_id, target_user_id)
+    )
+    conn.commit()
+
+    target_name = get_character_name_by_user_id(target_user_id)
+    add_guild_log(
+        guild_id=guild_id,
+        event_type="member_promoted",
+        text=f"{target_name} призначений 🛡 Заступником."
+    )
+
+    return {"success": True, "message": f"✅ {target_name} тепер 🛡 Заступник гільдії."}
+
+
+def demote_guild_officer(actor_user_id, target_user_id):
+    """
+    Зняти заступника до учасника.
+    Дозволено тільки голові гільдії.
+    """
+
+    init_guild_system()
+    actor_member = get_user_guild_member(actor_user_id)
+    target_member = get_user_guild_member(target_user_id)
+
+    if not actor_member:
+        return {"success": False, "message": "❌ Ти не перебуваєш у гільдії."}
+
+    if not target_member or int(target_member["guild_id"]) != int(actor_member["guild_id"]):
+        return {"success": False, "message": "❌ Цей гравець не перебуває у твоїй гільдії."}
+
+    guild_id = actor_member["guild_id"]
+
+    if actor_member["role"] != GUILD_ROLE_LEADER:
+        return {"success": False, "message": "❌ Знімати заступників може тільки 👑 Голова гільдії."}
+
+    if target_member["role"] != GUILD_ROLE_OFFICER:
+        return {"success": False, "message": "❌ Цей гравець не є заступником."}
+
+    cursor.execute(
+        "UPDATE guild_members SET role=? WHERE guild_id=? AND user_id=?",
+        (GUILD_ROLE_MEMBER, guild_id, target_user_id)
+    )
+    conn.commit()
+
+    target_name = get_character_name_by_user_id(target_user_id)
+    add_guild_log(
+        guild_id=guild_id,
+        event_type="member_demoted",
+        text=f"{target_name} більше не є 🛡 Заступником."
+    )
+
+    return {"success": True, "message": f"✅ {target_name} тепер 👤 Учасник гільдії."}
+
+
+def kick_guild_member(actor_user_id, target_user_id):
+    """
+    Виключити учасника з гільдії.
+
+    Правила:
+    - Голова може виключати учасників і заступників, але не себе.
+    - Заступник може виключати тільки звичайних учасників.
+    - Учасник не може виключати нікого.
+    - Голову не можна виключити.
+    """
+
+    init_guild_system()
+    actor_member = get_user_guild_member(actor_user_id)
+    target_member = get_user_guild_member(target_user_id)
+
+    if not actor_member:
+        return {"success": False, "message": "❌ Ти не перебуваєш у гільдії."}
+
+    if not target_member or int(target_member["guild_id"]) != int(actor_member["guild_id"]):
+        return {"success": False, "message": "❌ Цей гравець не перебуває у твоїй гільдії."}
+
+    guild_id = actor_member["guild_id"]
+
+    if int(actor_user_id) == int(target_user_id):
+        return {"success": False, "message": "❌ Не можна виключити самого себе."}
+
+    if target_member["role"] == GUILD_ROLE_LEADER:
+        return {"success": False, "message": "❌ Голову гільдії не можна виключити."}
+
+    if actor_member["role"] == GUILD_ROLE_MEMBER:
+        return {"success": False, "message": "❌ Учасник не може виключати інших учасників."}
+
+    if actor_member["role"] == GUILD_ROLE_OFFICER and target_member["role"] != GUILD_ROLE_MEMBER:
+        return {"success": False, "message": "❌ Заступник може виключати тільки звичайних учасників."}
+
+    cursor.execute(
+        "DELETE FROM guild_members WHERE guild_id=? AND user_id=?",
+        (guild_id, target_user_id)
+    )
+    conn.commit()
+
+    target_name = get_character_name_by_user_id(target_user_id)
+    add_guild_log(
+        guild_id=guild_id,
+        event_type="member_kicked",
+        text=f"{target_name} виключений з гільдії."
+    )
+
+    return {"success": True, "message": f"✅ {target_name} виключений з гільдії."}
+
+
+# ==============================
+# ✅ GUILD SINGLE OFFICER CORE V1
+# ==============================
+
+# 7.0.6a
+# У гільдії може бути максимум один 🛡 Заступник.
+
+
+def get_guild_officer_count(guild_id):
+    init_guild_system()
+    cursor.execute(
+        "SELECT COUNT(*) AS cnt FROM guild_members WHERE guild_id=? AND role=?",
+        (guild_id, GUILD_ROLE_OFFICER)
+    )
+    row = cursor.fetchone()
+    try:
+        return int(row["cnt"] or 0)
+    except Exception:
+        return int(row[0] or 0) if row else 0
+
+
+def get_guild_officer_member(guild_id):
+    init_guild_system()
+    cursor.execute(
+        "SELECT * FROM guild_members WHERE guild_id=? AND role=? LIMIT 1",
+        (guild_id, GUILD_ROLE_OFFICER)
+    )
+    return cursor.fetchone()
+
+
+try:
+    _base_promote_guild_member_to_officer_before_single_officer_v1 = promote_guild_member_to_officer
+except Exception:
+    _base_promote_guild_member_to_officer_before_single_officer_v1 = None
+
+
+def promote_guild_member_to_officer(actor_user_id, target_user_id):
+    """
+    FINAL OVERRIDE:
+    Призначає заступника, але тільки якщо у гільдії ще немає іншого заступника.
+    """
+
+    actor_member = get_user_guild_member(actor_user_id)
+    target_member = get_user_guild_member(target_user_id)
+
+    if not actor_member:
+        return {"success": False, "message": "❌ Ти не перебуваєш у гільдії."}
+
+    if not target_member or int(target_member["guild_id"]) != int(actor_member["guild_id"]):
+        return {"success": False, "message": "❌ Цей гравець не перебуває у твоїй гільдії."}
+
+    guild_id = actor_member["guild_id"]
+
+    if target_member["role"] == GUILD_ROLE_OFFICER:
+        return {"success": False, "message": "ℹ️ Цей гравець уже є 🛡 Заступником."}
+
+    officer = get_guild_officer_member(guild_id)
+
+    if officer:
+        officer_name = get_character_name_by_user_id(officer["user_id"])
+        return {
+            "success": False,
+            "message": f"❌ У гільдії вже є 🛡 Заступник: {officer_name}. Спочатку зніми його з посади."
+        }
+
+    if _base_promote_guild_member_to_officer_before_single_officer_v1 is None:
+        return {"success": False, "message": "❌ Функція призначення заступника недоступна."}
+
+    return _base_promote_guild_member_to_officer_before_single_officer_v1(actor_user_id, target_user_id)
+
+
+# ==============================
+# ✅ GUILD ACCEPT APPLICATION IDEMPOTENT FIX V1
+# ==============================
+
+# 7.0.6b
+# Fix проблеми:
+# - гравець уже додався в guild_members;
+# - заявка лишилась pending;
+# - повторне натискання ✅ Прийняти заявку падало через UNIQUE constraint
+#   guild_applications(guild_id, user_id, status).
+#
+# Рішення:
+# - прийняття заявки стало idempotent;
+# - якщо гравець уже в цій гільдії, pending-заявка просто позначається accepted/removes duplicate safely;
+# - якщо already є accepted-заявка з таким UNIQUE ключем, pending-заявка видаляється;
+# - старі pending-заявки гравця в інші гільдії скасовуються.
+
+
+def _guild_safe_set_application_status(application_id, status, processed_by=None):
+    """
+    Безпечно змінює статус заявки з урахуванням UNIQUE(guild_id, user_id, status).
+
+    Якщо запис із таким status уже існує, поточна заявка видаляється,
+    щоб не ламати БД і не залишати pending-дублікат.
+    """
+
+    app = get_guild_application_by_id(application_id)
+    if not app:
+        return False
+
+    now = now_iso()
+
+    try:
+        cursor.execute("""
+        UPDATE guild_applications
+        SET status=?, processed_at=?, processed_by=?
+        WHERE id=?
+        """, (
+            status,
+            now,
+            processed_by,
+            application_id,
+        ))
+        conn.commit()
+        return True
+    except Exception as error:
+        if "UNIQUE constraint failed" not in str(error):
+            raise
+
+        # Є інша заявка з таким самим guild_id/user_id/status.
+        # Поточний pending-запис більше не потрібен.
+        cursor.execute("DELETE FROM guild_applications WHERE id=?", (application_id,))
+        conn.commit()
+        return True
+
+
+def _guild_cancel_other_pending_applications(user_id, except_application_id=None, processed_by=None):
+    now = now_iso()
+
+    if except_application_id is None:
+        cursor.execute("""
+        UPDATE guild_applications
+        SET status=?, processed_at=?, processed_by=?
+        WHERE user_id=? AND status=?
+        """, (
+            GUILD_APPLICATION_CANCELLED,
+            now,
+            processed_by,
+            user_id,
+            GUILD_APPLICATION_PENDING,
+        ))
+    else:
+        cursor.execute("""
+        UPDATE guild_applications
+        SET status=?, processed_at=?, processed_by=?
+        WHERE user_id=? AND status=? AND id != ?
+        """, (
+            GUILD_APPLICATION_CANCELLED,
+            now,
+            processed_by,
+            user_id,
+            GUILD_APPLICATION_PENDING,
+            except_application_id,
+        ))
+
+    conn.commit()
+
+
+# FINAL OVERRIDE for 7.0.5 accept_guild_application.
+def accept_guild_application(actor_user_id, application_id):
+    init_guild_system()
+
+    app = get_guild_application_by_id(application_id)
+
+    if not app:
+        return {"success": False, "message": "❌ Заявку не знайдено."}
+
+    guild_id = app["guild_id"]
+    applicant_user_id = app["user_id"]
+
+    if app["status"] != GUILD_APPLICATION_PENDING:
+        return {"success": False, "message": "❌ Ця заявка вже не очікує розгляду."}
+
+    if not can_manage_guild_applications(actor_user_id, guild_id):
+        return {"success": False, "message": "❌ У тебе немає прав для обробки заявок."}
+
+    guild = get_guild_by_id(guild_id)
+    if not guild:
+        return {"success": False, "message": "❌ Гільдію не знайдено."}
+
+    applicant_name = get_character_name_by_user_id(applicant_user_id)
+    existing_member = get_user_guild_member(applicant_user_id)
+
+    # Idempotent recovery: гравець уже в цій гільдії, але pending-заявка висить.
+    if existing_member and int(existing_member["guild_id"]) == int(guild_id):
+        _guild_safe_set_application_status(
+            application_id,
+            GUILD_APPLICATION_ACCEPTED,
+            processed_by=actor_user_id,
+        )
+        _guild_cancel_other_pending_applications(
+            applicant_user_id,
+            except_application_id=application_id,
+            processed_by=actor_user_id,
+        )
+        return {
+            "success": True,
+            "message": f"✅ {applicant_name} уже перебуває в цій гільдії. Заявку очищено."
+        }
+
+    # Якщо гравець уже в іншій гільдії — pending-заявку треба прибрати без падіння.
+    if existing_member and int(existing_member["guild_id"]) != int(guild_id):
+        _guild_safe_set_application_status(
+            application_id,
+            GUILD_APPLICATION_REJECTED,
+            processed_by=actor_user_id,
+        )
+        return {"success": False, "message": "❌ Гравець уже перебуває в іншій гільдії. Заявку відхилено."}
+
+    member_count = get_guild_member_count(guild_id)
+    member_limit = int(guild["member_limit"] or DEFAULT_GUILD_MEMBER_LIMIT)
+
+    if member_count >= member_limit:
+        return {"success": False, "message": "❌ У гільдії немає вільних місць."}
+
+    now = now_iso()
+
+    try:
+        cursor.execute("""
+        INSERT INTO guild_members (guild_id, user_id, role, joined_at)
+        VALUES (?, ?, ?, ?)
+        """, (
+            guild_id,
+            applicant_user_id,
+            GUILD_ROLE_MEMBER,
+            now,
+        ))
+        conn.commit()
+    except Exception as error:
+        # Якщо паралельно/раніше гравець уже був доданий — переводимо в idempotent branch.
+        if "UNIQUE constraint failed" not in str(error):
+            raise
+
+    _guild_safe_set_application_status(
+        application_id,
+        GUILD_APPLICATION_ACCEPTED,
+        processed_by=actor_user_id,
+    )
+
+    _guild_cancel_other_pending_applications(
+        applicant_user_id,
+        except_application_id=application_id,
+        processed_by=actor_user_id,
+    )
+
+    try:
+        add_guild_log(
+            guild_id=guild_id,
+            event_type="application_accepted",
+            text=f"{applicant_name} вступив до гільдії."
+        )
+    except Exception:
+        pass
+
+    return {"success": True, "message": f"✅ {applicant_name} прийнято до гільдії."}
+
+
+def cleanup_stale_guild_applications():
+    """
+    Чистить старі pending-заявки від гравців, які вже є в тій самій гільдії.
+    Також прибирає pending-заявки в інші гільдії для гравців, які вже десь перебувають.
+    """
+
+    init_guild_system()
+
+    fixed_same_guild = 0
+    cancelled_other_guild = 0
+
+    cursor.execute("""
+    SELECT ga.id, ga.guild_id, ga.user_id, gm.guild_id AS member_guild_id
+    FROM guild_applications ga
+    JOIN guild_members gm ON gm.user_id = ga.user_id
+    WHERE ga.status=?
+    """, (GUILD_APPLICATION_PENDING,))
+
+    rows = cursor.fetchall()
+
+    for row in rows:
+        app_id = row["id"]
+        app_guild_id = row["guild_id"]
+        member_guild_id = row["member_guild_id"]
+
+        if int(app_guild_id) == int(member_guild_id):
+            _guild_safe_set_application_status(app_id, GUILD_APPLICATION_ACCEPTED, processed_by=None)
+            fixed_same_guild += 1
+        else:
+            _guild_safe_set_application_status(app_id, GUILD_APPLICATION_CANCELLED, processed_by=None)
+            cancelled_other_guild += 1
+
+    return {
+        "fixed_same_guild": fixed_same_guild,
+        "cancelled_other_guild": cancelled_other_guild,
+    }
+
+
+# ==============================
+# ✅ GUILD PROGRESS CONTRIBUTIONS CORE V1
+# ==============================
+
+# 7.0.7
+# Guild EXP / Resource / внесок учасників.
+# На цьому етапі додаємо:
+# - рівень гільдії від загального EXP;
+# - рейтинг внеску учасників;
+# - helper-и для прогресу;
+# - add_guild_progress() лишається центральною точкою нарахування.
+
+GUILD_LEVEL_EXP_BASE = 1000
+
+
+def get_guild_exp_required_for_level(level):
+    """
+    Скільки total EXP потрібно для конкретного рівня гільдії.
+
+    Level 1: 0
+    Level 2: 1000
+    Level 3: 3000
+    Level 4: 6000
+
+    Формула накопичувальна: sum(base * n) для n=1..level-1.
+    """
+
+    try:
+        level = int(level)
+    except Exception:
+        level = 1
+
+    level = max(1, level)
+
+    if level <= 1:
+        return 0
+
+    return int(GUILD_LEVEL_EXP_BASE * ((level - 1) * level / 2))
+
+
+def calculate_guild_level_from_exp(total_exp):
+    try:
+        total_exp = int(total_exp or 0)
+    except Exception:
+        total_exp = 0
+
+    level = 1
+
+    while total_exp >= get_guild_exp_required_for_level(level + 1):
+        level += 1
+
+    return level
+
+
+def get_guild_next_level_info(guild_id):
+    guild = get_guild_by_id(guild_id)
+
+    if not guild:
+        return None
+
+    total_exp = int(guild["total_exp"] or 0)
+    level = int(guild["level"] or 1)
+    calculated_level = calculate_guild_level_from_exp(total_exp)
+
+    if calculated_level > level:
+        level = calculated_level
+
+    current_level_exp = get_guild_exp_required_for_level(level)
+    next_level_exp = get_guild_exp_required_for_level(level + 1)
+    progress_exp = max(0, total_exp - current_level_exp)
+    needed_exp = max(1, next_level_exp - current_level_exp)
+    progress_percent = min(100.0, max(0.0, progress_exp / needed_exp * 100))
+
+    return {
+        "level": level,
+        "total_exp": total_exp,
+        "current_level_exp": current_level_exp,
+        "next_level_exp": next_level_exp,
+        "progress_exp": progress_exp,
+        "needed_exp": needed_exp,
+        "progress_percent": progress_percent,
+    }
+
+
+def recalculate_guild_level(guild_id):
+    guild = get_guild_by_id(guild_id)
+
+    if not guild:
+        return None
+
+    old_level = int(guild["level"] or 1)
+    total_exp = int(guild["total_exp"] or 0)
+    new_level = calculate_guild_level_from_exp(total_exp)
+
+    if new_level != old_level:
+        cursor.execute(
+            "UPDATE guilds SET level=?, updated_at=? WHERE id=?",
+            (new_level, now_iso(), guild_id)
+        )
+        conn.commit()
+
+        if new_level > old_level:
+            try:
+                add_guild_log(
+                    guild_id=guild_id,
+                    event_type="guild_level_up",
+                    text=f"Гільдія піднялась до рівня {new_level}."
+                )
+            except Exception:
+                pass
+
+    return new_level
+
+
+try:
+    _base_add_guild_progress_before_contributions_v1 = add_guild_progress
+except Exception:
+    _base_add_guild_progress_before_contributions_v1 = None
+
+
+def add_guild_progress(guild_id, exp=0, resource=0, kills=0, contracts=0, user_id=None, reason=""):
+    """
+    FINAL OVERRIDE:
+    Додає прогрес через базову функцію 7.0.1 і після цього перераховує рівень гільдії.
+    """
+
+    if _base_add_guild_progress_before_contributions_v1 is None:
+        return {
+            "success": False,
+            "message": "❌ Базова функція add_guild_progress недоступна."
+        }
+
+    result = _base_add_guild_progress_before_contributions_v1(
+        guild_id=guild_id,
+        exp=exp,
+        resource=resource,
+        kills=kills,
+        contracts=contracts,
+        user_id=user_id,
+        reason=reason,
+    )
+
+    try:
+        result["guild_level"] = recalculate_guild_level(guild_id)
+        result["next_level_info"] = get_guild_next_level_info(guild_id)
+    except Exception:
+        pass
+
+    return result
+
+
+def add_user_guild_progress(user_id, exp=0, resource=0, kills=0, contracts=0, reason=""):
+    """
+    Додає прогрес гільдії від конкретного учасника.
+    Саме цю функцію варто використовувати для майбутньої інтеграції з контрактами/елітними мобами.
+    """
+
+    member = get_user_guild_member(user_id)
+
+    if not member:
+        return {
+            "success": False,
+            "message": "❌ Гравець не перебуває у гільдії."
+        }
+
+    return add_guild_progress(
+        guild_id=member["guild_id"],
+        exp=exp,
+        resource=resource,
+        kills=kills,
+        contracts=contracts,
+        user_id=user_id,
+        reason=reason,
+    )
+
+
+def get_guild_contribution_ranking(guild_id, scope="monthly", limit=30):
+    init_guild_system()
+    ensure_guild_monthly_season(guild_id)
+
+    try:
+        limit = int(limit)
+    except Exception:
+        limit = 30
+
+    limit = max(1, min(100, limit))
+
+    if scope == "total":
+        cursor.execute("""
+        SELECT gm.*,
+               users.character_name,
+               users.level
+        FROM guild_members gm
+        LEFT JOIN users ON users.user_id = gm.user_id
+        WHERE gm.guild_id=?
+        ORDER BY gm.contribution_score DESC,
+                 gm.contribution_exp DESC,
+                 gm.joined_at ASC
+        LIMIT ?
+        """, (guild_id, limit))
+    else:
+        cursor.execute("""
+        SELECT gm.*,
+               users.character_name,
+               users.level
+        FROM guild_members gm
+        LEFT JOIN users ON users.user_id = gm.user_id
+        WHERE gm.guild_id=?
+        ORDER BY gm.monthly_contribution_score DESC,
+                 gm.monthly_contribution_exp DESC,
+                 gm.joined_at ASC
+        LIMIT ?
+        """, (guild_id, limit))
+
+    return cursor.fetchall()
+
+
+def cleanup_recalculate_all_guild_levels():
+    init_guild_system()
+    cursor.execute("SELECT id FROM guilds")
+    rows = cursor.fetchall()
+    updated = 0
+
+    for row in rows:
+        try:
+            guild_id = row["id"]
+        except Exception:
+            guild_id = row[0]
+        old = get_guild_by_id(guild_id)["level"]
+        new = recalculate_guild_level(guild_id)
+        if new != old:
+            updated += 1
+
+    return updated
+
+
+# ==============================
+# ✅ GUILD JOURNAL CORE V1
+# ==============================
+
+# 7.0.8
+# Журнал гільдії: перегляд останніх подій.
+
+
+def get_guild_logs(guild_id, limit=20, offset=0):
+    init_guild_system()
+    ensure_guild_monthly_season(guild_id)
+
+    try:
+        limit = int(limit)
+    except Exception:
+        limit = 20
+
+    try:
+        offset = int(offset)
+    except Exception:
+        offset = 0
+
+    limit = max(1, min(100, limit))
+    offset = max(0, offset)
+
+    cursor.execute("""
+    SELECT *
+    FROM guild_logs
+    WHERE guild_id=?
+    ORDER BY id DESC
+    LIMIT ? OFFSET ?
+    """, (
+        guild_id,
+        limit,
+        offset,
+    ))
+
+    return cursor.fetchall()
+
+
+def get_guild_logs_count(guild_id):
+    init_guild_system()
+    cursor.execute("SELECT COUNT(*) AS cnt FROM guild_logs WHERE guild_id=?", (guild_id,))
+    row = cursor.fetchone()
+
+    try:
+        return int(row["cnt"] or 0)
+    except Exception:
+        return int(row[0] or 0) if row else 0
+
+
+# ==============================
+# ✅ GUILD JOURNAL CHARACTER NAMES CORE V1
+# ==============================
+
+# 7.0.8a
+# Future logs: заявка до гільдії пише імʼя персонажа, а не user_id.
+
+try:
+    _base_create_guild_application_before_journal_names_v1 = create_guild_application
+except Exception:
+    _base_create_guild_application_before_journal_names_v1 = None
+
+
+def create_guild_application(user_id, guild_id):
+    """
+    FINAL OVERRIDE:
+    Подача заявки з журналом через character_name замість user_id.
+    """
+
+    init_guild_system()
+
+    if is_user_in_guild(user_id):
+        return {
+            "success": False,
+            "message": "❌ Ти вже перебуваєш у гільдії."
+        }
+
+    guild = get_guild_by_id(guild_id)
+
+    if not guild:
+        return {
+            "success": False,
+            "message": "❌ Гільдію не знайдено."
+        }
+
+    cursor.execute("""
+    SELECT * FROM guild_applications
+    WHERE guild_id=? AND user_id=? AND status=?
+    """, (
+        guild_id,
+        user_id,
+        GUILD_APPLICATION_PENDING,
+    ))
+
+    if cursor.fetchone():
+        return {
+            "success": False,
+            "message": "ℹ️ Ти вже подав заявку в цю гільдію."
+        }
+
+    cursor.execute("""
+    INSERT INTO guild_applications (guild_id, user_id, status, created_at)
+    VALUES (?, ?, ?, ?)
+    """, (
+        guild_id,
+        user_id,
+        GUILD_APPLICATION_PENDING,
+        now_iso(),
+    ))
+
+    conn.commit()
+
+    applicant_name = get_character_name_by_user_id(user_id)
+
+    add_guild_log(
+        guild_id=guild_id,
+        event_type="application_created",
+        text=f"Нова заявка до гільдії від {applicant_name}."
+    )
+
+    return {
+        "success": True,
+        "message": "✅ Заявку до гільдії подано."
+    }
+

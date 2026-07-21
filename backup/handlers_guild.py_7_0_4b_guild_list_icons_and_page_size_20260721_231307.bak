@@ -1,0 +1,780 @@
+from telebot import types
+
+from db import (
+    init_guild_system,
+    get_user_guild,
+    get_user_guild_member,
+    get_guild_members,
+    get_guild_member_count,
+    get_guild_ranking,
+    get_guild_display_name,
+    get_guild_role_label,
+    get_current_guild_season_key,
+    create_guild,
+    get_guild_by_name_or_tag,
+    get_guild_by_id,
+    get_public_guild_list,
+    create_guild_application,
+    get_user_guild_applications,
+    has_pending_guild_application,
+)
+
+from keyboards import city_kb
+
+
+GUILD_RANKING_LIMIT = 10
+GUILD_LIST_PAGE_SIZE = 8
+
+# user_id -> {step, name, tag, icon}
+GUILD_CREATE_STATE = {}
+
+# user_id -> {page, buttons: {label: guild_id}, selected_guild_id}
+GUILD_BROWSE_STATE = {}
+
+
+# ==============================
+# REPLY KEYBOARDS
+# ==============================
+
+def guild_hall_kb(user_id):
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    if get_user_guild(user_id):
+        kb.add("ℹ️ Інформація", "👥 Учасники")
+        kb.add("📨 Заявки", "📜 Журнал")
+        kb.add("🏆 Місячний рейтинг")
+        kb.add("🏆 Рейтинг за весь час")
+        kb.add("🔙 Місто")
+    else:
+        kb.add("🏗️ Створити гільдію")
+        kb.add("📜 Переглянути гільдії")
+        kb.add("🏆 Місячний рейтинг")
+        kb.add("🏆 Рейтинг за весь час")
+        kb.add("📨 Мої заявки")
+        kb.add("🔙 Місто")
+
+    return kb
+
+
+def guild_create_cancel_kb():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("❌ Скасувати створення")
+    kb.add("🔙 Зала Гільдій")
+    return kb
+
+
+def guild_create_confirm_kb():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("✅ Створити гільдію")
+    kb.add("✏️ Почати заново")
+    kb.add("❌ Скасувати створення")
+    return kb
+
+
+def guild_list_kb(user_id, page=0):
+    rows = get_public_guild_list(limit=GUILD_LIST_PAGE_SIZE + 1, offset=page * GUILD_LIST_PAGE_SIZE)
+    shown = rows[:GUILD_LIST_PAGE_SIZE]
+
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    buttons = {}
+
+    for guild in shown:
+        member_count = guild["member_count"] if "member_count" in guild.keys() else get_guild_member_count(guild["id"])
+        label = f"🏰 [{guild['tag']}] {guild['name']} ({member_count}/{guild['member_limit']})"
+        # Telegram buttons should not be too long.
+        if len(label) > 60:
+            label = label[:57] + "..."
+        buttons[label] = guild["id"]
+        kb.add(label)
+
+    nav = []
+    if page > 0:
+        nav.append("⬅️ Попередні гільдії")
+    if len(rows) > GUILD_LIST_PAGE_SIZE:
+        nav.append("➡️ Наступні гільдії")
+    if nav:
+        kb.add(*nav)
+
+    kb.add("🔙 Зала Гільдій")
+
+    GUILD_BROWSE_STATE[user_id] = {
+        "page": page,
+        "buttons": buttons,
+        "selected_guild_id": None,
+    }
+
+    return kb
+
+
+def guild_detail_kb(user_id, guild_id):
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+
+    if get_user_guild(user_id):
+        kb.add("📜 Переглянути гільдії")
+    else:
+        if has_pending_guild_application(user_id, guild_id):
+            kb.add("ℹ️ Заявку вже подано")
+        else:
+            kb.add("📨 Подати заявку")
+        kb.add("📜 Переглянути гільдії")
+
+    kb.add("🔙 Зала Гільдій")
+    return kb
+
+
+# ==============================
+# VALIDATION / STATE HELPERS
+# ==============================
+
+def normalize_guild_tag_input(value):
+    return (value or "").strip().upper()
+
+
+def reset_guild_browse_state(user_id):
+    GUILD_BROWSE_STATE.pop(user_id, None)
+
+
+def get_guild_browse_state(user_id):
+    return GUILD_BROWSE_STATE.get(user_id)
+
+
+def set_selected_guild(user_id, guild_id):
+    state = GUILD_BROWSE_STATE.setdefault(user_id, {"page": 0, "buttons": {}, "selected_guild_id": None})
+    state["selected_guild_id"] = guild_id
+
+
+def validate_guild_name_for_ui(name):
+    name = (name or "").strip()
+
+    if len(name) < 3:
+        return False, "❌ Назва гільдії має містити мінімум 3 символи."
+    if len(name) > 32:
+        return False, "❌ Назва гільдії має бути не довша за 32 символи."
+    if get_guild_by_name_or_tag(name):
+        return False, "❌ Гільдія з такою назвою або абревіатурою вже існує."
+
+    return True, name
+
+
+def validate_guild_tag_for_ui(tag):
+    tag = normalize_guild_tag_input(tag)
+
+    if len(tag) < 2:
+        return False, "❌ Абревіатура гільдії має містити мінімум 2 символи."
+    if len(tag) > 5:
+        return False, "❌ Абревіатура гільдії має бути не довша за 5 символів."
+
+    allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЬЮЯ"
+    if any(ch not in allowed for ch in tag):
+        return False, "❌ Абревіатура може містити тільки літери та цифри."
+    if get_guild_by_name_or_tag(tag):
+        return False, "❌ Гільдія з такою назвою або абревіатурою вже існує."
+
+    return True, tag
+
+
+def validate_guild_icon_for_ui(icon):
+    icon = (icon or "").strip()
+
+    if not icon:
+        return True, "🏰"
+    if len(icon) > 4:
+        return False, "❌ Іконка має бути короткою. Найкраще — один emoji."
+
+    return True, icon
+
+
+def reset_guild_create_state(user_id):
+    GUILD_CREATE_STATE.pop(user_id, None)
+
+
+def start_guild_create_state(user_id):
+    GUILD_CREATE_STATE[user_id] = {
+        "step": "name",
+        "name": "",
+        "tag": "",
+        "icon": "🏰",
+    }
+
+
+def get_guild_create_state(user_id):
+    return GUILD_CREATE_STATE.get(user_id)
+
+
+def format_ua_date(value):
+    value = str(value or "").strip()
+    if not value:
+        return "невідомо"
+    try:
+        date_part = value.split("T", 1)[0].split(" ", 1)[0]
+        year, month, day = date_part.split("-", 2)
+        return f"{day}.{month}.{year}"
+    except Exception:
+        return value
+
+
+# ==============================
+# TEXT BUILDERS
+# ==============================
+
+def build_guild_hall_no_guild_text(user_id):
+    season_key = get_current_guild_season_key()
+
+    return (
+        "🏰 Зала Гільдій\n\n"
+        "У просторій залі з кам’яними прапорами герої об’єднуються у гільдії, "
+        "подають заявки та змагаються за місце у рейтингу.\n\n"
+        "Ти поки не перебуваєш у гільдії.\n\n"
+        "Доступні дії:\n"
+        "• 🏗️ Створити гільдію\n"
+        "• 📜 Переглянути гільдії\n"
+        "• 🏆 Місячний рейтинг\n"
+        "• 🏆 Рейтинг за весь час\n"
+        "• 📨 Мої заявки\n\n"
+        f"Поточний рейтинговий сезон: {season_key}"
+    )
+
+
+def build_guild_hall_member_text(user_id):
+    guild = get_user_guild(user_id)
+    member = get_user_guild_member(user_id)
+
+    if not guild or not member:
+        return build_guild_hall_no_guild_text(user_id)
+
+    season_key = get_current_guild_season_key()
+    guild_name = get_guild_display_name(guild)
+    role_label = get_guild_role_label(member["role"])
+    member_count = get_guild_member_count(guild["id"])
+
+    return (
+        f"🏰 Гільдія\n\n"
+        f"{guild_name}\n"
+        f"Твоя роль: {role_label}\n\n"
+        f"Рівень гільдії: {guild['level']}\n"
+        f"Учасники: {member_count}/{guild['member_limit']}\n\n"
+        f"Місячний рейтинг ({season_key}):\n"
+        f"• EXP: {guild['monthly_exp']}\n"
+        f"• Ресурс: {guild['monthly_resource']}\n"
+        f"• Вбивства: {guild['monthly_kills']}\n"
+        f"• Контракти: {guild['monthly_contracts']}\n"
+        f"• Score: {guild['monthly_score']}\n\n"
+        f"За весь час:\n"
+        f"• EXP: {guild['total_exp']}\n"
+        f"• Ресурс: {guild['total_resource']}\n"
+        f"• Score: {guild['total_score']}\n\n"
+        "Доступні дії:\n"
+        "• ℹ️ Інформація\n"
+        "• 👥 Учасники\n"
+        "• 📨 Заявки\n"
+        "• 📜 Журнал\n"
+        "• 🏆 Місячний рейтинг\n"
+        "• 🏆 Рейтинг за весь час"
+    )
+
+
+def build_guild_hall_text(user_id):
+    init_guild_system()
+
+    if get_user_guild(user_id):
+        return build_guild_hall_member_text(user_id)
+    return build_guild_hall_no_guild_text(user_id)
+
+
+def build_guild_info_text(user_id):
+    guild = get_user_guild(user_id)
+
+    if not guild:
+        return "❌ Ти не перебуваєш у гільдії."
+
+    guild_name = get_guild_display_name(guild)
+    member_count = get_guild_member_count(guild["id"])
+    season_key = get_current_guild_season_key()
+
+    # Try to get leader name.
+    leader_name = f"user_id={guild['leader_user_id']}"
+    try:
+        from db import cursor
+        cursor.execute("SELECT character_name FROM users WHERE user_id=?", (guild["leader_user_id"],))
+        row = cursor.fetchone()
+        if row:
+            try:
+                leader_name = row["character_name"] or leader_name
+            except Exception:
+                leader_name = row[0] or leader_name
+    except Exception:
+        pass
+
+    return (
+        f"ℹ️ Інформація про гільдію\n\n"
+        f"{guild_name}\n"
+        f"Голова: {leader_name}\n"
+        f"Рівень: {guild['level']}\n"
+        f"Учасники: {member_count}/{guild['member_limit']}\n"
+        f"Створено: {format_ua_date(guild['created_at'])}\n\n"
+        f"Поточний сезон: {season_key}\n"
+        f"Місячний score: {guild['monthly_score']}\n"
+        f"All-time score: {guild['total_score']}"
+    )
+
+
+def build_guild_members_text(user_id):
+    guild = get_user_guild(user_id)
+
+    if not guild:
+        return "❌ Ти не перебуваєш у гільдії."
+
+    members = get_guild_members(guild["id"])
+    guild_name = get_guild_display_name(guild)
+
+    if not members:
+        return f"👥 Учасники\n\n{guild_name}\n\nСписок учасників порожній."
+
+    text = f"👥 Учасники\n\n{guild_name}\n\n"
+
+    for index, member in enumerate(members, start=1):
+        character_name = member["character_name"] or f"user_id={member['user_id']}"
+        level = member["level"] or "?"
+        role_label = get_guild_role_label(member["role"])
+        score = member["contribution_score"] or 0
+        monthly_score = member["monthly_contribution_score"] or 0
+        text += (
+            f"{index}. {role_label} {character_name}\n"
+            f"   Рівень: {level} | Score: {score} | Місяць: {monthly_score}\n"
+        )
+
+    return text.strip()
+
+
+def build_guild_ranking_text(scope="monthly"):
+    init_guild_system()
+
+    if scope == "total":
+        title = "🏆 Рейтинг гільдій за весь час"
+    else:
+        title = f"🏆 Місячний рейтинг гільдій ({get_current_guild_season_key()})"
+
+    rows = get_guild_ranking(scope=scope, limit=GUILD_RANKING_LIMIT)
+
+    if not rows:
+        return f"{title}\n\nПоки немає жодної гільдії."
+
+    text = f"{title}\n\n"
+    for index, guild in enumerate(rows, start=1):
+        name = get_guild_display_name(guild)
+        if scope == "total":
+            score = guild["total_score"] or 0
+            exp = guild["total_exp"] or 0
+            resource = guild["total_resource"] or 0
+        else:
+            score = guild["monthly_score"] or 0
+            exp = guild["monthly_exp"] or 0
+            resource = guild["monthly_resource"] or 0
+        text += (
+            f"{index}. {name}\n"
+            f"   Score: {score} | EXP: {exp} | Ресурс: {resource}\n"
+        )
+
+    return text.strip()
+
+
+def build_guild_list_text(user_id, page=0):
+    rows = get_public_guild_list(limit=GUILD_LIST_PAGE_SIZE + 1, offset=page * GUILD_LIST_PAGE_SIZE)
+    shown = rows[:GUILD_LIST_PAGE_SIZE]
+
+    if not shown:
+        return (
+            "📜 Список гільдій\n\n"
+            "Поки немає жодної гільдії.\n\n"
+            "Ти можеш створити першу гільдію у Залі Гільдій."
+        )
+
+    text = f"📜 Список гільдій\n\nСторінка: {page + 1}\n\n"
+
+    for index, guild in enumerate(shown, start=1 + page * GUILD_LIST_PAGE_SIZE):
+        member_count = guild["member_count"] if "member_count" in guild.keys() else get_guild_member_count(guild["id"])
+        text += (
+            f"{index}. {get_guild_display_name(guild)}\n"
+            f"   Рівень: {guild['level']} | Учасники: {member_count}/{guild['member_limit']}\n"
+            f"   Місяць score: {guild['monthly_score']} | All-time: {guild['total_score']}\n"
+        )
+
+    text += "\nОбери гільдію кнопкою нижче, щоб переглянути деталі або подати заявку."
+    return text.strip()
+
+
+def build_guild_detail_text(user_id, guild_id):
+    guild = get_guild_by_id(guild_id)
+    if not guild:
+        return "❌ Гільдію не знайдено."
+
+    member_count = get_guild_member_count(guild_id)
+    pending_text = ""
+
+    if not get_user_guild(user_id) and has_pending_guild_application(user_id, guild_id):
+        pending_text = "\n\nℹ️ Ти вже подав заявку в цю гільдію."
+
+    return (
+        f"🏰 Гільдія\n\n"
+        f"{get_guild_display_name(guild)}\n"
+        f"Рівень: {guild['level']}\n"
+        f"Учасники: {member_count}/{guild['member_limit']}\n"
+        f"Створено: {format_ua_date(guild['created_at'])}\n\n"
+        f"Поточний сезон:\n"
+        f"• EXP: {guild['monthly_exp']}\n"
+        f"• Ресурс: {guild['monthly_resource']}\n"
+        f"• Score: {guild['monthly_score']}\n\n"
+        f"За весь час:\n"
+        f"• EXP: {guild['total_exp']}\n"
+        f"• Ресурс: {guild['total_resource']}\n"
+        f"• Score: {guild['total_score']}"
+        f"{pending_text}"
+    )
+
+
+def build_my_applications_text(user_id):
+    apps = get_user_guild_applications(user_id)
+
+    if not apps:
+        return "📨 Мої заявки\n\nУ тебе немає заявок до гільдій."
+
+    status_labels = {
+        "pending": "⏳ очікує",
+        "accepted": "✅ прийнята",
+        "rejected": "❌ відхилена",
+        "cancelled": "🚫 скасована",
+    }
+
+    text = "📨 Мої заявки\n\n"
+    for index, app in enumerate(apps, start=1):
+        icon = app["guild_icon"] or "🏰"
+        tag = app["guild_tag"] or "???"
+        name = app["guild_name"] or "Гільдія"
+        status = status_labels.get(app["status"], app["status"])
+        text += f"{index}. {icon} [{tag}] {name}\n   Статус: {status}\n"
+
+    return text.strip()
+
+
+def build_guild_placeholder_text(title, next_stage):
+    return (
+        f"{title}\n\n"
+        f"Цей розділ буде реалізовано на етапі {next_stage}.\n\n"
+        "Ядро гільдій уже створене: таблиці, місячний рейтинг, all-time статистика та історія сезонів працюють."
+    )
+
+
+def build_guild_create_name_prompt():
+    return (
+        "🏗️ Створення гільдії\n\n"
+        "Крок 1/4 — назва гільдії.\n\n"
+        "Введи назву гільдії.\n"
+        "Вимоги:\n"
+        "• від 3 до 32 символів;\n"
+        "• назва має бути унікальною.\n\n"
+        "Створення гільдії зараз безкоштовне."
+    )
+
+
+def build_guild_create_tag_prompt(name):
+    return (
+        "🏗️ Створення гільдії\n\n"
+        "Крок 2/4 — абревіатура.\n\n"
+        f"Назва: {name}\n\n"
+        "Введи короткий TAG гільдії.\n"
+        "Вимоги:\n"
+        "• від 2 до 5 символів;\n"
+        "• тільки літери та цифри;\n"
+        "• буде показуватись у рейтингах, наприклад [ROM]."
+    )
+
+
+def build_guild_create_icon_prompt(name, tag):
+    return (
+        "🏗️ Створення гільдії\n\n"
+        "Крок 3/4 — іконка.\n\n"
+        f"Назва: {name}\n"
+        f"TAG: [{tag}]\n\n"
+        "Надішли один emoji для іконки гільдії.\n"
+        "Наприклад: 🏰, 🐺, 🔥, 🍒\n\n"
+        "Якщо хочеш стандартну іконку — надішли 🏰."
+    )
+
+
+def build_guild_create_confirm_text(state):
+    name = state.get("name", "")
+    tag = state.get("tag", "")
+    icon = state.get("icon", "🏰")
+    return (
+        "🏗️ Створення гільдії\n\n"
+        "Крок 4/4 — підтвердження.\n\n"
+        f"Майбутня гільдія:\n"
+        f"{icon} [{tag}] {name}\n\n"
+        "Вартість створення: 0 золота.\n\n"
+        "Підтвердити створення?"
+    )
+
+
+# ==============================
+# SEND HELPERS
+# ==============================
+
+def open_guild_hall(bot, chat_id, user_id):
+    reset_guild_browse_state(user_id)
+    bot.send_message(chat_id, build_guild_hall_text(user_id), reply_markup=guild_hall_kb(user_id))
+
+
+def send_guild_section(bot, message, text):
+    bot.send_message(message.chat.id, text, reply_markup=guild_hall_kb(message.from_user.id))
+
+
+def send_city(bot, message):
+    from handlers.city import build_city_text
+    bot.send_message(message.chat.id, build_city_text(message.from_user.id), reply_markup=city_kb())
+
+
+def send_guild_create_prompt(bot, message, text):
+    bot.send_message(message.chat.id, text, reply_markup=guild_create_cancel_kb())
+
+
+def show_guild_list(bot, message, page=0):
+    text = build_guild_list_text(message.from_user.id, page)
+    kb = guild_list_kb(message.from_user.id, page)
+    bot.send_message(message.chat.id, text, reply_markup=kb)
+
+
+def show_guild_detail(bot, message, guild_id):
+    set_selected_guild(message.from_user.id, guild_id)
+    bot.send_message(
+        message.chat.id,
+        build_guild_detail_text(message.from_user.id, guild_id),
+        reply_markup=guild_detail_kb(message.from_user.id, guild_id)
+    )
+
+
+# ==============================
+# CREATE FLOW
+# ==============================
+
+def start_guild_creation(bot, message):
+    user_id = message.from_user.id
+    init_guild_system()
+
+    if get_user_guild(user_id):
+        bot.send_message(message.chat.id, "❌ Ти вже перебуваєш у гільдії.", reply_markup=guild_hall_kb(user_id))
+        return
+
+    start_guild_create_state(user_id)
+    send_guild_create_prompt(bot, message, build_guild_create_name_prompt())
+
+
+def handle_guild_creation_message(bot, message):
+    user_id = message.from_user.id
+    text = (message.text or "").strip()
+    state = get_guild_create_state(user_id)
+
+    if not state:
+        return False
+
+    if text in ["❌ Скасувати створення", "🔙 Зала Гільдій", "🔙 Місто"]:
+        reset_guild_create_state(user_id)
+        if text == "🔙 Місто":
+            send_city(bot, message)
+        else:
+            open_guild_hall(bot, message.chat.id, user_id)
+        return True
+
+    if text == "✏️ Почати заново":
+        start_guild_create_state(user_id)
+        send_guild_create_prompt(bot, message, build_guild_create_name_prompt())
+        return True
+
+    step = state.get("step")
+
+    if step == "name":
+        ok, result = validate_guild_name_for_ui(text)
+        if not ok:
+            send_guild_create_prompt(bot, message, result + "\n\nСпробуй ввести іншу назву.")
+            return True
+        state["name"] = result
+        state["step"] = "tag"
+        send_guild_create_prompt(bot, message, build_guild_create_tag_prompt(state["name"]))
+        return True
+
+    if step == "tag":
+        ok, result = validate_guild_tag_for_ui(text)
+        if not ok:
+            send_guild_create_prompt(bot, message, result + "\n\nСпробуй ввести інший TAG.")
+            return True
+        state["tag"] = result
+        state["step"] = "icon"
+        send_guild_create_prompt(bot, message, build_guild_create_icon_prompt(state["name"], state["tag"]))
+        return True
+
+    if step == "icon":
+        ok, result = validate_guild_icon_for_ui(text)
+        if not ok:
+            send_guild_create_prompt(bot, message, result + "\n\nСпробуй надіслати один emoji.")
+            return True
+        state["icon"] = result
+        state["step"] = "confirm"
+        bot.send_message(message.chat.id, build_guild_create_confirm_text(state), reply_markup=guild_create_confirm_kb())
+        return True
+
+    if step == "confirm":
+        if text != "✅ Створити гільдію":
+            bot.send_message(message.chat.id, "Натисни ✅ Створити гільдію або скасуй створення.", reply_markup=guild_create_confirm_kb())
+            return True
+
+        result = create_guild(user_id=user_id, name=state.get("name", ""), tag=state.get("tag", ""), icon=state.get("icon", "🏰"))
+        reset_guild_create_state(user_id)
+
+        if result.get("success"):
+            bot.send_message(message.chat.id, result.get("message", "✅ Гільдію створено."), reply_markup=guild_hall_kb(user_id))
+            open_guild_hall(bot, message.chat.id, user_id)
+        else:
+            bot.send_message(message.chat.id, result.get("message", "❌ Не вдалося створити гільдію."), reply_markup=guild_hall_kb(user_id))
+        return True
+
+    return False
+
+
+# ==============================
+# LIST / APPLICATION FLOW
+# ==============================
+
+def handle_guild_list_message(bot, message):
+    user_id = message.from_user.id
+    text = (message.text or "").strip()
+    state = get_guild_browse_state(user_id)
+
+    if not state:
+        return False
+
+    if text == "⬅️ Попередні гільдії":
+        show_guild_list(bot, message, max(0, state.get("page", 0) - 1))
+        return True
+
+    if text == "➡️ Наступні гільдії":
+        show_guild_list(bot, message, state.get("page", 0) + 1)
+        return True
+
+    if text == "📜 Переглянути гільдії":
+        show_guild_list(bot, message, state.get("page", 0))
+        return True
+
+    if text == "📨 Подати заявку":
+        guild_id = state.get("selected_guild_id")
+        if not guild_id:
+            bot.send_message(message.chat.id, "❌ Спочатку обери гільдію зі списку.", reply_markup=guild_list_kb(user_id, state.get("page", 0)))
+            return True
+
+        result = create_guild_application(user_id=user_id, guild_id=guild_id)
+        bot.send_message(message.chat.id, result.get("message", ""), reply_markup=guild_detail_kb(user_id, guild_id))
+        show_guild_detail(bot, message, guild_id)
+        return True
+
+    buttons = state.get("buttons", {})
+    if text in buttons:
+        show_guild_detail(bot, message, buttons[text])
+        return True
+
+    return False
+
+
+# ==============================
+# HANDLERS
+# ==============================
+
+def register_guild_handlers(bot):
+    init_guild_system()
+
+    @bot.message_handler(func=lambda message: get_guild_create_state(message.from_user.id) is not None)
+    def guild_creation_state_message(message):
+        handle_guild_creation_message(bot, message)
+
+    @bot.message_handler(func=lambda message: get_guild_browse_state(message.from_user.id) is not None)
+    def guild_browse_state_message(message):
+        if not handle_guild_list_message(bot, message):
+            # If browse state cannot handle it, let user return by common buttons.
+            if message.text == "🔙 Зала Гільдій":
+                reset_guild_browse_state(message.from_user.id)
+                open_guild_hall(bot, message.chat.id, message.from_user.id)
+
+    @bot.message_handler(func=lambda message: message.text == "🏰 Зала Гільдій")
+    def guild_hall_message(message):
+        open_guild_hall(bot=bot, chat_id=message.chat.id, user_id=message.from_user.id)
+
+    @bot.message_handler(func=lambda message: message.text == "🔙 Зала Гільдій")
+    def guild_back_to_hall_message(message):
+        reset_guild_create_state(message.from_user.id)
+        reset_guild_browse_state(message.from_user.id)
+        open_guild_hall(bot=bot, chat_id=message.chat.id, user_id=message.from_user.id)
+
+    @bot.message_handler(func=lambda message: message.text == "🔙 Місто")
+    def guild_back_to_city_message(message):
+        reset_guild_create_state(message.from_user.id)
+        reset_guild_browse_state(message.from_user.id)
+        send_city(bot, message)
+
+    @bot.message_handler(func=lambda message: message.text == "ℹ️ Інформація")
+    def guild_info_message(message):
+        send_guild_section(bot, message, build_guild_info_text(message.from_user.id))
+
+    @bot.message_handler(func=lambda message: message.text == "👥 Учасники")
+    def guild_members_message(message):
+        send_guild_section(bot, message, build_guild_members_text(message.from_user.id))
+
+    @bot.message_handler(func=lambda message: message.text == "🏆 Місячний рейтинг")
+    def guild_monthly_ranking_message(message):
+        send_guild_section(bot, message, build_guild_ranking_text("monthly"))
+
+    @bot.message_handler(func=lambda message: message.text == "🏆 Рейтинг за весь час")
+    def guild_total_ranking_message(message):
+        send_guild_section(bot, message, build_guild_ranking_text("total"))
+
+    @bot.message_handler(func=lambda message: message.text == "🏗️ Створити гільдію")
+    def guild_create_start_message(message):
+        start_guild_creation(bot, message)
+
+    @bot.message_handler(func=lambda message: message.text == "📜 Переглянути гільдії")
+    def guild_list_message(message):
+        show_guild_list(bot, message, 0)
+
+    @bot.message_handler(func=lambda message: message.text == "📨 Мої заявки")
+    def guild_my_applications_message(message):
+        send_guild_section(bot, message, build_my_applications_text(message.from_user.id))
+
+    @bot.message_handler(func=lambda message: message.text == "📨 Заявки")
+    def guild_applications_message(message):
+        send_guild_section(bot, message, build_guild_placeholder_text("📨 Заявки до гільдії", "7.0.5"))
+
+    @bot.message_handler(func=lambda message: message.text == "📜 Журнал")
+    def guild_logs_message(message):
+        send_guild_section(bot, message, build_guild_placeholder_text("📜 Журнал гільдії", "7.0.8"))
+
+
+# ==============================
+# ✅ UNIQUE GUILD ICON UI VALIDATION V1
+# ==============================
+
+# 7.0.4a
+# Override UI icon validation: іконка гільдії має бути унікальна.
+
+
+def validate_guild_icon_for_ui(icon):
+    icon = (icon or "").strip() or "🏰"
+
+    # Telegram emoji may be several codepoints, so only prevent very long text.
+    if len(icon) > 4:
+        return False, "❌ Іконка має бути короткою. Найкраще — один emoji."
+
+    try:
+        from db import is_guild_icon_taken
+        if is_guild_icon_taken(icon):
+            return False, "❌ Така іконка вже використовується іншою гільдією. Обери іншу іконку."
+    except Exception:
+        pass
+
+    return True, icon
+

@@ -11850,3 +11850,344 @@ def get_user_guild_profile_line(user_id):
 
     return f"🏰 Гільдія: {icon} [{tag}]\n"
 
+
+# ==============================
+# ✅ GUILD LIST APPLICATIONS DB WRAPPERS V1
+# ==============================
+
+# 7.0.4 wrappers для списку гільдій і заявок.
+
+
+def get_public_guild_list(limit=50, offset=0):
+    from systems.guild_system import get_public_guild_list as _get_public_guild_list
+    return _get_public_guild_list(limit=limit, offset=offset)
+
+
+def get_user_guild_applications(user_id, status=None):
+    from systems.guild_system import get_user_guild_applications as _get_user_guild_applications
+    return _get_user_guild_applications(user_id=user_id, status=status)
+
+
+def has_pending_guild_application(user_id, guild_id):
+    from systems.guild_system import has_pending_guild_application as _has_pending_guild_application
+    return _has_pending_guild_application(user_id=user_id, guild_id=guild_id)
+
+
+def cancel_guild_application(user_id, application_id):
+    from systems.guild_system import cancel_guild_application as _cancel_guild_application
+    return _cancel_guild_application(user_id=user_id, application_id=application_id)
+
+
+# ==============================
+# ✅ UNIQUE GUILD ICON DB WRAPPERS V1
+# ==============================
+
+# 7.0.4a wrappers для унікальних іконок гільдій.
+
+
+def get_guild_by_icon(icon):
+    from systems.guild_system import get_guild_by_icon as _get_guild_by_icon
+    return _get_guild_by_icon(icon)
+
+
+def is_guild_icon_taken(icon, exclude_guild_id=None):
+    from systems.guild_system import is_guild_icon_taken as _is_guild_icon_taken
+    return _is_guild_icon_taken(icon=icon, exclude_guild_id=exclude_guild_id)
+
+
+def make_existing_guild_icons_unique():
+    from systems.guild_system import make_existing_guild_icons_unique as _make_existing_guild_icons_unique
+    return _make_existing_guild_icons_unique()
+
+
+def ensure_unique_guild_icon_index():
+    from systems.guild_system import ensure_unique_guild_icon_index as _ensure_unique_guild_icon_index
+    return _ensure_unique_guild_icon_index()
+
+
+# ==============================
+# ✅ GUILD APPLICATION REVIEW DB WRAPPERS V1
+# ==============================
+
+# 7.0.5 wrappers для обробки заявок.
+
+
+def get_guild_application_by_id(application_id):
+    from systems.guild_system import get_guild_application_by_id as _get_guild_application_by_id
+    return _get_guild_application_by_id(application_id)
+
+
+def accept_guild_application(actor_user_id, application_id):
+    from systems.guild_system import accept_guild_application as _accept_guild_application
+    return _accept_guild_application(actor_user_id=actor_user_id, application_id=application_id)
+
+
+def reject_guild_application(actor_user_id, application_id):
+    from systems.guild_system import reject_guild_application as _reject_guild_application
+    return _reject_guild_application(actor_user_id=actor_user_id, application_id=application_id)
+
+
+# ==============================
+# ✅ GUILD MEMBERS ROLES DB WRAPPERS V1
+# ==============================
+
+# 7.0.6 wrappers для керування учасниками / ролями.
+
+
+def get_guild_member(guild_id, user_id):
+    from systems.guild_system import get_guild_member as _get_guild_member
+    return _get_guild_member(guild_id=guild_id, user_id=user_id)
+
+
+def get_character_name_by_user_id(user_id):
+    from systems.guild_system import get_character_name_by_user_id as _get_character_name_by_user_id
+    return _get_character_name_by_user_id(user_id)
+
+
+def is_guild_leader(user_id, guild_id):
+    from systems.guild_system import is_guild_leader as _is_guild_leader
+    return _is_guild_leader(user_id=user_id, guild_id=guild_id)
+
+
+def is_guild_officer(user_id, guild_id):
+    from systems.guild_system import is_guild_officer as _is_guild_officer
+    return _is_guild_officer(user_id=user_id, guild_id=guild_id)
+
+
+def promote_guild_member_to_officer(actor_user_id, target_user_id):
+    from systems.guild_system import promote_guild_member_to_officer as _promote_guild_member_to_officer
+    return _promote_guild_member_to_officer(actor_user_id=actor_user_id, target_user_id=target_user_id)
+
+
+def demote_guild_officer(actor_user_id, target_user_id):
+    from systems.guild_system import demote_guild_officer as _demote_guild_officer
+    return _demote_guild_officer(actor_user_id=actor_user_id, target_user_id=target_user_id)
+
+
+def kick_guild_member(actor_user_id, target_user_id):
+    from systems.guild_system import kick_guild_member as _kick_guild_member
+    return _kick_guild_member(actor_user_id=actor_user_id, target_user_id=target_user_id)
+
+
+# ==============================
+# ✅ GUILD SINGLE OFFICER DB WRAPPERS V1
+# ==============================
+
+# 7.0.6a wrappers для правила одного заступника.
+
+
+def get_guild_officer_count(guild_id):
+    from systems.guild_system import get_guild_officer_count as _get_guild_officer_count
+    return _get_guild_officer_count(guild_id)
+
+
+def get_guild_officer_member(guild_id):
+    from systems.guild_system import get_guild_officer_member as _get_guild_officer_member
+    return _get_guild_officer_member(guild_id)
+
+
+# ==============================
+# ✅ GUILD ACCEPT APPLICATION IDEMPOTENT FIX DB WRAPPER V1
+# ==============================
+
+# 7.0.6b wrapper-и для безпечного прийняття заявок.
+
+
+def cleanup_stale_guild_applications():
+    from systems.guild_system import cleanup_stale_guild_applications as _cleanup_stale_guild_applications
+    return _cleanup_stale_guild_applications()
+
+
+# ==============================
+# ✅ GUILD PROGRESS CONTRIBUTIONS DB WRAPPERS V1
+# ==============================
+
+# 7.0.7 wrappers для Guild EXP / Resource / внеску учасників.
+
+
+def get_guild_exp_required_for_level(level):
+    from systems.guild_system import get_guild_exp_required_for_level as _get_guild_exp_required_for_level
+    return _get_guild_exp_required_for_level(level)
+
+
+def calculate_guild_level_from_exp(total_exp):
+    from systems.guild_system import calculate_guild_level_from_exp as _calculate_guild_level_from_exp
+    return _calculate_guild_level_from_exp(total_exp)
+
+
+def get_guild_next_level_info(guild_id):
+    from systems.guild_system import get_guild_next_level_info as _get_guild_next_level_info
+    return _get_guild_next_level_info(guild_id)
+
+
+def recalculate_guild_level(guild_id):
+    from systems.guild_system import recalculate_guild_level as _recalculate_guild_level
+    return _recalculate_guild_level(guild_id)
+
+
+def add_user_guild_progress(user_id, exp=0, resource=0, kills=0, contracts=0, reason=""):
+    from systems.guild_system import add_user_guild_progress as _add_user_guild_progress
+    return _add_user_guild_progress(
+        user_id=user_id,
+        exp=exp,
+        resource=resource,
+        kills=kills,
+        contracts=contracts,
+        reason=reason,
+    )
+
+
+def get_guild_contribution_ranking(guild_id, scope="monthly", limit=30):
+    from systems.guild_system import get_guild_contribution_ranking as _get_guild_contribution_ranking
+    return _get_guild_contribution_ranking(guild_id=guild_id, scope=scope, limit=limit)
+
+
+def cleanup_recalculate_all_guild_levels():
+    from systems.guild_system import cleanup_recalculate_all_guild_levels as _cleanup_recalculate_all_guild_levels
+    return _cleanup_recalculate_all_guild_levels()
+
+
+# ==============================
+# ✅ GUILD JOURNAL DB WRAPPERS V1
+# ==============================
+
+# 7.0.8 wrappers для журналу гільдії.
+
+
+def get_guild_logs(guild_id, limit=20, offset=0):
+    from systems.guild_system import get_guild_logs as _get_guild_logs
+    return _get_guild_logs(guild_id=guild_id, limit=limit, offset=offset)
+
+
+def get_guild_logs_count(guild_id):
+    from systems.guild_system import get_guild_logs_count as _get_guild_logs_count
+    return _get_guild_logs_count(guild_id=guild_id)
+
+
+# ==============================
+# ✅ GUILD ACTIVITY REWARDS DB WRAPPERS V1
+# ==============================
+
+# 7.0.9 wrappers для нарахування Guild EXP / Resource за активність.
+
+
+def award_guild_elite_kill(user_id, mob=None):
+    from systems.guild_system import award_guild_elite_kill as _award_guild_elite_kill
+    return _award_guild_elite_kill(user_id=user_id, mob=mob)
+
+
+def award_guild_contract_completion(user_id, contract=None):
+    from systems.guild_system import award_guild_contract_completion as _award_guild_contract_completion
+    return _award_guild_contract_completion(user_id=user_id, contract=contract)
+
+
+def get_guild_activity_reward_text(result):
+    from systems.guild_system import get_guild_activity_reward_text as _get_guild_activity_reward_text
+    return _get_guild_activity_reward_text(result)
+
+
+# ==============================
+# ✅ GUILD CONTRACT REWARD CLAIM HOOK V1
+# ==============================
+
+# 7.0.9a
+# Точний hook для поточної системи контрактів у db.py.
+# Контракт здається через claim_contract_reward(user_id), тому Guild EXP/Resource
+# треба нараховувати саме після успішної здачі контракту.
+#
+# Нагорода гільдії:
+# - +50 Guild EXP
+# - +3 Guild Resource
+# - +1 guild contract
+
+try:
+    _base_claim_contract_reward_before_guild_reward_v1 = claim_contract_reward
+except Exception:
+    _base_claim_contract_reward_before_guild_reward_v1 = None
+
+
+def _guild_contract_reward_result_success_v1(result):
+    if not result:
+        return False
+
+    if isinstance(result, dict):
+        if result.get("success") is False:
+            return False
+
+        message = str(result.get("message", ""))
+
+        if "🎁 Контракт здано" in message:
+            return True
+
+        if "Контракт здано" in message:
+            return True
+
+        return False
+
+    return False
+
+
+def _guild_contract_reward_append_message_v1(result, guild_result):
+    try:
+        guild_text = get_guild_activity_reward_text(guild_result)
+    except Exception:
+        guild_text = None
+
+    if not guild_text:
+        return result
+
+    if isinstance(result, dict):
+        message = str(result.get("message", ""))
+        if guild_text not in message:
+            result = dict(result)
+            result["message"] = message.rstrip() + "\n" + guild_text
+        return result
+
+    return result
+
+
+def claim_contract_reward(user_id):
+    """
+    FINAL OVERRIDE:
+    Здача контракту + Guild reward.
+    """
+
+    if _base_claim_contract_reward_before_guild_reward_v1 is None:
+        return {
+            "success": False,
+            "message": "❌ Функція здачі контракту недоступна."
+        }
+
+    # Зберігаємо active_contract ДО базової здачі, бо базова функція після нагороди
+    # видаляє контракт із user_active_contracts.
+    try:
+        active_contract_before_claim = get_active_contract(user_id)
+    except Exception:
+        active_contract_before_claim = None
+
+    result = _base_claim_contract_reward_before_guild_reward_v1(user_id)
+
+    if not _guild_contract_reward_result_success_v1(result):
+        return result
+
+    # Захист від випадкового нарахування, якщо до здачі контракту не було або він не completed.
+    if not active_contract_before_claim:
+        return result
+
+    try:
+        if not active_contract_before_claim.get("completed"):
+            return result
+        if active_contract_before_claim.get("reward_claimed"):
+            return result
+    except Exception:
+        return result
+
+    try:
+        contract_name = active_contract_before_claim.get("target_mob_name") or "контракт"
+        guild_result = award_guild_contract_completion(user_id, contract=contract_name)
+        result = _guild_contract_reward_append_message_v1(result, guild_result)
+    except Exception as error:
+        print(f"⚠️ Guild contract reward hook failed: {error}")
+
+    return result
+
