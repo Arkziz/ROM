@@ -2360,3 +2360,134 @@ def award_guild_contract_completion(user_id, contract=None):
 def get_guild_activity_reward_text(result):
     return _guild_activity_result_text(result)
 
+
+# ==============================
+# ✅ GUILD DIAGNOSTICS CORE V1
+# ==============================
+
+# 7.0.10
+# Stabilization / cleanup / diagnostics helpers.
+
+
+def get_guild_pending_applications_count(guild_id):
+    init_guild_system()
+    cursor.execute(
+        "SELECT COUNT(*) AS cnt FROM guild_applications WHERE guild_id=? AND status=?",
+        (guild_id, GUILD_APPLICATION_PENDING)
+    )
+    row = cursor.fetchone()
+    try:
+        return int(row["cnt"] or 0)
+    except Exception:
+        return int(row[0] or 0) if row else 0
+
+
+def get_user_pending_applications_count(user_id):
+    init_guild_system()
+    cursor.execute(
+        "SELECT COUNT(*) AS cnt FROM guild_applications WHERE user_id=? AND status=?",
+        (user_id, GUILD_APPLICATION_PENDING)
+    )
+    row = cursor.fetchone()
+    try:
+        return int(row["cnt"] or 0)
+    except Exception:
+        return int(row[0] or 0) if row else 0
+
+
+def get_guild_diagnostics(user_id):
+    """
+    Technical diagnostics for /guild_debug.
+    Safe read-only helper.
+    """
+
+    init_guild_system()
+
+    diagnostics = {
+        "user_id": user_id,
+        "season_key": get_current_guild_season_key(),
+        "has_guild": False,
+        "guild": None,
+        "member": None,
+        "member_count": 0,
+        "pending_applications": 0,
+        "user_pending_applications": 0,
+        "officer_count": 0,
+        "next_level_info": None,
+    }
+
+    try:
+        member = get_user_guild_member(user_id)
+        diagnostics["member"] = member
+        diagnostics["user_pending_applications"] = get_user_pending_applications_count(user_id)
+
+        if not member:
+            return diagnostics
+
+        guild = get_guild_by_id(member["guild_id"])
+        diagnostics["guild"] = guild
+        diagnostics["has_guild"] = bool(guild)
+
+        if guild:
+            ensure_guild_monthly_season(guild["id"])
+            diagnostics["member_count"] = get_guild_member_count(guild["id"])
+            diagnostics["pending_applications"] = get_guild_pending_applications_count(guild["id"])
+
+            try:
+                diagnostics["officer_count"] = get_guild_officer_count(guild["id"])
+            except Exception:
+                diagnostics["officer_count"] = 0
+
+            try:
+                diagnostics["next_level_info"] = get_guild_next_level_info(guild["id"])
+            except Exception:
+                diagnostics["next_level_info"] = None
+
+    except Exception as error:
+        diagnostics["error"] = str(error)
+
+    return diagnostics
+
+
+def run_guild_sanity_cleanup():
+    """
+    Conservative cleanup used by /guild_fix_states and startup-compatible calls:
+    - stale pending applications for players already in guilds;
+    - guild levels recalculation;
+    - duplicate icon/index checks if available.
+    """
+
+    result = {
+        "stale_applications": None,
+        "levels_recalculated": None,
+        "icons_checked": False,
+        "ok": True,
+        "errors": [],
+    }
+
+    try:
+        try:
+            result["stale_applications"] = cleanup_stale_guild_applications()
+        except Exception as error:
+            result["errors"].append(f"cleanup_stale_guild_applications: {error}")
+
+        try:
+            result["levels_recalculated"] = cleanup_recalculate_all_guild_levels()
+        except Exception as error:
+            result["errors"].append(f"cleanup_recalculate_all_guild_levels: {error}")
+
+        try:
+            ensure_unique_guild_icon_index()
+            result["icons_checked"] = True
+        except Exception as error:
+            result["errors"].append(f"ensure_unique_guild_icon_index: {error}")
+
+    except Exception as error:
+        result["ok"] = False
+        result["errors"].append(str(error))
+
+    if result["errors"]:
+        result["ok"] = False
+
+    return result
+

@@ -2564,3 +2564,244 @@ def _guild_progress_handle_global_guild_buttons_v1(bot, message):
 
     return False
 
+
+# ==============================
+# ✅ GUILD CLEANUP DIAGNOSTICS UI V1
+# ==============================
+
+# 7.0.10
+# Stabilization / cleanup / diagnostics:
+# - one central state reset;
+# - global pass-through for common buttons;
+# - /guild_debug;
+# - /guild_fix_states.
+
+try:
+    from db import get_guild_diagnostics, run_guild_sanity_cleanup
+except Exception as _guild_diag_import_error:
+    print(f"⚠️ Guild diagnostics import failed: {_guild_diag_import_error}")
+
+
+def reset_all_guild_ui_states(user_id):
+    """
+    Central state cleanup for all guild menus.
+    Safe to call even if a state does not exist in this build.
+    """
+
+    for reset_func_name in [
+        "reset_guild_create_state",
+        "reset_guild_browse_state",
+        "reset_guild_application_review_state",
+        "reset_guild_member_manage_state",
+        "reset_guild_logs_state",
+    ]:
+        try:
+            globals()[reset_func_name](user_id)
+        except Exception:
+            pass
+
+
+def get_active_guild_ui_states(user_id):
+    active = []
+
+    state_checks = [
+        ("create", "get_guild_create_state"),
+        ("browse", "get_guild_browse_state"),
+        ("applications", "get_guild_application_review_state"),
+        ("members", "get_guild_member_manage_state"),
+        ("logs", "get_guild_logs_state"),
+    ]
+
+    for label, getter_name in state_checks:
+        try:
+            getter = globals().get(getter_name)
+            if getter and getter(user_id) is not None:
+                active.append(label)
+        except Exception:
+            pass
+
+    return active
+
+
+def format_guild_debug_text(user_id):
+    try:
+        diagnostics = get_guild_diagnostics(user_id)
+    except Exception as error:
+        return f"🧪 Guild Debug\n\n❌ Не вдалося отримати diagnostics: {error}"
+
+    active_states = get_active_guild_ui_states(user_id)
+    guild = diagnostics.get("guild")
+    member = diagnostics.get("member")
+    next_level = diagnostics.get("next_level_info") or {}
+
+    text = "🧪 Guild Debug\n\n"
+    text += f"User ID: {diagnostics.get('user_id')}\n"
+    text += f"Season: {diagnostics.get('season_key')}\n"
+    text += f"Active UI states: {', '.join(active_states) if active_states else 'none'}\n"
+    text += f"User pending applications: {diagnostics.get('user_pending_applications', 0)}\n\n"
+
+    if not guild or not member:
+        text += "Guild: none\n"
+        return text.strip()
+
+    text += f"Guild ID: {guild['id']}\n"
+    text += f"Guild: {get_guild_display_name(guild)}\n"
+    text += f"Role: {get_guild_role_label(member['role'])}\n"
+    text += f"Members: {diagnostics.get('member_count', 0)}/{guild['member_limit']}\n"
+    text += f"Officers: {diagnostics.get('officer_count', 0)}\n"
+    text += f"Pending applications: {diagnostics.get('pending_applications', 0)}\n\n"
+
+    text += f"Level: {guild['level']}\n"
+    if next_level:
+        text += f"Level progress: {next_level.get('progress_exp', 0)}/{next_level.get('needed_exp', 0)} EXP ({next_level.get('progress_percent', 0):.1f}%)\n"
+
+    text += "\nMonthly:\n"
+    text += f"EXP: {guild['monthly_exp']} | Resource: {guild['monthly_resource']} | Kills: {guild['monthly_kills']} | Contracts: {guild['monthly_contracts']}\n"
+    text += f"Score: {guild['monthly_score']}\n"
+
+    text += "\nTotal:\n"
+    text += f"EXP: {guild['total_exp']} | Resource: {guild['total_resource']} | Kills: {guild['total_kills']} | Contracts: {guild['total_contracts']}\n"
+    text += f"Score: {guild['total_score']}"
+
+    if diagnostics.get("error"):
+        text += f"\n\nError: {diagnostics.get('error')}"
+
+    return text.strip()
+
+
+def format_guild_cleanup_result_text(result):
+    text = "🧹 Guild Cleanup\n\n"
+    text += f"Status: {'✅ OK' if result.get('ok') else '⚠️ issues'}\n"
+
+    stale = result.get("stale_applications")
+    if isinstance(stale, dict):
+        text += f"Stale pending fixed: {stale.get('fixed_same_guild', 0)}\n"
+        text += f"Other pending cancelled: {stale.get('cancelled_other_guild', 0)}\n"
+    else:
+        text += "Stale applications: n/a\n"
+
+    text += f"Levels recalculated: {result.get('levels_recalculated')}\n"
+    text += f"Icons checked: {result.get('icons_checked')}\n"
+
+    errors = result.get("errors") or []
+    if errors:
+        text += "\nErrors:\n"
+        for error in errors:
+            text += f"- {error}\n"
+
+    return text.strip()
+
+
+def _guild_global_navigation_passthrough_v2(bot, message):
+    """
+    Final global pass-through for common buttons that should work even if a guild state is active.
+    """
+
+    user_id = message.from_user.id
+    text = (message.text or "").strip()
+
+    if text in ["🏰 Зала Гільдій", "🔙 Зала Гільдій"]:
+        reset_all_guild_ui_states(user_id)
+        open_guild_hall(bot, message.chat.id, user_id)
+        return True
+
+    if text in ["🏙️ Місто", "🔙 Місто"]:
+        reset_all_guild_ui_states(user_id)
+        try:
+            send_city(bot, message)
+        except Exception:
+            try:
+                from handlers.city import build_city_text
+                from keyboards import city_kb
+                bot.send_message(message.chat.id, build_city_text(user_id), reply_markup=city_kb())
+            except Exception as error:
+                bot.send_message(message.chat.id, f"❌ Не вдалося повернутися в місто: {error}", reply_markup=guild_hall_kb(user_id))
+        return True
+
+    if text == "🏛 Прогрес гільдії":
+        reset_all_guild_ui_states(user_id)
+        send_guild_progress(bot, message)
+        return True
+
+    if text in ["📊 Внесок", "📊 Внесок за місяць"]:
+        reset_all_guild_ui_states(user_id)
+        send_guild_contribution(bot, message, "monthly")
+        return True
+
+    if text == "📊 Внесок за весь час":
+        reset_all_guild_ui_states(user_id)
+        send_guild_contribution(bot, message, "total")
+        return True
+
+    if text == "👥 Учасники":
+        reset_all_guild_ui_states(user_id)
+        show_guild_members_manage(bot, message)
+        return True
+
+    if text == "📨 Заявки":
+        reset_all_guild_ui_states(user_id)
+        show_guild_applications(bot, message)
+        return True
+
+    if text == "📜 Журнал":
+        reset_all_guild_ui_states(user_id)
+        show_guild_logs(bot, message, 0)
+        return True
+
+    if text == "📜 Переглянути гільдії":
+        reset_all_guild_ui_states(user_id)
+        show_guild_list(bot, message, 0)
+        return True
+
+    return False
+
+
+# Chain into the existing 7.0.7a global handler if present.
+try:
+    _base_guild_progress_handle_global_buttons_before_cleanup_v1 = _guild_progress_handle_global_guild_buttons_v1
+except Exception:
+    _base_guild_progress_handle_global_buttons_before_cleanup_v1 = None
+
+
+def _guild_progress_handle_global_guild_buttons_v1(bot, message):
+    if _guild_global_navigation_passthrough_v2(bot, message):
+        return True
+
+    if _base_guild_progress_handle_global_buttons_before_cleanup_v1 is not None:
+        return _base_guild_progress_handle_global_buttons_before_cleanup_v1(bot, message)
+
+    return False
+
+
+try:
+    _base_register_guild_handlers_before_cleanup_diag_v1 = register_guild_handlers
+except Exception:
+    _base_register_guild_handlers_before_cleanup_diag_v1 = None
+
+
+def register_guild_handlers(bot):
+    if _base_register_guild_handlers_before_cleanup_diag_v1 is not None:
+        _base_register_guild_handlers_before_cleanup_diag_v1(bot)
+
+    @bot.message_handler(commands=["guild_debug"])
+    def guild_debug_command(message):
+        bot.send_message(
+            message.chat.id,
+            format_guild_debug_text(message.from_user.id),
+            reply_markup=guild_hall_kb(message.from_user.id)
+        )
+
+    @bot.message_handler(commands=["guild_fix_states", "guild_cleanup"])
+    def guild_fix_states_command(message):
+        reset_all_guild_ui_states(message.from_user.id)
+        try:
+            result = run_guild_sanity_cleanup()
+        except Exception as error:
+            result = {"ok": False, "errors": [str(error)]}
+
+        bot.send_message(
+            message.chat.id,
+            format_guild_cleanup_result_text(result),
+            reply_markup=guild_hall_kb(message.from_user.id)
+        )
+

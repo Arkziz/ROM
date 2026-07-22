@@ -40,15 +40,16 @@ def fight_kb(skills=None):
 
 def city_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.add("🛒 Торговий ряд")
-    kb.add("⚒️ Ремісничий квартал")
-    kb.add("📜 Гільдія Найманців")
-    kb.add("🏰 Зала Гільдій")
-    kb.add("🏛️ Ратуша", "🍺 Таверна")
-    kb.add("🔙 Мапа")
-    return kb
 
-# ✅ GUILD HALL CITY BUTTON REPLY V2
+    # Міські напрямки згруповані по 2 кнопки в ряд.
+    # 🗺️ Мапа завжди окремо і останньою кнопкою внизу.
+    kb.add("🛒 Торговий ряд", "🏛️ Торговий дім")
+    kb.add("⚒️ Ремісничий квартал", "📜 Гільдія Найманців")
+    kb.add("🏰 Зала Гільдій", "🏛️ Ратуша")
+    kb.add("🍺 Таверна")
+    kb.add("🗺️ Мапа")
+
+    return kb
 
 def trader_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)

@@ -12237,3 +12237,183 @@ try:
 except Exception as _contract_target_kills_5_error:
     print(f"⚠️ Contract target kills migration failed: {_contract_target_kills_5_error}")
 
+
+# ==============================
+# ✅ GUILD DIAGNOSTICS DB WRAPPERS V1
+# ==============================
+
+# 7.0.10 wrappers для diagnostics / cleanup.
+
+
+def get_guild_pending_applications_count(guild_id):
+    from systems.guild_system import get_guild_pending_applications_count as _get_guild_pending_applications_count
+    return _get_guild_pending_applications_count(guild_id)
+
+
+def get_user_pending_applications_count(user_id):
+    from systems.guild_system import get_user_pending_applications_count as _get_user_pending_applications_count
+    return _get_user_pending_applications_count(user_id)
+
+
+def get_guild_diagnostics(user_id):
+    from systems.guild_system import get_guild_diagnostics as _get_guild_diagnostics
+    return _get_guild_diagnostics(user_id)
+
+
+def run_guild_sanity_cleanup():
+    from systems.guild_system import run_guild_sanity_cleanup as _run_guild_sanity_cleanup
+    return _run_guild_sanity_cleanup()
+
+
+# ==============================
+# ✅ AUCTION HOUSE DB WRAPPERS V1
+# ==============================
+
+# 8.0.1 wrappers. Heavy auction logic lives in systems/auction_house_system.py
+# to avoid overloading db.py.
+
+
+def init_auction_house():
+    from systems.auction_house_system import init_auction_house as _init_auction_house
+    return _init_auction_house()
+
+
+def validate_auction_price(value):
+    from systems.auction_house_system import validate_auction_price as _validate_auction_price
+    return _validate_auction_price(value)
+
+
+def decimal_to_price_text(value):
+    from systems.auction_house_system import decimal_to_price_text as _decimal_to_price_text
+    return _decimal_to_price_text(value)
+
+
+def auction_price_to_decimal(value):
+    from systems.auction_house_system import auction_price_to_decimal as _auction_price_to_decimal
+    return _auction_price_to_decimal(value)
+
+
+def normalize_auction_category(category):
+    from systems.auction_house_system import normalize_auction_category as _normalize_auction_category
+    return _normalize_auction_category(category)
+
+
+def add_auction_history(**kwargs):
+    from systems.auction_house_system import add_auction_history as _add_auction_history
+    return _add_auction_history(**kwargs)
+
+
+def get_auction_lot_by_id(lot_id):
+    from systems.auction_house_system import get_auction_lot_by_id as _get_auction_lot_by_id
+    return _get_auction_lot_by_id(lot_id)
+
+
+def get_user_active_auction_count(user_id):
+    from systems.auction_house_system import get_user_active_auction_count as _get_user_active_auction_count
+    return _get_user_active_auction_count(user_id)
+
+
+def can_user_create_auction_lot(user_id):
+    from systems.auction_house_system import can_user_create_auction_lot as _can_user_create_auction_lot
+    return _can_user_create_auction_lot(user_id)
+
+
+def get_auction_lots(status="ACTIVE", category=None, search_text=None, limit=10, offset=0, sort="new"):
+    from systems.auction_house_system import get_auction_lots as _get_auction_lots
+    return _get_auction_lots(status=status, category=category, search_text=search_text, limit=limit, offset=offset, sort=sort)
+
+
+def create_auction_lot_record(**kwargs):
+    from systems.auction_house_system import create_auction_lot_record as _create_auction_lot_record
+    return _create_auction_lot_record(**kwargs)
+
+
+def mark_auction_lot_status(lot_id, status_after, actor_user_id=None, event_type=None, details=None):
+    from systems.auction_house_system import mark_auction_lot_status as _mark_auction_lot_status
+    return _mark_auction_lot_status(lot_id, status_after, actor_user_id=actor_user_id, event_type=event_type, details=details)
+
+
+def update_expired_auction_lots():
+    from systems.auction_house_system import update_expired_auction_lots as _update_expired_auction_lots
+    return _update_expired_auction_lots()
+
+
+def get_auction_house_stats():
+    from systems.auction_house_system import get_auction_house_stats as _get_auction_house_stats
+    return _get_auction_house_stats()
+
+
+# ==============================
+# ✅ AUCTION HOUSE EQUIPMENT LISTING WRAPPERS V1
+# ==============================
+
+
+def get_user_sellable_equipment_for_auction(user_id, limit=50, offset=0):
+    from systems.auction_house_system import get_user_sellable_equipment_for_auction as _func
+    return _func(user_id=user_id, limit=limit, offset=offset)
+
+
+def get_inventory_item_snapshot_for_auction(user_id, inventory_id):
+    from systems.auction_house_system import get_inventory_item_snapshot_for_auction as _func
+    return _func(user_id=user_id, inventory_id=inventory_id)
+
+
+def validate_inventory_item_for_auction_equipment(user_id, inventory_id):
+    from systems.auction_house_system import validate_inventory_item_for_auction_equipment as _func
+    return _func(user_id=user_id, inventory_id=inventory_id)
+
+
+def create_equipment_auction_lot(user_id, inventory_id, price):
+    from systems.auction_house_system import create_equipment_auction_lot as _func
+    return _func(user_id=user_id, inventory_id=inventory_id, price=price)
+
+
+# ==============================
+# ✅ AUCTION HOUSE STACK LISTING WRAPPERS V1
+# ==============================
+
+
+def get_user_sellable_stack_items_for_auction(user_id, category, limit=50, offset=0):
+    from systems.auction_house_system import get_user_sellable_stack_items_for_auction as _func
+    return _func(user_id=user_id, category=category, limit=limit, offset=offset)
+
+
+def validate_inventory_stack_item_for_auction(user_id, inventory_id, category, quantity):
+    from systems.auction_house_system import validate_inventory_stack_item_for_auction as _func
+    return _func(user_id=user_id, inventory_id=inventory_id, category=category, quantity=quantity)
+
+
+def create_stack_auction_lot(user_id, inventory_id, category, quantity, price):
+    from systems.auction_house_system import create_stack_auction_lot as _func
+    return _func(user_id=user_id, inventory_id=inventory_id, category=category, quantity=quantity, price=price)
+
+
+# ==============================
+# ✅ AUCTION HOUSE BUY LOT WRAPPERS V1
+# ==============================
+
+
+def get_public_auction_lots_for_buyer(user_id, category=None, search_text=None, limit=8, offset=0, sort="new"):
+    from systems.auction_house_system import get_public_auction_lots_for_buyer as _func
+    return _func(user_id=user_id, category=category, search_text=search_text, limit=limit, offset=offset, sort=sort)
+
+
+def build_auction_lot_public_details(lot_id, viewer_user_id=None):
+    from systems.auction_house_system import build_auction_lot_public_details as _func
+    return _func(lot_id=lot_id, viewer_user_id=viewer_user_id)
+
+
+def buy_auction_lot(buyer_user_id, lot_id):
+    from systems.auction_house_system import buy_auction_lot as _func
+    return _func(buyer_user_id=buyer_user_id, lot_id=lot_id)
+
+
+# ==============================
+# ✅ AUCTION HOUSE SELL REVIEW WRAPPER V1
+# ==============================
+
+
+def build_auction_sell_item_review_text(user_id, inventory_id, category):
+    from systems.auction_house_system import build_auction_sell_item_review_text as _func
+    return _func(user_id=user_id, inventory_id=inventory_id, category=category)
+
