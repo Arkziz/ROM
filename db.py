@@ -2894,7 +2894,7 @@ def sell_inventory_item_to_trader(user_id, inventory_id):
 
 CONTRACTS_UNLOCK_LEVEL = 5
 DAILY_CONTRACT_LIMIT = 5
-CONTRACT_TARGET_KILLS = 10
+CONTRACT_TARGET_KILLS = 5
 CONTRACT_MOBS_EQUIVALENT = 20
 
 
@@ -12190,4 +12190,50 @@ def claim_contract_reward(user_id):
         print(f"⚠️ Guild contract reward hook failed: {error}")
 
     return result
+
+
+# ==============================
+# ✅ CONTRACT TARGET KILLS 5 V1
+# ==============================
+
+# 7.0.9c
+# Баланс контрактів:
+# було: 10 вбивств
+# стало: 5 вбивств
+#
+# Важливо:
+# - нові контракти створюються з target_kills=5;
+# - старі активні контракти з target_kills > 5 автоматично стискаються до 5;
+# - якщо у старому активному контракті вже current_kills >= 5, контракт стає completed.
+
+CONTRACT_TARGET_KILLS = 5
+
+
+def migrate_active_contracts_target_kills_to_5():
+    init_contract_system()
+
+    cursor.execute("""
+    UPDATE user_active_contracts
+    SET target_kills=5
+    WHERE target_kills > 5
+    """)
+
+    cursor.execute("""
+    UPDATE user_active_contracts
+    SET completed=1,
+        current_kills=5
+    WHERE target_kills=5
+      AND current_kills >= 5
+      AND reward_claimed=0
+    """)
+
+    conn.commit()
+
+    return True
+
+
+try:
+    migrate_active_contracts_target_kills_to_5()
+except Exception as _contract_target_kills_5_error:
+    print(f"⚠️ Contract target kills migration failed: {_contract_target_kills_5_error}")
 

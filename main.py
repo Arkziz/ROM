@@ -1,3 +1,59 @@
+
+# ✅ TELEGRAM POLLING TIMEOUT RESILIENCE V3
+import time as _rom_polling_time
+
+try:
+    import requests as _rom_polling_requests
+except Exception:
+    _rom_polling_requests = None
+
+try:
+    from telebot import apihelper as _rom_polling_apihelper
+except Exception:
+    _rom_polling_apihelper = None
+
+if _rom_polling_apihelper is not None:
+    try:
+        _rom_polling_apihelper.READ_TIMEOUT = 60
+        _rom_polling_apihelper.CONNECT_TIMEOUT = 15
+    except Exception:
+        pass
+
+
+def run_bot_polling_resilient(bot):
+    """
+    Keeps Telegram polling alive after temporary network timeouts.
+    """
+    while True:
+        try:
+            run_bot_polling_resilient(bot)
+        except Exception as error:
+            error_name = type(error).__name__
+            error_text = str(error)
+
+            is_timeout = False
+            is_connection = False
+
+            if _rom_polling_requests is not None:
+                try:
+                    is_timeout = isinstance(error, _rom_polling_requests.exceptions.ReadTimeout)
+                    is_connection = isinstance(error, _rom_polling_requests.exceptions.ConnectionError)
+                except Exception:
+                    pass
+
+            if is_timeout or "Read timed out" in error_text or "ReadTimeout" in error_name:
+                print(f"⚠️ Telegram polling read timeout, restarting polling in 5s: {error}")
+                _rom_polling_time.sleep(5)
+                continue
+
+            if is_connection or "Connection" in error_name or "connection" in error_text.lower():
+                print(f"⚠️ Telegram polling connection error, restarting polling in 10s: {error}")
+                _rom_polling_time.sleep(10)
+                continue
+
+            print(f"⚠️ Telegram polling unexpected error, restarting polling in 10s: {error}")
+            _rom_polling_time.sleep(10)
+
 import telebot
 
 from config import TOKEN
