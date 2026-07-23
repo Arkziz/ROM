@@ -3082,3 +3082,1228 @@ def build_auction_sell_item_review_text(user_id, inventory_id, category):
         "text": "\n".join(lines),
     }
 
+
+# ==============================
+# ✅ AUCTION HOUSE MY LOTS CANCEL V1
+# ==============================
+
+AUCTION_MY_LOTS_PAGE_SIZE = 8
+
+
+def get_user_auction_lots(user_id, status=None, limit=8, offset=0):
+    """Returns user's auction lots. By default only ACTIVE lots are used by UI."""
+    init_auction_house()
+
+    try:
+        limit = int(limit)
+    except Exception:
+        limit = 8
+    try:
+        offset = int(offset)
+    except Exception:
+        offset = 0
+
+    limit = max(1, min(50, limit))
+    offset = max(0, offset)
+
+    where = ["seller_user_id=?"]
+    params = [int(user_id)]
+
+    if status:
+        where.append("status=?")
+        params.append(str(status))
+
+    sql = f"""
+    SELECT *
+    FROM auction_lots
+    WHERE {' AND '.join(where)}
+    ORDER BY created_at DESC
+    LIMIT ? OFFSET ?
+    """
+    params.extend([limit, offset])
+    cursor.execute(sql, tuple(params))
+    return cursor.fetchall()
+
+
+def get_user_auction_lot_by_id(user_id, lot_id):
+    init_auction_house()
+    cursor.execute(
+        "SELECT * FROM auction_lots WHERE id=? AND seller_user_id=?",
+        (int(lot_id), int(user_id))
+    )
+    return cursor.fetchone()
+
+
+def build_user_auction_lot_details(user_id, lot_id):
+    init_auction_house()
+    lot = get_user_auction_lot_by_id(user_id, lot_id)
+
+    if not lot:
+        return {"success": False, "message": "❌ Лот не знайдено."}
+
+    snapshot = safe_json_loads(lot["item_snapshot_json"])
+    status = lot["status"]
+    category = lot["category"]
+    quantity = int(lot["quantity"] or 1)
+
+    lines = []
+    lines.append("📦 Мій лот")
+    lines.append("")
+    lines.append(str(lot["item_name"]))
+    lines.append("")
+    lines.append(f"📌 Статус: {status}")
+    lines.append(f"💰 Ціна: {lot['price']} золота")
+
+    if category == AUCTION_CATEGORY_EQUIPMENT:
+        refine_level = int(lot["enhancement_level"] or snapshot.get("refine_level", 0) or 0)
+        item_type = snapshot.get("item_type") or _auction_snapshot_value(snapshot, "type", "item_type", default="")
+        slot_key = snapshot.get("slot_key") or _auction_snapshot_value(snapshot, "slot_key", "slot", default="")
+        level = int(lot["level"] or snapshot.get("level", 0) or 0)
+
+        lines.append("")
+        lines.append(_auction_inventory_style_type_line(AUCTION_CATEGORY_EQUIPMENT))
+        lines.append(f"🎯 Слот: {_auction_inventory_style_slot(snapshot, slot_key, item_type)}")
+        if level:
+            lines.append(f"🏷 Рівень предмета: {level} 🔒")
+        if refine_level:
+            lines.append(f"✨ Заточка: +{refine_level}")
+        if lot["durability_current"] is not None:
+            lines.append(f"🧱 Міцність: {lot['durability_current']}/{lot['durability_max']}")
+
+        damage_lines = _auction_inventory_style_damage_lines(snapshot)
+        defense_lines = _auction_collect_inventory_style_defense_lines(snapshot)
+        bonus_lines = _auction_collect_inventory_style_bonus_lines(snapshot)
+
+        if damage_lines:
+            lines.append("")
+            lines.extend(damage_lines)
+        if defense_lines:
+            lines.extend(defense_lines)
+        if bonus_lines:
+            lines.append("")
+            lines.append("📊 Бонуси:")
+            lines.extend(bonus_lines)
+    else:
+        lines.append("")
+        lines.append(_auction_inventory_style_type_line(category))
+        lines.append(f"📦 Кількість: {quantity}")
+
+    lines.append("")
+    if status == AUCTION_STATUS_ACTIVE:
+        lines.append("Цей активний лот можна зняти з продажу.")
+    else:
+        lines.append("Цей лот уже не є активним.")
+
+    return {
+        "success": True,
+        "lot": lot,
+        "snapshot": snapshot,
+        "text": "\n".join(lines),
+    }
+
+
+def cancel_active_auction_lot(user_id, lot_id):
+    """
+    Cancels seller's ACTIVE lot and returns item to inventory.
+
+    Status: ACTIVE -> EXPIRED_CLAIMED.
+    This mirrors manual cancel in the spec: the seller receives the item back immediately.
+    """
+    init_auction_house()
+    user_id = int(user_id)
+    lot_id = int(lot_id)
+
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+
+        cursor.execute("SELECT * FROM auction_lots WHERE id=? AND seller_user_id=?", (lot_id, user_id))
+        lot = cursor.fetchone()
+
+        if not lot:
+            conn.rollback()
+            return {"success": False, "message": "❌ Лот не знайдено."}
+
+        if lot["status"] != AUCTION_STATUS_ACTIVE:
+            conn.rollback()
+            return {"success": False, "message": "⚠️ Зняти можна тільки активний лот."}
+
+        snapshot = safe_json_loads(lot["item_snapshot_json"])
+        quantity = int(lot["quantity"] or 1)
+
+        # Return item first; this checks/uses inventory space.
+        returned_inventory_id = _auction_insert_inventory_from_snapshot(user_id, snapshot, quantity=quantity)
+
+        now = now_iso()
+        cursor.execute("""
+        UPDATE auction_lots
+        SET status=?,
+            claimed_at=?,
+            updated_at=?
+        WHERE id=? AND seller_user_id=? AND status=?
+        """, (
+            AUCTION_STATUS_EXPIRED_CLAIMED,
+            now,
+            now,
+            lot_id,
+            user_id,
+            AUCTION_STATUS_ACTIVE,
+        ))
+
+        if cursor.rowcount != 1:
+            conn.rollback()
+            return {"success": False, "message": "⚠️ Лот уже недоступний."}
+
+        cursor.execute("""
+        INSERT INTO auction_history (
+            lot_id,
+            event_type,
+            actor_user_id,
+            seller_user_id,
+            buyer_user_id,
+            item_name,
+            category,
+            quantity,
+            price,
+            status_before,
+            status_after,
+            details_json,
+            created_at
+        ) VALUES (?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            lot_id,
+            AUCTION_HISTORY_CANCELLED,
+            user_id,
+            user_id,
+            lot["item_name"],
+            lot["category"],
+            quantity,
+            lot["price"],
+            AUCTION_STATUS_ACTIVE,
+            AUCTION_STATUS_EXPIRED_CLAIMED,
+            safe_json_dumps({"returned_inventory_id": returned_inventory_id}),
+            now,
+        ))
+
+        conn.commit()
+
+        return {
+            "success": True,
+            "message": "✅ Лот знято з продажу.",
+            "lot_id": lot_id,
+            "item_name": lot["item_name"],
+            "quantity": quantity,
+            "inventory_id": returned_inventory_id,
+        }
+
+    except Exception as error:
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        return {"success": False, "message": f"❌ Помилка зняття лота: {error}"}
+
+
+# ==============================
+# ✅ AUCTION HOUSE UNCLAIMED ITEMS V1
+# ==============================
+
+AUCTION_UNCLAIMED_ITEMS_PAGE_SIZE = 8
+
+
+def get_user_unclaimed_auction_items(user_id, limit=8, offset=0):
+    """Expired lots whose items are waiting for seller claim."""
+    init_auction_house()
+    update_expired_auction_lots()
+
+    try:
+        limit = int(limit)
+    except Exception:
+        limit = 8
+    try:
+        offset = int(offset)
+    except Exception:
+        offset = 0
+
+    limit = max(1, min(50, limit))
+    offset = max(0, offset)
+
+    cursor.execute("""
+    SELECT *
+    FROM auction_lots
+    WHERE seller_user_id=? AND status=?
+    ORDER BY updated_at DESC, created_at DESC
+    LIMIT ? OFFSET ?
+    """, (
+        int(user_id),
+        AUCTION_STATUS_EXPIRED_UNCLAIMED,
+        limit,
+        offset,
+    ))
+    return cursor.fetchall()
+
+
+def build_user_unclaimed_auction_item_details(user_id, lot_id):
+    init_auction_house()
+    update_expired_auction_lots()
+
+    cursor.execute(
+        "SELECT * FROM auction_lots WHERE id=? AND seller_user_id=?",
+        (int(lot_id), int(user_id))
+    )
+    lot = cursor.fetchone()
+
+    if not lot:
+        return {"success": False, "message": "❌ Лот не знайдено."}
+
+    if lot["status"] != AUCTION_STATUS_EXPIRED_UNCLAIMED:
+        return {"success": False, "message": "⚠️ Цей предмет уже не очікує отримання."}
+
+    snapshot = safe_json_loads(lot["item_snapshot_json"])
+    category = lot["category"]
+    quantity = int(lot["quantity"] or 1)
+
+    lines = []
+    lines.append("📬 Незабраний предмет")
+    lines.append("")
+    lines.append(str(lot["item_name"]))
+    lines.append("")
+    lines.append("⏳ Лот завершився і не був проданий.")
+    lines.append(f"💰 Ціна лота була: {lot['price']} золота")
+
+    if lot["delete_after"]:
+        lines.append(f"🗑 Видалення після: {lot['delete_after']}")
+
+    if category == AUCTION_CATEGORY_EQUIPMENT:
+        refine_level = int(lot["enhancement_level"] or snapshot.get("refine_level", 0) or 0)
+        item_type = snapshot.get("item_type") or _auction_snapshot_value(snapshot, "type", "item_type", default="")
+        slot_key = snapshot.get("slot_key") or _auction_snapshot_value(snapshot, "slot_key", "slot", default="")
+        level = int(lot["level"] or snapshot.get("level", 0) or 0)
+
+        lines.append("")
+        lines.append(_auction_inventory_style_type_line(AUCTION_CATEGORY_EQUIPMENT))
+        lines.append(f"🎯 Слот: {_auction_inventory_style_slot(snapshot, slot_key, item_type)}")
+        if level:
+            lines.append(f"🏷 Рівень предмета: {level} 🔒")
+        if refine_level:
+            lines.append(f"✨ Заточка: +{refine_level}")
+        if lot["durability_current"] is not None:
+            lines.append(f"🧱 Міцність: {lot['durability_current']}/{lot['durability_max']}")
+
+        damage_lines = _auction_inventory_style_damage_lines(snapshot)
+        defense_lines = _auction_collect_inventory_style_defense_lines(snapshot)
+        bonus_lines = _auction_collect_inventory_style_bonus_lines(snapshot)
+
+        if damage_lines:
+            lines.append("")
+            lines.extend(damage_lines)
+        if defense_lines:
+            lines.extend(defense_lines)
+        if bonus_lines:
+            lines.append("")
+            lines.append("📊 Бонуси:")
+            lines.extend(bonus_lines)
+    else:
+        lines.append("")
+        lines.append(_auction_inventory_style_type_line(category))
+        lines.append(f"📦 Кількість: {quantity}")
+        desc_lines = _auction_collect_stack_description_lines(snapshot)
+        if desc_lines:
+            lines.append("")
+            lines.extend(desc_lines)
+
+    lines.append("")
+    lines.append("Предмет можна повернути в інвентар, якщо там є місце.")
+
+    return {
+        "success": True,
+        "lot": lot,
+        "snapshot": snapshot,
+        "text": "\n".join(lines),
+    }
+
+
+def claim_expired_auction_item(user_id, lot_id):
+    """
+    Claims an EXPIRED_UNCLAIMED auction item back to seller inventory.
+
+    Status: EXPIRED_UNCLAIMED -> EXPIRED_CLAIMED.
+    """
+    init_auction_house()
+    update_expired_auction_lots()
+
+    user_id = int(user_id)
+    lot_id = int(lot_id)
+
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+
+        cursor.execute(
+            "SELECT * FROM auction_lots WHERE id=? AND seller_user_id=?",
+            (lot_id, user_id)
+        )
+        lot = cursor.fetchone()
+
+        if not lot:
+            conn.rollback()
+            return {"success": False, "message": "❌ Лот не знайдено."}
+
+        if lot["status"] != AUCTION_STATUS_EXPIRED_UNCLAIMED:
+            conn.rollback()
+            return {"success": False, "message": "⚠️ Предмет уже не очікує отримання."}
+
+        snapshot = safe_json_loads(lot["item_snapshot_json"])
+        quantity = int(lot["quantity"] or 1)
+
+        returned_inventory_id = _auction_insert_inventory_from_snapshot(user_id, snapshot, quantity=quantity)
+
+        now = now_iso()
+        cursor.execute("""
+        UPDATE auction_lots
+        SET status=?,
+            claimed_at=?,
+            updated_at=?
+        WHERE id=? AND seller_user_id=? AND status=?
+        """, (
+            AUCTION_STATUS_EXPIRED_CLAIMED,
+            now,
+            now,
+            lot_id,
+            user_id,
+            AUCTION_STATUS_EXPIRED_UNCLAIMED,
+        ))
+
+        if cursor.rowcount != 1:
+            conn.rollback()
+            return {"success": False, "message": "⚠️ Предмет уже забрано або видалено."}
+
+        cursor.execute("""
+        INSERT INTO auction_history (
+            lot_id,
+            event_type,
+            actor_user_id,
+            seller_user_id,
+            buyer_user_id,
+            item_name,
+            category,
+            quantity,
+            price,
+            status_before,
+            status_after,
+            details_json,
+            created_at
+        ) VALUES (?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            lot_id,
+            AUCTION_HISTORY_ITEM_CLAIMED,
+            user_id,
+            user_id,
+            lot["item_name"],
+            lot["category"],
+            quantity,
+            lot["price"],
+            AUCTION_STATUS_EXPIRED_UNCLAIMED,
+            AUCTION_STATUS_EXPIRED_CLAIMED,
+            safe_json_dumps({"returned_inventory_id": returned_inventory_id}),
+            now,
+        ))
+
+        conn.commit()
+
+        return {
+            "success": True,
+            "message": "✅ Предмет повернено в інвентар.",
+            "lot_id": lot_id,
+            "item_name": lot["item_name"],
+            "quantity": quantity,
+            "inventory_id": returned_inventory_id,
+        }
+
+    except Exception as error:
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        return {"success": False, "message": f"❌ Помилка отримання предмета: {error}"}
+
+
+# ==============================
+# ✅ AUCTION HOUSE COMPLETED SALES CLAIM GOLD V1
+# ==============================
+
+AUCTION_COMPLETED_SALES_PAGE_SIZE = 8
+
+
+def get_user_unclaimed_auction_sales(user_id, limit=8, offset=0):
+    """Sold lots whose gold is waiting for seller claim."""
+    init_auction_house()
+    update_expired_auction_lots()
+
+    try:
+        limit = int(limit)
+    except Exception:
+        limit = 8
+    try:
+        offset = int(offset)
+    except Exception:
+        offset = 0
+
+    limit = max(1, min(50, limit))
+    offset = max(0, offset)
+
+    cursor.execute("""
+    SELECT *
+    FROM auction_lots
+    WHERE seller_user_id=? AND status=?
+    ORDER BY sold_at DESC, updated_at DESC, created_at DESC
+    LIMIT ? OFFSET ?
+    """, (
+        int(user_id),
+        AUCTION_STATUS_SOLD_UNCLAIMED,
+        limit,
+        offset,
+    ))
+    return cursor.fetchall()
+
+
+def build_user_unclaimed_auction_sale_details(user_id, lot_id):
+    init_auction_house()
+    update_expired_auction_lots()
+
+    cursor.execute(
+        "SELECT * FROM auction_lots WHERE id=? AND seller_user_id=?",
+        (int(lot_id), int(user_id))
+    )
+    lot = cursor.fetchone()
+
+    if not lot:
+        return {"success": False, "message": "❌ Продаж не знайдено."}
+
+    if lot["status"] != AUCTION_STATUS_SOLD_UNCLAIMED:
+        return {"success": False, "message": "⚠️ Це золото вже отримано або продаж недоступний."}
+
+    snapshot = safe_json_loads(lot["item_snapshot_json"])
+    category = lot["category"]
+    quantity = int(lot["quantity"] or 1)
+
+    lines = []
+    lines.append("💰 Завершений продаж")
+    lines.append("")
+    lines.append(str(lot["item_name"]))
+    lines.append("")
+    lines.append(f"✅ Продано за: {lot['price']} золота")
+
+    if lot["sold_at"]:
+        lines.append(f"🕒 Дата продажу: {lot['sold_at']}")
+    if lot["delete_after"]:
+        lines.append(f"🗑 Видалення виплати після: {lot['delete_after']}")
+
+    if category == AUCTION_CATEGORY_EQUIPMENT:
+        refine_level = int(lot["enhancement_level"] or snapshot.get("refine_level", 0) or 0)
+        item_type = snapshot.get("item_type") or _auction_snapshot_value(snapshot, "type", "item_type", default="")
+        slot_key = snapshot.get("slot_key") or _auction_snapshot_value(snapshot, "slot_key", "slot", default="")
+        level = int(lot["level"] or snapshot.get("level", 0) or 0)
+
+        lines.append("")
+        lines.append(_auction_inventory_style_type_line(AUCTION_CATEGORY_EQUIPMENT))
+        lines.append(f"🎯 Слот: {_auction_inventory_style_slot(snapshot, slot_key, item_type)}")
+        if level:
+            lines.append(f"🏷 Рівень предмета: {level} 🔒")
+        if refine_level:
+            lines.append(f"✨ Заточка: +{refine_level}")
+        if lot["durability_current"] is not None:
+            lines.append(f"🧱 Міцність: {lot['durability_current']}/{lot['durability_max']}")
+
+        damage_lines = _auction_inventory_style_damage_lines(snapshot)
+        defense_lines = _auction_collect_inventory_style_defense_lines(snapshot)
+        bonus_lines = _auction_collect_inventory_style_bonus_lines(snapshot)
+
+        if damage_lines:
+            lines.append("")
+            lines.extend(damage_lines)
+        if defense_lines:
+            lines.extend(defense_lines)
+        if bonus_lines:
+            lines.append("")
+            lines.append("📊 Бонуси:")
+            lines.extend(bonus_lines)
+    else:
+        lines.append("")
+        lines.append(_auction_inventory_style_type_line(category))
+        lines.append(f"📦 Кількість: {quantity}")
+        desc_lines = _auction_collect_stack_description_lines(snapshot)
+        if desc_lines:
+            lines.append("")
+            lines.extend(desc_lines)
+
+    lines.append("")
+    lines.append("Золото можна забрати вручну.")
+
+    return {
+        "success": True,
+        "lot": lot,
+        "snapshot": snapshot,
+        "text": "\n".join(lines),
+    }
+
+
+def claim_auction_sale_gold(user_id, lot_id):
+    """
+    Claims gold from SOLD_UNCLAIMED sale.
+
+    Status: SOLD_UNCLAIMED -> SOLD_CLAIMED.
+    Gold is added to seller's balance.
+    """
+    init_auction_house()
+    update_expired_auction_lots()
+
+    user_id = int(user_id)
+    lot_id = int(lot_id)
+
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+
+        cursor.execute(
+            "SELECT * FROM auction_lots WHERE id=? AND seller_user_id=?",
+            (lot_id, user_id)
+        )
+        lot = cursor.fetchone()
+
+        if not lot:
+            conn.rollback()
+            return {"success": False, "message": "❌ Продаж не знайдено."}
+
+        if lot["status"] != AUCTION_STATUS_SOLD_UNCLAIMED:
+            conn.rollback()
+            return {"success": False, "message": "⚠️ Золото вже отримано або виплата недоступна."}
+
+        price = auction_price_to_decimal(lot["price"])
+        current_gold = _auction_get_user_gold(user_id)
+        _auction_set_user_gold(user_id, current_gold + price)
+
+        now = now_iso()
+        cursor.execute("""
+        UPDATE auction_lots
+        SET status=?,
+            claimed_at=?,
+            updated_at=?
+        WHERE id=? AND seller_user_id=? AND status=?
+        """, (
+            AUCTION_STATUS_SOLD_CLAIMED,
+            now,
+            now,
+            lot_id,
+            user_id,
+            AUCTION_STATUS_SOLD_UNCLAIMED,
+        ))
+
+        if cursor.rowcount != 1:
+            conn.rollback()
+            return {"success": False, "message": "⚠️ Виплату вже отримано."}
+
+        cursor.execute("""
+        INSERT INTO auction_history (
+            lot_id,
+            event_type,
+            actor_user_id,
+            seller_user_id,
+            buyer_user_id,
+            item_name,
+            category,
+            quantity,
+            price,
+            status_before,
+            status_after,
+            details_json,
+            created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            lot_id,
+            AUCTION_HISTORY_GOLD_CLAIMED,
+            user_id,
+            user_id,
+            lot["buyer_user_id"],
+            lot["item_name"],
+            lot["category"],
+            int(lot["quantity"] or 1),
+            lot["price"],
+            AUCTION_STATUS_SOLD_UNCLAIMED,
+            AUCTION_STATUS_SOLD_CLAIMED,
+            safe_json_dumps({"claimed_gold": lot["price"]}),
+            now,
+        ))
+
+        conn.commit()
+
+        return {
+            "success": True,
+            "message": f"✅ Отримано {lot['price']} золота.",
+            "lot_id": lot_id,
+            "item_name": lot["item_name"],
+            "amount": lot["price"],
+        }
+
+    except Exception as error:
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        return {"success": False, "message": f"❌ Помилка отримання золота: {error}"}
+
+
+# ==============================
+# ✅ AUCTION HOUSE UA DATE FORMAT V1
+# ==============================
+
+
+def _auction_format_ua_datetime_v1(value, with_time=True):
+    """
+    Formats ISO datetime values for Ukrainian UI.
+
+    Examples:
+    2026-07-23T00:07:18.129143 -> 23.07.2026 00:07
+    2026-08-22T00:07:18.129168 -> 22.08.2026 00:07
+    """
+
+    if not value:
+        return "-"
+
+    text = str(value).strip()
+
+    try:
+        normalized = text.replace("Z", "").replace(" ", "T")
+        dt = datetime.fromisoformat(normalized)
+
+        if with_time:
+            return dt.strftime("%d.%m.%Y %H:%M")
+
+        return dt.strftime("%d.%m.%Y")
+
+    except Exception:
+        pass
+
+    # Fallback for YYYY-MM-DD or strings starting with a date.
+    try:
+        if len(text) >= 10 and text[4] == "-" and text[7] == "-":
+            yyyy = text[0:4]
+            mm = text[5:7]
+            dd = text[8:10]
+
+            if with_time and len(text) >= 16:
+                hh = text[11:13]
+                minute = text[14:16]
+                if hh.isdigit() and minute.isdigit():
+                    return f"{dd}.{mm}.{yyyy} {hh}:{minute}"
+
+            return f"{dd}.{mm}.{yyyy}"
+
+    except Exception:
+        pass
+
+    return text
+
+
+def build_user_unclaimed_auction_sale_details(user_id, lot_id):
+    """
+    Ukrainian date-format override for completed sales details.
+    """
+
+    init_auction_house()
+    update_expired_auction_lots()
+
+    cursor.execute(
+        "SELECT * FROM auction_lots WHERE id=? AND seller_user_id=?",
+        (int(lot_id), int(user_id))
+    )
+    lot = cursor.fetchone()
+
+    if not lot:
+        return {"success": False, "message": "❌ Продаж не знайдено."}
+
+    if lot["status"] != AUCTION_STATUS_SOLD_UNCLAIMED:
+        return {"success": False, "message": "⚠️ Це золото вже отримано або продаж недоступний."}
+
+    snapshot = safe_json_loads(lot["item_snapshot_json"])
+    category = lot["category"]
+    quantity = int(lot["quantity"] or 1)
+
+    lines = []
+    lines.append("💰 Завершений продаж")
+    lines.append("")
+    lines.append(str(lot["item_name"]))
+    lines.append("")
+    lines.append(f"✅ Продано за: {lot['price']} золота")
+
+    if lot["sold_at"]:
+        lines.append(f"🕒 Дата продажу: {_auction_format_ua_datetime_v1(lot['sold_at'], with_time=True)}")
+    if lot["delete_after"]:
+        lines.append(f"🗑 Видалення виплати після: {_auction_format_ua_datetime_v1(lot['delete_after'], with_time=True)}")
+
+    if category == AUCTION_CATEGORY_EQUIPMENT:
+        refine_level = int(lot["enhancement_level"] or snapshot.get("refine_level", 0) or 0)
+        item_type = snapshot.get("item_type") or _auction_snapshot_value(snapshot, "type", "item_type", default="")
+        slot_key = snapshot.get("slot_key") or _auction_snapshot_value(snapshot, "slot_key", "slot", default="")
+        level = int(lot["level"] or snapshot.get("level", 0) or 0)
+
+        lines.append("")
+        lines.append(_auction_inventory_style_type_line(AUCTION_CATEGORY_EQUIPMENT))
+        lines.append(f"🎯 Слот: {_auction_inventory_style_slot(snapshot, slot_key, item_type)}")
+        if level:
+            lines.append(f"🏷 Рівень предмета: {level} 🔒")
+        if refine_level:
+            lines.append(f"✨ Заточка: +{refine_level}")
+        if lot["durability_current"] is not None:
+            lines.append(f"🧱 Міцність: {lot['durability_current']}/{lot['durability_max']}")
+
+        damage_lines = _auction_inventory_style_damage_lines(snapshot)
+        defense_lines = _auction_collect_inventory_style_defense_lines(snapshot)
+        bonus_lines = _auction_collect_inventory_style_bonus_lines(snapshot)
+
+        if damage_lines:
+            lines.append("")
+            lines.extend(damage_lines)
+        if defense_lines:
+            lines.extend(defense_lines)
+        if bonus_lines:
+            lines.append("")
+            lines.append("📊 Бонуси:")
+            lines.extend(bonus_lines)
+    else:
+        lines.append("")
+        lines.append(_auction_inventory_style_type_line(category))
+        lines.append(f"📦 Кількість: {quantity}")
+        desc_lines = _auction_collect_stack_description_lines(snapshot)
+        if desc_lines:
+            lines.append("")
+            lines.extend(desc_lines)
+
+    lines.append("")
+    lines.append("Золото можна забрати вручну.")
+
+    return {
+        "success": True,
+        "lot": lot,
+        "snapshot": snapshot,
+        "text": "\n".join(lines),
+    }
+
+
+def build_user_unclaimed_auction_item_details(user_id, lot_id):
+    """
+    Ukrainian date-format override for expired unclaimed item details.
+    """
+
+    init_auction_house()
+    update_expired_auction_lots()
+
+    cursor.execute(
+        "SELECT * FROM auction_lots WHERE id=? AND seller_user_id=?",
+        (int(lot_id), int(user_id))
+    )
+    lot = cursor.fetchone()
+
+    if not lot:
+        return {"success": False, "message": "❌ Лот не знайдено."}
+
+    if lot["status"] != AUCTION_STATUS_EXPIRED_UNCLAIMED:
+        return {"success": False, "message": "⚠️ Цей предмет уже не очікує отримання."}
+
+    snapshot = safe_json_loads(lot["item_snapshot_json"])
+    category = lot["category"]
+    quantity = int(lot["quantity"] or 1)
+
+    lines = []
+    lines.append("📬 Незабраний предмет")
+    lines.append("")
+    lines.append(str(lot["item_name"]))
+    lines.append("")
+    lines.append("⏳ Лот завершився і не був проданий.")
+    lines.append(f"💰 Ціна лота була: {lot['price']} золота")
+
+    if lot["delete_after"]:
+        lines.append(f"🗑 Видалення після: {_auction_format_ua_datetime_v1(lot['delete_after'], with_time=True)}")
+
+    if category == AUCTION_CATEGORY_EQUIPMENT:
+        refine_level = int(lot["enhancement_level"] or snapshot.get("refine_level", 0) or 0)
+        item_type = snapshot.get("item_type") or _auction_snapshot_value(snapshot, "type", "item_type", default="")
+        slot_key = snapshot.get("slot_key") or _auction_snapshot_value(snapshot, "slot_key", "slot", default="")
+        level = int(lot["level"] or snapshot.get("level", 0) or 0)
+
+        lines.append("")
+        lines.append(_auction_inventory_style_type_line(AUCTION_CATEGORY_EQUIPMENT))
+        lines.append(f"🎯 Слот: {_auction_inventory_style_slot(snapshot, slot_key, item_type)}")
+        if level:
+            lines.append(f"🏷 Рівень предмета: {level} 🔒")
+        if refine_level:
+            lines.append(f"✨ Заточка: +{refine_level}")
+        if lot["durability_current"] is not None:
+            lines.append(f"🧱 Міцність: {lot['durability_current']}/{lot['durability_max']}")
+
+        damage_lines = _auction_inventory_style_damage_lines(snapshot)
+        defense_lines = _auction_collect_inventory_style_defense_lines(snapshot)
+        bonus_lines = _auction_collect_inventory_style_bonus_lines(snapshot)
+
+        if damage_lines:
+            lines.append("")
+            lines.extend(damage_lines)
+        if defense_lines:
+            lines.extend(defense_lines)
+        if bonus_lines:
+            lines.append("")
+            lines.append("📊 Бонуси:")
+            lines.extend(bonus_lines)
+    else:
+        lines.append("")
+        lines.append(_auction_inventory_style_type_line(category))
+        lines.append(f"📦 Кількість: {quantity}")
+        desc_lines = _auction_collect_stack_description_lines(snapshot)
+        if desc_lines:
+            lines.append("")
+            lines.extend(desc_lines)
+
+    lines.append("")
+    lines.append("Предмет можна повернути в інвентар, якщо там є місце.")
+
+    return {
+        "success": True,
+        "lot": lot,
+        "snapshot": snapshot,
+        "text": "\n".join(lines),
+    }
+
+
+# ==============================
+# ✅ AUCTION HOUSE BUY FILTERS SORTING V1
+# ==============================
+
+AUCTION_BUY_PAGE_SIZE = 8
+AUCTION_BUY_CATEGORY_ALL = "all"
+
+AUCTION_BUY_CATEGORY_LABELS = {
+    "all": "Усі лоти",
+    "equipment": "⚔️ Спорядження",
+    "potion": "🧪 Зілля",
+    "material": "🪨 Матеріали",
+}
+
+AUCTION_BUY_SORT_LABELS = {
+    "new": "Нові",
+    "old": "Старі",
+    "price_asc": "Ціна ↑",
+    "price_desc": "Ціна ↓",
+    "rarity": "Рідкість",
+}
+
+
+def _auction_buy_normalize_category(category):
+    category = str(category or AUCTION_BUY_CATEGORY_ALL).strip().lower()
+    if category in ("all", "any", "*"):
+        return AUCTION_BUY_CATEGORY_ALL
+    if category in ("equipment", "gear", AUCTION_CATEGORY_EQUIPMENT):
+        return AUCTION_CATEGORY_EQUIPMENT
+    if category in ("potion", "potions", AUCTION_CATEGORY_POTION):
+        return AUCTION_CATEGORY_POTION
+    if category in ("material", "materials", AUCTION_CATEGORY_MATERIAL):
+        return AUCTION_CATEGORY_MATERIAL
+    return AUCTION_BUY_CATEGORY_ALL
+
+
+def _auction_buy_normalize_sort(sort_key):
+    sort_key = str(sort_key or "new").strip().lower()
+    if sort_key in ("new", "old", "price_asc", "price_desc", "rarity"):
+        return sort_key
+    return "new"
+
+
+def get_auction_lots_for_buy_filtered(buyer_user_id, category="all", sort_key="new", limit=8, offset=0):
+    """
+    Returns ACTIVE lots for buyer with category filter and sorting.
+
+    Own lots are hidden from buyer.
+    """
+    init_auction_house()
+    update_expired_auction_lots()
+
+    buyer_user_id = int(buyer_user_id)
+    category = _auction_buy_normalize_category(category)
+    sort_key = _auction_buy_normalize_sort(sort_key)
+
+    try:
+        limit = int(limit)
+    except Exception:
+        limit = 8
+    try:
+        offset = int(offset)
+    except Exception:
+        offset = 0
+
+    limit = max(1, min(50, limit))
+    offset = max(0, offset)
+
+    where = ["status=?", "seller_user_id<>?"]
+    params = [AUCTION_STATUS_ACTIVE, buyer_user_id]
+
+    if category != AUCTION_BUY_CATEGORY_ALL:
+        where.append("category=?")
+        params.append(category)
+
+    order_by = "created_at DESC"
+    if sort_key == "old":
+        order_by = "created_at ASC"
+    elif sort_key == "price_asc":
+        order_by = "CAST(price AS REAL) ASC, created_at DESC"
+    elif sort_key == "price_desc":
+        order_by = "CAST(price AS REAL) DESC, created_at DESC"
+    elif sort_key == "rarity":
+        order_by = """
+        CASE rarity
+            WHEN 'epic' THEN 4
+            WHEN 'rare' THEN 3
+            WHEN 'uncommon' THEN 2
+            WHEN 'common' THEN 1
+            ELSE 0
+        END DESC,
+        level DESC,
+        created_at DESC
+        """
+
+    sql = f"""
+    SELECT *
+    FROM auction_lots
+    WHERE {' AND '.join(where)}
+    ORDER BY {order_by}
+    LIMIT ? OFFSET ?
+    """
+    params.extend([limit, offset])
+
+    cursor.execute(sql, tuple(params))
+    return cursor.fetchall()
+
+
+def build_auction_buy_lot_details_v2(buyer_user_id, lot_id):
+    """
+    Inventory-style lot details for buyer.
+    Seller remains hidden.
+    """
+    init_auction_house()
+    update_expired_auction_lots()
+
+    cursor.execute("SELECT * FROM auction_lots WHERE id=?", (int(lot_id),))
+    lot = cursor.fetchone()
+
+    if not lot:
+        return {"success": False, "message": "❌ Лот не знайдено."}
+
+    if lot["status"] != AUCTION_STATUS_ACTIVE:
+        return {"success": False, "message": "⚠️ Лот уже недоступний."}
+
+    if int(lot["seller_user_id"] or 0) == int(buyer_user_id):
+        return {"success": False, "message": "⚠️ Не можна купити власний лот."}
+
+    snapshot = safe_json_loads(lot["item_snapshot_json"])
+    category = lot["category"]
+    quantity = int(lot["quantity"] or 1)
+
+    lines = []
+    lines.append("📦 Лот Торгового Дому")
+    lines.append("")
+    lines.append(str(lot["item_name"]))
+    lines.append("")
+
+    if category == AUCTION_CATEGORY_EQUIPMENT:
+        refine_level = int(lot["enhancement_level"] or snapshot.get("refine_level", 0) or 0)
+        item_type = snapshot.get("item_type") or _auction_snapshot_value(snapshot, "type", "item_type", default="")
+        slot_key = snapshot.get("slot_key") or _auction_snapshot_value(snapshot, "slot_key", "slot", default="")
+        level = int(lot["level"] or snapshot.get("level", 0) or 0)
+
+        lines.append(_auction_inventory_style_type_line(AUCTION_CATEGORY_EQUIPMENT))
+        lines.append(f"🎯 Слот: {_auction_inventory_style_slot(snapshot, slot_key, item_type)}")
+
+        try:
+            allowed_classes = _auction_inventory_style_allowed_classes(snapshot)
+            if allowed_classes:
+                lines.append(f"👥 Підходить класам: {allowed_classes}")
+        except Exception:
+            pass
+
+        if level:
+            lines.append(f"🏷 Рівень предмета: {level} 🔒")
+        if refine_level:
+            lines.append(f"✨ Заточка: +{refine_level}")
+
+        weapon_type_line = _auction_inventory_style_weapon_type_line(snapshot)
+        if weapon_type_line:
+            lines.append(weapon_type_line)
+
+        damage_lines = _auction_inventory_style_damage_lines(snapshot)
+        if damage_lines:
+            lines.extend(damage_lines)
+
+        if lot["durability_current"] is not None:
+            lines.append(f"🧱 Міцність: {lot['durability_current']}/{lot['durability_max']}")
+
+        defense_lines = _auction_collect_inventory_style_defense_lines(snapshot)
+        bonus_lines = _auction_collect_inventory_style_bonus_lines(snapshot)
+
+        if defense_lines:
+            lines.append("")
+            lines.extend(defense_lines)
+        if bonus_lines:
+            lines.append("")
+            lines.append("📊 Бонуси:")
+            lines.extend(bonus_lines)
+    else:
+        lines.append(_auction_inventory_style_type_line(category))
+        lines.append(f"📦 Кількість: {quantity}")
+        desc_lines = _auction_collect_stack_description_lines(snapshot)
+        if desc_lines:
+            lines.append("")
+            lines.extend(desc_lines)
+
+    lines.append("")
+    lines.append(f"💰 Ціна: {lot['price']} золота")
+    lines.append("⏳ Активний лот: до 7 днів від створення")
+    lines.append("")
+    lines.append("Продавець прихований.")
+
+    return {
+        "success": True,
+        "lot": lot,
+        "snapshot": snapshot,
+        "text": "\n".join(lines),
+    }
+
+
+def buy_auction_lot_v2(buyer_user_id, lot_id):
+    """
+    Transactional auction purchase.
+
+    ACTIVE -> SOLD_UNCLAIMED.
+    Buyer receives item immediately.
+    Seller claims gold later in completed sales.
+    """
+    init_auction_house()
+    update_expired_auction_lots()
+
+    buyer_user_id = int(buyer_user_id)
+    lot_id = int(lot_id)
+
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+
+        cursor.execute("SELECT * FROM auction_lots WHERE id=?", (lot_id,))
+        lot = cursor.fetchone()
+
+        if not lot:
+            conn.rollback()
+            return {"success": False, "message": "❌ Лот не знайдено."}
+
+        if lot["status"] != AUCTION_STATUS_ACTIVE:
+            conn.rollback()
+            return {"success": False, "message": "⚠️ Лот уже недоступний."}
+
+        seller_user_id = int(lot["seller_user_id"] or 0)
+        if seller_user_id == buyer_user_id:
+            conn.rollback()
+            return {"success": False, "message": "⚠️ Не можна купити власний лот."}
+
+        price = auction_price_to_decimal(lot["price"])
+        buyer_gold = _auction_get_user_gold(buyer_user_id)
+
+        if buyer_gold < price:
+            conn.rollback()
+            return {
+                "success": False,
+                "message": (
+                    "❌ Недостатньо золота.\n\n"
+                    f"💰 Потрібно: {format_auction_price(price)}\n"
+                    f"💰 У тебе: {format_auction_price(buyer_gold)}"
+                )
+            }
+
+        snapshot = safe_json_loads(lot["item_snapshot_json"])
+        quantity = int(lot["quantity"] or 1)
+
+        inventory_id = _auction_insert_inventory_from_snapshot(
+            buyer_user_id,
+            snapshot,
+            quantity=quantity,
+        )
+
+        _auction_set_user_gold(buyer_user_id, buyer_gold - price)
+
+        now = now_iso()
+        delete_after = add_days_iso(now, AUCTION_UNCLAIMED_RETENTION_DAYS)
+
+        cursor.execute("""
+        UPDATE auction_lots
+        SET status=?,
+            buyer_user_id=?,
+            sold_at=?,
+            delete_after=?,
+            updated_at=?
+        WHERE id=? AND status=?
+        """, (
+            AUCTION_STATUS_SOLD_UNCLAIMED,
+            buyer_user_id,
+            now,
+            delete_after,
+            now,
+            lot_id,
+            AUCTION_STATUS_ACTIVE,
+        ))
+
+        if cursor.rowcount != 1:
+            conn.rollback()
+            return {"success": False, "message": "⚠️ Лот уже куплений іншим гравцем."}
+
+        cursor.execute("""
+        INSERT INTO auction_history (
+            lot_id,
+            event_type,
+            actor_user_id,
+            seller_user_id,
+            buyer_user_id,
+            item_name,
+            category,
+            quantity,
+            price,
+            status_before,
+            status_after,
+            details_json,
+            created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            lot_id,
+            AUCTION_HISTORY_PURCHASED,
+            buyer_user_id,
+            seller_user_id,
+            buyer_user_id,
+            lot["item_name"],
+            lot["category"],
+            quantity,
+            lot["price"],
+            AUCTION_STATUS_ACTIVE,
+            AUCTION_STATUS_SOLD_UNCLAIMED,
+            safe_json_dumps({"buyer_inventory_id": inventory_id}),
+            now,
+        ))
+
+        conn.commit()
+
+        return {
+            "success": True,
+            "message": "✅ Покупку завершено!",
+            "lot_id": lot_id,
+            "item_name": lot["item_name"],
+            "quantity": quantity,
+            "price": lot["price"],
+            "inventory_id": inventory_id,
+        }
+
+    except Exception as error:
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        return {"success": False, "message": f"❌ Помилка покупки: {error}"}
+

@@ -12417,3 +12417,88 @@ def build_auction_sell_item_review_text(user_id, inventory_id, category):
     from systems.auction_house_system import build_auction_sell_item_review_text as _func
     return _func(user_id=user_id, inventory_id=inventory_id, category=category)
 
+
+# ==============================
+# ✅ AUCTION HOUSE MY LOTS CANCEL WRAPPERS V1
+# ==============================
+
+
+def get_user_auction_lots(user_id, status=None, limit=8, offset=0):
+    from systems.auction_house_system import get_user_auction_lots as _func
+    return _func(user_id=user_id, status=status, limit=limit, offset=offset)
+
+
+def get_user_auction_lot_by_id(user_id, lot_id):
+    from systems.auction_house_system import get_user_auction_lot_by_id as _func
+    return _func(user_id=user_id, lot_id=lot_id)
+
+
+def build_user_auction_lot_details(user_id, lot_id):
+    from systems.auction_house_system import build_user_auction_lot_details as _func
+    return _func(user_id=user_id, lot_id=lot_id)
+
+
+def cancel_active_auction_lot(user_id, lot_id):
+    from systems.auction_house_system import cancel_active_auction_lot as _func
+    return _func(user_id=user_id, lot_id=lot_id)
+
+
+# ==============================
+# ✅ AUCTION HOUSE UNCLAIMED ITEMS WRAPPERS V1
+# ==============================
+
+
+def get_user_unclaimed_auction_items(user_id, limit=8, offset=0):
+    from systems.auction_house_system import get_user_unclaimed_auction_items as _func
+    return _func(user_id=user_id, limit=limit, offset=offset)
+
+
+def build_user_unclaimed_auction_item_details(user_id, lot_id):
+    from systems.auction_house_system import build_user_unclaimed_auction_item_details as _func
+    return _func(user_id=user_id, lot_id=lot_id)
+
+
+def claim_expired_auction_item(user_id, lot_id):
+    from systems.auction_house_system import claim_expired_auction_item as _func
+    return _func(user_id=user_id, lot_id=lot_id)
+
+
+# ==============================
+# ✅ AUCTION HOUSE COMPLETED SALES CLAIM GOLD WRAPPERS V1
+# ==============================
+
+
+def get_user_unclaimed_auction_sales(user_id, limit=8, offset=0):
+    from systems.auction_house_system import get_user_unclaimed_auction_sales as _func
+    return _func(user_id=user_id, limit=limit, offset=offset)
+
+
+def build_user_unclaimed_auction_sale_details(user_id, lot_id):
+    from systems.auction_house_system import build_user_unclaimed_auction_sale_details as _func
+    return _func(user_id=user_id, lot_id=lot_id)
+
+
+def claim_auction_sale_gold(user_id, lot_id):
+    from systems.auction_house_system import claim_auction_sale_gold as _func
+    return _func(user_id=user_id, lot_id=lot_id)
+
+
+# ==============================
+# ✅ AUCTION HOUSE BUY FILTERS SORTING WRAPPERS V1
+# ==============================
+
+
+def get_auction_lots_for_buy_filtered(buyer_user_id, category="all", sort_key="new", limit=8, offset=0):
+    from systems.auction_house_system import get_auction_lots_for_buy_filtered as _func
+    return _func(buyer_user_id=buyer_user_id, category=category, sort_key=sort_key, limit=limit, offset=offset)
+
+
+def build_auction_buy_lot_details_v2(buyer_user_id, lot_id):
+    from systems.auction_house_system import build_auction_buy_lot_details_v2 as _func
+    return _func(buyer_user_id=buyer_user_id, lot_id=lot_id)
+
+
+def buy_auction_lot_v2(buyer_user_id, lot_id):
+    from systems.auction_house_system import buy_auction_lot_v2 as _func
+    return _func(buyer_user_id=buyer_user_id, lot_id=lot_id)
+

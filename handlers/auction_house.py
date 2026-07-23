@@ -2088,3 +2088,985 @@ def register_auction_house_handlers(bot):
     if _auction_base_register_handlers_before_sell_review_v1:
         _auction_base_register_handlers_before_sell_review_v1(bot)
 
+
+# ==============================
+# ✅ AUCTION HOUSE MY LOTS CANCEL UI V1
+# ==============================
+
+AUCTION_MY_LOTS_PAGE_SIZE = 8
+
+
+def auction_my_lots_inline_kb_v1(user_id, page=0):
+    from db import get_user_auction_lots
+
+    page = max(0, int(page or 0))
+    offset = page * AUCTION_MY_LOTS_PAGE_SIZE
+    lots = get_user_auction_lots(
+        user_id=user_id,
+        status="ACTIVE",
+        limit=AUCTION_MY_LOTS_PAGE_SIZE + 1,
+        offset=offset,
+    )
+
+    visible_lots = lots[:AUCTION_MY_LOTS_PAGE_SIZE]
+    has_next = len(lots) > AUCTION_MY_LOTS_PAGE_SIZE
+
+    kb = types.InlineKeyboardMarkup(row_width=1)
+
+    for lot in visible_lots:
+        quantity = int(lot["quantity"] or 1)
+        qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
+        label = f"📦 {lot['item_name']}{qty} — {lot['price']} 💰"
+        kb.add(types.InlineKeyboardButton(
+            _auction_inline_truncate(label),
+            callback_data=f"ah_my_lot:{lot['id']}:{page}"
+        ))
+
+    nav = []
+    if page > 0:
+        nav.append(types.InlineKeyboardButton("⬅️ Попередні", callback_data=f"ah_my_page:{page - 1}"))
+    if has_next:
+        nav.append(types.InlineKeyboardButton("➡️ Наступні", callback_data=f"ah_my_page:{page + 1}"))
+    if nav:
+        kb.row(*nav)
+
+    kb.add(types.InlineKeyboardButton("🔙 Торговий дім", callback_data="ah_menu"))
+    return kb, visible_lots, has_next
+
+
+def build_auction_my_lots_text_v1(user_id, page=0):
+    kb, lots, has_next = auction_my_lots_inline_kb_v1(user_id, page=page)
+    text = f"📦 Мої лоти\n\nСторінка: {int(page) + 1}\n\n"
+
+    if not lots:
+        text += "У тебе немає активних лотів."
+    else:
+        text += (
+            "Оберіть активний лот inline-кнопкою нижче.\n\n"
+            "У картці лота можна зняти товар з продажу."
+        )
+
+    return text, kb
+
+
+def auction_my_lot_view_kb_v1(lot_id, page=0):
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("📥 Зняти з продажу", callback_data=f"ah_my_cancel_confirm:{lot_id}:{page}"))
+    kb.add(types.InlineKeyboardButton("🔙 До моїх лотів", callback_data=f"ah_my_page:{page}"))
+    kb.add(types.InlineKeyboardButton("🔙 Торговий дім", callback_data="ah_menu"))
+    return kb
+
+
+def auction_my_lot_cancel_confirm_kb_v1(lot_id, page=0):
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("✅ Підтвердити зняття", callback_data=f"ah_my_cancel_do:{lot_id}:{page}"))
+    kb.add(types.InlineKeyboardButton("❌ Назад", callback_data=f"ah_my_lot:{lot_id}:{page}"))
+    return kb
+
+
+def _auction_register_my_lots_cancel_handlers_v1(bot):
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_MY_LOTS_BUTTON)
+    def auction_my_lots_start_v1(message):
+        user_id = message.from_user.id
+        text, kb = build_auction_my_lots_text_v1(user_id, page=0)
+        bot.send_message(message.chat.id, text, reply_markup=kb)
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_my_page:"))
+    def auction_my_lots_page_callback_v1(call):
+        user_id = call.from_user.id
+        page = int(call.data.split(":")[1])
+        text, kb = build_auction_my_lots_text_v1(user_id, page=page)
+        try:
+            bot.answer_callback_query(call.id)
+            bot.edit_message_text(text, chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=kb)
+        except Exception:
+            bot.send_message(call.message.chat.id, text, reply_markup=kb)
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_my_lot:"))
+    def auction_my_lot_view_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        lot_id = int(parts[1])
+        page = int(parts[2]) if len(parts) > 2 else 0
+
+        from db import build_user_auction_lot_details
+        details = build_user_auction_lot_details(user_id=user_id, lot_id=lot_id)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        if not details.get("success"):
+            text, kb = build_auction_my_lots_text_v1(user_id, page=page)
+            bot.send_message(call.message.chat.id, details.get("message", "❌ Лот недоступний."), reply_markup=auction_house_kb())
+            bot.send_message(call.message.chat.id, text, reply_markup=kb)
+            return
+
+        try:
+            bot.edit_message_text(details["text"], chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=auction_my_lot_view_kb_v1(lot_id, page=page))
+        except Exception:
+            bot.send_message(call.message.chat.id, details["text"], reply_markup=auction_my_lot_view_kb_v1(lot_id, page=page))
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_my_cancel_confirm:"))
+    def auction_my_lot_cancel_confirm_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        lot_id = int(parts[1])
+        page = int(parts[2]) if len(parts) > 2 else 0
+
+        from db import build_user_auction_lot_details
+        details = build_user_auction_lot_details(user_id=user_id, lot_id=lot_id)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        if not details.get("success"):
+            bot.send_message(call.message.chat.id, details.get("message", "❌ Лот недоступний."), reply_markup=auction_house_kb())
+            return
+
+        text = (
+            "⚠️ Підтвердження зняття лота\n\n"
+            f"{details['text']}\n\n"
+            "Після підтвердження предмет повернеться в інвентар, якщо там є місце."
+        )
+
+        try:
+            bot.edit_message_text(text, chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=auction_my_lot_cancel_confirm_kb_v1(lot_id, page=page))
+        except Exception:
+            bot.send_message(call.message.chat.id, text, reply_markup=auction_my_lot_cancel_confirm_kb_v1(lot_id, page=page))
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_my_cancel_do:"))
+    def auction_my_lot_cancel_do_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        lot_id = int(parts[1])
+        page = int(parts[2]) if len(parts) > 2 else 0
+
+        from db import cancel_active_auction_lot
+        result = cancel_active_auction_lot(user_id=user_id, lot_id=lot_id)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        if not result.get("success"):
+            bot.send_message(call.message.chat.id, result.get("message", "❌ Не вдалося зняти лот."), reply_markup=auction_house_kb())
+            return
+
+        bot.send_message(
+            call.message.chat.id,
+            (
+                "✅ Лот знято з продажу!\n\n"
+                f"📦 {result.get('item_name')}\n"
+                "Предмет повернено в інвентар."
+            ),
+            reply_markup=auction_house_kb(),
+        )
+
+        text, kb = build_auction_my_lots_text_v1(user_id, page=page)
+        bot.send_message(call.message.chat.id, text, reply_markup=kb)
+
+
+try:
+    _auction_base_register_handlers_before_my_lots_cancel_v1 = register_auction_house_handlers
+except NameError:
+    _auction_base_register_handlers_before_my_lots_cancel_v1 = None
+
+
+def register_auction_house_handlers(bot):
+    # My lots handler must be registered before old placeholder for 📦 Мої лоти.
+    _auction_register_my_lots_cancel_handlers_v1(bot)
+
+    if _auction_base_register_handlers_before_my_lots_cancel_v1:
+        _auction_base_register_handlers_before_my_lots_cancel_v1(bot)
+
+
+# ==============================
+# ✅ AUCTION HOUSE UNCLAIMED ITEMS UI V1
+# ==============================
+
+AUCTION_UNCLAIMED_ITEMS_PAGE_SIZE = 8
+
+
+def auction_unclaimed_items_inline_kb_v1(user_id, page=0):
+    from db import get_user_unclaimed_auction_items
+
+    page = max(0, int(page or 0))
+    offset = page * AUCTION_UNCLAIMED_ITEMS_PAGE_SIZE
+    lots = get_user_unclaimed_auction_items(
+        user_id=user_id,
+        limit=AUCTION_UNCLAIMED_ITEMS_PAGE_SIZE + 1,
+        offset=offset,
+    )
+
+    visible_lots = lots[:AUCTION_UNCLAIMED_ITEMS_PAGE_SIZE]
+    has_next = len(lots) > AUCTION_UNCLAIMED_ITEMS_PAGE_SIZE
+
+    kb = types.InlineKeyboardMarkup(row_width=1)
+
+    for lot in visible_lots:
+        quantity = int(lot["quantity"] or 1)
+        qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
+        label = f"📬 {lot['item_name']}{qty}"
+        kb.add(types.InlineKeyboardButton(
+            _auction_inline_truncate(label),
+            callback_data=f"ah_uncl_lot:{lot['id']}:{page}"
+        ))
+
+    nav = []
+    if page > 0:
+        nav.append(types.InlineKeyboardButton("⬅️ Попередні", callback_data=f"ah_uncl_page:{page - 1}"))
+    if has_next:
+        nav.append(types.InlineKeyboardButton("➡️ Наступні", callback_data=f"ah_uncl_page:{page + 1}"))
+    if nav:
+        kb.row(*nav)
+
+    kb.add(types.InlineKeyboardButton("🔙 Торговий дім", callback_data="ah_menu"))
+    return kb, visible_lots, has_next
+
+
+def build_auction_unclaimed_items_text_v1(user_id, page=0):
+    kb, lots, has_next = auction_unclaimed_items_inline_kb_v1(user_id, page=page)
+    text = f"📬 Незабрані предмети\n\nСторінка: {int(page) + 1}\n\n"
+
+    if not lots:
+        text += "У тебе немає незабраних предметів."
+    else:
+        text += (
+            "Тут зберігаються предмети з лотів, термін яких завершився без продажу.\n\n"
+            "Оберіть предмет inline-кнопкою нижче, щоб забрати його в інвентар."
+        )
+
+    return text, kb
+
+
+def auction_unclaimed_item_view_kb_v1(lot_id, page=0):
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("📥 Забрати предмет", callback_data=f"ah_uncl_claim_confirm:{lot_id}:{page}"))
+    kb.add(types.InlineKeyboardButton("🔙 До незабраних", callback_data=f"ah_uncl_page:{page}"))
+    kb.add(types.InlineKeyboardButton("🔙 Торговий дім", callback_data="ah_menu"))
+    return kb
+
+
+def auction_unclaimed_claim_confirm_kb_v1(lot_id, page=0):
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("✅ Підтвердити отримання", callback_data=f"ah_uncl_claim_do:{lot_id}:{page}"))
+    kb.add(types.InlineKeyboardButton("❌ Назад", callback_data=f"ah_uncl_lot:{lot_id}:{page}"))
+    return kb
+
+
+def _auction_register_unclaimed_items_handlers_v1(bot):
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_UNCLAIMED_ITEMS_BUTTON)
+    def auction_unclaimed_items_start_v1(message):
+        user_id = message.from_user.id
+        text, kb = build_auction_unclaimed_items_text_v1(user_id, page=0)
+        bot.send_message(message.chat.id, text, reply_markup=kb)
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_uncl_page:"))
+    def auction_unclaimed_items_page_callback_v1(call):
+        user_id = call.from_user.id
+        page = int(call.data.split(":")[1])
+        text, kb = build_auction_unclaimed_items_text_v1(user_id, page=page)
+        try:
+            bot.answer_callback_query(call.id)
+            bot.edit_message_text(text, chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=kb)
+        except Exception:
+            bot.send_message(call.message.chat.id, text, reply_markup=kb)
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_uncl_lot:"))
+    def auction_unclaimed_item_view_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        lot_id = int(parts[1])
+        page = int(parts[2]) if len(parts) > 2 else 0
+
+        from db import build_user_unclaimed_auction_item_details
+        details = build_user_unclaimed_auction_item_details(user_id=user_id, lot_id=lot_id)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        if not details.get("success"):
+            text, kb = build_auction_unclaimed_items_text_v1(user_id, page=page)
+            bot.send_message(call.message.chat.id, details.get("message", "❌ Предмет недоступний."), reply_markup=auction_house_kb())
+            bot.send_message(call.message.chat.id, text, reply_markup=kb)
+            return
+
+        try:
+            bot.edit_message_text(details["text"], chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=auction_unclaimed_item_view_kb_v1(lot_id, page=page))
+        except Exception:
+            bot.send_message(call.message.chat.id, details["text"], reply_markup=auction_unclaimed_item_view_kb_v1(lot_id, page=page))
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_uncl_claim_confirm:"))
+    def auction_unclaimed_claim_confirm_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        lot_id = int(parts[1])
+        page = int(parts[2]) if len(parts) > 2 else 0
+
+        from db import build_user_unclaimed_auction_item_details
+        details = build_user_unclaimed_auction_item_details(user_id=user_id, lot_id=lot_id)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        if not details.get("success"):
+            bot.send_message(call.message.chat.id, details.get("message", "❌ Предмет недоступний."), reply_markup=auction_house_kb())
+            return
+
+        text = (
+            "⚠️ Підтвердження отримання предмета\n\n"
+            f"{details['text']}\n\n"
+            "Після підтвердження предмет повернеться в інвентар, якщо там є місце."
+        )
+
+        try:
+            bot.edit_message_text(text, chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=auction_unclaimed_claim_confirm_kb_v1(lot_id, page=page))
+        except Exception:
+            bot.send_message(call.message.chat.id, text, reply_markup=auction_unclaimed_claim_confirm_kb_v1(lot_id, page=page))
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_uncl_claim_do:"))
+    def auction_unclaimed_claim_do_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        lot_id = int(parts[1])
+        page = int(parts[2]) if len(parts) > 2 else 0
+
+        from db import claim_expired_auction_item
+        result = claim_expired_auction_item(user_id=user_id, lot_id=lot_id)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        if not result.get("success"):
+            bot.send_message(call.message.chat.id, result.get("message", "❌ Не вдалося отримати предмет."), reply_markup=auction_house_kb())
+            return
+
+        bot.send_message(
+            call.message.chat.id,
+            (
+                "✅ Предмет повернено в інвентар!\n\n"
+                f"📦 {result.get('item_name')}"
+            ),
+            reply_markup=auction_house_kb(),
+        )
+
+        text, kb = build_auction_unclaimed_items_text_v1(user_id, page=page)
+        bot.send_message(call.message.chat.id, text, reply_markup=kb)
+
+
+try:
+    _auction_base_register_handlers_before_unclaimed_items_v1 = register_auction_house_handlers
+except NameError:
+    _auction_base_register_handlers_before_unclaimed_items_v1 = None
+
+
+def register_auction_house_handlers(bot):
+    # Unclaimed items handler must be registered before old placeholder for 📬 Незабрані предмети.
+    _auction_register_unclaimed_items_handlers_v1(bot)
+
+    if _auction_base_register_handlers_before_unclaimed_items_v1:
+        _auction_base_register_handlers_before_unclaimed_items_v1(bot)
+
+
+# ==============================
+# ✅ AUCTION HOUSE COMPLETED SALES CLAIM GOLD UI V1
+# ==============================
+
+AUCTION_COMPLETED_SALES_PAGE_SIZE = 8
+
+
+def auction_completed_sales_inline_kb_v1(user_id, page=0):
+    from db import get_user_unclaimed_auction_sales
+
+    page = max(0, int(page or 0))
+    offset = page * AUCTION_COMPLETED_SALES_PAGE_SIZE
+    lots = get_user_unclaimed_auction_sales(
+        user_id=user_id,
+        limit=AUCTION_COMPLETED_SALES_PAGE_SIZE + 1,
+        offset=offset,
+    )
+
+    visible_lots = lots[:AUCTION_COMPLETED_SALES_PAGE_SIZE]
+    has_next = len(lots) > AUCTION_COMPLETED_SALES_PAGE_SIZE
+
+    kb = types.InlineKeyboardMarkup(row_width=1)
+
+    for lot in visible_lots:
+        quantity = int(lot["quantity"] or 1)
+        qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
+        label = f"💰 {lot['item_name']}{qty} — {lot['price']} золота"
+        kb.add(types.InlineKeyboardButton(
+            _auction_inline_truncate(label),
+            callback_data=f"ah_sale_lot:{lot['id']}:{page}"
+        ))
+
+    nav = []
+    if page > 0:
+        nav.append(types.InlineKeyboardButton("⬅️ Попередні", callback_data=f"ah_sale_page:{page - 1}"))
+    if has_next:
+        nav.append(types.InlineKeyboardButton("➡️ Наступні", callback_data=f"ah_sale_page:{page + 1}"))
+    if nav:
+        kb.row(*nav)
+
+    kb.add(types.InlineKeyboardButton("🔙 Торговий дім", callback_data="ah_menu"))
+    return kb, visible_lots, has_next
+
+
+def build_auction_completed_sales_text_v1(user_id, page=0):
+    kb, lots, has_next = auction_completed_sales_inline_kb_v1(user_id, page=page)
+    text = f"💰 Завершені продажі\n\nСторінка: {int(page) + 1}\n\n"
+
+    if not lots:
+        text += "У тебе немає завершених продажів із незабраним золотом."
+    else:
+        text += (
+            "Тут зберігається золото за продані лоти.\n\n"
+            "Оберіть продаж inline-кнопкою нижче, щоб забрати золото."
+        )
+
+    return text, kb
+
+
+def auction_completed_sale_view_kb_v1(lot_id, page=0):
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("💰 Забрати золото", callback_data=f"ah_sale_claim_confirm:{lot_id}:{page}"))
+    kb.add(types.InlineKeyboardButton("🔙 До завершених продажів", callback_data=f"ah_sale_page:{page}"))
+    kb.add(types.InlineKeyboardButton("🔙 Торговий дім", callback_data="ah_menu"))
+    return kb
+
+
+def auction_completed_sale_claim_confirm_kb_v1(lot_id, page=0):
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("✅ Підтвердити отримання золота", callback_data=f"ah_sale_claim_do:{lot_id}:{page}"))
+    kb.add(types.InlineKeyboardButton("❌ Назад", callback_data=f"ah_sale_lot:{lot_id}:{page}"))
+    return kb
+
+
+def _auction_register_completed_sales_handlers_v1(bot):
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_SOLD_BUTTON)
+    def auction_completed_sales_start_v1(message):
+        user_id = message.from_user.id
+        text, kb = build_auction_completed_sales_text_v1(user_id, page=0)
+        bot.send_message(message.chat.id, text, reply_markup=kb)
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_sale_page:"))
+    def auction_completed_sales_page_callback_v1(call):
+        user_id = call.from_user.id
+        page = int(call.data.split(":")[1])
+        text, kb = build_auction_completed_sales_text_v1(user_id, page=page)
+        try:
+            bot.answer_callback_query(call.id)
+            bot.edit_message_text(text, chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=kb)
+        except Exception:
+            bot.send_message(call.message.chat.id, text, reply_markup=kb)
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_sale_lot:"))
+    def auction_completed_sale_view_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        lot_id = int(parts[1])
+        page = int(parts[2]) if len(parts) > 2 else 0
+
+        from db import build_user_unclaimed_auction_sale_details
+        details = build_user_unclaimed_auction_sale_details(user_id=user_id, lot_id=lot_id)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        if not details.get("success"):
+            text, kb = build_auction_completed_sales_text_v1(user_id, page=page)
+            bot.send_message(call.message.chat.id, details.get("message", "❌ Продаж недоступний."), reply_markup=auction_house_kb())
+            bot.send_message(call.message.chat.id, text, reply_markup=kb)
+            return
+
+        try:
+            bot.edit_message_text(details["text"], chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=auction_completed_sale_view_kb_v1(lot_id, page=page))
+        except Exception:
+            bot.send_message(call.message.chat.id, details["text"], reply_markup=auction_completed_sale_view_kb_v1(lot_id, page=page))
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_sale_claim_confirm:"))
+    def auction_completed_sale_claim_confirm_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        lot_id = int(parts[1])
+        page = int(parts[2]) if len(parts) > 2 else 0
+
+        from db import build_user_unclaimed_auction_sale_details
+        details = build_user_unclaimed_auction_sale_details(user_id=user_id, lot_id=lot_id)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        if not details.get("success"):
+            bot.send_message(call.message.chat.id, details.get("message", "❌ Продаж недоступний."), reply_markup=auction_house_kb())
+            return
+
+        text = (
+            "⚠️ Підтвердження отримання золота\n\n"
+            f"{details['text']}\n\n"
+            "Після підтвердження золото буде додано на баланс персонажа."
+        )
+
+        try:
+            bot.edit_message_text(text, chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=auction_completed_sale_claim_confirm_kb_v1(lot_id, page=page))
+        except Exception:
+            bot.send_message(call.message.chat.id, text, reply_markup=auction_completed_sale_claim_confirm_kb_v1(lot_id, page=page))
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_sale_claim_do:"))
+    def auction_completed_sale_claim_do_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        lot_id = int(parts[1])
+        page = int(parts[2]) if len(parts) > 2 else 0
+
+        from db import claim_auction_sale_gold
+        result = claim_auction_sale_gold(user_id=user_id, lot_id=lot_id)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        if not result.get("success"):
+            bot.send_message(call.message.chat.id, result.get("message", "❌ Не вдалося отримати золото."), reply_markup=auction_house_kb())
+            return
+
+        bot.send_message(
+            call.message.chat.id,
+            (
+                f"✅ Отримано {result.get('amount')} золота!\n\n"
+                f"📦 Проданий лот: {result.get('item_name')}"
+            ),
+            reply_markup=auction_house_kb(),
+        )
+
+        text, kb = build_auction_completed_sales_text_v1(user_id, page=page)
+        bot.send_message(call.message.chat.id, text, reply_markup=kb)
+
+
+try:
+    _auction_base_register_handlers_before_completed_sales_v1 = register_auction_house_handlers
+except NameError:
+    _auction_base_register_handlers_before_completed_sales_v1 = None
+
+
+def register_auction_house_handlers(bot):
+    # Completed sales handler must be registered before old placeholder for 💰 Завершені продажі.
+    _auction_register_completed_sales_handlers_v1(bot)
+
+    if _auction_base_register_handlers_before_completed_sales_v1:
+        _auction_base_register_handlers_before_completed_sales_v1(bot)
+
+
+# ==============================
+# ✅ AUCTION HOUSE BUY FILTERS SORTING UI V1
+# ==============================
+
+AUCTION_BUY_PAGE_SIZE = 8
+
+AUCTION_BUY_CATEGORY_BUTTONS_V1 = {
+    "all": "🔎 Усі лоти",
+    "equipment": "⚔️ Спорядження в продажу",
+    "potion": "🧪 Зілля в продажу",
+    "material": "🪨 Матеріали в продажу",
+}
+
+AUCTION_BUY_CATEGORY_BY_BUTTON_V1 = {
+    value: key for key, value in AUCTION_BUY_CATEGORY_BUTTONS_V1.items()
+}
+
+AUCTION_BUY_SORT_LABELS_V1 = {
+    "new": "🆕 Нові",
+    "old": "⏳ Старі",
+    "price_asc": "💰 Дешеві",
+    "price_desc": "💰 Дорогі",
+    "rarity": "⭐ Рідкість",
+}
+
+
+def auction_buy_category_kb_v1():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["all"])
+    kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["equipment"], AUCTION_BUY_CATEGORY_BUTTONS_V1["potion"])
+    kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["material"])
+    kb.row("🔙 Торговий дім")
+    return kb
+
+
+def auction_buy_sort_inline_row_v1(category, current_sort):
+    buttons = []
+    for sort_key, label in AUCTION_BUY_SORT_LABELS_V1.items():
+        prefix = "✅ " if sort_key == current_sort else ""
+        buttons.append(types.InlineKeyboardButton(
+            prefix + label,
+            callback_data=f"ah_buy2_page:{category}:{sort_key}:0"
+        ))
+    return buttons
+
+
+def auction_buy_lots_inline_kb_v1(user_id, category="all", sort_key="new", page=0):
+    from db import get_auction_lots_for_buy_filtered
+
+    page = max(0, int(page or 0))
+    offset = page * AUCTION_BUY_PAGE_SIZE
+    lots = get_auction_lots_for_buy_filtered(
+        buyer_user_id=user_id,
+        category=category,
+        sort_key=sort_key,
+        limit=AUCTION_BUY_PAGE_SIZE + 1,
+        offset=offset,
+    )
+
+    visible_lots = lots[:AUCTION_BUY_PAGE_SIZE]
+    has_next = len(lots) > AUCTION_BUY_PAGE_SIZE
+
+    kb = types.InlineKeyboardMarkup(row_width=1)
+
+    # Sort controls, split into two rows to avoid very wide buttons.
+    sort_buttons = auction_buy_sort_inline_row_v1(category, sort_key)
+    kb.row(*sort_buttons[:2])
+    kb.row(*sort_buttons[2:4])
+    kb.row(*sort_buttons[4:])
+
+    for lot in visible_lots:
+        quantity = int(lot["quantity"] or 1)
+        qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
+        label = f"📦 {lot['item_name']}{qty} — {lot['price']} 💰"
+        kb.add(types.InlineKeyboardButton(
+            _auction_inline_truncate(label),
+            callback_data=f"ah_buy2_lot:{lot['id']}:{category}:{sort_key}:{page}"
+        ))
+
+    nav = []
+    if page > 0:
+        nav.append(types.InlineKeyboardButton("⬅️ Попередні", callback_data=f"ah_buy2_page:{category}:{sort_key}:{page - 1}"))
+    if has_next:
+        nav.append(types.InlineKeyboardButton("➡️ Наступні", callback_data=f"ah_buy2_page:{category}:{sort_key}:{page + 1}"))
+    if nav:
+        kb.row(*nav)
+
+    kb.add(types.InlineKeyboardButton("🔙 Категорії", callback_data="ah_buy2_categories"))
+    kb.add(types.InlineKeyboardButton("🔙 Торговий дім", callback_data="ah_menu"))
+    return kb, visible_lots, has_next
+
+
+def build_auction_buy_category_text_v1():
+    return (
+        "🛒 Купити\n\n"
+        "Оберіть категорію лотів.\n\n"
+        "Доступні категорії:\n"
+        "• 🔎 Усі лоти\n"
+        "• ⚔️ Спорядження\n"
+        "• 🧪 Зілля\n"
+        "• 🪨 Матеріали\n\n"
+        "Продавці приховані. Власні лоти у списку покупки не показуються."
+    )
+
+
+def build_auction_buy_lots_text_v1(category="all", sort_key="new", page=0):
+    category_label = AUCTION_BUY_CATEGORY_BUTTONS_V1.get(category, AUCTION_BUY_CATEGORY_BUTTONS_V1["all"])
+    sort_label = AUCTION_BUY_SORT_LABELS_V1.get(sort_key, AUCTION_BUY_SORT_LABELS_V1["new"])
+    return (
+        "🛒 Купити\n\n"
+        f"📂 Категорія: {category_label}\n"
+        f"↕️ Сортування: {sort_label}\n"
+        f"📄 Сторінка: {int(page) + 1}\n\n"
+        "Оберіть лот inline-кнопкою нижче."
+    )
+
+
+def auction_buy_lot_view_kb_v1(lot_id, category="all", sort_key="new", page=0):
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("✅ Купити", callback_data=f"ah_buy2_confirm:{lot_id}:{category}:{sort_key}:{page}"))
+    kb.add(types.InlineKeyboardButton("🔙 До списку", callback_data=f"ah_buy2_page:{category}:{sort_key}:{page}"))
+    kb.add(types.InlineKeyboardButton("🔙 Торговий дім", callback_data="ah_menu"))
+    return kb
+
+
+def auction_buy_confirm_kb_v1(lot_id, category="all", sort_key="new", page=0):
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("✅ Підтвердити покупку", callback_data=f"ah_buy2_do:{lot_id}:{category}:{sort_key}:{page}"))
+    kb.add(types.InlineKeyboardButton("❌ Назад", callback_data=f"ah_buy2_lot:{lot_id}:{category}:{sort_key}:{page}"))
+    return kb
+
+
+def _auction_register_buy_filters_handlers_v1(bot):
+
+    @bot.message_handler(func=lambda m: m.text == "🛒 Купити")
+    def auction_buy_start_v1(message):
+        bot.send_message(
+            message.chat.id,
+            build_auction_buy_category_text_v1(),
+            reply_markup=auction_buy_category_kb_v1()
+        )
+
+    @bot.message_handler(func=lambda m: m.text in AUCTION_BUY_CATEGORY_BY_BUTTON_V1)
+    def auction_buy_category_selected_v1(message):
+        user_id = message.from_user.id
+        category = AUCTION_BUY_CATEGORY_BY_BUTTON_V1.get(message.text, "all")
+        sort_key = "new"
+        page = 0
+        text = build_auction_buy_lots_text_v1(category=category, sort_key=sort_key, page=page)
+        kb, lots, has_next = auction_buy_lots_inline_kb_v1(user_id, category=category, sort_key=sort_key, page=page)
+
+        if not lots:
+            text += "\n\nЛотів у цій категорії поки немає."
+
+        bot.send_message(message.chat.id, text, reply_markup=kb)
+
+    @bot.callback_query_handler(func=lambda call: call.data == "ah_buy2_categories")
+    def auction_buy_categories_callback_v1(call):
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+        bot.send_message(call.message.chat.id, build_auction_buy_category_text_v1(), reply_markup=auction_buy_category_kb_v1())
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_buy2_page:"))
+    def auction_buy_page_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        category = parts[1]
+        sort_key = parts[2]
+        page = int(parts[3])
+
+        text = build_auction_buy_lots_text_v1(category=category, sort_key=sort_key, page=page)
+        kb, lots, has_next = auction_buy_lots_inline_kb_v1(user_id, category=category, sort_key=sort_key, page=page)
+
+        if not lots:
+            text += "\n\nЛотів у цій категорії поки немає."
+
+        try:
+            bot.answer_callback_query(call.id)
+            bot.edit_message_text(text, chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=kb)
+        except Exception:
+            bot.send_message(call.message.chat.id, text, reply_markup=kb)
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_buy2_lot:"))
+    def auction_buy_lot_view_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        lot_id = int(parts[1])
+        category = parts[2]
+        sort_key = parts[3]
+        page = int(parts[4])
+
+        from db import build_auction_buy_lot_details_v2
+        details = build_auction_buy_lot_details_v2(buyer_user_id=user_id, lot_id=lot_id)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        if not details.get("success"):
+            bot.send_message(call.message.chat.id, details.get("message", "❌ Лот недоступний."), reply_markup=auction_house_kb())
+            return
+
+        try:
+            bot.edit_message_text(details["text"], chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=auction_buy_lot_view_kb_v1(lot_id, category, sort_key, page))
+        except Exception:
+            bot.send_message(call.message.chat.id, details["text"], reply_markup=auction_buy_lot_view_kb_v1(lot_id, category, sort_key, page))
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_buy2_confirm:"))
+    def auction_buy_confirm_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        lot_id = int(parts[1])
+        category = parts[2]
+        sort_key = parts[3]
+        page = int(parts[4])
+
+        from db import build_auction_buy_lot_details_v2
+        details = build_auction_buy_lot_details_v2(buyer_user_id=user_id, lot_id=lot_id)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        if not details.get("success"):
+            bot.send_message(call.message.chat.id, details.get("message", "❌ Лот недоступний."), reply_markup=auction_house_kb())
+            return
+
+        text = (
+            "⚠️ Підтвердження покупки\n\n"
+            f"{details['text']}\n\n"
+            "Після підтвердження золото буде списано, а предмет додано в інвентар."
+        )
+
+        try:
+            bot.edit_message_text(text, chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=auction_buy_confirm_kb_v1(lot_id, category, sort_key, page))
+        except Exception:
+            bot.send_message(call.message.chat.id, text, reply_markup=auction_buy_confirm_kb_v1(lot_id, category, sort_key, page))
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_buy2_do:"))
+    def auction_buy_do_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        lot_id = int(parts[1])
+        category = parts[2]
+        sort_key = parts[3]
+        page = int(parts[4])
+
+        from db import buy_auction_lot_v2
+        result = buy_auction_lot_v2(buyer_user_id=user_id, lot_id=lot_id)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        if not result.get("success"):
+            bot.send_message(call.message.chat.id, result.get("message", "❌ Не вдалося купити лот."), reply_markup=auction_house_kb())
+            return
+
+        bot.send_message(
+            call.message.chat.id,
+            (
+                "✅ Покупку завершено!\n\n"
+                f"📦 {result.get('item_name')}\n"
+                f"💰 Сплачено: {result.get('price')} золота\n\n"
+                "Предмет додано в інвентар."
+            ),
+            reply_markup=auction_house_kb(),
+        )
+
+        text = build_auction_buy_lots_text_v1(category=category, sort_key=sort_key, page=page)
+        kb, lots, has_next = auction_buy_lots_inline_kb_v1(user_id, category=category, sort_key=sort_key, page=page)
+        if not lots:
+            text += "\n\nЛотів у цій категорії поки немає."
+        bot.send_message(call.message.chat.id, text, reply_markup=kb)
+
+
+try:
+    _auction_base_register_handlers_before_buy_filters_v1 = register_auction_house_handlers
+except NameError:
+    _auction_base_register_handlers_before_buy_filters_v1 = None
+
+
+def register_auction_house_handlers(bot):
+    # Buy filters handler must be registered before older buy handlers/placeholders.
+    _auction_register_buy_filters_handlers_v1(bot)
+
+    if _auction_base_register_handlers_before_buy_filters_v1:
+        _auction_base_register_handlers_before_buy_filters_v1(bot)
+
+
+# ==============================
+# ✅ AUCTION HOUSE BACK TO MENU CALLBACK FIX V1
+# ==============================
+
+
+def _auction_clear_runtime_states_v1(user_id):
+    """
+    Best-effort cleanup for Auction House UI states.
+    This prevents old sell/buy state routers from swallowing navigation buttons.
+    """
+
+    possible_state_names = [
+        "AUCTION_SELL_STATE",
+        "AUCTION_BUY_STATE",
+        "AUCTION_MY_LOTS_STATE",
+        "AUCTION_UNCLAIMED_STATE",
+        "AUCTION_COMPLETED_SALES_STATE",
+        "AUCTION_SEARCH_STATE",
+        "AUCTION_HISTORY_STATE",
+    ]
+
+    for state_name in possible_state_names:
+        state_obj = globals().get(state_name)
+        if not state_obj:
+            continue
+
+        try:
+            if isinstance(state_obj, dict):
+                state_obj.pop(user_id, None)
+            elif isinstance(state_obj, set):
+                state_obj.discard(user_id)
+        except Exception:
+            pass
+
+
+def _auction_main_menu_text_v1(user_id=None):
+    """
+    Returns Auction House main menu text without relying on a specific older helper name.
+    """
+
+    try:
+        if "build_auction_house_text" in globals():
+            if user_id is not None:
+                try:
+                    return build_auction_house_text(user_id)
+                except TypeError:
+                    return build_auction_house_text()
+            return build_auction_house_text()
+    except Exception:
+        pass
+
+    return (
+        "🏛️ Торговий дім\n\n"
+        "Тут гравці можуть виставляти товари на продаж, купувати лоти інших гравців "
+        "та забирати золото за завершені продажі.\n\n"
+        "Доступні дії:\n"
+        "• 🛒 Купити\n"
+        "• ➕ Виставити товар\n"
+        "• 📦 Мої лоти\n"
+        "• 📬 Незабрані предмети\n"
+        "• 💰 Завершені продажі\n"
+        "• 📜 Історія"
+    )
+
+
+def _auction_register_back_to_menu_callback_v1(bot):
+
+    @bot.callback_query_handler(func=lambda call: call.data == "ah_menu")
+    def auction_back_to_menu_callback_v1(call):
+        user_id = call.from_user.id
+        _auction_clear_runtime_states_v1(user_id)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        # Main Auction House menu uses ReplyKeyboardMarkup, so send a fresh message.
+        # Telegram edit_message_text cannot attach ReplyKeyboardMarkup.
+        bot.send_message(
+            call.message.chat.id,
+            _auction_main_menu_text_v1(user_id),
+            reply_markup=auction_house_kb()
+        )
+
+
+try:
+    _auction_base_register_handlers_before_back_to_menu_v1 = register_auction_house_handlers
+except NameError:
+    _auction_base_register_handlers_before_back_to_menu_v1 = None
+
+
+def register_auction_house_handlers(bot):
+    # Register ah_menu callback before older handlers, so every inline "🔙 Торговий дім" works.
+    _auction_register_back_to_menu_callback_v1(bot)
+
+    if _auction_base_register_handlers_before_back_to_menu_v1:
+        _auction_base_register_handlers_before_back_to_menu_v1(bot)
+
