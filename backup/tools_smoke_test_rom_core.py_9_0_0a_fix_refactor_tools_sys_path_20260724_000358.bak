@@ -1,0 +1,88 @@
+# ✅ ROM REFACTOR SAFETY AUDIT TOOLS V1
+#!/usr/bin/env python3
+"""
+ROM Refactor Tool: minimal smoke-test for core public API.
+
+This does NOT modify gameplay state on purpose.
+It checks that key functions remain importable/callable after refactor patches.
+
+Usage:
+    python tools/smoke_test_rom_core.py
+"""
+
+from __future__ import annotations
+
+import traceback
+
+REQUIRED_DB_FUNCTIONS = [
+    "init_db",
+    "get_user",
+    "get_item",
+    "get_character_name",
+    "get_character_class",
+    "get_character_class_display",
+    "get_user_mp",
+    "set_user_mp",
+    "get_max_mp",
+    "get_player_stats",
+    "get_player_level",
+    "get_wallet",
+    "get_attack",
+    "get_magic_attack",
+    "get_max_hp",
+    "get_physical_defense",
+    "get_magic_defense",
+    "get_user_energy",
+    "consume_energy_for_hunt",
+    "process_passive_regeneration",
+    "create_daily_contract",
+    "get_active_contract",
+    "claim_contract_reward",
+    "equip_inventory_item",
+    "unequip_inventory_item",
+    "repair_equipped_item",
+    "repair_all_equipped",
+    "get_weapon_damage_by_inventory_id",
+    "init_auction_house",
+    "init_guild_system",
+]
+
+
+def main() -> int:
+    print("=" * 80)
+    print("ROM core smoke-test")
+    print("=" * 80)
+
+    errors: list[str] = []
+
+    try:
+        import db
+    except Exception as error:
+        print("[FAIL] import db")
+        traceback.print_exc()
+        return 1
+
+    for name in REQUIRED_DB_FUNCTIONS:
+        if not hasattr(db, name):
+            errors.append(f"db.{name} missing")
+
+    if errors:
+        print("\n[Missing public API]")
+        for error in errors:
+            print(f"- {error}")
+        return 1
+
+    # Lightweight callable checks.
+    try:
+        db.init_db()
+        print("[OK] db.init_db()")
+    except Exception as error:
+        print(f"[WARN] db.init_db() raised: {error}")
+
+    print("[OK] required public API exists")
+    print("Done.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

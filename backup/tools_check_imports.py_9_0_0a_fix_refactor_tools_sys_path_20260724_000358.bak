@@ -1,0 +1,96 @@
+# ✅ ROM REFACTOR SAFETY AUDIT TOOLS V1
+#!/usr/bin/env python3
+"""
+ROM Refactor Tool: compile/import safety check.
+
+Purpose:
+- Compile all Python files outside patch/backup/.venv.
+- Optionally import core modules to catch import errors early.
+
+Usage:
+    python tools/check_imports.py
+"""
+
+from __future__ import annotations
+
+import importlib
+import py_compile
+import sys
+from pathlib import Path
+
+EXCLUDED_DIRS = {".git", ".venv", "venv", "__pycache__", "backup", "patch", "TXT"}
+CORE_MODULES = [
+    "db",
+    "main",
+    "keyboards",
+    "handlers.start",
+    "handlers.profile",
+    "handlers.inventory",
+    "handlers.combat",
+    "systems.combat_system",
+    "systems.refine_system",
+    "systems.guild_system",
+    "systems.auction_house_system",
+]
+
+
+def iter_project_py_files(root: Path) -> list[Path]:
+    result: list[Path] = []
+    for py_file in root.rglob("*.py"):
+        if any(part in EXCLUDED_DIRS for part in py_file.relative_to(root).parts):
+            continue
+        result.append(py_file)
+    return sorted(result)
+
+
+def compile_all(root: Path) -> list[str]:
+    errors: list[str] = []
+    for py_file in iter_project_py_files(root):
+        try:
+            py_compile.compile(str(py_file), doraise=True)
+        except Exception as error:
+            errors.append(f"{py_file}: {error}")
+    return errors
+
+
+def import_core_modules() -> list[str]:
+    errors: list[str] = []
+    for module_name in CORE_MODULES:
+        try:
+            importlib.import_module(module_name)
+        except Exception as error:
+            errors.append(f"{module_name}: {error}")
+    return errors
+
+
+def main() -> int:
+    root = Path.cwd()
+    print("=" * 80)
+    print("ROM compile/import check")
+    print("=" * 80)
+
+    compile_errors = compile_all(root)
+    if compile_errors:
+        print("\n[COMPILE ERRORS]")
+        for error in compile_errors:
+            print(f"- {error}")
+    else:
+        print("[OK] py_compile passed for project files.")
+
+    import_errors = import_core_modules()
+    if import_errors:
+        print("\n[IMPORT WARNINGS/ERRORS]")
+        for error in import_errors:
+            print(f"- {error}")
+    else:
+        print("[OK] core module imports passed.")
+
+    if compile_errors:
+        return 1
+
+    print("\nDone.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
