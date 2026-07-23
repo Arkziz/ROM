@@ -12502,3 +12502,92 @@ def buy_auction_lot_v2(buyer_user_id, lot_id):
     from systems.auction_house_system import buy_auction_lot_v2 as _func
     return _func(buyer_user_id=buyer_user_id, lot_id=lot_id)
 
+
+# ==============================
+# ✅ AUCTION HOUSE BUY SEARCH WRAPPERS V1
+# ==============================
+
+
+def get_auction_lots_for_buy_search(buyer_user_id, search_text, sort_key="new", limit=8, offset=0):
+    from systems.auction_house_system import get_auction_lots_for_buy_search as _func
+    return _func(buyer_user_id=buyer_user_id, search_text=search_text, sort_key=sort_key, limit=limit, offset=offset)
+
+
+def normalize_auction_search_query(search_text):
+    from systems.auction_house_system import normalize_auction_search_query as _func
+    return _func(search_text=search_text)
+
+
+# ==============================
+# ✅ AUCTION HOUSE HISTORY AND MARKET PRICES WRAPPERS V1
+# ==============================
+
+
+def get_user_auction_history(user_id, mode="all", limit=8, offset=0):
+    from systems.auction_house_system import get_user_auction_history as _func
+    return _func(user_id=user_id, mode=mode, limit=limit, offset=offset)
+
+
+def get_auction_lot_market_price_stats(lot_id):
+    from systems.auction_house_system import get_auction_lot_market_price_stats as _func
+    return _func(lot_id=lot_id)
+
+
+def search_auction_market_price_stats(search_text, limit=10):
+    from systems.auction_house_system import search_auction_market_price_stats as _func
+    return _func(search_text=search_text, limit=limit)
+
+
+def format_auction_history_date(value, with_time=True):
+    from systems.auction_house_system import format_auction_history_date as _func
+    return _func(value=value, with_time=with_time)
+
+
+# ==============================
+# ✅ AUCTION HOUSE EXPIRATION CLEANUP WRAPPERS V2
+# ==============================
+
+
+def update_expired_auction_lots(now_iso=None):
+    from systems.auction_house_system import update_expired_auction_lots as _func
+    return _func(now_iso=now_iso)
+
+
+def get_auction_cleanup_report():
+    from systems.auction_house_system import get_auction_cleanup_report as _func
+    return _func()
+
+
+def init_auction_house():
+    """
+    Wrapper initialization.
+    Also runs lightweight cleanup so expiration is processed after bot start
+    and whenever Auction House systems initialize.
+    """
+
+    from systems.auction_house_system import init_auction_house as _init
+    from systems.auction_house_system import update_expired_auction_lots as _cleanup
+
+    _init()
+    try:
+        _cleanup()
+    except Exception:
+        pass
+
+    return True
+
+
+# ==============================
+# ✅ AUCTION HOUSE STABILIZATION DIAGNOSTICS WRAPPERS V1
+# ==============================
+
+
+def get_auction_diagnostics_report():
+    from systems.auction_house_system import get_auction_diagnostics_report as _func
+    return _func()
+
+
+def run_auction_sanity_fix():
+    from systems.auction_house_system import run_auction_sanity_fix as _func
+    return _func()
+

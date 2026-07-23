@@ -3070,3 +3070,2119 @@ def register_auction_house_handlers(bot):
     if _auction_base_register_handlers_before_back_to_menu_v1:
         _auction_base_register_handlers_before_back_to_menu_v1(bot)
 
+
+# ==============================
+# ✅ AUCTION HOUSE REPLY BACK AND REMOVE INLINE MENU V1
+# ==============================
+
+AUCTION_BACK_TO_HOUSE_BUTTON_V1 = "🔙 Торговий дім"
+
+
+def _auction_clear_runtime_states_v2(user_id):
+    """
+    Очищає runtime-стани Торгового Дому, щоб звичайна кнопка
+    🔙 Торговий дім не ковталась state-router-ами.
+    """
+
+    possible_state_names = [
+        "AUCTION_SELL_STATE",
+        "AUCTION_BUY_STATE",
+        "AUCTION_MY_LOTS_STATE",
+        "AUCTION_UNCLAIMED_STATE",
+        "AUCTION_COMPLETED_SALES_STATE",
+        "AUCTION_SEARCH_STATE",
+        "AUCTION_HISTORY_STATE",
+    ]
+
+    for state_name in possible_state_names:
+        state_obj = globals().get(state_name)
+        if not state_obj:
+            continue
+
+        try:
+            if isinstance(state_obj, dict):
+                state_obj.pop(user_id, None)
+            elif isinstance(state_obj, set):
+                state_obj.discard(user_id)
+        except Exception:
+            pass
+
+
+def _auction_main_menu_text_v2(user_id=None):
+    """
+    Текст головного меню Торгового Дому.
+    Не залежить від конкретної назви старого helper-а.
+    """
+
+    try:
+        if "build_auction_house_text" in globals():
+            if user_id is not None:
+                try:
+                    return build_auction_house_text(user_id)
+                except TypeError:
+                    return build_auction_house_text()
+            return build_auction_house_text()
+    except Exception:
+        pass
+
+    return (
+        "🏛️ Торговий дім\n\n"
+        "Тут гравці можуть виставляти товари на продаж, купувати лоти інших гравців "
+        "та забирати золото за завершені продажі.\n\n"
+        "Доступні дії:\n"
+        "• 🛒 Купити\n"
+        "• ➕ Виставити товар\n"
+        "• 📦 Мої лоти\n"
+        "• 📬 Незабрані предмети\n"
+        "• 💰 Завершені продажі\n"
+        "• 📜 Історія"
+    )
+
+
+def auction_buy_lots_inline_kb_v1(user_id, category="all", sort_key="new", page=0):
+    """
+    Override: список лотів лишається inline, але без inline-кнопки 🔙 Торговий дім.
+    Повернення в Торговий Дім має бути через звичайну ReplyKeyboard-кнопку внизу.
+    """
+
+    from db import get_auction_lots_for_buy_filtered
+
+    page = max(0, int(page or 0))
+    offset = page * AUCTION_BUY_PAGE_SIZE
+    lots = get_auction_lots_for_buy_filtered(
+        buyer_user_id=user_id,
+        category=category,
+        sort_key=sort_key,
+        limit=AUCTION_BUY_PAGE_SIZE + 1,
+        offset=offset,
+    )
+
+    visible_lots = lots[:AUCTION_BUY_PAGE_SIZE]
+    has_next = len(lots) > AUCTION_BUY_PAGE_SIZE
+
+    kb = types.InlineKeyboardMarkup(row_width=1)
+
+    # Сортування лишається inline.
+    sort_buttons = auction_buy_sort_inline_row_v1(category, sort_key)
+    kb.row(*sort_buttons[:2])
+    kb.row(*sort_buttons[2:4])
+    kb.row(*sort_buttons[4:])
+
+    for lot in visible_lots:
+        quantity = int(lot["quantity"] or 1)
+        qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
+        label = f"📦 {lot['item_name']}{qty} — {lot['price']} 💰"
+        kb.add(types.InlineKeyboardButton(
+            _auction_inline_truncate(label),
+            callback_data=f"ah_buy2_lot:{lot['id']}:{category}:{sort_key}:{page}"
+        ))
+
+    nav = []
+    if page > 0:
+        nav.append(types.InlineKeyboardButton("⬅️ Попередні", callback_data=f"ah_buy2_page:{category}:{sort_key}:{page - 1}"))
+    if has_next:
+        nav.append(types.InlineKeyboardButton("➡️ Наступні", callback_data=f"ah_buy2_page:{category}:{sort_key}:{page + 1}"))
+    if nav:
+        kb.row(*nav)
+
+    # У списку покупки лишаємо тільки повернення до категорій.
+    # Назад у головне меню — звичайною кнопкою 🔙 Торговий дім.
+    kb.add(types.InlineKeyboardButton("🔙 Категорії", callback_data="ah_buy2_categories"))
+    return kb, visible_lots, has_next
+
+
+def auction_buy_lot_view_kb_v1(lot_id, category="all", sort_key="new", page=0):
+    """
+    Override: у деталях лота прибрано inline 🔙 Торговий дім.
+    """
+
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("✅ Купити", callback_data=f"ah_buy2_confirm:{lot_id}:{category}:{sort_key}:{page}"))
+    kb.add(types.InlineKeyboardButton("🔙 До списку", callback_data=f"ah_buy2_page:{category}:{sort_key}:{page}"))
+    return kb
+
+
+def auction_buy_confirm_kb_v1(lot_id, category="all", sort_key="new", page=0):
+    """
+    Override: confirmation без inline 🔙 Торговий дім.
+    """
+
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("✅ Підтвердити покупку", callback_data=f"ah_buy2_do:{lot_id}:{category}:{sort_key}:{page}"))
+    kb.add(types.InlineKeyboardButton("❌ Назад", callback_data=f"ah_buy2_lot:{lot_id}:{category}:{sort_key}:{page}"))
+    return kb
+
+
+def _auction_register_reply_back_to_house_v1(bot):
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_BACK_TO_HOUSE_BUTTON_V1)
+    def auction_reply_back_to_house_v1(message):
+        user_id = message.from_user.id
+        _auction_clear_runtime_states_v2(user_id)
+
+        bot.send_message(
+            message.chat.id,
+            _auction_main_menu_text_v2(user_id),
+            reply_markup=auction_house_kb()
+        )
+
+
+try:
+    _auction_base_register_handlers_before_reply_back_v1 = register_auction_house_handlers
+except NameError:
+    _auction_base_register_handlers_before_reply_back_v1 = None
+
+
+def register_auction_house_handlers(bot):
+    # Reply-кнопка 🔙 Торговий дім має реєструватися раніше старих state-router-ів.
+    _auction_register_reply_back_to_house_v1(bot)
+
+    if _auction_base_register_handlers_before_reply_back_v1:
+        _auction_base_register_handlers_before_reply_back_v1(bot)
+
+
+# ==============================
+# ✅ AUCTION HOUSE BUY CATEGORY KEYBOARD CLEANUP V1
+# ==============================
+
+
+def auction_buy_lots_reply_back_kb_v1():
+    """
+    ReplyKeyboard для екранів зі списком лотів.
+
+    Коли гравець уже обрав категорію, кнопки категорій знизу більше не потрібні.
+    Лишається тільки звичайна кнопка повернення в головне меню Торгового Дому.
+    """
+
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.row("🔙 Торговий дім")
+    return kb
+
+
+def _auction_register_buy_category_keyboard_cleanup_v1(bot):
+
+    @bot.message_handler(func=lambda m: m.text in AUCTION_BUY_CATEGORY_BY_BUTTON_V1)
+    def auction_buy_category_selected_clean_keyboard_v1(message):
+        user_id = message.from_user.id
+        category = AUCTION_BUY_CATEGORY_BY_BUTTON_V1.get(message.text, "all")
+        sort_key = "new"
+        page = 0
+
+        text = build_auction_buy_lots_text_v1(
+            category=category,
+            sort_key=sort_key,
+            page=page
+        )
+
+        inline_kb, lots, has_next = auction_buy_lots_inline_kb_v1(
+            user_id,
+            category=category,
+            sort_key=sort_key,
+            page=page
+        )
+
+        if not lots:
+            text += "\n\nЛотів у цій категорії поки немає."
+
+        # Важливо: спочатку міняємо нижню ReplyKeyboard на одну кнопку 🔙 Торговий дім,
+        # а потім надсилаємо список з inline-кнопками.
+        bot.send_message(
+            message.chat.id,
+            "📂 Категорію відкрито. Для повернення до категорій використай inline-кнопку «🔙 Категорії» під списком.",
+            reply_markup=auction_buy_lots_reply_back_kb_v1()
+        )
+
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=inline_kb
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "ah_buy2_categories")
+    def auction_buy_categories_restore_reply_keyboard_v1(call):
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        # При поверненні до категорій повертаємо нижні кнопки категорій.
+        bot.send_message(
+            call.message.chat.id,
+            build_auction_buy_category_text_v1(),
+            reply_markup=auction_buy_category_kb_v1()
+        )
+
+
+try:
+    _auction_base_register_handlers_before_buy_cat_keyboard_cleanup_v1 = register_auction_house_handlers
+except NameError:
+    _auction_base_register_handlers_before_buy_cat_keyboard_cleanup_v1 = None
+
+
+def register_auction_house_handlers(bot):
+    # Реєструємо раніше старих category handlers, щоб прибирати нижні кнопки категорій після вибору.
+    _auction_register_buy_category_keyboard_cleanup_v1(bot)
+
+    if _auction_base_register_handlers_before_buy_cat_keyboard_cleanup_v1:
+        _auction_base_register_handlers_before_buy_cat_keyboard_cleanup_v1(bot)
+
+
+# ==============================
+# ✅ AUCTION HOUSE SELL CATEGORY KEYBOARD CLEANUP V1
+# ==============================
+
+AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V1 = "ah_sell_categories"
+AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V1 = "🔙 Торговий дім"
+
+AUCTION_SELL_CATEGORY_BUTTONS_V1 = {
+    "equipment": "⚔️ Спорядження",
+    "potion": "🧪 Зілля для продажу",
+    "material": "🪨 Матеріали",
+}
+
+
+def auction_sell_category_kb_v1():
+    """ReplyKeyboard з категоріями виставлення товару."""
+
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V1["equipment"], AUCTION_SELL_CATEGORY_BUTTONS_V1["potion"])
+    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V1["material"])
+    kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V1)
+    return kb
+
+
+def auction_sell_listing_back_kb_v1():
+    """
+    ReplyKeyboard для екранів зі списком предметів на продаж.
+
+    Коли гравець уже обрав категорію, кнопки інших категорій знизу не потрібні.
+    Лишається тільки повернення в головне меню Торгового Дому.
+    """
+
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V1)
+    return kb
+
+
+def build_auction_sell_category_text_v1():
+    return (
+        "➕ Виставити товар\n\n"
+        "Оберіть категорію товару, який хочете виставити на продаж.\n\n"
+        "Доступно зараз:\n"
+        "• ⚔️ Спорядження — зброя, броня, щити, біжутерія.\n"
+        "• 🧪 Зілля — стекові предмети, можна виставляти частинами.\n"
+        "• 🪨 Матеріали — камені та матеріали, можна виставляти частинами.\n\n"
+        "Обмеження:\n"
+        "• 💎 Руну Успіху не можна продавати через Торговий Дім.\n"
+        "• Екіпіровані та зламані предмети не можна виставляти.\n"
+        "• Активний лот існує 7 днів.\n"
+        "• Максимум активних лотів: 20."
+    )
+
+
+def _auction_sanitize_sell_inline_kb_v1(kb):
+    """
+    Прибирає inline-кнопку 🔙 Торговий дім зі списків виставлення товару
+    і додає inline-кнопку 🔙 Категорії виставлення.
+    """
+
+    try:
+        new_keyboard = []
+        for row in getattr(kb, "keyboard", []) or []:
+            new_row = []
+            for button in row:
+                text = getattr(button, "text", "") or ""
+                callback_data = getattr(button, "callback_data", "") or ""
+
+                if callback_data == "ah_menu":
+                    continue
+                if "Торговий дім" in text:
+                    continue
+
+                new_row.append(button)
+
+            if new_row:
+                new_keyboard.append(new_row)
+
+        kb.keyboard = new_keyboard
+    except Exception:
+        pass
+
+    try:
+        kb.add(types.InlineKeyboardButton("🔙 Категорії виставлення", callback_data=AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V1))
+    except Exception:
+        pass
+
+    return kb
+
+
+def _auction_call_equipment_sell_list_v1(user_id, page=0):
+    """Пробує викликати наявний helper списку спорядження."""
+
+    fn = globals().get("build_auction_sell_item_list_text")
+    if not fn:
+        return None
+
+    try:
+        return fn(user_id, page=page)
+    except TypeError:
+        try:
+            return fn(user_id=user_id, page=page)
+        except TypeError:
+            try:
+                return fn(user_id)
+            except Exception:
+                return None
+    except Exception:
+        raise
+
+
+def _auction_try_stack_sell_list_v1(user_id, category, page=0):
+    """Пробує знайти і викликати helper списку стекових предметів."""
+
+    candidate_names = [
+        "build_auction_sell_stack_item_list_text",
+        "build_auction_sell_stack_items_text",
+        "build_auction_sell_stack_list_text",
+        "build_auction_sell_stack_items_list_text",
+        "build_auction_sell_potion_material_list_text",
+    ]
+
+    for name in candidate_names:
+        fn = globals().get(name)
+        if not fn:
+            continue
+
+        call_patterns = [
+            lambda: fn(user_id=user_id, category=category, page=page),
+            lambda: fn(user_id, category, page=page),
+            lambda: fn(user_id, category, page),
+            lambda: fn(user_id=user_id, item_category=category, page=page),
+            lambda: fn(user_id, item_category=category, page=page),
+        ]
+
+        for call_fn in call_patterns:
+            try:
+                return call_fn()
+            except TypeError:
+                continue
+            except Exception:
+                raise
+
+    return None
+
+
+def _auction_send_sell_category_listing_v1(bot, message, category):
+    user_id = message.from_user.id
+    page = 0
+
+    # Перемикаємо нижню ReplyKeyboard на одну кнопку повернення.
+    bot.send_message(
+        message.chat.id,
+        "📂 Категорію відкрито. Для повернення до категорій використай inline-кнопку «🔙 Категорії виставлення» під списком.",
+        reply_markup=auction_sell_listing_back_kb_v1()
+    )
+
+    if category == "equipment":
+        result = _auction_call_equipment_sell_list_v1(user_id, page=page)
+        if result:
+            text, inline_kb = result
+            inline_kb = _auction_sanitize_sell_inline_kb_v1(inline_kb)
+            bot.send_message(message.chat.id, text, reply_markup=inline_kb)
+            return
+
+        bot.send_message(
+            message.chat.id,
+            "⚠️ Не вдалося відкрити список спорядження для продажу.",
+            reply_markup=auction_sell_listing_back_kb_v1()
+        )
+        return
+
+    stack_category = "potion" if category == "potion" else "material"
+    result = _auction_try_stack_sell_list_v1(user_id, stack_category, page=page)
+
+    if result:
+        text, inline_kb = result
+        inline_kb = _auction_sanitize_sell_inline_kb_v1(inline_kb)
+        bot.send_message(message.chat.id, text, reply_markup=inline_kb)
+        return
+
+    # Якщо helper має іншу назву, краще показати зрозумілий текст, а не мовчати.
+    label = "зілля" if category == "potion" else "матеріалів"
+    bot.send_message(
+        message.chat.id,
+        f"⚠️ Не вдалося відкрити список {label} для продажу. Якщо це повториться — скинь handlers/auction_house.py, я підключу точний helper.",
+        reply_markup=auction_sell_listing_back_kb_v1()
+    )
+
+
+def _auction_register_sell_category_keyboard_cleanup_v1(bot):
+
+    @bot.message_handler(func=lambda m: m.text == "➕ Виставити товар")
+    def auction_sell_start_categories_v1(message):
+        # Повертаємо нижні кнопки категорій при вході у виставлення товару.
+        bot.send_message(
+            message.chat.id,
+            build_auction_sell_category_text_v1(),
+            reply_markup=auction_sell_category_kb_v1()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_CATEGORY_BUTTONS_V1["equipment"])
+    def auction_sell_category_equipment_v1(message):
+        _auction_send_sell_category_listing_v1(bot, message, "equipment")
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_CATEGORY_BUTTONS_V1["potion"])
+    def auction_sell_category_potion_v1(message):
+        _auction_send_sell_category_listing_v1(bot, message, "potion")
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_CATEGORY_BUTTONS_V1["material"])
+    def auction_sell_category_material_v1(message):
+        _auction_send_sell_category_listing_v1(bot, message, "material")
+
+    @bot.callback_query_handler(func=lambda call: call.data == AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V1)
+    def auction_sell_back_to_categories_callback_v1(call):
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        bot.send_message(
+            call.message.chat.id,
+            build_auction_sell_category_text_v1(),
+            reply_markup=auction_sell_category_kb_v1()
+        )
+
+
+try:
+    _auction_base_register_handlers_before_sell_cat_cleanup_v1 = register_auction_house_handlers
+except NameError:
+    _auction_base_register_handlers_before_sell_cat_cleanup_v1 = None
+
+
+def register_auction_house_handlers(bot):
+    # Реєструємо раніше старих sell handlers, щоб керувати ReplyKeyboard категорій.
+    _auction_register_sell_category_keyboard_cleanup_v1(bot)
+
+    if _auction_base_register_handlers_before_sell_cat_cleanup_v1:
+        _auction_base_register_handlers_before_sell_cat_cleanup_v1(bot)
+
+
+# ==============================
+# ✅ AUCTION HOUSE RESTORE SELL INLINE FLOW V1
+# ==============================
+
+# ВАЖЛИВО:
+# patch_8_0_9d_auction_sell_category_keyboard_cleanup.py виявився занадто агресивним:
+# він відкривав старий sell-list helper, через що предмети для продажу знову стали
+# ReplyKeyboard-кнопками, а стекові категорії не знаходили свій helper.
+#
+# Цей hotfix вимикає проблемний register wrapper 8.0.9d і повертає попередній
+# робочий sell-flow з inline-кнопками для предметів.
+#
+# Після цього точну логіку "прибрати категорії після вибору" краще робити
+# вже під фактичну структуру handlers/auction_house.py, щоб не ламати callback-и.
+
+
+def _auction_register_reply_back_to_house_restore_v1(bot):
+    """Залишаємо робочу звичайну кнопку 🔙 Торговий дім."""
+
+    @bot.message_handler(func=lambda m: m.text == "🔙 Торговий дім")
+    def auction_reply_back_to_house_restore_v1(message):
+        user_id = message.from_user.id
+
+        try:
+            if "_auction_clear_runtime_states_v2" in globals():
+                _auction_clear_runtime_states_v2(user_id)
+            elif "_auction_clear_runtime_states_v1" in globals():
+                _auction_clear_runtime_states_v1(user_id)
+        except Exception:
+            pass
+
+        try:
+            text = _auction_main_menu_text_v2(user_id)
+        except Exception:
+            try:
+                text = _auction_main_menu_text_v1(user_id)
+            except Exception:
+                text = (
+                    "🏛️ Торговий дім\n\n"
+                    "Тут гравці можуть виставляти товари на продаж, купувати лоти інших гравців "
+                    "та забирати золото за завершені продажі."
+                )
+
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=auction_house_kb()
+        )
+
+
+try:
+    _auction_register_before_broken_sell_cleanup_v1 = _auction_base_register_handlers_before_sell_cat_cleanup_v1
+except NameError:
+    _auction_register_before_broken_sell_cleanup_v1 = None
+
+try:
+    _auction_current_register_before_restore_sell_inline_v1 = register_auction_house_handlers
+except NameError:
+    _auction_current_register_before_restore_sell_inline_v1 = None
+
+
+def register_auction_house_handlers(bot):
+    """
+    Restore handler chain before the broken 8.0.9d sell-category wrapper.
+
+    If _auction_base_register_handlers_before_sell_cat_cleanup_v1 exists, it points to
+    the register_auction_house_handlers version that existed before 8.0.9d was applied.
+    Calling it restores the previous working inline sell flow while preserving older
+    working fixes, including buy category cleanup and reply back to Auction House.
+    """
+
+    # Register this first so normal ReplyKeyboard back remains responsive.
+    _auction_register_reply_back_to_house_restore_v1(bot)
+
+    if _auction_register_before_broken_sell_cleanup_v1:
+        _auction_register_before_broken_sell_cleanup_v1(bot)
+    elif _auction_current_register_before_restore_sell_inline_v1:
+        _auction_current_register_before_restore_sell_inline_v1(bot)
+
+
+# ==============================
+# ✅ AUCTION HOUSE SELL CATEGORY KEYBOARD CLEANUP SAFE V2
+# ==============================
+
+# Цей patch робить те саме, що планувалося у 8.0.9d, але без виклику старого
+# reply-based helper-а. Він використовує вже робочий inline-flow:
+# build_auction_sell_inline_list_text_v1() / auction_sell_items_inline_kb_v1().
+
+AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2 = "ah_sell_categories_v2"
+AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V2 = "🔙 Торговий дім"
+
+AUCTION_SELL_CATEGORY_BUTTONS_V2 = {
+    "equipment": "⚔️ Спорядження",
+    "potion": "🧪 Зілля для продажу",
+    "material": "🪨 Матеріали",
+}
+
+AUCTION_SELL_CATEGORY_BY_BUTTON_V2 = {
+    value: key for key, value in AUCTION_SELL_CATEGORY_BUTTONS_V2.items()
+}
+
+
+def auction_sell_category_kb_v2_safe():
+    """ReplyKeyboard з категоріями виставлення товару."""
+
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V2["equipment"], AUCTION_SELL_CATEGORY_BUTTONS_V2["potion"])
+    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V2["material"])
+    kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V2)
+    return kb
+
+
+def auction_sell_listing_reply_back_kb_v2_safe():
+    """ReplyKeyboard після відкриття конкретної категорії: тільки назад у Торговий Дім."""
+
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V2)
+    return kb
+
+
+def build_auction_sell_category_text_v2_safe():
+    try:
+        if "build_auction_sell_start_text_inline_v1" in globals():
+            return build_auction_sell_start_text_inline_v1()
+    except Exception:
+        pass
+
+    try:
+        if "build_auction_sell_start_text_v2" in globals():
+            return build_auction_sell_start_text_v2()
+    except Exception:
+        pass
+
+    return (
+        "➕ Виставити товар\n\n"
+        "Оберіть категорію товару, який хочете виставити на продаж.\n\n"
+        "Доступно зараз:\n"
+        "• ⚔️ Спорядження — зброя, броня, щити, біжутерія.\n"
+        "• 🧪 Зілля для продажу — стекові предмети, можна виставляти частинами.\n"
+        "• 🪨 Матеріали — камені та матеріали, можна виставляти частинами.\n\n"
+        "Обмеження:\n"
+        "• 💎 Руну Успіху не можна продавати через Торговий Дім.\n"
+        "• Екіпіровані та зламані предмети не можна виставляти.\n"
+        "• Активний лот існує 7 днів.\n"
+        "• Максимум активних лотів: 20."
+    )
+
+
+def _auction_sanitize_sell_inline_keyboard_v2_safe(kb):
+    """
+    Видаляє inline 🔙 Торговий дім і додає inline 🔙 Категорії виставлення.
+    """
+
+    try:
+        new_keyboard = []
+        for row in getattr(kb, "keyboard", []) or []:
+            new_row = []
+            for button in row:
+                text = getattr(button, "text", "") or ""
+                callback_data = getattr(button, "callback_data", "") or ""
+
+                if callback_data == "ah_menu":
+                    continue
+                if "Торговий дім" in text:
+                    continue
+                if callback_data == AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2:
+                    continue
+
+                new_row.append(button)
+
+            if new_row:
+                new_keyboard.append(new_row)
+
+        kb.keyboard = new_keyboard
+    except Exception:
+        pass
+
+    try:
+        kb.add(types.InlineKeyboardButton("🔙 Категорії виставлення", callback_data=AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2))
+    except Exception:
+        pass
+
+    return kb
+
+
+try:
+    _auction_base_sell_items_inline_kb_before_sell_cleanup_v2 = auction_sell_items_inline_kb_v1
+except NameError:
+    _auction_base_sell_items_inline_kb_before_sell_cleanup_v2 = None
+
+
+def auction_sell_items_inline_kb_v1(user_id, category, page=0):
+    """
+    Override робочого inline-list helper-а:
+    - предмети залишаються inline;
+    - прибираємо inline 🔙 Торговий дім;
+    - додаємо inline 🔙 Категорії виставлення.
+    """
+
+    if not _auction_base_sell_items_inline_kb_before_sell_cleanup_v2:
+        kb = types.InlineKeyboardMarkup(row_width=1)
+        kb.add(types.InlineKeyboardButton("🔙 Категорії виставлення", callback_data=AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2))
+        return kb, [], False
+
+    kb, items, has_next = _auction_base_sell_items_inline_kb_before_sell_cleanup_v2(user_id, category, page=page)
+    kb = _auction_sanitize_sell_inline_keyboard_v2_safe(kb)
+    return kb, items, has_next
+
+
+try:
+    _auction_base_sell_review_kb_before_sell_cleanup_v2 = auction_sell_review_kb_v1
+except NameError:
+    _auction_base_sell_review_kb_before_sell_cleanup_v2 = None
+
+
+def auction_sell_review_kb_v1(category, inventory_id, page=0):
+    """
+    Override review-кнопок на екрані огляду товару перед ціною:
+    - прибираємо inline 🔙 Торговий дім;
+    - додаємо inline 🔙 Категорії виставлення.
+    """
+
+    if not _auction_base_sell_review_kb_before_sell_cleanup_v2:
+        kb = types.InlineKeyboardMarkup(row_width=1)
+        kb.add(types.InlineKeyboardButton("🔙 Категорії виставлення", callback_data=AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2))
+        return kb
+
+    kb = _auction_base_sell_review_kb_before_sell_cleanup_v2(category, inventory_id, page=page)
+    kb = _auction_sanitize_sell_inline_keyboard_v2_safe(kb)
+    return kb
+
+
+def _auction_open_sell_inline_category_v2_safe(bot, message, category):
+    user_id = message.from_user.id
+    page = 0
+
+    # Спершу прибираємо нижні категорії і залишаємо тільки звичайну кнопку назад.
+    bot.send_message(
+        message.chat.id,
+        "📂 Категорію відкрито. Для повернення до категорій використай inline-кнопку «🔙 Категорії виставлення» під списком.",
+        reply_markup=auction_sell_listing_reply_back_kb_v2_safe()
+    )
+
+    try:
+        text, inline_kb = build_auction_sell_inline_list_text_v1(user_id, category, page=page)
+        inline_kb = _auction_sanitize_sell_inline_keyboard_v2_safe(inline_kb)
+        bot.send_message(message.chat.id, text, reply_markup=inline_kb)
+    except Exception as error:
+        bot.send_message(
+            message.chat.id,
+            f"⚠️ Не вдалося відкрити список товарів цієї категорії: {error}",
+            reply_markup=auction_sell_listing_reply_back_kb_v2_safe()
+        )
+
+
+def _auction_register_sell_category_keyboard_cleanup_v2_safe(bot):
+
+    @bot.message_handler(func=lambda m: m.text == "➕ Виставити товар")
+    def auction_sell_start_categories_v2_safe(message):
+        # При вході у виставлення повертаємо нижні кнопки категорій.
+        bot.send_message(
+            message.chat.id,
+            build_auction_sell_category_text_v2_safe(),
+            reply_markup=auction_sell_category_kb_v2_safe()
+        )
+
+    @bot.message_handler(func=lambda m: m.text in AUCTION_SELL_CATEGORY_BY_BUTTON_V2)
+    def auction_sell_category_selected_v2_safe(message):
+        category = AUCTION_SELL_CATEGORY_BY_BUTTON_V2.get(message.text, "equipment")
+        _auction_open_sell_inline_category_v2_safe(bot, message, category)
+
+    @bot.callback_query_handler(func=lambda call: call.data == AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2)
+    def auction_sell_back_to_categories_v2_safe(call):
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        bot.send_message(
+            call.message.chat.id,
+            build_auction_sell_category_text_v2_safe(),
+            reply_markup=auction_sell_category_kb_v2_safe()
+        )
+
+
+try:
+    _auction_base_register_handlers_before_sell_keyboard_cleanup_v2_safe = register_auction_house_handlers
+except NameError:
+    _auction_base_register_handlers_before_sell_keyboard_cleanup_v2_safe = None
+
+
+def register_auction_house_handlers(bot):
+    # Цей handler має бути раніше старих sell category handlers, щоб коректно керувати ReplyKeyboard.
+    _auction_register_sell_category_keyboard_cleanup_v2_safe(bot)
+
+    if _auction_base_register_handlers_before_sell_keyboard_cleanup_v2_safe:
+        _auction_base_register_handlers_before_sell_keyboard_cleanup_v2_safe(bot)
+
+
+# ==============================
+# ✅ AUCTION HOUSE SECTION BACK KEYBOARD CLEANUP V1
+# ==============================
+
+# Уніфікація навігації Торгового Дому:
+# - inline-кнопка "🔙 Торговий дім" прибирається з розділів;
+# - у нижній ReplyKeyboard лишається звичайна кнопка "🔙 Торговий дім";
+# - це стосується: 📦 Мої лоти, 📬 Незабрані предмети,
+#   💰 Завершені продажі, 📜 Історія.
+
+AUCTION_REPLY_BACK_TO_HOUSE_BUTTON_V1 = "🔙 Торговий дім"
+
+
+def auction_reply_back_only_kb_v1():
+    """Нижня клавіатура для внутрішніх розділів Торгового Дому."""
+
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.row(AUCTION_REPLY_BACK_TO_HOUSE_BUTTON_V1)
+    return kb
+
+
+def _auction_strip_back_to_house_inline_v1(kb):
+    """Прибирає inline-кнопки повернення в головне меню Торгового Дому."""
+
+    try:
+        new_keyboard = []
+
+        for row in getattr(kb, "keyboard", []) or []:
+            new_row = []
+
+            for button in row:
+                text = getattr(button, "text", "") or ""
+                callback_data = getattr(button, "callback_data", "") or ""
+
+                if callback_data == "ah_menu":
+                    continue
+
+                if "Торговий дім" in text:
+                    continue
+
+                new_row.append(button)
+
+            if new_row:
+                new_keyboard.append(new_row)
+
+        kb.keyboard = new_keyboard
+    except Exception:
+        pass
+
+    return kb
+
+
+# ------------------------------
+# Мої лоти: прибрати inline "Торговий дім"
+# ------------------------------
+
+try:
+    _auction_base_my_lots_inline_kb_before_section_cleanup_v1 = auction_my_lots_inline_kb_v1
+except NameError:
+    _auction_base_my_lots_inline_kb_before_section_cleanup_v1 = None
+
+
+def auction_my_lots_inline_kb_v1(user_id, page=0):
+    if not _auction_base_my_lots_inline_kb_before_section_cleanup_v1:
+        return types.InlineKeyboardMarkup(row_width=1), [], False
+
+    kb, lots, has_next = _auction_base_my_lots_inline_kb_before_section_cleanup_v1(user_id, page=page)
+    return _auction_strip_back_to_house_inline_v1(kb), lots, has_next
+
+
+try:
+    _auction_base_my_lot_view_kb_before_section_cleanup_v1 = auction_my_lot_view_kb_v1
+except NameError:
+    _auction_base_my_lot_view_kb_before_section_cleanup_v1 = None
+
+
+def auction_my_lot_view_kb_v1(lot_id, page=0):
+    if not _auction_base_my_lot_view_kb_before_section_cleanup_v1:
+        return types.InlineKeyboardMarkup(row_width=1)
+
+    kb = _auction_base_my_lot_view_kb_before_section_cleanup_v1(lot_id, page=page)
+    return _auction_strip_back_to_house_inline_v1(kb)
+
+
+# ------------------------------
+# Незабрані предмети: прибрати inline "Торговий дім"
+# ------------------------------
+
+try:
+    _auction_base_unclaimed_items_inline_kb_before_section_cleanup_v1 = auction_unclaimed_items_inline_kb_v1
+except NameError:
+    _auction_base_unclaimed_items_inline_kb_before_section_cleanup_v1 = None
+
+
+def auction_unclaimed_items_inline_kb_v1(user_id, page=0):
+    if not _auction_base_unclaimed_items_inline_kb_before_section_cleanup_v1:
+        return types.InlineKeyboardMarkup(row_width=1), [], False
+
+    kb, lots, has_next = _auction_base_unclaimed_items_inline_kb_before_section_cleanup_v1(user_id, page=page)
+    return _auction_strip_back_to_house_inline_v1(kb), lots, has_next
+
+
+try:
+    _auction_base_unclaimed_item_view_kb_before_section_cleanup_v1 = auction_unclaimed_item_view_kb_v1
+except NameError:
+    _auction_base_unclaimed_item_view_kb_before_section_cleanup_v1 = None
+
+
+def auction_unclaimed_item_view_kb_v1(lot_id, page=0):
+    if not _auction_base_unclaimed_item_view_kb_before_section_cleanup_v1:
+        return types.InlineKeyboardMarkup(row_width=1)
+
+    kb = _auction_base_unclaimed_item_view_kb_before_section_cleanup_v1(lot_id, page=page)
+    return _auction_strip_back_to_house_inline_v1(kb)
+
+
+# ------------------------------
+# Завершені продажі: прибрати inline "Торговий дім"
+# ------------------------------
+
+try:
+    _auction_base_completed_sales_inline_kb_before_section_cleanup_v1 = auction_completed_sales_inline_kb_v1
+except NameError:
+    _auction_base_completed_sales_inline_kb_before_section_cleanup_v1 = None
+
+
+def auction_completed_sales_inline_kb_v1(user_id, page=0):
+    if not _auction_base_completed_sales_inline_kb_before_section_cleanup_v1:
+        return types.InlineKeyboardMarkup(row_width=1), [], False
+
+    kb, lots, has_next = _auction_base_completed_sales_inline_kb_before_section_cleanup_v1(user_id, page=page)
+    return _auction_strip_back_to_house_inline_v1(kb), lots, has_next
+
+
+try:
+    _auction_base_completed_sale_view_kb_before_section_cleanup_v1 = auction_completed_sale_view_kb_v1
+except NameError:
+    _auction_base_completed_sale_view_kb_before_section_cleanup_v1 = None
+
+
+def auction_completed_sale_view_kb_v1(lot_id, page=0):
+    if not _auction_base_completed_sale_view_kb_before_section_cleanup_v1:
+        return types.InlineKeyboardMarkup(row_width=1)
+
+    kb = _auction_base_completed_sale_view_kb_before_section_cleanup_v1(lot_id, page=page)
+    return _auction_strip_back_to_house_inline_v1(kb)
+
+
+# ------------------------------
+# Section start handlers: нижня ReplyKeyboard тільки з "🔙 Торговий дім"
+# ------------------------------
+
+def _auction_register_section_back_keyboard_cleanup_v1(bot):
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_MY_LOTS_BUTTON)
+    def auction_my_lots_start_section_cleanup_v1(message):
+        user_id = message.from_user.id
+        text, inline_kb = build_auction_my_lots_text_v1(user_id, page=0)
+        inline_kb = _auction_strip_back_to_house_inline_v1(inline_kb)
+
+        bot.send_message(
+            message.chat.id,
+            "📦 Розділ «Мої лоти» відкрито.",
+            reply_markup=auction_reply_back_only_kb_v1()
+        )
+        bot.send_message(message.chat.id, text, reply_markup=inline_kb)
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_UNCLAIMED_ITEMS_BUTTON)
+    def auction_unclaimed_items_start_section_cleanup_v1(message):
+        user_id = message.from_user.id
+        text, inline_kb = build_auction_unclaimed_items_text_v1(user_id, page=0)
+        inline_kb = _auction_strip_back_to_house_inline_v1(inline_kb)
+
+        bot.send_message(
+            message.chat.id,
+            "📬 Розділ «Незабрані предмети» відкрито.",
+            reply_markup=auction_reply_back_only_kb_v1()
+        )
+        bot.send_message(message.chat.id, text, reply_markup=inline_kb)
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_SOLD_BUTTON)
+    def auction_completed_sales_start_section_cleanup_v1(message):
+        user_id = message.from_user.id
+        text, inline_kb = build_auction_completed_sales_text_v1(user_id, page=0)
+        inline_kb = _auction_strip_back_to_house_inline_v1(inline_kb)
+
+        bot.send_message(
+            message.chat.id,
+            "💰 Розділ «Завершені продажі» відкрито.",
+            reply_markup=auction_reply_back_only_kb_v1()
+        )
+        bot.send_message(message.chat.id, text, reply_markup=inline_kb)
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_HISTORY_BUTTON)
+    def auction_history_start_section_cleanup_v1(message):
+        text = (
+            "📜 Історія\n\n"
+            "Тут буде історія покупок, продажів і перегляд ринкових цін.\n\n"
+            "Цей розділ буде реалізовано на наступному етапі Торгового Дому."
+        )
+
+        bot.send_message(
+            message.chat.id,
+            text,
+            reply_markup=auction_reply_back_only_kb_v1()
+        )
+
+
+try:
+    _auction_base_register_handlers_before_section_back_cleanup_v1 = register_auction_house_handlers
+except NameError:
+    _auction_base_register_handlers_before_section_back_cleanup_v1 = None
+
+
+def register_auction_house_handlers(bot):
+    # Реєструємо раніше старих placeholder/section handlers.
+    _auction_register_section_back_keyboard_cleanup_v1(bot)
+
+    if _auction_base_register_handlers_before_section_back_cleanup_v1:
+        _auction_base_register_handlers_before_section_back_cleanup_v1(bot)
+
+
+# ==============================
+# ✅ AUCTION HOUSE BUY SEARCH UI V1
+# ==============================
+
+AUCTION_SEARCH_BUTTON_V1 = "🔍 Пошук"
+AUCTION_SEARCH_STATE_V1 = {}
+AUCTION_SEARCH_PAGE_SIZE_V1 = 8
+
+
+def auction_buy_category_kb_v1():
+    """Override buy category keyboard: add Search button."""
+
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.row(AUCTION_SEARCH_BUTTON_V1)
+    kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["all"])
+    kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["equipment"], AUCTION_BUY_CATEGORY_BUTTONS_V1["potion"])
+    kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["material"])
+    kb.row("🔙 Торговий дім")
+    return kb
+
+
+def build_auction_buy_category_text_v1():
+    """Override buy category text: mention Search."""
+
+    return (
+        "🛒 Купити\n\n"
+        "Оберіть категорію лотів або скористайтесь пошуком.\n\n"
+        "Доступні дії:\n"
+        "• 🔍 Пошук — знайти лот за назвою предмета\n"
+        "• 🔎 Усі лоти\n"
+        "• ⚔️ Спорядження\n"
+        "• 🧪 Зілля\n"
+        "• 🪨 Матеріали\n\n"
+        "Продавці приховані. Власні лоти у списку покупки не показуються."
+    )
+
+
+def auction_search_reply_kb_v1():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.row("🔙 Категорії")
+    kb.row("🔙 Торговий дім")
+    return kb
+
+
+def auction_search_results_reply_kb_v1():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.row("🔙 Категорії")
+    kb.row("🔍 Новий пошук")
+    kb.row("🔙 Торговий дім")
+    return kb
+
+
+def build_auction_search_prompt_text_v1():
+    return (
+        "🔍 Пошук лотів\n\n"
+        "Введіть частину назви предмета, який хочете знайти.\n\n"
+        "Приклади запиту:\n"
+        "• жезл\n"
+        "• обладунок\n"
+        "• камінь\n"
+        "• зілля\n\n"
+        "Мінімум: 2 символи."
+    )
+
+
+def auction_search_sort_inline_buttons_v1(sort_key):
+    buttons = []
+    for key, label in AUCTION_BUY_SORT_LABELS_V1.items():
+        prefix = "✅ " if key == sort_key else ""
+        buttons.append(types.InlineKeyboardButton(prefix + label, callback_data=f"ah_search_page:{key}:0"))
+    return buttons
+
+
+def auction_search_results_inline_kb_v1(user_id, query, sort_key="new", page=0):
+    from db import get_auction_lots_for_buy_search
+
+    page = max(0, int(page or 0))
+    offset = page * AUCTION_SEARCH_PAGE_SIZE_V1
+    lots = get_auction_lots_for_buy_search(
+        buyer_user_id=user_id,
+        search_text=query,
+        sort_key=sort_key,
+        limit=AUCTION_SEARCH_PAGE_SIZE_V1 + 1,
+        offset=offset,
+    )
+
+    visible_lots = lots[:AUCTION_SEARCH_PAGE_SIZE_V1]
+    has_next = len(lots) > AUCTION_SEARCH_PAGE_SIZE_V1
+
+    kb = types.InlineKeyboardMarkup(row_width=1)
+
+    sort_buttons = auction_search_sort_inline_buttons_v1(sort_key)
+    kb.row(*sort_buttons[:2])
+    kb.row(*sort_buttons[2:4])
+    kb.row(*sort_buttons[4:])
+
+    for lot in visible_lots:
+        quantity = int(lot["quantity"] or 1)
+        qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
+        label = f"📦 {lot['item_name']}{qty} — {lot['price']} 💰"
+        kb.add(types.InlineKeyboardButton(
+            _auction_inline_truncate(label),
+            callback_data=f"ah_search_lot:{lot['id']}:{sort_key}:{page}"
+        ))
+
+    nav = []
+    if page > 0:
+        nav.append(types.InlineKeyboardButton("⬅️ Попередні", callback_data=f"ah_search_page:{sort_key}:{page - 1}"))
+    if has_next:
+        nav.append(types.InlineKeyboardButton("➡️ Наступні", callback_data=f"ah_search_page:{sort_key}:{page + 1}"))
+    if nav:
+        kb.row(*nav)
+
+    # Назад до категорій робимо через inline, бо це повернення саме до buy-category screen.
+    kb.add(types.InlineKeyboardButton("🔙 Категорії", callback_data="ah_buy2_categories"))
+    return kb, visible_lots, has_next
+
+
+def build_auction_search_results_text_v1(query, sort_key="new", page=0):
+    sort_label = AUCTION_BUY_SORT_LABELS_V1.get(sort_key, AUCTION_BUY_SORT_LABELS_V1["new"])
+    return (
+        "🔍 Результати пошуку\n\n"
+        f"Запит: {query}\n"
+        f"↕️ Сортування: {sort_label}\n"
+        f"📄 Сторінка: {int(page) + 1}\n\n"
+        "Оберіть лот inline-кнопкою нижче."
+    )
+
+
+def auction_search_lot_view_kb_v1(lot_id, sort_key="new", page=0):
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("✅ Купити", callback_data=f"ah_search_confirm:{lot_id}:{sort_key}:{page}"))
+    kb.add(types.InlineKeyboardButton("🔙 До результатів", callback_data=f"ah_search_page:{sort_key}:{page}"))
+    return kb
+
+
+def auction_search_confirm_kb_v1(lot_id, sort_key="new", page=0):
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("✅ Підтвердити покупку", callback_data=f"ah_search_do:{lot_id}:{sort_key}:{page}"))
+    kb.add(types.InlineKeyboardButton("❌ Назад", callback_data=f"ah_search_lot:{lot_id}:{sort_key}:{page}"))
+    return kb
+
+
+def _auction_get_search_query_v1(user_id):
+    state = AUCTION_SEARCH_STATE_V1.get(user_id) or {}
+    return state.get("query", "")
+
+
+def _auction_show_search_results_v1(bot, chat_id, user_id, sort_key="new", page=0, edit_message=None):
+    query = _auction_get_search_query_v1(user_id)
+    text = build_auction_search_results_text_v1(query, sort_key=sort_key, page=page)
+    kb, lots, has_next = auction_search_results_inline_kb_v1(user_id, query, sort_key=sort_key, page=page)
+
+    if not lots:
+        text += "\n\nНічого не знайдено. Спробуйте інший запит."
+
+    if edit_message is not None:
+        try:
+            bot.edit_message_text(text, chat_id=chat_id, message_id=edit_message.message_id, reply_markup=kb)
+            return
+        except Exception:
+            pass
+
+    bot.send_message(chat_id, text, reply_markup=kb)
+
+
+def _auction_register_buy_search_handlers_v1(bot):
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_SEARCH_BUTTON_V1)
+    def auction_search_start_v1(message):
+        user_id = message.from_user.id
+        AUCTION_SEARCH_STATE_V1[user_id] = {"step": "query"}
+        bot.send_message(
+            message.chat.id,
+            build_auction_search_prompt_text_v1(),
+            reply_markup=auction_search_reply_kb_v1()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "🔍 Новий пошук")
+    def auction_search_new_v1(message):
+        user_id = message.from_user.id
+        AUCTION_SEARCH_STATE_V1[user_id] = {"step": "query"}
+        bot.send_message(
+            message.chat.id,
+            build_auction_search_prompt_text_v1(),
+            reply_markup=auction_search_reply_kb_v1()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "🔙 Категорії")
+    def auction_search_back_to_categories_v1(message):
+        user_id = message.from_user.id
+        AUCTION_SEARCH_STATE_V1.pop(user_id, None)
+        bot.send_message(
+            message.chat.id,
+            build_auction_buy_category_text_v1(),
+            reply_markup=auction_buy_category_kb_v1()
+        )
+
+    @bot.message_handler(func=lambda m: m.from_user.id in AUCTION_SEARCH_STATE_V1)
+    def auction_search_query_router_v1(message):
+        user_id = message.from_user.id
+        text = (message.text or "").strip()
+
+        if text == "🔙 Торговий дім":
+            AUCTION_SEARCH_STATE_V1.pop(user_id, None)
+            try:
+                if "_auction_main_menu_text_v2" in globals():
+                    menu_text = _auction_main_menu_text_v2(user_id)
+                else:
+                    menu_text = build_auction_house_text(user_id)
+            except Exception:
+                menu_text = build_auction_house_text(user_id)
+
+            bot.send_message(message.chat.id, menu_text, reply_markup=auction_house_kb())
+            return
+
+        if len(text) < 2:
+            bot.send_message(message.chat.id, "❌ Введіть мінімум 2 символи для пошуку.", reply_markup=auction_search_reply_kb_v1())
+            return
+
+        from db import normalize_auction_search_query
+        query = normalize_auction_search_query(text)
+
+        AUCTION_SEARCH_STATE_V1[user_id] = {
+            "step": "results",
+            "query": query,
+            "sort_key": "new",
+            "page": 0,
+        }
+
+        bot.send_message(
+            message.chat.id,
+            "🔍 Пошук виконано.",
+            reply_markup=auction_search_results_reply_kb_v1()
+        )
+        _auction_show_search_results_v1(bot, message.chat.id, user_id, sort_key="new", page=0)
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_search_page:"))
+    def auction_search_page_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        sort_key = parts[1]
+        page = int(parts[2])
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        if not _auction_get_search_query_v1(user_id):
+            bot.send_message(call.message.chat.id, build_auction_search_prompt_text_v1(), reply_markup=auction_search_reply_kb_v1())
+            return
+
+        AUCTION_SEARCH_STATE_V1[user_id]["sort_key"] = sort_key
+        AUCTION_SEARCH_STATE_V1[user_id]["page"] = page
+        _auction_show_search_results_v1(bot, call.message.chat.id, user_id, sort_key=sort_key, page=page, edit_message=call.message)
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_search_lot:"))
+    def auction_search_lot_view_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        lot_id = int(parts[1])
+        sort_key = parts[2]
+        page = int(parts[3])
+
+        from db import build_auction_buy_lot_details_v2
+        details = build_auction_buy_lot_details_v2(buyer_user_id=user_id, lot_id=lot_id)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        if not details.get("success"):
+            bot.send_message(call.message.chat.id, details.get("message", "❌ Лот недоступний."), reply_markup=auction_search_results_reply_kb_v1())
+            return
+
+        try:
+            bot.edit_message_text(details["text"], chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=auction_search_lot_view_kb_v1(lot_id, sort_key, page))
+        except Exception:
+            bot.send_message(call.message.chat.id, details["text"], reply_markup=auction_search_lot_view_kb_v1(lot_id, sort_key, page))
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_search_confirm:"))
+    def auction_search_confirm_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        lot_id = int(parts[1])
+        sort_key = parts[2]
+        page = int(parts[3])
+
+        from db import build_auction_buy_lot_details_v2
+        details = build_auction_buy_lot_details_v2(buyer_user_id=user_id, lot_id=lot_id)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        if not details.get("success"):
+            bot.send_message(call.message.chat.id, details.get("message", "❌ Лот недоступний."), reply_markup=auction_search_results_reply_kb_v1())
+            return
+
+        text = (
+            "⚠️ Підтвердження покупки\n\n"
+            f"{details['text']}\n\n"
+            "Після підтвердження золото буде списано, а предмет додано в інвентар."
+        )
+
+        try:
+            bot.edit_message_text(text, chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=auction_search_confirm_kb_v1(lot_id, sort_key, page))
+        except Exception:
+            bot.send_message(call.message.chat.id, text, reply_markup=auction_search_confirm_kb_v1(lot_id, sort_key, page))
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_search_do:"))
+    def auction_search_do_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        lot_id = int(parts[1])
+        sort_key = parts[2]
+        page = int(parts[3])
+
+        from db import buy_auction_lot_v2
+        result = buy_auction_lot_v2(buyer_user_id=user_id, lot_id=lot_id)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        if not result.get("success"):
+            bot.send_message(call.message.chat.id, result.get("message", "❌ Не вдалося купити лот."), reply_markup=auction_search_results_reply_kb_v1())
+            return
+
+        bot.send_message(
+            call.message.chat.id,
+            (
+                "✅ Покупку завершено!\n\n"
+                f"📦 {result.get('item_name')}\n"
+                f"💰 Сплачено: {result.get('price')} золота\n\n"
+                "Предмет додано в інвентар."
+            ),
+            reply_markup=auction_search_results_reply_kb_v1()
+        )
+
+        _auction_show_search_results_v1(bot, call.message.chat.id, user_id, sort_key=sort_key, page=page)
+
+
+try:
+    _auction_base_register_handlers_before_buy_search_v1 = register_auction_house_handlers
+except NameError:
+    _auction_base_register_handlers_before_buy_search_v1 = None
+
+
+def register_auction_house_handlers(bot):
+    # Register search before older buy/category handlers, so search reply buttons work predictably.
+    _auction_register_buy_search_handlers_v1(bot)
+
+    if _auction_base_register_handlers_before_buy_search_v1:
+        _auction_base_register_handlers_before_buy_search_v1(bot)
+
+
+# ==============================
+# ✅ AUCTION HOUSE HISTORY AND MARKET PRICES UI V1
+# ==============================
+
+AUCTION_HISTORY_PAGE_SIZE_V1 = 8
+AUCTION_HISTORY_STATE_V1 = {}
+AUCTION_MARKET_PRICE_SEARCH_STATE_V1 = {}
+
+AUCTION_HISTORY_MODE_LABELS_V1 = {
+    "all": "📜 Уся історія",
+    "buy": "🛒 Мої покупки",
+    "sell": "💰 Мої продажі",
+}
+
+
+def auction_history_reply_kb_v1():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.row("📈 Ринкові ціни")
+    kb.row("🔙 Торговий дім")
+    return kb
+
+
+def auction_market_price_search_kb_v1():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.row("🔙 Історія")
+    kb.row("🔙 Торговий дім")
+    return kb
+
+
+def auction_history_inline_kb_v1(mode="all", page=0, has_next=False):
+    kb = types.InlineKeyboardMarkup(row_width=1)
+
+    row = []
+    for key, label in AUCTION_HISTORY_MODE_LABELS_V1.items():
+        prefix = "✅ " if key == mode else ""
+        row.append(types.InlineKeyboardButton(prefix + label, callback_data=f"ah_hist:{key}:0"))
+    kb.row(*row)
+
+    nav = []
+    if int(page) > 0:
+        nav.append(types.InlineKeyboardButton("⬅️ Попередні", callback_data=f"ah_hist:{mode}:{int(page) - 1}"))
+    if has_next:
+        nav.append(types.InlineKeyboardButton("➡️ Наступні", callback_data=f"ah_hist:{mode}:{int(page) + 1}"))
+    if nav:
+        kb.row(*nav)
+
+    return kb
+
+
+def _auction_history_row_to_line_v1(row, viewer_user_id, index):
+    from db import format_auction_history_date
+
+    seller_id = int(row["seller_user_id"] or 0)
+    buyer_id = int(row["buyer_user_id"] or 0)
+
+    if buyer_id == int(viewer_user_id):
+        action = "🛒 Куплено"
+    elif seller_id == int(viewer_user_id):
+        action = "💰 Продано"
+    else:
+        action = "📦 Угода"
+
+    sold_date = row["sold_at"] if "sold_at" in row.keys() else row["created_at"]
+    date_text = format_auction_history_date(sold_date, with_time=True)
+
+    quantity = int(row["quantity"] or 1)
+    qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in row["item_name"] else ""
+
+    return (
+        f"{index}. {action}: {row['item_name']}{qty}\n"
+        f"   💰 {row['price']} золота | 🕒 {date_text}"
+    )
+
+
+def build_auction_history_text_v1(user_id, mode="all", page=0):
+    from db import get_user_auction_history
+
+    page = max(0, int(page or 0))
+    offset = page * AUCTION_HISTORY_PAGE_SIZE_V1
+    rows = get_user_auction_history(user_id, mode=mode, limit=AUCTION_HISTORY_PAGE_SIZE_V1 + 1, offset=offset)
+
+    visible = rows[:AUCTION_HISTORY_PAGE_SIZE_V1]
+    has_next = len(rows) > AUCTION_HISTORY_PAGE_SIZE_V1
+    mode_label = AUCTION_HISTORY_MODE_LABELS_V1.get(mode, AUCTION_HISTORY_MODE_LABELS_V1["all"])
+
+    text = (
+        "📜 Історія Торгового Дому\n\n"
+        f"Розділ: {mode_label}\n"
+        f"Сторінка: {page + 1}\n\n"
+    )
+
+    if not visible:
+        text += "Записів поки немає."
+    else:
+        lines = []
+        for idx, row in enumerate(visible, start=offset + 1):
+            lines.append(_auction_history_row_to_line_v1(row, user_id, idx))
+        text += "\n".join(lines)
+
+    return text, auction_history_inline_kb_v1(mode=mode, page=page, has_next=has_next)
+
+
+def build_auction_market_price_prompt_v1():
+    return (
+        "📈 Ринкові ціни\n\n"
+        "Введіть частину назви предмета, щоб подивитися історію продажів.\n\n"
+        "Приклади:\n"
+        "• жезл\n"
+        "• обладунок\n"
+        "• камінь\n"
+        "• зілля\n\n"
+        "Мінімум: 2 символи."
+    )
+
+
+def build_auction_market_price_search_text_v1(query):
+    from db import search_auction_market_price_stats, format_auction_history_date
+
+    rows = search_auction_market_price_stats(query, limit=10)
+
+    text = (
+        "📈 Ринкові ціни\n\n"
+        f"Запит: {query}\n\n"
+    )
+
+    if not rows:
+        text += "Продажів за цим запитом ще не знайдено."
+        return text
+
+    lines = []
+    for idx, row in enumerate(rows, start=1):
+        try:
+            avg_price = float(row["avg_price"] or 0)
+            min_price = float(row["min_price"] or 0)
+            max_price = float(row["max_price"] or 0)
+        except Exception:
+            avg_price = min_price = max_price = 0.0
+
+        last_sale = format_auction_history_date(row["last_sale_at"], with_time=True)
+
+        lines.append(
+            f"{idx}. {row['item_name']}\n"
+            f"   Продажів: {row['sales_count']} | Середня: {avg_price:.2f} 💰\n"
+            f"   Мін: {min_price:.2f} 💰 | Макс: {max_price:.2f} 💰\n"
+            f"   Останній продаж: {last_sale}"
+        )
+
+    text += "\n\n".join(lines)
+    return text
+
+
+def build_auction_lot_market_price_text_v1(lot_id):
+    from db import get_auction_lot_market_price_stats, format_auction_history_date
+
+    result = get_auction_lot_market_price_stats(lot_id)
+
+    if not result.get("success"):
+        return result.get("message", "❌ Не вдалося отримати історію цін.")
+
+    item_name = result.get("item_name", "Предмет")
+
+    text = (
+        "📈 Ринкові ціни\n\n"
+        f"📦 {item_name}\n\n"
+    )
+
+    if int(result.get("count", 0) or 0) <= 0:
+        text += result.get("message", "Історії продажів ще немає.")
+        return text
+
+    text += (
+        f"Продажів враховано: {result['count']}\n"
+        f"Остання ціна: {float(result['last_price']):.2f} 💰\n"
+        f"Середня ціна: {float(result['avg_price']):.2f} 💰\n"
+        f"Мінімальна ціна: {float(result['min_price']):.2f} 💰\n"
+        f"Максимальна ціна: {float(result['max_price']):.2f} 💰\n\n"
+        "Останні продажі:\n"
+    )
+
+    for row in result.get("rows", [])[:5]:
+        date_text = format_auction_history_date(row["history_date"], with_time=True)
+        text += f"• {row['price']} 💰 — {date_text}\n"
+
+    return text.rstrip()
+
+
+# Add 📈 button into lot view keyboards, without adding back-to-house inline.
+try:
+    _auction_base_buy_lot_view_kb_before_history_v1 = auction_buy_lot_view_kb_v1
+except NameError:
+    _auction_base_buy_lot_view_kb_before_history_v1 = None
+
+
+def auction_buy_lot_view_kb_v1(lot_id, category="all", sort_key="new", page=0):
+    if not _auction_base_buy_lot_view_kb_before_history_v1:
+        kb = types.InlineKeyboardMarkup(row_width=1)
+        kb.add(types.InlineKeyboardButton("✅ Купити", callback_data=f"ah_buy2_confirm:{lot_id}:{category}:{sort_key}:{page}"))
+        kb.add(types.InlineKeyboardButton("📈 Ринкові ціни", callback_data=f"ah_price_lot:{lot_id}"))
+        return kb
+
+    kb = _auction_base_buy_lot_view_kb_before_history_v1(lot_id, category=category, sort_key=sort_key, page=page)
+    try:
+        kb.add(types.InlineKeyboardButton("📈 Ринкові ціни", callback_data=f"ah_price_lot:{lot_id}"))
+    except Exception:
+        pass
+    try:
+        if "_auction_strip_back_to_house_inline_v1" in globals():
+            kb = _auction_strip_back_to_house_inline_v1(kb)
+    except Exception:
+        pass
+    return kb
+
+try:
+    _auction_base_search_lot_view_kb_before_history_v1 = auction_search_lot_view_kb_v1
+except NameError:
+    _auction_base_search_lot_view_kb_before_history_v1 = None
+
+
+def auction_search_lot_view_kb_v1(lot_id, sort_key="new", page=0):
+    if not _auction_base_search_lot_view_kb_before_history_v1:
+        kb = types.InlineKeyboardMarkup(row_width=1)
+        kb.add(types.InlineKeyboardButton("✅ Купити", callback_data=f"ah_search_confirm:{lot_id}:{sort_key}:{page}"))
+        kb.add(types.InlineKeyboardButton("📈 Ринкові ціни", callback_data=f"ah_price_lot:{lot_id}"))
+        return kb
+
+    kb = _auction_base_search_lot_view_kb_before_history_v1(lot_id, sort_key=sort_key, page=page)
+    try:
+        kb.add(types.InlineKeyboardButton("📈 Ринкові ціни", callback_data=f"ah_price_lot:{lot_id}"))
+    except Exception:
+        pass
+    return kb
+
+
+def auction_price_back_kb_v1():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.row("🔙 Торговий дім")
+    return kb
+
+
+def _auction_register_history_market_prices_handlers_v1(bot):
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_HISTORY_BUTTON)
+    def auction_history_start_v1(message):
+        user_id = message.from_user.id
+        text, inline_kb = build_auction_history_text_v1(user_id, mode="all", page=0)
+        bot.send_message(
+            message.chat.id,
+            "📜 Розділ «Історія» відкрито.",
+            reply_markup=auction_history_reply_kb_v1()
+        )
+        bot.send_message(message.chat.id, text, reply_markup=inline_kb)
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_hist:"))
+    def auction_history_page_callback_v1(call):
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        mode = parts[1]
+        page = int(parts[2])
+        text, inline_kb = build_auction_history_text_v1(user_id, mode=mode, page=page)
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        try:
+            bot.edit_message_text(text, chat_id=call.message.chat.id, message_id=call.message.message_id, reply_markup=inline_kb)
+        except Exception:
+            bot.send_message(call.message.chat.id, text, reply_markup=inline_kb)
+
+    @bot.message_handler(func=lambda m: m.text == "📈 Ринкові ціни")
+    def auction_market_price_search_start_v1(message):
+        user_id = message.from_user.id
+        AUCTION_MARKET_PRICE_SEARCH_STATE_V1[user_id] = True
+        bot.send_message(
+            message.chat.id,
+            build_auction_market_price_prompt_v1(),
+            reply_markup=auction_market_price_search_kb_v1()
+        )
+
+    @bot.message_handler(func=lambda m: m.text == "🔙 Історія")
+    def auction_market_price_back_history_v1(message):
+        user_id = message.from_user.id
+        AUCTION_MARKET_PRICE_SEARCH_STATE_V1.pop(user_id, None)
+        text, inline_kb = build_auction_history_text_v1(user_id, mode="all", page=0)
+        bot.send_message(message.chat.id, text, reply_markup=inline_kb)
+
+    @bot.message_handler(func=lambda m: m.from_user.id in AUCTION_MARKET_PRICE_SEARCH_STATE_V1)
+    def auction_market_price_search_query_v1(message):
+        user_id = message.from_user.id
+        text = (message.text or "").strip()
+
+        if text == "🔙 Торговий дім":
+            AUCTION_MARKET_PRICE_SEARCH_STATE_V1.pop(user_id, None)
+            try:
+                if "_auction_main_menu_text_v2" in globals():
+                    menu_text = _auction_main_menu_text_v2(user_id)
+                else:
+                    menu_text = build_auction_house_text(user_id)
+            except Exception:
+                menu_text = build_auction_house_text(user_id)
+            bot.send_message(message.chat.id, menu_text, reply_markup=auction_house_kb())
+            return
+
+        if len(text) < 2:
+            bot.send_message(message.chat.id, "❌ Введіть мінімум 2 символи.", reply_markup=auction_market_price_search_kb_v1())
+            return
+
+        bot.send_message(
+            message.chat.id,
+            build_auction_market_price_search_text_v1(text),
+            reply_markup=auction_market_price_search_kb_v1()
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("ah_price_lot:"))
+    def auction_lot_price_history_callback_v1(call):
+        lot_id = int(call.data.split(":")[1])
+
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+
+        text = build_auction_lot_market_price_text_v1(lot_id)
+        bot.send_message(call.message.chat.id, text, reply_markup=auction_price_back_kb_v1())
+
+
+try:
+    _auction_base_register_handlers_before_history_market_v1 = register_auction_house_handlers
+except NameError:
+    _auction_base_register_handlers_before_history_market_v1 = None
+
+
+def register_auction_house_handlers(bot):
+    # History/market price handlers should be before old placeholder history handlers.
+    _auction_register_history_market_prices_handlers_v1(bot)
+
+    if _auction_base_register_handlers_before_history_market_v1:
+        _auction_base_register_handlers_before_history_market_v1(bot)
+
+
+# ==============================
+# ✅ AUCTION HISTORY KEYBOARD RESTORE V1
+# ==============================
+
+# Виправлення UX у розділі історії:
+# після натискання звичайної кнопки "🔙 Історія" з меню ринкових цін
+# нижня ReplyKeyboard має повертатися до клавіатури історії:
+#   📈 Ринкові ціни
+#   🔙 Торговий дім
+# а не залишати кнопку "🔙 Історія".
+
+
+def _auction_open_history_screen_v1(bot, chat_id, user_id, mode="all", page=0):
+    """Відкриває історію і гарантовано повертає правильну нижню клавіатуру."""
+
+    try:
+        AUCTION_MARKET_PRICE_SEARCH_STATE_V1.pop(user_id, None)
+    except Exception:
+        pass
+
+    try:
+        text, inline_kb = build_auction_history_text_v1(user_id, mode=mode, page=page)
+    except Exception:
+        text = "📜 Історія Торгового Дому\n\nЗаписів поки немає."
+        inline_kb = None
+
+    # Спочатку міняємо нижню клавіатуру на клавіатуру розділу історії.
+    try:
+        bot.send_message(
+            chat_id,
+            "📜 Розділ «Історія» відкрито.",
+            reply_markup=auction_history_reply_kb_v1()
+        )
+    except Exception:
+        pass
+
+    # Потім надсилаємо саму історію з inline-фільтрами.
+    bot.send_message(chat_id, text, reply_markup=inline_kb)
+
+
+def _auction_register_history_keyboard_restore_v1(bot):
+
+    @bot.message_handler(func=lambda m: m.text == "🔙 Історія")
+    def auction_history_back_restore_keyboard_v1(message):
+        user_id = message.from_user.id
+        _auction_open_history_screen_v1(
+            bot=bot,
+            chat_id=message.chat.id,
+            user_id=user_id,
+            mode="all",
+            page=0,
+        )
+
+
+try:
+    _auction_base_register_handlers_before_history_keyboard_restore_v1 = register_auction_house_handlers
+except NameError:
+    _auction_base_register_handlers_before_history_keyboard_restore_v1 = None
+
+
+def register_auction_house_handlers(bot):
+    # Має реєструватися раніше старого handler-а "🔙 Історія",
+    # який повертав історію без відновлення нижньої клавіатури.
+    _auction_register_history_keyboard_restore_v1(bot)
+
+    if _auction_base_register_handlers_before_history_keyboard_restore_v1:
+        _auction_base_register_handlers_before_history_keyboard_restore_v1(bot)
+
+
+# ==============================
+# ✅ AUCTION HOUSE EXPIRATION CLEANUP UI V2
+# ==============================
+
+
+def build_auction_cleanup_report_text_v2(result=None):
+    if result is None:
+        from db import get_auction_cleanup_report
+        result = get_auction_cleanup_report()
+
+    counts = result.get("status_counts", {}) if isinstance(result, dict) else {}
+
+    return (
+        "🧹 Auction cleanup / Торговий Дім\n\n"
+        f"ACTIVE: {counts.get('ACTIVE', 0)}\n"
+        f"SOLD_UNCLAIMED: {counts.get('SOLD_UNCLAIMED', 0)}\n"
+        f"SOLD_CLAIMED: {counts.get('SOLD_CLAIMED', 0)}\n"
+        f"EXPIRED_UNCLAIMED: {counts.get('EXPIRED_UNCLAIMED', 0)}\n"
+        f"EXPIRED_CLAIMED: {counts.get('EXPIRED_CLAIMED', 0)}\n"
+        f"DELETED: {counts.get('DELETED', 0)}"
+    )
+
+
+try:
+    _auction_base_build_auction_house_text_before_cleanup_v2 = build_auction_house_text
+except NameError:
+    _auction_base_build_auction_house_text_before_cleanup_v2 = None
+
+
+def build_auction_house_text(user_id):
+    """Override: cleanup runs whenever player opens Auction House."""
+
+    try:
+        from db import update_expired_auction_lots
+        update_expired_auction_lots()
+    except Exception:
+        pass
+
+    if _auction_base_build_auction_house_text_before_cleanup_v2:
+        return _auction_base_build_auction_house_text_before_cleanup_v2(user_id)
+
+    return (
+        "🏛️ Торговий дім\n\n"
+        "Тут гравці можуть виставляти товари, купувати лоти та забирати завершені продажі."
+    )
+
+
+def _auction_register_expiration_cleanup_handlers_v2(bot):
+
+    @bot.message_handler(commands=["auction_cleanup"])
+    def auction_cleanup_command_v2(message):
+        from db import update_expired_auction_lots, get_auction_cleanup_report
+
+        cleanup = update_expired_auction_lots()
+        report = get_auction_cleanup_report()
+
+        text = (
+            "🧹 Cleanup виконано.\n\n"
+            f"ACTIVE → EXPIRED_UNCLAIMED: {cleanup.get('expired_active', 0)}\n"
+            f"EXPIRED_UNCLAIMED → DELETED: {cleanup.get('deleted_expired_unclaimed', 0)}\n"
+            f"SOLD_UNCLAIMED → DELETED: {cleanup.get('deleted_sold_unclaimed', 0)}\n"
+            f"Виправлено delete_after: {cleanup.get('fixed_missing_delete_after', 0)}\n\n"
+            f"{build_auction_cleanup_report_text_v2(report)}"
+        )
+
+        bot.send_message(message.chat.id, text)
+
+    @bot.message_handler(commands=["auction_debug"])
+    def auction_debug_command_v2(message):
+        from db import get_auction_cleanup_report
+        bot.send_message(message.chat.id, build_auction_cleanup_report_text_v2(get_auction_cleanup_report()))
+
+
+try:
+    _auction_base_register_handlers_before_expiration_cleanup_v2 = register_auction_house_handlers
+except NameError:
+    _auction_base_register_handlers_before_expiration_cleanup_v2 = None
+
+
+def register_auction_house_handlers(bot):
+    _auction_register_expiration_cleanup_handlers_v2(bot)
+
+    if _auction_base_register_handlers_before_expiration_cleanup_v2:
+        _auction_base_register_handlers_before_expiration_cleanup_v2(bot)
+
+
+# ==============================
+# ✅ AUCTION HOUSE STABILIZATION DIAGNOSTICS UI V1
+# ==============================
+
+
+def _auction_list_short_v1(values, limit=10):
+    values = list(values or [])
+    if not values:
+        return "немає"
+
+    shown = values[:limit]
+    text = ", ".join(str(x) for x in shown)
+    if len(values) > limit:
+        text += f" ... +{len(values) - limit}"
+    return text
+
+
+def build_auction_diagnostics_text_v1(report):
+    counts = report.get("status_counts", {}) if isinstance(report, dict) else {}
+    active_by_seller = report.get("active_lots_by_seller", []) if isinstance(report, dict) else []
+
+    top_sellers = []
+    for row in active_by_seller[:5]:
+        top_sellers.append(f"{row.get('seller_user_id')}: {row.get('active_count')}")
+
+    if not top_sellers:
+        top_sellers_text = "немає"
+    else:
+        top_sellers_text = "\n".join(f"• {x}" for x in top_sellers)
+
+    return (
+        "🧪 Auction diagnostics\n\n"
+        f"Таблиці OK: {'так' if report.get('tables_ok') else 'ні'}\n"
+        f"Всього лотів: {report.get('total_lots', 0)}\n\n"
+        "Статуси:\n"
+        f"• ACTIVE: {counts.get('ACTIVE', 0)}\n"
+        f"• SOLD_UNCLAIMED: {counts.get('SOLD_UNCLAIMED', 0)}\n"
+        f"• SOLD_CLAIMED: {counts.get('SOLD_CLAIMED', 0)}\n"
+        f"• EXPIRED_UNCLAIMED: {counts.get('EXPIRED_UNCLAIMED', 0)}\n"
+        f"• EXPIRED_CLAIMED: {counts.get('EXPIRED_CLAIMED', 0)}\n"
+        f"• DELETED: {counts.get('DELETED', 0)}\n\n"
+        "Потенційні проблеми:\n"
+        f"• Некоректна ціна: {_auction_list_short_v1(report.get('bad_price_lots'))}\n"
+        f"• Немає snapshot: {_auction_list_short_v1(report.get('missing_snapshot_lots'))}\n"
+        f"• ACTIVE без expires_at: {_auction_list_short_v1(report.get('active_missing_expires_at'))}\n"
+        f"• Unclaimed без delete_after: {_auction_list_short_v1(report.get('unclaimed_missing_delete_after'))}\n"
+        f"• SOLD_UNCLAIMED без buyer: {_auction_list_short_v1(report.get('sold_unclaimed_without_buyer'))}\n\n"
+        "Активні лоти за продавцями TOP-5:\n"
+        f"{top_sellers_text}"
+    )
+
+
+def _auction_register_stabilization_diagnostics_handlers_v1(bot):
+
+    @bot.message_handler(commands=["auction_sanity"])
+    def auction_sanity_command_v1(message):
+        from db import get_auction_diagnostics_report
+        report = get_auction_diagnostics_report()
+        bot.send_message(message.chat.id, build_auction_diagnostics_text_v1(report))
+
+    @bot.message_handler(commands=["auction_fix"])
+    def auction_fix_command_v1(message):
+        from db import run_auction_sanity_fix
+        result = run_auction_sanity_fix()
+        cleanup = result.get("cleanup", {})
+        after = result.get("after", {})
+
+        text = (
+            "🛠 Auction sanity fix виконано.\n\n"
+            f"ACTIVE → EXPIRED_UNCLAIMED: {cleanup.get('expired_active', 0)}\n"
+            f"EXPIRED_UNCLAIMED → DELETED: {cleanup.get('deleted_expired_unclaimed', 0)}\n"
+            f"SOLD_UNCLAIMED → DELETED: {cleanup.get('deleted_sold_unclaimed', 0)}\n"
+            f"Виправлено delete_after: {cleanup.get('fixed_missing_delete_after', 0)}\n\n"
+            f"{build_auction_diagnostics_text_v1(after)}"
+        )
+
+        bot.send_message(message.chat.id, text)
+
+
+try:
+    _auction_base_register_handlers_before_stabilization_diagnostics_v1 = register_auction_house_handlers
+except NameError:
+    _auction_base_register_handlers_before_stabilization_diagnostics_v1 = None
+
+
+def register_auction_house_handlers(bot):
+    _auction_register_stabilization_diagnostics_handlers_v1(bot)
+
+    if _auction_base_register_handlers_before_stabilization_diagnostics_v1:
+        _auction_base_register_handlers_before_stabilization_diagnostics_v1(bot)
+
+
+# ==============================
+# ✅ AUCTION ADMIN COMMAND GUARD V1
+# ==============================
+
+# Захищає технічні команди Торгового Дому від звичайних гравців.
+# Команди:
+# /auction_sanity
+# /auction_fix
+# /auction_cleanup
+# /auction_debug
+#
+# За замовчуванням дозволено user_id=243129101.
+# Додатково можна задати змінну середовища:
+# AUCTION_ADMIN_IDS=243129101,123456789
+# або ADMIN_USER_IDS=243129101,123456789
+
+
+def _auction_get_admin_ids_v1():
+    import os
+
+    raw = (
+        os.getenv("AUCTION_ADMIN_IDS")
+        or os.getenv("ADMIN_USER_IDS")
+        or "243129101"
+    )
+
+    result = set()
+
+    for part in str(raw).replace(";", ",").split(","):
+        part = part.strip()
+        if not part:
+            continue
+        try:
+            result.add(int(part))
+        except Exception:
+            pass
+
+    return result
+
+
+def _auction_is_admin_v1(user_id):
+    return int(user_id) in _auction_get_admin_ids_v1()
+
+
+def _auction_admin_denied_text_v1():
+    return (
+        "⛔ Команда доступна тільки адміністратору.\n\n"
+        "Це технічна команда Торгового Дому."
+    )
+
+
+def _auction_safe_report_text_v1():
+    try:
+        from db import get_auction_diagnostics_report
+        report = get_auction_diagnostics_report()
+        return build_auction_diagnostics_text_v1(report)
+    except Exception:
+        try:
+            from db import get_auction_cleanup_report
+            result = get_auction_cleanup_report()
+            return build_auction_cleanup_report_text_v2(result)
+        except Exception as error:
+            return f"❌ Не вдалося сформувати звіт Торгового Дому.\n\n{error}"
+
+
+def _auction_register_admin_command_guard_v1(bot):
+
+    @bot.message_handler(commands=["auction_sanity"])
+    def auction_sanity_admin_guard_v1(message):
+        if not _auction_is_admin_v1(message.from_user.id):
+            bot.send_message(message.chat.id, _auction_admin_denied_text_v1())
+            return
+
+        bot.send_message(message.chat.id, _auction_safe_report_text_v1())
+
+    @bot.message_handler(commands=["auction_debug"])
+    def auction_debug_admin_guard_v1(message):
+        if not _auction_is_admin_v1(message.from_user.id):
+            bot.send_message(message.chat.id, _auction_admin_denied_text_v1())
+            return
+
+        bot.send_message(message.chat.id, _auction_safe_report_text_v1())
+
+    @bot.message_handler(commands=["auction_fix"])
+    def auction_fix_admin_guard_v1(message):
+        if not _auction_is_admin_v1(message.from_user.id):
+            bot.send_message(message.chat.id, _auction_admin_denied_text_v1())
+            return
+
+        try:
+            from db import run_auction_sanity_fix
+            result = run_auction_sanity_fix()
+            cleanup = result.get("cleanup", {})
+            after = result.get("after", {})
+
+            text = (
+                "🛠 Auction sanity fix виконано.\n\n"
+                f"ACTIVE → EXPIRED_UNCLAIMED: {cleanup.get('expired_active', 0)}\n"
+                f"EXPIRED_UNCLAIMED → DELETED: {cleanup.get('deleted_expired_unclaimed', 0)}\n"
+                f"SOLD_UNCLAIMED → DELETED: {cleanup.get('deleted_sold_unclaimed', 0)}\n"
+                f"Виправлено delete_after: {cleanup.get('fixed_missing_delete_after', 0)}\n\n"
+                f"{build_auction_diagnostics_text_v1(after)}"
+            )
+
+        except Exception as error:
+            text = f"❌ Помилка auction_fix.\n\n{error}"
+
+        bot.send_message(message.chat.id, text)
+
+    @bot.message_handler(commands=["auction_cleanup"])
+    def auction_cleanup_admin_guard_v1(message):
+        if not _auction_is_admin_v1(message.from_user.id):
+            bot.send_message(message.chat.id, _auction_admin_denied_text_v1())
+            return
+
+        try:
+            from db import update_expired_auction_lots, get_auction_cleanup_report
+            cleanup = update_expired_auction_lots()
+            report = get_auction_cleanup_report()
+
+            text = (
+                "🧹 Cleanup виконано.\n\n"
+                f"ACTIVE → EXPIRED_UNCLAIMED: {cleanup.get('expired_active', 0)}\n"
+                f"EXPIRED_UNCLAIMED → DELETED: {cleanup.get('deleted_expired_unclaimed', 0)}\n"
+                f"SOLD_UNCLAIMED → DELETED: {cleanup.get('deleted_sold_unclaimed', 0)}\n"
+                f"Виправлено delete_after: {cleanup.get('fixed_missing_delete_after', 0)}\n\n"
+                f"{build_auction_cleanup_report_text_v2(report)}"
+            )
+
+        except Exception as error:
+            text = f"❌ Помилка auction_cleanup.\n\n{error}"
+
+        bot.send_message(message.chat.id, text)
+
+
+try:
+    _auction_base_register_handlers_before_admin_guard_v1 = register_auction_house_handlers
+except NameError:
+    _auction_base_register_handlers_before_admin_guard_v1 = None
+
+
+def register_auction_house_handlers(bot):
+    # Реєструємо guard ПЕРЕД старими технічними handlers,
+    # щоб звичайні гравці не могли виконати debug/fix/cleanup.
+    _auction_register_admin_command_guard_v1(bot)
+
+    if _auction_base_register_handlers_before_admin_guard_v1:
+        _auction_base_register_handlers_before_admin_guard_v1(bot)
+

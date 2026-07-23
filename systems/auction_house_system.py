@@ -4307,3 +4307,795 @@ def buy_auction_lot_v2(buyer_user_id, lot_id):
             pass
         return {"success": False, "message": f"❌ Помилка покупки: {error}"}
 
+
+# ==============================
+# ✅ AUCTION HOUSE BUY SEARCH V1
+# ==============================
+
+AUCTION_SEARCH_MIN_LENGTH = 2
+AUCTION_SEARCH_PAGE_SIZE = 8
+
+
+def normalize_auction_search_query(search_text):
+    text = str(search_text or "").strip().lower()
+    text = " ".join(text.split())
+    return text
+
+
+def get_auction_lots_for_buy_search(buyer_user_id, search_text, sort_key="new", limit=8, offset=0):
+    """
+    Search ACTIVE lots by public item name.
+
+    - Own lots are hidden.
+    - Search uses item_name_norm when available.
+    - All words in the query must be present in the item name.
+    """
+
+    init_auction_house()
+    update_expired_auction_lots()
+
+    buyer_user_id = int(buyer_user_id)
+    query = normalize_auction_search_query(search_text)
+
+    if len(query) < AUCTION_SEARCH_MIN_LENGTH:
+        return []
+
+    sort_key = _auction_buy_normalize_sort(sort_key)
+
+    try:
+        limit = int(limit)
+    except Exception:
+        limit = 8
+    try:
+        offset = int(offset)
+    except Exception:
+        offset = 0
+
+    limit = max(1, min(50, limit))
+    offset = max(0, offset)
+
+    where = ["status=?", "seller_user_id<>?"]
+    params = [AUCTION_STATUS_ACTIVE, buyer_user_id]
+
+    tokens = [token for token in query.split(" ") if token]
+    for token in tokens:
+        where.append("(item_name_norm LIKE ? OR LOWER(item_name) LIKE ?)")
+        params.append(f"%{token}%")
+        params.append(f"%{token}%")
+
+    order_by = "created_at DESC"
+    if sort_key == "old":
+        order_by = "created_at ASC"
+    elif sort_key == "price_asc":
+        order_by = "CAST(price AS REAL) ASC, created_at DESC"
+    elif sort_key == "price_desc":
+        order_by = "CAST(price AS REAL) DESC, created_at DESC"
+    elif sort_key == "rarity":
+        order_by = """
+        CASE rarity
+            WHEN 'epic' THEN 4
+            WHEN 'rare' THEN 3
+            WHEN 'uncommon' THEN 2
+            WHEN 'common' THEN 1
+            ELSE 0
+        END DESC,
+        level DESC,
+        created_at DESC
+        """
+
+    sql = f"""
+    SELECT *
+    FROM auction_lots
+    WHERE {' AND '.join(where)}
+    ORDER BY {order_by}
+    LIMIT ? OFFSET ?
+    """
+    params.extend([limit, offset])
+
+    cursor.execute(sql, tuple(params))
+    return cursor.fetchall()
+
+
+# ==============================
+# ✅ AUCTION HOUSE HISTORY AND MARKET PRICES V1
+# ==============================
+
+AUCTION_HISTORY_PAGE_SIZE = 8
+AUCTION_PRICE_HISTORY_LIMIT = 10
+
+
+def _auction_table_columns_v1(table_name):
+    try:
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        return {row[1] for row in cursor.fetchall()}
+    except Exception:
+        return set()
+
+
+def _auction_iso_to_ua_v1(value, with_time=True):
+    value = str(value or "").strip()
+    if not value:
+        return "—"
+
+    try:
+        # Supports both 'YYYY-MM-DDTHH:MM:SS' and 'YYYY-MM-DD HH:MM:SS'.
+        normalized = value.replace("Z", "").replace("T", " ")
+        dt = datetime.fromisoformat(normalized)
+        if with_time:
+            return dt.strftime("%d.%m.%Y %H:%M")
+        return dt.strftime("%d.%m.%Y")
+    except Exception:
+        if len(value) >= 10 and value[4] == "-" and value[7] == "-":
+            date = f"{value[8:10]}.{value[5:7]}.{value[0:4]}"
+            if with_time and len(value) >= 16:
+                return f"{date} {value[11:16]}"
+            return date
+        return value
+
+
+def _auction_sold_statuses_v1():
+    return (
+        AUCTION_STATUS_SOLD_UNCLAIMED,
+        AUCTION_STATUS_SOLD_CLAIMED,
+    )
+
+
+def get_user_auction_history(user_id, mode="all", limit=8, offset=0):
+    """
+    Returns user's auction history using sold lots:
+    - mode='buy'  -> lots bought by user
+    - mode='sell' -> lots sold by user
+    - mode='all'  -> both bought and sold
+    """
+
+    init_auction_house()
+
+    user_id = int(user_id)
+    mode = str(mode or "all")
+
+    try:
+        limit = int(limit)
+    except Exception:
+        limit = 8
+    try:
+        offset = int(offset)
+    except Exception:
+        offset = 0
+
+    limit = max(1, min(50, limit))
+    offset = max(0, offset)
+
+    sold_statuses = _auction_sold_statuses_v1()
+    params = list(sold_statuses)
+
+    status_filter = "status IN (?, ?)"
+
+    if mode == "buy":
+        actor_filter = "buyer_user_id=?"
+        params.append(user_id)
+    elif mode == "sell":
+        actor_filter = "seller_user_id=?"
+        params.append(user_id)
+    else:
+        actor_filter = "(buyer_user_id=? OR seller_user_id=?)"
+        params.extend([user_id, user_id])
+
+    columns = _auction_table_columns_v1("auction_lots")
+    date_col = "sold_at" if "sold_at" in columns else "created_at"
+
+    sql = f"""
+    SELECT *
+    FROM auction_lots
+    WHERE {status_filter}
+      AND {actor_filter}
+    ORDER BY COALESCE({date_col}, created_at) DESC, id DESC
+    LIMIT ? OFFSET ?
+    """
+    params.extend([limit, offset])
+
+    cursor.execute(sql, tuple(params))
+    return cursor.fetchall()
+
+
+def get_auction_lot_market_price_stats(lot_id):
+    """
+    Returns market price stats for the selected lot based on completed sales
+    of the same normalized item name.
+    """
+
+    init_auction_house()
+
+    lot = get_auction_lot_by_id(lot_id)
+    if not lot:
+        return {
+            "success": False,
+            "message": "❌ Лот не знайдено."
+        }
+
+    columns = _auction_table_columns_v1("auction_lots")
+    has_norm = "item_name_norm" in columns
+    has_sold_at = "sold_at" in columns
+
+    if has_norm:
+        norm = str(lot["item_name_norm"] or "").strip().lower()
+    else:
+        norm = str(lot["item_name"] or "").strip().lower()
+
+    if not norm:
+        return {
+            "success": False,
+            "message": "❌ Не вдалося визначити назву предмета для історії цін."
+        }
+
+    name_expr = "item_name_norm" if has_norm else "LOWER(item_name)"
+    date_col = "sold_at" if has_sold_at else "created_at"
+
+    sql = f"""
+    SELECT price, item_name, {date_col} AS history_date
+    FROM auction_lots
+    WHERE status IN (?, ?)
+      AND {name_expr}=?
+    ORDER BY COALESCE({date_col}, created_at) DESC, id DESC
+    LIMIT ?
+    """
+
+    cursor.execute(sql, (
+        AUCTION_STATUS_SOLD_UNCLAIMED,
+        AUCTION_STATUS_SOLD_CLAIMED,
+        norm,
+        AUCTION_PRICE_HISTORY_LIMIT,
+    ))
+    rows = cursor.fetchall()
+
+    prices = []
+    for row in rows:
+        try:
+            prices.append(float(row["price"] or 0))
+        except Exception:
+            pass
+
+    if not prices:
+        return {
+            "success": True,
+            "lot": lot,
+            "item_name": lot["item_name"],
+            "count": 0,
+            "message": "📈 Історії продажів для цього предмета ще немає."
+        }
+
+    return {
+        "success": True,
+        "lot": lot,
+        "item_name": lot["item_name"],
+        "count": len(prices),
+        "min_price": min(prices),
+        "max_price": max(prices),
+        "avg_price": sum(prices) / len(prices),
+        "last_price": prices[0],
+        "rows": rows,
+    }
+
+
+def search_auction_market_price_stats(search_text, limit=10):
+    """
+    Searches completed sales by item name and returns grouped price stats.
+    """
+
+    init_auction_house()
+
+    query = normalize_auction_search_query(search_text)
+    if len(query) < 2:
+        return []
+
+    try:
+        limit = int(limit)
+    except Exception:
+        limit = 10
+    limit = max(1, min(20, limit))
+
+    columns = _auction_table_columns_v1("auction_lots")
+    has_norm = "item_name_norm" in columns
+    group_expr = "item_name_norm" if has_norm else "LOWER(item_name)"
+
+    tokens = [token for token in query.split(" ") if token]
+    where = ["status IN (?, ?)"]
+    params = [AUCTION_STATUS_SOLD_UNCLAIMED, AUCTION_STATUS_SOLD_CLAIMED]
+
+    for token in tokens:
+        where.append("(LOWER(item_name) LIKE ? OR " + group_expr + " LIKE ?)")
+        params.append(f"%{token}%")
+        params.append(f"%{token}%")
+
+    sql = f"""
+    SELECT
+        {group_expr} AS item_key,
+        MAX(item_name) AS item_name,
+        COUNT(*) AS sales_count,
+        MIN(CAST(price AS REAL)) AS min_price,
+        MAX(CAST(price AS REAL)) AS max_price,
+        AVG(CAST(price AS REAL)) AS avg_price,
+        MAX(COALESCE(sold_at, created_at)) AS last_sale_at
+    FROM auction_lots
+    WHERE {' AND '.join(where)}
+    GROUP BY {group_expr}
+    ORDER BY sales_count DESC, last_sale_at DESC
+    LIMIT ?
+    """
+    params.append(limit)
+
+    cursor.execute(sql, tuple(params))
+    return cursor.fetchall()
+
+
+def format_auction_history_date(value, with_time=True):
+    return _auction_iso_to_ua_v1(value, with_time=with_time)
+
+
+# ==============================
+# ✅ AUCTION HOUSE EXPIRATION CLEANUP V2
+# ==============================
+
+AUCTION_ACTIVE_DAYS_V2 = 7
+AUCTION_UNCLAIMED_RETENTION_DAYS_V2 = 30
+
+
+def _auction_now_iso_v2():
+    from datetime import datetime
+    return datetime.now().isoformat()
+
+
+def _auction_parse_dt_v2(value):
+    from datetime import datetime
+
+    value = str(value or "").strip()
+    if not value:
+        return None
+
+    try:
+        return datetime.fromisoformat(value.replace("Z", ""))
+    except Exception:
+        pass
+
+    try:
+        return datetime.fromisoformat(value.replace("T", " ").split(".")[0])
+    except Exception:
+        return None
+
+
+def _auction_plus_days_iso_v2(base_iso=None, days=30):
+    from datetime import datetime, timedelta
+
+    base_dt = _auction_parse_dt_v2(base_iso) or datetime.now()
+    return (base_dt + timedelta(days=int(days))).isoformat()
+
+
+def _auction_column_exists_v2(table_name, column_name):
+    try:
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        return column_name in {row[1] for row in cursor.fetchall()}
+    except Exception:
+        return False
+
+
+def _auction_safe_status_v2(name, fallback):
+    return globals().get(name, fallback)
+
+
+AUCTION_STATUS_ACTIVE_V2 = _auction_safe_status_v2("AUCTION_STATUS_ACTIVE", "ACTIVE")
+AUCTION_STATUS_SOLD_UNCLAIMED_V2 = _auction_safe_status_v2("AUCTION_STATUS_SOLD_UNCLAIMED", "SOLD_UNCLAIMED")
+AUCTION_STATUS_SOLD_CLAIMED_V2 = _auction_safe_status_v2("AUCTION_STATUS_SOLD_CLAIMED", "SOLD_CLAIMED")
+AUCTION_STATUS_EXPIRED_UNCLAIMED_V2 = _auction_safe_status_v2("AUCTION_STATUS_EXPIRED_UNCLAIMED", "EXPIRED_UNCLAIMED")
+AUCTION_STATUS_EXPIRED_CLAIMED_V2 = _auction_safe_status_v2("AUCTION_STATUS_EXPIRED_CLAIMED", "EXPIRED_CLAIMED")
+AUCTION_STATUS_DELETED_V2 = _auction_safe_status_v2("AUCTION_STATUS_DELETED", "DELETED")
+
+
+try:
+    _auction_base_update_expired_auction_lots_before_cleanup_v2 = update_expired_auction_lots
+except NameError:
+    _auction_base_update_expired_auction_lots_before_cleanup_v2 = None
+
+
+def update_expired_auction_lots(now_iso=None):
+    """
+    Повний cleanup Торгового Дому.
+
+    Правила:
+    - ACTIVE із expires_at <= now -> EXPIRED_UNCLAIMED;
+    - EXPIRED_UNCLAIMED із delete_after <= now -> DELETED;
+    - SOLD_UNCLAIMED із delete_after <= now -> DELETED.
+
+    SOLD_CLAIMED / EXPIRED_CLAIMED не видаляються цим cleanup-ом, бо це історія.
+    """
+
+    init_auction_house()
+
+    from datetime import datetime
+
+    now_iso = now_iso or _auction_now_iso_v2()
+    now_dt = _auction_parse_dt_v2(now_iso) or datetime.now()
+
+    result = {
+        "success": True,
+        "now": now_iso,
+        "expired_active": 0,
+        "deleted_expired_unclaimed": 0,
+        "deleted_sold_unclaimed": 0,
+        "fixed_missing_delete_after": 0,
+    }
+
+    has_delete_after = _auction_column_exists_v2("auction_lots", "delete_after")
+    has_expires_at = _auction_column_exists_v2("auction_lots", "expires_at")
+    has_updated_at = _auction_column_exists_v2("auction_lots", "updated_at")
+
+    if not has_expires_at:
+        return result
+
+    # 1. ACTIVE -> EXPIRED_UNCLAIMED
+    cursor.execute("""
+    SELECT id, expires_at, delete_after
+    FROM auction_lots
+    WHERE status=?
+    """, (AUCTION_STATUS_ACTIVE_V2,))
+    active_rows = cursor.fetchall()
+
+    for row in active_rows:
+        expires_dt = _auction_parse_dt_v2(row["expires_at"])
+        if not expires_dt or expires_dt > now_dt:
+            continue
+
+        delete_after = row["delete_after"] if has_delete_after else None
+        if not delete_after:
+            delete_after = _auction_plus_days_iso_v2(now_iso, AUCTION_UNCLAIMED_RETENTION_DAYS_V2)
+
+        if has_delete_after and has_updated_at:
+            cursor.execute("""
+            UPDATE auction_lots
+            SET status=?, delete_after=?, updated_at=?
+            WHERE id=? AND status=?
+            """, (
+                AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,
+                delete_after,
+                now_iso,
+                row["id"],
+                AUCTION_STATUS_ACTIVE_V2,
+            ))
+        elif has_delete_after:
+            cursor.execute("""
+            UPDATE auction_lots
+            SET status=?, delete_after=?
+            WHERE id=? AND status=?
+            """, (
+                AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,
+                delete_after,
+                row["id"],
+                AUCTION_STATUS_ACTIVE_V2,
+            ))
+        else:
+            cursor.execute("""
+            UPDATE auction_lots
+            SET status=?
+            WHERE id=? AND status=?
+            """, (
+                AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,
+                row["id"],
+                AUCTION_STATUS_ACTIVE_V2,
+            ))
+
+        if cursor.rowcount:
+            result["expired_active"] += 1
+
+    # 2. Fix missing delete_after for unclaimed statuses.
+    if has_delete_after:
+        cursor.execute("""
+        SELECT id, status, sold_at, expires_at, created_at, delete_after
+        FROM auction_lots
+        WHERE status IN (?, ?)
+          AND (delete_after IS NULL OR delete_after='')
+        """, (
+            AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,
+            AUCTION_STATUS_SOLD_UNCLAIMED_V2,
+        ))
+        missing_rows = cursor.fetchall()
+
+        for row in missing_rows:
+            base_date = row["sold_at"] or row["expires_at"] or row["created_at"] or now_iso
+            delete_after = _auction_plus_days_iso_v2(base_date, AUCTION_UNCLAIMED_RETENTION_DAYS_V2)
+            cursor.execute("""
+            UPDATE auction_lots
+            SET delete_after=?
+            WHERE id=?
+            """, (delete_after, row["id"]))
+            if cursor.rowcount:
+                result["fixed_missing_delete_after"] += 1
+
+    # 3. EXPIRED_UNCLAIMED -> DELETED after retention.
+    if has_delete_after:
+        cursor.execute("""
+        SELECT id, delete_after
+        FROM auction_lots
+        WHERE status=?
+          AND delete_after IS NOT NULL
+          AND delete_after<>''
+        """, (AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,))
+        expired_unclaimed_rows = cursor.fetchall()
+
+        for row in expired_unclaimed_rows:
+            delete_dt = _auction_parse_dt_v2(row["delete_after"])
+            if not delete_dt or delete_dt > now_dt:
+                continue
+
+            if has_updated_at:
+                cursor.execute("""
+                UPDATE auction_lots
+                SET status=?, updated_at=?
+                WHERE id=? AND status=?
+                """, (
+                    AUCTION_STATUS_DELETED_V2,
+                    now_iso,
+                    row["id"],
+                    AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,
+                ))
+            else:
+                cursor.execute("""
+                UPDATE auction_lots
+                SET status=?
+                WHERE id=? AND status=?
+                """, (
+                    AUCTION_STATUS_DELETED_V2,
+                    row["id"],
+                    AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,
+                ))
+
+            if cursor.rowcount:
+                result["deleted_expired_unclaimed"] += 1
+
+        # 4. SOLD_UNCLAIMED -> DELETED after retention.
+        cursor.execute("""
+        SELECT id, delete_after
+        FROM auction_lots
+        WHERE status=?
+          AND delete_after IS NOT NULL
+          AND delete_after<>''
+        """, (AUCTION_STATUS_SOLD_UNCLAIMED_V2,))
+        sold_unclaimed_rows = cursor.fetchall()
+
+        for row in sold_unclaimed_rows:
+            delete_dt = _auction_parse_dt_v2(row["delete_after"])
+            if not delete_dt or delete_dt > now_dt:
+                continue
+
+            if has_updated_at:
+                cursor.execute("""
+                UPDATE auction_lots
+                SET status=?, updated_at=?
+                WHERE id=? AND status=?
+                """, (
+                    AUCTION_STATUS_DELETED_V2,
+                    now_iso,
+                    row["id"],
+                    AUCTION_STATUS_SOLD_UNCLAIMED_V2,
+                ))
+            else:
+                cursor.execute("""
+                UPDATE auction_lots
+                SET status=?
+                WHERE id=? AND status=?
+                """, (
+                    AUCTION_STATUS_DELETED_V2,
+                    row["id"],
+                    AUCTION_STATUS_SOLD_UNCLAIMED_V2,
+                ))
+
+            if cursor.rowcount:
+                result["deleted_sold_unclaimed"] += 1
+
+    conn.commit()
+    return result
+
+
+def get_auction_cleanup_report():
+    """Повертає агреговану статистику статусів лотів."""
+
+    init_auction_house()
+    update_expired_auction_lots()
+
+    cursor.execute("""
+    SELECT status, COUNT(*) AS count
+    FROM auction_lots
+    GROUP BY status
+    ORDER BY status
+    """)
+    rows = cursor.fetchall()
+
+    status_counts = {}
+    for row in rows:
+        status_counts[row["status"]] = int(row["count"] or 0)
+
+    result = {
+        "success": True,
+        "status_counts": status_counts,
+        "active": status_counts.get(AUCTION_STATUS_ACTIVE_V2, 0),
+        "sold_unclaimed": status_counts.get(AUCTION_STATUS_SOLD_UNCLAIMED_V2, 0),
+        "sold_claimed": status_counts.get(AUCTION_STATUS_SOLD_CLAIMED_V2, 0),
+        "expired_unclaimed": status_counts.get(AUCTION_STATUS_EXPIRED_UNCLAIMED_V2, 0),
+        "expired_claimed": status_counts.get(AUCTION_STATUS_EXPIRED_CLAIMED_V2, 0),
+        "deleted": status_counts.get(AUCTION_STATUS_DELETED_V2, 0),
+    }
+
+    return result
+
+
+# ==============================
+# ✅ AUCTION HOUSE STABILIZATION DIAGNOSTICS V1
+# ==============================
+
+
+def _auction_diag_parse_decimal_v1(value):
+    from decimal import Decimal, InvalidOperation
+
+    try:
+        return Decimal(str(value))
+    except Exception:
+        return None
+
+
+def _auction_diag_column_exists_v1(table_name, column_name):
+    try:
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        return column_name in {row[1] for row in cursor.fetchall()}
+    except Exception:
+        return False
+
+
+def _auction_diag_table_exists_v1(table_name):
+    try:
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+            (table_name,)
+        )
+        return cursor.fetchone() is not None
+    except Exception:
+        return False
+
+
+def _auction_diag_statuses_v1():
+    return {
+        "ACTIVE": globals().get("AUCTION_STATUS_ACTIVE", "ACTIVE"),
+        "SOLD_UNCLAIMED": globals().get("AUCTION_STATUS_SOLD_UNCLAIMED", "SOLD_UNCLAIMED"),
+        "SOLD_CLAIMED": globals().get("AUCTION_STATUS_SOLD_CLAIMED", "SOLD_CLAIMED"),
+        "EXPIRED_UNCLAIMED": globals().get("AUCTION_STATUS_EXPIRED_UNCLAIMED", "EXPIRED_UNCLAIMED"),
+        "EXPIRED_CLAIMED": globals().get("AUCTION_STATUS_EXPIRED_CLAIMED", "EXPIRED_CLAIMED"),
+        "DELETED": globals().get("AUCTION_STATUS_DELETED", "DELETED"),
+    }
+
+
+def _auction_diag_price_limits_v1():
+    from decimal import Decimal
+
+    min_price = globals().get("AUCTION_MIN_PRICE", Decimal("1.0"))
+    max_price = globals().get("AUCTION_MAX_PRICE", Decimal("999999.0"))
+
+    return Decimal(str(min_price)), Decimal(str(max_price))
+
+
+def get_auction_diagnostics_report():
+    """
+    Conservative diagnostics for Auction House.
+    Does not mutate state except running regular expiration cleanup.
+    """
+
+    init_auction_house()
+
+    try:
+        update_expired_auction_lots()
+    except Exception:
+        pass
+
+    statuses = _auction_diag_statuses_v1()
+    min_price, max_price = _auction_diag_price_limits_v1()
+
+    result = {
+        "success": True,
+        "status_counts": {},
+        "total_lots": 0,
+        "bad_price_lots": [],
+        "missing_snapshot_lots": [],
+        "active_missing_expires_at": [],
+        "unclaimed_missing_delete_after": [],
+        "sold_unclaimed_without_buyer": [],
+        "active_lots_by_seller": [],
+        "max_active_lots_per_seller": 20,
+        "tables_ok": True,
+        "missing_tables": [],
+    }
+
+    required_tables = ["auction_lots", "auction_history"]
+    for table_name in required_tables:
+        if not _auction_diag_table_exists_v1(table_name):
+            result["tables_ok"] = False
+            result["missing_tables"].append(table_name)
+
+    if not result["tables_ok"]:
+        return result
+
+    cursor.execute("SELECT COUNT(*) AS count FROM auction_lots")
+    row = cursor.fetchone()
+    result["total_lots"] = int(row["count"] or 0) if row else 0
+
+    cursor.execute("""
+    SELECT status, COUNT(*) AS count
+    FROM auction_lots
+    GROUP BY status
+    ORDER BY status
+    """)
+    for row in cursor.fetchall():
+        result["status_counts"][row["status"]] = int(row["count"] or 0)
+
+    cursor.execute("""
+    SELECT id, seller_user_id, item_name, price, status, item_snapshot_json, expires_at, delete_after, buyer_user_id
+    FROM auction_lots
+    ORDER BY id DESC
+    """)
+    rows = cursor.fetchall()
+
+    for row in rows:
+        lot_id = row["id"]
+        status = row["status"]
+        price = _auction_diag_parse_decimal_v1(row["price"])
+
+        if price is None or price < min_price or price > max_price:
+            result["bad_price_lots"].append(lot_id)
+
+        if not str(row["item_snapshot_json"] or "").strip():
+            result["missing_snapshot_lots"].append(lot_id)
+
+        if status == statuses["ACTIVE"] and not str(row["expires_at"] or "").strip():
+            result["active_missing_expires_at"].append(lot_id)
+
+        if status in (statuses["SOLD_UNCLAIMED"], statuses["EXPIRED_UNCLAIMED"]):
+            if not str(row["delete_after"] or "").strip():
+                result["unclaimed_missing_delete_after"].append(lot_id)
+
+        if status == statuses["SOLD_UNCLAIMED"] and not row["buyer_user_id"]:
+            result["sold_unclaimed_without_buyer"].append(lot_id)
+
+    cursor.execute("""
+    SELECT seller_user_id, COUNT(*) AS active_count
+    FROM auction_lots
+    WHERE status=?
+    GROUP BY seller_user_id
+    ORDER BY active_count DESC
+    """, (statuses["ACTIVE"],))
+    result["active_lots_by_seller"] = [
+        {
+            "seller_user_id": row["seller_user_id"],
+            "active_count": int(row["active_count"] or 0),
+        }
+        for row in cursor.fetchall()
+    ]
+
+    return result
+
+
+def run_auction_sanity_fix():
+    """
+    Conservative repair:
+    - runs expiration cleanup;
+    - fills missing delete_after for unclaimed lots through cleanup;
+    - does not delete or modify sold/claimed historical data;
+    - does not attempt to reconstruct broken snapshots.
+    """
+
+    init_auction_house()
+
+    before = get_auction_diagnostics_report()
+    cleanup = update_expired_auction_lots()
+    after = get_auction_diagnostics_report()
+
+    return {
+        "success": True,
+        "cleanup": cleanup,
+        "before": before,
+        "after": after,
+    }
+
