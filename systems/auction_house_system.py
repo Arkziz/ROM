@@ -5099,3 +5099,111 @@ def run_auction_sanity_fix():
         "after": after,
     }
 
+
+# ==============================
+# ✅ ROM 9.0.6a AUCTION WEAPON TYPE LINE ALIAS V1
+# ==============================
+
+# Fix reason:
+# build_auction_buy_lot_details_v2() calls _auction_inventory_style_weapon_type_line(snapshot),
+# but in the current auction_house_system.py only _auction_inventory_style_type_line(snapshot)
+# exists. This caused NameError when opening an equipment lot in Buy flow.
+#
+# This compatibility alias restores the expected function name without changing
+# the auction item formatting logic.
+
+
+def _auction_inventory_style_weapon_type_line(snapshot):
+    """Compatibility wrapper for auction equipment details."""
+
+    try:
+        return _auction_inventory_style_type_line(snapshot)
+    except NameError:
+        return ""
+    except Exception:
+        return ""
+
+
+# ==============================
+# ✅ HOTFIX 9.0.6b: AUCTION WEAPON TYPE LINE FORMAT FIX
+# ==============================
+
+def _auction_inventory_style_weapon_type_line(snapshot):
+    """
+    Формує рядок типу зброї для картки лота Торгового Дому.
+
+    Важливо:
+    попередній compatibility-alias міг помилково передавати весь snapshot
+    у generic type formatter, через що в картці лота з'являвся рядок типу:
+
+    🧰 Тип: {'durability_current': 100, ...}
+
+    Правильна поведінка:
+    - для зброї показати:
+      ✋ Тип зброї: одноручна / дворучна
+    - для броні, біжутерії, матеріалів, зілля — не показувати нічого.
+    """
+
+    if not isinstance(snapshot, dict):
+        return ""
+
+    item_type = str(
+        snapshot.get("item_type")
+        or snapshot.get("type")
+        or snapshot.get("item_category")
+        or ""
+    )
+
+    slot_key = str(
+        snapshot.get("slot_key")
+        or snapshot.get("item_slot")
+        or snapshot.get("item_slot_key")
+        or ""
+    )
+
+    row = snapshot.get("row") or {}
+
+    if isinstance(row, dict):
+        item_type = item_type or str(row.get("item_type") or "")
+        slot_key = slot_key or str(row.get("item_slot_key") or "")
+
+    weapon_min_damage = int(snapshot.get("weapon_min_damage", 0) or 0)
+    weapon_max_damage = int(snapshot.get("weapon_max_damage", 0) or 0)
+    weapon_min_magic_damage = int(snapshot.get("weapon_min_magic_damage", 0) or 0)
+    weapon_max_magic_damage = int(snapshot.get("weapon_max_magic_damage", 0) or 0)
+
+    if isinstance(row, dict):
+        weapon_min_damage = weapon_min_damage or int(row.get("item_weapon_min_damage", 0) or 0)
+        weapon_max_damage = weapon_max_damage or int(row.get("item_weapon_max_damage", 0) or 0)
+        weapon_min_magic_damage = weapon_min_magic_damage or int(row.get("item_weapon_min_magic_damage", 0) or 0)
+        weapon_max_magic_damage = weapon_max_magic_damage or int(row.get("item_weapon_max_magic_damage", 0) or 0)
+
+    is_weapon = (
+        item_type == "weapon"
+        or slot_key == "main_hand"
+        or weapon_min_damage > 0
+        or weapon_max_damage > 0
+        or weapon_min_magic_damage > 0
+        or weapon_max_magic_damage > 0
+    )
+
+    if not is_weapon:
+        return ""
+
+    weapon_hands = snapshot.get("weapon_hands")
+
+    if weapon_hands is None and isinstance(row, dict):
+        weapon_hands = row.get("item_weapon_hands")
+
+    try:
+        weapon_hands = int(weapon_hands or 1)
+    except Exception:
+        weapon_hands = 1
+
+    if weapon_hands >= 2:
+        weapon_type_label = "дворучна"
+    else:
+        weapon_type_label = "одноручна"
+
+    return f"✋ Тип зброї: {weapon_type_label}"
+

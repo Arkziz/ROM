@@ -77,9 +77,10 @@ from handlers.city import register_city_handlers
 from handlers.contracts import register_contract_handlers
 from handlers.daily import register_daily_handlers
 from handlers.refine import register_refine_handlers
-from handlers.blacksmith_repair_hotfix import register_blacksmith_repair_hotfix_handlers
+from handlers.blacksmith import register_blacksmith_repair_hotfix_handlers
 from handlers.guild import register_guild_handlers
 from handlers.auction_house import register_auction_house_handlers
+from handlers.blacksmith_repair_confirm import register_blacksmith_repair_confirmation_handlers
 
 from systems.notifications import start_notification_worker
 
@@ -98,6 +99,18 @@ bot = telebot.TeleBot(TOKEN, threaded=False)
 # ==============================
 
 init_db()
+
+# ==============================
+# ✅ REFACTOR 9.0.11: RUN MIGRATIONS ON STARTUP
+# ==============================
+try:
+    import db as _rom_db_for_migrations
+    _migration_result = _rom_db_for_migrations.run_pending_migrations()
+    if _migration_result.get("applied"):
+        print(f"✅ DB MIGRATIONS APPLIED: {_migration_result.get('applied')}")
+except Exception as migration_error:
+    print(f"⚠️ DB migrations skipped/error: {migration_error}")
+
 seed_items()
 seed_location_trash_items()
 expand_bag_slots_to_40()
@@ -115,6 +128,7 @@ register_inventory_handlers(bot)
 register_combat_handlers(bot)
 register_dev_handlers(bot)
 register_map_handlers(bot)
+register_blacksmith_repair_confirmation_handlers(bot)
 register_blacksmith_repair_hotfix_handlers(bot)
 register_city_handlers(bot)
 register_guild_handlers(bot)
@@ -151,3 +165,6 @@ try:
 except Exception as e:
     logger.critical(f"Помилка при запуску бота: {e}", exc_info=True)
     raise
+
+# ✅ ROM 9.0.8d MAIN REPAIR CONFIRMATION ORDER FIX
+# Repair confirmation handlers are registered before old hotfix/city handlers.

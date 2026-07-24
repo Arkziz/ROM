@@ -13199,3 +13199,377 @@ def process_passive_regeneration(user_id):
         "max_hp": dynamic_max_hp,
     }
 
+# ✅ REFACTOR 9.0.5: REGEN SYSTEM FACADE
+# This block keeps db.py as public compatibility facade.
+# Actual domain entrypoint: systems/regen_system.py
+
+def _regen_system_v1():
+    from systems import regen_system
+    return regen_system
+
+try:
+    _legacy_regen_v1_init_hp_regen_system
+except NameError:
+    _legacy_regen_v1_init_hp_regen_system = init_hp_regen_system
+
+try:
+    _legacy_regen_v1_init_passive_regen_system
+except NameError:
+    _legacy_regen_v1_init_passive_regen_system = init_passive_regen_system
+
+try:
+    _legacy_regen_v1_process_passive_regeneration
+except NameError:
+    _legacy_regen_v1_process_passive_regeneration = process_passive_regeneration
+
+try:
+    _legacy_regen_v1_reset_hp_regen_timers_now
+except NameError:
+    _legacy_regen_v1_reset_hp_regen_timers_now = reset_hp_regen_timers_now
+
+try:
+    _legacy_regen_v1_apply_passive_hp_regen
+except NameError:
+    _legacy_regen_v1_apply_passive_hp_regen = apply_passive_hp_regen
+
+def init_hp_regen_system(*args, **kwargs):
+    return _regen_system_v1().init_hp_regen_system(*args, **kwargs)
+
+def init_passive_regen_system(*args, **kwargs):
+    return _regen_system_v1().init_passive_regen_system(*args, **kwargs)
+
+def process_passive_regeneration(*args, **kwargs):
+    return _regen_system_v1().process_passive_regeneration(*args, **kwargs)
+
+def reset_hp_regen_timers_now(*args, **kwargs):
+    return _regen_system_v1().reset_hp_regen_timers_now(*args, **kwargs)
+
+def apply_passive_hp_regen(*args, **kwargs):
+    return _regen_system_v1().apply_passive_hp_regen(*args, **kwargs)
+
+# ✅ REFACTOR 9.0.6: EQUIPMENT SYSTEM READONLY FACADE
+# This block keeps db.py as public compatibility facade.
+# Actual read-only domain entrypoint: systems/equipment_system.py
+
+def _equipment_system_ro_v1():
+    from systems import equipment_system
+    return equipment_system
+
+try:
+    _legacy_equipment_ro_v1_ensure_equipment_slots
+except NameError:
+    _legacy_equipment_ro_v1_ensure_equipment_slots = ensure_equipment_slots
+
+try:
+    _legacy_equipment_ro_v1_get_all_equipped_items
+except NameError:
+    _legacy_equipment_ro_v1_get_all_equipped_items = get_all_equipped_items
+
+try:
+    _legacy_equipment_ro_v1_get_equipped_items_for_repair
+except NameError:
+    _legacy_equipment_ro_v1_get_equipped_items_for_repair = get_equipped_items_for_repair
+
+try:
+    _legacy_equipment_ro_v1_get_inventory_detailed
+except NameError:
+    _legacy_equipment_ro_v1_get_inventory_detailed = get_inventory_detailed
+
+try:
+    _legacy_equipment_ro_v1_get_inventory_entry
+except NameError:
+    _legacy_equipment_ro_v1_get_inventory_entry = get_inventory_entry
+
+try:
+    _legacy_equipment_ro_v1_get_item_by_inventory_id
+except NameError:
+    _legacy_equipment_ro_v1_get_item_by_inventory_id = get_item_by_inventory_id
+
+try:
+    _legacy_equipment_ro_v1_get_item_by_inventory_id_full
+except NameError:
+    _legacy_equipment_ro_v1_get_item_by_inventory_id_full = get_item_by_inventory_id_full
+
+try:
+    _legacy_equipment_ro_v1_get_item_bonuses
+except NameError:
+    _legacy_equipment_ro_v1_get_item_bonuses = get_item_bonuses
+
+try:
+    _legacy_equipment_ro_v1_get_equipped_item_defenses
+except NameError:
+    _legacy_equipment_ro_v1_get_equipped_item_defenses = get_equipped_item_defenses
+
+try:
+    _legacy_equipment_ro_v1_get_sellable_equipment_items
+except NameError:
+    _legacy_equipment_ro_v1_get_sellable_equipment_items = get_sellable_equipment_items
+
+try:
+    _legacy_equipment_ro_v1_init_weapon_damage_system
+except NameError:
+    _legacy_equipment_ro_v1_init_weapon_damage_system = init_weapon_damage_system
+
+try:
+    _legacy_equipment_ro_v1_calculate_weapon_damage_by_values
+except NameError:
+    _legacy_equipment_ro_v1_calculate_weapon_damage_by_values = calculate_weapon_damage_by_values
+
+try:
+    _legacy_equipment_ro_v1_get_weapon_damage_by_inventory_id
+except NameError:
+    _legacy_equipment_ro_v1_get_weapon_damage_by_inventory_id = get_weapon_damage_by_inventory_id
+
+try:
+    _legacy_equipment_ro_v1_get_inventory_weapon_damage_display
+except NameError:
+    _legacy_equipment_ro_v1_get_inventory_weapon_damage_display = get_inventory_weapon_damage_display
+
+try:
+    _legacy_equipment_ro_v1_get_inventory_refine_level
+except NameError:
+    _legacy_equipment_ro_v1_get_inventory_refine_level = get_inventory_refine_level
+
+try:
+    _legacy_equipment_ro_v1_get_inventory_refined_display_name
+except NameError:
+    _legacy_equipment_ro_v1_get_inventory_refined_display_name = get_inventory_refined_display_name
+
+try:
+    _legacy_equipment_ro_v1_format_refined_item_name
+except NameError:
+    _legacy_equipment_ro_v1_format_refined_item_name = format_refined_item_name
+
+try:
+    _legacy_equipment_ro_v1_can_equip_item_by_class
+except NameError:
+    _legacy_equipment_ro_v1_can_equip_item_by_class = can_equip_item_by_class
+
+try:
+    _legacy_equipment_ro_v1_can_equip_inventory_item_by_class
+except NameError:
+    _legacy_equipment_ro_v1_can_equip_inventory_item_by_class = can_equip_inventory_item_by_class
+
+try:
+    _legacy_equipment_ro_v1_is_inventory_item_class_compatible
+except NameError:
+    _legacy_equipment_ro_v1_is_inventory_item_class_compatible = is_inventory_item_class_compatible
+
+def ensure_equipment_slots(*args, **kwargs):
+    return _equipment_system_ro_v1().ensure_equipment_slots(*args, **kwargs)
+
+def get_all_equipped_items(*args, **kwargs):
+    return _equipment_system_ro_v1().get_all_equipped_items(*args, **kwargs)
+
+def get_equipped_items_for_repair(*args, **kwargs):
+    return _equipment_system_ro_v1().get_equipped_items_for_repair(*args, **kwargs)
+
+def get_inventory_detailed(*args, **kwargs):
+    return _equipment_system_ro_v1().get_inventory_detailed(*args, **kwargs)
+
+def get_inventory_entry(*args, **kwargs):
+    return _equipment_system_ro_v1().get_inventory_entry(*args, **kwargs)
+
+def get_item_by_inventory_id(*args, **kwargs):
+    return _equipment_system_ro_v1().get_item_by_inventory_id(*args, **kwargs)
+
+def get_item_by_inventory_id_full(*args, **kwargs):
+    return _equipment_system_ro_v1().get_item_by_inventory_id_full(*args, **kwargs)
+
+def get_item_bonuses(*args, **kwargs):
+    return _equipment_system_ro_v1().get_item_bonuses(*args, **kwargs)
+
+def get_equipped_item_defenses(*args, **kwargs):
+    return _equipment_system_ro_v1().get_equipped_item_defenses(*args, **kwargs)
+
+def get_sellable_equipment_items(*args, **kwargs):
+    return _equipment_system_ro_v1().get_sellable_equipment_items(*args, **kwargs)
+
+def init_weapon_damage_system(*args, **kwargs):
+    return _equipment_system_ro_v1().init_weapon_damage_system(*args, **kwargs)
+
+def calculate_weapon_damage_by_values(*args, **kwargs):
+    return _equipment_system_ro_v1().calculate_weapon_damage_by_values(*args, **kwargs)
+
+def get_weapon_damage_by_inventory_id(*args, **kwargs):
+    return _equipment_system_ro_v1().get_weapon_damage_by_inventory_id(*args, **kwargs)
+
+def get_inventory_weapon_damage_display(*args, **kwargs):
+    return _equipment_system_ro_v1().get_inventory_weapon_damage_display(*args, **kwargs)
+
+def get_inventory_refine_level(*args, **kwargs):
+    return _equipment_system_ro_v1().get_inventory_refine_level(*args, **kwargs)
+
+def get_inventory_refined_display_name(*args, **kwargs):
+    return _equipment_system_ro_v1().get_inventory_refined_display_name(*args, **kwargs)
+
+def format_refined_item_name(*args, **kwargs):
+    return _equipment_system_ro_v1().format_refined_item_name(*args, **kwargs)
+
+def can_equip_item_by_class(*args, **kwargs):
+    return _equipment_system_ro_v1().can_equip_item_by_class(*args, **kwargs)
+
+def can_equip_inventory_item_by_class(*args, **kwargs):
+    return _equipment_system_ro_v1().can_equip_inventory_item_by_class(*args, **kwargs)
+
+def is_inventory_item_class_compatible(*args, **kwargs):
+    return _equipment_system_ro_v1().is_inventory_item_class_compatible(*args, **kwargs)
+
+# ✅ REFACTOR 9.0.7: EQUIPMENT SYSTEM WRITE FACADE
+# This block keeps db.py as public compatibility facade.
+# Actual equipment write domain entrypoint: systems/equipment_system.py
+
+def _equipment_system_write_v1():
+    from systems import equipment_system
+    return equipment_system
+
+try:
+    _legacy_equipment_write_v1_equip_inventory_item
+except NameError:
+    _legacy_equipment_write_v1_equip_inventory_item = equip_inventory_item
+
+try:
+    _legacy_equipment_write_v1_unequip_inventory_item
+except NameError:
+    _legacy_equipment_write_v1_unequip_inventory_item = unequip_inventory_item
+
+try:
+    _legacy_equipment_write_v1_unequip_incompatible_items_after_class_change
+except NameError:
+    _legacy_equipment_write_v1_unequip_incompatible_items_after_class_change = unequip_incompatible_items_after_class_change
+
+def equip_inventory_item(*args, **kwargs):
+    return _equipment_system_write_v1().equip_inventory_item(*args, **kwargs)
+
+def unequip_inventory_item(*args, **kwargs):
+    return _equipment_system_write_v1().unequip_inventory_item(*args, **kwargs)
+
+def unequip_incompatible_items_after_class_change(*args, **kwargs):
+    return _equipment_system_write_v1().unequip_incompatible_items_after_class_change(*args, **kwargs)
+
+# ✅ REFACTOR 9.0.8: EQUIPMENT SYSTEM REPAIR DURABILITY SELL FACADE
+# This block keeps db.py as public compatibility facade.
+# Actual equipment repair/durability/sell domain entrypoint: systems/equipment_system.py
+
+def _equipment_system_rds_v1():
+    from systems import equipment_system
+    return equipment_system
+
+try:
+    _legacy_equipment_rds_v1_repair_equipped_item
+except NameError:
+    _legacy_equipment_rds_v1_repair_equipped_item = repair_equipped_item
+
+try:
+    _legacy_equipment_rds_v1_repair_all_equipped
+except NameError:
+    _legacy_equipment_rds_v1_repair_all_equipped = repair_all_equipped
+
+try:
+    _legacy_equipment_rds_v1_calculate_repair_cost
+except NameError:
+    _legacy_equipment_rds_v1_calculate_repair_cost = calculate_repair_cost
+
+try:
+    _legacy_equipment_rds_v1_damage_equipped_items_on_death
+except NameError:
+    _legacy_equipment_rds_v1_damage_equipped_items_on_death = damage_equipped_items_on_death
+
+try:
+    _legacy_equipment_rds_v1_sell_inventory_item_to_trader
+except NameError:
+    _legacy_equipment_rds_v1_sell_inventory_item_to_trader = sell_inventory_item_to_trader
+
+try:
+    _legacy_equipment_rds_v1_buy_common_equipment_from_trader
+except NameError:
+    _legacy_equipment_rds_v1_buy_common_equipment_from_trader = buy_common_equipment_from_trader
+
+try:
+    _legacy_equipment_rds_v1_buy_item_for_gold
+except NameError:
+    _legacy_equipment_rds_v1_buy_item_for_gold = buy_item_for_gold
+
+def repair_equipped_item(*args, **kwargs):
+    return _equipment_system_rds_v1().repair_equipped_item(*args, **kwargs)
+
+def repair_all_equipped(*args, **kwargs):
+    return _equipment_system_rds_v1().repair_all_equipped(*args, **kwargs)
+
+def calculate_repair_cost(*args, **kwargs):
+    return _equipment_system_rds_v1().calculate_repair_cost(*args, **kwargs)
+
+def damage_equipped_items_on_death(*args, **kwargs):
+    return _equipment_system_rds_v1().damage_equipped_items_on_death(*args, **kwargs)
+
+def sell_inventory_item_to_trader(*args, **kwargs):
+    return _equipment_system_rds_v1().sell_inventory_item_to_trader(*args, **kwargs)
+
+def buy_common_equipment_from_trader(*args, **kwargs):
+    return _equipment_system_rds_v1().buy_common_equipment_from_trader(*args, **kwargs)
+
+def buy_item_for_gold(*args, **kwargs):
+    return _equipment_system_rds_v1().buy_item_for_gold(*args, **kwargs)
+
+# ✅ REFACTOR 9.0.9: DATA CLASSES EQUIPMENT PROFILES IMPORTS
+# Compatibility import block: db.py remains public API, static data lives in data/*.
+# This intentionally runs near the end of db.py so final globals point at data modules.
+
+try:
+    from data.classes import CLASS_CONFIGS, CLASS_RESET_SPHERE_ITEM_ID
+except Exception:
+    pass
+
+try:
+    from data.equipment_profiles import EQUIPMENT_SLOTS, MAIN_HAND_PROFILES, OFF_HAND_PROFILES, ARMOR_EXTRA_STATS_BY_SLOT, ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS, ARMOR_TYPE_LABELS, ITEM_SUBTYPE_LABELS
+except Exception:
+    pass
+
+
+# ==============================
+# ✅ DATA BALANCE COMPATIBILITY FACADE V1
+# ==============================
+
+try:
+    from data.balance import (
+        CONTRACTS_UNLOCK_LEVEL,
+        CONTRACT_MOBS_EQUIVALENT,
+        CONTRACT_TARGET_KILLS,
+        DAILY_CONTRACT_LIMIT,
+        DAILY_QUEST_ID_KILL_MONSTERS,
+        DAILY_QUEST_REWARD_ITEM_ID,
+        DAILY_QUEST_REWARD_QUANTITY,
+        DAILY_QUEST_TARGET_KILLS,
+        ENERGY_MAX,
+        ENERGY_REGEN_MINUTES,
+        HP_REGEN_MINUTES,
+        HP_REGEN_PERCENT,
+        RARITY_REPAIR_MULTIPLIERS,
+        REFINE_MATERIAL_MAX_STACK,
+        REFINE_STONE_ITEM_ID,
+        get_balance_constant,
+    )
+except Exception:
+    pass
+
+
+# ==============================
+# ✅ REFACTOR 9.0.11: MIGRATIONS FOUNDATION
+# ==============================
+
+
+def init_migration_system():
+    from migrations.runner import ensure_migrations_table
+    ensure_migrations_table(conn)
+    return True
+
+
+def run_pending_migrations():
+    from migrations.runner import run_pending_migrations as _run
+    return _run(conn)
+
+
+def get_migration_status():
+    from migrations.runner import get_migration_status as _status
+    return _status(conn)
+

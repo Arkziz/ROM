@@ -416,7 +416,7 @@ def build_blacksmith_repair_text(user_id):
 
             kb.add(types.InlineKeyboardButton(
                 text=f"🛠️ Ремонт: {name} — {format_gold(repair_cost)}",
-                callback_data=f"repair_one_{inventory_id}"
+                callback_data=f"repair_prompt_one_v3_{inventory_id}"
             ))
 
     text += (
@@ -437,7 +437,7 @@ def build_blacksmith_repair_text(user_id):
     if total_cost > 0:
         kb.add(types.InlineKeyboardButton(
             text=f"🛠️ Полагодити все за {format_gold(total_cost)}",
-            callback_data="repair_all_equipped"
+            callback_data="repair_prompt_all_v3"
         ))
 
     return text, kb
@@ -1829,3 +1829,5 @@ def get_item_by_inventory_id_full(inventory_id):
 
     return row
 
+# ✅ ROM 9.0.8d CITY REPAIR CALLBACK FINAL FIX
+# Repair menu now uses confirmation callbacks: repair_prompt_one_v3_* / repair_prompt_all_v3

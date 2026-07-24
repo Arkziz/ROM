@@ -24,8 +24,14 @@ PROJECT_FILES = [
     "handlers/auction_house.py",
     "systems/combat_system.py",
     "systems/refine_system.py",
+    "systems/regen_system.py",
+    "systems/equipment_system.py",
+    "data/classes.py",
+    "data/equipment_profiles.py",
     "systems/guild_system.py",
     "systems/auction_house_system.py",
+    "data/balance.py",
+    "migrations/runner.py",
 ]
 
 
@@ -34,8 +40,14 @@ SAFE_IMPORT_MODULES = [
     "keyboards",
     "systems.combat_system",
     "systems.refine_system",
+    "systems.regen_system",
+    "systems.equipment_system",
+    "data.classes",
+    "data.equipment_profiles",
     "systems.guild_system",
     "systems.auction_house_system",
+    "data.balance",
+    "migrations.runner",
 ]
 
 
