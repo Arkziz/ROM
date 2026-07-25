@@ -1,297 +1,283 @@
-# ✅ ROM 9.0.1 CHARACTER SYSTEM V1
-"""
-ROM Character System v1.
-
-Goal of 9.0.1:
-- create a dedicated character domain module;
-- move public character/class/MP API behind systems.character_system;
-- keep behavior stable by using legacy db.py implementations if they exist;
-- keep db.py as compatibility facade for existing handlers.
-
-This is intentionally conservative. It does not delete old db.py code yet.
-Final cleanup will happen after all refactor stages and smoke-tests.
-"""
-
+# ROM 9.0.12b character system real implementation
 from __future__ import annotations
 
+from datetime import datetime
 import re
-from typing import Any, Callable, Optional
+
+from data.classes import CLASS_CONFIGS, CLASS_RESET_SPHERE_ITEM_ID
+
+NAME_MIN_LENGTH = 2
+NAME_MAX_LENGTH = 24
+NAME_PATTERN = re.compile(r"^[A-Za-zА-Яа-яІіЇїЄєҐґ0-9 _'-]+$")
 
 
-DEFAULT_CLASS_CONFIGS = {
-    "warrior": {
-        "name": "🛡️ Воїн",
-        "resource": "rage",
-        "description": "Фізичний боєць ближнього бою.",
-        "main_stats": ["str", "sta"],
-    },
-    "knight": {
-        "name": "⚔️ Лицар",
-        "resource": "rage",
-        "description": "Захисний боєць у важкій броні.",
-        "main_stats": ["sta", "str"],
-    },
-    "scout": {
-        "name": "🏹 Скаут",
-        "resource": "combat_energy",
-        "description": "Фізичний боєць із луком та пастками.",
-        "main_stats": ["dex", "str"],
-    },
-    "rogue": {
-        "name": "🗡️ Розбійник",
-        "resource": "combat_energy_combo",
-        "description": "Швидкий фізичний боєць із комбо.",
-        "main_stats": ["dex", "str"],
-    },
-    "mage": {
-        "name": "🔮 Маг",
-        "resource": "mana",
-        "description": "Магічний damage dealer.",
-        "main_stats": ["int", "wis"],
-    },
-    "priest": {
-        "name": "⚕️ Жрець",
-        "resource": "mana",
-        "description": "Магічний support із лікуванням та очищенням.",
-        "main_stats": ["wis", "int"],
-    },
-}
-
-
-CLASS_RESET_SPHERE_ITEM_ID = 301
-
-
-def _db_module():
+def _db():
     import db
     return db
 
 
-def _legacy_function(name: str) -> Optional[Callable[..., Any]]:
-    db = _db_module()
-    return getattr(db, f"_legacy_{name}_before_character_system_v1", None)
-
-
-def _legacy_value(name: str, default: Any = None) -> Any:
-    db = _db_module()
-    return getattr(db, f"_legacy_{name}_before_character_system_v1", default)
-
-
-def get_class_configs() -> dict:
-    return _legacy_value("CLASS_CONFIGS", DEFAULT_CLASS_CONFIGS)
-
-
-# Keep CLASS_CONFIGS as module-level public data for imports that expect it.
-CLASS_CONFIGS = get_class_configs()
-
-
-def _fetchone(sql: str, params: tuple = ()):  # sqlite3.Row or tuple depending on project state
-    db = _db_module()
-    db.cursor.execute(sql, params)
-    return db.cursor.fetchone()
-
-
-def _execute_commit(sql: str, params: tuple = ()):
-    db = _db_module()
-    db.cursor.execute(sql, params)
+def init_character_class_system():
+    db = _db()
+    migrations = [
+        ("character_name", "TEXT DEFAULT ''"),
+        ("character_class", "TEXT DEFAULT ''"),
+        ("class_selected_at", "TEXT DEFAULT ''"),
+        ("class_change_available", "INTEGER DEFAULT 0"),
+        ("mp", "INTEGER DEFAULT 0"),
+        ("max_mp", "INTEGER DEFAULT 0"),
+        ("last_regen_at", "TEXT DEFAULT ''"),
+    ]
+    for column, column_type in migrations:
+        try:
+            db.cursor.execute(f"ALTER TABLE users ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
     db.conn.commit()
-
-
-def _row_get(row, key: str, index: int = 0, default=None):
-    if row is None:
-        return default
-    try:
-        return row[key]
-    except Exception:
-        pass
-    try:
-        return row[index]
-    except Exception:
-        return default
-
-
-def normalize_character_name(name: str) -> str:
-    legacy = _legacy_function("normalize_character_name")
-    if legacy:
-        return legacy(name)
-
-    return " ".join(str(name or "").strip().split())
-
-
-def validate_character_name(name: str):
-    legacy = _legacy_function("validate_character_name")
-    if legacy:
-        return legacy(name)
-
-    normalized = normalize_character_name(name)
-
-    if not normalized:
-        return False, "❌ Ім'я не може бути порожнім."
-
-    if len(normalized) < 2:
-        return False, "❌ Ім'я має містити мінімум 2 символи."
-
-    if len(normalized) > 20:
-        return False, "❌ Ім'я має містити максимум 20 символів."
-
-    if not re.match(r"^[\wА-Яа-яІіЇїЄєҐґ'’\- ]+$", normalized, flags=re.UNICODE):
-        return False, "❌ Ім'я містить недозволені символи."
-
-    return True, normalized
-
-
-def get_character_name(user_id: int):
-    legacy = _legacy_function("get_character_name")
-    if legacy:
-        return legacy(user_id)
-
-    row = _fetchone("SELECT character_name FROM users WHERE user_id=?", (user_id,))
-    return _row_get(row, "character_name", 0, None)
-
-
-def set_character_name(user_id: int, name: str):
-    legacy = _legacy_function("set_character_name")
-    if legacy:
-        return legacy(user_id, name)
-
-    normalized = normalize_character_name(name)
-    _execute_commit(
-        "UPDATE users SET character_name=? WHERE user_id=?",
-        (normalized, user_id),
-    )
     return True
 
 
-def get_character_class(user_id: int):
-    legacy = _legacy_function("get_character_class")
-    if legacy:
-        return legacy(user_id)
-
-    row = _fetchone("SELECT class_key FROM users WHERE user_id=?", (user_id,))
-    return _row_get(row, "class_key", 0, None)
+def normalize_character_name(name):
+    return re.sub(r"\s+", " ", str(name or "").strip())
 
 
-def set_character_class(user_id: int, class_key: str):
-    legacy = _legacy_function("set_character_class")
-    if legacy:
-        return legacy(user_id, class_key)
+def validate_character_name(name):
+    value = normalize_character_name(name)
+    if len(value) < NAME_MIN_LENGTH:
+        return False, f"Ім’я має містити щонайменше {NAME_MIN_LENGTH} символи."
+    if len(value) > NAME_MAX_LENGTH:
+        return False, f"Ім’я має містити не більше {NAME_MAX_LENGTH} символів."
+    if not NAME_PATTERN.fullmatch(value):
+        return False, "Ім’я містить недозволені символи."
+    return True, ""
 
-    if class_key not in get_class_configs():
-        return False
 
-    _execute_commit(
-        "UPDATE users SET class_key=? WHERE user_id=?",
-        (class_key, user_id),
+def is_character_name_taken(name, exclude_user_id=None):
+    init_character_class_system()
+    db = _db()
+    normalized = normalize_character_name(name).casefold()
+    db.cursor.execute("SELECT user_id, character_name FROM users WHERE TRIM(COALESCE(character_name, '')) <> ''")
+    for user_id, existing in db.cursor.fetchall():
+        if exclude_user_id is not None and int(user_id) == int(exclude_user_id):
+            continue
+        if normalize_character_name(existing).casefold() == normalized:
+            return True
+    return False
+
+
+def get_character_name(user_id):
+    init_character_class_system()
+    db = _db()
+    db.cursor.execute("SELECT character_name FROM users WHERE user_id=?", (user_id,))
+    row = db.cursor.fetchone()
+    return normalize_character_name(row[0] if row else "")
+
+
+def set_character_name(user_id, name):
+    init_character_class_system()
+    db = _db()
+    value = normalize_character_name(name)
+    valid, message = validate_character_name(value)
+    if not valid:
+        return {"success": False, "message": f"❌ {message}"}
+    if is_character_name_taken(value, exclude_user_id=user_id):
+        return {"success": False, "message": "❌ Це ім’я вже зайняте іншим персонажем."}
+    db.cursor.execute("UPDATE users SET character_name=? WHERE user_id=?", (value, user_id))
+    db.conn.commit()
+    return {"success": True, "message": "✅ Ім’я персонажа збережено.", "character_name": value}
+
+
+def get_character_class(user_id):
+    init_character_class_system()
+    db = _db()
+    db.cursor.execute("SELECT character_class FROM users WHERE user_id=?", (user_id,))
+    row = db.cursor.fetchone()
+    return str((row[0] if row else "") or "").strip().lower()
+
+
+def get_character_class_display(user_id):
+    key = get_character_class(user_id)
+    return CLASS_CONFIGS.get(key, {}).get("name", "Не обрано")
+
+
+def get_character_resource_type(user_id):
+    key = get_character_class(user_id)
+    return CLASS_CONFIGS.get(key, {}).get("resource", "")
+
+
+def get_max_mp(user_id):
+    if get_character_resource_type(user_id) != "mana":
+        return 0
+    db = _db()
+    db.cursor.execute("SELECT level, intelligence, wis FROM users WHERE user_id=?", (user_id,))
+    row = db.cursor.fetchone()
+    if not row:
+        return 0
+    level, intelligence, wisdom = (int(value or 0) for value in row)
+    return max(0, 100 + level * 20 + intelligence * 3 + wisdom * 2)
+
+
+def refresh_user_mp(user_id):
+    init_character_class_system()
+    db = _db()
+    maximum = get_max_mp(user_id)
+    db.cursor.execute("SELECT mp, max_mp FROM users WHERE user_id=?", (user_id,))
+    row = db.cursor.fetchone()
+    if not row:
+        return 0
+    current = int(row[0] or 0)
+    old_max = int(row[1] or 0)
+    if maximum <= 0:
+        current = 0
+    elif old_max <= 0 and current <= 0:
+        current = maximum
+    else:
+        current = min(current, maximum)
+    db.cursor.execute("UPDATE users SET mp=?, max_mp=? WHERE user_id=?", (current, maximum, user_id))
+    db.conn.commit()
+    return current
+
+
+def get_user_mp(user_id):
+    refresh_user_mp(user_id)
+    db = _db()
+    db.cursor.execute("SELECT mp FROM users WHERE user_id=?", (user_id,))
+    row = db.cursor.fetchone()
+    return int((row[0] if row else 0) or 0)
+
+
+def set_user_mp(user_id, amount):
+    init_character_class_system()
+    db = _db()
+    maximum = get_max_mp(user_id)
+    try:
+        value = int(amount)
+    except Exception:
+        value = 0
+    value = max(0, min(value, maximum))
+    db.cursor.execute("UPDATE users SET mp=?, max_mp=? WHERE user_id=?", (value, maximum, user_id))
+    db.conn.commit()
+    return value
+
+
+def set_character_class(user_id, class_key):
+    init_character_class_system()
+    db = _db()
+    key = str(class_key or "").strip().lower()
+    if key not in CLASS_CONFIGS:
+        return {"success": False, "message": "❌ Невідомий клас персонажа."}
+    db.cursor.execute(
+        "UPDATE users SET character_class=?, class_selected_at=? WHERE user_id=?",
+        (key, datetime.now().isoformat(), user_id),
     )
-    return True
+    db.conn.commit()
+    refresh_user_mp(user_id)
+    return {"success": True, "message": f"✅ Обрано клас: {CLASS_CONFIGS[key]['name']}", "class_key": key}
 
 
-def get_character_class_display(user_id: int):
-    legacy = _legacy_function("get_character_class_display")
-    if legacy:
-        return legacy(user_id)
-
-    class_key = get_character_class(user_id)
-    config = get_class_configs().get(class_key or "")
-    if not config:
-        return "Без класу"
-    return config.get("name", class_key)
+def get_class_change_available(user_id):
+    init_character_class_system()
+    db = _db()
+    db.cursor.execute("SELECT class_change_available FROM users WHERE user_id=?", (user_id,))
+    row = db.cursor.fetchone()
+    return max(0, int((row[0] if row else 0) or 0))
 
 
-def get_character_resource_type(user_id: int):
-    legacy = _legacy_function("get_character_resource_type")
-    if legacy:
-        return legacy(user_id)
-
-    class_key = get_character_class(user_id)
-    return get_class_configs().get(class_key or "", {}).get("resource", "mana")
+def has_class_change_available(user_id):
+    return get_class_change_available(user_id) > 0
 
 
-def get_user_mp(user_id: int):
-    legacy = _legacy_function("get_user_mp")
-    if legacy:
-        return legacy(user_id)
-
-    row = _fetchone("SELECT mp, max_mp FROM users WHERE user_id=?", (user_id,))
-    return {
-        "mp": int(_row_get(row, "mp", 0, 0) or 0),
-        "max_mp": int(_row_get(row, "max_mp", 1, 0) or 0),
-    }
-
-
-def set_user_mp(user_id: int, mp: int):
-    legacy = _legacy_function("set_user_mp")
-    if legacy:
-        return legacy(user_id, mp)
-
-    max_mp = get_max_mp(user_id)
-    safe_mp = max(0, min(int(mp), int(max_mp)))
-    _execute_commit("UPDATE users SET mp=? WHERE user_id=?", (safe_mp, user_id))
-    return safe_mp
+def grant_class_change_available(user_id, amount=1):
+    init_character_class_system()
+    db = _db()
+    try:
+        amount = max(1, int(amount))
+    except Exception:
+        amount = 1
+    db.cursor.execute(
+        "UPDATE users SET class_change_available=COALESCE(class_change_available, 0)+? WHERE user_id=?",
+        (amount, user_id),
+    )
+    db.conn.commit()
+    return get_class_change_available(user_id)
 
 
-def get_max_mp(user_id: int):
-    legacy = _legacy_function("get_max_mp")
-    if legacy:
-        return legacy(user_id)
-
-    row = _fetchone("SELECT max_mp FROM users WHERE user_id=?", (user_id,))
-    value = _row_get(row, "max_mp", 0, None)
-    if value is not None:
-        return int(value or 0)
-
-    # Conservative fallback if max_mp is absent/empty.
-    class_key = get_character_class(user_id)
-    if class_key in ("mage", "priest"):
-        return 100
-    return 0
+def consume_class_change_available(user_id):
+    init_character_class_system()
+    db = _db()
+    db.cursor.execute(
+        "UPDATE users SET class_change_available=class_change_available-1 WHERE user_id=? AND COALESCE(class_change_available, 0)>0",
+        (user_id,),
+    )
+    changed = db.cursor.rowcount > 0
+    db.conn.commit()
+    return changed
 
 
-def refresh_user_mp(user_id: int):
-    legacy = _legacy_function("refresh_user_mp")
-    if legacy:
-        return legacy(user_id)
-
-    max_mp = get_max_mp(user_id)
-    _execute_commit("UPDATE users SET mp=?, max_mp=? WHERE user_id=?", (max_mp, max_mp, user_id))
-    return {"mp": max_mp, "max_mp": max_mp}
+def needs_character_name(user_id):
+    return get_character_name(user_id) == ""
 
 
-# Class reset sphere / class change availability wrappers.
-# These keep existing behavior while moving API ownership into character_system.
-
-def grant_class_change_available(user_id: int, amount: int = 1):
-    legacy = _legacy_function("grant_class_change_available")
-    if legacy:
-        return legacy(user_id, amount)
-    return False
-
-
-def consume_class_change_available(user_id: int):
-    legacy = _legacy_function("consume_class_change_available")
-    if legacy:
-        return legacy(user_id)
-    return False
-
-
-def get_class_change_available(user_id: int):
-    legacy = _legacy_function("get_class_change_available")
-    if legacy:
-        return legacy(user_id)
-
-    # Some project versions used has_class_change_available.
-    legacy_alt = _legacy_function("has_class_change_available")
-    if legacy_alt:
-        return legacy_alt(user_id)
-
-    return 0
-
-
-def has_class_change_available(user_id: int):
-    legacy = _legacy_function("has_class_change_available")
-    if legacy:
-        return legacy(user_id)
-    return bool(get_class_change_available(user_id))
+def needs_character_class(user_id):
+    return get_character_class(user_id) == ""
 
 
 def get_class_reset_sphere_item_id():
-    return int(_legacy_value("CLASS_RESET_SPHERE_ITEM_ID", CLASS_RESET_SPHERE_ITEM_ID))
+    return int(CLASS_RESET_SPHERE_ITEM_ID)
+
+
+# ==============================
+# ✅ HOTFIX 9.0.12b1: CHARACTER MP RETURN CONTRACT FIX
+# ==============================
+
+def get_user_mp(user_id):
+    """
+    Повертає MP у старому публічному форматі ROM.
+
+    Важливо:
+    handlers/profile.py та handlers/combat.py очікують словник:
+
+        {
+            "mp": current_mp,
+            "max_mp": max_mp
+        }
+
+    Після refactor 9.0.12b функція помилково повертала int,
+    через що виникало:
+
+        AttributeError: 'int' object has no attribute 'get'
+    """
+
+    import db as _db
+
+    try:
+        user_id = int(user_id)
+    except Exception:
+        user_id = 0
+
+    max_mp = int(get_max_mp(user_id) or 0)
+
+    row = _db.conn.execute(
+        """
+        SELECT mp
+        FROM users
+        WHERE user_id=?
+        """,
+        (user_id,)
+    ).fetchone()
+
+    if not row:
+        current_mp = max_mp
+    else:
+        try:
+            current_mp = int(row[0] or 0)
+        except Exception:
+            current_mp = max_mp
+
+    current_mp = max(0, min(current_mp, max_mp))
+
+    return {
+        "mp": current_mp,
+        "max_mp": max_mp,
+        "current_mp": current_mp
+    }
+

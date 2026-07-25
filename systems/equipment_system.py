@@ -234,3 +234,391 @@ def buy_item_for_gold(*args, **kwargs):
     result = _call_legacy_repair_durability_sell('buy_item_for_gold', *args, **kwargs)
     _sync_hp_after_rds(user_id)
     return result
+
+
+# ==============================
+# ROM 9.0.12f1a EQUIPMENT READ-ONLY CORE REAL IMPLEMENTATION
+# ==============================
+
+_EQUIPMENT_SLOT_ORDER_REAL_V1 = (
+    "main_hand", "off_hand", "helmet", "shoulders", "chest",
+    "gloves", "legs", "boots", "necklace", "ring",
+)
+
+
+def _equipment_real_db_v1():
+    import db as _db_module
+    return _db_module
+
+
+def ensure_equipment_slots(user_id):
+    db = _equipment_real_db_v1()
+    uid = int(user_id)
+    db.conn.execute(
+        "CREATE TABLE IF NOT EXISTS equipment_slots ("
+        "user_id INTEGER NOT NULL, "
+        "slot_key TEXT NOT NULL, "
+        "inventory_id INTEGER, "
+        "PRIMARY KEY (user_id, slot_key))"
+    )
+    for slot_key in _EQUIPMENT_SLOT_ORDER_REAL_V1:
+        db.conn.execute(
+            "INSERT OR IGNORE INTO equipment_slots "
+            "(user_id, slot_key, inventory_id) VALUES (?, ?, NULL)",
+            (uid, slot_key),
+        )
+    db.conn.commit()
+    return True
+
+
+def _equipment_slot_rows_real_v1(user_id):
+    ensure_equipment_slots(user_id)
+    db = _equipment_real_db_v1()
+    return db.conn.execute(
+        "SELECT slot_key, inventory_id FROM equipment_slots "
+        "WHERE user_id=? ORDER BY CASE slot_key "
+        "WHEN 'main_hand' THEN 1 WHEN 'off_hand' THEN 2 "
+        "WHEN 'helmet' THEN 3 WHEN 'shoulders' THEN 4 "
+        "WHEN 'chest' THEN 5 WHEN 'gloves' THEN 6 "
+        "WHEN 'legs' THEN 7 WHEN 'boots' THEN 8 "
+        "WHEN 'necklace' THEN 9 WHEN 'ring' THEN 10 ELSE 99 END",
+        (int(user_id),),
+    ).fetchall()
+
+
+def get_all_equipped_items(user_id):
+    db = _equipment_real_db_v1()
+    result = []
+    for _slot_key, inventory_id in _equipment_slot_rows_real_v1(user_id):
+        if inventory_id is None:
+            continue
+        item = db.get_item_by_inventory_id_full(int(inventory_id))
+        if item is not None:
+            result.append(item)
+    return result
+
+
+def _equipment_aggregate_row_real_v1(user_id):
+    db = _equipment_real_db_v1()
+    ensure_equipment_slots(user_id)
+    return db.conn.execute(
+        "SELECT "
+        "COALESCE(SUM(CASE WHEN COALESCE(inv.durability,100)>0 THEN COALESCE(it.bonus_str,0) ELSE 0 END),0), "
+        "COALESCE(SUM(CASE WHEN COALESCE(inv.durability,100)>0 THEN COALESCE(it.bonus_dex,0) ELSE 0 END),0), "
+        "COALESCE(SUM(CASE WHEN COALESCE(inv.durability,100)>0 THEN COALESCE(it.bonus_int,0) ELSE 0 END),0), "
+        "COALESCE(SUM(CASE WHEN COALESCE(inv.durability,100)>0 THEN COALESCE(it.bonus_wis,0) ELSE 0 END),0), "
+        "COALESCE(SUM(CASE WHEN COALESCE(inv.durability,100)>0 THEN COALESCE(it.bonus_sta,0) ELSE 0 END),0), "
+        "COALESCE(SUM(CASE WHEN COALESCE(inv.durability,100)>0 THEN COALESCE(it.pdef,0) ELSE 0 END),0), "
+        "COALESCE(SUM(CASE WHEN COALESCE(inv.durability,100)>0 THEN COALESCE(it.mdef,0) ELSE 0 END),0) "
+        "FROM equipment_slots es "
+        "LEFT JOIN inventory inv ON inv.id=es.inventory_id "
+        "LEFT JOIN items it ON it.id=inv.item_id "
+        "WHERE es.user_id=?",
+        (int(user_id),),
+    ).fetchone()
+
+
+def get_item_bonuses(user_id):
+    row = _equipment_aggregate_row_real_v1(user_id)
+    if not row:
+        return 0, 0, 0, 0, 0
+    return tuple(int(value or 0) for value in row[:5])
+
+
+def get_equipped_item_defenses(user_id):
+    row = _equipment_aggregate_row_real_v1(user_id)
+    if not row:
+        return 0, 0
+    return int(row[5] or 0), int(row[6] or 0)
+
+# ==============================
+# ROM 9.0.12f1b EQUIPPED ITEMS DICT CONTRACT FIX
+# ==============================
+
+def _equipment_item_dict_real_v2(slot_key, inventory_id):
+    """Return one equipped item using the historical dict contract."""
+    db = _equipment_real_db_v1()
+    cursor = db.conn.execute(
+        "SELECT inv.id AS inventory_id, inv.user_id, inv.item_id, "
+        "COALESCE(inv.quantity,1) AS quantity, COALESCE(inv.durability,100) AS durability, "
+        "COALESCE(inv.refine_level,0) AS refine_level, it.name, it.type, it.rarity, "
+        "it.category, it.slot_key AS item_slot_key, COALESCE(it.weapon_hands,1) AS weapon_hands, "
+        "COALESCE(it.max_stack,1) AS max_stack, COALESCE(it.sell_price,0) AS sell_price, "
+        "COALESCE(it.bonus_str,0) AS bonus_str, COALESCE(it.bonus_dex,0) AS bonus_dex, "
+        "COALESCE(it.bonus_int,0) AS bonus_int, COALESCE(it.bonus_wis,0) AS bonus_wis, "
+        "COALESCE(it.bonus_sta,0) AS bonus_sta, COALESCE(it.pdef,0) AS pdef, "
+        "COALESCE(it.mdef,0) AS mdef, COALESCE(it.item_level,0) AS item_level, "
+        "COALESCE(it.item_subtype,'') AS item_subtype, COALESCE(it.armor_type,'') AS armor_type, "
+        "COALESCE(it.weapon_min_damage,0) AS weapon_min_damage, "
+        "COALESCE(it.weapon_max_damage,0) AS weapon_max_damage, "
+        "COALESCE(it.weapon_min_magic_damage,0) AS weapon_min_magic_damage, "
+        "COALESCE(it.weapon_max_magic_damage,0) AS weapon_max_magic_damage, "
+        "COALESCE(it.weapon_attack_type,'') AS weapon_attack_type "
+        "FROM inventory inv JOIN items it ON it.id=inv.item_id WHERE inv.id=?",
+        (int(inventory_id),),
+    )
+    row = cursor.fetchone()
+    if not row:
+        return None
+    columns = [col[0] for col in cursor.description]
+    item = dict(zip(columns, row))
+    item["slot_key"] = slot_key
+    item["equipped_slot"] = slot_key
+    item["id"] = item["inventory_id"]
+    item["inv_id"] = item["inventory_id"]
+    item["item_name"] = item["name"]
+    item["level"] = item["item_level"]
+    item["b_str"] = item["bonus_str"]
+    item["b_dex"] = item["bonus_dex"]
+    item["b_int"] = item["bonus_int"]
+    item["b_wis"] = item["bonus_wis"]
+    item["b_sta"] = item["bonus_sta"]
+    try:
+        display_name = db.get_inventory_refined_display_name(int(inventory_id))
+        if display_name:
+            item["name"] = display_name
+            item["item_name"] = display_name
+    except Exception:
+        pass
+    return item
+
+
+def get_all_equipped_items(user_id):
+    """Return list[dict], matching the legacy public contract."""
+    result = []
+    for slot_key, inventory_id in _equipment_slot_rows_real_v1(user_id):
+        if inventory_id is None:
+            continue
+        item = _equipment_item_dict_real_v2(slot_key, inventory_id)
+        if item is not None:
+            result.append(item)
+    return result
+
+# HOTFIX 9.0.12f1c: EQUIPPED ITEM SLOT_NAME CONTRACT
+_SLOT_NAMES_9_0_12F1C = {
+    'main_hand': 'Основна рука',
+    'off_hand': 'Друга рука',
+    'helmet': 'Шолом',
+    'shoulders': 'Наплічники',
+    'chest': 'Обладунок',
+    'gloves': 'Рукавиці',
+    'legs': 'Поножі',
+    'boots': 'Чоботи',
+    'necklace': 'Намисто',
+    'ring': 'Перстень',
+}
+
+_get_all_equipped_items_before_slot_name_9_0_12f1c = get_all_equipped_items
+
+def get_all_equipped_items(user_id):
+    rows = _get_all_equipped_items_before_slot_name_9_0_12f1c(user_id)
+    normalized = []
+    for row in rows or []:
+        if isinstance(row, dict):
+            item = dict(row)
+        elif hasattr(row, 'keys'):
+            item = {key: row[key] for key in row.keys()}
+        else:
+            try:
+                item = dict(row)
+            except Exception:
+                continue
+        slot_key = item.get('slot_key') or item.get('equipment_slot') or item.get('slot') or ''
+        item['slot_key'] = slot_key
+        item['slot_name'] = item.get('slot_name') or _SLOT_NAMES_9_0_12F1C.get(slot_key, slot_key or 'Невідомий слот')
+        if 'inventory_id' not in item:
+            item['inventory_id'] = item.get('inv_id') or item.get('id')
+        if 'durability' not in item:
+            item['durability'] = item.get('inv_durability', 100)
+        if 'refine_level' not in item:
+            item['refine_level'] = item.get('inventory_refine_level', 0)
+        if 'name' not in item:
+            item['name'] = item.get('item_name') or item.get('raw_name') or 'Предмет'
+        normalized.append(item)
+    return normalized
+
+
+# ==============================
+# ROM 9.0.12f1d EQUIPPED ITEMS FULL LEGACY CONTRACT FIX
+# ==============================
+
+_EQUIPMENT_SLOT_NAMES_REAL_V2 = {
+    "main_hand": "Основна рука",
+    "off_hand": "Друга рука",
+    "helmet": "Шолом",
+    "shoulders": "Наплічники",
+    "chest": "Обладунок",
+    "gloves": "Рукавиці",
+    "legs": "Поножі",
+    "boots": "Чоботи",
+    "necklace": "Намисто",
+    "ring": "Перстень",
+}
+
+
+def _equipment_refined_name_real_v2(db, inventory_id, base_name, refine_level):
+    """Return the same display name used by inventory/repair UI."""
+    helper = getattr(db, "get_inventory_refined_display_name", None)
+    if helper:
+        try:
+            value = helper(int(inventory_id))
+            if value:
+                return str(value)
+        except TypeError:
+            try:
+                value = helper(int(inventory_id), base_name)
+                if value:
+                    return str(value)
+            except Exception:
+                pass
+        except Exception:
+            pass
+
+    name = str(base_name or "Предмет")
+    level = int(refine_level or 0)
+    if level > 0 and f"[+{level}]" not in name:
+        name = f"{name} [+{level}]"
+    return name
+
+
+def _equipment_nested_item_tuple_real_v2(row, display_name):
+    """Build the exact 19-field tuple expected by the legacy repair formatter."""
+    return (
+        int(row["inventory_id"]),
+        int(row["item_id"]),
+        display_name,
+        row["item_type"],
+        row["rarity"],
+        row["category"],
+        row["item_slot_key"],
+        int(row["weapon_hands"] or 1),
+        int(row["quantity"] or 1),
+        int(row["max_stack"] or 1),
+        int(row["durability"] if row["durability"] is not None else 100),
+        int(row["bonus_str"] or 0),
+        int(row["bonus_dex"] or 0),
+        int(row["bonus_int"] or 0),
+        int(row["bonus_wis"] or 0),
+        int(row["bonus_sta"] or 0),
+        int(row["pdef"] or 0),
+        int(row["mdef"] or 0),
+        float(row["sell_price"] or 0.0),
+    )
+
+
+def get_all_equipped_items(user_id):
+    """
+    Return the historical equipment contract used by repair code:
+
+        [{
+            "slot_key": str,
+            "slot_name": str,
+            "inventory_id": int | None,
+            "item": tuple(19 fields) | None,
+            ...flat aliases...
+        }, ...]
+
+    All ten slots are returned, including empty slots. Newer callers can use
+    the flat aliases; old repair code can use the nested ``item`` tuple.
+    """
+    db = _equipment_real_db_v1()
+    ensure_equipment_slots(user_id)
+    uid = int(user_id)
+
+    rows = db.conn.execute(
+        "SELECT "
+        "es.slot_key AS equipped_slot_key, es.inventory_id AS equipped_inventory_id, "
+        "inv.id AS inventory_id, inv.user_id AS inventory_user_id, "
+        "inv.item_id AS item_id, inv.quantity AS quantity, "
+        "inv.durability AS durability, COALESCE(inv.refine_level,0) AS refine_level, "
+        "it.name AS item_name, it.type AS item_type, it.rarity AS rarity, "
+        "it.category AS category, it.slot_key AS item_slot_key, "
+        "COALESCE(it.weapon_hands,1) AS weapon_hands, "
+        "COALESCE(it.max_stack,1) AS max_stack, COALESCE(it.sell_price,0) AS sell_price, "
+        "COALESCE(it.bonus_str,0) AS bonus_str, COALESCE(it.bonus_dex,0) AS bonus_dex, "
+        "COALESCE(it.bonus_int,0) AS bonus_int, COALESCE(it.bonus_wis,0) AS bonus_wis, "
+        "COALESCE(it.bonus_sta,0) AS bonus_sta, COALESCE(it.pdef,0) AS pdef, "
+        "COALESCE(it.mdef,0) AS mdef "
+        "FROM equipment_slots es "
+        "LEFT JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id "
+        "LEFT JOIN items it ON it.id=inv.item_id "
+        "WHERE es.user_id=? "
+        "ORDER BY CASE es.slot_key "
+        "WHEN 'main_hand' THEN 1 WHEN 'off_hand' THEN 2 "
+        "WHEN 'helmet' THEN 3 WHEN 'shoulders' THEN 4 "
+        "WHEN 'chest' THEN 5 WHEN 'gloves' THEN 6 "
+        "WHEN 'legs' THEN 7 WHEN 'boots' THEN 8 "
+        "WHEN 'necklace' THEN 9 WHEN 'ring' THEN 10 ELSE 99 END",
+        (uid,),
+    ).fetchall()
+
+    result = []
+    for raw in rows:
+        row = dict(raw) if hasattr(raw, "keys") else None
+        if row is None:
+            columns = (
+                "equipped_slot_key", "equipped_inventory_id", "inventory_id",
+                "inventory_user_id", "item_id", "quantity", "durability",
+                "refine_level", "item_name", "item_type", "rarity", "category",
+                "item_slot_key", "weapon_hands", "max_stack", "sell_price",
+                "bonus_str", "bonus_dex", "bonus_int", "bonus_wis", "bonus_sta",
+                "pdef", "mdef",
+            )
+            row = dict(zip(columns, raw))
+
+        slot_key = str(row.get("equipped_slot_key") or "")
+        slot_name = _EQUIPMENT_SLOT_NAMES_REAL_V2.get(slot_key, slot_key)
+        inventory_id = row.get("inventory_id")
+
+        if inventory_id is None:
+            result.append({
+                "slot_key": slot_key,
+                "slot_name": slot_name,
+                "inventory_id": None,
+                "item": None,
+                "name": None,
+                "durability": None,
+                "refine_level": 0,
+            })
+            continue
+
+        display_name = _equipment_refined_name_real_v2(
+            db,
+            inventory_id,
+            row.get("item_name"),
+            row.get("refine_level"),
+        )
+        nested_item = _equipment_nested_item_tuple_real_v2(row, display_name)
+
+        result.append({
+            "slot_key": slot_key,
+            "slot_name": slot_name,
+            "inventory_id": int(inventory_id),
+            "item": nested_item,
+            "id": int(inventory_id),
+            "inv_id": int(inventory_id),
+            "user_id": int(row.get("inventory_user_id") or uid),
+            "item_id": int(row.get("item_id") or 0),
+            "name": display_name,
+            "item_name": display_name,
+            "type": row.get("item_type"),
+            "rarity": row.get("rarity"),
+            "category": row.get("category"),
+            "item_slot_key": row.get("item_slot_key"),
+            "weapon_hands": int(row.get("weapon_hands") or 1),
+            "quantity": int(row.get("quantity") or 1),
+            "max_stack": int(row.get("max_stack") or 1),
+            "durability": int(row.get("durability") if row.get("durability") is not None else 100),
+            "refine_level": int(row.get("refine_level") or 0),
+            "sell_price": float(row.get("sell_price") or 0.0),
+            "bonus_str": int(row.get("bonus_str") or 0),
+            "bonus_dex": int(row.get("bonus_dex") or 0),
+            "bonus_int": int(row.get("bonus_int") or 0),
+            "bonus_wis": int(row.get("bonus_wis") or 0),
+            "bonus_sta": int(row.get("bonus_sta") or 0),
+            "pdef": int(row.get("pdef") or 0),
+            "mdef": int(row.get("mdef") or 0),
+        })
+
+    return result
+

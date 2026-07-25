@@ -447,3 +447,92 @@ def set_current_hp(user_id: int, hp: int):
             return _player_system_base_set_current_hp_before_hp_sync_v1(user_id, safe_hp)
         return safe_hp
 
+# ==============================
+# ✅ ROM 9.0.12c1 PLAYER PROGRESSION REAL IMPLEMENTATION V1
+# ==============================
+# Safe first slice. Complex EXP/progress/combat-stat contracts remain legacy.
+
+def _player_direct_db():
+    import db
+    return db
+
+def _player_direct_fetchone(sql, params=()):
+    db = _player_direct_db()
+    db.cursor.execute(sql, params)
+    return db.cursor.fetchone()
+
+def _player_direct_value(row, key, index=0, default=None):
+    if row is None:
+        return default
+    try:
+        return row[key]
+    except Exception:
+        pass
+    try:
+        return row[index]
+    except Exception:
+        return default
+
+def get_player_level(user_id: int):
+    row = _player_direct_fetchone("SELECT level FROM users WHERE user_id=?", (int(user_id),))
+    try:
+        return int(_player_direct_value(row, "level", 0, 1) or 1)
+    except Exception:
+        return 1
+
+def get_wallet(user_id: int):
+    row = _player_direct_fetchone("SELECT gold FROM users WHERE user_id=?", (int(user_id),))
+    try:
+        return float(_player_direct_value(row, "gold", 0, 0.0) or 0.0)
+    except Exception:
+        return 0.0
+
+def add_gold(user_id: int, amount):
+    db = _player_direct_db()
+    try:
+        amount = float(amount)
+    except Exception:
+        amount = 0.0
+    db.cursor.execute("UPDATE users SET gold=COALESCE(gold,0)+? WHERE user_id=?", (amount, int(user_id)))
+    db.conn.commit()
+    return None
+
+def add_kill(user_id: int, amount: int = 1):
+    db = _player_direct_db()
+    try:
+        amount = max(0, int(amount))
+    except Exception:
+        amount = 1
+    if amount:
+        db.cursor.execute("UPDATE users SET kills=COALESCE(kills,0)+? WHERE user_id=?", (amount, int(user_id)))
+        db.conn.commit()
+    return None
+
+def get_current_hp_raw(user_id: int):
+    sync = sync_user_max_hp(int(user_id), heal_to_full=False)
+    try:
+        return int(sync.get("hp", 0) or 0)
+    except Exception:
+        return 0
+
+def get_current_hp(user_id: int):
+    return get_current_hp_raw(int(user_id))
+
+def set_current_hp(user_id: int, hp: int):
+    db = _player_direct_db()
+    sync = sync_user_max_hp(int(user_id), heal_to_full=False)
+    try:
+        max_hp = int(sync.get("max_hp", get_max_hp(user_id)) or get_max_hp(user_id))
+    except Exception:
+        max_hp = int(get_max_hp(user_id) or 1)
+    try:
+        safe_hp = max(0, min(int(hp), max_hp))
+    except Exception:
+        safe_hp = 0
+    db.cursor.execute("UPDATE users SET hp=? WHERE user_id=?", (safe_hp, int(user_id)))
+    db.conn.commit()
+    reset = getattr(db, "reset_hp_regen_timers_now", None)
+    if callable(reset):
+        reset(int(user_id))
+    return safe_hp
+

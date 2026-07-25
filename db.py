@@ -12593,126 +12593,82 @@ def run_auction_sanity_fix():
 
 
 # ==============================
-# ✅ ROM 9.0.1 CHARACTER SYSTEM FACADE WRAPPERS V1
+# ROM 9.0.12b CHARACTER SYSTEM REAL IMPLEMENTATION V1
 # ==============================
 
-# Safety approach:
-# - preserve the current final db.py implementations as _legacy_* refs;
-# - expose db.py functions as wrappers to systems.character_system;
-# - systems.character_system calls legacy refs where available;
-# - no gameplay behavior change intended.
-
-try:
-    _legacy_CLASS_CONFIGS_before_character_system_v1 = CLASS_CONFIGS
-except NameError:
-    _legacy_CLASS_CONFIGS_before_character_system_v1 = None
-
-try:
-    _legacy_CLASS_RESET_SPHERE_ITEM_ID_before_character_system_v1 = CLASS_RESET_SPHERE_ITEM_ID
-except NameError:
-    _legacy_CLASS_RESET_SPHERE_ITEM_ID_before_character_system_v1 = 301
-
-for _name in [
-    "normalize_character_name",
-    "validate_character_name",
-    "get_character_name",
-    "set_character_name",
-    "get_character_class",
-    "set_character_class",
-    "get_character_class_display",
-    "get_character_resource_type",
-    "get_user_mp",
-    "set_user_mp",
-    "get_max_mp",
-    "refresh_user_mp",
-    "grant_class_change_available",
-    "consume_class_change_available",
-    "get_class_change_available",
-    "has_class_change_available",
-]:
-    if _name in globals() and f"_legacy_{_name}_before_character_system_v1" not in globals():
-        globals()[f"_legacy_{_name}_before_character_system_v1"] = globals()[_name]
-
-
-def _character_system_v1():
+def _character_system_v2():
     from systems import character_system as _mod
     return _mod
 
 
 def normalize_character_name(name):
-    return _character_system_v1().normalize_character_name(name)
+    return _character_system_v2().normalize_character_name(name)
 
 
 def validate_character_name(name):
-    return _character_system_v1().validate_character_name(name)
+    return _character_system_v2().validate_character_name(name)
 
 
 def get_character_name(user_id):
-    return _character_system_v1().get_character_name(user_id)
+    return _character_system_v2().get_character_name(user_id)
 
 
 def set_character_name(user_id, name):
-    return _character_system_v1().set_character_name(user_id, name)
+    return _character_system_v2().set_character_name(user_id, name)
 
 
 def get_character_class(user_id):
-    return _character_system_v1().get_character_class(user_id)
+    return _character_system_v2().get_character_class(user_id)
 
 
 def set_character_class(user_id, class_key):
-    return _character_system_v1().set_character_class(user_id, class_key)
+    return _character_system_v2().set_character_class(user_id, class_key)
 
 
 def get_character_class_display(user_id):
-    return _character_system_v1().get_character_class_display(user_id)
+    return _character_system_v2().get_character_class_display(user_id)
 
 
 def get_character_resource_type(user_id):
-    return _character_system_v1().get_character_resource_type(user_id)
+    return _character_system_v2().get_character_resource_type(user_id)
 
 
 def get_user_mp(user_id):
-    return _character_system_v1().get_user_mp(user_id)
+    return _character_system_v2().get_user_mp(user_id)
 
 
 def set_user_mp(user_id, mp):
-    return _character_system_v1().set_user_mp(user_id, mp)
+    return _character_system_v2().set_user_mp(user_id, mp)
 
 
 def get_max_mp(user_id):
-    return _character_system_v1().get_max_mp(user_id)
+    return _character_system_v2().get_max_mp(user_id)
 
 
 def refresh_user_mp(user_id):
-    return _character_system_v1().refresh_user_mp(user_id)
+    return _character_system_v2().refresh_user_mp(user_id)
 
 
 def grant_class_change_available(user_id, amount=1):
-    return _character_system_v1().grant_class_change_available(user_id, amount)
+    return _character_system_v2().grant_class_change_available(user_id, amount)
 
 
 def consume_class_change_available(user_id):
-    return _character_system_v1().consume_class_change_available(user_id)
+    return _character_system_v2().consume_class_change_available(user_id)
 
 
 def get_class_change_available(user_id):
-    return _character_system_v1().get_class_change_available(user_id)
+    return _character_system_v2().get_class_change_available(user_id)
 
 
 def has_class_change_available(user_id):
-    return _character_system_v1().has_class_change_available(user_id)
+    return _character_system_v2().has_class_change_available(user_id)
 
 
 try:
-    CLASS_CONFIGS = _legacy_CLASS_CONFIGS_before_character_system_v1 or _character_system_v1().DEFAULT_CLASS_CONFIGS
+    from data.classes import CLASS_CONFIGS, CLASS_RESET_SPHERE_ITEM_ID
 except Exception:
     pass
-
-try:
-    CLASS_RESET_SPHERE_ITEM_ID = _character_system_v1().get_class_reset_sphere_item_id()
-except Exception:
-    pass
-
 
 # ==============================
 # ✅ ROM 9.0.2 PLAYER SYSTEM FACADE WRAPPERS V1
@@ -12823,130 +12779,6 @@ def get_magical_crit_chance_display(user_id):
 
 def get_base_dodge_chance_display(user_id):
     return _player_system_v1().get_base_dodge_chance_display(user_id)
-
-
-# ==============================
-# ✅ ROM 9.0.3 CONTRACT SYSTEM FACADE WRAPPERS V1
-# ==============================
-
-# Safety approach:
-# - preserve the current final db.py contract implementations as _legacy_* refs;
-# - expose db.py contract API as wrappers to systems.contract_system;
-# - systems.contract_system calls legacy refs where available;
-# - no gameplay behavior change intended.
-
-try:
-    _legacy_CONTRACT_TARGET_KILLS_before_contract_system_v1 = CONTRACT_TARGET_KILLS
-except NameError:
-    _legacy_CONTRACT_TARGET_KILLS_before_contract_system_v1 = 5
-
-try:
-    _legacy_CONTRACT_MOBS_EQUIVALENT_before_contract_system_v1 = CONTRACT_MOBS_EQUIVALENT
-except NameError:
-    _legacy_CONTRACT_MOBS_EQUIVALENT_before_contract_system_v1 = 5
-
-for _name in [
-    "get_today_str",
-    "init_contract_system",
-    "create_daily_contract",
-    "get_active_contract",
-    "get_contract_status",
-    "process_contract_progress_on_kill",
-    "claim_contract_reward",
-    "get_daily_contract_reset_info",
-    "reset_daily_contracts_if_needed",
-    "get_contract_mobs_equivalent",
-    "migrate_contract_target_kills_to_v2",
-]:
-    if _name in globals() and f"_legacy_{_name}_before_contract_system_v1" not in globals():
-        globals()[f"_legacy_{_name}_before_contract_system_v1"] = globals()[_name]
-
-
-def _contract_system_v1():
-    from systems import contract_system as _mod
-    return _mod
-
-
-def get_today_str(*args, **kwargs):
-    return _contract_system_v1().get_today_str(*args, **kwargs)
-
-
-def init_contract_system(*args, **kwargs):
-    return _contract_system_v1().init_contract_system(*args, **kwargs)
-
-
-def create_daily_contract(*args, **kwargs):
-    return _contract_system_v1().create_daily_contract(*args, **kwargs)
-
-
-def get_active_contract(*args, **kwargs):
-    return _contract_system_v1().get_active_contract(*args, **kwargs)
-
-
-def get_contract_status(*args, **kwargs):
-    return _contract_system_v1().get_contract_status(*args, **kwargs)
-
-
-def process_contract_progress_on_kill(*args, **kwargs):
-    return _contract_system_v1().process_contract_progress_on_kill(*args, **kwargs)
-
-
-def claim_contract_reward(*args, **kwargs):
-    return _contract_system_v1().claim_contract_reward(*args, **kwargs)
-
-
-def get_daily_contract_reset_info(*args, **kwargs):
-    return _contract_system_v1().get_daily_contract_reset_info(*args, **kwargs)
-
-
-def reset_daily_contracts_if_needed(*args, **kwargs):
-    return _contract_system_v1().reset_daily_contracts_if_needed(*args, **kwargs)
-
-
-def get_contract_mobs_equivalent(*args, **kwargs):
-    return _contract_system_v1().get_contract_mobs_equivalent(*args, **kwargs)
-
-
-def migrate_contract_target_kills_to_v2(*args, **kwargs):
-    return _contract_system_v1().migrate_contract_target_kills_to_v2(*args, **kwargs)
-
-
-try:
-    CONTRACT_TARGET_KILLS = _contract_system_v1().get_contract_target_kills()
-except Exception:
-    pass
-
-try:
-    CONTRACT_MOBS_EQUIVALENT = _contract_system_v1().get_contract_mobs_equivalent()
-except Exception:
-    pass
-
-# ==============================
-# ✅ REFACTOR 9.0.4 ENERGY SYSTEM FACADE
-# ==============================
-
-def _energy_system_v1():
-    from systems import energy_system
-    return energy_system
-
-
-try:
-    _legacy_init_energy_system_before_energy_system_v1 = init_energy_system
-except NameError:
-    _legacy_init_energy_system_before_energy_system_v1 = None
-
-try:
-    _legacy_get_user_energy_before_energy_system_v1 = get_user_energy
-except NameError:
-    _legacy_get_user_energy_before_energy_system_v1 = None
-
-def init_energy_system(*args, **kwargs):
-    return _energy_system_v1().init_energy_system(*args, **kwargs)
-
-
-def get_user_energy(*args, **kwargs):
-    return _energy_system_v1().get_user_energy(*args, **kwargs)
-
 
 # ==============================
 # ✅ ROM 9.0.2b HP MAX SYNC DB WRAPPER V1
@@ -13199,53 +13031,33 @@ def process_passive_regeneration(user_id):
         "max_hp": dynamic_max_hp,
     }
 
-# ✅ REFACTOR 9.0.5: REGEN SYSTEM FACADE
-# This block keeps db.py as public compatibility facade.
-# Actual domain entrypoint: systems/regen_system.py
+# ==============================
+# ✅ ROM 9.0.12e2 REGEN SYSTEM REAL IMPLEMENTATION WRAPPERS V2
+# ==============================
 
-def _regen_system_v1():
-    from systems import regen_system
-    return regen_system
+def _regen_system_v2():
+    from systems import regen_system as _mod
+    return _mod
 
-try:
-    _legacy_regen_v1_init_hp_regen_system
-except NameError:
-    _legacy_regen_v1_init_hp_regen_system = init_hp_regen_system
-
-try:
-    _legacy_regen_v1_init_passive_regen_system
-except NameError:
-    _legacy_regen_v1_init_passive_regen_system = init_passive_regen_system
-
-try:
-    _legacy_regen_v1_process_passive_regeneration
-except NameError:
-    _legacy_regen_v1_process_passive_regeneration = process_passive_regeneration
-
-try:
-    _legacy_regen_v1_reset_hp_regen_timers_now
-except NameError:
-    _legacy_regen_v1_reset_hp_regen_timers_now = reset_hp_regen_timers_now
-
-try:
-    _legacy_regen_v1_apply_passive_hp_regen
-except NameError:
-    _legacy_regen_v1_apply_passive_hp_regen = apply_passive_hp_regen
 
 def init_hp_regen_system(*args, **kwargs):
-    return _regen_system_v1().init_hp_regen_system(*args, **kwargs)
+    return _regen_system_v2().init_hp_regen_system(*args, **kwargs)
+
 
 def init_passive_regen_system(*args, **kwargs):
-    return _regen_system_v1().init_passive_regen_system(*args, **kwargs)
+    return _regen_system_v2().init_passive_regen_system(*args, **kwargs)
+
 
 def process_passive_regeneration(*args, **kwargs):
-    return _regen_system_v1().process_passive_regeneration(*args, **kwargs)
+    return _regen_system_v2().process_passive_regeneration(*args, **kwargs)
+
 
 def reset_hp_regen_timers_now(*args, **kwargs):
-    return _regen_system_v1().reset_hp_regen_timers_now(*args, **kwargs)
+    return _regen_system_v2().reset_hp_regen_timers_now(*args, **kwargs)
+
 
 def apply_passive_hp_regen(*args, **kwargs):
-    return _regen_system_v1().apply_passive_hp_regen(*args, **kwargs)
+    return _regen_system_v2().apply_passive_hp_regen(*args, **kwargs)
 
 # ✅ REFACTOR 9.0.6: EQUIPMENT SYSTEM READONLY FACADE
 # This block keeps db.py as public compatibility facade.
@@ -13572,4 +13384,57 @@ def run_pending_migrations():
 def get_migration_status():
     from migrations.runner import get_migration_status as _status
     return _status(conn)
+
+# ==============================
+# ✅ ROM 9.0.12c1 PLAYER PROGRESSION REAL IMPLEMENTATION WRAPPERS V1
+# ==============================
+# add_exp/get_user_progress/get_player_stats/combat formulas remain legacy.
+
+def _player_system_v2():
+    from systems import player_system as _mod
+    return _mod
+
+def get_player_level(user_id):
+    return _player_system_v2().get_player_level(user_id)
+
+def get_wallet(user_id):
+    return _player_system_v2().get_wallet(user_id)
+
+def add_gold(user_id, amount):
+    return _player_system_v2().add_gold(user_id, amount)
+
+def add_kill(user_id, amount=1):
+    return _player_system_v2().add_kill(user_id, amount)
+
+def get_current_hp_raw(user_id):
+    return _player_system_v2().get_current_hp_raw(user_id)
+
+def get_current_hp(user_id):
+    return _player_system_v2().get_current_hp(user_id)
+
+def set_current_hp(user_id, hp):
+    return _player_system_v2().set_current_hp(user_id, hp)
+
+# ==============================
+# ✅ ROM 9.0.12e1 ENERGY SYSTEM REAL IMPLEMENTATION WRAPPERS V2
+# ==============================
+
+def _energy_system_v2():
+    from systems import energy_system as _mod
+    return _mod
+
+def init_energy_system(*args, **kwargs):
+    return _energy_system_v2().init_energy_system(*args, **kwargs)
+
+def get_user_energy(*args, **kwargs):
+    return _energy_system_v2().get_user_energy(*args, **kwargs)
+
+def consume_energy_for_hunt(*args, **kwargs):
+    return _energy_system_v2().consume_energy_for_hunt(*args, **kwargs)
+
+def restore_energy_for_test(*args, **kwargs):
+    return _energy_system_v2().restore_energy_for_test(*args, **kwargs)
+
+def get_users_for_energy_full_notification(*args, **kwargs):
+    return _energy_system_v2().get_users_for_energy_full_notification(*args, **kwargs)
 
