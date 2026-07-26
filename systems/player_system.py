@@ -536,3 +536,130 @@ def set_current_hp(user_id: int, hp: int):
         reset(int(user_id))
     return safe_hp
 
+
+# ==============================
+# ROM 9.0.12g PLAYER COMBAT STATS REAL IMPLEMENTATION
+# ==============================
+
+_ARMOR_SLOTS_9_0_12G = {"helmet", "shoulders", "chest", "gloves", "legs", "boots"}
+
+
+def _player_combat_db_9_0_12g():
+    import db as _db_module
+    return _db_module
+
+
+def _player_base_row_9_0_12g(user_id):
+    db = _player_combat_db_9_0_12g()
+    return db.conn.execute(
+        "SELECT COALESCE(str,0), COALESCE(dex,0), COALESCE(intelligence,0), "
+        "COALESCE(wis,0), COALESCE(sta,0), COALESCE(level,1) "
+        "FROM users WHERE user_id=?",
+        (int(user_id),),
+    ).fetchone()
+
+
+def get_player_stats(user_id: int):
+    """Return (STR, DEX, INT, WIS, STA, level), including active equipment."""
+    row = _player_base_row_9_0_12g(user_id)
+    if not row:
+        return None
+    base_str, base_dex, base_int, base_wis, base_sta, level = row
+    db = _player_combat_db_9_0_12g()
+    bonuses = db.get_item_bonuses(int(user_id))
+    try:
+        item_str, item_dex, item_int, item_wis, item_sta = bonuses
+    except Exception:
+        item_str = item_dex = item_int = item_wis = item_sta = 0
+    return (
+        int(base_str or 0) + int(item_str or 0),
+        int(base_dex or 0) + int(item_dex or 0),
+        int(base_int or 0) + int(item_int or 0),
+        int(base_wis or 0) + int(item_wis or 0),
+        int(base_sta or 0) + int(item_sta or 0),
+        max(1, int(level or 1)),
+    )
+
+
+def get_attack(user_id: int):
+    stats = get_player_stats(user_id)
+    return int(stats[0]) if stats else 0
+
+
+def get_magic_attack(user_id: int):
+    stats = get_player_stats(user_id)
+    return int(stats[2]) if stats else 0
+
+
+def _armor_refine_hp_bonus_percent_9_0_12g(user_id):
+    db = _player_combat_db_9_0_12g()
+    rows = db.conn.execute(
+        "SELECT it.slot_key, it.rarity, COALESCE(inv.refine_level,0), "
+        "COALESCE(inv.durability,100) "
+        "FROM equipment_slots es "
+        "JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id "
+        "JOIN items it ON it.id=inv.item_id "
+        "WHERE es.user_id=?",
+        (int(user_id),),
+    ).fetchall()
+    total = 0.0
+    try:
+        from systems.refine_system import get_armor_refine_hp_bonus_percent
+    except Exception:
+        return 0.0
+    for slot_key, rarity, refine_level, durability in rows:
+        if slot_key not in _ARMOR_SLOTS_9_0_12G:
+            continue
+        if int(durability or 0) <= 0:
+            continue
+        total += float(get_armor_refine_hp_bonus_percent(refine_level, rarity) or 0.0)
+    return round(total, 4)
+
+
+def get_max_hp(user_id: int):
+    stats = get_player_stats(user_id)
+    if not stats:
+        return 100
+    _str, _dex, _int, _wis, total_sta, level = stats
+    base_hp = 100 + int(level) * 20 + int(total_sta) * 5
+    refine_percent = _armor_refine_hp_bonus_percent_9_0_12g(user_id)
+    return max(1, int(round(base_hp * (1.0 + refine_percent / 100.0))))
+
+
+def get_physical_defense(user_id: int):
+    stats = get_player_stats(user_id)
+    if not stats:
+        return 0
+    db = _player_combat_db_9_0_12g()
+    item_pdef, _item_mdef = db.get_equipped_item_defenses(int(user_id))
+    return int(int(item_pdef or 0) + int(stats[4]) * 0.2)
+
+
+def get_magic_defense(user_id: int):
+    stats = get_player_stats(user_id)
+    if not stats:
+        return 0
+    db = _player_combat_db_9_0_12g()
+    _item_pdef, item_mdef = db.get_equipped_item_defenses(int(user_id))
+    return int(int(item_mdef or 0) + int(stats[3]))
+
+
+def get_physical_crit_chance_display(user_id: int):
+    stats = get_player_stats(user_id)
+    if not stats:
+        return 5.0
+    chance = 5.0 + ((float(stats[1]) - 10.0) / max(1, int(stats[5]))) * 0.5
+    return max(1.0, min(35.0, chance))
+
+
+def get_magical_crit_chance_display(user_id: int):
+    stats = get_player_stats(user_id)
+    if not stats:
+        return 5.0
+    chance = 5.0 + ((float(stats[3]) - 10.0) / max(1, int(stats[5]))) * 0.5
+    return max(1.0, min(35.0, chance))
+
+
+def get_base_dodge_chance_display(user_id: int):
+    return 5.0
+

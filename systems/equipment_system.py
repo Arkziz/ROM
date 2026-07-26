@@ -622,3 +622,1319 @@ def get_all_equipped_items(user_id):
 
     return result
 
+
+# ==============================
+# ROM 9.0.12f2 INVENTORY REFINE READ-ONLY REAL IMPLEMENTATION
+# ==============================
+
+import re as _inventory_refine_re_v3
+
+
+def _inventory_refine_db_v3():
+    import db as _db_module
+    return _db_module
+
+
+def _inventory_refine_level_v3(inventory_id):
+    db = _inventory_refine_db_v3()
+    row = db.conn.execute(
+        "SELECT COALESCE(refine_level, 0) FROM inventory WHERE id=?",
+        (int(inventory_id),),
+    ).fetchone()
+    if not row:
+        return 0
+    try:
+        return max(0, int(row[0] or 0))
+    except Exception:
+        return 0
+
+
+def strip_refine_suffix_from_name(name):
+    value = str(name or "").strip()
+    return _inventory_refine_re_v3.sub(r"\s*\[\+\d+\]\s*$", "", value).strip()
+
+
+def format_refined_item_name(name, refine_level):
+    base_name = strip_refine_suffix_from_name(name)
+    try:
+        level = max(0, int(refine_level or 0))
+    except Exception:
+        level = 0
+    return base_name if level <= 0 else f"{base_name} [+{level}]"
+
+
+def get_inventory_refine_level(inventory_id):
+    return _inventory_refine_level_v3(inventory_id)
+
+
+def get_inventory_refined_display_name(inventory_id, name=None):
+    db = _inventory_refine_db_v3()
+    if name is None:
+        row = db.conn.execute(
+            "SELECT it.name FROM inventory inv JOIN items it ON it.id=inv.item_id WHERE inv.id=?",
+            (int(inventory_id),),
+        ).fetchone()
+        if not row:
+            return ""
+        name = row[0]
+    return format_refined_item_name(name, _inventory_refine_level_v3(inventory_id))
+
+
+def _inventory_read_rows_v3(user_id=None, inventory_id=None, full=False, short=False):
+    db = _inventory_refine_db_v3()
+
+    if short:
+        select_sql = (
+            "SELECT inv.id, inv.item_id, it.name, it.type, it.category, "
+            "COALESCE(inv.quantity,1), COALESCE(inv.refine_level,0) "
+        )
+    elif full:
+        select_sql = (
+            "SELECT inv.id, inv.item_id, it.name, it.type, it.rarity, it.category, "
+            "it.slot_key, COALESCE(it.weapon_hands,1), COALESCE(inv.quantity,1), "
+            "COALESCE(it.max_stack,1), COALESCE(inv.durability,100), "
+            "COALESCE(it.bonus_str,0), COALESCE(it.bonus_dex,0), "
+            "COALESCE(it.bonus_int,0), COALESCE(it.bonus_wis,0), "
+            "COALESCE(it.bonus_sta,0), COALESCE(it.pdef,0), COALESCE(it.mdef,0), "
+            "COALESCE(it.sell_price,0), COALESCE(inv.refine_level,0) "
+        )
+    else:
+        select_sql = (
+            "SELECT inv.id, inv.item_id, it.name, it.type, it.rarity, it.category, "
+            "COALESCE(inv.quantity,1), COALESCE(it.max_stack,1), "
+            "COALESCE(inv.durability,100), COALESCE(it.bonus_str,0), "
+            "COALESCE(it.bonus_dex,0), COALESCE(it.bonus_int,0), "
+            "COALESCE(it.bonus_wis,0), COALESCE(it.bonus_sta,0), "
+            "COALESCE(it.pdef,0), COALESCE(it.mdef,0), COALESCE(it.sell_price,0), "
+            "COALESCE(inv.refine_level,0) "
+        )
+
+    sql = select_sql + "FROM inventory inv JOIN items it ON it.id=inv.item_id "
+    params = []
+    where = []
+    if user_id is not None:
+        where.append("inv.user_id=?")
+        params.append(int(user_id))
+    if inventory_id is not None:
+        where.append("inv.id=?")
+        params.append(int(inventory_id))
+    if where:
+        sql += "WHERE " + " AND ".join(where) + " "
+    sql += "ORDER BY inv.id ASC"
+    return db.conn.execute(sql, tuple(params)).fetchall()
+
+
+def _apply_refine_name_to_row_v3(row, name_index=2, refine_index=-1):
+    if row is None:
+        return None
+    values = list(row)
+    values[name_index] = format_refined_item_name(values[name_index], values[refine_index])
+    del values[refine_index]
+    return tuple(values)
+
+
+def get_inventory_detailed(user_id):
+    """Return the historical 17-field inventory tuple list with refined names."""
+    rows = _inventory_read_rows_v3(user_id=user_id, full=False, short=False)
+    return [_apply_refine_name_to_row_v3(row) for row in rows]
+
+
+def get_item_by_inventory_id(inventory_id):
+    """Return the historical 17-field inventory tuple with refined name."""
+    rows = _inventory_read_rows_v3(inventory_id=inventory_id, full=False, short=False)
+    return _apply_refine_name_to_row_v3(rows[0]) if rows else None
+
+
+def get_item_by_inventory_id_full(inventory_id):
+    """Return the historical 19-field full item tuple with refined name."""
+    rows = _inventory_read_rows_v3(inventory_id=inventory_id, full=True, short=False)
+    return _apply_refine_name_to_row_v3(rows[0]) if rows else None
+
+
+def get_inventory_entry(user_id, inventory_id):
+    """Return the historical 6-field short inventory tuple with refined name."""
+    rows = _inventory_read_rows_v3(
+        user_id=user_id,
+        inventory_id=inventory_id,
+        full=False,
+        short=True,
+    )
+    return _apply_refine_name_to_row_v3(rows[0]) if rows else None
+
+
+# ==============================
+# ROM 9.0.12f3 WEAPON DAMAGE READ-ONLY REAL IMPLEMENTATION
+# ==============================
+
+_WEAPON_DAMAGE_RARITY_MULTIPLIERS_V4 = {
+    "common": 1.00,
+    "uncommon": 1.35,
+    "rare": 1.85,
+    "epic": 2.60,
+}
+
+_MAGICAL_WEAPON_SUBTYPES_V4 = {
+    "wand_1h",
+    "staff_2h",
+    "wand",
+    "staff",
+}
+
+
+def _weapon_damage_db_v4():
+    import db as _db_module
+    return _db_module
+
+
+def _weapon_damage_table_columns_v4(table_name):
+    db = _weapon_damage_db_v4()
+    try:
+        rows = db.conn.execute(f"PRAGMA table_info({table_name})").fetchall()
+        return {str(row[1]) for row in rows}
+    except Exception:
+        return set()
+
+
+def init_weapon_damage_system():
+    db = _weapon_damage_db_v4()
+    columns = _weapon_damage_table_columns_v4("items")
+    migrations = (
+        ("weapon_min_damage", "INTEGER DEFAULT 0"),
+        ("weapon_max_damage", "INTEGER DEFAULT 0"),
+        ("weapon_min_magic_damage", "INTEGER DEFAULT 0"),
+        ("weapon_max_magic_damage", "INTEGER DEFAULT 0"),
+        ("weapon_attack_type", "TEXT DEFAULT ''"),
+        ("item_subtype", "TEXT DEFAULT ''"),
+    )
+    for column, column_type in migrations:
+        if column in columns:
+            continue
+        try:
+            db.conn.execute(f"ALTER TABLE items ADD COLUMN {column} {column_type}")
+        except Exception:
+            pass
+    db.conn.commit()
+    return True
+
+
+def calculate_weapon_damage_by_values(item_level, rarity, weapon_hands=1):
+    """Preserve the current base formula: level x 0.8/1.2 x rarity x hands."""
+    try:
+        level = max(1, int(item_level or 1))
+    except Exception:
+        level = 1
+    rarity_key = str(rarity or "common").strip().lower()
+    rarity_multiplier = _WEAPON_DAMAGE_RARITY_MULTIPLIERS_V4.get(rarity_key, 1.0)
+    try:
+        hand_multiplier = 1.35 if int(weapon_hands or 1) == 2 else 1.0
+    except Exception:
+        hand_multiplier = 1.0
+    minimum = max(1, int(round(level * 0.8 * rarity_multiplier * hand_multiplier)))
+    maximum = max(minimum, int(round(level * 1.2 * rarity_multiplier * hand_multiplier)))
+    return minimum, maximum
+
+
+def _weapon_damage_empty_result_v4():
+    return {
+        "is_weapon": False,
+        "attack_type": "physical",
+        "physical_min": 0,
+        "physical_max": 0,
+        "magic_min": 0,
+        "magic_max": 0,
+        "text": None,
+    }
+
+
+def _weapon_is_magical_v4(name, item_subtype, weapon_attack_type):
+    attack_type = str(weapon_attack_type or "").strip().lower()
+    if attack_type in {"magical", "magic"}:
+        return True
+    subtype = str(item_subtype or "").strip().lower()
+    if subtype in _MAGICAL_WEAPON_SUBTYPES_V4:
+        return True
+    lowered_name = str(name or "").lower()
+    return "посох" in lowered_name or "жезл" in lowered_name or "wand" in lowered_name or "staff" in lowered_name
+
+
+def _weapon_damage_apply_refine_v4(minimum, maximum, refine_level):
+    try:
+        from systems.refine_system import apply_weapon_refine_to_damage
+        return apply_weapon_refine_to_damage(minimum, maximum, refine_level)
+    except Exception:
+        return int(minimum or 0), int(maximum or 0)
+
+
+def get_weapon_damage_by_inventory_id(inventory_id):
+    """Return the established weapon-damage dict, including refine multiplier."""
+    init_weapon_damage_system()
+    db = _weapon_damage_db_v4()
+    row = db.conn.execute(
+        "SELECT it.name, it.category, it.slot_key, COALESCE(it.weapon_hands,1), "
+        "it.rarity, COALESCE(it.item_level,1), "
+        "COALESCE(it.weapon_min_damage,0), COALESCE(it.weapon_max_damage,0), "
+        "COALESCE(it.weapon_min_magic_damage,0), COALESCE(it.weapon_max_magic_damage,0), "
+        "COALESCE(it.weapon_attack_type,''), COALESCE(it.item_subtype,''), "
+        "COALESCE(inv.refine_level,0) "
+        "FROM inventory inv JOIN items it ON it.id=inv.item_id WHERE inv.id=?",
+        (int(inventory_id),),
+    ).fetchone()
+    if not row:
+        return _weapon_damage_empty_result_v4()
+
+    (
+        name, category, slot_key, weapon_hands, rarity, item_level,
+        physical_min, physical_max, magic_min, magic_max,
+        weapon_attack_type, item_subtype, refine_level,
+    ) = row
+
+    if category != "equipment" or slot_key != "main_hand":
+        return _weapon_damage_empty_result_v4()
+
+    is_magical = _weapon_is_magical_v4(name, item_subtype, weapon_attack_type)
+    attack_type = "magical" if is_magical else "physical"
+
+    if is_magical:
+        base_min = int(magic_min or 0)
+        base_max = int(magic_max or 0)
+        if base_min <= 0 or base_max <= 0:
+            base_min, base_max = calculate_weapon_damage_by_values(item_level, rarity, weapon_hands)
+        final_min, final_max = _weapon_damage_apply_refine_v4(base_min, base_max, refine_level)
+        return {
+            "is_weapon": True,
+            "attack_type": attack_type,
+            "physical_min": 0,
+            "physical_max": 0,
+            "magic_min": final_min,
+            "magic_max": final_max,
+            "text": f"🔮 Маг. шкода: {final_min}-{final_max}",
+        }
+
+    base_min = int(physical_min or 0)
+    base_max = int(physical_max or 0)
+    if base_min <= 0 or base_max <= 0:
+        base_min, base_max = calculate_weapon_damage_by_values(item_level, rarity, weapon_hands)
+    final_min, final_max = _weapon_damage_apply_refine_v4(base_min, base_max, refine_level)
+    return {
+        "is_weapon": True,
+        "attack_type": attack_type,
+        "physical_min": final_min,
+        "physical_max": final_max,
+        "magic_min": 0,
+        "magic_max": 0,
+        "text": f"⚔️ Шкода: {final_min}-{final_max}",
+    }
+
+
+def get_inventory_weapon_damage_display(inventory_id):
+    result = get_weapon_damage_by_inventory_id(inventory_id)
+    if not isinstance(result, dict) or not result.get("is_weapon"):
+        return None
+    return result.get("text")
+
+# ==============================
+# ✅ ROM 9.0.12h1 EQUIPMENT EQUIP UNEQUIP REAL IMPLEMENTATION
+# ==============================
+
+_EQUIPMENT_WRITE_SLOT_ORDER_V5 = (
+    "main_hand", "off_hand", "helmet", "shoulders", "chest",
+    "gloves", "legs", "boots", "necklace", "ring",
+)
+
+_EQUIPMENT_WRITE_SLOT_LABELS_V5 = {
+    "main_hand": "🗡️ Зброя",
+    "off_hand": "🛡️ Друга рука",
+    "helmet": "🪖 Голова",
+    "shoulders": "🦾 Плечі",
+    "chest": "🥋 Тіло",
+    "gloves": "🧤 Руки",
+    "legs": "👖 Ноги",
+    "boots": "👟 Взуття",
+    "necklace": "📿 Шия",
+    "ring": "💍 Кільце",
+}
+
+_EQUIPMENT_WRITE_ARMOR_LABELS_V5 = {
+    "cloth": "Тканина",
+    "leather": "Шкіра",
+    "chain": "Кольчуга",
+    "plate": "Лати",
+}
+
+
+def _equipment_write_db_v5():
+    import db as _db_module
+    return _db_module
+
+
+def _equipment_write_sync_hp_v5(user_id):
+    db = _equipment_write_db_v5()
+    sync = getattr(db, "sync_user_max_hp", None)
+    if callable(sync):
+        try:
+            return sync(int(user_id), heal_to_full=False)
+        except TypeError:
+            return sync(int(user_id))
+        except Exception:
+            return None
+    return None
+
+
+def _equipment_write_ensure_slots_v5(user_id):
+    db = _equipment_write_db_v5()
+    uid = int(user_id)
+    db.conn.execute(
+        "CREATE TABLE IF NOT EXISTS equipment_slots ("
+        "user_id INTEGER NOT NULL, slot_key TEXT NOT NULL, inventory_id INTEGER, "
+        "PRIMARY KEY (user_id, slot_key))"
+    )
+    for slot_key in _EQUIPMENT_WRITE_SLOT_ORDER_V5:
+        db.conn.execute(
+            "INSERT OR IGNORE INTO equipment_slots (user_id, slot_key, inventory_id) "
+            "VALUES (?, ?, NULL)",
+            (uid, slot_key),
+        )
+    db.conn.commit()
+
+
+def _equipment_write_get_slot_v5(user_id, slot_key):
+    _equipment_write_ensure_slots_v5(user_id)
+    db = _equipment_write_db_v5()
+    row = db.conn.execute(
+        "SELECT inventory_id FROM equipment_slots WHERE user_id=? AND slot_key=?",
+        (int(user_id), str(slot_key)),
+    ).fetchone()
+    return int(row[0]) if row and row[0] is not None else None
+
+
+def _equipment_write_set_slot_v5(user_id, slot_key, inventory_id):
+    _equipment_write_ensure_slots_v5(user_id)
+    db = _equipment_write_db_v5()
+    db.conn.execute(
+        "UPDATE equipment_slots SET inventory_id=? WHERE user_id=? AND slot_key=?",
+        (int(inventory_id) if inventory_id is not None else None, int(user_id), str(slot_key)),
+    )
+    db.conn.commit()
+
+
+def _equipment_write_find_slot_v5(user_id, inventory_id):
+    _equipment_write_ensure_slots_v5(user_id)
+    db = _equipment_write_db_v5()
+    row = db.conn.execute(
+        "SELECT slot_key FROM equipment_slots WHERE user_id=? AND inventory_id=? LIMIT 1",
+        (int(user_id), int(inventory_id)),
+    ).fetchone()
+    return str(row[0]) if row else None
+
+
+def _equipment_write_item_v5(user_id, inventory_id):
+    db = _equipment_write_db_v5()
+    row = db.conn.execute(
+        "SELECT inv.id, inv.user_id, inv.item_id, COALESCE(inv.durability,100), "
+        "COALESCE(inv.refine_level,0), it.name, it.category, it.slot_key, "
+        "COALESCE(it.weapon_hands,1), COALESCE(it.item_level,1), "
+        "COALESCE(it.item_subtype,''), COALESCE(it.armor_type,'') "
+        "FROM inventory inv JOIN items it ON it.id=inv.item_id "
+        "WHERE inv.id=? AND inv.user_id=?",
+        (int(inventory_id), int(user_id)),
+    ).fetchone()
+    if not row:
+        return None
+    keys = (
+        "inventory_id", "user_id", "item_id", "durability", "refine_level",
+        "name", "category", "slot_key", "weapon_hands", "item_level",
+        "item_subtype", "armor_type",
+    )
+    result = dict(zip(keys, row))
+    try:
+        display = get_inventory_refined_display_name(int(inventory_id), result["name"])
+        if display:
+            result["name"] = display
+    except Exception:
+        pass
+    return result
+
+
+def _equipment_write_required_level_v5(inventory_id, fallback=1):
+    db = _equipment_write_db_v5()
+    row = db.conn.execute(
+        "SELECT COALESCE(it.item_level, ?) FROM inventory inv "
+        "JOIN items it ON it.id=inv.item_id WHERE inv.id=?",
+        (int(fallback), int(inventory_id)),
+    ).fetchone()
+    try:
+        return max(1, int(row[0] if row else fallback))
+    except Exception:
+        return max(1, int(fallback or 1))
+
+
+def _equipment_write_player_level_v5(user_id):
+    db = _equipment_write_db_v5()
+    row = db.conn.execute("SELECT level FROM users WHERE user_id=?", (int(user_id),)).fetchone()
+    return max(1, int(row[0] if row else 1))
+
+
+def _equipment_write_main_hand_two_handed_v5(user_id):
+    inventory_id = _equipment_write_get_slot_v5(user_id, "main_hand")
+    if not inventory_id:
+        return False
+    db = _equipment_write_db_v5()
+    row = db.conn.execute(
+        "SELECT COALESCE(it.weapon_hands,1) FROM inventory inv "
+        "JOIN items it ON it.id=inv.item_id WHERE inv.id=?",
+        (int(inventory_id),),
+    ).fetchone()
+    return bool(row and int(row[0] or 1) == 2)
+
+
+def equip_inventory_item(user_id, inventory_id):
+    """Direct SQL equip implementation preserving the historical string contract."""
+    uid = int(user_id)
+    iid = int(inventory_id)
+    item = _equipment_write_item_v5(uid, iid)
+
+    if not item:
+        return "❌ Предмет не знайдено"
+    if item.get("category") != "equipment":
+        return "❌ Цей предмет не можна одягти"
+
+    slot_key = str(item.get("slot_key") or "")
+    if not slot_key:
+        return "❌ Для цього предмета не вказано слот"
+    if slot_key not in _EQUIPMENT_WRITE_SLOT_ORDER_V5:
+        return "❌ Невідомий слот екіпірування"
+
+    player_level = _equipment_write_player_level_v5(uid)
+    required_level = _equipment_write_required_level_v5(iid, item.get("item_level", 1))
+    if player_level < required_level:
+        return (
+            "🔒 Ти ще не можеш одягти цей предмет.\n\n"
+            f"📦 Предмет: {item['name']}\n"
+            f"🏷 Потрібний рівень: {required_level}\n"
+            f"👤 Твій рівень: {player_level}"
+        )
+
+    class_check = can_equip_inventory_item_by_class(uid, iid)
+    if isinstance(class_check, dict) and not class_check.get("success"):
+        return class_check.get("message", "❌ Цей предмет не підходить твоєму класу.")
+
+    if slot_key == "off_hand" and _equipment_write_main_hand_two_handed_v5(uid):
+        return "❌ Неможливо: дворучна зброя блокує другу руку"
+
+    if slot_key == "main_hand" and int(item.get("weapon_hands") or 1) == 2:
+        _equipment_write_set_slot_v5(uid, "off_hand", None)
+
+    # One inventory row may occupy only one slot.
+    old_slot = _equipment_write_find_slot_v5(uid, iid)
+    if old_slot and old_slot != slot_key:
+        _equipment_write_set_slot_v5(uid, old_slot, None)
+
+    _equipment_write_set_slot_v5(uid, slot_key, iid)
+    _equipment_write_sync_hp_v5(uid)
+    return f"✅ Одягнуто: {item['name']}"
+
+
+def unequip_inventory_item(user_id, inventory_id):
+    """Direct SQL unequip implementation preserving the historical string contract."""
+    uid = int(user_id)
+    iid = int(inventory_id)
+    slot_key = _equipment_write_find_slot_v5(uid, iid)
+    if not slot_key:
+        return "❌ Цей предмет не вдягнений"
+    _equipment_write_set_slot_v5(uid, slot_key, None)
+    _equipment_write_sync_hp_v5(uid)
+    return f"✅ Знято зі слота: {_EQUIPMENT_WRITE_SLOT_LABELS_V5.get(slot_key, slot_key)}"
+
+
+def _equipment_write_reason_v5(item_info, message=""):
+    lowered = str(message or "").lower()
+    slot_key = str((item_info or {}).get("slot_key") or "")
+    if "дворуч" in lowered:
+        return "конфлікт із дворучною зброєю"
+    if slot_key in {"helmet", "shoulders", "chest", "gloves", "legs", "boots"}:
+        return "броня не підходить класу"
+    if slot_key == "main_hand":
+        return "зброя не підходить класу"
+    if slot_key == "off_hand":
+        return "предмет для другої руки не підходить класу"
+    return "не підходить новому класу"
+
+
+def _equipment_write_display_name_v5(item_info, inventory_id):
+    name = str((item_info or {}).get("name") or "Невідомий предмет")
+    armor_type = str((item_info or {}).get("armor_type") or "")
+    slot_key = str((item_info or {}).get("slot_key") or "")
+    if slot_key in {"helmet", "shoulders", "chest", "gloves", "legs", "boots"} and armor_type:
+        label = _EQUIPMENT_WRITE_ARMOR_LABELS_V5.get(armor_type, armor_type)
+        if label and f"[{label}]" not in name:
+            marker = " рівня"
+            if marker in name:
+                index = name.rfind(marker)
+                before, after = name[:index], name[index:]
+                parts = before.rsplit(" ", 1)
+                if len(parts) == 2 and parts[1].isdigit():
+                    name = f"{parts[0]} [{label}] {parts[1]}{after}"
+                else:
+                    name = f"{name} [{label}]"
+            else:
+                name = f"{name} [{label}]"
+    try:
+        refined = get_inventory_refined_display_name(int(inventory_id), name)
+        if refined:
+            name = refined
+    except Exception:
+        pass
+    return name
+
+
+def unequip_incompatible_items_after_class_change(user_id):
+    """Direct slot updates; compatibility rules remain in the read-only domain."""
+    uid = int(user_id)
+    _equipment_write_ensure_slots_v5(uid)
+    db = _equipment_write_db_v5()
+    rows = db.conn.execute(
+        "SELECT slot_key, inventory_id FROM equipment_slots WHERE user_id=?",
+        (uid,),
+    ).fetchall()
+
+    removed_items = []
+    for slot_key, inventory_id in rows:
+        if inventory_id is None:
+            continue
+        try:
+            compatibility = can_equip_inventory_item_by_class(uid, int(inventory_id))
+        except Exception:
+            continue
+        if isinstance(compatibility, dict) and compatibility.get("success"):
+            continue
+        if not isinstance(compatibility, dict):
+            continue
+
+        item_info = None
+        classifier = getattr(db, "get_item_classification_by_inventory_id", None)
+        if callable(classifier):
+            try:
+                item_info = classifier(int(inventory_id))
+            except Exception:
+                item_info = None
+        if not isinstance(item_info, dict):
+            raw = _equipment_write_item_v5(uid, int(inventory_id)) or {}
+            item_info = {
+                "name": raw.get("name"),
+                "slot_key": raw.get("slot_key"),
+                "armor_type": raw.get("armor_type"),
+                "item_subtype": raw.get("item_subtype"),
+            }
+
+        reason = _equipment_write_reason_v5(item_info, compatibility.get("message", ""))
+        display_name = _equipment_write_display_name_v5(item_info, int(inventory_id))
+        _equipment_write_set_slot_v5(uid, str(slot_key), None)
+        removed_items.append({
+            "inventory_id": int(inventory_id),
+            "slot_key": str(slot_key),
+            "name": f"{display_name} — {reason}",
+            "reason": reason,
+        })
+
+    _equipment_write_sync_hp_v5(uid)
+    return {
+        "success": True,
+        "removed_items": removed_items,
+        "removed_count": len(removed_items),
+    }
+
+
+# ==============================
+# ✅ 9.0.12h2 EQUIPMENT REPAIR / DURABILITY / DEATH REAL IMPLEMENTATION
+# ==============================
+
+_REPAIR_MULTIPLIERS_9_0_12H2 = {
+    "common": 1.0,
+    "uncommon": 2.5,
+    "rare": 7.0,
+    "epic": 18.0,
+}
+
+
+def _equipment_db_9_0_12h2():
+    import db
+    return db
+
+
+def _equipment_sync_hp_9_0_12h2(user_id):
+    try:
+        db = _equipment_db_9_0_12h2()
+        sync = getattr(db, "sync_user_max_hp", None)
+        if callable(sync):
+            sync(int(user_id), heal_to_full=False)
+    except Exception:
+        pass
+
+
+def _equipment_display_name_9_0_12h2(inventory_id, base_name):
+    try:
+        func = globals().get("get_inventory_refined_display_name")
+        if callable(func):
+            value = func(int(inventory_id))
+            if value:
+                return str(value)
+    except Exception:
+        pass
+    return str(base_name or "Предмет")
+
+
+def get_rarity_repair_multiplier(rarity):
+    return float(_REPAIR_MULTIPLIERS_9_0_12H2.get(str(rarity or "common").lower(), 1.0))
+
+
+def calculate_repair_cost(durability, rarity):
+    try:
+        durability = int(100 if durability is None else durability)
+    except Exception:
+        durability = 100
+    durability = max(0, min(100, durability))
+    if durability >= 100:
+        return 0.0
+    return round((100 - durability) * get_rarity_repair_multiplier(rarity) * 0.05, 2)
+
+
+def _equipment_slot_rows_9_0_12h2(user_id):
+    db = _equipment_db_9_0_12h2()
+    db.conn.row_factory = __import__("sqlite3").Row
+    return db.conn.execute(
+        """
+        SELECT es.slot_key,
+               es.inventory_id,
+               inv.item_id,
+               inv.durability,
+               COALESCE(inv.refine_level, 0) AS refine_level,
+               i.name,
+               i.rarity
+        FROM equipment_slots es
+        LEFT JOIN inventory inv
+          ON inv.id = es.inventory_id
+         AND inv.user_id = es.user_id
+        LEFT JOIN items i
+          ON i.id = inv.item_id
+        WHERE es.user_id=?
+        ORDER BY CASE es.slot_key
+            WHEN 'main_hand' THEN 1
+            WHEN 'off_hand' THEN 2
+            WHEN 'helmet' THEN 3
+            WHEN 'shoulders' THEN 4
+            WHEN 'chest' THEN 5
+            WHEN 'gloves' THEN 6
+            WHEN 'legs' THEN 7
+            WHEN 'boots' THEN 8
+            WHEN 'necklace' THEN 9
+            WHEN 'ring' THEN 10
+            ELSE 99 END
+        """,
+        (int(user_id),),
+    ).fetchall()
+
+
+_SLOT_NAMES_9_0_12H2 = {
+    "main_hand": "Основна рука",
+    "off_hand": "Друга рука",
+    "helmet": "Шолом",
+    "shoulders": "Наплічники",
+    "chest": "Обладунок",
+    "gloves": "Рукавиці",
+    "legs": "Поножі",
+    "boots": "Чоботи",
+    "necklace": "Намисто",
+    "ring": "Перстень",
+}
+
+
+def get_equipped_items_for_repair(user_id):
+    result = []
+    for row in _equipment_slot_rows_9_0_12h2(user_id):
+        slot_key = row["slot_key"]
+        inventory_id = row["inventory_id"]
+        slot_name = _SLOT_NAMES_9_0_12H2.get(slot_key, slot_key)
+
+        if not inventory_id:
+            result.append({
+                "slot": slot_name,
+                "slot_name": slot_name,
+                "slot_key": slot_key,
+                "inventory_id": None,
+                "name": "Порожньо",
+                "rarity": None,
+                "durability": None,
+                "repair_cost": 0.0,
+                "is_broken": False,
+                "refine_level": 0,
+            })
+            continue
+
+        durability = 100 if row["durability"] is None else max(0, min(100, int(row["durability"])))
+        rarity = str(row["rarity"] or "common")
+        name = _equipment_display_name_9_0_12h2(inventory_id, row["name"])
+        result.append({
+            "slot": slot_name,
+            "slot_name": slot_name,
+            "slot_key": slot_key,
+            "inventory_id": int(inventory_id),
+            "item_id": int(row["item_id"]),
+            "name": name,
+            "rarity": rarity,
+            "durability": durability,
+            "repair_cost": calculate_repair_cost(durability, rarity),
+            "is_broken": durability <= 0,
+            "refine_level": int(row["refine_level"] or 0),
+        })
+    return result
+
+
+def get_total_repair_cost(user_id):
+    return round(sum(float(x.get("repair_cost", 0.0) or 0.0) for x in get_equipped_items_for_repair(user_id)), 2)
+
+
+def _equipment_wallet_9_0_12h2(db, user_id):
+    row = db.conn.execute("SELECT gold FROM users WHERE user_id=?", (int(user_id),)).fetchone()
+    return float(row[0] or 0.0) if row else 0.0
+
+
+def repair_equipped_item(user_id, inventory_id):
+    db = _equipment_db_9_0_12h2()
+    user_id = int(user_id)
+    inventory_id = int(inventory_id)
+    row = db.conn.execute(
+        """
+        SELECT inv.durability, COALESCE(inv.refine_level, 0), i.name, i.rarity
+        FROM equipment_slots es
+        JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id
+        JOIN items i ON i.id=inv.item_id
+        WHERE es.user_id=? AND es.inventory_id=?
+        LIMIT 1
+        """,
+        (user_id, inventory_id),
+    ).fetchone()
+    if not row:
+        return {"success": False, "message": "❌ Цей предмет не вдягнений або не належить персонажу."}
+
+    old_durability = 100 if row[0] is None else max(0, min(100, int(row[0])))
+    name = _equipment_display_name_9_0_12h2(inventory_id, row[2])
+    rarity = str(row[3] or "common")
+    cost = calculate_repair_cost(old_durability, rarity)
+    if old_durability >= 100 or cost <= 0:
+        return {"success": False, "message": f"ℹ️ {name} уже має максимальну міцність.", "inventory_id": inventory_id}
+
+    try:
+        db.conn.execute("BEGIN IMMEDIATE")
+        wallet = _equipment_wallet_9_0_12h2(db, user_id)
+        if wallet + 1e-9 < cost:
+            db.conn.rollback()
+            return {"success": False, "message": f"❌ Недостатньо золота. Потрібно: {cost:.2f} 💰"}
+        db.conn.execute("UPDATE users SET gold=gold-? WHERE user_id=?", (cost, user_id))
+        db.conn.execute("UPDATE inventory SET durability=100 WHERE id=? AND user_id=?", (inventory_id, user_id))
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
+
+    _equipment_sync_hp_9_0_12h2(user_id)
+    message = (
+        "✅ Предмет відремонтовано.\n\n"
+        f"📦 {name}\n"
+        f"🛠️ Міцність: {old_durability}/100 → 100/100\n"
+        f"💳 Сплачено: {cost:.2f} 💰 золото"
+    )
+    return {
+        "success": True,
+        "message": message,
+        "inventory_id": inventory_id,
+        "name": name,
+        "old_durability": old_durability,
+        "new_durability": 100,
+        "cost": cost,
+    }
+
+
+def repair_inventory_item(user_id, inventory_id):
+    return repair_equipped_item(user_id, inventory_id)
+
+
+def repair_all_equipped(user_id):
+    db = _equipment_db_9_0_12h2()
+    user_id = int(user_id)
+    items = [x for x in get_equipped_items_for_repair(user_id) if x.get("inventory_id") and int(x.get("durability") or 0) < 100]
+    if not items:
+        return {"success": False, "message": "ℹ️ Усе вдягнене спорядження вже відремонтоване."}
+    total = round(sum(float(x["repair_cost"]) for x in items), 2)
+    try:
+        db.conn.execute("BEGIN IMMEDIATE")
+        wallet = _equipment_wallet_9_0_12h2(db, user_id)
+        if wallet + 1e-9 < total:
+            db.conn.rollback()
+            return {"success": False, "message": f"❌ Недостатньо золота. Потрібно: {total:.2f} 💰"}
+        db.conn.execute("UPDATE users SET gold=gold-? WHERE user_id=?", (total, user_id))
+        db.conn.executemany(
+            "UPDATE inventory SET durability=100 WHERE id=? AND user_id=?",
+            [(int(x["inventory_id"]), user_id) for x in items],
+        )
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
+    _equipment_sync_hp_9_0_12h2(user_id)
+    return {
+        "success": True,
+        "message": (
+            "✅ Усе спорядження відремонтовано.\n\n"
+            f"📦 Відремонтовано предметів: {len(items)}\n"
+            f"💳 Сплачено: {total:.2f} 💰 золото"
+        ),
+        "count": len(items),
+        "cost": total,
+        "items": items,
+    }
+
+
+def set_inventory_item_durability(inventory_id, durability, user_id=None):
+    db = _equipment_db_9_0_12h2()
+    inventory_id = int(inventory_id)
+    durability = max(0, min(100, int(durability)))
+    if user_id is None:
+        owner = db.conn.execute("SELECT user_id FROM inventory WHERE id=?", (inventory_id,)).fetchone()
+        if not owner:
+            return {"success": False, "message": "❌ Предмет не знайдено."}
+        user_id = int(owner[0])
+    cur = db.conn.execute(
+        "UPDATE inventory SET durability=? WHERE id=? AND user_id=?",
+        (durability, inventory_id, int(user_id)),
+    )
+    db.conn.commit()
+    _equipment_sync_hp_9_0_12h2(user_id)
+    return {"success": cur.rowcount > 0, "inventory_id": inventory_id, "durability": durability}
+
+
+def damage_equipped_items(user_id, amount=1):
+    db = _equipment_db_9_0_12h2()
+    user_id = int(user_id)
+    amount = max(0, int(amount or 0))
+    if amount <= 0:
+        return {"success": True, "damaged": 0, "amount": 0, "items": []}
+    rows = db.conn.execute(
+        """
+        SELECT inv.id, COALESCE(inv.durability, 100), i.name
+        FROM equipment_slots es
+        JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id
+        JOIN items i ON i.id=inv.item_id
+        WHERE es.user_id=? AND es.inventory_id IS NOT NULL
+        """,
+        (user_id,),
+    ).fetchall()
+    changed = []
+    try:
+        db.conn.execute("BEGIN IMMEDIATE")
+        for inv_id, old_value, base_name in rows:
+            old_value = max(0, min(100, int(old_value or 0)))
+            new_value = max(0, old_value - amount)
+            if new_value == old_value:
+                continue
+            db.conn.execute("UPDATE inventory SET durability=? WHERE id=? AND user_id=?", (new_value, int(inv_id), user_id))
+            changed.append({
+                "inventory_id": int(inv_id),
+                "name": _equipment_display_name_9_0_12h2(inv_id, base_name),
+                "old_durability": old_value,
+                "new_durability": new_value,
+                "is_broken": new_value <= 0,
+            })
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
+    _equipment_sync_hp_9_0_12h2(user_id)
+    return {"success": True, "damaged": len(changed), "amount": amount, "items": changed}
+
+
+def damage_equipped_items_on_death(user_id, amount=5):
+    return damage_equipped_items(user_id, amount=5)
+
+
+def reduce_equipped_item_durability(user_id, inventory_id, amount=1):
+    db = _equipment_db_9_0_12h2()
+    row = db.conn.execute(
+        """
+        SELECT COALESCE(inv.durability,100)
+        FROM equipment_slots es
+        JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id
+        WHERE es.user_id=? AND es.inventory_id=?
+        """,
+        (int(user_id), int(inventory_id)),
+    ).fetchone()
+    if not row:
+        return {"success": False, "message": "❌ Вдягнений предмет не знайдено."}
+    old_value = max(0, min(100, int(row[0] or 0)))
+    new_value = max(0, old_value - max(0, int(amount or 0)))
+    result = set_inventory_item_durability(inventory_id, new_value, user_id=user_id)
+    result.update({"old_durability": old_value, "new_durability": new_value, "is_broken": new_value <= 0})
+    return result
+
+
+def apply_equipment_wear(user_id, amount=1):
+    return damage_equipped_items(user_id, amount=amount)
+
+
+def apply_equipment_wear_after_combat(user_id, amount=1):
+    return damage_equipped_items(user_id, amount=amount)
+
+
+def apply_random_durability_wear_on_victory(user_id, chance=None, amount=1):
+    """Зберігає старий принцип: за успішного roll зношується один випадковий вдягнений предмет."""
+    import random
+    db = _equipment_db_9_0_12h2()
+    if chance is None:
+        chance = float(getattr(db, "DURABILITY_WEAR_CHANCE", 0.25))
+    chance = max(0.0, min(1.0, float(chance)))
+    if random.random() >= chance:
+        return {"success": True, "worn": False, "damaged": 0, "items": []}
+    rows = db.conn.execute(
+        """
+        SELECT inv.id
+        FROM equipment_slots es
+        JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id
+        WHERE es.user_id=? AND es.inventory_id IS NOT NULL AND COALESCE(inv.durability,100)>0
+        """,
+        (int(user_id),),
+    ).fetchall()
+    if not rows:
+        return {"success": True, "worn": False, "damaged": 0, "items": []}
+    inventory_id = int(random.choice(rows)[0])
+    result = reduce_equipped_item_durability(user_id, inventory_id, amount=amount)
+    return {"success": bool(result.get("success")), "worn": True, "damaged": 1, "items": [result], "inventory_id": inventory_id}
+
+
+def roll_equipment_wear_after_combat(user_id, chance=None, amount=1):
+    return apply_random_durability_wear_on_victory(user_id, chance=chance, amount=amount)
+
+
+# ==============================
+# ✅ 9.0.12h2a DEATH AND VICTORY DURABILITY CONTRACT FIX
+# ==============================
+
+
+def damage_equipped_items_on_death(user_id, amount=5):
+    """
+    Historical public contract used by handlers/combat.py:
+    list[dict] with name, old, new and broken.
+
+    The gameplay rule is fixed at -5 durability for every equipped item.
+    The amount argument remains accepted for API compatibility.
+    """
+    result = damage_equipped_items(user_id, amount=5)
+    items = result.get("items", []) if isinstance(result, dict) else []
+    return [
+        {
+            "name": str(item.get("name") or "Предмет"),
+            "old": int(item.get("old_durability", 0) or 0),
+            "new": int(item.get("new_durability", 0) or 0),
+            "broken": bool(item.get("is_broken", False)),
+        }
+        for item in items
+        if isinstance(item, dict)
+    ]
+
+
+def apply_random_durability_wear_on_victory(user_id, chance_percent=25, **kwargs):
+    """
+    Historical public contract used by build_victory_text():
+    {triggered: bool, message: str | None}.
+
+    On a successful roll exactly one equipped, non-broken item loses 1 durability.
+    """
+    import random
+
+    try:
+        chance_percent = int(chance_percent)
+    except Exception:
+        chance_percent = 25
+    chance_percent = max(0, min(100, chance_percent))
+
+    roll = random.randint(1, 100)
+    if roll > chance_percent:
+        return {"triggered": False, "message": None}
+
+    db = _equipment_db_9_0_12h2()
+    rows = db.conn.execute(
+        "SELECT es.slot_key, inv.id, COALESCE(inv.durability,100), it.name "
+        "FROM equipment_slots es "
+        "JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id "
+        "JOIN items it ON it.id=inv.item_id "
+        "WHERE es.user_id=? AND es.inventory_id IS NOT NULL "
+        "AND COALESCE(inv.durability,100)>0",
+        (int(user_id),),
+    ).fetchall()
+
+    if not rows:
+        return {"triggered": False, "message": None}
+
+    slot_key, inventory_id, old_durability, base_name = random.choice(rows)
+    old_durability = max(0, min(100, int(old_durability or 0)))
+    new_durability = max(0, old_durability - 1)
+
+    db.conn.execute(
+        "UPDATE inventory SET durability=? WHERE id=? AND user_id=?",
+        (new_durability, int(inventory_id), int(user_id)),
+    )
+    db.conn.commit()
+    _equipment_sync_hp_9_0_12h2(user_id)
+
+    name = _equipment_display_name_9_0_12h2(inventory_id, base_name)
+    slot_name = _SLOT_NAMES_9_0_12H2.get(str(slot_key), str(slot_key))
+    broken_text = " Предмет зламано!" if new_durability <= 0 else ""
+    message = (
+        f"🧱 {slot_name}: {name} втратив 1 міцності "
+        f"({old_durability} → {new_durability}/100).{broken_text}"
+    )
+    return {
+        "triggered": True,
+        "message": message,
+        "inventory_id": int(inventory_id),
+        "name": name,
+        "slot_key": str(slot_key),
+        "old": old_durability,
+        "new": new_durability,
+        "broken": new_durability <= 0,
+    }
+
+
+def roll_equipment_wear_after_combat(user_id, chance_percent=25, **kwargs):
+    return apply_random_durability_wear_on_victory(
+        user_id,
+        chance_percent=chance_percent,
+        **kwargs,
+    )
+
+
+# ==============================
+# ✅ 9.0.12h3 EQUIPMENT TRADER REAL IMPLEMENTATION
+# ==============================
+
+_TRADER_EQUIPMENT_SLOTS_9_0_12H3 = (
+    "main_hand", "off_hand", "helmet", "shoulders", "chest",
+    "gloves", "legs", "boots", "necklace", "ring",
+)
+
+
+def _trader_db_9_0_12h3():
+    import db
+    return db
+
+
+def _trader_wallet_9_0_12h3(db, user_id):
+    row = db.conn.execute("SELECT gold FROM users WHERE user_id=?", (int(user_id),)).fetchone()
+    return float(row[0] or 0.0) if row else 0.0
+
+
+def _trader_bag_state_9_0_12h3(db, user_id):
+    row = db.conn.execute(
+        "SELECT COALESCE(bag_slots,40) FROM users WHERE user_id=?",
+        (int(user_id),),
+    ).fetchone()
+    capacity = int(row[0] or 40) if row else 40
+    used = int(db.conn.execute(
+        "SELECT COUNT(*) FROM inventory WHERE user_id=?",
+        (int(user_id),),
+    ).fetchone()[0] or 0)
+    return used, capacity
+
+
+def _trader_display_name_9_0_12h3(inventory_id, base_name):
+    try:
+        value = get_inventory_refined_display_name(int(inventory_id), base_name)
+        if value:
+            return str(value)
+    except Exception:
+        pass
+    return str(base_name or "Предмет")
+
+
+def get_sellable_equipment_items(user_id):
+    """Historical 19-field tuple list, excluding every currently equipped row."""
+    db = _trader_db_9_0_12h3()
+    rows = db.conn.execute(
+        "SELECT inv.id, inv.item_id, it.name, it.type, it.rarity, it.category, "
+        "it.slot_key, COALESCE(it.weapon_hands,1), COALESCE(inv.quantity,1), "
+        "COALESCE(it.max_stack,1), COALESCE(inv.durability,100), "
+        "COALESCE(it.bonus_str,0), COALESCE(it.bonus_dex,0), "
+        "COALESCE(it.bonus_int,0), COALESCE(it.bonus_wis,0), "
+        "COALESCE(it.bonus_sta,0), COALESCE(it.pdef,0), COALESCE(it.mdef,0), "
+        "COALESCE(it.sell_price,0) "
+        "FROM inventory inv JOIN items it ON it.id=inv.item_id "
+        "WHERE inv.user_id=? AND it.category='equipment' "
+        "AND NOT EXISTS (SELECT 1 FROM equipment_slots es "
+        "                WHERE es.user_id=inv.user_id AND es.inventory_id=inv.id) "
+        "ORDER BY inv.id ASC",
+        (int(user_id),),
+    ).fetchall()
+    result = []
+    for row in rows:
+        values = list(row)
+        values[2] = _trader_display_name_9_0_12h3(values[0], values[2])
+        result.append(tuple(values))
+    return result
+
+
+def sell_inventory_item_to_trader(user_id, inventory_id):
+    """Atomically remove one owned, unequipped equipment row and credit its sell price."""
+    db = _trader_db_9_0_12h3()
+    uid = int(user_id)
+    iid = int(inventory_id)
+    try:
+        db.conn.execute("BEGIN IMMEDIATE")
+        row = db.conn.execute(
+            "SELECT inv.item_id, COALESCE(inv.quantity,1), COALESCE(inv.refine_level,0), "
+            "it.name, it.category, COALESCE(it.sell_price,0) "
+            "FROM inventory inv JOIN items it ON it.id=inv.item_id "
+            "WHERE inv.id=? AND inv.user_id=?",
+            (iid, uid),
+        ).fetchone()
+        if not row:
+            db.conn.rollback()
+            return {"success": False, "message": "❌ Предмет не знайдено або його вже продано."}
+        item_id, quantity, refine_level, base_name, category, sell_price = row
+        if category != "equipment":
+            db.conn.rollback()
+            return {"success": False, "message": "❌ Торговець приймає тут лише спорядження."}
+        equipped = db.conn.execute(
+            "SELECT 1 FROM equipment_slots WHERE user_id=? AND inventory_id=? LIMIT 1",
+            (uid, iid),
+        ).fetchone()
+        if equipped:
+            db.conn.rollback()
+            return {
+                "success": False,
+                "message": "❌ Неможливо продати вдягнений предмет.\n\nСпочатку зніми його з персонажа.",
+            }
+        quantity = max(1, int(quantity or 1))
+        earned = round(float(sell_price or 0.0) * quantity, 2)
+        name = _trader_display_name_9_0_12h3(iid, base_name)
+        deleted = db.conn.execute(
+            "DELETE FROM inventory WHERE id=? AND user_id=?",
+            (iid, uid),
+        )
+        if deleted.rowcount != 1:
+            db.conn.rollback()
+            return {"success": False, "message": "❌ Предмет уже продано. Золото не нараховано."}
+        db.conn.execute("UPDATE users SET gold=COALESCE(gold,0)+? WHERE user_id=?", (earned, uid))
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
+    return {
+        "success": True,
+        "message": f"✅ Продано: {name}\n💰 Отримано: {earned:.2f} золота",
+        "inventory_id": iid,
+        "item_id": int(item_id),
+        "name": name,
+        "quantity": quantity,
+        "refine_level": int(refine_level or 0),
+        "earned": earned,
+        "sell_price": earned,
+    }
+
+
+def buy_item_for_gold(user_id, item_id, price, quantity=1):
+    """Atomic generic purchase with wallet, stacking and bag-capacity checks."""
+    db = _trader_db_9_0_12h3()
+    uid = int(user_id)
+    item_id = int(item_id)
+    quantity = max(1, int(quantity or 1))
+    price = round(max(0.0, float(price or 0.0)), 2)
+    try:
+        db.conn.execute("BEGIN IMMEDIATE")
+        item = db.conn.execute(
+            "SELECT name, COALESCE(max_stack,1) FROM items WHERE id=?",
+            (item_id,),
+        ).fetchone()
+        if not item:
+            db.conn.rollback()
+            return {"success": False, "message": "❌ Товар не знайдено."}
+        name, max_stack = item
+        wallet = _trader_wallet_9_0_12h3(db, uid)
+        if wallet + 1e-9 < price:
+            db.conn.rollback()
+            return {"success": False, "message": f"❌ Недостатньо золота. Потрібно: {price:.2f} 💰"}
+
+        max_stack = max(1, int(max_stack or 1))
+        stack = None
+        if max_stack > 1:
+            stack = db.conn.execute(
+                "SELECT id, quantity FROM inventory WHERE user_id=? AND item_id=? "
+                "AND quantity<? ORDER BY id ASC LIMIT 1",
+                (uid, item_id, max_stack),
+            ).fetchone()
+        if stack and int(stack[1] or 0) + quantity <= max_stack:
+            db.conn.execute(
+                "UPDATE inventory SET quantity=quantity+? WHERE id=? AND user_id=?",
+                (quantity, int(stack[0]), uid),
+            )
+            inventory_id = int(stack[0])
+        else:
+            used, capacity = _trader_bag_state_9_0_12h3(db, uid)
+            if used >= capacity:
+                db.conn.rollback()
+                return {"success": False, "message": "❌ У сумці немає вільного місця."}
+            cur = db.conn.execute(
+                "INSERT INTO inventory (user_id,item_id,quantity,durability,refine_level) "
+                "VALUES (?,?,?,100,0)",
+                (uid, item_id, quantity),
+            )
+            inventory_id = int(cur.lastrowid)
+        db.conn.execute("UPDATE users SET gold=gold-? WHERE user_id=?", (price, uid))
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
+    return {
+        "success": True,
+        "message": f"✅ Куплено: {name} ×{quantity}\n💳 Сплачено: {price:.2f} 💰 золота",
+        "inventory_id": inventory_id,
+        "item_id": item_id,
+        "quantity": quantity,
+        "price": price,
+        "name": str(name),
+    }
+
+
+def buy_common_equipment_from_trader(user_id, slot_key, item_profile=None):
+    """
+    Preserve the direct-buy API while using the established preview workflow.
+    Preview ownership, class restrictions, price and item generation remain validated
+    by the existing preview functions; confirmation is still a single purchase action.
+    """
+    db = _trader_db_9_0_12h3()
+    uid = int(user_id)
+    slot_key = str(slot_key or "")
+    if slot_key not in _TRADER_EQUIPMENT_SLOTS_9_0_12H3:
+        return {"success": False, "message": "❌ Невідомий слот спорядження."}
+
+    allowed = getattr(db, "is_shop_profile_allowed_for_user", None)
+    if item_profile and callable(allowed):
+        try:
+            if not allowed(uid, slot_key, item_profile):
+                return {"success": False, "message": "❌ Цей тип спорядження не підходить твоєму класу."}
+        except Exception:
+            pass
+
+    create_preview = getattr(db, "create_common_equipment_shop_preview", None)
+    confirm_preview = getattr(db, "confirm_common_equipment_shop_preview", None)
+    if not callable(create_preview) or not callable(confirm_preview):
+        return {"success": False, "message": "❌ Магазин спорядження тимчасово недоступний."}
+
+    preview = create_preview(uid, slot_key, item_profile)
+    if isinstance(preview, dict) and not preview.get("success", True):
+        return preview
+    if isinstance(preview, dict):
+        preview_id = preview.get("item_id") or preview.get("preview_item_id") or preview.get("id")
+    else:
+        preview_id = preview
+    if not preview_id:
+        return {"success": False, "message": "❌ Не вдалося створити товар магазину."}
+    return confirm_preview(uid, int(preview_id))
+

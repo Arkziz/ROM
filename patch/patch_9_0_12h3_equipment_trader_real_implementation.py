@@ -1,0 +1,348 @@
+# 9.0.12h3 INSTALLER VARIABLE COLLISION FIXED
+from pathlib import Path
+from datetime import datetime
+import py_compile
+
+PATCH_NAME = "9_0_12h3_equipment_trader_real_implementation"
+TARGET = Path("systems") / "equipment_system.py"
+SMOKE_PATH = Path("tools") / "smoke_test_equipment_trader_contracts.py"
+MARKER = "# ✅ 9.0.12h3 EQUIPMENT TRADER REAL IMPLEMENTATION"
+
+
+def backup(root, target):
+    backup_dir = root / "backup"
+    backup_dir.mkdir(exist_ok=True)
+    stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe = str(target.relative_to(root)).replace("\\", "_").replace("/", "_")
+    dst = backup_dir / f"{safe}_{PATCH_NAME}_{stamp}.bak"
+    dst.write_text(target.read_text(encoding="utf-8"), encoding="utf-8")
+    return dst
+
+
+IMPLEMENTATION = r'''
+
+# ==============================
+# ✅ 9.0.12h3 EQUIPMENT TRADER REAL IMPLEMENTATION
+# ==============================
+
+_TRADER_EQUIPMENT_SLOTS_9_0_12H3 = (
+    "main_hand", "off_hand", "helmet", "shoulders", "chest",
+    "gloves", "legs", "boots", "necklace", "ring",
+)
+
+
+def _trader_db_9_0_12h3():
+    import db
+    return db
+
+
+def _trader_wallet_9_0_12h3(db, user_id):
+    row = db.conn.execute("SELECT gold FROM users WHERE user_id=?", (int(user_id),)).fetchone()
+    return float(row[0] or 0.0) if row else 0.0
+
+
+def _trader_bag_state_9_0_12h3(db, user_id):
+    row = db.conn.execute(
+        "SELECT COALESCE(bag_slots,40) FROM users WHERE user_id=?",
+        (int(user_id),),
+    ).fetchone()
+    capacity = int(row[0] or 40) if row else 40
+    used = int(db.conn.execute(
+        "SELECT COUNT(*) FROM inventory WHERE user_id=?",
+        (int(user_id),),
+    ).fetchone()[0] or 0)
+    return used, capacity
+
+
+def _trader_display_name_9_0_12h3(inventory_id, base_name):
+    try:
+        value = get_inventory_refined_display_name(int(inventory_id), base_name)
+        if value:
+            return str(value)
+    except Exception:
+        pass
+    return str(base_name or "Предмет")
+
+
+def get_sellable_equipment_items(user_id):
+    """Historical 19-field tuple list, excluding every currently equipped row."""
+    db = _trader_db_9_0_12h3()
+    rows = db.conn.execute(
+        "SELECT inv.id, inv.item_id, it.name, it.type, it.rarity, it.category, "
+        "it.slot_key, COALESCE(it.weapon_hands,1), COALESCE(inv.quantity,1), "
+        "COALESCE(it.max_stack,1), COALESCE(inv.durability,100), "
+        "COALESCE(it.bonus_str,0), COALESCE(it.bonus_dex,0), "
+        "COALESCE(it.bonus_int,0), COALESCE(it.bonus_wis,0), "
+        "COALESCE(it.bonus_sta,0), COALESCE(it.pdef,0), COALESCE(it.mdef,0), "
+        "COALESCE(it.sell_price,0) "
+        "FROM inventory inv JOIN items it ON it.id=inv.item_id "
+        "WHERE inv.user_id=? AND it.category='equipment' "
+        "AND NOT EXISTS (SELECT 1 FROM equipment_slots es "
+        "                WHERE es.user_id=inv.user_id AND es.inventory_id=inv.id) "
+        "ORDER BY inv.id ASC",
+        (int(user_id),),
+    ).fetchall()
+    result = []
+    for row in rows:
+        values = list(row)
+        values[2] = _trader_display_name_9_0_12h3(values[0], values[2])
+        result.append(tuple(values))
+    return result
+
+
+def sell_inventory_item_to_trader(user_id, inventory_id):
+    """Atomically remove one owned, unequipped equipment row and credit its sell price."""
+    db = _trader_db_9_0_12h3()
+    uid = int(user_id)
+    iid = int(inventory_id)
+    try:
+        db.conn.execute("BEGIN IMMEDIATE")
+        row = db.conn.execute(
+            "SELECT inv.item_id, COALESCE(inv.quantity,1), COALESCE(inv.refine_level,0), "
+            "it.name, it.category, COALESCE(it.sell_price,0) "
+            "FROM inventory inv JOIN items it ON it.id=inv.item_id "
+            "WHERE inv.id=? AND inv.user_id=?",
+            (iid, uid),
+        ).fetchone()
+        if not row:
+            db.conn.rollback()
+            return {"success": False, "message": "❌ Предмет не знайдено або його вже продано."}
+        item_id, quantity, refine_level, base_name, category, sell_price = row
+        if category != "equipment":
+            db.conn.rollback()
+            return {"success": False, "message": "❌ Торговець приймає тут лише спорядження."}
+        equipped = db.conn.execute(
+            "SELECT 1 FROM equipment_slots WHERE user_id=? AND inventory_id=? LIMIT 1",
+            (uid, iid),
+        ).fetchone()
+        if equipped:
+            db.conn.rollback()
+            return {
+                "success": False,
+                "message": "❌ Неможливо продати вдягнений предмет.\n\nСпочатку зніми його з персонажа.",
+            }
+        quantity = max(1, int(quantity or 1))
+        earned = round(float(sell_price or 0.0) * quantity, 2)
+        name = _trader_display_name_9_0_12h3(iid, base_name)
+        deleted = db.conn.execute(
+            "DELETE FROM inventory WHERE id=? AND user_id=?",
+            (iid, uid),
+        )
+        if deleted.rowcount != 1:
+            db.conn.rollback()
+            return {"success": False, "message": "❌ Предмет уже продано. Золото не нараховано."}
+        db.conn.execute("UPDATE users SET gold=COALESCE(gold,0)+? WHERE user_id=?", (earned, uid))
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
+    return {
+        "success": True,
+        "message": f"✅ Продано: {name}\n💰 Отримано: {earned:.2f} золота",
+        "inventory_id": iid,
+        "item_id": int(item_id),
+        "name": name,
+        "quantity": quantity,
+        "refine_level": int(refine_level or 0),
+        "earned": earned,
+        "sell_price": earned,
+    }
+
+
+def buy_item_for_gold(user_id, item_id, price, quantity=1):
+    """Atomic generic purchase with wallet, stacking and bag-capacity checks."""
+    db = _trader_db_9_0_12h3()
+    uid = int(user_id)
+    item_id = int(item_id)
+    quantity = max(1, int(quantity or 1))
+    price = round(max(0.0, float(price or 0.0)), 2)
+    try:
+        db.conn.execute("BEGIN IMMEDIATE")
+        item = db.conn.execute(
+            "SELECT name, COALESCE(max_stack,1) FROM items WHERE id=?",
+            (item_id,),
+        ).fetchone()
+        if not item:
+            db.conn.rollback()
+            return {"success": False, "message": "❌ Товар не знайдено."}
+        name, max_stack = item
+        wallet = _trader_wallet_9_0_12h3(db, uid)
+        if wallet + 1e-9 < price:
+            db.conn.rollback()
+            return {"success": False, "message": f"❌ Недостатньо золота. Потрібно: {price:.2f} 💰"}
+
+        max_stack = max(1, int(max_stack or 1))
+        stack = None
+        if max_stack > 1:
+            stack = db.conn.execute(
+                "SELECT id, quantity FROM inventory WHERE user_id=? AND item_id=? "
+                "AND quantity<? ORDER BY id ASC LIMIT 1",
+                (uid, item_id, max_stack),
+            ).fetchone()
+        if stack and int(stack[1] or 0) + quantity <= max_stack:
+            db.conn.execute(
+                "UPDATE inventory SET quantity=quantity+? WHERE id=? AND user_id=?",
+                (quantity, int(stack[0]), uid),
+            )
+            inventory_id = int(stack[0])
+        else:
+            used, capacity = _trader_bag_state_9_0_12h3(db, uid)
+            if used >= capacity:
+                db.conn.rollback()
+                return {"success": False, "message": "❌ У сумці немає вільного місця."}
+            cur = db.conn.execute(
+                "INSERT INTO inventory (user_id,item_id,quantity,durability,refine_level) "
+                "VALUES (?,?,?,100,0)",
+                (uid, item_id, quantity),
+            )
+            inventory_id = int(cur.lastrowid)
+        db.conn.execute("UPDATE users SET gold=gold-? WHERE user_id=?", (price, uid))
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
+    return {
+        "success": True,
+        "message": f"✅ Куплено: {name} ×{quantity}\n💳 Сплачено: {price:.2f} 💰 золота",
+        "inventory_id": inventory_id,
+        "item_id": item_id,
+        "quantity": quantity,
+        "price": price,
+        "name": str(name),
+    }
+
+
+def buy_common_equipment_from_trader(user_id, slot_key, item_profile=None):
+    """
+    Preserve the direct-buy API while using the established preview workflow.
+    Preview ownership, class restrictions, price and item generation remain validated
+    by the existing preview functions; confirmation is still a single purchase action.
+    """
+    db = _trader_db_9_0_12h3()
+    uid = int(user_id)
+    slot_key = str(slot_key or "")
+    if slot_key not in _TRADER_EQUIPMENT_SLOTS_9_0_12H3:
+        return {"success": False, "message": "❌ Невідомий слот спорядження."}
+
+    allowed = getattr(db, "is_shop_profile_allowed_for_user", None)
+    if item_profile and callable(allowed):
+        try:
+            if not allowed(uid, slot_key, item_profile):
+                return {"success": False, "message": "❌ Цей тип спорядження не підходить твоєму класу."}
+        except Exception:
+            pass
+
+    create_preview = getattr(db, "create_common_equipment_shop_preview", None)
+    confirm_preview = getattr(db, "confirm_common_equipment_shop_preview", None)
+    if not callable(create_preview) or not callable(confirm_preview):
+        return {"success": False, "message": "❌ Магазин спорядження тимчасово недоступний."}
+
+    preview = create_preview(uid, slot_key, item_profile)
+    if isinstance(preview, dict) and not preview.get("success", True):
+        return preview
+    if isinstance(preview, dict):
+        preview_id = preview.get("item_id") or preview.get("preview_item_id") or preview.get("id")
+    else:
+        preview_id = preview
+    if not preview_id:
+        return {"success": False, "message": "❌ Не вдалося створити товар магазину."}
+    return confirm_preview(uid, int(preview_id))
+'''
+
+
+SMOKE_CODE = r'''from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+import db
+from systems import equipment_system as equipment
+
+USER_ID = 243129101
+
+items = db.get_sellable_equipment_items(USER_ID)
+assert isinstance(items, list)
+for item in items:
+    assert isinstance(item, tuple), type(item)
+    assert len(item) == 19, len(item)
+    inventory_id = int(item[0])
+    equipped = db.conn.execute(
+        "SELECT 1 FROM equipment_slots WHERE user_id=? AND inventory_id=?",
+        (USER_ID, inventory_id),
+    ).fetchone()
+    assert equipped is None, inventory_id
+
+for name in (
+    "get_sellable_equipment_items",
+    "sell_inventory_item_to_trader",
+    "buy_item_for_gold",
+    "buy_common_equipment_from_trader",
+):
+    assert callable(getattr(equipment, name, None)), name
+
+# Read-only refusal checks: no DB mutation.
+missing_sale = equipment.sell_inventory_item_to_trader(USER_ID, -999999999)
+assert isinstance(missing_sale, dict) and missing_sale.get("success") is False
+missing_buy = equipment.buy_item_for_gold(USER_ID, -999999999, 1.0, 1)
+assert isinstance(missing_buy, dict) and missing_buy.get("success") is False
+
+print("[OK] equipment trader runtime contracts")
+print("- sellable equipment:", len(items))
+print("- sell rows: tuple[19]")
+print("- equipped items excluded: yes")
+print("- duplicate/missing sale protected: yes")
+print("- missing product purchase protected: yes")
+'''
+
+
+def main():
+    root = Path(__file__).resolve().parents[1]
+    target = root / TARGET
+    smoke = root / SMOKE_PATH
+    if not target.exists():
+        raise SystemExit(f"❌ Не знайдено файл: {target}")
+    original = target.read_text(encoding="utf-8")
+    original_smoke = smoke.read_text(encoding="utf-8") if smoke.exists() else None
+    if MARKER in original:
+        print("ℹ️ Патч 9.0.12h3 уже застосовано.")
+        return
+
+    backups = [backup(root, target)]
+    if smoke.exists():
+        backups.append(backup(root, smoke))
+    try:
+        target.write_text(original.rstrip() + "\n" + IMPLEMENTATION + "\n", encoding="utf-8")
+        smoke.parent.mkdir(exist_ok=True)
+        smoke.write_text(SMOKE_CODE, encoding="utf-8")
+        py_compile.compile(str(target), doraise=True)
+        py_compile.compile(str(smoke), doraise=True)
+    except Exception as error:
+        target.write_text(original, encoding="utf-8")
+        if original_smoke is None:
+            try:
+                smoke.unlink()
+            except FileNotFoundError:
+                pass
+        else:
+            smoke.write_text(original_smoke, encoding="utf-8")
+        raise SystemExit(f"❌ Патч не застосовано; файли відновлено.\nПомилка: {error}")
+
+    print("✅ Патч 9.0.12h3 успішно застосовано.")
+    print("✅ Продаж спорядження та купівля у торговця тепер виконуються у systems/equipment_system.py.")
+    print("✅ Перевірки власника, вдягненого стану, золота, сумки та повторного продажу збережено.")
+    print("Резервні копії:")
+    for path in backups:
+        print(f"- {path}")
+    print("Перевірки:")
+    print(r"python -m py_compile .\systems\equipment_system.py")
+    print(r"python -m py_compile .\db.py")
+    print("python tools/check_imports.py")
+    print("python tools/smoke_test_rom_core.py")
+    print("python tools/smoke_test_equipment_trader_contracts.py")
+    print("python tools/db_cleanup_readiness.py")
+
+
+if __name__ == "__main__":
+    main()
