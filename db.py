@@ -13067,90 +13067,22 @@ def _equipment_system_ro_v1():
     from systems import equipment_system
     return equipment_system
 
-try:
-    _legacy_equipment_ro_v1_ensure_equipment_slots
-except NameError:
-    _legacy_equipment_ro_v1_ensure_equipment_slots = ensure_equipment_slots
 
-try:
-    _legacy_equipment_ro_v1_get_all_equipped_items
-except NameError:
-    _legacy_equipment_ro_v1_get_all_equipped_items = get_all_equipped_items
 
-try:
-    _legacy_equipment_ro_v1_get_equipped_items_for_repair
-except NameError:
-    _legacy_equipment_ro_v1_get_equipped_items_for_repair = get_equipped_items_for_repair
 
-try:
-    _legacy_equipment_ro_v1_get_inventory_detailed
-except NameError:
-    _legacy_equipment_ro_v1_get_inventory_detailed = get_inventory_detailed
 
-try:
-    _legacy_equipment_ro_v1_get_inventory_entry
-except NameError:
-    _legacy_equipment_ro_v1_get_inventory_entry = get_inventory_entry
 
-try:
-    _legacy_equipment_ro_v1_get_item_by_inventory_id
-except NameError:
-    _legacy_equipment_ro_v1_get_item_by_inventory_id = get_item_by_inventory_id
 
-try:
-    _legacy_equipment_ro_v1_get_item_by_inventory_id_full
-except NameError:
-    _legacy_equipment_ro_v1_get_item_by_inventory_id_full = get_item_by_inventory_id_full
 
-try:
-    _legacy_equipment_ro_v1_get_item_bonuses
-except NameError:
-    _legacy_equipment_ro_v1_get_item_bonuses = get_item_bonuses
 
-try:
-    _legacy_equipment_ro_v1_get_equipped_item_defenses
-except NameError:
-    _legacy_equipment_ro_v1_get_equipped_item_defenses = get_equipped_item_defenses
 
-try:
-    _legacy_equipment_ro_v1_get_sellable_equipment_items
-except NameError:
-    _legacy_equipment_ro_v1_get_sellable_equipment_items = get_sellable_equipment_items
 
-try:
-    _legacy_equipment_ro_v1_init_weapon_damage_system
-except NameError:
-    _legacy_equipment_ro_v1_init_weapon_damage_system = init_weapon_damage_system
 
-try:
-    _legacy_equipment_ro_v1_calculate_weapon_damage_by_values
-except NameError:
-    _legacy_equipment_ro_v1_calculate_weapon_damage_by_values = calculate_weapon_damage_by_values
 
-try:
-    _legacy_equipment_ro_v1_get_weapon_damage_by_inventory_id
-except NameError:
-    _legacy_equipment_ro_v1_get_weapon_damage_by_inventory_id = get_weapon_damage_by_inventory_id
 
-try:
-    _legacy_equipment_ro_v1_get_inventory_weapon_damage_display
-except NameError:
-    _legacy_equipment_ro_v1_get_inventory_weapon_damage_display = get_inventory_weapon_damage_display
 
-try:
-    _legacy_equipment_ro_v1_get_inventory_refine_level
-except NameError:
-    _legacy_equipment_ro_v1_get_inventory_refine_level = get_inventory_refine_level
 
-try:
-    _legacy_equipment_ro_v1_get_inventory_refined_display_name
-except NameError:
-    _legacy_equipment_ro_v1_get_inventory_refined_display_name = get_inventory_refined_display_name
 
-try:
-    _legacy_equipment_ro_v1_format_refined_item_name
-except NameError:
-    _legacy_equipment_ro_v1_format_refined_item_name = format_refined_item_name
 
 try:
     _legacy_equipment_ro_v1_can_equip_item_by_class
@@ -13235,20 +13167,8 @@ def _equipment_system_write_v1():
     from systems import equipment_system
     return equipment_system
 
-try:
-    _legacy_equipment_write_v1_equip_inventory_item
-except NameError:
-    _legacy_equipment_write_v1_equip_inventory_item = equip_inventory_item
 
-try:
-    _legacy_equipment_write_v1_unequip_inventory_item
-except NameError:
-    _legacy_equipment_write_v1_unequip_inventory_item = unequip_inventory_item
 
-try:
-    _legacy_equipment_write_v1_unequip_incompatible_items_after_class_change
-except NameError:
-    _legacy_equipment_write_v1_unequip_incompatible_items_after_class_change = unequip_incompatible_items_after_class_change
 
 def equip_inventory_item(*args, **kwargs):
     return _equipment_system_write_v1().equip_inventory_item(*args, **kwargs)
@@ -13267,40 +13187,12 @@ def _equipment_system_rds_v1():
     from systems import equipment_system
     return equipment_system
 
-try:
-    _legacy_equipment_rds_v1_repair_equipped_item
-except NameError:
-    _legacy_equipment_rds_v1_repair_equipped_item = repair_equipped_item
 
-try:
-    _legacy_equipment_rds_v1_repair_all_equipped
-except NameError:
-    _legacy_equipment_rds_v1_repair_all_equipped = repair_all_equipped
 
-try:
-    _legacy_equipment_rds_v1_calculate_repair_cost
-except NameError:
-    _legacy_equipment_rds_v1_calculate_repair_cost = calculate_repair_cost
 
-try:
-    _legacy_equipment_rds_v1_damage_equipped_items_on_death
-except NameError:
-    _legacy_equipment_rds_v1_damage_equipped_items_on_death = damage_equipped_items_on_death
 
-try:
-    _legacy_equipment_rds_v1_sell_inventory_item_to_trader
-except NameError:
-    _legacy_equipment_rds_v1_sell_inventory_item_to_trader = sell_inventory_item_to_trader
 
-try:
-    _legacy_equipment_rds_v1_buy_common_equipment_from_trader
-except NameError:
-    _legacy_equipment_rds_v1_buy_common_equipment_from_trader = buy_common_equipment_from_trader
 
-try:
-    _legacy_equipment_rds_v1_buy_item_for_gold
-except NameError:
-    _legacy_equipment_rds_v1_buy_item_for_gold = buy_item_for_gold
 
 def repair_equipped_item(*args, **kwargs):
     return _equipment_system_rds_v1().repair_equipped_item(*args, **kwargs)
