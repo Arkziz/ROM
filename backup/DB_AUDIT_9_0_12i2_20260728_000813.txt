@@ -1,0 +1,78 @@
+✅ Backup created:
+   C:\Users\Oleh\OneDrive\Документи\ROM\backup\db_before_9_0_12i2_audit_20260728_000813.py
+============================================================
+ROM 9.0.12i2 AUDIT
+============================================================
+
+db.py size: 335,330 chars
+function defs: 479
+
+=== MARKERS ===
+✅ ROM 9.0.12b CHARACTER SYSTEM REAL IMPLEMENTATION V1
+✅ ROM 9.0.2 PLAYER SYSTEM FACADE WRAPPERS V1
+✅ ROM 9.0.12c1 PLAYER PROGRESSION REAL IMPLEMENTATION WRAPPERS V1
+✅ ROM 9.0.12e1 ENERGY SYSTEM REAL IMPLEMENTATION WRAPPERS V2
+✅ ROM 9.0.12e2 REGEN SYSTEM REAL IMPLEMENTATION WRAPPERS V2
+
+=== PLAYER WRAPPERS ===
+✅ get_player_level
+✅ get_wallet
+✅ add_gold
+✅ add_kill
+✅ get_current_hp_raw
+✅ get_current_hp
+✅ set_current_hp
+
+=== ENERGY WRAPPERS ===
+✅ init_energy_system
+✅ get_user_energy
+✅ consume_energy_for_hunt
+✅ restore_energy_for_test
+✅ get_users_for_energy_full_notification
+
+=== REGEN WRAPPERS ===
+✅ init_hp_regen_system
+✅ init_passive_regen_system
+✅ process_passive_regeneration
+✅ reset_hp_regen_timers_now
+✅ apply_passive_hp_regen
+
+=== LEGACY REFERENCES ===
+✅ _legacy_equipment_ro_v1_can_equip_item_by_class
+✅ _legacy_equipment_ro_v1_can_equip_inventory_item_by_class
+✅ _legacy_equipment_ro_v1_is_inventory_item_class_compatible
+
+=== DUPLICATES ===
+duplicate names: 89
+  set_current_hp: 5
+  get_weapon_damage_by_inventory_id: 5
+  create_generated_equipment_item: 4
+  buy_common_equipment_from_trader: 4
+  grant_class_change_available: 4
+  create_user: 3
+  get_inventory_detailed: 3
+  get_item_by_inventory_id: 3
+  get_item_by_inventory_id_full: 3
+  get_inventory_entry: 3
+  get_player_level: 3
+  equip_inventory_item: 3
+  add_gold: 3
+  add_kill: 3
+  get_wallet: 3
+  buy_item_for_gold: 3
+  get_equipped_items_for_repair: 3
+  repair_equipped_item: 3
+  repair_all_equipped: 3
+  get_max_hp: 3
+  get_sellable_equipment_items: 3
+  sell_inventory_item_to_trader: 3
+  init_energy_system: 3
+  get_current_hp_raw: 3
+  get_current_hp: 3
+  init_weapon_damage_system: 3
+  calculate_weapon_damage_by_values: 3
+  set_character_name: 3
+  refresh_user_mp: 3
+  get_user_mp: 3
+
+✅ AUDIT COMPLETED
