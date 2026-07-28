@@ -1,0 +1,83 @@
+$ProjectRoot = "C:\Users\Oleh\OneDrive\Документи\ROM"
+$OutputFile = Join-Path $ProjectRoot "ROM_FULL_DUMP.txt"
+
+$ExcludeDirs = @(
+    "\patch\",
+    "\backup\",
+    "\.venv\",
+    "\__pycache__\",
+    "\.git\"
+)
+
+$DumpFileName = "ROM_FULL_DUMP.txt"
+
+# Створюємо новий дамп
+"" | Set-Content $OutputFile -Encoding UTF8
+
+Add-Content $OutputFile "============================================================"
+Add-Content $OutputFile "ROM PROJECT FULL DUMP"
+Add-Content $OutputFile "============================================================"
+Add-Content $OutputFile ""
+
+# Структура проєкту
+Add-Content $OutputFile "==================== PROJECT TREE ===================="
+
+cmd /c "tree `"$ProjectRoot`" /F" |
+    Out-File $OutputFile -Append -Encoding utf8
+
+Add-Content $OutputFile ""
+Add-Content $OutputFile "==================== FILE CONTENTS ===================="
+
+Get-ChildItem $ProjectRoot -Recurse -File | ForEach-Object {
+
+    $FullPath = $_.FullName
+
+    # Пропускаємо сам дамп
+    if ($_.Name -eq $DumpFileName) {
+        return
+    }
+
+    # Пропускаємо виключені каталоги
+    $Skip = $false
+
+    foreach ($Excluded in $ExcludeDirs) {
+        if ($FullPath -like "*$Excluded*") {
+            $Skip = $true
+            break
+        }
+    }
+
+    if ($Skip) {
+        return
+    }
+
+    Add-Content $OutputFile ""
+    Add-Content $OutputFile "============================================================"
+    Add-Content $OutputFile "FILE: $($FullPath.Substring($ProjectRoot.Length + 1))"
+    Add-Content $OutputFile "============================================================"
+    Add-Content $OutputFile ""
+
+    try {
+
+        $Content = Get-Content $FullPath -Raw -ErrorAction Stop
+
+        Add-Content $OutputFile $Content
+
+    }
+    catch {
+
+        Add-Content $OutputFile "[Не вдалося прочитати файл]"
+
+    }
+
+    Add-Content $OutputFile ""
+}
+
+Write-Host ""
+Write-Host "✅ Готово"
+Write-Host "✅ Дамп створено:"
+Write-Host $OutputFile
+
+$SizeMB = (Get-Item $OutputFile).Length / 1MB
+
+Write-Host ("✅ Розмір дампа: {0:N2} MB" -f $SizeMB)

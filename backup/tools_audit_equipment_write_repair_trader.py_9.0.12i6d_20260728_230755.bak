@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""ROM 9.0.12i6c: structural and protected-runtime audit."""
+from __future__ import annotations
+import ast, inspect, sys
+from pathlib import Path
+
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path: sys.path.insert(0,str(ROOT))
+REPORT=ROOT/"DB_CLEANUP_9_0_12I6C_EQUIPMENT_WRITE_REPAIR_TRADER_AUDIT.md"
+TARGETS=(
+"equip_inventory_item","unequip_inventory_item","unequip_incompatible_items_after_class_change",
+"calculate_repair_cost","repair_equipped_item","repair_all_equipped",
+"damage_equipped_items_on_death","sell_inventory_item_to_trader",
+"buy_item_for_gold","buy_common_equipment_from_trader")
+
+def fail(x): print("[FAIL] "+x); raise SystemExit(1)
+def parse(path):
+ text=path.read_text(encoding="utf-8-sig"); tree=ast.parse(text,filename=str(path)); d={}
+ for n in tree.body:
+  if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)): d.setdefault(n.name,[]).append(n)
+ return text,d
+def sig(fn):
+ try:return str(inspect.signature(fn))
+ except Exception as e:return f"<{e}>"
+def safe(fn,*args,**kwargs):
+ try:return True,fn(*args,**kwargs)
+ except Exception as e:return False,f"{type(e).__name__}: {e}"
+def main():
+ dbtext,dbdefs=parse(ROOT/"db.py"); systext,sysdefs=parse(ROOT/"systems"/"equipment_system.py")
+ import db
+ from systems import equipment_system as eq
+ rows=[]
+ for name in TARGETS:
+  dc=len(dbdefs.get(name,[])); sc=len(sysdefs.get(name,[]))
+  if dc<2: fail(f"db.py {name}: expected duplicate, got {dc}")
+  if sc<1: fail(f"equipment_system.py missing {name}")
+  db_final=ast.get_source_segment(dbtext,dbdefs[name][-1]) or ""
+  sys_final=ast.get_source_segment(systext,sysdefs[name][-1]) or ""
+  if "equipment_system" not in db_final: fail(f"final db.{name} is not equipment_system wrapper")
+  if "_call_legacy" in sys_final: fail(f"final equipment_system.{name} still calls _call_legacy")
+  rows.append((name,dc,sc,[n.lineno for n in dbdefs[name]],sig(getattr(db,name)),sig(getattr(eq,name))))
+
+ # Pure repair-cost equivalence across boundary values and rarities.
+ pure=0
+ for durability in (-10,0,1,50,99,100,120,None):
+  for rarity in ("common","uncommon","rare","epic",None):
+   if safe(db.calculate_repair_cost,durability,rarity)!=safe(eq.calculate_repair_cost,durability,rarity):
+    fail(f"repair-cost mismatch durability={durability}, rarity={rarity}")
+   pure+=1
+
+ # Protected missing-ID paths must be equivalent and must not create rows.
+ missing_uid=-987654321
+ missing_iid=-987654322
+ before_users=db.cursor.execute("SELECT COUNT(*) FROM users WHERE user_id=?",(missing_uid,)).fetchone()[0]
+ before_inventory=db.cursor.execute("SELECT COUNT(*) FROM inventory WHERE id=? OR user_id=?",(missing_iid,missing_uid)).fetchone()[0]
+ protected_cases=(
+  ("equip_inventory_item",(missing_uid,missing_iid),{}),
+  ("unequip_inventory_item",(missing_uid,missing_iid),{}),
+  ("unequip_incompatible_items_after_class_change",(missing_uid,),{}),
+  ("repair_equipped_item",(missing_uid,missing_iid),{}),
+  ("repair_all_equipped",(missing_uid,),{}),
+  ("damage_equipped_items_on_death",(missing_uid,),{}),
+  ("sell_inventory_item_to_trader",(missing_uid,missing_iid),{}),
+  ("buy_item_for_gold",(missing_uid,missing_iid,10.0),{}),
+  ("buy_common_equipment_from_trader",(missing_uid,"__invalid_slot__"),{}),
+ )
+ protected=0
+ for name,args,kwargs in protected_cases:
+  public=safe(getattr(db,name),*args,**kwargs)
+  direct=safe(getattr(eq,name),*args,**kwargs)
+  if public!=direct: fail(f"protected-path mismatch {name}: public={public!r}, direct={direct!r}")
+  protected+=1
+ after_users=db.cursor.execute("SELECT COUNT(*) FROM users WHERE user_id=?",(missing_uid,)).fetchone()[0]
+ after_inventory=db.cursor.execute("SELECT COUNT(*) FROM inventory WHERE id=? OR user_id=?",(missing_iid,missing_uid)).fetchone()[0]
+ if (before_users,before_inventory)!=(after_users,after_inventory): fail("protected paths created database rows")
+
+ report=["# ROM 9.0.12i6c - Equipment Write Repair Trader Audit","","## Scope","","Structural audit plus protected missing-ID runtime checks. No real user rows were changed.","","## Cleanup candidates",""]
+ for name,dc,sc,lines,ds,ss in rows:
+  report.append(f"- `{name}`: db definitions={dc}, db lines={lines}, system definitions={sc}, public signature=`{ds}`, final system signature=`{ss}`")
+ report += ["","## Runtime", "",f"- Repair-cost equivalence cases: {pure}",f"- Protected missing-ID comparisons: {protected}","- Mismatches: 0","- Final system implementations using `_call_legacy`: 0","- Rows created by protected checks: 0","","## Existing isolated contract suites","","- `smoke_test_equipment_write_contracts.py`","- `smoke_test_equipment_durability_contracts.py`","- `smoke_test_equipment_trader_contracts.py`","","## Recommendation","","Proceed to 9.0.12i6d. Remove all earlier db.py definitions for these 10 APIs, retain only final wrappers, and rerun write, class compatibility, durability, trader, read-only, player-stat, core, import, and readiness checks.",""]
+ REPORT.write_text("\n".join(report),encoding="utf-8")
+ print("[OK] equipment write/repair/trader audit")
+ print(f"- duplicate cleanup candidates: {len(TARGETS)}")
+ print(f"- repair-cost equivalence cases: {pure}")
+ print(f"- protected missing-ID comparisons: {protected}")
+ print("- mismatches: 0")
+ print("- final system legacy delegation: 0")
+ print("- real user mutations: 0")
+ print(f"- report: {REPORT}")
+if __name__=="__main__": main()

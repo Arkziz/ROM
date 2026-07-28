@@ -1,0 +1,651 @@
+
+
+def consume_inventory_item(user_id, inventory_id, quantity=1):
+    entry = get_inventory_entry(user_id, inventory_id)
+
+    if not entry:
+        return False
+
+    inv_id, item_id, name, type_, category, current_quantity = entry
+
+    if current_quantity is None:
+        current_quantity = 1
+
+    if current_quantity < quantity:
+        return False
+
+    new_quantity = current_quantity - quantity
+
+    if new_quantity <= 0:
+        cursor.execute("""
+        DELETE FROM inventory
+        WHERE id=? AND user_id=?
+        """, (inventory_id, user_id))
+    else:
+        cursor.execute("""
+        UPDATE inventory
+        SET quantity=?
+        WHERE id=? AND user_id=?
+        """, (new_quantity, inventory_id, user_id))
+
+    conn.commit()
+    return True
+
+
+def find_first_item_stack_by_type(user_id, item_type):
+    cursor.execute("""
+    SELECT inventory.id
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.user_id=?
+      AND items.type=?
+      AND inventory.quantity > 0
+    ORDER BY inventory.id ASC
+    LIMIT 1
+    """, (user_id, item_type))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return None
+
+    return row[0]
+
+
+# ==============================
+# ✅ ITEM LEVEL REQUIREMENT
+# ==============================
+
+def get_player_level(user_id):
+    cursor.execute("""
+    SELECT level
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return 1
+
+    return row[0] or 1
+
+
+def get_item_required_level_by_inventory_id(inventory_id):
+    try:
+        init_dynamic_equipment_system()
+    except Exception:
+        pass
+
+    try:
+        cursor.execute("""
+        SELECT items.item_level
+        FROM inventory
+        JOIN items ON inventory.item_id = items.id
+        WHERE inventory.id=?
+        """, (inventory_id,))
+
+        row = cursor.fetchone()
+
+        if not row:
+            return 1
+
+        return row[0] or 1
+
+    except Exception:
+        return 1
+
+
+# ==============================
+# ✅ EQUIPMENT
+# ==============================
+
+def get_main_hand_item(user_id):
+    main_hand_id = get_equipped_slot(user_id, "main_hand")
+
+    if not main_hand_id:
+        return None
+
+    return get_item_by_inventory_id_full(main_hand_id)
+
+
+def is_main_hand_two_handed(user_id):
+    item = get_main_hand_item(user_id)
+
+    if not item:
+        return False
+
+    weapon_hands = item[7]
+
+    return weapon_hands == 2
+
+
+def equip_inventory_item(user_id, inventory_id):
+    item = get_item_by_inventory_id_full(inventory_id)
+
+    if not item:
+        return "❌ Предмет не знайдено"
+
+    (
+        inv_id,
+        item_id,
+        name,
+        type_,
+        rarity,
+        category,
+        slot_key,
+        weapon_hands,
+        quantity,
+        max_stack,
+        durability,
+        b_str,
+        b_dex,
+        b_int,
+        b_wis,
+        b_sta,
+        pdef,
+        mdef,
+        sell_price
+    ) = item
+
+    if category != "equipment":
+        return "❌ Цей предмет не можна одягти"
+
+    player_level = get_player_level(user_id)
+    required_level = get_item_required_level_by_inventory_id(inventory_id)
+
+    if player_level < required_level:
+        return (
+            f"🔒 Ти ще не можеш одягти цей предмет.\n\n"
+            f"📦 Предмет: {name}\n"
+            f"🏷 Потрібний рівень: {required_level}\n"
+            f"👤 Твій рівень: {player_level}"
+        )
+
+        if not slot_key:
+            return "❌ Для цього предмета не вказано слот"
+
+        if slot_key not in EQUIPMENT_SLOTS:
+            return "❌ Невідомий слот екіпірування"
+
+        # ==============================
+        # ✅ CLASS EQUIPMENT RESTRICTION CHECK
+        # ==============================
+
+        class_check = can_equip_inventory_item_by_class(
+            user_id=user_id,
+            inventory_id=inventory_id
+        )
+
+        if not class_check.get("success"):
+            return class_check.get(
+                "message",
+                "❌ Цей предмет не підходить твоєму класу."
+            )
+
+        if slot_key == "off_hand" and is_main_hand_two_handed(user_id):
+            return "❌ Неможливо: дворучна зброя блокує другу руку"
+
+    if slot_key == "main_hand" and weapon_hands == 2:
+        unequip_slot(user_id, "off_hand")
+
+    set_equipped_slot(user_id, slot_key, inventory_id)
+
+    return f"✅ Одягнуто: {name}"
+
+
+def unequip_inventory_item(user_id, inventory_id):
+    slot_key = find_equipped_slot_by_inventory_id(user_id, inventory_id)
+
+    if not slot_key:
+        return "❌ Цей предмет не вдягнений"
+
+    unequip_slot(user_id, slot_key)
+
+    return f"✅ Знято зі слота: {EQUIPMENT_SLOTS.get(slot_key, slot_key)}"
+
+
+def equip_item(user_id, item_id):
+    cursor.execute("""
+    SELECT id
+    FROM inventory
+    WHERE user_id=? AND item_id=?
+    ORDER BY id ASC
+    LIMIT 1
+    """, (user_id, item_id))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return "❌ Такого предмета немає в інвентарі"
+
+    return equip_inventory_item(user_id, row[0])
+
+
+# ==============================
+# ✅ BONUSES
+# ==============================
+
+def get_item_bonuses(user_id):
+    equipped_items = get_all_equipped_items(user_id)
+
+    total_str = 0
+    total_dex = 0
+    total_int = 0
+    total_wis = 0
+    total_sta = 0
+
+    for equipped in equipped_items:
+        item = equipped["item"]
+
+        if not item:
+            continue
+
+        (
+            inv_id,
+            item_id,
+            name,
+            type_,
+            rarity,
+            category,
+            slot_key,
+            weapon_hands,
+            quantity,
+            max_stack,
+            durability,
+            b_str,
+            b_dex,
+            b_int,
+            b_wis,
+            b_sta,
+            pdef,
+            mdef,
+            sell_price
+        ) = item
+
+        if durability is not None and durability <= 0:
+            continue
+
+        total_str += b_str or 0
+        total_dex += b_dex or 0
+        total_int += b_int or 0
+        total_wis += b_wis or 0
+        total_sta += b_sta or 0
+
+    return total_str, total_dex, total_int, total_wis, total_sta
+
+
+def get_equipped_item_defenses(user_id):
+    equipped_items = get_all_equipped_items(user_id)
+
+    total_pdef = 0
+    total_mdef = 0
+
+    for equipped in equipped_items:
+        item = equipped["item"]
+
+        if not item:
+            continue
+
+        (
+            inv_id,
+            item_id,
+            name,
+            type_,
+            rarity,
+            category,
+            slot_key,
+            weapon_hands,
+            quantity,
+            max_stack,
+            durability,
+            b_str,
+            b_dex,
+            b_int,
+            b_wis,
+            b_sta,
+            pdef,
+            mdef,
+            sell_price
+        ) = item
+
+        if durability is not None and durability <= 0:
+            continue
+
+        total_pdef += pdef or 0
+        total_mdef += mdef or 0
+
+    return total_pdef, total_mdef
+
+
+# ==============================
+# ✅ PLAYER STATS
+# ==============================
+
+def get_player_stats(user_id):
+    cursor.execute("""
+    SELECT
+        str,
+        dex,
+        intelligence,
+        wis,
+        sta,
+        level
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return None
+
+    base_str, base_dex, base_int, base_wis, base_sta, lvl = row
+
+    item_str, item_dex, item_int, item_wis, item_sta = get_item_bonuses(user_id)
+
+    return (
+        base_str + item_str,
+        base_dex + item_dex,
+        base_int + item_int,
+        base_wis + item_wis,
+        base_sta + item_sta,
+        lvl
+    )
+
+
+# ==============================
+# ✅ EXP / GOLD
+# ==============================
+
+BASE_EXP_BY_LEVEL = {
+    1: 10,
+    2: 12,
+    3: 15,
+    4: 18,
+    5: 25,
+    6: 30,
+    7: 35,
+    8: 45,
+    9: 60,
+    10: 65,
+    11: 75,
+    12: 85,
+    13: 95,
+    14: 110,
+    15: 120,
+    16: 135,
+    17: 150,
+    18: 170,
+    19: 190,
+    20: 220,
+    21: 240,
+    22: 270,
+    23: 300,
+    24: 340,
+    25: 380,
+    26: 420,
+    27: 460,
+    28: 520,
+    29: 600,
+    30: 600
+}
+
+
+CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL = {
+    1: 50,
+    2: 150,
+    3: 300,
+    4: 500,
+    5: 1200,
+    6: 1800,
+    7: 2500,
+    8: 3500,
+    9: 4500,
+    10: 5000,
+    11: 5500,
+    12: 6000,
+    13: 6000,
+    14: 6000,
+    15: 7000,
+    16: 7000,
+    17: 7000,
+    18: 8000,
+    19: 8000,
+    20: 8500,
+    21: 8500,
+    22: 9500,
+    23: 9500,
+    24: 9500,
+    25: 10500,
+    26: 10500,
+    27: 10500,
+    28: 12000,
+    29: 12000,
+    30: 14000
+}
+
+
+CONTRACT_MOBS_EQUIVALENT = 20
+
+
+def get_base_exp_for_level(level):
+    level = int(level)
+
+    if level in BASE_EXP_BY_LEVEL:
+        return BASE_EXP_BY_LEVEL[level]
+
+    if level > 30:
+        return int(BASE_EXP_BY_LEVEL[30] * (1.12 ** (level - 30)))
+
+    return BASE_EXP_BY_LEVEL[1]
+
+
+def get_contract_exp_for_level(level):
+    return get_base_exp_for_level(level) * CONTRACT_MOBS_EQUIVALENT
+
+
+def get_exp_to_next_level(level):
+    level = int(level)
+    base_exp = get_base_exp_for_level(level)
+
+    if level in CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL:
+        mobs_required = CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL[level]
+        return int(base_exp * mobs_required)
+
+    mobs_required = int(CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL[30] * (1.10 ** (level - 30)))
+    return int(base_exp * mobs_required)
+
+
+def add_exp(user_id, amount):
+    cursor.execute("""
+    SELECT level, exp
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return None
+
+    level, exp = row
+    exp += int(amount)
+
+    level_ups = 0
+
+    while exp >= get_exp_to_next_level(level):
+        exp -= get_exp_to_next_level(level)
+        level += 1
+        level_ups += 1
+
+        cursor.execute("""
+        UPDATE users
+        SET
+            str = str + 1,
+            dex = dex + 1,
+            intelligence = intelligence + 1,
+            wis = wis + 1,
+            sta = sta + 1
+        WHERE user_id=?
+        """, (user_id,))
+
+    cursor.execute("""
+    UPDATE users
+    SET level=?, exp=?
+    WHERE user_id=?
+    """, (level, exp, user_id))
+
+    conn.commit()
+
+    max_hp = get_max_hp(user_id)
+
+    cursor.execute("""
+    UPDATE users
+    SET max_hp=?
+    WHERE user_id=?
+    """, (max_hp, user_id))
+
+    conn.commit()
+
+    return {
+        "level": level,
+        "exp": exp,
+        "exp_to_next": get_exp_to_next_level(level),
+        "level_ups": level_ups
+    }
+
+
+def add_gold(user_id, amount):
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold + ?
+    WHERE user_id=?
+    """, (float(amount), user_id))
+
+    conn.commit()
+
+
+def add_kill(user_id):
+    cursor.execute("""
+    UPDATE users
+    SET kills = kills + 1
+    WHERE user_id=?
+    """, (user_id,))
+
+    conn.commit()
+
+
+def get_wallet(user_id):
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return 0.0
+
+    return row[0]
+
+
+def get_user_progress(user_id):
+    cursor.execute("""
+    SELECT level, exp, gold, kills, daily_hunts
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return None
+
+    level, exp, gold, kills, daily_hunts = row
+
+    return {
+        "level": level,
+        "exp": exp,
+        "exp_to_next": get_exp_to_next_level(level),
+        "gold": gold,
+        "kills": kills,
+        "daily_hunts": daily_hunts or 0
+    }
+
+
+# ==============================
+# ✅ SELL TRASH
+# ==============================
+
+def sell_all_trash(user_id):
+    cursor.execute("""
+    SELECT
+        inventory.id,
+        items.name,
+        inventory.quantity,
+        items.sell_price
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.user_id=?
+      AND items.category='trash'
+    """, (user_id,))
+
+    rows = cursor.fetchall()
+
+    if not rows:
+        return {
+            "sold_items_count": 0,
+            "gold_earned": 0.0,
+            "freed_slots": 0,
+            "details": []
+        }
+
+    total_gold = 0.0
+    freed_slots = 0
+    details = []
+
+    for inv_id, name, quantity, sell_price in rows:
+        quantity = quantity or 1
+        sell_price = sell_price or 0
+
+        earned = quantity * sell_price
+        total_gold += earned
+        freed_slots += 1
+
+        details.append(f"{name} x{quantity} = {earned:.2f} золота")
+
+        cursor.execute("""
+        DELETE FROM inventory
+        WHERE id=?
+        """, (inv_id,))
+
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold + ?
+    WHERE user_id=?
+    """, (total_gold, user_id))
+
+    conn.commit()
+
+    return {
+        "sold_items_count": len(rows),
+        "gold_earned": total_gold,
+        "freed_slots": freed_slots,
+        "details": details
+    }
+
+
+# ==============================
+# ✅ BUY ITEM FOR GOLD
+# ==============================
+
+def buy_item_for_gold(user_id, item_id, price, quantity=1):
+    cursor.execute("""
+    SELECT gold
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()

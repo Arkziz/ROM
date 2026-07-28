@@ -1,0 +1,250 @@
+    conn.commit()
+
+
+def seed_class_reset_sphere_item():
+    """
+    🔮 Сфера нового шляху.
+    Предмет для майбутньої зміни класу.
+    Зараз додаємо в базу, щоб можна було видавати через DEV і тестувати інвентар.
+    """
+
+    try:
+        cursor.execute("""
+        INSERT OR REPLACE INTO items (
+            id,
+            name,
+            type,
+            rarity,
+            category,
+            slot_key,
+            weapon_hands,
+            max_stack,
+            sell_price,
+            bonus_str,
+            bonus_dex,
+            bonus_int,
+            bonus_wis,
+            bonus_sta,
+            pdef,
+            mdef
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            CLASS_RESET_SPHERE_ITEM_ID,
+            "🔮 Сфера нового шляху",
+            "class_reset",
+            "epic",
+            "potion",
+            None,
+            1,
+            10,
+            0.0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+        ))
+
+        conn.commit()
+    except Exception:
+        pass
+
+
+def get_character_name(user_id):
+    init_character_class_system()
+
+    cursor.execute("""
+    SELECT character_name
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return ""
+
+    return row[0] or ""
+
+
+def get_character_class(user_id):
+    init_character_class_system()
+
+    cursor.execute("""
+    SELECT character_class
+    FROM users
+    WHERE user_id=?
+    """, (user_id,))
+
+    row = cursor.fetchone()
+
+    if not row:
+        return ""
+
+    return row[0] or ""
+
+
+def get_character_class_display(user_id):
+    class_key = get_character_class(user_id)
+
+    if not class_key:
+        return "Не обрано"
+
+    return CLASS_CONFIGS.get(class_key, {}).get("name", "Невідомий клас")
+
+
+def get_character_resource_type(user_id):
+    class_key = get_character_class(user_id)
+
+    if not class_key:
+        return ""
+
+    return CLASS_CONFIGS.get(class_key, {}).get("resource", "")
+
+
+def normalize_character_name(name):
+    name = (name or "").strip()
+
+    while "  " in name:
+        name = name.replace("  ", " ")
+
+    return name
+
+
+def validate_character_name(name):
+    name = normalize_character_name(name)
+
+    if len(name) < 2:
+        return {
+            "success": False,
+            "message": "❌ Ім’я персонажа має містити щонайменше 2 символи."
+        }
+
+    if len(name) > 24:
+        return {
+            "success": False,
+            "message": "❌ Ім’я персонажа не може бути довшим за 24 символи."
+        }
+
+    forbidden = ["/", "\\", "<", ">", "{", "}", "[", "]", "|"]
+
+    for symbol in forbidden:
+        if symbol in name:
+            return {
+                "success": False,
+                "message": "❌ Ім’я містить недозволені символи."
+            }
+
+    return {
+        "success": True,
+        "name": name
+    }
+
+
+def set_character_name(user_id, name):
+    init_character_class_system()
+
+    validation = validate_character_name(name)
+
+    if not validation["success"]:
+        return validation
+
+    clean_name = validation["name"]
+
+    cursor.execute("""
+    UPDATE users
+    SET character_name=?
+    WHERE user_id=?
+    """, (clean_name, user_id))
+
+    conn.commit()
+
+    return {
+        "success": True,
+        "name": clean_name,
+        "message": f"✅ Ім’я персонажа збережено: {clean_name}"
+    }
+
+
+def set_character_class(user_id, class_key):
+    init_character_class_system()
+
+    if class_key not in CLASS_CONFIGS:
+        return {
+            "success": False,
+            "message": "❌ Невідомий клас персонажа."
+        }
+
+    from datetime import datetime
+
+    cursor.execute("""
+    UPDATE users
+    SET character_class=?,
+        class_selected_at=?
+    WHERE user_id=?
+    """, (
+        class_key,
+        datetime.now().isoformat(),
+        user_id
+    ))
+
+    conn.commit()
+
+    refresh_user_mp(user_id)
+
+    return {
+        "success": True,
+        "class_key": class_key,
+        "class_name": CLASS_CONFIGS[class_key]["name"],
+        "message": f"✅ Клас обрано: {CLASS_CONFIGS[class_key]['name']}"
+    }
+
+
+def needs_character_name(user_id):
+    return get_character_name(user_id) == ""
+
+
+def needs_character_class(user_id):
+    return get_character_class(user_id) == ""
+
+
+def get_max_mp(user_id):
+    """
+    Базова формула MP.
+    Поки проста, щоб не ламати баланс:
+
+    max_mp = 50 + INT * 5 + WIS * 3
+
+    Надалі можна буде змінити під класи.
+    """
+
+    stats = get_player_stats(user_id)
+
+    if not stats:
+        return 0
+
+    total_str, total_dex, total_int, total_wis, total_sta, lvl = stats
+
+    max_mp = 50 + (total_int * 5) + (total_wis * 3)
+
+    return max(0, int(max_mp))
+
+
+def refresh_user_mp(user_id):
+    init_character_class_system()
+
+    class_key = get_character_class(user_id)
+    resource_type = CLASS_CONFIGS.get(class_key, {}).get("resource", "")
+
+    if resource_type != "mana":
+        cursor.execute("""
+        UPDATE users
+        SET mp=0,
+            max_mp=0
+        WHERE user_id=?
+        """, (user_id,))
+
+        conn.commit()

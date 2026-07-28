@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""ROM 9.0.12i4b: isolated Player Progression equivalence test."""
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+import db
+from systems import player_system
+
+TEST_USER_ID = -90120402
+LEGACY_ADD = "_legacy_add_exp_before_player_system_v1"
+LEGACY_PROGRESS = "_legacy_get_user_progress_before_player_system_v1"
+
+
+def fail(message):
+    print(f"[FAIL] {message}")
+    raise SystemExit(1)
+
+
+def cleanup():
+    # Remove only the isolated negative test fixture and its related rows.
+    for table in ("equipment_slots", "inventory", "user_active_contracts", "user_daily_quests"):
+        try:
+            db.cursor.execute(f"DELETE FROM {table} WHERE user_id=?", (TEST_USER_ID,))
+        except Exception:
+            pass
+    db.cursor.execute("DELETE FROM users WHERE user_id=?", (TEST_USER_ID,))
+    db.conn.commit()
+
+
+def insert_fixture(level, exp, stats=10):
+    cleanup()
+    db.cursor.execute(
+        """
+        INSERT INTO users (
+            user_id, hp, max_hp, level, exp, gold, kills, bag_slots,
+            current_location, str, dex, intelligence, wis, sta, daily_hunts
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            TEST_USER_ID, 170, 170, int(level), int(exp), 12.5, 7, 40,
+            "start_path", int(stats), int(stats), int(stats), int(stats),
+            int(stats), 3,
+        ),
+    )
+    db.conn.commit()
+
+
+def snapshot():
+    return db.cursor.execute(
+        """
+        SELECT level, exp, str, dex, intelligence, wis, sta, max_hp
+        FROM users WHERE user_id=?
+        """,
+        (TEST_USER_ID,),
+    ).fetchone()
+
+
+def run_path(function, level, exp, amount):
+    insert_fixture(level, exp)
+    result = function(TEST_USER_ID, amount)
+    state = snapshot()
+    progress = player_system.get_user_progress(TEST_USER_ID)
+    return result, tuple(state) if state is not None else None, progress
+
+
+def main():
+    legacy_add = getattr(db, LEGACY_ADD, None)
+    legacy_progress = getattr(db, LEGACY_PROGRESS, None)
+    if not callable(legacy_add) or not callable(legacy_progress):
+        fail("legacy progression captures are missing")
+
+    cases = []
+    threshold_1 = int(db.get_exp_to_next_level(1))
+    threshold_2 = int(db.get_exp_to_next_level(2))
+    cases.append(("no_level_up", 1, 0, max(1, threshold_1 // 2)))
+    cases.append(("one_level_up", 1, max(0, threshold_1 - 3), 5))
+    cases.append(("multiple_level_ups", 1, 0, threshold_1 + threshold_2 + 11))
+
+    comparisons = 0
+    try:
+        for label, level, exp, amount in cases:
+            legacy = run_path(legacy_add, level, exp, amount)
+            direct = run_path(player_system.add_exp, level, exp, amount)
+            comparisons += 1
+            if legacy != direct:
+                fail(f"{label} mismatch: legacy={legacy!r}, direct={direct!r}")
+
+        # Read-only get_user_progress comparison on all real users.
+        rows = db.cursor.execute(
+            "SELECT user_id FROM users WHERE user_id>=0 ORDER BY user_id"
+        ).fetchall()
+        progress_comparisons = 0
+        for (user_id,) in rows:
+            public_value = db.get_user_progress(user_id)
+            direct_value = player_system.get_user_progress(user_id)
+            legacy_value = legacy_progress(user_id)
+            progress_comparisons += 1
+            if not (public_value == direct_value == legacy_value):
+                fail(f"get_user_progress mismatch for user {user_id}")
+
+        missing = -987654321
+        if not (
+            db.get_user_progress(missing)
+            == player_system.get_user_progress(missing)
+            == legacy_progress(missing)
+        ):
+            fail("missing-user progress behavior mismatch")
+    finally:
+        cleanup()
+
+    leftover = db.cursor.execute(
+        "SELECT COUNT(*) FROM users WHERE user_id=?", (TEST_USER_ID,)
+    ).fetchone()[0]
+    if int(leftover or 0) != 0:
+        fail("isolated test user was not removed")
+
+    print("[OK] player progression direct implementation")
+    print(f"- add_exp equivalence cases: {comparisons}")
+    print(f"- get_user_progress comparisons: {progress_comparisons}")
+    print("- mismatches: 0")
+    print("- level-up stat increments: OK")
+    print("- max HP synchronization: OK")
+    print("- missing-user contract: OK")
+    print("- isolated test user cleanup: OK")
+    print("- real user mutations: 0")
+
+
+if __name__ == "__main__":
+    main()

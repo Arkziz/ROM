@@ -1,0 +1,182 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Read-only audit and runtime smoke-test for equipment class compatibility."""
+from __future__ import annotations
+import ast, inspect, sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+API_NAMES = (
+    "can_equip_item_by_class",
+    "can_equip_inventory_item_by_class",
+    "is_inventory_item_class_compatible",
+)
+CAPTURES = {
+    "can_equip_item_by_class": "_legacy_equipment_ro_v1_can_equip_item_by_class",
+    "can_equip_inventory_item_by_class": "_legacy_equipment_ro_v1_can_equip_inventory_item_by_class",
+    "is_inventory_item_class_compatible": "_legacy_equipment_ro_v1_is_inventory_item_class_compatible",
+}
+REPORT_PATH = ROOT / "DB_CLEANUP_9_0_12I3A_CLASS_COMPATIBILITY_AUDIT.md"
+
+
+def fail(msg):
+    print(f"[FAIL] {msg}")
+    raise SystemExit(1)
+
+
+def top_defs(path):
+    text = path.read_text(encoding="utf-8-sig")
+    tree = ast.parse(text, filename=str(path))
+    result = {}
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            result.setdefault(node.name, []).append(node)
+    return text, result
+
+
+def normalize(value):
+    if isinstance(value, dict):
+        return {k: normalize(v) for k, v in sorted(value.items())}
+    if isinstance(value, (list, tuple)):
+        return [normalize(v) for v in value]
+    return value
+
+
+def call_safely(func, *args):
+    try:
+        return True, func(*args)
+    except Exception as exc:
+        return False, f"{type(exc).__name__}: {exc}"
+
+
+def main():
+    db_text, db_defs = top_defs(ROOT / "db.py")
+    eq_text, eq_defs = top_defs(ROOT / "systems" / "equipment_system.py")
+
+    structural = []
+    for name in API_NAMES:
+        if name not in db_defs:
+            fail(f"db.py: відсутня функція {name}")
+        if name not in eq_defs:
+            fail(f"equipment_system.py: відсутня функція {name}")
+        final = ast.get_source_segment(db_text, db_defs[name][-1]) or ""
+        if "equipment_system" not in final:
+            fail(f"db.py: фінальна {name} не делегує в equipment_system")
+        structural.append((name, len(db_defs[name]), len(eq_defs[name])))
+
+    import db
+    from systems import equipment_system
+
+    for name in API_NAMES:
+        if not callable(getattr(db, name, None)):
+            fail(f"db.{name} не callable")
+        if not callable(getattr(equipment_system, name, None)):
+            fail(f"equipment_system.{name} не callable")
+        capture = CAPTURES[name]
+        if not callable(getattr(db, capture, None)):
+            fail(f"Відсутній чинний legacy capture {capture}")
+
+    # Contract checks that do not mutate the database.
+    ok, missing_result = call_safely(db.can_equip_item_by_class, -1, None)
+    if not ok or not isinstance(missing_result, dict):
+        fail("can_equip_item_by_class(None) має повертати dict")
+    if not {"success", "message"}.issubset(missing_result):
+        fail("Результат can_equip_item_by_class не має ключів success/message")
+
+    ok, non_equipment = call_safely(
+        db.can_equip_item_by_class,
+        -1,
+        {"category": "potion", "slot_key": None},
+    )
+    if not ok or not isinstance(non_equipment, dict) or non_equipment.get("success") is not True:
+        fail("Не-equipment item має проходити сумісність без помилки")
+
+    ok, missing_bool = call_safely(db.is_inventory_item_class_compatible, -1, -987654321)
+    boolean_contract_ok = bool(ok and isinstance(missing_bool, bool))
+
+    # Read-only comparison on existing fixtures. No UPDATE/INSERT/DELETE is issued.
+    cursor = db.conn.cursor()
+    try:
+        cursor.execute("SELECT user_id FROM users ORDER BY user_id")
+        user_ids = [row[0] for row in cursor.fetchall()]
+    except Exception:
+        user_ids = []
+    comparisons = 0
+    mismatches = []
+    sampled = []
+    for user_id in user_ids:
+        cursor.execute(
+            "SELECT id FROM inventory WHERE user_id=? ORDER BY id LIMIT 25",
+            (user_id,),
+        )
+        for (inventory_id,) in cursor.fetchall():
+            for name in ("can_equip_inventory_item_by_class",):
+                public_fn = getattr(db, name)
+                legacy_fn = getattr(db, CAPTURES[name])
+                system_fn = getattr(equipment_system, name)
+                public = call_safely(public_fn, user_id, inventory_id)
+                legacy = call_safely(legacy_fn, user_id, inventory_id)
+                system = call_safely(system_fn, user_id, inventory_id)
+                comparisons += 1
+                if normalize(public) != normalize(legacy) or normalize(public) != normalize(system):
+                    mismatches.append((user_id, inventory_id, name, public, legacy, system))
+                elif len(sampled) < 8:
+                    sampled.append((user_id, inventory_id, name, public[1]))
+
+    # Mismatches are audit findings. i3a must not change gameplay code.
+
+    lines = [
+        "# ROM 9.0.12i3a — Class Compatibility Audit",
+        "",
+        "## Scope",
+        "",
+        "Read-only audit. No legacy code or captures were removed.",
+        "",
+        "## Structural results",
+        "",
+    ]
+    for name, db_count, system_count in structural:
+        lines.append(f"- `{name}`: db.py definitions={db_count}; equipment_system.py definitions={system_count}; final db wrapper delegates to equipment_system.")
+    lines += [
+        "",
+        "## Legacy captures",
+        "",
+    ]
+    for name, capture in CAPTURES.items():
+        lines.append(f"- `{capture}`: present and callable; API `{name}`.")
+    lines += [
+        "",
+        "## Runtime contracts",
+        "",
+        "- Result for missing item is `dict` with `success` and `message`.",
+        "- Non-equipment synthetic item is accepted.",
+        f"- Boolean helper contract passed: {boolean_contract_ok}.",
+        f"- Existing read-only public/legacy/system comparisons: {comparisons}.",
+        f"- Mismatches: {len(mismatches)}.",
+        "",
+        "## Conclusion",
+        "",
+        "The three captures remain required because equipment_system still delegates these APIs through `_call_legacy`. Physical removal is not part of i3a.",
+        "",
+        "If the boolean helper contract is false, this confirms a recursive legacy/public delegation risk that must be removed by direct implementation in equipment_system before capture cleanup.",
+        "",
+        "Next safe step: implement these three functions directly in systems/equipment_system.py, then repeat equivalence tests before removing captures.",
+        "",
+    ]
+    REPORT_PATH.write_text("\n".join(lines), encoding="utf-8")
+
+    print("[OK] equipment class compatibility audit")
+    print("- public APIs: 3")
+    print("- legacy captures: 3 (preserved)")
+    print(f"- runtime comparisons: {comparisons}")
+    print(f"- mismatches: {len(mismatches)}")
+    print(f"- boolean helper contract: {'OK' if boolean_contract_ok else 'WARNING'}")
+    print("- database mutations: 0")
+    print(f"- report: {REPORT_PATH}")
+
+
+if __name__ == "__main__":
+    main()

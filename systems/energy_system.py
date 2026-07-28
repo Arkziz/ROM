@@ -23,11 +23,6 @@ class _CursorProxy:
 conn = _ConnProxy()
 cursor = _CursorProxy()
 
-def init_energy_system(*args, **kwargs):
-    return _energy_system_v1().init_energy_system(*args, **kwargs)
-
-def get_user_energy(*args, **kwargs):
-    return _energy_system_v1().get_user_energy(*args, **kwargs)
 
 def consume_energy_for_hunt(user_id):
     from datetime import datetime

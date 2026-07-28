@@ -1,0 +1,221 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""ROM 9.0.12i4d: read-only audit of residual legacy_refs."""
+from __future__ import annotations
+
+import ast
+import re
+import sys
+from collections import defaultdict
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+DB_PATH = ROOT / "db.py"
+READINESS_PATH = ROOT / "tools" / "db_cleanup_readiness.py"
+REPORT_PATH = ROOT / "DB_CLEANUP_9_0_12I4D_RESIDUAL_LEGACY_REFS_AUDIT.md"
+LEGACY_PATTERN = re.compile(r"_legacy_[A-Za-z0-9_]+")
+
+
+def fail(message):
+    print(f"[FAIL] {message}")
+    raise SystemExit(1)
+
+
+def parent_map(tree):
+    result = {}
+    for parent in ast.walk(tree):
+        for child in ast.iter_child_nodes(parent):
+            result[child] = parent
+    return result
+
+
+def enclosing_statement(node, parents):
+    current = node
+    while current in parents:
+        parent = parents[current]
+        if isinstance(parent, ast.stmt):
+            current = parent
+        else:
+            break
+    return current
+
+
+def classify_name(name, occurrences):
+    if name == "_legacy_equipment_to_slots":
+        return (
+            "false_positive",
+            "The identifier is part of the normal migration API name "
+            "migrate_legacy_equipment_to_slots; it is not a _legacy_* capture. "
+            "The current regex starts matching inside a longer identifier."
+        )
+    if name == "_legacy_process_passive_regeneration_before_hp_dynamic_max_fix_v1":
+        loads = sum(item["context"] == "Load" for item in occurrences)
+        stores = sum(item["context"] == "Store" for item in occurrences)
+        if stores >= 1 and loads == 0:
+            return (
+                "write_only_capture",
+                "The variable is assigned in a compatibility try/except block but is never loaded. "
+                "Current regen wrappers delegate directly to systems.regen_system."
+            )
+        return (
+            "runtime_reference",
+            f"The identifier has stores={stores}, loads={loads}; manual review is required."
+        )
+    return ("unknown", "Unrecognized residual legacy-like identifier.")
+
+
+def main():
+    text = DB_PATH.read_text(encoding="utf-8-sig")
+    tree = ast.parse(text, filename=str(DB_PATH))
+    parents = parent_map(tree)
+    lines = text.splitlines()
+
+    regex_names = sorted(set(LEGACY_PATTERN.findall(text)))
+    if len(regex_names) != 2:
+        fail(f"Expected 2 residual regex matches, got {len(regex_names)}: {regex_names}")
+
+    occurrences = defaultdict(list)
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Name) and node.id in regex_names:
+            occurrences[node.id].append({
+                "line": node.lineno,
+                "column": node.col_offset,
+                "context": type(node.ctx).__name__,
+                "statement": type(enclosing_statement(node, parents)).__name__,
+                "source": lines[node.lineno - 1].strip(),
+            })
+
+    # The regex false positive is embedded in a larger valid identifier, so AST
+    # sees the full function/call name rather than the regex substring.
+    false_positive_lines = [
+        index for index, line in enumerate(lines, start=1)
+        if "migrate_legacy_equipment_to_slots" in line
+    ]
+    if false_positive_lines:
+        occurrences["_legacy_equipment_to_slots"] = [
+            {
+                "line": line,
+                "column": lines[line - 1].find("_legacy_equipment_to_slots"),
+                "context": "Substring",
+                "statement": "IdentifierSubstring",
+                "source": lines[line - 1].strip(),
+            }
+            for line in false_positive_lines
+        ]
+
+    results = []
+    for name in regex_names:
+        kind, explanation = classify_name(name, occurrences[name])
+        results.append((name, kind, explanation, occurrences[name]))
+
+    kinds = {name: kind for name, kind, _explanation, _rows in results}
+    if kinds.get("_legacy_equipment_to_slots") != "false_positive":
+        fail("migrate_legacy_equipment_to_slots false positive was not confirmed")
+    if kinds.get("_legacy_process_passive_regeneration_before_hp_dynamic_max_fix_v1") != "write_only_capture":
+        fail("regen write-only capture classification was not confirmed")
+
+    # Confirm current public regen path is direct and the legacy variable is not
+    # referenced outside db.py.
+    repo_references = defaultdict(list)
+    excluded = {".git", ".venv", "venv", "env", "backup", "patch", "__pycache__"}
+    for path in ROOT.rglob("*.py"):
+        rel = path.relative_to(ROOT)
+        if any(part in excluded for part in rel.parts):
+            continue
+        try:
+            candidate = path.read_text(encoding="utf-8-sig")
+        except Exception:
+            continue
+        for name in regex_names:
+            if name in candidate:
+                repo_references[name].append(rel.as_posix())
+
+    regen_defs = [
+        node for node in tree.body
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        and node.name == "process_passive_regeneration"
+    ]
+    if not regen_defs:
+        fail("process_passive_regeneration wrapper is missing")
+    final_regen = ast.get_source_segment(text, regen_defs[-1]) or ""
+    if "regen_system" not in final_regen:
+        fail("final process_passive_regeneration does not delegate to regen_system")
+
+    readiness_text = READINESS_PATH.read_text(encoding="utf-8-sig")
+    pattern_line = next(
+        (i for i, line in enumerate(readiness_text.splitlines(), start=1)
+         if 're.compile(r"_legacy_' in line),
+        None,
+    )
+
+    report = [
+        "# ROM 9.0.12i4d - Residual Legacy References Audit",
+        "",
+        "## Scope",
+        "",
+        "Read-only audit. No gameplay code, tools, database rows, or legacy variables were changed.",
+        "",
+        "## Readiness result under investigation",
+        "",
+        "- `legacy_refs`: 2",
+        "- `unsafe_delete`: 0",
+        f"- Readiness regex line: {pattern_line}",
+        "",
+        "## Findings",
+        "",
+    ]
+
+    for name, kind, explanation, rows in results:
+        report.extend([
+            f"### `{name}`",
+            "",
+            f"- Classification: `{kind}`",
+            f"- Explanation: {explanation}",
+            f"- Repository Python files containing the exact text: {repo_references.get(name, [])}",
+            "- Occurrences:",
+        ])
+        for row in rows:
+            report.append(
+                f"  - line {row['line']}; context={row['context']}; "
+                f"statement={row['statement']}; `{row['source']}`"
+            )
+        report.append("")
+
+    report.extend([
+        "## Runtime path confirmation",
+        "",
+        "- Final `db.process_passive_regeneration` delegates to `systems.regen_system`.",
+        "- The dynamic-max regen compatibility capture has no AST Load usage.",
+        "- `migrate_legacy_equipment_to_slots` is a valid migration function and must not be removed or renamed.",
+        "",
+        "## Conclusion",
+        "",
+        "The readiness value `legacy_refs: 2` does not represent two active runtime legacy dependencies.",
+        "One match is a regex false positive inside `migrate_legacy_equipment_to_slots`.",
+        "One match is an unused write-only compatibility capture left from the historical HP dynamic-max fix.",
+        "",
+        "## Recommended next step",
+        "",
+        "9.0.12i4e should:",
+        "1. remove only the unused regen capture try/except block from `db.py`;",
+        "2. fix `tools/db_cleanup_readiness.py` to match `_legacy_` identifiers only at a valid identifier boundary;",
+        "3. preserve `migrate_legacy_equipment_to_slots` unchanged;",
+        "4. rerun regen, equipment migration, core, import, and readiness tests.",
+        "",
+        "Expected readiness after i4e: `legacy_refs: 0`, `unsafe_delete: 0`.",
+        "",
+    ])
+    REPORT_PATH.write_text("\n".join(report), encoding="utf-8")
+
+    print("[OK] residual legacy refs audit")
+    print("- readiness regex matches: 2")
+    print("- active runtime legacy dependencies: 0")
+    print("- regex false positives: 1")
+    print("- unused write-only captures: 1")
+    print("- migrate_legacy_equipment_to_slots preserved: yes")
+    print("- database mutations: 0")
+    print(f"- report: {REPORT_PATH}")
+
+
+if __name__ == "__main__":
+    main()

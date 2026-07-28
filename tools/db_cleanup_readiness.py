@@ -77,7 +77,7 @@ def duplicate_defs(defs):
 
 
 def legacy_refs(text: str):
-    pattern = re.compile(r"_legacy_[A-Za-z0-9_]+")
+    pattern = re.compile(r"(?<![A-Za-z0-9_])_legacy_[A-Za-z0-9_]+")
     found = sorted(set(pattern.findall(text)))
     by_func = defaultdict(list)
 

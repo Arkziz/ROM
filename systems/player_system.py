@@ -108,15 +108,59 @@ def add_gold(user_id: int, amount):
 
 
 def add_exp(user_id: int, amount):
-    legacy = _legacy_function("add_exp")
-    if legacy:
-        return legacy(user_id, amount)
+    """Add EXP and preserve the historical db.py progression contract."""
+    db = _db_module()
 
-    row = _fetchone("SELECT exp FROM users WHERE user_id=?", (user_id,))
-    current = int(_row_get(row, "exp", 0, 0) or 0)
-    new_value = current + int(amount)
-    _execute_commit("UPDATE users SET exp=? WHERE user_id=?", (new_value, user_id))
-    return {"exp": new_value, "level": get_player_level(user_id), "level_ups": 0}
+    row = _fetchone(
+        "SELECT level, exp FROM users WHERE user_id=?",
+        (user_id,),
+    )
+    if not row:
+        return None
+
+    level = int(_row_get(row, "level", 0, 1) or 1)
+    exp = int(_row_get(row, "exp", 1, 0) or 0)
+    exp += int(amount)
+    level_ups = 0
+
+    while exp >= db.get_exp_to_next_level(level):
+        exp -= db.get_exp_to_next_level(level)
+        level += 1
+        level_ups += 1
+
+        db.cursor.execute(
+            """
+            UPDATE users
+            SET
+                str = str + 1,
+                dex = dex + 1,
+                intelligence = intelligence + 1,
+                wis = wis + 1,
+                sta = sta + 1
+            WHERE user_id=?
+            """,
+            (user_id,),
+        )
+
+    db.cursor.execute(
+        "UPDATE users SET level=?, exp=? WHERE user_id=?",
+        (level, exp, user_id),
+    )
+    db.conn.commit()
+
+    max_hp = get_max_hp(user_id)
+    db.cursor.execute(
+        "UPDATE users SET max_hp=? WHERE user_id=?",
+        (max_hp, user_id),
+    )
+    db.conn.commit()
+
+    return {
+        "level": level,
+        "exp": exp,
+        "exp_to_next": db.get_exp_to_next_level(level),
+        "level_ups": level_ups,
+    }
 
 
 def add_kill(user_id: int, amount: int = 1):
@@ -136,27 +180,27 @@ def add_kill(user_id: int, amount: int = 1):
 
 
 def get_user_progress(user_id: int):
-    legacy = _legacy_function("get_user_progress")
-    if legacy:
-        return legacy(user_id)
-
+    """Return the historical six-key player progression dictionary."""
+    db = _db_module()
     row = _fetchone(
         """
-        SELECT level, exp, gold, kills
+        SELECT level, exp, gold, kills, daily_hunts
         FROM users
         WHERE user_id=?
         """,
         (user_id,),
     )
-
     if not row:
         return None
 
+    level = int(_row_get(row, "level", 0, 1) or 1)
     return {
-        "level": int(_row_get(row, "level", 0, 1) or 1),
+        "level": level,
         "exp": int(_row_get(row, "exp", 1, 0) or 0),
-        "gold": float(_row_get(row, "gold", 2, 0) or 0),
-        "kills": int(_row_get(row, "kills", 3, 0) or 0),
+        "exp_to_next": db.get_exp_to_next_level(level),
+        "gold": _row_get(row, "gold", 2, 0),
+        "kills": _row_get(row, "kills", 3, 0),
+        "daily_hunts": int(_row_get(row, "daily_hunts", 4, 0) or 0),
     }
 
 

@@ -92,14 +92,62 @@ def get_inventory_refined_display_name(*args, **kwargs):
 def format_refined_item_name(*args, **kwargs):
     return _call_legacy('format_refined_item_name', *args, **kwargs)
 
-def can_equip_item_by_class(*args, **kwargs):
-    return _call_legacy('can_equip_item_by_class', *args, **kwargs)
+# ✅ ROM 9.0.12i3b: REAL CLASS-COMPATIBILITY IMPLEMENTATION
+# These three public domain functions no longer delegate through
+# _legacy_equipment_ro_v1_* captures. Low-level classification and rule helpers
+# remain available through db.py compatibility APIs until their own extraction.
 
-def can_equip_inventory_item_by_class(*args, **kwargs):
-    return _call_legacy('can_equip_inventory_item_by_class', *args, **kwargs)
+def can_equip_item_by_class(user_id, item_info):
+    db = _db()
 
-def is_inventory_item_class_compatible(*args, **kwargs):
-    return _call_legacy('is_inventory_item_class_compatible', *args, **kwargs)
+    if not item_info:
+        return {
+            "success": False,
+            "message": "❌ Предмет не знайдено."
+        }
+
+    if item_info.get("category") != "equipment":
+        return {
+            "success": True,
+            "message": ""
+        }
+
+    class_key = db.get_character_class(user_id)
+    if not class_key:
+        return {
+            "success": False,
+            "message": "❌ Спочатку обери клас персонажа."
+        }
+
+    checks = (
+        db.check_armor_compatibility_for_class,
+        db.check_main_hand_compatibility_for_class,
+        db.check_off_hand_compatibility_for_class,
+    )
+    for check in checks:
+        result = check(class_key, item_info)
+        if not result["success"]:
+            return result
+
+    result = db.check_two_handed_conflict_for_equip(user_id, item_info)
+    if not result["success"]:
+        return result
+
+    return {
+        "success": True,
+        "message": ""
+    }
+
+
+def can_equip_inventory_item_by_class(user_id, inventory_id):
+    db = _db()
+    item_info = db.get_item_classification_by_inventory_id(inventory_id)
+    return can_equip_item_by_class(user_id, item_info)
+
+
+def is_inventory_item_class_compatible(user_id, inventory_id):
+    result = can_equip_inventory_item_by_class(user_id, inventory_id)
+    return bool(result.get("success"))
 
 # ✅ REFACTOR 9.0.7: EQUIPMENT WRITE API
 # Write-operation wrappers. These delegate to legacy db.py implementations

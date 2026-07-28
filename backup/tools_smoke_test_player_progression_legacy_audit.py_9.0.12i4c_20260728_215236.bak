@@ -1,0 +1,272 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""ROM 9.0.12i4a: read-only Player Progression legacy audit."""
+from __future__ import annotations
+
+import ast
+import inspect
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+APIS = ("add_exp", "get_user_progress")
+CAPTURES = {
+    name: f"_legacy_{name}_before_player_system_v1"
+    for name in APIS
+}
+REPORT_PATH = ROOT / "DB_CLEANUP_9_0_12I4A_PLAYER_PROGRESSION_AUDIT.md"
+
+
+def fail(message: str) -> None:
+    print(f"[FAIL] {message}")
+    raise SystemExit(1)
+
+
+def parse_file(path: Path):
+    text = path.read_text(encoding="utf-8-sig")
+    tree = ast.parse(text, filename=str(path))
+    definitions = {}
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            definitions.setdefault(node.name, []).append(node)
+    return text, tree, definitions
+
+
+def normalize(value):
+    if isinstance(value, dict):
+        return {key: normalize(value[key]) for key in sorted(value)}
+    if isinstance(value, tuple):
+        return [normalize(item) for item in value]
+    if isinstance(value, list):
+        return [normalize(item) for item in value]
+    return value
+
+
+def safe_call(function, *args):
+    try:
+        return True, function(*args)
+    except Exception as exc:
+        return False, f"{type(exc).__name__}: {exc}"
+
+
+def signature_text(function) -> str:
+    try:
+        return str(inspect.signature(function))
+    except Exception as exc:
+        return f"<signature unavailable: {exc}>"
+
+
+def find_consumers() -> dict[str, list[str]]:
+    result = {name: [] for name in APIS}
+    excluded_parts = {
+        ".git", ".venv", "venv", "env", "backup", "patch",
+        "__pycache__", ".idea", ".vscode"
+    }
+    for path in ROOT.rglob("*.py"):
+        relative = path.relative_to(ROOT)
+        if any(part in excluded_parts for part in relative.parts):
+            continue
+        if relative.as_posix() == "tools/smoke_test_player_progression_legacy_audit.py":
+            continue
+        try:
+            text = path.read_text(encoding="utf-8-sig")
+            tree = ast.parse(text, filename=str(path))
+        except Exception:
+            continue
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            called_name = None
+            if isinstance(node.func, ast.Name):
+                called_name = node.func.id
+            elif isinstance(node.func, ast.Attribute):
+                called_name = node.func.attr
+            if called_name in APIS:
+                result[called_name].append(
+                    f"{relative.as_posix()}:{getattr(node, 'lineno', '?')}"
+                )
+    for name in result:
+        result[name] = sorted(set(result[name]))
+    return result
+
+
+def main() -> None:
+    db_path = ROOT / "db.py"
+    player_path = ROOT / "systems" / "player_system.py"
+    db_text, _db_tree, db_defs = parse_file(db_path)
+    player_text, _player_tree, player_defs = parse_file(player_path)
+
+    import db
+    from systems import player_system
+
+    findings = []
+    for name in APIS:
+        if len(db_defs.get(name, [])) != 2:
+            fail(f"db.py: expected 2 definitions of {name}, got {len(db_defs.get(name, []))}")
+        if len(player_defs.get(name, [])) < 1:
+            fail(f"player_system.py: missing {name}")
+        final_db_source = ast.get_source_segment(db_text, db_defs[name][-1]) or ""
+        player_source = ast.get_source_segment(player_text, player_defs[name][0]) or ""
+        if "player_system" not in final_db_source:
+            fail(f"db.py final {name} is not a player_system wrapper")
+        capture = CAPTURES[name]
+        captured = getattr(db, capture, None)
+        if not callable(captured):
+            fail(f"missing callable legacy capture: {capture}")
+        if "_legacy_function" not in player_source:
+            fail(f"player_system.{name} no longer exposes the expected legacy audit path")
+        findings.append({
+            "name": name,
+            "capture": capture,
+            "db_signature": signature_text(getattr(db, name)),
+            "system_signature": signature_text(getattr(player_system, name)),
+            "legacy_signature": signature_text(captured),
+            "db_lines": [node.lineno for node in db_defs[name]],
+            "system_lines": [node.lineno for node in player_defs[name]],
+        })
+
+    # Read-only runtime equivalence for get_user_progress.
+    required_progress_keys = {
+        "level", "exp", "exp_to_next", "gold", "kills", "daily_hunts"
+    }
+    cursor = db.conn.cursor()
+    try:
+        cursor.execute("SELECT user_id FROM users ORDER BY user_id")
+        user_ids = [int(row[0]) for row in cursor.fetchall()]
+    except Exception:
+        user_ids = []
+
+    comparisons = 0
+    mismatches = []
+    contract_errors = []
+    public_progress = db.get_user_progress
+    system_progress = player_system.get_user_progress
+    legacy_progress = getattr(db, CAPTURES["get_user_progress"])
+
+    for user_id in user_ids:
+        values = {
+            "public": safe_call(public_progress, user_id),
+            "system": safe_call(system_progress, user_id),
+            "legacy": safe_call(legacy_progress, user_id),
+        }
+        comparisons += 1
+        normalized = {key: normalize(value) for key, value in values.items()}
+        if not (normalized["public"] == normalized["system"] == normalized["legacy"]):
+            mismatches.append((user_id, values))
+        ok, result = values["public"]
+        if not ok or not isinstance(result, dict):
+            contract_errors.append(f"user={user_id}: progress is not dict")
+        elif not required_progress_keys.issubset(result):
+            missing = sorted(required_progress_keys - set(result))
+            contract_errors.append(f"user={user_id}: missing keys {missing}")
+
+    missing_user_id = -987654321
+    missing_values = {
+        "public": safe_call(public_progress, missing_user_id),
+        "system": safe_call(system_progress, missing_user_id),
+        "legacy": safe_call(legacy_progress, missing_user_id),
+    }
+    if not (
+        normalize(missing_values["public"])
+        == normalize(missing_values["system"])
+        == normalize(missing_values["legacy"])
+    ):
+        mismatches.append((missing_user_id, missing_values))
+
+    if mismatches:
+        fail(f"get_user_progress public/system/legacy mismatch: {mismatches[0]}")
+    if contract_errors:
+        fail(f"get_user_progress contract error: {contract_errors[0]}")
+
+    # add_exp is intentionally not executed: i4a has zero DB mutations.
+    # Audit its legacy implementation structurally instead.
+    add_exp_legacy_node = db_defs["add_exp"][0]
+    add_exp_source = ast.get_source_segment(db_text, add_exp_legacy_node) or ""
+    required_add_exp_tokens = (
+        "get_exp_to_next_level",
+        "level_ups",
+        "UPDATE users",
+        "get_max_hp",
+        "exp_to_next",
+    )
+    missing_tokens = [token for token in required_add_exp_tokens if token not in add_exp_source]
+    if missing_tokens:
+        fail(f"legacy add_exp structure misses tokens: {missing_tokens}")
+
+    consumers = find_consumers()
+
+    report = [
+        "# ROM 9.0.12i4a - Player Progression Legacy Audit",
+        "",
+        "## Scope",
+        "",
+        "Read-only audit. No gameplay code, database rows, or legacy captures were changed.",
+        "",
+        "## Confirmed legacy references",
+        "",
+    ]
+    for item in findings:
+        report.extend([
+            f"### `{item['name']}`",
+            "",
+            f"- Capture: `{item['capture']}`",
+            f"- db.py definitions at lines: {item['db_lines']}",
+            f"- player_system.py definitions at lines: {item['system_lines']}",
+            f"- Public signature: `{item['db_signature']}`",
+            f"- System signature: `{item['system_signature']}`",
+            f"- Legacy signature: `{item['legacy_signature']}`",
+            "",
+        ])
+
+    report.extend([
+        "## Runtime contracts",
+        "",
+        f"- Existing users compared for `get_user_progress`: {comparisons}",
+        "- Public/system/legacy mismatches: 0",
+        f"- Required progress keys: {', '.join(sorted(required_progress_keys))}",
+        "- Missing-user behavior is equivalent across public/system/legacy paths.",
+        "- `add_exp` was not executed because i4a is strictly read-only.",
+        "- Legacy `add_exp` structurally includes level thresholds, level-up count, stat updates, max-HP synchronization, and result metadata.",
+        "",
+        "## Consumers",
+        "",
+    ])
+    for name in APIS:
+        report.append(f"### `{name}`")
+        report.append("")
+        if consumers[name]:
+            report.extend(f"- `{location}`" for location in consumers[name])
+        else:
+            report.append("- No external calls found.")
+        report.append("")
+
+    report.extend([
+        "## Conclusion",
+        "",
+        "Both remaining legacy refs are confirmed as Player Progression dependencies.",
+        "`get_user_progress` is safe to reimplement directly if its six-key dictionary contract is preserved.",
+        "`add_exp` requires a transactional equivalence test because it mutates EXP, level, five base stats, and stored max HP.",
+        "",
+        "## Recommended next step",
+        "",
+        "9.0.12i4b: implement direct Player Progression logic in systems/player_system.py while preserving both captures for rollback and equivalence testing on an isolated temporary user or rollback transaction.",
+        "",
+    ])
+    REPORT_PATH.write_text("\n".join(report), encoding="utf-8")
+
+    print("[OK] player progression legacy audit")
+    print("- public APIs: 2")
+    print("- legacy refs confirmed: 2")
+    print(f"- get_user_progress comparisons: {comparisons}")
+    print("- mismatches: 0")
+    print("- progress dict contract: OK")
+    print("- add_exp structural contract: OK")
+    print("- database mutations: 0")
+    print(f"- report: {REPORT_PATH}")
+
+
+if __name__ == "__main__":
+    main()
