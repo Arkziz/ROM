@@ -261,50 +261,6 @@ def seed_items():
 # ✅ USER
 # ==============================
 
-def create_user(user_id):
-    cursor.execute("""
-    INSERT OR IGNORE INTO users (
-        user_id,
-        hp,
-        max_hp,
-        level,
-        exp,
-        gold,
-        kills,
-        bag_slots,
-        current_location,
-        str,
-        dex,
-        intelligence,
-        wis,
-        sta,
-        equipped_weapon,
-        equipped_armor
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        user_id,
-        170,
-        170,
-        1,
-        0,
-        0.0,
-        0,
-        20,
-        "start_path",
-        10,
-        10,
-        10,
-        10,
-        10,
-        None,
-        None
-    ))
-
-    conn.commit()
-
-    ensure_equipment_slots(user_id)
-    migrate_legacy_equipment_to_slots(user_id)
 
 
 # ==============================
@@ -1763,71 +1719,6 @@ def process_contract_progress_on_kill(user_id, mob):
     }
 
 
-def claim_contract_reward(user_id):
-    reset_daily_contracts_if_needed(user_id)
-
-    active_contract = get_active_contract(user_id)
-
-    if not active_contract:
-        return {
-            "success": False,
-            "message": "📜 У тебе немає контракту для здачі."
-        }
-
-    if not active_contract.get("completed"):
-        return {
-            "success": False,
-            "message": (
-                "❌ Контракт ще не виконано.\n\n"
-                f"🎯 Ціль: {active_contract['target_mob_name']}\n"
-                f"📈 Прогрес: {active_contract['current_kills']}/{active_contract['target_kills']}"
-            )
-        }
-
-    if active_contract.get("reward_claimed"):
-        return {
-            "success": False,
-            "message": "✅ Нагороду за цей контракт уже отримано."
-        }
-
-    reward_exp = active_contract["reward_exp"]
-
-    exp_result = add_exp(user_id, reward_exp)
-
-    cursor.execute("""
-    UPDATE users
-    SET daily_contracts_completed = daily_contracts_completed + 1
-    WHERE user_id=?
-    """, (user_id,))
-
-    cursor.execute("""
-    UPDATE user_active_contracts
-    SET reward_claimed=1
-    WHERE id=?
-    """, (active_contract["id"],))
-
-    cursor.execute("""
-    DELETE FROM user_active_contracts
-    WHERE id=?
-    """, (active_contract["id"],))
-
-    conn.commit()
-
-    message = (
-        f"🎁 Контракт здано!\n\n"
-        f"🎯 Ціль: {active_contract['target_mob_name']}\n"
-        f"✨ Нагорода: +{reward_exp} EXP"
-    )
-
-    if exp_result and exp_result.get("level_ups", 0) > 0:
-        message += f"\n🏆 Новий рівень: {exp_result['level']}!"
-
-    return {
-        "success": True,
-        "message": message,
-        "reward_exp": reward_exp,
-        "exp_result": exp_result
-    }
 
 # ==============================
 # ✅ ENERGY SYSTEM
@@ -3208,51 +3099,6 @@ def seed_location_trash_items():
 # ✅ OVERRIDE create_user WITH 40 SLOTS
 # ==============================
 
-def create_user(user_id):
-    cursor.execute("""
-    INSERT OR IGNORE INTO users (
-        user_id,
-        hp,
-        max_hp,
-        level,
-        exp,
-        gold,
-        kills,
-        bag_slots,
-        current_location,
-        str,
-        dex,
-        intelligence,
-        wis,
-        sta,
-        equipped_weapon,
-        equipped_armor
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        user_id,
-        170,
-        170,
-        1,
-        0,
-        0.0,
-        0,
-        DEFAULT_BAG_SLOTS,
-        "start_path",
-        10,
-        10,
-        10,
-        10,
-        10,
-        None,
-        None
-    ))
-
-    conn.commit()
-
-    ensure_equipment_slots(user_id)
-    migrate_legacy_equipment_to_slots(user_id)
-    expand_bag_slots_to_40()
 
 # ==============================
 # ✅ GOLD FORMAT HELPERS
@@ -7146,96 +6992,16 @@ def get_guild_activity_reward_text(result):
 # - +3 Guild Resource
 # - +1 guild contract
 
-try:
-    _base_claim_contract_reward_before_guild_reward_v1 = claim_contract_reward
-except Exception:
-    _base_claim_contract_reward_before_guild_reward_v1 = None
 
 
-def _guild_contract_reward_result_success_v1(result):
-    if not result:
-        return False
-
-    if isinstance(result, dict):
-        if result.get("success") is False:
-            return False
-
-        message = str(result.get("message", ""))
-
-        if "🎁 Контракт здано" in message:
-            return True
-
-        if "Контракт здано" in message:
-            return True
-
-        return False
-
-    return False
 
 
-def _guild_contract_reward_append_message_v1(result, guild_result):
-    try:
-        guild_text = get_guild_activity_reward_text(guild_result)
-    except Exception:
-        guild_text = None
-
-    if not guild_text:
-        return result
-
-    if isinstance(result, dict):
-        message = str(result.get("message", ""))
-        if guild_text not in message:
-            result = dict(result)
-            result["message"] = message.rstrip() + "\n" + guild_text
-        return result
-
-    return result
 
 
 def claim_contract_reward(user_id):
-    """
-    FINAL OVERRIDE:
-    Здача контракту + Guild reward.
-    """
-
-    if _base_claim_contract_reward_before_guild_reward_v1 is None:
-        return {
-            "success": False,
-            "message": "❌ Функція здачі контракту недоступна."
-        }
-
-    # Зберігаємо active_contract ДО базової здачі, бо базова функція після нагороди
-    # видаляє контракт із user_active_contracts.
-    try:
-        active_contract_before_claim = get_active_contract(user_id)
-    except Exception:
-        active_contract_before_claim = None
-
-    result = _base_claim_contract_reward_before_guild_reward_v1(user_id)
-
-    if not _guild_contract_reward_result_success_v1(result):
-        return result
-
-    # Захист від випадкового нарахування, якщо до здачі контракту не було або він не completed.
-    if not active_contract_before_claim:
-        return result
-
-    try:
-        if not active_contract_before_claim.get("completed"):
-            return result
-        if active_contract_before_claim.get("reward_claimed"):
-            return result
-    except Exception:
-        return result
-
-    try:
-        contract_name = active_contract_before_claim.get("target_mob_name") or "контракт"
-        guild_result = award_guild_contract_completion(user_id, contract=contract_name)
-        result = _guild_contract_reward_append_message_v1(result, guild_result)
-    except Exception as error:
-        print(f"⚠️ Guild contract reward hook failed: {error}")
-
-    return result
+    """Public Contract Reward facade backed by systems.contract_system."""
+    from systems.contract_system import claim_contract_reward as _func
+    return _func(user_id)
 
 
 # ==============================
@@ -7319,9 +7085,6 @@ def run_guild_sanity_cleanup():
 # to avoid overloading db.py.
 
 
-def init_auction_house():
-    from systems.auction_house_system import init_auction_house as _init_auction_house
-    return _init_auction_house()
 
 
 def validate_auction_price(value):
@@ -7379,9 +7142,6 @@ def mark_auction_lot_status(lot_id, status_after, actor_user_id=None, event_type
     return _mark_auction_lot_status(lot_id, status_after, actor_user_id=actor_user_id, event_type=event_type, details=details)
 
 
-def update_expired_auction_lots():
-    from systems.auction_house_system import update_expired_auction_lots as _update_expired_auction_lots
-    return _update_expired_auction_lots()
 
 
 def get_auction_house_stats():

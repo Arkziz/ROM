@@ -4215,8 +4215,8 @@ def buy_auction_lot_v2(buyer_user_id, lot_id):
                 "success": False,
                 "message": (
                     "❌ Недостатньо золота.\n\n"
-                    f"💰 Потрібно: {format_auction_price(price)}\n"
-                    f"💰 У тебе: {format_auction_price(buyer_gold)}"
+                    f"💰 Потрібно: {decimal_to_price_text(price)}\n"
+                    f"💰 У тебе: {decimal_to_price_text(buyer_gold)}"
                 )
             }
 
@@ -4232,7 +4232,7 @@ def buy_auction_lot_v2(buyer_user_id, lot_id):
         _auction_set_user_gold(buyer_user_id, buyer_gold - price)
 
         now = now_iso()
-        delete_after = add_days_iso(now, AUCTION_UNCLAIMED_RETENTION_DAYS)
+        delete_after = _auction_plus_days_iso_v2(now, AUCTION_UNCLAIMED_RETENTION_DAYS_V2)
 
         cursor.execute("""
         UPDATE auction_lots
@@ -4274,7 +4274,7 @@ def buy_auction_lot_v2(buyer_user_id, lot_id):
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             lot_id,
-            AUCTION_HISTORY_PURCHASED,
+            AUCTION_HISTORY_SOLD,
             buyer_user_id,
             seller_user_id,
             buyer_user_id,

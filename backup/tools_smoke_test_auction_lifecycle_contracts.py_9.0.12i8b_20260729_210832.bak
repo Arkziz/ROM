@@ -1,0 +1,128 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Isolated in-memory contracts for Auction lifecycle duplicates."""
+from __future__ import annotations
+import ast
+import json
+import sqlite3
+import sys
+from pathlib import Path
+
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path: sys.path.insert(0,str(ROOT))
+import db
+from systems import auction_house_system as auction
+
+TARGETS=("init_auction_house","update_expired_auction_lots")
+NOW="2030-01-15T12:00:00"
+PAST="2030-01-01T12:00:00"
+FUTURE="2030-02-01T12:00:00"
+OLD_DELETE="2030-01-10T12:00:00"
+FUTURE_DELETE="2030-02-10T12:00:00"
+
+
+def fail(message):
+ print(f"[FAIL] {message}"); raise SystemExit(1)
+
+def parse_defs(path):
+ text=path.read_text(encoding="utf-8-sig"); tree=ast.parse(text,filename=str(path)); result={}
+ for node in tree.body:
+  if isinstance(node,(ast.FunctionDef,ast.AsyncFunctionDef)): result.setdefault(node.name,[]).append(node)
+ return text,result
+
+def insert_lot(cursor, seller, status, expires_at, delete_after=None, sold_at=None, suffix="x"):
+ now="2030-01-01T00:00:00"
+ cursor.execute(
+  """INSERT INTO auction_lots (
+  seller_user_id,buyer_user_id,item_type,item_source,item_ref_id,item_snapshot_json,
+  item_name,item_name_norm,category,rarity,level,enhancement_level,durability_current,
+  durability_max,quantity,price,status,created_at,expires_at,sold_at,claimed_at,
+  delete_after,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+  (seller,None,"equipment","fixture",None,json.dumps({"fixture":suffix}),
+   f"fixture-{suffix}",f"fixture-{suffix}","equipment","common",1,0,100,100,1,
+   "10.00",status,now,expires_at,sold_at,None,delete_after,now),
+ )
+ return int(cursor.lastrowid)
+def status(cursor,lot_id):
+ row=cursor.execute("SELECT status,delete_after,updated_at FROM auction_lots WHERE id=?",(lot_id,)).fetchone()
+ return tuple(row) if row else None
+
+def main():
+ db_text,db_defs=parse_defs(ROOT/"db.py")
+ system_text,system_defs=parse_defs(ROOT/"systems"/"auction_house_system.py")
+ for name in TARGETS:
+  if len(db_defs.get(name,[]))!=2: fail(f"db.py {name}: definitions={len(db_defs.get(name,[]))}, expected 2")
+  if len(system_defs.get(name,[]))<1: fail(f"auction_house_system.py missing {name}")
+  final=ast.get_source_segment(db_text,db_defs[name][-1]) or ""
+  if "auction_house_system" not in final: fail(f"final db.{name} is not Auction System wrapper")
+
+ real_conn=auction.conn; real_cursor=auction.cursor
+ memory=sqlite3.connect(":memory:")
+ memory.row_factory=sqlite3.Row
+ cursor=memory.cursor()
+ auction.conn=memory; auction.cursor=cursor
+ checks=0
+ try:
+  # Public init delegates to the isolated system connection and is idempotent.
+  if db.init_auction_house() is not True: fail("public init return contract failed")
+  if db.init_auction_house() is not True: fail("second public init return contract failed")
+  tables={r[0] for r in cursor.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
+  if not {"auction_lots","auction_history"}.issubset(tables): fail("auction schema initialization failed")
+  checks+=3
+
+  active_expired=insert_lot(cursor,-90120801,"ACTIVE",PAST,suffix="active-expired")
+  active_future=insert_lot(cursor,-90120802,"ACTIVE",FUTURE,suffix="active-future")
+  expired_old=insert_lot(cursor,-90120803,"EXPIRED_UNCLAIMED",PAST,OLD_DELETE,suffix="expired-old")
+  expired_future=insert_lot(cursor,-90120804,"EXPIRED_UNCLAIMED",PAST,FUTURE_DELETE,suffix="expired-future")
+  sold_old=insert_lot(cursor,-90120805,"SOLD_UNCLAIMED",PAST,OLD_DELETE,PAST,"sold-old")
+  sold_claimed=insert_lot(cursor,-90120806,"SOLD_CLAIMED",PAST,OLD_DELETE,PAST,"sold-claimed")
+  expired_missing=insert_lot(cursor,-90120807,"EXPIRED_UNCLAIMED",PAST,None,suffix="expired-missing-delete")
+  memory.commit()
+
+  result=db.update_expired_auction_lots(now_iso=NOW)
+  required={"success","now","expired_active","deleted_expired_unclaimed","deleted_sold_unclaimed","fixed_missing_delete_after"}
+  if not isinstance(result,dict) or not required.issubset(result): fail(f"cleanup result contract failed: {result!r}")
+  if result["success"] is not True or result["now"]!=NOW: fail("cleanup success/now contract failed")
+  if int(result["expired_active"])!=1: fail(f"expired_active={result['expired_active']}, expected 1")
+  if int(result["deleted_expired_unclaimed"])!=1: fail("expired-unclaimed deletion count failed")
+  if int(result["deleted_sold_unclaimed"])!=1: fail("sold-unclaimed deletion count failed")
+  if int(result["fixed_missing_delete_after"])!=1: fail("missing delete_after fix count failed")
+  checks+=6
+
+  if status(cursor,active_expired)[0]!="EXPIRED_UNCLAIMED": fail("expired ACTIVE transition failed")
+  if not status(cursor,active_expired)[1]: fail("expired ACTIVE delete_after missing")
+  if status(cursor,active_future)[0]!="ACTIVE": fail("future ACTIVE lot changed")
+  if status(cursor,expired_old)[0]!="DELETED": fail("old EXPIRED_UNCLAIMED not deleted")
+  if status(cursor,expired_future)[0]!="EXPIRED_UNCLAIMED": fail("future retained lot changed")
+  if status(cursor,sold_old)[0]!="DELETED": fail("old SOLD_UNCLAIMED not deleted")
+  if status(cursor,sold_claimed)[0]!="SOLD_CLAIMED": fail("claimed sale changed")
+  if not status(cursor,expired_missing)[1]: fail("missing delete_after was not repaired")
+  checks+=8
+
+  # Same timestamp must be idempotent.
+  second=db.update_expired_auction_lots(now_iso=NOW)
+  for key in ("expired_active","deleted_expired_unclaimed","deleted_sold_unclaimed","fixed_missing_delete_after"):
+   if int(second.get(key,-1))!=0: fail(f"idempotency failed for {key}: {second.get(key)}")
+  checks+=4
+
+  # Direct system path and public wrapper must return the same empty delta now.
+  direct=auction.update_expired_auction_lots(now_iso=NOW)
+  public=db.update_expired_auction_lots(now_iso=NOW)
+  if direct!=public: fail(f"public/system cleanup mismatch: {public!r} != {direct!r}")
+  checks+=1
+ finally:
+  auction.conn=real_conn; auction.cursor=real_cursor
+  memory.close()
+
+ # Real project connection was never replaced or mutated.
+ if auction.conn is not real_conn or auction.cursor is not real_cursor: fail("Auction globals were not restored")
+ print("[OK] auction lifecycle isolated contracts")
+ print(f"- lifecycle checks: {checks}")
+ print("- schema init idempotency: OK")
+ print("- ACTIVE expiration transition: OK")
+ print("- unclaimed retention deletion: OK")
+ print("- claimed/future lot preservation: OK")
+ print("- cleanup idempotency: OK")
+ print("- public/system comparison: OK")
+ print("- real database mutations: 0")
+if __name__=="__main__": main()
