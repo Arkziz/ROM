@@ -4,6 +4,8 @@ from db import (
     get_current_hp,
     set_current_hp,
     get_max_hp,
+    get_user_mp,
+    set_user_mp,
     find_first_item_stack_by_type
 )
 
@@ -78,6 +80,7 @@ def get_potion_description(item_id):
 # ==============================
 
 def use_potion_from_inventory(user_id, inventory_id):
+    """Use a supported HP or MP potion from one inventory stack."""
     entry = get_inventory_entry(user_id, inventory_id)
 
     if not entry:
@@ -103,9 +106,45 @@ def use_potion_from_inventory(user_id, inventory_id):
         }
 
     if potion["type"] == "mp":
+        mp_data = get_user_mp(user_id)
+        current_mp = int(mp_data.get("mp", mp_data.get("current_mp", 0)) or 0)
+        max_mp = int(mp_data.get("max_mp", 0) or 0)
+
+        if max_mp <= 0:
+            return {
+                "success": False,
+                "message": "🔵 Твій клас не використовує ману"
+            }
+
+        if current_mp >= max_mp:
+            return {
+                "success": False,
+                "message": "🔵 Мана вже повна"
+            }
+
+        new_mp = min(max_mp, current_mp + int(potion["restore"]))
+        real_restore = new_mp - current_mp
+
+        consumed = consume_inventory_item(user_id, inventory_id, 1)
+        if not consumed:
+            return {
+                "success": False,
+                "message": "❌ Не вдалося використати зілля"
+            }
+
+        set_user_mp(user_id, new_mp)
+
         return {
-            "success": False,
-            "message": "🔵 Мана ще не реалізована. Це зілля поки не можна використати."
+            "success": True,
+            "resource": "mp",
+            "message": (
+                f"{potion['name']} використано.\n"
+                f"🔵 Відновлено: +{real_restore} MP\n"
+                f"🔵 Мана: {new_mp}/{max_mp}"
+            ),
+            "restore_mp": real_restore,
+            "new_mp": new_mp,
+            "max_mp": max_mp
         }
 
     current_hp = get_current_hp(user_id)
@@ -133,6 +172,7 @@ def use_potion_from_inventory(user_id, inventory_id):
 
     return {
         "success": True,
+        "resource": "hp",
         "message": (
             f"{potion['name']} використано.\n"
             f"❤️ Відновлено: +{real_heal} HP\n"
@@ -142,6 +182,7 @@ def use_potion_from_inventory(user_id, inventory_id):
         "new_hp": new_hp,
         "max_hp": max_hp
     }
+
 
 
 # ==============================

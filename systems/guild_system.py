@@ -2291,6 +2291,25 @@ def _guild_activity_result_text(result):
     return "🏰 Гільдія: " + ", ".join(parts)
 
 
+def _get_guild_event_actor_name(user_id):
+    """Resolve a character name for Guild log enrichment.
+
+    A lazy Character System import avoids introducing a module-import cycle.
+    Empty, invalid, or unavailable names intentionally produce an empty string,
+    so Guild events keep their previous text without exposing a technical ID.
+    """
+    try:
+        from systems.character_system import get_character_name
+
+        actor_name = get_character_name(user_id)
+        if actor_name is None:
+            return ""
+
+        actor_name = str(actor_name).strip()
+        return actor_name
+    except Exception:
+        return ""
+
 def award_guild_elite_kill(user_id, mob=None):
     """
     Нарахування прогресу гільдії за перемогу над елітним мобом.
@@ -2313,14 +2332,20 @@ def award_guild_elite_kill(user_id, mob=None):
     except Exception:
         pass
 
+    actor_name = str(_get_guild_event_actor_name(user_id) or "").strip()
+    reason = f"{GUILD_ELITE_KILL_SCORE_REASON}: {mob_name}."
+    if actor_name:
+        reason += f" (переміг: {actor_name})"
+
     return add_user_guild_progress(
         user_id=user_id,
         exp=GUILD_ELITE_KILL_EXP_REWARD,
         resource=GUILD_ELITE_KILL_RESOURCE_REWARD,
         kills=1,
         contracts=0,
-        reason=f"{GUILD_ELITE_KILL_SCORE_REASON}: {mob_name}."
+        reason=reason
     )
+
 
 
 def award_guild_contract_completion(user_id, contract=None):
@@ -2341,11 +2366,22 @@ def award_guild_contract_completion(user_id, contract=None):
     contract_name = "контракт"
     try:
         if isinstance(contract, dict):
-            contract_name = contract.get("name") or contract.get("title") or contract.get("contract_name") or contract_name
+            contract_name = (
+                contract.get("target_mob_name")
+                or contract.get("name")
+                or contract.get("title")
+                or contract.get("contract_name")
+                or contract_name
+            )
         elif contract:
             contract_name = str(contract)
     except Exception:
         pass
+
+    actor_name = str(_get_guild_event_actor_name(user_id) or "").strip()
+    reason = f"{GUILD_CONTRACT_SCORE_REASON}: {contract_name}."
+    if actor_name:
+        reason += f" (виконав: {actor_name})"
 
     return add_user_guild_progress(
         user_id=user_id,
@@ -2353,8 +2389,9 @@ def award_guild_contract_completion(user_id, contract=None):
         resource=GUILD_CONTRACT_RESOURCE_REWARD,
         kills=0,
         contracts=1,
-        reason=f"{GUILD_CONTRACT_SCORE_REASON}: {contract_name}."
+        reason=reason
     )
+
 
 
 def get_guild_activity_reward_text(result):

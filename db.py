@@ -190,61 +190,21 @@ def init_db():
 # ==============================
 
 def seed_items():
+    """Seed active consumables only.
+
+    Legacy static equipment 1-26, legacy trash 101-106, and the obsolete
+    Rune of Strength definition for ID 301 were retired in ROM 9.0.13b.
+    """
     items = [
-        (1, "⚪ Старий меч", "weapon", "common", "equipment", "main_hand", 1, 1, 1.00, 1, 0, 0, 0, 0, 0, 0),
-        (2, "🟢 Залізний меч", "weapon", "uncommon", "equipment", "main_hand", 1, 1, 3.00, 2, 0, 0, 0, 0, 0, 0),
-        (3, "🔵 Меч воїна", "weapon", "rare", "equipment", "main_hand", 1, 1, 8.00, 4, 0, 0, 0, 0, 0, 0),
-        (4, "🟣 Епічний клинок", "weapon", "epic", "equipment", "main_hand", 2, 1, 25.00, 7, 0, 0, 0, 0, 0, 0),
-
-        (8, "⚪ Деревʼяний щит", "offhand", "common", "equipment", "off_hand", 1, 1, 1.00, 0, 0, 0, 0, 1, 2, 0),
-        (9, "🟢 Малий круглий щит", "offhand", "uncommon", "equipment", "off_hand", 1, 1, 3.00, 0, 0, 0, 0, 2, 4, 0),
-        (10, "🔵 Рунічна сфера", "offhand", "rare", "equipment", "off_hand", 1, 1, 8.00, 0, 0, 1, 3, 0, 0, 5),
-
-        (11, "⚪ Старий шолом", "helmet", "common", "equipment", "helmet", 1, 1, 1.00, 0, 0, 0, 0, 1, 2, 0),
-        (12, "🟢 Шкіряний капюшон", "helmet", "uncommon", "equipment", "helmet", 1, 1, 3.00, 0, 1, 0, 1, 1, 3, 1),
-
-        (13, "⚪ Потерті наплічники", "shoulders", "common", "equipment", "shoulders", 1, 1, 1.00, 0, 0, 0, 0, 1, 2, 0),
-        (14, "🟢 Наплічники слідопита", "shoulders", "uncommon", "equipment", "shoulders", 1, 1, 3.00, 0, 1, 0, 0, 2, 4, 0),
-
-        (5, "⚪ Стара броня", "armor", "common", "equipment", "chest", 1, 1, 1.00, 0, 0, 0, 1, 1, 2, 0),
-        (6, "🟢 Шкіряна броня", "armor", "uncommon", "equipment", "chest", 1, 1, 3.00, 0, 1, 0, 2, 2, 4, 1),
-        (7, "🔵 Лицарська броня", "armor", "rare", "equipment", "chest", 1, 1, 8.00, 0, 2, 0, 3, 4, 8, 2),
-
-        (15, "⚪ Старі рукавиці", "gloves", "common", "equipment", "gloves", 1, 1, 1.00, 0, 0, 0, 0, 1, 1, 0),
-        (16, "🟢 Рукавиці мисливця", "gloves", "uncommon", "equipment", "gloves", 1, 1, 3.00, 1, 1, 0, 0, 1, 2, 0),
-
-        (17, "⚪ Старі поножі", "legs", "common", "equipment", "legs", 1, 1, 1.00, 0, 0, 0, 0, 1, 2, 0),
-        (18, "🟢 Шкіряні поножі", "legs", "uncommon", "equipment", "legs", 1, 1, 3.00, 0, 1, 0, 0, 2, 4, 0),
-
-        (19, "⚪ Старі чоботи", "boots", "common", "equipment", "boots", 1, 1, 1.00, 0, 1, 0, 0, 0, 1, 0),
-        (20, "🟢 Чоботи слідопита", "boots", "uncommon", "equipment", "boots", 1, 1, 3.00, 0, 2, 0, 0, 1, 2, 0),
-
-        (21, "⚪ Простий амулет", "necklace", "common", "equipment", "necklace", 1, 1, 1.00, 0, 0, 0, 1, 0, 0, 2),
-        (22, "🟢 Амулет мудрості", "necklace", "uncommon", "equipment", "necklace", 1, 1, 3.00, 0, 0, 0, 3, 0, 0, 5),
-        (23, "🔵 Рунічне намисто", "necklace", "rare", "equipment", "necklace", 1, 1, 8.00, 0, 0, 1, 5, 0, 0, 10),
-
-        (24, "⚪ Мідне кільце", "ring", "common", "equipment", "ring", 1, 1, 1.00, 1, 0, 0, 0, 0, 0, 0),
-        (25, "🟢 Перстень спритності", "ring", "uncommon", "equipment", "ring", 1, 1, 3.00, 0, 3, 0, 0, 0, 0, 0),
-        (26, "🔵 Перстень сили", "ring", "rare", "equipment", "ring", 1, 1, 8.00, 5, 0, 0, 0, 0, 0, 0),
-
-        (101, "🐾 Густа вовча шкура", "trash", "grey", "trash", None, 1, 20, 0.50, 0, 0, 0, 0, 0, 0, 0),
-        (102, "🐗 Жорстка щетина", "trash", "grey", "trash", None, 1, 20, 0.15, 0, 0, 0, 0, 0, 0, 0),
-        (103, "🦡 Борсучий жир", "trash", "grey", "trash", None, 1, 20, 0.25, 0, 0, 0, 0, 0, 0, 0),
-        (104, "👹 Гоблінська сережка", "trash", "grey", "trash", None, 1, 20, 0.35, 0, 0, 0, 0, 0, 0, 0),
-        (105, "🕷️ Липка павутина", "trash", "grey", "trash", None, 1, 20, 0.60, 0, 0, 0, 0, 0, 0, 0),
-        (106, "💎 Тріснутий рунічний уламок", "trash", "grey", "trash", None, 1, 20, 0.75, 0, 0, 0, 0, 0, 0, 0),
-
         (201, "🔴 Мале зілля здоров’я", "potion_hp", "common", "potion", None, 1, 10, 1.00, 0, 0, 0, 0, 0, 0, 0),
         (202, "🔵 Мале зілля мани", "potion_mp", "common", "potion", None, 1, 10, 1.20, 0, 0, 0, 0, 0, 0, 0),
         (203, "🔴 Середнє зілля здоров’я", "potion_hp_medium", "common", "potion", None, 1, 10, 3.00, 0, 0, 0, 0, 0, 0, 0),
         (204, "🔵 Середнє зілля мани", "potion_mp_medium", "common", "potion", None, 1, 10, 3.60, 0, 0, 0, 0, 0, 0, 0),
-
-        (301, "💎 Руна Сили I", "rune_str", "common", "rune", None, 1, 5, 1.00, 1, 0, 0, 0, 0, 0, 0),
     ]
 
     for item in items:
         cursor.execute("""
-        INSERT OR REPLACE INTO items (
+        INSERT INTO items (
             id, name, type, rarity, category,
             slot_key, weapon_hands,
             max_stack, sell_price,
@@ -252,9 +212,26 @@ def seed_items():
             pdef, mdef
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+            name=excluded.name,
+            type=excluded.type,
+            rarity=excluded.rarity,
+            category=excluded.category,
+            slot_key=excluded.slot_key,
+            weapon_hands=excluded.weapon_hands,
+            max_stack=excluded.max_stack,
+            sell_price=excluded.sell_price,
+            bonus_str=excluded.bonus_str,
+            bonus_dex=excluded.bonus_dex,
+            bonus_int=excluded.bonus_int,
+            bonus_wis=excluded.bonus_wis,
+            bonus_sta=excluded.bonus_sta,
+            pdef=excluded.pdef,
+            mdef=excluded.mdef
         """, item)
 
     conn.commit()
+
 
 
 # ==============================
@@ -3082,7 +3059,7 @@ def seed_location_trash_items():
 
     for item in trash_items:
         cursor.execute("""
-        INSERT OR REPLACE INTO items (
+        INSERT INTO items (
             id, name, type, rarity, category,
             slot_key, weapon_hands,
             max_stack, sell_price,
@@ -3090,9 +3067,26 @@ def seed_location_trash_items():
             pdef, mdef
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+            name=excluded.name,
+            type=excluded.type,
+            rarity=excluded.rarity,
+            category=excluded.category,
+            slot_key=excluded.slot_key,
+            weapon_hands=excluded.weapon_hands,
+            max_stack=excluded.max_stack,
+            sell_price=excluded.sell_price,
+            bonus_str=excluded.bonus_str,
+            bonus_dex=excluded.bonus_dex,
+            bonus_int=excluded.bonus_int,
+            bonus_wis=excluded.bonus_wis,
+            bonus_sta=excluded.bonus_sta,
+            pdef=excluded.pdef,
+            mdef=excluded.mdef
         """, item)
 
     conn.commit()
+
 
 
 # ==============================
@@ -3651,7 +3645,7 @@ def seed_class_reset_sphere_item():
 
     try:
         cursor.execute("""
-        INSERT OR REPLACE INTO items (
+        INSERT INTO items (
             id,
             name,
             type,
@@ -3670,6 +3664,22 @@ def seed_class_reset_sphere_item():
             mdef
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+            name=excluded.name,
+            type=excluded.type,
+            rarity=excluded.rarity,
+            category=excluded.category,
+            slot_key=excluded.slot_key,
+            weapon_hands=excluded.weapon_hands,
+            max_stack=excluded.max_stack,
+            sell_price=excluded.sell_price,
+            bonus_str=excluded.bonus_str,
+            bonus_dex=excluded.bonus_dex,
+            bonus_int=excluded.bonus_int,
+            bonus_wis=excluded.bonus_wis,
+            bonus_sta=excluded.bonus_sta,
+            pdef=excluded.pdef,
+            mdef=excluded.mdef
         """, (
             CLASS_RESET_SPHERE_ITEM_ID,
             "🔮 Сфера нового шляху",
@@ -3692,6 +3702,7 @@ def seed_class_reset_sphere_item():
         conn.commit()
     except Exception:
         pass
+
 
 
 

@@ -1312,6 +1312,25 @@ def append_effects_to_combat_text(text, mob):
 # 🧪 POTION COOLDOWN
 # ==============================
 
+def format_combat_turns_uk(value):
+    """Return a Ukrainian turn count with correct plural form."""
+    try:
+        value = max(0, int(value))
+    except Exception:
+        value = 0
+
+    mod_10 = value % 10
+    mod_100 = value % 100
+
+    if mod_10 == 1 and mod_100 != 11:
+        word = "хід"
+    elif mod_10 in (2, 3, 4) and mod_100 not in (12, 13, 14):
+        word = "ходи"
+    else:
+        word = "ходів"
+
+    return f"{value} {word}"
+
 def get_potion_cooldown_turns_by_inventory_id(inventory_id):
     item = get_item_by_inventory_id_full(inventory_id)
 
@@ -1340,17 +1359,25 @@ def get_potion_cooldown_turns_by_inventory_id(inventory_id):
         sell_price
     ) = item
 
-    if type_ == "potion_hp_medium":
+    if type_ in ("potion_hp_medium", "potion_mp_medium"):
         return 5
 
-    if type_ == "potion_hp":
+    if type_ in ("potion_hp", "potion_mp"):
         return 3
 
     return 3
 
 
-def build_combat_potion_kb(user_id):
+
+def build_combat_potion_kb(user_id, cooldown=0):
     items = get_inventory_detailed(user_id)
+    profile_summary = get_character_profile_summary(user_id)
+    uses_mana = profile_summary.get("resource_type") == "mana"
+
+    try:
+        cooldown = max(0, int(cooldown or 0))
+    except Exception:
+        cooldown = 0
 
     kb = types.InlineKeyboardMarkup()
     found = False
@@ -1376,18 +1403,32 @@ def build_combat_potion_kb(user_id):
             sell_price
         ) = item
 
-        if category == "potion" and type_ in ["potion_hp", "potion_hp_medium"]:
-            found = True
+        is_hp_potion = type_ in ("potion_hp", "potion_hp_medium")
+        is_mp_potion = type_ in ("potion_mp", "potion_mp_medium")
 
-            cooldown = 3
+        if category != "potion" or not (is_hp_potion or (uses_mana and is_mp_potion)):
+            continue
 
-            if type_ == "potion_hp_medium":
-                cooldown = 5
+        found = True
 
-            kb.add(types.InlineKeyboardButton(
-                text=f"{name} x{quantity} — cooldown {cooldown} ход.",
-                callback_data=f"combat_potion_{inv_id}"
-            ))
+        if cooldown > 0:
+            button_text = (
+                f"⏳ {name} x{quantity}, "
+                f"доступно через {format_combat_turns_uk(cooldown)}"
+            )
+        else:
+            potion_cooldown = (
+                5 if type_ in ("potion_hp_medium", "potion_mp_medium") else 3
+            )
+            button_text = (
+                f"{name} x{quantity} — "
+                f"cooldown {format_combat_turns_uk(potion_cooldown)}"
+            )
+
+        kb.add(types.InlineKeyboardButton(
+            text=button_text,
+            callback_data=f"combat_potion_{inv_id}"
+        ))
 
     if not found:
         return None
@@ -1398,6 +1439,8 @@ def build_combat_potion_kb(user_id):
     ))
 
     return kb
+
+
 
 
 def build_death_text(durability_damage):
@@ -2923,44 +2966,35 @@ def register_combat_handlers(bot):
 
     @bot.message_handler(func=lambda m: m.text == "🧪 Зілля")
     def choose_potion_in_combat(message):
-        user_id = message.from_user.id
+            user_id = message.from_user.id
 
-        if not hasattr(bot, "user_data") or user_id not in bot.user_data:
+            if not hasattr(bot, "user_data") or user_id not in bot.user_data:
+                bot.send_message(
+                    message.chat.id,
+                    "❗ Ти не в бою",
+                    reply_markup=main_kb()
+                )
+                return
+
+            mob = bot.user_data[user_id]
+            cooldown = mob.get("potion_cooldown", 0)
+            kb = build_combat_potion_kb(user_id, cooldown=cooldown)
+
+            if not kb:
+        
+                bot.send_message(
+                    message.chat.id,
+                    "❌ У тебе немає доступних зіль",
+                    reply_markup=build_combat_inline_kb(user_id, mob)
+                )
+                return
+
             bot.send_message(
                 message.chat.id,
-                "❗ Ти не в бою",
-                reply_markup=main_kb()
+                "🧪 Обери зілля, яке хочеш випити:",
+                reply_markup=kb
             )
-            return
 
-        mob = bot.user_data[user_id]
-        cooldown = mob.get("potion_cooldown", 0)
-
-        if cooldown > 0:
-    
-            bot.send_message(
-                message.chat.id,
-                f"🔴 Повний шлунок: зілля можна буде випити через {cooldown} ход.",
-                reply_markup=build_combat_inline_kb(user_id, mob)
-            )
-            return
-
-        kb = build_combat_potion_kb(user_id)
-
-        if not kb:
-    
-            bot.send_message(
-                message.chat.id,
-                "❌ У тебе немає зілля здоров’я",
-                reply_markup=build_combat_inline_kb(user_id, mob)
-            )
-            return
-
-        bot.send_message(
-            message.chat.id,
-            "🧪 Обери зілля, яке хочеш випити:",
-            reply_markup=kb
-        )
 
     @bot.callback_query_handler(func=lambda call: call.data == "combat_back")
     def combat_back(call):
@@ -2988,83 +3022,90 @@ def register_combat_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("combat_potion_"))
     def use_selected_potion_in_combat(call):
-        user_id = call.from_user.id
+            user_id = call.from_user.id
 
-        if not hasattr(bot, "user_data") or user_id not in bot.user_data:
+            if not hasattr(bot, "user_data") or user_id not in bot.user_data:
+                bot.answer_callback_query(call.id)
+
+                bot.send_message(
+                    call.message.chat.id,
+                    "❗ Бій уже завершено",
+                    reply_markup=main_kb()
+                )
+                return
+
+            mob = bot.user_data[user_id]
+            character_name = get_character_name(user_id) or "Без імені"
+
+            cooldown = mob.get("potion_cooldown", 0)
+
+            if cooldown > 0:
+                bot.answer_callback_query(call.id)
+        
+
+                bot.send_message(
+                    call.message.chat.id,
+                    f"🔴 Повний шлунок: зілля можна буде випити через {format_combat_turns_uk(cooldown)}.",
+                    reply_markup=build_combat_inline_kb(user_id, mob)
+                )
+                return
+
+            inventory_id = int(call.data.split("_")[2])
+            cooldown_turns = get_potion_cooldown_turns_by_inventory_id(inventory_id)
+
+            potion_result = use_potion_from_inventory(user_id, inventory_id)
+
+            if not potion_result["success"]:
+                bot.answer_callback_query(call.id)
+        
+
+                bot.send_message(
+                    call.message.chat.id,
+                    potion_result["message"],
+                    reply_markup=build_combat_inline_kb(user_id, mob)
+                )
+                return
+
             bot.answer_callback_query(call.id)
 
-            bot.send_message(
-                call.message.chat.id,
-                "❗ Бій уже завершено",
-                reply_markup=main_kb()
+            mob["potion_cooldown"] = cooldown_turns
+
+            resource = potion_result.get("resource", "hp")
+
+            if resource == "mp":
+                mob["player_mp"] = potion_result["new_mp"]
+                mob["player_max_mp"] = potion_result["max_mp"]
+            else:
+                player_hp = potion_result["new_hp"]
+                player_max_hp = potion_result["max_hp"]
+                mob["player_hp"] = player_hp
+                mob["player_max_hp"] = player_max_hp
+
+            player_hp = mob.get("player_hp", get_current_hp(user_id))
+            player_max_hp = mob.get("player_max_hp", get_max_hp(user_id))
+            class_resource_text = get_class_resource_line(mob)
+
+            text = (
+                f"🧪 ЗІЛЛЯ\n\n"
+                f"{potion_result['message']}\n\n"
+                f"✅ Хід не витрачено — {mob['name']} не атакує після використання зілля.\n"
+                f"🔴 Повний шлунок: {format_combat_turns_uk(cooldown_turns)}.\n\n"
+                f"❤️ {character_name}: {player_hp}/{player_max_hp}\n"
+                f"{hp_bar(player_hp, player_max_hp)}\n"
+                f"{class_resource_text}\n"
+                f"👹 {mob['name']}: {mob['hp']}/{mob['max_hp']}\n"
+                f"{hp_bar(mob['hp'], mob['max_hp'])}"
             )
-            return
 
-        mob = bot.user_data[user_id]
-        character_name = get_character_name(user_id) or "Без імені"
+            text = append_effects_to_combat_text(text, mob)
 
-        cooldown = mob.get("potion_cooldown", 0)
-
-        if cooldown > 0:
-            bot.answer_callback_query(call.id)
-    
 
             bot.send_message(
                 call.message.chat.id,
-                f"🔴 Повний шлунок: зілля можна буде випити через {cooldown} ход.",
+                text,
                 reply_markup=build_combat_inline_kb(user_id, mob)
             )
-            return
 
-        inventory_id = int(call.data.split("_")[2])
-        cooldown_turns = get_potion_cooldown_turns_by_inventory_id(inventory_id)
-
-        potion_result = use_potion_from_inventory(user_id, inventory_id)
-
-        if not potion_result["success"]:
-            bot.answer_callback_query(call.id)
-    
-
-            bot.send_message(
-                call.message.chat.id,
-                potion_result["message"],
-                reply_markup=build_combat_inline_kb(user_id, mob)
-            )
-            return
-
-        bot.answer_callback_query(call.id)
-
-        mob["potion_cooldown"] = cooldown_turns
-
-        player_hp = potion_result["new_hp"]
-        player_max_hp = potion_result["max_hp"]
-
-        # Оновлюємо здоров'я в mob
-        mob["player_hp"] = player_hp
-        mob["player_max_hp"] = player_max_hp
-
-        class_resource_text = get_class_resource_line(mob)
-
-        text = (
-            f"🧪 ЗІЛЛЯ\n\n"
-            f"{potion_result['message']}\n\n"
-            f"✅ Хід не витрачено — {mob['name']} не атакує після використання зілля.\n"
-            f"🔴 Повний шлунок: {cooldown_turns} ход.\n\n"
-            f"❤️ {character_name}: {player_hp}/{player_max_hp}\n"
-            f"{hp_bar(player_hp, player_max_hp)}\n"
-            f"{class_resource_text}\n"
-            f"👹 {mob['name']}: {mob['hp']}/{mob['max_hp']}\n"
-            f"{hp_bar(mob['hp'], mob['max_hp'])}"
-        )
-
-        text = append_effects_to_combat_text(text, mob)
-
-
-        bot.send_message(
-            call.message.chat.id,
-            text,
-            reply_markup=build_combat_inline_kb(user_id, mob)
-        )
 
     @bot.message_handler(func=lambda m: m.text == "🏃 Втекти")
     def escape(message):

@@ -431,22 +431,40 @@ def register_start_handlers(bot):
 
         bot.answer_callback_query(call.id)
 
-        if not consume_result["success"]:
+        # Character System returns bool for consume_class_change_available().
+        # Keep compatibility with a possible historical dict result as well.
+        if isinstance(consume_result, dict):
+            consume_success = bool(consume_result.get("success"))
+            consume_message = consume_result.get(
+                "message",
+                "❌ Не вдалося використати право на зміну класу."
+            )
+        else:
+            consume_success = bool(consume_result)
+            consume_message = "❌ Не вдалося використати право на зміну класу."
+
+        if not consume_success:
             bot.send_message(
                 call.message.chat.id,
-                consume_result["message"]
+                consume_message
             )
             return
 
         unequip_result = unequip_incompatible_items_after_class_change(user_id)
         unequip_text = build_class_change_unequip_text_local(unequip_result)
+        new_class_name = (
+            result.get("class_name")
+            or get_character_class_display(user_id)
+            or result.get("class_key")
+            or class_key
+        )
 
         bot.send_message(
             call.message.chat.id,
             (
                 f"🔮 Клас змінено.\n\n"
                 f"Було: {old_class}\n"
-                f"Стало: {result['class_name']}"
+                f"Стало: {new_class_name}"
                 f"{unequip_text}"
             )
         )
