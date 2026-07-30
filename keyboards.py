@@ -63,6 +63,7 @@ def trader_kb():
 def craft_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.add("⚒️ Коваль", "🧪 Алхімік")
+    kb.add("💠 Рунний Майстер")
     kb.add("🔙 Місто")
     return kb
 
@@ -162,3 +163,16 @@ def combat_placeholder_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=False)
     kb.add("⚔️ Бій триває...")
     return kb
+
+# ==============================
+# ROM 10.8.1 RUNE MASTER DEDICATED MENU
+# ==============================
+
+def rune_master_kb():
+    """Dedicated Rune Master menu without Blacksmith/Alchemist buttons."""
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("💠 Вставити руну", "🔄 Переробити руни")
+    kb.add("🧰 Екстрактор")
+    kb.add("🔙 Ремісничий квартал")
+    return kb
+

@@ -545,3 +545,27 @@ def roll_loot(user_id, mob):
 
     return messages
 
+# ==============================
+# ROM 10.11.0 RUNE DROP VICTORY INTEGRATION
+# ==============================
+_RUNE_DROP_BASE_PROCESS_VICTORY_REWARD_10_11_0 = process_victory_reward
+
+
+def process_victory_reward(user_id, player_level, mob):
+    """Preserve all existing rewards and append one independent rune roll."""
+    reward = _RUNE_DROP_BASE_PROCESS_VICTORY_REWARD_10_11_0(user_id, player_level, mob)
+    try:
+        from systems.rune_system import award_rune_drop
+        rune_result = award_rune_drop(user_id, mob)
+    except Exception as error:
+        print(f"⚠️ Rune drop reward failed: {error}")
+        rune_result = {"dropped": False, "error": str(error)}
+    reward = dict(reward)
+    reward["rune_drop"] = rune_result
+    if rune_result.get("dropped") and rune_result.get("message"):
+        reward.setdefault("loot_messages", []).append(rune_result["message"])
+    # Rune award may consume a new bag slot, so refresh counters after the roll.
+    reward["used_slots"] = get_inventory_used_slots(user_id)
+    reward["capacity"] = get_bag_capacity(user_id)
+    return reward
+

@@ -1155,3 +1155,215 @@ def _inject_refine_material_description(text, inventory_id):
         pass
     return result
 
+# ==============================
+# ROM 10.4.0 RUNE INVENTORY UI
+# ==============================
+
+try:
+    if ("rune", "💠 Руни") not in INVENTORY_CATEGORIES:
+        _rune_category_insert_index = len(INVENTORY_CATEGORIES)
+        for _rune_category_index, _rune_category_entry in enumerate(INVENTORY_CATEGORIES):
+            if _rune_category_entry[0] == "material":
+                _rune_category_insert_index = _rune_category_index
+                break
+            if _rune_category_entry[0] == "all":
+                _rune_category_insert_index = _rune_category_index
+                break
+        INVENTORY_CATEGORIES.insert(
+            _rune_category_insert_index,
+            ("rune", "💠 Руни"),
+        )
+except Exception:
+    pass
+
+_RUNE_UI_BASE_GET_CATEGORY_ITEMS_10_4_0 = get_category_items
+_RUNE_UI_BASE_MATERIAL_DESCRIPTION_10_4_0 = get_refine_material_description_text
+_RUNE_UI_BASE_INJECT_DESCRIPTION_10_4_0 = _inject_refine_material_description
+
+
+def get_category_items(user_id, category_key):
+    if category_key != "rune":
+        return _RUNE_UI_BASE_GET_CATEGORY_ITEMS_10_4_0(user_id, category_key)
+    return [
+        item for item in get_inventory_full_items(user_id)
+        if len(item) > 5 and item[5] == "rune"
+    ]
+
+
+def get_category_count(user_id, category_key):
+    return len(get_category_items(user_id, category_key))
+
+
+def _get_rune_inventory_description(item_id):
+    from data.runes import (
+        FIRIUS_TOKEN_ITEM_ID,
+        PERFECT_RUNE_EXTRACTOR_ITEM_ID,
+        RUNE_EXTRACTOR_ITEM_ID,
+        RUNE_LEVEL_ROMAN,
+        RUNE_STAT_NAMES,
+        get_rune_definition,
+    )
+
+    definition = get_rune_definition(item_id)
+    if definition:
+        stat_name = RUNE_STAT_NAMES[definition["stat"]]
+        level = int(definition["level"])
+        level_roman = RUNE_LEVEL_ROMAN[level]
+        if level < 5:
+            next_roman = RUNE_LEVEL_ROMAN[level + 1]
+            upgrade_line = (
+                f"• може бути покращена до Руни {stat_name} {next_roman}.\n"
+            )
+        else:
+            upgrade_line = (
+                "• має максимальний рівень і не може бути покращена далі.\n"
+            )
+        return (
+            "\nℹ️ Опис:\n"
+            f"{definition['name']} — руна характеристики рівня {level_roman}.\n\n"
+            "Ефект:\n"
+            f"• після вставки у спорядження додає +{definition['bonus']} "
+            f"до характеристики {stat_name};\n"
+            "• бонус діє лише тоді, коли предмет екіпірований і не зламаний;\n"
+            "• для переробки потрібні 3 однакові руни одного типу й рівня;\n"
+            "• переробка також витрачає 1 Жетон Фіріуса;\n"
+            + upgrade_line
+        )
+
+    if int(item_id) == RUNE_EXTRACTOR_ITEM_ID:
+        return (
+            "\nℹ️ Опис:\n"
+            "🧰 Екстрактор рун — матеріал для вилучення руни зі спорядження.\n\n"
+            "Майбутній ефект:\n"
+            "• повертає одну випадкову вставлену руну в інвентар;\n"
+            "• знищує предмет спорядження;\n"
+            "• витрачається під час використання;\n"
+            "• стане доступним у Рунного Майстра після впровадження вилучення рун.\n"
+        )
+
+    if int(item_id) == PERFECT_RUNE_EXTRACTOR_ITEM_ID:
+        return (
+            "\nℹ️ Опис:\n"
+            "✨ Досконалий Екстрактор рун — особливий матеріал для повного вилучення рун.\n\n"
+            "Майбутній ефект:\n"
+            "• повертає всі вставлені руни в інвентар;\n"
+            "• знищує предмет спорядження;\n"
+            "• витрачається під час використання;\n"
+            "• поки не продається і не випадає звичайним гравцям.\n"
+        )
+
+    return ""
+
+
+def get_refine_material_description_text(item_id):
+    description = _RUNE_UI_BASE_MATERIAL_DESCRIPTION_10_4_0(item_id)
+    if description:
+        return description
+    try:
+        return _get_rune_inventory_description(int(item_id))
+    except Exception:
+        return ""
+
+
+def _inject_refine_material_description(text, inventory_id):
+    result = _RUNE_UI_BASE_INJECT_DESCRIPTION_10_4_0(text, inventory_id)
+    try:
+        item = get_item_by_inventory_id_full(inventory_id)
+        if not item:
+            return result
+        item_id = int(item[1])
+        category = str(item[5] or "") if len(item) > 5 else ""
+        if category == "rune" or 501 <= item_id <= 525:
+            result = result.replace("📦 Категорія: rune", "📦 Категорія: Руни")
+        if item_id in (401, 402, 526, 527, 528):
+            result = result.replace(
+                "📦 Категорія: material",
+                "📦 Категорія: Матеріали",
+            )
+    except Exception:
+        pass
+    return result
+
+# ==============================
+# ROM 10.5.0 EQUIPMENT RUNE SLOT DISPLAY + MOBILE LABELS
+# ==============================
+
+_RUNE_SLOT_BASE_BUILD_ITEM_DETAILS_10_5_0 = build_item_details
+_RUNE_SLOT_BASE_BUTTON_LABEL_10_5_0 = build_item_button_label
+
+
+def build_item_button_label(user_id, item):
+    """Use × and hide redundant ×1 for rune buttons on narrow mobile screens."""
+    label = _RUNE_SLOT_BASE_BUTTON_LABEL_10_5_0(user_id, item)
+    try:
+        category = str(item[5] or "")
+        quantity = int(item[8] or 0)
+        if category == "rune":
+            label = label.replace(f" x{quantity}", "")
+            label = label.replace(f" ×{quantity}", "")
+            if quantity > 1:
+                label += f" ×{quantity}"
+        else:
+            label = label.replace(f" x{quantity}", f" ×{quantity}")
+    except Exception:
+        pass
+    return label
+
+
+def build_item_details(user_id, inventory_id, back_category="all", page=0):
+    result = _RUNE_SLOT_BASE_BUILD_ITEM_DETAILS_10_5_0(
+        user_id,
+        inventory_id,
+        back_category,
+        page,
+    )
+    try:
+        from systems.rune_system import format_equipment_rune_slots_text
+        block = format_equipment_rune_slots_text(user_id, inventory_id)
+        if not block:
+            return result
+        if isinstance(result, tuple) and len(result) >= 2:
+            text, keyboard = result[0], result[1]
+            if "💠 Рунні слоти:" not in text:
+                text += block
+            return (text, keyboard, *result[2:])
+        if isinstance(result, str) and "💠 Рунні слоти:" not in result:
+            return result + block
+    except Exception:
+        return result
+    return result
+
+# ==============================
+# ROM 10.8.1 RUNE CATEGORY MOBILE WIDTH TEXT
+# ==============================
+
+_RUNE_CATEGORY_BASE_BUILD_LIST_10_8_1 = build_category_list
+
+
+def build_category_list(user_id, category_key, page=0):
+    result = _RUNE_CATEGORY_BASE_BUILD_LIST_10_8_1(
+        user_id,
+        category_key,
+        page,
+    )
+    if category_key != "rune":
+        return result
+    try:
+        if isinstance(result, tuple) and len(result) >= 2:
+            text, keyboard = result[0], result[1]
+            text = text.replace(
+                "Оберіть предмет:",
+                "Оберіть предмет для ознайомлення:",
+                1,
+            )
+            return (text, keyboard, *result[2:])
+        if isinstance(result, str):
+            return result.replace(
+                "Оберіть предмет:",
+                "Оберіть предмет для ознайомлення:",
+                1,
+            )
+    except Exception:
+        return result
+    return result
+

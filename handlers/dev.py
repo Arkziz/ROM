@@ -52,6 +52,91 @@ VALID_DROP_RARITIES = {
 }
 
 
+
+# ==============================
+# ROM 10.4.0 RUNE DEV HELPERS
+# ==============================
+
+
+def parse_dev_rune_request(parts):
+    from data.runes import RUNE_LEVELS, RUNE_STATS, get_rune_item_id
+
+    if len(parts) < 3:
+        return {
+            "success": False,
+            "message": (
+                "❌ Формат:\n"
+                "/dev_rune STAT LEVEL [quantity]\n\n"
+                "Доступні характеристики: STR, STA, DEX, INT, WIS\n"
+                "Доступні рівні: 1-5"
+            ),
+        }
+    stat = str(parts[1]).strip().upper()
+    try:
+        level = int(parts[2])
+        quantity = int(parts[3]) if len(parts) >= 4 else 1
+    except Exception:
+        return {
+            "success": False,
+            "message": "❌ Рівень і кількість мають бути цілими числами.",
+        }
+    if stat not in RUNE_STATS:
+        return {
+            "success": False,
+            "message": "❌ Невідома характеристика. Доступні: STR, STA, DEX, INT, WIS.",
+        }
+    if level not in RUNE_LEVELS:
+        return {
+            "success": False,
+            "message": "❌ Рівень руни має бути від 1 до 5.",
+        }
+    if quantity < 1 or quantity > 999:
+        return {
+            "success": False,
+            "message": "❌ Кількість має бути від 1 до 999.",
+        }
+    return {
+        "success": True,
+        "stat": stat,
+        "level": level,
+        "quantity": quantity,
+        "item_id": get_rune_item_id(stat, level),
+    }
+
+
+def parse_dev_quantity_request(parts, default=1, maximum=999):
+    try:
+        quantity = int(parts[1]) if len(parts) >= 2 else int(default)
+    except Exception:
+        return {"success": False, "message": "❌ Кількість має бути цілим числом."}
+    if quantity < 1 or quantity > int(maximum):
+        return {
+            "success": False,
+            "message": f"❌ Кількість має бути від 1 до {int(maximum)}.",
+        }
+    return {"success": True, "quantity": quantity}
+
+
+# ==============================
+# ROM 10.11.0 RUNE DROP DEV SIMULATION
+# ==============================
+def format_rune_drop_simulation(result):
+    if not result.get("success"):
+        return result.get("message", "❌ Помилка симуляції.")
+    levels = result["levels"]; stats = result["stats"]
+    return (
+        "🎲 DEV: симуляція дропу рун\n\n"
+        f"Тип ворога: {result['enemy_type']}\n"
+        f"Симуляцій: {result['trials']}\n"
+        f"Рун випало: {result['dropped']}\n"
+        f"Фактичний шанс: {result['actual_rate'] * 100:.2f}%\n\n"
+        "Рівні:\n"
+        f"I: {levels[1]}\nII: {levels[2]}\nIII: {levels[3]}\nIV: {levels[4]}\nV: {levels[5]}\n\n"
+        "Характеристики:\n"
+        f"STR: {stats['STR']}\nSTA: {stats['STA']}\nDEX: {stats['DEX']}\n"
+        f"INT: {stats['INT']}\nWIS: {stats['WIS']}"
+    )
+
 def register_dev_handlers(bot):
 
     # ==============================
@@ -558,6 +643,116 @@ def register_dev_handlers(bot):
             reply_markup=main_kb()
         )
 
+
+    # ==============================
+    # ROM 10.4.0 RUNE DEV COMMANDS
+    # ==============================
+
+    @bot.message_handler(commands=["dev_rune"])
+    def dev_rune(message):
+        if not DEV_MODE:
+            return
+        request = parse_dev_rune_request(message.text.split())
+        if not request.get("success"):
+            bot.send_message(message.chat.id, request["message"], reply_markup=main_kb())
+            return
+        result = add_item(
+            message.from_user.id,
+            request["item_id"],
+            request["quantity"],
+        )
+        bot.send_message(
+            message.chat.id,
+            result.get("message") if not result.get("success") else (
+                "✅ DEV: руну видано.\n\n"
+                f"💠 {result.get('name', 'Руна')} ×{result.get('added', 0)}"
+            ),
+            reply_markup=main_kb(),
+        )
+
+    @bot.message_handler(commands=["dev_firius"])
+    def dev_firius(message):
+        if not DEV_MODE:
+            return
+        from data.runes import FIRIUS_TOKEN_ITEM_ID
+        request = parse_dev_quantity_request(message.text.split(), default=10)
+        if not request.get("success"):
+            bot.send_message(message.chat.id, request["message"], reply_markup=main_kb())
+            return
+        result = add_item(
+            message.from_user.id,
+            FIRIUS_TOKEN_ITEM_ID,
+            request["quantity"],
+        )
+        bot.send_message(
+            message.chat.id,
+            result.get("message") if not result.get("success") else (
+                "✅ DEV: Жетони Фіріуса видано.\n\n"
+                f"🪙 Кількість: {result.get('added', 0)}"
+            ),
+            reply_markup=main_kb(),
+        )
+
+    @bot.message_handler(commands=["dev_extractor"])
+    def dev_extractor(message):
+        if not DEV_MODE:
+            return
+        from data.runes import RUNE_EXTRACTOR_ITEM_ID
+        request = parse_dev_quantity_request(message.text.split(), default=1)
+        if not request.get("success"):
+            bot.send_message(message.chat.id, request["message"], reply_markup=main_kb())
+            return
+        result = add_item(message.from_user.id, RUNE_EXTRACTOR_ITEM_ID, request["quantity"])
+        bot.send_message(
+            message.chat.id,
+            result.get("message") if not result.get("success") else (
+                "✅ DEV: Екстрактор рун видано.\n\n"
+                f"🧰 Кількість: {result.get('added', 0)}"
+            ),
+            reply_markup=main_kb(),
+        )
+
+    @bot.message_handler(commands=["dev_extractor_perfect"])
+    def dev_extractor_perfect(message):
+        if not DEV_MODE:
+            return
+        from data.runes import PERFECT_RUNE_EXTRACTOR_ITEM_ID
+        request = parse_dev_quantity_request(message.text.split(), default=1)
+        if not request.get("success"):
+            bot.send_message(message.chat.id, request["message"], reply_markup=main_kb())
+            return
+        result = add_item(
+            message.from_user.id,
+            PERFECT_RUNE_EXTRACTOR_ITEM_ID,
+            request["quantity"],
+        )
+        bot.send_message(
+            message.chat.id,
+            result.get("message") if not result.get("success") else (
+                "✅ DEV: Досконалий Екстрактор рун видано.\n\n"
+                f"✨ Кількість: {result.get('added', 0)}"
+            ),
+            reply_markup=main_kb(),
+        )
+
+
+    # ==============================
+    # /dev_rune_drop_sim normal|elite|boss [trials]
+    # ==============================
+    @bot.message_handler(commands=["dev_rune_drop_sim"])
+    def dev_rune_drop_sim(message):
+        if not DEV_MODE:
+            return
+        from systems.rune_system import simulate_rune_drops
+        parts = message.text.split()
+        if len(parts) < 2:
+            bot.send_message(message.chat.id,
+                "❌ Формат:\n/dev_rune_drop_sim normal|elite|boss [trials]",
+                reply_markup=main_kb()); return
+        trials = parts[2] if len(parts) >= 3 else 10000
+        result = simulate_rune_drops(parts[1], trials)
+        bot.send_message(message.chat.id, format_rune_drop_simulation(result), reply_markup=main_kb())
+
     # ==============================
     # /devhelp
     # ==============================
@@ -569,6 +764,11 @@ def register_dev_handlers(bot):
 
         text = (
             "🛠 DEV-команди\n\n"
+            "💠 Руни й жетони:\n"
+            "/dev_rune STAT LEVEL [quantity]\n"
+            "/dev_firius [quantity]  (типово 10)\n"
+            "/dev_extractor [quantity]\n"
+            "/dev_extractor_perfect [quantity]\n\n"
             "📦 Предмети:\n"
             "/give item_id [quantity]\n"
             "/drop rarity level\n"

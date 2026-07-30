@@ -7738,3 +7738,93 @@ def claim_daily_quest_reward(user_id):
     from systems.rune_system import claim_daily_quest_reward_with_firius_tokens as _func
     return _func(user_id)
 
+# ==============================
+# ROM 10.5.0 EQUIPMENT RUNE SLOT FACADE
+# ==============================
+
+
+def get_equipment_rune_slot_info(user_id, inventory_id):
+    from systems.rune_system import get_equipment_rune_slot_info as _func
+    return _func(user_id, inventory_id)
+
+
+def get_user_rune_slot_equipment(user_id):
+    from systems.rune_system import get_user_rune_slot_equipment as _func
+    return _func(user_id)
+
+
+def format_equipment_rune_slots_text(user_id, inventory_id):
+    from systems.rune_system import format_equipment_rune_slots_text as _func
+    return _func(user_id, inventory_id)
+
+# ==============================
+# ROM 10.6.0 RUNE MASTER/INSERTION FACADE
+# ==============================
+
+
+def get_user_inventory_rune_stacks(user_id):
+    from systems.rune_system import get_user_inventory_rune_stacks as _func
+    return _func(user_id)
+
+
+def get_rune_insertion_preview(user_id, equipment_inventory_id, slot_index, rune_inventory_id):
+    from systems.rune_system import get_rune_insertion_preview as _func
+    return _func(user_id, equipment_inventory_id, slot_index, rune_inventory_id)
+
+
+def insert_rune_into_equipment(user_id, equipment_inventory_id, slot_index, rune_inventory_id):
+    from systems.rune_system import insert_rune_into_equipment as _func
+    return _func(user_id, equipment_inventory_id, slot_index, rune_inventory_id)
+
+# ==============================
+# ROM 10.8.0 RUNE FUSION FACADE
+# ==============================
+
+
+def get_available_rune_fusion_recipes(user_id):
+    from systems.rune_system import get_available_rune_fusion_recipes as _func
+    return _func(user_id)
+
+
+def get_firius_token_quantity(user_id):
+    from systems.rune_system import get_firius_token_quantity as _func
+    return _func(user_id)
+
+
+def get_rune_fusion_preview(user_id, source_item_id):
+    from systems.rune_system import get_rune_fusion_preview as _func
+    return _func(user_id, source_item_id)
+
+
+def fuse_runes_with_firius_token(user_id, source_item_id):
+    from systems.rune_system import fuse_runes_with_firius_token as _func
+    return _func(user_id, source_item_id)
+
+# ==============================
+# ROM 10.9.0 EXTRACTOR FACADE
+# ==============================
+def get_extractor_material_counts(user_id):
+    from systems.rune_system import get_extractor_material_counts as f; return f(user_id)
+def get_extractor_equipment(user_id):
+    from systems.rune_system import get_extractor_equipment as f; return f(user_id)
+def get_extractor_preview(user_id,equipment_inventory_id):
+    from systems.rune_system import get_extractor_preview as f; return f(user_id,equipment_inventory_id)
+def use_simple_rune_extractor(user_id,equipment_inventory_id,random_choice=None):
+    from systems.rune_system import use_simple_rune_extractor as f; return f(user_id,equipment_inventory_id,random_choice=random_choice)
+
+# ==============================
+# ROM 10.9.2 RUNE EQUIPMENT DISPLAY NAME FACADE
+# ==============================
+
+def get_rune_equipment_display_name(inventory_id, fallback_name=None):
+    from systems.rune_system import get_rune_equipment_display_name as _func
+    return _func(inventory_id, fallback_name=fallback_name)
+
+# ==============================
+# ROM 10.10.0 PERFECT RUNE EXTRACTOR FACADE
+# ==============================
+
+def use_perfect_rune_extractor(user_id, equipment_inventory_id):
+    from systems.rune_system import use_perfect_rune_extractor as _func
+    return _func(user_id, equipment_inventory_id)
+

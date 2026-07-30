@@ -281,3 +281,31 @@ def get_user_mp(user_id):
         "current_mp": current_mp
     }
 
+# ==============================
+# ROM 10.7.0 RUNE-AWARE MAX MP
+# ==============================
+
+_RUNE_STATS_BASE_GET_MAX_MP_10_7_0 = get_max_mp
+
+
+def get_max_mp(user_id):
+    """Mana formula with equipped, unbroken INT/WIS rune bonuses."""
+    if get_character_resource_type(user_id) != "mana":
+        return 0
+    db = _db()
+    row = db.conn.execute(
+        "SELECT level, intelligence, wis FROM users WHERE user_id=?",
+        (int(user_id),),
+    ).fetchone()
+    if not row:
+        return 0
+    level, intelligence, wisdom = (int(value or 0) for value in row)
+    try:
+        from systems.rune_system import get_equipped_rune_stat_totals
+        rune = get_equipped_rune_stat_totals(user_id)
+    except Exception:
+        rune = {}
+    intelligence += int(rune.get("int", 0) or 0)
+    wisdom += int(rune.get("wis", 0) or 0)
+    return max(0, 100 + level * 20 + intelligence * 3 + wisdom * 2)
+

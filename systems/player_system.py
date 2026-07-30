@@ -707,3 +707,30 @@ def get_magical_crit_chance_display(user_id: int):
 def get_base_dodge_chance_display(user_id: int):
     return 5.0
 
+# ==============================
+# ROM 10.7.0 EQUIPPED RUNE STAT BONUSES
+# ==============================
+
+_RUNE_STATS_BASE_GET_PLAYER_STATS_10_7_0 = get_player_stats
+
+
+def get_player_stats(user_id: int):
+    """Add equipped, unbroken rune STR/DEX/INT/WIS/STA exactly once."""
+    stats = _RUNE_STATS_BASE_GET_PLAYER_STATS_10_7_0(user_id)
+    if not stats:
+        return stats
+    try:
+        from systems.rune_system import get_equipped_rune_stat_totals
+        rune = get_equipped_rune_stat_totals(user_id)
+    except Exception:
+        rune = {}
+    base_str, base_dex, base_int, base_wis, base_sta, level = stats
+    return (
+        int(base_str or 0) + int(rune.get("str", 0) or 0),
+        int(base_dex or 0) + int(rune.get("dex", 0) or 0),
+        int(base_int or 0) + int(rune.get("int", 0) or 0),
+        int(base_wis or 0) + int(rune.get("wis", 0) or 0),
+        int(base_sta or 0) + int(rune.get("sta", 0) or 0),
+        int(level or 1),
+    )
+
