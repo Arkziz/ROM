@@ -32,6 +32,8 @@ def build_daily_quest_text(user_id):
         f"{progress}/{target_count}\n\n"
         "🎁 Нагорода:\n"
         "🔴 Мале зілля здоров’я ×3\n"
+        "🪙 Жетон Фіріуса ×10\n"
+        "ℹ️ Жетони накопичуються та не зникають наступного дня.\n"
     )
 
     kb = types.InlineKeyboardMarkup()

@@ -67,6 +67,7 @@ from db import (
     seed_class_reset_sphere_item
 )
 from db import run_db_startup_maintenance
+from db import init_rune_system
 
 from handlers.start import register_start_handlers
 from handlers.profile import register_profile_handlers
@@ -115,6 +116,10 @@ except Exception as migration_error:
 _db_startup_maintenance_result = run_db_startup_maintenance()
 if _db_startup_maintenance_result.get("success"):
     print(f"✅ DB STARTUP MAINTENANCE: {_db_startup_maintenance_result}")
+
+_rune_system_init_result = init_rune_system()
+if _rune_system_init_result.get("success"):
+    print(f"✅ RUNE SYSTEM DATA MODEL: {_rune_system_init_result}")
 
 seed_items()
 seed_location_trash_items()

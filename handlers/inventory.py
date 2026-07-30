@@ -1071,6 +1071,19 @@ def get_refine_material_description_text(item_id):
             "• допомагає уникнути невдалої спроби заточки.\n"
         )
 
+
+    if item_id == 526:
+        return (
+            "\nℹ️ Опис:\n"
+            "🪙 Жетон Фіріуса — особливий матеріал для переробки рун у Рунного Майстра.\n\n"
+            "Призначення:\n"
+            "• використовується для створення руни наступного рівня;\n"
+            "• одна успішна переробка витрачає 1 жетон;\n"
+            "• для переробки також потрібні 3 однакові руни одного типу й рівня;\n"
+            "• жетони накопичуються та не зникають наступного дня;\n"
+            "• 10 жетонів можна отримати за виконання щоденного завдання.\n"
+        )
+
     return ""
 
 
@@ -1120,5 +1133,25 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
     if isinstance(result, str):
         return _inject_refine_material_description(result, inventory_id)
 
+    return result
+
+# ==============================
+# ROM 10.3.2 MATERIAL CATEGORY UKRAINIAN LABEL
+# ==============================
+
+_BASE_INJECT_MATERIAL_DESCRIPTION_10_3_2 = _inject_refine_material_description
+
+
+def _inject_refine_material_description(text, inventory_id):
+    result = _BASE_INJECT_MATERIAL_DESCRIPTION_10_3_2(text, inventory_id)
+    try:
+        item = get_item_by_inventory_id_full(inventory_id)
+        if not item:
+            return result
+        item_id = int(item[1])
+        if item_id in (401, 402, 526):
+            result = result.replace("📦 Категорія: material", "📦 Категорія: Матеріали")
+    except Exception:
+        pass
     return result
 

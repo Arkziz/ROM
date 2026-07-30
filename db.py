@@ -7692,3 +7692,49 @@ def restore_energy_for_test(*args, **kwargs):
 def get_users_for_energy_full_notification(*args, **kwargs):
     return _energy_system_v2().get_users_for_energy_full_notification(*args, **kwargs)
 
+# ==============================
+# ROM 10.2.0 RUNE SYSTEM DATA MODEL FACADE
+# ==============================
+
+def init_rune_system():
+    from systems.rune_system import init_rune_system as _func
+    return _func()
+
+
+def seed_rune_system_items(commit=True):
+    from systems.rune_system import seed_rune_system_items as _func
+    return _func(commit=commit)
+
+
+def get_inventory_runes(inventory_id):
+    from systems.rune_system import get_inventory_runes as _func
+    return _func(inventory_id)
+
+
+def get_inventory_rune_capacity(inventory_id):
+    from systems.rune_system import get_inventory_rune_capacity as _func
+    return _func(inventory_id)
+
+
+def get_inventory_rune_socket_summary(inventory_id):
+    from systems.rune_system import get_inventory_rune_socket_summary as _func
+    return _func(inventory_id)
+
+
+def get_equipped_rune_stat_totals(user_id):
+    from systems.rune_system import get_equipped_rune_stat_totals as _func
+    return _func(user_id)
+
+
+def validate_rune_fusion_selection(rune_item_ids):
+    from systems.rune_system import validate_rune_fusion_selection as _func
+    return _func(rune_item_ids)
+
+# ==============================
+# ROM 10.3.0 DAILY QUEST FIRIUS TOKEN REWARD FACADE
+# ==============================
+
+def claim_daily_quest_reward(user_id):
+    from systems.rune_system import claim_daily_quest_reward_with_firius_tokens as _func
+    return _func(user_id)
+
