@@ -1,6 +1,42 @@
 import sqlite3
 import random
 
+from data.classes import (
+    CLASS_CONFIGS,
+    CLASS_RESET_SPHERE_ITEM_ID,
+)
+
+from data.equipment_profiles import (
+    ARMOR_ALLOWED_BY_CLASS,
+    ARMOR_EXTRA_STATS_BY_SLOT,
+    ARMOR_TYPE_LABELS,
+    EQUIPMENT_SLOTS,
+    ITEM_SUBTYPE_LABELS,
+    MAIN_HAND_ALLOWED_BY_CLASS,
+    MAIN_HAND_PROFILES,
+    OFF_HAND_ALLOWED_BY_CLASS,
+    OFF_HAND_PROFILES,
+)
+
+from data.balance import (
+    CONTRACTS_UNLOCK_LEVEL,
+    CONTRACT_MOBS_EQUIVALENT,
+    CONTRACT_TARGET_KILLS,
+    DAILY_CONTRACT_LIMIT,
+    DAILY_QUEST_ID_KILL_MONSTERS,
+    DAILY_QUEST_REWARD_ITEM_ID,
+    DAILY_QUEST_REWARD_QUANTITY,
+    DAILY_QUEST_TARGET_KILLS,
+    ENERGY_MAX,
+    ENERGY_REGEN_MINUTES,
+    HP_REGEN_MINUTES,
+    HP_REGEN_PERCENT,
+    RARITY_REPAIR_MULTIPLIERS,
+    REFINE_MATERIAL_MAX_STACK,
+    REFINE_STONE_ITEM_ID,
+)
+
+
 # ==============================
 # 🔌 ПІДКЛЮЧЕННЯ ДО БАЗИ
 # ==============================
@@ -12,19 +48,6 @@ cursor = conn.cursor()
 # ==============================
 # ✅ EQUIPMENT CONFIG
 # ==============================
-
-EQUIPMENT_SLOTS = {
-    "main_hand": "🗡️ Зброя",
-    "off_hand": "🛡️ Друга рука",
-    "helmet": "🪖 Голова",
-    "shoulders": "🦾 Плечі",
-    "chest": "🥋 Тіло",
-    "gloves": "🧤 Руки",
-    "legs": "👖 Ноги",
-    "boots": "👟 Взуття",
-    "necklace": "📿 Шия",
-    "ring": "💍 Кільце"
-}
 
 
 SLOT_ORDER = [
@@ -40,13 +63,6 @@ SLOT_ORDER = [
     "ring"
 ]
 
-
-RARITY_REPAIR_MULTIPLIERS = {
-    "common": 1.0,
-    "uncommon": 2.5,
-    "rare": 7.0,
-    "epic": 18.0
-}
 
 
 # ==============================
@@ -868,8 +884,6 @@ CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL = {
 }
 
 
-CONTRACT_MOBS_EQUIVALENT = 20
-
 
 def get_base_exp_for_level(level):
     level = int(level)
@@ -1256,12 +1270,6 @@ def get_common_equipment_shop_offer(user_id):
 # ==============================
 # ✅ MERCENARY CONTRACTS SYSTEM
 # ==============================
-
-CONTRACTS_UNLOCK_LEVEL = 5
-DAILY_CONTRACT_LIMIT = 5
-CONTRACT_TARGET_KILLS = 5
-CONTRACT_MOBS_EQUIVALENT = 20
-
 
 def get_today_str():
     from datetime import date
@@ -1701,19 +1709,11 @@ def process_contract_progress_on_kill(user_id, mob):
 # ✅ ENERGY SYSTEM
 # ==============================
 
-ENERGY_MAX = 40
-ENERGY_REGEN_MINUTES = 5
-
-
 
 
 # ==============================
 # ✅ PASSIVE HP REGEN SYSTEM
 # ==============================
-
-HP_REGEN_PERCENT = 0.10
-HP_REGEN_MINUTES = 1
-
 
 
 
@@ -1919,12 +1919,6 @@ def set_gold_for_test(user_id, amount):
 # ==============================
 # ✅ DAILY QUEST SYSTEM
 # ==============================
-
-DAILY_QUEST_ID_KILL_MONSTERS = "kill_25_monsters"
-DAILY_QUEST_TARGET_KILLS = 25
-DAILY_QUEST_REWARD_ITEM_ID = 201  # 🔴 Мале зілля здоров’я
-DAILY_QUEST_REWARD_QUANTITY = 3
-
 
 def get_daily_today_str():
     from datetime import date
@@ -2382,84 +2376,7 @@ def reset_hero_for_test(user_id):
 # ✅ ROLE-BASED EQUIPMENT GENERATION V1
 # ==============================
 
-MAIN_HAND_PROFILES = {
-    "sword_1h": {
-        "name": "Одноручний меч",
-        "hands": 1,
-        "attack_type": "physical",
-        "main_stats": ["str"],
-        "extra_stats": ["str", "sta"]
-    },
-    "wand_1h": {
-        "name": "Жезл",
-        "hands": 1,
-        "attack_type": "magical",
-        "main_stats": ["int"],
-        "extra_stats": ["int", "wis"]
-    },
-    "sword_2h": {
-        "name": "Дворучний меч",
-        "hands": 2,
-        "attack_type": "physical",
-        "main_stats": ["str"],
-        "extra_stats": ["str", "sta"]
-    },
-    "staff_2h": {
-        "name": "Дворучний посох",
-        "hands": 2,
-        "attack_type": "magical",
-        "main_stats": ["int"],
-        "extra_stats": ["int", "wis"]
-    },
-    "bow_2h": {
-        "name": "Лук",
-        "hands": 2,
-        "attack_type": "physical",
-        "main_stats": ["dex"],
-        "extra_stats": ["dex", "str"]
-    },
-    "crossbow_2h": {
-        "name": "Арбалет",
-        "hands": 2,
-        "attack_type": "physical",
-        "main_stats": ["dex"],
-        "extra_stats": ["dex", "str"]
-    }
-}
 
-
-OFF_HAND_PROFILES = {
-    "shield": {
-        "name": "Щит",
-        "attack_type": "defense",
-        "main_stats": ["sta"],
-        "extra_stats": ["sta", "wis"]
-    },
-    "talisman": {
-        "name": "Магічний талісман",
-        "attack_type": "magical",
-        "main_stats": ["wis"],
-        "extra_stats": ["wis", "int"]
-    },
-    "dagger": {
-        "name": "Кинджал для другої руки",
-        "attack_type": "physical",
-        "main_stats": ["dex"],
-        "extra_stats": ["dex", "str"]
-    }
-}
-
-
-ARMOR_EXTRA_STATS_BY_SLOT = {
-    "helmet": ["sta", "wis", "dex"],
-    "shoulders": ["sta", "str"],
-    "chest": ["sta"],
-    "gloves": ["dex", "str"],
-    "legs": ["sta", "dex"],
-    "boots": ["dex"],
-    "necklace": ["wis", "int"],
-    "ring": ["str", "dex", "int", "wis", "sta"]
-}
 
 
 def init_dynamic_equipment_system():
@@ -2903,58 +2820,6 @@ def get_common_equipment_shop_suboffers(user_id, slot_key):
 # ==============================
 # ✅ PATCH: MAIN HAND DAGGER PROFILE
 # ==============================
-
-MAIN_HAND_PROFILES = {
-    "sword_1h": {
-        "name": "Одноручний меч",
-        "hands": 1,
-        "attack_type": "physical",
-        "main_stats": ["str"],
-        "extra_stats": ["str", "sta"]
-    },
-    "dagger_1h": {
-        "name": "Кинджал",
-        "hands": 1,
-        "attack_type": "physical",
-        "main_stats": ["dex"],
-        "extra_stats": ["dex", "str"]
-    },
-    "wand_1h": {
-        "name": "Жезл",
-        "hands": 1,
-        "attack_type": "magical",
-        "main_stats": ["int"],
-        "extra_stats": ["int", "wis"]
-    },
-    "sword_2h": {
-        "name": "Дворучний меч",
-        "hands": 2,
-        "attack_type": "physical",
-        "main_stats": ["str"],
-        "extra_stats": ["str", "sta"]
-    },
-    "staff_2h": {
-        "name": "Дворучний посох",
-        "hands": 2,
-        "attack_type": "magical",
-        "main_stats": ["int"],
-        "extra_stats": ["int", "wis"]
-    },
-    "bow_2h": {
-        "name": "Лук",
-        "hands": 2,
-        "attack_type": "physical",
-        "main_stats": ["dex"],
-        "extra_stats": ["dex", "str"]
-    },
-    "crossbow_2h": {
-        "name": "Арбалет",
-        "hands": 2,
-        "attack_type": "physical",
-        "main_stats": ["dex"],
-        "extra_stats": ["dex", "str"]
-    }
-}
 
 
 def detect_weapon_profile_from_name(name):
@@ -3555,65 +3420,6 @@ def get_shop_preview_weapon_damage_text(item_id):
 # ✅ CHARACTER NAME / CLASS / MP SYSTEM
 # ==============================
 
-CLASS_CONFIGS = {
-    "warrior": {
-        "name": "🛡️ Воїн",
-        "resource": "rage",
-        "description": (
-            "Фізичний боєць ближнього бою.\n"
-            "Основні характеристики: Сила, Витривалість.\n"
-            "Ресурс у бою: 🔴 Лютість."
-        )
-    },
-    "knight": {
-        "name": "⚔️ Лицар",
-        "resource": "rage",
-        "description": (
-            "Захисник із високим фізичним захистом і щитом.\n"
-            "Основні характеристики: Витривалість, Фіз. захист.\n"
-            "Ресурс у бою: 🔴 Лютість."
-        )
-    },
-    "scout": {
-        "name": "🏹 Скаут",
-        "resource": "combat_energy",
-        "description": (
-            "Дистанційний фізичний боєць із пастками та точними пострілами.\n"
-            "Основні характеристики: Спритність, Сила.\n"
-            "Ресурс у бою: 🟡 Енергія."
-        )
-    },
-    "rogue": {
-        "name": "🗡️ Розбійник",
-        "resource": "combat_energy_combo",
-        "description": (
-            "Швидкий боєць ближнього бою з майбутньою механікою комбо.\n"
-            "Основні характеристики: Спритність, Сила.\n"
-            "Ресурс у бою: 🟡 Енергія + комбо-очки."
-        )
-    },
-    "mage": {
-        "name": "🔮 Маг",
-        "resource": "mana",
-        "description": (
-            "Магічний боєць із високим вибуховою шкодою.\n"
-            "Основні характеристики: Інтелект, Мудрість.\n"
-            "Ресурс у бою: 🔵 Мана."
-        )
-    },
-    "priest": {
-        "name": "⚕️ Жрець",
-        "resource": "mana",
-        "description": (
-            "Магічний клас підтримки з лікуванням і захистом.\n"
-            "Основні характеристики: Мудрість, Інтелект.\n"
-            "Ресурс у бою: 🔵 Мана."
-        )
-    }
-}
-
-
-CLASS_RESET_SPHERE_ITEM_ID = 301
 
 
 def init_character_class_system():
@@ -4036,66 +3842,9 @@ ARMOR_SLOTS = [
 ]
 
 
-ARMOR_ALLOWED_BY_CLASS = {
-    "mage": "cloth",
-    "priest": "cloth",
-
-    "scout": "leather",
-    "rogue": "leather",
-
-    "warrior": "chain",
-    "knight": "plate"
-}
 
 
-MAIN_HAND_ALLOWED_BY_CLASS = {
-    "mage": ["wand_1h", "staff_2h"],
-    "priest": ["wand_1h", "staff_2h"],
 
-    "scout": ["bow_2h", "crossbow_2h"],
-    "rogue": ["dagger_1h"],
-
-    "warrior": ["sword_1h", "sword_2h"],
-    "knight": ["sword_1h"]
-}
-
-
-OFF_HAND_ALLOWED_BY_CLASS = {
-    "mage": ["talisman"],
-    "priest": ["talisman"],
-
-    "scout": [],
-    "rogue": ["dagger"],
-
-    "warrior": [],
-    "knight": ["shield"]
-}
-
-
-ARMOR_TYPE_LABELS = {
-    "cloth": "Тканина",
-    "leather": "Шкіра",
-    "chain": "Кольчуга",
-    "plate": "Лати",
-    "": "Універсальний"
-}
-
-
-ITEM_SUBTYPE_LABELS = {
-    "sword_1h": "Одноручний меч",
-    "sword_2h": "Дворучний меч",
-    "dagger_1h": "Кинджал",
-    "wand_1h": "Жезл",
-    "staff_2h": "Дворучний посох",
-    "bow_2h": "Лук",
-    "crossbow_2h": "Арбалет",
-
-    "shield": "Щит",
-    "talisman": "Магічний талісман",
-    "dagger": "Кинджал для другої руки",
-
-    "": "Універсальний"
-}
 
 
 def init_class_equipment_restrictions_system():
@@ -5962,7 +5711,6 @@ def is_character_name_taken(name, exclude_user_id=None):
 # ✅ REFINE SYSTEM CORE V1
 # ==============================
 
-REFINE_STONE_ITEM_ID = 401
 SUCCESS_RUNE_ITEM_ID = 402
 
 
@@ -6113,14 +5861,14 @@ def get_refine_resource_counts(user_id):
 # - PDEF/MDEF/STR/DEX/INT/WIS заточка НЕ змінює.
 
 try:
-    _base_get_max_hp_before_refine_v1 = get_max_hp
+    pass  # removed obsolete compatibility capture
 except Exception:
-    _base_get_max_hp_before_refine_v1 = None
+    pass  # removed obsolete compatibility capture
 
 try:
-    _base_get_weapon_damage_by_inventory_id_before_refine_v1 = get_weapon_damage_by_inventory_id
+    pass  # removed obsolete compatibility capture
 except Exception:
-    _base_get_weapon_damage_by_inventory_id_before_refine_v1 = None
+    pass  # removed obsolete compatibility capture
 
 
 def get_refine_total_armor_hp_bonus_percent(user_id):
@@ -6301,12 +6049,12 @@ def get_refine_effects_summary_for_user(user_id):
 # Старий 6.0.2 обробляв інші назви ключів, тому магічна шкода посоха/жезла могла не збільшуватись.
 
 try:
-    _base_get_weapon_damage_for_refine_hotfix_v1 = _base_get_weapon_damage_by_inventory_id_before_refine_v1
+    pass  # removed obsolete compatibility capture
 except Exception:
     try:
-        _base_get_weapon_damage_for_refine_hotfix_v1 = get_weapon_damage_by_inventory_id
+        pass  # removed obsolete compatibility capture
     except Exception:
-        _base_get_weapon_damage_for_refine_hotfix_v1 = None
+        pass  # removed obsolete compatibility capture
 
 
 def _build_refined_weapon_damage_text(damage_data):
@@ -6422,29 +6170,29 @@ def _apply_refine_to_weapon_damage_result_v2(base_result, refine_level):
 import re as _refine_display_re
 
 try:
-    _base_get_inventory_detailed_before_refine_display_v1 = get_inventory_detailed
+    pass  # removed obsolete compatibility capture
 except Exception:
-    _base_get_inventory_detailed_before_refine_display_v1 = None
+    pass  # removed obsolete compatibility capture
 
 try:
-    _base_get_item_by_inventory_id_before_refine_display_v1 = get_item_by_inventory_id
+    pass  # removed obsolete compatibility capture
 except Exception:
-    _base_get_item_by_inventory_id_before_refine_display_v1 = None
+    pass  # removed obsolete compatibility capture
 
 try:
-    _base_get_item_by_inventory_id_full_before_refine_display_v1 = get_item_by_inventory_id_full
+    pass  # removed obsolete compatibility capture
 except Exception:
-    _base_get_item_by_inventory_id_full_before_refine_display_v1 = None
+    pass  # removed obsolete compatibility capture
 
 try:
-    _base_get_inventory_entry_before_refine_display_v1 = get_inventory_entry
+    pass  # removed obsolete compatibility capture
 except Exception:
-    _base_get_inventory_entry_before_refine_display_v1 = None
+    pass  # removed obsolete compatibility capture
 
 try:
-    _base_get_sellable_equipment_items_before_refine_display_v1 = get_sellable_equipment_items
+    pass  # removed obsolete compatibility capture
 except Exception:
-    _base_get_sellable_equipment_items_before_refine_display_v1 = None
+    pass  # removed obsolete compatibility capture
 
 
 
@@ -6542,8 +6290,6 @@ def _replace_dict_name_by_refine(item):
 # 401 — 🪨 Камінь Посилення
 # 402 — 💎 Руна Успіху
 
-REFINE_MATERIAL_MAX_STACK = 999
-
 
 def ensure_refine_material_stack_sizes():
     """
@@ -6585,11 +6331,6 @@ def get_refine_material_stack_debug():
 
 
 # Автоматично фіксимо max_stack при імпорті db.py.
-try:
-    ensure_refine_material_stack_sizes()
-except Exception:
-    pass
-
 
 # ==============================
 # ✅ GUILD CORE DB WRAPPERS V1
@@ -7029,8 +6770,6 @@ def claim_contract_reward(user_id):
 # - старі активні контракти з target_kills > 5 автоматично стискаються до 5;
 # - якщо у старому активному контракті вже current_kills >= 5, контракт стає completed.
 
-CONTRACT_TARGET_KILLS = 5
-
 
 def migrate_active_contracts_target_kills_to_5():
     init_contract_system()
@@ -7054,11 +6793,24 @@ def migrate_active_contracts_target_kills_to_5():
 
     return True
 
+def run_db_startup_maintenance():
+    """Run idempotent database maintenance explicitly during application startup.
 
-try:
-    migrate_active_contracts_target_kills_to_5()
-except Exception as _contract_target_kills_5_error:
-    print(f"⚠️ Contract target kills migration failed: {_contract_target_kills_5_error}")
+    This function is intentionally not called while importing db.py.  main.py
+    owns the startup call after schema migrations and before item seeding and
+    handler registration.
+    """
+    result = {
+        "success": False,
+        "refine_material_stack_sizes": None,
+        "contract_target_kills": None,
+    }
+
+    result["refine_material_stack_sizes"] = ensure_refine_material_stack_sizes()
+    result["contract_target_kills"] = migrate_active_contracts_target_kills_to_5()
+    result["success"] = True
+    return result
+
 
 
 # ==============================

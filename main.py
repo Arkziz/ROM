@@ -66,6 +66,7 @@ from db import (
     init_character_class_system,
     seed_class_reset_sphere_item
 )
+from db import run_db_startup_maintenance
 
 from handlers.start import register_start_handlers
 from handlers.profile import register_profile_handlers
@@ -110,6 +111,10 @@ try:
         print(f"✅ DB MIGRATIONS APPLIED: {_migration_result.get('applied')}")
 except Exception as migration_error:
     print(f"⚠️ DB migrations skipped/error: {migration_error}")
+
+_db_startup_maintenance_result = run_db_startup_maintenance()
+if _db_startup_maintenance_result.get("success"):
+    print(f"✅ DB STARTUP MAINTENANCE: {_db_startup_maintenance_result}")
 
 seed_items()
 seed_location_trash_items()
