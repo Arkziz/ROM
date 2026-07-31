@@ -1478,3 +1478,41 @@ def buy_simple_rune_extractor(user_id, quantity=1):
         conn.rollback()
         raise
 
+# ==============================
+# ROM 11.2.0 CENTRAL DROP RUNE MIGRATION
+# ==============================
+_RUNE_DROP_LEGACY_ROLL_11_2_0 = roll_rune_drop
+
+
+def roll_rune_drop(mob, random_func=None):
+    """Compatibility API now delegated to the central drop rune rule."""
+    import random
+    from systems.drop_system import roll_central_rune_drop
+
+    rng = random_func or random.random
+    central = roll_central_rune_drop(mob, rng)
+    payload = central.get("payload") or {}
+    if not central.get("rolled"):
+        return {
+            "dropped": False,
+            "enemy_type": central["enemy_type"],
+            "chance": payload.get("chance"),
+            "roll": payload.get("roll"),
+        }
+
+    stat = str(payload["stat"])
+    level = int(payload["level"])
+    item_id = get_rune_item_id(stat, level)
+    definition = get_rune_definition(item_id)
+    return {
+        "dropped": True,
+        "enemy_type": central["enemy_type"],
+        "chance": float(payload["chance"]),
+        "roll": float(payload["roll"]),
+        "item_id": int(item_id),
+        "name": definition["name"],
+        "stat": stat,
+        "level": level,
+        "quantity": 1,
+    }
+

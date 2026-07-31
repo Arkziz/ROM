@@ -1,5 +1,113 @@
 from telebot import types
 
+
+# ==============================
+# ROM 11.3.1 COMBAT CALLBACK / TELEGRAM RATE-LIMIT GUARD
+# ==============================
+import re as _combat_rate_re_11_3_1
+import time as _combat_rate_time_11_3_1
+
+_COMBAT_CALLBACK_DEBOUNCE_SECONDS_11_3_1 = 0.90
+_COMBAT_CALLBACK_LAST_ACTION_11_3_1 = {}
+_COMBAT_TELEGRAM_BLOCKED_UNTIL_11_3_1 = {}
+_COMBAT_SEND_WRAPPER_INSTALLED_11_3_1 = set()
+
+
+def _combat_extract_retry_after_11_3_1(error):
+    """Return Telegram retry_after seconds from an API exception, or None."""
+    text = str(error or "")
+    if "too many requests" not in text.lower():
+        return None
+    match = _combat_rate_re_11_3_1.search(
+        r"retry after\s+(\d+)", text, _combat_rate_re_11_3_1.IGNORECASE
+    )
+    return int(match.group(1)) if match else 1
+
+
+def _install_combat_safe_send_11_3_1(bot):
+    """Contain Telegram 429 without retrying stale combat presentation."""
+    marker = id(bot)
+    if marker in _COMBAT_SEND_WRAPPER_INSTALLED_11_3_1:
+        return
+    original_send_message = bot.send_message
+
+    def safe_send_message(chat_id, *args, **kwargs):
+        now = _combat_rate_time_11_3_1.monotonic()
+        blocked_until = float(_COMBAT_TELEGRAM_BLOCKED_UNTIL_11_3_1.get(chat_id, 0.0))
+        if now < blocked_until:
+            # Do not queue or replay stale combat screens. The next valid user
+            # action will render the current authoritative combat state.
+            return None
+        try:
+            return original_send_message(chat_id, *args, **kwargs)
+        except Exception as error:
+            retry_after = _combat_extract_retry_after_11_3_1(error)
+            if retry_after is None:
+                raise
+            _COMBAT_TELEGRAM_BLOCKED_UNTIL_11_3_1[chat_id] = (
+                _combat_rate_time_11_3_1.monotonic() + retry_after
+            )
+            print(
+                f"⚠️ Telegram 429 for chat {chat_id}: presentation suppressed "
+                f"for {retry_after}s; combat state will not be replayed."
+            )
+            return None
+
+    bot.send_message = safe_send_message
+    _COMBAT_SEND_WRAPPER_INSTALLED_11_3_1.add(marker)
+
+
+def _combat_callback_allowed_11_3_1(bot, call, action_key):
+    """Reject rapid duplicate callbacks before any combat-state mutation."""
+    user_id = int(call.from_user.id)
+    chat_id = int(call.message.chat.id)
+    now = _combat_rate_time_11_3_1.monotonic()
+
+    blocked_until = float(_COMBAT_TELEGRAM_BLOCKED_UNTIL_11_3_1.get(chat_id, 0.0))
+    if now < blocked_until:
+        remaining = max(1, int(blocked_until - now + 0.999))
+        try:
+            bot.answer_callback_query(
+                call.id,
+                f"⏳ Telegram просить зачекати {remaining} с.",
+                show_alert=False,
+            )
+        except Exception:
+            pass
+        return False
+
+    previous = float(_COMBAT_CALLBACK_LAST_ACTION_11_3_1.get(user_id, 0.0))
+    if now - previous < _COMBAT_CALLBACK_DEBOUNCE_SECONDS_11_3_1:
+        try:
+            bot.answer_callback_query(
+                call.id,
+                "⏳ Попередня бойова дія ще обробляється.",
+                show_alert=False,
+            )
+        except Exception:
+            pass
+        return False
+
+    _COMBAT_CALLBACK_LAST_ACTION_11_3_1[user_id] = now
+    try:
+        bot.answer_callback_query(call.id)
+    except Exception as error:
+        retry_after = _combat_extract_retry_after_11_3_1(error)
+        if retry_after is not None:
+            _COMBAT_TELEGRAM_BLOCKED_UNTIL_11_3_1[chat_id] = now + retry_after
+            return False
+        # Callback acknowledgement is presentation-only. A non-429 failure
+        # must not duplicate the mutation by retrying the action.
+    return True
+
+
+def _combat_message_allowed_11_3_1(message):
+    """Prevent Hunt reply-button spam while Telegram has imposed a cooldown."""
+    chat_id = int(message.chat.id)
+    return _combat_rate_time_11_3_1.monotonic() >= float(
+        _COMBAT_TELEGRAM_BLOCKED_UNTIL_11_3_1.get(chat_id, 0.0)
+    )
+
 from data.locations import LOCATIONS
 
 from db import (
@@ -1644,6 +1752,8 @@ def register_combat_handlers(bot):
     @bot.message_handler(func=lambda m: m.text == "🔎 Полювання")
     def hunt(message):
         user_id = message.from_user.id
+        if not _combat_message_allowed_11_3_1(message):
+            return
 
         stats = get_player_stats(user_id)
 
@@ -2500,6 +2610,8 @@ def register_combat_handlers(bot):
     @bot.callback_query_handler(func=lambda call: call.data == "combat_attack")
     def combat_attack_callback(call):
         user_id = call.from_user.id
+        if not _combat_callback_allowed_11_3_1(bot, call, "attack"):
+            return
         
         if not hasattr(bot, "user_data") or user_id not in bot.user_data:
             bot.answer_callback_query(call.id)
@@ -2522,6 +2634,8 @@ def register_combat_handlers(bot):
     @bot.callback_query_handler(func=lambda call: call.data == "combat_potion")
     def combat_potion_callback(call):
         user_id = call.from_user.id
+        if not _combat_callback_allowed_11_3_1(bot, call, "potion"):
+            return
         
         if not hasattr(bot, "user_data") or user_id not in bot.user_data:
             bot.answer_callback_query(call.id)
@@ -2543,6 +2657,8 @@ def register_combat_handlers(bot):
     @bot.callback_query_handler(func=lambda call: call.data == "combat_flee")
     def combat_flee_callback(call):
         user_id = call.from_user.id
+        if not _combat_callback_allowed_11_3_1(bot, call, "flee"):
+            return
         
         if not hasattr(bot, "user_data") or user_id not in bot.user_data:
             bot.answer_callback_query(call.id)
@@ -2579,6 +2695,8 @@ def register_combat_handlers(bot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith("combat_use_skill:"))
     def combat_use_skill_callback(call):
         user_id = call.from_user.id
+        if not _combat_callback_allowed_11_3_1(bot, call, "skill"):
+            return
         skill_key = call.data.split(":")[1]
         
         if not hasattr(bot, "user_data") or user_id not in bot.user_data:
@@ -3023,6 +3141,8 @@ def register_combat_handlers(bot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith("combat_potion_"))
     def use_selected_potion_in_combat(call):
             user_id = call.from_user.id
+            if not _combat_callback_allowed_11_3_1(bot, call, "potion_use"):
+                return
 
             if not hasattr(bot, "user_data") or user_id not in bot.user_data:
                 bot.answer_callback_query(call.id)

@@ -1831,3 +1831,73 @@ def get_item_by_inventory_id_full(inventory_id):
 
 # ✅ ROM 9.0.8d CITY REPAIR CALLBACK FINAL FIX
 # Repair menu now uses confirmation callbacks: repair_prompt_one_v3_* / repair_prompt_all_v3
+
+# ==============================
+# ROM 11.4.1 TRADER EQUIPMENT TYPE DISPLAY
+# ==============================
+_CITY_SELLABLE_BEFORE_TYPE_DISPLAY_11_4_1 = get_sellable_equipment_items
+_CITY_ITEM_FULL_BEFORE_TYPE_DISPLAY_11_4_1 = get_item_by_inventory_id_full
+
+
+def _city_equipment_typed_name_11_4_1(inventory_id, name):
+    """Apply the same [armor type] label used by inventory and loot UI."""
+    from db import get_item_classification_by_inventory_id, get_armor_type_label, is_armor_slot
+
+    display_name = str(name or "Предмет")
+    try:
+        classification = get_item_classification_by_inventory_id(int(inventory_id)) or {}
+        slot_key = classification.get("slot_key", "")
+        armor_type = classification.get("armor_type", "")
+        if not is_armor_slot(slot_key) or not armor_type:
+            return display_name
+        label = get_armor_type_label(armor_type)
+        if not label or f"[{label}]" in display_name:
+            return display_name
+        marker = " рівня"
+        if marker in display_name:
+            index = display_name.rfind(marker)
+            before = display_name[:index]
+            after = display_name[index:]
+            parts = before.rsplit(" ", 1)
+            if len(parts) == 2 and parts[1].isdigit():
+                return f"{parts[0]} [{label}] {parts[1]}{after}"
+        return f"{display_name} [{label}]"
+    except Exception:
+        return display_name
+
+
+def get_sellable_equipment_items(user_id):
+    rows = _CITY_SELLABLE_BEFORE_TYPE_DISPLAY_11_4_1(user_id)
+    updated_rows = []
+    for row in rows or []:
+        try:
+            values = list(row)
+            values[2] = _city_equipment_typed_name_11_4_1(values[0], values[2])
+            updated_rows.append(tuple(values) if isinstance(row, tuple) else values)
+        except Exception:
+            updated_rows.append(row)
+    return updated_rows
+
+
+def get_item_by_inventory_id_full(inventory_id):
+    row = _CITY_ITEM_FULL_BEFORE_TYPE_DISPLAY_11_4_1(inventory_id)
+    if not row:
+        return row
+    try:
+        if isinstance(row, dict):
+            updated = dict(row)
+            for key in ("name", "item_name", "display_name", "label"):
+                if key in updated and updated[key]:
+                    updated[key] = _city_equipment_typed_name_11_4_1(inventory_id, updated[key])
+                    break
+            return updated
+        values = list(row)
+        # Current full-item tuple keeps static item name at index 1.
+        for index in (1, 2):
+            if index < len(values) and isinstance(values[index], str):
+                values[index] = _city_equipment_typed_name_11_4_1(inventory_id, values[index])
+                break
+        return tuple(values) if isinstance(row, tuple) else values
+    except Exception:
+        return row
+

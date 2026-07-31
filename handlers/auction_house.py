@@ -1,4 +1,41 @@
 from telebot import types
+
+
+# ==============================
+# ROM 11.4.1 AUCTION EQUIPMENT TYPE DISPLAY
+# ==============================
+
+def _auction_equipment_typed_name_11_4_1(inventory_id, name):
+    """Apply canonical armor type to auction list/prompt/confirmation names."""
+    from db import get_item_classification_by_inventory_id, get_armor_type_label, is_armor_slot
+
+    display_name = str(name or "Предмет")
+    try:
+        classification = get_item_classification_by_inventory_id(int(inventory_id)) or {}
+        slot_key = classification.get("slot_key", "")
+        armor_type = classification.get("armor_type", "")
+        if not is_armor_slot(slot_key) or not armor_type:
+            return display_name
+        label = get_armor_type_label(armor_type)
+        if not label or f"[{label}]" in display_name:
+            return display_name
+        marker = " рівня"
+        if marker in display_name:
+            index = display_name.rfind(marker)
+            before = display_name[:index]
+            after = display_name[index:]
+            parts = before.rsplit(" ", 1)
+            if len(parts) == 2 and parts[1].isdigit():
+                return f"{parts[0]} [{label}] {parts[1]}{after}"
+        return f"{display_name} [{label}]"
+    except Exception:
+        return display_name
+
+
+def _auction_snapshot_typed_name_11_4_1(snapshot):
+    return _auction_equipment_typed_name_11_4_1(
+        snapshot.get("inventory_id"), snapshot.get("name")
+    )
 # ✅ AUCTION HOUSE POTION BUTTON CONFLICT FIX V1
 # Кнопка категорії зілля в Торговому Домі не має збігатися з бойовою кнопкою "🧪 Зілля".
 # Інакше бойовий handler перехоплює кнопку і відповідає: "❗ Ти не в бою".
@@ -258,7 +295,8 @@ def auction_sell_items_kb(user_id, page=0):
         if item.get("durability_current") is not None:
             durability = f" [{item.get('durability_current')}/{item.get('durability_max')}]"
 
-        button_text = f"📦 #{item['inventory_id']} {item['name']}{durability}"
+        typed_name = _auction_equipment_typed_name_11_4_1(item['inventory_id'], item['name'])
+        button_text = f"📦 #{item['inventory_id']} {typed_name}{durability}"
 
         # Telegram buttons can be large, but keep it reasonable.
         if len(button_text) > 90:
@@ -320,7 +358,7 @@ def build_auction_sell_price_prompt(snapshot):
 
     return (
         "💰 Введення ціни\n\n"
-        f"📦 {snapshot['name']}\n"
+        f"📦 {_auction_snapshot_typed_name_11_4_1(snapshot)}\n"
         f"🔧 Міцність: {durability}\n\n"
         "Введіть ціну лота у золоті.\n"
         "Приклади:\n"
@@ -337,7 +375,7 @@ def build_auction_sell_confirm_text(snapshot, price):
 
     return (
         "📦 Новий лот\n\n"
-        f"{snapshot['name']}\n\n"
+        f"{_auction_snapshot_typed_name_11_4_1(snapshot)}\n\n"
         f"🔧 Міцність: {durability}\n"
         f"💰 Ціна: {price} золота\n"
         "⏳ Термін: 7 днів\n\n"
@@ -1353,7 +1391,8 @@ def auction_sell_items_inline_kb_v1(user_id, category, page=0):
             durability = ""
             if item.get("durability_current") is not None:
                 durability = f" [{item.get('durability_current')}/{item.get('durability_max')}]"
-            label = f"📦 {item['name']}{durability}"
+            typed_name = _auction_equipment_typed_name_11_4_1(item['inventory_id'], item['name'])
+            label = f"📦 {typed_name}{durability}"
         else:
             label = f"📦 {item['name']} x{item['quantity']}"
 

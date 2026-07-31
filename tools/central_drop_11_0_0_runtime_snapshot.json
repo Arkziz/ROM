@@ -1,0 +1,510 @@
+{
+  "call_sites": {
+    "add_item": [
+      "db.py:2157",
+      "handlers/dev.py:181",
+      "handlers/dev.py:659",
+      "handlers/dev.py:682",
+      "handlers/dev.py:705",
+      "handlers/dev.py:724",
+      "handlers/dev.py:847",
+      "systems/reward_system.py:318",
+      "systems/reward_system.py:361",
+      "systems/reward_system.py:469",
+      "systems/rune_system.py:1302",
+      "tools/smoke_test_perfect_rune_extractor.py:134",
+      "tools/smoke_test_perfect_rune_extractor.py:96",
+      "tools/smoke_test_rune_fusion_with_firius_tokens.py:36",
+      "tools/smoke_test_simple_rune_extractor.py:23",
+      "tools/smoke_test_simple_rune_extractor.py:23"
+    ],
+    "award_rune_drop": [
+      "systems/reward_system.py:559"
+    ],
+    "create_generated_equipment_item": [
+      "handlers/dev.py:496",
+      "systems/reward_system.py:274",
+      "tools/smoke_test_dynamic_equipment_repair_contracts.py:139"
+    ],
+    "process_victory_reward": [
+      "handlers/combat.py:1599"
+    ],
+    "roll_equipment_drop": [
+      "systems/reward_system.py:388"
+    ],
+    "roll_loot": [
+      "systems/reward_system.py:415"
+    ],
+    "roll_refine_stone_drop": [
+      "systems/reward_system.py:498"
+    ],
+    "roll_rune_drop": [
+      "systems/rune_system.py:1298",
+      "systems/rune_system.py:1333",
+      "tools/smoke_test_rune_drop_and_balance.py:15",
+      "tools/smoke_test_rune_drop_and_balance.py:17",
+      "tools/smoke_test_rune_drop_and_balance.py:19",
+      "tools/smoke_test_rune_drop_and_balance.py:21"
+    ]
+  },
+  "database": {
+    "foreign_key_issues": [],
+    "items": [
+      {
+        "category": "potion",
+        "id": 201,
+        "max_stack": 10,
+        "name": "🔴 Мале зілля здоров’я",
+        "type": "potion_hp"
+      },
+      {
+        "category": "potion",
+        "id": 202,
+        "max_stack": 10,
+        "name": "🔵 Мале зілля мани",
+        "type": "potion_mp"
+      },
+      {
+        "category": "potion",
+        "id": 203,
+        "max_stack": 10,
+        "name": "🔴 Середнє зілля здоров’я",
+        "type": "potion_hp_medium"
+      },
+      {
+        "category": "potion",
+        "id": 204,
+        "max_stack": 10,
+        "name": "🔵 Середнє зілля мани",
+        "type": "potion_mp_medium"
+      },
+      {
+        "category": "potion",
+        "id": 301,
+        "max_stack": 10,
+        "name": "🔮 Сфера нового шляху",
+        "type": "class_reset"
+      },
+      {
+        "category": "material",
+        "id": 401,
+        "max_stack": 999,
+        "name": "🪨 Камінь Посилення",
+        "type": "refine_stone"
+      },
+      {
+        "category": "material",
+        "id": 402,
+        "max_stack": 999,
+        "name": "💎 Руна Успіху",
+        "type": "success_rune"
+      },
+      {
+        "category": "rune",
+        "id": 501,
+        "max_stack": 999,
+        "name": "💠 Руна Сили I",
+        "type": "rune_str_1"
+      },
+      {
+        "category": "material",
+        "id": 526,
+        "max_stack": 999,
+        "name": "🪙 Жетон Фіріуса",
+        "type": "firius_token"
+      },
+      {
+        "category": "material",
+        "id": 527,
+        "max_stack": 999,
+        "name": "🧰 Екстрактор рун",
+        "type": "rune_extractor"
+      },
+      {
+        "category": "material",
+        "id": 528,
+        "max_stack": 999,
+        "name": "✨ Досконалий Екстрактор рун",
+        "type": "rune_extractor_perfect"
+      }
+    ],
+    "quick_check": "ok"
+  },
+  "generated_at": "2026-07-31T23:06:47",
+  "integrity": {
+    "game_db_bytes_unchanged": true,
+    "game_db_logical_fingerprint_after": "e8ce9a15b31b6f534932a10ca3e13428604835eba0ec01d508415149e2923404",
+    "game_db_logical_fingerprint_before": "e8ce9a15b31b6f534932a10ca3e13428604835eba0ec01d508415149e2923404",
+    "game_db_logical_rows_unchanged": true,
+    "game_db_sha256_after": "c6139ec733937482dd7f665b8368afb9bd31043e6c910cc82ae4e7ff73a4a62b",
+    "game_db_sha256_before": "c6139ec733937482dd7f665b8368afb9bd31043e6c910cc82ae4e7ff73a4a62b",
+    "gameplay_sources_unchanged": true
+  },
+  "mobs": {
+    "classification_signals": {},
+    "loot_chances": {
+      "0.45": 4,
+      "0.48": 2,
+      "0.5": 2,
+      "0.52": 2,
+      "0.54": 2,
+      "0.55": 2,
+      "0.56": 2,
+      "0.58": 2,
+      "0.6": 2
+    },
+    "loot_mentions": 0,
+    "loot_table_mentions": 0,
+    "mob_templates": 20,
+    "trash_item_ids": [
+      107,
+      108,
+      109,
+      110,
+      111,
+      112,
+      113,
+      114,
+      115,
+      116,
+      117,
+      118,
+      119,
+      120,
+      121,
+      122,
+      123,
+      124,
+      125,
+      126
+    ],
+    "trash_references": {
+      "107": 1,
+      "108": 1,
+      "109": 1,
+      "110": 1,
+      "111": 1,
+      "112": 1,
+      "113": 1,
+      "114": 1,
+      "115": 1,
+      "116": 1,
+      "117": 1,
+      "118": 1,
+      "119": 1,
+      "120": 1,
+      "121": 1,
+      "122": 1,
+      "123": 1,
+      "124": 1,
+      "125": 1,
+      "126": 1
+    }
+  },
+  "mutation_isolated": true,
+  "patch_id": "11.0.0",
+  "potions": {
+    "definitions": {
+      "201": {
+        "buy_price": 5.0,
+        "max_stack": 10,
+        "name": "🔴 Мале зілля здоров’я",
+        "resource": null,
+        "restore": 50,
+        "sell_price": 1.0
+      },
+      "202": {
+        "buy_price": 6.0,
+        "max_stack": 10,
+        "name": "🔵 Мале зілля мани",
+        "resource": null,
+        "restore": 40,
+        "sell_price": 1.2
+      },
+      "203": {
+        "buy_price": 15.0,
+        "max_stack": 10,
+        "name": "🔴 Середнє зілля здоров’я",
+        "resource": null,
+        "restore": 120,
+        "sell_price": 3.0
+      },
+      "204": {
+        "buy_price": 18.0,
+        "max_stack": 10,
+        "name": "🔵 Середнє зілля мани",
+        "resource": null,
+        "restore": 100,
+        "sell_price": 3.6
+      }
+    },
+    "drop_runtime_present": false
+  },
+  "reward_system": {
+    "base_captures": [
+      "_base_roll_loot_before_guild_elite_reward_v1",
+      "_base_roll_loot_before_refine_stone_drop_v1"
+    ],
+    "constants": {
+      "ELITE_CLASS_AWARE_DROP_CHANCE": null,
+      "ELITE_EQUIPMENT_DROP_CHANCE": 0.45,
+      "ELITE_REFINE_STONE_DROP_CHANCE": 0.2,
+      "NORMAL_CLASS_AWARE_DROP_CHANCE": null,
+      "NORMAL_EQUIPMENT_DROP_CHANCE": 0.2,
+      "NORMAL_REFINE_STONE_DROP_CHANCE": 0.08,
+      "REFINE_STONE_ITEM_ID": 401
+    },
+    "drop_functions": [
+      {
+        "end_line": 35,
+        "line": 29,
+        "name": "roll_normal_equipment_rarity"
+      },
+      {
+        "end_line": 44,
+        "line": 38,
+        "name": "roll_elite_equipment_rarity"
+      },
+      {
+        "end_line": 248,
+        "line": 212,
+        "name": "build_trophy_drop_message"
+      },
+      {
+        "end_line": 289,
+        "line": 255,
+        "name": "roll_equipment_drop"
+      },
+      {
+        "end_line": 330,
+        "line": 304,
+        "name": "roll_loot_from_loot_table"
+      },
+      {
+        "end_line": 373,
+        "line": 333,
+        "name": "roll_loot_from_simple_keys"
+      },
+      {
+        "end_line": 393,
+        "line": 376,
+        "name": "roll_loot"
+      },
+      {
+        "end_line": 481,
+        "line": 448,
+        "name": "roll_refine_stone_drop"
+      },
+      {
+        "end_line": 503,
+        "line": 484,
+        "name": "roll_loot"
+      },
+      {
+        "end_line": 546,
+        "line": 527,
+        "name": "roll_loot"
+      }
+    ],
+    "function_counts": {
+      "_guild_is_elite_mob_v1": 1,
+      "build_trophy_display_name": 1,
+      "build_trophy_drop_message": 1,
+      "calculate_exp_reward": 1,
+      "calculate_gold_reward": 1,
+      "get_level_difference_multiplier": 1,
+      "get_random_quantity": 1,
+      "is_trophy_suitable_for_class": 1,
+      "process_victory_reward": 2,
+      "roll_elite_equipment_rarity": 1,
+      "roll_equipment_drop": 1,
+      "roll_loot": 3,
+      "roll_loot_from_loot_table": 1,
+      "roll_loot_from_simple_keys": 1,
+      "roll_normal_equipment_rarity": 1,
+      "roll_refine_stone_drop": 1
+    },
+    "guild_hook_in_roll_loot": true,
+    "random_call_lines": [
+      30,
+      39,
+      264,
+      299,
+      315,
+      357,
+      360,
+      466
+    ],
+    "roll_loot_definitions": [
+      {
+        "end_line": 393,
+        "line": 376,
+        "name": "roll_loot"
+      },
+      {
+        "end_line": 503,
+        "line": 484,
+        "name": "roll_loot"
+      },
+      {
+        "end_line": 546,
+        "line": 527,
+        "name": "roll_loot"
+      }
+    ],
+    "rune_wrapper_present": true,
+    "victory_definitions": [
+      {
+        "end_line": 427,
+        "line": 400,
+        "name": "process_victory_reward"
+      },
+      {
+        "end_line": 570,
+        "line": 554,
+        "name": "process_victory_reward"
+      }
+    ]
+  },
+  "runes": {
+    "boss_signals": {
+      "boss": true,
+      "enemy_type": true,
+      "is_boss": true,
+      "mob_type": true
+    },
+    "chances": {
+      "boss": 0.35,
+      "elite": 0.12,
+      "normal": 0.05
+    },
+    "direct_max_level": 3,
+    "functions": [
+      {
+        "end_line": 1260,
+        "line": 1252,
+        "name": "classify_rune_drop_enemy"
+      },
+      {
+        "end_line": 1293,
+        "line": 1273,
+        "name": "roll_rune_drop"
+      },
+      {
+        "end_line": 1312,
+        "line": 1296,
+        "name": "award_rune_drop"
+      },
+      {
+        "end_line": 1338,
+        "line": 1315,
+        "name": "simulate_rune_drops"
+      }
+    ],
+    "level_weights": {
+      "boss": [
+        [
+          1,
+          0.6
+        ],
+        [
+          2,
+          0.35
+        ],
+        [
+          3,
+          0.05
+        ]
+      ],
+      "elite": [
+        [
+          1,
+          0.8
+        ],
+        [
+          2,
+          0.2
+        ]
+      ],
+      "normal": [
+        [
+          1,
+          1.0
+        ]
+      ]
+    },
+    "max_per_kill": 1,
+    "stat_weights": [
+      [
+        "STR",
+        0.2
+      ],
+      [
+        "STA",
+        0.2
+      ],
+      [
+        "DEX",
+        0.2
+      ],
+      [
+        "INT",
+        0.2
+      ],
+      [
+        "WIS",
+        0.2
+      ]
+    ]
+  },
+  "tests": [
+    {
+      "output": "[OK] Rune drop and balance contracts\n- normal chance: 5%\n- elite chance: 12%\n- boss chance: 35%\n- normal levels: I only\n- elite levels: I 80% / II 20%\n- boss levels: I 60% / II 35% / III 5%\n- stat distribution: 20% each\n- direct Rune IV/V drops: 0\n- boss priority over elite: OK\n- maximum runes per kill: 1\n- DEV simulation is read-only: OK\n- real user mutations: 0",
+      "path": "tools/smoke_test_rune_drop_and_balance.py",
+      "returncode": 0,
+      "success": true
+    },
+    {
+      "output": "[OK] inventory/refine read-only runtime contracts\n- inventory rows: 33\n- sample inventory_id: 84\n- sample name: ⚪ Дворучний посох 8 рівня [+10]\n- refine level: 10\n- tuple lengths: detailed=17 item=17 full=19 entry=6",
+      "path": "tools/smoke_test_inventory_refine_contracts.py",
+      "returncode": 0,
+      "success": true
+    },
+    {
+      "output": "[OK] weapon damage read-only runtime contracts\n- inventory_id: 166\n- attack_type: magical\n- refine_level: 5\n- base damage: (16, 24)\n- final damage: (21, 31)\n- display: 🔮 Маг. шкода: 21-31",
+      "path": "tools/smoke_test_weapon_damage_contracts.py",
+      "returncode": 0,
+      "success": true
+    },
+    {
+      "output": "[OK] Combat Mana Potion implementation contracts\n- small MP restore: 40\n- medium MP restore/clamp: OK\n- full mana no-consume: OK\n- consume exactly once: OK\n- HP potion compatibility: OK\n- mana-class keyboard visibility: OK\n- non-mana-class hiding: OK\n- cooldown small/medium: 3/5\n- combat MP state synchronization: OK\n- potion use spends no turn: OK\n- database mutations: 0",
+      "path": "tools/smoke_test_combat_mana_potion_contracts.py",
+      "returncode": 0,
+      "success": true
+    },
+    {
+      "output": "[OK] Combat potion cooldown menu UX contracts\n- shared HP/MP cooldown: preserved\n- menu opens during cooldown: OK\n- individual potion callbacks remain blocked: OK\n- cooldown shown on each potion button: OK\n- Ukrainian 1/2/3/4/5 turn forms: OK\n- MP potions hidden from non-mana classes: OK\n- back-to-combat action: preserved\n- database mutations: 0",
+      "path": "tools/smoke_test_combat_potion_cooldown_menu_ux.py",
+      "returncode": 0,
+      "success": true
+    },
+    {
+      "output": "[OK] equipment full legacy contract\n- equipment slots: 10\n- repair rows: 10\n- repairable: 9",
+      "path": "tools/smoke_test_equipment_readonly_core.py",
+      "returncode": 0,
+      "success": true
+    },
+    {
+      "output": "================================================================================\nROM core smoke-test\n================================================================================\n[OK] import db: db imported\n[OK] init core systems: core systems initialized\n[OK] required db API functions: required db API functions exist\n\n[OK] ROM core smoke-test passed.",
+      "path": "tools/smoke_test_rom_core.py",
+      "returncode": 0,
+      "success": true
+    },
+    {
+      "output": "================================================================================\nROM compile/import check\n================================================================================\n[OK] py_compile passed for project files.\n\n[SAFE IMPORT CHECK]\n[OK] import db\n[OK] import keyboards\n[OK] import systems.combat_system\n[OK] import systems.refine_system\n[OK] import systems.energy_system\n[OK] import systems.regen_system\n[OK] import systems.equipment_system\n[OK] import data.classes\n[OK] import data.equipment_profiles\n[OK] import systems.guild_system\n[OK] import systems.auction_house_system\n[OK] import data.balance\n[OK] import migrations.runner\n\n[OK] safe imports passed.\n\nNote:\n- main.py is intentionally not imported here, because importing main.py can start the bot.\n- handlers are compiled, not imported, to avoid registering handlers during audit.\n\nDone.",
+      "path": "tools/check_imports.py",
+      "returncode": 0,
+      "success": true
+    }
+  ]
+}

@@ -569,3 +569,65 @@ def process_victory_reward(user_id, player_level, mob):
     reward["capacity"] = get_bag_capacity(user_id)
     return reward
 
+# ==============================
+# ROM 11.3.0 CENTRAL DROP REFINE STONE MIGRATION
+# ==============================
+_ROLL_REFINE_STONE_LEGACY_11_3_0 = roll_refine_stone_drop
+
+
+def roll_refine_stone_drop(user_id, mob, random_func=None):
+    """Compatibility API using the central Refine Stone chance table."""
+    import random
+    from systems.drop_system import roll_central_refine_stone_drop
+
+    rng = random_func or random.random
+    central = roll_central_refine_stone_drop(mob, rng)
+    if not central.get("rolled"):
+        return None
+
+    payload = central.get("payload") or {}
+    result = add_item(
+        int(user_id),
+        int(payload.get("item_id", REFINE_STONE_ITEM_ID)),
+        int(payload.get("quantity", 1)),
+    )
+    if result.get("added", 0) > 0:
+        name = result.get("name", "🪨 Камінь Посилення")
+        return f"{name} x{int(result.get('added', 1))}"
+    if result.get("lost", 0) > 0:
+        name = result.get("name", "🪨 Камінь Посилення")
+        return f"⚠️ Не влізло в сумку: {name} x{int(result.get('lost', 1))}"
+    return None
+
+# ==============================
+# ROM 11.4.0 CENTRAL DROP EQUIPMENT MIGRATION
+# ==============================
+_ROLL_EQUIPMENT_LEGACY_11_4_0 = roll_equipment_drop
+
+
+def roll_equipment_drop(user_id, mob, random_func=None):
+    """Compatibility API delegated to the central equipment drop rule."""
+    from systems.drop_system import roll_central_equipment_drop
+
+    rng = random_func or random.random
+    central = roll_central_equipment_drop(mob, rng)
+    if not central.get("rolled"):
+        return None
+
+    payload = central.get("payload") or {}
+    result = create_generated_equipment_item(
+        user_id=user_id,
+        item_level=int(mob.get("level", 1)),
+        rarity=str(payload["rarity"]),
+        class_aware_chance=float(payload["class_aware_chance"]),
+    )
+    if not result.get("success"):
+        return result.get("message", "🎒 Екіпірування не влізло в сумку.")
+
+    return build_trophy_drop_message(
+        user_id=user_id,
+        result=result,
+        rarity=str(payload["rarity"]),
+        is_elite=central["enemy_type"] in ("elite", "boss"),
+    )
+
