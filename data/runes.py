@@ -110,3 +110,11 @@ def is_rune_item_id(item_id):
 
 def get_rune_slot_limit(slot_key):
     return int(RUNE_SLOT_LIMITS.get(str(slot_key or ""), 0))
+
+# ==============================
+# ROM 10.13.0 RUNE MASTER SHOP
+# ==============================
+SIMPLE_RUNE_EXTRACTOR_GOLD_PRICE = 10.0
+SIMPLE_RUNE_EXTRACTOR_SHOP_ENABLED = True
+PERFECT_RUNE_EXTRACTOR_CRYSTAL_SHOP_ENABLED = False
+

@@ -3,11 +3,11 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-07-31 00:42:40 +03:00
+Created: 2026-07-31 22:44:17 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.8875
-Included files: 149
-Excluded files: 3353
+Included files: 151
+Excluded files: 3399
 Maximum file size: 2 MB
 
 SECURITY EXCLUSIONS:
@@ -162,9 +162,11 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_rune_equipment_display_names.py
 - tools\smoke_test_rune_fusion_with_firius_tokens.py
 - tools\smoke_test_rune_inventory_and_dev_commands.py
+- tools\smoke_test_rune_master_extractor_shop.py
 - tools\smoke_test_rune_master_inline_navigation_cleanup.py
 - tools\smoke_test_rune_master_insertion.py
 - tools\smoke_test_rune_master_menu_ui.py
+- tools\smoke_test_rune_master_shop_refresh_hotfix.py
 - tools\smoke_test_rune_stat_ukrainian_labels.py
 - tools\smoke_test_simple_rune_extractor.py
 - tools\smoke_test_static_item_seed_contracts.py
@@ -1294,8 +1296,8 @@ RUNE_DROP_BALANCE_VERSION = "10.11.0"
 
 ============================================================
 FILE: data\runes.py
-SIZE: 3309 bytes
-LAST WRITE: 2026-07-30 15:06:11
+SIZE: 3550 bytes
+LAST WRITE: 2026-07-31 22:31:37
 ============================================================
 
 """Canonical Rune System data for ROM 10.x."""
@@ -1411,11 +1413,19 @@ def is_rune_item_id(item_id):
 def get_rune_slot_limit(slot_key):
     return int(RUNE_SLOT_LIMITS.get(str(slot_key or ""), 0))
 
+# ==============================
+# ROM 10.13.0 RUNE MASTER SHOP
+# ==============================
+SIMPLE_RUNE_EXTRACTOR_GOLD_PRICE = 10.0
+SIMPLE_RUNE_EXTRACTOR_SHOP_ENABLED = True
+PERFECT_RUNE_EXTRACTOR_CRYSTAL_SHOP_ENABLED = False
+
+
 
 ============================================================
 FILE: db.py
-SIZE: 216117 bytes
-LAST WRITE: 2026-07-31 00:12:46
+SIZE: 216545 bytes
+LAST WRITE: 2026-07-31 22:31:38
 ============================================================
 
 import sqlite3
@@ -9247,6 +9257,19 @@ def get_rune_equipment_display_name(inventory_id, fallback_name=None):
 def use_perfect_rune_extractor(user_id, equipment_inventory_id):
     from systems.rune_system import use_perfect_rune_extractor as _func
     return _func(user_id, equipment_inventory_id)
+
+# ==============================
+# ROM 10.13.0 RUNE MASTER SHOP FACADE
+# ==============================
+
+def get_rune_master_shop_state(user_id):
+    from systems.rune_system import get_rune_master_shop_state as _func
+    return _func(user_id)
+
+
+def buy_simple_rune_extractor(user_id, quantity=1):
+    from systems.rune_system import buy_simple_rune_extractor as _func
+    return _func(user_id, quantity=quantity)
 
 
 
@@ -27195,8 +27218,8 @@ def register_refine_handlers(bot):
 
 ============================================================
 FILE: handlers\runes.py
-SIZE: 24622 bytes
-LAST WRITE: 2026-07-31 00:12:46
+SIZE: 32256 bytes
+LAST WRITE: 2026-07-31 22:38:57
 ============================================================
 
 from telebot import types
@@ -27686,6 +27709,165 @@ def build_perfect_extractor_confirmation(user_id, equipment_id, page=0):
     ))
     return text, keyboard
 
+# ==============================
+# ROM 10.13.0 RUNE MASTER SHOP UI
+# ==============================
+
+_RUNE_MASTER_SHOP_QUANTITY_STATE_10_13_0 = {}
+_RUNE_MASTER_SHOP_NAVIGATION_TEXTS_10_13_0 = {
+    "💠 Вставити руну", "🔄 Переробити руни", "🧰 Екстрактор",
+    "🛒 Крамниця", "🔙 Ремісничий квартал",
+}
+
+
+def _clear_rune_master_shop_quantity_state_10_13_0(user_id):
+    _RUNE_MASTER_SHOP_QUANTITY_STATE_10_13_0.pop(int(user_id), None)
+
+
+def build_rune_master_shop(user_id):
+    from db import get_rune_master_shop_state
+    state = get_rune_master_shop_state(user_id)
+    text = (
+        "🛒 Крамниця Рунного Майстра\n\n"
+        f"💰 Золото: {state['gold']:g}\n\n"
+        "🧰 Простий Екстрактор рун\n"
+        f"Ціна за 1: {state['simple_price']:g} золота\n"
+        f"У сумці: {state['simple_owned']}\n\n"
+        "Простий Екстрактор повертає одну випадкову вставлену руну, "
+        "але знищує спорядження та решту вставлених рун.\n\n"
+        "✨ Досконалий Екстрактор рун\n"
+        f"У сумці: {state['perfect_owned']}\n"
+        "Придбання за кристали буде додано в майбутньому."
+    )
+    keyboard = types.InlineKeyboardMarkup(row_width=1)
+    keyboard.add(types.InlineKeyboardButton(
+        text=f"🧰 Купити 1 за {state['simple_price']:g} золота",
+        callback_data="rs:buy:1",
+    ))
+    keyboard.add(types.InlineKeyboardButton(
+        text="🔢 Вказати кількість", callback_data="rs:quantity",
+    ))
+    keyboard.add(types.InlineKeyboardButton(
+        text="🔄 Оновити", callback_data="rs:home",
+    ))
+    return text, keyboard
+
+
+def build_rune_master_shop_quantity_prompt(user_id):
+    from db import get_rune_master_shop_state
+    state = get_rune_master_shop_state(user_id)
+    price = float(state["simple_price"])
+    affordable = min(100, int(float(state["gold"]) // price)) if price > 0 else 100
+    return (
+        "🧰 Купівля Простого Екстрактора\n\n"
+        f"Ціна за 1: {price:g} золота\n"
+        f"Доступно золота: {state['gold']:g}\n"
+        f"Максимально можна придбати зараз: {affordable}\n\n"
+        "Введіть потрібну кількість цілим числом від 1 до 100."
+    )
+
+
+def build_rune_master_shop_confirmation(user_id, quantity):
+    from db import get_rune_master_shop_state
+    state = get_rune_master_shop_state(user_id)
+    quantity = int(quantity)
+    unit_price = float(state["simple_price"])
+    total_price = round(unit_price * quantity, 2)
+    remaining = round(float(state["gold"]) - total_price, 2)
+    keyboard = types.InlineKeyboardMarkup(row_width=1)
+    keyboard.add(types.InlineKeyboardButton(
+        text=f"✅ Купити {quantity}", callback_data=f"rs:confirm:{quantity}",
+    ))
+    keyboard.add(types.InlineKeyboardButton(
+        text="❌ Скасувати", callback_data="rs:home",
+    ))
+    return (
+        "🧰 Підтвердження покупки\n\n"
+        "Предмет:\n• Простий Екстрактор рун\n\n"
+        f"Кількість: {quantity}\n"
+        f"Ціна за 1: {unit_price:g} золота\n"
+        f"Загальна ціна: {total_price:g} золота\n"
+        f"Після покупки залишиться: {remaining:g} золота",
+        keyboard,
+    )
+
+
+def register_rune_master_shop_handlers(bot):
+    @bot.message_handler(func=lambda message: message.text == "🛒 Крамниця")
+    def show_rune_master_shop(message):
+        _clear_rune_master_shop_quantity_state_10_13_0(message.from_user.id)
+        text, keyboard = build_rune_master_shop(message.from_user.id)
+        bot.send_message(message.chat.id, text, reply_markup=keyboard)
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("rs:"))
+    def rune_master_shop_callback(call):
+        # ROM 10.13.1 SHOP REFRESH NO-OP GUARD
+        from db import buy_simple_rune_extractor
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        action = parts[1] if len(parts) > 1 else "home"
+        bot.answer_callback_query(call.id)
+        if action == "quantity":
+            _RUNE_MASTER_SHOP_QUANTITY_STATE_10_13_0[int(user_id)] = True
+            bot.send_message(
+                call.message.chat.id,
+                build_rune_master_shop_quantity_prompt(user_id),
+                reply_markup=rune_master_kb(),
+            )
+            return
+        _clear_rune_master_shop_quantity_state_10_13_0(user_id)
+        if action in ("buy", "confirm"):
+            result = buy_simple_rune_extractor(user_id, int(parts[2]))
+            shop_text, keyboard = build_rune_master_shop(user_id)
+            text = result.get("message", "❌ Не вдалося виконати покупку.") + "\n\n" + shop_text
+        else:
+            text, keyboard = build_rune_master_shop(user_id)
+        try:
+            bot.edit_message_text(
+                text,
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboard,
+            )
+        except Exception as error:
+            # Telegram returns HTTP 400 when Refresh produces exactly the same
+            # text and inline keyboard. This is a successful no-op, not a bot error.
+            if "message is not modified" not in str(error).lower():
+                raise
+
+    @bot.message_handler(func=lambda message: (
+        int(message.from_user.id) in _RUNE_MASTER_SHOP_QUANTITY_STATE_10_13_0
+        and message.text not in _RUNE_MASTER_SHOP_NAVIGATION_TEXTS_10_13_0
+    ))
+    def rune_master_shop_quantity_input(message):
+        from db import get_rune_master_shop_state
+        user_id = int(message.from_user.id)
+        try:
+            quantity = int(str(message.text or "").strip())
+        except Exception:
+            bot.send_message(message.chat.id, "❌ Введіть ціле число від 1 до 100.", reply_markup=rune_master_kb())
+            return
+        if quantity < 1 or quantity > 100:
+            bot.send_message(message.chat.id, "❌ Введіть ціле число від 1 до 100.", reply_markup=rune_master_kb())
+            return
+        state = get_rune_master_shop_state(user_id)
+        total_price = round(float(state["simple_price"]) * quantity, 2)
+        if float(state["gold"]) + 1e-9 < total_price:
+            affordable = min(100, int(float(state["gold"]) // float(state["simple_price"])))
+            bot.send_message(
+                message.chat.id,
+                "❌ Недостатньо золота.\n\n"
+                f"Кількість: {quantity}\n"
+                f"Загальна ціна: {total_price:g} золота\n"
+                f"Доступно: {state['gold']:g} золота\n"
+                f"Максимально можна придбати: {affordable}",
+                reply_markup=rune_master_kb(),
+            )
+            return
+        _clear_rune_master_shop_quantity_state_10_13_0(user_id)
+        text, keyboard = build_rune_master_shop_confirmation(user_id, quantity)
+        bot.send_message(message.chat.id, text, reply_markup=keyboard)
+
 
 
 ============================================================
@@ -28173,8 +28355,8 @@ def register_start_handlers(bot):
 
 ============================================================
 FILE: keyboards.py
-SIZE: 5953 bytes
-LAST WRITE: 2026-07-30 23:47:42
+SIZE: 5990 bytes
+LAST WRITE: 2026-07-31 22:31:38
 ============================================================
 
 from telebot import types
@@ -28352,6 +28534,7 @@ def rune_master_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.add("💠 Вставити руну", "🔄 Переробити руни")
     kb.add("🧰 Екстрактор")
+    kb.add("🛒 Крамниця")
     kb.add("🔙 Ремісничий квартал")
     return kb
 
@@ -28359,8 +28542,8 @@ def rune_master_kb():
 
 ============================================================
 FILE: main.py
-SIZE: 6017 bytes
-LAST WRITE: 2026-07-30 23:42:28
+SIZE: 6094 bytes
+LAST WRITE: 2026-07-31 22:31:38
 ============================================================
 
 
@@ -28444,7 +28627,7 @@ from handlers.city import register_city_handlers
 from handlers.contracts import register_contract_handlers
 from handlers.daily import register_daily_handlers
 from handlers.refine import register_refine_handlers
-from handlers.runes import register_rune_handlers, register_rune_fusion_handlers, register_simple_rune_extractor_handlers
+from handlers.runes import register_rune_handlers, register_rune_fusion_handlers, register_simple_rune_extractor_handlers, register_rune_master_shop_handlers
 from handlers.blacksmith import register_blacksmith_repair_hotfix_handlers
 from handlers.guild import register_guild_handlers
 from handlers.auction_house import register_auction_house_handlers
@@ -28514,6 +28697,7 @@ register_daily_handlers(bot)
 register_rune_handlers(bot)
 register_rune_fusion_handlers(bot)
 register_simple_rune_extractor_handlers(bot)
+register_rune_master_shop_handlers(bot)
 
 
 register_refine_handlers(bot)
@@ -46596,8 +46780,8 @@ def process_victory_reward(user_id, player_level, mob):
 
 ============================================================
 FILE: systems\rune_system.py
-SIZE: 52149 bytes
-LAST WRITE: 2026-07-31 00:26:18
+SIZE: 57424 bytes
+LAST WRITE: 2026-07-31 22:31:37
 ============================================================
 
 """Rune System foundation: schema, seed, reads and fusion-selection validation."""
@@ -47938,6 +48122,147 @@ def simulate_rune_drops(enemy_type, trials, seed=None):
     return {"success": True, "enemy_type": enemy_type, "trials": trials,
             "dropped": dropped, "actual_rate": dropped / trials,
             "levels": levels, "stats": stats}
+
+# ==============================
+# ROM 10.13.0 RUNE MASTER EXTRACTOR SHOP
+# ==============================
+
+
+def get_rune_master_shop_state(user_id):
+    """Read-only Rune Master shop state for the current character."""
+    from data.runes import (
+        PERFECT_RUNE_EXTRACTOR_CRYSTAL_SHOP_ENABLED,
+        SIMPLE_RUNE_EXTRACTOR_GOLD_PRICE,
+        SIMPLE_RUNE_EXTRACTOR_SHOP_ENABLED,
+    )
+    db = _db()
+    row = db.conn.execute(
+        "SELECT COALESCE(gold,0) FROM users WHERE user_id=?",
+        (int(user_id),),
+    ).fetchone()
+    counts = get_extractor_material_counts(user_id)
+    return {
+        "success": row is not None,
+        "gold": round(float(row[0] or 0), 2) if row else 0.0,
+        "simple_price": float(SIMPLE_RUNE_EXTRACTOR_GOLD_PRICE),
+        "simple_enabled": bool(SIMPLE_RUNE_EXTRACTOR_SHOP_ENABLED),
+        "simple_owned": int(counts.get("simple", 0) or 0),
+        "perfect_owned": int(counts.get("perfect", 0) or 0),
+        "perfect_crystal_enabled": bool(PERFECT_RUNE_EXTRACTOR_CRYSTAL_SHOP_ENABLED),
+    }
+
+
+def buy_simple_rune_extractor(user_id, quantity=1):
+    """Atomically buy Simple Rune Extractors for gold."""
+    from data.runes import (
+        SIMPLE_RUNE_EXTRACTOR_GOLD_PRICE,
+        SIMPLE_RUNE_EXTRACTOR_SHOP_ENABLED,
+    )
+    db = _db()
+    conn = db.conn
+    try:
+        user_id = int(user_id)
+        quantity = int(quantity)
+    except Exception:
+        return {
+            "success": False,
+            "code": "invalid_quantity",
+            "message": "❌ Некоректна кількість Екстракторів.",
+        }
+    if quantity < 1 or quantity > 100:
+        return {
+            "success": False,
+            "code": "invalid_quantity",
+            "message": "❌ За одну покупку можна придбати від 1 до 100 Екстракторів.",
+        }
+    if not SIMPLE_RUNE_EXTRACTOR_SHOP_ENABLED:
+        return {
+            "success": False,
+            "code": "shop_disabled",
+            "message": "❌ Продаж Простих Екстракторів тимчасово вимкнено.",
+        }
+
+    unit_price = float(SIMPLE_RUNE_EXTRACTOR_GOLD_PRICE)
+    total_price = round(unit_price * quantity, 2)
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        row = conn.execute(
+            "SELECT COALESCE(gold,0) FROM users WHERE user_id=?",
+            (user_id,),
+        ).fetchone()
+        if not row:
+            conn.rollback()
+            return {
+                "success": False,
+                "code": "user_not_found",
+                "message": "❌ Персонажа не знайдено.",
+            }
+        current_gold = round(float(row[0] or 0), 2)
+        if current_gold + 1e-9 < total_price:
+            conn.rollback()
+            return {
+                "success": False,
+                "code": "not_enough_gold",
+                "gold": current_gold,
+                "required": total_price,
+                "message": (
+                    "❌ Недостатньо золота.\n\n"
+                    f"Потрібно: {total_price:g} золота\n"
+                    f"Доступно: {current_gold:g} золота"
+                ),
+            }
+
+        added = _add_stack_quantity_in_transaction(
+            conn,
+            user_id,
+            RUNE_EXTRACTOR_ITEM_ID,
+            quantity,
+        )
+        if not added.get("success"):
+            conn.rollback()
+            return {
+                "success": False,
+                "code": added.get("code", "bag_full"),
+                "message": (
+                    "🎒 У сумці немає місця для Простого Екстрактора.\n\n"
+                    "Золото не було витрачено."
+                ),
+            }
+
+        updated = conn.execute(
+            "UPDATE users SET gold=ROUND(gold-?,2) "
+            "WHERE user_id=? AND gold>=?",
+            (total_price, user_id, total_price),
+        )
+        if updated.rowcount != 1:
+            conn.rollback()
+            return {
+                "success": False,
+                "code": "gold_changed",
+                "message": "❌ Баланс золота змінився. Покупку скасовано.",
+            }
+        new_gold = round(float(conn.execute(
+            "SELECT gold FROM users WHERE user_id=?", (user_id,)
+        ).fetchone()[0] or 0), 2)
+        conn.commit()
+        return {
+            "success": True,
+            "code": "purchased",
+            "item_id": RUNE_EXTRACTOR_ITEM_ID,
+            "quantity": quantity,
+            "unit_price": unit_price,
+            "total_price": total_price,
+            "gold": new_gold,
+            "message": (
+                "✅ Покупку завершено!\n\n"
+                f"Отримано:\n• 🧰 Простий Екстрактор рун ×{quantity}\n\n"
+                f"Витрачено: {total_price:g} золота\n"
+                f"Залишок: {new_gold:g} золота"
+            ),
+        }
+    except Exception:
+        conn.rollback()
+        raise
 
 
 
@@ -57440,6 +57765,69 @@ if __name__ == "__main__":
 
 
 ============================================================
+FILE: tools\smoke_test_rune_master_extractor_shop.py
+SIZE: 3352 bytes
+LAST WRITE: 2026-07-31 22:31:38
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from __future__ import annotations
+import ast, sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path: sys.path.insert(0,str(ROOT))
+USER_ID=-101300001
+
+def fail(message): print(f"[FAIL] {message}"); raise SystemExit(1)
+def cleanup(db):
+    for table in ("equipment_slots","inventory","user_daily_quests"):
+        try: db.conn.execute(f"DELETE FROM {table} WHERE user_id=?",(USER_ID,))
+        except Exception: pass
+    db.conn.execute("DELETE FROM users WHERE user_id=?",(USER_ID,)); db.conn.commit()
+def quantity(db,item_id):
+    return int(db.conn.execute("SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?",(USER_ID,item_id)).fetchone()[0] or 0)
+def main():
+    import db
+    from data.runes import SIMPLE_RUNE_EXTRACTOR_GOLD_PRICE,SIMPLE_RUNE_EXTRACTOR_SHOP_ENABLED,PERFECT_RUNE_EXTRACTOR_CRYSTAL_SHOP_ENABLED
+    cleanup(db)
+    try:
+        if SIMPLE_RUNE_EXTRACTOR_GOLD_PRICE!=10.0: fail("price")
+        if not SIMPLE_RUNE_EXTRACTOR_SHOP_ENABLED: fail("shop disabled")
+        if PERFECT_RUNE_EXTRACTOR_CRYSTAL_SHOP_ENABLED: fail("perfect shop enabled")
+        db.create_user(USER_ID); db.conn.execute("UPDATE users SET gold=100 WHERE user_id=?",(USER_ID,)); db.conn.commit()
+        before=quantity(db,527)
+        one=db.buy_simple_rune_extractor(USER_ID,1)
+        if not one.get("success") or quantity(db,527)!=before+1: fail(one)
+        custom=db.buy_simple_rune_extractor(USER_ID,7)
+        if not custom.get("success") or quantity(db,527)!=before+8: fail(custom)
+        gold=float(db.conn.execute("SELECT gold FROM users WHERE user_id=?",(USER_ID,)).fetchone()[0])
+        if gold!=20.0: fail(f"gold={gold}")
+        rejected=db.buy_simple_rune_extractor(USER_ID,3)
+        if rejected.get("code")!="not_enough_gold" or quantity(db,527)!=before+8: fail(rejected)
+        for value in (0,101):
+            if db.buy_simple_rune_extractor(USER_ID,value).get("code")!="invalid_quantity": fail(value)
+        hp=ROOT/"handlers/runes.py"; handlers=hp.read_text(encoding="utf-8-sig"); ast.parse(handlers,filename=str(hp))
+        keyboard=(ROOT/"keyboards.py").read_text(encoding="utf-8-sig")
+        main_source=(ROOT/"main.py").read_text(encoding="utf-8-sig")
+        if 'kb.add("🛒 Крамниця")' not in keyboard: fail("shop button")
+        for marker in ("rs:buy:1","rs:quantity","rs:confirm:","build_rune_master_shop_quantity_prompt","build_rune_master_shop_confirmation","rune_master_shop_quantity_input","_RUNE_MASTER_SHOP_QUANTITY_STATE_10_13_0"):
+            if marker not in handlers: fail(marker)
+        if "rs:buy:5" in handlers: fail("obsolete buy 5")
+        if "register_rune_master_shop_handlers(bot)" not in main_source: fail("registration")
+        print("[OK] Rune Master Extractor shop contracts")
+        print("- Simple Extractor unit price: 10 gold")
+        print("- immediate buy x1: OK")
+        print("- custom quantity 1-100: OK")
+        print("- confirmation callback: OK")
+        print("- insufficient gold rollback: OK")
+        print("- Perfect Extractor crystal purchase active: no")
+    finally: cleanup(db)
+    print("- isolated fixture cleanup: OK"); print("- real user mutations: 0")
+if __name__=="__main__": main()
+
+
+============================================================
 FILE: tools\smoke_test_rune_master_inline_navigation_cleanup.py
 SIZE: 2958 bytes
 LAST WRITE: 2026-07-30 23:17:51
@@ -57749,6 +58137,62 @@ def main():
     print("- Back to Craft District action: OK")
     print("- rune inventory text: Оберіть предмет для ознайомлення")
     print("- other inventory category text changed: no")
+    print("- database mutations: 0")
+
+
+if __name__ == "__main__":
+    main()
+
+
+============================================================
+FILE: tools\smoke_test_rune_master_shop_refresh_hotfix.py
+SIZE: 1513 bytes
+LAST WRITE: 2026-07-31 22:38:57
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from __future__ import annotations
+
+import ast
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+TARGET = ROOT / "handlers" / "runes.py"
+
+
+def fail(message):
+    print(f"[FAIL] {message}")
+    raise SystemExit(1)
+
+
+def main():
+    source = TARGET.read_text(encoding="utf-8-sig")
+    tree = ast.parse(source, filename=str(TARGET))
+    functions = [
+        node for node in ast.walk(tree)
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "rune_master_shop_callback"
+    ]
+    if len(functions) != 1:
+        fail(f"rune_master_shop_callback count={len(functions)}")
+    block = ast.get_source_segment(source, functions[0]) or ""
+    required = (
+        "bot.edit_message_text(",
+        'if "message is not modified" not in str(error).lower():',
+        "raise",
+        'action = parts[1] if len(parts) > 1 else "home"',
+    )
+    for marker in required:
+        if marker not in block:
+            fail(f"shop refresh guard missing: {marker}")
+    if "except Exception as error:" not in block:
+        fail("selective Telegram no-op exception guard missing")
+
+    print("[OK] Rune Master shop refresh hotfix contracts")
+    print("- unchanged Refresh is treated as successful no-op")
+    print("- unexpected Telegram/API exceptions are re-raised")
+    print("- purchase callbacks remain unchanged")
     print("- database mutations: 0")
 
 

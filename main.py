@@ -79,7 +79,7 @@ from handlers.city import register_city_handlers
 from handlers.contracts import register_contract_handlers
 from handlers.daily import register_daily_handlers
 from handlers.refine import register_refine_handlers
-from handlers.runes import register_rune_handlers, register_rune_fusion_handlers, register_simple_rune_extractor_handlers
+from handlers.runes import register_rune_handlers, register_rune_fusion_handlers, register_simple_rune_extractor_handlers, register_rune_master_shop_handlers
 from handlers.blacksmith import register_blacksmith_repair_hotfix_handlers
 from handlers.guild import register_guild_handlers
 from handlers.auction_house import register_auction_house_handlers
@@ -149,6 +149,7 @@ register_daily_handlers(bot)
 register_rune_handlers(bot)
 register_rune_fusion_handlers(bot)
 register_simple_rune_extractor_handlers(bot)
+register_rune_master_shop_handlers(bot)
 
 
 register_refine_handlers(bot)

@@ -173,6 +173,7 @@ def rune_master_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.add("💠 Вставити руну", "🔄 Переробити руни")
     kb.add("🧰 Екстрактор")
+    kb.add("🛒 Крамниця")
     kb.add("🔙 Ремісничий квартал")
     return kb
 

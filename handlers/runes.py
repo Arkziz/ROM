@@ -485,3 +485,162 @@ def build_perfect_extractor_confirmation(user_id, equipment_id, page=0):
     ))
     return text, keyboard
 
+# ==============================
+# ROM 10.13.0 RUNE MASTER SHOP UI
+# ==============================
+
+_RUNE_MASTER_SHOP_QUANTITY_STATE_10_13_0 = {}
+_RUNE_MASTER_SHOP_NAVIGATION_TEXTS_10_13_0 = {
+    "💠 Вставити руну", "🔄 Переробити руни", "🧰 Екстрактор",
+    "🛒 Крамниця", "🔙 Ремісничий квартал",
+}
+
+
+def _clear_rune_master_shop_quantity_state_10_13_0(user_id):
+    _RUNE_MASTER_SHOP_QUANTITY_STATE_10_13_0.pop(int(user_id), None)
+
+
+def build_rune_master_shop(user_id):
+    from db import get_rune_master_shop_state
+    state = get_rune_master_shop_state(user_id)
+    text = (
+        "🛒 Крамниця Рунного Майстра\n\n"
+        f"💰 Золото: {state['gold']:g}\n\n"
+        "🧰 Простий Екстрактор рун\n"
+        f"Ціна за 1: {state['simple_price']:g} золота\n"
+        f"У сумці: {state['simple_owned']}\n\n"
+        "Простий Екстрактор повертає одну випадкову вставлену руну, "
+        "але знищує спорядження та решту вставлених рун.\n\n"
+        "✨ Досконалий Екстрактор рун\n"
+        f"У сумці: {state['perfect_owned']}\n"
+        "Придбання за кристали буде додано в майбутньому."
+    )
+    keyboard = types.InlineKeyboardMarkup(row_width=1)
+    keyboard.add(types.InlineKeyboardButton(
+        text=f"🧰 Купити 1 за {state['simple_price']:g} золота",
+        callback_data="rs:buy:1",
+    ))
+    keyboard.add(types.InlineKeyboardButton(
+        text="🔢 Вказати кількість", callback_data="rs:quantity",
+    ))
+    keyboard.add(types.InlineKeyboardButton(
+        text="🔄 Оновити", callback_data="rs:home",
+    ))
+    return text, keyboard
+
+
+def build_rune_master_shop_quantity_prompt(user_id):
+    from db import get_rune_master_shop_state
+    state = get_rune_master_shop_state(user_id)
+    price = float(state["simple_price"])
+    affordable = min(100, int(float(state["gold"]) // price)) if price > 0 else 100
+    return (
+        "🧰 Купівля Простого Екстрактора\n\n"
+        f"Ціна за 1: {price:g} золота\n"
+        f"Доступно золота: {state['gold']:g}\n"
+        f"Максимально можна придбати зараз: {affordable}\n\n"
+        "Введіть потрібну кількість цілим числом від 1 до 100."
+    )
+
+
+def build_rune_master_shop_confirmation(user_id, quantity):
+    from db import get_rune_master_shop_state
+    state = get_rune_master_shop_state(user_id)
+    quantity = int(quantity)
+    unit_price = float(state["simple_price"])
+    total_price = round(unit_price * quantity, 2)
+    remaining = round(float(state["gold"]) - total_price, 2)
+    keyboard = types.InlineKeyboardMarkup(row_width=1)
+    keyboard.add(types.InlineKeyboardButton(
+        text=f"✅ Купити {quantity}", callback_data=f"rs:confirm:{quantity}",
+    ))
+    keyboard.add(types.InlineKeyboardButton(
+        text="❌ Скасувати", callback_data="rs:home",
+    ))
+    return (
+        "🧰 Підтвердження покупки\n\n"
+        "Предмет:\n• Простий Екстрактор рун\n\n"
+        f"Кількість: {quantity}\n"
+        f"Ціна за 1: {unit_price:g} золота\n"
+        f"Загальна ціна: {total_price:g} золота\n"
+        f"Після покупки залишиться: {remaining:g} золота",
+        keyboard,
+    )
+
+
+def register_rune_master_shop_handlers(bot):
+    @bot.message_handler(func=lambda message: message.text == "🛒 Крамниця")
+    def show_rune_master_shop(message):
+        _clear_rune_master_shop_quantity_state_10_13_0(message.from_user.id)
+        text, keyboard = build_rune_master_shop(message.from_user.id)
+        bot.send_message(message.chat.id, text, reply_markup=keyboard)
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("rs:"))
+    def rune_master_shop_callback(call):
+        # ROM 10.13.1 SHOP REFRESH NO-OP GUARD
+        from db import buy_simple_rune_extractor
+        user_id = call.from_user.id
+        parts = call.data.split(":")
+        action = parts[1] if len(parts) > 1 else "home"
+        bot.answer_callback_query(call.id)
+        if action == "quantity":
+            _RUNE_MASTER_SHOP_QUANTITY_STATE_10_13_0[int(user_id)] = True
+            bot.send_message(
+                call.message.chat.id,
+                build_rune_master_shop_quantity_prompt(user_id),
+                reply_markup=rune_master_kb(),
+            )
+            return
+        _clear_rune_master_shop_quantity_state_10_13_0(user_id)
+        if action in ("buy", "confirm"):
+            result = buy_simple_rune_extractor(user_id, int(parts[2]))
+            shop_text, keyboard = build_rune_master_shop(user_id)
+            text = result.get("message", "❌ Не вдалося виконати покупку.") + "\n\n" + shop_text
+        else:
+            text, keyboard = build_rune_master_shop(user_id)
+        try:
+            bot.edit_message_text(
+                text,
+                call.message.chat.id,
+                call.message.message_id,
+                reply_markup=keyboard,
+            )
+        except Exception as error:
+            # Telegram returns HTTP 400 when Refresh produces exactly the same
+            # text and inline keyboard. This is a successful no-op, not a bot error.
+            if "message is not modified" not in str(error).lower():
+                raise
+
+    @bot.message_handler(func=lambda message: (
+        int(message.from_user.id) in _RUNE_MASTER_SHOP_QUANTITY_STATE_10_13_0
+        and message.text not in _RUNE_MASTER_SHOP_NAVIGATION_TEXTS_10_13_0
+    ))
+    def rune_master_shop_quantity_input(message):
+        from db import get_rune_master_shop_state
+        user_id = int(message.from_user.id)
+        try:
+            quantity = int(str(message.text or "").strip())
+        except Exception:
+            bot.send_message(message.chat.id, "❌ Введіть ціле число від 1 до 100.", reply_markup=rune_master_kb())
+            return
+        if quantity < 1 or quantity > 100:
+            bot.send_message(message.chat.id, "❌ Введіть ціле число від 1 до 100.", reply_markup=rune_master_kb())
+            return
+        state = get_rune_master_shop_state(user_id)
+        total_price = round(float(state["simple_price"]) * quantity, 2)
+        if float(state["gold"]) + 1e-9 < total_price:
+            affordable = min(100, int(float(state["gold"]) // float(state["simple_price"])))
+            bot.send_message(
+                message.chat.id,
+                "❌ Недостатньо золота.\n\n"
+                f"Кількість: {quantity}\n"
+                f"Загальна ціна: {total_price:g} золота\n"
+                f"Доступно: {state['gold']:g} золота\n"
+                f"Максимально можна придбати: {affordable}",
+                reply_markup=rune_master_kb(),
+            )
+            return
+        _clear_rune_master_shop_quantity_state_10_13_0(user_id)
+        text, keyboard = build_rune_master_shop_confirmation(user_id, quantity)
+        bot.send_message(message.chat.id, text, reply_markup=keyboard)
+

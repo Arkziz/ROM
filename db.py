@@ -7828,3 +7828,16 @@ def use_perfect_rune_extractor(user_id, equipment_inventory_id):
     from systems.rune_system import use_perfect_rune_extractor as _func
     return _func(user_id, equipment_inventory_id)
 
+# ==============================
+# ROM 10.13.0 RUNE MASTER SHOP FACADE
+# ==============================
+
+def get_rune_master_shop_state(user_id):
+    from systems.rune_system import get_rune_master_shop_state as _func
+    return _func(user_id)
+
+
+def buy_simple_rune_extractor(user_id, quantity=1):
+    from systems.rune_system import buy_simple_rune_extractor as _func
+    return _func(user_id, quantity=quantity)
+

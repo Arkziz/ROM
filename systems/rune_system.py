@@ -1337,3 +1337,144 @@ def simulate_rune_drops(enemy_type, trials, seed=None):
             "dropped": dropped, "actual_rate": dropped / trials,
             "levels": levels, "stats": stats}
 
+# ==============================
+# ROM 10.13.0 RUNE MASTER EXTRACTOR SHOP
+# ==============================
+
+
+def get_rune_master_shop_state(user_id):
+    """Read-only Rune Master shop state for the current character."""
+    from data.runes import (
+        PERFECT_RUNE_EXTRACTOR_CRYSTAL_SHOP_ENABLED,
+        SIMPLE_RUNE_EXTRACTOR_GOLD_PRICE,
+        SIMPLE_RUNE_EXTRACTOR_SHOP_ENABLED,
+    )
+    db = _db()
+    row = db.conn.execute(
+        "SELECT COALESCE(gold,0) FROM users WHERE user_id=?",
+        (int(user_id),),
+    ).fetchone()
+    counts = get_extractor_material_counts(user_id)
+    return {
+        "success": row is not None,
+        "gold": round(float(row[0] or 0), 2) if row else 0.0,
+        "simple_price": float(SIMPLE_RUNE_EXTRACTOR_GOLD_PRICE),
+        "simple_enabled": bool(SIMPLE_RUNE_EXTRACTOR_SHOP_ENABLED),
+        "simple_owned": int(counts.get("simple", 0) or 0),
+        "perfect_owned": int(counts.get("perfect", 0) or 0),
+        "perfect_crystal_enabled": bool(PERFECT_RUNE_EXTRACTOR_CRYSTAL_SHOP_ENABLED),
+    }
+
+
+def buy_simple_rune_extractor(user_id, quantity=1):
+    """Atomically buy Simple Rune Extractors for gold."""
+    from data.runes import (
+        SIMPLE_RUNE_EXTRACTOR_GOLD_PRICE,
+        SIMPLE_RUNE_EXTRACTOR_SHOP_ENABLED,
+    )
+    db = _db()
+    conn = db.conn
+    try:
+        user_id = int(user_id)
+        quantity = int(quantity)
+    except Exception:
+        return {
+            "success": False,
+            "code": "invalid_quantity",
+            "message": "❌ Некоректна кількість Екстракторів.",
+        }
+    if quantity < 1 or quantity > 100:
+        return {
+            "success": False,
+            "code": "invalid_quantity",
+            "message": "❌ За одну покупку можна придбати від 1 до 100 Екстракторів.",
+        }
+    if not SIMPLE_RUNE_EXTRACTOR_SHOP_ENABLED:
+        return {
+            "success": False,
+            "code": "shop_disabled",
+            "message": "❌ Продаж Простих Екстракторів тимчасово вимкнено.",
+        }
+
+    unit_price = float(SIMPLE_RUNE_EXTRACTOR_GOLD_PRICE)
+    total_price = round(unit_price * quantity, 2)
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        row = conn.execute(
+            "SELECT COALESCE(gold,0) FROM users WHERE user_id=?",
+            (user_id,),
+        ).fetchone()
+        if not row:
+            conn.rollback()
+            return {
+                "success": False,
+                "code": "user_not_found",
+                "message": "❌ Персонажа не знайдено.",
+            }
+        current_gold = round(float(row[0] or 0), 2)
+        if current_gold + 1e-9 < total_price:
+            conn.rollback()
+            return {
+                "success": False,
+                "code": "not_enough_gold",
+                "gold": current_gold,
+                "required": total_price,
+                "message": (
+                    "❌ Недостатньо золота.\n\n"
+                    f"Потрібно: {total_price:g} золота\n"
+                    f"Доступно: {current_gold:g} золота"
+                ),
+            }
+
+        added = _add_stack_quantity_in_transaction(
+            conn,
+            user_id,
+            RUNE_EXTRACTOR_ITEM_ID,
+            quantity,
+        )
+        if not added.get("success"):
+            conn.rollback()
+            return {
+                "success": False,
+                "code": added.get("code", "bag_full"),
+                "message": (
+                    "🎒 У сумці немає місця для Простого Екстрактора.\n\n"
+                    "Золото не було витрачено."
+                ),
+            }
+
+        updated = conn.execute(
+            "UPDATE users SET gold=ROUND(gold-?,2) "
+            "WHERE user_id=? AND gold>=?",
+            (total_price, user_id, total_price),
+        )
+        if updated.rowcount != 1:
+            conn.rollback()
+            return {
+                "success": False,
+                "code": "gold_changed",
+                "message": "❌ Баланс золота змінився. Покупку скасовано.",
+            }
+        new_gold = round(float(conn.execute(
+            "SELECT gold FROM users WHERE user_id=?", (user_id,)
+        ).fetchone()[0] or 0), 2)
+        conn.commit()
+        return {
+            "success": True,
+            "code": "purchased",
+            "item_id": RUNE_EXTRACTOR_ITEM_ID,
+            "quantity": quantity,
+            "unit_price": unit_price,
+            "total_price": total_price,
+            "gold": new_gold,
+            "message": (
+                "✅ Покупку завершено!\n\n"
+                f"Отримано:\n• 🧰 Простий Екстрактор рун ×{quantity}\n\n"
+                f"Витрачено: {total_price:g} золота\n"
+                f"Залишок: {new_gold:g} золота"
+            ),
+        }
+    except Exception:
+        conn.rollback()
+        raise
+
