@@ -137,6 +137,47 @@ def format_rune_drop_simulation(result):
         f"INT: {stats['INT']}\nWIS: {stats['WIS']}"
     )
 
+
+
+# ==============================
+# ROM 11.8.0 UNIVERSAL DROP SIMULATOR
+# ==============================
+
+def parse_dev_drop_sim_request(text):
+    parts=str(text or "").split()
+    if len(parts)<2:
+        return {"success":False,"message":"❌ Формат:\n/dev_drop_sim normal|elite|boss [trials] [all|equipment|trophy|stone|rune|potion|special]"}
+    enemy=parts[1].lower()
+    if enemy not in ("normal","elite","boss"):
+        return {"success":False,"message":"❌ Тип ворога: normal, elite або boss."}
+    try: trials=int(parts[2]) if len(parts)>=3 else 10000
+    except Exception: return {"success":False,"message":"❌ Кількість симуляцій має бути цілим числом."}
+    if trials<1 or trials>1000000: return {"success":False,"message":"❌ Кількість симуляцій: від 1 до 1000000."}
+    group=parts[3].lower() if len(parts)>=4 else "all"
+    if group not in ("all","equipment","gear","trophy","loot","stone","material","refine","refine_stone","rune","runes","potion","potions","special"):
+        return {"success":False,"message":"❌ Група: all, equipment, trophy, stone, rune, potion або special."}
+    return {"success":True,"enemy_type":enemy,"trials":trials,"group":group}
+
+
+def format_universal_drop_simulation(result):
+    trials=result["trials"]; counts=result["counts"]
+    labels={"equipment":"Спорядження","trophy":"Трофеї","refine_stone":"Камінь Посилення","rune":"Руни","potion":"Зілля","success_rune":"Руна Успіху","simple_extractor":"Простий Екстрактор","perfect_extractor":"Досконалий Екстрактор"}
+    lines=["🎲 DEV: універсальна симуляція дропу","",f"Тип ворога: {result['enemy_type']}",f"Симуляцій: {trials}",f"Група: {result['group']}",""]
+    for key in ("equipment","trophy","refine_stone","rune","potion","success_rune","simple_extractor","perfect_extractor"):
+        if key in counts or result["group"] in ("all","special",key):
+            value=counts.get(key,0); lines.append(f"{labels[key]}: {value} ({value/trials*100:.2f}%)")
+    if result["equipment_rarity"]:
+        lines.extend(("","Рідкість спорядження:")); lines.extend(f"• {k}: {v}" for k,v in sorted(result["equipment_rarity"].items()))
+    if result["rune_levels"]:
+        lines.extend(("","Рівні рун:")); lines.extend(f"• {k}: {v}" for k,v in sorted(result["rune_levels"].items()))
+    if result["rune_stats"]:
+        lines.extend(("","Характеристики рун:")); lines.extend(f"• {k}: {v}" for k,v in sorted(result["rune_stats"].items()))
+    if result["potion_items"]:
+        names={201:"Мале HP",202:"Мале MP",203:"Середнє HP",204:"Середнє MP"}; lines.extend(("","Зілля:")); lines.extend(f"• {names.get(k,k)}: {v}" for k,v in sorted(result["potion_items"].items()))
+    lines.extend(("",f"Усього результатів: {result['total_results']}","DB writes: 0","Generated equipment rows: 0"))
+    return "\n".join(lines)
+
+
 def register_dev_handlers(bot):
 
     # ==============================
@@ -737,6 +778,20 @@ def register_dev_handlers(bot):
 
 
     # ==============================
+
+
+    # /dev_drop_sim normal|elite|boss [trials] [group]
+    @bot.message_handler(commands=["dev_drop_sim"])
+    def dev_drop_sim(message):
+        if not DEV_MODE:
+            return
+        parsed=parse_dev_drop_sim_request(message.text)
+        if not parsed["success"]:
+            bot.send_message(message.chat.id,parsed["message"],reply_markup=main_kb()); return
+        from systems.drop_system import simulate_central_drops
+        result=simulate_central_drops(parsed["enemy_type"],parsed["trials"],parsed["group"])
+        bot.send_message(message.chat.id,format_universal_drop_simulation(result),reply_markup=main_kb())
+
     # /dev_rune_drop_sim normal|elite|boss [trials]
     # ==============================
     @bot.message_handler(commands=["dev_rune_drop_sim"])

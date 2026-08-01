@@ -114,11 +114,25 @@ def validate_drop_rule(rule):
     if "stat_weights" in rule:
         errors.extend(_validate_weights(rule["stat_weights"], f"{prefix}.stat_weights"))
     if "item_weights" in rule:
-        errors.extend(_validate_weights(rule["item_weights"], f"{prefix}.item_weights", allow_empty=not rule["enabled"]))
+        item_weights = rule["item_weights"]
+        if isinstance(item_weights, dict):
+            if set(item_weights) != set(ENEMY_TYPES):
+                errors.append(f"{prefix}.item_weights: enemy keys must equal {ENEMY_TYPES}")
+            for enemy_type in ENEMY_TYPES:
+                errors.extend(_validate_weights(
+                    item_weights.get(enemy_type),
+                    f"{prefix}.item_weights.{enemy_type}",
+                    allow_empty=not rule["enabled"],
+                ))
+        else:
+            errors.extend(_validate_weights(
+                item_weights, f"{prefix}.item_weights",
+                allow_empty=not rule["enabled"],
+            ))
     return errors
 
 
-def validate_drop_tables(rules=None):
+def _validate_drop_tables_schema_11_10_0(rules=None):
     """Validate all rules and return a structured, non-throwing result."""
     selected = tuple(DROP_RULES if rules is None else rules)
     errors = []
@@ -210,7 +224,10 @@ def roll_drop_rule(rule, mob, random_func, context=None):
         payload["stat"] = weighted_choice(rule["stat_weights"], random_func())
         payload["quantity"] = 1
     elif rule["resolver"] == "weighted_item_pool":
-        payload["item_id"] = weighted_choice(rule["item_weights"], random_func())
+        item_weights = rule["item_weights"]
+        if isinstance(item_weights, dict):
+            item_weights = item_weights[enemy_type]
+        payload["item_id"] = weighted_choice(item_weights, random_func())
         payload["quantity"] = rule["quantity"]["min"]
     else:
         payload["deferred_resolver"] = True
@@ -397,4 +414,283 @@ def roll_central_equipment_drop(mob, random_func):
     return make_drop_result(
         rule, enemy_type, True, reason="shadow_roll_hit", payload=payload,
     )
+
+# ==============================
+# ROM 11.5.0 CENTRAL TROPHY MIGRATION
+# ==============================
+
+def resolve_central_trophy_chance(mob):
+    """Resolve the legacy trophy chance through the canonical trophy rule.
+
+    The pre-Stage-11 runtime adds +20 percentage points only when `is_elite`
+    is truthy. Bosses had no independent trophy balance. Preserve that exact
+    behavior during migration, while recording the boss path explicitly.
+    """
+    rule = get_drop_rule("trophy")
+    if rule is None:
+        raise RuntimeError("central trophy rule is missing")
+    if not rule.get("production_enabled", False):
+        raise RuntimeError("central trophy rule is not production-enabled")
+
+    enemy_type = classify_enemy(mob)
+    base_chance = float((mob or {}).get("loot_chance", 0.45))
+    elite_bonus = 0.20 if bool((mob or {}).get("is_elite", False)) else 0.0
+    chance = min(1.0, base_chance + elite_bonus)
+    return {
+        "enemy_type": enemy_type,
+        "chance": chance,
+        "base_chance": base_chance,
+        "elite_flag_bonus": elite_bonus,
+        "boss_policy": "legacy_elite_flag_compatibility" if enemy_type == "boss" else None,
+    }
+
+
+def roll_central_trophy_simple(mob, random_func, choice_func):
+    """Pure legacy-equivalent roll for trash_item/loot_item/simple pools."""
+    rule = get_drop_rule("trophy")
+    possible_items = []
+    if "trash_item_id" in mob:
+        possible_items.append(mob["trash_item_id"])
+    if "loot_item_id" in mob:
+        possible_items.append(mob["loot_item_id"])
+    if "trash_items" in mob and isinstance(mob["trash_items"], list):
+        possible_items.extend(mob["trash_items"])
+    if "trash_drops" in mob and isinstance(mob["trash_drops"], list):
+        possible_items.extend(mob["trash_drops"])
+
+    enemy_type = classify_enemy(mob)
+    if not possible_items:
+        return make_drop_result(rule, enemy_type, False, reason="empty_trophy_pool")
+
+    config = resolve_central_trophy_chance(mob)
+    roll = float(random_func())
+    payload = {
+        "chance": config["chance"],
+        "roll": roll,
+        "base_chance": config["base_chance"],
+        "elite_flag_bonus": config["elite_flag_bonus"],
+        "boss_policy": config["boss_policy"],
+    }
+    if roll > config["chance"]:
+        return make_drop_result(
+            rule, enemy_type, False, reason="chance_miss", payload=payload,
+        )
+
+    payload.update({
+        "resolver": "mob_trophy",
+        "item_id": int(choice_func(possible_items)),
+        "quantity": 1,
+        "pool": tuple(int(item_id) for item_id in possible_items),
+        "boundary": "inclusive",
+    })
+    return make_drop_result(
+        rule, enemy_type, True, reason="shadow_roll_hit", payload=payload,
+    )
+
+
+def roll_central_trophy_table_entry(loot, random_func):
+    """Pure chance roll for one legacy `loot_table`/`loot` entry."""
+    rule = get_drop_rule("trophy")
+    chance = float((loot or {}).get("chance", 0) or 0)
+    roll = float(random_func())
+    payload = {
+        "chance": chance,
+        "roll": roll,
+        "item_id": (loot or {}).get("item_id"),
+        "boundary": "inclusive",
+        "resolver": "mob_trophy",
+    }
+    if roll > chance:
+        return make_drop_result(
+            rule, "normal", False, reason="chance_miss", payload=payload,
+        )
+    return make_drop_result(
+        rule, "normal", True, reason="shadow_roll_hit", payload=payload,
+    )
+
+# ==============================
+# ROM 11.6.0 CENTRAL POTION DROP
+# ==============================
+
+def roll_central_potion_drop(mob, random_func):
+    """Roll at most one potion using one group roll plus one weighted roll."""
+    rule = get_drop_rule("potion")
+    if rule is None:
+        raise RuntimeError("central potion rule is missing")
+    if not rule.get("production_enabled", False):
+        raise RuntimeError("central potion rule is not production-enabled")
+
+    enemy_type = classify_enemy(mob)
+    chance = float(rule["enemy"][enemy_type]["chance"])
+    roll = float(random_func())
+    payload = {"chance": chance, "roll": roll}
+    if roll > chance:
+        return make_drop_result(
+            rule, enemy_type, False, reason="chance_miss", payload=payload,
+        )
+
+    item_id = _weighted_choice_inclusive_11_4_0(
+        rule["item_weights"][enemy_type], random_func()
+    )
+    payload.update({
+        "resolver": "weighted_item_pool",
+        "item_id": int(item_id),
+        "quantity": 1,
+        "boundary": "inclusive",
+        "exclusive_group": True,
+    })
+    return make_drop_result(
+        rule, enemy_type, True, reason="shadow_roll_hit", payload=payload,
+    )
+
+# ==============================
+# ROM 11.7.0 SPECIAL MATERIAL POLICY GUARD
+# ==============================
+
+def validate_special_material_drop_policy(rules=None):
+    """Return errors if a protected special item can enter enemy-drop runtime."""
+    from data.drop_tables import (
+        SPECIAL_MATERIAL_MOB_DROP_DENYLIST,
+        SPECIAL_MATERIAL_SOURCE_POLICY,
+    )
+
+    selected = tuple(DROP_RULES if rules is None else rules)
+    errors = []
+    by_id = {rule.get("rule_id"): rule for rule in selected if isinstance(rule, dict)}
+
+    for item_id, policy in SPECIAL_MATERIAL_SOURCE_POLICY.items():
+        rule_id = policy["rule_id"]
+        rule = by_id.get(rule_id)
+        if rule is None:
+            errors.append(f"special policy rule missing: {rule_id}")
+            continue
+        if int(rule.get("item_id", -1)) != int(item_id):
+            errors.append(f"{rule_id}: item_id mismatch")
+        if item_id not in SPECIAL_MATERIAL_MOB_DROP_DENYLIST:
+            errors.append(f"{rule_id}: item missing from mob-drop denylist")
+        if rule.get("enabled"):
+            errors.append(f"{rule_id}: enabled must remain False")
+        if rule.get("production_enabled"):
+            errors.append(f"{rule_id}: production_enabled must remain False")
+        for enemy_type in ENEMY_TYPES:
+            chance = (rule.get("enemy", {}).get(enemy_type, {}) or {}).get("chance")
+            # The Simple Extractor retains a documented disabled 1% boss
+            # candidate. It is safe only while both enable flags remain False.
+            allowed_candidate = (
+                item_id == 527
+                and enemy_type == "boss"
+                and chance == policy.get("boss_candidate_chance")
+                and not rule.get("enabled")
+                and not rule.get("production_enabled")
+            )
+            if chance not in (0, 0.0) and not allowed_candidate:
+                errors.append(
+                    f"{rule_id}.{enemy_type}: protected mob-drop chance {chance}"
+                )
+    return {"success": not errors, "errors": errors, "checked_items": sorted(SPECIAL_MATERIAL_SOURCE_POLICY)}
+
+
+def validate_drop_tables(rules=None):
+    """Extend canonical schema validation with protected-item policy checks."""
+    base = _validate_drop_tables_schema_11_10_0(rules)
+    policy = validate_special_material_drop_policy(rules)
+    errors = list(base.get("errors", ())) + list(policy.get("errors", ()))
+    result = dict(base)
+    result["success"] = not errors
+    result["errors"] = errors
+    result["special_material_policy"] = policy
+    return result
+
+
+def assert_item_allowed_for_enemy_drop(item_id):
+    """Fail closed if future generic award code targets a protected item."""
+    from data.drop_tables import SPECIAL_MATERIAL_MOB_DROP_DENYLIST
+
+    normalized = int(item_id)
+    if normalized in SPECIAL_MATERIAL_MOB_DROP_DENYLIST:
+        raise ValueError(
+            f"item {normalized} is denied by special material mob-drop policy"
+        )
+    return True
+
+# ==============================
+# ROM 11.8.0 UNIVERSAL DROP SIMULATOR
+# ==============================
+
+def _simulation_mob_11_8_0(enemy_type):
+    enemy_type=str(enemy_type).strip().lower()
+    if enemy_type not in ENEMY_TYPES:
+        raise ValueError(f"unsupported enemy_type: {enemy_type}")
+    mob={"level":10,"loot_chance":0.50,"trash_items":[107,108,109]}
+    if enemy_type=="elite": mob["is_elite"]=True
+    elif enemy_type=="boss": mob["is_boss"]=True
+    return mob
+
+
+def simulate_central_drops(enemy_type,trials=10000,group="all",seed=None):
+    """Simulate current central rules without DB access or item creation."""
+    import random
+    from collections import Counter
+    enemy_type=str(enemy_type).strip().lower()
+    group=str(group or "all").strip().lower()
+    trials=int(trials)
+    if enemy_type not in ENEMY_TYPES: raise ValueError("enemy_type must be normal, elite or boss")
+    if trials<1 or trials>1000000: raise ValueError("trials must be between 1 and 1000000")
+    aliases={"all":"all","rune":"rune","runes":"rune","equipment":"equipment","gear":"equipment","trophy":"trophy","loot":"trophy","material":"refine_stone","stone":"refine_stone","refine":"refine_stone","refine_stone":"refine_stone","potion":"potion","potions":"potion","special":"special"}
+    if group not in aliases: raise ValueError("unsupported group")
+    group=aliases[group]
+    rng=random.Random(seed)
+    mob=_simulation_mob_11_8_0(enemy_type)
+    counts=Counter(); rarity=Counter(); rune_levels=Counter(); rune_stats=Counter(); potion_items=Counter()
+    protected=Counter(); total_results=0
+    selected=[]
+    if group in ("all","equipment"): selected.append("equipment")
+    if group in ("all","trophy"): selected.append("trophy")
+    if group in ("all","refine_stone"): selected.append("refine_stone")
+    if group in ("all","rune"): selected.append("rune")
+    if group in ("all","potion"): selected.append("potion")
+    if group in ("all","special"): selected.extend(("success_rune","simple_extractor","perfect_extractor"))
+    for _ in range(trials):
+        for rule_id in selected:
+            rule=get_drop_rule(rule_id)
+            if rule_id=="equipment": result=roll_central_equipment_drop(mob,rng.random)
+            elif rule_id=="trophy": result=roll_central_trophy_simple(mob,rng.random,rng.choice)
+            elif rule_id=="refine_stone": result=roll_central_refine_stone_drop(mob,rng.random)
+            elif rule_id=="rune": result=roll_central_rune_drop(mob,rng.random)
+            elif rule_id=="potion": result=roll_central_potion_drop(mob,rng.random)
+            else: result=roll_drop_rule(rule,mob,rng.random)
+            if not result.get("rolled"): continue
+            total_results+=1; counts[rule_id]+=1; payload=result.get("payload") or {}
+            if rule_id=="equipment": rarity[str(payload.get("rarity"))]+=1
+            elif rule_id=="rune": rune_levels[int(payload.get("level",0))]+=1; rune_stats[str(payload.get("stat"))]+=1
+            elif rule_id=="potion": potion_items[int(payload.get("item_id",0))]+=1
+            elif rule_id in ("success_rune","simple_extractor","perfect_extractor"): protected[rule_id]+=1
+    return {"enemy_type":enemy_type,"trials":trials,"group":group,"seed":seed,"counts":dict(counts),"total_results":total_results,"equipment_rarity":dict(rarity),"rune_levels":dict(rune_levels),"rune_stats":dict(rune_stats),"potion_items":dict(potion_items),"protected_items":dict(protected),"database_writes":0,"generated_equipment_rows":0}
+
+# ==============================
+# ROM 11.9.0 FINAL VICTORY DROP PLAN
+# ==============================
+
+def get_victory_drop_plan():
+    """Return the single authoritative ordered production drop plan."""
+    from data.drop_tables import (
+        CENTRAL_DROP_VICTORY_INTEGRATION_ENABLED,
+        CENTRAL_DROP_VICTORY_RULE_ORDER,
+    )
+    if not CENTRAL_DROP_VICTORY_INTEGRATION_ENABLED:
+        raise RuntimeError("central victory integration is disabled")
+    validation = validate_drop_tables()
+    if not validation["success"]:
+        raise RuntimeError("invalid central drop tables: " + "; ".join(validation["errors"]))
+    production = {
+        rule["rule_id"] for rule in DROP_RULES if rule.get("production_enabled")
+    }
+    plan = tuple(CENTRAL_DROP_VICTORY_RULE_ORDER)
+    if set(plan) != production:
+        raise RuntimeError(
+            f"victory plan {plan} does not match production rules {sorted(production)}"
+        )
+    if len(plan) != len(set(plan)):
+        raise RuntimeError("duplicate rule in central victory plan")
+    return plan
 

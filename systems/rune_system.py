@@ -1270,7 +1270,7 @@ def _weighted_choice_10_11_0(weighted_values, random_value):
     return weighted_values[-1][0]
 
 
-def roll_rune_drop(mob, random_func=None):
+def _legacy_roll_rune_drop_11_10_0(mob, random_func=None):
     """Pure roll. Returns at most one canonical rune; never levels IV-V."""
     import random
     from data.rune_drop_balance import (
@@ -1481,7 +1481,6 @@ def buy_simple_rune_extractor(user_id, quantity=1):
 # ==============================
 # ROM 11.2.0 CENTRAL DROP RUNE MIGRATION
 # ==============================
-_RUNE_DROP_LEGACY_ROLL_11_2_0 = roll_rune_drop
 
 
 def roll_rune_drop(mob, random_func=None):

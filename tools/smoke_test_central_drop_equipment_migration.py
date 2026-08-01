@@ -67,7 +67,7 @@ def main():
     )
 
     rule = DROP_RULES_BY_ID["equipment"]
-    if tuple(CENTRAL_DROP_MIGRATED_RULES) != ("rune", "refine_stone", "equipment"):
+    if tuple(CENTRAL_DROP_MIGRATED_RULES) != ("rune", "refine_stone", "equipment", "trophy", "potion"):
         fail(f"migrated rules mismatch: {CENTRAL_DROP_MIGRATED_RULES}")
     if rule["enemy"] != {
         "normal": {"chance": 0.20},
@@ -137,7 +137,7 @@ def main():
             fail(f"{enemy_type} rate {actual} vs {target}")
 
     status = get_central_drop_status()
-    if status["production_rules"] != ["equipment", "refine_stone", "rune"]:
+    if status["production_rules"] != ["equipment", "trophy", "refine_stone", "rune", "potion"]:
         fail(f"production status mismatch: {status}")
 
     reward = (ROOT / "systems" / "reward_system.py").read_text(encoding="utf-8-sig")
@@ -146,10 +146,10 @@ def main():
         node for node in ast.walk(tree)
         if isinstance(node, ast.FunctionDef) and node.name == "roll_equipment_drop"
     ]
-    if len(functions) < 2 or "roll_central_equipment_drop" not in reward:
-        fail("equipment compatibility override missing")
-    if "process_enemy_drops" in reward:
-        fail("full victory integration was connected prematurely")
+    if len(functions) != 1 or "roll_central_equipment_drop" not in reward:
+        fail("final equipment compatibility API missing or duplicated")
+    if "process_enemy_drops" not in reward:
+        fail("final central victory integration is missing")
 
     print("[OK] Central drop equipment migration contracts")
     print("- normal: 20%, common 80% / uncommon 20%, class-aware 50%")
@@ -159,7 +159,7 @@ def main():
     print("- inclusive chance and rarity boundaries: OK")
     print("- boss priority over elite: OK")
     print("- existing equipment creator remains authoritative: OK")
-    print("- production central rules: equipment + refine_stone + rune")
+    print("- production central rules: equipment + refine_stone + rune + trophy + potion")
     print("- database mutations: 0")
 
 

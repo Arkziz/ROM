@@ -59,7 +59,7 @@ def main():
     validation = validate_drop_tables()
     if not CENTRAL_DROP_PRODUCTION_ENABLED:
         fail("central production must be enabled after 11.2.0")
-    if tuple(CENTRAL_DROP_MIGRATED_RULES) != ("rune", "refine_stone", "equipment"):
+    if tuple(CENTRAL_DROP_MIGRATED_RULES) != ("rune", "refine_stone", "equipment", "trophy", "potion"):
         fail(f"migrated rules mismatch: {CENTRAL_DROP_MIGRATED_RULES}")
     if not validation["success"]:
         fail(validation["errors"])
@@ -69,7 +69,7 @@ def main():
         rule["rule_id"] for rule in DROP_RULES
         if rule.get("production_enabled")
     ]
-    if production_rules != ["equipment", "refine_stone", "rune"]:
+    if production_rules != ["equipment", "trophy", "refine_stone", "rune", "potion"]:
         fail(f"production rules mismatch: {production_rules}")
 
     if classify_enemy({"is_boss": True, "is_elite": True}) != "boss":
@@ -119,19 +119,19 @@ def main():
     if invalid["success"] or not invalid["errors"]:
         fail("validator accepted invalid probability")
 
-    all_results = roll_enemy_drops({}, sequence([0.99, 0.99, 0.99, 0.99]))
+    all_results = roll_enemy_drops({}, sequence([0.99, 0.99, 0.99, 0.99, 0.99]))
     if len(all_results) != len(DROP_RULES):
         fail("full table result count mismatch")
     if any(result["awarded"] for result in all_results):
         fail("pure engine awarded a real item")
 
     status = get_central_drop_status()
-    if status["shadow_only"] or status["production_rules"] != ["equipment", "refine_stone", "rune"]:
+    if status["shadow_only"] or status["production_rules"] != ["equipment", "trophy", "refine_stone", "rune", "potion"]:
         fail(f"central status mismatch: {status}")
 
     reward_source = (ROOT / "systems" / "reward_system.py").read_text(encoding="utf-8-sig")
-    if "process_enemy_drops" in reward_source:
-        fail("full central victory flow was connected prematurely")
+    if "process_enemy_drops" not in reward_source:
+        fail("final central victory flow is missing")
     if "roll_central_refine_stone_drop" not in reward_source:
         fail("targeted refine-stone central delegation missing")
 
@@ -145,7 +145,7 @@ def main():
     print("- refine-stone boss chance: 50% inclusive")
     print("- trophy dynamic chance resolver: OK")
     print("- disabled potion/premium rules: OK")
-    print("- migrated production rules: rune + refine_stone + equipment")
+    print("- migrated production rules: rune + refine_stone + equipment + trophy + potion")
     print("- full-table victory integration enabled: no")
     print("- database mutations: 0")
     print("- gameplay drop behavior changed: no")

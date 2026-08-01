@@ -86,6 +86,7 @@ from handlers.auction_house import register_auction_house_handlers
 from handlers.blacksmith_repair_confirm import register_blacksmith_repair_confirmation_handlers
 
 from systems.notifications import start_notification_worker
+from systems.telegram_rate_limit import install_global_telegram_rate_limit_guard
 
 
 # ==============================
@@ -156,6 +157,14 @@ register_refine_handlers(bot)
 # ==============================
 # NOTIFICATIONS
 # ==============================
+
+
+# ==============================
+# ROM 11.9.1 GLOBAL TELEGRAM 429 GUARD
+# Installed after every handler so it remains the outermost bot API wrapper.
+# Installed before the notification worker so worker sends are protected too.
+# ==============================
+install_global_telegram_rate_limit_guard(bot)
 
 start_notification_worker(bot)
 

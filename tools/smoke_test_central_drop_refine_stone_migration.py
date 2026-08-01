@@ -53,11 +53,37 @@ def logical_db_fingerprint():
 
 
 def cleanup(db):
-    for table in ("equipment_slots", "inventory", "user_daily_quests"):
+    # Remove the isolated fixture from every current/future user-owned table.
+    # Stage 11 adds systems over time, so a hard-coded three-table cleanup is
+    # no longer sufficient for a whole-database logical fingerprint.
+    tables = [
+        row[0] for row in db.conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' "
+            "AND name NOT LIKE 'sqlite_%' ORDER BY name"
+        ).fetchall()
+    ]
+    owned = []
+    for table in tables:
         try:
-            db.conn.execute(f"DELETE FROM {table} WHERE user_id=?", (USER_ID,))
+            columns = {
+                str(row[1]) for row in db.conn.execute(
+                    f'PRAGMA table_info("{table}")'
+                ).fetchall()
+            }
+            if "user_id" in columns and table != "users":
+                owned.append(table)
         except Exception:
             pass
+    # Repeat to tolerate foreign-key dependency order between owned tables.
+    for _ in range(3):
+        for table in owned:
+            quoted = '"' + str(table).replace('"', '""') + '"'
+            try:
+                db.conn.execute(
+                    f"DELETE FROM {quoted} WHERE user_id=?", (USER_ID,)
+                )
+            except Exception:
+                pass
     db.conn.execute("DELETE FROM users WHERE user_id=?", (USER_ID,))
     db.conn.commit()
 
@@ -107,7 +133,7 @@ def main():
     }
     if not CENTRAL_DROP_PRODUCTION_ENABLED:
         fail("central production disabled")
-    if tuple(CENTRAL_DROP_MIGRATED_RULES) != ("rune", "refine_stone", "equipment"):
+    if tuple(CENTRAL_DROP_MIGRATED_RULES) != ("rune", "refine_stone", "equipment", "trophy", "potion"):
         fail(f"migrated rules mismatch: {CENTRAL_DROP_MIGRATED_RULES}")
     if rule["enemy"] != expected_enemy:
         fail(f"refine stone chances mismatch: {rule['enemy']}")
@@ -157,7 +183,7 @@ def main():
             fail(f"{enemy_type}: actual={actual}, target={target}")
 
     status = get_central_drop_status()
-    if status["production_rules"] != ["equipment", "refine_stone", "rune"]:
+    if status["production_rules"] != ["equipment", "trophy", "refine_stone", "rune", "potion"]:
         fail(f"production status mismatch: {status}")
     if DROP_RULES_BY_ID["success_rune"].get("production_enabled"):
         fail("Rune of Success was production-enabled")
@@ -196,8 +222,8 @@ def main():
         node for node in ast.walk(tree)
         if isinstance(node, ast.FunctionDef) and node.name == "roll_refine_stone_drop"
     ]
-    if len(functions) < 2 or "roll_central_refine_stone_drop" not in reward_source:
-        fail("central compatibility override missing")
+    if len(functions) != 1 or "roll_central_refine_stone_drop" not in reward_source:
+        fail("final Refine Stone compatibility API missing or duplicated")
 
     print("[OK] Central drop Refine Stone migration contracts")
     print("- normal chance: 8%")
@@ -209,7 +235,7 @@ def main():
     print("- item ID 401, quantity 1, max per kill 1: OK")
     print("- Rune of Success item 402 drops: disabled")
     print("- public award adds exactly one stone: OK")
-    print("- production central rules: rune + refine_stone + equipment")
+    print("- production central rules: rune + refine_stone + equipment + trophy + potion")
     print("- real user mutations: 0")
 
 

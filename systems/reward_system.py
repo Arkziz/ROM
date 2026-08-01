@@ -249,47 +249,6 @@ def build_trophy_drop_message(user_id, result, rarity, is_elite):
 
 
 # ==============================
-# EQUIPMENT DROP
-# ==============================
-
-def roll_equipment_drop(user_id, mob):
-    mob_level = int(mob.get("level", 1))
-    is_elite = bool(mob.get("is_elite", False))
-
-    if is_elite:
-        drop_chance = ELITE_EQUIPMENT_DROP_CHANCE
-    else:
-        drop_chance = NORMAL_EQUIPMENT_DROP_CHANCE
-
-    if random.random() > drop_chance:
-        return None
-
-    if is_elite:
-        rarity = roll_elite_equipment_rarity()
-        class_aware_chance = ELITE_CLASS_AWARE_EQUIPMENT_CHANCE
-    else:
-        rarity = roll_normal_equipment_rarity()
-        class_aware_chance = NORMAL_CLASS_AWARE_EQUIPMENT_CHANCE
-
-    result = create_generated_equipment_item(
-        user_id=user_id,
-        item_level=mob_level,
-        rarity=rarity,
-        class_aware_chance=class_aware_chance,
-    )
-
-    if not result.get("success"):
-        return result.get("message", "🎒 Екіпірування не влізло в сумку.")
-
-    return build_trophy_drop_message(
-        user_id=user_id,
-        result=result,
-        rarity=rarity,
-        is_elite=is_elite,
-    )
-
-
-# ==============================
 # SIMPLE LOOT
 # ==============================
 
@@ -299,132 +258,6 @@ def get_random_quantity(value):
             return random.randint(int(value[0]), int(value[1]))
 
     return int(value or 1)
-
-
-def roll_loot_from_loot_table(user_id, loot_table):
-    messages = []
-
-    for loot in loot_table:
-        item_id = loot.get("item_id")
-        chance = loot.get("chance", 0)
-        quantity = get_random_quantity(loot.get("quantity", 1))
-
-        if not item_id:
-            continue
-
-        roll = random.random()
-
-        if roll <= chance:
-            result = add_item(user_id, item_id, quantity)
-
-            if result.get("added", 0) > 0:
-                name = result.get("name", "Предмет")
-                added = result.get("added", 0)
-                messages.append(f"{name} x{added}")
-
-            if result.get("lost", 0) > 0:
-                name = result.get("name", "Предмет")
-                lost = result.get("lost", 0)
-                messages.append(f"⚠️ Не влізло в сумку: {name} x{lost}")
-
-    return messages
-
-
-def roll_loot_from_simple_keys(user_id, mob):
-    messages = []
-    possible_items = []
-
-    if "trash_item_id" in mob:
-        possible_items.append(mob["trash_item_id"])
-
-    if "loot_item_id" in mob:
-        possible_items.append(mob["loot_item_id"])
-
-    if "trash_items" in mob and isinstance(mob["trash_items"], list):
-        possible_items.extend(mob["trash_items"])
-
-    if "trash_drops" in mob and isinstance(mob["trash_drops"], list):
-        possible_items.extend(mob["trash_drops"])
-
-    if not possible_items:
-        return messages
-
-    loot_chance = mob.get("loot_chance", 0.45)
-
-    if mob.get("is_elite"):
-        loot_chance = min(1.0, loot_chance + 0.20)
-
-    if random.random() > loot_chance:
-        return messages
-
-    item_id = random.choice(possible_items)
-    result = add_item(user_id, item_id, 1)
-
-    if result.get("added", 0) > 0:
-        name = result.get("name", "Предмет")
-        added = result.get("added", 0)
-        messages.append(f"{name} x{added}")
-
-    if result.get("lost", 0) > 0:
-        name = result.get("name", "Предмет")
-        lost = result.get("lost", 0)
-        messages.append(f"⚠️ Не влізло в сумку: {name} x{lost}")
-
-    return messages
-
-
-def roll_loot(user_id, mob):
-    messages = []
-
-    if "loot_table" in mob and isinstance(mob["loot_table"], list):
-        messages.extend(roll_loot_from_loot_table(user_id, mob["loot_table"]))
-
-    elif "loot" in mob and isinstance(mob["loot"], list):
-        messages.extend(roll_loot_from_loot_table(user_id, mob["loot"]))
-
-    else:
-        messages.extend(roll_loot_from_simple_keys(user_id, mob))
-
-    trophy_message = roll_equipment_drop(user_id, mob)
-
-    if trophy_message:
-        messages.append(trophy_message)
-
-    return messages
-
-
-# ==============================
-# PROCESS VICTORY REWARD
-# ==============================
-
-def process_victory_reward(user_id, player_level, mob):
-    exp = calculate_exp_reward(
-        player_level=player_level,
-        mob=mob,
-    )
-
-    gold = calculate_gold_reward(
-        player_level=player_level,
-        mob=mob,
-    )
-
-    exp_result = add_exp(user_id, exp)
-    add_gold(user_id, gold)
-    add_kill(user_id)
-
-    loot_messages = roll_loot(user_id, mob)
-
-    used_slots = get_inventory_used_slots(user_id)
-    capacity = get_bag_capacity(user_id)
-
-    return {
-        "exp": exp,
-        "gold": gold,
-        "exp_result": exp_result,
-        "loot_messages": loot_messages,
-        "used_slots": used_slots,
-        "capacity": capacity,
-    }
 
 
 # ==============================
@@ -439,140 +272,12 @@ REFINE_STONE_ITEM_ID = 401
 NORMAL_REFINE_STONE_DROP_CHANCE = 0.08
 ELITE_REFINE_STONE_DROP_CHANCE = 0.20
 
-try:
-    _base_roll_loot_before_refine_stone_drop_v1 = roll_loot
-except Exception:
-    _base_roll_loot_before_refine_stone_drop_v1 = None
-
-
-def roll_refine_stone_drop(user_id, mob):
-    """
-    Окремий глобальний roll для 🪨 Каменя Посилення.
-
-    Баланс:
-    - звичайний моб: 8%
-    - елітний моб: 20%
-
-    💎 Руна Успіху тут НЕ падає.
-    """
-
-    is_elite = bool(mob.get("is_elite", False))
-
-    if is_elite:
-        chance = ELITE_REFINE_STONE_DROP_CHANCE
-    else:
-        chance = NORMAL_REFINE_STONE_DROP_CHANCE
-
-    if random.random() > chance:
-        return None
-
-    result = add_item(user_id, REFINE_STONE_ITEM_ID, 1)
-
-    if result.get("added", 0) > 0:
-        name = result.get("name", "🪨 Камінь Посилення")
-        added = result.get("added", 1)
-        return f"{name} x{added}"
-
-    if result.get("lost", 0) > 0:
-        name = result.get("name", "🪨 Камінь Посилення")
-        lost = result.get("lost", 1)
-        return f"⚠️ Не влізло в сумку: {name} x{lost}"
-
-    return None
-
-
-def roll_loot(user_id, mob):
-    """
-    FINAL OVERRIDE:
-    Додає шанс дропу 🪨 Каменя Посилення до вже існуючого луту.
-    """
-
-    if _base_roll_loot_before_refine_stone_drop_v1 is not None:
-        messages = _base_roll_loot_before_refine_stone_drop_v1(user_id, mob)
-    else:
-        messages = []
-
-    if messages is None:
-        messages = []
-
-    stone_message = roll_refine_stone_drop(user_id, mob)
-
-    if stone_message:
-        messages.append(stone_message)
-
-    return messages
-
-
-# ==============================
-# ✅ GUILD ELITE MOB REWARD V1
-# ==============================
-
-# 7.0.9
-# Гільдія отримує прогрес за перемогу над елітним мобом.
-# Hook стоїть у roll_loot(), бо roll_loot викликається після перемоги.
-
-try:
-    _base_roll_loot_before_guild_elite_reward_v1 = roll_loot
-except Exception:
-    _base_roll_loot_before_guild_elite_reward_v1 = None
-
 
 def _guild_is_elite_mob_v1(mob):
     try:
         return bool(mob.get("is_elite", False) or mob.get("elite", False))
     except Exception:
         return False
-
-
-def roll_loot(user_id, mob):
-    if _base_roll_loot_before_guild_elite_reward_v1 is not None:
-        messages = _base_roll_loot_before_guild_elite_reward_v1(user_id, mob)
-    else:
-        messages = []
-
-    if messages is None:
-        messages = []
-
-    if _guild_is_elite_mob_v1(mob):
-        try:
-            from db import award_guild_elite_kill, get_guild_activity_reward_text
-            result = award_guild_elite_kill(user_id, mob)
-            text = get_guild_activity_reward_text(result)
-            if text:
-                messages.append(text)
-        except Exception as error:
-            print(f"⚠️ Guild elite reward failed: {error}")
-
-    return messages
-
-# ==============================
-# ROM 10.11.0 RUNE DROP VICTORY INTEGRATION
-# ==============================
-_RUNE_DROP_BASE_PROCESS_VICTORY_REWARD_10_11_0 = process_victory_reward
-
-
-def process_victory_reward(user_id, player_level, mob):
-    """Preserve all existing rewards and append one independent rune roll."""
-    reward = _RUNE_DROP_BASE_PROCESS_VICTORY_REWARD_10_11_0(user_id, player_level, mob)
-    try:
-        from systems.rune_system import award_rune_drop
-        rune_result = award_rune_drop(user_id, mob)
-    except Exception as error:
-        print(f"⚠️ Rune drop reward failed: {error}")
-        rune_result = {"dropped": False, "error": str(error)}
-    reward = dict(reward)
-    reward["rune_drop"] = rune_result
-    if rune_result.get("dropped") and rune_result.get("message"):
-        reward.setdefault("loot_messages", []).append(rune_result["message"])
-    # Rune award may consume a new bag slot, so refresh counters after the roll.
-    reward["used_slots"] = get_inventory_used_slots(user_id)
-    reward["capacity"] = get_bag_capacity(user_id)
-    return reward
-
-# ==============================
-# ROM 11.3.0 CENTRAL DROP REFINE STONE MIGRATION
-# ==============================
-_ROLL_REFINE_STONE_LEGACY_11_3_0 = roll_refine_stone_drop
 
 
 def roll_refine_stone_drop(user_id, mob, random_func=None):
@@ -598,11 +303,6 @@ def roll_refine_stone_drop(user_id, mob, random_func=None):
         name = result.get("name", "🪨 Камінь Посилення")
         return f"⚠️ Не влізло в сумку: {name} x{int(result.get('lost', 1))}"
     return None
-
-# ==============================
-# ROM 11.4.0 CENTRAL DROP EQUIPMENT MIGRATION
-# ==============================
-_ROLL_EQUIPMENT_LEGACY_11_4_0 = roll_equipment_drop
 
 
 def roll_equipment_drop(user_id, mob, random_func=None):
@@ -630,4 +330,181 @@ def roll_equipment_drop(user_id, mob, random_func=None):
         rarity=str(payload["rarity"]),
         is_elite=central["enemy_type"] in ("elite", "boss"),
     )
+
+
+def _append_central_trophy_award_11_5_0(messages, user_id, item_id, quantity):
+    result = add_item(int(user_id), int(item_id), int(quantity))
+    if result.get("added", 0) > 0:
+        messages.append(
+            f"{result.get('name', 'Предмет')} x{int(result.get('added', 0))}"
+        )
+    if result.get("lost", 0) > 0:
+        messages.append(
+            f"⚠️ Не влізло в сумку: "
+            f"{result.get('name', 'Предмет')} x{int(result.get('lost', 0))}"
+        )
+
+
+def roll_loot_from_loot_table(user_id, loot_table, random_func=None):
+    """Compatibility table path delegated to the central trophy rule."""
+    from systems.drop_system import roll_central_trophy_table_entry
+
+    rng = random_func or random.random
+    messages = []
+    for loot in loot_table:
+        item_id = loot.get("item_id")
+        # Preserve legacy RNG order: quantity is rolled before item validation
+        # and before the chance roll.
+        quantity = get_random_quantity(loot.get("quantity", 1))
+        if not item_id:
+            continue
+        central = roll_central_trophy_table_entry(loot, rng)
+        if central.get("rolled"):
+            _append_central_trophy_award_11_5_0(
+                messages, user_id, item_id, quantity
+            )
+    return messages
+
+
+def roll_loot_from_simple_keys(
+    user_id, mob, random_func=None, choice_func=None
+):
+    """Compatibility simple-pool path delegated to central trophy config."""
+    from systems.drop_system import roll_central_trophy_simple
+
+    rng = random_func or random.random
+    chooser = choice_func or random.choice
+    central = roll_central_trophy_simple(mob, rng, chooser)
+    if not central.get("rolled"):
+        return []
+    payload = central.get("payload") or {}
+    messages = []
+    _append_central_trophy_award_11_5_0(
+        messages,
+        user_id,
+        int(payload["item_id"]),
+        int(payload.get("quantity", 1)),
+    )
+    return messages
+
+
+def roll_potion_drop(user_id, mob, random_func=None):
+    """Award zero or one potion after one central mutually-exclusive roll."""
+    from systems.drop_system import roll_central_potion_drop
+
+    rng = random_func or random.random
+    central = roll_central_potion_drop(mob, rng)
+    if not central.get("rolled"):
+        return None
+    payload = central.get("payload") or {}
+    result = add_item(
+        int(user_id), int(payload["item_id"]), int(payload.get("quantity", 1))
+    )
+    if result.get("added", 0) > 0:
+        return f"{result.get('name', 'Зілля')} x{int(result.get('added', 0))}"
+    if result.get("lost", 0) > 0:
+        return (
+            f"⚠️ Не влізло в сумку: "
+            f"{result.get('name', 'Зілля')} x{int(result.get('lost', 0))}"
+        )
+    return None
+
+
+def _central_guild_elite_reward_11_9_0(user_id, mob):
+    """Preserve the non-item guild hook exactly once."""
+    if not _guild_is_elite_mob_v1(mob):
+        return None
+    try:
+        from db import award_guild_elite_kill, get_guild_activity_reward_text
+        result = award_guild_elite_kill(user_id, mob)
+        return get_guild_activity_reward_text(result)
+    except Exception as error:
+        print(f"⚠️ Guild elite reward failed: {error}")
+        return None
+
+
+def process_enemy_drops(user_id, mob):
+    """Award every active central drop rule once, in canonical order.
+
+    This is the only production composition point after 11.9.0. Compatibility
+    functions remain available, but the old nested roll_loot chain is bypassed
+    to prevent duplicate equipment, trophy, stone, rune or potion awards.
+    """
+    from systems.drop_system import get_victory_drop_plan
+
+    messages = []
+    rune_result = {"dropped": False}
+    executed = []
+
+    for rule_id in get_victory_drop_plan():
+        executed.append(rule_id)
+        if rule_id == "trophy":
+            if "loot_table" in mob and isinstance(mob["loot_table"], list):
+                messages.extend(roll_loot_from_loot_table(user_id, mob["loot_table"]))
+            elif "loot" in mob and isinstance(mob["loot"], list):
+                messages.extend(roll_loot_from_loot_table(user_id, mob["loot"]))
+            else:
+                messages.extend(roll_loot_from_simple_keys(user_id, mob))
+        elif rule_id == "equipment":
+            message = roll_equipment_drop(user_id, mob)
+            if message:
+                messages.append(message)
+        elif rule_id == "refine_stone":
+            message = roll_refine_stone_drop(user_id, mob)
+            if message:
+                messages.append(message)
+        elif rule_id == "rune":
+            try:
+                from systems.rune_system import award_rune_drop
+                rune_result = award_rune_drop(user_id, mob)
+            except Exception as error:
+                print(f"⚠️ Rune drop reward failed: {error}")
+                rune_result = {"dropped": False, "error": str(error)}
+            if rune_result.get("dropped") and rune_result.get("message"):
+                messages.append(rune_result["message"])
+        elif rule_id == "potion":
+            message = roll_potion_drop(user_id, mob)
+            if message:
+                messages.append(message)
+        else:
+            raise RuntimeError(f"unsupported production victory rule: {rule_id}")
+
+    guild_message = _central_guild_elite_reward_11_9_0(user_id, mob)
+    if guild_message:
+        messages.append(guild_message)
+
+    return {
+        "messages": messages,
+        "rune_drop": rune_result,
+        "executed_rules": tuple(executed),
+        "guild_hook_executed": bool(_guild_is_elite_mob_v1(mob)),
+    }
+
+
+def roll_loot(user_id, mob):
+    """Compatibility API routed to the final central orchestration."""
+    return process_enemy_drops(user_id, mob)["messages"]
+
+
+def process_victory_reward(user_id, player_level, mob):
+    """Single authoritative victory transaction composition after 11.9.0."""
+    exp = calculate_exp_reward(player_level=player_level, mob=mob)
+    gold = calculate_gold_reward(player_level=player_level, mob=mob)
+
+    exp_result = add_exp(user_id, exp)
+    add_gold(user_id, gold)
+    add_kill(user_id)
+
+    drop_result = process_enemy_drops(user_id, mob)
+
+    return {
+        "exp": exp,
+        "gold": gold,
+        "exp_result": exp_result,
+        "loot_messages": drop_result["messages"],
+        "rune_drop": drop_result["rune_drop"],
+        "central_drop_rules": drop_result["executed_rules"],
+        "used_slots": get_inventory_used_slots(user_id),
+        "capacity": get_bag_capacity(user_id),
+    }
 

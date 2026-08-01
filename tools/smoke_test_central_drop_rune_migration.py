@@ -59,13 +59,13 @@ def comparable(result):
 
 def compare_case(name, mob, values):
     from systems.rune_system import (
-        _RUNE_DROP_LEGACY_ROLL_11_2_0,
+        _legacy_roll_rune_drop_11_10_0,
         roll_rune_drop,
     )
 
     legacy_rng = CountingRandom(values)
     central_rng = CountingRandom(values)
-    legacy = _RUNE_DROP_LEGACY_ROLL_11_2_0(mob, random_func=legacy_rng)
+    legacy = _legacy_roll_rune_drop_11_10_0(mob, random_func=legacy_rng)
     central = roll_rune_drop(mob, random_func=central_rng)
     if comparable(legacy) != comparable(central):
         fail(f"{name}: result mismatch\nlegacy={legacy}\ncentral={central}")
@@ -97,7 +97,7 @@ def main():
         rule_id for rule_id, rule in DROP_RULES_BY_ID.items()
         if rule.get("production_enabled")
     )
-    if production_rules != ["equipment", "refine_stone", "rune"]:
+    if production_rules != ["equipment", "potion", "refine_stone", "rune", "trophy"]:
         fail(f"unexpected production rules: {production_rules}")
     if rune_rule["enemy"] != {
         key: {"chance": value} for key, value in RUNE_DROP_CHANCES.items()
@@ -141,15 +141,16 @@ def main():
     # Public award/simulation APIs remain dynamic users of roll_rune_drop.
     rune_source = (ROOT / "systems" / "rune_system.py").read_text(encoding="utf-8-sig")
     reward_source = (ROOT / "systems" / "reward_system.py").read_text(encoding="utf-8-sig")
-    if "_RUNE_DROP_LEGACY_ROLL_11_2_0 = roll_rune_drop" not in rune_source:
-        fail("legacy equivalence capture missing")
+    from systems.rune_system import _legacy_roll_rune_drop_11_10_0
+    if not callable(_legacy_roll_rune_drop_11_10_0):
+        fail("legacy equivalence helper missing")
     if "roll_central_rune_drop" not in rune_source:
         fail("central delegation missing")
     if "award_rune_drop(user_id, mob)" not in reward_source:
         fail("victory reward public rune hook changed unexpectedly")
 
     status = get_central_drop_status()
-    if status["production_rules"] != ["equipment", "refine_stone", "rune"]:
+    if status["production_rules"] != ["equipment", "trophy", "refine_stone", "rune", "potion"]:
         fail(f"production rule status mismatch: {status}")
 
     # One direct public-API sanity case after all equivalence checks.
@@ -169,7 +170,7 @@ def main():
     print("- level/stat/item/name/quantity equivalence: OK")
     print("- award_rune_drop public API preserved: OK")
     print("- simulate_rune_drops public API preserved: OK")
-    print("- production central rules include rune + refine_stone + equipment")
+    print("- production central rules include rune + refine_stone + equipment + trophy + potion")
     print("- database mutations: 0")
 
 

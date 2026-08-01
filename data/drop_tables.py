@@ -7,7 +7,7 @@ corresponding migration stage explicitly switches each group.
 
 CENTRAL_DROP_SCHEMA_VERSION = "11.1.0"
 CENTRAL_DROP_PRODUCTION_ENABLED = True
-CENTRAL_DROP_MIGRATED_RULES = ("rune", "refine_stone", "equipment")
+CENTRAL_DROP_MIGRATED_RULES = ("rune", "refine_stone", "equipment", "trophy", "potion")
 # ROM 11.2.0 CENTRAL RUNE MIGRATION
 
 ENEMY_TYPES = ("normal", "elite", "boss")
@@ -69,12 +69,12 @@ DROP_RULES = (
         "group": "trophy",
         "mode": "independent",
         "enabled": True,
-        "production_enabled": False,
+        "production_enabled": True,
         "resolver": "mob_trophy",
         "enemy": {
             "normal": {"chance": None, "source": "mob.loot_chance"},
             "elite": {"chance": None, "source": "min(1,mob.loot_chance+0.20)"},
-            "boss": {"chance": None, "source": "mob/boss config", "decision_required": True},
+            "boss": {"chance": None, "source": "mob.loot_chance+legacy_is_elite_bonus"},
         },
         "quantity": {"min": 1, "max": None, "source": "legacy trophy quantity"},
         "max_per_kill": 1,
@@ -133,15 +133,19 @@ DROP_RULES = (
         "rule_id": "potion",
         "group": "potion",
         "mode": "exclusive",
-        "enabled": False,
-        "production_enabled": False,
+        "enabled": True,
+        "production_enabled": True,
         "resolver": "weighted_item_pool",
         "enemy": {
-            "normal": {"chance": 0.0},
-            "elite": {"chance": 0.0},
-            "boss": {"chance": 0.0},
+            "normal": {"chance": 0.06},
+            "elite": {"chance": 0.19},
+            "boss": {"chance": 0.45},
         },
-        "item_weights": (),
+        "item_weights": {
+            "normal": ((201, 4 / 6), (202, 2 / 6)),
+            "elite": ((201, 10 / 19), (202, 6 / 19), (203, 2 / 19), (204, 1 / 19)),
+            "boss": ((201, 20 / 45), (202, 12 / 45), (203, 8 / 45), (204, 5 / 45)),
+        },
         "quantity": {"min": 1, "max": 1},
         "max_per_kill": 1,
         "bag_policy": "stack_or_lose",
@@ -215,3 +219,55 @@ DROP_RULES_BY_ID = {rule["rule_id"]: rule for rule in DROP_RULES}
 # ROM 11.3.0 CENTRAL REFINE STONE MIGRATION
 
 # ROM 11.4.0 CENTRAL EQUIPMENT MIGRATION
+
+# ROM 11.5.0 CENTRAL TROPHY MIGRATION
+
+# ROM 11.6.0 CENTRAL POTION DROP
+
+# ==============================
+# ROM 11.7.0 SPECIAL MATERIAL DROP POLICY
+# ==============================
+# These items are deliberately unavailable through enemy drops. Their rules
+# remain in DROP_RULES so future sources can be configured without scattering
+# item IDs through gameplay code.
+SPECIAL_MATERIAL_MOB_DROP_POLICY_VERSION = "11.7.0"
+SPECIAL_MATERIAL_MOB_DROP_DENYLIST = frozenset((402, 527, 528))
+SPECIAL_MATERIAL_SOURCE_POLICY = {
+    402: {
+        "rule_id": "success_rune",
+        "name": "Руна Успіху",
+        "mob_drop": False,
+        "primary_source": "future_crystal_shop",
+        "bound_policy": "future_decision_required",
+    },
+    527: {
+        "rule_id": "simple_extractor",
+        "name": "Простий Екстрактор",
+        "mob_drop": False,
+        "primary_source": "rune_master_gold_shop",
+        "boss_candidate_chance": 0.01,
+        "candidate_enabled": False,
+        "bound_policy": "tradeable_current_item_policy",
+    },
+    528: {
+        "rule_id": "perfect_extractor",
+        "name": "Досконалий Екстрактор",
+        "mob_drop": False,
+        "primary_source": "future_crystal_shop",
+        "bound_policy": "future_premium_bound_candidate",
+    },
+}
+
+# ==============================
+# ROM 11.9.0 FINAL VICTORY INTEGRATION
+# ==============================
+CENTRAL_DROP_VICTORY_INTEGRATION_ENABLED = True
+CENTRAL_DROP_VICTORY_INTEGRATION_VERSION = "11.9.0"
+CENTRAL_DROP_VICTORY_RULE_ORDER = (
+    "trophy",
+    "equipment",
+    "refine_stone",
+    "rune",
+    "potion",
+)
+
