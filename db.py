@@ -7841,3 +7841,109 @@ def buy_simple_rune_extractor(user_id, quantity=1):
     from systems.rune_system import buy_simple_rune_extractor as _func
     return _func(user_id, quantity=quantity)
 
+# ROM 12.1.0 PLAYER PRESENCE AND ACTIVITY SESSIONS
+# Compatibility facade; implementation is in systems/player_interaction_system.py.
+def init_player_interaction_foundation(*args, **kwargs):
+    from systems.player_interaction_system import init_player_interaction_foundation as _impl
+    return _impl(*args, **kwargs)
+
+def touch_player_activity(*args, **kwargs):
+    from systems.player_interaction_system import touch_player_activity as _impl
+    return _impl(*args, **kwargs)
+
+def get_player_last_activity(*args, **kwargs):
+    from systems.player_interaction_system import get_player_last_activity as _impl
+    return _impl(*args, **kwargs)
+
+def is_player_online(*args, **kwargs):
+    from systems.player_interaction_system import is_player_online as _impl
+    return _impl(*args, **kwargs)
+
+def get_player_activity_session(*args, **kwargs):
+    from systems.player_interaction_system import get_player_activity_session as _impl
+    return _impl(*args, **kwargs)
+
+def acquire_player_activity_session(*args, **kwargs):
+    from systems.player_interaction_system import acquire_player_activity_session as _impl
+    return _impl(*args, **kwargs)
+
+def refresh_player_activity_session(*args, **kwargs):
+    from systems.player_interaction_system import refresh_player_activity_session as _impl
+    return _impl(*args, **kwargs)
+
+def release_player_activity_session(*args, **kwargs):
+    from systems.player_interaction_system import release_player_activity_session as _impl
+    return _impl(*args, **kwargs)
+
+def expire_stale_player_activity_sessions(*args, **kwargs):
+    from systems.player_interaction_system import expire_stale_player_activity_sessions as _impl
+    return _impl(*args, **kwargs)
+
+def is_player_interaction_busy(*args, **kwargs):
+    from systems.player_interaction_system import is_player_interaction_busy as _impl
+    return _impl(*args, **kwargs)
+
+# ROM 12.2.0 MAP LOCATION PLAYER DISCOVERY
+def get_online_players_in_same_location(*args, **kwargs):
+    from systems.player_interaction_system import get_online_players_in_same_location as _impl
+    return _impl(*args, **kwargs)
+
+def get_public_player_interaction_profile(*args, **kwargs):
+    from systems.player_interaction_system import get_public_player_interaction_profile as _impl
+    return _impl(*args, **kwargs)
+
+# ROM 12.3.0 PLAYER INTERACTION REQUESTS
+def init_player_interaction_requests(*args, **kwargs):
+    from systems.player_interaction_system import init_player_interaction_requests as _impl
+    return _impl(*args, **kwargs)
+def create_player_interaction_request(*args, **kwargs):
+    from systems.player_interaction_system import create_player_interaction_request as _impl
+    return _impl(*args, **kwargs)
+def get_interaction_request(*args, **kwargs):
+    from systems.player_interaction_system import get_interaction_request as _impl
+    return _impl(*args, **kwargs)
+def respond_to_player_interaction_request(*args, **kwargs):
+    from systems.player_interaction_system import respond_to_player_interaction_request as _impl
+    return _impl(*args, **kwargs)
+def cancel_player_interaction_request(*args, **kwargs):
+    from systems.player_interaction_system import cancel_player_interaction_request as _impl
+    return _impl(*args, **kwargs)
+def expire_stale_interaction_requests(*args, **kwargs):
+    from systems.player_interaction_system import expire_stale_interaction_requests as _impl
+    return _impl(*args, **kwargs)
+
+# ROM 12.3.2 INTERACTION SESSION TIMEOUT AND RECOVERY
+def recover_orphan_player_activity_sessions(*args, **kwargs):
+    from systems.player_interaction_system import recover_orphan_player_activity_sessions as _impl
+    return _impl(*args, **kwargs)
+
+def cleanup_player_interaction_state(*args, **kwargs):
+    from systems.player_interaction_system import cleanup_player_interaction_state as _impl
+    return _impl(*args, **kwargs)
+
+# ROM 12.4.0 PLAYER TRADE DATABASE AND HISTORY FOUNDATION
+def init_player_trade_foundation(*args, **kwargs):
+    from systems.player_interaction_system import init_player_trade_foundation as _impl
+    return _impl(*args, **kwargs)
+def create_player_trade_from_accepted_request(*args, **kwargs):
+    from systems.player_interaction_system import create_player_trade_from_accepted_request as _impl
+    return _impl(*args, **kwargs)
+def get_player_trade(*args, **kwargs):
+    from systems.player_interaction_system import get_player_trade as _impl
+    return _impl(*args, **kwargs)
+def get_active_player_trade(*args, **kwargs):
+    from systems.player_interaction_system import get_active_player_trade as _impl
+    return _impl(*args, **kwargs)
+def get_player_trade_events(*args, **kwargs):
+    from systems.player_interaction_system import get_player_trade_events as _impl
+    return _impl(*args, **kwargs)
+def get_player_trade_history(*args, **kwargs):
+    from systems.player_interaction_system import get_player_trade_history as _impl
+    return _impl(*args, **kwargs)
+def cancel_player_trade(*args, **kwargs):
+    from systems.player_interaction_system import cancel_player_trade as _impl
+    return _impl(*args, **kwargs)
+def expire_stale_player_trades(*args, **kwargs):
+    from systems.player_interaction_system import expire_stale_player_trades as _impl
+    return _impl(*args, **kwargs)
+

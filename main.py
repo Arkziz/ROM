@@ -102,7 +102,14 @@ bot = telebot.TeleBot(TOKEN, threaded=False)
 # DB INIT
 # ==============================
 
+# ROM 12.1.0 PLAYER PRESENCE AND ACTIVITY SESSIONS
+from systems.player_interaction_system import init_player_interaction_foundation, install_player_presence_tracking, cleanup_player_interaction_state, init_player_trade_foundation
 init_db()
+print('✅ PLAYER INTERACTION FOUNDATION:', init_player_interaction_foundation())
+# ROM 12.3.2 INTERACTION SESSION TIMEOUT AND RECOVERY
+print('✅ PLAYER INTERACTION RECOVERY:', cleanup_player_interaction_state())
+# ROM 12.4.0 PLAYER TRADE DATABASE AND HISTORY FOUNDATION
+print('✅ PLAYER TRADE FOUNDATION:', init_player_trade_foundation())
 
 # ==============================
 # ✅ REFACTOR 9.0.11: RUN MIGRATIONS ON STARTUP
@@ -166,6 +173,10 @@ register_refine_handlers(bot)
 # ==============================
 install_global_telegram_rate_limit_guard(bot)
 
+print('✅ PLAYER PRESENCE TRACKER:', install_player_presence_tracking(bot))
+# ROM 12.2.0 MAP LOCATION PLAYER DISCOVERY
+from handlers.player_interaction import register_player_interaction_handlers
+register_player_interaction_handlers(bot)
 start_notification_worker(bot)
 
 
