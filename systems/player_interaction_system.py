@@ -1267,7 +1267,7 @@ def get_inventory_available_quantity(user_id, inventory_id, *, exclude_reference
         conn.close()
 
 
-def build_trade_item_snapshot(user_id, inventory_id, *, db_path=None):
+def _trade_base_build_item_snapshot_12_6_3(user_id, inventory_id, *, db_path=None):
     """Build an immutable JSON-ready snapshot, including socketed runes when available."""
     conn = _connect(db_path)
     try:
@@ -1494,17 +1494,35 @@ def _trade_offer_actor(trade, user_id):
     return None
 
 
+
+def _trade_actor_offer_locked_12_7_0(trade, user_id):
+    side, ready_col, _ = _trade_side_columns_12_7_0(trade, user_id)
+    return bool(side and int(trade.get(ready_col) or 0))
+
 def _trade_offer_mutation(conn, trade, actor_user_id, event_type, stamp, payload):
-    """Invalidate readiness after every offer mutation and advance revision."""
+    """Invalidate only the actor's offer-ready state and both final confirms."""
+    side, ready_col, _ = _trade_side_columns_12_7_0(trade, actor_user_id)
+    if not side:
+        raise ValueError("trade mutation actor is not a participant")
     new_revision = int(trade["revision"] or 0) + 1
-    expires_at = _text(_parse(stamp) + timedelta(seconds=PLAYER_TRADE_EDITING_TTL_SECONDS))
+    expires_at = _text(
+        _parse(stamp) + timedelta(seconds=PLAYER_TRADE_EDITING_TTL_SECONDS)
+    )
     conn.execute(
-        "UPDATE player_trades SET status='editing',revision=?,initiator_ready=0,recipient_ready=0,"
-        "initiator_confirmed=0,recipient_confirmed=0,updated_at=?,expires_at=? WHERE id=?",
+        f"UPDATE player_trades SET status='editing',revision=?,{ready_col}=0,"
+        "initiator_confirmed=0,recipient_confirmed=0,updated_at=?,expires_at=? "
+        "WHERE id=?",
         (new_revision, stamp, expires_at, int(trade["id"])),
     )
-    _trade_event(conn, int(trade["id"]), int(actor_user_id), event_type, new_revision, stamp,
-                 json.dumps(payload, ensure_ascii=False, sort_keys=True))
+    _trade_event(
+        conn,
+        int(trade["id"]),
+        int(actor_user_id),
+        event_type,
+        new_revision,
+        stamp,
+        json.dumps(payload, ensure_ascii=False, sort_keys=True),
+    )
     return new_revision, expires_at
 
 
@@ -1556,33 +1574,6 @@ def get_player_trade_editor_state(trade_id, viewer_user_id, *, now=None, db_path
     }
 
 
-def get_tradeable_inventory_for_trade(trade_id, user_id, *, page=0, page_size=8, db_path=None):
-    state = get_player_trade_editor_state(trade_id, user_id, db_path=db_path)
-    if not state.get("success"):
-        return state
-    page = max(0, int(page or 0)); page_size = max(1, min(20, int(page_size or 8)))
-    conn = _connect(db_path)
-    try:
-        rows = conn.execute(
-            "SELECT inv.id FROM inventory inv WHERE inv.user_id=? ORDER BY inv.id DESC",
-            (int(user_id),),
-        ).fetchall()
-    finally:
-        conn.close()
-    items = []
-    for row in rows:
-        policy = get_item_trade_policy(user_id, int(row[0]), 1, trade_id=trade_id, db_path=db_path)
-        if policy.get("tradeable"):
-            snapshot = policy.get("snapshot") or {}
-            items.append({
-                "inventory_id": int(row[0]),
-                "available_quantity": int(policy.get("available_quantity") or 0),
-                "snapshot": snapshot,
-            })
-    total = len(items); start = page * page_size; selected = items[start:start + page_size]
-    return {"success": True, "trade_id": int(trade_id), "page": page, "page_size": page_size,
-            "total": total, "has_previous": page > 0, "has_next": start + page_size < total,
-            "items": selected}
 
 
 def set_player_trade_item_offer(trade_id, owner_user_id, inventory_id, quantity=1, *, now=None, db_path=None):
@@ -1608,6 +1599,8 @@ def set_player_trade_item_offer(trade_id, owner_user_id, inventory_id, quantity=
         trade = dict(trade_row)
         if trade["status"] != "editing" or not _trade_offer_actor(trade, uid):
             conn.rollback(); return {"success": False, "reason": "trade_not_editing"}
+        if _trade_actor_offer_locked_12_7_0(trade, uid):
+            conn.rollback(); return {"success": False, "reason": "own_offer_locked", "message": "Ваша пропозиція вже зафіксована. Натисніть «↩️ Змінити свою пропозицію»."}
         snapshot = policy.get("snapshot") or {}
         asset_type = "equipment" if int(snapshot.get("quantity") or 1) <= 1 else "stack"
         existing = conn.execute(
@@ -1651,6 +1644,8 @@ def remove_player_trade_item_offer(trade_id, owner_user_id, inventory_id, *, now
         trade = dict(trade_row)
         if trade["status"] != "editing" or not _trade_offer_actor(trade, uid):
             conn.rollback(); return {"success": False, "reason": "trade_not_editing"}
+        if _trade_actor_offer_locked_12_7_0(trade, uid):
+            conn.rollback(); return {"success": False, "reason": "own_offer_locked", "message": "Ваша пропозиція вже зафіксована. Натисніть «↩️ Змінити свою пропозицію»."}
         deleted = conn.execute(
             "DELETE FROM player_trade_offers WHERE trade_id=? AND owner_user_id=? AND inventory_id=?",
             (trade_id, uid, inv_id),
@@ -1690,6 +1685,8 @@ def set_player_trade_gold_offer(trade_id, owner_user_id, gold_amount, *, now=Non
         trade = dict(trade_row)
         if trade["status"] != "editing" or not _trade_offer_actor(trade, uid):
             conn.rollback(); return {"success": False, "reason": "trade_not_editing"}
+        if _trade_actor_offer_locked_12_7_0(trade, uid):
+            conn.rollback(); return {"success": False, "reason": "own_offer_locked", "message": "Ваша пропозиція вже зафіксована. Натисніть «↩️ Змінити свою пропозицію»."}
         wallet = conn.execute("SELECT gold FROM users WHERE user_id=?", (uid,)).fetchone()
         available = round(float((wallet[0] if wallet else 0) or 0), 2)
         if amount > available:
@@ -1862,7 +1859,6 @@ _TRADE_PREVIEW_ITEM_FIELDS_12_6_3 = (
     "weapon_min_magic_damage","weapon_max_magic_damage","bonus_str",
     "bonus_dex","bonus_int","bonus_wis","bonus_sta","pdef","mdef",
 )
-_trade_base_build_item_snapshot_12_6_3 = build_trade_item_snapshot
 
 def build_trade_item_snapshot(user_id, inventory_id, *, db_path=None):
     snapshot=_trade_base_build_item_snapshot_12_6_3(user_id,inventory_id,db_path=db_path)
@@ -1900,6 +1896,315 @@ def parse_trade_gold_amount_input(value, wallet_gold):
     if len(parts)==2 and len(parts[1])>2:
         return {"success":False,"reason":"too_many_decimals","message":"Використовуйте не більше двох знаків після крапки."}
     return {"success":True,"gold_amount":amount,"maximum":wallet}
+
+# ROM 12.7.0 PLAYER TRADE CONFIRMATION AND ATOMIC COMMIT
+PLAYER_TRADE_CONFIRM_TTL_SECONDS = 300
+
+
+def _trade_side_columns_12_7_0(trade, user_id):
+    uid = int(user_id)
+    if uid == int(trade["initiator_user_id"]):
+        return "initiator", "initiator_ready", "initiator_confirmed"
+    if uid == int(trade["recipient_user_id"]):
+        return "recipient", "recipient_ready", "recipient_confirmed"
+    return None, None, None
+
+
+def set_player_trade_ready(trade_id, user_id, ready=True, *, expected_revision=None, now=None, db_path=None):
+    conn = _connect(db_path)
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        row = conn.execute(
+            "SELECT * FROM player_trades WHERE id=?", (int(trade_id),)
+        ).fetchone()
+        if not row:
+            conn.rollback()
+            return {"success": False, "reason": "trade_not_found"}
+        trade = dict(row)
+        side, ready_col, _ = _trade_side_columns_12_7_0(trade, user_id)
+        if not side:
+            conn.rollback()
+            return {"success": False, "reason": "wrong_actor"}
+        if trade["status"] not in ("editing", "confirming"):
+            conn.rollback()
+            return {"success": False, "reason": "trade_not_editable"}
+        if expected_revision is not None and int(expected_revision) != int(trade["revision"]):
+            conn.rollback()
+            return {
+                "success": False,
+                "reason": "stale_revision",
+                "trade": trade,
+            }
+        value = 1 if ready else 0
+        previous_value = int(trade.get(ready_col) or 0)
+        changed = previous_value != value
+        stamp = _text(now)
+        if changed:
+            conn.execute(
+                f"UPDATE player_trades SET {ready_col}=?,"
+                "initiator_confirmed=0,recipient_confirmed=0,updated_at=? "
+                "WHERE id=?",
+                (value, stamp, int(trade_id)),
+            )
+        updated = dict(conn.execute(
+            "SELECT * FROM player_trades WHERE id=?", (int(trade_id),)
+        ).fetchone())
+        status = (
+            "confirming"
+            if int(updated["initiator_ready"]) and int(updated["recipient_ready"])
+            else "editing"
+        )
+        expires = _text(
+            _parse(stamp) + timedelta(
+                seconds=(
+                    PLAYER_TRADE_CONFIRM_TTL_SECONDS
+                    if status == "confirming"
+                    else PLAYER_TRADE_EDITING_TTL_SECONDS
+                )
+            )
+        )
+        if changed or str(updated.get("status")) != status:
+            conn.execute(
+                "UPDATE player_trades SET status=?,expires_at=?,updated_at=? WHERE id=?",
+                (status, expires, stamp, int(trade_id)),
+            )
+            _trade_event(
+                conn,
+                int(trade_id),
+                int(user_id),
+                "ready_set" if value else "ready_cleared",
+                int(trade["revision"]),
+                stamp,
+                json.dumps(
+                    {"ready": bool(value), "status": status},
+                    ensure_ascii=False,
+                ),
+            )
+        conn.commit()
+        updated.update({"status": status, "expires_at": expires})
+        return {
+            "success": True,
+            "trade": updated,
+            "both_ready": status == "confirming",
+            "changed": changed,
+        }
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def return_player_trade_to_editing(trade_id, user_id, *, expected_revision=None, now=None, db_path=None):
+    conn = _connect(db_path)
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        row = conn.execute(
+            "SELECT * FROM player_trades WHERE id=?", (int(trade_id),)
+        ).fetchone()
+        if not row:
+            conn.rollback()
+            return {"success": False, "reason": "trade_not_found"}
+        trade = dict(row)
+        side, ready_col, confirm_col = _trade_side_columns_12_7_0(trade, user_id)
+        if not side:
+            conn.rollback()
+            return {"success": False, "reason": "wrong_actor"}
+        if trade["status"] not in ("editing", "confirming"):
+            conn.rollback()
+            return {"success": False, "reason": "trade_not_editable"}
+        # Unlocking one's own offer remains valid even if the other participant
+        # changed the global revision while this participant's panel was stale.
+        stamp = _text(now)
+        expires = _text(
+            _parse(stamp) + timedelta(seconds=PLAYER_TRADE_EDITING_TTL_SECONDS)
+        )
+        conn.execute(
+            f"UPDATE player_trades SET status='editing',{ready_col}=0,"
+            "initiator_confirmed=0,recipient_confirmed=0,updated_at=?,expires_at=? "
+            "WHERE id=?",
+            (stamp, expires, int(trade_id)),
+        )
+        _trade_event(
+            conn, int(trade_id), int(user_id), "own_offer_unlocked",
+            int(trade["revision"]), stamp,
+            json.dumps({"side": side}, ensure_ascii=False),
+        )
+        conn.commit()
+        return {
+            "success": True,
+            "trade_id": int(trade_id),
+            "revision": int(trade["revision"]),
+            "side": side,
+            "cleared_ready_column": ready_col,
+            "cleared_confirm_column": confirm_col,
+        }
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+def _trade_commit_fail_12_7_0(conn, reason, message):
+    conn.rollback(); return {"success": False, "reason": reason, "message": message}
+
+
+def _trade_commit_validate_item_12_7_0(conn, trade_id, offer):
+    inv = conn.execute("SELECT * FROM inventory WHERE id=? AND user_id=?", (int(offer["inventory_id"]), int(offer["owner_user_id"]))).fetchone()
+    if not inv: return None, "Предмет більше не належить учаснику."
+    quantity = int(offer["quantity"] or 0)
+    if quantity <= 0 or int(inv["quantity"] or 0) < quantity: return None, "Кількість предмета змінилася."
+    reserved = conn.execute("SELECT COALESCE(SUM(quantity),0) FROM inventory_reservations WHERE inventory_id=? AND user_id=? AND reservation_type=? AND reference_id=?", (int(offer["inventory_id"]), int(offer["owner_user_id"]), TRADE_RESERVATION_TYPE, int(trade_id))).fetchone()[0]
+    if int(reserved or 0) != quantity: return None, "Резервування предмета змінилося."
+    item = conn.execute("SELECT * FROM items WHERE id=?", (int(inv["item_id"]),)).fetchone()
+    if not item or int(inv["item_id"]) in (301, 402, 526, 528) or str(item["category"] or "").lower() == "trash": return None, "Предмет заборонено передавати."
+    equipped = conn.execute("SELECT 1 FROM equipment_slots WHERE user_id=? AND inventory_id=?", (int(offer["owner_user_id"]), int(offer["inventory_id"]))).fetchone()
+    if equipped: return None, "Екіпірований предмет не можна передати."
+    return (dict(inv), dict(item)), None
+
+
+def _trade_stack_slots_needed_12_7_0(conn, recipient, item_id, quantity, max_stack):
+    room = 0
+    for row in conn.execute("SELECT quantity FROM inventory WHERE user_id=? AND item_id=?", (recipient, item_id)):
+        room += max(0, max_stack - int(row[0] or 0))
+    return max(0, (max(0, quantity - room) + max_stack - 1) // max_stack)
+
+
+def _trade_transfer_stack_12_7_0(conn, source, recipient, quantity, item):
+    inv_id = int(source["id"]); item_id = int(source["item_id"]); remaining = int(quantity); max_stack = max(1, int(item.get("max_stack") or 1))
+    source_qty = int(source.get("quantity") or 0)
+    conn.execute("UPDATE inventory SET quantity=quantity-? WHERE id=?", (remaining, inv_id))
+    for row in conn.execute("SELECT id,quantity FROM inventory WHERE user_id=? AND item_id=? AND id<>? ORDER BY id", (recipient, item_id, inv_id)).fetchall():
+        if remaining <= 0: break
+        room = max(0, max_stack - int(row["quantity"] or 0)); add = min(room, remaining)
+        if add: conn.execute("UPDATE inventory SET quantity=quantity+? WHERE id=?", (add, int(row["id"]))); remaining -= add
+    columns = [r[1] for r in conn.execute("PRAGMA table_info(inventory)") if r[1] not in ("id", "user_id", "quantity")]
+    while remaining > 0:
+        add = min(max_stack, remaining); names = ["user_id", "item_id", "quantity"] + columns
+        values = [recipient, item_id, add] + [source.get(name) for name in columns]
+        conn.execute("INSERT INTO inventory(" + ",".join(names) + ") VALUES(" + ",".join("?" for _ in names) + ")", values); remaining -= add
+    if source_qty == quantity: conn.execute("DELETE FROM inventory WHERE id=?", (inv_id,))
+
+
+def _trade_offer_snapshot_12_7_0(offers, owner):
+    return json.dumps([dict(x) for x in offers if int(x["owner_user_id"]) == int(owner)], ensure_ascii=False, default=str, sort_keys=True)
+
+
+def _commit_player_trade_12_7_0(conn, trade, offers, stamp):
+    tid = int(trade["id"]); a = int(trade["initiator_user_id"]); b = int(trade["recipient_user_id"])
+    gold = {a: 0.0, b: 0.0}; validated = []
+    for offer in offers:
+        offer = dict(offer)
+        if offer["asset_type"] == "gold": gold[int(offer["owner_user_id"])] = round(float(offer["gold_amount"] or 0), 2); continue
+        pair, error = _trade_commit_validate_item_12_7_0(conn, tid, offer)
+        if error: return _trade_commit_fail_12_7_0(conn, "item_validation_failed", error)
+        validated.append((offer, pair[0], pair[1]))
+    wallets = {int(r["user_id"]): round(float(r["gold"] or 0),2) for r in conn.execute("SELECT user_id,gold FROM users WHERE user_id IN (?,?)", (a,b))}
+    if wallets.get(a,0) < gold[a] or wallets.get(b,0) < gold[b]: return _trade_commit_fail_12_7_0(conn, "insufficient_gold", "Недостатньо золота для завершення обміну.")
+    # Conservative capacity check after outgoing full rows and incoming new slots.
+    for recipient in (a,b):
+        used = int(conn.execute("SELECT COUNT(*) FROM inventory WHERE user_id=?", (recipient,)).fetchone()[0]); cap = int(conn.execute("SELECT COALESCE(bag_slots,40) FROM users WHERE user_id=?", (recipient,)).fetchone()[0] or 40)
+        outgoing_full = sum(1 for offer, inv, item in validated if int(offer["owner_user_id"]) == recipient and int(inv["quantity"] or 0) == int(offer["quantity"]) and int(item.get("max_stack") or 1) <= 1)
+        incoming = 0
+        for offer, inv, item in validated:
+            if int(offer["owner_user_id"]) == recipient: continue
+            if int(item.get("max_stack") or 1) <= 1: incoming += 1
+            else: incoming += _trade_stack_slots_needed_12_7_0(conn, recipient, int(inv["item_id"]), int(offer["quantity"]), max(1,int(item.get("max_stack") or 1)))
+        if used - outgoing_full + incoming > cap: return _trade_commit_fail_12_7_0(conn, "bag_full", "Недостатньо місця в сумці одного з учасників.")
+    conn.execute("UPDATE users SET gold=ROUND(COALESCE(gold,0)-?+?,2) WHERE user_id=?", (gold[a],gold[b],a)); conn.execute("UPDATE users SET gold=ROUND(COALESCE(gold,0)-?+?,2) WHERE user_id=?", (gold[b],gold[a],b))
+    for offer, inv, item in validated:
+        owner=int(offer["owner_user_id"]); recipient=b if owner==a else a; quantity=int(offer["quantity"])
+        if int(item.get("max_stack") or 1) <= 1:
+            conn.execute("UPDATE inventory SET user_id=? WHERE id=? AND user_id=?", (recipient,int(inv["id"]),owner))
+        else: _trade_transfer_stack_12_7_0(conn, inv, recipient, quantity, item)
+    conn.execute("DELETE FROM inventory_reservations WHERE reservation_type=? AND reference_id=?", (TRADE_RESERVATION_TYPE,tid)); conn.execute("DELETE FROM player_activity_sessions WHERE activity_type='trade' AND reference_id=?", (str(tid),))
+    conn.execute("UPDATE player_trades SET status='completed',completed_at=?,updated_at=?,expires_at=?,initiator_confirmed=1,recipient_confirmed=1 WHERE id=?", (stamp,stamp,stamp,tid))
+    _trade_event(conn,tid,None,"completed",int(trade["revision"]),stamp,json.dumps({"gold":gold,"items":len(validated)},ensure_ascii=False))
+    _write_trade_history(conn,trade,"completed",stamp)
+    conn.execute("UPDATE player_trade_history SET initiator_offer_snapshot=?,recipient_offer_snapshot=?,summary_json=? WHERE trade_id=?", (_trade_offer_snapshot_12_7_0(offers,a),_trade_offer_snapshot_12_7_0(offers,b),json.dumps({"gold":gold,"item_offer_count":len(validated)},ensure_ascii=False),tid))
+    conn.commit(); return {"success":True,"completed":True,"trade_id":tid,"initiator_user_id":a,"recipient_user_id":b,"revision":int(trade["revision"])}
+
+
+def confirm_player_trade(trade_id, user_id, *, expected_revision=None, now=None, db_path=None):
+    conn = _connect(db_path)
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        row = conn.execute(
+            "SELECT * FROM player_trades WHERE id=?", (int(trade_id),)
+        ).fetchone()
+        if not row:
+            return _trade_commit_fail_12_7_0(
+                conn, "trade_not_found", "Обмін не знайдено."
+            )
+        trade = dict(row)
+        side, _, confirm_col = _trade_side_columns_12_7_0(trade, user_id)
+        if not side:
+            return _trade_commit_fail_12_7_0(
+                conn, "wrong_actor", "Немає доступу до цього обміну."
+            )
+        if trade["status"] == "completed":
+            conn.rollback()
+            return {
+                "success": True,
+                "completed": True,
+                "idempotent": True,
+                "changed": False,
+                "trade_id": int(trade_id),
+            }
+        if (
+            trade["status"] != "confirming"
+            or not int(trade["initiator_ready"])
+            or not int(trade["recipient_ready"])
+        ):
+            return _trade_commit_fail_12_7_0(
+                conn, "not_ready", "Обидва учасники ще не готові."
+            )
+        if expected_revision is not None and int(expected_revision) != int(trade["revision"]):
+            return _trade_commit_fail_12_7_0(
+                conn, "stale_revision", "Пропозиція вже змінилася."
+            )
+        already_confirmed = bool(trade.get(confirm_col))
+        stamp = _text(now)
+        if not already_confirmed:
+            conn.execute(
+                f"UPDATE player_trades SET {confirm_col}=1,updated_at=? WHERE id=?",
+                (stamp, int(trade_id)),
+            )
+            _trade_event(
+                conn, int(trade_id), int(user_id), "final_confirmed",
+                int(trade["revision"]), stamp,
+            )
+        trade = dict(conn.execute(
+            "SELECT * FROM player_trades WHERE id=?", (int(trade_id),)
+        ).fetchone())
+        if not int(trade["initiator_confirmed"]) or not int(trade["recipient_confirmed"]):
+            conn.commit()
+            return {
+                "success": True,
+                "completed": False,
+                "waiting": True,
+                "changed": not already_confirmed,
+                "trade": trade,
+            }
+        conn.execute(
+            "UPDATE player_trades SET status='committing',updated_at=? WHERE id=?",
+            (stamp, int(trade_id)),
+        )
+        offers = conn.execute(
+            "SELECT * FROM player_trade_offers WHERE trade_id=? ORDER BY id",
+            (int(trade_id),),
+        ).fetchall()
+        result = _commit_player_trade_12_7_0(conn, trade, offers, stamp)
+        if isinstance(result, dict):
+            result.setdefault("changed", not already_confirmed)
+        return result
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
 
 # ROM 12.6.4 PLAYER TRADE NAVIGATION LOCK AND ITEM CATEGORIES
 PLAYER_TRADE_ITEM_CATEGORY_PAGE_SIZE = 8

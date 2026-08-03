@@ -16,6 +16,7 @@ from systems.player_interaction_system import (
     set_player_trade_item_offer,
     remove_player_trade_item_offer,
     set_player_trade_gold_offer,
+    get_player_trade, set_player_trade_ready, return_player_trade_to_editing, confirm_player_trade,
 )
 
 PLAYER_LIST_BUTTON = "👥 Гравці локації"
@@ -130,33 +131,12 @@ def _trade_offer_lines(offers):
     return lines or ["• нічого не додано"]
 
 
-def _trade_editor_text(state):
-    return (
-        "🤝 <b>Прямий обмін</b>\n\n"
-        "<b>Ваша пропозиція:</b>\n" + "\n".join(_trade_offer_lines(state.get("own_offers", []))) +
-        "\n\n<b>Пропозиція іншого гравця:</b>\n" + "\n".join(_trade_offer_lines(state.get("other_offers", []))) +
-        "\n\nРедагування пропозиції скидає готовність обох гравців."
-    )
 
 
-def _trade_editor_kb(trade_id):
-    kb = types.InlineKeyboardMarkup(row_width=2)
-    kb.row(types.InlineKeyboardButton("➕ Додати предмет", callback_data=f"pi:te:list:{trade_id}:0"))
-    kb.row(
-        types.InlineKeyboardButton("💰 +1", callback_data=f"pi:te:gold:{trade_id}:1"),
-        types.InlineKeyboardButton("💰 +10", callback_data=f"pi:te:gold:{trade_id}:10"),
-    )
-    kb.row(
-        types.InlineKeyboardButton("💰 -1", callback_data=f"pi:te:gold:{trade_id}:-1"),
-        types.InlineKeyboardButton("🧹 Золото 0", callback_data=f"pi:te:gold0:{trade_id}"),
-    )
-    kb.row(types.InlineKeyboardButton("🔄 Оновити", callback_data=f"pi:te:open:{trade_id}"))
-    kb.row(types.InlineKeyboardButton("❌ Скасувати обмін", callback_data=f"pi:trade:cancel:{trade_id}"))
-    return kb
 
 
 def _trade_inventory_text(result):
-    return f"➕ <b>Додати предмет</b>\n\nДоступних предметів: {int(result.get('total', 0))}\nОберіть предмет:"
+    return f"➕ <b>Додати предмет</b>\n\nДоступних предметів: {int(result.get('total', 0))}\nОберіть предмет для обміну:"
 
 
 def _trade_inventory_kb(result):
@@ -193,22 +173,31 @@ def _trade_item_kb(trade_id, inventory_id, quantity, page=0):
     return kb
 
 
-def _send_trade_editor(bot, chat_id, user_id, trade_id, edit_message=None):
+def _send_trade_editor(bot, chat_id, user_id, trade_id, message_id=None):
     state = get_player_trade_editor_state(trade_id, user_id)
     if not state.get("success"):
-        text = "ℹ️ Обмін уже неактивний або недоступний."
-        if edit_message:
-            _safe_edit_message_text(bot, text, chat_id, edit_message)
-        else:
-            bot.send_message(chat_id, text)
+        bot.send_message(chat_id, "ℹ️ Обмін уже неактивний.")
         return
-    text = _trade_editor_text(state); kb = _trade_editor_kb(trade_id)
-    if edit_message:
-        _safe_edit_message_text(bot, text, chat_id, edit_message, parse_mode="HTML", reply_markup=kb)
+    text = _trade_editor_text(state)
+    keyboard = _trade_editor_kb(trade_id, state=state)
+    if message_id is not None:
+        _safe_edit_message_text(
+            bot,
+            text,
+            chat_id,
+            message_id,
+            parse_mode="HTML",
+            reply_markup=keyboard,
+        )
     else:
-        bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=kb)
+        bot.send_message(
+            chat_id,
+            text,
+            parse_mode="HTML",
+            reply_markup=keyboard,
+        )
 
-def register_player_interaction_handlers(bot):
+def _register_player_interaction_base_handlers_12_6_8(bot):
     @bot.message_handler(func=lambda message: getattr(message, "text", None) == PLAYER_LIST_BUTTON)
     def show_location_players(message):
         user_id = int(message.from_user.id)
@@ -548,47 +537,8 @@ def _trade_ux_is_equipment(snapshot):
     return category in ("equipment", "weapon", "armor", "jewelry") or snapshot.get("durability") is not None or snapshot.get("max_durability") is not None
 
 
-def _trade_editor_kb(trade_id):
-    kb = types.InlineKeyboardMarkup(row_width=2)
-    kb.row(
-        types.InlineKeyboardButton("➕ Додати предмет", callback_data=f"pi:teux:list:{trade_id}:0"),
-        types.InlineKeyboardButton("✏️ Моя пропозиція", callback_data=f"pi:teux:mine:{trade_id}"),
-    )
-    kb.row(
-        types.InlineKeyboardButton("💰 +1", callback_data=f"pi:te:gold:{trade_id}:1"),
-        types.InlineKeyboardButton("💰 +10", callback_data=f"pi:te:gold:{trade_id}:10"),
-    )
-    kb.row(
-        types.InlineKeyboardButton("💰 -1", callback_data=f"pi:te:gold:{trade_id}:-1"),
-        types.InlineKeyboardButton("🧹 Золото 0", callback_data=f"pi:te:gold0:{trade_id}"),
-    )
-    kb.row(types.InlineKeyboardButton("🔄 Оновити", callback_data=f"pi:te:open:{trade_id}"))
-    kb.row(types.InlineKeyboardButton("❌ Скасувати обмін", callback_data=f"pi:trade:cancel:{trade_id}"))
-    return kb
 
 
-def _trade_ux_inventory_kb(result):
-    trade_id = int(result["trade_id"]); page = int(result.get("page", 0))
-    kb = types.InlineKeyboardMarkup(row_width=1)
-    for item in result.get("items", []):
-        snapshot = item.get("snapshot") or {}
-        name = str(snapshot.get("item_name") or snapshot.get("name") or f"Предмет #{snapshot.get('item_id')}")
-        remaining = int(item.get("available_quantity") or 0)
-        suffix = "" if item.get("is_equipment") else f" (можна додати {remaining})"
-        kb.add(types.InlineKeyboardButton(
-            name + suffix,
-            callback_data=f"pi:teux:add:{trade_id}:{int(item['inventory_id'])}:{page}",
-        ))
-    nav = []
-    if result.get("has_previous"):
-        nav.append(types.InlineKeyboardButton("⬅️", callback_data=f"pi:teux:list:{trade_id}:{page-1}"))
-    if result.get("has_next"):
-        nav.append(types.InlineKeyboardButton("➡️", callback_data=f"pi:teux:list:{trade_id}:{page+1}"))
-    if nav:
-        kb.row(*nav)
-    kb.row(types.InlineKeyboardButton("✏️ Моя пропозиція", callback_data=f"pi:teux:mine:{trade_id}"))
-    kb.row(types.InlineKeyboardButton("🔙 До обміну", callback_data=f"pi:te:open:{trade_id}"))
-    return kb
 
 
 def _trade_ux_mine_text(state):
@@ -598,22 +548,6 @@ def _trade_ux_mine_text(state):
     return "✏️ <b>Моя пропозиція</b>\n\nОберіть позицію для редагування:"
 
 
-def _trade_ux_mine_kb(state):
-    trade_id = int(state["trade"]["id"])
-    kb = types.InlineKeyboardMarkup(row_width=1)
-    for offer in state.get("own_offers", []):
-        if offer.get("asset_type") == "gold":
-            kb.add(types.InlineKeyboardButton(
-                f"💰 Золото: {float(offer.get('gold_amount') or 0):.2f}",
-                callback_data=f"pi:teux:gold:{trade_id}"))
-        else:
-            kb.add(types.InlineKeyboardButton(
-                f"{_trade_ux_offer_name(offer)} x{int(offer.get('quantity') or 1)}",
-                callback_data=f"pi:teux:edit:{trade_id}:{int(offer['inventory_id'])}"))
-    if not state.get("own_offers"):
-        kb.row(types.InlineKeyboardButton("➕ Додати предмет", callback_data=f"pi:teux:list:{trade_id}:0"))
-    kb.row(types.InlineKeyboardButton("🔙 До обміну", callback_data=f"pi:te:open:{trade_id}"))
-    return kb
 
 
 def _trade_ux_stack_kb(trade_id, inventory_id, quantity, maximum, back_callback):
@@ -657,7 +591,7 @@ def _register_player_trade_offer_editor_ux_handlers(bot):
         if not result.get("success"):
             _safe_answer(bot,call,"Обмін уже недоступний.",True); return
         text=(f"➕ <b>Додати предмет</b>\n\nДоступних позицій: {int(result.get('total',0))}\n"
-              + ("Оберіть предмет:" if result.get("items") else "Усі доступні предмети вже додано до пропозиції."))
+              + ("Оберіть предмет для обміну:" if result.get("items") else "Усі доступні предмети вже додано до пропозиції."))
         _safe_edit_message_text(bot,text,call.message.chat.id,call.message.message_id,parse_mode="HTML",reply_markup=_trade_ux_inventory_kb(result))
 
     @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith("pi:teux:add:"))
@@ -677,7 +611,7 @@ def _register_player_trade_offer_editor_ux_handlers(bot):
             _safe_answer(bot,call,"Предмет додано до пропозиції.")
             refreshed=get_tradeable_inventory_for_trade(trade_id,int(call.from_user.id),page=page,page_size=TRADE_EDITOR_PAGE_SIZE)
             text=(f"➕ <b>Додати предмет</b>\n\nДоступних позицій: {int(refreshed.get('total',0))}\n"
-                  + ("Оберіть предмет:" if refreshed.get("items") else "Усі доступні предмети вже додано до пропозиції."))
+                  + ("Оберіть предмет для обміну:" if refreshed.get("items") else "Усі доступні предмети вже додано до пропозиції."))
             _safe_edit_message_text(bot,text,call.message.chat.id,call.message.message_id,parse_mode="HTML",reply_markup=_trade_ux_inventory_kb(refreshed)); return
         existing=get_trade_offer_entry(trade_id,int(call.from_user.id),inventory_id)
         quantity=int((existing or {}).get("quantity") or 0)
@@ -771,12 +705,7 @@ def _register_player_trade_offer_editor_ux_handlers(bot):
         _safe_edit_message_text(bot,f"💰 <b>Золото у пропозиції</b>\n\nПоточна сума: {amount:.2f}",call.message.chat.id,call.message.message_id,parse_mode="HTML",reply_markup=kb)
 
 
-_trade_ux_base_register_player_interaction_handlers = register_player_interaction_handlers
 
-def register_player_interaction_handlers(bot):
-    # UX callbacks must be registered before the 12.6.0 editor callbacks.
-    _register_player_trade_offer_editor_ux_handlers(bot)
-    return _trade_ux_base_register_player_interaction_handlers(bot)
 
 # ROM 12.6.2 PLAYER TRADE ITEM PREVIEW AND WALLET UX
 from systems.player_interaction_system import (
@@ -794,38 +723,12 @@ def _trade_money_12_6_2(value):
     return f"{float(value or 0):.2f}"
 
 
-def _trade_snapshot_lines_12_6_2(snapshot, include_quantity=False):
-    snapshot = snapshot or {}
-    lines = []
-    category = str(snapshot.get("category") or "").strip()
-    rarity = str(snapshot.get("rarity") or "").strip().lower()
-    level = snapshot.get("level") or snapshot.get("item_level")
-    durability = snapshot.get("durability")
-    max_durability = snapshot.get("max_durability")
-    refine = int(snapshot.get("refine_level") or 0)
-    if category:
-        lines.append(f"Категорія: {category}")
-    if rarity:
-        lines.append(f"Рідкість: {_TRADE_RARITY_LABELS_12_6_2.get(rarity, rarity)}")
-    if level is not None:
-        lines.append(f"Рівень предмета: {level}")
-    if durability is not None:
-        max_text = max_durability if max_durability is not None else 100
-        lines.append(f"Міцність: {durability}/{max_text}")
-    if refine > 0:
-        lines.append(f"Заточка: +{refine}")
-    runes = list(snapshot.get("runes") or [])
-    if runes:
-        rune_names = ", ".join(str(x.get("rune_name") or x.get("rune_item_id")) for x in runes)
-        lines.append(f"Вставлені руни: {rune_names}")
-    if include_quantity and snapshot.get("quantity") is not None:
-        lines.append(f"Усього в інвентарі: {int(snapshot.get('quantity') or 0)}")
-    return lines
 
 
 def _trade_editor_text(state):
     wallet = get_player_trade_wallet_state(
-        int(state["trade"]["id"]), int(state["viewer_user_id"]))
+        int(state["trade"]["id"]), int(state["viewer_user_id"])
+    )
     wallet_lines = ""
     if wallet.get("success"):
         wallet_lines = (
@@ -835,10 +738,13 @@ def _trade_editor_text(state):
         )
     return (
         "🤝 <b>Прямий обмін</b>\n\n"
-        "<b>Ваша пропозиція:</b>\n" + "\n".join(_trade_offer_lines(state.get("own_offers", []))) +
-        wallet_lines +
-        "\n\n<b>Пропозиція іншого гравця:</b>\n" + "\n".join(_trade_offer_lines(state.get("other_offers", []))) +
-        "\n\nРедагування пропозиції скидає готовність обох гравців."
+        "<b>Ваша пропозиція:</b>\n"
+        + "\n".join(_trade_offer_lines(state.get("own_offers", [])))
+        + wallet_lines
+        + "\n\n<b>Пропозиція іншого гравця:</b>\n"
+        + "\n".join(_trade_offer_lines(state.get("other_offers", [])))
+        + _trade_ready_status_text_12_7_0(state)
+        + "\n\nРедагування пропозиції скидає готовність обох гравців."
     )
 
 
@@ -870,22 +776,6 @@ def _trade_preview_equipment_kb_12_6_2(trade_id, inventory_id, page):
     return kb
 
 
-def _trade_preview_stack_kb_12_6_2(preview, page):
-    trade_id = int(preview["trade_id"]); inventory_id = int(preview["inventory_id"])
-    quantity = int(preview.get("offered_quantity") or 0)
-    maximum = int(preview.get("maximum_quantity") or quantity)
-    kb = types.InlineKeyboardMarkup(row_width=3)
-    kb.row(
-        types.InlineKeyboardButton("➖", callback_data=f"pi:tep:set:{trade_id}:{inventory_id}:{max(0, quantity-1)}:{page}"),
-        types.InlineKeyboardButton(f"x{quantity}", callback_data=f"pi:tep:view:{trade_id}:{inventory_id}:{page}"),
-        types.InlineKeyboardButton("➕", callback_data=f"pi:tep:set:{trade_id}:{inventory_id}:{min(maximum, quantity+1)}:{page}"),
-    )
-    if quantity < maximum:
-        kb.row(types.InlineKeyboardButton(
-            "📦 Додати все доступне", callback_data=f"pi:tep:all:{trade_id}:{inventory_id}:{page}"))
-    kb.row(types.InlineKeyboardButton(
-        "🔙 До предметів", callback_data=f"pi:teux:list:{trade_id}:{page}"))
-    return kb
 
 
 def _trade_show_preview_12_6_2(bot, call, trade_id, inventory_id, page):
@@ -934,7 +824,7 @@ def _register_trade_preview_wallet_handlers_12_6_2(bot):
         _safe_answer(bot,call,"Предмет додано до пропозиції.")
         listing=get_tradeable_inventory_for_trade(trade_id,int(call.from_user.id),page=page,page_size=TRADE_EDITOR_PAGE_SIZE)
         text=(f"➕ <b>Додати предмет</b>\n\nДоступних позицій: {int(listing.get('total',0))}\n"
-              + ("Оберіть предмет:" if listing.get("items") else "Усі доступні предмети вже додано до пропозиції."))
+              + ("Оберіть предмет для обміну:" if listing.get("items") else "Усі доступні предмети вже додано до пропозиції."))
         _safe_edit_message_text(bot,text,call.message.chat.id,call.message.message_id,parse_mode="HTML",reply_markup=_trade_ux_inventory_kb(listing))
 
     @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith("pi:tep:set:"))
@@ -965,31 +855,12 @@ def _register_trade_preview_wallet_handlers_12_6_2(bot):
         _safe_answer(bot,call,"Увесь доступний стек додано.")
         listing=get_tradeable_inventory_for_trade(trade_id,int(call.from_user.id),page=page,page_size=TRADE_EDITOR_PAGE_SIZE)
         text=(f"➕ <b>Додати предмет</b>\n\nДоступних позицій: {int(listing.get('total',0))}\n"
-              + ("Оберіть предмет:" if listing.get("items") else "Усі доступні предмети вже додано до пропозиції."))
+              + ("Оберіть предмет для обміну:" if listing.get("items") else "Усі доступні предмети вже додано до пропозиції."))
         _safe_edit_message_text(bot,text,call.message.chat.id,call.message.message_id,parse_mode="HTML",reply_markup=_trade_ux_inventory_kb(listing))
 
 
 # Override the 12.6.1 add-list buttons: selecting an item opens preview and
 # does not immediately add it to the offer.
-def _trade_ux_inventory_kb(result):
-    trade_id=int(result["trade_id"]); page=int(result.get("page",0))
-    kb=types.InlineKeyboardMarkup(row_width=1)
-    for item in result.get("items",[]):
-        snapshot=item.get("snapshot") or {}
-        name=str(snapshot.get("item_name") or snapshot.get("name") or f"Предмет #{snapshot.get('item_id')}")
-        remaining=int(item.get("available_quantity") or 0)
-        suffix="" if item.get("is_equipment") else f" (можна додати {remaining})"
-        kb.add(types.InlineKeyboardButton(
-            name+suffix, callback_data=f"pi:tep:view:{trade_id}:{int(item['inventory_id'])}:{page}"))
-    nav=[]
-    if result.get("has_previous"):
-        nav.append(types.InlineKeyboardButton("⬅️",callback_data=f"pi:teux:list:{trade_id}:{page-1}"))
-    if result.get("has_next"):
-        nav.append(types.InlineKeyboardButton("➡️",callback_data=f"pi:teux:list:{trade_id}:{page+1}"))
-    if nav: kb.row(*nav)
-    kb.row(types.InlineKeyboardButton("✏️ Моя пропозиція",callback_data=f"pi:teux:mine:{trade_id}"))
-    kb.row(types.InlineKeyboardButton("🔙 До обміну",callback_data=f"pi:te:open:{trade_id}"))
-    return kb
 
 
 # Override the 12.6.1 wallet editor with live wallet/offered/remaining values.
@@ -1001,11 +872,7 @@ def _trade_gold_editor_kb_12_6_2(trade_id):
     return kb
 
 
-_trade_preview_base_register_player_interaction_handlers = register_player_interaction_handlers
 
-def register_player_interaction_handlers(bot):
-    _register_trade_preview_wallet_handlers_12_6_2(bot)
-    return _trade_preview_base_register_player_interaction_handlers(bot)
 
 # ROM 12.6.3 PLAYER TRADE PREVIEW DETAILS AND AMOUNT INPUT
 from systems.player_interaction_system import parse_trade_item_quantity_input, parse_trade_gold_amount_input
@@ -1024,55 +891,7 @@ _TRADE_STAT_LABELS_12_6_3={"bonus_str":"Сила","bonus_dex":"Спритніс�
 def _trade_category_ua_12_6_3(value):
     return _TRADE_CATEGORY_LABELS_12_6_3.get(str(value or "").strip().lower(),"Предмет")
 
-def _trade_snapshot_lines_12_6_2(snapshot,include_quantity=False):
-    snapshot=snapshot or {}; lines=[]
-    lines.append(f"Категорія: {_trade_category_ua_12_6_3(snapshot.get('category'))}")
-    rarity=str(snapshot.get("rarity") or "").strip().lower()
-    if rarity: lines.append(f"Рідкість: {_TRADE_RARITY_LABELS_12_6_2.get(rarity,rarity)}")
-    level=snapshot.get("item_level") if snapshot.get("item_level") is not None else snapshot.get("level")
-    if level is not None: lines.append(f"Рівень предмета: {level}")
-    slot=str(snapshot.get("slot_key") or "")
-    if slot: lines.append(f"Слот: {EQUIPMENT_SLOTS.get(slot,slot)}")
-    armor=str(snapshot.get("armor_type") or "")
-    if armor: lines.append(f"Тип броні: {ARMOR_TYPE_LABELS.get(armor,armor)}")
-    subtype=str(snapshot.get("item_subtype") or "")
-    if subtype: lines.append(f"Тип предмета: {ITEM_SUBTYPE_LABELS.get(subtype,subtype)}")
-    attack=str(snapshot.get("weapon_attack_type") or "")
-    if attack: lines.append(f"Тип атаки: {_TRADE_ATTACK_LABELS_12_6_3.get(attack,attack)}")
-    hands=int(snapshot.get("weapon_hands") or 0)
-    if hands: lines.append(f"Кількість рук: {hands}")
-    pmin=int(snapshot.get("weapon_min_damage") or 0); pmax=int(snapshot.get("weapon_max_damage") or 0)
-    mmin=int(snapshot.get("weapon_min_magic_damage") or 0); mmax=int(snapshot.get("weapon_max_magic_damage") or 0)
-    if pmin or pmax: lines.append(f"Фізична шкода: {pmin}-{pmax}")
-    if mmin or mmax: lines.append(f"Магічна шкода: {mmin}-{mmax}")
-    durability=snapshot.get("durability"); max_durability=snapshot.get("max_durability")
-    if durability is not None: lines.append(f"Міцність: {durability}/{max_durability if max_durability is not None else 100}")
-    refine=int(snapshot.get("refine_level") or 0)
-    if refine: lines.append(f"Заточка: +{refine}")
-    stats=[]
-    for key,label in _TRADE_STAT_LABELS_12_6_3.items():
-        value=int(snapshot.get(key) or 0)
-        if value: stats.append(f"• {label}: +{value}")
-    if stats: lines.extend(["","Характеристики:",*stats])
-    runes=list(snapshot.get("runes") or [])
-    if runes:
-        lines.extend(["","Вставлені руни:"]+[f"• {x.get('rune_name') or x.get('rune_item_id')}" for x in runes])
-    if include_quantity and snapshot.get("quantity") is not None:
-        lines.append(f"Усього в інвентарі: {int(snapshot.get('quantity') or 0)}")
-    return lines
 
-def _trade_editor_kb(trade_id):
-    kb=types.InlineKeyboardMarkup(row_width=2)
-    kb.row(
-        types.InlineKeyboardButton("➕ Додати предмет",callback_data=f"pi:teux:list:{trade_id}:0"),
-        types.InlineKeyboardButton("💰 Додати золото",callback_data=f"pi:tea:gold:{trade_id}"),
-    )
-    kb.row(types.InlineKeyboardButton("✏️ Моя пропозиція",callback_data=f"pi:teux:mine:{trade_id}"))
-    kb.row(
-        types.InlineKeyboardButton("🔄 Оновити",callback_data=f"pi:te:open:{trade_id}"),
-        types.InlineKeyboardButton("❌ Скасувати обмін",callback_data=f"pi:trade:cancel:{trade_id}"),
-    )
-    return kb
 
 def _trade_amount_cancel_kb_12_6_3():
     kb=types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -1181,10 +1000,6 @@ def _trade_register_amount_input_12_6_3(bot):
         bot.send_message(m.chat.id,"✅ Значення оновлено.",reply_markup=types.ReplyKeyboardRemove())
         _send_trade_editor(bot,m.chat.id,uid,trade_id)
 
-_trade_amount_base_register_12_6_3=register_player_interaction_handlers
-def register_player_interaction_handlers(bot):
-    _trade_register_amount_input_12_6_3(bot)
-    return _trade_amount_base_register_12_6_3(bot)
 
 # ROM 12.6.3a PLAYER TRADE DATETIME AND EQUIPMENT TYPE HOTFIX
 # 12.6.3 uses datetime.now() in manual amount input handlers.
@@ -1228,7 +1043,7 @@ def _trade_ux_inventory_kb(result):
         snapshot = item.get("snapshot") or {}
         name = _trade_add_list_display_name_12_6_3a(snapshot)
         remaining = int(item.get("available_quantity") or 0)
-        suffix = "" if item.get("is_equipment") else f" (можна додати {remaining})"
+        suffix = "" if item.get("is_equipment") else f" (({remaining})"
         kb.add(types.InlineKeyboardButton(
             name + suffix,
             callback_data=f"pi:tep:view:{trade_id}:{int(item['inventory_id'])}:{page}",
@@ -1383,7 +1198,7 @@ _PLAYER_TRADE_CATEGORY_LABELS_12_6_4 = {
     "rune": "💠 Руни",
 }
 _PLAYER_TRADE_ALLOWED_CALLBACK_PREFIXES_12_6_4 = (
-    "pi:te:", "pi:teux:", "pi:tep:", "pi:tea:", "pi:tec:",
+    "pi:te:", "pi:teux:", "pi:tep:", "pi:tea:", "pi:tec:", "pi:tcf:",
     "pi:trade:cancel:", "pi:req:accept:", "pi:req:decline:",
 )
 
@@ -1396,7 +1211,7 @@ def player_trade_active_reply_kb_12_6_4():
 
 def _trade_category_text_12_6_4(counts):
     return (
-        "📦 <b>Категорії предметів</b>\n\nОберіть категорію:\n\n"
+        "📦 <b>Категорії предметів</b>\n\nОберіть категорію для обміну:\n\n"
         f"⚔️ Спорядження: {int(counts.get('equipment', 0))}\n"
         f"🧪 Зілля: {int(counts.get('potion', 0))}\n"
         f"🪨 Матеріали: {int(counts.get('material', 0))}\n"
@@ -1439,45 +1254,9 @@ def _trade_category_list_text_12_6_4(result):
         f"{_PLAYER_TRADE_CATEGORY_LABELS_12_6_4.get(category, '📦 Предмети')}\n\n"
         f"Доступних позицій: {total}\nСторінка: {page + 1}/{pages}\n\n"
     )
-    return text + ("Оберіть предмет:" if result.get("items") else "У цій категорії немає доступних предметів.")
+    return text + ("Оберіть предмет для обміну:" if result.get("items") else "У цій категорії немає доступних предметів.")
 
 
-def _trade_category_list_kb_12_6_4(result):
-    trade_id = int(result["trade_id"])
-    category = str(result["category"])
-    page = int(result.get("page") or 0)
-    kb = types.InlineKeyboardMarkup(row_width=1)
-    for item in result.get("items", []):
-        snapshot = item.get("snapshot") or {}
-        name_builder = globals().get("_trade_add_list_display_name_12_6_3a")
-        name = name_builder(snapshot) if callable(name_builder) else str(
-            snapshot.get("item_name") or snapshot.get("name") or f"Предмет #{snapshot.get('item_id')}"
-        )
-        remaining = int(item.get("available_quantity") or 0)
-        suffix = "" if item.get("is_equipment") else f" (можна додати {remaining})"
-        kb.add(types.InlineKeyboardButton(
-            name + suffix,
-            callback_data=(
-                f"pi:tec:view:{trade_id}:{category}:"
-                f"{int(item['inventory_id'])}:{page}"
-            ),
-        ))
-    nav = []
-    if result.get("has_previous"):
-        nav.append(types.InlineKeyboardButton(
-            "⬅️", callback_data=f"pi:tec:list:{trade_id}:{category}:{page-1}"))
-    if result.get("has_next"):
-        nav.append(types.InlineKeyboardButton(
-            "➡️", callback_data=f"pi:tec:list:{trade_id}:{category}:{page+1}"))
-    if nav:
-        kb.row(*nav)
-    kb.row(types.InlineKeyboardButton(
-        "🔙 До категорій", callback_data=f"pi:tec:categories:{trade_id}"))
-    kb.row(types.InlineKeyboardButton(
-        "✏️ Моя пропозиція", callback_data=f"pi:teux:mine:{trade_id}"))
-    kb.row(types.InlineKeyboardButton(
-        "🔙 До обміну", callback_data=f"pi:te:open:{trade_id}"))
-    return kb
 
 
 def _trade_category_preview_kb_12_6_4(preview, category, page):
@@ -1769,25 +1548,292 @@ def _register_trade_navigation_and_categories_12_6_4(bot):
 
 
 # Final main trade keyboard override: item selection starts from categories.
-def _trade_editor_kb(trade_id):
-    kb=types.InlineKeyboardMarkup(row_width=2)
+def _trade_editor_kb(trade_id, state=None):
+    own_ready = False
+    if state and state.get("success"):
+        trade = state.get("trade") or {}
+        side = state.get("side")
+        own_ready = bool(side and trade.get(f"{side}_ready"))
+    kb = types.InlineKeyboardMarkup(row_width=2)
+    if not own_ready:
+        kb.row(
+            types.InlineKeyboardButton(
+                "➕ Додати предмет",
+                callback_data=f"pi:tec:categories:{trade_id}",
+            ),
+            types.InlineKeyboardButton(
+                "💰 Додати золото",
+                callback_data=f"pi:tea:gold:{trade_id}",
+            ),
+        )
+        kb.row(types.InlineKeyboardButton(
+            "✏️ Моя пропозиція",
+            callback_data=f"pi:teux:mine:{trade_id}",
+        ))
+        revision = int((state or {}).get("trade", {}).get("revision") or 0)
+        kb.row(types.InlineKeyboardButton(
+            "✅ Завершити свою пропозицію",
+            callback_data=f"pi:tcf:ready:{trade_id}:{revision}",
+        ))
+    else:
+        kb.row(types.InlineKeyboardButton(
+            "✅ Ваша пропозиція зафіксована",
+            callback_data=f"pi:te:open:{trade_id}",
+        ))
+        revision = int((state or {}).get("trade", {}).get("revision") or 0)
+        kb.row(types.InlineKeyboardButton(
+            "↩️ Змінити свою пропозицію",
+            callback_data=f"pi:tcf:edit:{trade_id}:{revision}",
+        ))
     kb.row(
-        types.InlineKeyboardButton("➕ Додати предмет", callback_data=f"pi:tec:categories:{trade_id}"),
-        types.InlineKeyboardButton("💰 Додати золото", callback_data=f"pi:tea:gold:{trade_id}"),
-    )
-    kb.row(types.InlineKeyboardButton("✏️ Моя пропозиція", callback_data=f"pi:teux:mine:{trade_id}"))
-    kb.row(
-        types.InlineKeyboardButton("🔄 Оновити", callback_data=f"pi:te:open:{trade_id}"),
-        types.InlineKeyboardButton("❌ Скасувати обмін", callback_data=f"pi:trade:cancel:{trade_id}"),
+        types.InlineKeyboardButton(
+            "🔄 Оновити",
+            callback_data=f"pi:te:open:{trade_id}",
+        ),
+        types.InlineKeyboardButton(
+            "❌ Скасувати обмін",
+            callback_data=f"pi:trade:cancel:{trade_id}",
+        ),
     )
     return kb
 
 
-_trade_navigation_base_register_12_6_4 = register_player_interaction_handlers
+
+# ROM 12.6.8 PLAYER TRADE HANDLER AND DOMAIN CONSOLIDATION
+
+# ROM 12.7.0 PLAYER TRADE CONFIRMATION UI
+def _trade_ready_status_text_12_7_0(state):
+    trade = state["trade"]
+    side = state["side"]
+    other_side = "recipient" if side == "initiator" else "initiator"
+    own_ready = bool(trade[f"{side}_ready"])
+    other_ready = bool(trade[f"{other_side}_ready"])
+    return (
+        "\n\n<b>Статус учасників:</b>\n"
+        f"Ви: {'✅ Готові до обміну' if own_ready else '✏️ Редагуєте пропозицію'}\n"
+        f"Інший гравець: {'✅ Готовий до обміну' if other_ready else '✏️ Редагує пропозицію'}"
+    )
+
+
+def _trade_final_text_12_7_0(state):
+    trade = state["trade"]
+    side = state["side"]
+    other_side = "recipient" if side == "initiator" else "initiator"
+    own_confirmed = bool(trade[f"{side}_confirmed"])
+    other_confirmed = bool(trade[f"{other_side}_confirmed"])
+    return (
+        "⚠️ <b>Фінальне підтвердження обміну</b>\n\n"
+        "<b>Ви віддаєте:</b>\n"
+        + "\n".join(_trade_offer_lines(state.get("own_offers", [])))
+        + "\n\n<b>Ви отримуєте:</b>\n"
+        + "\n".join(_trade_offer_lines(state.get("other_offers", [])))
+        + "\n\n<b>Статус фінального підтвердження:</b>\n"
+        + f"Ви: {'✅ Підтвердили обмін' if own_confirmed else '⏳ Очікується підтвердження'}\n"
+        + f"Інший гравець: {'✅ Підтвердив обмін' if other_confirmed else '⏳ Очікується підтвердження'}\n\n"
+        + "Передавання буде виконано лише після підтвердження обох учасників."
+    )
+
+
+def _trade_final_kb_12_7_0(trade_id, revision, own_confirmed=False):
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    if not own_confirmed:
+        kb.add(types.InlineKeyboardButton(
+            "✅ Підтвердити обмін",
+            callback_data=f"pi:tcf:confirm:{trade_id}:{revision}",
+        ))
+    else:
+        kb.add(types.InlineKeyboardButton(
+            "✅ Ви підтвердили. Очікуємо іншого гравця",
+            callback_data=f"pi:tcf:refresh:{trade_id}:{revision}",
+        ))
+    kb.add(types.InlineKeyboardButton(
+        "🔄 Оновити статус",
+        callback_data=f"pi:tcf:refresh:{trade_id}:{revision}",
+    ))
+    kb.add(types.InlineKeyboardButton(
+        "↩️ Повернутися до редагування",
+        callback_data=f"pi:tcf:edit:{trade_id}:{revision}",
+    ))
+    kb.add(types.InlineKeyboardButton(
+        "❌ Скасувати обмін",
+        callback_data=f"pi:trade:cancel:{trade_id}",
+    ))
+    return kb
+
+
+
+def _trade_own_confirmed_12_7_0(state):
+    trade = state.get("trade") or {}
+    side = state.get("side")
+    return bool(side and trade.get(f"{side}_confirmed"))
+
+
+def _trade_show_current_stage_12_7_0(bot, chat_id, user_id, trade_id, message_id=None):
+    state = get_player_trade_editor_state(int(trade_id), int(user_id))
+    if not state.get("success"):
+        return False
+    trade = state.get("trade") or {}
+    if str(trade.get("status")) == "confirming":
+        text = _trade_final_text_12_7_0(state)
+        keyboard = _trade_final_kb_12_7_0(
+            int(trade_id),
+            int(trade.get("revision") or 0),
+            own_confirmed=_trade_own_confirmed_12_7_0(state),
+        )
+    else:
+        text = _trade_editor_text(state)
+        keyboard = _trade_editor_kb(int(trade_id), state=state)
+    if message_id is not None:
+        _safe_edit_message_text(
+            bot, text, chat_id, message_id,
+            parse_mode="HTML", reply_markup=keyboard,
+        )
+    else:
+        bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=keyboard)
+    return True
+
+
+def _trade_send_synchronized_stage_12_7_0(bot, state):
+    """Send one actionable synchronized panel to the other participant."""
+    try:
+        return _trade_show_current_stage_12_7_0(
+            bot,
+            int(state["other_user_id"]),
+            int(state["other_user_id"]),
+            int(state["trade"]["id"]),
+        )
+    except Exception:
+        return False
+
+def _register_trade_confirmation_handlers_12_7_0(bot):
+    @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith("pi:tcf:ready:"))
+    def ready(call):
+        parts = str(call.data).split(":")
+        try:
+            trade_id, revision = int(parts[3]), int(parts[4])
+        except (IndexError, TypeError, ValueError):
+            return
+        result = set_player_trade_ready(
+            trade_id,
+            int(call.from_user.id),
+            True,
+            expected_revision=revision,
+        )
+        if not result.get("success"):
+            _safe_answer(
+                bot, call,
+                result.get("message") or "Пропозиція вже змінилася.",
+                True,
+            )
+            return
+        _safe_answer(bot, call)
+        state = get_player_trade_editor_state(trade_id, int(call.from_user.id))
+        if not state.get("success"):
+            return
+        # First-stage ready is local. Never interrupt the other participant's
+        # category, preview, quantity or gold editor.
+        _trade_show_current_stage_12_7_0(
+            bot, call.message.chat.id, int(call.from_user.id), trade_id,
+            call.message.message_id,
+        )
+        # Only the transition where both independent offers are locked opens a
+        # new final-confirmation panel for the other participant.
+        if result.get("both_ready") and result.get("changed"):
+            _trade_send_synchronized_stage_12_7_0(bot, state)
+
+    @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith("pi:tcf:refresh:"))
+    def refresh_confirmation(call):
+        parts = str(call.data).split(":")
+        try:
+            trade_id = int(parts[3])
+        except (IndexError, TypeError, ValueError):
+            return
+        _safe_answer(bot, call)
+        _trade_show_current_stage_12_7_0(
+            bot, call.message.chat.id, int(call.from_user.id), trade_id,
+            call.message.message_id,
+        )
+
+    @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith("pi:tcf:edit:"))
+    def edit(call):
+        parts = str(call.data).split(":")
+        try:
+            trade_id = int(parts[3])
+        except (IndexError, TypeError, ValueError):
+            return
+        result = return_player_trade_to_editing(
+            trade_id,
+            int(call.from_user.id),
+            expected_revision=None,
+        )
+        if not result.get("success"):
+            _safe_answer(bot, call, "Обмін уже змінився.", True)
+            return
+        _safe_answer(bot, call)
+        # Unlock and redraw only this participant. The other participant keeps
+        # their own ready state and current working screen.
+        _trade_show_current_stage_12_7_0(
+            bot, call.message.chat.id, int(call.from_user.id), trade_id,
+            call.message.message_id,
+        )
+
+    @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith("pi:tcf:confirm:"))
+    def confirm(call):
+        parts = str(call.data).split(":")
+        try:
+            trade_id, revision = int(parts[3]), int(parts[4])
+        except (IndexError, TypeError, ValueError):
+            return
+        result = confirm_player_trade(
+            trade_id,
+            int(call.from_user.id),
+            expected_revision=revision,
+        )
+        if not result.get("success"):
+            _safe_answer(
+                bot, call,
+                result.get("message") or "Не вдалося завершити обмін.",
+                True,
+            )
+            return
+        _safe_answer(bot, call)
+        if not result.get("completed"):
+            state = get_player_trade_editor_state(trade_id, int(call.from_user.id))
+            if not state.get("success"):
+                return
+            _trade_show_current_stage_12_7_0(
+                bot, call.message.chat.id, int(call.from_user.id), trade_id,
+                call.message.message_id,
+            )
+            if result.get("changed"):
+                _trade_send_synchronized_stage_12_7_0(bot, state)
+            return
+
+        text = (
+            "✅ <b>Обмін успішно завершено</b>\n\n"
+            "Предмети та золото передано!"
+        )
+        try:
+            from keyboards import main_kb
+            for user_id in (
+                int(result.get("initiator_user_id") or call.from_user.id),
+                int(result.get("recipient_user_id") or call.from_user.id),
+            ):
+                bot.send_message(
+                    user_id, text, parse_mode="HTML", reply_markup=main_kb(),
+                )
+        except Exception:
+            pass
+
 
 def register_player_interaction_handlers(bot):
+    """Register the complete Stage 12 player-interaction handler set once."""
+    _register_trade_confirmation_handlers_12_7_0(bot)
     _register_trade_navigation_and_categories_12_6_4(bot)
-    result = _trade_navigation_base_register_12_6_4(bot)
+    _trade_register_amount_input_12_6_3(bot)
+    _register_trade_preview_wallet_handlers_12_6_2(bot)
+    _register_player_trade_offer_editor_ux_handlers(bot)
+    result = _register_player_interaction_base_handlers_12_6_8(bot)
     _install_player_trade_handler_level_navigation_guard_12_6_6(bot)
     return result
 
@@ -1800,56 +1846,6 @@ def register_player_interaction_handlers(bot):
 
 # ROM 12.6.4b PLAYER TRADE CATEGORY PAGINATION LABELS
 
-def _trade_category_list_kb_12_6_4(result):
-    """Final categorized trade list keyboard with readable page navigation."""
-    trade_id = int(result["trade_id"])
-    category = str(result["category"])
-    page = int(result.get("page") or 0)
-    kb = types.InlineKeyboardMarkup(row_width=1)
-
-    for item in result.get("items", []):
-        snapshot = item.get("snapshot") or {}
-        name_builder = globals().get("_trade_add_list_display_name_12_6_3a")
-        name = name_builder(snapshot) if callable(name_builder) else str(
-            snapshot.get("item_name")
-            or snapshot.get("name")
-            or f"Предмет #{snapshot.get('item_id')}"
-        )
-        remaining = int(item.get("available_quantity") or 0)
-        suffix = "" if item.get("is_equipment") else f" (можна додати {remaining})"
-        kb.add(types.InlineKeyboardButton(
-            name + suffix,
-            callback_data=(
-                f"pi:tec:view:{trade_id}:{category}:"
-                f"{int(item['inventory_id'])}:{page}"
-            ),
-        ))
-
-    # Keep the Auction House UX: one readable navigation button per row.
-    if result.get("has_previous"):
-        kb.row(types.InlineKeyboardButton(
-            "⬅️ Попередні",
-            callback_data=f"pi:tec:list:{trade_id}:{category}:{page-1}",
-        ))
-    if result.get("has_next"):
-        kb.row(types.InlineKeyboardButton(
-            "➡️ Наступні",
-            callback_data=f"pi:tec:list:{trade_id}:{category}:{page+1}",
-        ))
-
-    kb.row(types.InlineKeyboardButton(
-        "🔙 До категорій",
-        callback_data=f"pi:tec:categories:{trade_id}",
-    ))
-    kb.row(types.InlineKeyboardButton(
-        "✏️ Моя пропозиція",
-        callback_data=f"pi:teux:mine:{trade_id}",
-    ))
-    kb.row(types.InlineKeyboardButton(
-        "🔙 До обміну",
-        callback_data=f"pi:te:open:{trade_id}",
-    ))
-    return kb
 
 # ROM 12.6.4c PLAYER TRADE CONTEXTUAL NAVIGATION CLEANUP
 
@@ -1869,7 +1865,7 @@ def _trade_category_list_kb_12_6_4(result):
             or f"Предмет #{snapshot.get('item_id')}"
         )
         remaining = int(item.get("available_quantity") or 0)
-        suffix = "" if item.get("is_equipment") else f" (можна додати {remaining})"
+        suffix = "" if item.get("is_equipment") else f" ({remaining})"
         kb.add(types.InlineKeyboardButton(
             name + suffix,
             callback_data=(
@@ -1961,3 +1957,15 @@ def _trade_ux_mine_kb(state):
 # ROM 12.6.4h PLAYER TRADE STATUS BUTTON NOOP
 
 
+
+# ROM 12.6.8A PLAYER TRADE MOBILE WIDTH AND ITEM LABELS
+
+# ROM 12.6.8B PLAYER TRADE COMPACT QUANTITY PARENTHESES FIX
+
+# ROM 12.7.0A PLAYER TRADE CONFIRMATION CALLBACK WHITELIST FIX
+
+# ROM 12.7.0B PLAYER TRADE SYNCHRONIZED CONFIRMATION STATUS UI
+
+# ROM 12.7.0C PLAYER TRADE FIRST READY STATUS AND COMPLETION TEXT FIX
+
+# ROM 12.7.0D PLAYER TRADE INDEPENDENT OFFER READY STATE

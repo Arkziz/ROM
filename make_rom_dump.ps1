@@ -32,6 +32,7 @@ $ExcludeDirectoryNames = @(
     "temp",
     "patch",
     "backup"
+	"MD"
 )
 
 $ExcludeExactFileNames = @(

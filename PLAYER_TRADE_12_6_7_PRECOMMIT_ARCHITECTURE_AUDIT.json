@@ -1,0 +1,310 @@
+{
+  "stage": "12.6.7",
+  "generated_at": "2026-08-03T17:43:17.791536+00:00",
+  "mode": "read_only",
+  "gameplay_mutations": 0,
+  "database_writes": 0,
+  "source": {
+    "handlers/player_interaction.py": {
+      "exists": true,
+      "syntax_valid": true,
+      "size": 87518,
+      "sha256": "72cd8b2d2ca56d96765933bf11b1133d8040251a0f1e85a1adc42928f615c9f0",
+      "duplicate_top_level_functions": {},
+      "process_new_updates_assignments": [],
+      "handler_level_guard_count": 1,
+      "dispatcher_lock_count": 0,
+      "register_function_count": 1,
+      "high_frequency_callback_prefixes": {
+        "pi:te:": 30,
+        "pi:teux:": 30,
+        "pi:tea:": 15,
+        "pi:tec:": 23
+      },
+      "has_status_noop": true,
+      "has_continue_handling": true,
+      "has_inline_refresh": true,
+      "has_amount_input": true
+    },
+    "systems/player_interaction_system.py": {
+      "exists": true,
+      "syntax_valid": true,
+      "size": 92872,
+      "sha256": "1c6045638da7ac316153e16a41c5954059124dae629acf581f97eeaa4649282a",
+      "duplicate_top_level_functions": {},
+      "required_trade_functions": {
+        "create_player_trade_from_accepted_request": 1,
+        "cancel_player_trade": 1,
+        "expire_stale_player_trades": 1,
+        "recover_active_player_trades_after_restart": 1,
+        "get_active_player_trade": 1,
+        "get_player_trade_editor_state": 1,
+        "set_player_trade_item_offer": 1,
+        "remove_player_trade_item_offer": 1,
+        "set_player_trade_gold_offer": 1,
+        "reserve_inventory_for_trade": 1,
+        "release_trade_inventory_reservations": 1,
+        "get_item_trade_policy": 1
+      },
+      "missing_required_trade_functions": [],
+      "has_begin_immediate": true,
+      "has_atomic_commit_api": false
+    },
+    "handlers/auction_house.py": {
+      "exists": true,
+      "syntax_valid": true,
+      "size": 215926,
+      "sha256": "6ff3be2c807b61da85ab35523534d83f9390efa30fc74be94314d8455a5d6505",
+      "duplicate_top_level_functions": {
+        "auction_buy_category_kb_v1": 3,
+        "auction_buy_confirm_kb_v1": 2,
+        "auction_buy_lot_view_kb_v1": 3,
+        "auction_buy_lots_inline_kb_v1": 3,
+        "auction_completed_sale_view_kb_v1": 2,
+        "auction_completed_sales_inline_kb_v1": 2,
+        "auction_my_lot_view_kb_v1": 2,
+        "auction_my_lots_inline_kb_v1": 2,
+        "auction_search_lot_view_kb_v1": 2,
+        "auction_sell_category_kb_v2_safe": 2,
+        "auction_sell_inline_category_kb_v1": 2,
+        "auction_sell_items_inline_kb_v1": 2,
+        "auction_sell_review_kb_v1": 2,
+        "auction_unclaimed_item_view_kb_v1": 2,
+        "auction_unclaimed_items_inline_kb_v1": 2,
+        "build_auction_buy_category_text_v1": 2,
+        "build_auction_house_text": 2,
+        "build_auction_sell_inline_list_text_v1": 2,
+        "build_auction_sell_start_text_inline_v1": 2,
+        "register_auction_house_handlers": 23
+      }
+    },
+    "systems/auction_house_system.py": {
+      "exists": true,
+      "syntax_valid": true,
+      "size": 174419,
+      "sha256": "83bb9d691b7c5e90d1930ad756d8dfa4f5ee540dc32903600c0827cc319322ee",
+      "duplicate_top_level_functions": {
+        "_auction_buy_normalize_category": 2,
+        "_auction_get_inventory_row": 2,
+        "_auction_inventory_style_weapon_type_line": 2,
+        "_auction_stack_category_matches": 2,
+        "build_auction_lot_public_details": 4,
+        "build_user_unclaimed_auction_item_details": 2,
+        "build_user_unclaimed_auction_sale_details": 2,
+        "create_equipment_auction_lot": 2,
+        "get_user_sellable_stack_items_for_auction": 2,
+        "normalize_auction_category": 2,
+        "update_expired_auction_lots": 2,
+        "validate_inventory_stack_item_for_auction": 2
+      }
+    },
+    "db.py": {
+      "exists": true,
+      "syntax_valid": true,
+      "size": 226812,
+      "sha256": "6a717371ab89c351de9c7613f23d5fd9663c72a796401e2c4e23e22a3ed72202",
+      "duplicate_top_level_functions": {
+        "claim_daily_quest_reward": 2
+      }
+    },
+    "main.py": {
+      "exists": true,
+      "syntax_valid": true,
+      "size": 8672,
+      "sha256": "ba65adb0e8079d546e2827aa1f8bf0d1988b6a85aec0026f10aab307a44df2c6",
+      "duplicate_top_level_functions": {}
+    },
+    "keyboards.py": {
+      "exists": true,
+      "syntax_valid": true,
+      "size": 6174,
+      "sha256": "179ee8321707c0ae371228734a7b57bd654d13dcabc37705e9816c2c05236605",
+      "duplicate_top_level_functions": {}
+    }
+  },
+  "database": {
+    "exists": true,
+    "quick_check": "ok",
+    "foreign_key_issue_count": 0,
+    "tables": {
+      "player_activity_sessions": {
+        "exists": true,
+        "columns": [
+          "id",
+          "user_id",
+          "activity_type",
+          "reference_id",
+          "status",
+          "created_at",
+          "updated_at",
+          "expires_at"
+        ],
+        "indexes": [
+          "idx_player_activity_sessions_type_status",
+          "idx_player_activity_sessions_expires_at",
+          "sqlite_autoindex_player_activity_sessions_1"
+        ]
+      },
+      "player_interaction_requests": {
+        "exists": true,
+        "columns": [
+          "id",
+          "request_type",
+          "initiator_user_id",
+          "recipient_user_id",
+          "location_snapshot",
+          "status",
+          "revision",
+          "created_at",
+          "updated_at",
+          "expires_at",
+          "responded_at"
+        ],
+        "indexes": [
+          "idx_player_interaction_requests_initiator_status",
+          "idx_player_interaction_requests_recipient_status_expiry"
+        ]
+      },
+      "player_trades": {
+        "exists": true,
+        "columns": [
+          "id",
+          "request_id",
+          "initiator_user_id",
+          "recipient_user_id",
+          "location_snapshot",
+          "status",
+          "revision",
+          "initiator_ready",
+          "recipient_ready",
+          "initiator_confirmed",
+          "recipient_confirmed",
+          "created_at",
+          "updated_at",
+          "expires_at",
+          "completed_at",
+          "cancelled_at",
+          "cancel_reason"
+        ],
+        "indexes": [
+          "idx_player_trades_status_expiry",
+          "idx_player_trades_recipient_status",
+          "idx_player_trades_initiator_status",
+          "sqlite_autoindex_player_trades_1"
+        ],
+        "missing_precommit_columns": []
+      },
+      "player_trade_offers": {
+        "exists": true,
+        "columns": [
+          "id",
+          "trade_id",
+          "owner_user_id",
+          "asset_type",
+          "inventory_id",
+          "item_id",
+          "quantity",
+          "gold_amount",
+          "snapshot_json",
+          "created_at",
+          "updated_at"
+        ],
+        "indexes": [
+          "idx_player_trade_offers_trade_owner"
+        ]
+      },
+      "player_trade_events": {
+        "exists": true,
+        "columns": [
+          "id",
+          "trade_id",
+          "actor_user_id",
+          "event_type",
+          "revision",
+          "payload_json",
+          "created_at"
+        ],
+        "indexes": [
+          "idx_player_trade_events_trade_id"
+        ]
+      },
+      "player_trade_history": {
+        "exists": true,
+        "columns": [
+          "id",
+          "trade_id",
+          "initiator_user_id",
+          "recipient_user_id",
+          "status",
+          "initiator_offer_snapshot",
+          "recipient_offer_snapshot",
+          "summary_json",
+          "created_at",
+          "completed_at",
+          "cancelled_at",
+          "cancel_reason"
+        ],
+        "indexes": [
+          "idx_player_trade_history_recipient",
+          "idx_player_trade_history_initiator",
+          "sqlite_autoindex_player_trade_history_1"
+        ]
+      },
+      "inventory_reservations": {
+        "exists": true,
+        "columns": [
+          "id",
+          "inventory_id",
+          "user_id",
+          "quantity",
+          "reservation_type",
+          "reference_id",
+          "created_at",
+          "expires_at"
+        ],
+        "indexes": [
+          "idx_inventory_reservations_expiry",
+          "idx_inventory_reservations_reference",
+          "idx_inventory_reservations_user",
+          "idx_inventory_reservations_inventory",
+          "sqlite_autoindex_inventory_reservations_1"
+        ]
+      }
+    },
+    "status_counts": {
+      "editing": 0,
+      "confirming": 0,
+      "committing": 0,
+      "completed": 0,
+      "cancelled": 18,
+      "expired": 6,
+      "failed": 0
+    },
+    "orphan_counts": {
+      "trade_reservations": 0,
+      "trade_sessions": 0
+    }
+  },
+  "findings": [
+    {
+      "severity": "INFO",
+      "code": "atomic_commit_pending",
+      "message": "Atomic commit ще не реалізовано, очікувано до 12.7.0"
+    }
+  ],
+  "readiness": {
+    "handler_level_guard": true,
+    "no_dispatcher_wrapper": true,
+    "status_noop": true,
+    "inline_refresh": true,
+    "manual_amount_input": true,
+    "trade_domain_api": true,
+    "trade_schema": true,
+    "ready_confirm_columns": true,
+    "database_integrity": true,
+    "no_orphan_state": true,
+    "atomic_commit_pending": true
+  },
+  "ready_for_12_7": true,
+  "verdict": "PASS"
+}
