@@ -3,11 +3,11 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-03 17:13:48 +03:00
+Created: 2026-08-03 19:46:53 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.8875
-Included files: 207
-Excluded files: 3095
+Included files: 208
+Excluded files: 3139
 Maximum file size: 2 MB
 
 SECURITY EXCLUSIONS:
@@ -199,6 +199,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_player_trade_immediate_keyboard_and_lock_spam_hotfix.py
 - tools\smoke_test_player_trade_item_policy_and_reservations.py
 - tools\smoke_test_player_trade_item_preview_and_wallet_ux.py
+- tools\smoke_test_player_trade_lock_consolidation_and_startup_recovery.py
 - tools\smoke_test_player_trade_navigation_lock_and_item_categories.py
 - tools\smoke_test_player_trade_offer_editor.py
 - tools\smoke_test_player_trade_offer_editor_ux.py
@@ -1761,8 +1762,8 @@ PERFECT_RUNE_EXTRACTOR_CRYSTAL_SHOP_ENABLED = False
 
 ============================================================
 FILE: db.py
-SIZE: 226532 bytes
-LAST WRITE: 2026-08-03 15:23:50
+SIZE: 226812 bytes
+LAST WRITE: 2026-08-03 17:28:12
 ============================================================
 
 import sqlite3
@@ -9819,6 +9820,11 @@ def get_player_trade_category_counts(*args, **kwargs):
     from systems.player_interaction_system import get_player_trade_category_counts as _impl
     return _impl(*args, **kwargs)
 
+# ROM 12.6.5 PLAYER TRADE LOCK CONSOLIDATION AND STARTUP RECOVERY FACADE
+
+def recover_active_player_trades_after_restart(*args, **kwargs):
+    from systems.player_interaction_system import recover_active_player_trades_after_restart as _impl
+    return _impl(*args, **kwargs)
 
 
 ============================================================
@@ -27084,8 +27090,8 @@ def register_map_handlers(bot):
 
 ============================================================
 FILE: handlers\player_interaction.py
-SIZE: 127814 bytes
-LAST WRITE: 2026-08-03 17:06:56
+SIZE: 102760 bytes
+LAST WRITE: 2026-08-03 17:28:12
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -28645,34 +28651,72 @@ def _trade_extract_update_actor_12_6_4(update):
     return int(getattr(actor, "id", 0) or 0), message, callback
 
 
+# ROM 12.6.5 PLAYER TRADE LOCK CONSOLIDATION AND STARTUP RECOVERY
+
 def install_player_trade_navigation_lock_12_6_4(bot):
-    if getattr(bot, "_rom_trade_navigation_lock_12_6_4", False):
+    """Install exactly one canonical active-trade navigation lock.
+
+    The persistent `🤝 Триває обмін` ReplyKeyboard button is a strict no-op.
+    Trade inline callbacks and manual amount input pass through. Other gameplay
+    messages/callbacks are blocked with bounded feedback.
+    """
+    if getattr(bot, "_rom_trade_navigation_lock_12_6_5", False):
         return {"success": True, "installed": False}
+
     original = bot.process_new_updates
+    notice_at = {}
+
+    def notice_allowed(user_id):
+        import time
+        uid = int(user_id)
+        now = time.monotonic()
+        previous = float(notice_at.get(uid, -10**9))
+        if now - previous < 10.0:
+            return False
+        notice_at[uid] = now
+        return True
 
     def wrapped(updates):
         allowed = []
+        notice_sent = set()
+
         for update in updates:
             user_id, message, callback = _trade_extract_update_actor_12_6_4(update)
             trade = get_active_player_trade(user_id) if user_id else None
             if not trade:
                 allowed.append(update)
                 continue
+
             if message is not None:
                 text = str(getattr(message, "text", "") or "")
-                if text == PLAYER_TRADE_ACTIVE_REPLY_BUTTON_12_6_4 or _trade_is_amount_input_active_12_6_4(user_id):
+
+                # Strict no-op. Do not call Telegram API, refresh the editor,
+                # mutate state, or touch a cooldown for this status button.
+                if text == PLAYER_TRADE_ACTIVE_REPLY_BUTTON_12_6_4:
+                    continue
+
+                if _trade_is_amount_input_active_12_6_4(user_id):
                     allowed.append(update)
                     continue
-                bot.send_message(
-                    getattr(message, "chat", message).id,
-                    "🤝 Зараз триває обмін.\n\nЗавершіть або скасуйте поточний обмін, перш ніж виконувати інші дії.",
-                    reply_markup=player_trade_active_reply_kb_12_6_4(),
-                )
+
+                if user_id not in notice_sent and notice_allowed(user_id):
+                    notice_sent.add(user_id)
+                    bot.send_message(
+                        message.chat.id,
+                        "🤝 Зараз триває обмін.\n\n"
+                        "Завершіть або скасуйте поточний обмін, перш ніж "
+                        "виконувати інші дії.",
+                        reply_markup=player_trade_active_reply_kb_12_6_4(),
+                    )
                 continue
+
             if callback is not None:
-                if _trade_lock_allowed_callback_12_6_4(getattr(callback, "data", "")):
+                if _trade_lock_allowed_callback_12_6_4(
+                    getattr(callback, "data", "")
+                ):
                     allowed.append(update)
-                else:
+                elif user_id not in notice_sent and notice_allowed(user_id):
+                    notice_sent.add(user_id)
                     try:
                         bot.answer_callback_query(
                             callback.id,
@@ -28682,27 +28726,21 @@ def install_player_trade_navigation_lock_12_6_4(bot):
                     except Exception:
                         pass
                 continue
+
             allowed.append(update)
+
         if allowed:
             return original(allowed)
         return None
 
     bot.process_new_updates = wrapped
     bot._rom_trade_navigation_lock_12_6_4 = True
+    bot._rom_trade_navigation_lock_12_6_5 = True
     return {"success": True, "installed": True}
 
 
+
 def _register_trade_navigation_and_categories_12_6_4(bot):
-    @bot.message_handler(func=lambda m: getattr(m, "text", None) == PLAYER_TRADE_ACTIVE_REPLY_BUTTON_12_6_4)
-    def reopen_active_trade(message):
-        trade = get_active_player_trade(int(message.from_user.id))
-        if not trade:
-            bot.send_message(
-                message.chat.id, "ℹ️ Активного обміну вже немає.",
-                reply_markup=main_kb())
-            return
-        _send_trade_editor(
-            bot, message.chat.id, int(message.from_user.id), int(trade["id"]))
 
     @bot.callback_query_handler(func=lambda c: str(getattr(c, "data", "")).startswith("pi:tec:categories:"))
     def trade_categories(call):
@@ -28835,99 +28873,11 @@ def register_player_interaction_handlers(bot):
     return result
 
 # ROM 12.6.4a PLAYER TRADE IMMEDIATE KEYBOARD AND LOCK SPAM HOTFIX
-import time as _trade_lock_time_12_6_4a
-
-_PLAYER_TRADE_LOCK_NOTICE_AT_12_6_4A = {}
-PLAYER_TRADE_LOCK_NOTICE_COOLDOWN_SECONDS_12_6_4A = 3.0
 
 
-def _trade_lock_notice_allowed_12_6_4a(user_id, now=None):
-    """Allow one blocked-action notice per user per cooldown window."""
-    uid = int(user_id)
-    stamp = float(
-        _trade_lock_time_12_6_4a.monotonic() if now is None else now
-    )
-    previous = float(_PLAYER_TRADE_LOCK_NOTICE_AT_12_6_4A.get(uid, -10**9))
-    if stamp - previous < PLAYER_TRADE_LOCK_NOTICE_COOLDOWN_SECONDS_12_6_4A:
-        return False
-    _PLAYER_TRADE_LOCK_NOTICE_AT_12_6_4A[uid] = stamp
-    return True
 
 
-def install_player_trade_navigation_lock_12_6_4(bot):
-    """Final lock installer with burst-safe feedback.
 
-    A batch can contain several queued presses from the old keyboard. All are
-    blocked, but only the first one produces a chat notice. Trade callbacks,
-    manual amount input, and the active-trade reply button remain available.
-    """
-    if getattr(bot, "_rom_trade_navigation_lock_12_6_4a", False):
-        return {"success": True, "installed": False}
-    original = bot.process_new_updates
-
-    def wrapped(updates):
-        allowed = []
-        notice_sent_in_batch = set()
-        for update in updates:
-            user_id, message, callback = _trade_extract_update_actor_12_6_4(update)
-            trade = get_active_player_trade(user_id) if user_id else None
-            if not trade:
-                allowed.append(update)
-                continue
-
-            if message is not None:
-                text = str(getattr(message, "text", "") or "")
-                if (
-                    text == PLAYER_TRADE_ACTIVE_REPLY_BUTTON_12_6_4
-                    or _trade_is_amount_input_active_12_6_4(user_id)
-                ):
-                    allowed.append(update)
-                    continue
-
-                # Drop every blocked message. Only one warning is emitted for
-                # a burst, preventing the repeated messages seen in Telegram.
-                if (
-                    user_id not in notice_sent_in_batch
-                    and _trade_lock_notice_allowed_12_6_4a(user_id)
-                ):
-                    notice_sent_in_batch.add(user_id)
-                    bot.send_message(
-                        getattr(message, "chat", message).id,
-                        "🤝 Зараз триває обмін.\n\n"
-                        "Завершіть або скасуйте поточний обмін, перш ніж "
-                        "виконувати інші дії.",
-                        reply_markup=player_trade_active_reply_kb_12_6_4(),
-                    )
-                continue
-
-            if callback is not None:
-                if _trade_lock_allowed_callback_12_6_4(getattr(callback, "data", "")):
-                    allowed.append(update)
-                elif (
-                    user_id not in notice_sent_in_batch
-                    and _trade_lock_notice_allowed_12_6_4a(user_id)
-                ):
-                    notice_sent_in_batch.add(user_id)
-                    try:
-                        bot.answer_callback_query(
-                            callback.id,
-                            "Завершіть або скасуйте поточний обмін.",
-                            show_alert=True,
-                        )
-                    except Exception:
-                        pass
-                continue
-
-            allowed.append(update)
-
-        if allowed:
-            return original(allowed)
-        return None
-
-    bot.process_new_updates = wrapped
-    bot._rom_trade_navigation_lock_12_6_4 = True
-    bot._rom_trade_navigation_lock_12_6_4a = True
-    return {"success": True, "installed": True}
 
 # ROM 12.6.4b PLAYER TRADE CATEGORY PAGINATION LABELS
 
@@ -29059,546 +29009,38 @@ def _trade_ux_mine_kb(state):
     return kb
 
 # ROM 12.6.4d PLAYER TRADE AMOUNT CANCEL AND LOCK RECOVERY
-PLAYER_TRADE_LOCK_NOTICE_COOLDOWN_SECONDS_12_6_4D = 10.0
-_PLAYER_TRADE_LOCK_NOTICE_AT_12_6_4D = {}
 
 
-def _trade_lock_notice_allowed_12_6_4d(user_id, now=None):
-    """Suppress repeated lock notices while queued old-keyboard updates drain."""
-    uid = int(user_id)
-    stamp = float(
-        _trade_lock_time_12_6_4a.monotonic() if now is None else now
-    )
-    previous = float(_PLAYER_TRADE_LOCK_NOTICE_AT_12_6_4D.get(uid, -10**9))
-    if stamp - previous < PLAYER_TRADE_LOCK_NOTICE_COOLDOWN_SECONDS_12_6_4D:
-        return False
-    _PLAYER_TRADE_LOCK_NOTICE_AT_12_6_4D[uid] = stamp
-    return True
 
 
-def _trade_reopen_directly_12_6_4d(bot, message, user_id, trade):
-    """Reopen trade at lock level so broad message handlers cannot swallow it."""
-    bot.send_message(
-        message.chat.id,
-        "🤝 Повернення до активного обміну.",
-        reply_markup=player_trade_active_reply_kb_12_6_4(),
-    )
-    _send_trade_editor(bot, message.chat.id, int(user_id), int(trade["id"]))
 
 
-def install_player_trade_navigation_lock_12_6_4(bot):
-    """Final navigation lock with direct recovery and anti-spam handling."""
-    if getattr(bot, "_rom_trade_navigation_lock_12_6_4d", False):
-        return {"success": True, "installed": False}
-    original = bot.process_new_updates
-
-    def wrapped(updates):
-        allowed = []
-        notice_sent_in_batch = set()
-        for update in updates:
-            user_id, message, callback = _trade_extract_update_actor_12_6_4(update)
-            trade = get_active_player_trade(user_id) if user_id else None
-            if not trade:
-                allowed.append(update)
-                continue
-
-            if message is not None:
-                text = str(getattr(message, "text", "") or "")
-
-                # Do not delegate the recovery button to the normal TeleBot
-                # handler chain. A broad handler can consume it first. Reopen
-                # the editor immediately inside the lock wrapper.
-                if text == PLAYER_TRADE_ACTIVE_REPLY_BUTTON_12_6_4:
-                    _trade_reopen_directly_12_6_4d(bot, message, user_id, trade)
-                    continue
-
-                # Manual amount input, including its cancel button, must reach
-                # the dedicated amount handler.
-                if _trade_is_amount_input_active_12_6_4(user_id):
-                    allowed.append(update)
-                    continue
-
-                if (
-                    user_id not in notice_sent_in_batch
-                    and _trade_lock_notice_allowed_12_6_4d(user_id)
-                ):
-                    notice_sent_in_batch.add(user_id)
-                    bot.send_message(
-                        message.chat.id,
-                        "🤝 Зараз триває обмін.\n\n"
-                        "Завершіть або скасуйте поточний обмін, перш ніж "
-                        "виконувати інші дії.",
-                        reply_markup=player_trade_active_reply_kb_12_6_4(),
-                    )
-                continue
-
-            if callback is not None:
-                if _trade_lock_allowed_callback_12_6_4(getattr(callback, "data", "")):
-                    allowed.append(update)
-                elif (
-                    user_id not in notice_sent_in_batch
-                    and _trade_lock_notice_allowed_12_6_4d(user_id)
-                ):
-                    notice_sent_in_batch.add(user_id)
-                    try:
-                        bot.answer_callback_query(
-                            callback.id,
-                            "Завершіть або скасуйте поточний обмін.",
-                            show_alert=True,
-                        )
-                    except Exception:
-                        pass
-                continue
-
-            allowed.append(update)
-
-        if allowed:
-            return original(allowed)
-        return None
-
-    bot.process_new_updates = wrapped
-    bot._rom_trade_navigation_lock_12_6_4 = True
-    bot._rom_trade_navigation_lock_12_6_4a = True
-    bot._rom_trade_navigation_lock_12_6_4d = True
-    return {"success": True, "installed": True}
 
 # ROM 12.6.4e PLAYER TRADE REOPEN DEDUPLICATION HOTFIX
-PLAYER_TRADE_REOPEN_COOLDOWN_SECONDS_12_6_4E = 2.0
-_PLAYER_TRADE_REOPEN_AT_12_6_4E = {}
-_PLAYER_TRADE_SEEN_UPDATE_IDS_12_6_4E = {}
-PLAYER_TRADE_UPDATE_ID_TTL_SECONDS_12_6_4E = 60.0
 
 
-def _trade_reopen_allowed_12_6_4e(user_id, now=None):
-    uid = int(user_id)
-    stamp = float(
-        _trade_lock_time_12_6_4a.monotonic() if now is None else now
-    )
-    previous = float(_PLAYER_TRADE_REOPEN_AT_12_6_4E.get(uid, -10**9))
-    if stamp - previous < PLAYER_TRADE_REOPEN_COOLDOWN_SECONDS_12_6_4E:
-        return False
-    _PLAYER_TRADE_REOPEN_AT_12_6_4E[uid] = stamp
-    return True
 
 
-def _trade_update_is_duplicate_12_6_4e(update, now=None):
-    """Drop a repeated Telegram update_id before any presentation is sent."""
-    update_id = getattr(update, "update_id", None)
-    if update_id is None:
-        return False
-    stamp = float(
-        _trade_lock_time_12_6_4a.monotonic() if now is None else now
-    )
-    expired = [
-        key for key, seen_at in _PLAYER_TRADE_SEEN_UPDATE_IDS_12_6_4E.items()
-        if stamp - float(seen_at) > PLAYER_TRADE_UPDATE_ID_TTL_SECONDS_12_6_4E
-    ]
-    for key in expired:
-        _PLAYER_TRADE_SEEN_UPDATE_IDS_12_6_4E.pop(key, None)
-    key = int(update_id)
-    if key in _PLAYER_TRADE_SEEN_UPDATE_IDS_12_6_4E:
-        return True
-    _PLAYER_TRADE_SEEN_UPDATE_IDS_12_6_4E[key] = stamp
-    return False
 
 
-def _trade_reopen_directly_12_6_4d(bot, message, user_id, trade):
-    """Reopen exactly one editor message without an extra status message."""
-    uid = int(user_id)
-    if not _trade_reopen_allowed_12_6_4e(uid):
-        return False
-    _send_trade_editor(bot, message.chat.id, uid, int(trade["id"]))
-    return True
 
 
-def install_player_trade_navigation_lock_12_6_4(bot):
-    """Final lock: update-id dedupe, reopen debounce, and bounded feedback."""
-    if getattr(bot, "_rom_trade_navigation_lock_12_6_4e", False):
-        return {"success": True, "installed": False}
-    original = bot.process_new_updates
-
-    def wrapped(updates):
-        allowed = []
-        notice_sent_in_batch = set()
-        reopen_sent_in_batch = set()
-        for update in updates:
-            if _trade_update_is_duplicate_12_6_4e(update):
-                continue
-
-            user_id, message, callback = _trade_extract_update_actor_12_6_4(update)
-            trade = get_active_player_trade(user_id) if user_id else None
-            if not trade:
-                allowed.append(update)
-                continue
-
-            if message is not None:
-                text = str(getattr(message, "text", "") or "")
-
-                if text == PLAYER_TRADE_ACTIVE_REPLY_BUTTON_12_6_4:
-                    if user_id not in reopen_sent_in_batch:
-                        reopen_sent_in_batch.add(user_id)
-                        _trade_reopen_directly_12_6_4d(
-                            bot, message, user_id, trade
-                        )
-                    continue
-
-                if _trade_is_amount_input_active_12_6_4(user_id):
-                    allowed.append(update)
-                    continue
-
-                if (
-                    user_id not in notice_sent_in_batch
-                    and _trade_lock_notice_allowed_12_6_4d(user_id)
-                ):
-                    notice_sent_in_batch.add(user_id)
-                    bot.send_message(
-                        message.chat.id,
-                        "🤝 Зараз триває обмін.\n\n"
-                        "Завершіть або скасуйте поточний обмін, перш ніж "
-                        "виконувати інші дії.",
-                        reply_markup=player_trade_active_reply_kb_12_6_4(),
-                    )
-                continue
-
-            if callback is not None:
-                if _trade_lock_allowed_callback_12_6_4(getattr(callback, "data", "")):
-                    allowed.append(update)
-                elif (
-                    user_id not in notice_sent_in_batch
-                    and _trade_lock_notice_allowed_12_6_4d(user_id)
-                ):
-                    notice_sent_in_batch.add(user_id)
-                    try:
-                        bot.answer_callback_query(
-                            callback.id,
-                            "Завершіть або скасуйте поточний обмін.",
-                            show_alert=True,
-                        )
-                    except Exception:
-                        pass
-                continue
-
-            allowed.append(update)
-
-        if allowed:
-            return original(allowed)
-        return None
-
-    bot.process_new_updates = wrapped
-    bot._rom_trade_navigation_lock_12_6_4 = True
-    bot._rom_trade_navigation_lock_12_6_4a = True
-    bot._rom_trade_navigation_lock_12_6_4d = True
-    bot._rom_trade_navigation_lock_12_6_4e = True
-    return {"success": True, "installed": True}
 
 # ROM 12.6.4f PLAYER TRADE REOPEN DISTINCT UPDATE FIX
 
-def _trade_reopen_directly_12_6_4d(bot, message, user_id, trade):
-    """Open one editor for every distinct user press.
-
-    update_id deduplication already protects against repeated delivery of the
-    same Telegram update. A time debounce is intentionally not used because a
-    second real button press has a new update_id and must receive a response.
-    """
-    _send_trade_editor(
-        bot, message.chat.id, int(user_id), int(trade["id"])
-    )
-    return True
 
 
-def install_player_trade_navigation_lock_12_6_4(bot):
-    """Final lock: one reopen per distinct update_id, never silently debounce."""
-    if getattr(bot, "_rom_trade_navigation_lock_12_6_4f", False):
-        return {"success": True, "installed": False}
-    original = bot.process_new_updates
-
-    def wrapped(updates):
-        allowed = []
-        notice_sent_in_batch = set()
-        reopen_update_ids_in_batch = set()
-
-        for update in updates:
-            if _trade_update_is_duplicate_12_6_4e(update):
-                continue
-
-            user_id, message, callback = _trade_extract_update_actor_12_6_4(update)
-            trade = get_active_player_trade(user_id) if user_id else None
-            if not trade:
-                allowed.append(update)
-                continue
-
-            if message is not None:
-                text = str(getattr(message, "text", "") or "")
-
-                if text == PLAYER_TRADE_ACTIVE_REPLY_BUTTON_12_6_4:
-                    update_id = getattr(update, "update_id", None)
-                    batch_key = (
-                        int(update_id) if update_id is not None
-                        else (int(user_id), int(getattr(message, "message_id", 0) or 0))
-                    )
-                    if batch_key not in reopen_update_ids_in_batch:
-                        reopen_update_ids_in_batch.add(batch_key)
-                        _trade_reopen_directly_12_6_4d(
-                            bot, message, user_id, trade
-                        )
-                    continue
-
-                if _trade_is_amount_input_active_12_6_4(user_id):
-                    allowed.append(update)
-                    continue
-
-                if (
-                    user_id not in notice_sent_in_batch
-                    and _trade_lock_notice_allowed_12_6_4d(user_id)
-                ):
-                    notice_sent_in_batch.add(user_id)
-                    bot.send_message(
-                        message.chat.id,
-                        "🤝 Зараз триває обмін.\n\n"
-                        "Завершіть або скасуйте поточний обмін, перш ніж "
-                        "виконувати інші дії.",
-                        reply_markup=player_trade_active_reply_kb_12_6_4(),
-                    )
-                continue
-
-            if callback is not None:
-                if _trade_lock_allowed_callback_12_6_4(getattr(callback, "data", "")):
-                    allowed.append(update)
-                elif (
-                    user_id not in notice_sent_in_batch
-                    and _trade_lock_notice_allowed_12_6_4d(user_id)
-                ):
-                    notice_sent_in_batch.add(user_id)
-                    try:
-                        bot.answer_callback_query(
-                            callback.id,
-                            "Завершіть або скасуйте поточний обмін.",
-                            show_alert=True,
-                        )
-                    except Exception:
-                        pass
-                continue
-
-            allowed.append(update)
-
-        if allowed:
-            return original(allowed)
-        return None
-
-    bot.process_new_updates = wrapped
-    bot._rom_trade_navigation_lock_12_6_4 = True
-    bot._rom_trade_navigation_lock_12_6_4a = True
-    bot._rom_trade_navigation_lock_12_6_4d = True
-    bot._rom_trade_navigation_lock_12_6_4e = True
-    bot._rom_trade_navigation_lock_12_6_4f = True
-    return {"success": True, "installed": True}
 
 # ROM 12.6.4g PLAYER TRADE STATUS BUTTON STUB
-PLAYER_TRADE_STATUS_NOTICE_COOLDOWN_SECONDS_12_6_4G = 2.0
-_PLAYER_TRADE_STATUS_NOTICE_AT_12_6_4G = {}
 
 
-def _trade_status_notice_allowed_12_6_4g(user_id, now=None):
-    uid = int(user_id)
-    stamp = float(_trade_lock_time_12_6_4a.monotonic() if now is None else now)
-    previous = float(_PLAYER_TRADE_STATUS_NOTICE_AT_12_6_4G.get(uid, -10**9))
-    if stamp - previous < PLAYER_TRADE_STATUS_NOTICE_COOLDOWN_SECONDS_12_6_4G:
-        return False
-    _PLAYER_TRADE_STATUS_NOTICE_AT_12_6_4G[uid] = stamp
-    return True
 
 
-def _trade_status_button_stub_12_6_4g(bot, message, user_id, trade):
-    """ReplyKeyboard buttons cannot show callback alerts.
-
-    Therefore this persistent button is deliberately informational only. It
-    never refreshes or duplicates the trade editor. The existing inline screen
-    remains the place where the player chooses actions and uses Оновити.
-    """
-    if not _trade_status_notice_allowed_12_6_4g(user_id):
-        return False
-    bot.send_message(
-        message.chat.id,
-        "🤝 Обмін триває. Оберіть потрібну дію в меню обміну вище.\n\n"
-        "Для оновлення даних використовуйте inline-кнопку «🔄 Оновити».",
-        reply_markup=player_trade_active_reply_kb_12_6_4(),
-    )
-    return True
 
 
-def install_player_trade_navigation_lock_12_6_4(bot):
-    """Final lock with an informational, non-refreshing persistent button."""
-    if getattr(bot, "_rom_trade_navigation_lock_12_6_4g", False):
-        return {"success": True, "installed": False}
-    original = bot.process_new_updates
-
-    def wrapped(updates):
-        allowed = []
-        notice_sent_in_batch = set()
-        status_sent_in_batch = set()
-
-        for update in updates:
-            if _trade_update_is_duplicate_12_6_4e(update):
-                continue
-
-            user_id, message, callback = _trade_extract_update_actor_12_6_4(update)
-            trade = get_active_player_trade(user_id) if user_id else None
-            if not trade:
-                allowed.append(update)
-                continue
-
-            if message is not None:
-                text = str(getattr(message, "text", "") or "")
-
-                if text == PLAYER_TRADE_ACTIVE_REPLY_BUTTON_12_6_4:
-                    if user_id not in status_sent_in_batch:
-                        status_sent_in_batch.add(user_id)
-                        _trade_status_button_stub_12_6_4g(
-                            bot, message, user_id, trade
-                        )
-                    continue
-
-                if _trade_is_amount_input_active_12_6_4(user_id):
-                    allowed.append(update)
-                    continue
-
-                if (
-                    user_id not in notice_sent_in_batch
-                    and _trade_lock_notice_allowed_12_6_4d(user_id)
-                ):
-                    notice_sent_in_batch.add(user_id)
-                    bot.send_message(
-                        message.chat.id,
-                        "🤝 Зараз триває обмін.\n\n"
-                        "Завершіть або скасуйте поточний обмін, перш ніж "
-                        "виконувати інші дії.",
-                        reply_markup=player_trade_active_reply_kb_12_6_4(),
-                    )
-                continue
-
-            if callback is not None:
-                if _trade_lock_allowed_callback_12_6_4(getattr(callback, "data", "")):
-                    allowed.append(update)
-                elif (
-                    user_id not in notice_sent_in_batch
-                    and _trade_lock_notice_allowed_12_6_4d(user_id)
-                ):
-                    notice_sent_in_batch.add(user_id)
-                    try:
-                        bot.answer_callback_query(
-                            callback.id,
-                            "Завершіть або скасуйте поточний обмін.",
-                            show_alert=True,
-                        )
-                    except Exception:
-                        pass
-                continue
-
-            allowed.append(update)
-
-        if allowed:
-            return original(allowed)
-        return None
-
-    bot.process_new_updates = wrapped
-    bot._rom_trade_navigation_lock_12_6_4 = True
-    bot._rom_trade_navigation_lock_12_6_4a = True
-    bot._rom_trade_navigation_lock_12_6_4d = True
-    bot._rom_trade_navigation_lock_12_6_4e = True
-    bot._rom_trade_navigation_lock_12_6_4f = True
-    bot._rom_trade_navigation_lock_12_6_4g = True
-    return {"success": True, "installed": True}
 
 # ROM 12.6.4h PLAYER TRADE STATUS BUTTON NOOP
 
-def install_player_trade_navigation_lock_12_6_4(bot):
-    """Final lock with a strict no-op persistent trade-status button.
-
-    The ReplyKeyboard button remains visible for the entire active trade, but
-    its text update is consumed without any Telegram API call, editor refresh,
-    cooldown mutation, or state mutation. The inline Refresh button remains the
-    only explicit way to refresh the trade screen.
-    """
-    if getattr(bot, "_rom_trade_navigation_lock_12_6_4h", False):
-        return {"success": True, "installed": False}
-    original = bot.process_new_updates
-
-    def wrapped(updates):
-        allowed = []
-        notice_sent_in_batch = set()
-
-        for update in updates:
-            if _trade_update_is_duplicate_12_6_4e(update):
-                continue
-
-            user_id, message, callback = _trade_extract_update_actor_12_6_4(update)
-            trade = get_active_player_trade(user_id) if user_id else None
-            if not trade:
-                allowed.append(update)
-                continue
-
-            if message is not None:
-                text = str(getattr(message, "text", "") or "")
-
-                # Strict no-op. Telegram still displays the user's outgoing
-                # text bubble because this is a ReplyKeyboard button, but the
-                # bot sends nothing and does not touch the editor or trade.
-                if text == PLAYER_TRADE_ACTIVE_REPLY_BUTTON_12_6_4:
-                    continue
-
-                # Manual amount input, including its cancel action, continues
-                # through the dedicated amount-input handler.
-                if _trade_is_amount_input_active_12_6_4(user_id):
-                    allowed.append(update)
-                    continue
-
-                if (
-                    user_id not in notice_sent_in_batch
-                    and _trade_lock_notice_allowed_12_6_4d(user_id)
-                ):
-                    notice_sent_in_batch.add(user_id)
-                    bot.send_message(
-                        message.chat.id,
-                        "🤝 Зараз триває обмін.\n\n"
-                        "Завершіть або скасуйте поточний обмін, перш ніж "
-                        "виконувати інші дії.",
-                        reply_markup=player_trade_active_reply_kb_12_6_4(),
-                    )
-                continue
-
-            if callback is not None:
-                if _trade_lock_allowed_callback_12_6_4(
-                    getattr(callback, "data", "")
-                ):
-                    allowed.append(update)
-                elif (
-                    user_id not in notice_sent_in_batch
-                    and _trade_lock_notice_allowed_12_6_4d(user_id)
-                ):
-                    notice_sent_in_batch.add(user_id)
-                    try:
-                        bot.answer_callback_query(
-                            callback.id,
-                            "Завершіть або скасуйте поточний обмін.",
-                            show_alert=True,
-                        )
-                    except Exception:
-                        pass
-                continue
-
-            allowed.append(update)
-
-        if allowed:
-            return original(allowed)
-        return None
-
-    bot.process_new_updates = wrapped
-    bot._rom_trade_navigation_lock_12_6_4 = True
-    bot._rom_trade_navigation_lock_12_6_4a = True
-    bot._rom_trade_navigation_lock_12_6_4d = True
-    bot._rom_trade_navigation_lock_12_6_4e = True
-    bot._rom_trade_navigation_lock_12_6_4h = True
-    return {"success": True, "installed": True}
 
 
 
@@ -31949,8 +31391,8 @@ def rune_master_kb():
 
 ============================================================
 FILE: main.py
-SIZE: 7508 bytes
-LAST WRITE: 2026-08-03 12:16:05
+SIZE: 8672 bytes
+LAST WRITE: 2026-08-03 17:28:12
 ============================================================
 
 
@@ -32058,7 +31500,7 @@ bot = telebot.TeleBot(TOKEN, threaded=False)
 # ==============================
 
 # ROM 12.1.0 PLAYER PRESENCE AND ACTIVITY SESSIONS
-from systems.player_interaction_system import init_player_interaction_foundation, install_player_presence_tracking, cleanup_player_interaction_state, init_player_trade_foundation, init_player_trade_item_policy_and_reservations
+from systems.player_interaction_system import init_player_interaction_foundation, install_player_presence_tracking, cleanup_player_interaction_state, init_player_trade_foundation, init_player_trade_item_policy_and_reservations, recover_active_player_trades_after_restart
 init_db()
 print('✅ PLAYER INTERACTION FOUNDATION:', init_player_interaction_foundation())
 # ROM 12.3.2 INTERACTION SESSION TIMEOUT AND RECOVERY
@@ -32067,6 +31509,9 @@ print('✅ PLAYER INTERACTION RECOVERY:', cleanup_player_interaction_state())
 print('✅ PLAYER TRADE FOUNDATION:', init_player_trade_foundation())
 # ROM 12.5.0 PLAYER TRADE ITEM POLICY AND RESERVATIONS
 print('✅ PLAYER TRADE ITEM POLICY:', init_player_trade_item_policy_and_reservations())
+# ROM 12.6.5: process restarts invalidate all unfinished trade UI/input state.
+_PLAYER_TRADE_RESTART_RECOVERY = recover_active_player_trades_after_restart()
+print('✅ PLAYER TRADE RESTART RECOVERY:', _PLAYER_TRADE_RESTART_RECOVERY)
 
 # ==============================
 # ✅ REFACTOR 9.0.11: RUN MIGRATIONS ON STARTUP
@@ -32134,6 +31579,22 @@ print('✅ PLAYER PRESENCE TRACKER:', install_player_presence_tracking(bot))
 # ROM 12.2.0 MAP LOCATION PLAYER DISCOVERY
 from handlers.player_interaction import register_player_interaction_handlers
 register_player_interaction_handlers(bot)
+# ROM 12.6.5: replace the stale Telegram ReplyKeyboard for every participant
+# whose unfinished trade was cancelled during startup recovery.
+from keyboards import main_kb as _player_trade_recovery_main_kb
+for _trade_recovery_user_id in _PLAYER_TRADE_RESTART_RECOVERY.get('participant_user_ids', []):
+    try:
+        bot.send_message(
+            int(_trade_recovery_user_id),
+            "⚠️ Попередній обмін скасовано через перезапуск бота.\n\n"
+            "Предмети та резервування повернено.",
+            reply_markup=_player_trade_recovery_main_kb(),
+        )
+    except Exception as _trade_recovery_notify_error:
+        print(
+            f"⚠️ PLAYER TRADE RESTART NOTICE FAILED: "
+            f"user={_trade_recovery_user_id}, error={_trade_recovery_notify_error}"
+        )
 start_notification_worker(bot)
 
 
@@ -50877,8 +50338,8 @@ def apply_hp_regen(conn, user_id):
 
 ============================================================
 FILE: systems\player_interaction_system.py
-SIZE: 91658 bytes
-LAST WRITE: 2026-08-03 15:23:50
+SIZE: 94247 bytes
+LAST WRITE: 2026-08-03 17:28:12
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -51854,6 +51315,72 @@ def create_player_trade_from_accepted_request(request_id, *, now=None, db_path=N
     finally:
         conn.close()
 
+
+# ROM 12.6.5 PLAYER TRADE LOCK CONSOLIDATION AND STARTUP RECOVERY
+
+def recover_active_player_trades_after_restart(*, now=None, db_path=None):
+    """Cancel every unfinished direct trade during process startup.
+
+    In-memory Telegram UI/input state cannot safely survive a process restart.
+    This transaction cancels active trades, releases activity sessions and item
+    reservations, and records normal trade event/history entries.
+    """
+    stamp = _text(now)
+    conn = _connect(db_path)
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        _init_player_trade_schema(conn)
+        rows = conn.execute(
+            "SELECT * FROM player_trades "
+            "WHERE status IN ('editing','confirming','committing') "
+            "ORDER BY id"
+        ).fetchall()
+        participants = set()
+        trade_ids = []
+        for row in rows:
+            trade = dict(row)
+            trade_id = int(trade["id"])
+            participants.add(int(trade["initiator_user_id"]))
+            participants.add(int(trade["recipient_user_id"]))
+            trade_ids.append(trade_id)
+            conn.execute(
+                "UPDATE player_trades SET status='cancelled',updated_at=?,"
+                "cancelled_at=?,cancel_reason='server_restart' "
+                "WHERE id=? AND status IN ('editing','confirming','committing')",
+                (stamp, stamp, trade_id),
+            )
+            conn.execute(
+                "DELETE FROM player_activity_sessions "
+                "WHERE activity_type='trade' AND reference_id=?",
+                (trade_id,),
+            )
+            if _table_exists(conn, "inventory_reservations"):
+                conn.execute(
+                    "DELETE FROM inventory_reservations "
+                    "WHERE reservation_type='player_trade' AND reference_id=?",
+                    (trade_id,),
+                )
+            _trade_event(
+                conn, trade_id, None, "cancelled",
+                int(trade.get("revision") or 1), stamp,
+                '{"reason":"server_restart"}',
+            )
+            _write_trade_history(
+                conn, trade, "cancelled", stamp, "server_restart"
+            )
+        conn.commit()
+        return {
+            "success": True,
+            "cancelled_trades": len(trade_ids),
+            "trade_ids": trade_ids,
+            "participant_user_ids": sorted(participants),
+            "reason": "server_restart",
+        }
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 def get_player_trade(trade_id, *, db_path=None):
     conn = _connect(db_path)
@@ -95889,6 +95416,80 @@ def main():
     print('- preview callback routing contracts: OK')
     print('- isolated DB; real user mutations: 0')
 if __name__=='__main__': main()
+
+
+============================================================
+FILE: tools\smoke_test_player_trade_lock_consolidation_and_startup_recovery.py
+SIZE: 6134 bytes
+LAST WRITE: 2026-08-03 17:28:12
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from __future__ import annotations
+import ast, sqlite3, sys, tempfile
+from contextlib import closing
+from datetime import timedelta
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path: sys.path.insert(0,str(ROOT))
+def fail(x): print(f"[FAIL] {x}"); raise SystemExit(1)
+def main():
+    hp=ROOT/"handlers/player_interaction.py"; sp=ROOT/"systems/player_interaction_system.py"; mp=ROOT/"main.py"
+    hs=hp.read_text(encoding="utf-8-sig"); ss=sp.read_text(encoding="utf-8-sig"); ms=mp.read_text(encoding="utf-8-sig")
+    ht=ast.parse(hs,filename=str(hp)); ast.parse(ss,filename=str(sp)); ast.parse(ms,filename=str(mp))
+    locks=[n for n in ht.body if isinstance(n,ast.FunctionDef) and n.name=="install_player_trade_navigation_lock_12_6_4"]
+    if len(locks)!=1: fail(f"expected one canonical lock installer, found {len(locks)}")
+    obsolete=[n.name for n in ht.body if isinstance(n,ast.FunctionDef) and (n.name.startswith("_trade_reopen_directly_") or n.name.startswith("_trade_status_button_stub_") or n.name.startswith("_trade_update_is_duplicate_") or n.name.startswith("_trade_reopen_allowed_"))]
+    if obsolete: fail(f"obsolete lock helpers remain: {obsolete}")
+    reopen_handlers=[n for n in ast.walk(ht) if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.name=="reopen_active_trade"]
+    if reopen_handlers: fail("obsolete reopen_active_trade handler remains registered")
+    lock_src=ast.get_source_segment(hs,locks[0]) or ""
+    branches=[n for n in ast.walk(locks[0]) if isinstance(n,ast.If) and "PLAYER_TRADE_ACTIVE_REPLY_BUTTON_12_6_4" in (ast.get_source_segment(hs,n.test) or "")]
+    if len(branches)!=1: fail("canonical no-op button branch missing")
+    body=ast.Module(body=branches[0].body,type_ignores=[])
+    if any(isinstance(n,ast.Call) for n in ast.walk(body)): fail("status no-op branch contains calls")
+    if "_trade_lock_allowed_callback_12_6_4" not in lock_src: fail("callback whitelist missing")
+    if "_trade_is_amount_input_active_12_6_4(user_id)" not in lock_src: fail("amount-input pass-through missing")
+    amount_handlers=[n for n in ast.walk(ht) if isinstance(n,ast.FunctionDef) and n.name=="amount_message"]
+    if not amount_handlers: fail("amount_message handler missing")
+    amount_src=ast.get_source_segment(hs,amount_handlers[-1]) or ""
+    if "Скасувати введення" not in amount_src: fail("amount-input cancel branch missing")
+    if "player_trade_active_reply_kb_12_6_4" not in amount_src: fail("amount cancel does not restore trade keyboard")
+    if "_send_trade_editor" not in amount_src: fail("amount cancel does not restore trade editor")
+    for contract in ("recover_active_player_trades_after_restart","server_restart","_PLAYER_TRADE_RESTART_RECOVERY","participant_user_ids","_player_trade_recovery_main_kb"):
+        if contract not in ss+ms: fail("missing startup contract: "+contract)
+    from systems import player_interaction_system as m
+    with tempfile.TemporaryDirectory(prefix="rom_trade_restart_12_6_5_",ignore_cleanup_errors=True) as td:
+        db=Path(td)/"test.db"; now=m._now(); stamp=m._text(now); expires=m._text(now+timedelta(minutes=20))
+        with closing(sqlite3.connect(db)) as c:
+            c.executescript("""
+            PRAGMA foreign_keys=ON;
+            CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT,current_location TEXT,gold REAL,last_activity_at TEXT);
+            CREATE TABLE inventory(id INTEGER PRIMARY KEY,user_id INTEGER,item_id INTEGER,quantity INTEGER);
+            CREATE TABLE player_interaction_requests(id INTEGER PRIMARY KEY,request_type TEXT,initiator_user_id INTEGER,recipient_user_id INTEGER,location_snapshot TEXT,status TEXT,revision INTEGER,created_at TEXT,updated_at TEXT,expires_at TEXT,responded_at TEXT);
+            CREATE TABLE player_activity_sessions(id INTEGER PRIMARY KEY,user_id INTEGER UNIQUE,activity_type TEXT,reference_id INTEGER,status TEXT,created_at TEXT,updated_at TEXT,expires_at TEXT);
+            INSERT INTO users VALUES(1,'A','start_path',0,'x'),(2,'B','start_path',0,'x');
+            """); c.commit()
+        m.init_player_interaction_foundation(db_path=db); m.init_player_trade_foundation(db_path=db); m.init_player_trade_item_policy_and_reservations(db_path=db)
+        with closing(sqlite3.connect(db)) as c:
+            c.execute("INSERT INTO player_trades(initiator_user_id,recipient_user_id,location_snapshot,status,revision,created_at,updated_at,expires_at) VALUES(1,2,'start_path','editing',3,?,?,?)",(stamp,stamp,expires)); tid=c.execute("SELECT last_insert_rowid()").fetchone()[0]
+            c.executemany("INSERT INTO player_activity_sessions(user_id,activity_type,reference_id,status,created_at,updated_at,expires_at) VALUES(?,'trade',?,'editing',?,?,?)",((1,tid,stamp,stamp,expires),(2,tid,stamp,stamp,expires))); c.commit()
+        result=m.recover_active_player_trades_after_restart(now=now,db_path=db)
+        if result.get("cancelled_trades")!=1 or result.get("participant_user_ids")!=[1,2]: fail(result)
+        with closing(sqlite3.connect(db)) as c:
+            status=c.execute("SELECT status,cancel_reason FROM player_trades WHERE id=?",(tid,)).fetchone(); sessions=c.execute("SELECT COUNT(*) FROM player_activity_sessions WHERE reference_id=?",(tid,)).fetchone()[0]
+        if status!=("cancelled","server_restart") or sessions!=0: fail((status,sessions))
+    print("[OK] Player trade lock consolidation and startup recovery contracts")
+    print("- exactly one canonical navigation lock: OK")
+    print("- obsolete reopen/status/dedupe helpers removed: OK")
+    print("- obsolete persistent-button message handler removed: OK")
+    print("- status button is a strict no-op: OK")
+    print("- amount-input cancel recovery remains covered: OK")
+    print("- restart cancels active trades and releases sessions: OK")
+    print("- startup restores normal keyboards for both participants: OK")
+    print("- isolated DB; real user mutations: 0")
+if __name__=="__main__": main()
 
 
 ============================================================

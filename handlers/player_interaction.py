@@ -1556,22 +1556,26 @@ def _trade_extract_update_actor_12_6_4(update):
 
 
 # ROM 12.6.5 PLAYER TRADE LOCK CONSOLIDATION AND STARTUP RECOVERY
+# ROM 12.6.5a PLAYER TRADE EMPTY BATCH DISPATCH FIX
 
-def install_player_trade_navigation_lock_12_6_4(bot):
-    """Install exactly one canonical active-trade navigation lock.
+# ROM 12.6.6 PLAYER TRADE HANDLER LEVEL NAVIGATION GUARD
 
-    The persistent `🤝 Триває обмін` ReplyKeyboard button is a strict no-op.
-    Trade inline callbacks and manual amount input pass through. Other gameplay
-    messages/callbacks are blocked with bounded feedback.
+def _install_player_trade_handler_level_navigation_guard_12_6_6(bot):
+    """Install first-priority TeleBot handlers instead of wrapping dispatcher.
+
+    The persistent trade status button is consumed by a normal no-op message
+    handler. Active-trade message/callback guards return ContinueHandling for
+    permitted updates, preserving TeleBot's ordinary dispatch lifecycle.
     """
-    if getattr(bot, "_rom_trade_navigation_lock_12_6_5", False):
+    if getattr(bot, "_rom_trade_handler_level_guard_12_6_6", False):
         return {"success": True, "installed": False}
 
-    original = bot.process_new_updates
+    from telebot.handler_backends import ContinueHandling
+    import time
+
     notice_at = {}
 
     def notice_allowed(user_id):
-        import time
         uid = int(user_id)
         now = time.monotonic()
         previous = float(notice_at.get(uid, -10**9))
@@ -1580,66 +1584,77 @@ def install_player_trade_navigation_lock_12_6_4(bot):
         notice_at[uid] = now
         return True
 
-    def wrapped(updates):
-        allowed = []
-        notice_sent = set()
-
-        for update in updates:
-            user_id, message, callback = _trade_extract_update_actor_12_6_4(update)
-            trade = get_active_player_trade(user_id) if user_id else None
-            if not trade:
-                allowed.append(update)
-                continue
-
-            if message is not None:
-                text = str(getattr(message, "text", "") or "")
-
-                # Strict no-op. Do not call Telegram API, refresh the editor,
-                # mutate state, or touch a cooldown for this status button.
-                if text == PLAYER_TRADE_ACTIVE_REPLY_BUTTON_12_6_4:
-                    continue
-
-                if _trade_is_amount_input_active_12_6_4(user_id):
-                    allowed.append(update)
-                    continue
-
-                if user_id not in notice_sent and notice_allowed(user_id):
-                    notice_sent.add(user_id)
-                    bot.send_message(
-                        message.chat.id,
-                        "🤝 Зараз триває обмін.\n\n"
-                        "Завершіть або скасуйте поточний обмін, перш ніж "
-                        "виконувати інші дії.",
-                        reply_markup=player_trade_active_reply_kb_12_6_4(),
-                    )
-                continue
-
-            if callback is not None:
-                if _trade_lock_allowed_callback_12_6_4(
-                    getattr(callback, "data", "")
-                ):
-                    allowed.append(update)
-                elif user_id not in notice_sent and notice_allowed(user_id):
-                    notice_sent.add(user_id)
-                    try:
-                        bot.answer_callback_query(
-                            callback.id,
-                            "Завершіть або скасуйте поточний обмін.",
-                            show_alert=True,
-                        )
-                    except Exception:
-                        pass
-                continue
-
-            allowed.append(update)
-
-        if allowed:
-            return original(allowed)
+    def trade_status_noop(message):
+        # Normal TeleBot handling completes this update. No API/state action.
         return None
 
-    bot.process_new_updates = wrapped
-    bot._rom_trade_navigation_lock_12_6_4 = True
-    bot._rom_trade_navigation_lock_12_6_5 = True
+    def active_trade_message_guard(message):
+        user_id = int(message.from_user.id)
+        if not get_active_player_trade(user_id):
+            return ContinueHandling()
+        if _trade_is_amount_input_active_12_6_4(user_id):
+            return ContinueHandling()
+        if notice_allowed(user_id):
+            bot.send_message(
+                message.chat.id,
+                "🤝 Зараз триває обмін.\n\n"
+                "Завершіть або скасуйте поточний обмін, перш ніж "
+                "виконувати інші дії.",
+                reply_markup=player_trade_active_reply_kb_12_6_4(),
+            )
+        return None
+
+    def active_trade_callback_guard(call):
+        user_id = int(call.from_user.id)
+        if not get_active_player_trade(user_id):
+            return ContinueHandling()
+        if _trade_lock_allowed_callback_12_6_4(getattr(call, "data", "")):
+            return ContinueHandling()
+        if notice_allowed(user_id):
+            try:
+                bot.answer_callback_query(
+                    call.id,
+                    "Завершіть або скасуйте поточний обмін.",
+                    show_alert=True,
+                )
+            except Exception:
+                pass
+        return None
+
+    message_before = len(bot.message_handlers)
+    bot.register_message_handler(
+        active_trade_message_guard,
+        func=lambda message: True,
+    )
+    bot.register_message_handler(
+        trade_status_noop,
+        func=lambda message: (
+            getattr(message, "text", None)
+            == PLAYER_TRADE_ACTIVE_REPLY_BUTTON_12_6_4
+        ),
+    )
+    new_message_handlers = bot.message_handlers[message_before:]
+    del bot.message_handlers[message_before:]
+    if len(new_message_handlers) != 2:
+        raise RuntimeError("Could not install trade message guards")
+    # Exact status handler first, broad active-trade guard second.
+    bot.message_handlers[0:0] = [
+        new_message_handlers[1],
+        new_message_handlers[0],
+    ]
+
+    callback_before = len(bot.callback_query_handlers)
+    bot.register_callback_query_handler(
+        active_trade_callback_guard,
+        func=lambda call: True,
+    )
+    new_callback_handlers = bot.callback_query_handlers[callback_before:]
+    del bot.callback_query_handlers[callback_before:]
+    if len(new_callback_handlers) != 1:
+        raise RuntimeError("Could not install trade callback guard")
+    bot.callback_query_handlers.insert(0, new_callback_handlers[0])
+
+    bot._rom_trade_handler_level_guard_12_6_6 = True
     return {"success": True, "installed": True}
 
 
@@ -1773,7 +1788,7 @@ _trade_navigation_base_register_12_6_4 = register_player_interaction_handlers
 def register_player_interaction_handlers(bot):
     _register_trade_navigation_and_categories_12_6_4(bot)
     result = _trade_navigation_base_register_12_6_4(bot)
-    install_player_trade_navigation_lock_12_6_4(bot)
+    _install_player_trade_handler_level_navigation_guard_12_6_6(bot)
     return result
 
 # ROM 12.6.4a PLAYER TRADE IMMEDIATE KEYBOARD AND LOCK SPAM HOTFIX
