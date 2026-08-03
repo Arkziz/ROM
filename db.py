@@ -7947,3 +7947,113 @@ def expire_stale_player_trades(*args, **kwargs):
     from systems.player_interaction_system import expire_stale_player_trades as _impl
     return _impl(*args, **kwargs)
 
+# ROM 12.5.0 PLAYER TRADE ITEM POLICY AND RESERVATIONS
+def init_player_trade_item_policy_and_reservations(*args, **kwargs):
+    from systems.player_interaction_system import init_player_trade_item_policy_and_reservations as _impl
+    return _impl(*args, **kwargs)
+def get_item_trade_policy(*args, **kwargs):
+    from systems.player_interaction_system import get_item_trade_policy as _impl
+    return _impl(*args, **kwargs)
+def build_trade_item_snapshot(*args, **kwargs):
+    from systems.player_interaction_system import build_trade_item_snapshot as _impl
+    return _impl(*args, **kwargs)
+def get_inventory_reserved_quantity(*args, **kwargs):
+    from systems.player_interaction_system import get_inventory_reserved_quantity as _impl
+    return _impl(*args, **kwargs)
+def get_inventory_available_quantity(*args, **kwargs):
+    from systems.player_interaction_system import get_inventory_available_quantity as _impl
+    return _impl(*args, **kwargs)
+def reserve_inventory_for_trade(*args, **kwargs):
+    from systems.player_interaction_system import reserve_inventory_for_trade as _impl
+    return _impl(*args, **kwargs)
+def release_trade_inventory_reservations(*args, **kwargs):
+    from systems.player_interaction_system import release_trade_inventory_reservations as _impl
+    return _impl(*args, **kwargs)
+def assert_inventory_not_reserved(*args, **kwargs):
+    from systems.player_interaction_system import assert_inventory_not_reserved as _impl
+    return _impl(*args, **kwargs)
+def recover_orphan_inventory_reservations(*args, **kwargs):
+    from systems.player_interaction_system import recover_orphan_inventory_reservations as _impl
+    return _impl(*args, **kwargs)
+
+# ROM 12.6.0 PLAYER TRADE OFFER EDITOR FACADE
+
+def get_player_trade_offers(*args, **kwargs):
+    from systems.player_interaction_system import get_player_trade_offers as _impl
+    return _impl(*args, **kwargs)
+
+
+def get_player_trade_editor_state(*args, **kwargs):
+    from systems.player_interaction_system import get_player_trade_editor_state as _impl
+    return _impl(*args, **kwargs)
+
+
+def get_tradeable_inventory_for_trade(*args, **kwargs):
+    from systems.player_interaction_system import get_tradeable_inventory_for_trade as _impl
+    return _impl(*args, **kwargs)
+
+
+def set_player_trade_item_offer(*args, **kwargs):
+    from systems.player_interaction_system import set_player_trade_item_offer as _impl
+    return _impl(*args, **kwargs)
+
+
+def remove_player_trade_item_offer(*args, **kwargs):
+    from systems.player_interaction_system import remove_player_trade_item_offer as _impl
+    return _impl(*args, **kwargs)
+
+
+def set_player_trade_gold_offer(*args, **kwargs):
+    from systems.player_interaction_system import set_player_trade_gold_offer as _impl
+    return _impl(*args, **kwargs)
+
+# ROM 12.6.1 PLAYER TRADE OFFER EDITOR UX FACADE
+
+def get_trade_offer_entry(*args, **kwargs):
+    from systems.player_interaction_system import get_trade_offer_entry as _impl
+    return _impl(*args, **kwargs)
+
+
+def add_all_available_to_trade_offer(*args, **kwargs):
+    from systems.player_interaction_system import add_all_available_to_trade_offer as _impl
+    return _impl(*args, **kwargs)
+
+# ROM 12.6.2 PLAYER TRADE ITEM PREVIEW AND WALLET UX FACADE
+
+def get_player_trade_wallet_state(*args, **kwargs):
+    from systems.player_interaction_system import get_player_trade_wallet_state as _impl
+    return _impl(*args, **kwargs)
+
+
+def get_trade_item_preview(*args, **kwargs):
+    from systems.player_interaction_system import get_trade_item_preview as _impl
+    return _impl(*args, **kwargs)
+
+# ROM 12.6.3 PLAYER TRADE PREVIEW DETAILS AND AMOUNT INPUT FACADE
+
+def parse_trade_item_quantity_input(*args,**kwargs):
+    from systems.player_interaction_system import parse_trade_item_quantity_input as f
+    return f(*args,**kwargs)
+def parse_trade_gold_amount_input(*args,**kwargs):
+    from systems.player_interaction_system import parse_trade_gold_amount_input as f
+    return f(*args,**kwargs)
+
+# ROM 12.6.3c AUCTION RUNE CATEGORY AND TRANSFER POLICY ALIGNMENT FACADE
+AUCTION_CATEGORY_RUNE = "rune"
+
+# ROM 12.6.4 PLAYER TRADE NAVIGATION LOCK AND ITEM CATEGORIES FACADE
+
+def get_tradeable_inventory_for_trade_category(*args, **kwargs):
+    from systems.player_interaction_system import get_tradeable_inventory_for_trade_category as _impl
+    return _impl(*args, **kwargs)
+
+
+def get_player_trade_category_counts(*args, **kwargs):
+    from systems.player_interaction_system import get_player_trade_category_counts as _impl
+    return _impl(*args, **kwargs)
+
+# ROM 12.6.5 PLAYER TRADE LOCK CONSOLIDATION AND STARTUP RECOVERY FACADE
+
+def recover_active_player_trades_after_restart(*args, **kwargs):
+    from systems.player_interaction_system import recover_active_player_trades_after_restart as _impl
+    return _impl(*args, **kwargs)

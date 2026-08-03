@@ -103,13 +103,18 @@ bot = telebot.TeleBot(TOKEN, threaded=False)
 # ==============================
 
 # ROM 12.1.0 PLAYER PRESENCE AND ACTIVITY SESSIONS
-from systems.player_interaction_system import init_player_interaction_foundation, install_player_presence_tracking, cleanup_player_interaction_state, init_player_trade_foundation
+from systems.player_interaction_system import init_player_interaction_foundation, install_player_presence_tracking, cleanup_player_interaction_state, init_player_trade_foundation, init_player_trade_item_policy_and_reservations, recover_active_player_trades_after_restart
 init_db()
 print('✅ PLAYER INTERACTION FOUNDATION:', init_player_interaction_foundation())
 # ROM 12.3.2 INTERACTION SESSION TIMEOUT AND RECOVERY
 print('✅ PLAYER INTERACTION RECOVERY:', cleanup_player_interaction_state())
 # ROM 12.4.0 PLAYER TRADE DATABASE AND HISTORY FOUNDATION
 print('✅ PLAYER TRADE FOUNDATION:', init_player_trade_foundation())
+# ROM 12.5.0 PLAYER TRADE ITEM POLICY AND RESERVATIONS
+print('✅ PLAYER TRADE ITEM POLICY:', init_player_trade_item_policy_and_reservations())
+# ROM 12.6.5: process restarts invalidate all unfinished trade UI/input state.
+_PLAYER_TRADE_RESTART_RECOVERY = recover_active_player_trades_after_restart()
+print('✅ PLAYER TRADE RESTART RECOVERY:', _PLAYER_TRADE_RESTART_RECOVERY)
 
 # ==============================
 # ✅ REFACTOR 9.0.11: RUN MIGRATIONS ON STARTUP
@@ -177,6 +182,22 @@ print('✅ PLAYER PRESENCE TRACKER:', install_player_presence_tracking(bot))
 # ROM 12.2.0 MAP LOCATION PLAYER DISCOVERY
 from handlers.player_interaction import register_player_interaction_handlers
 register_player_interaction_handlers(bot)
+# ROM 12.6.5: replace the stale Telegram ReplyKeyboard for every participant
+# whose unfinished trade was cancelled during startup recovery.
+from keyboards import main_kb as _player_trade_recovery_main_kb
+for _trade_recovery_user_id in _PLAYER_TRADE_RESTART_RECOVERY.get('participant_user_ids', []):
+    try:
+        bot.send_message(
+            int(_trade_recovery_user_id),
+            "⚠️ Попередній обмін скасовано через перезапуск бота.\n\n"
+            "Предмети та резервування повернено.",
+            reply_markup=_player_trade_recovery_main_kb(),
+        )
+    except Exception as _trade_recovery_notify_error:
+        print(
+            f"⚠️ PLAYER TRADE RESTART NOTICE FAILED: "
+            f"user={_trade_recovery_user_id}, error={_trade_recovery_notify_error}"
+        )
 start_notification_worker(bot)
 
 

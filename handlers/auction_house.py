@@ -5225,3 +5225,58 @@ def register_auction_house_handlers(bot):
     if _auction_base_register_handlers_before_admin_guard_v1:
         _auction_base_register_handlers_before_admin_guard_v1(bot)
 
+# ROM 12.6.3c AUCTION RUNE CATEGORY AND TRANSFER POLICY ALIGNMENT
+AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C = "💠 Руни"
+AUCTION_SELL_INLINE_CATEGORY_BUTTONS[AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C] = "rune"
+AUCTION_SELL_CATEGORY_BUTTONS_V2["rune"] = AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C
+AUCTION_SELL_CATEGORY_BY_BUTTON_V2[AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C] = "rune"
+AUCTION_BUY_CATEGORY_BUTTONS_V1["rune"] = AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C
+AUCTION_BUY_CATEGORY_BY_BUTTON_V1[AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C] = "rune"
+
+
+def auction_sell_inline_category_kb_v1():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.row(AUCTION_EQUIPMENT_CATEGORY_BUTTON, globals().get("AUCTION_STACK_CATEGORY_POTION_BUTTON", "🧪 Зілля для продажу"))
+    kb.row(globals().get("AUCTION_STACK_CATEGORY_MATERIAL_BUTTON", "🪨 Матеріали"), AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C)
+    kb.row(AUCTION_BACK_TO_MENU_BUTTON)
+    return kb
+
+
+def auction_sell_category_kb_v2_safe():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V2["equipment"], AUCTION_SELL_CATEGORY_BUTTONS_V2["potion"])
+    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V2["material"], AUCTION_SELL_CATEGORY_BUTTONS_V2["rune"])
+    kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V2)
+    return kb
+
+
+def build_auction_sell_start_text_inline_v1():
+    return (
+        "➕ Виставити товар\n\nОберіть категорію товару.\n\n"
+        "Предмети показуються inline-кнопками по 8 на сторінку.\n\n"
+        "Доступні категорії:\n• ⚔️ Спорядження\n• 🧪 Зілля\n• 🪨 Матеріали\n• 💠 Руни\n\n"
+        "Не можна виставляти Сферу нового шляху, Руну Успіху, Жетони Фіріуса, "
+        "Досконалий Екстрактор, екіпіровані, зламані, bound/quest/DEV/premium та "
+        "зарезервовані прямим обміном предмети."
+    )
+
+
+_auction_base_build_sell_list_text_12_6_3c = build_auction_sell_inline_list_text_v1
+
+def build_auction_sell_inline_list_text_v1(user_id, category, page=0):
+    if category == "rune":
+        kb, items, has_next = auction_sell_items_inline_kb_v1(user_id, category, page=page)
+        text = f"💠 Виставлення рун\n\nСторінка: {int(page)+1}\n\n"
+        text += "Оберіть предмет inline-кнопкою нижче." if items else "Немає доступних рун для продажу."
+        return text, kb
+    return _auction_base_build_sell_list_text_12_6_3c(user_id, category, page=page)
+
+
+def auction_buy_category_kb_v1():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["all"])
+    kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["equipment"], AUCTION_BUY_CATEGORY_BUTTONS_V1["potion"])
+    kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["material"], AUCTION_BUY_CATEGORY_BUTTONS_V1["rune"])
+    kb.row(AUCTION_BACK_TO_MENU_BUTTON)
+    return kb
+

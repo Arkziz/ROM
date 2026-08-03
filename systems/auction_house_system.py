@@ -5207,3 +5207,148 @@ def _auction_inventory_style_weapon_type_line(snapshot):
 
     return f"✋ Тип зброї: {weapon_type_label}"
 
+# ROM 12.6.3c AUCTION RUNE CATEGORY AND TRANSFER POLICY ALIGNMENT
+AUCTION_CATEGORY_RUNE = "rune"
+AUCTION_ALLOWED_CATEGORIES.add(AUCTION_CATEGORY_RUNE)
+AUCTION_PROTECTED_TRANSFER_ITEM_IDS = frozenset((301, 402, 526, 528))
+AUCTION_ALLOWED_SPECIAL_TRANSFER_ITEM_IDS = frozenset((401, 527))
+AUCTION_FORBIDDEN_AUCTION_ITEM_IDS = set(AUCTION_FORBIDDEN_AUCTION_ITEM_IDS) | set(AUCTION_PROTECTED_TRANSFER_ITEM_IDS)
+
+_auction_base_normalize_category_12_6_3c = normalize_auction_category
+
+def normalize_auction_category(category):
+    raw = str(category or "").strip().lower()
+    if raw in ("💠 руни", "руни", "руна", "rune", "runes"):
+        return AUCTION_CATEGORY_RUNE
+    return _auction_base_normalize_category_12_6_3c(category)
+
+
+def _auction_item_id_12_6_3c(snapshot):
+    try:
+        return int((snapshot or {}).get("item_id") or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _auction_is_rune_snapshot_12_6_3c(snapshot):
+    snapshot = snapshot or {}
+    item_id = _auction_item_id_12_6_3c(snapshot)
+    item_type = str(snapshot.get("item_type") or "").strip().lower()
+    item_category = str(snapshot.get("item_category") or "").strip().lower()
+    return (501 <= item_id <= 525) or item_type in ("rune", "stat_rune") or item_category in ("rune", "runes")
+
+
+def _auction_is_protected_transfer_snapshot_12_6_3c(snapshot):
+    return _auction_item_id_12_6_3c(snapshot) in AUCTION_PROTECTED_TRANSFER_ITEM_IDS
+
+
+def _auction_stack_category_matches(snapshot, category):
+    category = normalize_auction_category(category)
+    if category == AUCTION_CATEGORY_RUNE:
+        return _auction_is_rune_snapshot_12_6_3c(snapshot)
+    if _auction_is_rune_snapshot_12_6_3c(snapshot):
+        return False
+    if category == AUCTION_CATEGORY_POTION:
+        return _auction_is_potion_snapshot(snapshot)
+    if category == AUCTION_CATEGORY_MATERIAL:
+        return _auction_is_material_snapshot(snapshot)
+    return False
+
+
+def _auction_trade_reserved_quantity_12_6_3c(inventory_id):
+    try:
+        exists = cursor.execute(
+            "SELECT 1 FROM sqlite_master WHERE type='table' AND name='inventory_reservations'"
+        ).fetchone()
+        if not exists:
+            return 0
+        row = cursor.execute(
+            "SELECT COALESCE(SUM(quantity),0) FROM inventory_reservations "
+            "WHERE inventory_id=? AND reservation_type='player_trade'",
+            (int(inventory_id),),
+        ).fetchone()
+        return int(row[0] or 0)
+    except Exception:
+        return 0
+
+
+def validate_inventory_stack_item_for_auction(user_id, inventory_id, category, quantity):
+    try:
+        category = normalize_auction_category(category)
+    except ValueError as exc:
+        return {"success": False, "message": f"❌ {exc}"}
+    if category not in (AUCTION_CATEGORY_POTION, AUCTION_CATEGORY_MATERIAL, AUCTION_CATEGORY_RUNE):
+        return {"success": False, "message": "❌ Некоректна категорія стекового предмета."}
+    snapshot_result = get_inventory_item_snapshot_for_auction(user_id, inventory_id)
+    if not snapshot_result.get("success"):
+        return snapshot_result
+    snapshot = snapshot_result["snapshot"]
+    item_id = _auction_item_id_12_6_3c(snapshot)
+    if _auction_is_protected_transfer_snapshot_12_6_3c(snapshot):
+        names = {
+            301: "Сферу нового шляху", 402: "Руну Успіху",
+            526: "Жетони Фіріуса", 528: "Досконалий Екстрактор",
+        }
+        return {"success": False, "message": f"❌ {names.get(item_id, 'Цей предмет')} не можна виставити на Торговий Дім."}
+    if not _auction_stack_category_matches(snapshot, category):
+        return {"success": False, "message": "❌ Предмет не належить до обраної категорії."}
+    try:
+        quantity = int(quantity)
+    except (TypeError, ValueError):
+        return {"success": False, "message": "❌ Кількість має бути числом."}
+    owned = int(snapshot.get("quantity") or 0)
+    reserved = _auction_trade_reserved_quantity_12_6_3c(inventory_id)
+    available = max(0, owned - reserved)
+    if quantity <= 0:
+        return {"success": False, "message": "❌ Кількість має бути більшою за 0."}
+    if quantity > available:
+        return {"success": False, "message": f"❌ Для аукціону доступно лише {available} шт.", "available_quantity": available}
+    snapshot["auction_quantity"] = quantity
+    snapshot["owned_quantity"] = owned
+    snapshot["available_quantity"] = available
+    return {"success": True, "snapshot": snapshot}
+
+
+def get_user_sellable_stack_items_for_auction(user_id, category, limit=50, offset=0):
+    init_auction_house()
+    try:
+        category = normalize_auction_category(category)
+    except ValueError:
+        return []
+    limit = max(1, int(limit or 50)); offset = max(0, int(offset or 0))
+    cursor.execute(
+        "SELECT inv.id AS inventory_id FROM inventory inv "
+        "JOIN items it ON inv.item_id=it.id WHERE inv.user_id=? ORDER BY inv.id DESC LIMIT 300",
+        (int(user_id),),
+    )
+    result = []
+    for row in cursor.fetchall():
+        inventory_id = int(row["inventory_id"] if hasattr(row, "keys") else row[0])
+        snapshot_result = get_inventory_item_snapshot_for_auction(user_id, inventory_id)
+        if not snapshot_result.get("success"):
+            continue
+        snapshot = snapshot_result["snapshot"]
+        if _auction_is_protected_transfer_snapshot_12_6_3c(snapshot):
+            continue
+        if not _auction_stack_category_matches(snapshot, category):
+            continue
+        quantity = max(0, int(snapshot.get("quantity") or 0) - _auction_trade_reserved_quantity_12_6_3c(inventory_id))
+        if quantity <= 0:
+            continue
+        result.append({
+            "inventory_id": inventory_id, "name": snapshot["name"],
+            "quantity": quantity, "item_id": snapshot.get("item_id"),
+            "item_type": snapshot.get("item_type"),
+            "item_category": snapshot.get("item_category"),
+        })
+    return result[offset:offset + limit]
+
+
+_auction_base_buy_normalize_category_12_6_3c = _auction_buy_normalize_category
+
+def _auction_buy_normalize_category(category):
+    raw = str(category or AUCTION_BUY_CATEGORY_ALL).strip().lower()
+    if raw in ("rune", "runes", "руна", "руни", "💠 руни"):
+        return AUCTION_CATEGORY_RUNE
+    return _auction_base_buy_normalize_category_12_6_3c(category)
+

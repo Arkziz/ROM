@@ -972,6 +972,72 @@ def create_player_trade_from_accepted_request(request_id, *, now=None, db_path=N
         conn.close()
 
 
+# ROM 12.6.5 PLAYER TRADE LOCK CONSOLIDATION AND STARTUP RECOVERY
+
+def recover_active_player_trades_after_restart(*, now=None, db_path=None):
+    """Cancel every unfinished direct trade during process startup.
+
+    In-memory Telegram UI/input state cannot safely survive a process restart.
+    This transaction cancels active trades, releases activity sessions and item
+    reservations, and records normal trade event/history entries.
+    """
+    stamp = _text(now)
+    conn = _connect(db_path)
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        _init_player_trade_schema(conn)
+        rows = conn.execute(
+            "SELECT * FROM player_trades "
+            "WHERE status IN ('editing','confirming','committing') "
+            "ORDER BY id"
+        ).fetchall()
+        participants = set()
+        trade_ids = []
+        for row in rows:
+            trade = dict(row)
+            trade_id = int(trade["id"])
+            participants.add(int(trade["initiator_user_id"]))
+            participants.add(int(trade["recipient_user_id"]))
+            trade_ids.append(trade_id)
+            conn.execute(
+                "UPDATE player_trades SET status='cancelled',updated_at=?,"
+                "cancelled_at=?,cancel_reason='server_restart' "
+                "WHERE id=? AND status IN ('editing','confirming','committing')",
+                (stamp, stamp, trade_id),
+            )
+            conn.execute(
+                "DELETE FROM player_activity_sessions "
+                "WHERE activity_type='trade' AND reference_id=?",
+                (trade_id,),
+            )
+            if _table_exists(conn, "inventory_reservations"):
+                conn.execute(
+                    "DELETE FROM inventory_reservations "
+                    "WHERE reservation_type='player_trade' AND reference_id=?",
+                    (trade_id,),
+                )
+            _trade_event(
+                conn, trade_id, None, "cancelled",
+                int(trade.get("revision") or 1), stamp,
+                '{"reason":"server_restart"}',
+            )
+            _write_trade_history(
+                conn, trade, "cancelled", stamp, "server_restart"
+            )
+        conn.commit()
+        return {
+            "success": True,
+            "cancelled_trades": len(trade_ids),
+            "trade_ids": trade_ids,
+            "participant_user_ids": sorted(participants),
+            "reason": "server_restart",
+        }
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
 def get_player_trade(trade_id, *, db_path=None):
     conn = _connect(db_path)
     try:
@@ -1031,6 +1097,10 @@ def cancel_player_trade(trade_id, actor_user_id, *, reason="user_cancelled", now
             conn.rollback(); return {"success":False,"reason":"trade_not_active","status":trade["status"]}
         conn.execute("UPDATE player_trades SET status='cancelled',updated_at=?,cancelled_at=?,cancel_reason=? WHERE id=?",(stamp,stamp,str(reason),trade_id))
         conn.execute("DELETE FROM player_activity_sessions WHERE activity_type='trade' AND reference_id=?",(trade_id,))
+        # Compatibility: older isolated tests and partially migrated databases
+        # may not have the Stage 12.5 reservation table yet.
+        if _table_exists(conn, "inventory_reservations"):
+            conn.execute("DELETE FROM inventory_reservations WHERE reservation_type='player_trade' AND reference_id=?",(trade_id,))
         _trade_event(conn,trade_id,actor,"cancelled",trade["revision"],stamp,'{}')
         _write_trade_history(conn,trade,"cancelled",stamp,str(reason))
         conn.commit(); return {**trade,"success":True,"status":"cancelled","cancel_reason":str(reason)}
@@ -1048,10 +1118,857 @@ def expire_stale_player_trades(*, now=None, db_path=None):
             trade=dict(row)
             conn.execute("UPDATE player_trades SET status='expired',updated_at=?,cancelled_at=?,cancel_reason='timeout' WHERE id=?",(stamp,stamp,trade["id"]))
             conn.execute("DELETE FROM player_activity_sessions WHERE activity_type='trade' AND reference_id=?",(trade["id"],))
+            # Compatibility: expiration must work before/without the optional
+            # reservation schema in isolated legacy tests.
+            if _table_exists(conn, "inventory_reservations"):
+                conn.execute("DELETE FROM inventory_reservations WHERE reservation_type='player_trade' AND reference_id=?",(trade["id"],))
             _trade_event(conn,trade["id"],None,"expired",trade["revision"],stamp,'{}')
             _write_trade_history(conn,trade,"expired",stamp,"timeout")
         conn.commit(); return len(rows)
     except Exception:
         conn.rollback(); raise
     finally: conn.close()
+
+# ROM 12.5.0 PLAYER TRADE ITEM POLICY AND RESERVATIONS
+TRADE_BLOCKED_ITEM_IDS = frozenset((301, 402, 526, 528))
+TRADE_ALLOWED_SPECIAL_ITEM_IDS = frozenset((401, 527))
+TRADE_BLOCKED_CATEGORIES = frozenset(("trash", "gray_loot", "grey_loot", "quest", "dev", "premium_bound"))
+TRADE_RESERVATION_TYPE = "player_trade"
+
+
+def _init_inventory_reservation_schema(conn):
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS inventory_reservations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            inventory_id INTEGER NOT NULL,
+            user_id INTEGER NOT NULL,
+            quantity INTEGER NOT NULL CHECK(quantity > 0),
+            reservation_type TEXT NOT NULL,
+            reference_id INTEGER NOT NULL,
+            created_at TEXT NOT NULL,
+            expires_at TEXT NOT NULL,
+            FOREIGN KEY(inventory_id) REFERENCES inventory(id) ON DELETE CASCADE,
+            FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+            UNIQUE(inventory_id, reservation_type, reference_id)
+        );
+        CREATE INDEX IF NOT EXISTS idx_inventory_reservations_inventory
+            ON inventory_reservations(inventory_id);
+        CREATE INDEX IF NOT EXISTS idx_inventory_reservations_user
+            ON inventory_reservations(user_id);
+        CREATE INDEX IF NOT EXISTS idx_inventory_reservations_reference
+            ON inventory_reservations(reference_id, reservation_type);
+        CREATE INDEX IF NOT EXISTS idx_inventory_reservations_expiry
+            ON inventory_reservations(expires_at);
+    """)
+
+
+def init_player_trade_item_policy_and_reservations(db_path=None):
+    conn = _connect(db_path)
+    try:
+        _init_inventory_reservation_schema(conn)
+        conn.commit()
+    finally:
+        conn.close()
+    recovery = recover_orphan_inventory_reservations(db_path=db_path)
+    return {
+        "success": True,
+        "table": "inventory_reservations",
+        "blocked_item_ids": sorted(TRADE_BLOCKED_ITEM_IDS),
+        "allowed_special_item_ids": sorted(TRADE_ALLOWED_SPECIAL_ITEM_IDS),
+        "recovery": recovery,
+    }
+
+
+def _inventory_columns(conn):
+    return {row[1] for row in conn.execute("PRAGMA table_info(inventory)").fetchall()}
+
+
+def _items_columns(conn):
+    return {row[1] for row in conn.execute("PRAGMA table_info(items)").fetchall()}
+
+
+def _first_existing(columns, candidates):
+    for candidate in candidates:
+        if candidate in columns:
+            return candidate
+    return None
+
+
+def _active_auction_reserved_quantity(conn, inventory_id):
+    if not _table_exists(conn, "auction_lots"):
+        return 0
+    columns = {row[1] for row in conn.execute("PRAGMA table_info(auction_lots)").fetchall()}
+    if "item_ref_id" not in columns or "status" not in columns:
+        return 0
+    quantity_expr = "quantity" if "quantity" in columns else "1"
+    source_clause = ""
+    params = [int(inventory_id)]
+    if "item_source" in columns:
+        source_clause = " AND item_source IN ('inventory','generated_equipment','equipment')"
+    row = conn.execute(
+        f"SELECT COALESCE(SUM({quantity_expr}),0) FROM auction_lots "
+        f"WHERE item_ref_id=? AND status='active'{source_clause}",
+        tuple(params),
+    ).fetchone()
+    return int(row[0] or 0)
+
+
+def _inventory_is_equipped(conn, user_id, inventory_id):
+    if not _table_exists(conn, "equipment_slots"):
+        return False
+    row = conn.execute(
+        "SELECT 1 FROM equipment_slots WHERE user_id=? AND inventory_id=? LIMIT 1",
+        (int(user_id), int(inventory_id)),
+    ).fetchone()
+    return row is not None
+
+
+def _trade_policy_result(tradeable, reason, message, **extra):
+    return {"tradeable": bool(tradeable), "reason": str(reason), "message": str(message), **extra}
+
+
+def get_inventory_reserved_quantity(inventory_id, *, exclude_reference_id=None, db_path=None):
+    conn = _connect(db_path)
+    try:
+        _init_inventory_reservation_schema(conn)
+        query = "SELECT COALESCE(SUM(quantity),0) FROM inventory_reservations WHERE inventory_id=?"
+        params = [int(inventory_id)]
+        if exclude_reference_id is not None:
+            query += " AND NOT (reservation_type=? AND reference_id=?)"
+            params.extend((TRADE_RESERVATION_TYPE, int(exclude_reference_id)))
+        return int(conn.execute(query, tuple(params)).fetchone()[0] or 0)
+    finally:
+        conn.close()
+
+
+def get_inventory_available_quantity(user_id, inventory_id, *, exclude_reference_id=None, db_path=None):
+    conn = _connect(db_path)
+    try:
+        inv_columns = _inventory_columns(conn)
+        quantity_col = _first_existing(inv_columns, ("quantity", "qty", "count"))
+        if quantity_col is None:
+            return 0
+        row = conn.execute(
+            f'SELECT "{quantity_col}" FROM inventory WHERE id=? AND user_id=?',
+            (int(inventory_id), int(user_id)),
+        ).fetchone()
+        if not row:
+            return 0
+        reserved = conn.execute(
+            "SELECT COALESCE(SUM(quantity),0) FROM inventory_reservations "
+            "WHERE inventory_id=?" +
+            (" AND NOT (reservation_type=? AND reference_id=?)" if exclude_reference_id is not None else ""),
+            ((int(inventory_id), TRADE_RESERVATION_TYPE, int(exclude_reference_id))
+             if exclude_reference_id is not None else (int(inventory_id),)),
+        ).fetchone()[0]
+        auction = _active_auction_reserved_quantity(conn, inventory_id)
+        return max(0, int(row[0] or 0) - int(reserved or 0) - int(auction or 0))
+    finally:
+        conn.close()
+
+
+def build_trade_item_snapshot(user_id, inventory_id, *, db_path=None):
+    """Build an immutable JSON-ready snapshot, including socketed runes when available."""
+    conn = _connect(db_path)
+    try:
+        inv_columns = _inventory_columns(conn)
+        item_columns = _items_columns(conn)
+        inventory_select = ["inv.id AS inventory_id", "inv.user_id", "inv.item_id"]
+        for column in ("quantity", "durability", "max_durability", "refine_level"):
+            inventory_select.append(f'inv."{column}" AS "{column}"' if column in inv_columns else f'NULL AS "{column}"')
+        item_select = []
+        for output, candidates in (
+            ("item_name", ("name", "item_name")),
+            ("category", ("category", "item_type", "type")),
+            ("rarity", ("rarity",)),
+            ("level", ("level", "required_level")),
+            ("tradeable", ("tradeable",)),
+        ):
+            column = _first_existing(item_columns, candidates)
+            item_select.append(f'i."{column}" AS "{output}"' if column else f'NULL AS "{output}"')
+        row = conn.execute(
+            "SELECT " + ",".join(inventory_select + item_select) +
+            " FROM inventory inv JOIN items i ON i.id=inv.item_id WHERE inv.id=? AND inv.user_id=?",
+            (int(inventory_id), int(user_id)),
+        ).fetchone()
+        if not row:
+            return None
+        snapshot = dict(row)
+        snapshot["runes"] = []
+        if _table_exists(conn, "inventory_runes"):
+            rune_columns = {x[1] for x in conn.execute("PRAGMA table_info(inventory_runes)").fetchall()}
+            inventory_fk = _first_existing(rune_columns, ("inventory_id", "equipment_inventory_id"))
+            rune_id_col = _first_existing(rune_columns, ("rune_item_id", "item_id", "rune_id"))
+            slot_col = _first_existing(rune_columns, ("slot_index", "socket_index", "slot"))
+            if inventory_fk and rune_id_col:
+                slot_expr = f'ir."{slot_col}"' if slot_col else "NULL"
+                rows = conn.execute(
+                    f'SELECT ir."{rune_id_col}" AS rune_item_id,{slot_expr} AS slot_index,'
+                    f'COALESCE(i.name, "") AS rune_name FROM inventory_runes ir '
+                    f'LEFT JOIN items i ON i.id=ir."{rune_id_col}" WHERE ir."{inventory_fk}"=? '
+                    f'ORDER BY slot_index, rune_item_id',
+                    (int(inventory_id),),
+                ).fetchall()
+                snapshot["runes"] = [dict(x) for x in rows]
+        return snapshot
+    finally:
+        conn.close()
+
+
+def get_item_trade_policy(user_id, inventory_id, requested_quantity=1, *, trade_id=None, db_path=None):
+    """Canonical tradeability resolver for stacks and generated equipment."""
+    uid = int(user_id)
+    inv_id = int(inventory_id)
+    try:
+        requested = int(requested_quantity)
+    except (TypeError, ValueError):
+        return _trade_policy_result(False, "invalid_quantity", "Кількість предмета вказана некоректно.")
+    if requested <= 0:
+        return _trade_policy_result(False, "invalid_quantity", "Кількість предмета повинна бути більшою за нуль.")
+
+    conn = _connect(db_path)
+    try:
+        _init_inventory_reservation_schema(conn)
+        inv_columns = _inventory_columns(conn)
+        item_columns = _items_columns(conn)
+        quantity_col = _first_existing(inv_columns, ("quantity", "qty", "count"))
+        durability_col = _first_existing(inv_columns, ("durability", "durability_current"))
+        select = ["inv.id AS inventory_id", "inv.user_id", "inv.item_id"]
+        select.append(f'inv."{quantity_col}" AS quantity' if quantity_col else "1 AS quantity")
+        select.append(f'inv."{durability_col}" AS durability' if durability_col else "NULL AS durability")
+        for output, candidates in (
+            ("category", ("category", "item_type", "type")),
+            ("tradeable", ("tradeable",)),
+            ("bound_type", ("bound_type", "binding", "bind_type")),
+            ("dev_only", ("dev_only", "is_dev")),
+            ("premium_bound", ("premium_bound", "is_premium_bound")),
+        ):
+            column = _first_existing(item_columns, candidates)
+            select.append(f'i."{column}" AS "{output}"' if column else f'NULL AS "{output}"')
+        row = conn.execute(
+            "SELECT " + ",".join(select) + " FROM inventory inv JOIN items i ON i.id=inv.item_id "
+            "WHERE inv.id=? AND inv.user_id=?",
+            (inv_id, uid),
+        ).fetchone()
+        if not row:
+            return _trade_policy_result(False, "not_owned", "Предмет не знайдено у вашому інвентарі.")
+        item = dict(row)
+        item_id = int(item["item_id"])
+        category = str(item.get("category") or "").strip().lower()
+        bound_type = str(item.get("bound_type") or "").strip().lower()
+
+        if item_id in TRADE_BLOCKED_ITEM_IDS:
+            messages = {
+                301: "Сферу нового шляху не можна передавати.",
+                402: "Руну Успіху не можна передавати.",
+                526: "Жетони Фіріуса не можна передавати.",
+                528: "Досконалий Екстрактор не можна передавати.",
+            }
+            return _trade_policy_result(False, "protected_item", messages[item_id], item_id=item_id)
+        if category in TRADE_BLOCKED_CATEGORIES or "trash" in category:
+            return _trade_policy_result(False, "gray_loot", "Сірий лут не можна передавати.", item_id=item_id)
+        # Specific binding policies must win over the generic tradeable=False
+        # fallback so callers receive the correct machine reason and message.
+        if bound_type in ("quest", "class", "dev", "premium", "premium_bound", "soulbound", "bound"):
+            return _trade_policy_result(False, "bound_item", "Прив’язаний предмет не можна передавати.", item_id=item_id)
+        if item.get("dev_only") not in (None, 0, "0", False):
+            return _trade_policy_result(False, "dev_only", "Службовий DEV-предмет не можна передавати.", item_id=item_id)
+        if item.get("premium_bound") not in (None, 0, "0", False):
+            return _trade_policy_result(False, "premium_bound", "Premium-bound предмет не можна передавати.", item_id=item_id)
+        if item.get("tradeable") is not None and int(item["tradeable"] or 0) == 0 and item_id not in TRADE_ALLOWED_SPECIAL_ITEM_IDS:
+            return _trade_policy_result(False, "tradeable_false", "Цей предмет не можна передавати.", item_id=item_id)
+        if _inventory_is_equipped(conn, uid, inv_id):
+            return _trade_policy_result(False, "equipped", "Екіпірований предмет не можна передавати.", item_id=item_id)
+        if item.get("durability") is not None and int(item["durability"]) <= 0:
+            return _trade_policy_result(False, "broken", "Зламане спорядження не можна передавати.", item_id=item_id)
+        auction_reserved = _active_auction_reserved_quantity(conn, inv_id)
+        if auction_reserved > 0:
+            return _trade_policy_result(False, "auction_reserved", "Предмет уже використовується в Торговому Домі.", item_id=item_id)
+
+        query = "SELECT COALESCE(SUM(quantity),0) FROM inventory_reservations WHERE inventory_id=?"
+        params = [inv_id]
+        if trade_id is not None:
+            query += " AND NOT (reservation_type=? AND reference_id=?)"
+            params.extend((TRADE_RESERVATION_TYPE, int(trade_id)))
+        reserved = int(conn.execute(query, tuple(params)).fetchone()[0] or 0)
+        actual = int(item.get("quantity") or 1)
+        available = max(0, actual - reserved - auction_reserved)
+        if requested > available:
+            reason = "already_reserved" if reserved else "insufficient_quantity"
+            message = "Предмет уже зарезервований для іншої операції." if reserved else "Недостатньо доступної кількості предмета."
+            return _trade_policy_result(False, reason, message, item_id=item_id, available_quantity=available)
+        snapshot = build_trade_item_snapshot(uid, inv_id, db_path=db_path)
+        return _trade_policy_result(True, "allowed", "Предмет можна додати до обміну.", item_id=item_id,
+                                    available_quantity=available, requested_quantity=requested, snapshot=snapshot)
+    finally:
+        conn.close()
+
+
+def reserve_inventory_for_trade(trade_id, user_id, inventory_id, quantity=1, *, now=None, db_path=None):
+    trade_id=int(trade_id); uid=int(user_id); inv_id=int(inventory_id); quantity=int(quantity)
+    conn=_connect(db_path)
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        _init_inventory_reservation_schema(conn)
+        trade=conn.execute("SELECT * FROM player_trades WHERE id=?",(trade_id,)).fetchone()
+        if not trade:
+            conn.rollback(); return {"success":False,"reason":"trade_not_found"}
+        trade=dict(trade)
+        if trade["status"] != "editing":
+            conn.rollback(); return {"success":False,"reason":"trade_not_editing"}
+        if uid not in (int(trade["initiator_user_id"]),int(trade["recipient_user_id"])):
+            conn.rollback(); return {"success":False,"reason":"wrong_actor"}
+        policy=get_item_trade_policy(uid,inv_id,quantity,trade_id=trade_id,db_path=db_path)
+        if not policy.get("tradeable"):
+            conn.rollback(); return {"success":False,**policy}
+        stamp=_text(now)
+        conn.execute(
+            "INSERT INTO inventory_reservations(inventory_id,user_id,quantity,reservation_type,reference_id,created_at,expires_at) "
+            "VALUES(?,?,?,?,?,?,?) ON CONFLICT(inventory_id,reservation_type,reference_id) DO UPDATE SET "
+            "quantity=excluded.quantity,expires_at=excluded.expires_at",
+            (inv_id,uid,quantity,TRADE_RESERVATION_TYPE,trade_id,stamp,trade["expires_at"]),
+        )
+        conn.commit(); return {"success":True,"trade_id":trade_id,"inventory_id":inv_id,"quantity":quantity,"policy":policy}
+    except sqlite3.IntegrityError as exc:
+        conn.rollback(); return {"success":False,"reason":"integrity_error","error":str(exc)}
+    except Exception:
+        conn.rollback(); raise
+    finally: conn.close()
+
+
+def release_trade_inventory_reservations(trade_id, *, db_path=None):
+    conn=_connect(db_path)
+    try:
+        cur=conn.execute("DELETE FROM inventory_reservations WHERE reservation_type=? AND reference_id=?",(TRADE_RESERVATION_TYPE,int(trade_id)))
+        conn.commit(); return max(0,int(cur.rowcount))
+    finally: conn.close()
+
+
+def assert_inventory_not_reserved(inventory_id, *, requested_quantity=1, exclude_trade_id=None, db_path=None):
+    reserved=get_inventory_reserved_quantity(inventory_id,exclude_reference_id=exclude_trade_id,db_path=db_path)
+    if reserved >= int(requested_quantity):
+        return {"success":False,"reason":"inventory_reserved","reserved_quantity":reserved,
+                "message":"Предмет уже зарезервований для обміну."}
+    return {"success":True,"reserved_quantity":reserved}
+
+
+def recover_orphan_inventory_reservations(*, now=None, db_path=None):
+    stamp=_text(now); conn=_connect(db_path)
+    try:
+        conn.execute("BEGIN IMMEDIATE"); _init_inventory_reservation_schema(conn)
+        expired=conn.execute("DELETE FROM inventory_reservations WHERE expires_at<=?",(stamp,)).rowcount
+        orphan=0
+        if _table_exists(conn,"player_trades"):
+            cur=conn.execute(
+                "DELETE FROM inventory_reservations WHERE reservation_type=? AND ("
+                "NOT EXISTS(SELECT 1 FROM player_trades t WHERE t.id=inventory_reservations.reference_id) OR "
+                "EXISTS(SELECT 1 FROM player_trades t WHERE t.id=inventory_reservations.reference_id "
+                "AND t.status IN ('completed','cancelled','expired','failed')))"
+                ,(TRADE_RESERVATION_TYPE,))
+            orphan=max(0,int(cur.rowcount))
+        owner_mismatch=conn.execute(
+            "DELETE FROM inventory_reservations WHERE NOT EXISTS("
+            "SELECT 1 FROM inventory inv WHERE inv.id=inventory_reservations.inventory_id "
+            "AND inv.user_id=inventory_reservations.user_id)"
+        ).rowcount
+        conn.commit()
+        return {"success":True,"expired":max(0,int(expired)),"orphan_or_terminal":orphan,
+                "owner_mismatch":max(0,int(owner_mismatch)),
+                "total_removed":max(0,int(expired))+orphan+max(0,int(owner_mismatch))}
+    except Exception:
+        conn.rollback(); raise
+    finally: conn.close()
+
+# ROM 12.6.0 PLAYER TRADE OFFER EDITOR
+import json
+
+PLAYER_TRADE_OFFER_PAGE_SIZE = 8
+
+
+def _trade_offer_actor(trade, user_id):
+    uid = int(user_id)
+    if uid == int(trade["initiator_user_id"]):
+        return "initiator"
+    if uid == int(trade["recipient_user_id"]):
+        return "recipient"
+    return None
+
+
+def _trade_offer_mutation(conn, trade, actor_user_id, event_type, stamp, payload):
+    """Invalidate readiness after every offer mutation and advance revision."""
+    new_revision = int(trade["revision"] or 0) + 1
+    expires_at = _text(_parse(stamp) + timedelta(seconds=PLAYER_TRADE_EDITING_TTL_SECONDS))
+    conn.execute(
+        "UPDATE player_trades SET status='editing',revision=?,initiator_ready=0,recipient_ready=0,"
+        "initiator_confirmed=0,recipient_confirmed=0,updated_at=?,expires_at=? WHERE id=?",
+        (new_revision, stamp, expires_at, int(trade["id"])),
+    )
+    _trade_event(conn, int(trade["id"]), int(actor_user_id), event_type, new_revision, stamp,
+                 json.dumps(payload, ensure_ascii=False, sort_keys=True))
+    return new_revision, expires_at
+
+
+def get_player_trade_offers(trade_id, *, db_path=None):
+    conn = _connect(db_path)
+    try:
+        _init_player_trade_schema(conn)
+        rows = conn.execute(
+            "SELECT * FROM player_trade_offers WHERE trade_id=? "
+            "ORDER BY owner_user_id, CASE asset_type WHEN 'gold' THEN 0 ELSE 1 END, id",
+            (int(trade_id),),
+        ).fetchall()
+        result = []
+        for row in rows:
+            item = dict(row)
+            try:
+                item["snapshot"] = json.loads(item.get("snapshot_json") or "{}")
+            except Exception:
+                item["snapshot"] = {}
+            result.append(item)
+        return result
+    finally:
+        conn.close()
+
+
+def get_player_trade_editor_state(trade_id, viewer_user_id, *, now=None, db_path=None):
+    expire_stale_player_trades(now=now, db_path=db_path)
+    trade = get_player_trade(trade_id, db_path=db_path)
+    if not trade:
+        return {"success": False, "reason": "trade_not_found"}
+    side = _trade_offer_actor(trade, viewer_user_id)
+    if not side:
+        return {"success": False, "reason": "wrong_actor"}
+    if trade["status"] not in PLAYER_TRADE_ACTIVE_STATUSES:
+        return {"success": False, "reason": "trade_not_active", "trade": trade}
+    offers = get_player_trade_offers(trade_id, db_path=db_path)
+    own = [x for x in offers if int(x["owner_user_id"]) == int(viewer_user_id)]
+    other = [x for x in offers if int(x["owner_user_id"]) != int(viewer_user_id)]
+    other_user_id = (int(trade["recipient_user_id"]) if side == "initiator"
+                     else int(trade["initiator_user_id"]))
+    return {
+        "success": True,
+        "trade": trade,
+        "side": side,
+        "viewer_user_id": int(viewer_user_id),
+        "other_user_id": other_user_id,
+        "own_offers": own,
+        "other_offers": other,
+    }
+
+
+def get_tradeable_inventory_for_trade(trade_id, user_id, *, page=0, page_size=8, db_path=None):
+    state = get_player_trade_editor_state(trade_id, user_id, db_path=db_path)
+    if not state.get("success"):
+        return state
+    page = max(0, int(page or 0)); page_size = max(1, min(20, int(page_size or 8)))
+    conn = _connect(db_path)
+    try:
+        rows = conn.execute(
+            "SELECT inv.id FROM inventory inv WHERE inv.user_id=? ORDER BY inv.id DESC",
+            (int(user_id),),
+        ).fetchall()
+    finally:
+        conn.close()
+    items = []
+    for row in rows:
+        policy = get_item_trade_policy(user_id, int(row[0]), 1, trade_id=trade_id, db_path=db_path)
+        if policy.get("tradeable"):
+            snapshot = policy.get("snapshot") or {}
+            items.append({
+                "inventory_id": int(row[0]),
+                "available_quantity": int(policy.get("available_quantity") or 0),
+                "snapshot": snapshot,
+            })
+    total = len(items); start = page * page_size; selected = items[start:start + page_size]
+    return {"success": True, "trade_id": int(trade_id), "page": page, "page_size": page_size,
+            "total": total, "has_previous": page > 0, "has_next": start + page_size < total,
+            "items": selected}
+
+
+def set_player_trade_item_offer(trade_id, owner_user_id, inventory_id, quantity=1, *, now=None, db_path=None):
+    trade_id = int(trade_id); uid = int(owner_user_id); inv_id = int(inventory_id)
+    try:
+        quantity = int(quantity)
+    except (TypeError, ValueError):
+        return {"success": False, "reason": "invalid_quantity", "message": "Некоректна кількість."}
+    if quantity <= 0:
+        return remove_player_trade_item_offer(trade_id, uid, inv_id, now=now, db_path=db_path)
+    policy = get_item_trade_policy(uid, inv_id, quantity, trade_id=trade_id, db_path=db_path)
+    if not policy.get("tradeable"):
+        return {"success": False, **policy}
+    reserved = reserve_inventory_for_trade(trade_id, uid, inv_id, quantity, now=now, db_path=db_path)
+    if not reserved.get("success"):
+        return reserved
+    conn = _connect(db_path)
+    try:
+        conn.execute("BEGIN IMMEDIATE"); _init_player_trade_schema(conn)
+        trade_row = conn.execute("SELECT * FROM player_trades WHERE id=?", (trade_id,)).fetchone()
+        if not trade_row:
+            conn.rollback(); return {"success": False, "reason": "trade_not_found"}
+        trade = dict(trade_row)
+        if trade["status"] != "editing" or not _trade_offer_actor(trade, uid):
+            conn.rollback(); return {"success": False, "reason": "trade_not_editing"}
+        snapshot = policy.get("snapshot") or {}
+        asset_type = "equipment" if int(snapshot.get("quantity") or 1) <= 1 else "stack"
+        existing = conn.execute(
+            "SELECT id FROM player_trade_offers WHERE trade_id=? AND owner_user_id=? AND inventory_id=?",
+            (trade_id, uid, inv_id),
+        ).fetchone()
+        stamp = _text(now)
+        payload = json.dumps(snapshot, ensure_ascii=False, sort_keys=True)
+        if existing:
+            conn.execute(
+                "UPDATE player_trade_offers SET asset_type=?,item_id=?,quantity=?,snapshot_json=?,updated_at=? WHERE id=?",
+                (asset_type, int(snapshot.get("item_id") or policy.get("item_id")), quantity, payload, stamp, int(existing[0])),
+            )
+        else:
+            conn.execute(
+                "INSERT INTO player_trade_offers(trade_id,owner_user_id,asset_type,inventory_id,item_id,quantity,gold_amount,snapshot_json,created_at,updated_at) "
+                "VALUES(?,?,?,?,?,?,NULL,?,?,?)",
+                (trade_id, uid, asset_type, inv_id, int(snapshot.get("item_id") or policy.get("item_id")), quantity, payload, stamp, stamp),
+            )
+        revision, expires_at = _trade_offer_mutation(
+            conn, trade, uid, "offer_item_set", stamp,
+            {"inventory_id": inv_id, "item_id": int(snapshot.get("item_id") or policy.get("item_id")), "quantity": quantity},
+        )
+        conn.commit()
+        return {"success": True, "trade_id": trade_id, "inventory_id": inv_id, "quantity": quantity,
+                "revision": revision, "expires_at": expires_at}
+    except Exception:
+        conn.rollback(); raise
+    finally:
+        conn.close()
+
+
+def remove_player_trade_item_offer(trade_id, owner_user_id, inventory_id, *, now=None, db_path=None):
+    trade_id = int(trade_id); uid = int(owner_user_id); inv_id = int(inventory_id)
+    conn = _connect(db_path)
+    try:
+        conn.execute("BEGIN IMMEDIATE"); _init_player_trade_schema(conn); _init_inventory_reservation_schema(conn)
+        trade_row = conn.execute("SELECT * FROM player_trades WHERE id=?", (trade_id,)).fetchone()
+        if not trade_row:
+            conn.rollback(); return {"success": False, "reason": "trade_not_found"}
+        trade = dict(trade_row)
+        if trade["status"] != "editing" or not _trade_offer_actor(trade, uid):
+            conn.rollback(); return {"success": False, "reason": "trade_not_editing"}
+        deleted = conn.execute(
+            "DELETE FROM player_trade_offers WHERE trade_id=? AND owner_user_id=? AND inventory_id=?",
+            (trade_id, uid, inv_id),
+        ).rowcount
+        conn.execute(
+            "DELETE FROM inventory_reservations WHERE inventory_id=? AND user_id=? AND reservation_type=? AND reference_id=?",
+            (inv_id, uid, TRADE_RESERVATION_TYPE, trade_id),
+        )
+        if not deleted:
+            conn.rollback(); return {"success": False, "reason": "offer_not_found"}
+        stamp = _text(now)
+        revision, expires_at = _trade_offer_mutation(
+            conn, trade, uid, "offer_item_removed", stamp, {"inventory_id": inv_id})
+        conn.commit()
+        return {"success": True, "trade_id": trade_id, "inventory_id": inv_id,
+                "revision": revision, "expires_at": expires_at}
+    except Exception:
+        conn.rollback(); raise
+    finally:
+        conn.close()
+
+
+def set_player_trade_gold_offer(trade_id, owner_user_id, gold_amount, *, now=None, db_path=None):
+    trade_id = int(trade_id); uid = int(owner_user_id)
+    try:
+        amount = round(float(gold_amount), 2)
+    except (TypeError, ValueError):
+        return {"success": False, "reason": "invalid_gold", "message": "Некоректна сума золота."}
+    if amount < 0:
+        return {"success": False, "reason": "invalid_gold", "message": "Сума золота не може бути від’ємною."}
+    conn = _connect(db_path)
+    try:
+        conn.execute("BEGIN IMMEDIATE"); _init_player_trade_schema(conn)
+        trade_row = conn.execute("SELECT * FROM player_trades WHERE id=?", (trade_id,)).fetchone()
+        if not trade_row:
+            conn.rollback(); return {"success": False, "reason": "trade_not_found"}
+        trade = dict(trade_row)
+        if trade["status"] != "editing" or not _trade_offer_actor(trade, uid):
+            conn.rollback(); return {"success": False, "reason": "trade_not_editing"}
+        wallet = conn.execute("SELECT gold FROM users WHERE user_id=?", (uid,)).fetchone()
+        available = round(float((wallet[0] if wallet else 0) or 0), 2)
+        if amount > available:
+            conn.rollback(); return {"success": False, "reason": "insufficient_gold",
+                                     "message": "Недостатньо золота.", "available_gold": available}
+        stamp = _text(now)
+        conn.execute("DELETE FROM player_trade_offers WHERE trade_id=? AND owner_user_id=? AND asset_type='gold'",
+                     (trade_id, uid))
+        if amount > 0:
+            conn.execute(
+                "INSERT INTO player_trade_offers(trade_id,owner_user_id,asset_type,inventory_id,item_id,quantity,gold_amount,snapshot_json,created_at,updated_at) "
+                "VALUES(?,?,'gold',NULL,NULL,NULL,?,'{}',?,?)",
+                (trade_id, uid, amount, stamp, stamp),
+            )
+        revision, expires_at = _trade_offer_mutation(
+            conn, trade, uid, "offer_gold_set", stamp, {"gold_amount": amount})
+        conn.commit()
+        return {"success": True, "trade_id": trade_id, "gold_amount": amount,
+                "available_gold": available, "revision": revision, "expires_at": expires_at}
+    except Exception:
+        conn.rollback(); raise
+    finally:
+        conn.close()
+
+# ROM 12.6.1 PLAYER TRADE OFFER EDITOR UX
+
+def _trade_offer_is_equipment_snapshot(snapshot):
+    snapshot = snapshot or {}
+    category = str(snapshot.get("category") or "").strip().lower()
+    if category in ("equipment", "weapon", "armor", "jewelry"):
+        return True
+    return snapshot.get("durability") is not None or snapshot.get("max_durability") is not None
+
+
+def get_trade_offer_entry(trade_id, owner_user_id, inventory_id, *, db_path=None):
+    offers = get_player_trade_offers(trade_id, db_path=db_path)
+    for offer in offers:
+        if (int(offer.get("owner_user_id") or 0) == int(owner_user_id)
+                and int(offer.get("inventory_id") or 0) == int(inventory_id)):
+            return offer
+    return None
+
+
+def get_tradeable_inventory_for_trade(trade_id, user_id, *, page=0, page_size=8, db_path=None):
+    """List only inventory quantities that can still be added to this offer.
+
+    Equipment already offered disappears. A stack remains visible only while a
+    positive quantity is not yet included in the current player's offer.
+    """
+    state = get_player_trade_editor_state(trade_id, user_id, db_path=db_path)
+    if not state.get("success"):
+        return state
+    page = max(0, int(page or 0))
+    page_size = max(1, min(20, int(page_size or 8)))
+    offered_by_inventory = {
+        int(x["inventory_id"]): int(x.get("quantity") or 1)
+        for x in state.get("own_offers", []) if x.get("inventory_id") is not None
+    }
+    conn = _connect(db_path)
+    try:
+        rows = conn.execute(
+            "SELECT inv.id FROM inventory inv WHERE inv.user_id=? ORDER BY inv.id DESC",
+            (int(user_id),),
+        ).fetchall()
+    finally:
+        conn.close()
+    items = []
+    for row in rows:
+        inventory_id = int(row[0])
+        policy = get_item_trade_policy(
+            user_id, inventory_id, 1, trade_id=trade_id, db_path=db_path)
+        if not policy.get("tradeable"):
+            continue
+        snapshot = policy.get("snapshot") or {}
+        total_available = int(policy.get("available_quantity") or 0)
+        offered_quantity = int(offered_by_inventory.get(inventory_id, 0))
+        remaining_quantity = max(0, total_available - offered_quantity)
+        if remaining_quantity <= 0:
+            continue
+        is_equipment = _trade_offer_is_equipment_snapshot(snapshot)
+        items.append({
+            "inventory_id": inventory_id,
+            "available_quantity": remaining_quantity,
+            "total_available_quantity": total_available,
+            "offered_quantity": offered_quantity,
+            "is_equipment": is_equipment,
+            "is_stack": not is_equipment,
+            "snapshot": snapshot,
+        })
+    total = len(items)
+    start = page * page_size
+    if start >= total and page > 0:
+        page = max(0, (max(0, total - 1)) // page_size)
+        start = page * page_size
+    selected = items[start:start + page_size]
+    return {
+        "success": True, "trade_id": int(trade_id), "page": page,
+        "page_size": page_size, "total": total,
+        "has_previous": page > 0,
+        "has_next": start + page_size < total,
+        "items": selected,
+    }
+
+
+def add_all_available_to_trade_offer(trade_id, owner_user_id, inventory_id, *, now=None, db_path=None):
+    policy = get_item_trade_policy(
+        owner_user_id, inventory_id, 1, trade_id=trade_id, db_path=db_path)
+    if not policy.get("tradeable"):
+        return {"success": False, **policy}
+    quantity = int(policy.get("available_quantity") or 0)
+    if quantity <= 0:
+        return {"success": False, "reason": "nothing_available",
+                "message": "Увесь доступний стек уже додано до пропозиції."}
+    return set_player_trade_item_offer(
+        trade_id, owner_user_id, inventory_id, quantity, now=now, db_path=db_path)
+
+# ROM 12.6.2 PLAYER TRADE ITEM PREVIEW AND WALLET UX
+
+def get_player_trade_wallet_state(trade_id, user_id, *, db_path=None):
+    state = get_player_trade_editor_state(trade_id, user_id, db_path=db_path)
+    if not state.get("success"):
+        return state
+    conn = _connect(db_path)
+    try:
+        row = conn.execute("SELECT gold FROM users WHERE user_id=?", (int(user_id),)).fetchone()
+    finally:
+        conn.close()
+    wallet_gold = round(float((row[0] if row else 0) or 0), 2)
+    offered_gold = round(sum(
+        float(x.get("gold_amount") or 0)
+        for x in state.get("own_offers", []) if x.get("asset_type") == "gold"
+    ), 2)
+    return {
+        "success": True,
+        "wallet_gold": wallet_gold,
+        "offered_gold": offered_gold,
+        "remaining_gold": round(max(0.0, wallet_gold - offered_gold), 2),
+    }
+
+
+def get_trade_item_preview(trade_id, user_id, inventory_id, *, db_path=None):
+    state = get_player_trade_editor_state(trade_id, user_id, db_path=db_path)
+    if not state.get("success"):
+        return state
+    policy = get_item_trade_policy(
+        user_id, inventory_id, 1, trade_id=trade_id, db_path=db_path)
+    if not policy.get("tradeable"):
+        return {"success": False, **policy}
+    snapshot = dict(policy.get("snapshot") or {})
+    existing = get_trade_offer_entry(trade_id, user_id, inventory_id, db_path=db_path)
+    offered_quantity = int((existing or {}).get("quantity") or 0)
+    maximum_quantity = int(policy.get("available_quantity") or 0)
+    is_equipment = _trade_offer_is_equipment_snapshot(snapshot)
+    return {
+        "success": True,
+        "trade_id": int(trade_id),
+        "inventory_id": int(inventory_id),
+        "snapshot": snapshot,
+        "is_equipment": is_equipment,
+        "is_stack": not is_equipment,
+        "offered_quantity": offered_quantity,
+        "maximum_quantity": maximum_quantity,
+        "remaining_quantity": max(0, maximum_quantity - offered_quantity),
+    }
+
+# ROM 12.6.3 PLAYER TRADE PREVIEW DETAILS AND AMOUNT INPUT
+_TRADE_PREVIEW_ITEM_FIELDS_12_6_3 = (
+    "item_level","slot_key","item_subtype","armor_type","weapon_hands",
+    "weapon_attack_type","weapon_min_damage","weapon_max_damage",
+    "weapon_min_magic_damage","weapon_max_magic_damage","bonus_str",
+    "bonus_dex","bonus_int","bonus_wis","bonus_sta","pdef","mdef",
+)
+_trade_base_build_item_snapshot_12_6_3 = build_trade_item_snapshot
+
+def build_trade_item_snapshot(user_id, inventory_id, *, db_path=None):
+    snapshot=_trade_base_build_item_snapshot_12_6_3(user_id,inventory_id,db_path=db_path)
+    if not snapshot: return snapshot
+    conn=_connect(db_path)
+    try:
+        columns=_items_columns(conn)
+        selected=[x for x in _TRADE_PREVIEW_ITEM_FIELDS_12_6_3 if x in columns]
+        if selected:
+            sql="SELECT "+",".join('"'+x+'"' for x in selected)+" FROM items WHERE id=?"
+            row=conn.execute(sql,(int(snapshot["item_id"]),)).fetchone()
+            if row: snapshot.update(dict(row))
+    finally: conn.close()
+    return snapshot
+
+def parse_trade_item_quantity_input(value, maximum):
+    text=str(value or "").strip()
+    try: quantity=int(text)
+    except (TypeError,ValueError):
+        return {"success":False,"reason":"invalid_quantity","message":"Введіть ціле число."}
+    maximum=max(0,int(maximum or 0))
+    if quantity<0 or quantity>maximum:
+        return {"success":False,"reason":"quantity_out_of_range","message":f"Можна вказати від 0 до {maximum}.","maximum":maximum}
+    return {"success":True,"quantity":quantity,"maximum":maximum}
+
+def parse_trade_gold_amount_input(value, wallet_gold):
+    text=str(value or "").strip().replace(",",".")
+    try: amount=round(float(text),2)
+    except (TypeError,ValueError):
+        return {"success":False,"reason":"invalid_gold","message":"Введіть коректну суму золота."}
+    wallet=round(float(wallet_gold or 0),2)
+    if amount<0 or amount>wallet:
+        return {"success":False,"reason":"gold_out_of_range","message":f"Можна вказати від 0 до {wallet:.2f}.","maximum":wallet}
+    parts=text.split(".",1)
+    if len(parts)==2 and len(parts[1])>2:
+        return {"success":False,"reason":"too_many_decimals","message":"Використовуйте не більше двох знаків після крапки."}
+    return {"success":True,"gold_amount":amount,"maximum":wallet}
+
+# ROM 12.6.4 PLAYER TRADE NAVIGATION LOCK AND ITEM CATEGORIES
+PLAYER_TRADE_ITEM_CATEGORY_PAGE_SIZE = 8
+PLAYER_TRADE_ITEM_CATEGORIES = ("equipment", "potion", "material", "rune")
+
+
+def _player_trade_item_category_12_6_4(item):
+    snapshot = (item or {}).get("snapshot") or {}
+    if item.get("is_equipment") or _trade_offer_is_equipment_snapshot(snapshot):
+        return "equipment"
+    category = str(snapshot.get("category") or "").strip().lower()
+    item_id = int(snapshot.get("item_id") or 0)
+    if 501 <= item_id <= 525 or category in ("rune", "runes", "stat_rune"):
+        return "rune"
+    if category in ("potion", "potions", "consumable", "heal_potion", "mana_potion"):
+        return "potion"
+    return "material"
+
+
+def get_tradeable_inventory_for_trade_category(
+    trade_id, user_id, category, *, page=0, page_size=8, db_path=None
+):
+    category = str(category or "").strip().lower()
+    if category not in PLAYER_TRADE_ITEM_CATEGORIES:
+        return {"success": False, "reason": "invalid_category", "items": []}
+    page = max(0, int(page or 0))
+    page_size = max(1, min(20, int(page_size or 8)))
+    collected = []
+    source_page = 0
+    while source_page < 100:
+        batch = get_tradeable_inventory_for_trade(
+            trade_id, user_id, page=source_page, page_size=20, db_path=db_path)
+        if not batch.get("success"):
+            return batch
+        for item in batch.get("items", []):
+            if _player_trade_item_category_12_6_4(item) == category:
+                enriched = dict(item)
+                enriched["trade_category"] = category
+                collected.append(enriched)
+        if not batch.get("has_next"):
+            break
+        source_page += 1
+    total = len(collected)
+    if total == 0:
+        page = 0
+    elif page * page_size >= total:
+        page = (total - 1) // page_size
+    start = page * page_size
+    return {
+        "success": True,
+        "trade_id": int(trade_id),
+        "category": category,
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "items": collected[start:start + page_size],
+        "has_previous": page > 0,
+        "has_next": start + page_size < total,
+    }
+
+
+def get_player_trade_category_counts(trade_id, user_id, *, db_path=None):
+    counts = {}
+    for category in PLAYER_TRADE_ITEM_CATEGORIES:
+        result = get_tradeable_inventory_for_trade_category(
+            trade_id, user_id, category, page=0,
+            page_size=PLAYER_TRADE_ITEM_CATEGORY_PAGE_SIZE, db_path=db_path)
+        if not result.get("success"):
+            return result
+        counts[category] = int(result.get("total") or 0)
+    return {"success": True, "trade_id": int(trade_id), "counts": counts}
 
