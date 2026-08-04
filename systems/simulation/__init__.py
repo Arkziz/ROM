@@ -39,3 +39,7 @@ from .skill_catalog import SkillCatalogError, load_production_skill_catalog
 from .inventory_engine import InventoryAward, InventoryAwardResult, SimulationInventoryEngine
 from .drop_inventory import DropProcessResult, SimulationDropInventoryEngine
 from .capacity_analysis import CapacityScenarioResult, compare_40_60, run_capacity_scenario
+
+from .equipment_policy import EquipmentDecision, EquipmentScore, evaluate_candidate, is_class_compatible, score_item
+from .behavior_policy import BehaviorDecision, BehaviorPolicy
+from .equipment_service import SimulationEquipmentService
