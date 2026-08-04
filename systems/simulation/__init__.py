@@ -35,3 +35,7 @@ from .rng_adapter import RandomModuleAdapter, inject_module_rng
 from .battle_models import BattleAction, BattleActor, BattleResult
 from .pve_battle import ExactPveBattleEngine
 from .skill_catalog import SkillCatalogError, load_production_skill_catalog
+
+from .inventory_engine import InventoryAward, InventoryAwardResult, SimulationInventoryEngine
+from .drop_inventory import DropProcessResult, SimulationDropInventoryEngine
+from .capacity_analysis import CapacityScenarioResult, compare_40_60, run_capacity_scenario
