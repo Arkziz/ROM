@@ -1,4 +1,5 @@
 import random
+from data.player_progression import get_base_exp_for_level
 
 from db import (
     add_exp,
@@ -7,7 +8,6 @@ from db import (
     add_item,
     get_inventory_used_slots,
     get_bag_capacity,
-    get_base_exp_for_level,
     create_generated_equipment_item,
 )
 

@@ -1,0 +1,40 @@
+from __future__ import annotations
+from dataclasses import dataclass
+from typing import Dict
+from data.classes import CLASS_CONFIGS
+from systems.refine_system import apply_weapon_refine_to_damage,get_armor_refine_hp_bonus_percent
+from .battle_models import BattleActor
+from .models import SimulationEquipment,SimulationInventory
+
+BASE_STAT=10
+ARMOR_SLOTS={"helmet","shoulders","chest","gloves","legs","boots"}
+
+@dataclass(frozen=True)
+class CombatStatSnapshot:
+ str:int;dex:int;intelligence:int;wis:int;sta:int;level:int;max_hp:int;max_mp:int;attack:int;magic_attack:int;pdef:int;mdef:int;weapon_min_damage:int;weapon_max_damage:int;attack_type:str;resource_type:str
+
+def _equipped(inventory,equipment):
+ by_id={x.simulation_item_id:x for x in inventory.items};return [by_id[x] for x in equipment.slots.values() if x in by_id]
+
+def build_combat_stat_snapshot(character_class:str,level:int,inventory:SimulationInventory,equipment:SimulationEquipment)->CombatStatSnapshot:
+ level=max(1,int(level));base=BASE_STAT+level-1;stats={"str":base,"dex":base,"int":base,"wis":base,"sta":base};item_pdef=item_mdef=0;armor_refine=0.0;weapon_min=weapon_max=0
+ for item in _equipped(inventory,equipment):
+  if int(item.durability or 0)<=0:continue
+  for key in stats:stats[key]+=int(item.stats.get(key,item.stats.get(f"bonus_{key}",0)) or 0)
+  item_pdef+=int(item.stats.get("pdef",0) or 0);item_mdef+=int(item.stats.get("mdef",0) or 0)
+  for rune in item.runes:
+   key=str(rune.stat).strip().lower();
+   if key=="int":key="int"
+   if key in stats:stats[key]+=int(rune.level)
+  if item.slot_key in ARMOR_SLOTS:armor_refine+=float(get_armor_refine_hp_bonus_percent(item.refine_level,item.rarity) or 0.0)
+  if item.slot_key=="main_hand":
+   raw_min=int(item.stats.get("weapon_min_damage",item.stats.get("weapon_min_magic_damage",0)) or 0);raw_max=int(item.stats.get("weapon_max_damage",item.stats.get("weapon_max_magic_damage",0)) or 0)
+   weapon_min,weapon_max=apply_weapon_refine_to_damage(raw_min,raw_max,item.refine_level)
+ max_hp=max(1,int(round((100+level*20+stats["sta"]*5)*(1+armor_refine/100.0))))
+ mana=CLASS_CONFIGS[character_class]["resource"]=="mana";max_mp=100+level*20+stats["int"]*3+stats["wis"]*2 if mana else 0
+ attack_type="magical" if mana else "physical"
+ return CombatStatSnapshot(stats["str"],stats["dex"],stats["int"],stats["wis"],stats["sta"],level,max_hp,max_mp,stats["str"],stats["int"],int(item_pdef+stats["sta"]*0.2),int(item_mdef+stats["wis"]),weapon_min,weapon_max,attack_type,CLASS_CONFIGS[character_class]["resource"])
+
+def build_battle_actor(character_class,level,inventory,equipment,current_hp=None,current_mp=None):
+ s=build_combat_stat_snapshot(character_class,level,inventory,equipment);mana=s.resource_type=="mana";max_resource=s.max_mp if mana else 100;resource=max_resource if current_mp is None else max(0,min(int(current_mp),max_resource));hp=s.max_hp if current_hp is None else max(1,min(int(current_hp),s.max_hp))
+ return BattleActor(character_class,s.level,hp,s.max_hp,s.attack,s.magic_attack,s.pdef,s.mdef,s.dex,s.wis,s.sta,s.attack_type,s.weapon_min_damage,s.weapon_max_damage,s.resource_type,resource,max_resource)

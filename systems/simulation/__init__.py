@@ -43,3 +43,15 @@ from .capacity_analysis import CapacityScenarioResult, compare_40_60, run_capaci
 from .equipment_policy import EquipmentDecision, EquipmentScore, evaluate_candidate, is_class_compatible, score_item
 from .behavior_policy import BehaviorDecision, BehaviorPolicy
 from .equipment_service import SimulationEquipmentService
+
+from .progression_models import PROFILES, ProgressionEvent, ProgressionProfile, ProgressionResult
+from .progression_provider import ProgressionProvider
+from .world_progression import WorldProgressionSimulator
+from .progression_reporting import write_progression_report
+
+from .survival_state import DurabilityResult, PersistentCombatState, RepairResult, SimulationSurvivalService
+
+from .loot_equipment_city import CityResult, SimulationLootEquipmentCityService, VictoryLootResult
+
+from .meta_progression import ContractState, DailyState, GuildSimulationState, SimulationMetaProgressionService, SimulationMetaState
+from .combat_actor_stats import CombatStatSnapshot, build_battle_actor, build_combat_stat_snapshot

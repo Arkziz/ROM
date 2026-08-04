@@ -886,15 +886,8 @@ CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL = {
 
 
 def get_base_exp_for_level(level):
-    level = int(level)
-
-    if level in BASE_EXP_BY_LEVEL:
-        return BASE_EXP_BY_LEVEL[level]
-
-    if level > 30:
-        return int(BASE_EXP_BY_LEVEL[30] * (1.12 ** (level - 30)))
-
-    return BASE_EXP_BY_LEVEL[1]
+    from data.player_progression import get_base_exp_for_level as _canonical
+    return _canonical(level)
 
 
 def get_contract_exp_for_level(level):
@@ -902,15 +895,8 @@ def get_contract_exp_for_level(level):
 
 
 def get_exp_to_next_level(level):
-    level = int(level)
-    base_exp = get_base_exp_for_level(level)
-
-    if level in CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL:
-        mobs_required = CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL[level]
-        return int(base_exp * mobs_required)
-
-    mobs_required = int(CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL[30] * (1.10 ** (level - 30)))
-    return int(base_exp * mobs_required)
+    from data.player_progression import get_exp_to_next_level as _canonical
+    return _canonical(level)
 
 
 

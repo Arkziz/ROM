@@ -134,5 +134,5 @@ class ExactPveBattleEngine:
             self._mob_action(turn,p,m,actions)
             if not p.alive: break
         turns=max((a.turn for a in actions),default=0); winner="player" if p.alive and not m.alive else "mob" if m.alive and not p.alive else "draw"
-        metrics={"actions":len(actions),"player_damage":sum(a.damage for a in actions if a.actor in {"player","effect"}),"mob_damage":sum(a.damage for a in actions if a.actor=="mob"),"crits":sum(a.critical for a in actions),"dodges":sum(a.dodged for a in actions),"skills_used":sum(a.actor=="player" and a.action!="basic_attack" for a in actions)}
+        metrics={"actions":len(actions),"player_damage":sum(a.damage for a in actions if a.actor in {"player","effect"}),"mob_damage":sum(a.damage for a in actions if a.actor=="mob"),"crits":sum(a.critical for a in actions),"dodges":sum(a.dodged for a in actions),"skills_used":sum(a.actor=="player" and a.action!="basic_attack" for a in actions),"player_resource":p.resource,"player_max_resource":p.max_resource}
         return BattleResult(battle_id,self.seed,battle_type,class_key,winner,turns,p.hp,p.max_hp,m.hp,m.max_hp,actions,metrics,"death" if winner!="draw" else "turn_limit")
