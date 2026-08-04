@@ -58,3 +58,6 @@ from .combat_actor_stats import CombatStatSnapshot, build_battle_actor, build_co
 from .balance_analyzer import AnalysisConfig, PveBalanceAnalyzer
 from .progression_wall_analyzer import ProgressionWallAnalyzer
 from .asset_valuation import AssetValuation, value_progression_assets
+
+from .economy_analyzer import EconomyResult, analyze_economy
+from .guild_population import GuildPopulationResult, simulate_guild_population
