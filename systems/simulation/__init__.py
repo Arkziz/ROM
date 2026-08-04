@@ -31,3 +31,7 @@ __all__ = [
 from .canonical_rules import CanonicalRuleDescriptor, CanonicalRuleError, call_rule, rule_manifest
 from .production_parity import run_required_parity, source_dependency_report
 from .rng_adapter import RandomModuleAdapter, inject_module_rng
+
+from .battle_models import BattleAction, BattleActor, BattleResult
+from .pve_battle import ExactPveBattleEngine
+from .skill_catalog import SkillCatalogError, load_production_skill_catalog
