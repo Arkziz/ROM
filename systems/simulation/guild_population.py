@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any, Iterable, Mapping
 
+MAX_GUILD_MEMBERS = 50
+
 
 def _event_counts(payload: Mapping[str, Any]) -> dict[str, int]:
     result: dict[str, int] = {}
@@ -49,6 +51,8 @@ def simulate_guild_population(payloads: Iterable[Mapping[str, Any]], players: in
     rows = list(payloads)
     if players <= 0:
         raise ValueError("players must be positive")
+    if players > MAX_GUILD_MEMBERS:
+        raise ValueError(f"players cannot exceed guild member limit {MAX_GUILD_MEMBERS}")
     if not rows:
         raise ValueError("at least one progression payload is required")
     values = [_guild_values(item) for item in rows]
