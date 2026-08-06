@@ -528,3 +528,39 @@ def get_pvp_events(battle_id: int, connection: sqlite3.Connection | None = None)
             item["payload"] = _loads(item.pop("payload_json", None), {})
             result.append(item)
         return result
+
+
+# Stage 14.2.0 simultaneous round persistence adapter
+def resolve_persisted_pvp_round(battle_id: int, round_number: int, revision: int, seed: int | None = None, connection: sqlite3.Connection | None = None) -> dict[str, Any]:
+    """Resolve two persisted intents once and persist only duel-local participant state."""
+    from systems.pvp_models import PvpActionIntent, PvpActorState
+    from systems.pvp_round_engine import resolve_pvp_round
+    with _connection(connection) as conn:
+        if not claim_pvp_round_resolution(battle_id, round_number, revision, conn):
+            return {"resolved": False, "reason": "resolution_not_claimed"}
+        try:
+            participants = get_pvp_participants(battle_id, conn)
+            actions = get_pvp_round_actions(battle_id, round_number, revision, conn)
+            if len(participants) != 2 or len(actions) != 2:
+                conn.execute("UPDATE pvp_battles SET status='active', resolving=0 WHERE id=?", (int(battle_id),))
+                conn.commit()
+                return {"resolved": False, "reason": "actions_or_participants_incomplete"}
+            actors = []
+            for row in participants:
+                snap = dict(row.get("snapshot") or {})
+                snap.update({"user_id":row["user_id"],"class_key":row["class_key"],"max_hp":row["max_hp"],"hp":row["hp"],"max_mp":row["max_mp"],"mp":row["mp"],"resource_type":row["resource_type"],"resource":row["resource_value"],"combo":row["combo"],"cooldowns":row["cooldowns"],"effects":row["effects"],"consecutive_afk":row["consecutive_afk"],"stunned_next":bool(row["stunned_next"])})
+                actors.append(PvpActorState.from_dict(snap))
+            intents = {row["user_id"]: PvpActionIntent(row["user_id"], row["action_type"], row["skill_key"], row["payload"]) for row in actions}
+            result = resolve_pvp_round(round_number, revision, actors[0], actors[1], intents[actors[0].user_id], intents[actors[1].user_id], seed=seed)
+            for state in (result.actor_a, result.actor_b):
+                conn.execute("""UPDATE pvp_participants SET hp=?,mp=?,resource_value=?,combo=?,consecutive_afk=?,stunned_next=?,cooldowns_json=?,effects_json=?,updated_at=? WHERE battle_id=? AND user_id=?""",(state["hp"],state["mp"],state["resource"],state["combo"],state["consecutive_afk"],1 if state["stunned_next"] else 0,_json(state["cooldowns"]),_json(state["effects"]),_iso(),int(battle_id),int(state["user_id"])))
+            add_pvp_event(battle_id,"round_resolved",round_number,revision,payload={"terminal":result.terminal,"winner_id":result.winner_id,"reason":result.result_reason,"events":list(result.events)},connection=conn)
+            if result.terminal:
+                complete_pvp_battle(battle_id,result.result_reason or "terminal",result.winner_id,connection=conn)
+            else:
+                release_pvp_round_resolution(battle_id,revision,connection=conn)
+            conn.commit()
+            return {"resolved":True,"terminal":result.terminal,"winner_id":result.winner_id,"result_reason":result.result_reason}
+        except Exception:
+            conn.rollback()
+            raise
