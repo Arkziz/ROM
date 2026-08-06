@@ -61,3 +61,8 @@ from .asset_valuation import AssetValuation, value_progression_assets
 
 from .economy_analyzer import EconomyResult, analyze_economy
 from .guild_population import GuildPopulationResult, simulate_guild_population
+
+# ROM 13.9.0 RNG percentiles and patch regression
+from .rng_percentiles import distribution as rng_distribution, percentile as rng_percentile, rng_bands
+from .patch_regression import RegressionConfig, analyze_payloads, compare_reports, create_baseline, load_baseline, run_matrix
+

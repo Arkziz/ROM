@@ -25,17 +25,24 @@ def main():
     assert economy.gold_transfers == 14
     assert economy.net_gold_created == 26
     assert economy.mean_total_net_worth == 28
-    guild = simulate_guild_population([fixture(), fixture()], 100)
-    assert guild.guild_exp == 7500 and guild.kills == 3000 and guild.contracts == 100
+    guild = simulate_guild_population([fixture(), fixture()], 50)
+    assert guild.guild_exp == 3750 and guild.kills == 1500 and guild.contracts == 50
     assert guild.mode == "FAST_COHORT"
     exact = simulate_guild_population([fixture(), fixture()], 2)
     assert exact.mode == "EXACT"
+    try:
+        simulate_guild_population([fixture(), fixture()], 51)
+    except ValueError as error:
+        assert "50" in str(error)
+    else:
+        raise AssertionError("guild population above 50 was not rejected")
     print("[OK] Economy and guild-population contracts")
     print("- faucets/sinks/transfers separated: PASS")
     print("- total net worth uses explicit asset values: PASS")
     print("- player transfers do not alter net gold creation: PASS")
     print("- EXACT/FAST cohort guild aggregation: PASS")
-    print("- populations 10/50/100/500/1000 supported: PASS")
+    print("- populations 10/25/50 supported: PASS")
+    print("- guild member limit 50 enforced: PASS")
     print("- database writes: 0")
 
 

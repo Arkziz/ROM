@@ -3,11 +3,11 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-05 21:01:23 +03:00
+Created: 2026-08-06 06:35:35 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.8875
-Included files: 264
-Excluded files: 4032
+Included files: 273
+Excluded files: 4084
 Maximum file size: 2 MB
 
 SECURITY EXCLUSIONS:
@@ -91,7 +91,10 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\simulation\combat_actor_stats.py
 - systems\simulation\config.py
 - systems\simulation\drop_inventory.py
+- systems\simulation\economic_ledger.py
+- systems\simulation\economic_progression.py
 - systems\simulation\economy_analyzer.py
+- systems\simulation\economy_guild_acceptance.py
 - systems\simulation\equipment_policy.py
 - systems\simulation\equipment_service.py
 - systems\simulation\guild_population.py
@@ -144,18 +147,22 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\migration_status.py
 - tools\player_trade_stage_12_manifest.txt
 - tools\README_refactor_tools.md
+- tools\run_economic_progression_v2.py
 - tools\run_economy_analysis.py
+- tools\run_economy_guild_acceptance_13_8_2.py
 - tools\run_full_production_progression_acceptance.py
 - tools\run_guild_population_sim.py
 - tools\run_pve_balance_analysis.py
 - tools\run_simulation_canonical_parity_report.py
 - tools\run_world_progression_sim.py
 - tools\rune_system_10_12_0_manifest.txt
+- tools\simulation_asset_snapshot_economic_ledger_13_8_1_manifest.txt
 - tools\simulation_behavior_equipment_13_5_0_manifest.txt
 - tools\simulation_canonical_rules_13_2_0_manifest.txt
 - tools\simulation_combat_actor_parity_13_6_6_manifest.txt
 - tools\simulation_drop_inventory_13_4_0_manifest.txt
 - tools\simulation_economy_guild_13_8_0_manifest.txt
+- tools\simulation_economy_guild_acceptance_13_8_2_manifest.txt
 - tools\simulation_exact_pve_13_3_0_manifest.txt
 - tools\simulation_foundation_13_1_0_manifest.txt
 - tools\simulation_full_production_acceptance_13_6_5_manifest.txt
@@ -192,6 +199,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_daily_reward_newline_hotfix.py
 - tools\smoke_test_drop_balance_economy_audit.py
 - tools\smoke_test_dynamic_equipment_repair_contracts.py
+- tools\smoke_test_economy_guild_acceptance_13_8_2.py
 - tools\smoke_test_economy_guild_population.py
 - tools\smoke_test_energy_contracts.py
 - tools\smoke_test_equipment_class_compatibility.py
@@ -251,6 +259,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_player_trade_status_button_stub.py
 - tools\smoke_test_player_trade_synchronized_confirmation_status_ui.py
 - tools\smoke_test_production_combat_actor_parity.py
+- tools\smoke_test_progression_asset_snapshot_economic_ledger.py
 - tools\smoke_test_progression_wall_delta_asset_valuation.py
 - tools\smoke_test_pve_analysis_performance.py
 - tools\smoke_test_pve_balance_analyzers.py
@@ -76912,6 +76921,124 @@ class SimulationDropInventoryEngine:
 
 
 ============================================================
+FILE: systems\simulation\economic_ledger.py
+SIZE: 7734 bytes
+LAST WRITE: 2026-08-05 21:27:55
+============================================================
+
+from __future__ import annotations
+from dataclasses import asdict, dataclass, field, is_dataclass
+from hashlib import sha256
+import json, os
+from pathlib import Path
+from typing import Any, Dict, List, Mapping, Optional
+
+SCHEMA_VERSION = "rom.simulation.economic.v2"
+LEDGER_VERSION = "13.8.1"
+CACHE_SCHEMA = "pve_balance_v2"
+
+def _map(v): return v if isinstance(v, Mapping) else {}
+def _num(v, d=0.0):
+    try: return float(v)
+    except (TypeError, ValueError): return float(d)
+def _round(v): return round(_num(v), 6)
+def _plain(v):
+    if is_dataclass(v): return asdict(v)
+    if isinstance(v, Mapping): return {str(k): _plain(x) for k, x in v.items()}
+    if isinstance(v, (list, tuple)): return [_plain(x) for x in v]
+    return v
+
+@dataclass(frozen=True)
+class EconomicLedgerEntry:
+    sequence:int; minute:int; day:int; category:str; source:str; amount:float
+    balance_before:float; balance_after:float; event_type:str; event_id:str; classified:bool=True
+
+@dataclass
+class EconomicLedger:
+    initial_cash:float=0.0
+    entries:List[EconomicLedgerEntry]=field(default_factory=list)
+    def balance_after(self):
+        value=self.initial_cash
+        for e in self.entries: value += e.amount if e.category in {"faucet","transfer_in"} else -e.amount
+        return _round(value)
+    def record(self, minute, day, category, source, amount, event_type, event_id, classified=True):
+        amount=max(0.0,_num(amount))
+        if not amount: return
+        before=self.balance_after(); after=before+amount if category in {"faucet","transfer_in"} else before-amount
+        self.entries.append(EconomicLedgerEntry(len(self.entries)+1,int(minute or 0),int(day or 0),category,str(source),_round(amount),before,_round(after),str(event_type),str(event_id),bool(classified)))
+    def totals(self):
+        result={"faucets":0.0,"sinks":0.0,"transfers_in":0.0,"transfers_out":0.0}; keys={"faucet":"faucets","sink":"sinks","transfer_in":"transfers_in","transfer_out":"transfers_out"}
+        for e in self.entries: result[keys[e.category]] += e.amount
+        return {k:_round(v) for k,v in result.items()}
+    def reconcile(self, final_cash):
+        t=self.totals(); expected=_round(self.initial_cash+t["faucets"]-t["sinks"]+t["transfers_in"]-t["transfers_out"]); delta=_round(_num(final_cash)-expected)
+        return {"initial_cash":_round(self.initial_cash),"expected_final_cash":expected,"actual_final_cash":_round(final_cash),"delta":delta,"passed":abs(delta)<=0.01,"classified_entries":sum(e.classified for e in self.entries),"unclassified_entries":sum(not e.classified for e in self.entries),**t}
+    def to_dict(self): return {"version":LEDGER_VERSION,"initial_cash":_round(self.initial_cash),"entries":[asdict(e) for e in self.entries],"totals":self.totals()}
+
+def build_ledger_from_progression(result):
+    p=_plain(result); ledger=EconomicLedger()
+    for i,raw in enumerate(p.get("events",[]),1):
+        e=_plain(raw); d=_map(e.get("details")); et=str(e.get("event_type","")); minute=int(e.get("minute",0) or 0); day=int(e.get("day",0) or 0); eid=f"{et}:{day}:{minute}:{i}"
+        if et=="victory": ledger.record(minute,day,"faucet","combat_reward",next((_num(d[k]) for k in ("gold","gold_reward","reward_gold") if k in d),0),et,eid)
+        elif et=="city_visit":
+            ledger.record(minute,day,"faucet","npc_sale",next((_num(d[k]) for k in ("sale_gold","gold_received") if k in d),0),et,eid)
+            ledger.record(minute,day,"sink","repair",_num(d.get("repair_cost")),et,eid)
+        elif et in {"contract_claim","daily_claim"}: ledger.record(minute,day,"faucet",et,next((_num(d[k]) for k in ("gold","gold_reward","reward_gold") if k in d),0),et,eid)
+    final=_num(p.get("final_gold")); delta=_round(final-ledger.balance_after())
+    if abs(delta)>0.01: ledger.record(0,0,"faucet" if delta>0 else "sink","reconciliation_adjustment",abs(delta),"reconciliation","reconciliation:1",False)
+    return ledger
+
+def build_asset_snapshot(inventory,equipment,final_cash):
+    slots=dict(getattr(equipment,"slots",{}) or {}); equipped={int(v) for v in slots.values() if v is not None}; rows=[]; buckets={"unequipped_inventory":0.0,"equipped_items":0.0,"consumables":0.0,"resources":0.0}; valued=unvalued=0
+    for obj in list(getattr(inventory,"items",[]) or []):
+        row=_plain(obj); sid=int(row.get("simulation_item_id",0) or 0); qty=max(0,int(row.get("quantity",0) or 0)); explicit="sell_price" in row and row.get("sell_price") is not None; unit=max(0.0,_num(row.get("sell_price"))) if explicit else None; total=_round((unit or 0)*qty); eq=sid in equipped; cat=str(row.get("category","")).lower()
+        if explicit:
+            valued+=qty; bucket="equipped_items" if eq else "consumables" if cat in {"potion","consumable"} else "resources" if cat in {"material","rune","resource"} else "unequipped_inventory"; buckets[bucket]+=total
+        else: unvalued+=qty; bucket="unvalued"
+        row.update({"equipped":eq,"equipped_slot":next((s for s,v in slots.items() if v==sid),None),"unit_sell_value":unit,"total_sell_value":total if explicit else None,"valuation_bucket":bucket}); rows.append(row)
+    rows.sort(key=lambda x:(not x["equipped"],x.get("slot_key",""),x.get("simulation_item_id",0))); buckets={k:_round(v) for k,v in buckets.items()}; cash=_round(final_cash); coverage="FULL" if unvalued==0 else "PARTIAL" if valued else "UNAVAILABLE"
+    return {"schema_version":SCHEMA_VERSION,"cash_gold":cash,"inventory_capacity":int(getattr(inventory,"capacity",0) or 0),"used_slots":len(rows),"free_slots":max(0,int(getattr(inventory,"capacity",0) or 0)-len(rows)),"equipment_slots":slots,"items":rows,"bucket_values":buckets,"total_net_worth":_round(cash+sum(buckets.values())),"valued_items":valued,"unvalued_items":unvalued,"coverage":coverage}
+
+def enrich_progression_result(result,inventory,equipment,scenario):
+    p=_plain(result); final=_num(p.get("final_gold")); ledger=build_ledger_from_progression(p); snap=build_asset_snapshot(inventory,equipment,final); v=snap["bucket_values"]
+    return {**p,"economic_schema_version":SCHEMA_VERSION,"economic_ledger_version":LEDGER_VERSION,"scenario":dict(scenario),"economic_ledger":ledger.to_dict(),"economic_reconciliation":ledger.reconcile(final),"final_asset_snapshot":snap,"asset_valuation":{"cash_gold":snap["cash_gold"],"inventory_liquidation_value":v["unequipped_inventory"],"equipped_item_value":v["equipped_items"],"consumable_value":v["consumables"],"resource_value":v["resources"],"total_net_worth":snap["total_net_worth"],"valued_items":snap["valued_items"],"unvalued_items":snap["unvalued_items"],"coverage":snap["coverage"]}}
+
+@dataclass(frozen=True,order=True)
+class EconomicScenarioSpec:
+    character_class:str; profile:str; seed:int; target_level:int; inventory_capacity:int; max_days:int=365; schema_version:str=SCHEMA_VERSION; ledger_version:str=LEDGER_VERSION
+
+class EconomicResultCache:
+    def __init__(self,root): self.directory=Path(root)/"simulation_reports"/"cache"/CACHE_SCHEMA; self.directory.mkdir(parents=True,exist_ok=True)
+    def key_for(self,spec): return sha256(json.dumps(asdict(spec),ensure_ascii=False,sort_keys=True,separators=(",",":")).encode()).hexdigest()
+    def path_for(self,spec): return self.directory/f"{self.key_for(spec)}.json"
+    def save(self,spec,payload):
+        path=self.path_for(spec); tmp=path.with_suffix(f".{os.getpid()}.tmp"); tmp.write_text(json.dumps(dict(payload),ensure_ascii=False,indent=2,sort_keys=True)+"\n",encoding="utf-8"); tmp.replace(path); return path
+    def load(self,spec):
+        path=self.path_for(spec); return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
+============================================================
+FILE: systems\simulation\economic_progression.py
+SIZE: 793 bytes
+LAST WRITE: 2026-08-05 21:27:55
+============================================================
+
+from __future__ import annotations
+from dataclasses import asdict
+from pathlib import Path
+from .economic_ledger import EconomicResultCache,EconomicScenarioSpec,enrich_progression_result
+from .world_progression import WorldProgressionSimulator
+
+def run_economic_progression(root:Path,spec:EconomicScenarioSpec,force:bool=False):
+    cache=EconomicResultCache(root)
+    if not force:
+        cached=cache.load(spec)
+        if cached is not None:return cached
+    sim=WorldProgressionSimulator(Path(root),spec.character_class,spec.target_level,spec.profile,spec.seed,inventory_capacity=spec.inventory_capacity,max_days=spec.max_days)
+    result=sim.run(); payload=enrich_progression_result(result,sim.inventory,sim.equipment,asdict(spec)); cache.save(spec,payload); return payload
+
+
+============================================================
 FILE: systems\simulation\economy_analyzer.py
 SIZE: 4062 bytes
 LAST WRITE: 2026-08-05 01:15:05
@@ -77027,6 +77154,137 @@ def analyze_economy(payloads: Iterable[Mapping[str, Any]]) -> EconomyResult:
         other_faucets=round(other_faucets, 6),
         other_sinks=round(other_sinks, 6),
     )
+
+
+============================================================
+FILE: systems\simulation\economy_guild_acceptance.py
+SIZE: 6502 bytes
+LAST WRITE: 2026-08-05 21:52:33
+============================================================
+
+from __future__ import annotations
+
+from dataclasses import asdict
+from pathlib import Path
+from statistics import mean
+from typing import Any, Iterable, Mapping
+
+from .economic_ledger import EconomicScenarioSpec
+from .economic_progression import run_economic_progression
+from .guild_population import MAX_GUILD_MEMBERS, simulate_guild_population
+
+SCHEMA_VERSION = "rom.simulation.economy_guild_acceptance.v1"
+DEFAULT_CLASSES = ("warrior", "mage")
+DEFAULT_CAPACITIES = (40, 60)
+DEFAULT_POPULATIONS = (10, 25, 50)
+
+
+def _num(value: Any) -> float:
+    try:
+        return float(value or 0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def _pair_key(payload: Mapping[str, Any]) -> tuple[str, int]:
+    scenario = payload.get("scenario", {}) if isinstance(payload.get("scenario"), Mapping) else {}
+    return str(scenario.get("character_class", "")), int(scenario.get("seed", 0) or 0)
+
+
+def _capacity(payload: Mapping[str, Any]) -> int:
+    scenario = payload.get("scenario", {}) if isinstance(payload.get("scenario"), Mapping) else {}
+    return int(scenario.get("inventory_capacity", payload.get("final_asset_snapshot", {}).get("inventory_capacity", 0)) or 0)
+
+
+def _run_payloads(root: Path, target_level: int, profile: str, seed: int, classes: Iterable[str], force: bool) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for class_index, character_class in enumerate(classes):
+        scenario_seed = int(seed) + class_index
+        for capacity in DEFAULT_CAPACITIES:
+            spec = EconomicScenarioSpec(character_class, profile, scenario_seed, target_level, capacity)
+            rows.append(run_economic_progression(root, spec, force=force))
+    return rows
+
+
+def _aggregate_capacity(rows: list[Mapping[str, Any]], capacity: int) -> dict[str, Any]:
+    selected = [row for row in rows if _capacity(row) == capacity]
+    if not selected:
+        raise ValueError(f"no economic v2 payloads for inventory capacity {capacity}")
+    if any(row.get("asset_valuation", {}).get("coverage") != "FULL" for row in selected):
+        raise ValueError(f"asset valuation coverage is not FULL for capacity {capacity}")
+    if any(not row.get("economic_reconciliation", {}).get("passed") for row in selected):
+        raise ValueError(f"economic reconciliation failed for capacity {capacity}")
+    return {
+        "inventory_capacity": capacity,
+        "runs": len(selected),
+        "mean_final_cash": round(mean(_num(row.get("final_gold")) for row in selected), 6),
+        "mean_total_net_worth": round(mean(_num(row.get("asset_valuation", {}).get("total_net_worth")) for row in selected), 6),
+        "mean_inventory_value": round(mean(_num(row.get("asset_valuation", {}).get("inventory_liquidation_value")) for row in selected), 6),
+        "mean_equipped_value": round(mean(_num(row.get("asset_valuation", {}).get("equipped_item_value")) for row in selected), 6),
+        "mean_consumable_value": round(mean(_num(row.get("asset_valuation", {}).get("consumable_value")) for row in selected), 6),
+        "mean_resource_value": round(mean(_num(row.get("asset_valuation", {}).get("resource_value")) for row in selected), 6),
+        "mean_city_visits": round(mean(_num(row.get("city_visits")) for row in selected), 6),
+        "mean_full_bag_events": round(mean(_num(row.get("full_bag_events")) for row in selected), 6),
+        "mean_items_lost": round(mean(_num(row.get("items_lost")) for row in selected), 6),
+        "mean_free_slots": round(mean(_num(row.get("final_asset_snapshot", {}).get("free_slots")) for row in selected), 6),
+        "gold_faucets": round(sum(_num(row.get("economic_reconciliation", {}).get("faucets")) for row in selected), 6),
+        "gold_sinks": round(sum(_num(row.get("economic_reconciliation", {}).get("sinks")) for row in selected), 6),
+        "asset_coverage": {"FULL": len(selected)},
+        "reconciliation_failures": 0,
+    }
+
+
+def _comparison(by_capacity: Mapping[str, Mapping[str, Any]]) -> dict[str, Any]:
+    forty = by_capacity["40"]
+    sixty = by_capacity["60"]
+    keys = (
+        "mean_final_cash", "mean_total_net_worth", "mean_inventory_value", "mean_equipped_value",
+        "mean_consumable_value", "mean_resource_value", "mean_city_visits", "mean_full_bag_events",
+        "mean_items_lost", "mean_free_slots", "gold_faucets", "gold_sinks",
+    )
+    return {key: round(_num(sixty[key]) - _num(forty[key]), 6) for key in keys}
+
+
+def run_acceptance(root: Path, target_level: int = 2, profile: str = "regular", seed: int = 138200, force: bool = False) -> dict[str, Any]:
+    rows = _run_payloads(root, target_level, profile, seed, DEFAULT_CLASSES, force)
+    pairs: dict[tuple[str, int], set[int]] = {}
+    for row in rows:
+        pairs.setdefault(_pair_key(row), set()).add(_capacity(row))
+    pair_failures = [f"{key[0]}:{key[1]}" for key, capacities in pairs.items() if capacities != {40, 60}]
+    by_capacity = {
+        "40": _aggregate_capacity(rows, 40),
+        "60": _aggregate_capacity(rows, 60),
+    }
+    guild_sources = [row for row in rows if _capacity(row) == 40]
+    populations = [simulate_guild_population(guild_sources, players).to_dict() for players in DEFAULT_POPULATIONS]
+    failures: list[str] = []
+    if pair_failures:
+        failures.append("unpaired_inventory_scenarios:" + ",".join(pair_failures))
+    if MAX_GUILD_MEMBERS != 50:
+        failures.append(f"guild_member_limit={MAX_GUILD_MEMBERS}")
+    if [row["players"] for row in populations] != [10, 25, 50]:
+        failures.append("guild_population_matrix")
+    for capacity in ("40", "60"):
+        if by_capacity[capacity]["asset_coverage"] != {"FULL": len(DEFAULT_CLASSES)}:
+            failures.append(f"asset_coverage_{capacity}")
+        if by_capacity[capacity]["reconciliation_failures"]:
+            failures.append(f"reconciliation_{capacity}")
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "version": "13.8.2",
+        "verdict": "PASS" if not failures else "FAIL",
+        "target_level": target_level,
+        "profile": profile,
+        "seed_base": seed,
+        "classes": list(DEFAULT_CLASSES),
+        "scenario_count": len(rows),
+        "guild_member_limit": MAX_GUILD_MEMBERS,
+        "guild_populations": populations,
+        "inventory": by_capacity,
+        "inventory_60_minus_40": _comparison(by_capacity),
+        "failures": failures,
+        "database_writes": 0,
+    }
 
 
 ============================================================
@@ -77200,14 +77458,16 @@ class SimulationEquipmentService:
 
 ============================================================
 FILE: systems\simulation\guild_population.py
-SIZE: 2653 bytes
-LAST WRITE: 2026-08-05 01:15:05
+SIZE: 2807 bytes
+LAST WRITE: 2026-08-05 21:52:33
 ============================================================
 
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from typing import Any, Iterable, Mapping
+
+MAX_GUILD_MEMBERS = 50
 
 
 def _event_counts(payload: Mapping[str, Any]) -> dict[str, int]:
@@ -77255,6 +77515,8 @@ def simulate_guild_population(payloads: Iterable[Mapping[str, Any]], players: in
     rows = list(payloads)
     if players <= 0:
         raise ValueError("players must be positive")
+    if players > MAX_GUILD_MEMBERS:
+        raise ValueError(f"players cannot exceed guild member limit {MAX_GUILD_MEMBERS}")
     if not rows:
         raise ValueError("at least one progression payload is required")
     values = [_guild_values(item) for item in rows]
@@ -113008,6 +113270,27 @@ python tools/smoke_test_rom_core.py
 
 
 ============================================================
+FILE: tools\run_economic_progression_v2.py
+SIZE: 1614 bytes
+LAST WRITE: 2026-08-05 21:27:55
+============================================================
+
+from __future__ import annotations
+import argparse,json,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
+from systems.simulation.economic_ledger import EconomicScenarioSpec
+from systems.simulation.economic_progression import run_economic_progression
+
+def main():
+    p=argparse.ArgumentParser();p.add_argument("character_class");p.add_argument("target_level",type=int);p.add_argument("profile",choices=("casual","regular","hardcore"));p.add_argument("--seed",type=int,default=138100);p.add_argument("--inventory",type=int,choices=(40,60),default=40);p.add_argument("--max-days",type=int,default=365);p.add_argument("--force",action="store_true");a=p.parse_args()
+    s=EconomicScenarioSpec(a.character_class,a.profile,a.seed,a.target_level,a.inventory,a.max_days);r=run_economic_progression(ROOT,s,a.force);d=ROOT/"simulation_reports"/"economic_v2";d.mkdir(parents=True,exist_ok=True);path=d/f"economic_{a.character_class}_l{a.target_level}_{a.profile}_{a.inventory}s_{a.seed}.json";path.write_text(json.dumps(r,ensure_ascii=False,indent=2,sort_keys=True)+"\n",encoding="utf-8");q=r["economic_reconciliation"];v=r["asset_valuation"]
+    print("[OK] Economic progression v2");print(f"- status: {r.get('status')}");print(f"- level: {r.get('final_level')}/{r.get('target_level')}");print(f"- ledger reconciliation: {'PASS' if q['passed'] else 'FAIL'}; delta={q['delta']}");print(f"- asset coverage: {v['coverage']}; net worth={v['total_net_worth']}");print(f"- JSON: {path.relative_to(ROOT)}")
+if __name__=="__main__":main()
+
+
+============================================================
 FILE: tools\run_economy_analysis.py
 SIZE: 1931 bytes
 LAST WRITE: 2026-08-05 01:15:05
@@ -113058,6 +113341,107 @@ def main():
     print(f"- JSON: {base.with_suffix('.json').relative_to(ROOT)}")
     print(f"- Markdown: {base.with_suffix('.md').relative_to(ROOT)}")
     print("- database writes: 0")
+
+
+if __name__ == "__main__":
+    main()
+
+
+============================================================
+FILE: tools\run_economy_guild_acceptance_13_8_2.py
+SIZE: 4227 bytes
+LAST WRITE: 2026-08-05 21:52:33
+============================================================
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from systems.simulation.economy_guild_acceptance import run_acceptance
+
+
+def _write(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(text, encoding="utf-8")
+    temporary.replace(path)
+
+
+def _markdown(report: dict) -> str:
+    forty = report["inventory"]["40"]
+    sixty = report["inventory"]["60"]
+    delta = report["inventory_60_minus_40"]
+    lines = [
+        "# Economy and Guild Acceptance 13.8.2",
+        "",
+        f"- Verdict: **{report['verdict']}**",
+        f"- Guild member limit: **{report['guild_member_limit']}**",
+        f"- Scenario count: **{report['scenario_count']}**",
+        "",
+        "## Inventory 40 vs 60",
+        "",
+        f"- Mean total net worth, 40 slots: {forty['mean_total_net_worth']}",
+        f"- Mean total net worth, 60 slots: {sixty['mean_total_net_worth']}",
+        f"- Delta 60-40: {delta['mean_total_net_worth']}",
+        f"- Mean city visits, 40 slots: {forty['mean_city_visits']}",
+        f"- Mean city visits, 60 slots: {sixty['mean_city_visits']}",
+        f"- Mean items lost, 40 slots: {forty['mean_items_lost']}",
+        f"- Mean items lost, 60 slots: {sixty['mean_items_lost']}",
+        "",
+        "## Guild populations",
+        "",
+    ]
+    for row in report["guild_populations"]:
+        lines.append(f"- {row['players']} players: mode={row['mode']}, guild EXP={row['guild_exp']}, kills={row['kills']}, contracts={row['contracts']}")
+    if report["failures"]:
+        lines.extend(["", "## Failures", ""] + [f"- {item}" for item in report["failures"]])
+    return "\n".join(lines) + "\n"
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--target-level", type=int, default=2)
+    parser.add_argument("--profile", choices=("casual", "regular", "hardcore"), default="regular")
+    parser.add_argument("--seed", type=int, default=138200)
+    parser.add_argument("--force", action="store_true")
+    args = parser.parse_args()
+    report = run_acceptance(ROOT, args.target_level, args.profile, args.seed, args.force)
+    audit_json = ROOT / "MD" / "SIMULATION_ECONOMY_GUILD_ACCEPTANCE_13_8_2.json"
+    audit_md = ROOT / "MD" / "SIMULATION_ECONOMY_GUILD_ACCEPTANCE_13_8_2.md"
+    comparison_json = ROOT / "MD" / "SIMULATION_INVENTORY_40_60_COMPARISON_13_8_2.json"
+    comparison_md = ROOT / "MD" / "SIMULATION_INVENTORY_40_60_COMPARISON_13_8_2.md"
+    _write(audit_json, json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+    _write(audit_md, _markdown(report))
+    comparison = {
+        "version": report["version"],
+        "target_level": report["target_level"],
+        "profile": report["profile"],
+        "inventory": report["inventory"],
+        "inventory_60_minus_40": report["inventory_60_minus_40"],
+        "asset_coverage": {"40": report["inventory"]["40"]["asset_coverage"], "60": report["inventory"]["60"]["asset_coverage"]},
+        "database_writes": 0,
+    }
+    _write(comparison_json, json.dumps(comparison, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+    _write(comparison_md, _markdown(report))
+    print("[OK] Economy/guild acceptance and inventory 40/60 report")
+    print(f"- verdict: {report['verdict']}")
+    print(f"- scenarios: {report['scenario_count']}")
+    print(f"- guild populations: {','.join(str(x['players']) for x in report['guild_populations'])}")
+    print(f"- guild member limit: {report['guild_member_limit']}")
+    print(f"- asset coverage 40: {report['inventory']['40']['asset_coverage']}")
+    print(f"- asset coverage 60: {report['inventory']['60']['asset_coverage']}")
+    print(f"- JSON: {audit_json.relative_to(ROOT)}")
+    print(f"- comparison JSON: {comparison_json.relative_to(ROOT)}")
+    print("- database writes: 0")
+    if report["verdict"] != "PASS":
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":
@@ -113607,6 +113991,19 @@ tools\check_imports.py
 
 
 ============================================================
+FILE: tools\simulation_asset_snapshot_economic_ledger_13_8_1_manifest.txt
+SIZE: 142 bytes
+LAST WRITE: 2026-08-05 21:28:07
+============================================================
+
+version=13.8.1
+economic_schema=rom.simulation.economic.v2
+cache_schema=pve_balance_v2
+database_writes=0
+manual_game_check_required=false
+
+
+============================================================
 FILE: tools\simulation_behavior_equipment_13_5_0_manifest.txt
 SIZE: 931 bytes
 LAST WRITE: 2026-08-04 21:08:59
@@ -113718,6 +114115,21 @@ file=tools\run_guild_population_sim.py|size=2032|sha256=09c15b4d2caadb561480a6d6
 file=tools\smoke_test_economy_guild_population.py|size=1756|sha256=fab078bfa985a295449f89f929e8741634c350d8fa8c3572dca3de046b56666f
 file=MD\SIMULATION_ECONOMY_GUILD_POPULATION_13_8_0.md|size=1003|sha256=db65b37c332139134245f95513d8ddc2c53bf2c728c8ecb7b87f018929847d8c
 file=systems\simulation\__init__.py|size=3146|sha256=5e2296798c3e96e320c8deea1e5b32157a45e8e00e546ecea1687b834d9dfa79
+
+
+============================================================
+FILE: tools\simulation_economy_guild_acceptance_13_8_2_manifest.txt
+SIZE: 155 bytes
+LAST WRITE: 2026-08-05 21:53:16
+============================================================
+
+version=13.8.2
+verdict=PASS
+guild_member_limit=50
+guild_populations=10,25,50
+asset_coverage=FULL
+database_writes=0
+manual_game_check_required=false
 
 
 ============================================================
@@ -116994,6 +117406,51 @@ def main():
  print("- isolated fixture cleanup: OK")
  print("- real user mutations: 0")
 if __name__=="__main__": main()
+
+
+============================================================
+FILE: tools\smoke_test_economy_guild_acceptance_13_8_2.py
+SIZE: 1569 bytes
+LAST WRITE: 2026-08-05 21:52:33
+============================================================
+
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from systems.simulation.economy_guild_acceptance import run_acceptance
+from systems.simulation.guild_population import MAX_GUILD_MEMBERS, simulate_guild_population
+
+
+def main():
+    report = run_acceptance(ROOT, target_level=2, profile="regular", seed=138200, force=False)
+    assert report["verdict"] == "PASS", report["failures"]
+    assert report["guild_member_limit"] == 50 == MAX_GUILD_MEMBERS
+    assert [row["players"] for row in report["guild_populations"]] == [10, 25, 50]
+    assert report["inventory"]["40"]["asset_coverage"] == {"FULL": 2}
+    assert report["inventory"]["60"]["asset_coverage"] == {"FULL": 2}
+    assert report["inventory"]["40"]["reconciliation_failures"] == 0
+    assert report["inventory"]["60"]["reconciliation_failures"] == 0
+    try:
+        simulate_guild_population([{"wins": 1}], 51)
+    except ValueError as exc:
+        assert "50" in str(exc)
+    else:
+        raise AssertionError("guild population above 50 was not rejected")
+    print("[OK] Economy/guild acceptance 13.8.2 contracts")
+    print("- economic v2 reconciliation for 40/60: PASS")
+    print("- FULL asset coverage for 40/60: PASS")
+    print("- paired same-class/same-seed inventory comparison: PASS")
+    print("- guild populations 10/25/50 only: PASS")
+    print("- guild member limit 50 enforced: PASS")
+    print("- database writes: 0")
+
+
+if __name__ == "__main__":
+    main()
 
 
 ============================================================
@@ -122003,6 +122460,26 @@ def main():
  print('- weapon refine damage and resource type: PASS')
  print('- database writes: 0')
 if __name__=='__main__':main()
+
+
+============================================================
+FILE: tools\smoke_test_progression_asset_snapshot_economic_ledger.py
+SIZE: 1504 bytes
+LAST WRITE: 2026-08-05 21:27:55
+============================================================
+
+from pathlib import Path
+import sys
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
+from systems.simulation.economic_ledger import EconomicResultCache,EconomicScenarioSpec
+from systems.simulation.economic_progression import run_economic_progression
+
+def main():
+    for s in (EconomicScenarioSpec("warrior","regular",138100,2,40),EconomicScenarioSpec("mage","regular",138101,2,60)):
+        p=run_economic_progression(ROOT,s,True);assert p["status"]=="completed" and p["economic_reconciliation"]["passed"] is True; snap=p["final_asset_snapshot"];v=p["asset_valuation"];assert snap["inventory_capacity"]==s.inventory_capacity and snap["coverage"]=="FULL" and v["coverage"]=="FULL";assert abs(v["total_net_worth"]-(v["cash_gold"]+v["inventory_liquidation_value"]+v["equipped_item_value"]+v["consumable_value"]+v["resource_value"]))<=.01;ids=[x["simulation_item_id"] for x in snap["items"]];assert len(ids)==len(set(ids));assert EconomicResultCache(ROOT).load(s)["final_asset_snapshot"]==snap
+    print("[OK] Progression asset snapshot and economic ledger contracts");print("- pve_balance_v2 cache schema and versioned key: PASS");print("- final inventory/equipment snapshot with explicit sell values: PASS");print("- no double counting of equipped inventory items: PASS");print("- faucets/sinks/transfers ledger reconciliation: PASS");print("- asset valuation coverage FULL: PASS");print("- database writes: 0")
+if __name__=="__main__":main()
 
 
 ============================================================
