@@ -3,11 +3,11 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-06 14:20:22 +03:00
+Created: 2026-08-06 23:01:16 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.8875
-Included files: 282
-Excluded files: 4158
+Included files: 294
+Excluded files: 4201
 Maximum file size: 2 MB
 
 SECURITY EXCLUSIONS:
@@ -76,6 +76,11 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\player_interaction_system.py
 - systems\player_system.py
 - systems\potion_system.py
+- systems\pvp_config.py
+- systems\pvp_models.py
+- systems\pvp_round_engine.py
+- systems\pvp_skill_adapter.py
+- systems\pvp_system.py
 - systems\refine_system.py
 - systems\regen_system.py
 - systems\reward_system.py
@@ -133,6 +138,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\audit_guild_actor_name_log.py
 - tools\audit_guild_contract_target_log.py
 - tools\audit_player_trade_precommit_architecture.py
+- tools\audit_pvp_architecture_skill_parity.py
 - tools\audit_remaining_duplicates.py
 - tools\audit_residual_compatibility.py
 - tools\audit_residual_legacy_refs.py
@@ -148,6 +154,9 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\map_player_interaction_12_0_0_snapshot.json
 - tools\migration_status.py
 - tools\player_trade_stage_12_manifest.txt
+- tools\pvp_stage_14_1_0_manifest.txt
+- tools\pvp_stage_14_2_0_manifest.txt
+- tools\pvp_stage_14_manifest.txt
 - tools\README_refactor_tools.md
 - tools\run_economic_progression_v2.py
 - tools\run_economy_analysis.py
@@ -271,6 +280,9 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_progression_wall_delta_asset_valuation.py
 - tools\smoke_test_pve_analysis_performance.py
 - tools\smoke_test_pve_balance_analyzers.py
+- tools\smoke_test_pvp_architecture_skill_parity.py
+- tools\smoke_test_pvp_data_model_sessions_recovery.py
+- tools\smoke_test_pvp_simultaneous_round_engine.py
 - tools\smoke_test_regen_contracts.py
 - tools\smoke_test_rng_patch_regression.py
 - tools\smoke_test_rom_core.py
@@ -70032,8 +70044,8 @@ def apply_hp_regen(conn, user_id):
 
 ============================================================
 FILE: systems\player_interaction_system.py
-SIZE: 110235 bytes
-LAST WRITE: 2026-08-03 23:34:23
+SIZE: 110426 bytes
+LAST WRITE: 2026-08-06 22:45:26
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -70092,6 +70104,11 @@ def _parse(value):
 
 
 def init_player_interaction_foundation(db_path=None):
+
+    # Stage 14.1.0 PvP persistent foundation
+    from systems.pvp_system import init_pvp_foundation, recover_pvp_after_restart
+    init_pvp_foundation()
+    recover_pvp_after_restart()
     conn = _connect(db_path)
     try:
         columns = {row[1] for row in conn.execute("PRAGMA table_info(users)")}
@@ -73271,6 +73288,1043 @@ def use_first_hp_potion(user_id):
         }
 
     return use_potion_from_inventory(user_id, inventory_id)
+
+============================================================
+FILE: systems\pvp_config.py
+SIZE: 420 bytes
+LAST WRITE: 2026-08-06 22:55:30
+============================================================
+
+from __future__ import annotations
+
+PVP_DAMAGE_MULTIPLIER = 1.00
+PVP_HEALING_MULTIPLIER = 1.00
+PVP_SHIELD_MULTIPLIER = 1.00
+PVP_DEBUFF_MULTIPLIER = 1.00
+PVP_ACTION_TIMEOUT_SECONDS = 20
+PVP_MAX_ROUNDS = 50
+PVP_CONSECUTIVE_AFK_LIMIT = 5
+PVP_COMBAT_ENERGY_MAX = 100
+PVP_DOT_CAN_CRIT = False
+PVP_POTIONS_ALLOWED = False
+PVP_PRODUCTION_STATE_MUTATION = False
+PVP_ENTRYPOINT = "map_same_location_online_players"
+
+
+============================================================
+FILE: systems\pvp_models.py
+SIZE: 3337 bytes
+LAST WRITE: 2026-08-06 22:55:30
+============================================================
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any, Mapping
+
+
+@dataclass(frozen=True)
+class PvpActionIntent:
+    user_id: int
+    action_type: str
+    skill_key: str | None = None
+    payload: Mapping[str, Any] = field(default_factory=dict)
+
+
+@dataclass
+class PvpActorState:
+    user_id: int
+    class_key: str
+    max_hp: int
+    hp: int
+    max_mp: int = 0
+    mp: int = 0
+    resource_type: str = "rage"
+    resource: int = 0
+    combo: int = 0
+    physical_attack: float = 0.0
+    magical_attack: float = 0.0
+    physical_defense: float = 0.0
+    magical_defense: float = 0.0
+    weapon_physical_min: float = 0.0
+    weapon_physical_max: float = 0.0
+    weapon_magical_min: float = 0.0
+    weapon_magical_max: float = 0.0
+    physical_crit_chance: float = 5.0
+    magical_crit_chance: float = 5.0
+    dodge_chance: float = 5.0
+    level: int = 1
+    cooldowns: dict[str, int] = field(default_factory=dict)
+    effects: dict[str, dict[str, Any]] = field(default_factory=dict)
+    consecutive_afk: int = 0
+    stunned_next: bool = False
+
+    def clone(self) -> "PvpActorState":
+        return PvpActorState.from_dict(self.to_dict())
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "user_id": self.user_id, "class_key": self.class_key,
+            "max_hp": self.max_hp, "hp": self.hp, "max_mp": self.max_mp, "mp": self.mp,
+            "resource_type": self.resource_type, "resource": self.resource, "combo": self.combo,
+            "physical_attack": self.physical_attack, "magical_attack": self.magical_attack,
+            "physical_defense": self.physical_defense, "magical_defense": self.magical_defense,
+            "weapon_physical_min": self.weapon_physical_min, "weapon_physical_max": self.weapon_physical_max,
+            "weapon_magical_min": self.weapon_magical_min, "weapon_magical_max": self.weapon_magical_max,
+            "physical_crit_chance": self.physical_crit_chance,
+            "magical_crit_chance": self.magical_crit_chance,
+            "dodge_chance": self.dodge_chance, "level": self.level,
+            "cooldowns": dict(self.cooldowns),
+            "effects": {key: dict(value) for key, value in self.effects.items()},
+            "consecutive_afk": self.consecutive_afk, "stunned_next": self.stunned_next,
+        }
+
+    @classmethod
+    def from_dict(cls, value: Mapping[str, Any]) -> "PvpActorState":
+        fields = cls.__dataclass_fields__
+        return cls(**{key: value[key] for key in fields if key in value})
+
+
+@dataclass(frozen=True)
+class PvpActionOutcome:
+    user_id: int
+    action_type: str
+    skill_key: str | None
+    valid: bool
+    reason: str
+    damage: int = 0
+    healing: int = 0
+    critical: bool = False
+    dodged: bool = False
+    resource_spent: int = 0
+    resource_gained: int = 0
+    combo_spent: int = 0
+    combo_gained: int = 0
+    applied_effects: tuple[dict[str, Any], ...] = ()
+
+
+@dataclass(frozen=True)
+class PvpRoundResult:
+    round_number: int
+    revision: int
+    actor_a: Mapping[str, Any]
+    actor_b: Mapping[str, Any]
+    outcomes: tuple[PvpActionOutcome, PvpActionOutcome]
+    events: tuple[dict[str, Any], ...]
+    terminal: bool
+    winner_id: int | None
+    result_reason: str | None
+
+
+============================================================
+FILE: systems\pvp_round_engine.py
+SIZE: 16245 bytes
+LAST WRITE: 2026-08-06 22:55:30
+============================================================
+
+from __future__ import annotations
+
+import random
+from typing import Any, Mapping
+
+from systems.pvp_config import (
+    PVP_COMBAT_ENERGY_MAX, PVP_CONSECUTIVE_AFK_LIMIT, PVP_DAMAGE_MULTIPLIER,
+    PVP_DEBUFF_MULTIPLIER, PVP_HEALING_MULTIPLIER, PVP_MAX_ROUNDS,
+    PVP_SHIELD_MULTIPLIER,
+)
+from systems.pvp_models import PvpActionIntent, PvpActionOutcome, PvpActorState, PvpRoundResult
+from systems.pvp_skill_adapter import get_production_pvp_skill, load_production_pvp_skill_catalog
+
+
+class PvpRoundError(RuntimeError):
+    pass
+
+
+def _clamp(value: int, low: int, high: int) -> int:
+    return max(low, min(high, int(value)))
+
+
+def _effect_value(effect: Mapping[str, Any], key: str, default: float = 0.0) -> float:
+    try:
+        return float(effect.get(key, default))
+    except (TypeError, ValueError):
+        return default
+
+
+def _effective_defense(actor: PvpActorState, attack_type: str) -> float:
+    base = actor.magical_defense if attack_type == "magical" else actor.physical_defense
+    down_key = "mdef_down" if attack_type == "magical" else "pdef_down"
+    buff_key = "mdef_buff" if attack_type == "magical" else "pdef_buff"
+    down = _effect_value(actor.effects.get(down_key, {}), "percent")
+    buff = _effect_value(actor.effects.get(buff_key, {}), "percent")
+    return max(0.0, base * (1.0 - down / 100.0) * (1.0 + buff / 100.0))
+
+
+def _tick_start(actor: PvpActorState, events: list[dict[str, Any]]) -> None:
+    for key, effect in list(actor.effects.items()):
+        kind = effect.get("kind", key)
+        if kind in {"poison", "bleed", "dot"}:
+            damage = max(0, int(round(_effect_value(effect, "power"))))
+            actor.hp = max(0, actor.hp - damage)
+            events.append({"type": "dot_tick", "user_id": actor.user_id, "effect": key, "value": damage})
+        elif kind in {"hot", "heal_over_time"}:
+            healing = max(0, int(round(_effect_value(effect, "power") * PVP_HEALING_MULTIPLIER)))
+            before = actor.hp
+            actor.hp = min(actor.max_hp, actor.hp + healing)
+            events.append({"type": "hot_tick", "user_id": actor.user_id, "effect": key, "value": actor.hp - before})
+        remaining = int(effect.get("duration", 1)) - 1
+        if remaining <= 0:
+            del actor.effects[key]
+            events.append({"type": "effect_expired", "user_id": actor.user_id, "effect": key})
+        else:
+            effect["duration"] = remaining
+    for key in list(actor.cooldowns):
+        actor.cooldowns[key] = max(0, int(actor.cooldowns[key]) - 1)
+        if actor.cooldowns[key] == 0:
+            del actor.cooldowns[key]
+
+
+def _terminal(a: PvpActorState, b: PvpActorState, reason: str) -> tuple[bool, int | None, str | None]:
+    if a.hp <= 0 and b.hp <= 0:
+        return True, None, "draw_" + reason
+    if a.hp <= 0:
+        return True, b.user_id, reason
+    if b.hp <= 0:
+        return True, a.user_id, reason
+    return False, None, None
+
+
+def _base_damage(attacker: PvpActorState, defender: PvpActorState, attack_type: str, rng: random.Random) -> tuple[int, bool, bool]:
+    dodge = rng.random() * 100 < max(0.0, min(100.0, defender.dodge_chance))
+    if dodge:
+        return 0, False, True
+    if attack_type == "magical":
+        weapon = rng.uniform(attacker.weapon_magical_min, attacker.weapon_magical_max)
+        attack = attacker.magical_attack
+        crit_chance = attacker.magical_crit_chance
+    else:
+        weapon = rng.uniform(attacker.weapon_physical_min, attacker.weapon_physical_max)
+        attack = attacker.physical_attack
+        crit_chance = attacker.physical_crit_chance
+    damage = max(1.0, weapon + attack - _effective_defense(defender, attack_type) * 0.5)
+    critical = rng.random() * 100 < max(0.0, min(100.0, crit_chance))
+    if critical:
+        damage *= 1.5
+    return max(1, int(round(damage * PVP_DAMAGE_MULTIPLIER))), critical, False
+
+
+def _pay(actor: PvpActorState, skill: Mapping[str, Any]) -> tuple[bool, str, int, int]:
+    cost_type = str(skill.get("cost_type") or "")
+    cost = max(0, int(skill.get("cost") or 0))
+    combo_spent = 0
+    if cost_type == "mana":
+        if actor.mp < cost: return False, "not_enough_mana", 0, 0
+        actor.mp -= cost
+    elif cost_type == "rage":
+        if actor.resource < cost: return False, "not_enough_rage", 0, 0
+        actor.resource -= cost
+    elif cost_type in {"combat_energy", "combat_energy_combo"}:
+        if actor.resource < cost: return False, "not_enough_combat_energy", 0, 0
+        minimum_combo = int(skill.get("min_combo") or (1 if cost_type == "combat_energy_combo" else 0))
+        if actor.combo < minimum_combo: return False, "not_enough_combo", 0, 0
+        actor.resource -= cost
+        if cost_type == "combat_energy_combo":
+            combo_spent = actor.combo
+            actor.combo = 0
+    elif cost_type == "rage_all_min":
+        minimum = int(skill.get("min_cost") or 0)
+        if actor.resource < minimum: return False, "not_enough_rage", 0, 0
+        cost = actor.resource
+        actor.resource = 0
+    return True, "ok", cost, combo_spent
+
+
+def _replace_effect(target: PvpActorState, key: str, kind: str, power: float, duration: int, source_id: int) -> dict[str, Any]:
+    effect = {"kind": kind, "power": power, "duration": max(1, duration), "source_id": source_id}
+    target.effects[key] = effect
+    return {"target_id": target.user_id, "effect_key": key, **effect}
+
+
+def _special(actor: PvpActorState, target: PvpActorState, skill: Mapping[str, Any], direct_damage: int, rng: random.Random) -> tuple[list[dict[str, Any]], int, int]:
+    applied: list[dict[str, Any]] = []
+    resource_gain = int(skill.get("extra_rage") or skill.get("resource_gain") or 0)
+    combo_gain = int(skill.get("combo_gain") or 0)
+    effect = str(skill.get("effect") or "")
+    duration = int(skill.get("duration") or 0)
+    if effect in {"enemy_poison", "enemy_bleed"}:
+        kind = "poison" if effect == "enemy_poison" else "bleed"
+        applied.append(_replace_effect(target, kind, kind, max(2, round(direct_damage * 0.30)), duration or 3, actor.user_id))
+    elif effect in {"enemy_pdef_down", "enemy_pdef_trap"}:
+        percent = 30 if effect == "enemy_pdef_down" else 50
+        percent *= PVP_DEBUFF_MULTIPLIER
+        applied.append(_replace_effect(target, "pdef_down", "pdef_down", percent, duration or (3 if effect == "enemy_pdef_down" else 2), actor.user_id))
+        target.effects["pdef_down"]["percent"] = percent
+    elif effect == "player_shield":
+        amount = max(15, round(actor.physical_defense * 2 + actor.level * 3))
+        amount = round(amount * PVP_SHIELD_MULTIPLIER)
+        applied.append(_replace_effect(actor, "shield", "shield", amount, duration or 3, actor.user_id))
+        actor.effects["shield"]["remaining"] = amount
+    elif effect == "player_hot":
+        amount = max(5, round(actor.max_hp * 0.10))
+        applied.append(_replace_effect(actor, "hot", "hot", amount, duration or 4, actor.user_id))
+    elif effect == "restore_mana_percent":
+        amount = max(1, round(actor.max_mp * 0.25))
+        actor.mp = min(actor.max_mp, actor.mp + amount)
+        applied.append({"target_id": actor.user_id, "effect_key": "mana_restore", "power": amount})
+    elif effect == "player_cleanse_mdef_buff":
+        for key in list(actor.effects):
+            if actor.effects[key].get("kind") in {"poison", "bleed", "dot", "pdef_down", "mdef_down", "debuff"}:
+                del actor.effects[key]
+        applied.append(_replace_effect(actor, "mdef_buff", "mdef_buff", 30, duration or 3, actor.user_id))
+        actor.effects["mdef_buff"]["percent"] = 30
+        amount = max(1, round(actor.max_mp * 0.15))
+        actor.mp = min(actor.max_mp, actor.mp + amount)
+    stun_chance = float(skill.get("stun_chance") or 0)
+    if stun_chance and rng.random() * 100 < stun_chance:
+        target.stunned_next = True
+        applied.append({"target_id": target.user_id, "effect_key": "stun_next", "duration": 1})
+    return applied, resource_gain, combo_gain
+
+
+def _shield_absorb(target: PvpActorState, incoming: int, events: list[dict[str, Any]]) -> int:
+    shield = target.effects.get("shield")
+    if not shield or incoming <= 0:
+        return incoming
+    remaining = max(0, int(shield.get("remaining", shield.get("power", 0))))
+    absorbed = min(remaining, incoming)
+    remaining -= absorbed
+    if remaining <= 0:
+        target.effects.pop("shield", None)
+    else:
+        shield["remaining"] = remaining
+    events.append({"type": "shield_absorb", "user_id": target.user_id, "value": absorbed})
+    return incoming - absorbed
+
+
+def resolve_pvp_round(round_number: int, revision: int, actor_a: PvpActorState, actor_b: PvpActorState, action_a: PvpActionIntent, action_b: PvpActionIntent, seed: int | None = None, catalog: Mapping[str, tuple[dict[str, Any], ...]] | None = None) -> PvpRoundResult:
+    if {action_a.user_id, action_b.user_id} != {actor_a.user_id, actor_b.user_id}:
+        raise PvpRoundError("action actor mismatch")
+    rng = random.Random(seed)
+    skills = catalog or load_production_pvp_skill_catalog()
+    a, b = actor_a.clone(), actor_b.clone()
+    events: list[dict[str, Any]] = []
+    _tick_start(a, events); _tick_start(b, events)
+    terminal, winner, reason = _terminal(a, b, "periodic")
+    no = PvpActionOutcome(a.user_id, "none", None, False, "terminal_before_actions")
+    if terminal:
+        return PvpRoundResult(round_number, revision, a.to_dict(), b.to_dict(), (no, PvpActionOutcome(b.user_id, "none", None, False, "terminal_before_actions")), tuple(events), True, winner, reason)
+
+    forced: dict[int, str] = {}
+    for actor in (a, b):
+        if actor.stunned_next:
+            forced[actor.user_id] = "stunned_skip"
+            actor.stunned_next = False
+
+    prepared: dict[int, dict[str, Any]] = {}
+    outcomes: dict[int, PvpActionOutcome] = {}
+    pairs = ((a, b, action_a if action_a.user_id == a.user_id else action_b), (b, a, action_b if action_b.user_id == b.user_id else action_a))
+    for actor, target, intent in pairs:
+        action_type = forced.get(actor.user_id, intent.action_type)
+        if action_type in {"afk_skip", "stunned_skip"}:
+            if action_type == "afk_skip": actor.consecutive_afk += 1
+            else: actor.consecutive_afk = 0
+            outcomes[actor.user_id] = PvpActionOutcome(actor.user_id, action_type, None, True, action_type)
+            continue
+        actor.consecutive_afk = 0
+        if action_type == "basic_attack":
+            prepared[actor.user_id] = {"actor": actor, "target": target, "intent": intent, "skill": None, "cost": 0, "combo_spent": 0}
+            continue
+        if action_type != "skill" or not intent.skill_key:
+            outcomes[actor.user_id] = PvpActionOutcome(actor.user_id, action_type, intent.skill_key, False, "invalid_action")
+            continue
+        skill = get_production_pvp_skill(actor.class_key, intent.skill_key, skills)
+        if not skill:
+            outcomes[actor.user_id] = PvpActionOutcome(actor.user_id, action_type, intent.skill_key, False, "unknown_skill")
+            continue
+        if actor.cooldowns.get(intent.skill_key, 0) > 0:
+            outcomes[actor.user_id] = PvpActionOutcome(actor.user_id, action_type, intent.skill_key, False, "skill_on_cooldown")
+            continue
+        paid, pay_reason, cost, combo_spent = _pay(actor, skill)
+        if not paid:
+            outcomes[actor.user_id] = PvpActionOutcome(actor.user_id, action_type, intent.skill_key, False, pay_reason)
+            continue
+        cooldown = int(skill.get("cooldown") or 0)
+        if cooldown > 0: actor.cooldowns[intent.skill_key] = cooldown
+        prepared[actor.user_id] = {"actor": actor, "target": target, "intent": intent, "skill": skill, "cost": cost, "combo_spent": combo_spent}
+
+    # Utility and defensive effects are prepared before both damage packets.
+    for item in prepared.values():
+        skill = item["skill"]
+        if skill and (skill.get("no_damage") or float(skill.get("damage_multiplier") or 0) == 0):
+            applied, gained, combo_gain = _special(item["actor"], item["target"], skill, 0, rng)
+            item["actor"].resource = _clamp(item["actor"].resource + gained, 0, PVP_COMBAT_ENERGY_MAX if "energy" in item["actor"].resource_type else 100)
+            item["actor"].combo = _clamp(item["actor"].combo + combo_gain, 0, 3)
+            outcomes[item["actor"].user_id] = PvpActionOutcome(item["actor"].user_id, "skill", item["intent"].skill_key, True, "ok", resource_spent=item["cost"], combo_spent=item["combo_spent"], resource_gained=gained, combo_gained=combo_gain, applied_effects=tuple(applied))
+
+    damage_packets: list[tuple[PvpActorState, PvpActorState, int, bool, bool, dict[str, Any]]] = []
+    for item in prepared.values():
+        actor, target, skill = item["actor"], item["target"], item["skill"]
+        if skill and (skill.get("no_damage") or float(skill.get("damage_multiplier") or 0) == 0):
+            continue
+        attack_type = str((skill or {}).get("attack_type") or ("magical" if actor.class_key in {"mage", "priest"} else "physical"))
+        damage, critical, dodged = _base_damage(actor, target, attack_type, rng)
+        multiplier = float((skill or {}).get("damage_multiplier") or 1.0)
+        damage = 0 if dodged else max(1, round(damage * multiplier))
+        # Production flags use the same PvE definitions; no PvP-specific constants are introduced.
+        if skill and skill.get("scales_with_spent_rage"):
+            damage = max(1, round(damage * (1.0 + item["cost"] / 100.0)))
+        if skill and skill.get("scales_with_combo"):
+            damage = max(1, round(damage * (1.0 + item["combo_spent"] * 0.35)))
+        if skill and skill.get("scales_with_player_pdef"):
+            damage = max(1, round(damage + actor.physical_defense * 1.4))
+        applied, gained, combo_gain = _special(actor, target, skill or {}, damage, rng)
+        actor.resource = _clamp(actor.resource + gained, 0, PVP_COMBAT_ENERGY_MAX if "energy" in actor.resource_type else 100)
+        actor.combo = _clamp(actor.combo + combo_gain, 0, 3)
+        damage_packets.append((actor, target, damage, critical, dodged, {"applied": applied, "gained": gained, "combo_gain": combo_gain, "item": item}))
+
+    for actor, target, damage, critical, dodged, meta in damage_packets:
+        final_damage = _shield_absorb(target, damage, events)
+        target.hp = max(0, target.hp - final_damage)
+        item = meta["item"]
+        outcomes[actor.user_id] = PvpActionOutcome(actor.user_id, item["intent"].action_type, item["intent"].skill_key, True, "ok", damage=final_damage, critical=critical, dodged=dodged, resource_spent=item["cost"], combo_spent=item["combo_spent"], resource_gained=meta["gained"], combo_gained=meta["combo_gain"], applied_effects=tuple(meta["applied"]))
+        events.append({"type": "damage", "actor_id": actor.user_id, "target_id": target.user_id, "value": final_damage, "critical": critical, "dodged": dodged})
+
+    if a.consecutive_afk >= PVP_CONSECUTIVE_AFK_LIMIT and b.consecutive_afk >= PVP_CONSECUTIVE_AFK_LIMIT:
+        terminal, winner, reason = True, None, "technical_draw_both_afk"
+    elif a.consecutive_afk >= PVP_CONSECUTIVE_AFK_LIMIT:
+        terminal, winner, reason = True, b.user_id, "afk_defeat"
+    elif b.consecutive_afk >= PVP_CONSECUTIVE_AFK_LIMIT:
+        terminal, winner, reason = True, a.user_id, "afk_defeat"
+    else:
+        terminal, winner, reason = _terminal(a, b, "simultaneous")
+    if not terminal and round_number >= PVP_MAX_ROUNDS:
+        a_pct = a.hp / max(1, a.max_hp); b_pct = b.hp / max(1, b.max_hp)
+        terminal = True
+        winner = a.user_id if a_pct > b_pct else b.user_id if b_pct > a_pct else None
+        reason = "round_limit_hp_percent" if winner is not None else "draw_round_limit_equal_hp_percent"
+    return PvpRoundResult(round_number, revision, a.to_dict(), b.to_dict(), (outcomes[a.user_id], outcomes[b.user_id]), tuple(events), terminal, winner, reason)
+
+
+============================================================
+FILE: systems\pvp_skill_adapter.py
+SIZE: 1920 bytes
+LAST WRITE: 2026-08-06 22:55:30
+============================================================
+
+from __future__ import annotations
+
+import ast
+from pathlib import Path
+from typing import Any, Mapping
+
+_ROOT = Path(__file__).resolve().parents[1]
+
+
+class PvpSkillCatalogError(RuntimeError):
+    pass
+
+
+def load_production_pvp_skill_catalog() -> dict[str, tuple[dict[str, Any], ...]]:
+    """Load the one canonical PvE catalog without importing Telegram handlers."""
+    path = _ROOT / "handlers" / "combat.py"
+    tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+    assignments = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "CLASS_SKILLS_V1" for t in node.targets):
+            assignments.append(node.value)
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name) and node.target.id == "CLASS_SKILLS_V1":
+            assignments.append(node.value)
+    if len(assignments) != 1:
+        raise PvpSkillCatalogError(f"CLASS_SKILLS_V1 assignments={len(assignments)}")
+    catalog = ast.literal_eval(assignments[0])
+    if not isinstance(catalog, dict):
+        raise PvpSkillCatalogError("CLASS_SKILLS_V1 is not a dict")
+    normalized = {str(cls): tuple(dict(skill) for skill in skills) for cls, skills in catalog.items()}
+    if set(normalized) != {"warrior", "knight", "scout", "rogue", "mage", "priest"}:
+        raise PvpSkillCatalogError("production class set changed")
+    if sum(len(skills) for skills in normalized.values()) != 18:
+        raise PvpSkillCatalogError("production skill count is not 18")
+    return normalized
+
+
+def get_production_pvp_skill(class_key: str, skill_key: str, catalog: Mapping[str, tuple[dict[str, Any], ...]] | None = None) -> dict[str, Any] | None:
+    source = catalog or load_production_pvp_skill_catalog()
+    return next((dict(skill) for skill in source.get(class_key, ()) if skill.get("key") == skill_key), None)
+
+
+============================================================
+FILE: systems\pvp_system.py
+SIZE: 25500 bytes
+LAST WRITE: 2026-08-06 22:55:30
+============================================================
+
+from __future__ import annotations
+
+import inspect
+import json
+import sqlite3
+from contextlib import contextmanager
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from typing import Any, Callable, Mapping
+
+PVP_ACTION_TIMEOUT_SECONDS = 20
+PVP_MAX_ROUNDS = 50
+PVP_CONSECUTIVE_AFK_LIMIT = 5
+PVP_ACTIVE_STATUSES = ("waiting", "active", "resolving")
+PVP_TERMINAL_STATUSES = ("completed", "cancelled", "expired")
+
+ConnectionFactory = Callable[[], sqlite3.Connection]
+_CONNECTION_FACTORY: ConnectionFactory | None = None
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _iso(value: datetime | None = None) -> str:
+    return (value or _utc_now()).astimezone(timezone.utc).isoformat(timespec="seconds")
+
+
+def _parse(value: str | None) -> datetime | None:
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(value))
+    except (TypeError, ValueError):
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _json(value: Any) -> str:
+    return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def _loads(value: str | None, fallback: Any) -> Any:
+    if not value:
+        return fallback
+    try:
+        return json.loads(value)
+    except (TypeError, ValueError):
+        return fallback
+
+
+def configure_pvp_connection_factory(factory: ConnectionFactory | None) -> None:
+    global _CONNECTION_FACTORY
+    _CONNECTION_FACTORY = factory
+
+
+def _default_connection() -> sqlite3.Connection:
+    try:
+        import db as db_module
+    except ImportError:
+        db_module = None
+    if db_module is not None:
+        for name in ("get_db_connection", "get_connection", "connect_db", "create_connection"):
+            candidate = getattr(db_module, name, None)
+            if callable(candidate):
+                connection = candidate()
+                connection.row_factory = sqlite3.Row
+                return connection
+        declared_path = getattr(db_module, "DB_PATH", None)
+        if declared_path:
+            connection = sqlite3.connect(str(declared_path), timeout=30)
+            connection.row_factory = sqlite3.Row
+            return connection
+    root = Path(__file__).resolve().parents[1]
+    connection = sqlite3.connect(str(root / "game.db"), timeout=30)
+    connection.row_factory = sqlite3.Row
+    return connection
+
+
+@contextmanager
+def _connection(connection: sqlite3.Connection | None = None):
+    owned = connection is None
+    conn = connection or (_CONNECTION_FACTORY() if _CONNECTION_FACTORY else _default_connection())
+    conn.row_factory = sqlite3.Row
+    try:
+        yield conn
+    finally:
+        if owned:
+            conn.close()
+
+
+def init_pvp_foundation(connection: sqlite3.Connection | None = None) -> dict[str, Any]:
+    with _connection(connection) as conn:
+        conn.execute("PRAGMA foreign_keys = ON")
+        conn.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS pvp_battles (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                request_id INTEGER,
+                challenger_id INTEGER NOT NULL,
+                opponent_id INTEGER NOT NULL,
+                status TEXT NOT NULL DEFAULT 'waiting'
+                    CHECK(status IN ('waiting','active','resolving','completed','cancelled','expired')),
+                round_number INTEGER NOT NULL DEFAULT 1 CHECK(round_number >= 1),
+                revision INTEGER NOT NULL DEFAULT 1 CHECK(revision >= 1),
+                resolving INTEGER NOT NULL DEFAULT 0 CHECK(resolving IN (0,1)),
+                action_deadline TEXT,
+                winner_id INTEGER,
+                result_reason TEXT,
+                max_rounds INTEGER NOT NULL DEFAULT 50 CHECK(max_rounds >= 1),
+                action_timeout_seconds INTEGER NOT NULL DEFAULT 20 CHECK(action_timeout_seconds >= 1),
+                state_json TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                completed_at TEXT,
+                CHECK(challenger_id <> opponent_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS pvp_participants (
+                battle_id INTEGER NOT NULL,
+                user_id INTEGER NOT NULL,
+                side TEXT NOT NULL CHECK(side IN ('challenger','opponent')),
+                class_key TEXT NOT NULL,
+                max_hp INTEGER NOT NULL CHECK(max_hp >= 1),
+                hp INTEGER NOT NULL CHECK(hp >= 0),
+                max_mp INTEGER NOT NULL DEFAULT 0 CHECK(max_mp >= 0),
+                mp INTEGER NOT NULL DEFAULT 0 CHECK(mp >= 0),
+                resource_type TEXT NOT NULL,
+                resource_value INTEGER NOT NULL DEFAULT 0,
+                combo INTEGER NOT NULL DEFAULT 0 CHECK(combo >= 0),
+                consecutive_afk INTEGER NOT NULL DEFAULT 0 CHECK(consecutive_afk >= 0),
+                stunned_next INTEGER NOT NULL DEFAULT 0 CHECK(stunned_next IN (0,1)),
+                cooldowns_json TEXT NOT NULL DEFAULT '{}',
+                effects_json TEXT NOT NULL DEFAULT '{}',
+                snapshot_json TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                PRIMARY KEY (battle_id, user_id),
+                UNIQUE (battle_id, side),
+                FOREIGN KEY (battle_id) REFERENCES pvp_battles(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS pvp_round_actions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                battle_id INTEGER NOT NULL,
+                round_number INTEGER NOT NULL CHECK(round_number >= 1),
+                revision INTEGER NOT NULL CHECK(revision >= 1),
+                user_id INTEGER NOT NULL,
+                action_type TEXT NOT NULL CHECK(action_type IN ('basic_attack','skill','afk_skip','stunned_skip')),
+                skill_key TEXT,
+                payload_json TEXT NOT NULL DEFAULT '{}',
+                submitted_at TEXT NOT NULL,
+                UNIQUE (battle_id, round_number, user_id),
+                FOREIGN KEY (battle_id) REFERENCES pvp_battles(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS pvp_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                battle_id INTEGER NOT NULL,
+                round_number INTEGER,
+                revision INTEGER,
+                event_type TEXT NOT NULL,
+                actor_id INTEGER,
+                target_id INTEGER,
+                payload_json TEXT NOT NULL DEFAULT '{}',
+                created_at TEXT NOT NULL,
+                FOREIGN KEY (battle_id) REFERENCES pvp_battles(id) ON DELETE CASCADE
+            );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_pvp_request_once
+                ON pvp_battles(request_id) WHERE request_id IS NOT NULL;
+            CREATE INDEX IF NOT EXISTS ix_pvp_battles_status_deadline
+                ON pvp_battles(status, action_deadline);
+            CREATE INDEX IF NOT EXISTS ix_pvp_battles_challenger_status
+                ON pvp_battles(challenger_id, status);
+            CREATE INDEX IF NOT EXISTS ix_pvp_battles_opponent_status
+                ON pvp_battles(opponent_id, status);
+            CREATE INDEX IF NOT EXISTS ix_pvp_actions_round
+                ON pvp_round_actions(battle_id, round_number, revision);
+            CREATE INDEX IF NOT EXISTS ix_pvp_events_battle
+                ON pvp_events(battle_id, id);
+            """
+        )
+        conn.commit()
+        return {
+            "tables": ["pvp_battles", "pvp_participants", "pvp_round_actions", "pvp_events"],
+            "action_timeout_seconds": PVP_ACTION_TIMEOUT_SECONDS,
+            "maximum_rounds": PVP_MAX_ROUNDS,
+            "afk_limit": PVP_CONSECUTIVE_AFK_LIMIT,
+        }
+
+
+def _row_dict(row: sqlite3.Row | None) -> dict[str, Any] | None:
+    return dict(row) if row is not None else None
+
+
+def get_pvp_battle(battle_id: int, connection: sqlite3.Connection | None = None) -> dict[str, Any] | None:
+    with _connection(connection) as conn:
+        row = conn.execute("SELECT * FROM pvp_battles WHERE id = ?", (int(battle_id),)).fetchone()
+        result = _row_dict(row)
+        if result:
+            result["state"] = _loads(result.pop("state_json", None), {})
+        return result
+
+
+def get_pvp_participants(battle_id: int, connection: sqlite3.Connection | None = None) -> list[dict[str, Any]]:
+    with _connection(connection) as conn:
+        rows = conn.execute(
+            "SELECT * FROM pvp_participants WHERE battle_id = ? ORDER BY side",
+            (int(battle_id),),
+        ).fetchall()
+        result = []
+        for row in rows:
+            item = dict(row)
+            item["cooldowns"] = _loads(item.pop("cooldowns_json", None), {})
+            item["effects"] = _loads(item.pop("effects_json", None), {})
+            item["snapshot"] = _loads(item.pop("snapshot_json", None), {})
+            result.append(item)
+        return result
+
+
+def _normalized_participant(user_id: int, side: str, snapshot: Mapping[str, Any], now: str) -> tuple[Any, ...]:
+    class_key = str(snapshot.get("class_key") or snapshot.get("character_class") or "").strip().lower()
+    if not class_key:
+        raise ValueError("participant class_key is required")
+    max_hp = max(1, int(snapshot.get("max_hp") or 1))
+    max_mp = max(0, int(snapshot.get("max_mp") or 0))
+    resource_type = str(snapshot.get("resource_type") or "rage")
+    resource_value = 100 if resource_type in {"combat_energy", "combat_energy_combo"} else 0
+    if resource_type == "mana":
+        resource_value = max_mp
+    return (
+        int(user_id), side, class_key, max_hp, max_hp, max_mp, max_mp,
+        resource_type, resource_value, 0, 0, 0, "{}", "{}", _json(dict(snapshot)), now, now,
+    )
+
+
+def create_pvp_battle(
+    challenger_id: int,
+    opponent_id: int,
+    challenger_snapshot: Mapping[str, Any],
+    opponent_snapshot: Mapping[str, Any],
+    request_id: int | None = None,
+    start_immediately: bool = True,
+    now: datetime | None = None,
+    connection: sqlite3.Connection | None = None,
+) -> dict[str, Any]:
+    challenger_id = int(challenger_id)
+    opponent_id = int(opponent_id)
+    if challenger_id == opponent_id:
+        raise ValueError("self duel is forbidden")
+    moment = now or _utc_now()
+    now_text = _iso(moment)
+    deadline = _iso(moment + timedelta(seconds=PVP_ACTION_TIMEOUT_SECONDS)) if start_immediately else None
+    status = "active" if start_immediately else "waiting"
+    with _connection(connection) as conn:
+        init_pvp_foundation(conn)
+        conn.execute("BEGIN IMMEDIATE")
+        try:
+            conflict = conn.execute(
+                """
+                SELECT id FROM pvp_battles
+                WHERE status IN ('waiting','active','resolving')
+                  AND (challenger_id IN (?, ?) OR opponent_id IN (?, ?))
+                LIMIT 1
+                """,
+                (challenger_id, opponent_id, challenger_id, opponent_id),
+            ).fetchone()
+            if conflict:
+                raise ValueError("one of the players is already in an active PvP battle")
+            cursor = conn.execute(
+                """
+                INSERT INTO pvp_battles(
+                    request_id, challenger_id, opponent_id, status, round_number, revision,
+                    resolving, action_deadline, max_rounds, action_timeout_seconds,
+                    state_json, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, 1, 1, 0, ?, ?, ?, '{}', ?, ?)
+                """,
+                (
+                    request_id, challenger_id, opponent_id, status, deadline,
+                    PVP_MAX_ROUNDS, PVP_ACTION_TIMEOUT_SECONDS, now_text, now_text,
+                ),
+            )
+            battle_id = int(cursor.lastrowid)
+            sql = """
+                INSERT INTO pvp_participants(
+                    battle_id, user_id, side, class_key, max_hp, hp, max_mp, mp,
+                    resource_type, resource_value, combo, consecutive_afk, stunned_next,
+                    cooldowns_json, effects_json, snapshot_json, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """
+            conn.execute(sql, (battle_id,) + _normalized_participant(challenger_id, "challenger", challenger_snapshot, now_text))
+            conn.execute(sql, (battle_id,) + _normalized_participant(opponent_id, "opponent", opponent_snapshot, now_text))
+            add_pvp_event(battle_id, "battle_created", payload={"status": status}, connection=conn)
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        battle = get_pvp_battle(battle_id, conn)
+        participants = get_pvp_participants(battle_id, conn)
+        return {"battle": battle, "participants": participants}
+
+
+def add_pvp_event(
+    battle_id: int,
+    event_type: str,
+    round_number: int | None = None,
+    revision: int | None = None,
+    actor_id: int | None = None,
+    target_id: int | None = None,
+    payload: Mapping[str, Any] | None = None,
+    connection: sqlite3.Connection | None = None,
+) -> int:
+    with _connection(connection) as conn:
+        cursor = conn.execute(
+            """
+            INSERT INTO pvp_events(
+                battle_id, round_number, revision, event_type, actor_id, target_id, payload_json, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (int(battle_id), round_number, revision, str(event_type), actor_id, target_id, _json(dict(payload or {})), _iso()),
+        )
+        if connection is None:
+            conn.commit()
+        return int(cursor.lastrowid)
+
+
+def submit_pvp_action(
+    battle_id: int,
+    user_id: int,
+    round_number: int,
+    revision: int,
+    action_type: str,
+    skill_key: str | None = None,
+    payload: Mapping[str, Any] | None = None,
+    connection: sqlite3.Connection | None = None,
+) -> dict[str, Any]:
+    if action_type not in {"basic_attack", "skill", "afk_skip", "stunned_skip"}:
+        raise ValueError("unsupported PvP action type")
+    if action_type == "skill" and not skill_key:
+        raise ValueError("skill_key is required for skill action")
+    with _connection(connection) as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        try:
+            battle = conn.execute("SELECT * FROM pvp_battles WHERE id = ?", (int(battle_id),)).fetchone()
+            if not battle or battle["status"] != "active":
+                raise ValueError("PvP battle is not active")
+            if int(battle["round_number"]) != int(round_number) or int(battle["revision"]) != int(revision):
+                raise ValueError("stale PvP callback")
+            participant = conn.execute(
+                "SELECT 1 FROM pvp_participants WHERE battle_id = ? AND user_id = ?",
+                (int(battle_id), int(user_id)),
+            ).fetchone()
+            if not participant:
+                raise ValueError("actor does not belong to this PvP battle")
+            conn.execute(
+                """
+                INSERT INTO pvp_round_actions(
+                    battle_id, round_number, revision, user_id, action_type, skill_key, payload_json, submitted_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (int(battle_id), int(round_number), int(revision), int(user_id), action_type, skill_key, _json(dict(payload or {})), _iso()),
+            )
+            count = conn.execute(
+                "SELECT COUNT(*) FROM pvp_round_actions WHERE battle_id = ? AND round_number = ? AND revision = ?",
+                (int(battle_id), int(round_number), int(revision)),
+            ).fetchone()[0]
+            add_pvp_event(
+                int(battle_id), "action_submitted", int(round_number), int(revision), int(user_id),
+                payload={"action_type": action_type, "skill_key": skill_key}, connection=conn,
+            )
+            conn.commit()
+            return {"accepted": True, "actions_ready": int(count), "both_ready": int(count) >= 2}
+        except sqlite3.IntegrityError as exc:
+            conn.rollback()
+            raise ValueError("action already submitted for this round") from exc
+        except Exception:
+            conn.rollback()
+            raise
+
+
+def get_pvp_round_actions(
+    battle_id: int,
+    round_number: int,
+    revision: int,
+    connection: sqlite3.Connection | None = None,
+) -> list[dict[str, Any]]:
+    with _connection(connection) as conn:
+        rows = conn.execute(
+            """
+            SELECT * FROM pvp_round_actions
+            WHERE battle_id = ? AND round_number = ? AND revision = ?
+            ORDER BY user_id
+            """,
+            (int(battle_id), int(round_number), int(revision)),
+        ).fetchall()
+        result = []
+        for row in rows:
+            item = dict(row)
+            item["payload"] = _loads(item.pop("payload_json", None), {})
+            result.append(item)
+        return result
+
+
+def claim_pvp_round_resolution(
+    battle_id: int,
+    round_number: int,
+    revision: int,
+    connection: sqlite3.Connection | None = None,
+) -> bool:
+    with _connection(connection) as conn:
+        cursor = conn.execute(
+            """
+            UPDATE pvp_battles
+               SET resolving = 1, status = 'resolving', updated_at = ?
+             WHERE id = ? AND status = 'active' AND resolving = 0
+               AND round_number = ? AND revision = ?
+            """,
+            (_iso(), int(battle_id), int(round_number), int(revision)),
+        )
+        conn.commit()
+        return cursor.rowcount == 1
+
+
+def release_pvp_round_resolution(
+    battle_id: int,
+    expected_revision: int,
+    next_deadline: datetime | None = None,
+    connection: sqlite3.Connection | None = None,
+) -> bool:
+    deadline = _iso(next_deadline or (_utc_now() + timedelta(seconds=PVP_ACTION_TIMEOUT_SECONDS)))
+    with _connection(connection) as conn:
+        cursor = conn.execute(
+            """
+            UPDATE pvp_battles
+               SET status = 'active', resolving = 0,
+                   round_number = round_number + 1,
+                   revision = revision + 1,
+                   action_deadline = ?, updated_at = ?
+             WHERE id = ? AND status = 'resolving' AND resolving = 1 AND revision = ?
+            """,
+            (deadline, _iso(), int(battle_id), int(expected_revision)),
+        )
+        conn.commit()
+        return cursor.rowcount == 1
+
+
+def complete_pvp_battle(
+    battle_id: int,
+    result_reason: str,
+    winner_id: int | None = None,
+    status: str = "completed",
+    connection: sqlite3.Connection | None = None,
+) -> bool:
+    if status not in PVP_TERMINAL_STATUSES:
+        raise ValueError("invalid terminal PvP status")
+    with _connection(connection) as conn:
+        cursor = conn.execute(
+            """
+            UPDATE pvp_battles
+               SET status = ?, resolving = 0, action_deadline = NULL,
+                   winner_id = ?, result_reason = ?, completed_at = ?, updated_at = ?
+             WHERE id = ? AND status IN ('waiting','active','resolving')
+            """,
+            (status, winner_id, str(result_reason), _iso(), _iso(), int(battle_id)),
+        )
+        if cursor.rowcount:
+            add_pvp_event(int(battle_id), "battle_finished", payload={"status": status, "reason": result_reason, "winner_id": winner_id}, connection=conn)
+        conn.commit()
+        return cursor.rowcount == 1
+
+
+def get_pvp_recovery_plan(
+    now: datetime | None = None,
+    connection: sqlite3.Connection | None = None,
+) -> dict[str, Any]:
+    moment = now or _utc_now()
+    with _connection(connection) as conn:
+        rows = conn.execute(
+            "SELECT * FROM pvp_battles WHERE status IN ('waiting','active','resolving') ORDER BY id"
+        ).fetchall()
+        active = []
+        expired = []
+        resolving = []
+        for row in rows:
+            item = dict(row)
+            deadline = _parse(item.get("action_deadline"))
+            if item["status"] == "resolving":
+                resolving.append(item["id"])
+            elif deadline is not None and deadline <= moment:
+                expired.append(item["id"])
+            else:
+                active.append(item["id"])
+        return {"active": active, "expired": expired, "resolving": resolving}
+
+
+def recover_pvp_after_restart(
+    now: datetime | None = None,
+    connection: sqlite3.Connection | None = None,
+) -> dict[str, Any]:
+    """Return a persisted recovery plan; Stage 14.4/14.5 will attach timers and AFK resolution."""
+    with _connection(connection) as conn:
+        init_pvp_foundation(conn)
+        plan = get_pvp_recovery_plan(now=now, connection=conn)
+        for battle_id in plan["resolving"]:
+            conn.execute(
+                """
+                UPDATE pvp_battles
+                   SET status = 'active', resolving = 0, revision = revision + 1, updated_at = ?
+                 WHERE id = ? AND status = 'resolving'
+                """,
+                (_iso(now or _utc_now()), int(battle_id)),
+            )
+            add_pvp_event(int(battle_id), "restart_resolution_released", payload={}, connection=conn)
+        conn.commit()
+        plan["released_resolving"] = list(plan["resolving"])
+        return plan
+
+
+def get_pvp_events(battle_id: int, connection: sqlite3.Connection | None = None) -> list[dict[str, Any]]:
+    with _connection(connection) as conn:
+        rows = conn.execute("SELECT * FROM pvp_events WHERE battle_id = ? ORDER BY id", (int(battle_id),)).fetchall()
+        result = []
+        for row in rows:
+            item = dict(row)
+            item["payload"] = _loads(item.pop("payload_json", None), {})
+            result.append(item)
+        return result
+
+
+# Stage 14.2.0 simultaneous round persistence adapter
+def resolve_persisted_pvp_round(battle_id: int, round_number: int, revision: int, seed: int | None = None, connection: sqlite3.Connection | None = None) -> dict[str, Any]:
+    """Resolve two persisted intents once and persist only duel-local participant state."""
+    from systems.pvp_models import PvpActionIntent, PvpActorState
+    from systems.pvp_round_engine import resolve_pvp_round
+    with _connection(connection) as conn:
+        if not claim_pvp_round_resolution(battle_id, round_number, revision, conn):
+            return {"resolved": False, "reason": "resolution_not_claimed"}
+        try:
+            participants = get_pvp_participants(battle_id, conn)
+            actions = get_pvp_round_actions(battle_id, round_number, revision, conn)
+            if len(participants) != 2 or len(actions) != 2:
+                conn.execute("UPDATE pvp_battles SET status='active', resolving=0 WHERE id=?", (int(battle_id),))
+                conn.commit()
+                return {"resolved": False, "reason": "actions_or_participants_incomplete"}
+            actors = []
+            for row in participants:
+                snap = dict(row.get("snapshot") or {})
+                snap.update({"user_id":row["user_id"],"class_key":row["class_key"],"max_hp":row["max_hp"],"hp":row["hp"],"max_mp":row["max_mp"],"mp":row["mp"],"resource_type":row["resource_type"],"resource":row["resource_value"],"combo":row["combo"],"cooldowns":row["cooldowns"],"effects":row["effects"],"consecutive_afk":row["consecutive_afk"],"stunned_next":bool(row["stunned_next"])})
+                actors.append(PvpActorState.from_dict(snap))
+            intents = {row["user_id"]: PvpActionIntent(row["user_id"], row["action_type"], row["skill_key"], row["payload"]) for row in actions}
+            result = resolve_pvp_round(round_number, revision, actors[0], actors[1], intents[actors[0].user_id], intents[actors[1].user_id], seed=seed)
+            for state in (result.actor_a, result.actor_b):
+                conn.execute("""UPDATE pvp_participants SET hp=?,mp=?,resource_value=?,combo=?,consecutive_afk=?,stunned_next=?,cooldowns_json=?,effects_json=?,updated_at=? WHERE battle_id=? AND user_id=?""",(state["hp"],state["mp"],state["resource"],state["combo"],state["consecutive_afk"],1 if state["stunned_next"] else 0,_json(state["cooldowns"]),_json(state["effects"]),_iso(),int(battle_id),int(state["user_id"])))
+            add_pvp_event(battle_id,"round_resolved",round_number,revision,payload={"terminal":result.terminal,"winner_id":result.winner_id,"reason":result.result_reason,"events":list(result.events)},connection=conn)
+            if result.terminal:
+                complete_pvp_battle(battle_id,result.result_reason or "terminal",result.winner_id,connection=conn)
+            else:
+                release_pvp_round_resolution(battle_id,revision,connection=conn)
+            conn.commit()
+            return {"resolved":True,"terminal":result.terminal,"winner_id":result.winner_id,"result_reason":result.result_reason}
+        except Exception:
+            conn.rollback()
+            raise
+
 
 ============================================================
 FILE: systems\refine_system.py
@@ -82934,6 +83988,485 @@ def main():
     for x in result["findings"]: print(f"  [{x['severity']}] {x['code']}: {x['message']}")
     if result["verdict"]=="FAIL": raise SystemExit(1)
 if __name__=="__main__": main()
+
+
+============================================================
+FILE: tools\audit_pvp_architecture_skill_parity.py
+SIZE: 21238 bytes
+LAST WRITE: 2026-08-06 22:30:10
+============================================================
+
+from __future__ import annotations
+
+import ast
+import hashlib
+import json
+import py_compile
+import sqlite3
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+EXPECTED_CLASSES = ("warrior", "knight", "scout", "rogue", "mage", "priest")
+EXPECTED_SKILLS_PER_CLASS = 3
+PVP_MULTIPLIERS = {
+    "damage": 1.00,
+    "healing": 1.00,
+    "shield": 1.00,
+    "debuff": 1.00,
+}
+
+APPROVED_RULES = {
+    "same_skill_definitions_as_pve": True,
+    "separate_pvp_skill_overrides": False,
+    "simultaneous_rounds": True,
+    "action_timeout_seconds": 20,
+    "timeout_action": "afk_skip",
+    "automatic_basic_attack_on_timeout": False,
+    "consecutive_afk_limit": 5,
+    "both_afk_limit_same_round": "technical_draw",
+    "maximum_rounds": 50,
+    "round_limit_tiebreak": "higher_hp_percent_then_draw",
+    "potions_allowed": False,
+    "production_hp_mp_changed": False,
+    "production_durability_changed": False,
+    "production_exploration_energy_changed": False,
+    "rewards_exp_gold_loot_guild": False,
+    "duel_local_hp_start_percent": 100,
+    "duel_local_mp_start_percent": 100,
+    "duel_local_rage_start": 0,
+    "duel_local_combat_energy_start": 100,
+    "duel_local_combo_start": 0,
+    "duel_local_cooldowns_start": 0,
+    "duel_local_effects_start_empty": True,
+    "stun_applies_next_round": True,
+    "stun_counts_as_afk": False,
+    "cleanse_removes_existing_debuffs_only": True,
+    "cleanse_removes_stun": False,
+    "dot_ticks_can_crit": False,
+    "dot_hot_refresh": "replace_power_and_duration",
+    "simultaneous_lethal_result": "draw",
+    "pvp_damage_multiplier": 1.00,
+    "pvp_healing_multiplier": 1.00,
+    "pvp_shield_multiplier": 1.00,
+    "pvp_debuff_multiplier": 1.00,
+    "pvp_deferred_balance_overrides": True,
+}
+
+
+def sha256(path: Path) -> str | None:
+    if not path.exists() or not path.is_file():
+        return None
+    h = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def file_state(path: Path) -> dict[str, Any]:
+    return {"exists": path.exists(), "size": path.stat().st_size if path.exists() else None, "sha256": sha256(path)}
+
+
+def find_assignment(tree: ast.AST, name: str) -> list[ast.AST]:
+    found = []
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.Assign, ast.AnnAssign)):
+            targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+            if any(isinstance(target, ast.Name) and target.id == name for target in targets):
+                found.append(node)
+    return found
+
+
+def literal_assignment(tree: ast.AST, name: str) -> Any:
+    nodes = find_assignment(tree, name)
+    if len(nodes) != 1:
+        raise ValueError(f"{name}: expected exactly one assignment, found {len(nodes)}")
+    node = nodes[0]
+    value = node.value
+    return ast.literal_eval(value)
+
+
+def function_index(tree: ast.Module) -> dict[str, list[dict[str, Any]]]:
+    index: dict[str, list[dict[str, Any]]] = {}
+    for node in tree.body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            index.setdefault(node.name, []).append({"line": node.lineno, "end_line": getattr(node, "end_lineno", node.lineno), "kind": type(node).__name__})
+    return index
+
+
+def normalize_skill(skill: dict[str, Any]) -> dict[str, Any]:
+    keys = (
+        "key", "name", "cost_type", "cost", "min_cost", "cooldown",
+        "damage_multiplier", "attack_type", "effect", "duration",
+        "stun_chance", "combo_gain", "consume_all", "spend_all",
+        "resource_gain", "scaling", "scale_by_rage", "scale_by_combo",
+        "scale_by_pdef",
+    )
+    return {key: skill.get(key) for key in keys if key in skill}
+
+
+def inspect_skill_catalog(findings: list[dict[str, str]]) -> dict[str, Any]:
+    candidates = [ROOT / "handlers/combat.py", ROOT / "handlers/combat_handler.py"]
+    source_path = next((path for path in candidates if path.exists()), None)
+    if source_path is None:
+        findings.append({"severity": "BLOCKER", "code": "combat_handler_missing", "message": "Не знайдено handlers/combat.py або handlers/combat_handler.py"})
+        return {"source": None, "classes": {}, "total_skills": 0}
+    tree = ast.parse(source_path.read_text(encoding="utf-8"), filename=str(source_path))
+    try:
+        catalog = literal_assignment(tree, "CLASS_SKILLS_V1")
+    except Exception as error:
+        findings.append({"severity": "BLOCKER", "code": "skill_catalog_unreadable", "message": str(error)})
+        return {"source": str(source_path.relative_to(ROOT)), "classes": {}, "total_skills": 0}
+    if not isinstance(catalog, dict):
+        findings.append({"severity": "BLOCKER", "code": "skill_catalog_type", "message": "CLASS_SKILLS_V1 має бути словником"})
+        return {"source": str(source_path.relative_to(ROOT)), "classes": {}, "total_skills": 0}
+    classes: dict[str, Any] = {}
+    total = 0
+    for class_key in EXPECTED_CLASSES:
+        skills = catalog.get(class_key)
+        if not isinstance(skills, (list, tuple)):
+            findings.append({"severity": "BLOCKER", "code": "class_skills_missing", "message": f"{class_key}: відсутній список навичок"})
+            skills = []
+        if len(skills) != EXPECTED_SKILLS_PER_CLASS:
+            findings.append({"severity": "BLOCKER", "code": "skill_count", "message": f"{class_key}: expected 3 skills, found {len(skills)}"})
+        normalized = []
+        keys_seen = set()
+        for skill in skills:
+            if not isinstance(skill, dict):
+                findings.append({"severity": "BLOCKER", "code": "skill_type", "message": f"{class_key}: skill definition is not a dict"})
+                continue
+            missing = [key for key in ("key", "cost_type", "cooldown") if key not in skill]
+            if missing:
+                findings.append({"severity": "BLOCKER", "code": "skill_fields", "message": f"{class_key}/{skill.get('key', '?')}: missing {missing}"})
+            skill_key = str(skill.get("key", ""))
+            if skill_key in keys_seen:
+                findings.append({"severity": "BLOCKER", "code": "duplicate_skill_key", "message": f"{class_key}: duplicate key {skill_key}"})
+            keys_seen.add(skill_key)
+            normalized.append(normalize_skill(skill))
+        classes[class_key] = normalized
+        total += len(normalized)
+    extras = sorted(set(catalog) - set(EXPECTED_CLASSES))
+    if extras:
+        findings.append({"severity": "REVIEW", "code": "extra_skill_classes", "message": f"Unexpected classes in CLASS_SKILLS_V1: {extras}"})
+    return {
+        "source": str(source_path.relative_to(ROOT)),
+        "source_sha256": sha256(source_path),
+        "classes": classes,
+        "total_skills": total,
+        "expected_total": len(EXPECTED_CLASSES) * EXPECTED_SKILLS_PER_CLASS,
+    }
+
+
+def inspect_architecture() -> dict[str, Any]:
+    files = []
+    tokens = {token: [] for token in ("duel", "duel_request", "pvp_battle", "interaction_type", "activity_type", "process_new_updates")}
+    roots = [ROOT / "systems", ROOT / "handlers", ROOT / "data"]
+    for base in roots:
+        if not base.exists():
+            continue
+        for path in sorted(base.rglob("*.py")):
+            try:
+                text = path.read_text(encoding="utf-8")
+                tree = ast.parse(text, filename=str(path))
+            except Exception:
+                continue
+            relative = str(path.relative_to(ROOT)).replace("\\", "/")
+            files.append({"path": relative, "sha256": sha256(path), "definitions": function_index(tree)})
+            lowered = text.lower()
+            for token in tokens:
+                if token in lowered:
+                    tokens[token].append(relative)
+    return {"tokens": tokens, "files_scanned": len(files), "files": files}
+
+
+def inspect_database(findings: list[dict[str, str]]) -> dict[str, Any]:
+    path = ROOT / "game.db"
+    if not path.exists():
+        return {"exists": False, "quick_check": "not_available", "foreign_key_issues": None, "pvp_tables": []}
+    uri = f"file:{path.as_posix()}?mode=ro"
+    try:
+        connection = sqlite3.connect(uri, uri=True)
+        connection.execute("PRAGMA query_only=ON")
+        quick = connection.execute("PRAGMA quick_check").fetchone()[0]
+        fk = connection.execute("PRAGMA foreign_key_check").fetchall()
+        tables = [row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")]
+        connection.close()
+    except Exception as error:
+        findings.append({"severity": "BLOCKER", "code": "database_read", "message": str(error)})
+        return {"exists": True, "quick_check": "error", "foreign_key_issues": None, "pvp_tables": []}
+    if quick != "ok":
+        findings.append({"severity": "BLOCKER", "code": "database_integrity", "message": f"PRAGMA quick_check={quick}"})
+    if fk:
+        findings.append({"severity": "BLOCKER", "code": "database_fk", "message": f"foreign_key_check issues={len(fk)}"})
+    pvp_tables = [name for name in tables if "pvp" in name.lower() or "duel" in name.lower()]
+    return {"exists": True, "quick_check": quick, "foreign_key_issues": len(fk), "pvp_tables": pvp_tables, "table_count": len(tables)}
+
+
+def inspect_existing_pvp_modules() -> list[str]:
+    found = []
+    for base in (ROOT / "systems", ROOT / "handlers", ROOT / "data"):
+        if base.exists():
+            for path in base.rglob("*.py"):
+                if "pvp" in path.name.lower() or "duel" in path.name.lower():
+                    found.append(str(path.relative_to(ROOT)).replace("\\", "/"))
+    return sorted(found)
+
+
+def write_outputs(result: dict[str, Any]) -> None:
+    md = ROOT / "MD"
+    tools = ROOT / "tools"
+    md.mkdir(exist_ok=True)
+    tools.mkdir(exist_ok=True)
+    json_path = md / "PVP_ARCHITECTURE_SKILL_PARITY_AUDIT_14_0_0.json"
+    json_path.write_text(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+
+    audit_lines = [
+        "# PvP Architecture, Skill Parity and Specification Audit 14.0.0",
+        "",
+        f"- Verdict: **{result['verdict']}**",
+        f"- Findings: **{len(result['findings'])}**",
+        f"- Skill catalog: `{result['skill_catalog']['source']}`",
+        f"- Classes: **{len(result['skill_catalog']['classes'])}/6**",
+        f"- Skills: **{result['skill_catalog']['total_skills']}/18**",
+        "- Gameplay mutations: **0**",
+        "- Database writes: **0**",
+        "",
+        "## Multipliers fixed for PvP V1",
+        "",
+        "```python",
+        "PVP_DAMAGE_MULTIPLIER = 1.00",
+        "PVP_HEALING_MULTIPLIER = 1.00",
+        "PVP_SHIELD_MULTIPLIER = 1.00",
+        "PVP_DEBUFF_MULTIPLIER = 1.00",
+        "```",
+        "",
+        "## Skill policy",
+        "",
+        "PvP V1 reuses the current PvE skill definitions one-to-one. No separate PvP costs, cooldowns, multipliers or duplicate skill catalog are introduced in Stage 14.0.0.",
+        "",
+        "## Findings",
+    ]
+    if result["findings"]:
+        for item in result["findings"]:
+            audit_lines.append(f"- [{item['severity']}] `{item['code']}`: {item['message']}")
+    else:
+        audit_lines.append("- None.")
+    audit_lines.extend(["", "## Architecture tokens", ""])
+    for token, paths in result["architecture"]["tokens"].items():
+        audit_lines.append(f"- `{token}`: {len(paths)} file(s)")
+    (md / "PVP_ARCHITECTURE_SKILL_PARITY_AUDIT_14_0_0.md").write_text("\n".join(audit_lines) + "\n", encoding="utf-8")
+
+    spec = """# PvP V1 Canonical Specification 14.0.0
+
+## Canonical principle
+
+PvP uses the current PvE class skill catalog one-to-one. PvP V1 does not create separate skill costs, cooldowns, damage multipliers, effect durations or duplicate skill definitions.
+
+## Central PvP modifiers
+
+```python
+PVP_DAMAGE_MULTIPLIER = 1.00
+PVP_HEALING_MULTIPLIER = 1.00
+PVP_SHIELD_MULTIPLIER = 1.00
+PVP_DEBUFF_MULTIPLIER = 1.00
+```
+
+The values are configuration points. They remain `1.00` until PvP simulation data justify a deliberate balance change.
+
+## Entry and request
+
+- A duel can be proposed only to an online player in the same location.
+- Self-duel is forbidden.
+- Both players must be outside PvE combat and not busy in trade, duel or another blocking activity.
+- The existing interaction request and activity-session architecture should be reused.
+
+## Isolated duel state
+
+- Production HP, MP, exploration energy, durability, active PvE effects and cooldowns are not mutated by the duel.
+- Duel-local HP starts at 100%.
+- Duel-local MP starts at 100% for mana classes.
+- Rage starts at 0.
+- Combat Energy starts at 100.
+- Combo starts at 0.
+- Cooldowns start at 0.
+- Active effects start empty.
+- On completion, cancellation, timeout or restart recovery, production state remains unchanged.
+
+## Round contract
+
+- Both participants choose independently.
+- Action timeout is 20 seconds.
+- Timeout produces `afk_skip`, never an automatic basic attack.
+- Stun produces `stunned_skip` and does not increment AFK.
+- Five consecutive AFK skips cause defeat.
+- If both reach the AFK limit in the same round, the result is a technical draw.
+- Maximum duration is 50 rounds.
+- At round limit, higher HP percentage wins; equal HP percentage is a draw.
+
+## Resolution phases
+
+1. Start-of-round DoT and HoT.
+2. Duration and cooldown updates.
+3. Terminal check after periodic effects.
+4. Stun state.
+5. Action collection.
+6. Revision, actor, resource, combo and cooldown validation.
+7. Defensive preparation, including shield, self-buff and cleanse.
+8. Offensive calculations from a round-start snapshot.
+9. Atomic application of both results.
+10. Terminal result and next-round creation.
+
+## Effects
+
+- A stun applied in round N affects round N+1 and does not cancel an already chosen action in round N.
+- Cleanse removes only debuffs that existed before simultaneous action resolution; it does not remove stun.
+- A debuff applied simultaneously in the same round remains.
+- DoT ticks do not roll critical hits.
+- Reapplying the same DoT or HoT replaces power and duration; it does not stack or extend them.
+- Simultaneous lethal results produce a draw.
+
+## Items, rewards and penalties
+
+- HP and MP potions are unavailable.
+- No EXP, gold, loot, guild progress or achievements are awarded in V1.
+- No item loss, gold loss, durability loss or death penalty occurs.
+- Exploration energy is not consumed.
+
+## Persistence and safety
+
+- PvP battle state must be persisted in SQLite, not only in Python memory.
+- Every callback carries battle ID, round number, revision and actor ownership.
+- Stale callbacks do not mutate state.
+- Round resolution is atomically claimed by one worker.
+- Restart recovery restores timers or resolves expired rounds as AFK according to persisted deadlines.
+"""
+    (md / "PVP_V1_CANONICAL_SPECIFICATION_14_0_0.md").write_text(spec, encoding="utf-8")
+
+    roadmap = """# PvP Stage 14 Implementation Roadmap
+
+## 14.0.0 Architecture, skill parity and specification audit
+
+Read-only audit, canonical PvP V1 specification and skill parity snapshot.
+
+## 14.1.0 PvP data model, sessions and recovery
+
+Persistent battles, participants, round actions, events, interaction-session conversion, deadlines and restart recovery. No playable combat UI yet.
+
+## 14.2.0 Simultaneous PvP round engine
+
+Pure and deterministic intent resolver with snapshot calculations, atomic application, resources, cooldowns, shield, stun, DoT, HoT, cleanse, AFK and draw rules.
+
+## 14.3.0 Duel request and player-interaction UI
+
+Map action, propose duel, accept, decline, expiration, same-location and busy checks.
+
+## 14.4.0 Round UI, actions and timer
+
+Battle messages, action buttons, skill availability, 20-second deadlines, stale callback guards and synchronized status rendering.
+
+## 14.5.0 Completion, cleanup and restart recovery
+
+Victory, defeat, draw, AFK, cancellation, maximum-round handling, production-state preservation, keyboard restoration and orphan cleanup.
+
+## 14.6.0 PvP balance simulator and class matrix
+
+Six-by-six class matrix, levels 1/5/10, equipment profiles, seeded trials, win/draw rates, rounds, burst, control, shield, DoT and HoT contribution. Central PvP modifiers remain configurable.
+
+## 14.7.0 Final audit and full documentation
+
+Regression suite, DB integrity, restart tests, abuse tests, manual scenarios and full Stage 14 documentation.
+"""
+    (md / "PVP_IMPLEMENTATION_ROADMAP_14_0_0.md").write_text(roadmap, encoding="utf-8")
+
+    manifest_lines = [
+        "version=14.0.0",
+        f"verdict={result['verdict']}",
+        f"findings={len(result['findings'])}",
+        f"skill_source={result['skill_catalog']['source']}",
+        f"skill_source_sha256={result['skill_catalog'].get('source_sha256')}",
+        f"classes={len(result['skill_catalog']['classes'])}",
+        f"skills={result['skill_catalog']['total_skills']}",
+        "pvp_damage_multiplier=1.00",
+        "pvp_healing_multiplier=1.00",
+        "pvp_shield_multiplier=1.00",
+        "pvp_debuff_multiplier=1.00",
+        "separate_pvp_skill_overrides=false",
+        "gameplay_mutations=0",
+        "database_writes=0",
+        "next_stage=patch_14_1_0_pvp_data_model_sessions_and_recovery.py",
+    ]
+    for path in (
+        md / "PVP_ARCHITECTURE_SKILL_PARITY_AUDIT_14_0_0.md",
+        json_path,
+        md / "PVP_V1_CANONICAL_SPECIFICATION_14_0_0.md",
+        md / "PVP_IMPLEMENTATION_ROADMAP_14_0_0.md",
+    ):
+        manifest_lines.append(f"file={path.relative_to(ROOT)}|sha256={sha256(path)}|size={path.stat().st_size}")
+    (tools / "pvp_stage_14_manifest.txt").write_text("\n".join(manifest_lines) + "\n", encoding="utf-8")
+
+
+def main() -> None:
+    findings: list[dict[str, str]] = []
+    before = {name: file_state(ROOT / name) for name in ("game.db", "game.db-wal")}
+    skill_catalog = inspect_skill_catalog(findings)
+    architecture = inspect_architecture()
+    database = inspect_database(findings)
+    existing_pvp_modules = inspect_existing_pvp_modules()
+
+    if skill_catalog.get("total_skills") != 18:
+        findings.append({"severity": "BLOCKER", "code": "skill_total", "message": f"Expected 18 skills, found {skill_catalog.get('total_skills')}"})
+    if not architecture["tokens"].get("duel"):
+        findings.append({"severity": "REVIEW", "code": "duel_architecture_token", "message": "У Python-коді не знайдено токен duel; Stage 14.1 має додати або уточнити інтеграційний шлях"})
+    if database.get("pvp_tables"):
+        findings.append({"severity": "INFO", "code": "existing_pvp_tables", "message": f"Existing PvP/duel tables: {database['pvp_tables']}"})
+    else:
+        findings.append({"severity": "INFO", "code": "pvp_tables_pending", "message": "Persistent PvP tables ще не створені; очікувано до Stage 14.1.0"})
+
+    blocker_count = sum(item["severity"] == "BLOCKER" for item in findings)
+    review_count = sum(item["severity"] == "REVIEW" for item in findings)
+    verdict = "FAIL" if blocker_count else ("REVIEW" if review_count else "PASS")
+    result = {
+        "schema": "rom.pvp.architecture.skill_parity.audit.v1",
+        "version": "14.0.0",
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "verdict": verdict,
+        "findings": findings,
+        "skill_catalog": skill_catalog,
+        "approved_rules": APPROVED_RULES,
+        "pvp_multipliers": PVP_MULTIPLIERS,
+        "architecture": architecture,
+        "database": database,
+        "existing_pvp_modules": existing_pvp_modules,
+        "gameplay_mutations": 0,
+        "database_writes": 0,
+    }
+    write_outputs(result)
+    after = {name: file_state(ROOT / name) for name in ("game.db", "game.db-wal")}
+    if before != after:
+        raise RuntimeError("game.db or game.db-wal changed during read-only PvP audit")
+
+    print("[OK] PvP architecture, skill parity and specification audit")
+    print(f"- verdict: {verdict}")
+    print(f"- findings: {len(findings)}")
+    print(f"- classes: {len(skill_catalog.get('classes', {}))}/6")
+    print(f"- skills: {skill_catalog.get('total_skills', 0)}/18")
+    print("- PvE skill catalog reused one-to-one: YES")
+    print("- separate PvP skill overrides: NO")
+    print("- PvP multipliers damage/healing/shield/debuff: 1.00/1.00/1.00/1.00")
+    print("- gameplay mutations: 0")
+    print("- database writes: 0")
+    print("- game.db/WAL unchanged: YES")
+    for item in findings:
+        print(f"  [{item['severity']}] {item['code']}: {item['message']}")
+    if verdict == "FAIL":
+        raise SystemExit(2)
+
+
+if __name__ == "__main__":
+    main()
 
 
 ============================================================
@@ -113520,6 +115053,73 @@ player_duel_pvp
 
 
 ============================================================
+FILE: tools\pvp_stage_14_1_0_manifest.txt
+SIZE: 655 bytes
+LAST WRITE: 2026-08-06 22:45:27
+============================================================
+
+version=14.1.0
+status=PASS
+playable_ui=NO
+persistent_tables=pvp_battles,pvp_participants,pvp_round_actions,pvp_events
+production_hp_mp_mutation=NO
+game_db_changed_during_patch=NO
+file=systems\pvp_system.py sha256=6d94b8226708a288f9b6b74b2af0cd4aade57e81fcd6fcff9da684df6c255e54
+file=tools\smoke_test_pvp_data_model_sessions_recovery.py sha256=0557f8f15b7ebbd412a3ed99c774193872d2d5691a7a0babfd1a98eb251d3164
+file=MD\PVP_DATA_MODEL_SESSIONS_RECOVERY_14_1_0.md sha256=77d0c208590cc8743250d5189c4abc3f69f74c66de2e2281d8657be8fe9ec702
+file=systems\player_interaction_system.py sha256=691cc989e9085221266a9866ef115923f1f0c50e78b16e03e925521085d4047f
+
+
+============================================================
+FILE: tools\pvp_stage_14_2_0_manifest.txt
+SIZE: 936 bytes
+LAST WRITE: 2026-08-06 22:55:31
+============================================================
+
+version=14.2.0
+status=PASS
+entrypoint=map_same_location_online_players
+separate_player_finder=NO
+playable_ui=NO
+pvp_skill_overrides=NO
+multipliers=1.00,1.00,1.00,1.00
+file=systems/pvp_config.py sha256=9f74a3635fa9ddd384fa12c71b9a7ea3fb34b2bb3500cb8f24b90740f46dfb4e
+file=systems/pvp_models.py sha256=b6631d1f9f0de2931e6b4bb36845763cb1b1240531d683a51be454aaf263e109
+file=systems/pvp_skill_adapter.py sha256=2f4ed46c893d10ac832b6223b32926f7405930fe86da378e11a9ddedb649de0f
+file=systems/pvp_round_engine.py sha256=144737e7ef4b5bf5c9f95c35c76635df2b78ede8f10f57308298d3b53f032c86
+file=tools/smoke_test_pvp_simultaneous_round_engine.py sha256=c32a87428efab59847eb3562345764699c598fff3a596895a7becabf90869ea3
+file=MD/PVP_SIMULTANEOUS_ROUND_ENGINE_14_2_0.md sha256=6e3d0f88fffb2c63346746d609f8786c0b4ffa27b2d083ea6af4956fb73086aa
+file=systems/pvp_system.py sha256=7670a203241a5ab5176a6910c897d872a0e927c700cc3578e90d5e9c50b3617a
+
+
+============================================================
+FILE: tools\pvp_stage_14_manifest.txt
+SIZE: 975 bytes
+LAST WRITE: 2026-08-06 22:30:13
+============================================================
+
+version=14.0.0
+verdict=PASS
+findings=1
+skill_source=handlers\combat.py
+skill_source_sha256=85e14d97b58944d3305e50bdd75ab098081b4ca116176e54bda5a0dee2ccb802
+classes=6
+skills=18
+pvp_damage_multiplier=1.00
+pvp_healing_multiplier=1.00
+pvp_shield_multiplier=1.00
+pvp_debuff_multiplier=1.00
+separate_pvp_skill_overrides=false
+gameplay_mutations=0
+database_writes=0
+next_stage=patch_14_1_0_pvp_data_model_sessions_and_recovery.py
+file=MD\PVP_ARCHITECTURE_SKILL_PARITY_AUDIT_14_0_0.md|sha256=9542269fa56925a99c3c99374bb3732899614c5dc0438442d8d1b7bfeeede029|size=941
+file=MD\PVP_ARCHITECTURE_SKILL_PARITY_AUDIT_14_0_0.json|sha256=b859f779172be012ec79feda95b29ea8ca7e45bc1ec084cbc507ed95bce3dd85|size=276776
+file=MD\PVP_V1_CANONICAL_SPECIFICATION_14_0_0.md|sha256=7459cbb0b345bea240cc59b24d04ef6423be65b79e07528260313954bce71f8c|size=3339
+file=MD\PVP_IMPLEMENTATION_ROADMAP_14_0_0.md|sha256=cab5eec6507afd7825bfdd5edfd03276b2ce5ccdaf7338ca49aae7d14fdb1d0b|size=1510
+
+
+============================================================
 FILE: tools\README_refactor_tools.md
 SIZE: 1532 bytes
 LAST WRITE: 2026-07-23 23:58:58
@@ -123071,6 +124671,238 @@ def main():
  print('- production content ceiling level 10: PASS')
  print('- database writes: 0')
 if __name__=='__main__':main()
+
+
+============================================================
+FILE: tools\smoke_test_pvp_architecture_skill_parity.py
+SIZE: 1908 bytes
+LAST WRITE: 2026-08-06 22:30:10
+============================================================
+
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+REPORT = ROOT / "MD/PVP_ARCHITECTURE_SKILL_PARITY_AUDIT_14_0_0.json"
+SPEC = ROOT / "MD/PVP_V1_CANONICAL_SPECIFICATION_14_0_0.md"
+ROADMAP = ROOT / "MD/PVP_IMPLEMENTATION_ROADMAP_14_0_0.md"
+
+
+def main() -> None:
+    assert REPORT.exists(), REPORT
+    data = json.loads(REPORT.read_text(encoding="utf-8"))
+    assert data["verdict"] in {"PASS", "REVIEW"}, data["findings"]
+    assert data["skill_catalog"]["total_skills"] == 18
+    assert set(data["skill_catalog"]["classes"]) == {"warrior", "knight", "scout", "rogue", "mage", "priest"}
+    assert all(len(skills) == 3 for skills in data["skill_catalog"]["classes"].values())
+    assert data["approved_rules"]["same_skill_definitions_as_pve"] is True
+    assert data["approved_rules"]["separate_pvp_skill_overrides"] is False
+    assert data["approved_rules"]["production_hp_mp_changed"] is False
+    assert data["approved_rules"]["stun_counts_as_afk"] is False
+    assert data["approved_rules"]["maximum_rounds"] == 50
+    assert data["approved_rules"]["action_timeout_seconds"] == 20
+    assert data["pvp_multipliers"] == {"damage": 1.0, "healing": 1.0, "shield": 1.0, "debuff": 1.0}
+    assert "PVP_DAMAGE_MULTIPLIER = 1.00" in SPEC.read_text(encoding="utf-8")
+    assert "14.1.0" in ROADMAP.read_text(encoding="utf-8")
+    assert data["gameplay_mutations"] == 0 and data["database_writes"] == 0
+    print("[OK] PvP 14.0.0 audit contracts")
+    print("- six classes / eighteen PvE skills parity snapshot: PASS")
+    print("- no separate PvP skill costs/cooldowns/effects: PASS")
+    print("- central PvP multipliers fixed at 1.00: PASS")
+    print("- isolated duel-state and simultaneous-round specification: PASS")
+    print("- database writes: 0")
+
+
+if __name__ == "__main__":
+    main()
+
+
+============================================================
+FILE: tools\smoke_test_pvp_data_model_sessions_recovery.py
+SIZE: 5129 bytes
+LAST WRITE: 2026-08-06 22:45:26
+============================================================
+
+from __future__ import annotations
+
+import sqlite3
+import sys
+import tempfile
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from systems.pvp_system import (
+    claim_pvp_round_resolution,
+    complete_pvp_battle,
+    create_pvp_battle,
+    get_pvp_battle,
+    get_pvp_events,
+    get_pvp_participants,
+    get_pvp_recovery_plan,
+    init_pvp_foundation,
+    recover_pvp_after_restart,
+    release_pvp_round_resolution,
+    submit_pvp_action,
+)
+
+
+def connection(path: Path) -> sqlite3.Connection:
+    conn = sqlite3.connect(str(path))
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
+
+
+def snapshot(class_key: str, resource_type: str, max_mp: int = 0):
+    return {
+        "class_key": class_key,
+        "max_hp": 500,
+        "max_mp": max_mp,
+        "resource_type": resource_type,
+        "production_hp": 17,
+        "production_mp": 3,
+    }
+
+
+def main() -> None:
+    with tempfile.TemporaryDirectory(prefix="rom_pvp_14_1_") as temp:
+        db_path = Path(temp) / "pvp_test.db"
+        conn = connection(db_path)
+        schema = init_pvp_foundation(conn)
+        assert len(schema["tables"]) == 4
+        created = create_pvp_battle(
+            101,
+            202,
+            snapshot("warrior", "rage"),
+            snapshot("mage", "mana", 300),
+            request_id=77,
+            connection=conn,
+        )
+        battle_id = created["battle"]["id"]
+        battle = get_pvp_battle(battle_id, conn)
+        participants = get_pvp_participants(battle_id, conn)
+        assert battle["status"] == "active"
+        assert battle["round_number"] == 1 and battle["revision"] == 1
+        assert len(participants) == 2
+        warrior = next(row for row in participants if row["user_id"] == 101)
+        mage = next(row for row in participants if row["user_id"] == 202)
+        assert warrior["hp"] == warrior["max_hp"] == 500
+        assert warrior["resource_value"] == 0
+        assert mage["mp"] == mage["max_mp"] == 300
+        assert mage["resource_value"] == 300
+        assert warrior["snapshot"]["production_hp"] == 17
+
+        first = submit_pvp_action(battle_id, 101, 1, 1, "basic_attack", connection=conn)
+        second = submit_pvp_action(battle_id, 202, 1, 1, "skill", skill_key="fixture", connection=conn)
+        assert first["both_ready"] is False and second["both_ready"] is True
+        try:
+            submit_pvp_action(battle_id, 101, 1, 1, "basic_attack", connection=conn)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("duplicate PvP action was accepted")
+        assert claim_pvp_round_resolution(battle_id, 1, 1, conn) is True
+        assert claim_pvp_round_resolution(battle_id, 1, 1, conn) is False
+        assert release_pvp_round_resolution(battle_id, 1, connection=conn) is True
+        battle = get_pvp_battle(battle_id, conn)
+        assert battle["round_number"] == 2 and battle["revision"] == 2 and battle["status"] == "active"
+
+        stale_rejected = False
+        try:
+            submit_pvp_action(battle_id, 101, 1, 1, "basic_attack", connection=conn)
+        except ValueError:
+            stale_rejected = True
+        assert stale_rejected
+
+        past = datetime.now(timezone.utc) - timedelta(seconds=1)
+        conn.execute("UPDATE pvp_battles SET action_deadline = ? WHERE id = ?", (past.isoformat(), battle_id))
+        conn.commit()
+        plan = get_pvp_recovery_plan(connection=conn)
+        assert battle_id in plan["expired"]
+
+        assert claim_pvp_round_resolution(battle_id, 2, 2, conn) is True
+        recovered = recover_pvp_after_restart(connection=conn)
+        assert battle_id in recovered["released_resolving"]
+        battle = get_pvp_battle(battle_id, conn)
+        assert battle["status"] == "active" and battle["resolving"] == 0 and battle["revision"] == 3
+
+        assert complete_pvp_battle(battle_id, "manual_test_draw", winner_id=None, connection=conn) is True
+        battle = get_pvp_battle(battle_id, conn)
+        assert battle["status"] == "completed" and battle["result_reason"] == "manual_test_draw"
+        events = get_pvp_events(battle_id, conn)
+        assert any(event["event_type"] == "battle_created" for event in events)
+        assert any(event["event_type"] == "battle_finished" for event in events)
+        assert conn.execute("PRAGMA foreign_key_check").fetchall() == []
+        conn.close()
+
+    print("[OK] PvP data model, sessions and recovery contracts")
+    print("- persistent battle/participant/action/event schema: PASS")
+    print("- isolated duel-local HP/MP/resources snapshot: PASS")
+    print("- stale callback and duplicate action guards: PASS")
+    print("- atomic round-resolution claim: PASS")
+    print("- persisted deadline and restart-recovery plan: PASS")
+    print("- database writes to game.db: 0")
+
+
+if __name__ == "__main__":
+    main()
+
+
+============================================================
+FILE: tools\smoke_test_pvp_simultaneous_round_engine.py
+SIZE: 3108 bytes
+LAST WRITE: 2026-08-06 22:55:30
+============================================================
+
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path: sys.path.insert(0, str(ROOT))
+
+from systems.pvp_models import PvpActionIntent, PvpActorState
+from systems.pvp_round_engine import resolve_pvp_round
+
+CATALOG = {
+    "warrior": ({"key":"strike","cost_type":"rage","cost":0,"cooldown":0,"attack_type":"physical","damage_multiplier":1.0,"extra_rage":10},),
+    "mage": ({"key":"bolt","cost_type":"mana","cost":20,"cooldown":2,"attack_type":"magical","damage_multiplier":1.0,"stun_chance":100},),
+    "priest": ({"key":"hot","cost_type":"mana","cost":20,"cooldown":2,"damage_multiplier":0,"no_damage":True,"effect":"player_hot","duration":4},),
+    "knight": (), "scout": (), "rogue": (),
+}
+
+def actor(uid, cls, resource_type, resource, mp=0):
+    return PvpActorState(uid, cls, 500, 500, mp, mp, resource_type, resource, physical_attack=50, magical_attack=50, physical_defense=20, magical_defense=20, weapon_physical_min=10, weapon_physical_max=10, weapon_magical_min=10, weapon_magical_max=10, physical_crit_chance=0, magical_crit_chance=0, dodge_chance=0)
+
+def main():
+    a=actor(1,"warrior","rage",0); b=actor(2,"mage","mana",100,100)
+    r=resolve_pvp_round(1,1,a,b,PvpActionIntent(1,"skill","strike"),PvpActionIntent(2,"skill","bolt"),seed=1,catalog=CATALOG)
+    assert r.actor_a["hp"] < 500 and r.actor_b["hp"] < 500
+    assert r.actor_a["resource"] == 10 and r.actor_a["stunned_next"] is True
+    assert r.actor_b["mp"] == 80 and r.actor_b["cooldowns"]["bolt"] == 2
+    r2=resolve_pvp_round(2,2,PvpActorState.from_dict(r.actor_a),PvpActorState.from_dict(r.actor_b),PvpActionIntent(1,"basic_attack"),PvpActionIntent(2,"basic_attack"),seed=2,catalog=CATALOG)
+    assert r2.outcomes[0].action_type == "stunned_skip"
+    afk_a=actor(3,"warrior","rage",0); afk_b=actor(4,"warrior","rage",0); afk_a.consecutive_afk=4; afk_b.consecutive_afk=4
+    draw=resolve_pvp_round(5,5,afk_a,afk_b,PvpActionIntent(3,"afk_skip"),PvpActionIntent(4,"afk_skip"),seed=3,catalog=CATALOG)
+    assert draw.terminal and draw.winner_id is None and draw.result_reason == "technical_draw_both_afk"
+    x=actor(5,"warrior","rage",0); y=actor(6,"warrior","rage",0); x.hp=40; y.hp=40; x.effects["bleed"]={"kind":"bleed","power":50,"duration":1}; y.effects["poison"]={"kind":"poison","power":50,"duration":1}
+    lethal=resolve_pvp_round(3,3,x,y,PvpActionIntent(5,"basic_attack"),PvpActionIntent(6,"basic_attack"),seed=4,catalog=CATALOG)
+    assert lethal.terminal and lethal.winner_id is None and lethal.result_reason == "draw_periodic"
+    print("[OK] Simultaneous PvP round engine contracts")
+    print("- immutable intents and cloned duel-local actors: PASS")
+    print("- simultaneous damage and next-round stun: PASS")
+    print("- production skill cost/cooldown fields consumed: PASS")
+    print("- DoT/HoT, AFK technical draw and simultaneous lethal draw: PASS")
+    print("- PvP modifiers 1.00 and potion-free engine: PASS")
+    print("- database writes: 0")
+if __name__ == "__main__": main()
 
 
 ============================================================

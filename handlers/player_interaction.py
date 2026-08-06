@@ -1827,7 +1827,9 @@ def _register_trade_confirmation_handlers_12_7_0(bot):
 
 
 def register_player_interaction_handlers(bot):
-    """Register the complete Stage 12 player-interaction handler set once."""
+    """Register Stage 12 interaction plus Stage 14 PvP request handlers once."""
+    from handlers.pvp_interaction import register_pvp_interaction_handlers
+    register_pvp_interaction_handlers(bot)
     _register_trade_confirmation_handlers_12_7_0(bot)
     _register_trade_navigation_and_categories_12_6_4(bot)
     _trade_register_amount_input_12_6_3(bot)

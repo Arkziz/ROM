@@ -564,3 +564,10 @@ def resolve_persisted_pvp_round(battle_id: int, round_number: int, revision: int
         except Exception:
             conn.rollback()
             raise
+
+
+# Stage 14.4.0 active battle query used by UI and persisted timer worker
+def list_active_pvp_battles(connection: sqlite3.Connection | None = None) -> list[dict[str, Any]]:
+    with _connection(connection) as conn:
+        rows=conn.execute("SELECT * FROM pvp_battles WHERE status IN ('active','resolving') ORDER BY id").fetchall()
+        return [dict(row) for row in rows]
