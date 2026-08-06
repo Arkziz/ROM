@@ -533,6 +533,7 @@ def get_pvp_events(battle_id: int, connection: sqlite3.Connection | None = None)
 # Stage 14.2.0 simultaneous round persistence adapter
 def resolve_persisted_pvp_round(battle_id: int, round_number: int, revision: int, seed: int | None = None, connection: sqlite3.Connection | None = None) -> dict[str, Any]:
     """Resolve two persisted intents once and persist only duel-local participant state."""
+    from dataclasses import asdict
     from systems.pvp_models import PvpActionIntent, PvpActorState
     from systems.pvp_round_engine import resolve_pvp_round
     with _connection(connection) as conn:
@@ -554,13 +555,27 @@ def resolve_persisted_pvp_round(battle_id: int, round_number: int, revision: int
             result = resolve_pvp_round(round_number, revision, actors[0], actors[1], intents[actors[0].user_id], intents[actors[1].user_id], seed=seed)
             for state in (result.actor_a, result.actor_b):
                 conn.execute("""UPDATE pvp_participants SET hp=?,mp=?,resource_value=?,combo=?,consecutive_afk=?,stunned_next=?,cooldowns_json=?,effects_json=?,updated_at=? WHERE battle_id=? AND user_id=?""",(state["hp"],state["mp"],state["resource"],state["combo"],state["consecutive_afk"],1 if state["stunned_next"] else 0,_json(state["cooldowns"]),_json(state["effects"]),_iso(),int(battle_id),int(state["user_id"])))
-            add_pvp_event(battle_id,"round_resolved",round_number,revision,payload={"terminal":result.terminal,"winner_id":result.winner_id,"reason":result.result_reason,"events":list(result.events)},connection=conn)
+            round_payload = {
+                "round_number": result.round_number,
+                "revision": result.revision,
+                "terminal": result.terminal,
+                "winner_id": result.winner_id,
+                "reason": result.result_reason,
+                "actors": [dict(result.actor_a), dict(result.actor_b)],
+                "outcomes": [asdict(outcome) for outcome in result.outcomes],
+                "events": list(result.events),
+            }
+            add_pvp_event(battle_id,"round_resolved",round_number,revision,payload=round_payload,connection=conn)
             if result.terminal:
                 complete_pvp_battle(battle_id,result.result_reason or "terminal",result.winner_id,connection=conn)
             else:
                 release_pvp_round_resolution(battle_id,revision,connection=conn)
             conn.commit()
-            return {"resolved":True,"terminal":result.terminal,"winner_id":result.winner_id,"result_reason":result.result_reason}
+            return {
+                "resolved": True, "terminal": result.terminal,
+                "winner_id": result.winner_id, "result_reason": result.result_reason,
+                "round_payload": round_payload,
+            }
         except Exception:
             conn.rollback()
             raise
@@ -571,3 +586,48 @@ def list_active_pvp_battles(connection: sqlite3.Connection | None = None) -> lis
     with _connection(connection) as conn:
         rows=conn.execute("SELECT * FROM pvp_battles WHERE status IN ('active','resolving') ORDER BY id").fetchall()
         return [dict(row) for row in rows]
+
+
+# Stage 14.4.0b active-battle lookup and terminal activity-session cleanup
+def get_active_pvp_battle_for_user(user_id: int, connection: sqlite3.Connection | None = None) -> dict[str, Any] | None:
+    uid = int(user_id)
+    with _connection(connection) as conn:
+        row = conn.execute(
+            """
+            SELECT b.*
+              FROM pvp_battles b
+              JOIN pvp_participants p ON p.battle_id = b.id
+             WHERE p.user_id = ? AND b.status IN ('waiting','active','resolving')
+             ORDER BY b.id DESC
+             LIMIT 1
+            """,
+            (uid,),
+        ).fetchone()
+        return dict(row) if row else None
+
+
+def cleanup_terminal_pvp_activity_sessions(connection: sqlite3.Connection | None = None, activity_db_path=None) -> dict[str, Any]:
+    """Release only sessions whose referenced PvP battle is terminal or missing."""
+    from systems.player_interaction_system import release_player_activity_session
+
+    terminal = []
+    with _connection(connection) as conn:
+        rows = conn.execute(
+            """
+            SELECT p.user_id, p.battle_id, b.status
+              FROM pvp_participants p
+              LEFT JOIN pvp_battles b ON b.id = p.battle_id
+             WHERE b.id IS NULL OR b.status IN ('completed','cancelled','expired')
+            """
+        ).fetchall()
+        terminal = [(int(row['user_id']), int(row['battle_id'])) for row in rows]
+    released = 0
+    for user_id, battle_id in terminal:
+        result = release_player_activity_session(
+            user_id,
+            activity_type="pvp_battle",
+            reference_id=battle_id,
+            db_path=activity_db_path,
+        )
+        released += int(result.get("released") or 0)
+    return {"success": True, "released": released, "terminal_participants": len(terminal)}

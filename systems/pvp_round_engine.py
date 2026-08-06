@@ -37,6 +37,21 @@ def _effective_defense(actor: PvpActorState, attack_type: str) -> float:
 
 
 def _tick_start(actor: PvpActorState, events: list[dict[str, Any]]) -> None:
+    # PvE parity: Scout and Rogue restore 20 combat energy at the start of every round,
+    # before action cost validation. Energy is duel-local and capped at 100.
+    if actor.resource_type in {"combat_energy", "combat_energy_combo"}:
+        before_energy = int(actor.resource or 0)
+        actor.resource = min(PVP_COMBAT_ENERGY_MAX, before_energy + 20)
+        restored = actor.resource - before_energy
+        if restored > 0:
+            events.append({
+                "type": "combat_energy_regen",
+                "user_id": actor.user_id,
+                "value": restored,
+                "before": before_energy,
+                "after": actor.resource,
+                "maximum": PVP_COMBAT_ENERGY_MAX,
+            })
     for key, effect in list(actor.effects.items()):
         kind = effect.get("kind", key)
         if kind in {"poison", "bleed", "dot"}:
@@ -47,7 +62,11 @@ def _tick_start(actor: PvpActorState, events: list[dict[str, Any]]) -> None:
             healing = max(0, int(round(_effect_value(effect, "power") * PVP_HEALING_MULTIPLIER)))
             before = actor.hp
             actor.hp = min(actor.max_hp, actor.hp + healing)
-            events.append({"type": "hot_tick", "user_id": actor.user_id, "effect": key, "value": actor.hp - before})
+            events.append({
+                "type": "hot_tick", "user_id": actor.user_id, "effect": key,
+                "value": actor.hp - before, "nominal_value": healing,
+                "hp_before": before, "hp_after": actor.hp, "max_hp": actor.max_hp,
+            })
         remaining = int(effect.get("duration", 1)) - 1
         if remaining <= 0:
             del actor.effects[key]
@@ -255,7 +274,12 @@ def resolve_pvp_round(round_number: int, revision: int, actor_a: PvpActorState, 
             damage = max(1, round(damage + actor.physical_defense * 1.4))
         applied, gained, combo_gain = _special(actor, target, skill or {}, damage, rng)
         actor.resource = _clamp(actor.resource + gained, 0, PVP_COMBAT_ENERGY_MAX if "energy" in actor.resource_type else 100)
-        actor.combo = _clamp(actor.combo + combo_gain, 0, 3)
+        # Production rogue finisher consumes every accumulated combo point.
+        # Keep this explicit after special-effect processing so no later gain can resurrect spent combo.
+        if item["combo_spent"] > 0:
+            actor.combo = 0
+        else:
+            actor.combo = _clamp(actor.combo + combo_gain, 0, 3)
         damage_packets.append((actor, target, damage, critical, dodged, {"applied": applied, "gained": gained, "combo_gain": combo_gain, "item": item}))
 
     for actor, target, damage, critical, dodged, meta in damage_packets:

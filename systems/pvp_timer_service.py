@@ -53,7 +53,10 @@ def start_pvp_timer_worker(on_battle_changed=None, poll_seconds: float=1.0):
                     if _expired(battle):
                         result=close_expired_round(int(battle["id"]))
                         if result.get("resolved") and on_battle_changed:
-                            on_battle_changed(int(battle["id"]))
+                            try:
+                                on_battle_changed(int(battle["id"]), result)
+                            except TypeError:
+                                on_battle_changed(int(battle["id"]))
             except Exception:
                 log.exception("PvP timer worker iteration failed")
             time.sleep(max(0.25,float(poll_seconds)))

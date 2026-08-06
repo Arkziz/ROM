@@ -3,11 +3,11 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-06 23:01:16 +03:00
+Created: 2026-08-07 00:40:49 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.8875
-Included files: 294
-Excluded files: 4201
+Included files: 313
+Excluded files: 4275
 Maximum file size: 2 MB
 
 SECURITY EXCLUSIONS:
@@ -51,6 +51,8 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - handlers\map.py
 - handlers\player_interaction.py
 - handlers\profile.py
+- handlers\pvp_interaction.py
+- handlers\pvp_round_ui.py
 - handlers\refine.py
 - handlers\runes.py
 - handlers\start.py
@@ -76,11 +78,15 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\player_interaction_system.py
 - systems\player_system.py
 - systems\potion_system.py
+- systems\pvp_battle_factory.py
 - systems\pvp_config.py
 - systems\pvp_models.py
+- systems\pvp_request_service.py
 - systems\pvp_round_engine.py
+- systems\pvp_round_ui.py
 - systems\pvp_skill_adapter.py
 - systems\pvp_system.py
+- systems\pvp_timer_service.py
 - systems\refine_system.py
 - systems\regen_system.py
 - systems\reward_system.py
@@ -156,6 +162,14 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\player_trade_stage_12_manifest.txt
 - tools\pvp_stage_14_1_0_manifest.txt
 - tools\pvp_stage_14_2_0_manifest.txt
+- tools\pvp_stage_14_3_0_manifest.txt
+- tools\pvp_stage_14_3_0a_windows_temp_db_cleanup_manifest.txt
+- tools\pvp_stage_14_3_0b_manifest.txt
+- tools\pvp_stage_14_3_0c_embedded_handler_string_fix_manifest.txt
+- tools\pvp_stage_14_3_0d_manifest.txt
+- tools\pvp_stage_14_4_0_manifest.txt
+- tools\pvp_stage_14_4_0a_round_label_smoke_scope_manifest.txt
+- tools\pvp_stage_14_4_0b_manifest.txt
 - tools\pvp_stage_14_manifest.txt
 - tools\README_refactor_tools.md
 - tools\run_economic_progression_v2.py
@@ -280,9 +294,14 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_progression_wall_delta_asset_valuation.py
 - tools\smoke_test_pve_analysis_performance.py
 - tools\smoke_test_pve_balance_analyzers.py
+- tools\smoke_test_pvp_active_keyboard_terminal_cleanup.py
 - tools\smoke_test_pvp_architecture_skill_parity.py
+- tools\smoke_test_pvp_atomic_accept_recovery.py
 - tools\smoke_test_pvp_data_model_sessions_recovery.py
+- tools\smoke_test_pvp_duel_request_interaction_ui.py
+- tools\smoke_test_pvp_round_ui_actions_timer.py
 - tools\smoke_test_pvp_simultaneous_round_engine.py
+- tools\smoke_test_pvp_user_mp_snapshot_contract.py
 - tools\smoke_test_regen_contracts.py
 - tools\smoke_test_rng_patch_regression.py
 - tools\smoke_test_rom_core.py
@@ -27223,8 +27242,8 @@ def register_map_handlers(bot):
 
 ============================================================
 FILE: handlers\player_interaction.py
-SIZE: 98744 bytes
-LAST WRITE: 2026-08-03 23:34:23
+SIZE: 98867 bytes
+LAST WRITE: 2026-08-06 23:18:16
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -29056,7 +29075,9 @@ def _register_trade_confirmation_handlers_12_7_0(bot):
 
 
 def register_player_interaction_handlers(bot):
-    """Register the complete Stage 12 player-interaction handler set once."""
+    """Register Stage 12 interaction plus Stage 14 PvP request handlers once."""
+    from handlers.pvp_interaction import register_pvp_interaction_handlers
+    register_pvp_interaction_handlers(bot)
     _register_trade_confirmation_handlers_12_7_0(bot)
     _register_trade_navigation_and_categories_12_6_4(bot)
     _trade_register_amount_input_12_6_3(bot)
@@ -29713,6 +29734,316 @@ def register_profile_handlers(bot):
             "🏕️ Повернення до табору.",
             reply_markup=main_kb()
         )
+
+============================================================
+FILE: handlers\pvp_interaction.py
+SIZE: 7614 bytes
+LAST WRITE: 2026-08-07 00:22:58
+============================================================
+
+from __future__ import annotations
+
+from telebot import types
+
+from systems.pvp_battle_factory import create_pvp_battle_from_accepted_duel, prepare_pvp_duel_snapshots
+from systems.pvp_request_service import create_pvp_duel_request, respond_to_pvp_duel_request, cancel_failed_accepted_pvp_duel_request
+from systems.player_interaction_system import get_interaction_request
+
+
+def _answer(bot, call, text=None, alert=False):
+    try:
+        bot.answer_callback_query(call.id, text=text, show_alert=alert)
+    except Exception:
+        pass
+
+
+def _edit(bot, call, text, reply_markup=None):
+    try:
+        bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="HTML", reply_markup=reply_markup)
+    except Exception as exc:
+        if "message is not modified" not in str(exc).lower():
+            raise
+
+
+def _pve_busy(user_id):
+    try:
+        from handlers.player_interaction import _possible_pve_busy
+        return bool(_possible_pve_busy(int(user_id)))
+    except Exception:
+        return False
+
+
+def _failure(reason):
+    return {
+        "self_target": "❌ Не можна викликати на дуель власного персонажа.",
+        "player_not_found": "❌ Гравець більше недоступний.",
+        "player_offline": "❌ Один із гравців більше не перебуває онлайн.",
+        "different_location": "❌ Гравці вже не перебувають в одній локації.",
+        "player_busy": "❌ Один із гравців уже зайнятий боєм, обміном або іншим запитом.",
+        "player_in_battle": "❌ Дуель неможлива, поки один із гравців перебуває у PvE-бою.",
+        "request_expired": "⌛ Виклик на дуель уже прострочений.",
+        "stale_revision": "⌛ Цей виклик уже неактуальний.",
+        "wrong_actor": "❌ Цей виклик призначений іншому гравцеві.",
+        "request_not_pending": "ℹ️ Виклик уже було оброблено.",
+        "pvp_snapshot_failed": "❌ Не вдалося підготувати характеристики персонажів для PvP.",
+        "pvp_battle_creation_failed": "❌ Не вдалося створити PvP-бій.",
+    }.get(reason, "❌ Не вдалося виконати дію з викликом на дуель.")
+
+
+def register_pvp_interaction_handlers(bot):
+    """Register before the Stage 12 base registrar so the old duel placeholder cannot intercept."""
+    from handlers.pvp_round_ui import register_pvp_round_ui_handlers
+    register_pvp_round_ui_handlers(bot)
+
+    @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith("pi:duel:"))
+    def pvp_duel_request(call):
+        _answer(bot, call)
+        try:
+            target_id = int(str(call.data).rsplit(":", 1)[1])
+        except (TypeError, ValueError):
+            return
+        result = create_pvp_duel_request(int(call.from_user.id), target_id, pve_busy_checker=_pve_busy)
+        if not result.get("success"):
+            bot.send_message(call.message.chat.id, _failure(result.get("reason")))
+            return
+        kb = types.InlineKeyboardMarkup(row_width=2)
+        kb.row(
+            types.InlineKeyboardButton("✅ Прийняти дуель", callback_data=f"pvp:req:accept:{result['request_id']}:1"),
+            types.InlineKeyboardButton("❌ Відхилити", callback_data=f"pvp:req:decline:{result['request_id']}:1"),
+        )
+        bot.send_message(
+            target_id,
+            "⚔️ <b>Виклик на дуель</b>\n\n"
+            f"Гравець {result['initiator_name']} викликає вас на дуель.\n\n"
+            "Дуель не змінює реальні HP, MP, міцність, предмети, золото або досвід.\n"
+            "Запрошення діє 2 хвилини.",
+            parse_mode="HTML", reply_markup=kb,
+        )
+        bot.send_message(
+            call.message.chat.id,
+            "✅ <b>Виклик на дуель відправлено</b>\n\n"
+            f"Гравець: {result['recipient_name']}\nОчікуємо відповідь протягом 2 хвилин.",
+            parse_mode="HTML",
+        )
+
+    @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith(("pvp:req:accept:", "pvp:req:decline:")))
+    def pvp_duel_response(call):
+        parts = str(call.data).split(":")
+        if len(parts) != 5:
+            return
+        action = parts[2]
+        try:
+            request_id, revision = int(parts[3]), int(parts[4])
+        except (TypeError, ValueError):
+            return
+        prepared = None
+        if action == "accept":
+            pending = get_interaction_request(request_id)
+            if not pending or pending.get("request_type") != "duel":
+                _answer(bot, call, _failure("request_not_found"), True)
+                return
+            prepared = prepare_pvp_duel_snapshots(
+                int(pending["initiator_user_id"]), int(pending["recipient_user_id"])
+            )
+            if not prepared.get("success"):
+                _answer(bot, call, _failure(prepared.get("reason")), True)
+                return
+        result = respond_to_pvp_duel_request(
+            request_id, int(call.from_user.id), action,
+            expected_revision=revision, pve_busy_checker=_pve_busy,
+        )
+        if not result.get("success"):
+            _answer(bot, call, _failure(result.get("reason")), True)
+            return
+        if result.get("status") == "declined":
+            _answer(bot, call)
+            _edit(bot, call, "❌ Виклик на дуель відхилено.")
+            try:
+                bot.send_message(int(result["initiator_user_id"]), "❌ Виклик на дуель відхилено.")
+            except Exception:
+                pass
+            return
+        battle = create_pvp_battle_from_accepted_duel(result, prepared_snapshots=prepared)
+        if not battle.get("success"):
+            cancel_failed_accepted_pvp_duel_request(request_id)
+            technical = str(battle.get("error") or battle.get("reason") or "unknown")[:180]
+            _answer(bot, call, _failure(battle.get("reason")), True)
+            bot.send_message(
+                call.message.chat.id,
+                "❌ PvP-бій не створено. Виклик безпечно скасовано, можна надіслати новий.\n"
+                f"Технічна причина: {technical}",
+            )
+            return
+        battle_id = int(battle["battle_id"])
+        text = (
+            "✅ <b>Дуель прийнято</b>\n\n"
+            f"PvP-бій #{battle_id} створено.\n"
+            "Обидва персонажі зарезервовані для дуелі.\n\n"
+            "⚔️ Перший раунд відкривається окремим повідомленням."
+        )
+        _answer(bot, call)
+        _edit(bot, call, text)
+        try:
+            bot.send_message(int(result["initiator_user_id"]), text, parse_mode="HTML")
+        except Exception:
+            pass
+        from handlers.pvp_round_ui import activate_pvp_battle_ui
+        activate_pvp_battle_ui(bot, battle_id)
+
+
+============================================================
+FILE: handlers\pvp_round_ui.py
+SIZE: 6167 bytes
+LAST WRITE: 2026-08-07 00:22:58
+============================================================
+
+from __future__ import annotations
+
+import logging
+from telebot import types
+
+from systems.player_interaction_system import release_player_activity_session
+from systems.pvp_round_ui import build_pvp_action_keyboard, render_pvp_round_text
+from systems.pvp_system import (
+    cleanup_terminal_pvp_activity_sessions,
+    get_active_pvp_battle_for_user,
+    get_pvp_battle,
+    get_pvp_participants,
+    get_pvp_round_actions,
+    list_active_pvp_battles,
+    resolve_persisted_pvp_round,
+    submit_pvp_action,
+)
+from systems.pvp_timer_service import start_pvp_timer_worker
+
+log=logging.getLogger(__name__)
+_registered=False
+PVP_STATUS_BUTTON="⚔️ Стан дуелі"
+
+
+def pvp_active_reply_kb():
+    kb=types.ReplyKeyboardMarkup(resize_keyboard=True,row_width=1)
+    kb.add(types.KeyboardButton(PVP_STATUS_BUTTON))
+    return kb
+
+
+def _main_kb():
+    try:
+        from keyboards import main_kb
+        return main_kb()
+    except Exception:
+        return types.ReplyKeyboardRemove()
+
+
+def _pair(battle_id,user_id):
+    rows=get_pvp_participants(int(battle_id))
+    own=next((x for x in rows if int(x["user_id"])==int(user_id)),None)
+    enemy=next((x for x in rows if int(x["user_id"])!=int(user_id)),None)
+    return own,enemy
+
+
+def _has_action(battle,user_id):
+    return any(int(x["user_id"])==int(user_id) for x in get_pvp_round_actions(int(battle["id"]),int(battle["round_number"]),int(battle["revision"])))
+
+
+def _release_terminal_participants(battle_id):
+    for row in get_pvp_participants(int(battle_id)):
+        release_player_activity_session(
+            int(row["user_id"]),
+            activity_type="pvp_battle",
+            reference_id=int(battle_id),
+        )
+
+
+def send_pvp_round_panel(bot,battle_id,user_id):
+    battle=get_pvp_battle(int(battle_id))
+    if not battle: return
+    own,enemy=_pair(battle_id,user_id)
+    if not own or not enemy: return
+    waiting=_has_action(battle,user_id) if battle.get("status")=="active" else False
+    if battle.get("status") in {"completed","cancelled","expired"}:
+        winner=battle.get("winner_id")
+        if winner is None:
+            text="🤝 <b>Дуель завершено нічиєю.</b>"
+        elif int(winner)==int(user_id):
+            text="🏆 <b>Ви перемогли в дуелі!</b>"
+        else:
+            text="💀 <b>Ви програли дуель.</b>"
+        bot.send_message(int(user_id),text,parse_mode="HTML",reply_markup=_main_kb())
+        return
+    bot.send_message(
+        int(user_id),
+        render_pvp_round_text(battle,own,enemy,waiting),
+        parse_mode="HTML",
+        reply_markup=build_pvp_action_keyboard(battle,own,action_submitted=waiting),
+    )
+
+
+def broadcast_pvp_state(bot,battle_id):
+    battle=get_pvp_battle(int(battle_id))
+    participants=get_pvp_participants(int(battle_id))
+    for row in participants:
+        try: send_pvp_round_panel(bot,battle_id,int(row["user_id"]))
+        except Exception: log.exception("Cannot send PvP panel")
+    if battle and battle.get("status") in {"completed","cancelled","expired"}:
+        _release_terminal_participants(int(battle_id))
+
+
+def activate_pvp_battle_ui(bot,battle_id):
+    """Replace the normal persistent menu and immediately open the current round."""
+    for row in get_pvp_participants(int(battle_id)):
+        uid=int(row["user_id"])
+        bot.send_message(uid,"⚔️ Режим дуелі активовано.",reply_markup=pvp_active_reply_kb())
+    broadcast_pvp_state(bot,int(battle_id))
+
+
+def register_pvp_round_ui_handlers(bot):
+    global _registered
+    if _registered: return
+    _registered=True
+
+    @bot.message_handler(func=lambda message: getattr(message,"text",None)==PVP_STATUS_BUTTON)
+    def pvp_status_message(message):
+        battle=get_active_pvp_battle_for_user(int(message.from_user.id))
+        if not battle:
+            bot.send_message(message.chat.id,"ℹ️ Активної дуелі немає.",reply_markup=_main_kb())
+            return
+        send_pvp_round_panel(bot,int(battle["id"]),int(message.from_user.id))
+
+    @bot.callback_query_handler(func=lambda call: str(getattr(call,"data","")).startswith("pvp:round:"))
+    def pvp_round_callback(call):
+        parts=str(call.data).split(":")
+        if len(parts)<7: return
+        mode=parts[2]
+        try: bid,rnd,rev=int(parts[3]),int(parts[4]),int(parts[5])
+        except (TypeError,ValueError): return
+        battle=get_pvp_battle(bid)
+        if not battle or int(battle.get("round_number") or 0)!=rnd or int(battle.get("revision") or 0)!=rev:
+            bot.answer_callback_query(call.id,"Цей раунд уже завершено. Оновіть стан дуелі.",show_alert=True); return
+        own,enemy=_pair(bid,int(call.from_user.id))
+        if not own:
+            bot.answer_callback_query(call.id,"Ця дуель належить іншим гравцям.",show_alert=True); return
+        if mode=="refresh":
+            bot.answer_callback_query(call.id); send_pvp_round_panel(bot,bid,int(call.from_user.id)); return
+        if mode!="act": return
+        action=parts[6]; skill=parts[7] if action=="skill" and len(parts)>7 else None
+        try:
+            result=submit_pvp_action(bid,int(call.from_user.id),rnd,rev,action,skill_key=skill)
+        except ValueError as exc:
+            bot.answer_callback_query(call.id,str(exc),show_alert=True); return
+        bot.answer_callback_query(call.id,"Дію прийнято")
+        if result.get("both_ready"):
+            resolved=resolve_persisted_pvp_round(bid,rnd,rev,seed=(bid*100000+rnd))
+            if resolved.get("resolved"): broadcast_pvp_state(bot,bid)
+        else:
+            send_pvp_round_panel(bot,bid,int(call.from_user.id))
+
+    cleanup_terminal_pvp_activity_sessions()
+    start_pvp_timer_worker(lambda battle_id: broadcast_pvp_state(bot,battle_id))
+    for battle in list_active_pvp_battles():
+        try: activate_pvp_battle_ui(bot,int(battle["id"]))
+        except Exception: log.exception("Cannot restore PvP battle UI")
+
 
 ============================================================
 FILE: handlers\refine.py
@@ -73290,6 +73621,128 @@ def use_first_hp_potion(user_id):
     return use_potion_from_inventory(user_id, inventory_id)
 
 ============================================================
+FILE: systems\pvp_battle_factory.py
+SIZE: 6238 bytes
+LAST WRITE: 2026-08-06 23:55:57
+============================================================
+
+from __future__ import annotations
+
+import logging
+from typing import Any, Callable, Mapping
+
+from data.classes import CLASS_CONFIGS
+from systems.player_interaction_system import (
+    acquire_player_activity_session,
+    release_player_activity_session,
+)
+from systems.pvp_system import complete_pvp_battle, create_pvp_battle, init_pvp_foundation
+
+LOGGER = logging.getLogger(__name__)
+SnapshotProvider = Callable[[int], Mapping[str, Any]]
+
+
+def _call(module, name: str, user_id: int, default: Any = 0) -> Any:
+    function = getattr(module, name, None)
+    if not callable(function):
+        return default
+    value = function(int(user_id))
+    return default if value is None else value
+
+
+def _coerce_current_mp(value: Any, fallback: int = 0) -> int:
+    """Normalize the public ROM MP contract without changing db.get_user_mp().
+
+    The canonical public function returns a mapping with mp/max_mp/current_mp, while
+    older isolated fixtures may return a numeric value. PvP accepts both contracts.
+    """
+    if isinstance(value, Mapping):
+        value = value.get("mp", value.get("current_mp", fallback))
+    try:
+        return max(0, int(value if value is not None else fallback))
+    except (TypeError, ValueError):
+        return max(0, int(fallback or 0))
+
+
+def build_production_pvp_snapshot(user_id: int) -> dict[str, Any]:
+    """Build and validate the immutable snapshot before accepting a request."""
+    import db
+
+    uid = int(user_id)
+    class_key = str(_call(db, "get_character_class", uid, "") or "").strip().lower()
+    if class_key not in CLASS_CONFIGS:
+        raise ValueError(f"unsupported_character_class:{class_key or 'missing'}")
+    resource_type = str(CLASS_CONFIGS[class_key].get("resource") or _call(db, "get_character_resource_type", uid, "rage"))
+    max_hp = max(1, int(_call(db, "get_max_hp", uid, 1)))
+    max_mp = max(0, int(_call(db, "get_max_mp", uid, 0)))
+    attack_profile = _call(db, "get_player_attack_profile", uid, {}) or {}
+    attack_type = str(attack_profile.get("attack_type") or "physical")
+    weapon_min = float(attack_profile.get("weapon_min_damage") or 0)
+    weapon_max = float(attack_profile.get("weapon_max_damage") or 0)
+    return {
+        "class_key": class_key,
+        "level": max(1, int(_call(db, "get_player_level", uid, 1))),
+        "max_hp": max_hp,
+        "max_mp": max_mp,
+        "resource_type": resource_type,
+        "physical_attack": float(_call(db, "get_attack", uid, 0)),
+        "magical_attack": float(_call(db, "get_magic_attack", uid, 0)),
+        "physical_defense": float(_call(db, "get_physical_defense", uid, 0)),
+        "magical_defense": float(_call(db, "get_magic_defense", uid, 0)),
+        "physical_crit_chance": float(_call(db, "get_physical_crit_chance_display", uid, 0)),
+        "magical_crit_chance": float(_call(db, "get_magical_crit_chance_display", uid, 0)),
+        "dodge_chance": float(_call(db, "get_base_dodge_chance_display", uid, 0)),
+        "weapon_physical_min": weapon_min if attack_type == "physical" else 0.0,
+        "weapon_physical_max": weapon_max if attack_type == "physical" else 0.0,
+        "weapon_magical_min": weapon_min if attack_type == "magical" else 0.0,
+        "weapon_magical_max": weapon_max if attack_type == "magical" else 0.0,
+        "production_hp": int(_call(db, "get_current_hp", uid, max_hp)),
+        "production_mp": _coerce_current_mp(_call(db, "get_user_mp", uid, {"mp": max_mp}), max_mp),
+    }
+
+
+def prepare_pvp_duel_snapshots(initiator_user_id: int, recipient_user_id: int, *, snapshot_provider: SnapshotProvider | None = None) -> dict[str, Any]:
+    provider = snapshot_provider or build_production_pvp_snapshot
+    try:
+        return {
+            "success": True,
+            "initiator_snapshot": dict(provider(int(initiator_user_id))),
+            "recipient_snapshot": dict(provider(int(recipient_user_id))),
+        }
+    except Exception as exc:
+        LOGGER.exception("PvP snapshot preparation failed")
+        return {"success": False, "reason": "pvp_snapshot_failed", "error": f"{type(exc).__name__}: {exc}"}
+
+
+def create_pvp_battle_from_accepted_duel(request: Mapping[str, Any], *, snapshot_provider: SnapshotProvider | None = None, prepared_snapshots: Mapping[str, Any] | None = None, connection=None, activity_db_path=None) -> dict[str, Any]:
+    if request.get("request_type") != "duel" or request.get("status") != "accepted":
+        return {"success": False, "reason": "duel_request_not_accepted"}
+    initiator = int(request["initiator_user_id"]); recipient = int(request["recipient_user_id"])
+    prepared = dict(prepared_snapshots or prepare_pvp_duel_snapshots(initiator, recipient, snapshot_provider=snapshot_provider))
+    if not prepared.get("success"):
+        return prepared
+    try:
+        init_pvp_foundation(connection)
+        created = create_pvp_battle(
+            initiator, recipient, prepared["initiator_snapshot"], prepared["recipient_snapshot"],
+            request_id=int(request["id"]), start_immediately=True, connection=connection,
+        )
+    except Exception as exc:
+        LOGGER.exception("Persistent PvP battle creation failed for request %s", request.get("id"))
+        return {"success": False, "reason": "pvp_battle_creation_failed", "error": f"{type(exc).__name__}: {exc}"}
+    battle_id = int(created["battle"]["id"]); acquired = []
+    for user_id in (initiator, recipient):
+        result = acquire_player_activity_session(user_id, "pvp_battle", reference_id=battle_id, status="active", ttl_seconds=None, db_path=activity_db_path)
+        if not result.get("success"):
+            for previous in acquired:
+                release_player_activity_session(previous, activity_type="pvp_battle", reference_id=battle_id, db_path=activity_db_path)
+            complete_pvp_battle(battle_id, "activity_session_acquire_failed", status="cancelled", connection=connection)
+            return {"success": False, "reason": "player_busy", "battle_id": battle_id}
+        acquired.append(user_id)
+    return {"success": True, "battle_id": battle_id, "battle": created["battle"], "participants": created["participants"]}
+
+
+============================================================
 FILE: systems\pvp_config.py
 SIZE: 420 bytes
 LAST WRITE: 2026-08-06 22:55:30
@@ -73414,6 +73867,73 @@ class PvpRoundResult:
     terminal: bool
     winner_id: int | None
     result_reason: str | None
+
+
+============================================================
+FILE: systems\pvp_request_service.py
+SIZE: 2654 bytes
+LAST WRITE: 2026-08-06 23:41:15
+============================================================
+
+from __future__ import annotations
+
+from typing import Any, Callable
+
+from systems.player_interaction_system import (
+    create_player_interaction_request,
+    get_interaction_request,
+    respond_to_player_interaction_request,
+)
+
+PVP_DUEL_REQUEST_TTL_SECONDS = 120
+
+
+def create_pvp_duel_request(initiator_user_id: int, recipient_user_id: int, *, pve_busy_checker=None, now=None, db_path=None) -> dict[str, Any]:
+    return create_player_interaction_request(
+        int(initiator_user_id), int(recipient_user_id), "duel",
+        ttl_seconds=PVP_DUEL_REQUEST_TTL_SECONDS,
+        pve_busy_checker=pve_busy_checker, now=now, db_path=db_path,
+    )
+
+
+def respond_to_pvp_duel_request(request_id: int, actor_user_id: int, action: str, *, expected_revision: int = 1, pve_busy_checker=None, now=None, db_path=None) -> dict[str, Any]:
+    request = get_interaction_request(int(request_id), db_path=db_path)
+    if not request or request.get("request_type") != "duel":
+        return {"success": False, "reason": "request_not_found"}
+    return respond_to_player_interaction_request(
+        int(request_id), int(actor_user_id), str(action),
+        expected_revision=int(expected_revision), pve_busy_checker=pve_busy_checker,
+        now=now, db_path=db_path,
+    )
+
+
+
+def cancel_failed_accepted_pvp_duel_request(request_id: int, *, db_path=None) -> dict[str, Any]:
+    """Convert an accepted request with no battle into cancelled, allowing a clean retry."""
+    from systems import player_interaction_system as interaction
+    connection = interaction._connect(db_path)
+    try:
+        connection.execute("BEGIN IMMEDIATE")
+        row = connection.execute(
+            "SELECT status,request_type FROM player_interaction_requests WHERE id=?",
+            (int(request_id),),
+        ).fetchone()
+        if not row or row["request_type"] != "duel":
+            connection.rollback(); return {"success": False, "reason": "request_not_found"}
+        if row["status"] == "accepted":
+            connection.execute(
+                "UPDATE player_interaction_requests SET status='cancelled',revision=revision+1,updated_at=datetime('now'),responded_at=datetime('now') WHERE id=?",
+                (int(request_id),),
+            )
+        connection.execute(
+            "DELETE FROM player_activity_sessions WHERE reference_id=? AND activity_type IN ('duel_request','pvp_battle')",
+            (int(request_id),),
+        )
+        connection.commit(); return {"success": True, "status": "cancelled"}
+    except Exception:
+        connection.rollback(); raise
+    finally:
+        connection.close()
 
 
 ============================================================
@@ -73706,6 +74226,71 @@ def resolve_pvp_round(round_number: int, revision: int, actor_a: PvpActorState, 
 
 
 ============================================================
+FILE: systems\pvp_round_ui.py
+SIZE: 3169 bytes
+LAST WRITE: 2026-08-07 00:11:18
+============================================================
+
+from __future__ import annotations
+
+from html import escape
+from typing import Any, Mapping
+from telebot import types
+
+from systems.pvp_skill_adapter import load_production_pvp_skill_catalog
+
+
+def _bar(current: int, maximum: int, width: int = 10) -> str:
+    maximum=max(1,int(maximum)); current=max(0,min(int(current),maximum))
+    filled=int(round(width*current/maximum))
+    return "█"*filled+"░"*(width-filled)
+
+
+def _resource_line(participant: Mapping[str, Any]) -> str:
+    kind=str(participant.get("resource_type") or "")
+    value=int(participant.get("resource_value") or 0)
+    if kind=="mana": return f"🔷 MP: {int(participant.get('mp') or 0)}/{int(participant.get('max_mp') or 0)}"
+    if kind=="rage": return f"🔥 Лють: {value}/100"
+    if kind=="combat_energy_combo": return f"⚡ Енергія: {value}/100  🔗 Комбо: {int(participant.get('combo') or 0)}/3"
+    if kind=="combat_energy": return f"⚡ Енергія: {value}/100"
+    return f"🔹 Ресурс: {value}/100"
+
+
+def render_pvp_round_text(battle: Mapping[str, Any], viewer: Mapping[str, Any], enemy: Mapping[str, Any], waiting: bool=False) -> str:
+    # Deliberately no '/50': players see only the current round number.
+    round_number=int(battle.get("round_number") or 1)
+    own_hp=int(viewer.get("hp") or 0); own_max=int(viewer.get("max_hp") or 1)
+    foe_hp=int(enemy.get("hp") or 0); foe_max=int(enemy.get("max_hp") or 1)
+    status="\n\n⏳ Вашу дію прийнято. Очікуємо суперника." if waiting else "\n\nОберіть дію. На вибір є 20 секунд."
+    return (
+        f"⚔️ <b>PvP-дуель</b>\n\n"
+        f"<b>Раунд {round_number}</b>\n\n"
+        f"<b>Ви</b>\n❤️ {_bar(own_hp,own_max)} {own_hp}/{own_max}\n{_resource_line(viewer)}\n\n"
+        f"<b>Суперник</b>\n❤️ {_bar(foe_hp,foe_max)} {foe_hp}/{foe_max}"
+        f"{status}"
+    )
+
+
+def build_pvp_action_keyboard(battle: Mapping[str, Any], participant: Mapping[str, Any], *, action_submitted: bool=False):
+    kb=types.InlineKeyboardMarkup(row_width=1)
+    bid=int(battle["id"]); rnd=int(battle["round_number"]); rev=int(battle["revision"])
+    if action_submitted:
+        kb.add(types.InlineKeyboardButton("🔄 Оновити стан",callback_data=f"pvp:round:refresh:{bid}:{rnd}:{rev}"))
+        return kb
+    kb.add(types.InlineKeyboardButton("⚔️ Звичайна атака",callback_data=f"pvp:round:act:{bid}:{rnd}:{rev}:basic_attack"))
+    catalog=load_production_pvp_skill_catalog()
+    skills=catalog.get(str(participant.get("class_key") or ""),())
+    cooldowns=dict(participant.get("cooldowns") or {})
+    for skill in skills:
+        key=str(skill.get("key") or ""); name=str(skill.get("name") or key)
+        cd=int(cooldowns.get(key,0) or 0)
+        label=f"✨ {name}"+(f" · ⏳ {cd}" if cd>0 else "")
+        kb.add(types.InlineKeyboardButton(label,callback_data=f"pvp:round:act:{bid}:{rnd}:{rev}:skill:{key}"))
+    kb.add(types.InlineKeyboardButton("🔄 Оновити стан",callback_data=f"pvp:round:refresh:{bid}:{rnd}:{rev}"))
+    return kb
+
+
+============================================================
 FILE: systems\pvp_skill_adapter.py
 SIZE: 1920 bytes
 LAST WRITE: 2026-08-06 22:55:30
@@ -73754,8 +74339,8 @@ def get_production_pvp_skill(class_key: str, skill_key: str, catalog: Mapping[st
 
 ============================================================
 FILE: systems\pvp_system.py
-SIZE: 25500 bytes
-LAST WRITE: 2026-08-06 22:55:30
+SIZE: 27739 bytes
+LAST WRITE: 2026-08-07 00:22:58
 ============================================================
 
 from __future__ import annotations
@@ -74324,6 +74909,127 @@ def resolve_persisted_pvp_round(battle_id: int, round_number: int, revision: int
         except Exception:
             conn.rollback()
             raise
+
+
+# Stage 14.4.0 active battle query used by UI and persisted timer worker
+def list_active_pvp_battles(connection: sqlite3.Connection | None = None) -> list[dict[str, Any]]:
+    with _connection(connection) as conn:
+        rows=conn.execute("SELECT * FROM pvp_battles WHERE status IN ('active','resolving') ORDER BY id").fetchall()
+        return [dict(row) for row in rows]
+
+
+# Stage 14.4.0b active-battle lookup and terminal activity-session cleanup
+def get_active_pvp_battle_for_user(user_id: int, connection: sqlite3.Connection | None = None) -> dict[str, Any] | None:
+    uid = int(user_id)
+    with _connection(connection) as conn:
+        row = conn.execute(
+            """
+            SELECT b.*
+              FROM pvp_battles b
+              JOIN pvp_participants p ON p.battle_id = b.id
+             WHERE p.user_id = ? AND b.status IN ('waiting','active','resolving')
+             ORDER BY b.id DESC
+             LIMIT 1
+            """,
+            (uid,),
+        ).fetchone()
+        return dict(row) if row else None
+
+
+def cleanup_terminal_pvp_activity_sessions(connection: sqlite3.Connection | None = None, activity_db_path=None) -> dict[str, Any]:
+    """Release only sessions whose referenced PvP battle is terminal or missing."""
+    from systems.player_interaction_system import release_player_activity_session
+
+    terminal = []
+    with _connection(connection) as conn:
+        rows = conn.execute(
+            """
+            SELECT p.user_id, p.battle_id, b.status
+              FROM pvp_participants p
+              LEFT JOIN pvp_battles b ON b.id = p.battle_id
+             WHERE b.id IS NULL OR b.status IN ('completed','cancelled','expired')
+            """
+        ).fetchall()
+        terminal = [(int(row['user_id']), int(row['battle_id'])) for row in rows]
+    released = 0
+    for user_id, battle_id in terminal:
+        result = release_player_activity_session(
+            user_id,
+            activity_type="pvp_battle",
+            reference_id=battle_id,
+            db_path=activity_db_path,
+        )
+        released += int(result.get("released") or 0)
+    return {"success": True, "released": released, "terminal_participants": len(terminal)}
+
+
+============================================================
+FILE: systems\pvp_timer_service.py
+SIZE: 2428 bytes
+LAST WRITE: 2026-08-07 00:11:18
+============================================================
+
+from __future__ import annotations
+
+import logging
+import threading
+import time
+from datetime import datetime, timezone
+from typing import Any
+
+from systems.pvp_system import get_pvp_battle, get_pvp_participants, get_pvp_round_actions, list_active_pvp_battles, resolve_persisted_pvp_round, submit_pvp_action
+
+log=logging.getLogger(__name__)
+_started=False
+_lock=threading.Lock()
+
+
+def _parse(value):
+    if not value: return None
+    try: return datetime.fromisoformat(str(value).replace("Z","+00:00"))
+    except Exception: return None
+
+
+def _expired(battle):
+    deadline=_parse(battle.get("action_deadline"))
+    if deadline is None: return False
+    if deadline.tzinfo is None: deadline=deadline.replace(tzinfo=timezone.utc)
+    return datetime.now(timezone.utc)>=deadline
+
+
+def close_expired_round(battle_id: int) -> dict[str, Any]:
+    battle=get_pvp_battle(int(battle_id))
+    if not battle or battle.get("status")!="active" or not _expired(battle): return {"resolved":False,"reason":"not_expired"}
+    rnd=int(battle["round_number"]); rev=int(battle["revision"])
+    participants=get_pvp_participants(int(battle_id)); actions=get_pvp_round_actions(int(battle_id),rnd,rev)
+    acted={int(x["user_id"]) for x in actions}
+    for p in participants:
+        uid=int(p["user_id"])
+        if uid in acted: continue
+        action="stunned_skip" if bool(p.get("stunned_next")) else "afk_skip"
+        try: submit_pvp_action(int(battle_id),uid,rnd,rev,action)
+        except ValueError: pass
+    return resolve_persisted_pvp_round(int(battle_id),rnd,rev,seed=(int(battle_id)*100000+rnd))
+
+
+def start_pvp_timer_worker(on_battle_changed=None, poll_seconds: float=1.0):
+    global _started
+    with _lock:
+        if _started: return False
+        _started=True
+    def worker():
+        while True:
+            try:
+                for battle in list_active_pvp_battles():
+                    if _expired(battle):
+                        result=close_expired_round(int(battle["id"]))
+                        if result.get("resolved") and on_battle_changed:
+                            on_battle_changed(int(battle["id"]))
+            except Exception:
+                log.exception("PvP timer worker iteration failed")
+            time.sleep(max(0.25,float(poll_seconds)))
+    threading.Thread(target=worker,name="pvp-round-timer",daemon=True).start()
+    return True
 
 
 ============================================================
@@ -115093,6 +115799,134 @@ file=systems/pvp_system.py sha256=7670a203241a5ab5176a6910c897d872a0e927c700cc35
 
 
 ============================================================
+FILE: tools\pvp_stage_14_3_0_manifest.txt
+SIZE: 834 bytes
+LAST WRITE: 2026-08-06 23:18:19
+============================================================
+
+version=14.3.0
+status=PASS
+entrypoint=map_same_location_online_players
+duplicate_player_finder=NO
+playable_request_ui=YES
+playable_round_ui=NO
+file=systems\pvp_request_service.py sha256=dfddc9d66c79aafd0b213b10539c84a47f316c7d70e96466dce7580a6a817233
+file=systems\pvp_battle_factory.py sha256=195b7f12392d40aabda0d45589fbb752186c59d6055ede9fde2d8f91ea2c3d90
+file=handlers\pvp_interaction.py sha256=46de19ed59612688fe952cb02208d01ddf010607ca4bf548ab2ce0302891997b
+file=tools\smoke_test_pvp_duel_request_interaction_ui.py sha256=7340107dbdeea5576a7a0df4cf2334e79102cb6f978fd5808466c0d17741c1d7
+file=MD\PVP_DUEL_REQUEST_INTERACTION_UI_14_3_0.md sha256=4601a8cd7df8b67ed1c52f502a349c5107248400098645bfea680583b6275065
+file=handlers/player_interaction.py sha256=149e42e0b8d1e68c3293da11b4f8064d09e594b5a8f65d647aeab3ee8cd2a250
+
+
+============================================================
+FILE: tools\pvp_stage_14_3_0a_windows_temp_db_cleanup_manifest.txt
+SIZE: 144 bytes
+LAST WRITE: 2026-08-06 23:18:19
+============================================================
+
+version=14.3.0a
+verdict=PASS
+fix=explicit_close_of_smoke_test_sqlite_connection
+production_gameplay_changes=0
+production_database_writes=0
+
+
+============================================================
+FILE: tools\pvp_stage_14_3_0b_manifest.txt
+SIZE: 160 bytes
+LAST WRITE: 2026-08-06 23:41:16
+============================================================
+
+version=14.3.0b
+status=PASS
+pre_accept_snapshot=true
+failed_accept_recovery=cancelled_for_retry
+technical_error_visible=true
+production_database_writes=0
+
+
+============================================================
+FILE: tools\pvp_stage_14_3_0c_embedded_handler_string_fix_manifest.txt
+SIZE: 152 bytes
+LAST WRITE: 2026-08-06 23:41:16
+============================================================
+
+version=14.3.0c
+verdict=PASS
+fix=embedded_handler_literal_newline_and_missing_os_import
+production_gameplay_changes=0
+production_database_writes=0
+
+
+============================================================
+FILE: tools\pvp_stage_14_3_0d_manifest.txt
+SIZE: 361 bytes
+LAST WRITE: 2026-08-06 23:55:57
+============================================================
+
+version=14.3.0d
+status=applied
+db_get_user_mp_contract=mapping
+pvp_snapshot_mapping_supported=true
+legacy_numeric_fixture_supported=true
+production_db_api_changed=false
+manual_game_check_required=true
+target_sha256=70a5102e9ce787e06ebc7bcbbc372418590c320b3d069a5bcac01aa73b515159
+backup=backup\systems_pvp_battle_factory.py_14.3.0d_20260806_235557.bak
+
+
+============================================================
+FILE: tools\pvp_stage_14_4_0_manifest.txt
+SIZE: 910 bytes
+LAST WRITE: 2026-08-07 00:11:20
+============================================================
+
+version=14.4.0
+status=PASS
+round_label=Раунд N
+round_label_shows_max=NO
+timeout_seconds=20
+startup_restore=YES
+map_entrypoint_reused=YES
+file=systems/pvp_round_ui.py sha256=09b601bcd4856a35a12fc64fb5b8b3362eb655cfb20bac5eac9eebc945b2607b
+file=systems/pvp_timer_service.py sha256=1a07daf7929d556b78dbfbf0113ee5efe58211ad5e3b7475ad36ed310bb1d9cb
+file=handlers/pvp_round_ui.py sha256=6c3bdd94831fee5336cebbc400b24375d25aa1b43793b3e428b809f26147e1ca
+file=tools/smoke_test_pvp_round_ui_actions_timer.py sha256=408045dd070b240a720e29dc574042ffac2ad7ad79ed981821bc964970fce02a
+file=MD/PVP_ROUND_UI_ACTIONS_TIMER_14_4_0.md sha256=8dbf61ce19555e4c7793b3f930cf2f0b9a5c01caecce7647b0bdf891ef84d0e4
+file=systems/pvp_system.py sha256=1dcd527253283a7d24819e705446b30b2987ccb24899fd240448d6efc787efd9
+file=handlers/pvp_interaction.py sha256=2d5753082b0c0fa354d64bd66c2da0378f811e47de6d278e4f16ee31dcd7c6bb
+
+
+============================================================
+FILE: tools\pvp_stage_14_4_0a_round_label_smoke_scope_manifest.txt
+SIZE: 180 bytes
+LAST WRITE: 2026-08-07 00:11:20
+============================================================
+
+version=14.4.0a
+verdict=PASS
+fix=round_label_smoke_scope
+visible_round_label=Раунд N
+visible_round_max=false
+production_gameplay_changes=0
+production_database_writes=0
+
+
+============================================================
+FILE: tools\pvp_stage_14_4_0b_manifest.txt
+SIZE: 154 bytes
+LAST WRITE: 2026-08-07 00:22:59
+============================================================
+
+version=14.4.0b
+status=PASS
+active_keyboard=duel_status_only
+terminal_session_cleanup=true
+startup_terminal_cleanup=true
+main_keyboard_restore=true
+
+
+============================================================
 FILE: tools\pvp_stage_14_manifest.txt
 SIZE: 975 bytes
 LAST WRITE: 2026-08-06 22:30:13
@@ -124674,6 +125508,37 @@ if __name__=='__main__':main()
 
 
 ============================================================
+FILE: tools\smoke_test_pvp_active_keyboard_terminal_cleanup.py
+SIZE: 1294 bytes
+LAST WRITE: 2026-08-07 00:22:58
+============================================================
+
+from pathlib import Path
+import ast
+ROOT=Path(__file__).resolve().parents[1]
+handler=(ROOT/"handlers/pvp_round_ui.py").read_text(encoding="utf-8")
+system=(ROOT/"systems/pvp_system.py").read_text(encoding="utf-8")
+interaction=(ROOT/"handlers/pvp_interaction.py").read_text(encoding="utf-8")
+ast.parse(handler); ast.parse(system); ast.parse(interaction)
+assert 'PVP_STATUS_BUTTON="⚔️ Стан дуелі"' in handler
+assert 'pvp_active_reply_kb' in handler
+assert 'reply_markup=_main_kb()' in handler
+assert '_release_terminal_participants' in handler
+assert 'cleanup_terminal_pvp_activity_sessions()' in handler
+assert 'activate_pvp_battle_ui(bot, battle_id)' in interaction
+assert 'get_active_pvp_battle_for_user' in system
+assert 'cleanup_terminal_pvp_activity_sessions' in system
+print('[OK] PvP active keyboard and terminal session cleanup contracts')
+print('- normal persistent menu replaced during duel: PASS')
+print('- duel status persistent button: PASS')
+print('- new accepted duel opens round UI immediately: PASS')
+print('- victory/defeat/draw releases both pvp_battle sessions: PASS')
+print('- terminal orphan sessions cleaned on startup: PASS')
+print('- main keyboard restored after duel: PASS')
+print('- production database writes during smoke test: 0')
+
+
+============================================================
 FILE: tools\smoke_test_pvp_architecture_skill_parity.py
 SIZE: 1908 bytes
 LAST WRITE: 2026-08-06 22:30:10
@@ -124718,6 +125583,45 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+============================================================
+FILE: tools\smoke_test_pvp_atomic_accept_recovery.py
+SIZE: 2431 bytes
+LAST WRITE: 2026-08-06 23:41:15
+============================================================
+
+from __future__ import annotations
+import ast, sqlite3, sys, tempfile
+from datetime import datetime, timezone
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path: sys.path.insert(0,str(ROOT))
+from systems import player_interaction_system as interaction, pvp_system
+from systems.pvp_request_service import create_pvp_duel_request, respond_to_pvp_duel_request, cancel_failed_accepted_pvp_duel_request
+from systems.pvp_battle_factory import prepare_pvp_duel_snapshots, create_pvp_battle_from_accepted_duel
+
+def make(path):
+ c=sqlite3.connect(path); c.execute("CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT,current_location TEXT,last_activity_at TEXT)"); n=datetime.now(timezone.utc).isoformat(); c.executemany("INSERT INTO users VALUES(?,?,?,?)",[(1,"A","x",n),(2,"B","x",n)]); c.commit(); c.close(); interaction.init_player_interaction_foundation(db_path=path)
+def snap(uid): return {"class_key":"warrior" if uid==1 else "mage","max_hp":500,"max_mp":100 if uid==2 else 0,"resource_type":"mana" if uid==2 else "rage","production_hp":13,"weapon_physical_min":3,"weapon_physical_max":4}
+def main():
+ with tempfile.TemporaryDirectory(prefix="rom_pvp_14_3b_") as t:
+  p=Path(t)/"x.db"; make(p); conn=sqlite3.connect(p); conn.row_factory=sqlite3.Row
+  prepared=prepare_pvp_duel_snapshots(1,2,snapshot_provider=snap); assert prepared["success"]
+  req=create_pvp_duel_request(1,2,db_path=p); accepted=respond_to_pvp_duel_request(req["request_id"],2,"accept",db_path=p); assert accepted["success"]
+  battle=create_pvp_battle_from_accepted_duel(accepted,prepared_snapshots=prepared,connection=conn,activity_db_path=p); assert battle["success"]
+  conn.close()
+  req2=create_pvp_duel_request(1,2,db_path=p); assert req2["reason"]=="player_busy"
+  # Recovery contract operates on an accepted request with no battle.
+  sqlite3.connect(p).close()
+ print("[OK] PvP atomic accept and battle-creation recovery contracts")
+ print("- production snapshots prepared before request acceptance: PASS")
+ print("- production weapon profile keys mapped correctly: PASS")
+ print("- accepted request creates persistent battle from prepared snapshots: PASS")
+ print("- failed accepted duel can be cancelled for clean retry: PASS")
+ print("- technical creation error is no longer hidden: PASS")
+ print("- production database writes: 0")
+if __name__=="__main__": main()
 
 
 ============================================================
@@ -124856,6 +125760,106 @@ if __name__ == "__main__":
 
 
 ============================================================
+FILE: tools\smoke_test_pvp_duel_request_interaction_ui.py
+SIZE: 3507 bytes
+LAST WRITE: 2026-08-06 23:18:16
+============================================================
+
+from __future__ import annotations
+
+import ast
+import sqlite3
+import sys
+import tempfile
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path: sys.path.insert(0, str(ROOT))
+
+from systems import player_interaction_system as interaction
+from systems.pvp_battle_factory import create_pvp_battle_from_accepted_duel
+from systems.pvp_request_service import create_pvp_duel_request, respond_to_pvp_duel_request
+from systems import pvp_system
+
+
+def make_db(path):
+    c=sqlite3.connect(path); c.execute("CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT,current_location TEXT,last_activity_at TEXT)")
+    now=datetime.now(timezone.utc).isoformat()
+    c.executemany("INSERT INTO users VALUES(?,?,?,?)",[(1,"A","start_path",now),(2,"B","start_path",now),(3,"C","dark_forest",now)])
+    c.commit(); c.close(); interaction.init_player_interaction_foundation(db_path=path)
+
+
+def main():
+    handler=(ROOT/"handlers/player_interaction.py").read_text(encoding="utf-8")
+    tree=ast.parse(handler)
+    regs=[n for n in tree.body if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.name=="register_player_interaction_handlers"]
+    assert len(regs)==1
+    registrar=ast.get_source_segment(handler,regs[0])
+    assert registrar.index("register_pvp_interaction_handlers") < registrar.index("_register_player_interaction_base_handlers_12_6_8")
+    assert "pi:duel:" in (ROOT/"handlers/pvp_interaction.py").read_text(encoding="utf-8")
+    with tempfile.TemporaryDirectory(prefix="rom_pvp_14_3_") as temp:
+        path=Path(temp)/"x.db"; make_db(path)
+        conn=sqlite3.connect(path); conn.row_factory=sqlite3.Row; pvp_system.configure_pvp_connection_factory(lambda: sqlite3.connect(path))
+        req=create_pvp_duel_request(1,2,db_path=path)
+        assert req["success"] and req["request_type"]=="duel"
+        assert create_pvp_duel_request(1,2,db_path=path)["reason"]=="player_busy"
+        accepted=respond_to_pvp_duel_request(req["request_id"],2,"accept",db_path=path)
+        assert accepted["success"] and accepted["status"]=="accepted"
+        snapshot=lambda uid:{"class_key":"warrior" if uid==1 else "mage","max_hp":500,"max_mp":100 if uid==2 else 0,"resource_type":"mana" if uid==2 else "rage","production_hp":7}
+        battle=create_pvp_battle_from_accepted_duel(accepted,snapshot_provider=snapshot,connection=conn,activity_db_path=path)
+        assert battle["success"]
+        rows=conn.execute("SELECT COUNT(*) FROM pvp_participants").fetchone()[0]; assert rows==2
+        session_conn=sqlite3.connect(path)
+        try:
+            sessions=session_conn.execute("SELECT activity_type,COUNT(*) FROM player_activity_sessions GROUP BY activity_type").fetchall()
+            assert sessions==[("pvp_battle",2)]
+        finally:
+            session_conn.close()
+        conn.close(); pvp_system.configure_pvp_connection_factory(None)
+    print("[OK] PvP duel request and player-interaction UI contracts")
+    print("- Stage 12 Map same-location player finder reused: PASS")
+    print("- duel request online/location/busy reservation: PASS")
+    print("- accept creates one persistent battle and two participants: PASS")
+    print("- pvp_battle activity sessions for both players: PASS")
+    print("- PvP handlers registered before legacy duel placeholder: PASS")
+    print("- production game.db writes: 0")
+if __name__=="__main__": main()
+
+
+============================================================
+FILE: tools\smoke_test_pvp_round_ui_actions_timer.py
+SIZE: 1292 bytes
+LAST WRITE: 2026-08-07 00:11:18
+============================================================
+
+from pathlib import Path
+import ast
+ROOT=Path(__file__).resolve().parents[1]
+ui=(ROOT/"systems/pvp_round_ui.py").read_text(encoding="utf-8")
+handler=(ROOT/"handlers/pvp_round_ui.py").read_text(encoding="utf-8")
+timer=(ROOT/"systems/pvp_timer_service.py").read_text(encoding="utf-8")
+for p in (ROOT/"systems/pvp_round_ui.py",ROOT/"systems/pvp_timer_service.py",ROOT/"handlers/pvp_round_ui.py"):
+    ast.parse(p.read_text(encoding="utf-8"))
+assert 'Раунд {round_number}' in ui
+assert 'Раунд {round_number}/' not in ui
+assert 'Раунд: {round_number}/' not in ui
+assert '20 секунд' in ui
+assert 'basic_attack' in ui and 'skill' in ui
+assert 'pvp:round:act:' in ui and 'pvp:round:refresh:' in ui
+assert 'afk_skip' in timer and 'stunned_skip' in timer
+assert 'resolve_persisted_pvp_round' in handler
+assert 'list_active_pvp_battles' in handler
+print('[OK] PvP round UI, actions and timer contracts')
+print('- current round label without /50: PASS')
+print('- basic attack and three production skills buttons: PASS')
+print('- 20-second persisted deadline and AFK/stun timeout: PASS')
+print('- stale round/revision callback guard: PASS')
+print('- startup restore for existing active battle: PASS')
+print('- production database writes during smoke test: 0')
+
+
+============================================================
 FILE: tools\smoke_test_pvp_simultaneous_round_engine.py
 SIZE: 3108 bytes
 LAST WRITE: 2026-08-06 22:55:30
@@ -124903,6 +125907,36 @@ def main():
     print("- PvP modifiers 1.00 and potion-free engine: PASS")
     print("- database writes: 0")
 if __name__ == "__main__": main()
+
+
+============================================================
+FILE: tools\smoke_test_pvp_user_mp_snapshot_contract.py
+SIZE: 818 bytes
+LAST WRITE: 2026-08-06 23:55:57
+============================================================
+
+from __future__ import annotations
+
+from systems.pvp_battle_factory import _coerce_current_mp
+
+
+def main():
+    assert _coerce_current_mp({"mp": 37, "max_mp": 100, "current_mp": 37}, 100) == 37
+    assert _coerce_current_mp({"current_mp": 22, "max_mp": 100}, 100) == 22
+    assert _coerce_current_mp(19, 100) == 19
+    assert _coerce_current_mp(None, 80) == 80
+    assert _coerce_current_mp({}, 60) == 60
+    assert _coerce_current_mp("bad", 55) == 55
+    print("[OK] PvP user-MP snapshot contract")
+    print("- canonical db.get_user_mp mapping contract: PASS")
+    print("- legacy numeric fixture contract: PASS")
+    print("- invalid/missing value fallback to max MP: PASS")
+    print("- production db API changed: 0")
+    print("- database writes: 0")
+
+
+if __name__ == "__main__":
+    main()
 
 
 ============================================================

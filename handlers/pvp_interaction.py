@@ -144,3 +144,5 @@ def register_pvp_interaction_handlers(bot):
             bot.send_message(int(result["initiator_user_id"]), text, parse_mode="HTML")
         except Exception:
             pass
+        from handlers.pvp_round_ui import activate_pvp_battle_ui
+        activate_pvp_battle_ui(bot, battle_id)
