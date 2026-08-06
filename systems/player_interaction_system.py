@@ -54,6 +54,11 @@ def _parse(value):
 
 
 def init_player_interaction_foundation(db_path=None):
+
+    # Stage 14.1.0 PvP persistent foundation
+    from systems.pvp_system import init_pvp_foundation, recover_pvp_after_restart
+    init_pvp_foundation()
+    recover_pvp_after_restart()
     conn = _connect(db_path)
     try:
         columns = {row[1] for row in conn.execute("PRAGMA table_info(users)")}

@@ -3,11 +3,11 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-06 06:35:35 +03:00
+Created: 2026-08-06 14:20:22 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.8875
-Included files: 273
-Excluded files: 4084
+Included files: 282
+Excluded files: 4158
 Maximum file size: 2 MB
 
 SECURITY EXCLUSIONS:
@@ -103,6 +103,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\simulation\meta_progression.py
 - systems\simulation\metrics.py
 - systems\simulation\models.py
+- systems\simulation\patch_regression.py
 - systems\simulation\population_cache.py
 - systems\simulation\population_reporting.py
 - systems\simulation\production_parity.py
@@ -114,6 +115,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\simulation\reporting.py
 - systems\simulation\rng.py
 - systems\simulation\rng_adapter.py
+- systems\simulation\rng_percentiles.py
 - systems\simulation\skill_catalog.py
 - systems\simulation\survival_state.py
 - systems\simulation\world_progression.py
@@ -153,6 +155,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\run_full_production_progression_acceptance.py
 - tools\run_guild_population_sim.py
 - tools\run_pve_balance_analysis.py
+- tools\run_rng_patch_regression.py
 - tools\run_simulation_canonical_parity_report.py
 - tools\run_world_progression_sim.py
 - tools\rune_system_10_12_0_manifest.txt
@@ -172,8 +175,13 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\simulation_progression_wall_asset_valuation_13_7_2_manifest.txt
 - tools\simulation_pve_analysis_performance_13_7_1_manifest.txt
 - tools\simulation_pve_balance_13_7_0_manifest.txt
+- tools\simulation_rng_patch_regression_13_9_0_manifest.txt
+- tools\simulation_rng_patch_regression_13_9_0a_manifest.txt
+- tools\simulation_stage_13_10_0a_guild_smoke_alignment_manifest.txt
+- tools\simulation_stage_13_10_0b_import_path_fix_manifest.txt
 - tools\simulation_stage_13_manifest.txt
 - tools\simulation_strict_armor_compatibility_13_5_0a_manifest.txt
+- tools\simulation_system_stage_13_manifest.txt
 - tools\simulation_world_progression_13_6_0_manifest.txt
 - tools\simulation_world_progression_cli_13_6_0a_manifest.txt
 - tools\simulation_world_progression_production_parity_13_6_1_manifest.txt
@@ -264,6 +272,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_pve_analysis_performance.py
 - tools\smoke_test_pve_balance_analyzers.py
 - tools\smoke_test_regen_contracts.py
+- tools\smoke_test_rng_patch_regression.py
 - tools\smoke_test_rom_core.py
 - tools\smoke_test_rune_character_stat_bonuses.py
 - tools\smoke_test_rune_data_model.py
@@ -75838,8 +75847,8 @@ def roll_rune_drop(mob, random_func=None):
 
 ============================================================
 FILE: systems\simulation\__init__.py
-SIZE: 3146 bytes
-LAST WRITE: 2026-08-05 01:15:05
+SIZE: 3432 bytes
+LAST WRITE: 2026-08-06 06:46:58
 ============================================================
 
 """Deterministic, database-free ROM simulation foundation (Stage 13.1)."""
@@ -75905,6 +75914,11 @@ from .asset_valuation import AssetValuation, value_progression_assets
 
 from .economy_analyzer import EconomyResult, analyze_economy
 from .guild_population import GuildPopulationResult, simulate_guild_population
+
+# ROM 13.9.0 RNG percentiles and patch regression
+from .rng_percentiles import distribution as rng_distribution, percentile as rng_percentile, rng_bands
+from .patch_regression import RegressionConfig, analyze_payloads, compare_reports, create_baseline, load_baseline, run_matrix
+
 
 
 ============================================================
@@ -78073,6 +78087,221 @@ class SimulationRunResult:
 
 
 ============================================================
+FILE: systems\simulation\patch_regression.py
+SIZE: 11436 bytes
+LAST WRITE: 2026-08-06 06:53:39
+============================================================
+
+from __future__ import annotations
+
+import hashlib
+import json
+import os
+from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Iterable, Mapping
+
+from .economic_ledger import EconomicScenarioSpec
+from .economic_progression import run_economic_progression
+from .rng_percentiles import distribution, rng_bands
+
+SCHEMA_VERSION = "rom.simulation.patch_regression.v1"
+VERSION = "13.9.0"
+DEFAULT_CLASSES = ("warrior", "knight", "scout", "rogue", "mage", "priest")
+DEFAULT_PROFILES = ("regular",)
+DEFAULT_CAPACITIES = (40, 60)
+CONTROLLED_METRICS = (
+    "battles", "elapsed_minutes", "deaths", "win_rate", "final_cash",
+    "gold_faucets", "gold_sinks", "total_net_worth", "city_visits",
+    "full_bag_events", "items_lost", "guild_exp", "guild_contracts",
+)
+THRESHOLDS = {
+    "battles": (10.0, 20.0), "elapsed_minutes": (10.0, 20.0),
+    "deaths": (20.0, 50.0), "win_rate": (3.0, 7.0),
+    "final_cash": (10.0, 20.0), "gold_faucets": (10.0, 20.0),
+    "gold_sinks": (10.0, 20.0), "total_net_worth": (10.0, 20.0),
+    "city_visits": (20.0, 50.0), "full_bag_events": (20.0, 50.0),
+    "items_lost": (0.0, 0.0), "guild_exp": (10.0, 20.0),
+    "guild_contracts": (10.0, 20.0),
+}
+
+@dataclass(frozen=True)
+class RegressionConfig:
+    target_level: int = 2
+    profiles: tuple[str, ...] = DEFAULT_PROFILES
+    classes: tuple[str, ...] = DEFAULT_CLASSES
+    seed_start: int = 139000
+    seed_count: int = 10
+    capacities: tuple[int, ...] = DEFAULT_CAPACITIES
+    max_days: int = 365
+
+    def seeds(self) -> tuple[int, ...]:
+        return tuple(range(self.seed_start, self.seed_start + self.seed_count))
+
+    def validate(self) -> None:
+        if not 2 <= int(self.target_level) <= 10:
+            raise ValueError("target_level must be between 2 and current production ceiling 10")
+        if self.seed_count < 1:
+            raise ValueError("seed_count must be positive")
+        if any(int(capacity) not in (40, 60) for capacity in self.capacities):
+            raise ValueError("inventory capacity must be 40 or 60")
+
+
+def _num(value) -> float:
+    try: return float(value)
+    except (TypeError, ValueError): return 0.0
+
+
+def _nested(payload: Mapping, *path, default=0.0):
+    value = payload
+    for key in path:
+        if not isinstance(value, Mapping): return default
+        value = value.get(key)
+    return default if value is None else value
+
+
+def metric_row(payload: Mapping) -> dict:
+    wins, battles = _num(payload.get("wins")), _num(payload.get("battles"))
+    ledger = payload.get("economic_ledger") if isinstance(payload.get("economic_ledger"), Mapping) else {}
+    totals = ledger.get("totals") if isinstance(ledger.get("totals"), Mapping) else ledger
+    valuation = payload.get("asset_valuation") if isinstance(payload.get("asset_valuation"), Mapping) else {}
+    guild = payload.get("guild") if isinstance(payload.get("guild"), Mapping) else {}
+    return {
+        "battles": _num(payload.get("battles")),
+        "elapsed_minutes": _num(payload.get("elapsed_minutes")),
+        "deaths": _num(payload.get("deaths")),
+        "win_rate": 100.0 * wins / battles if battles else 0.0,
+        "final_cash": _num(payload.get("final_gold", valuation.get("cash_gold"))),
+        "gold_faucets": _num(totals.get("faucets", totals.get("gold_faucets", 0.0))),
+        "gold_sinks": _num(totals.get("sinks", totals.get("gold_sinks", 0.0))),
+        "total_net_worth": _num(valuation.get("total_net_worth")),
+        "city_visits": _num(payload.get("city_visits")),
+        "full_bag_events": _num(payload.get("full_bag_events")),
+        "items_lost": _num(payload.get("items_lost")),
+        "guild_exp": _num(guild.get("exp", payload.get("guild_exp", 0.0))),
+        "guild_contracts": _num(guild.get("contracts", payload.get("guild_contracts", 0.0))),
+    }
+
+
+def scenario_identity(payload: Mapping) -> tuple:
+    scenario = payload.get("scenario") if isinstance(payload.get("scenario"), Mapping) else {}
+    return (
+        scenario.get("character_class", payload.get("character_class")),
+        scenario.get("profile", payload.get("profile")),
+        int(scenario.get("seed", payload.get("seed", 0))),
+        int(scenario.get("target_level", payload.get("target_level", payload.get("final_level", 0)))),
+        int(scenario.get("inventory_capacity", _nested(payload, "final_asset_snapshot", "inventory_capacity", default=0))),
+    )
+
+
+def source_fingerprint(root: Path) -> dict:
+    paths = [
+        "data/player_progression.py", "systems/combat_system.py", "systems/reward_system.py",
+        "systems/refine_system.py", "systems/simulation/world_progression.py",
+        "systems/simulation/pve_battle.py", "systems/simulation/economic_ledger.py",
+        "systems/simulation/economic_progression.py", "systems/simulation/combat_actor_stats.py",
+    ]
+    entries = []
+    combined = hashlib.sha256()
+    for relative in paths:
+        path = root / relative
+        if not path.exists(): continue
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        entries.append({"path": relative, "sha256": digest, "size": path.stat().st_size})
+        combined.update(relative.encode("utf-8")); combined.update(digest.encode("ascii"))
+    return {"sha256": combined.hexdigest(), "files": entries}
+
+
+def run_matrix(root: Path, config: RegressionConfig, force: bool = False, progress=None) -> list[dict]:
+    config.validate(); rows = []; total = len(config.classes) * len(config.profiles) * config.seed_count * len(config.capacities); done = 0
+    for class_key in config.classes:
+        for profile in config.profiles:
+            for seed in config.seeds():
+                for capacity in config.capacities:
+                    spec = EconomicScenarioSpec(character_class=class_key, profile=profile, seed=seed, target_level=config.target_level, inventory_capacity=capacity, max_days=config.max_days)
+                    payload = run_economic_progression(root, spec, force=force)
+                    rows.append(payload); done += 1
+                    if progress: progress(done, total, class_key, profile, seed, capacity)
+    return rows
+
+
+def analyze_payloads(root: Path, payloads: Iterable[Mapping], config: RegressionConfig) -> dict:
+    rows = list(payloads); groups = {}; failures = []
+    for payload in rows:
+        identity = scenario_identity(payload); groups.setdefault((identity[0], identity[1], identity[4]), []).append(metric_row(payload))
+        reconciliation = payload.get("economic_reconciliation") if isinstance(payload.get("economic_reconciliation"), Mapping) else {}
+        valuation = payload.get("asset_valuation") if isinstance(payload.get("asset_valuation"), Mapping) else {}
+        if payload.get("status") != "completed": failures.append({"code": "scenario_not_completed", "identity": identity})
+        if not reconciliation.get("passed", False): failures.append({"code": "economic_reconciliation", "identity": identity})
+        if valuation.get("coverage") != "FULL": failures.append({"code": "asset_coverage", "identity": identity, "coverage": valuation.get("coverage")})
+    aggregates = []
+    for key, metric_rows in sorted(groups.items()):
+        metrics = {}; bands = {}
+        for metric in CONTROLLED_METRICS:
+            stats = distribution(row[metric] for row in metric_rows); metrics[metric] = stats; bands[metric] = rng_bands(metric, stats)
+        aggregates.append({"character_class": key[0], "profile": key[1], "inventory_capacity": key[2], "runs": len(metric_rows), "metrics": metrics, "rng_bands": bands})
+    return {
+        "schema_version": SCHEMA_VERSION, "version": VERSION, "created_at": datetime.now(timezone.utc).isoformat(),
+        "config": asdict(config), "source_fingerprint": source_fingerprint(root), "scenario_count": len(rows),
+        "aggregates": aggregates, "failures": failures, "verdict": "PASS" if not failures else "FAIL", "database_writes": 0,
+    }
+
+
+def _aggregate_map(report: Mapping) -> dict:
+    return {(row["character_class"], row["profile"], int(row["inventory_capacity"])): row for row in report.get("aggregates", [])}
+
+
+def _canonical_json_value(value):
+    """Normalize tuples/lists and nested mappings to their JSON representation."""
+    return json.loads(json.dumps(value, ensure_ascii=False, sort_keys=True))
+
+
+def compare_reports(baseline: Mapping, current: Mapping) -> dict:
+    failures = []; findings = []; comparisons = []; base_map, cur_map = _aggregate_map(baseline), _aggregate_map(current)
+    if baseline.get("schema_version") != current.get("schema_version"): failures.append({"code": "schema_mismatch"})
+    if _canonical_json_value(baseline.get("config")) != _canonical_json_value(current.get("config")): failures.append({"code": "config_mismatch"})
+    for key in sorted(set(base_map) | set(cur_map)):
+        if key not in base_map or key not in cur_map:
+            failures.append({"code": "aggregate_group_mismatch", "group": key}); continue
+        for metric in CONTROLLED_METRICS:
+            before = _num(base_map[key]["metrics"][metric]["mean"]); after = _num(cur_map[key]["metrics"][metric]["mean"])
+            absolute = after - before
+            percent = 0.0 if before == 0.0 and after == 0.0 else (100.0 if before == 0.0 else absolute / abs(before) * 100.0)
+            review, fail = THRESHOLDS[metric]
+            magnitude = abs(percent)
+            verdict = "FAIL" if magnitude > fail else ("REVIEW" if magnitude > review else "PASS")
+            entry = {"group": key, "metric": metric, "baseline": round(before, 6), "current": round(after, 6), "absolute_diff": round(absolute, 6), "percent_diff": round(percent, 6), "review_threshold": review, "fail_threshold": fail, "verdict": verdict}
+            comparisons.append(entry)
+            if verdict == "FAIL": failures.append(entry)
+            elif verdict == "REVIEW": findings.append(entry)
+    verdict = "FAIL" if failures else ("REVIEW" if findings else "PASS")
+    return {"schema_version": SCHEMA_VERSION, "version": VERSION, "verdict": verdict, "comparisons": comparisons, "failures": failures, "findings": findings, "database_writes": 0}
+
+
+def baseline_path(root: Path, name: str) -> Path:
+    safe = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in name).strip("_") or "default"
+    return root / "simulation_reports" / "baselines" / "stage_13_9_0" / f"{safe}.json"
+
+
+def write_json_atomic(path: Path, payload: Mapping) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True); temporary = path.with_suffix(f".{os.getpid()}.tmp")
+    temporary.write_text(json.dumps(dict(payload), ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8"); os.replace(temporary, path)
+
+
+def create_baseline(root: Path, name: str, report: Mapping, replace: bool = False) -> Path:
+    path = baseline_path(root, name)
+    if path.exists() and not replace: raise FileExistsError(f"Baseline already exists: {path}. Use --replace-baseline explicitly.")
+    write_json_atomic(path, report); return path
+
+
+def load_baseline(root: Path, name: str) -> dict:
+    path = baseline_path(root, name)
+    if not path.exists(): raise FileNotFoundError(f"Baseline not found: {path}")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+============================================================
 FILE: systems\simulation\population_cache.py
 SIZE: 3082 bytes
 LAST WRITE: 2026-08-05 01:15:05
@@ -79032,6 +79261,86 @@ def inject_module_rng(module: Any, rng: SimulationRng) -> Iterator[RandomModuleA
         yield adapter
     finally:
         module.random = original
+
+
+============================================================
+FILE: systems\simulation\rng_percentiles.py
+SIZE: 2987 bytes
+LAST WRITE: 2026-08-06 06:46:58
+============================================================
+
+from __future__ import annotations
+
+import math
+import statistics
+from typing import Iterable, Mapping, Sequence
+
+PERCENTILES = (5, 10, 25, 50, 75, 90, 95)
+LOWER_IS_BETTER = frozenset({"battles", "elapsed_minutes", "deaths", "death_rate", "city_visits", "full_bag_events", "items_lost", "gold_sinks"})
+HIGHER_IS_BETTER = frozenset({"win_rate", "final_cash", "total_net_worth", "gold_faucets", "guild_exp", "guild_contracts"})
+
+
+def _number(value) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def percentile(values: Sequence[float], percent: float) -> float:
+    ordered = sorted(_number(x) for x in values)
+    if not ordered:
+        return 0.0
+    if len(ordered) == 1:
+        return ordered[0]
+    position = (len(ordered) - 1) * float(percent) / 100.0
+    lower = math.floor(position)
+    upper = math.ceil(position)
+    if lower == upper:
+        return ordered[lower]
+    fraction = position - lower
+    return ordered[lower] * (1.0 - fraction) + ordered[upper] * fraction
+
+
+def distribution(values: Iterable[float]) -> dict:
+    data = [_number(value) for value in values]
+    if not data:
+        return {"count": 0, "minimum": 0.0, "maximum": 0.0, "mean": 0.0, "median": 0.0, "standard_deviation": 0.0, "coefficient_of_variation": 0.0, "interquartile_range": 0.0, "p05_p95_spread": 0.0, "stability": "UNAVAILABLE", "percentiles": {f"p{p:02d}": 0.0 for p in PERCENTILES}}
+    mean = statistics.fmean(data)
+    std = statistics.pstdev(data) if len(data) > 1 else 0.0
+    cv = abs(std / mean) if mean else (0.0 if std == 0.0 else float("inf"))
+    pct = {f"p{p:02d}": round(percentile(data, p), 6) for p in PERCENTILES}
+    if cv < 0.05:
+        stability = "STABLE"
+    elif cv < 0.15:
+        stability = "WATCH"
+    elif cv < 0.30:
+        stability = "REVIEW"
+    else:
+        stability = "UNSTABLE"
+    return {
+        "count": len(data),
+        "minimum": round(min(data), 6),
+        "maximum": round(max(data), 6),
+        "mean": round(mean, 6),
+        "median": round(statistics.median(data), 6),
+        "standard_deviation": round(std, 6),
+        "coefficient_of_variation": round(cv, 6) if math.isfinite(cv) else "INF",
+        "interquartile_range": round(pct["p75"] - pct["p25"], 6),
+        "p05_p95_spread": round(pct["p95"] - pct["p05"], 6),
+        "stability": stability,
+        "percentiles": pct,
+    }
+
+
+def rng_bands(metric: str, stats: Mapping) -> dict:
+    pct = dict(stats.get("percentiles") or {})
+    lower_is_better = metric in LOWER_IS_BETTER
+    if lower_is_better:
+        unlucky, typical, lucky = pct.get("p90", 0.0), pct.get("p50", 0.0), pct.get("p10", 0.0)
+    else:
+        unlucky, typical, lucky = pct.get("p10", 0.0), pct.get("p50", 0.0), pct.get("p90", 0.0)
+    return {"direction": "lower_is_better" if lower_is_better else "higher_is_better", "unlucky": unlucky, "typical": typical, "lucky": lucky}
 
 
 ============================================================
@@ -113851,6 +114160,72 @@ if __name__ == "__main__":
 
 
 ============================================================
+FILE: tools\run_rng_patch_regression.py
+SIZE: 3428 bytes
+LAST WRITE: 2026-08-06 06:46:58
+============================================================
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path: sys.path.insert(0, str(ROOT))
+
+from systems.simulation.patch_regression import RegressionConfig, analyze_payloads, compare_reports, create_baseline, load_baseline, run_matrix, write_json_atomic
+
+
+def csv_tuple(value): return tuple(part.strip() for part in str(value).split(",") if part.strip())
+def int_tuple(value): return tuple(int(part.strip()) for part in str(value).split(",") if part.strip())
+
+def main():
+    parser = argparse.ArgumentParser(description="ROM RNG percentiles and patch regression analyzer")
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--create-baseline", action="store_true")
+    mode.add_argument("--compare-baseline", action="store_true")
+    mode.add_argument("--replace-baseline", action="store_true")
+    parser.add_argument("--baseline-name", default="stage_13_current")
+    parser.add_argument("--target-level", type=int, default=2)
+    parser.add_argument("--profiles", default="regular")
+    parser.add_argument("--classes", default="warrior,knight,scout,rogue,mage,priest")
+    parser.add_argument("--seed-start", type=int, default=139000)
+    parser.add_argument("--seeds", type=int, default=10)
+    parser.add_argument("--inventory", default="40,60")
+    parser.add_argument("--max-days", type=int, default=365)
+    parser.add_argument("--force", action="store_true")
+    args = parser.parse_args()
+    config = RegressionConfig(target_level=args.target_level, profiles=csv_tuple(args.profiles), classes=csv_tuple(args.classes), seed_start=args.seed_start, seed_count=args.seeds, capacities=int_tuple(args.inventory), max_days=args.max_days)
+    def progress(done,total,cls,profile,seed,capacity):
+        if done == 1 or done == total or done % max(1,total//10) == 0: print(f"[progress] {done}/{total} {cls}/{profile}/seed={seed}/slots={capacity}")
+    payloads = run_matrix(ROOT, config, force=args.force, progress=progress)
+    current = analyze_payloads(ROOT, payloads, config)
+    current_path = ROOT / "MD" / f"SIMULATION_RNG_CURRENT_13_9_0_{args.baseline_name}.json"
+    write_json_atomic(current_path, current)
+    replace = bool(args.replace_baseline)
+    if args.create_baseline or replace:
+        path = create_baseline(ROOT, args.baseline_name, current, replace=replace)
+        print("[OK] RNG baseline created" if not replace else "[OK] RNG baseline replaced")
+        print(f"- verdict: {current['verdict']}")
+        print(f"- scenarios: {current['scenario_count']}")
+        print(f"- baseline: {path.relative_to(ROOT)}")
+    else:
+        baseline = load_baseline(ROOT, args.baseline_name); diff = compare_reports(baseline, current)
+        diff_path = ROOT / "MD" / f"SIMULATION_PATCH_REGRESSION_DIFF_13_9_0_{args.baseline_name}.json"; write_json_atomic(diff_path, diff)
+        print("[OK] Patch regression comparison")
+        print(f"- verdict: {diff['verdict']}")
+        print(f"- comparisons: {len(diff['comparisons'])}")
+        print(f"- findings: {len(diff['findings'])}; failures: {len(diff['failures'])}")
+        print(f"- diff: {diff_path.relative_to(ROOT)}")
+    print(f"- current: {current_path.relative_to(ROOT)}")
+    print("- database writes: 0")
+
+if __name__ == "__main__": main()
+
+
+============================================================
 FILE: tools\run_simulation_canonical_parity_report.py
 SIZE: 1716 bytes
 LAST WRITE: 2026-08-04 15:21:49
@@ -114332,6 +114707,59 @@ file=systems\simulation\__init__.py|size=2931|sha256=fdc1df4f225b94d04facfd4a26d
 
 
 ============================================================
+FILE: tools\simulation_rng_patch_regression_13_9_0_manifest.txt
+SIZE: 86 bytes
+LAST WRITE: 2026-08-06 06:47:00
+============================================================
+
+version=13.9.0
+verdict=PASS
+database_writes=0
+pvp=DEFERRED
+guild_member_limit=50
+
+
+============================================================
+FILE: tools\simulation_rng_patch_regression_13_9_0a_manifest.txt
+SIZE: 117 bytes
+LAST WRITE: 2026-08-06 06:53:41
+============================================================
+
+version=13.9.0a
+verdict=PASS
+fix=json_round_trip_config_normalization
+baseline_immutable=true
+database_writes=0
+
+
+============================================================
+FILE: tools\simulation_stage_13_10_0a_guild_smoke_alignment_manifest.txt
+SIZE: 145 bytes
+LAST WRITE: 2026-08-06 07:15:57
+============================================================
+
+version=13.10.0a
+verdict=PASS
+guild_member_limit=50
+obsolete_population_100_removed=true
+production_simulation_changes=0
+database_writes=0
+
+
+============================================================
+FILE: tools\simulation_stage_13_10_0b_import_path_fix_manifest.txt
+SIZE: 114 bytes
+LAST WRITE: 2026-08-06 07:15:57
+============================================================
+
+version=13.10.0b
+verdict=PASS
+fix=child_process_pythonpath
+production_simulation_changes=0
+database_writes=0
+
+
+============================================================
 FILE: tools\simulation_stage_13_manifest.txt
 SIZE: 817 bytes
 LAST WRITE: 2026-08-04 01:24:45
@@ -114373,6 +114801,31 @@ priest_armor=cloth_only
 database_unchanged=true
 file=systems\simulation\equipment_policy.py|size=7121|sha256=077542208208c6c3ed5eb44c95d9495bd52b51034109dbe84877c2aa7fcc69f9
 file=tools\smoke_test_simulation_behavior_equipment_policy.py|size=3372|sha256=fc6d0c4c36a05ab67943b3470c3214a65e1c8ae2632f3278ad89c952092d3c9e
+
+
+============================================================
+FILE: tools\simulation_system_stage_13_manifest.txt
+SIZE: 702 bytes
+LAST WRITE: 2026-08-06 07:15:57
+============================================================
+
+version=13.10.0
+verdict=PASS
+stage_13_closed=true
+gameplay_mutations=0
+database_writes=0
+pvp=DEFERRED
+guild_member_limit=50
+production_content_ceiling=10
+inventory_baseline=40
+inventory_experiment=60
+critical_tests=16
+simulation_modules=37
+cache_v1_files=200
+cache_v2_files=18
+file=MD\SIMULATION_SYSTEM_COMPLETE_DOCUMENTATION_13_10_0.md|size=20367|sha256=f3b4d210baef86e8979b226a4a76d54f69f34322a6e55f0e620a4365dcf0fc35
+file=MD\SIMULATION_SYSTEM_FINAL_AUDIT_13_10_0.md|size=3041|sha256=ae2b35273edcf8f265b7f918c3f33bba52cde0a48fd871681293b24bf7b0695e
+file=MD\SIMULATION_SYSTEM_FINAL_AUDIT_13_10_0.json|size=49786|sha256=4ecdd97d2ccb76387c18ff392ee2cb2803b2eac54ede82352f5f41c23477052b
 
 
 ============================================================
@@ -117455,8 +117908,8 @@ if __name__ == "__main__":
 
 ============================================================
 FILE: tools\smoke_test_economy_guild_population.py
-SIZE: 1756 bytes
-LAST WRITE: 2026-08-05 01:15:05
+SIZE: 2025 bytes
+LAST WRITE: 2026-08-06 07:13:40
 ============================================================
 
 from systems.simulation.economy_analyzer import analyze_economy
@@ -117486,17 +117939,24 @@ def main():
     assert economy.gold_transfers == 14
     assert economy.net_gold_created == 26
     assert economy.mean_total_net_worth == 28
-    guild = simulate_guild_population([fixture(), fixture()], 100)
-    assert guild.guild_exp == 7500 and guild.kills == 3000 and guild.contracts == 100
+    guild = simulate_guild_population([fixture(), fixture()], 50)
+    assert guild.guild_exp == 3750 and guild.kills == 1500 and guild.contracts == 50
     assert guild.mode == "FAST_COHORT"
     exact = simulate_guild_population([fixture(), fixture()], 2)
     assert exact.mode == "EXACT"
+    try:
+        simulate_guild_population([fixture(), fixture()], 51)
+    except ValueError as error:
+        assert "50" in str(error)
+    else:
+        raise AssertionError("guild population above 50 was not rejected")
     print("[OK] Economy and guild-population contracts")
     print("- faucets/sinks/transfers separated: PASS")
     print("- total net worth uses explicit asset values: PASS")
     print("- player transfers do not alter net gold creation: PASS")
     print("- EXACT/FAST cohort guild aggregation: PASS")
-    print("- populations 10/50/100/500/1000 supported: PASS")
+    print("- populations 10/25/50 supported: PASS")
+    print("- guild member limit 50 enforced: PASS")
     print("- database writes: 0")
 
 
@@ -122657,6 +123117,66 @@ print("[OK] regen runtime contracts")
 print("- before:", before_hp, "/", max_hp)
 print("- after:", after_hp, "/", db.get_max_hp(user_id))
 print("- result:", result)
+
+============================================================
+FILE: tools\smoke_test_rng_patch_regression.py
+SIZE: 3540 bytes
+LAST WRITE: 2026-08-06 06:53:39
+============================================================
+
+from __future__ import annotations
+
+import tempfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+import sys
+if str(ROOT) not in sys.path: sys.path.insert(0, str(ROOT))
+
+from systems.simulation.patch_regression import RegressionConfig, analyze_payloads, compare_reports, create_baseline, load_baseline
+from systems.simulation.rng_percentiles import distribution, rng_bands
+
+
+def payload(seed, cash, deaths=0):
+    return {"status":"completed","character_class":"warrior","profile":"regular","seed":seed,"target_level":2,"battles":50,"wins":50-deaths,"deaths":deaths,"elapsed_minutes":1000,"final_gold":cash,"city_visits":1,"full_bag_events":0,"items_lost":0,"economic_reconciliation":{"passed":True},"asset_valuation":{"coverage":"FULL","total_net_worth":cash+10},"economic_ledger":{"totals":{"faucets":cash,"sinks":0}},"final_asset_snapshot":{"inventory_capacity":40},"guild_exp":0,"guild_contracts":0}
+
+
+def main():
+    stats=distribution([1,2,3,4,5]); assert stats["percentiles"]["p50"]==3 and stats["count"]==5
+    assert rng_bands("deaths",stats)["direction"]=="lower_is_better"
+    cfg=RegressionConfig(target_level=2, profiles=("regular",), classes=("warrior",), seed_start=1, seed_count=3, capacities=(40,))
+    base=analyze_payloads(ROOT,[payload(1,10),payload(2,11),payload(3,12)],cfg); assert base["verdict"]=="PASS"
+    same=analyze_payloads(ROOT,[payload(1,10),payload(2,11),payload(3,12)],cfg); diff=compare_reports(base,same); assert diff["verdict"]=="PASS"
+    changed=analyze_payloads(ROOT,[payload(1,30),payload(2,31),payload(3,32)],cfg); diff2=compare_reports(base,changed); assert diff2["verdict"] in {"REVIEW","FAIL"}
+    with tempfile.TemporaryDirectory() as directory:
+        root=Path(directory); path=create_baseline(root,"smoke",base); assert path.exists() and load_baseline(root,"smoke")["scenario_count"]==3
+        try: create_baseline(root,"smoke",base)
+        except FileExistsError: pass
+        else: raise AssertionError("baseline overwrite guard failed")
+    print("[OK] RNG percentiles and patch-regression contracts")
+    print("- P05/P10/P25/P50/P75/P90/P95 statistics: PASS")
+    print("- lucky/typical/unlucky direction by metric: PASS")
+    print("- immutable baseline and explicit replace guard: PASS")
+    print("- same-input comparison PASS; material drift surfaced: PASS")
+    print("- economic reconciliation/FULL coverage gates: PASS")
+    print("- database writes: 0")
+
+if __name__=="__main__": main()
+
+# ROM 13.9.0a JSON round-trip compatibility contract
+def _json_round_trip_config_contract():
+    import json
+    from systems.simulation.patch_regression import RegressionConfig, analyze_payloads, compare_reports
+    cfg = RegressionConfig(target_level=2, profiles=("regular",), classes=("warrior",), seed_start=1, seed_count=1, capacities=(40,))
+    payload = {"status":"completed","character_class":"warrior","profile":"regular","seed":1,"target_level":2,"battles":50,"wins":50,"deaths":0,"elapsed_minutes":1000,"final_gold":10,"city_visits":0,"full_bag_events":0,"items_lost":0,"economic_reconciliation":{"passed":True},"asset_valuation":{"coverage":"FULL","total_net_worth":10},"economic_ledger":{"totals":{"faucets":10,"sinks":0}},"final_asset_snapshot":{"inventory_capacity":40}}
+    current = analyze_payloads(ROOT, [payload], cfg)
+    baseline = json.loads(json.dumps(current))
+    diff = compare_reports(baseline, current)
+    assert diff["verdict"] == "PASS", diff
+
+_json_round_trip_config_contract()
+
+
 
 ============================================================
 FILE: tools\smoke_test_rom_core.py
