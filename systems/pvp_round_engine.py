@@ -6,6 +6,7 @@ from typing import Any, Mapping
 from systems.pvp_config import (
     PVP_COMBAT_ENERGY_MAX, PVP_CONSECUTIVE_AFK_LIMIT, PVP_DAMAGE_MULTIPLIER,
     PVP_DEBUFF_MULTIPLIER, PVP_HEALING_MULTIPLIER, PVP_MAX_ROUNDS,
+    PVP_RAGE_GAIN_ON_ATTACK, PVP_RAGE_GAIN_ON_DAMAGE_TAKEN,
     PVP_SHIELD_MULTIPLIER,
 )
 from systems.pvp_models import PvpActionIntent, PvpActionOutcome, PvpActorState, PvpRoundResult
@@ -272,8 +273,38 @@ def resolve_pvp_round(round_number: int, revision: int, actor_a: PvpActorState, 
             damage = max(1, round(damage * (1.0 + item["combo_spent"] * 0.35)))
         if skill and skill.get("scales_with_player_pdef"):
             damage = max(1, round(damage + actor.physical_defense * 1.4))
+        # PvE parity for rage classes:
+        # every executed damaging action grants +15 Rage, then the skill-specific
+        # extra_rage is added. This applies to basic attacks and damaging skills.
+        attack_rage_gain = PVP_RAGE_GAIN_ON_ATTACK if actor.resource_type == "rage" else 0
+        rage_before_attack = int(actor.resource or 0)
+        if attack_rage_gain > 0:
+            actor.resource = _clamp(actor.resource + attack_rage_gain, 0, 100)
+            attack_rage_gain = actor.resource - rage_before_attack
+            if attack_rage_gain > 0:
+                events.append({
+                    "type": "rage_gain_attack",
+                    "user_id": actor.user_id,
+                    "value": attack_rage_gain,
+                    "before": rage_before_attack,
+                    "after": actor.resource,
+                    "maximum": 100,
+                })
         applied, gained, combo_gain = _special(actor, target, skill or {}, damage, rng)
+        rage_before_extra = int(actor.resource or 0)
         actor.resource = _clamp(actor.resource + gained, 0, PVP_COMBAT_ENERGY_MAX if "energy" in actor.resource_type else 100)
+        actual_extra_gain = actor.resource - rage_before_extra
+        item["attack_rage_gain"] = attack_rage_gain
+        item["actual_extra_gain"] = actual_extra_gain
+        if actual_extra_gain > 0 and actor.resource_type == "rage":
+            events.append({
+                "type": "rage_gain_skill",
+                "user_id": actor.user_id,
+                "value": actual_extra_gain,
+                "before": rage_before_extra,
+                "after": actor.resource,
+                "maximum": 100,
+            })
         # Production rogue finisher consumes every accumulated combo point.
         # Keep this explicit after special-effect processing so no later gain can resurrect spent combo.
         if item["combo_spent"] > 0:
@@ -285,8 +316,27 @@ def resolve_pvp_round(round_number: int, revision: int, actor_a: PvpActorState, 
     for actor, target, damage, critical, dodged, meta in damage_packets:
         final_damage = _shield_absorb(target, damage, events)
         target.hp = max(0, target.hp - final_damage)
+        # PvE parity: a rage-based defender gains +10 Rage only when positive
+        # damage remains after dodge and shield absorption.
+        if target.resource_type == "rage" and final_damage > 0:
+            rage_before_damage = int(target.resource or 0)
+            target.resource = _clamp(target.resource + PVP_RAGE_GAIN_ON_DAMAGE_TAKEN, 0, 100)
+            damage_rage_gain = target.resource - rage_before_damage
+            if damage_rage_gain > 0:
+                events.append({
+                    "type": "rage_gain_damage_taken",
+                    "user_id": target.user_id,
+                    "value": damage_rage_gain,
+                    "before": rage_before_damage,
+                    "after": target.resource,
+                    "maximum": 100,
+                    "damage": final_damage,
+                })
         item = meta["item"]
-        outcomes[actor.user_id] = PvpActionOutcome(actor.user_id, item["intent"].action_type, item["intent"].skill_key, True, "ok", damage=final_damage, critical=critical, dodged=dodged, resource_spent=item["cost"], combo_spent=item["combo_spent"], resource_gained=meta["gained"], combo_gained=meta["combo_gain"], applied_effects=tuple(meta["applied"]))
+        action_resource_gain = int(item.get("actual_extra_gain", meta["gained"]) or 0)
+        if actor.resource_type == "rage":
+            action_resource_gain += int(item.get("attack_rage_gain", 0) or 0)
+        outcomes[actor.user_id] = PvpActionOutcome(actor.user_id, item["intent"].action_type, item["intent"].skill_key, True, "ok", damage=final_damage, critical=critical, dodged=dodged, resource_spent=item["cost"], combo_spent=item["combo_spent"], resource_gained=action_resource_gain, combo_gained=meta["combo_gain"], applied_effects=tuple(meta["applied"]))
         events.append({"type": "damage", "actor_id": actor.user_id, "target_id": target.user_id, "value": final_damage, "critical": critical, "dodged": dodged})
 
     if a.consecutive_afk >= PVP_CONSECUTIVE_AFK_LIMIT and b.consecutive_afk >= PVP_CONSECUTIVE_AFK_LIMIT:

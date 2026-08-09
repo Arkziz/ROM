@@ -33,6 +33,17 @@ def _effect_label(key: str) -> str:
     return _EFFECT_LABELS.get(str(key or ""), str(key or "ефект"))
 
 
+def _actor_display_name(actor: Mapping[str, Any], user_id: int) -> str:
+    name = str(actor.get("character_name") or "").strip()
+    if not name:
+        try:
+            from db import get_character_name
+            name = str(get_character_name(int(user_id)) or "").strip()
+        except Exception:
+            name = ""
+    return name or f"Гравець #{int(user_id)}"
+
+
 def render_pvp_round_combat_log(payload: Mapping[str, Any], viewer_user_id: int) -> str:
     """Render one resolved round from the viewer's perspective.
 
@@ -47,20 +58,20 @@ def render_pvp_round_combat_log(payload: Mapping[str, Any], viewer_user_id: int)
         if not isinstance(outcome, Mapping):
             continue
         uid = int(outcome.get("user_id") or 0)
-        who = "Ви" if uid == viewer else "Суперник"
         actor = actors.get(uid, {})
+        who = _actor_display_name(actor, uid)
         action_type = str(outcome.get("action_type") or "")
         if action_type == "afk_skip":
-            lines.append(f"\n⏳ <b>{who}</b>: пропуск через бездіяльність.")
+            lines.append(f"\n⏳ <b>{escape(who)}</b>: пропуск через бездіяльність.")
             continue
         if action_type == "stunned_skip":
-            lines.append(f"\n⚡ <b>{who}</b>: пропуск через оглушення.")
+            lines.append(f"\n⚡ <b>{escape(who)}</b>: пропуск через оглушення.")
             continue
         if not bool(outcome.get("valid")):
-            lines.append(f"\n⚠️ <b>{who}</b>: дія не виконана ({escape(str(outcome.get('reason') or 'невідома причина'))}).")
+            lines.append(f"\n⚠️ <b>{escape(who)}</b>: дія не виконана ({escape(str(outcome.get('reason') or 'невідома причина'))}).")
             continue
         name = escape(_skill_name(str(actor.get("class_key") or ""), outcome.get("skill_key")))
-        lines.append(f"\n<b>{who}</b> використав: {name}.")
+        lines.append(f"\n<b>{escape(who)}</b> використав: {name}.")
         if bool(outcome.get("dodged")):
             lines.append("💨 Атаку було ухилено.")
         elif int(outcome.get("damage") or 0) > 0:
@@ -101,24 +112,36 @@ def render_pvp_round_combat_log(payload: Mapping[str, Any], viewer_user_id: int)
             continue
         kind = str(event.get("type") or "")
         uid = int(event.get("user_id") or 0)
-        who = "Ви" if uid == viewer else "Суперник"
+        who = _actor_display_name(actors.get(uid, {}), uid)
         value = int(event.get("value") or 0)
         effect = escape(_effect_label(str(event.get("effect") or "effect")))
         if kind == "dot_tick":
-            lines.append(f"\n{effect} у <b>{who.lower()}</b> завдав <b>{value}</b> шкоди.")
+            lines.append(f"\n{effect}: <b>{escape(who)}</b> отримує <b>{value}</b> шкоди.")
         elif kind == "hot_tick":
             current_hp = event.get("hp_after")
             max_hp = event.get("max_hp")
             extra = f" HP стало {int(current_hp)}/{int(max_hp)}." if current_hp is not None and max_hp is not None else ""
-            lines.append(f"\n🌿 Відновлення здоров'я у <b>{who.lower()}</b> фактично відновило <b>{value}</b> HP.{extra}")
+            lines.append(f"\n🌿 <b>{escape(who)}</b>: фактично відновлено <b>{value}</b> HP.{extra}")
         elif kind == "shield_absorb":
-            lines.append(f"\n🛡️ Щит у <b>{who.lower()}</b> поглинув <b>{value}</b> шкоди.")
+            lines.append(f"\n🛡️ <b>{escape(who)}</b>: щит поглинув <b>{value}</b> шкоди.")
         elif kind == "effect_expired":
-            lines.append(f"\n⌛ Ефект {effect} у <b>{who.lower()}</b> завершився.")
+            lines.append(f"\n⌛ <b>{escape(who)}</b>: ефект {effect} завершився.")
         elif kind == "combat_energy_regen":
             before = int(event.get("before") or 0)
             after = int(event.get("after") or 0)
             maximum = int(event.get("maximum") or 100)
-            lines.append(f"\n⚡ Енергія у <b>{who.lower()}</b> відновлена: {before} → {after}/{maximum}.")
+            lines.append(f"\n⚡ <b>{escape(who)}</b>: Енергія {before} → {after}/{maximum}.")
+        elif kind == "rage_gain_attack":
+            before = int(event.get("before") or 0)
+            after = int(event.get("after") or 0)
+            lines.append(f"\n🔥 <b>{escape(who)}</b>: +{value} Люті за атаку ({before} → {after}/100).")
+        elif kind == "rage_gain_skill":
+            before = int(event.get("before") or 0)
+            after = int(event.get("after") or 0)
+            lines.append(f"\n🔥 <b>{escape(who)}</b>: +{value} додаткової Люті від навички ({before} → {after}/100).")
+        elif kind == "rage_gain_damage_taken":
+            before = int(event.get("before") or 0)
+            after = int(event.get("after") or 0)
+            lines.append(f"\n🔥 <b>{escape(who)}</b>: +{value} Люті за отриману шкоду ({before} → {after}/100).")
 
     return "\n".join(lines)

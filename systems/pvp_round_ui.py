@@ -5,12 +5,25 @@ from typing import Any, Mapping
 from telebot import types
 
 from systems.pvp_skill_adapter import load_production_pvp_skill_catalog
+from systems.pvp_action_validation import pvp_skill_button_state
 
 
 def _bar(current: int, maximum: int, width: int = 10) -> str:
     maximum=max(1,int(maximum)); current=max(0,min(int(current),maximum))
     filled=int(round(width*current/maximum))
     return "█"*filled+"░"*(width-filled)
+
+
+def _participant_display_name(participant: Mapping[str, Any]) -> str:
+    snapshot = participant.get("snapshot") if isinstance(participant.get("snapshot"), Mapping) else {}
+    name = str(participant.get("character_name") or snapshot.get("character_name") or "").strip()
+    if not name:
+        try:
+            from db import get_character_name
+            name = str(get_character_name(int(participant.get("user_id") or 0)) or "").strip()
+        except Exception:
+            name = ""
+    return name or f"Гравець #{int(participant.get('user_id') or 0)}"
 
 
 def _resource_line(participant: Mapping[str, Any]) -> str:
@@ -32,8 +45,8 @@ def render_pvp_round_text(battle: Mapping[str, Any], viewer: Mapping[str, Any], 
     return (
         f"⚔️ <b>PvP-дуель</b>\n\n"
         f"<b>Раунд {round_number}</b>\n\n"
-        f"<b>Ви</b>\n❤️ {_bar(own_hp,own_max)} {own_hp}/{own_max}\n{_resource_line(viewer)}\n\n"
-        f"<b>Суперник</b>\n❤️ {_bar(foe_hp,foe_max)} {foe_hp}/{foe_max}"
+        f"<b>{escape(_participant_display_name(viewer))}</b>\n❤️ {_bar(own_hp,own_max)} {own_hp}/{own_max}\n{_resource_line(viewer)}\n\n"
+        f"<b>{escape(_participant_display_name(enemy))}</b>\n❤️ {_bar(foe_hp,foe_max)} {foe_hp}/{foe_max}"
         f"{status}"
     )
 
@@ -49,9 +62,8 @@ def build_pvp_action_keyboard(battle: Mapping[str, Any], participant: Mapping[st
     skills=catalog.get(str(participant.get("class_key") or ""),())
     cooldowns=dict(participant.get("cooldowns") or {})
     for skill in skills:
-        key=str(skill.get("key") or ""); name=str(skill.get("name") or key)
-        cd=int(cooldowns.get(key,0) or 0)
-        label=f"✨ {name}"+(f" · ⏳ {cd}" if cd>0 else "")
-        kb.add(types.InlineKeyboardButton(label,callback_data=f"pvp:round:act:{bid}:{rnd}:{rev}:skill:{key}"))
+        key=str(skill.get("key") or "")
+        state=pvp_skill_button_state(participant,skill)
+        kb.add(types.InlineKeyboardButton(str(state.get("label") or skill.get("name") or key),callback_data=f"pvp:round:act:{bid}:{rnd}:{rev}:skill:{key}"))
     kb.add(types.InlineKeyboardButton("🔄 Оновити стан",callback_data=f"pvp:round:refresh:{bid}:{rnd}:{rev}"))
     return kb

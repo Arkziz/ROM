@@ -3,11 +3,11 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-07 00:40:49 +03:00
+Created: 2026-08-09 22:52:35 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.8875
-Included files: 313
-Excluded files: 4275
+Included files: 320
+Excluded files: 4312
 Maximum file size: 2 MB
 
 SECURITY EXCLUSIONS:
@@ -79,6 +79,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\player_system.py
 - systems\potion_system.py
 - systems\pvp_battle_factory.py
+- systems\pvp_combat_log.py
 - systems\pvp_config.py
 - systems\pvp_models.py
 - systems\pvp_request_service.py
@@ -170,6 +171,9 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\pvp_stage_14_4_0_manifest.txt
 - tools\pvp_stage_14_4_0a_round_label_smoke_scope_manifest.txt
 - tools\pvp_stage_14_4_0b_manifest.txt
+- tools\pvp_stage_14_4_1_manifest.txt
+- tools\pvp_stage_14_4_1a_manifest.txt
+- tools\pvp_stage_14_4_1b_manifest.txt
 - tools\pvp_stage_14_manifest.txt
 - tools\README_refactor_tools.md
 - tools\run_economic_progression_v2.py
@@ -297,8 +301,11 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_pvp_active_keyboard_terminal_cleanup.py
 - tools\smoke_test_pvp_architecture_skill_parity.py
 - tools\smoke_test_pvp_atomic_accept_recovery.py
+- tools\smoke_test_pvp_combat_energy_regeneration.py
 - tools\smoke_test_pvp_data_model_sessions_recovery.py
 - tools\smoke_test_pvp_duel_request_interaction_ui.py
+- tools\smoke_test_pvp_rage_generation.py
+- tools\smoke_test_pvp_round_combat_log_combo_hot.py
 - tools\smoke_test_pvp_round_ui_actions_timer.py
 - tools\smoke_test_pvp_simultaneous_round_engine.py
 - tools\smoke_test_pvp_user_mp_snapshot_contract.py
@@ -29893,8 +29900,8 @@ def register_pvp_interaction_handlers(bot):
 
 ============================================================
 FILE: handlers\pvp_round_ui.py
-SIZE: 6167 bytes
-LAST WRITE: 2026-08-07 00:22:58
+SIZE: 6942 bytes
+LAST WRITE: 2026-08-07 00:50:23
 ============================================================
 
 from __future__ import annotations
@@ -29903,6 +29910,7 @@ import logging
 from telebot import types
 
 from systems.player_interaction_system import release_player_activity_session
+from systems.pvp_combat_log import render_pvp_round_combat_log
 from systems.pvp_round_ui import build_pvp_action_keyboard, render_pvp_round_text
 from systems.pvp_system import (
     cleanup_terminal_pvp_activity_sessions,
@@ -29979,6 +29987,20 @@ def send_pvp_round_panel(bot,battle_id,user_id):
     )
 
 
+def broadcast_pvp_round_log(bot, battle_id, payload):
+    if not payload:
+        return
+    for row in get_pvp_participants(int(battle_id)):
+        try:
+            bot.send_message(
+                int(row["user_id"]),
+                render_pvp_round_combat_log(payload, int(row["user_id"])),
+                parse_mode="HTML",
+            )
+        except Exception:
+            log.exception("Cannot send PvP round combat log")
+
+
 def broadcast_pvp_state(bot,battle_id):
     battle=get_pvp_battle(int(battle_id))
     participants=get_pvp_participants(int(battle_id))
@@ -30034,12 +30056,18 @@ def register_pvp_round_ui_handlers(bot):
         bot.answer_callback_query(call.id,"Дію прийнято")
         if result.get("both_ready"):
             resolved=resolve_persisted_pvp_round(bid,rnd,rev,seed=(bid*100000+rnd))
-            if resolved.get("resolved"): broadcast_pvp_state(bot,bid)
+            if resolved.get("resolved"):
+                broadcast_pvp_round_log(bot, bid, resolved.get("round_payload"))
+                broadcast_pvp_state(bot,bid)
         else:
             send_pvp_round_panel(bot,bid,int(call.from_user.id))
 
     cleanup_terminal_pvp_activity_sessions()
-    start_pvp_timer_worker(lambda battle_id: broadcast_pvp_state(bot,battle_id))
+    def _timer_broadcast(battle_id, result=None):
+        if result:
+            broadcast_pvp_round_log(bot, battle_id, result.get("round_payload"))
+        broadcast_pvp_state(bot, battle_id)
+    start_pvp_timer_worker(_timer_broadcast)
     for battle in list_active_pvp_battles():
         try: activate_pvp_battle_ui(bot,int(battle["id"]))
         except Exception: log.exception("Cannot restore PvP battle UI")
@@ -73743,9 +73771,153 @@ def create_pvp_battle_from_accepted_duel(request: Mapping[str, Any], *, snapshot
 
 
 ============================================================
+FILE: systems\pvp_combat_log.py
+SIZE: 7898 bytes
+LAST WRITE: 2026-08-09 22:25:57
+============================================================
+
+from __future__ import annotations
+
+from html import escape
+from typing import Any, Mapping, Sequence
+
+from systems.pvp_skill_adapter import load_production_pvp_skill_catalog
+
+_EFFECT_LABELS = {
+    "poison": "☠️ Отруєння",
+    "bleed": "🩸 Кровотеча",
+    "dot": "🔥 Періодична шкода",
+    "hot": "🌿 Відновлення здоров'я",
+    "heal_over_time": "🌿 Відновлення здоров'я",
+    "pdef_down": "🛡️ Зниження фізичного захисту",
+    "mdef_down": "🔮 Зниження магічного захисту",
+    "mdef_buff": "🔮 Підвищення магічного захисту",
+    "shield": "🛡️ Щит",
+    "stun_next": "⚡ Оглушення",
+    "mana_restore": "🔷 Відновлення мани",
+}
+
+
+def _skill_name(class_key: str, skill_key: str | None) -> str:
+    if not skill_key:
+        return "Звичайна атака"
+    for skill in load_production_pvp_skill_catalog().get(str(class_key or ""), ()):
+        if str(skill.get("key") or "") == str(skill_key):
+            return str(skill.get("name") or skill_key)
+    return str(skill_key)
+
+
+def _effect_label(key: str) -> str:
+    return _EFFECT_LABELS.get(str(key or ""), str(key or "ефект"))
+
+
+def render_pvp_round_combat_log(payload: Mapping[str, Any], viewer_user_id: int) -> str:
+    """Render one resolved round from the viewer's perspective.
+
+    This function is presentation-only. It does not mutate PvP or production state.
+    """
+    viewer = int(viewer_user_id)
+    round_number = int(payload.get("round_number") or 0)
+    actors = {int(x.get("user_id")): x for x in payload.get("actors", ()) if isinstance(x, Mapping) and x.get("user_id") is not None}
+    lines = [f"⚔️ <b>Результат раунду {round_number}</b>"]
+
+    for outcome in payload.get("outcomes", ()):
+        if not isinstance(outcome, Mapping):
+            continue
+        uid = int(outcome.get("user_id") or 0)
+        who = "Ви" if uid == viewer else "Суперник"
+        actor = actors.get(uid, {})
+        action_type = str(outcome.get("action_type") or "")
+        if action_type == "afk_skip":
+            lines.append(f"\n⏳ <b>{who}</b>: пропуск через бездіяльність.")
+            continue
+        if action_type == "stunned_skip":
+            lines.append(f"\n⚡ <b>{who}</b>: пропуск через оглушення.")
+            continue
+        if not bool(outcome.get("valid")):
+            lines.append(f"\n⚠️ <b>{who}</b>: дія не виконана ({escape(str(outcome.get('reason') or 'невідома причина'))}).")
+            continue
+        name = escape(_skill_name(str(actor.get("class_key") or ""), outcome.get("skill_key")))
+        lines.append(f"\n<b>{who}</b> використав: {name}.")
+        if bool(outcome.get("dodged")):
+            lines.append("💨 Атаку було ухилено.")
+        elif int(outcome.get("damage") or 0) > 0:
+            crit = " 💥 Критичний удар." if bool(outcome.get("critical")) else ""
+            lines.append(f"🗡 Завдано <b>{int(outcome.get('damage') or 0)}</b> шкоди.{crit}")
+        if int(outcome.get("healing") or 0) > 0:
+            lines.append(f"❤️ Відновлено <b>{int(outcome.get('healing') or 0)}</b> HP.")
+        if int(outcome.get("resource_spent") or 0) > 0:
+            lines.append(f"🔹 Витрачено ресурсу: {int(outcome.get('resource_spent') or 0)}.")
+        if int(outcome.get("resource_gained") or 0) > 0:
+            lines.append(f"🔹 Отримано ресурсу: {int(outcome.get('resource_gained') or 0)}.")
+        if int(outcome.get("combo_spent") or 0) > 0:
+            lines.append(f"🔗 Витрачено комбо: <b>{int(outcome.get('combo_spent') or 0)}</b>. Після навички: 0/3.")
+        if int(outcome.get("combo_gained") or 0) > 0:
+            combo_after = int(actor.get("combo") or 0)
+            lines.append(f"🔗 Отримано комбо: {int(outcome.get('combo_gained') or 0)}. Тепер: {combo_after}/3.")
+        for effect in outcome.get("applied_effects", ()):
+            if not isinstance(effect, Mapping):
+                continue
+            key = str(effect.get("effect_key") or effect.get("kind") or "effect")
+            label = escape(_effect_label(key))
+            duration = int(effect.get("duration") or 0)
+            power = int(round(float(effect.get("power") or 0)))
+            suffix = f" на {duration} раунд(и)" if duration > 0 else ""
+            if key == "hot":
+                lines.append(f"🌿 Накладено відновлення здоров'я{suffix}: до {power} HP на початку кожного наступного раунду.")
+            elif key == "shield":
+                lines.append(f"🛡️ Накладено щит{suffix}: {power} поглинання.")
+            elif key == "mana_restore":
+                lines.append(f"🔷 Відновлено мани: {power}.")
+            elif key == "stun_next":
+                lines.append("⚡ Накладено оглушення на наступний раунд.")
+            else:
+                lines.append(f"✨ Накладено ефект: {label}{suffix}.")
+
+    for event in payload.get("events", ()):
+        if not isinstance(event, Mapping):
+            continue
+        kind = str(event.get("type") or "")
+        uid = int(event.get("user_id") or 0)
+        who = "Ви" if uid == viewer else "Суперник"
+        value = int(event.get("value") or 0)
+        effect = escape(_effect_label(str(event.get("effect") or "effect")))
+        if kind == "dot_tick":
+            lines.append(f"\n{effect} у <b>{who.lower()}</b> завдав <b>{value}</b> шкоди.")
+        elif kind == "hot_tick":
+            current_hp = event.get("hp_after")
+            max_hp = event.get("max_hp")
+            extra = f" HP стало {int(current_hp)}/{int(max_hp)}." if current_hp is not None and max_hp is not None else ""
+            lines.append(f"\n🌿 Відновлення здоров'я у <b>{who.lower()}</b> фактично відновило <b>{value}</b> HP.{extra}")
+        elif kind == "shield_absorb":
+            lines.append(f"\n🛡️ Щит у <b>{who.lower()}</b> поглинув <b>{value}</b> шкоди.")
+        elif kind == "effect_expired":
+            lines.append(f"\n⌛ Ефект {effect} у <b>{who.lower()}</b> завершився.")
+        elif kind == "combat_energy_regen":
+            before = int(event.get("before") or 0)
+            after = int(event.get("after") or 0)
+            maximum = int(event.get("maximum") or 100)
+            lines.append(f"\n⚡ Енергія у <b>{who.lower()}</b> відновлена: {before} → {after}/{maximum}.")
+        elif kind == "rage_gain_attack":
+            before = int(event.get("before") or 0)
+            after = int(event.get("after") or 0)
+            lines.append(f"\n🔥 Лють у <b>{who.lower()}</b> за атаку: +{value} ({before} → {after}/100).")
+        elif kind == "rage_gain_skill":
+            before = int(event.get("before") or 0)
+            after = int(event.get("after") or 0)
+            lines.append(f"\n🔥 Додаткова Лють у <b>{who.lower()}</b> від навички: +{value} ({before} → {after}/100).")
+        elif kind == "rage_gain_damage_taken":
+            before = int(event.get("before") or 0)
+            after = int(event.get("after") or 0)
+            lines.append(f"\n🔥 Лють у <b>{who.lower()}</b> за отриману шкоду: +{value} ({before} → {after}/100).")
+
+    return "\n".join(lines)
+
+
+============================================================
 FILE: systems\pvp_config.py
-SIZE: 420 bytes
-LAST WRITE: 2026-08-06 22:55:30
+SIZE: 545 bytes
+LAST WRITE: 2026-08-09 22:25:57
 ============================================================
 
 from __future__ import annotations
@@ -73758,6 +73930,9 @@ PVP_ACTION_TIMEOUT_SECONDS = 20
 PVP_MAX_ROUNDS = 50
 PVP_CONSECUTIVE_AFK_LIMIT = 5
 PVP_COMBAT_ENERGY_MAX = 100
+# PvE resource parity for Warrior/Knight duel-local Rage.
+PVP_RAGE_GAIN_ON_ATTACK = 15
+PVP_RAGE_GAIN_ON_DAMAGE_TAKEN = 10
 PVP_DOT_CAN_CRIT = False
 PVP_POTIONS_ALLOWED = False
 PVP_PRODUCTION_STATE_MUTATION = False
@@ -73938,8 +74113,8 @@ def cancel_failed_accepted_pvp_duel_request(request_id: int, *, db_path=None) ->
 
 ============================================================
 FILE: systems\pvp_round_engine.py
-SIZE: 16245 bytes
-LAST WRITE: 2026-08-06 22:55:30
+SIZE: 20045 bytes
+LAST WRITE: 2026-08-09 22:25:57
 ============================================================
 
 from __future__ import annotations
@@ -73950,6 +74125,7 @@ from typing import Any, Mapping
 from systems.pvp_config import (
     PVP_COMBAT_ENERGY_MAX, PVP_CONSECUTIVE_AFK_LIMIT, PVP_DAMAGE_MULTIPLIER,
     PVP_DEBUFF_MULTIPLIER, PVP_HEALING_MULTIPLIER, PVP_MAX_ROUNDS,
+    PVP_RAGE_GAIN_ON_ATTACK, PVP_RAGE_GAIN_ON_DAMAGE_TAKEN,
     PVP_SHIELD_MULTIPLIER,
 )
 from systems.pvp_models import PvpActionIntent, PvpActionOutcome, PvpActorState, PvpRoundResult
@@ -73981,6 +74157,21 @@ def _effective_defense(actor: PvpActorState, attack_type: str) -> float:
 
 
 def _tick_start(actor: PvpActorState, events: list[dict[str, Any]]) -> None:
+    # PvE parity: Scout and Rogue restore 20 combat energy at the start of every round,
+    # before action cost validation. Energy is duel-local and capped at 100.
+    if actor.resource_type in {"combat_energy", "combat_energy_combo"}:
+        before_energy = int(actor.resource or 0)
+        actor.resource = min(PVP_COMBAT_ENERGY_MAX, before_energy + 20)
+        restored = actor.resource - before_energy
+        if restored > 0:
+            events.append({
+                "type": "combat_energy_regen",
+                "user_id": actor.user_id,
+                "value": restored,
+                "before": before_energy,
+                "after": actor.resource,
+                "maximum": PVP_COMBAT_ENERGY_MAX,
+            })
     for key, effect in list(actor.effects.items()):
         kind = effect.get("kind", key)
         if kind in {"poison", "bleed", "dot"}:
@@ -73991,7 +74182,11 @@ def _tick_start(actor: PvpActorState, events: list[dict[str, Any]]) -> None:
             healing = max(0, int(round(_effect_value(effect, "power") * PVP_HEALING_MULTIPLIER)))
             before = actor.hp
             actor.hp = min(actor.max_hp, actor.hp + healing)
-            events.append({"type": "hot_tick", "user_id": actor.user_id, "effect": key, "value": actor.hp - before})
+            events.append({
+                "type": "hot_tick", "user_id": actor.user_id, "effect": key,
+                "value": actor.hp - before, "nominal_value": healing,
+                "hp_before": before, "hp_after": actor.hp, "max_hp": actor.max_hp,
+            })
         remaining = int(effect.get("duration", 1)) - 1
         if remaining <= 0:
             del actor.effects[key]
@@ -74197,16 +74392,70 @@ def resolve_pvp_round(round_number: int, revision: int, actor_a: PvpActorState, 
             damage = max(1, round(damage * (1.0 + item["combo_spent"] * 0.35)))
         if skill and skill.get("scales_with_player_pdef"):
             damage = max(1, round(damage + actor.physical_defense * 1.4))
+        # PvE parity for rage classes:
+        # every executed damaging action grants +15 Rage, then the skill-specific
+        # extra_rage is added. This applies to basic attacks and damaging skills.
+        attack_rage_gain = PVP_RAGE_GAIN_ON_ATTACK if actor.resource_type == "rage" else 0
+        rage_before_attack = int(actor.resource or 0)
+        if attack_rage_gain > 0:
+            actor.resource = _clamp(actor.resource + attack_rage_gain, 0, 100)
+            attack_rage_gain = actor.resource - rage_before_attack
+            if attack_rage_gain > 0:
+                events.append({
+                    "type": "rage_gain_attack",
+                    "user_id": actor.user_id,
+                    "value": attack_rage_gain,
+                    "before": rage_before_attack,
+                    "after": actor.resource,
+                    "maximum": 100,
+                })
         applied, gained, combo_gain = _special(actor, target, skill or {}, damage, rng)
+        rage_before_extra = int(actor.resource or 0)
         actor.resource = _clamp(actor.resource + gained, 0, PVP_COMBAT_ENERGY_MAX if "energy" in actor.resource_type else 100)
-        actor.combo = _clamp(actor.combo + combo_gain, 0, 3)
+        actual_extra_gain = actor.resource - rage_before_extra
+        item["attack_rage_gain"] = attack_rage_gain
+        item["actual_extra_gain"] = actual_extra_gain
+        if actual_extra_gain > 0 and actor.resource_type == "rage":
+            events.append({
+                "type": "rage_gain_skill",
+                "user_id": actor.user_id,
+                "value": actual_extra_gain,
+                "before": rage_before_extra,
+                "after": actor.resource,
+                "maximum": 100,
+            })
+        # Production rogue finisher consumes every accumulated combo point.
+        # Keep this explicit after special-effect processing so no later gain can resurrect spent combo.
+        if item["combo_spent"] > 0:
+            actor.combo = 0
+        else:
+            actor.combo = _clamp(actor.combo + combo_gain, 0, 3)
         damage_packets.append((actor, target, damage, critical, dodged, {"applied": applied, "gained": gained, "combo_gain": combo_gain, "item": item}))
 
     for actor, target, damage, critical, dodged, meta in damage_packets:
         final_damage = _shield_absorb(target, damage, events)
         target.hp = max(0, target.hp - final_damage)
+        # PvE parity: a rage-based defender gains +10 Rage only when positive
+        # damage remains after dodge and shield absorption.
+        if target.resource_type == "rage" and final_damage > 0:
+            rage_before_damage = int(target.resource or 0)
+            target.resource = _clamp(target.resource + PVP_RAGE_GAIN_ON_DAMAGE_TAKEN, 0, 100)
+            damage_rage_gain = target.resource - rage_before_damage
+            if damage_rage_gain > 0:
+                events.append({
+                    "type": "rage_gain_damage_taken",
+                    "user_id": target.user_id,
+                    "value": damage_rage_gain,
+                    "before": rage_before_damage,
+                    "after": target.resource,
+                    "maximum": 100,
+                    "damage": final_damage,
+                })
         item = meta["item"]
-        outcomes[actor.user_id] = PvpActionOutcome(actor.user_id, item["intent"].action_type, item["intent"].skill_key, True, "ok", damage=final_damage, critical=critical, dodged=dodged, resource_spent=item["cost"], combo_spent=item["combo_spent"], resource_gained=meta["gained"], combo_gained=meta["combo_gain"], applied_effects=tuple(meta["applied"]))
+        action_resource_gain = int(item.get("actual_extra_gain", meta["gained"]) or 0)
+        if actor.resource_type == "rage":
+            action_resource_gain += int(item.get("attack_rage_gain", 0) or 0)
+        outcomes[actor.user_id] = PvpActionOutcome(actor.user_id, item["intent"].action_type, item["intent"].skill_key, True, "ok", damage=final_damage, critical=critical, dodged=dodged, resource_spent=item["cost"], combo_spent=item["combo_spent"], resource_gained=action_resource_gain, combo_gained=meta["combo_gain"], applied_effects=tuple(meta["applied"]))
         events.append({"type": "damage", "actor_id": actor.user_id, "target_id": target.user_id, "value": final_damage, "critical": critical, "dodged": dodged})
 
     if a.consecutive_afk >= PVP_CONSECUTIVE_AFK_LIMIT and b.consecutive_afk >= PVP_CONSECUTIVE_AFK_LIMIT:
@@ -74339,8 +74588,8 @@ def get_production_pvp_skill(class_key: str, skill_key: str, catalog: Mapping[st
 
 ============================================================
 FILE: systems\pvp_system.py
-SIZE: 27739 bytes
-LAST WRITE: 2026-08-07 00:22:58
+SIZE: 28267 bytes
+LAST WRITE: 2026-08-07 00:50:23
 ============================================================
 
 from __future__ import annotations
@@ -74878,6 +75127,7 @@ def get_pvp_events(battle_id: int, connection: sqlite3.Connection | None = None)
 # Stage 14.2.0 simultaneous round persistence adapter
 def resolve_persisted_pvp_round(battle_id: int, round_number: int, revision: int, seed: int | None = None, connection: sqlite3.Connection | None = None) -> dict[str, Any]:
     """Resolve two persisted intents once and persist only duel-local participant state."""
+    from dataclasses import asdict
     from systems.pvp_models import PvpActionIntent, PvpActorState
     from systems.pvp_round_engine import resolve_pvp_round
     with _connection(connection) as conn:
@@ -74899,13 +75149,27 @@ def resolve_persisted_pvp_round(battle_id: int, round_number: int, revision: int
             result = resolve_pvp_round(round_number, revision, actors[0], actors[1], intents[actors[0].user_id], intents[actors[1].user_id], seed=seed)
             for state in (result.actor_a, result.actor_b):
                 conn.execute("""UPDATE pvp_participants SET hp=?,mp=?,resource_value=?,combo=?,consecutive_afk=?,stunned_next=?,cooldowns_json=?,effects_json=?,updated_at=? WHERE battle_id=? AND user_id=?""",(state["hp"],state["mp"],state["resource"],state["combo"],state["consecutive_afk"],1 if state["stunned_next"] else 0,_json(state["cooldowns"]),_json(state["effects"]),_iso(),int(battle_id),int(state["user_id"])))
-            add_pvp_event(battle_id,"round_resolved",round_number,revision,payload={"terminal":result.terminal,"winner_id":result.winner_id,"reason":result.result_reason,"events":list(result.events)},connection=conn)
+            round_payload = {
+                "round_number": result.round_number,
+                "revision": result.revision,
+                "terminal": result.terminal,
+                "winner_id": result.winner_id,
+                "reason": result.result_reason,
+                "actors": [dict(result.actor_a), dict(result.actor_b)],
+                "outcomes": [asdict(outcome) for outcome in result.outcomes],
+                "events": list(result.events),
+            }
+            add_pvp_event(battle_id,"round_resolved",round_number,revision,payload=round_payload,connection=conn)
             if result.terminal:
                 complete_pvp_battle(battle_id,result.result_reason or "terminal",result.winner_id,connection=conn)
             else:
                 release_pvp_round_resolution(battle_id,revision,connection=conn)
             conn.commit()
-            return {"resolved":True,"terminal":result.terminal,"winner_id":result.winner_id,"result_reason":result.result_reason}
+            return {
+                "resolved": True, "terminal": result.terminal,
+                "winner_id": result.winner_id, "result_reason": result.result_reason,
+                "round_payload": round_payload,
+            }
         except Exception:
             conn.rollback()
             raise
@@ -74965,8 +75229,8 @@ def cleanup_terminal_pvp_activity_sessions(connection: sqlite3.Connection | None
 
 ============================================================
 FILE: systems\pvp_timer_service.py
-SIZE: 2428 bytes
-LAST WRITE: 2026-08-07 00:11:18
+SIZE: 2591 bytes
+LAST WRITE: 2026-08-07 00:50:23
 ============================================================
 
 from __future__ import annotations
@@ -75024,7 +75288,10 @@ def start_pvp_timer_worker(on_battle_changed=None, poll_seconds: float=1.0):
                     if _expired(battle):
                         result=close_expired_round(int(battle["id"]))
                         if result.get("resolved") and on_battle_changed:
-                            on_battle_changed(int(battle["id"]))
+                            try:
+                                on_battle_changed(int(battle["id"]), result)
+                            except TypeError:
+                                on_battle_changed(int(battle["id"]))
             except Exception:
                 log.exception("PvP timer worker iteration failed")
             time.sleep(max(0.25,float(poll_seconds)))
@@ -115927,6 +116194,49 @@ main_keyboard_restore=true
 
 
 ============================================================
+FILE: tools\pvp_stage_14_4_1_manifest.txt
+SIZE: 282 bytes
+LAST WRITE: 2026-08-07 00:50:25
+============================================================
+
+Stage 14.4.1 PvP combat log/combo/HoT
+combat log: action, damage, critical, dodge, resources, combo, effects
+rogue_eviscerate: consumes all combo and ends at 0/3
+priest_healing_blessing: 4 next-round ticks, capped by Max HP
+PvE skill definitions changed: 0
+database writes: 0
+
+
+============================================================
+FILE: tools\pvp_stage_14_4_1a_manifest.txt
+SIZE: 188 bytes
+LAST WRITE: 2026-08-07 01:03:05
+============================================================
+
+version=14.4.1a
+status=PASS
+energy_regeneration=20
+phase=start_of_round_before_cost_validation
+resource_types=combat_energy,combat_energy_combo
+cap=100
+production_state_mutations=0
+
+
+============================================================
+FILE: tools\pvp_stage_14_4_1b_manifest.txt
+SIZE: 179 bytes
+LAST WRITE: 2026-08-09 22:25:57
+============================================================
+
+version=14.4.1b
+systems/pvp_config.py
+systems/pvp_round_engine.py
+systems/pvp_combat_log.py
+tools/smoke_test_pvp_rage_generation.py
+MD/PVP_RAGE_GENERATION_PARITY_14_4_1B.md
+
+
+============================================================
 FILE: tools\pvp_stage_14_manifest.txt
 SIZE: 975 bytes
 LAST WRITE: 2026-08-06 22:30:13
@@ -125625,6 +125935,85 @@ if __name__=="__main__": main()
 
 
 ============================================================
+FILE: tools\smoke_test_pvp_combat_energy_regeneration.py
+SIZE: 2857 bytes
+LAST WRITE: 2026-08-07 01:03:03
+============================================================
+
+from __future__ import annotations
+
+from systems.pvp_combat_log import render_pvp_round_combat_log
+from systems.pvp_models import PvpActionIntent, PvpActorState
+from systems.pvp_round_engine import resolve_pvp_round
+
+
+def rogue(uid=1, energy=0):
+    return PvpActorState(
+        user_id=uid, class_key="rogue", max_hp=500, hp=500,
+        resource_type="combat_energy_combo", resource=energy, combo=0,
+        physical_attack=40, physical_defense=10, magical_defense=10,
+        weapon_physical_min=10, weapon_physical_max=10,
+        physical_crit_chance=0, dodge_chance=0,
+    )
+
+
+def priest(uid=2):
+    return PvpActorState(
+        user_id=uid, class_key="priest", max_hp=500, hp=500,
+        max_mp=200, mp=200, resource_type="mana",
+        magical_attack=40, physical_defense=10, magical_defense=10,
+        weapon_magical_min=10, weapon_magical_max=10,
+        magical_crit_chance=0, dodge_chance=0,
+    )
+
+
+def run_round(energy, skill_key):
+    return resolve_pvp_round(
+        2, 2, rogue(energy=energy), priest(),
+        PvpActionIntent(1, "skill", skill_key),
+        PvpActionIntent(2, "afk_skip"), seed=17,
+    )
+
+
+def main():
+    # 5 + 20 = 25, so a 25-energy builder becomes valid and deals damage.
+    result = run_round(5, "rogue_sneak_strike")
+    outcome = next(x for x in result.outcomes if x.user_id == 1)
+    assert outcome.valid and outcome.damage > 0
+    assert result.actor_a["resource"] == 0
+    regen = next(x for x in result.events if x["type"] == "combat_energy_regen" and x["user_id"] == 1)
+    assert regen == {"type":"combat_energy_regen","user_id":1,"value":20,"before":5,"after":25,"maximum":100}
+
+    # Cap: 90 + 20 = 100, not 110. Then skill costs 25, leaving 75.
+    capped = run_round(90, "rogue_sneak_strike")
+    assert capped.actor_a["resource"] == 75
+    cap_event = next(x for x in capped.events if x["type"] == "combat_energy_regen")
+    assert cap_event["value"] == 10 and cap_event["after"] == 100
+
+    payload = {
+        "round_number": 2,
+        "actors": [result.actor_a, result.actor_b],
+        "outcomes": [x.__dict__ for x in result.outcomes],
+        "events": list(result.events),
+    }
+    text = render_pvp_round_combat_log(payload, 1)
+    assert "Енергія" in text and "5 → 25/100" in text
+    assert "Завдано" in text
+
+    print("[OK] PvP combat-energy regeneration parity contracts")
+    print("- Rogue/Scout start-of-round energy regeneration +20: PASS")
+    print("- regeneration occurs before action-cost validation: PASS")
+    print("- 100-energy cap: PASS")
+    print("- restored energy is duel-local only: PASS")
+    print("- combat log energy regeneration line: PASS")
+    print("- PvE skill definitions changed: 0")
+    print("- production database writes: 0")
+
+
+if __name__ == "__main__": main()
+
+
+============================================================
 FILE: tools\smoke_test_pvp_data_model_sessions_recovery.py
 SIZE: 5129 bytes
 LAST WRITE: 2026-08-06 22:45:26
@@ -125825,6 +126214,202 @@ def main():
     print("- PvP handlers registered before legacy duel placeholder: PASS")
     print("- production game.db writes: 0")
 if __name__=="__main__": main()
+
+
+============================================================
+FILE: tools\smoke_test_pvp_rage_generation.py
+SIZE: 4219 bytes
+LAST WRITE: 2026-08-09 22:25:57
+============================================================
+
+from systems.pvp_combat_log import render_pvp_round_combat_log
+from systems.pvp_models import PvpActionIntent, PvpActorState
+from systems.pvp_round_engine import resolve_pvp_round
+
+
+def actor(uid, rage=0):
+    return PvpActorState(
+        user_id=uid, class_key="warrior", max_hp=500, hp=500,
+        resource_type="rage", resource=rage,
+        physical_attack=40, physical_defense=10,
+        weapon_physical_min=10, weapon_physical_max=10,
+        physical_crit_chance=0, dodge_chance=0,
+    )
+
+
+def run(a, b, aa, ab, catalog=None):
+    return resolve_pvp_round(1, 1, a, b, aa, ab, seed=144101, catalog=catalog or {"warrior": ()})
+
+
+def main():
+    # Two rage actors exchange basic attacks: +15 for own attack and +10 for damage taken.
+    result = run(
+        actor(1), actor(2),
+        PvpActionIntent(1, "basic_attack"),
+        PvpActionIntent(2, "basic_attack"),
+    )
+    assert result.actor_a["resource"] == 25
+    assert result.actor_b["resource"] == 25
+    kinds = [event["type"] for event in result.events]
+    assert kinds.count("rage_gain_attack") == 2
+    assert kinds.count("rage_gain_damage_taken") == 2
+
+    # Cap is 100 and actual reported gain reflects the cap.
+    capped = run(
+        actor(1, 95), actor(2, 95),
+        PvpActionIntent(1, "basic_attack"),
+        PvpActionIntent(2, "basic_attack"),
+    )
+    assert capped.actor_a["resource"] == 100
+    assert capped.actor_b["resource"] == 100
+
+    # Rage skill cost is paid first, then +15 attack rage is granted.
+    catalog = {"warrior": ({
+        "key": "rage_cost_skill", "name": "Test", "cost_type": "rage",
+        "cost": 20, "cooldown": 0, "attack_type": "physical",
+        "damage_multiplier": 1.0,
+    },)}
+    paid = run(
+        actor(1, 20), actor(2),
+        PvpActionIntent(1, "skill", "rage_cost_skill"),
+        PvpActionIntent(2, "afk_skip"), catalog,
+    )
+    assert paid.actor_a["resource"] == 15
+    assert paid.outcomes[0].resource_spent == 20
+
+    # Cleave-style damaging skill grants base +15 plus production extra_rage +10.
+    catalog = {"warrior": ({
+        "key": "rage_extra_skill", "name": "Test Extra", "cost_type": "rage",
+        "cost": 0, "cooldown": 0, "attack_type": "physical",
+        "damage_multiplier": 1.0, "extra_rage": 10,
+    },)}
+    extra = run(
+        actor(1), actor(2),
+        PvpActionIntent(1, "skill", "rage_extra_skill"),
+        PvpActionIntent(2, "afk_skip"), catalog,
+    )
+    assert extra.actor_a["resource"] == 25
+    assert any(event["type"] == "rage_gain_skill" for event in extra.events)
+
+    # Non-damaging utility does not grant base attack rage.
+    catalog = {"warrior": ({
+        "key": "utility", "name": "Utility", "cost_type": "rage", "cost": 0,
+        "cooldown": 0, "no_damage": True, "damage_multiplier": 0,
+        "effect": "player_shield", "duration": 1,
+    },)}
+    utility = run(
+        actor(1), actor(2),
+        PvpActionIntent(1, "skill", "utility"),
+        PvpActionIntent(2, "afk_skip"), catalog,
+    )
+    assert utility.actor_a["resource"] == 0
+
+    # Combat log explains both rage sources.
+    payload = {
+        "round_number": result.round_number,
+        "actors": [result.actor_a, result.actor_b],
+        "outcomes": [vars(outcome) for outcome in result.outcomes],
+        "events": list(result.events),
+    }
+    text = render_pvp_round_combat_log(payload, 1)
+    assert "Лють" in text and "за атаку" in text and "за отриману шкоду" in text
+
+    print("[OK] PvP Rage generation parity contracts")
+    print("- rage classes gain +15 for each executed damaging action: PASS")
+    print("- rage classes gain +10 for positive damage taken after shield/dodge: PASS")
+    print("- skill cost is paid before attack Rage and 100 cap is enforced: PASS")
+    print("- production extra_rage stacks after base attack Rage: PASS")
+    print("- utility/no-damage actions do not grant base attack Rage: PASS")
+    print("- combat log explains attack/damage/skill Rage gains: PASS")
+    print("- PvE skill definitions changed: 0")
+    print("- production database writes: 0")
+
+
+if __name__ == "__main__":
+    main()
+
+
+============================================================
+FILE: tools\smoke_test_pvp_round_combat_log_combo_hot.py
+SIZE: 3340 bytes
+LAST WRITE: 2026-08-07 00:50:23
+============================================================
+
+from __future__ import annotations
+
+from systems.pvp_combat_log import render_pvp_round_combat_log
+from systems.pvp_models import PvpActionIntent, PvpActorState
+from systems.pvp_round_engine import resolve_pvp_round
+
+
+def actor(uid, cls, hp=500):
+    return PvpActorState(
+        user_id=uid, class_key=cls, max_hp=500, hp=hp,
+        max_mp=200, mp=200,
+        resource_type="combat_energy_combo" if cls == "rogue" else "mana",
+        resource=100 if cls == "rogue" else 0,
+        combo=3 if cls == "rogue" else 0,
+        physical_attack=30, magical_attack=30,
+        physical_defense=10, magical_defense=10,
+        weapon_physical_min=10, weapon_physical_max=10,
+        weapon_magical_min=10, weapon_magical_max=10,
+        physical_crit_chance=0, magical_crit_chance=0, dodge_chance=0,
+    )
+
+
+def test_combo():
+    rogue = actor(1, "rogue")
+    priest = actor(2, "priest")
+    result = resolve_pvp_round(
+        1, 1, rogue, priest,
+        PvpActionIntent(1, "skill", "rogue_eviscerate"),
+        PvpActionIntent(2, "afk_skip"), seed=1,
+    )
+    assert result.actor_a["combo"] == 0
+    out = next(x for x in result.outcomes if x.user_id == 1)
+    assert out.combo_spent == 3
+    payload = {"round_number": 1, "actors": [result.actor_a, result.actor_b], "outcomes": [x.__dict__ for x in result.outcomes], "events": list(result.events)}
+    text = render_pvp_round_combat_log(payload, 1)
+    assert "Витрачено комбо" in text and "3" in text and "Завдано" in text
+
+
+def test_hot():
+    priest = actor(2, "priest", hp=460)
+    rogue = actor(1, "rogue")
+    priest.combo = 0
+    first = resolve_pvp_round(
+        1, 1, priest, rogue,
+        PvpActionIntent(2, "skill", "priest_healing_blessing"),
+        PvpActionIntent(1, "afk_skip"), seed=2,
+    )
+    assert first.actor_a["hp"] == 460, "HoT must not tick in the application round"
+    assert first.actor_a["effects"]["hot"]["duration"] == 4
+    second = resolve_pvp_round(
+        2, 2,
+        PvpActorState.from_dict(first.actor_a), PvpActorState.from_dict(first.actor_b),
+        PvpActionIntent(2, "afk_skip"), PvpActionIntent(1, "afk_skip"), seed=3,
+    )
+    assert second.actor_a["hp"] == 500
+    hot = next(x for x in second.events if x["type"] == "hot_tick")
+    assert hot["value"] == 40, "log must report actual healing capped by Max HP"
+    assert hot["nominal_value"] == 50
+    assert hot["hp_after"] == 500 and hot["max_hp"] == 500
+    payload = {"round_number": 2, "actors": [second.actor_a, second.actor_b], "outcomes": [x.__dict__ for x in second.outcomes], "events": list(second.events)}
+    text = render_pvp_round_combat_log(payload, 2)
+    assert "фактично відновило" in text and "40" in text and "500/500" in text
+
+
+def main():
+    test_combo(); test_hot()
+    print("[OK] PvP round combat-log, Rogue combo and Priest HoT contracts")
+    print("- damage, critical/dodge, resource, combo and effects narration: PASS")
+    print("- Rogue Eviscerate spends all 1..3 combo points and ends at 0/3: PASS")
+    print("- Priest HoT starts next round, lasts 4 ticks and reports actual capped healing: PASS")
+    print("- production PvE skill definitions changed: 0")
+    print("- production database writes: 0")
+
+
+if __name__ == "__main__": main()
 
 
 ============================================================

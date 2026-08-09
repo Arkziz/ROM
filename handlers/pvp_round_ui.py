@@ -5,6 +5,7 @@ from telebot import types
 
 from systems.player_interaction_system import release_player_activity_session
 from systems.pvp_combat_log import render_pvp_round_combat_log
+from systems.pvp_action_validation import validate_pvp_action_choice
 from systems.pvp_round_ui import build_pvp_action_keyboard, render_pvp_round_text
 from systems.pvp_system import (
     cleanup_terminal_pvp_activity_sessions,
@@ -143,6 +144,11 @@ def register_pvp_round_ui_handlers(bot):
             bot.answer_callback_query(call.id); send_pvp_round_panel(bot,bid,int(call.from_user.id)); return
         if mode!="act": return
         action=parts[6]; skill=parts[7] if action=="skill" and len(parts)>7 else None
+        validation=validate_pvp_action_choice(own,action,skill)
+        if not validation.get("success"):
+            # Do not persist an invalid intent and do not reset the existing deadline.
+            bot.answer_callback_query(call.id,str(validation.get("message") or "Оберіть іншу дію."),show_alert=True)
+            return
         try:
             result=submit_pvp_action(bid,int(call.from_user.id),rnd,rev,action,skill_key=skill)
         except ValueError as exc:

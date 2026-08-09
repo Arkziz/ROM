@@ -18,6 +18,7 @@ class PvpActorState:
     class_key: str
     max_hp: int
     hp: int
+    character_name: str = ""
     max_mp: int = 0
     mp: int = 0
     resource_type: str = "rage"
@@ -45,7 +46,7 @@ class PvpActorState:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "user_id": self.user_id, "class_key": self.class_key,
+            "user_id": self.user_id, "class_key": self.class_key, "character_name": self.character_name,
             "max_hp": self.max_hp, "hp": self.hp, "max_mp": self.max_mp, "mp": self.mp,
             "resource_type": self.resource_type, "resource": self.resource, "combo": self.combo,
             "physical_attack": self.physical_attack, "magical_attack": self.magical_attack,

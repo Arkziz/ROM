@@ -52,6 +52,7 @@ def build_production_pvp_snapshot(user_id: int) -> dict[str, Any]:
     weapon_min = float(attack_profile.get("weapon_min_damage") or 0)
     weapon_max = float(attack_profile.get("weapon_max_damage") or 0)
     return {
+        "character_name": str(_call(db, "get_character_name", uid, "") or f"Гравець #{uid}"),
         "class_key": class_key,
         "level": max(1, int(_call(db, "get_player_level", uid, 1))),
         "max_hp": max_hp,
