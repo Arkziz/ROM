@@ -17,6 +17,7 @@ from systems.pvp_system import (
     resolve_persisted_pvp_round,
     submit_pvp_action,
 )
+from systems.pvp_completion_service import cleanup_all_terminal_pvp_sessions, render_pvp_terminal_text, surrender_pvp_battle
 from systems.pvp_timer_service import start_pvp_timer_worker
 
 log=logging.getLogger(__name__)
@@ -49,6 +50,26 @@ def _has_action(battle,user_id):
     return any(int(x["user_id"])==int(user_id) for x in get_pvp_round_actions(int(battle["id"]),int(battle["round_number"]),int(battle["revision"])))
 
 
+def _pvp_terminal(battle):
+    return bool(battle) and str(battle.get("status") or "") in {"completed","cancelled","expired"}
+
+
+def _terminal_callback_answer(bot, call):
+    bot.answer_callback_query(call.id,"ℹ️ Дуель уже завершена. Старі бойові кнопки більше не активні.",show_alert=True)
+
+
+def _localized_pvp_action_error(error):
+    key=str(error or "").strip().lower()
+    return {
+        "pvp battle is not active":"ℹ️ Дуель уже завершена. Старі бойові кнопки більше не активні.",
+        "battle is not active":"ℹ️ Дуель уже завершена. Старі бойові кнопки більше не активні.",
+        "stale pvp round callback":"ℹ️ Цей раунд уже завершено. Відкрийте актуальний стан дуелі.",
+        "actor is not a pvp participant":"❌ Ця дуель належить іншим гравцям.",
+        "pvp action already submitted":"ℹ️ Дію для цього раунду вже обрано.",
+        "unsupported pvp action type":"❌ Невідома бойова дія.",
+    }.get(key,"❌ Не вдалося виконати бойову дію. Оновіть стан дуелі.")
+
+
 def _release_terminal_participants(battle_id):
     for row in get_pvp_participants(int(battle_id)):
         release_player_activity_session(
@@ -65,14 +86,7 @@ def send_pvp_round_panel(bot,battle_id,user_id):
     if not own or not enemy: return
     waiting=_has_action(battle,user_id) if battle.get("status")=="active" else False
     if battle.get("status") in {"completed","cancelled","expired"}:
-        winner=battle.get("winner_id")
-        if winner is None:
-            text="🤝 <b>Дуель завершено нічиєю.</b>"
-        elif int(winner)==int(user_id):
-            text="🏆 <b>Ви перемогли в дуелі!</b>"
-        else:
-            text="💀 <b>Ви програли дуель.</b>"
-        bot.send_message(int(user_id),text,parse_mode="HTML",reply_markup=_main_kb())
+        bot.send_message(int(user_id),render_pvp_terminal_text(int(battle_id),int(user_id)),parse_mode="HTML",reply_markup=_main_kb())
         return
     bot.send_message(
         int(user_id),
@@ -135,6 +149,8 @@ def register_pvp_round_ui_handlers(bot):
         try: bid,rnd,rev=int(parts[3]),int(parts[4]),int(parts[5])
         except (TypeError,ValueError): return
         battle=get_pvp_battle(bid)
+        if _pvp_terminal(battle):
+            _terminal_callback_answer(bot,call); return
         if not battle or int(battle.get("round_number") or 0)!=rnd or int(battle.get("revision") or 0)!=rev:
             bot.answer_callback_query(call.id,"Цей раунд уже завершено. Оновіть стан дуелі.",show_alert=True); return
         own,enemy=_pair(bid,int(call.from_user.id))
@@ -152,7 +168,7 @@ def register_pvp_round_ui_handlers(bot):
         try:
             result=submit_pvp_action(bid,int(call.from_user.id),rnd,rev,action,skill_key=skill)
         except ValueError as exc:
-            bot.answer_callback_query(call.id,str(exc),show_alert=True); return
+            bot.answer_callback_query(call.id,_localized_pvp_action_error(exc),show_alert=True); return
         bot.answer_callback_query(call.id,"Дію прийнято")
         if result.get("both_ready"):
             resolved=resolve_persisted_pvp_round(bid,rnd,rev,seed=(bid*100000+rnd))
@@ -162,7 +178,41 @@ def register_pvp_round_ui_handlers(bot):
         else:
             send_pvp_round_panel(bot,bid,int(call.from_user.id))
 
-    cleanup_terminal_pvp_activity_sessions()
+    @bot.callback_query_handler(func=lambda call: str(getattr(call,"data","")).startswith("pvp:surrender:"))
+    def pvp_surrender_callback(call):
+        parts=str(call.data).split(":")
+        if len(parts)!=5: return
+        mode=parts[2]
+        try: battle_id,revision=int(parts[3]),int(parts[4])
+        except (TypeError,ValueError): return
+        battle=get_pvp_battle(battle_id)
+        if _pvp_terminal(battle):
+            _terminal_callback_answer(bot,call); return
+        if not battle or int(battle.get("revision") or 0)!=revision:
+            bot.answer_callback_query(call.id,"Ця панель уже застаріла. Відкрийте актуальний стан дуелі.",show_alert=True); return
+        own,enemy=_pair(battle_id,int(call.from_user.id))
+        if not own or not enemy:
+            bot.answer_callback_query(call.id,"Ця дуель належить іншим гравцям.",show_alert=True); return
+        if mode=="ask":
+            kb=types.InlineKeyboardMarkup(row_width=1)
+            kb.add(types.InlineKeyboardButton("🏳️ Так, здатися",callback_data=f"pvp:surrender:confirm:{battle_id}:{revision}"))
+            kb.add(types.InlineKeyboardButton("↩️ Продовжити дуель",callback_data=f"pvp:surrender:cancel:{battle_id}:{revision}"))
+            bot.answer_callback_query(call.id)
+            bot.send_message(int(call.from_user.id),"🏳️ <b>Підтвердіть, що ви бажаєте здатися.</b>\n\nПісля підтвердження суперник буде оголошений переможцем, а дуель завершиться.",parse_mode="HTML",reply_markup=kb); return
+        if mode=="cancel":
+            bot.answer_callback_query(call.id,"Дуель продовжується."); send_pvp_round_panel(bot,battle_id,int(call.from_user.id)); return
+        if mode!="confirm": return
+        result=surrender_pvp_battle(battle_id,int(call.from_user.id),revision)
+        if not result.get("success"):
+            text={"battle_already_finished":"Дуель уже завершена.","stale_revision":"Ця панель вже застаріла.","wrong_actor":"Ця дуель належить іншим гравцям."}.get(result.get("reason"),"Не вдалося завершити дуель.")
+            bot.answer_callback_query(call.id,text,show_alert=True); return
+        bot.answer_callback_query(call.id,"Дуель завершено.")
+        for row in get_pvp_participants(battle_id):
+            uid=int(row["user_id"])
+            try: bot.send_message(uid,render_pvp_terminal_text(battle_id,uid),parse_mode="HTML",reply_markup=_main_kb())
+            except Exception: log.exception("Cannot send PvP surrender result")
+
+    cleanup_all_terminal_pvp_sessions()
     def _timer_broadcast(battle_id, result=None):
         if result:
             broadcast_pvp_round_log(bot, battle_id, result.get("round_payload"))

@@ -1,3 +1,4 @@
+from pathlib import Path
 from db import (
     add_item,
     set_player_level_for_test,
@@ -811,6 +812,46 @@ def register_dev_handlers(bot):
     # ==============================
     # /devhelp
     # ==============================
+
+    @bot.message_handler(commands=["dev_pvp"])
+    def dev_pvp(message):
+        if not DEV_MODE: return
+        from systems.pvp_balance_simulator import CLASSES,format_matchup,save_report,simulate_matchup
+        parts=message.text.split()
+        if len(parts)<3 or parts[1] not in CLASSES or parts[2] not in CLASSES:
+            bot.send_message(message.chat.id,"❌ Формат: /dev_pvp warrior knight [trials]\nКласи: warrior, knight, scout, rogue, mage, priest"); return
+        try: trials=int(parts[3]) if len(parts)>3 else 100
+        except ValueError: trials=100
+        result=simulate_matchup(parts[1],parts[2],trials)
+        save_report(result,Path(__file__).resolve().parents[1]/"tools/pvp_balance_matchup_report.json")
+        bot.send_message(message.chat.id,format_matchup(result))
+
+    @bot.message_handler(commands=["dev_pvp_all"])
+    def dev_pvp_all(message):
+        if not DEV_MODE: return
+        from systems.pvp_balance_simulator import LABELS,save_report,simulate_matrix
+        parts=message.text.split()
+        try: trials=int(parts[1]) if len(parts)>1 else 100
+        except ValueError: trials=100
+        result=simulate_matrix(trials)
+        path=save_report(result,Path(__file__).resolve().parents[1]/"tools/pvp_balance_class_matrix_report.json")
+        lines=["📊 <b>PvP матриця 6 × 6</b>",f"\nСимуляцій на matchup: {trials}"]
+        for key,row in sorted(result["class_summary"].items(),key=lambda x:x[1]["win_rate"],reverse=True): lines.append(f"{LABELS[key]}: {row['win_rate']}% ({row['wins']}/{row['games']})")
+        lines.append(f"\nJSON: {path.name}")
+        bot.send_message(message.chat.id,"\n".join(lines),parse_mode="HTML")
+
+    @bot.message_handler(commands=["dev_pvp_audit"])
+    def dev_pvp_audit(message):
+        if not DEV_MODE: return
+        from pathlib import Path
+        from systems.pvp_policy_metrics_audit import audit_all_policies,format_summary,save_report
+        parts=message.text.split()
+        try: trials=int(parts[1]) if len(parts)>1 else 25
+        except ValueError: trials=25
+        bot.send_message(message.chat.id,"🔬 Запущено PvP policy audit. Зачекайте на результат.")
+        result=audit_all_policies(trials)
+        path=save_report(result,Path(__file__).resolve().parents[1]/"tools/pvp_policy_metrics_audit_report.json")
+        bot.send_message(message.chat.id,format_summary(result)+f"\n\nJSON: {path.name}",parse_mode="HTML")
 
     @bot.message_handler(commands=["devhelp"])
     def dev_help(message):

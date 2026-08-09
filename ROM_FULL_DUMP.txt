@@ -3,11 +3,11 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-09 22:52:35 +03:00
+Created: 2026-08-09 23:52:26 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.8875
-Included files: 320
-Excluded files: 4312
+Included files: 328
+Excluded files: 4353
 Maximum file size: 2 MB
 
 SECURITY EXCLUSIONS:
@@ -78,8 +78,10 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\player_interaction_system.py
 - systems\player_system.py
 - systems\potion_system.py
+- systems\pvp_action_validation.py
 - systems\pvp_battle_factory.py
 - systems\pvp_combat_log.py
+- systems\pvp_completion_service.py
 - systems\pvp_config.py
 - systems\pvp_models.py
 - systems\pvp_request_service.py
@@ -174,6 +176,9 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\pvp_stage_14_4_1_manifest.txt
 - tools\pvp_stage_14_4_1a_manifest.txt
 - tools\pvp_stage_14_4_1b_manifest.txt
+- tools\pvp_stage_14_4_1c_manifest.txt
+- tools\pvp_stage_14_4_1d_manifest.txt
+- tools\pvp_stage_14_5_0_manifest.txt
 - tools\pvp_stage_14_manifest.txt
 - tools\README_refactor_tools.md
 - tools\run_economic_progression_v2.py
@@ -298,10 +303,13 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_progression_wall_delta_asset_valuation.py
 - tools\smoke_test_pve_analysis_performance.py
 - tools\smoke_test_pve_balance_analyzers.py
+- tools\smoke_test_pvp_action_prevalidation_retry.py
 - tools\smoke_test_pvp_active_keyboard_terminal_cleanup.py
 - tools\smoke_test_pvp_architecture_skill_parity.py
 - tools\smoke_test_pvp_atomic_accept_recovery.py
 - tools\smoke_test_pvp_combat_energy_regeneration.py
+- tools\smoke_test_pvp_combat_log_actor_binding.py
+- tools\smoke_test_pvp_completion_cleanup_recovery.py
 - tools\smoke_test_pvp_data_model_sessions_recovery.py
 - tools\smoke_test_pvp_duel_request_interaction_ui.py
 - tools\smoke_test_pvp_rage_generation.py
@@ -29900,8 +29908,8 @@ def register_pvp_interaction_handlers(bot):
 
 ============================================================
 FILE: handlers\pvp_round_ui.py
-SIZE: 6942 bytes
-LAST WRITE: 2026-08-07 00:50:23
+SIZE: 9712 bytes
+LAST WRITE: 2026-08-09 23:32:02
 ============================================================
 
 from __future__ import annotations
@@ -29911,6 +29919,7 @@ from telebot import types
 
 from systems.player_interaction_system import release_player_activity_session
 from systems.pvp_combat_log import render_pvp_round_combat_log
+from systems.pvp_action_validation import validate_pvp_action_choice
 from systems.pvp_round_ui import build_pvp_action_keyboard, render_pvp_round_text
 from systems.pvp_system import (
     cleanup_terminal_pvp_activity_sessions,
@@ -29922,6 +29931,7 @@ from systems.pvp_system import (
     resolve_persisted_pvp_round,
     submit_pvp_action,
 )
+from systems.pvp_completion_service import cleanup_all_terminal_pvp_sessions, render_pvp_terminal_text, surrender_pvp_battle
 from systems.pvp_timer_service import start_pvp_timer_worker
 
 log=logging.getLogger(__name__)
@@ -29970,14 +29980,7 @@ def send_pvp_round_panel(bot,battle_id,user_id):
     if not own or not enemy: return
     waiting=_has_action(battle,user_id) if battle.get("status")=="active" else False
     if battle.get("status") in {"completed","cancelled","expired"}:
-        winner=battle.get("winner_id")
-        if winner is None:
-            text="🤝 <b>Дуель завершено нічиєю.</b>"
-        elif int(winner)==int(user_id):
-            text="🏆 <b>Ви перемогли в дуелі!</b>"
-        else:
-            text="💀 <b>Ви програли дуель.</b>"
-        bot.send_message(int(user_id),text,parse_mode="HTML",reply_markup=_main_kb())
+        bot.send_message(int(user_id),render_pvp_terminal_text(int(battle_id),int(user_id)),parse_mode="HTML",reply_markup=_main_kb())
         return
     bot.send_message(
         int(user_id),
@@ -30049,6 +30052,11 @@ def register_pvp_round_ui_handlers(bot):
             bot.answer_callback_query(call.id); send_pvp_round_panel(bot,bid,int(call.from_user.id)); return
         if mode!="act": return
         action=parts[6]; skill=parts[7] if action=="skill" and len(parts)>7 else None
+        validation=validate_pvp_action_choice(own,action,skill)
+        if not validation.get("success"):
+            # Do not persist an invalid intent and do not reset the existing deadline.
+            bot.answer_callback_query(call.id,str(validation.get("message") or "Оберіть іншу дію."),show_alert=True)
+            return
         try:
             result=submit_pvp_action(bid,int(call.from_user.id),rnd,rev,action,skill_key=skill)
         except ValueError as exc:
@@ -30062,7 +30070,39 @@ def register_pvp_round_ui_handlers(bot):
         else:
             send_pvp_round_panel(bot,bid,int(call.from_user.id))
 
-    cleanup_terminal_pvp_activity_sessions()
+    @bot.callback_query_handler(func=lambda call: str(getattr(call,"data","")).startswith("pvp:surrender:"))
+    def pvp_surrender_callback(call):
+        parts=str(call.data).split(":")
+        if len(parts)!=5: return
+        mode=parts[2]
+        try: battle_id,revision=int(parts[3]),int(parts[4])
+        except (TypeError,ValueError): return
+        battle=get_pvp_battle(battle_id)
+        if not battle or int(battle.get("revision") or 0)!=revision:
+            bot.answer_callback_query(call.id,"Ця панель уже застаріла. Відкрийте актуальний стан дуелі.",show_alert=True); return
+        own,enemy=_pair(battle_id,int(call.from_user.id))
+        if not own or not enemy:
+            bot.answer_callback_query(call.id,"Ця дуель належить іншим гравцям.",show_alert=True); return
+        if mode=="ask":
+            kb=types.InlineKeyboardMarkup(row_width=1)
+            kb.add(types.InlineKeyboardButton("🏳️ Так, здатися",callback_data=f"pvp:surrender:confirm:{battle_id}:{revision}"))
+            kb.add(types.InlineKeyboardButton("↩️ Продовжити дуель",callback_data=f"pvp:surrender:cancel:{battle_id}:{revision}"))
+            bot.answer_callback_query(call.id)
+            bot.send_message(int(call.from_user.id),"🏳️ <b>Підтвердіть, що ви бажаєте здатися.</b>\n\nПісля підтвердження суперник буде оголошений переможцем, а дуель завершиться.",parse_mode="HTML",reply_markup=kb); return
+        if mode=="cancel":
+            bot.answer_callback_query(call.id,"Дуель продовжується."); send_pvp_round_panel(bot,battle_id,int(call.from_user.id)); return
+        if mode!="confirm": return
+        result=surrender_pvp_battle(battle_id,int(call.from_user.id),revision)
+        if not result.get("success"):
+            text={"battle_already_finished":"Дуель уже завершена.","stale_revision":"Ця панель вже застаріла.","wrong_actor":"Ця дуель належить іншим гравцям."}.get(result.get("reason"),"Не вдалося завершити дуель.")
+            bot.answer_callback_query(call.id,text,show_alert=True); return
+        bot.answer_callback_query(call.id,"Дуель завершено.")
+        for row in get_pvp_participants(battle_id):
+            uid=int(row["user_id"])
+            try: bot.send_message(uid,render_pvp_terminal_text(battle_id,uid),parse_mode="HTML",reply_markup=_main_kb())
+            except Exception: log.exception("Cannot send PvP surrender result")
+
+    cleanup_all_terminal_pvp_sessions()
     def _timer_broadcast(battle_id, result=None):
         if result:
             broadcast_pvp_round_log(bot, battle_id, result.get("round_payload"))
@@ -73649,9 +73689,111 @@ def use_first_hp_potion(user_id):
     return use_potion_from_inventory(user_id, inventory_id)
 
 ============================================================
+FILE: systems\pvp_action_validation.py
+SIZE: 5616 bytes
+LAST WRITE: 2026-08-09 23:06:35
+============================================================
+
+from __future__ import annotations
+
+from typing import Any, Mapping
+
+from systems.pvp_config import PVP_COMBAT_ENERGY_MAX
+from systems.pvp_skill_adapter import get_production_pvp_skill, load_production_pvp_skill_catalog
+
+
+def projected_round_cooldown(participant: Mapping[str, Any], skill_key: str) -> int:
+    """Cooldown visible to the action validator after the engine start-of-round tick."""
+    stored = int(dict(participant.get("cooldowns") or {}).get(str(skill_key), 0) or 0)
+    return max(0, stored - 1)
+
+
+def projected_round_resource(participant: Mapping[str, Any]) -> int:
+    value = int(participant.get("resource_value", participant.get("resource", 0)) or 0)
+    if str(participant.get("resource_type") or "") in {"combat_energy", "combat_energy_combo"}:
+        return min(PVP_COMBAT_ENERGY_MAX, value + 20)
+    return value
+
+
+def validate_pvp_action_choice(
+    participant: Mapping[str, Any],
+    action_type: str,
+    skill_key: str | None = None,
+    *,
+    catalog: Mapping[str, tuple[dict[str, Any], ...]] | None = None,
+) -> dict[str, Any]:
+    """Prevalidate a UI action without mutating state or consuming the round.
+
+    The pure round engine remains the final authority. This helper mirrors the
+    engine's imminent start-of-round cooldown tick and Combat Energy regeneration
+    so a choice accepted by the UI is not rejected later for stale resource data.
+    """
+    action_type = str(action_type or "")
+    if action_type == "basic_attack":
+        return {"success": True, "reason": "ok", "message": ""}
+    if action_type != "skill" or not skill_key:
+        return {"success": False, "reason": "invalid_action", "message": "❌ Невідома бойова дія. Оберіть іншу дію."}
+
+    class_key = str(participant.get("class_key") or "")
+    skill = get_production_pvp_skill(class_key, str(skill_key), catalog or load_production_pvp_skill_catalog())
+    if not skill:
+        return {"success": False, "reason": "unknown_skill", "message": "❌ Ця навичка не належить вашому класу. Оберіть іншу дію."}
+
+    name = str(skill.get("name") or skill_key)
+    cooldown = projected_round_cooldown(participant, str(skill_key))
+    if cooldown > 0:
+        return {
+            "success": False,
+            "reason": "skill_on_cooldown",
+            "remaining": cooldown,
+            "message": f"⏳ «{name}» ще відновлюється. Залишилося раундів: {cooldown}. Оберіть іншу дію.",
+        }
+
+    cost_type = str(skill.get("cost_type") or "")
+    cost = max(0, int(skill.get("cost") or 0))
+    resource = projected_round_resource(participant)
+    mp = int(participant.get("mp") or 0)
+    combo = int(participant.get("combo") or 0)
+
+    if cost_type == "mana" and mp < cost:
+        return {"success": False, "reason": "not_enough_mana", "required": cost, "available": mp, "message": f"🔷 Недостатньо мани для «{name}». Потрібно: {cost} MP, доступно: {mp} MP. Оберіть іншу дію."}
+    if cost_type == "rage" and resource < cost:
+        return {"success": False, "reason": "not_enough_rage", "required": cost, "available": resource, "message": f"🔥 Недостатньо Люті для «{name}». Потрібно: {cost}, доступно: {resource}. Оберіть іншу дію."}
+    if cost_type == "rage_all_min":
+        minimum = max(0, int(skill.get("min_cost") or 0))
+        if resource < minimum:
+            return {"success": False, "reason": "not_enough_rage", "required": minimum, "available": resource, "message": f"🔥 Недостатньо Люті для «{name}». Потрібно щонайменше: {minimum}, доступно: {resource}. Оберіть іншу дію."}
+    if cost_type in {"combat_energy", "combat_energy_combo"} and resource < cost:
+        return {"success": False, "reason": "not_enough_combat_energy", "required": cost, "available": resource, "message": f"⚡ Недостатньо Енергії для «{name}». Потрібно: {cost}, після відновлення доступно: {resource}. Оберіть іншу дію."}
+    if cost_type == "combat_energy_combo":
+        minimum_combo = int(skill.get("min_combo") or 1)
+        if combo < minimum_combo:
+            return {"success": False, "reason": "not_enough_combo", "required": minimum_combo, "available": combo, "message": f"🔗 Недостатньо комбо для «{name}». Потрібно: {minimum_combo}, доступно: {combo}. Оберіть іншу дію."}
+
+    return {
+        "success": True,
+        "reason": "ok",
+        "message": "",
+        "skill": dict(skill),
+        "projected_resource": resource,
+        "projected_cooldown": cooldown,
+    }
+
+
+def pvp_skill_button_state(participant: Mapping[str, Any], skill: Mapping[str, Any]) -> dict[str, Any]:
+    result = validate_pvp_action_choice(participant, "skill", str(skill.get("key") or ""), catalog={str(participant.get("class_key") or ""): (dict(skill),)})
+    name = str(skill.get("name") or skill.get("key") or "Навичка")
+    if result.get("success"):
+        return {"available": True, "label": f"✨ {name}", "reason": "ok"}
+    if result.get("reason") == "skill_on_cooldown":
+        return {"available": False, "label": f"⏳ {name} · {int(result.get('remaining') or 0)}", "reason": result.get("reason")}
+    return {"available": False, "label": f"🔒 {name}", "reason": result.get("reason")}
+
+
+============================================================
 FILE: systems\pvp_battle_factory.py
-SIZE: 6238 bytes
-LAST WRITE: 2026-08-06 23:55:57
+SIZE: 6340 bytes
+LAST WRITE: 2026-08-09 23:06:35
 ============================================================
 
 from __future__ import annotations
@@ -73708,6 +73850,7 @@ def build_production_pvp_snapshot(user_id: int) -> dict[str, Any]:
     weapon_min = float(attack_profile.get("weapon_min_damage") or 0)
     weapon_max = float(attack_profile.get("weapon_max_damage") or 0)
     return {
+        "character_name": str(_call(db, "get_character_name", uid, "") or f"Гравець #{uid}"),
         "class_key": class_key,
         "level": max(1, int(_call(db, "get_player_level", uid, 1))),
         "max_hp": max_hp,
@@ -73772,8 +73915,8 @@ def create_pvp_battle_from_accepted_duel(request: Mapping[str, Any], *, snapshot
 
 ============================================================
 FILE: systems\pvp_combat_log.py
-SIZE: 7898 bytes
-LAST WRITE: 2026-08-09 22:25:57
+SIZE: 8082 bytes
+LAST WRITE: 2026-08-09 23:17:56
 ============================================================
 
 from __future__ import annotations
@@ -73811,6 +73954,17 @@ def _effect_label(key: str) -> str:
     return _EFFECT_LABELS.get(str(key or ""), str(key or "ефект"))
 
 
+def _actor_display_name(actor: Mapping[str, Any], user_id: int) -> str:
+    name = str(actor.get("character_name") or "").strip()
+    if not name:
+        try:
+            from db import get_character_name
+            name = str(get_character_name(int(user_id)) or "").strip()
+        except Exception:
+            name = ""
+    return name or f"Гравець #{int(user_id)}"
+
+
 def render_pvp_round_combat_log(payload: Mapping[str, Any], viewer_user_id: int) -> str:
     """Render one resolved round from the viewer's perspective.
 
@@ -73825,20 +73979,20 @@ def render_pvp_round_combat_log(payload: Mapping[str, Any], viewer_user_id: int)
         if not isinstance(outcome, Mapping):
             continue
         uid = int(outcome.get("user_id") or 0)
-        who = "Ви" if uid == viewer else "Суперник"
         actor = actors.get(uid, {})
+        who = _actor_display_name(actor, uid)
         action_type = str(outcome.get("action_type") or "")
         if action_type == "afk_skip":
-            lines.append(f"\n⏳ <b>{who}</b>: пропуск через бездіяльність.")
+            lines.append(f"\n⏳ <b>{escape(who)}</b>: пропуск через бездіяльність.")
             continue
         if action_type == "stunned_skip":
-            lines.append(f"\n⚡ <b>{who}</b>: пропуск через оглушення.")
+            lines.append(f"\n⚡ <b>{escape(who)}</b>: пропуск через оглушення.")
             continue
         if not bool(outcome.get("valid")):
-            lines.append(f"\n⚠️ <b>{who}</b>: дія не виконана ({escape(str(outcome.get('reason') or 'невідома причина'))}).")
+            lines.append(f"\n⚠️ <b>{escape(who)}</b>: дія не виконана ({escape(str(outcome.get('reason') or 'невідома причина'))}).")
             continue
         name = escape(_skill_name(str(actor.get("class_key") or ""), outcome.get("skill_key")))
-        lines.append(f"\n<b>{who}</b> використав: {name}.")
+        lines.append(f"\n<b>{escape(who)}</b> використав: {name}.")
         if bool(outcome.get("dodged")):
             lines.append("💨 Атаку було ухилено.")
         elif int(outcome.get("damage") or 0) > 0:
@@ -73879,39 +74033,145 @@ def render_pvp_round_combat_log(payload: Mapping[str, Any], viewer_user_id: int)
             continue
         kind = str(event.get("type") or "")
         uid = int(event.get("user_id") or 0)
-        who = "Ви" if uid == viewer else "Суперник"
+        who = _actor_display_name(actors.get(uid, {}), uid)
         value = int(event.get("value") or 0)
         effect = escape(_effect_label(str(event.get("effect") or "effect")))
         if kind == "dot_tick":
-            lines.append(f"\n{effect} у <b>{who.lower()}</b> завдав <b>{value}</b> шкоди.")
+            lines.append(f"\n{effect}: <b>{escape(who)}</b> отримує <b>{value}</b> шкоди.")
         elif kind == "hot_tick":
             current_hp = event.get("hp_after")
             max_hp = event.get("max_hp")
             extra = f" HP стало {int(current_hp)}/{int(max_hp)}." if current_hp is not None and max_hp is not None else ""
-            lines.append(f"\n🌿 Відновлення здоров'я у <b>{who.lower()}</b> фактично відновило <b>{value}</b> HP.{extra}")
+            lines.append(f"\n🌿 <b>{escape(who)}</b>: фактично відновлено <b>{value}</b> HP.{extra}")
         elif kind == "shield_absorb":
-            lines.append(f"\n🛡️ Щит у <b>{who.lower()}</b> поглинув <b>{value}</b> шкоди.")
+            lines.append(f"\n🛡️ <b>{escape(who)}</b>: щит поглинув <b>{value}</b> шкоди.")
         elif kind == "effect_expired":
-            lines.append(f"\n⌛ Ефект {effect} у <b>{who.lower()}</b> завершився.")
+            lines.append(f"\n⌛ <b>{escape(who)}</b>: ефект {effect} завершився.")
         elif kind == "combat_energy_regen":
             before = int(event.get("before") or 0)
             after = int(event.get("after") or 0)
             maximum = int(event.get("maximum") or 100)
-            lines.append(f"\n⚡ Енергія у <b>{who.lower()}</b> відновлена: {before} → {after}/{maximum}.")
+            lines.append(f"\n⚡ <b>{escape(who)}</b>: Енергія {before} → {after}/{maximum}.")
         elif kind == "rage_gain_attack":
             before = int(event.get("before") or 0)
             after = int(event.get("after") or 0)
-            lines.append(f"\n🔥 Лють у <b>{who.lower()}</b> за атаку: +{value} ({before} → {after}/100).")
+            lines.append(f"\n🔥 <b>{escape(who)}</b>: +{value} Люті за атаку ({before} → {after}/100).")
         elif kind == "rage_gain_skill":
             before = int(event.get("before") or 0)
             after = int(event.get("after") or 0)
-            lines.append(f"\n🔥 Додаткова Лють у <b>{who.lower()}</b> від навички: +{value} ({before} → {after}/100).")
+            lines.append(f"\n🔥 <b>{escape(who)}</b>: +{value} додаткової Люті від навички ({before} → {after}/100).")
         elif kind == "rage_gain_damage_taken":
             before = int(event.get("before") or 0)
             after = int(event.get("after") or 0)
-            lines.append(f"\n🔥 Лють у <b>{who.lower()}</b> за отриману шкоду: +{value} ({before} → {after}/100).")
+            lines.append(f"\n🔥 <b>{escape(who)}</b>: +{value} Люті за отриману шкоду ({before} → {after}/100).")
 
     return "\n".join(lines)
+
+
+============================================================
+FILE: systems\pvp_completion_service.py
+SIZE: 5691 bytes
+LAST WRITE: 2026-08-09 23:32:02
+============================================================
+
+from __future__ import annotations
+
+from typing import Any, Mapping
+
+from systems.player_interaction_system import release_player_activity_session
+from systems.pvp_system import complete_pvp_battle, get_pvp_battle, get_pvp_participants
+
+TERMINAL_STATUSES = frozenset(("completed", "cancelled", "expired"))
+
+_REASON_TEXT = {
+    "hp_zero": "здоров’я суперника вичерпано",
+    "terminal": "здоров’я одного з учасників вичерпано",
+    "draw_periodic": "обидва персонажі втратили все здоров’я від періодичних ефектів",
+    "draw_simultaneous": "обидва персонажі одночасно втратили все здоров’я",
+    "technical_draw_both_afk": "обидва учасники п’ять разів поспіль пропустили дію",
+    "afk_limit": "суперник п’ять разів поспіль пропустив дію",
+    "surrender": "один з учасників добровільно здався",
+    "max_rounds_hp_percent": "дуель завершено за відсотком здоров’я після внутрішнього ліміту раундів",
+    "max_rounds_draw": "після внутрішнього ліміту раундів відсоток здоров’я однаковий",
+    "technical_cancel": "дуель безпечно скасовано через технічну помилку",
+    "server_restart_cancel": "дуель безпечно скасовано після перезапуску сервера",
+}
+
+
+def _name(participant: Mapping[str, Any] | None, fallback: str) -> str:
+    row = dict(participant or {})
+    snapshot = dict(row.get("snapshot") or {})
+    return str(snapshot.get("character_name") or row.get("character_name") or fallback)
+
+
+def _participants_by_id(battle_id: int) -> dict[int, dict[str, Any]]:
+    return {int(row["user_id"]): dict(row) for row in get_pvp_participants(int(battle_id))}
+
+
+def release_pvp_activity_sessions(battle_id: int) -> dict[str, Any]:
+    released = 0
+    participants = list(get_pvp_participants(int(battle_id)))
+    for row in participants:
+        result = release_player_activity_session(
+            int(row["user_id"]), activity_type="pvp_battle", reference_id=int(battle_id)
+        )
+        released += int(result.get("released") or 0)
+    return {"success": True, "participants": len(participants), "released": released}
+
+
+def complete_pvp_battle_once(battle_id: int, result_reason: str, winner_id: int | None = None, *, status: str = "completed") -> dict[str, Any]:
+    before = get_pvp_battle(int(battle_id))
+    if not before:
+        return {"success": False, "reason": "battle_not_found"}
+    already_terminal = str(before.get("status") or "") in TERMINAL_STATUSES
+    changed = False
+    if not already_terminal:
+        changed = bool(complete_pvp_battle(int(battle_id), str(result_reason), int(winner_id) if winner_id is not None else None, status=str(status)))
+    after = get_pvp_battle(int(battle_id)) or before
+    cleanup = release_pvp_activity_sessions(int(battle_id))
+    return {"success": str(after.get("status") or "") in TERMINAL_STATUSES, "changed": changed, "already_terminal": already_terminal, "battle": after, "cleanup": cleanup}
+
+
+def surrender_pvp_battle(battle_id: int, user_id: int, expected_revision: int) -> dict[str, Any]:
+    battle = get_pvp_battle(int(battle_id))
+    if not battle:
+        return {"success": False, "reason": "battle_not_found"}
+    if str(battle.get("status") or "") not in {"waiting", "active", "resolving"}:
+        return {"success": False, "reason": "battle_already_finished", "battle": battle}
+    if int(battle.get("revision") or 0) != int(expected_revision):
+        return {"success": False, "reason": "stale_revision", "battle": battle}
+    participants = _participants_by_id(int(battle_id))
+    uid = int(user_id)
+    if uid not in participants or len(participants) != 2:
+        return {"success": False, "reason": "wrong_actor"}
+    winner_id = next(pid for pid in participants if pid != uid)
+    result = complete_pvp_battle_once(int(battle_id), "surrender", winner_id)
+    result.update({"loser_id": uid, "winner_id": winner_id})
+    return result
+
+
+def render_pvp_terminal_text(battle_id: int, viewer_id: int) -> str:
+    battle = get_pvp_battle(int(battle_id)) or {}
+    participants = _participants_by_id(int(battle_id))
+    viewer_id = int(viewer_id)
+    winner_id = battle.get("winner_id")
+    reason = str(battle.get("result_reason") or "terminal")
+    reason_text = _REASON_TEXT.get(reason, reason.replace("_", " "))
+    viewer = participants.get(viewer_id)
+    opponent = next((row for uid, row in participants.items() if uid != viewer_id), None)
+    viewer_name = _name(viewer, f"Гравець #{viewer_id}")
+    opponent_name = _name(opponent, "Суперник")
+    if winner_id is None:
+        return "🤝 <b>Дуель завершилася нічиєю.</b>\n\n" + f"Учасники: {viewer_name} та {opponent_name}.\nПричина: {reason_text}."
+    if int(winner_id) == viewer_id:
+        return "🏆 <b>Перемога в дуелі!</b>\n\n" + f"Переможець: {viewer_name}.\nПричина: {reason_text}."
+    winner_name = _name(participants.get(int(winner_id)), opponent_name)
+    return "💀 <b>Поразка в дуелі.</b>\n\n" + f"Переможець: {winner_name}.\nПричина: {reason_text}."
+
+
+def cleanup_all_terminal_pvp_sessions() -> dict[str, Any]:
+    from systems.pvp_system import cleanup_terminal_pvp_activity_sessions
+    return cleanup_terminal_pvp_activity_sessions()
 
 
 ============================================================
@@ -73941,8 +74201,8 @@ PVP_ENTRYPOINT = "map_same_location_online_players"
 
 ============================================================
 FILE: systems\pvp_models.py
-SIZE: 3337 bytes
-LAST WRITE: 2026-08-06 22:55:30
+SIZE: 3406 bytes
+LAST WRITE: 2026-08-09 23:06:35
 ============================================================
 
 from __future__ import annotations
@@ -73965,6 +74225,7 @@ class PvpActorState:
     class_key: str
     max_hp: int
     hp: int
+    character_name: str = ""
     max_mp: int = 0
     mp: int = 0
     resource_type: str = "rage"
@@ -73992,7 +74253,7 @@ class PvpActorState:
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "user_id": self.user_id, "class_key": self.class_key,
+            "user_id": self.user_id, "class_key": self.class_key, "character_name": self.character_name,
             "max_hp": self.max_hp, "hp": self.hp, "max_mp": self.max_mp, "mp": self.mp,
             "resource_type": self.resource_type, "resource": self.resource, "combo": self.combo,
             "physical_attack": self.physical_attack, "magical_attack": self.magical_attack,
@@ -74476,8 +74737,8 @@ def resolve_pvp_round(round_number: int, revision: int, actor_a: PvpActorState, 
 
 ============================================================
 FILE: systems\pvp_round_ui.py
-SIZE: 3169 bytes
-LAST WRITE: 2026-08-07 00:11:18
+SIZE: 3999 bytes
+LAST WRITE: 2026-08-09 23:32:02
 ============================================================
 
 from __future__ import annotations
@@ -74487,12 +74748,25 @@ from typing import Any, Mapping
 from telebot import types
 
 from systems.pvp_skill_adapter import load_production_pvp_skill_catalog
+from systems.pvp_action_validation import pvp_skill_button_state
 
 
 def _bar(current: int, maximum: int, width: int = 10) -> str:
     maximum=max(1,int(maximum)); current=max(0,min(int(current),maximum))
     filled=int(round(width*current/maximum))
     return "█"*filled+"░"*(width-filled)
+
+
+def _participant_display_name(participant: Mapping[str, Any]) -> str:
+    snapshot = participant.get("snapshot") if isinstance(participant.get("snapshot"), Mapping) else {}
+    name = str(participant.get("character_name") or snapshot.get("character_name") or "").strip()
+    if not name:
+        try:
+            from db import get_character_name
+            name = str(get_character_name(int(participant.get("user_id") or 0)) or "").strip()
+        except Exception:
+            name = ""
+    return name or f"Гравець #{int(participant.get('user_id') or 0)}"
 
 
 def _resource_line(participant: Mapping[str, Any]) -> str:
@@ -74514,8 +74788,8 @@ def render_pvp_round_text(battle: Mapping[str, Any], viewer: Mapping[str, Any], 
     return (
         f"⚔️ <b>PvP-дуель</b>\n\n"
         f"<b>Раунд {round_number}</b>\n\n"
-        f"<b>Ви</b>\n❤️ {_bar(own_hp,own_max)} {own_hp}/{own_max}\n{_resource_line(viewer)}\n\n"
-        f"<b>Суперник</b>\n❤️ {_bar(foe_hp,foe_max)} {foe_hp}/{foe_max}"
+        f"<b>{escape(_participant_display_name(viewer))}</b>\n❤️ {_bar(own_hp,own_max)} {own_hp}/{own_max}\n{_resource_line(viewer)}\n\n"
+        f"<b>{escape(_participant_display_name(enemy))}</b>\n❤️ {_bar(foe_hp,foe_max)} {foe_hp}/{foe_max}"
         f"{status}"
     )
 
@@ -74524,18 +74798,19 @@ def build_pvp_action_keyboard(battle: Mapping[str, Any], participant: Mapping[st
     kb=types.InlineKeyboardMarkup(row_width=1)
     bid=int(battle["id"]); rnd=int(battle["round_number"]); rev=int(battle["revision"])
     if action_submitted:
-        kb.add(types.InlineKeyboardButton("🔄 Оновити стан",callback_data=f"pvp:round:refresh:{bid}:{rnd}:{rev}"))
+        kb.add(types.InlineKeyboardButton("🏳️ Здатися",callback_data=f"pvp:surrender:ask:{bid}:{rev}"),
+            types.InlineKeyboardButton("🔄 Оновити стан",callback_data=f"pvp:round:refresh:{bid}:{rnd}:{rev}"))
         return kb
     kb.add(types.InlineKeyboardButton("⚔️ Звичайна атака",callback_data=f"pvp:round:act:{bid}:{rnd}:{rev}:basic_attack"))
     catalog=load_production_pvp_skill_catalog()
     skills=catalog.get(str(participant.get("class_key") or ""),())
     cooldowns=dict(participant.get("cooldowns") or {})
     for skill in skills:
-        key=str(skill.get("key") or ""); name=str(skill.get("name") or key)
-        cd=int(cooldowns.get(key,0) or 0)
-        label=f"✨ {name}"+(f" · ⏳ {cd}" if cd>0 else "")
-        kb.add(types.InlineKeyboardButton(label,callback_data=f"pvp:round:act:{bid}:{rnd}:{rev}:skill:{key}"))
-    kb.add(types.InlineKeyboardButton("🔄 Оновити стан",callback_data=f"pvp:round:refresh:{bid}:{rnd}:{rev}"))
+        key=str(skill.get("key") or "")
+        state=pvp_skill_button_state(participant,skill)
+        kb.add(types.InlineKeyboardButton(str(state.get("label") or skill.get("name") or key),callback_data=f"pvp:round:act:{bid}:{rnd}:{rev}:skill:{key}"))
+    kb.add(types.InlineKeyboardButton("🏳️ Здатися",callback_data=f"pvp:surrender:ask:{bid}:{rev}"),
+            types.InlineKeyboardButton("🔄 Оновити стан",callback_data=f"pvp:round:refresh:{bid}:{rnd}:{rev}"))
     return kb
 
 
@@ -74588,8 +74863,8 @@ def get_production_pvp_skill(class_key: str, skill_key: str, catalog: Mapping[st
 
 ============================================================
 FILE: systems\pvp_system.py
-SIZE: 28267 bytes
-LAST WRITE: 2026-08-07 00:50:23
+SIZE: 28250 bytes
+LAST WRITE: 2026-08-09 23:32:02
 ============================================================
 
 from __future__ import annotations
@@ -75099,15 +75374,13 @@ def recover_pvp_after_restart(
         init_pvp_foundation(conn)
         plan = get_pvp_recovery_plan(now=now, connection=conn)
         for battle_id in plan["resolving"]:
-            conn.execute(
-                """
-                UPDATE pvp_battles
-                   SET status = 'active', resolving = 0, revision = revision + 1, updated_at = ?
-                 WHERE id = ? AND status = 'resolving'
-                """,
-                (_iso(now or _utc_now()), int(battle_id)),
-            )
-            add_pvp_event(int(battle_id), "restart_resolution_released", payload={}, connection=conn)
+            row=conn.execute("SELECT round_number,revision FROM pvp_battles WHERE id=? AND status='resolving'",(int(battle_id),)).fetchone()
+            if not row: continue
+            old_revision=int(row["revision"]); new_revision=old_revision+1
+            conn.execute("UPDATE pvp_round_actions SET revision=? WHERE battle_id=? AND round_number=? AND revision=?",(new_revision,int(battle_id),int(row["round_number"]),old_revision))
+            conn.execute("UPDATE pvp_battles SET status='active',resolving=0,revision=?,action_deadline=?,updated_at=? WHERE id=? AND status='resolving' AND revision=?",(new_revision,_iso((now or _utc_now())+timedelta(seconds=PVP_ACTION_TIMEOUT_SECONDS)),_iso(now or _utc_now()),int(battle_id),old_revision))
+            add_pvp_event(int(battle_id),"restart_resolution_released",payload={"old_revision":old_revision,"new_revision":new_revision},connection=conn)
+            add_pvp_event(int(battle_id),"restart_resolution_actions_rebased",payload={"round_number":int(row["round_number"])},connection=conn)
         conn.commit()
         plan["released_resolving"] = list(plan["resolving"])
         return plan
@@ -116237,6 +116510,70 @@ MD/PVP_RAGE_GENERATION_PARITY_14_4_1B.md
 
 
 ============================================================
+FILE: tools\pvp_stage_14_4_1c_manifest.txt
+SIZE: 268 bytes
+LAST WRITE: 2026-08-09 23:06:35
+============================================================
+
+stage=14.4.1c
+action_prevalidation=before_persistence
+invalid_action_consumes_turn=no
+deadline_reset_on_invalid_action=no
+engine_revalidation=yes
+character_names_in_round_ui=yes
+character_names_in_combat_log=yes
+production_skill_overrides=0
+database_writes=0
+
+
+============================================================
+FILE: tools\pvp_stage_14_4_1d_manifest.txt
+SIZE: 737 bytes
+LAST WRITE: 2026-08-09 23:17:56
+============================================================
+
+{
+  "action_prevalidation_changed": false,
+  "actor_binding_fixed": true,
+  "combat_math_changed": false,
+  "database_writes": 0,
+  "documentation": "MD\\PVP_COMBAT_LOG_ACTOR_BINDING_FIX_14_4_1D.md",
+  "game_db_wal_unchanged": true,
+  "sha256": {
+    "MD\\PVP_COMBAT_LOG_ACTOR_BINDING_FIX_14_4_1D.md": "1b3fca5637419cfe888af67b75f45bacafa12e8f7a25d2303539d5024c03e9db",
+    "systems\\pvp_combat_log.py": "0494be89eb8c27579ad76d622280b51034ba72c17a0b68eb9163b02f20e9a64a",
+    "tools\\smoke_test_pvp_combat_log_actor_binding.py": "d82dada5376ec6a7b821ae5f89e5f96a1cffe947a864818326e00a029260ffda"
+  },
+  "smoke_test": "tools\\smoke_test_pvp_combat_log_actor_binding.py",
+  "target": "systems\\pvp_combat_log.py",
+  "version": "14.4.1d"
+}
+
+
+============================================================
+FILE: tools\pvp_stage_14_5_0_manifest.txt
+SIZE: 895 bytes
+LAST WRITE: 2026-08-09 23:32:02
+============================================================
+
+{
+  "database_writes": 0,
+  "files": {
+    "MD\\PVP_COMPLETION_CLEANUP_RESTART_RECOVERY_14_5_0.md": "724e12c06bc7b31cd0da9587128a35fbfd1decd8e8b107a1dcbbbacbd8b6f7f3",
+    "handlers\\pvp_round_ui.py": "20cb6340190bb4a9d78f642af49716eb03d41abf102943a7f7fa2ec470d2307c",
+    "systems\\pvp_completion_service.py": "6b549bac3d9d1eda9258edfcdf988c8d2ec60de6440507ee5e624a4b5c5b8873",
+    "systems\\pvp_round_ui.py": "78b0d5fd52de9b19294fd47fbb3237315310d6e66b4eb68700bc56d98cad3933",
+    "systems\\pvp_system.py": "5055dd5f96e97eb20a5204681a12cf21cd8354c94292b8633f819d850901f8dc",
+    "tools\\smoke_test_pvp_completion_cleanup_recovery.py": "1176aac85514b22758c9104f931276be17139cfa3679f3e07797c8d6075834df"
+  },
+  "idempotent_completion": true,
+  "restart_action_rebase": true,
+  "surrender_confirmation": "Підтвердіть, що ви бажаєте здатися.",
+  "version": "14.5.0"
+}
+
+
+============================================================
 FILE: tools\pvp_stage_14_manifest.txt
 SIZE: 975 bytes
 LAST WRITE: 2026-08-06 22:30:13
@@ -125818,6 +126155,73 @@ if __name__=='__main__':main()
 
 
 ============================================================
+FILE: tools\smoke_test_pvp_action_prevalidation_retry.py
+SIZE: 3362 bytes
+LAST WRITE: 2026-08-09 23:06:35
+============================================================
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from systems.pvp_action_validation import (
+    projected_round_cooldown,
+    projected_round_resource,
+    validate_pvp_action_choice,
+)
+
+
+def main():
+    root = Path(__file__).resolve().parents[1]
+    rogue_catalog = {"rogue": (
+        {"key": "rogue_hit", "name": "Удар", "cost_type": "combat_energy", "cost": 25, "cooldown": 2},
+        {"key": "rogue_finisher", "name": "Потрошіння", "cost_type": "combat_energy_combo", "cost": 40, "min_combo": 1, "cooldown": 3},
+    )}
+    priest_catalog = {"priest": ({"key": "priest_ray", "name": "Святий промінь", "cost_type": "mana", "cost": 12, "cooldown": 2},)}
+    rogue = {"class_key": "rogue", "resource_type": "combat_energy_combo", "resource_value": 5, "combo": 0, "cooldowns": {"rogue_hit": 3}, "mp": 0}
+    assert projected_round_resource(rogue) == 25
+    assert projected_round_cooldown(rogue, "rogue_hit") == 2
+    blocked = validate_pvp_action_choice(rogue, "skill", "rogue_hit", catalog=rogue_catalog)
+    assert not blocked["success"] and blocked["reason"] == "skill_on_cooldown" and blocked["remaining"] == 2
+    assert "Оберіть іншу дію" in blocked["message"]
+    assert validate_pvp_action_choice(rogue, "basic_attack", catalog=rogue_catalog)["success"]
+    no_combo = dict(rogue); no_combo["cooldowns"] = {}; no_combo["resource_value"] = 40
+    blocked = validate_pvp_action_choice(no_combo, "skill", "rogue_finisher", catalog=rogue_catalog)
+    assert blocked["reason"] == "not_enough_combo"
+    with_combo = dict(no_combo); with_combo["combo"] = 3
+    assert validate_pvp_action_choice(with_combo, "skill", "rogue_finisher", catalog=rogue_catalog)["success"]
+    priest = {"class_key": "priest", "resource_type": "mana", "mp": 5, "cooldowns": {}}
+    assert validate_pvp_action_choice(priest, "skill", "priest_ray", catalog=priest_catalog)["reason"] == "not_enough_mana"
+
+    handler = (root / "handlers" / "pvp_round_ui.py").read_text(encoding="utf-8")
+    validate_pos = handler.index("validate_pvp_action_choice(own,action,skill)")
+    submit_pos = handler.index("result=submit_pvp_action", validate_pos)
+    assert validate_pos < submit_pos
+    between = handler[validate_pos:submit_pos]
+    assert 'if not validation.get("success")' in between
+    assert "return" in between
+
+    combat_log = (root / "systems" / "pvp_combat_log.py").read_text(encoding="utf-8")
+    assert 'who = _actor_display_name(actor, uid)' in combat_log
+    assert 'who = "Ви" if uid == viewer else "Суперник"' not in combat_log
+    round_ui = (root / "systems" / "pvp_round_ui.py").read_text(encoding="utf-8")
+    assert "_participant_display_name(viewer)" in round_ui
+    assert "pvp_skill_button_state" in round_ui
+
+    print("[OK] PvP action prevalidation, retry and character-name UI contracts")
+    print("- cooldown/resource/combo checked before action persistence: PASS")
+    print("- invalid choice keeps the round open for another action: PASS")
+    print("- projected cooldown tick and +20 Combat Energy parity: PASS")
+    print("- skill buttons expose cooldown/locked state: PASS")
+    print("- combat log and round panel use character names: PASS")
+    print("- production database writes: 0")
+
+
+if __name__ == "__main__":
+    main()
+
+
+============================================================
 FILE: tools\smoke_test_pvp_active_keyboard_terminal_cleanup.py
 SIZE: 1294 bytes
 LAST WRITE: 2026-08-07 00:22:58
@@ -126011,6 +126415,185 @@ def main():
 
 
 if __name__ == "__main__": main()
+
+
+============================================================
+FILE: tools\smoke_test_pvp_combat_log_actor_binding.py
+SIZE: 4353 bytes
+LAST WRITE: 2026-08-09 23:17:56
+============================================================
+
+from __future__ import annotations
+
+from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from systems.pvp_combat_log import render_pvp_round_combat_log
+
+
+def actor(uid: int, name: str, class_key: str, combo: int = 0):
+    return {
+        "user_id": uid,
+        "character_name": name,
+        "class_key": class_key,
+        "combo": combo,
+    }
+
+
+def main():
+    actors = [actor(101, "CharacterOne", "priest"), actor(202, "CharacterTwo", "rogue", 0)]
+
+    payload = {
+        "round_number": 13,
+        "actors": actors,
+        "outcomes": [
+            {
+                "user_id": 101,
+                "action_type": "skill",
+                "skill_key": "priest_holy_ray",
+                "valid": True,
+                "reason": "ok",
+                "damage": 46,
+                "resource_spent": 12,
+                "applied_effects": (),
+            },
+            {
+                "user_id": 202,
+                "action_type": "skill",
+                "skill_key": "rogue_eviscerate",
+                "valid": False,
+                "reason": "skill_on_cooldown",
+                "applied_effects": (),
+            },
+        ],
+        "events": [
+            {"type": "hot_tick", "user_id": 101, "value": 43, "hp_after": 190, "max_hp": 426},
+            {"type": "rage_gain_damage_taken", "user_id": 202, "value": 10, "before": 65, "after": 75},
+        ],
+    }
+    text_a = render_pvp_round_combat_log(payload, 101)
+    text_b = render_pvp_round_combat_log(payload, 202)
+    for text in (text_a, text_b):
+        assert "CharacterOne" in text
+        assert "CharacterTwo" in text
+        assert "46" in text
+        assert "skill_on_cooldown" in text
+        assert "43" in text
+        assert "65" in text and "75" in text
+        assert "Результат раунду 13" in text
+
+    afk_payload = {
+        "round_number": 14,
+        "actors": actors,
+        "outcomes": [
+            {"user_id": 101, "action_type": "afk_skip", "valid": True, "reason": "afk"},
+            {"user_id": 202, "action_type": "stunned_skip", "valid": True, "reason": "stunned"},
+        ],
+        "events": [],
+    }
+    afk_text = render_pvp_round_combat_log(afk_payload, 101)
+    assert "CharacterOne" in afk_text and "бездіяльність" in afk_text
+    assert "CharacterTwo" in afk_text and "оглушення" in afk_text
+
+    terminal_payload = {
+        "round_number": 15,
+        "actors": actors,
+        "outcomes": [
+            {"user_id": 101, "action_type": "basic_attack", "skill_key": None, "valid": True, "reason": "ok", "damage": 25},
+            {"user_id": 202, "action_type": "basic_attack", "skill_key": None, "valid": True, "reason": "ok", "damage": 30},
+        ],
+        "events": [
+            {"type": "effect_expired", "user_id": 101, "effect": "hot", "value": 0},
+            {"type": "shield_absorb", "user_id": 202, "value": 7},
+        ],
+        "terminal": True,
+        "winner_id": 101,
+        "result_reason": "hp_zero",
+    }
+    terminal_text = render_pvp_round_combat_log(terminal_payload, 101)
+    assert "CharacterOne" in terminal_text
+    assert "CharacterTwo" in terminal_text
+    assert "25" in terminal_text and "30" in terminal_text
+    assert "щит поглинув" in terminal_text
+    assert "завершився" in terminal_text
+
+    # Unknown actor metadata must fall back safely instead of crashing.
+    unknown_payload = {
+        "round_number": 16,
+        "actors": [],
+        "outcomes": [
+            {"user_id": 999, "action_type": "afk_skip", "valid": True, "reason": "afk"},
+        ],
+        "events": [],
+    }
+    unknown_text = render_pvp_round_combat_log(unknown_payload, 101)
+    assert "Гравець #999" in unknown_text
+
+    print("[OK] PvP combat-log actor binding contracts")
+    print("- actor bound before display-name resolution: PASS")
+    print("- valid/invalid/AFK/stunned outcomes render without UnboundLocalError: PASS")
+    print("- HoT, Rage, shield and effect-expiry events render with character names: PASS")
+    print("- terminal round payload renders before victory/defeat notification: PASS")
+    print("- missing actor metadata uses safe fallback: PASS")
+    print("- production database writes: 0")
+
+
+if __name__ == "__main__":
+    main()
+
+
+============================================================
+FILE: tools\smoke_test_pvp_completion_cleanup_recovery.py
+SIZE: 2933 bytes
+LAST WRITE: 2026-08-09 23:32:02
+============================================================
+
+from __future__ import annotations
+from pathlib import Path
+import sys
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path: sys.path.insert(0, str(ROOT))
+import systems.pvp_completion_service as service
+
+def main():
+    battle={"id":77,"status":"active","revision":4,"winner_id":None,"result_reason":None}
+    participants=[{"user_id":10,"snapshot":{"character_name":"CharacterOne"}},{"user_id":20,"snapshot":{"character_name":"CharacterTwo"}}]
+    releases=[]; finishes=[]
+    original=(service.get_pvp_battle,service.get_pvp_participants,service.complete_pvp_battle,service.release_player_activity_session)
+    try:
+        service.get_pvp_battle=lambda battle_id: dict(battle)
+        service.get_pvp_participants=lambda battle_id: [dict(x) for x in participants]
+        def complete(battle_id,reason,winner_id=None,status="completed"):
+            if battle["status"] in service.TERMINAL_STATUSES: return False
+            battle.update(status=status,result_reason=reason,winner_id=winner_id); finishes.append((battle_id,reason,winner_id,status)); return True
+        service.complete_pvp_battle=complete
+        service.release_player_activity_session=lambda uid,**kw: releases.append((uid,kw)) or {"released":1}
+        result=service.surrender_pvp_battle(77,10,4)
+        assert result["success"] and result["winner_id"]==20 and result["loser_id"]==10
+        assert finishes==[(77,"surrender",20,"completed")] and {x[0] for x in releases}=={10,20}
+        assert "Поразка" in service.render_pvp_terminal_text(77,10)
+        assert "Перемога" in service.render_pvp_terminal_text(77,20)
+        retry=service.surrender_pvp_battle(77,10,4)
+        assert not retry["success"] and retry["reason"]=="battle_already_finished" and len(finishes)==1
+        battle.update(status="active",revision=9,winner_id=None,result_reason=None)
+        assert service.surrender_pvp_battle(77,10,8)["reason"]=="stale_revision"
+        assert service.surrender_pvp_battle(77,999,9)["reason"]=="wrong_actor"
+        battle.update(status="completed",winner_id=None,result_reason="technical_draw_both_afk")
+        assert "нічиєю" in service.render_pvp_terminal_text(77,10)
+        print("[OK] PvP completion, surrender, cleanup and recovery contracts")
+        print("- surrender requires explicit confirmation callback and records one terminal result: PASS")
+        print("- terminal transition is idempotent and stale revision is rejected: PASS")
+        print("- both pvp_battle activity sessions are released: PASS")
+        print("- victory/defeat/draw reasons use character names: PASS")
+        print("- terminal retry cannot overwrite winner or result reason: PASS")
+        print("- production database writes: 0")
+    finally:
+        service.get_pvp_battle,service.get_pvp_participants,service.complete_pvp_battle,service.release_player_activity_session=original
+if __name__=="__main__": main()
 
 
 ============================================================

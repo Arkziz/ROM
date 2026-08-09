@@ -55,7 +55,8 @@ def build_pvp_action_keyboard(battle: Mapping[str, Any], participant: Mapping[st
     kb=types.InlineKeyboardMarkup(row_width=1)
     bid=int(battle["id"]); rnd=int(battle["round_number"]); rev=int(battle["revision"])
     if action_submitted:
-        kb.add(types.InlineKeyboardButton("🔄 Оновити стан",callback_data=f"pvp:round:refresh:{bid}:{rnd}:{rev}"))
+        kb.add(types.InlineKeyboardButton("🏳️ Здатися",callback_data=f"pvp:surrender:ask:{bid}:{rev}"),
+            types.InlineKeyboardButton("🔄 Оновити стан",callback_data=f"pvp:round:refresh:{bid}:{rnd}:{rev}"))
         return kb
     kb.add(types.InlineKeyboardButton("⚔️ Звичайна атака",callback_data=f"pvp:round:act:{bid}:{rnd}:{rev}:basic_attack"))
     catalog=load_production_pvp_skill_catalog()
@@ -65,5 +66,6 @@ def build_pvp_action_keyboard(battle: Mapping[str, Any], participant: Mapping[st
         key=str(skill.get("key") or "")
         state=pvp_skill_button_state(participant,skill)
         kb.add(types.InlineKeyboardButton(str(state.get("label") or skill.get("name") or key),callback_data=f"pvp:round:act:{bid}:{rnd}:{rev}:skill:{key}"))
-    kb.add(types.InlineKeyboardButton("🔄 Оновити стан",callback_data=f"pvp:round:refresh:{bid}:{rnd}:{rev}"))
+    kb.add(types.InlineKeyboardButton("🏳️ Здатися",callback_data=f"pvp:surrender:ask:{bid}:{rev}"),
+            types.InlineKeyboardButton("🔄 Оновити стан",callback_data=f"pvp:round:refresh:{bid}:{rnd}:{rev}"))
     return kb

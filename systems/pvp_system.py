@@ -505,15 +505,13 @@ def recover_pvp_after_restart(
         init_pvp_foundation(conn)
         plan = get_pvp_recovery_plan(now=now, connection=conn)
         for battle_id in plan["resolving"]:
-            conn.execute(
-                """
-                UPDATE pvp_battles
-                   SET status = 'active', resolving = 0, revision = revision + 1, updated_at = ?
-                 WHERE id = ? AND status = 'resolving'
-                """,
-                (_iso(now or _utc_now()), int(battle_id)),
-            )
-            add_pvp_event(int(battle_id), "restart_resolution_released", payload={}, connection=conn)
+            row=conn.execute("SELECT round_number,revision FROM pvp_battles WHERE id=? AND status='resolving'",(int(battle_id),)).fetchone()
+            if not row: continue
+            old_revision=int(row["revision"]); new_revision=old_revision+1
+            conn.execute("UPDATE pvp_round_actions SET revision=? WHERE battle_id=? AND round_number=? AND revision=?",(new_revision,int(battle_id),int(row["round_number"]),old_revision))
+            conn.execute("UPDATE pvp_battles SET status='active',resolving=0,revision=?,action_deadline=?,updated_at=? WHERE id=? AND status='resolving' AND revision=?",(new_revision,_iso((now or _utc_now())+timedelta(seconds=PVP_ACTION_TIMEOUT_SECONDS)),_iso(now or _utc_now()),int(battle_id),old_revision))
+            add_pvp_event(int(battle_id),"restart_resolution_released",payload={"old_revision":old_revision,"new_revision":new_revision},connection=conn)
+            add_pvp_event(int(battle_id),"restart_resolution_actions_rebased",payload={"round_number":int(row["round_number"])},connection=conn)
         conn.commit()
         plan["released_resolving"] = list(plan["resolving"])
         return plan
