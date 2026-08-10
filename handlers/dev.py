@@ -968,3 +968,74 @@ def register_dev_handlers(bot):
             text,
             reply_markup=main_kb()
         )
+
+# ROM 14.6.2 PVP PRODUCTION MATRIX AND CALIBRATION SANDBOX
+
+def _register_pvp_production_calibration_handlers_14_6_2(bot):
+    @bot.message_handler(commands=["dev_pvp_prod"])
+    def dev_pvp_prod_14_6_2(message):
+        from systems.pvp_production_calibration import duel,save_report,LABELS
+        from pathlib import Path
+        parts=(message.text or "").split();
+        if len(parts)<3: return bot.reply_to(message,"Формат: /dev_pvp_prod class_a class_b [trials] [level] [rarity]")
+        a,b=parts[1].lower(),parts[2].lower(); trials=int(parts[3]) if len(parts)>3 else 50; level=int(parts[4]) if len(parts)>4 else 10; rarity=parts[5].lower() if len(parts)>5 else "rare"
+        r=duel(a,b,trials,level,rarity); save_report(r,Path(__file__).resolve().parents[1]/"tools/pvp_production_matchup_report.json")
+        bot.reply_to(message,f"⚔️ Production PvP sandbox\n\n{LABELS[a]} проти {LABELS[b]}\nРівень: {level}\nРідкість: {rarity}\nСимуляцій: {trials}\nПеремоги: {r['wins_a']} / {r['wins_b']}\nНічиї: {r['draws']}\nWin rate: {r['win_rate_a']}% / {r['win_rate_b']}%")
+    @bot.message_handler(commands=["dev_pvp_prod_all"])
+    def dev_pvp_prod_all_14_6_2(message):
+        from systems.pvp_production_calibration import matrix,save_report,LABELS
+        from pathlib import Path
+        p=(message.text or "").split(); trials=int(p[1]) if len(p)>1 else 20; level=int(p[2]) if len(p)>2 else 10; rarity=p[3].lower() if len(p)>3 else "rare"
+        r=matrix(trials,level,rarity); save_report(r,Path(__file__).resolve().parents[1]/"tools/pvp_production_class_matrix_report.json")
+        lines=["📊 Production PvP матриця 6 × 6","",f"Рівень: {level}",f"Рідкість: {rarity}",f"Симуляцій на matchup: {trials}",""]
+        for c,v in sorted(r["class_summary"].items(),key=lambda x:x[1]["non_mirror_win_rate"],reverse=True): lines.append(f"{LABELS[c]}: {v['non_mirror_win_rate']}% non-mirror")
+        bot.reply_to(message,"\n".join(lines)+"\n\nJSON: pvp_production_class_matrix_report.json")
+    @bot.message_handler(commands=["dev_pvp_calibrate"])
+    def dev_pvp_calibrate_14_6_2(message):
+        from systems.pvp_production_calibration import calibrate,save_report
+        from pathlib import Path
+        p=(message.text or "").split(); trials=int(p[1]) if len(p)>1 else 10; level=int(p[2]) if len(p)>2 else 10; rarity=p[3].lower() if len(p)>3 else "rare"
+        r=calibrate(trials,level,rarity); save_report(r,Path(__file__).resolve().parents[1]/"tools/pvp_calibration_sandbox_report.json")
+        lines=["🧪 PvP calibration sandbox","",f"Перевірено наборів: {r['candidates_tested']}","Найкращі DEV-only варіанти:"]
+        for x in r["best"][:5]: lines.append(f"score {x['score']}: healing {x['healing']}, warrior {x['warrior_damage']}, scout {x['scout_damage']}")
+        bot.reply_to(message,"\n".join(lines)+"\n\nLive-баланс не змінено. JSON: pvp_calibration_sandbox_report.json")
+
+try:
+    _register_dev_handlers_before_pvp_production_14_6_2 = register_dev_handlers
+except NameError:
+    _register_dev_handlers_before_pvp_production_14_6_2 = None
+
+def register_dev_handlers(bot):
+    if _register_dev_handlers_before_pvp_production_14_6_2:
+        _register_dev_handlers_before_pvp_production_14_6_2(bot)
+    _register_pvp_production_calibration_handlers_14_6_2(bot)
+
+
+# ROM 14.6.2a PVP PRODUCTION FIXTURE AUDIT
+
+def _register_pvp_fixture_audit_handlers_14_6_2a(bot):
+    @bot.message_handler(commands=["dev_pvp_fixture_audit"])
+    def dev_pvp_fixture_audit_14_6_2a(message):
+        from pathlib import Path
+        from systems.pvp_production_fixture_audit import format_summary, run_audit, save_report
+        parts=(message.text or "").split()
+        try:
+            trials=int(parts[1]) if len(parts)>1 else 10
+            level=int(parts[2]) if len(parts)>2 else 10
+            rarity=parts[3].lower() if len(parts)>3 else "rare"
+            bot.reply_to(message,"🔎 Запущено audit усіх 6 класів, 18 навичок і matrix integrity.")
+            result=run_audit(trials,level,rarity)
+            path=save_report(result,Path(__file__).resolve().parents[1]/"tools/pvp_production_fixture_audit_report.json")
+            bot.reply_to(message,format_summary(result)+f"\nJSON: {path.name}",parse_mode="HTML")
+        except Exception as error:
+            bot.reply_to(message,f"❌ PvP fixture audit: {error}")
+
+try:
+    _register_dev_handlers_before_pvp_fixture_audit_14_6_2a=register_dev_handlers
+except NameError:
+    _register_dev_handlers_before_pvp_fixture_audit_14_6_2a=None
+
+def register_dev_handlers(bot):
+    if _register_dev_handlers_before_pvp_fixture_audit_14_6_2a:
+        _register_dev_handlers_before_pvp_fixture_audit_14_6_2a(bot)
+    _register_pvp_fixture_audit_handlers_14_6_2a(bot)
