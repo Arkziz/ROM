@@ -3,11 +3,11 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-11 00:52:21 +03:00
+Created: 2026-08-11 10:49:54 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.8875
-Included files: 358
-Excluded files: 4435
+Included files: 362
+Excluded files: 4472
 Maximum file size: 2 MB
 
 SECURITY EXCLUSIONS:
@@ -201,6 +201,8 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\pvp_stage_14_6_2_manifest.txt
 - tools\pvp_stage_14_6_2a_manifest.txt
 - tools\pvp_stage_14_6_2b_manifest.txt
+- tools\pvp_stage_14_6_2c_manifest.txt
+- tools\pvp_stage_14_6_2d_manifest.txt
 - tools\pvp_stage_14_manifest.txt
 - tools\README_refactor_tools.md
 - tools\run_economic_progression_v2.py
@@ -335,6 +337,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_pvp_completion_cleanup_recovery.py
 - tools\smoke_test_pvp_data_model_sessions_recovery.py
 - tools\smoke_test_pvp_duel_request_interaction_ui.py
+- tools\smoke_test_pvp_fixture_summary_and_statistical_review.py
 - tools\smoke_test_pvp_mirror_side_modifier_sensitivity.py
 - tools\smoke_test_pvp_policy_metrics_audit.py
 - tools\smoke_test_pvp_policy_target_awareness_metrics.py
@@ -345,6 +348,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_pvp_round_combat_log_combo_hot.py
 - tools\smoke_test_pvp_round_ui_actions_timer.py
 - tools\smoke_test_pvp_simultaneous_round_engine.py
+- tools\smoke_test_pvp_slot_weighted_production_fixture_parity.py
 - tools\smoke_test_pvp_terminal_callbacks_localization_idempotency.py
 - tools\smoke_test_pvp_user_mp_snapshot_contract.py
 - tools\smoke_test_regen_contracts.py
@@ -74945,8 +74949,8 @@ def format_summary(data):
 
 ============================================================
 FILE: systems\pvp_production_calibration.py
-SIZE: 8486 bytes
-LAST WRITE: 2026-08-11 00:38:56
+SIZE: 10214 bytes
+LAST WRITE: 2026-08-11 01:02:13
 ============================================================
 
 from __future__ import annotations
@@ -74968,7 +74972,48 @@ ARMOR={"warrior":"chain","knight":"plate","scout":"leather","rogue":"leather","m
 WEAPON={"warrior":"sword_2h","knight":"sword_1h","scout":"bow_2h","rogue":"dagger_1h","mage":"staff_2h","priest":"staff_2h"}
 SLOTS=("main_hand","helmet","shoulders","chest","gloves","legs","boots","necklace","ring")
 
-def _stats(cls,slot,level,rarity):
+SLOT_BASE_WEIGHTS = {
+    "main_hand": 1.80, "off_hand": 1.00, "helmet": 0.80,
+    "shoulders": 0.70, "chest": 1.40, "gloves": 0.70,
+    "legs": 1.20, "boots": 0.80, "necklace": 0.80, "ring": 0.80,
+}
+_unknown_fixture_slots = sorted(set(SLOTS) - set(SLOT_BASE_WEIGHTS))
+if _unknown_fixture_slots:
+    raise RuntimeError(f"Unsupported production fixture slots: {_unknown_fixture_slots}")
+_raw_slot_weight_total = sum(SLOT_BASE_WEIGHTS[slot] for slot in SLOTS)
+_slot_weight_scale = len(SLOTS) / _raw_slot_weight_total
+SLOT_WEIGHTS = {
+    slot: round(SLOT_BASE_WEIGHTS[slot] * _slot_weight_scale, 8)
+    for slot in SLOTS
+}
+SLOT_WEIGHT_TOTAL = float(len(SLOTS))
+SLOT_WEIGHTED_FIELDS = frozenset({
+    "str", "dex", "int", "wis", "sta", "pdef", "mdef",
+    "physical_defense", "magical_defense", "physical_min", "physical_max",
+    "magical_min", "magical_max", "weapon_physical_min",
+    "weapon_physical_max", "weapon_magical_min", "weapon_magical_max",
+})
+
+
+def _weighted_fixture_value(value, weight):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return value
+    scaled = int(float(value) * float(weight) + 0.5)
+    return max(1, scaled) if value > 0 else scaled
+
+
+def _apply_slot_weight(stats, slot):
+    if slot not in SLOT_WEIGHTS:
+        raise ValueError(f"Unknown production fixture slot: {slot}")
+    result = dict(stats)
+    for key in SLOT_WEIGHTED_FIELDS:
+        if key in result:
+            result[key] = _weighted_fixture_value(result[key], SLOT_WEIGHTS[slot])
+    result["fixture_slot_weight"] = SLOT_WEIGHTS[slot]
+    return result
+
+
+def _stats_unweighted(cls,slot,level,rarity):
  m=RARITY_MULT[rarity]; v=max(1,round(level*m)); d={"str":0,"dex":0,"int":0,"wis":0,"sta":0,"pdef":0,"mdef":0}
  if cls in ("warrior","knight"): d["str"]+=v; d["sta"]+=max(1,v//2)
  elif cls in ("scout","rogue"): d["dex"]+=v; d["str"]+=max(1,v//2)
@@ -74979,6 +75024,10 @@ def _stats(cls,slot,level,rarity):
  if slot=="main_hand":
   magical=cls in ("mage","priest"); base=max(1,round(level*m*1.6)); d["weapon_min_magic_damage" if magical else "weapon_min_damage"]=base; d["weapon_max_magic_damage" if magical else "weapon_max_damage"]=base+max(1,level//2)
  return d
+
+
+def _stats(class_key, slot, level, rarity):
+    return _apply_slot_weight(_stats_unweighted(class_key, slot, level, rarity), slot)
 
 def build_standard_actor(cls,level=10,rarity="rare",uid=1,class_damage=1.0):
  if cls not in CLASSES or rarity not in RARITIES: raise ValueError("unsupported class/rarity")
@@ -75038,7 +75087,7 @@ def matrix(trials=50,level=10,rarity="rare",seed=1462,healing=1.0,class_damage=N
   s=summary[r["class_a"]]; s["wins"]+=r["wins_a"]; s["losses"]+=r["wins_b"]; s["draws"]+=r["draws"]; s["games"]+=r["trials"]
   if r["class_a"]!=r["class_b"]: s["non_mirror_games"]+=r["trials"]; s["non_mirror_wins"]+=r["wins_a"]
  for s in summary.values(): s["overall_win_rate"]=round(100*s["wins"]/max(1,s["games"]),2); s["non_mirror_win_rate"]=round(100*s["non_mirror_wins"]/max(1,s["non_mirror_games"]),2)
- return {"version":"14.6.2b","mode":"production_standardized","trials_per_matchup":trials,"level":level,"rarity":rarity,"healing_multiplier":healing,"class_damage":class_damage or {},"matchups":rows,"class_summary":summary,"production_database_writes":0,"live_balance_changed":False}
+ return {"version":"14.6.2c","mode":"production_standardized","trials_per_matchup":trials,"level":level,"rarity":rarity,"healing_multiplier":healing,"class_damage":class_damage or {},"matchups":rows,"class_summary":summary,"production_database_writes":0,"live_balance_changed":False}
 
 def score(report):
  vals=[v["non_mirror_win_rate"] for v in report["class_summary"].values()]; return round(sum(abs(v-50) for v in vals)/len(vals),3)
@@ -75049,7 +75098,7 @@ def calibrate(trials=20,level=10,rarity="rare",seed=1462):
   for warrior in (1.0,1.15,1.3,1.45):
    for scout in (1.0,1.15,1.3):
     r=matrix(trials,level,rarity,seed,healing,{"warrior":warrior,"scout":scout}); candidates.append({"score":score(r),"healing":healing,"warrior_damage":warrior,"scout_damage":scout,"class_summary":r["class_summary"]})
- candidates.sort(key=lambda x:x["score"]); return {"version":"14.6.2b","trials":trials,"level":level,"rarity":rarity,"candidates_tested":len(candidates),"best":candidates[:10],"live_balance_changed":False}
+ candidates.sort(key=lambda x:x["score"]); return {"version":"14.6.2c","trials":trials,"level":level,"rarity":rarity,"candidates_tested":len(candidates),"best":candidates[:10],"live_balance_changed":False}
 
 def save_report(data,path):
  p=Path(path); p.parent.mkdir(parents=True,exist_ok=True); p.write_text(json.dumps(data,ensure_ascii=False,indent=2,sort_keys=True)+"\n",encoding="utf-8"); return p
@@ -75057,14 +75106,14 @@ def save_report(data,path):
 
 ============================================================
 FILE: systems\pvp_production_fixture_audit.py
-SIZE: 7392 bytes
-LAST WRITE: 2026-08-11 00:38:56
+SIZE: 9428 bytes
+LAST WRITE: 2026-08-11 01:07:34
 ============================================================
 
 from __future__ import annotations
 import json
 from pathlib import Path
-from systems.pvp_production_calibration import ARMOR,CLASSES,LABELS,RARITIES,SLOTS,_stats,build_standard_actor,duel
+from systems.pvp_production_calibration import ARMOR,CLASSES,LABELS,RARITIES,SLOTS,SLOT_WEIGHTS,SLOT_WEIGHT_TOTAL,_stats,build_standard_actor,duel
 from systems.pvp_skill_adapter import load_production_pvp_skill_catalog
 
 EXPECTED_SKILLS_PER_CLASS=3
@@ -75107,6 +75156,17 @@ def _sensitivity(trials,level,rarity,seed):
   baseline=duel(pair[0],pair[1],trials,level,rarity,seed+index,**base_kwargs); variant=duel(pair[0],pair[1],trials,level,rarity,seed+index,**var_kwargs); a=_combat_signature(baseline); b=_combat_signature(variant); changed={key:{"baseline":a[key],"variant":b[key]} for key in a if a[key]!=b[key]}; checks.append({"parameter":name,"baseline_config":base_kwargs,"variant_config":var_kwargs,"combat_baseline":a,"combat_variant":b,"changed_combat_metrics":changed,"observable_change":bool(changed)})
  return {"checks":checks,"all_observable":all(row["observable_change"] for row in checks),"criterion":"combat_metrics_only_v2"}
 
+def _slot_weighted_fixture_parity():
+ weights={slot:float(SLOT_WEIGHTS[slot]) for slot in SLOTS if slot in SLOT_WEIGHTS}; failures=[]
+ if set(SLOTS)!=set(SLOT_WEIGHTS): failures.append("slot set mismatch")
+ total=round(sum(weights.values()),6)
+ if total!=float(SLOT_WEIGHT_TOTAL): failures.append(f"weight total {total} != {SLOT_WEIGHT_TOTAL}")
+ if weights.get("chest",0)<=weights.get("gloves",0): failures.append("chest weight must exceed gloves weight")
+ if weights.get("main_hand",0)!=max(weights.values(),default=0): failures.append("main_hand must have the largest fixture weight")
+ samples={class_key:{slot:{"weight":weights.get(slot),"stats":_stats(class_key,slot,10,"rare")} for slot in SLOTS} for class_key in CLASSES}
+ return {"weights":weights,"weight_total":total,"expected_total":float(SLOT_WEIGHT_TOTAL),"slots_checked":len(weights),"samples_level_10_rare":samples,"failures":failures,"pass":not failures}
+
+
 def _fixture_warnings(actors):
  hp=[x["max_hp"] for x in actors.values()]; attacks=[max(x["physical_attack"],x["magical_attack"]) for x in actors.values()]; hp_ratio=round(max(hp)/max(1,min(hp)),2); attack_ratio=round(max(attacks)/max(1,min(attacks)),2); warnings=[]
  if hp_ratio>1.6: warnings.append(f"HP max/min ratio {hp_ratio} > 1.60")
@@ -75116,14 +75176,39 @@ def _fixture_warnings(actors):
 def run_audit(trials=10,level=10,rarity="rare",seed=14622):
  trials=max(2,min(100,int(trials))); level=max(1,min(100,int(level)))
  if rarity not in RARITIES: raise ValueError("rarity must be common, uncommon or rare")
- actors={key:_actor_snapshot(key,level,rarity) for key in CLASSES}; skills=_skill_audit(); integrity=_matrix_integrity(trials,level,rarity,seed); sensitivity=_sensitivity(trials,level,rarity,seed+900000); fixtures=_fixture_warnings(actors); verdict="PASS" if skills["pass"] and integrity["pass"] else "FAIL"
- return {"version":"14.6.2b","verdict":verdict,"trials":trials,"level":level,"rarity":rarity,"actors":actors,"skills":skills,"matrix_integrity":integrity,"modifier_sensitivity":sensitivity,"fixture_warnings":fixtures,"all_classes_checked":len(actors)==6,"all_skills_checked":skills["skills_checked"]==18,"live_balance_changed":False,"production_database_writes":0,"corrections_applied":False}
+ actors={key:_actor_snapshot(key,level,rarity) for key in CLASSES}; skills=_skill_audit(); integrity=_matrix_integrity(trials,level,rarity,seed); sensitivity=_sensitivity(trials,level,rarity,seed+900000); fixtures=_fixture_warnings(actors); parity=_slot_weighted_fixture_parity(); verdict="PASS" if skills["pass"] and integrity["pass"] and parity["pass"] else "FAIL"
+ return {"version":"14.6.2d","verdict":verdict,"trials":trials,"level":level,"rarity":rarity,"actors":actors,"skills":skills,"matrix_integrity":integrity,"modifier_sensitivity":sensitivity,"fixture_warnings":fixtures,"fixture_slot_parity":parity,"all_classes_checked":len(actors)==6,"all_skills_checked":skills["skills_checked"]==18,"live_balance_changed":False,"production_database_writes":0,"corrections_applied":False}
 
 def save_report(data,path):
  value=Path(path); value.parent.mkdir(parents=True,exist_ok=True); value.write_text(json.dumps(data,ensure_ascii=False,indent=2,sort_keys=True)+"\n",encoding="utf-8"); return value
 
 def format_summary(data):
- return "\n".join(["🔎 <b>PvP production fixture audit 14.6.2b</b>","",f"Verdict: <b>{data['verdict']}</b>",f"Класів перевірено: {len(data['actors'])}/6",f"Навичок перевірено: {data['skills']['skills_checked']}/18",f"Mirror/matrix integrity: {'PASS' if data['matrix_integrity']['pass'] else 'FAIL'}",f"Max side delta: {data['matrix_integrity']['max_side_delta_pp']} п.п.",f"Modifier sensitivity: {'PASS' if data['modifier_sensitivity']['all_observable'] else 'REVIEW'}",f"Fixture parity: {'REVIEW' if data['fixture_warnings']['review'] else 'PASS'}","","Live-баланс не змінено."])
+    integrity = dict(data.get("matrix_integrity") or {})
+    slot_parity = dict(data.get("fixture_slot_parity") or {})
+    spread = dict(data.get("fixture_warnings") or {})
+    sensitivity = dict(data.get("modifier_sensitivity") or {})
+    trials = int(data.get("trials") or 0)
+    side_review = bool(integrity.get("side_delta_review"))
+    statistical_label = "REVIEW" if trials < 100 else ("REVIEW" if side_review else "PASS")
+    lines = [
+        f"🔎 <b>PvP production fixture audit {data.get('version', '14.6.2d')}</b>",
+        "",
+        f"Verdict: <b>{data.get('verdict', 'FAIL')}</b>",
+        f"Класів перевірено: {len(data.get('actors') or {})}/6",
+        f"Навичок перевірено: {dict(data.get('skills') or {}).get('skills_checked', 0)}/18",
+        f"Mirror/matrix integrity: {'PASS' if integrity.get('pass') else 'FAIL'}",
+        f"Max side delta: {integrity.get('max_side_delta_pp', 0)} п.п.",
+        f"Modifier sensitivity: {'PASS' if sensitivity.get('all_observable') else 'REVIEW'}",
+        f"Slot-weighted fixture parity: {'PASS' if slot_parity.get('pass') else 'FAIL'}",
+        f"Fixture balance spread: {'REVIEW' if spread.get('review') else 'PASS'}",
+        f"Statistical confidence: {statistical_label} ({trials} trials/direction)",
+    ]
+    if trials < 100:
+        lines.append("Рекомендація: повторити audit зі 100 trials для статистичного review.")
+    if side_review:
+        lines.append("Side-order sensitivity: REVIEW.")
+    lines.extend(["", "Live-баланс не змінено."])
+    return "\n".join(lines)
 
 
 ============================================================
@@ -122622,8 +122707,8 @@ LAST WRITE: 2026-08-11 00:12:23
 
 ============================================================
 FILE: tools\pvp_production_fixture_audit_report.json
-SIZE: 31926 bytes
-LAST WRITE: 2026-08-11 00:39:57
+SIZE: 51887 bytes
+LAST WRITE: 2026-08-11 01:13:09
 ============================================================
 
 {
@@ -122641,93 +122726,102 @@ LAST WRITE: 2026-08-11 00:39:57
       "equipment_breakdown": {
         "boots": {
           "dex": 0,
+          "fixture_slot_weight": 0.8,
           "int": 0,
-          "mdef": 3,
-          "pdef": 20,
-          "sta": 9,
-          "str": 18,
+          "mdef": 2,
+          "pdef": 16,
+          "sta": 7,
+          "str": 14,
           "wis": 0
         },
         "chest": {
           "dex": 0,
+          "fixture_slot_weight": 1.4,
           "int": 0,
-          "mdef": 3,
-          "pdef": 20,
-          "sta": 9,
-          "str": 18,
+          "mdef": 4,
+          "pdef": 28,
+          "sta": 13,
+          "str": 25,
           "wis": 0
         },
         "gloves": {
           "dex": 0,
+          "fixture_slot_weight": 0.7,
           "int": 0,
-          "mdef": 3,
-          "pdef": 20,
-          "sta": 9,
-          "str": 18,
+          "mdef": 2,
+          "pdef": 14,
+          "sta": 6,
+          "str": 13,
           "wis": 0
         },
         "helmet": {
           "dex": 0,
+          "fixture_slot_weight": 0.8,
           "int": 0,
-          "mdef": 3,
-          "pdef": 20,
-          "sta": 9,
-          "str": 18,
+          "mdef": 2,
+          "pdef": 16,
+          "sta": 7,
+          "str": 14,
           "wis": 0
         },
         "legs": {
           "dex": 0,
+          "fixture_slot_weight": 1.2,
           "int": 0,
-          "mdef": 3,
-          "pdef": 20,
-          "sta": 9,
-          "str": 18,
+          "mdef": 4,
+          "pdef": 24,
+          "sta": 11,
+          "str": 22,
           "wis": 0
         },
         "main_hand": {
           "dex": 0,
+          "fixture_slot_weight": 1.8,
           "int": 0,
           "mdef": 0,
           "pdef": 0,
-          "sta": 9,
-          "str": 18,
+          "sta": 16,
+          "str": 32,
           "weapon_max_damage": 35,
           "weapon_min_damage": 30,
           "wis": 0
         },
         "necklace": {
           "dex": 0,
+          "fixture_slot_weight": 0.8,
           "int": 0,
           "mdef": 0,
           "pdef": 0,
-          "sta": 9,
-          "str": 18,
+          "sta": 7,
+          "str": 14,
           "wis": 0
         },
         "ring": {
           "dex": 0,
+          "fixture_slot_weight": 0.8,
           "int": 0,
           "mdef": 0,
           "pdef": 0,
-          "sta": 9,
-          "str": 18,
+          "sta": 7,
+          "str": 14,
           "wis": 0
         },
         "shoulders": {
           "dex": 0,
+          "fixture_slot_weight": 0.7,
           "int": 0,
-          "mdef": 3,
-          "pdef": 20,
-          "sta": 9,
-          "str": 18,
+          "mdef": 2,
+          "pdef": 14,
+          "sta": 6,
+          "str": 13,
           "wis": 0
         }
       },
       "equipment_primary_stats": {
         "dex": 0,
         "int": 0,
-        "sta": 81,
-        "str": 162,
+        "sta": 80,
+        "str": 161,
         "wis": 0
       },
       "equipment_slots": [
@@ -122744,18 +122838,18 @@ LAST WRITE: 2026-08-11 00:39:57
       "final_primary_stats": {
         "dex": 19,
         "int": 19,
-        "sta": 100,
-        "str": 181,
+        "sta": 99,
+        "str": 180,
         "wis": 19
       },
       "label": "Лицар",
       "level": 10,
       "magical_attack": 19,
-      "magical_defense": 37,
-      "max_hp": 800,
+      "magical_defense": 35,
+      "max_hp": 795,
       "max_mp": 0,
-      "physical_attack": 181,
-      "physical_defense": 140,
+      "physical_attack": 180,
+      "physical_defense": 131,
       "rarity": "rare",
       "resource": 0,
       "resource_type": "rage",
@@ -122777,94 +122871,103 @@ LAST WRITE: 2026-08-11 00:39:57
       "equipment_breakdown": {
         "boots": {
           "dex": 0,
-          "int": 18,
-          "mdef": 16,
-          "pdef": 7,
+          "fixture_slot_weight": 0.8,
+          "int": 14,
+          "mdef": 13,
+          "pdef": 6,
           "sta": 0,
           "str": 0,
-          "wis": 9
+          "wis": 7
         },
         "chest": {
           "dex": 0,
-          "int": 18,
-          "mdef": 16,
-          "pdef": 7,
+          "fixture_slot_weight": 1.4,
+          "int": 25,
+          "mdef": 22,
+          "pdef": 10,
           "sta": 0,
           "str": 0,
-          "wis": 9
+          "wis": 13
         },
         "gloves": {
           "dex": 0,
-          "int": 18,
-          "mdef": 16,
-          "pdef": 7,
+          "fixture_slot_weight": 0.7,
+          "int": 13,
+          "mdef": 11,
+          "pdef": 5,
           "sta": 0,
           "str": 0,
-          "wis": 9
+          "wis": 6
         },
         "helmet": {
           "dex": 0,
-          "int": 18,
-          "mdef": 16,
-          "pdef": 7,
+          "fixture_slot_weight": 0.8,
+          "int": 14,
+          "mdef": 13,
+          "pdef": 6,
           "sta": 0,
           "str": 0,
-          "wis": 9
+          "wis": 7
         },
         "legs": {
           "dex": 0,
-          "int": 18,
-          "mdef": 16,
-          "pdef": 7,
+          "fixture_slot_weight": 1.2,
+          "int": 22,
+          "mdef": 19,
+          "pdef": 8,
           "sta": 0,
           "str": 0,
-          "wis": 9
+          "wis": 11
         },
         "main_hand": {
           "dex": 0,
-          "int": 18,
+          "fixture_slot_weight": 1.8,
+          "int": 32,
           "mdef": 0,
           "pdef": 0,
           "sta": 0,
           "str": 0,
           "weapon_max_magic_damage": 35,
           "weapon_min_magic_damage": 30,
-          "wis": 9
+          "wis": 16
         },
         "necklace": {
           "dex": 0,
-          "int": 18,
+          "fixture_slot_weight": 0.8,
+          "int": 14,
           "mdef": 0,
           "pdef": 0,
           "sta": 0,
           "str": 0,
-          "wis": 9
+          "wis": 7
         },
         "ring": {
           "dex": 0,
-          "int": 18,
+          "fixture_slot_weight": 0.8,
+          "int": 14,
           "mdef": 0,
           "pdef": 0,
           "sta": 0,
           "str": 0,
-          "wis": 9
+          "wis": 7
         },
         "shoulders": {
           "dex": 0,
-          "int": 18,
-          "mdef": 16,
-          "pdef": 7,
+          "fixture_slot_weight": 0.7,
+          "int": 13,
+          "mdef": 11,
+          "pdef": 5,
           "sta": 0,
           "str": 0,
-          "wis": 9
+          "wis": 6
         }
       },
       "equipment_primary_stats": {
         "dex": 0,
-        "int": 162,
+        "int": 161,
         "sta": 0,
         "str": 0,
-        "wis": 81
+        "wis": 80
       },
       "equipment_slots": [
         "main_hand",
@@ -122879,21 +122982,21 @@ LAST WRITE: 2026-08-11 00:39:57
       ],
       "final_primary_stats": {
         "dex": 19,
-        "int": 181,
+        "int": 180,
         "sta": 19,
         "str": 19,
-        "wis": 100
+        "wis": 99
       },
       "label": "Маг",
       "level": 10,
-      "magical_attack": 181,
-      "magical_defense": 196,
+      "magical_attack": 180,
+      "magical_defense": 188,
       "max_hp": 395,
-      "max_mp": 1043,
+      "max_mp": 1038,
       "physical_attack": 19,
-      "physical_defense": 45,
+      "physical_defense": 43,
       "rarity": "rare",
-      "resource": 1043,
+      "resource": 1038,
       "resource_type": "mana",
       "weapon_magical_max": 35,
       "weapon_magical_min": 30,
@@ -122913,94 +123016,103 @@ LAST WRITE: 2026-08-11 00:39:57
       "equipment_breakdown": {
         "boots": {
           "dex": 0,
-          "int": 18,
-          "mdef": 16,
-          "pdef": 7,
+          "fixture_slot_weight": 0.8,
+          "int": 14,
+          "mdef": 13,
+          "pdef": 6,
           "sta": 0,
           "str": 0,
-          "wis": 9
+          "wis": 7
         },
         "chest": {
           "dex": 0,
-          "int": 18,
-          "mdef": 16,
-          "pdef": 7,
+          "fixture_slot_weight": 1.4,
+          "int": 25,
+          "mdef": 22,
+          "pdef": 10,
           "sta": 0,
           "str": 0,
-          "wis": 9
+          "wis": 13
         },
         "gloves": {
           "dex": 0,
-          "int": 18,
-          "mdef": 16,
-          "pdef": 7,
+          "fixture_slot_weight": 0.7,
+          "int": 13,
+          "mdef": 11,
+          "pdef": 5,
           "sta": 0,
           "str": 0,
-          "wis": 9
+          "wis": 6
         },
         "helmet": {
           "dex": 0,
-          "int": 18,
-          "mdef": 16,
-          "pdef": 7,
+          "fixture_slot_weight": 0.8,
+          "int": 14,
+          "mdef": 13,
+          "pdef": 6,
           "sta": 0,
           "str": 0,
-          "wis": 9
+          "wis": 7
         },
         "legs": {
           "dex": 0,
-          "int": 18,
-          "mdef": 16,
-          "pdef": 7,
+          "fixture_slot_weight": 1.2,
+          "int": 22,
+          "mdef": 19,
+          "pdef": 8,
           "sta": 0,
           "str": 0,
-          "wis": 9
+          "wis": 11
         },
         "main_hand": {
           "dex": 0,
-          "int": 18,
+          "fixture_slot_weight": 1.8,
+          "int": 32,
           "mdef": 0,
           "pdef": 0,
           "sta": 0,
           "str": 0,
           "weapon_max_magic_damage": 35,
           "weapon_min_magic_damage": 30,
-          "wis": 9
+          "wis": 16
         },
         "necklace": {
           "dex": 0,
-          "int": 18,
+          "fixture_slot_weight": 0.8,
+          "int": 14,
           "mdef": 0,
           "pdef": 0,
           "sta": 0,
           "str": 0,
-          "wis": 9
+          "wis": 7
         },
         "ring": {
           "dex": 0,
-          "int": 18,
+          "fixture_slot_weight": 0.8,
+          "int": 14,
           "mdef": 0,
           "pdef": 0,
           "sta": 0,
           "str": 0,
-          "wis": 9
+          "wis": 7
         },
         "shoulders": {
           "dex": 0,
-          "int": 18,
-          "mdef": 16,
-          "pdef": 7,
+          "fixture_slot_weight": 0.7,
+          "int": 13,
+          "mdef": 11,
+          "pdef": 5,
           "sta": 0,
           "str": 0,
-          "wis": 9
+          "wis": 6
         }
       },
       "equipment_primary_stats": {
         "dex": 0,
-        "int": 162,
+        "int": 161,
         "sta": 0,
         "str": 0,
-        "wis": 81
+        "wis": 80
       },
       "equipment_slots": [
         "main_hand",
@@ -123015,21 +123127,21 @@ LAST WRITE: 2026-08-11 00:39:57
       ],
       "final_primary_stats": {
         "dex": 19,
-        "int": 181,
+        "int": 180,
         "sta": 19,
         "str": 19,
-        "wis": 100
+        "wis": 99
       },
       "label": "Жрець",
       "level": 10,
-      "magical_attack": 181,
-      "magical_defense": 196,
+      "magical_attack": 180,
+      "magical_defense": 188,
       "max_hp": 395,
-      "max_mp": 1043,
+      "max_mp": 1038,
       "physical_attack": 19,
-      "physical_defense": 45,
+      "physical_defense": 43,
       "rarity": "rare",
-      "resource": 1043,
+      "resource": 1038,
       "resource_type": "mana",
       "weapon_magical_max": 35,
       "weapon_magical_min": 30,
@@ -123048,94 +123160,103 @@ LAST WRITE: 2026-08-11 00:39:57
       "class_key": "rogue",
       "equipment_breakdown": {
         "boots": {
-          "dex": 18,
+          "dex": 14,
+          "fixture_slot_weight": 0.8,
           "int": 0,
-          "mdef": 10,
-          "pdef": 13,
+          "mdef": 8,
+          "pdef": 10,
           "sta": 0,
-          "str": 9,
+          "str": 7,
           "wis": 0
         },
         "chest": {
-          "dex": 18,
+          "dex": 25,
+          "fixture_slot_weight": 1.4,
           "int": 0,
-          "mdef": 10,
-          "pdef": 13,
+          "mdef": 14,
+          "pdef": 18,
           "sta": 0,
-          "str": 9,
+          "str": 13,
           "wis": 0
         },
         "gloves": {
-          "dex": 18,
+          "dex": 13,
+          "fixture_slot_weight": 0.7,
           "int": 0,
-          "mdef": 10,
-          "pdef": 13,
+          "mdef": 7,
+          "pdef": 9,
           "sta": 0,
-          "str": 9,
+          "str": 6,
           "wis": 0
         },
         "helmet": {
-          "dex": 18,
+          "dex": 14,
+          "fixture_slot_weight": 0.8,
           "int": 0,
-          "mdef": 10,
-          "pdef": 13,
+          "mdef": 8,
+          "pdef": 10,
           "sta": 0,
-          "str": 9,
+          "str": 7,
           "wis": 0
         },
         "legs": {
-          "dex": 18,
+          "dex": 22,
+          "fixture_slot_weight": 1.2,
           "int": 0,
-          "mdef": 10,
-          "pdef": 13,
+          "mdef": 12,
+          "pdef": 16,
           "sta": 0,
-          "str": 9,
+          "str": 11,
           "wis": 0
         },
         "main_hand": {
-          "dex": 18,
+          "dex": 32,
+          "fixture_slot_weight": 1.8,
           "int": 0,
           "mdef": 0,
           "pdef": 0,
           "sta": 0,
-          "str": 9,
+          "str": 16,
           "weapon_max_damage": 35,
           "weapon_min_damage": 30,
           "wis": 0
         },
         "necklace": {
-          "dex": 18,
+          "dex": 14,
+          "fixture_slot_weight": 0.8,
           "int": 0,
           "mdef": 0,
           "pdef": 0,
           "sta": 0,
-          "str": 9,
+          "str": 7,
           "wis": 0
         },
         "ring": {
-          "dex": 18,
+          "dex": 14,
+          "fixture_slot_weight": 0.8,
           "int": 0,
           "mdef": 0,
           "pdef": 0,
           "sta": 0,
-          "str": 9,
+          "str": 7,
           "wis": 0
         },
         "shoulders": {
-          "dex": 18,
+          "dex": 13,
+          "fixture_slot_weight": 0.7,
           "int": 0,
-          "mdef": 10,
-          "pdef": 13,
+          "mdef": 7,
+          "pdef": 9,
           "sta": 0,
-          "str": 9,
+          "str": 6,
           "wis": 0
         }
       },
       "equipment_primary_stats": {
-        "dex": 162,
+        "dex": 161,
         "int": 0,
         "sta": 0,
-        "str": 81,
+        "str": 80,
         "wis": 0
       },
       "equipment_slots": [
@@ -123150,20 +123271,20 @@ LAST WRITE: 2026-08-11 00:39:57
         "ring"
       ],
       "final_primary_stats": {
-        "dex": 181,
+        "dex": 180,
         "int": 19,
         "sta": 19,
-        "str": 100,
+        "str": 99,
         "wis": 19
       },
       "label": "Розбійник",
       "level": 10,
       "magical_attack": 19,
-      "magical_defense": 79,
+      "magical_defense": 75,
       "max_hp": 395,
       "max_mp": 0,
-      "physical_attack": 100,
-      "physical_defense": 81,
+      "physical_attack": 99,
+      "physical_defense": 75,
       "rarity": "rare",
       "resource": 100,
       "resource_type": "combat_energy_combo",
@@ -123184,94 +123305,103 @@ LAST WRITE: 2026-08-11 00:39:57
       "class_key": "scout",
       "equipment_breakdown": {
         "boots": {
-          "dex": 18,
+          "dex": 14,
+          "fixture_slot_weight": 0.8,
           "int": 0,
-          "mdef": 10,
-          "pdef": 13,
+          "mdef": 8,
+          "pdef": 10,
           "sta": 0,
-          "str": 9,
+          "str": 7,
           "wis": 0
         },
         "chest": {
-          "dex": 18,
+          "dex": 25,
+          "fixture_slot_weight": 1.4,
           "int": 0,
-          "mdef": 10,
-          "pdef": 13,
+          "mdef": 14,
+          "pdef": 18,
           "sta": 0,
-          "str": 9,
+          "str": 13,
           "wis": 0
         },
         "gloves": {
-          "dex": 18,
+          "dex": 13,
+          "fixture_slot_weight": 0.7,
           "int": 0,
-          "mdef": 10,
-          "pdef": 13,
+          "mdef": 7,
+          "pdef": 9,
           "sta": 0,
-          "str": 9,
+          "str": 6,
           "wis": 0
         },
         "helmet": {
-          "dex": 18,
+          "dex": 14,
+          "fixture_slot_weight": 0.8,
           "int": 0,
-          "mdef": 10,
-          "pdef": 13,
+          "mdef": 8,
+          "pdef": 10,
           "sta": 0,
-          "str": 9,
+          "str": 7,
           "wis": 0
         },
         "legs": {
-          "dex": 18,
+          "dex": 22,
+          "fixture_slot_weight": 1.2,
           "int": 0,
-          "mdef": 10,
-          "pdef": 13,
+          "mdef": 12,
+          "pdef": 16,
           "sta": 0,
-          "str": 9,
+          "str": 11,
           "wis": 0
         },
         "main_hand": {
-          "dex": 18,
+          "dex": 32,
+          "fixture_slot_weight": 1.8,
           "int": 0,
           "mdef": 0,
           "pdef": 0,
           "sta": 0,
-          "str": 9,
+          "str": 16,
           "weapon_max_damage": 35,
           "weapon_min_damage": 30,
           "wis": 0
         },
         "necklace": {
-          "dex": 18,
+          "dex": 14,
+          "fixture_slot_weight": 0.8,
           "int": 0,
           "mdef": 0,
           "pdef": 0,
           "sta": 0,
-          "str": 9,
+          "str": 7,
           "wis": 0
         },
         "ring": {
-          "dex": 18,
+          "dex": 14,
+          "fixture_slot_weight": 0.8,
           "int": 0,
           "mdef": 0,
           "pdef": 0,
           "sta": 0,
-          "str": 9,
+          "str": 7,
           "wis": 0
         },
         "shoulders": {
-          "dex": 18,
+          "dex": 13,
+          "fixture_slot_weight": 0.7,
           "int": 0,
-          "mdef": 10,
-          "pdef": 13,
+          "mdef": 7,
+          "pdef": 9,
           "sta": 0,
-          "str": 9,
+          "str": 6,
           "wis": 0
         }
       },
       "equipment_primary_stats": {
-        "dex": 162,
+        "dex": 161,
         "int": 0,
         "sta": 0,
-        "str": 81,
+        "str": 80,
         "wis": 0
       },
       "equipment_slots": [
@@ -123286,20 +123416,20 @@ LAST WRITE: 2026-08-11 00:39:57
         "ring"
       ],
       "final_primary_stats": {
-        "dex": 181,
+        "dex": 180,
         "int": 19,
         "sta": 19,
-        "str": 100,
+        "str": 99,
         "wis": 19
       },
       "label": "Скаут",
       "level": 10,
       "magical_attack": 19,
-      "magical_defense": 79,
+      "magical_defense": 75,
       "max_hp": 395,
       "max_mp": 0,
-      "physical_attack": 100,
-      "physical_defense": 81,
+      "physical_attack": 99,
+      "physical_defense": 75,
       "rarity": "rare",
       "resource": 100,
       "resource_type": "combat_energy",
@@ -123321,93 +123451,102 @@ LAST WRITE: 2026-08-11 00:39:57
       "equipment_breakdown": {
         "boots": {
           "dex": 0,
+          "fixture_slot_weight": 0.8,
           "int": 0,
-          "mdef": 6,
-          "pdef": 17,
-          "sta": 9,
-          "str": 18,
+          "mdef": 5,
+          "pdef": 14,
+          "sta": 7,
+          "str": 14,
           "wis": 0
         },
         "chest": {
           "dex": 0,
+          "fixture_slot_weight": 1.4,
           "int": 0,
-          "mdef": 6,
-          "pdef": 17,
-          "sta": 9,
-          "str": 18,
+          "mdef": 8,
+          "pdef": 24,
+          "sta": 13,
+          "str": 25,
           "wis": 0
         },
         "gloves": {
           "dex": 0,
+          "fixture_slot_weight": 0.7,
           "int": 0,
-          "mdef": 6,
-          "pdef": 17,
-          "sta": 9,
-          "str": 18,
+          "mdef": 4,
+          "pdef": 12,
+          "sta": 6,
+          "str": 13,
           "wis": 0
         },
         "helmet": {
           "dex": 0,
+          "fixture_slot_weight": 0.8,
           "int": 0,
-          "mdef": 6,
-          "pdef": 17,
-          "sta": 9,
-          "str": 18,
+          "mdef": 5,
+          "pdef": 14,
+          "sta": 7,
+          "str": 14,
           "wis": 0
         },
         "legs": {
           "dex": 0,
+          "fixture_slot_weight": 1.2,
           "int": 0,
-          "mdef": 6,
-          "pdef": 17,
-          "sta": 9,
-          "str": 18,
+          "mdef": 7,
+          "pdef": 20,
+          "sta": 11,
+          "str": 22,
           "wis": 0
         },
         "main_hand": {
           "dex": 0,
+          "fixture_slot_weight": 1.8,
           "int": 0,
           "mdef": 0,
           "pdef": 0,
-          "sta": 9,
-          "str": 18,
+          "sta": 16,
+          "str": 32,
           "weapon_max_damage": 35,
           "weapon_min_damage": 30,
           "wis": 0
         },
         "necklace": {
           "dex": 0,
+          "fixture_slot_weight": 0.8,
           "int": 0,
           "mdef": 0,
           "pdef": 0,
-          "sta": 9,
-          "str": 18,
+          "sta": 7,
+          "str": 14,
           "wis": 0
         },
         "ring": {
           "dex": 0,
+          "fixture_slot_weight": 0.8,
           "int": 0,
           "mdef": 0,
           "pdef": 0,
-          "sta": 9,
-          "str": 18,
+          "sta": 7,
+          "str": 14,
           "wis": 0
         },
         "shoulders": {
           "dex": 0,
+          "fixture_slot_weight": 0.7,
           "int": 0,
-          "mdef": 6,
-          "pdef": 17,
-          "sta": 9,
-          "str": 18,
+          "mdef": 4,
+          "pdef": 12,
+          "sta": 6,
+          "str": 13,
           "wis": 0
         }
       },
       "equipment_primary_stats": {
         "dex": 0,
         "int": 0,
-        "sta": 81,
-        "str": 162,
+        "sta": 80,
+        "str": 161,
         "wis": 0
       },
       "equipment_slots": [
@@ -123424,18 +123563,18 @@ LAST WRITE: 2026-08-11 00:39:57
       "final_primary_stats": {
         "dex": 19,
         "int": 19,
-        "sta": 100,
-        "str": 181,
+        "sta": 99,
+        "str": 180,
         "wis": 19
       },
       "label": "Воїн",
       "level": 10,
       "magical_attack": 19,
-      "magical_defense": 55,
-      "max_hp": 800,
+      "magical_defense": 52,
+      "max_hp": 795,
       "max_mp": 0,
-      "physical_attack": 181,
-      "physical_defense": 122,
+      "physical_attack": 180,
+      "physical_defense": 115,
       "rarity": "rare",
       "resource": 0,
       "resource_type": "rage",
@@ -123448,271 +123587,1017 @@ LAST WRITE: 2026-08-11 00:39:57
   "all_classes_checked": true,
   "all_skills_checked": true,
   "corrections_applied": false,
+  "fixture_slot_parity": {
+    "expected_total": 9.0,
+    "failures": [],
+    "pass": true,
+    "samples_level_10_rare": {
+      "knight": {
+        "boots": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.8,
+            "int": 0,
+            "mdef": 2,
+            "pdef": 16,
+            "sta": 7,
+            "str": 14,
+            "wis": 0
+          },
+          "weight": 0.8
+        },
+        "chest": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 1.4,
+            "int": 0,
+            "mdef": 4,
+            "pdef": 28,
+            "sta": 13,
+            "str": 25,
+            "wis": 0
+          },
+          "weight": 1.4
+        },
+        "gloves": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.7,
+            "int": 0,
+            "mdef": 2,
+            "pdef": 14,
+            "sta": 6,
+            "str": 13,
+            "wis": 0
+          },
+          "weight": 0.7
+        },
+        "helmet": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.8,
+            "int": 0,
+            "mdef": 2,
+            "pdef": 16,
+            "sta": 7,
+            "str": 14,
+            "wis": 0
+          },
+          "weight": 0.8
+        },
+        "legs": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 1.2,
+            "int": 0,
+            "mdef": 4,
+            "pdef": 24,
+            "sta": 11,
+            "str": 22,
+            "wis": 0
+          },
+          "weight": 1.2
+        },
+        "main_hand": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 1.8,
+            "int": 0,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 16,
+            "str": 32,
+            "weapon_max_damage": 35,
+            "weapon_min_damage": 30,
+            "wis": 0
+          },
+          "weight": 1.8
+        },
+        "necklace": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.8,
+            "int": 0,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 7,
+            "str": 14,
+            "wis": 0
+          },
+          "weight": 0.8
+        },
+        "ring": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.8,
+            "int": 0,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 7,
+            "str": 14,
+            "wis": 0
+          },
+          "weight": 0.8
+        },
+        "shoulders": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.7,
+            "int": 0,
+            "mdef": 2,
+            "pdef": 14,
+            "sta": 6,
+            "str": 13,
+            "wis": 0
+          },
+          "weight": 0.7
+        }
+      },
+      "mage": {
+        "boots": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.8,
+            "int": 14,
+            "mdef": 13,
+            "pdef": 6,
+            "sta": 0,
+            "str": 0,
+            "wis": 7
+          },
+          "weight": 0.8
+        },
+        "chest": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 1.4,
+            "int": 25,
+            "mdef": 22,
+            "pdef": 10,
+            "sta": 0,
+            "str": 0,
+            "wis": 13
+          },
+          "weight": 1.4
+        },
+        "gloves": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.7,
+            "int": 13,
+            "mdef": 11,
+            "pdef": 5,
+            "sta": 0,
+            "str": 0,
+            "wis": 6
+          },
+          "weight": 0.7
+        },
+        "helmet": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.8,
+            "int": 14,
+            "mdef": 13,
+            "pdef": 6,
+            "sta": 0,
+            "str": 0,
+            "wis": 7
+          },
+          "weight": 0.8
+        },
+        "legs": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 1.2,
+            "int": 22,
+            "mdef": 19,
+            "pdef": 8,
+            "sta": 0,
+            "str": 0,
+            "wis": 11
+          },
+          "weight": 1.2
+        },
+        "main_hand": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 1.8,
+            "int": 32,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 0,
+            "str": 0,
+            "weapon_max_magic_damage": 35,
+            "weapon_min_magic_damage": 30,
+            "wis": 16
+          },
+          "weight": 1.8
+        },
+        "necklace": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.8,
+            "int": 14,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 0,
+            "str": 0,
+            "wis": 7
+          },
+          "weight": 0.8
+        },
+        "ring": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.8,
+            "int": 14,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 0,
+            "str": 0,
+            "wis": 7
+          },
+          "weight": 0.8
+        },
+        "shoulders": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.7,
+            "int": 13,
+            "mdef": 11,
+            "pdef": 5,
+            "sta": 0,
+            "str": 0,
+            "wis": 6
+          },
+          "weight": 0.7
+        }
+      },
+      "priest": {
+        "boots": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.8,
+            "int": 14,
+            "mdef": 13,
+            "pdef": 6,
+            "sta": 0,
+            "str": 0,
+            "wis": 7
+          },
+          "weight": 0.8
+        },
+        "chest": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 1.4,
+            "int": 25,
+            "mdef": 22,
+            "pdef": 10,
+            "sta": 0,
+            "str": 0,
+            "wis": 13
+          },
+          "weight": 1.4
+        },
+        "gloves": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.7,
+            "int": 13,
+            "mdef": 11,
+            "pdef": 5,
+            "sta": 0,
+            "str": 0,
+            "wis": 6
+          },
+          "weight": 0.7
+        },
+        "helmet": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.8,
+            "int": 14,
+            "mdef": 13,
+            "pdef": 6,
+            "sta": 0,
+            "str": 0,
+            "wis": 7
+          },
+          "weight": 0.8
+        },
+        "legs": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 1.2,
+            "int": 22,
+            "mdef": 19,
+            "pdef": 8,
+            "sta": 0,
+            "str": 0,
+            "wis": 11
+          },
+          "weight": 1.2
+        },
+        "main_hand": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 1.8,
+            "int": 32,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 0,
+            "str": 0,
+            "weapon_max_magic_damage": 35,
+            "weapon_min_magic_damage": 30,
+            "wis": 16
+          },
+          "weight": 1.8
+        },
+        "necklace": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.8,
+            "int": 14,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 0,
+            "str": 0,
+            "wis": 7
+          },
+          "weight": 0.8
+        },
+        "ring": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.8,
+            "int": 14,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 0,
+            "str": 0,
+            "wis": 7
+          },
+          "weight": 0.8
+        },
+        "shoulders": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.7,
+            "int": 13,
+            "mdef": 11,
+            "pdef": 5,
+            "sta": 0,
+            "str": 0,
+            "wis": 6
+          },
+          "weight": 0.7
+        }
+      },
+      "rogue": {
+        "boots": {
+          "stats": {
+            "dex": 14,
+            "fixture_slot_weight": 0.8,
+            "int": 0,
+            "mdef": 8,
+            "pdef": 10,
+            "sta": 0,
+            "str": 7,
+            "wis": 0
+          },
+          "weight": 0.8
+        },
+        "chest": {
+          "stats": {
+            "dex": 25,
+            "fixture_slot_weight": 1.4,
+            "int": 0,
+            "mdef": 14,
+            "pdef": 18,
+            "sta": 0,
+            "str": 13,
+            "wis": 0
+          },
+          "weight": 1.4
+        },
+        "gloves": {
+          "stats": {
+            "dex": 13,
+            "fixture_slot_weight": 0.7,
+            "int": 0,
+            "mdef": 7,
+            "pdef": 9,
+            "sta": 0,
+            "str": 6,
+            "wis": 0
+          },
+          "weight": 0.7
+        },
+        "helmet": {
+          "stats": {
+            "dex": 14,
+            "fixture_slot_weight": 0.8,
+            "int": 0,
+            "mdef": 8,
+            "pdef": 10,
+            "sta": 0,
+            "str": 7,
+            "wis": 0
+          },
+          "weight": 0.8
+        },
+        "legs": {
+          "stats": {
+            "dex": 22,
+            "fixture_slot_weight": 1.2,
+            "int": 0,
+            "mdef": 12,
+            "pdef": 16,
+            "sta": 0,
+            "str": 11,
+            "wis": 0
+          },
+          "weight": 1.2
+        },
+        "main_hand": {
+          "stats": {
+            "dex": 32,
+            "fixture_slot_weight": 1.8,
+            "int": 0,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 0,
+            "str": 16,
+            "weapon_max_damage": 35,
+            "weapon_min_damage": 30,
+            "wis": 0
+          },
+          "weight": 1.8
+        },
+        "necklace": {
+          "stats": {
+            "dex": 14,
+            "fixture_slot_weight": 0.8,
+            "int": 0,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 0,
+            "str": 7,
+            "wis": 0
+          },
+          "weight": 0.8
+        },
+        "ring": {
+          "stats": {
+            "dex": 14,
+            "fixture_slot_weight": 0.8,
+            "int": 0,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 0,
+            "str": 7,
+            "wis": 0
+          },
+          "weight": 0.8
+        },
+        "shoulders": {
+          "stats": {
+            "dex": 13,
+            "fixture_slot_weight": 0.7,
+            "int": 0,
+            "mdef": 7,
+            "pdef": 9,
+            "sta": 0,
+            "str": 6,
+            "wis": 0
+          },
+          "weight": 0.7
+        }
+      },
+      "scout": {
+        "boots": {
+          "stats": {
+            "dex": 14,
+            "fixture_slot_weight": 0.8,
+            "int": 0,
+            "mdef": 8,
+            "pdef": 10,
+            "sta": 0,
+            "str": 7,
+            "wis": 0
+          },
+          "weight": 0.8
+        },
+        "chest": {
+          "stats": {
+            "dex": 25,
+            "fixture_slot_weight": 1.4,
+            "int": 0,
+            "mdef": 14,
+            "pdef": 18,
+            "sta": 0,
+            "str": 13,
+            "wis": 0
+          },
+          "weight": 1.4
+        },
+        "gloves": {
+          "stats": {
+            "dex": 13,
+            "fixture_slot_weight": 0.7,
+            "int": 0,
+            "mdef": 7,
+            "pdef": 9,
+            "sta": 0,
+            "str": 6,
+            "wis": 0
+          },
+          "weight": 0.7
+        },
+        "helmet": {
+          "stats": {
+            "dex": 14,
+            "fixture_slot_weight": 0.8,
+            "int": 0,
+            "mdef": 8,
+            "pdef": 10,
+            "sta": 0,
+            "str": 7,
+            "wis": 0
+          },
+          "weight": 0.8
+        },
+        "legs": {
+          "stats": {
+            "dex": 22,
+            "fixture_slot_weight": 1.2,
+            "int": 0,
+            "mdef": 12,
+            "pdef": 16,
+            "sta": 0,
+            "str": 11,
+            "wis": 0
+          },
+          "weight": 1.2
+        },
+        "main_hand": {
+          "stats": {
+            "dex": 32,
+            "fixture_slot_weight": 1.8,
+            "int": 0,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 0,
+            "str": 16,
+            "weapon_max_damage": 35,
+            "weapon_min_damage": 30,
+            "wis": 0
+          },
+          "weight": 1.8
+        },
+        "necklace": {
+          "stats": {
+            "dex": 14,
+            "fixture_slot_weight": 0.8,
+            "int": 0,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 0,
+            "str": 7,
+            "wis": 0
+          },
+          "weight": 0.8
+        },
+        "ring": {
+          "stats": {
+            "dex": 14,
+            "fixture_slot_weight": 0.8,
+            "int": 0,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 0,
+            "str": 7,
+            "wis": 0
+          },
+          "weight": 0.8
+        },
+        "shoulders": {
+          "stats": {
+            "dex": 13,
+            "fixture_slot_weight": 0.7,
+            "int": 0,
+            "mdef": 7,
+            "pdef": 9,
+            "sta": 0,
+            "str": 6,
+            "wis": 0
+          },
+          "weight": 0.7
+        }
+      },
+      "warrior": {
+        "boots": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.8,
+            "int": 0,
+            "mdef": 5,
+            "pdef": 14,
+            "sta": 7,
+            "str": 14,
+            "wis": 0
+          },
+          "weight": 0.8
+        },
+        "chest": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 1.4,
+            "int": 0,
+            "mdef": 8,
+            "pdef": 24,
+            "sta": 13,
+            "str": 25,
+            "wis": 0
+          },
+          "weight": 1.4
+        },
+        "gloves": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.7,
+            "int": 0,
+            "mdef": 4,
+            "pdef": 12,
+            "sta": 6,
+            "str": 13,
+            "wis": 0
+          },
+          "weight": 0.7
+        },
+        "helmet": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.8,
+            "int": 0,
+            "mdef": 5,
+            "pdef": 14,
+            "sta": 7,
+            "str": 14,
+            "wis": 0
+          },
+          "weight": 0.8
+        },
+        "legs": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 1.2,
+            "int": 0,
+            "mdef": 7,
+            "pdef": 20,
+            "sta": 11,
+            "str": 22,
+            "wis": 0
+          },
+          "weight": 1.2
+        },
+        "main_hand": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 1.8,
+            "int": 0,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 16,
+            "str": 32,
+            "weapon_max_damage": 35,
+            "weapon_min_damage": 30,
+            "wis": 0
+          },
+          "weight": 1.8
+        },
+        "necklace": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.8,
+            "int": 0,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 7,
+            "str": 14,
+            "wis": 0
+          },
+          "weight": 0.8
+        },
+        "ring": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.8,
+            "int": 0,
+            "mdef": 0,
+            "pdef": 0,
+            "sta": 7,
+            "str": 14,
+            "wis": 0
+          },
+          "weight": 0.8
+        },
+        "shoulders": {
+          "stats": {
+            "dex": 0,
+            "fixture_slot_weight": 0.7,
+            "int": 0,
+            "mdef": 4,
+            "pdef": 12,
+            "sta": 6,
+            "str": 13,
+            "wis": 0
+          },
+          "weight": 0.7
+        }
+      }
+    },
+    "slots_checked": 9,
+    "weight_total": 9.0,
+    "weights": {
+      "boots": 0.8,
+      "chest": 1.4,
+      "gloves": 0.7,
+      "helmet": 0.8,
+      "legs": 1.2,
+      "main_hand": 1.8,
+      "necklace": 0.8,
+      "ring": 0.8,
+      "shoulders": 0.7
+    }
+  },
   "fixture_warnings": {
-    "attack_max_min_ratio": 1.81,
-    "hp_max_min_ratio": 2.03,
+    "attack_max_min_ratio": 1.82,
+    "hp_max_min_ratio": 2.01,
     "review": true,
     "warnings": [
-      "HP max/min ratio 2.03 > 1.60",
-      "Attack max/min ratio 1.81 > 1.60"
+      "HP max/min ratio 2.01 > 1.60",
+      "Attack max/min ratio 1.82 > 1.60"
     ]
   },
   "level": 10,
   "live_balance_changed": false,
   "matrix_integrity": {
-    "avg_side_delta_pp": 5.33,
+    "avg_side_delta_pp": 2.0,
     "failures": [],
-    "max_side_delta_pp": 40.0,
+    "max_side_delta_pp": 8.0,
     "pass": true,
     "rows": [
       {
         "class_a": "warrior",
         "class_b": "warrior",
-        "draws": 7,
+        "draws": 60,
         "kind": "mirror",
         "pass": true,
-        "total": 10,
-        "trials": 10,
-        "wins_a": 1,
-        "wins_b": 2
+        "total": 100,
+        "trials": 100,
+        "wins_a": 18,
+        "wins_b": 22
       },
       {
         "class_a": "knight",
         "class_b": "knight",
-        "draws": 0,
+        "draws": 25,
         "kind": "mirror",
         "pass": true,
-        "total": 10,
-        "trials": 10,
-        "wins_a": 2,
-        "wins_b": 8
+        "total": 100,
+        "trials": 100,
+        "wins_a": 37,
+        "wins_b": 38
       },
       {
         "class_a": "scout",
         "class_b": "scout",
-        "draws": 6,
+        "draws": 62,
         "kind": "mirror",
         "pass": true,
-        "total": 10,
-        "trials": 10,
-        "wins_a": 2,
-        "wins_b": 2
+        "total": 100,
+        "trials": 100,
+        "wins_a": 20,
+        "wins_b": 18
       },
       {
         "class_a": "rogue",
         "class_b": "rogue",
-        "draws": 7,
+        "draws": 67,
         "kind": "mirror",
         "pass": true,
-        "total": 10,
-        "trials": 10,
-        "wins_a": 3,
-        "wins_b": 0
+        "total": 100,
+        "trials": 100,
+        "wins_a": 19,
+        "wins_b": 14
       },
       {
         "class_a": "mage",
         "class_b": "mage",
-        "draws": 7,
+        "draws": 55,
         "kind": "mirror",
         "pass": true,
-        "total": 10,
-        "trials": 10,
-        "wins_a": 2,
-        "wins_b": 1
+        "total": 100,
+        "trials": 100,
+        "wins_a": 28,
+        "wins_b": 17
       },
       {
         "class_a": "priest",
         "class_b": "priest",
-        "draws": 6,
+        "draws": 46,
         "kind": "mirror",
         "pass": true,
-        "total": 10,
-        "trials": 10,
-        "wins_a": 3,
-        "wins_b": 1
+        "total": 100,
+        "trials": 100,
+        "wins_a": 26,
+        "wins_b": 28
       },
       {
         "a_win_rate_when_first": 0.0,
         "a_win_rate_when_second": 0.0,
-        "ab_total": 10,
-        "ba_total": 10,
+        "ab_total": 100,
+        "ba_total": 100,
         "class_a": "warrior",
         "class_b": "knight",
         "kind": "side_pair",
         "pass": true,
         "side_delta_pp": 0.0,
-        "trials_each_direction": 10
+        "trials_each_direction": 100
       },
       {
         "a_win_rate_when_first": 100.0,
         "a_win_rate_when_second": 100.0,
-        "ab_total": 10,
-        "ba_total": 10,
+        "ab_total": 100,
+        "ba_total": 100,
         "class_a": "warrior",
         "class_b": "scout",
         "kind": "side_pair",
         "pass": true,
         "side_delta_pp": 0.0,
-        "trials_each_direction": 10
+        "trials_each_direction": 100
       },
       {
         "a_win_rate_when_first": 100.0,
         "a_win_rate_when_second": 100.0,
-        "ab_total": 10,
-        "ba_total": 10,
+        "ab_total": 100,
+        "ba_total": 100,
         "class_a": "warrior",
         "class_b": "rogue",
         "kind": "side_pair",
         "pass": true,
         "side_delta_pp": 0.0,
-        "trials_each_direction": 10
+        "trials_each_direction": 100
       },
       {
-        "a_win_rate_when_first": 50.0,
-        "a_win_rate_when_second": 30.0,
-        "ab_total": 10,
-        "ba_total": 10,
+        "a_win_rate_when_first": 14.0,
+        "a_win_rate_when_second": 10.0,
+        "ab_total": 100,
+        "ba_total": 100,
         "class_a": "warrior",
         "class_b": "mage",
         "kind": "side_pair",
         "pass": true,
-        "side_delta_pp": 20.0,
-        "trials_each_direction": 10
+        "side_delta_pp": 4.0,
+        "trials_each_direction": 100
       },
       {
         "a_win_rate_when_first": 100.0,
         "a_win_rate_when_second": 100.0,
-        "ab_total": 10,
-        "ba_total": 10,
+        "ab_total": 100,
+        "ba_total": 100,
         "class_a": "warrior",
         "class_b": "priest",
         "kind": "side_pair",
         "pass": true,
         "side_delta_pp": 0.0,
-        "trials_each_direction": 10
+        "trials_each_direction": 100
       },
       {
         "a_win_rate_when_first": 100.0,
         "a_win_rate_when_second": 100.0,
-        "ab_total": 10,
-        "ba_total": 10,
+        "ab_total": 100,
+        "ba_total": 100,
         "class_a": "knight",
         "class_b": "scout",
         "kind": "side_pair",
         "pass": true,
         "side_delta_pp": 0.0,
-        "trials_each_direction": 10
+        "trials_each_direction": 100
       },
       {
         "a_win_rate_when_first": 100.0,
         "a_win_rate_when_second": 100.0,
-        "ab_total": 10,
-        "ba_total": 10,
+        "ab_total": 100,
+        "ba_total": 100,
         "class_a": "knight",
         "class_b": "rogue",
         "kind": "side_pair",
         "pass": true,
         "side_delta_pp": 0.0,
-        "trials_each_direction": 10
+        "trials_each_direction": 100
       },
       {
-        "a_win_rate_when_first": 70.0,
-        "a_win_rate_when_second": 80.0,
-        "ab_total": 10,
-        "ba_total": 10,
+        "a_win_rate_when_first": 16.0,
+        "a_win_rate_when_second": 19.0,
+        "ab_total": 100,
+        "ba_total": 100,
         "class_a": "knight",
         "class_b": "mage",
         "kind": "side_pair",
         "pass": true,
-        "side_delta_pp": 10.0,
-        "trials_each_direction": 10
+        "side_delta_pp": 3.0,
+        "trials_each_direction": 100
       },
       {
-        "a_win_rate_when_first": 100.0,
+        "a_win_rate_when_first": 99.0,
         "a_win_rate_when_second": 100.0,
-        "ab_total": 10,
-        "ba_total": 10,
+        "ab_total": 100,
+        "ba_total": 100,
         "class_a": "knight",
         "class_b": "priest",
         "kind": "side_pair",
         "pass": true,
-        "side_delta_pp": 0.0,
-        "trials_each_direction": 10
+        "side_delta_pp": 1.0,
+        "trials_each_direction": 100
       },
       {
-        "a_win_rate_when_first": 40.0,
-        "a_win_rate_when_second": 0.0,
-        "ab_total": 10,
-        "ba_total": 10,
+        "a_win_rate_when_first": 14.0,
+        "a_win_rate_when_second": 16.0,
+        "ab_total": 100,
+        "ba_total": 100,
         "class_a": "scout",
         "class_b": "rogue",
         "kind": "side_pair",
         "pass": true,
-        "side_delta_pp": 40.0,
-        "trials_each_direction": 10
+        "side_delta_pp": 2.0,
+        "trials_each_direction": 100
       },
       {
         "a_win_rate_when_first": 0.0,
         "a_win_rate_when_second": 0.0,
-        "ab_total": 10,
-        "ba_total": 10,
+        "ab_total": 100,
+        "ba_total": 100,
         "class_a": "scout",
         "class_b": "mage",
         "kind": "side_pair",
         "pass": true,
         "side_delta_pp": 0.0,
-        "trials_each_direction": 10
+        "trials_each_direction": 100
       },
       {
-        "a_win_rate_when_first": 10.0,
-        "a_win_rate_when_second": 10.0,
-        "ab_total": 10,
-        "ba_total": 10,
+        "a_win_rate_when_first": 7.0,
+        "a_win_rate_when_second": 15.0,
+        "ab_total": 100,
+        "ba_total": 100,
         "class_a": "scout",
         "class_b": "priest",
         "kind": "side_pair",
         "pass": true,
-        "side_delta_pp": 0.0,
-        "trials_each_direction": 10
+        "side_delta_pp": 8.0,
+        "trials_each_direction": 100
       },
       {
         "a_win_rate_when_first": 0.0,
-        "a_win_rate_when_second": 0.0,
-        "ab_total": 10,
-        "ba_total": 10,
+        "a_win_rate_when_second": 1.0,
+        "ab_total": 100,
+        "ba_total": 100,
         "class_a": "rogue",
         "class_b": "mage",
         "kind": "side_pair",
         "pass": true,
-        "side_delta_pp": 0.0,
-        "trials_each_direction": 10
+        "side_delta_pp": 1.0,
+        "trials_each_direction": 100
       },
       {
-        "a_win_rate_when_first": 0.0,
-        "a_win_rate_when_second": 10.0,
-        "ab_total": 10,
-        "ba_total": 10,
+        "a_win_rate_when_first": 6.0,
+        "a_win_rate_when_second": 11.0,
+        "ab_total": 100,
+        "ba_total": 100,
         "class_a": "rogue",
         "class_b": "priest",
         "kind": "side_pair",
         "pass": true,
-        "side_delta_pp": 10.0,
-        "trials_each_direction": 10
+        "side_delta_pp": 5.0,
+        "trials_each_direction": 100
       },
       {
-        "a_win_rate_when_first": 100.0,
-        "a_win_rate_when_second": 100.0,
-        "ab_total": 10,
-        "ba_total": 10,
+        "a_win_rate_when_first": 93.0,
+        "a_win_rate_when_second": 87.0,
+        "ab_total": 100,
+        "ba_total": 100,
         "class_a": "mage",
         "class_b": "priest",
         "kind": "side_pair",
         "pass": true,
-        "side_delta_pp": 0.0,
-        "trials_each_direction": 10
+        "side_delta_pp": 6.0,
+        "trials_each_direction": 100
       }
     ],
-    "side_delta_review": true
+    "side_delta_review": false
   },
   "modifier_sensitivity": {
     "all_observable": true,
@@ -123722,38 +124607,54 @@ LAST WRITE: 2026-08-11 00:39:57
           "healing": 1.0
         },
         "changed_combat_metrics": {
+          "avg_damage_a": {
+            "baseline": 385.49,
+            "variant": 383.92
+          },
+          "avg_damage_b": {
+            "baseline": 568.7,
+            "variant": 566.81
+          },
           "avg_healing_a": {
-            "baseline": 72.0,
-            "variant": 28.8
+            "baseline": 80.4,
+            "variant": 32.0
+          },
+          "avg_rounds": {
+            "baseline": 4.09,
+            "variant": 4.08
+          },
+          "avg_shield_b": {
+            "baseline": 286.04,
+            "variant": 285.39
           }
         },
         "combat_baseline": {
-          "avg_damage_a": 334.2,
-          "avg_damage_b": 555.1,
+          "avg_damage_a": 385.49,
+          "avg_damage_b": 568.7,
           "avg_dot_a": 0.0,
           "avg_dot_b": 0.0,
-          "avg_healing_a": 72.0,
+          "avg_healing_a": 80.4,
           "avg_healing_b": 0.0,
-          "avg_rounds": 3.8,
+          "avg_rounds": 4.09,
           "avg_shield_a": 0.0,
-          "avg_shield_b": 292.7,
+          "avg_shield_b": 286.04,
           "draws": 0,
           "wins_a": 0,
-          "wins_b": 10
+          "wins_b": 100
         },
         "combat_variant": {
-          "avg_damage_a": 334.2,
-          "avg_damage_b": 555.1,
+          "avg_damage_a": 383.92,
+          "avg_damage_b": 566.81,
           "avg_dot_a": 0.0,
           "avg_dot_b": 0.0,
-          "avg_healing_a": 28.8,
+          "avg_healing_a": 32.0,
           "avg_healing_b": 0.0,
-          "avg_rounds": 3.8,
+          "avg_rounds": 4.08,
           "avg_shield_a": 0.0,
-          "avg_shield_b": 292.7,
+          "avg_shield_b": 285.39,
           "draws": 0,
           "wins_a": 0,
-          "wins_b": 10
+          "wins_b": 100
         },
         "observable_change": true,
         "parameter": "healing",
@@ -123769,57 +124670,61 @@ LAST WRITE: 2026-08-11 00:39:57
         },
         "changed_combat_metrics": {
           "avg_damage_a": {
-            "baseline": 365.0,
-            "variant": 731.2
+            "baseline": 406.25,
+            "variant": 740.3
           },
           "avg_damage_b": {
-            "baseline": 862.7,
-            "variant": 825.4
+            "baseline": 885.8,
+            "variant": 790.77
           },
           "avg_rounds": {
-            "baseline": 7.9,
-            "variant": 7.7
+            "baseline": 8.03,
+            "variant": 7.38
           },
           "avg_shield_b": {
-            "baseline": 592.1,
-            "variant": 608.3
+            "baseline": 560.89,
+            "variant": 573.49
+          },
+          "draws": {
+            "baseline": 0,
+            "variant": 14
           },
           "wins_a": {
             "baseline": 0,
-            "variant": 2
+            "variant": 50
           },
           "wins_b": {
-            "baseline": 10,
-            "variant": 8
+            "baseline": 100,
+            "variant": 36
           }
         },
         "combat_baseline": {
-          "avg_damage_a": 365.0,
-          "avg_damage_b": 862.7,
+          "avg_damage_a": 406.25,
+          "avg_damage_b": 885.8,
           "avg_dot_a": 0.0,
           "avg_dot_b": 0.0,
           "avg_healing_a": 0.0,
           "avg_healing_b": 0.0,
-          "avg_rounds": 7.9,
+          "avg_rounds": 8.03,
           "avg_shield_a": 0.0,
-          "avg_shield_b": 592.1,
+          "avg_shield_b": 560.89,
           "draws": 0,
           "wins_a": 0,
-          "wins_b": 10
+          "wins_b": 100
         },
         "combat_variant": {
-          "avg_damage_a": 731.2,
-          "avg_damage_b": 825.4,
+          "avg_damage_a": 740.3,
+          "avg_damage_b": 790.77,
           "avg_dot_a": 0.0,
           "avg_dot_b": 0.0,
           "avg_healing_a": 0.0,
           "avg_healing_b": 0.0,
-          "avg_rounds": 7.7,
+          "avg_rounds": 7.38,
           "avg_shield_a": 0.0,
-          "avg_shield_b": 608.3,
-          "draws": 0,
-          "wins_a": 2,
-          "wins_b": 8
+          "avg_shield_b": 573.49,
+          "draws": 14,
+          "wins_a": 50,
+          "wins_b": 36
         },
         "observable_change": true,
         "parameter": "warrior_damage",
@@ -123837,65 +124742,65 @@ LAST WRITE: 2026-08-11 00:39:57
         },
         "changed_combat_metrics": {
           "avg_damage_a": {
-            "baseline": 310.6,
-            "variant": 347.8
+            "baseline": 315.56,
+            "variant": 344.1
           },
           "avg_damage_b": {
-            "baseline": 425.7,
-            "variant": 312.0
+            "baseline": 435.27,
+            "variant": 295.67
           },
           "avg_dot_a": {
-            "baseline": 82.5,
-            "variant": 82.9
+            "baseline": 83.26,
+            "variant": 82.36
           },
           "avg_dot_b": {
-            "baseline": 68.1,
-            "variant": 47.4
+            "baseline": 61.65,
+            "variant": 43.64
           },
           "avg_rounds": {
-            "baseline": 4.0,
-            "variant": 3.1
+            "baseline": 4.01,
+            "variant": 3.13
           },
           "draws": {
-            "baseline": 7,
+            "baseline": 67,
             "variant": 0
           },
           "wins_a": {
-            "baseline": 0,
-            "variant": 9
+            "baseline": 8,
+            "variant": 89
           },
           "wins_b": {
-            "baseline": 3,
-            "variant": 1
+            "baseline": 25,
+            "variant": 11
           }
         },
         "combat_baseline": {
-          "avg_damage_a": 310.6,
-          "avg_damage_b": 425.7,
-          "avg_dot_a": 82.5,
-          "avg_dot_b": 68.1,
+          "avg_damage_a": 315.56,
+          "avg_damage_b": 435.27,
+          "avg_dot_a": 83.26,
+          "avg_dot_b": 61.65,
           "avg_healing_a": 0.0,
           "avg_healing_b": 0.0,
-          "avg_rounds": 4.0,
+          "avg_rounds": 4.01,
           "avg_shield_a": 0.0,
           "avg_shield_b": 0.0,
-          "draws": 7,
-          "wins_a": 0,
-          "wins_b": 3
+          "draws": 67,
+          "wins_a": 8,
+          "wins_b": 25
         },
         "combat_variant": {
-          "avg_damage_a": 347.8,
-          "avg_damage_b": 312.0,
-          "avg_dot_a": 82.9,
-          "avg_dot_b": 47.4,
+          "avg_damage_a": 344.1,
+          "avg_damage_b": 295.67,
+          "avg_dot_a": 82.36,
+          "avg_dot_b": 43.64,
           "avg_healing_a": 0.0,
           "avg_healing_b": 0.0,
-          "avg_rounds": 3.1,
+          "avg_rounds": 3.13,
           "avg_shield_a": 0.0,
           "avg_shield_b": 0.0,
           "draws": 0,
-          "wins_a": 9,
-          "wins_b": 1
+          "wins_a": 89,
+          "wins_b": 11
         },
         "observable_change": true,
         "parameter": "scout_damage",
@@ -124027,9 +124932,9 @@ LAST WRITE: 2026-08-11 00:39:57
     "pass": true,
     "skills_checked": 18
   },
-  "trials": 10,
+  "trials": 100,
   "verdict": "PASS",
-  "version": "14.6.2b"
+  "version": "14.6.2d"
 }
 
 
@@ -124524,6 +125429,43 @@ LAST WRITE: 2026-08-11 00:39:07
   "sensitivity_criterion": "combat_metrics_only_v2",
   "skills_checked": 18,
   "version": "14.6.2b"
+}
+
+
+============================================================
+FILE: tools\pvp_stage_14_6_2c_manifest.txt
+SIZE: 326 bytes
+LAST WRITE: 2026-08-11 01:02:21
+============================================================
+
+{
+  "aggregate_fixture_budget_preserved": true,
+  "classes_checked": 6,
+  "fixture_mode": "slot_weighted_production_parity",
+  "live_balance_changed": false,
+  "production_database_writes": 0,
+  "skills_checked": 18,
+  "slot_weight_total": "runtime_len_SLOTS",
+  "slots_checked": "runtime_len_SLOTS",
+  "version": "14.6.2c"
+}
+
+
+============================================================
+FILE: tools\pvp_stage_14_6_2d_manifest.txt
+SIZE: 320 bytes
+LAST WRITE: 2026-08-11 01:07:43
+============================================================
+
+{
+  "fixture_values_changed": false,
+  "live_balance_changed": false,
+  "low_sample_review_threshold_trials_per_direction": 100,
+  "production_database_writes": 0,
+  "scope": "dev_fixture_reporting_only",
+  "side_order_review_exposed": true,
+  "slot_parity_separated_from_balance_spread": true,
+  "version": "14.6.2d"
 }
 
 
@@ -134777,6 +135719,39 @@ if __name__=="__main__": main()
 
 
 ============================================================
+FILE: tools\smoke_test_pvp_fixture_summary_and_statistical_review.py
+SIZE: 1749 bytes
+LAST WRITE: 2026-08-11 01:07:34
+============================================================
+
+from pathlib import Path
+import hashlib,sys
+ROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT))
+from systems.pvp_production_fixture_audit import format_summary,run_audit
+before={name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() if (ROOT/name).exists() else None for name in ("game.db","game.db-wal")}
+fixture={"version":"14.6.2d","verdict":"PASS","trials":10,"actors":{str(i):{} for i in range(6)},"skills":{"skills_checked":18},"matrix_integrity":{"pass":True,"max_side_delta_pp":40.0,"side_delta_review":True},"modifier_sensitivity":{"all_observable":True},"fixture_slot_parity":{"pass":True},"fixture_warnings":{"review":True}}
+text=format_summary(fixture)
+assert "Slot-weighted fixture parity: PASS" in text
+assert "Fixture balance spread: REVIEW" in text
+assert "Statistical confidence: REVIEW (10 trials/direction)" in text
+assert "Side-order sensitivity: REVIEW" in text
+assert "Fixture parity: REVIEW" not in text
+result=run_audit(2,10,"rare")
+assert result["verdict"]=="PASS" and result["fixture_slot_parity"]["pass"] is True
+runtime_text=format_summary(result)
+assert "Slot-weighted fixture parity: PASS" in runtime_text
+assert "Fixture balance spread:" in runtime_text
+assert "Statistical confidence: REVIEW (2 trials/direction)" in runtime_text
+after={name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() if (ROOT/name).exists() else None for name in ("game.db","game.db-wal")}; assert before==after
+print("[OK] PvP fixture summary and statistical review fix")
+print("- slot parity and balance spread are separated: PASS")
+print("- low-sample statistical review is explicit: PASS")
+print("- side-order review is explicit: PASS")
+print("- live balance changes: 0")
+print("- production database writes: 0")
+
+
+============================================================
 FILE: tools\smoke_test_pvp_mirror_side_modifier_sensitivity.py
 SIZE: 1434 bytes
 LAST WRITE: 2026-08-11 00:38:56
@@ -135228,6 +136203,35 @@ def main():
     print("- PvP modifiers 1.00 and potion-free engine: PASS")
     print("- database writes: 0")
 if __name__ == "__main__": main()
+
+
+============================================================
+FILE: tools\smoke_test_pvp_slot_weighted_production_fixture_parity.py
+SIZE: 1645 bytes
+LAST WRITE: 2026-08-11 01:02:13
+============================================================
+
+from pathlib import Path
+import hashlib,sys
+ROOT=Path(__file__).resolve().parents[1]; sys.path.insert(0,str(ROOT))
+from systems.pvp_production_calibration import CLASSES,SLOTS,SLOT_WEIGHTS,SLOT_WEIGHT_TOTAL,_stats,build_standard_actor
+from systems.pvp_production_fixture_audit import run_audit
+before={name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() if (ROOT/name).exists() else None for name in ("game.db","game.db-wal")}
+assert set(SLOTS)==set(SLOT_WEIGHTS) and round(sum(SLOT_WEIGHTS.values()),6)==round(SLOT_WEIGHT_TOTAL,6)==float(len(SLOTS))
+assert SLOT_WEIGHTS["main_hand"]==max(SLOT_WEIGHTS.values()) and SLOT_WEIGHTS["chest"]>SLOT_WEIGHTS["gloves"]
+for class_key in CLASSES:
+ rows={slot:_stats(class_key,slot,10,"rare") for slot in SLOTS}
+ assert all(rows[slot]["fixture_slot_weight"]==SLOT_WEIGHTS[slot] for slot in SLOTS)
+ actor=build_standard_actor(class_key,10,"rare"); assert actor.max_hp>0 and actor.max_mp>=0
+result=run_audit(2,10,"rare"); parity=result["fixture_slot_parity"]
+assert result["verdict"]=="PASS" and parity["pass"] and parity["slots_checked"]==len(SLOTS) and parity["weight_total"]==round(float(len(SLOTS)),6)
+after={name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() if (ROOT/name).exists() else None for name in ("game.db","game.db-wal")}; assert before==after
+print("[OK] PvP slot-weighted production fixture parity fix")
+print(f"- canonical production fixture slots: {len(SLOTS)}/{len(SLOTS)}")
+print(f"- aggregate slot budget preserved: {float(len(SLOTS))}")
+print("- all 6 class fixtures rebuild successfully: PASS")
+print("- live balance changes: 0")
+print("- production database writes: 0")
 
 
 ============================================================
