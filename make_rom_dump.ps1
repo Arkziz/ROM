@@ -34,6 +34,7 @@ $ExcludeDirectoryNames = @(
     "backup"
 	"MD"
 	"simulation_reports"
+	"reports"
 )
 
 $ExcludeExactFileNames = @(
