@@ -1,0 +1,6522 @@
+{
+  "actor_source": "stage_14_6_3a_real_reference",
+  "balance_decisions_allowed": true,
+  "distinct_skills_observed": 17,
+  "dominance_count": 13,
+  "dominance_pairs": [
+    {
+      "avg_rounds": 23.25,
+      "class_a": "warrior",
+      "class_b": "knight",
+      "class_metrics": {
+        "knight": {
+          "actions": {
+            "basic_attack": 1110,
+            "skill": 1215
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 26.14,
+            "knight_holy_protection": 0.0,
+            "knight_shield_bash": 23.29
+          },
+          "avg_damage_per_trial": 438.3,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 294.8,
+          "avg_ending_resource": 28.25,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 23.25,
+          "basic_attacks": 1110,
+          "chosen_skills": {
+            "knight_holy_protection": 579,
+            "knight_shield_bash": 636
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 2235,
+          "critical_hits": 90,
+          "damage_by_action": {
+            "basic_attack": 29015,
+            "knight_holy_protection": 0,
+            "knight_shield_bash": 14815
+          },
+          "dodges_caused": 97,
+          "dot_damage": 0,
+          "effects_applied": {
+            "shield": 579,
+            "unknown": 147
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2325
+          },
+          "resource_blocked_rounds": 4445,
+          "resource_gained": 26190,
+          "resource_spent": 27195,
+          "shield_absorbed": 40870,
+          "skill_actions": 1215,
+          "total_damage": 43830,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 1110,
+            "knight_holy_protection": 579,
+            "knight_shield_bash": 636
+          },
+          "valid_actions": 2325,
+          "win_rate": 100.0,
+          "wins": 100
+        },
+        "warrior": {
+          "actions": {
+            "skill": 2325
+          },
+          "avg_damage_by_action_use": {
+            "warrior_cleave": 8.28,
+            "warrior_subjugation_strike": 10.58,
+            "warrior_suppression": 0.0
+          },
+          "avg_damage_per_trial": 140.2,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 53.45,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 23.25,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "warrior_cleave": 1157,
+            "warrior_subjugation_strike": 420,
+            "warrior_suppression": 748
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 2033,
+          "critical_hits": 61,
+          "damage_by_action": {
+            "stunned_skip": 0,
+            "warrior_cleave": 9576,
+            "warrior_subjugation_strike": 4444,
+            "warrior_suppression": 0
+          },
+          "dodges_caused": 64,
+          "dot_damage": 0,
+          "effects_applied": {
+            "pdef_down": 731
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2189,
+            "stunned_skip": 136
+          },
+          "resource_blocked_rounds": 1166,
+          "resource_gained": 32810,
+          "resource_spent": 43845,
+          "shield_absorbed": 0,
+          "skill_actions": 2325,
+          "total_damage": 14020,
+          "total_healing": 0,
+          "uses_by_action": {
+            "warrior_cleave": 1157,
+            "warrior_subjugation_strike": 420,
+            "warrior_suppression": 748
+          },
+          "valid_actions": 2325,
+          "win_rate": 0.0,
+          "wins": 0
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "warrior",
+        "loser_top_actions": [
+          [
+            "warrior_cleave",
+            1157
+          ],
+          [
+            "warrior_suppression",
+            748
+          ],
+          [
+            "warrior_subjugation_strike",
+            420
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "damage_output_gap",
+          "shield_absorption_gap"
+        ],
+        "winner_profile": "knight",
+        "winner_top_actions": [
+          [
+            "basic_attack",
+            1110
+          ],
+          [
+            "knight_shield_bash",
+            636
+          ],
+          [
+            "knight_holy_protection",
+            579
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "knight": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 28.25,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 26190,
+              "rage_spent": 27195,
+              "raw_gained_signal": 26190,
+              "spent": 27195
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "warrior": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 53.45,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 32810,
+              "rage_spent": 43845,
+              "raw_gained_signal": 32810,
+              "spent": 43845
+            },
+            "stunned_skips": 136,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 136,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "knight": 100
+      }
+    },
+    {
+      "avg_rounds": 11.83,
+      "class_a": "warrior",
+      "class_b": "scout",
+      "class_metrics": {
+        "scout": {
+          "actions": {
+            "basic_attack": 104,
+            "skill": 1079
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 2.22,
+            "scout_aimed_shot": 21.94,
+            "scout_sting_arrow": 2.1,
+            "scout_trap": 0.0
+          },
+          "avg_damage_per_trial": 81.77,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 11.5,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 11.83,
+          "basic_attacks": 104,
+          "chosen_skills": {
+            "scout_aimed_shot": 326,
+            "scout_sting_arrow": 378,
+            "scout_trap": 375
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1005,
+          "critical_hits": 45,
+          "damage_by_action": {
+            "basic_attack": 231,
+            "scout_aimed_shot": 7154,
+            "scout_sting_arrow": 792,
+            "scout_trap": 0
+          },
+          "dodges_caused": 28,
+          "dot_damage": 2010,
+          "effects_applied": {
+            "pdef_down": 375,
+            "poison": 378
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1183
+          },
+          "resource_blocked_rounds": 311,
+          "resource_gained": 0,
+          "resource_spent": 30510,
+          "shield_absorbed": 0,
+          "skill_actions": 1079,
+          "total_damage": 8177,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 104,
+            "scout_aimed_shot": 326,
+            "scout_sting_arrow": 378,
+            "scout_trap": 375
+          },
+          "valid_actions": 1183,
+          "win_rate": 0.0,
+          "wins": 0
+        },
+        "warrior": {
+          "actions": {
+            "skill": 1183
+          },
+          "avg_damage_by_action_use": {
+            "warrior_cleave": 48.51,
+            "warrior_subjugation_strike": 81.42,
+            "warrior_suppression": 0.0
+          },
+          "avg_damage_per_trial": 431.94,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 323.13,
+          "avg_ending_resource": 69.65,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 11.83,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "warrior_cleave": 679,
+            "warrior_subjugation_strike": 126,
+            "warrior_suppression": 378
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 913,
+          "critical_hits": 50,
+          "damage_by_action": {
+            "warrior_cleave": 32935,
+            "warrior_subjugation_strike": 10259,
+            "warrior_suppression": 0
+          },
+          "dodges_caused": 50,
+          "dot_damage": 0,
+          "effects_applied": {
+            "pdef_down": 378
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1183
+          },
+          "resource_blocked_rounds": 717,
+          "resource_gained": 18865,
+          "resource_spent": 19700,
+          "shield_absorbed": 0,
+          "skill_actions": 1183,
+          "total_damage": 43194,
+          "total_healing": 0,
+          "uses_by_action": {
+            "warrior_cleave": 679,
+            "warrior_subjugation_strike": 126,
+            "warrior_suppression": 378
+          },
+          "valid_actions": 1183,
+          "win_rate": 100.0,
+          "wins": 100
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "scout",
+        "loser_top_actions": [
+          [
+            "scout_sting_arrow",
+            378
+          ],
+          [
+            "scout_trap",
+            375
+          ],
+          [
+            "scout_aimed_shot",
+            326
+          ],
+          [
+            "basic_attack",
+            104
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "damage_output_gap"
+        ],
+        "winner_profile": "warrior",
+        "winner_top_actions": [
+          [
+            "warrior_cleave",
+            679
+          ],
+          [
+            "warrior_suppression",
+            378
+          ],
+          [
+            "warrior_subjugation_strike",
+            126
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "scout": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 11.5,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 30510,
+              "family": "combat_energy",
+              "raw_gained_signal": 0,
+              "spent": 30510
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "warrior": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 69.65,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 18865,
+              "rage_spent": 19700,
+              "raw_gained_signal": 18865,
+              "spent": 19700
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 0,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "warrior": 100
+      }
+    },
+    {
+      "avg_rounds": 10.63,
+      "class_a": "warrior",
+      "class_b": "rogue",
+      "class_metrics": {
+        "rogue": {
+          "actions": {
+            "basic_attack": 25,
+            "skill": 1038
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 6.08,
+            "rogue_bleeding_follow": 4.49,
+            "rogue_eviscerate": 11.79,
+            "rogue_sneak_strike": 6.78
+          },
+          "avg_damage_per_trial": 74.4,
+          "avg_ending_combo": 2.25,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 3.1,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 10.63,
+          "basic_attacks": 25,
+          "chosen_skills": {
+            "rogue_bleeding_follow": 327,
+            "rogue_eviscerate": 200,
+            "rogue_sneak_strike": 511
+          },
+          "combo_gained": 838,
+          "combo_spent": 600,
+          "cooldown_blocked_rounds": 509,
+          "critical_hits": 92,
+          "damage_by_action": {
+            "basic_attack": 152,
+            "rogue_bleeding_follow": 1467,
+            "rogue_eviscerate": 2357,
+            "rogue_sneak_strike": 3464
+          },
+          "dodges_caused": 57,
+          "dot_damage": 1534,
+          "effects_applied": {
+            "bleed": 327
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1063
+          },
+          "resource_blocked_rounds": 488,
+          "resource_gained": 0,
+          "resource_spent": 28950,
+          "shield_absorbed": 0,
+          "skill_actions": 1038,
+          "total_damage": 7440,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 25,
+            "rogue_bleeding_follow": 327,
+            "rogue_eviscerate": 200,
+            "rogue_sneak_strike": 511
+          },
+          "valid_actions": 1063,
+          "win_rate": 0.0,
+          "wins": 0
+        },
+        "warrior": {
+          "actions": {
+            "skill": 1063
+          },
+          "avg_damage_by_action_use": {
+            "warrior_cleave": 48.38,
+            "warrior_subjugation_strike": 81.17,
+            "warrior_suppression": 0.0
+          },
+          "avg_damage_per_trial": 422.33,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 335.26,
+          "avg_ending_resource": 31.9,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 10.63,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "warrior_cleave": 534,
+            "warrior_subjugation_strike": 202,
+            "warrior_suppression": 327
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 882,
+          "critical_hits": 26,
+          "damage_by_action": {
+            "warrior_cleave": 25836,
+            "warrior_subjugation_strike": 16397,
+            "warrior_suppression": 0
+          },
+          "dodges_caused": 28,
+          "dot_damage": 0,
+          "effects_applied": {
+            "pdef_down": 327
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1063
+          },
+          "resource_blocked_rounds": 494,
+          "resource_gained": 16380,
+          "resource_spent": 23310,
+          "shield_absorbed": 0,
+          "skill_actions": 1063,
+          "total_damage": 42233,
+          "total_healing": 0,
+          "uses_by_action": {
+            "warrior_cleave": 534,
+            "warrior_subjugation_strike": 202,
+            "warrior_suppression": 327
+          },
+          "valid_actions": 1063,
+          "win_rate": 100.0,
+          "wins": 100
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "rogue",
+        "loser_top_actions": [
+          [
+            "rogue_sneak_strike",
+            511
+          ],
+          [
+            "rogue_bleeding_follow",
+            327
+          ],
+          [
+            "rogue_eviscerate",
+            200
+          ],
+          [
+            "basic_attack",
+            25
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "damage_output_gap"
+        ],
+        "winner_profile": "warrior",
+        "winner_top_actions": [
+          [
+            "warrior_cleave",
+            534
+          ],
+          [
+            "warrior_suppression",
+            327
+          ],
+          [
+            "warrior_subjugation_strike",
+            202
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "rogue": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "avg_ending_combo": 2.25,
+              "combo_gained": 838,
+              "combo_spent": 600,
+              "ending_value_legacy": 3.1,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 28950,
+              "family": "combat_energy_combo",
+              "raw_gained_signal": 0,
+              "spent": 28950
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "warrior": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 31.9,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 16380,
+              "rage_spent": 23310,
+              "raw_gained_signal": 16380,
+              "spent": 23310
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 0,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "warrior": 100
+      }
+    },
+    {
+      "avg_rounds": 11.57,
+      "class_a": "warrior",
+      "class_b": "mage",
+      "class_metrics": {
+        "mage": {
+          "actions": {
+            "skill": 1157
+          },
+          "avg_damage_by_action_use": {
+            "mage_arcane_flow": 0.0,
+            "mage_fireball": 29.81,
+            "mage_thunder_spell": 35.86
+          },
+          "avg_damage_per_trial": 361.47,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 1.8,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 11.57,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "mage_arcane_flow": 6,
+            "mage_fireball": 847,
+            "mage_thunder_spell": 304
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 829,
+          "critical_hits": 62,
+          "damage_by_action": {
+            "mage_arcane_flow": 0,
+            "mage_fireball": 25247,
+            "mage_thunder_spell": 10900
+          },
+          "dodges_caused": 44,
+          "dot_damage": 0,
+          "effects_applied": {
+            "unknown": 73
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1157
+          },
+          "resource_blocked_rounds": 34,
+          "resource_gained": -24500,
+          "resource_spent": 30620,
+          "shield_absorbed": 0,
+          "skill_actions": 1157,
+          "total_damage": 36147,
+          "total_healing": 0,
+          "uses_by_action": {
+            "mage_arcane_flow": 6,
+            "mage_fireball": 847,
+            "mage_thunder_spell": 304
+          },
+          "valid_actions": 1157,
+          "win_rate": 3.0,
+          "wins": 3
+        },
+        "warrior": {
+          "actions": {
+            "skill": 1157
+          },
+          "avg_damage_by_action_use": {
+            "warrior_cleave": 52.82,
+            "warrior_subjugation_strike": 73.18,
+            "warrior_suppression": 0.0
+          },
+          "avg_damage_per_trial": 455.67,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 64.58,
+          "avg_ending_resource": 40.75,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 11.57,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "warrior_cleave": 544,
+            "warrior_subjugation_strike": 230,
+            "warrior_suppression": 383
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 938,
+          "critical_hits": 40,
+          "damage_by_action": {
+            "stunned_skip": 0,
+            "warrior_cleave": 28736,
+            "warrior_subjugation_strike": 16831,
+            "warrior_suppression": 0
+          },
+          "dodges_caused": 42,
+          "dot_damage": 0,
+          "effects_applied": {
+            "pdef_down": 359
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1092,
+            "stunned_skip": 65
+          },
+          "resource_blocked_rounds": 560,
+          "resource_gained": 16365,
+          "resource_spent": 23350,
+          "shield_absorbed": 0,
+          "skill_actions": 1157,
+          "total_damage": 45567,
+          "total_healing": 0,
+          "uses_by_action": {
+            "warrior_cleave": 544,
+            "warrior_subjugation_strike": 230,
+            "warrior_suppression": 383
+          },
+          "valid_actions": 1157,
+          "win_rate": 89.0,
+          "wins": 89
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "mage",
+        "loser_top_actions": [
+          [
+            "mage_fireball",
+            847
+          ],
+          [
+            "mage_thunder_spell",
+            304
+          ],
+          [
+            "mage_arcane_flow",
+            6
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [],
+        "winner_profile": "warrior",
+        "winner_top_actions": [
+          [
+            "warrior_cleave",
+            544
+          ],
+          [
+            "warrior_suppression",
+            383
+          ],
+          [
+            "warrior_subjugation_strike",
+            230
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 8.0,
+      "draws": 8,
+      "metric_semantics": {
+        "by_class": {
+          "mage": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 30620,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 30620
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "warrior": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 40.75,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 16365,
+              "rage_spent": 23350,
+              "raw_gained_signal": 16365,
+              "spent": 23350
+            },
+            "stunned_skips": 65,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 65,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "draw_simultaneous": 8,
+        "simultaneous": 92
+      },
+      "trials": 100,
+      "wins": {
+        "mage": 3,
+        "warrior": 89
+      }
+    },
+    {
+      "avg_rounds": 22.77,
+      "class_a": "warrior",
+      "class_b": "priest",
+      "class_metrics": {
+        "priest": {
+          "actions": {
+            "skill": 2277
+          },
+          "avg_damage_by_action_use": {
+            "priest_healing_blessing": 0.0,
+            "priest_holy_ray": 35.32,
+            "priest_purify_faith": 0.0
+          },
+          "avg_damage_per_trial": 440.45,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 104.41,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 22.77,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "priest_healing_blessing": 487,
+            "priest_holy_ray": 1247,
+            "priest_purify_faith": 543
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 2450,
+          "critical_hits": 89,
+          "damage_by_action": {
+            "priest_healing_blessing": 0,
+            "priest_holy_ray": 44045,
+            "priest_purify_faith": 0
+          },
+          "dodges_caused": 77,
+          "dot_damage": 0,
+          "effects_applied": {
+            "hot": 487,
+            "mdef_buff": 543
+          },
+          "hot_healing": 65702,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2277
+          },
+          "resource_blocked_rounds": 0,
+          "resource_gained": -24500,
+          "resource_spent": 40434,
+          "shield_absorbed": 0,
+          "skill_actions": 2277,
+          "total_damage": 44045,
+          "total_healing": 0,
+          "uses_by_action": {
+            "priest_healing_blessing": 487,
+            "priest_holy_ray": 1247,
+            "priest_purify_faith": 543
+          },
+          "valid_actions": 2277,
+          "win_rate": 96.0,
+          "wins": 96
+        },
+        "warrior": {
+          "actions": {
+            "skill": 2277
+          },
+          "avg_damage_by_action_use": {
+            "warrior_cleave": 53.02,
+            "warrior_subjugation_strike": 88.84,
+            "warrior_suppression": 0.0
+          },
+          "avg_damage_per_trial": 932.71,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 2.23,
+          "avg_ending_resource": 61.35,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 22.77,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "warrior_cleave": 1233,
+            "warrior_subjugation_strike": 314,
+            "warrior_suppression": 730
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1948,
+          "critical_hits": 68,
+          "damage_by_action": {
+            "warrior_cleave": 65375,
+            "warrior_subjugation_strike": 27896,
+            "warrior_suppression": 0
+          },
+          "dodges_caused": 54,
+          "dot_damage": 0,
+          "effects_applied": {
+            "pdef_down": 730
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2277
+          },
+          "resource_blocked_rounds": 929,
+          "resource_gained": 35415,
+          "resource_spent": 40940,
+          "shield_absorbed": 0,
+          "skill_actions": 2277,
+          "total_damage": 93271,
+          "total_healing": 0,
+          "uses_by_action": {
+            "warrior_cleave": 1233,
+            "warrior_subjugation_strike": 314,
+            "warrior_suppression": 730
+          },
+          "valid_actions": 2277,
+          "win_rate": 4.0,
+          "wins": 4
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "warrior",
+        "loser_top_actions": [
+          [
+            "warrior_cleave",
+            1233
+          ],
+          [
+            "warrior_suppression",
+            730
+          ],
+          [
+            "warrior_subjugation_strike",
+            314
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "resource_availability_gap",
+          "healing_sustain_gap"
+        ],
+        "winner_profile": "priest",
+        "winner_top_actions": [
+          [
+            "priest_holy_ray",
+            1247
+          ],
+          [
+            "priest_purify_faith",
+            543
+          ],
+          [
+            "priest_healing_blessing",
+            487
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "priest": {
+            "avg_effective_healing_per_trial": 657.02,
+            "direct_healing": 0,
+            "effective_healing_total": 65702,
+            "hot_healing": 65702,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 40434,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 40434
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "warrior": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 61.35,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 35415,
+              "rage_spent": 40940,
+              "raw_gained_signal": 35415,
+              "spent": 40940
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 0,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "priest": 96,
+        "warrior": 4
+      }
+    },
+    {
+      "avg_rounds": 16.17,
+      "class_a": "knight",
+      "class_b": "scout",
+      "class_metrics": {
+        "knight": {
+          "actions": {
+            "basic_attack": 798,
+            "skill": 819
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 35.56,
+            "knight_holy_protection": 0.0,
+            "knight_shield_bash": 31.37
+          },
+          "avg_damage_per_trial": 413.04,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 383.97,
+          "avg_ending_resource": 25.55,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 16.17,
+          "basic_attacks": 798,
+          "chosen_skills": {
+            "knight_holy_protection": 407,
+            "knight_shield_bash": 412
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1469,
+          "critical_hits": 66,
+          "damage_by_action": {
+            "basic_attack": 28378,
+            "knight_holy_protection": 0,
+            "knight_shield_bash": 12926
+          },
+          "dodges_caused": 55,
+          "dot_damage": 0,
+          "effects_applied": {
+            "shield": 407,
+            "unknown": 105
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1617
+          },
+          "resource_blocked_rounds": 3169,
+          "resource_gained": 18150,
+          "resource_spent": 18415,
+          "shield_absorbed": 3819,
+          "skill_actions": 819,
+          "total_damage": 41304,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 798,
+            "knight_holy_protection": 407,
+            "knight_shield_bash": 412
+          },
+          "valid_actions": 1617,
+          "win_rate": 100.0,
+          "wins": 100
+        },
+        "scout": {
+          "actions": {
+            "basic_attack": 158,
+            "skill": 1459
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 0.72,
+            "scout_aimed_shot": 4.96,
+            "scout_sting_arrow": 0.21,
+            "scout_trap": 0.0
+          },
+          "avg_damage_per_trial": 24.44,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 11.95,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 16.17,
+          "basic_attacks": 158,
+          "chosen_skills": {
+            "scout_aimed_shot": 448,
+            "scout_sting_arrow": 516,
+            "scout_trap": 495
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1356,
+          "critical_hits": 79,
+          "damage_by_action": {
+            "basic_attack": 113,
+            "scout_aimed_shot": 2222,
+            "scout_sting_arrow": 109,
+            "scout_trap": 0,
+            "stunned_skip": 0
+          },
+          "dodges_caused": 58,
+          "dot_damage": 2659,
+          "effects_applied": {
+            "pdef_down": 491,
+            "poison": 501
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1520,
+            "stunned_skip": 97
+          },
+          "resource_blocked_rounds": 598,
+          "resource_gained": 0,
+          "resource_spent": 39145,
+          "shield_absorbed": 0,
+          "skill_actions": 1459,
+          "total_damage": 2444,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 158,
+            "scout_aimed_shot": 448,
+            "scout_sting_arrow": 516,
+            "scout_trap": 495
+          },
+          "valid_actions": 1617,
+          "win_rate": 0.0,
+          "wins": 0
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "scout",
+        "loser_top_actions": [
+          [
+            "scout_sting_arrow",
+            516
+          ],
+          [
+            "scout_trap",
+            495
+          ],
+          [
+            "scout_aimed_shot",
+            448
+          ],
+          [
+            "basic_attack",
+            158
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "damage_output_gap",
+          "shield_absorption_gap"
+        ],
+        "winner_profile": "knight",
+        "winner_top_actions": [
+          [
+            "basic_attack",
+            798
+          ],
+          [
+            "knight_shield_bash",
+            412
+          ],
+          [
+            "knight_holy_protection",
+            407
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "knight": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 25.55,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 18150,
+              "rage_spent": 18415,
+              "raw_gained_signal": 18150,
+              "spent": 18415
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "scout": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 11.95,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 39145,
+              "family": "combat_energy",
+              "raw_gained_signal": 0,
+              "spent": 39145
+            },
+            "stunned_skips": 97,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 97,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "knight": 100
+      }
+    },
+    {
+      "avg_rounds": 16.36,
+      "class_a": "knight",
+      "class_b": "rogue",
+      "class_metrics": {
+        "knight": {
+          "actions": {
+            "basic_attack": 768,
+            "skill": 868
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 35.01,
+            "knight_holy_protection": 0.0,
+            "knight_shield_bash": 31.42
+          },
+          "avg_damage_per_trial": 412.46,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 405.1,
+          "avg_ending_resource": 27.3,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 16.36,
+          "basic_attacks": 768,
+          "chosen_skills": {
+            "knight_holy_protection": 411,
+            "knight_shield_bash": 457
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1537,
+          "critical_hits": 65,
+          "damage_by_action": {
+            "basic_attack": 26885,
+            "knight_holy_protection": 0,
+            "knight_shield_bash": 14361
+          },
+          "dodges_caused": 67,
+          "dot_damage": 0,
+          "effects_applied": {
+            "shield": 411,
+            "unknown": 116
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1636
+          },
+          "resource_blocked_rounds": 3092,
+          "resource_gained": 18375,
+          "resource_spent": 19415,
+          "shield_absorbed": 1423,
+          "skill_actions": 868,
+          "total_damage": 41246,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 768,
+            "knight_holy_protection": 411,
+            "knight_shield_bash": 457
+          },
+          "valid_actions": 1636,
+          "win_rate": 100.0,
+          "wins": 100
+        },
+        "rogue": {
+          "actions": {
+            "basic_attack": 108,
+            "skill": 1528
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 0.0,
+            "rogue_bleeding_follow": 0.54,
+            "rogue_eviscerate": 0.24,
+            "rogue_sneak_strike": 0.12
+          },
+          "avg_damage_per_trial": 4.4,
+          "avg_ending_combo": 1.75,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 11.2,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 16.36,
+          "basic_attacks": 108,
+          "chosen_skills": {
+            "rogue_bleeding_follow": 524,
+            "rogue_eviscerate": 285,
+            "rogue_sneak_strike": 719
+          },
+          "combo_gained": 1152,
+          "combo_spent": 810,
+          "cooldown_blocked_rounds": 707,
+          "critical_hits": 115,
+          "damage_by_action": {
+            "basic_attack": 0,
+            "rogue_bleeding_follow": 283,
+            "rogue_eviscerate": 68,
+            "rogue_sneak_strike": 89,
+            "stunned_skip": 0
+          },
+          "dodges_caused": 66,
+          "dot_damage": 2550,
+          "effects_applied": {
+            "bleed": 483
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1526,
+            "stunned_skip": 110
+          },
+          "resource_blocked_rounds": 973,
+          "resource_gained": 0,
+          "resource_spent": 39600,
+          "shield_absorbed": 0,
+          "skill_actions": 1528,
+          "total_damage": 440,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 108,
+            "rogue_bleeding_follow": 524,
+            "rogue_eviscerate": 285,
+            "rogue_sneak_strike": 719
+          },
+          "valid_actions": 1636,
+          "win_rate": 0.0,
+          "wins": 0
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "rogue",
+        "loser_top_actions": [
+          [
+            "rogue_sneak_strike",
+            719
+          ],
+          [
+            "rogue_bleeding_follow",
+            524
+          ],
+          [
+            "rogue_eviscerate",
+            285
+          ],
+          [
+            "basic_attack",
+            108
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "damage_output_gap"
+        ],
+        "winner_profile": "knight",
+        "winner_top_actions": [
+          [
+            "basic_attack",
+            768
+          ],
+          [
+            "knight_shield_bash",
+            457
+          ],
+          [
+            "knight_holy_protection",
+            411
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "knight": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 27.3,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 18375,
+              "rage_spent": 19415,
+              "raw_gained_signal": 18375,
+              "spent": 19415
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "rogue": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "avg_ending_combo": 1.75,
+              "combo_gained": 1152,
+              "combo_spent": 810,
+              "ending_value_legacy": 11.2,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 39600,
+              "family": "combat_energy_combo",
+              "raw_gained_signal": 0,
+              "spent": 39600
+            },
+            "stunned_skips": 110,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 110,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "knight": 100
+      }
+    },
+    {
+      "avg_rounds": 15.77,
+      "class_a": "knight",
+      "class_b": "mage",
+      "class_metrics": {
+        "knight": {
+          "actions": {
+            "basic_attack": 729,
+            "skill": 848
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 40.26,
+            "knight_holy_protection": 0.0,
+            "knight_shield_bash": 36.25
+          },
+          "avg_damage_per_trial": 442.12,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 284.98,
+          "avg_ending_resource": 27.3,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 15.77,
+          "basic_attacks": 729,
+          "chosen_skills": {
+            "knight_holy_protection": 438,
+            "knight_shield_bash": 410
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1386,
+          "critical_hits": 50,
+          "damage_by_action": {
+            "basic_attack": 29348,
+            "knight_holy_protection": 0,
+            "knight_shield_bash": 14864,
+            "stunned_skip": 0
+          },
+          "dodges_caused": 44,
+          "dot_damage": 0,
+          "effects_applied": {
+            "shield": 378,
+            "unknown": 103
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1474,
+            "stunned_skip": 103
+          },
+          "resource_blocked_rounds": 2924,
+          "resource_gained": 16440,
+          "resource_spent": 17370,
+          "shield_absorbed": 36647,
+          "skill_actions": 848,
+          "total_damage": 44212,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 729,
+            "knight_holy_protection": 438,
+            "knight_shield_bash": 410
+          },
+          "valid_actions": 1577,
+          "win_rate": 100.0,
+          "wins": 100
+        },
+        "mage": {
+          "actions": {
+            "basic_attack": 7,
+            "skill": 1570
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 20.71,
+            "mage_arcane_flow": 0.0,
+            "mage_fireball": 5.35,
+            "mage_thunder_spell": 22.46
+          },
+          "avg_damage_per_trial": 150.02,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 15.77,
+          "basic_attacks": 7,
+          "chosen_skills": {
+            "mage_arcane_flow": 101,
+            "mage_fireball": 1060,
+            "mage_thunder_spell": 409
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1190,
+          "critical_hits": 95,
+          "damage_by_action": {
+            "basic_attack": 145,
+            "mage_arcane_flow": 0,
+            "mage_fireball": 5672,
+            "mage_thunder_spell": 9185,
+            "stunned_skip": 0
+          },
+          "dodges_caused": 68,
+          "dot_damage": 0,
+          "effects_applied": {
+            "unknown": 201
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1484,
+            "stunned_skip": 93
+          },
+          "resource_blocked_rounds": 307,
+          "resource_gained": -24500,
+          "resource_spent": 37685,
+          "shield_absorbed": 0,
+          "skill_actions": 1570,
+          "total_damage": 15002,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 7,
+            "mage_arcane_flow": 101,
+            "mage_fireball": 1060,
+            "mage_thunder_spell": 409
+          },
+          "valid_actions": 1577,
+          "win_rate": 0.0,
+          "wins": 0
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "mage",
+        "loser_top_actions": [
+          [
+            "mage_fireball",
+            1060
+          ],
+          [
+            "mage_thunder_spell",
+            409
+          ],
+          [
+            "mage_arcane_flow",
+            101
+          ],
+          [
+            "basic_attack",
+            7
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "damage_output_gap",
+          "shield_absorption_gap"
+        ],
+        "winner_profile": "knight",
+        "winner_top_actions": [
+          [
+            "basic_attack",
+            729
+          ],
+          [
+            "knight_holy_protection",
+            438
+          ],
+          [
+            "knight_shield_bash",
+            410
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "knight": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 27.3,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 16440,
+              "rage_spent": 17370,
+              "raw_gained_signal": 16440,
+              "spent": 17370
+            },
+            "stunned_skips": 103,
+            "terminal_cancelled_intents": 0
+          },
+          "mage": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 37685,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 37685
+            },
+            "stunned_skips": 93,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 196,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "knight": 100
+      }
+    },
+    {
+      "avg_rounds": 20.73,
+      "class_a": "scout",
+      "class_b": "rogue",
+      "class_metrics": {
+        "rogue": {
+          "actions": {
+            "basic_attack": 310,
+            "skill": 1763
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 14.91,
+            "rogue_bleeding_follow": 10.85,
+            "rogue_eviscerate": 30.36,
+            "rogue_sneak_strike": 16.62
+          },
+          "avg_damage_per_trial": 345.19,
+          "avg_ending_combo": 2.21,
+          "avg_ending_hp": 84.99,
+          "avg_ending_resource": 11.9,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 20.73,
+          "basic_attacks": 310,
+          "chosen_skills": {
+            "rogue_bleeding_follow": 620,
+            "rogue_eviscerate": 304,
+            "rogue_sneak_strike": 839
+          },
+          "combo_gained": 1446,
+          "combo_spent": 909,
+          "cooldown_blocked_rounds": 897,
+          "critical_hits": 136,
+          "damage_by_action": {
+            "basic_attack": 4622,
+            "none": 0,
+            "rogue_bleeding_follow": 6724,
+            "rogue_eviscerate": 9229,
+            "rogue_sneak_strike": 13944
+          },
+          "dodges_caused": 103,
+          "dot_damage": 5705,
+          "effects_applied": {
+            "bleed": 613
+          },
+          "hot_healing": 0,
+          "invalid_actions": 17,
+          "outcome_reasons": {
+            "ok": 2056,
+            "terminal_before_actions": 17
+          },
+          "resource_blocked_rounds": 1889,
+          "resource_gained": 0,
+          "resource_spent": 48270,
+          "shield_absorbed": 0,
+          "skill_actions": 1763,
+          "total_damage": 34519,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 310,
+            "rogue_bleeding_follow": 620,
+            "rogue_eviscerate": 304,
+            "rogue_sneak_strike": 839
+          },
+          "valid_actions": 2056,
+          "win_rate": 99.0,
+          "wins": 99
+        },
+        "scout": {
+          "actions": {
+            "basic_attack": 356,
+            "skill": 1717
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 13.15,
+            "scout_aimed_shot": 27.98,
+            "scout_sting_arrow": 10.78,
+            "scout_trap": 0.0
+          },
+          "avg_damage_per_trial": 250.09,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 13.15,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 20.73,
+          "basic_attacks": 356,
+          "chosen_skills": {
+            "scout_aimed_shot": 487,
+            "scout_sting_arrow": 622,
+            "scout_trap": 608
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1750,
+          "critical_hits": 118,
+          "damage_by_action": {
+            "basic_attack": 4682,
+            "none": 0,
+            "scout_aimed_shot": 13624,
+            "scout_sting_arrow": 6703,
+            "scout_trap": 0
+          },
+          "dodges_caused": 84,
+          "dot_damage": 5995,
+          "effects_applied": {
+            "pdef_down": 605,
+            "poison": 615
+          },
+          "hot_healing": 0,
+          "invalid_actions": 17,
+          "outcome_reasons": {
+            "ok": 2056,
+            "terminal_before_actions": 17
+          },
+          "resource_blocked_rounds": 1318,
+          "resource_gained": 0,
+          "resource_spent": 48145,
+          "shield_absorbed": 0,
+          "skill_actions": 1717,
+          "total_damage": 25009,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 356,
+            "scout_aimed_shot": 487,
+            "scout_sting_arrow": 622,
+            "scout_trap": 608
+          },
+          "valid_actions": 2056,
+          "win_rate": 0.0,
+          "wins": 0
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "scout",
+        "loser_top_actions": [
+          [
+            "scout_sting_arrow",
+            622
+          ],
+          [
+            "scout_trap",
+            608
+          ],
+          [
+            "scout_aimed_shot",
+            487
+          ],
+          [
+            "basic_attack",
+            356
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [],
+        "winner_profile": "rogue",
+        "winner_top_actions": [
+          [
+            "rogue_sneak_strike",
+            839
+          ],
+          [
+            "rogue_bleeding_follow",
+            620
+          ],
+          [
+            "basic_attack",
+            310
+          ],
+          [
+            "rogue_eviscerate",
+            304
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 1.0,
+      "draws": 1,
+      "metric_semantics": {
+        "by_class": {
+          "rogue": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "avg_ending_combo": 2.21,
+              "combo_gained": 1446,
+              "combo_spent": 909,
+              "ending_value_legacy": 11.9,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 48270,
+              "family": "combat_energy_combo",
+              "raw_gained_signal": 0,
+              "spent": 48270
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 17
+          },
+          "scout": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 13.15,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 48145,
+              "family": "combat_energy",
+              "raw_gained_signal": 0,
+              "spent": 48145
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 17
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 0,
+        "terminal_cancelled_intents": 34,
+        "terminal_rates": {
+          "periodic_terminal_rate": 17.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 83.0
+        }
+      },
+      "terminal_reasons": {
+        "draw_simultaneous": 1,
+        "periodic": 17,
+        "simultaneous": 82
+      },
+      "trials": 100,
+      "wins": {
+        "rogue": 99
+      }
+    },
+    {
+      "avg_rounds": 21.26,
+      "class_a": "scout",
+      "class_b": "priest",
+      "class_metrics": {
+        "priest": {
+          "actions": {
+            "skill": 2126
+          },
+          "avg_damage_by_action_use": {
+            "priest_healing_blessing": 0.0,
+            "priest_holy_ray": 29.09,
+            "priest_purify_faith": 0.0
+          },
+          "avg_damage_per_trial": 409.0,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 275.02,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 21.26,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "priest_healing_blessing": 211,
+            "priest_holy_ray": 1406,
+            "priest_purify_faith": 509
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1835,
+          "critical_hits": 89,
+          "damage_by_action": {
+            "priest_healing_blessing": 0,
+            "priest_holy_ray": 40900,
+            "priest_purify_faith": 0
+          },
+          "dodges_caused": 65,
+          "dot_damage": 0,
+          "effects_applied": {
+            "hot": 211,
+            "mdef_buff": 509
+          },
+          "hot_healing": 30438,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2126
+          },
+          "resource_blocked_rounds": 0,
+          "resource_gained": -24500,
+          "resource_spent": 33382,
+          "shield_absorbed": 0,
+          "skill_actions": 2126,
+          "total_damage": 40900,
+          "total_healing": 0,
+          "uses_by_action": {
+            "priest_healing_blessing": 211,
+            "priest_holy_ray": 1406,
+            "priest_purify_faith": 509
+          },
+          "valid_actions": 2126,
+          "win_rate": 100.0,
+          "wins": 100
+        },
+        "scout": {
+          "actions": {
+            "basic_attack": 409,
+            "skill": 1717
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 20.34,
+            "scout_aimed_shot": 28.19,
+            "scout_sting_arrow": 19.34,
+            "scout_trap": 0.0
+          },
+          "avg_damage_per_trial": 319.95,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 15.05,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 21.26,
+          "basic_attacks": 409,
+          "chosen_skills": {
+            "scout_aimed_shot": 311,
+            "scout_sting_arrow": 771,
+            "scout_trap": 635
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1922,
+          "critical_hits": 115,
+          "damage_by_action": {
+            "basic_attack": 8321,
+            "scout_aimed_shot": 8766,
+            "scout_sting_arrow": 14908,
+            "scout_trap": 0
+          },
+          "dodges_caused": 80,
+          "dot_damage": 8941,
+          "effects_applied": {
+            "pdef_down": 635,
+            "poison": 771
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2126
+          },
+          "resource_blocked_rounds": 1462,
+          "resource_gained": 0,
+          "resource_spent": 49015,
+          "shield_absorbed": 0,
+          "skill_actions": 1717,
+          "total_damage": 31995,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 409,
+            "scout_aimed_shot": 311,
+            "scout_sting_arrow": 771,
+            "scout_trap": 635
+          },
+          "valid_actions": 2126,
+          "win_rate": 0.0,
+          "wins": 0
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "scout",
+        "loser_top_actions": [
+          [
+            "scout_sting_arrow",
+            771
+          ],
+          [
+            "scout_trap",
+            635
+          ],
+          [
+            "basic_attack",
+            409
+          ],
+          [
+            "scout_aimed_shot",
+            311
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "resource_availability_gap",
+          "healing_sustain_gap"
+        ],
+        "winner_profile": "priest",
+        "winner_top_actions": [
+          [
+            "priest_holy_ray",
+            1406
+          ],
+          [
+            "priest_purify_faith",
+            509
+          ],
+          [
+            "priest_healing_blessing",
+            211
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "priest": {
+            "avg_effective_healing_per_trial": 304.38,
+            "direct_healing": 0,
+            "effective_healing_total": 30438,
+            "hot_healing": 30438,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 33382,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 33382
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "scout": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 15.05,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 49015,
+              "family": "combat_energy",
+              "raw_gained_signal": 0,
+              "spent": 49015
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 0,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "priest": 100
+      }
+    },
+    {
+      "avg_rounds": 16.01,
+      "class_a": "rogue",
+      "class_b": "mage",
+      "class_metrics": {
+        "mage": {
+          "actions": {
+            "basic_attack": 11,
+            "skill": 1590
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 16.18,
+            "mage_arcane_flow": 0.0,
+            "mage_fireball": 21.28,
+            "mage_thunder_spell": 25.22
+          },
+          "avg_damage_per_trial": 334.14,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 0.22,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 16.01,
+          "basic_attacks": 11,
+          "chosen_skills": {
+            "mage_arcane_flow": 100,
+            "mage_fireball": 1101,
+            "mage_thunder_spell": 389
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1213,
+          "critical_hits": 85,
+          "damage_by_action": {
+            "basic_attack": 178,
+            "mage_arcane_flow": 0,
+            "mage_fireball": 23427,
+            "mage_thunder_spell": 9809,
+            "none": 0
+          },
+          "dodges_caused": 91,
+          "dot_damage": 0,
+          "effects_applied": {
+            "unknown": 197
+          },
+          "hot_healing": 0,
+          "invalid_actions": 19,
+          "outcome_reasons": {
+            "ok": 1582,
+            "terminal_before_actions": 19
+          },
+          "resource_blocked_rounds": 359,
+          "resource_gained": -24500,
+          "resource_spent": 39035,
+          "shield_absorbed": 0,
+          "skill_actions": 1590,
+          "total_damage": 33414,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 11,
+            "mage_arcane_flow": 100,
+            "mage_fireball": 1101,
+            "mage_thunder_spell": 389
+          },
+          "valid_actions": 1582,
+          "win_rate": 1.0,
+          "wins": 1
+        },
+        "rogue": {
+          "actions": {
+            "basic_attack": 119,
+            "skill": 1482
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 17.68,
+            "rogue_bleeding_follow": 15.16,
+            "rogue_eviscerate": 44.14,
+            "rogue_sneak_strike": 21.51
+          },
+          "avg_damage_per_trial": 365.46,
+          "avg_ending_combo": 2.02,
+          "avg_ending_hp": 61.15,
+          "avg_ending_resource": 11.5,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 16.01,
+          "basic_attacks": 119,
+          "chosen_skills": {
+            "rogue_bleeding_follow": 498,
+            "rogue_eviscerate": 253,
+            "rogue_sneak_strike": 731
+          },
+          "combo_gained": 1143,
+          "combo_spent": 744,
+          "cooldown_blocked_rounds": 688,
+          "critical_hits": 102,
+          "damage_by_action": {
+            "basic_attack": 2104,
+            "none": 0,
+            "rogue_bleeding_follow": 7551,
+            "rogue_eviscerate": 11167,
+            "rogue_sneak_strike": 15724,
+            "stunned_skip": 0
+          },
+          "dodges_caused": 79,
+          "dot_damage": 6128,
+          "effects_applied": {
+            "bleed": 483
+          },
+          "hot_healing": 0,
+          "invalid_actions": 19,
+          "outcome_reasons": {
+            "ok": 1492,
+            "stunned_skip": 90,
+            "terminal_before_actions": 19
+          },
+          "resource_blocked_rounds": 1009,
+          "resource_gained": 0,
+          "resource_spent": 38495,
+          "shield_absorbed": 0,
+          "skill_actions": 1482,
+          "total_damage": 36546,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 119,
+            "rogue_bleeding_follow": 498,
+            "rogue_eviscerate": 253,
+            "rogue_sneak_strike": 731
+          },
+          "valid_actions": 1582,
+          "win_rate": 96.0,
+          "wins": 96
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "mage",
+        "loser_top_actions": [
+          [
+            "mage_fireball",
+            1101
+          ],
+          [
+            "mage_thunder_spell",
+            389
+          ],
+          [
+            "mage_arcane_flow",
+            100
+          ],
+          [
+            "basic_attack",
+            11
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "periodic_damage_gap"
+        ],
+        "winner_profile": "rogue",
+        "winner_top_actions": [
+          [
+            "rogue_sneak_strike",
+            731
+          ],
+          [
+            "rogue_bleeding_follow",
+            498
+          ],
+          [
+            "rogue_eviscerate",
+            253
+          ],
+          [
+            "basic_attack",
+            119
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 3.0,
+      "draws": 3,
+      "metric_semantics": {
+        "by_class": {
+          "mage": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 39035,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 39035
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 19
+          },
+          "rogue": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "avg_ending_combo": 2.02,
+              "combo_gained": 1143,
+              "combo_spent": 744,
+              "ending_value_legacy": 11.5,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 38495,
+              "family": "combat_energy_combo",
+              "raw_gained_signal": 0,
+              "spent": 38495
+            },
+            "stunned_skips": 90,
+            "terminal_cancelled_intents": 19
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 90,
+        "terminal_cancelled_intents": 38,
+        "terminal_rates": {
+          "periodic_terminal_rate": 19.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 81.0
+        }
+      },
+      "terminal_reasons": {
+        "draw_simultaneous": 3,
+        "periodic": 19,
+        "simultaneous": 78
+      },
+      "trials": 100,
+      "wins": {
+        "mage": 1,
+        "rogue": 96
+      }
+    },
+    {
+      "avg_rounds": 23.66,
+      "class_a": "rogue",
+      "class_b": "priest",
+      "class_metrics": {
+        "priest": {
+          "actions": {
+            "skill": 2366
+          },
+          "avg_damage_by_action_use": {
+            "priest_healing_blessing": 0.0,
+            "priest_holy_ray": 29.29,
+            "priest_purify_faith": 0.0
+          },
+          "avg_damage_per_trial": 410.62,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 219.76,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 23.66,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "priest_healing_blessing": 381,
+            "priest_holy_ray": 1402,
+            "priest_purify_faith": 583
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 2403,
+          "critical_hits": 99,
+          "damage_by_action": {
+            "priest_healing_blessing": 0,
+            "priest_holy_ray": 41062,
+            "priest_purify_faith": 0
+          },
+          "dodges_caused": 60,
+          "dot_damage": 0,
+          "effects_applied": {
+            "hot": 381,
+            "mdef_buff": 583
+          },
+          "hot_healing": 51224,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2366
+          },
+          "resource_blocked_rounds": 0,
+          "resource_gained": -24500,
+          "resource_spent": 39914,
+          "shield_absorbed": 0,
+          "skill_actions": 2366,
+          "total_damage": 41062,
+          "total_healing": 0,
+          "uses_by_action": {
+            "priest_healing_blessing": 381,
+            "priest_holy_ray": 1402,
+            "priest_purify_faith": 583
+          },
+          "valid_actions": 2366,
+          "win_rate": 100.0,
+          "wins": 100
+        },
+        "rogue": {
+          "actions": {
+            "basic_attack": 406,
+            "skill": 1960
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 22.41,
+            "rogue_bleeding_follow": 16.27,
+            "rogue_eviscerate": 45.87,
+            "rogue_sneak_strike": 24.8
+          },
+          "avg_damage_per_trial": 585.11,
+          "avg_ending_combo": 1.39,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 9.2,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 23.66,
+          "basic_attacks": 406,
+          "chosen_skills": {
+            "rogue_bleeding_follow": 795,
+            "rogue_eviscerate": 360,
+            "rogue_sneak_strike": 805
+          },
+          "combo_gained": 1600,
+          "combo_spent": 1080,
+          "cooldown_blocked_rounds": 1112,
+          "critical_hits": 164,
+          "damage_by_action": {
+            "basic_attack": 9100,
+            "rogue_bleeding_follow": 12933,
+            "rogue_eviscerate": 16514,
+            "rogue_sneak_strike": 19964
+          },
+          "dodges_caused": 137,
+          "dot_damage": 8737,
+          "effects_applied": {
+            "bleed": 795
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2366
+          },
+          "resource_blocked_rounds": 2318,
+          "resource_gained": 0,
+          "resource_spent": 54400,
+          "shield_absorbed": 0,
+          "skill_actions": 1960,
+          "total_damage": 58511,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 406,
+            "rogue_bleeding_follow": 795,
+            "rogue_eviscerate": 360,
+            "rogue_sneak_strike": 805
+          },
+          "valid_actions": 2366,
+          "win_rate": 0.0,
+          "wins": 0
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "rogue",
+        "loser_top_actions": [
+          [
+            "rogue_sneak_strike",
+            805
+          ],
+          [
+            "rogue_bleeding_follow",
+            795
+          ],
+          [
+            "basic_attack",
+            406
+          ],
+          [
+            "rogue_eviscerate",
+            360
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "resource_availability_gap",
+          "healing_sustain_gap"
+        ],
+        "winner_profile": "priest",
+        "winner_top_actions": [
+          [
+            "priest_holy_ray",
+            1402
+          ],
+          [
+            "priest_purify_faith",
+            583
+          ],
+          [
+            "priest_healing_blessing",
+            381
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "priest": {
+            "avg_effective_healing_per_trial": 512.24,
+            "direct_healing": 0,
+            "effective_healing_total": 51224,
+            "hot_healing": 51224,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 39914,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 39914
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "rogue": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "avg_ending_combo": 1.39,
+              "combo_gained": 1600,
+              "combo_spent": 1080,
+              "ending_value_legacy": 9.2,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 54400,
+              "family": "combat_energy_combo",
+              "raw_gained_signal": 0,
+              "spent": 54400
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 0,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "priest": 100
+      }
+    },
+    {
+      "avg_rounds": 27.93,
+      "class_a": "mage",
+      "class_b": "priest",
+      "class_metrics": {
+        "mage": {
+          "actions": {
+            "basic_attack": 253,
+            "skill": 2540
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 2.87,
+            "mage_arcane_flow": 0.0,
+            "mage_fireball": 4.47,
+            "mage_thunder_spell": 5.4
+          },
+          "avg_damage_per_trial": 111.77,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 27.93,
+          "basic_attacks": 253,
+          "chosen_skills": {
+            "mage_arcane_flow": 330,
+            "mage_fireball": 1593,
+            "mage_thunder_spell": 617
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 2909,
+          "critical_hits": 154,
+          "damage_by_action": {
+            "basic_attack": 727,
+            "mage_arcane_flow": 0,
+            "mage_fireball": 7119,
+            "mage_thunder_spell": 3331
+          },
+          "dodges_caused": 122,
+          "dot_damage": 0,
+          "effects_applied": {
+            "unknown": 483
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2793
+          },
+          "resource_blocked_rounds": 1553,
+          "resource_gained": -24500,
+          "resource_spent": 59625,
+          "shield_absorbed": 0,
+          "skill_actions": 2540,
+          "total_damage": 11177,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 253,
+            "mage_arcane_flow": 330,
+            "mage_fireball": 1593,
+            "mage_thunder_spell": 617
+          },
+          "valid_actions": 2793,
+          "win_rate": 0.0,
+          "wins": 0
+        },
+        "priest": {
+          "actions": {
+            "skill": 2793
+          },
+          "avg_damage_by_action_use": {
+            "priest_healing_blessing": 0.0,
+            "priest_holy_ray": 16.56,
+            "priest_purify_faith": 0.0
+          },
+          "avg_damage_per_trial": 424.38,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 270.37,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 27.93,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "priest_healing_blessing": 2,
+            "priest_holy_ray": 2563,
+            "priest_purify_faith": 228
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 546,
+          "critical_hits": 172,
+          "damage_by_action": {
+            "priest_healing_blessing": 0,
+            "priest_holy_ray": 42438,
+            "priest_purify_faith": 0,
+            "stunned_skip": 0
+          },
+          "dodges_caused": 128,
+          "dot_damage": 0,
+          "effects_applied": {
+            "hot": 2,
+            "mdef_buff": 212
+          },
+          "hot_healing": 214,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2645,
+            "stunned_skip": 148
+          },
+          "resource_blocked_rounds": 0,
+          "resource_gained": -24500,
+          "resource_spent": 33472,
+          "shield_absorbed": 0,
+          "skill_actions": 2793,
+          "total_damage": 42438,
+          "total_healing": 0,
+          "uses_by_action": {
+            "priest_healing_blessing": 2,
+            "priest_holy_ray": 2563,
+            "priest_purify_faith": 228
+          },
+          "valid_actions": 2793,
+          "win_rate": 100.0,
+          "wins": 100
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "mage",
+        "loser_top_actions": [
+          [
+            "mage_fireball",
+            1593
+          ],
+          [
+            "mage_thunder_spell",
+            617
+          ],
+          [
+            "mage_arcane_flow",
+            330
+          ],
+          [
+            "basic_attack",
+            253
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "damage_output_gap",
+          "resource_availability_gap"
+        ],
+        "winner_profile": "priest",
+        "winner_top_actions": [
+          [
+            "priest_holy_ray",
+            2563
+          ],
+          [
+            "priest_purify_faith",
+            228
+          ],
+          [
+            "priest_healing_blessing",
+            2
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "mage": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 59625,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 59625
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "priest": {
+            "avg_effective_healing_per_trial": 2.14,
+            "direct_healing": 0,
+            "effective_healing_total": 214,
+            "hot_healing": 214,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 33472,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 33472
+            },
+            "stunned_skips": 148,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 148,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "priest": 100
+      }
+    }
+  ],
+  "fixture_values_changed": false,
+  "invalid_action_count_legacy": 80,
+  "live_balance_changed": false,
+  "metric_semantics_corrected": true,
+  "pairs_checked": 15,
+  "policy_invalid_action_count": 0,
+  "production_database_writes": 0,
+  "production_round_resolver_used": true,
+  "production_skill_catalog_used": true,
+  "rows": [
+    {
+      "avg_rounds": 23.25,
+      "class_a": "warrior",
+      "class_b": "knight",
+      "class_metrics": {
+        "knight": {
+          "actions": {
+            "basic_attack": 1110,
+            "skill": 1215
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 26.14,
+            "knight_holy_protection": 0.0,
+            "knight_shield_bash": 23.29
+          },
+          "avg_damage_per_trial": 438.3,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 294.8,
+          "avg_ending_resource": 28.25,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 23.25,
+          "basic_attacks": 1110,
+          "chosen_skills": {
+            "knight_holy_protection": 579,
+            "knight_shield_bash": 636
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 2235,
+          "critical_hits": 90,
+          "damage_by_action": {
+            "basic_attack": 29015,
+            "knight_holy_protection": 0,
+            "knight_shield_bash": 14815
+          },
+          "dodges_caused": 97,
+          "dot_damage": 0,
+          "effects_applied": {
+            "shield": 579,
+            "unknown": 147
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2325
+          },
+          "resource_blocked_rounds": 4445,
+          "resource_gained": 26190,
+          "resource_spent": 27195,
+          "shield_absorbed": 40870,
+          "skill_actions": 1215,
+          "total_damage": 43830,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 1110,
+            "knight_holy_protection": 579,
+            "knight_shield_bash": 636
+          },
+          "valid_actions": 2325,
+          "win_rate": 100.0,
+          "wins": 100
+        },
+        "warrior": {
+          "actions": {
+            "skill": 2325
+          },
+          "avg_damage_by_action_use": {
+            "warrior_cleave": 8.28,
+            "warrior_subjugation_strike": 10.58,
+            "warrior_suppression": 0.0
+          },
+          "avg_damage_per_trial": 140.2,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 53.45,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 23.25,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "warrior_cleave": 1157,
+            "warrior_subjugation_strike": 420,
+            "warrior_suppression": 748
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 2033,
+          "critical_hits": 61,
+          "damage_by_action": {
+            "stunned_skip": 0,
+            "warrior_cleave": 9576,
+            "warrior_subjugation_strike": 4444,
+            "warrior_suppression": 0
+          },
+          "dodges_caused": 64,
+          "dot_damage": 0,
+          "effects_applied": {
+            "pdef_down": 731
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2189,
+            "stunned_skip": 136
+          },
+          "resource_blocked_rounds": 1166,
+          "resource_gained": 32810,
+          "resource_spent": 43845,
+          "shield_absorbed": 0,
+          "skill_actions": 2325,
+          "total_damage": 14020,
+          "total_healing": 0,
+          "uses_by_action": {
+            "warrior_cleave": 1157,
+            "warrior_subjugation_strike": 420,
+            "warrior_suppression": 748
+          },
+          "valid_actions": 2325,
+          "win_rate": 0.0,
+          "wins": 0
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "warrior",
+        "loser_top_actions": [
+          [
+            "warrior_cleave",
+            1157
+          ],
+          [
+            "warrior_suppression",
+            748
+          ],
+          [
+            "warrior_subjugation_strike",
+            420
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "damage_output_gap",
+          "shield_absorption_gap"
+        ],
+        "winner_profile": "knight",
+        "winner_top_actions": [
+          [
+            "basic_attack",
+            1110
+          ],
+          [
+            "knight_shield_bash",
+            636
+          ],
+          [
+            "knight_holy_protection",
+            579
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "knight": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 28.25,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 26190,
+              "rage_spent": 27195,
+              "raw_gained_signal": 26190,
+              "spent": 27195
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "warrior": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 53.45,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 32810,
+              "rage_spent": 43845,
+              "raw_gained_signal": 32810,
+              "spent": 43845
+            },
+            "stunned_skips": 136,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 136,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "knight": 100
+      }
+    },
+    {
+      "avg_rounds": 11.83,
+      "class_a": "warrior",
+      "class_b": "scout",
+      "class_metrics": {
+        "scout": {
+          "actions": {
+            "basic_attack": 104,
+            "skill": 1079
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 2.22,
+            "scout_aimed_shot": 21.94,
+            "scout_sting_arrow": 2.1,
+            "scout_trap": 0.0
+          },
+          "avg_damage_per_trial": 81.77,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 11.5,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 11.83,
+          "basic_attacks": 104,
+          "chosen_skills": {
+            "scout_aimed_shot": 326,
+            "scout_sting_arrow": 378,
+            "scout_trap": 375
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1005,
+          "critical_hits": 45,
+          "damage_by_action": {
+            "basic_attack": 231,
+            "scout_aimed_shot": 7154,
+            "scout_sting_arrow": 792,
+            "scout_trap": 0
+          },
+          "dodges_caused": 28,
+          "dot_damage": 2010,
+          "effects_applied": {
+            "pdef_down": 375,
+            "poison": 378
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1183
+          },
+          "resource_blocked_rounds": 311,
+          "resource_gained": 0,
+          "resource_spent": 30510,
+          "shield_absorbed": 0,
+          "skill_actions": 1079,
+          "total_damage": 8177,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 104,
+            "scout_aimed_shot": 326,
+            "scout_sting_arrow": 378,
+            "scout_trap": 375
+          },
+          "valid_actions": 1183,
+          "win_rate": 0.0,
+          "wins": 0
+        },
+        "warrior": {
+          "actions": {
+            "skill": 1183
+          },
+          "avg_damage_by_action_use": {
+            "warrior_cleave": 48.51,
+            "warrior_subjugation_strike": 81.42,
+            "warrior_suppression": 0.0
+          },
+          "avg_damage_per_trial": 431.94,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 323.13,
+          "avg_ending_resource": 69.65,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 11.83,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "warrior_cleave": 679,
+            "warrior_subjugation_strike": 126,
+            "warrior_suppression": 378
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 913,
+          "critical_hits": 50,
+          "damage_by_action": {
+            "warrior_cleave": 32935,
+            "warrior_subjugation_strike": 10259,
+            "warrior_suppression": 0
+          },
+          "dodges_caused": 50,
+          "dot_damage": 0,
+          "effects_applied": {
+            "pdef_down": 378
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1183
+          },
+          "resource_blocked_rounds": 717,
+          "resource_gained": 18865,
+          "resource_spent": 19700,
+          "shield_absorbed": 0,
+          "skill_actions": 1183,
+          "total_damage": 43194,
+          "total_healing": 0,
+          "uses_by_action": {
+            "warrior_cleave": 679,
+            "warrior_subjugation_strike": 126,
+            "warrior_suppression": 378
+          },
+          "valid_actions": 1183,
+          "win_rate": 100.0,
+          "wins": 100
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "scout",
+        "loser_top_actions": [
+          [
+            "scout_sting_arrow",
+            378
+          ],
+          [
+            "scout_trap",
+            375
+          ],
+          [
+            "scout_aimed_shot",
+            326
+          ],
+          [
+            "basic_attack",
+            104
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "damage_output_gap"
+        ],
+        "winner_profile": "warrior",
+        "winner_top_actions": [
+          [
+            "warrior_cleave",
+            679
+          ],
+          [
+            "warrior_suppression",
+            378
+          ],
+          [
+            "warrior_subjugation_strike",
+            126
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "scout": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 11.5,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 30510,
+              "family": "combat_energy",
+              "raw_gained_signal": 0,
+              "spent": 30510
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "warrior": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 69.65,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 18865,
+              "rage_spent": 19700,
+              "raw_gained_signal": 18865,
+              "spent": 19700
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 0,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "warrior": 100
+      }
+    },
+    {
+      "avg_rounds": 10.63,
+      "class_a": "warrior",
+      "class_b": "rogue",
+      "class_metrics": {
+        "rogue": {
+          "actions": {
+            "basic_attack": 25,
+            "skill": 1038
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 6.08,
+            "rogue_bleeding_follow": 4.49,
+            "rogue_eviscerate": 11.79,
+            "rogue_sneak_strike": 6.78
+          },
+          "avg_damage_per_trial": 74.4,
+          "avg_ending_combo": 2.25,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 3.1,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 10.63,
+          "basic_attacks": 25,
+          "chosen_skills": {
+            "rogue_bleeding_follow": 327,
+            "rogue_eviscerate": 200,
+            "rogue_sneak_strike": 511
+          },
+          "combo_gained": 838,
+          "combo_spent": 600,
+          "cooldown_blocked_rounds": 509,
+          "critical_hits": 92,
+          "damage_by_action": {
+            "basic_attack": 152,
+            "rogue_bleeding_follow": 1467,
+            "rogue_eviscerate": 2357,
+            "rogue_sneak_strike": 3464
+          },
+          "dodges_caused": 57,
+          "dot_damage": 1534,
+          "effects_applied": {
+            "bleed": 327
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1063
+          },
+          "resource_blocked_rounds": 488,
+          "resource_gained": 0,
+          "resource_spent": 28950,
+          "shield_absorbed": 0,
+          "skill_actions": 1038,
+          "total_damage": 7440,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 25,
+            "rogue_bleeding_follow": 327,
+            "rogue_eviscerate": 200,
+            "rogue_sneak_strike": 511
+          },
+          "valid_actions": 1063,
+          "win_rate": 0.0,
+          "wins": 0
+        },
+        "warrior": {
+          "actions": {
+            "skill": 1063
+          },
+          "avg_damage_by_action_use": {
+            "warrior_cleave": 48.38,
+            "warrior_subjugation_strike": 81.17,
+            "warrior_suppression": 0.0
+          },
+          "avg_damage_per_trial": 422.33,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 335.26,
+          "avg_ending_resource": 31.9,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 10.63,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "warrior_cleave": 534,
+            "warrior_subjugation_strike": 202,
+            "warrior_suppression": 327
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 882,
+          "critical_hits": 26,
+          "damage_by_action": {
+            "warrior_cleave": 25836,
+            "warrior_subjugation_strike": 16397,
+            "warrior_suppression": 0
+          },
+          "dodges_caused": 28,
+          "dot_damage": 0,
+          "effects_applied": {
+            "pdef_down": 327
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1063
+          },
+          "resource_blocked_rounds": 494,
+          "resource_gained": 16380,
+          "resource_spent": 23310,
+          "shield_absorbed": 0,
+          "skill_actions": 1063,
+          "total_damage": 42233,
+          "total_healing": 0,
+          "uses_by_action": {
+            "warrior_cleave": 534,
+            "warrior_subjugation_strike": 202,
+            "warrior_suppression": 327
+          },
+          "valid_actions": 1063,
+          "win_rate": 100.0,
+          "wins": 100
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "rogue",
+        "loser_top_actions": [
+          [
+            "rogue_sneak_strike",
+            511
+          ],
+          [
+            "rogue_bleeding_follow",
+            327
+          ],
+          [
+            "rogue_eviscerate",
+            200
+          ],
+          [
+            "basic_attack",
+            25
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "damage_output_gap"
+        ],
+        "winner_profile": "warrior",
+        "winner_top_actions": [
+          [
+            "warrior_cleave",
+            534
+          ],
+          [
+            "warrior_suppression",
+            327
+          ],
+          [
+            "warrior_subjugation_strike",
+            202
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "rogue": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "avg_ending_combo": 2.25,
+              "combo_gained": 838,
+              "combo_spent": 600,
+              "ending_value_legacy": 3.1,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 28950,
+              "family": "combat_energy_combo",
+              "raw_gained_signal": 0,
+              "spent": 28950
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "warrior": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 31.9,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 16380,
+              "rage_spent": 23310,
+              "raw_gained_signal": 16380,
+              "spent": 23310
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 0,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "warrior": 100
+      }
+    },
+    {
+      "avg_rounds": 11.57,
+      "class_a": "warrior",
+      "class_b": "mage",
+      "class_metrics": {
+        "mage": {
+          "actions": {
+            "skill": 1157
+          },
+          "avg_damage_by_action_use": {
+            "mage_arcane_flow": 0.0,
+            "mage_fireball": 29.81,
+            "mage_thunder_spell": 35.86
+          },
+          "avg_damage_per_trial": 361.47,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 1.8,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 11.57,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "mage_arcane_flow": 6,
+            "mage_fireball": 847,
+            "mage_thunder_spell": 304
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 829,
+          "critical_hits": 62,
+          "damage_by_action": {
+            "mage_arcane_flow": 0,
+            "mage_fireball": 25247,
+            "mage_thunder_spell": 10900
+          },
+          "dodges_caused": 44,
+          "dot_damage": 0,
+          "effects_applied": {
+            "unknown": 73
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1157
+          },
+          "resource_blocked_rounds": 34,
+          "resource_gained": -24500,
+          "resource_spent": 30620,
+          "shield_absorbed": 0,
+          "skill_actions": 1157,
+          "total_damage": 36147,
+          "total_healing": 0,
+          "uses_by_action": {
+            "mage_arcane_flow": 6,
+            "mage_fireball": 847,
+            "mage_thunder_spell": 304
+          },
+          "valid_actions": 1157,
+          "win_rate": 3.0,
+          "wins": 3
+        },
+        "warrior": {
+          "actions": {
+            "skill": 1157
+          },
+          "avg_damage_by_action_use": {
+            "warrior_cleave": 52.82,
+            "warrior_subjugation_strike": 73.18,
+            "warrior_suppression": 0.0
+          },
+          "avg_damage_per_trial": 455.67,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 64.58,
+          "avg_ending_resource": 40.75,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 11.57,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "warrior_cleave": 544,
+            "warrior_subjugation_strike": 230,
+            "warrior_suppression": 383
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 938,
+          "critical_hits": 40,
+          "damage_by_action": {
+            "stunned_skip": 0,
+            "warrior_cleave": 28736,
+            "warrior_subjugation_strike": 16831,
+            "warrior_suppression": 0
+          },
+          "dodges_caused": 42,
+          "dot_damage": 0,
+          "effects_applied": {
+            "pdef_down": 359
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1092,
+            "stunned_skip": 65
+          },
+          "resource_blocked_rounds": 560,
+          "resource_gained": 16365,
+          "resource_spent": 23350,
+          "shield_absorbed": 0,
+          "skill_actions": 1157,
+          "total_damage": 45567,
+          "total_healing": 0,
+          "uses_by_action": {
+            "warrior_cleave": 544,
+            "warrior_subjugation_strike": 230,
+            "warrior_suppression": 383
+          },
+          "valid_actions": 1157,
+          "win_rate": 89.0,
+          "wins": 89
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "mage",
+        "loser_top_actions": [
+          [
+            "mage_fireball",
+            847
+          ],
+          [
+            "mage_thunder_spell",
+            304
+          ],
+          [
+            "mage_arcane_flow",
+            6
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [],
+        "winner_profile": "warrior",
+        "winner_top_actions": [
+          [
+            "warrior_cleave",
+            544
+          ],
+          [
+            "warrior_suppression",
+            383
+          ],
+          [
+            "warrior_subjugation_strike",
+            230
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 8.0,
+      "draws": 8,
+      "metric_semantics": {
+        "by_class": {
+          "mage": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 30620,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 30620
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "warrior": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 40.75,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 16365,
+              "rage_spent": 23350,
+              "raw_gained_signal": 16365,
+              "spent": 23350
+            },
+            "stunned_skips": 65,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 65,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "draw_simultaneous": 8,
+        "simultaneous": 92
+      },
+      "trials": 100,
+      "wins": {
+        "mage": 3,
+        "warrior": 89
+      }
+    },
+    {
+      "avg_rounds": 22.77,
+      "class_a": "warrior",
+      "class_b": "priest",
+      "class_metrics": {
+        "priest": {
+          "actions": {
+            "skill": 2277
+          },
+          "avg_damage_by_action_use": {
+            "priest_healing_blessing": 0.0,
+            "priest_holy_ray": 35.32,
+            "priest_purify_faith": 0.0
+          },
+          "avg_damage_per_trial": 440.45,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 104.41,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 22.77,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "priest_healing_blessing": 487,
+            "priest_holy_ray": 1247,
+            "priest_purify_faith": 543
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 2450,
+          "critical_hits": 89,
+          "damage_by_action": {
+            "priest_healing_blessing": 0,
+            "priest_holy_ray": 44045,
+            "priest_purify_faith": 0
+          },
+          "dodges_caused": 77,
+          "dot_damage": 0,
+          "effects_applied": {
+            "hot": 487,
+            "mdef_buff": 543
+          },
+          "hot_healing": 65702,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2277
+          },
+          "resource_blocked_rounds": 0,
+          "resource_gained": -24500,
+          "resource_spent": 40434,
+          "shield_absorbed": 0,
+          "skill_actions": 2277,
+          "total_damage": 44045,
+          "total_healing": 0,
+          "uses_by_action": {
+            "priest_healing_blessing": 487,
+            "priest_holy_ray": 1247,
+            "priest_purify_faith": 543
+          },
+          "valid_actions": 2277,
+          "win_rate": 96.0,
+          "wins": 96
+        },
+        "warrior": {
+          "actions": {
+            "skill": 2277
+          },
+          "avg_damage_by_action_use": {
+            "warrior_cleave": 53.02,
+            "warrior_subjugation_strike": 88.84,
+            "warrior_suppression": 0.0
+          },
+          "avg_damage_per_trial": 932.71,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 2.23,
+          "avg_ending_resource": 61.35,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 22.77,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "warrior_cleave": 1233,
+            "warrior_subjugation_strike": 314,
+            "warrior_suppression": 730
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1948,
+          "critical_hits": 68,
+          "damage_by_action": {
+            "warrior_cleave": 65375,
+            "warrior_subjugation_strike": 27896,
+            "warrior_suppression": 0
+          },
+          "dodges_caused": 54,
+          "dot_damage": 0,
+          "effects_applied": {
+            "pdef_down": 730
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2277
+          },
+          "resource_blocked_rounds": 929,
+          "resource_gained": 35415,
+          "resource_spent": 40940,
+          "shield_absorbed": 0,
+          "skill_actions": 2277,
+          "total_damage": 93271,
+          "total_healing": 0,
+          "uses_by_action": {
+            "warrior_cleave": 1233,
+            "warrior_subjugation_strike": 314,
+            "warrior_suppression": 730
+          },
+          "valid_actions": 2277,
+          "win_rate": 4.0,
+          "wins": 4
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "warrior",
+        "loser_top_actions": [
+          [
+            "warrior_cleave",
+            1233
+          ],
+          [
+            "warrior_suppression",
+            730
+          ],
+          [
+            "warrior_subjugation_strike",
+            314
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "resource_availability_gap",
+          "healing_sustain_gap"
+        ],
+        "winner_profile": "priest",
+        "winner_top_actions": [
+          [
+            "priest_holy_ray",
+            1247
+          ],
+          [
+            "priest_purify_faith",
+            543
+          ],
+          [
+            "priest_healing_blessing",
+            487
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "priest": {
+            "avg_effective_healing_per_trial": 657.02,
+            "direct_healing": 0,
+            "effective_healing_total": 65702,
+            "hot_healing": 65702,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 40434,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 40434
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "warrior": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 61.35,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 35415,
+              "rage_spent": 40940,
+              "raw_gained_signal": 35415,
+              "spent": 40940
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 0,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "priest": 96,
+        "warrior": 4
+      }
+    },
+    {
+      "avg_rounds": 16.17,
+      "class_a": "knight",
+      "class_b": "scout",
+      "class_metrics": {
+        "knight": {
+          "actions": {
+            "basic_attack": 798,
+            "skill": 819
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 35.56,
+            "knight_holy_protection": 0.0,
+            "knight_shield_bash": 31.37
+          },
+          "avg_damage_per_trial": 413.04,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 383.97,
+          "avg_ending_resource": 25.55,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 16.17,
+          "basic_attacks": 798,
+          "chosen_skills": {
+            "knight_holy_protection": 407,
+            "knight_shield_bash": 412
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1469,
+          "critical_hits": 66,
+          "damage_by_action": {
+            "basic_attack": 28378,
+            "knight_holy_protection": 0,
+            "knight_shield_bash": 12926
+          },
+          "dodges_caused": 55,
+          "dot_damage": 0,
+          "effects_applied": {
+            "shield": 407,
+            "unknown": 105
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1617
+          },
+          "resource_blocked_rounds": 3169,
+          "resource_gained": 18150,
+          "resource_spent": 18415,
+          "shield_absorbed": 3819,
+          "skill_actions": 819,
+          "total_damage": 41304,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 798,
+            "knight_holy_protection": 407,
+            "knight_shield_bash": 412
+          },
+          "valid_actions": 1617,
+          "win_rate": 100.0,
+          "wins": 100
+        },
+        "scout": {
+          "actions": {
+            "basic_attack": 158,
+            "skill": 1459
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 0.72,
+            "scout_aimed_shot": 4.96,
+            "scout_sting_arrow": 0.21,
+            "scout_trap": 0.0
+          },
+          "avg_damage_per_trial": 24.44,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 11.95,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 16.17,
+          "basic_attacks": 158,
+          "chosen_skills": {
+            "scout_aimed_shot": 448,
+            "scout_sting_arrow": 516,
+            "scout_trap": 495
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1356,
+          "critical_hits": 79,
+          "damage_by_action": {
+            "basic_attack": 113,
+            "scout_aimed_shot": 2222,
+            "scout_sting_arrow": 109,
+            "scout_trap": 0,
+            "stunned_skip": 0
+          },
+          "dodges_caused": 58,
+          "dot_damage": 2659,
+          "effects_applied": {
+            "pdef_down": 491,
+            "poison": 501
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1520,
+            "stunned_skip": 97
+          },
+          "resource_blocked_rounds": 598,
+          "resource_gained": 0,
+          "resource_spent": 39145,
+          "shield_absorbed": 0,
+          "skill_actions": 1459,
+          "total_damage": 2444,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 158,
+            "scout_aimed_shot": 448,
+            "scout_sting_arrow": 516,
+            "scout_trap": 495
+          },
+          "valid_actions": 1617,
+          "win_rate": 0.0,
+          "wins": 0
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "scout",
+        "loser_top_actions": [
+          [
+            "scout_sting_arrow",
+            516
+          ],
+          [
+            "scout_trap",
+            495
+          ],
+          [
+            "scout_aimed_shot",
+            448
+          ],
+          [
+            "basic_attack",
+            158
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "damage_output_gap",
+          "shield_absorption_gap"
+        ],
+        "winner_profile": "knight",
+        "winner_top_actions": [
+          [
+            "basic_attack",
+            798
+          ],
+          [
+            "knight_shield_bash",
+            412
+          ],
+          [
+            "knight_holy_protection",
+            407
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "knight": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 25.55,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 18150,
+              "rage_spent": 18415,
+              "raw_gained_signal": 18150,
+              "spent": 18415
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "scout": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 11.95,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 39145,
+              "family": "combat_energy",
+              "raw_gained_signal": 0,
+              "spent": 39145
+            },
+            "stunned_skips": 97,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 97,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "knight": 100
+      }
+    },
+    {
+      "avg_rounds": 16.36,
+      "class_a": "knight",
+      "class_b": "rogue",
+      "class_metrics": {
+        "knight": {
+          "actions": {
+            "basic_attack": 768,
+            "skill": 868
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 35.01,
+            "knight_holy_protection": 0.0,
+            "knight_shield_bash": 31.42
+          },
+          "avg_damage_per_trial": 412.46,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 405.1,
+          "avg_ending_resource": 27.3,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 16.36,
+          "basic_attacks": 768,
+          "chosen_skills": {
+            "knight_holy_protection": 411,
+            "knight_shield_bash": 457
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1537,
+          "critical_hits": 65,
+          "damage_by_action": {
+            "basic_attack": 26885,
+            "knight_holy_protection": 0,
+            "knight_shield_bash": 14361
+          },
+          "dodges_caused": 67,
+          "dot_damage": 0,
+          "effects_applied": {
+            "shield": 411,
+            "unknown": 116
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1636
+          },
+          "resource_blocked_rounds": 3092,
+          "resource_gained": 18375,
+          "resource_spent": 19415,
+          "shield_absorbed": 1423,
+          "skill_actions": 868,
+          "total_damage": 41246,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 768,
+            "knight_holy_protection": 411,
+            "knight_shield_bash": 457
+          },
+          "valid_actions": 1636,
+          "win_rate": 100.0,
+          "wins": 100
+        },
+        "rogue": {
+          "actions": {
+            "basic_attack": 108,
+            "skill": 1528
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 0.0,
+            "rogue_bleeding_follow": 0.54,
+            "rogue_eviscerate": 0.24,
+            "rogue_sneak_strike": 0.12
+          },
+          "avg_damage_per_trial": 4.4,
+          "avg_ending_combo": 1.75,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 11.2,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 16.36,
+          "basic_attacks": 108,
+          "chosen_skills": {
+            "rogue_bleeding_follow": 524,
+            "rogue_eviscerate": 285,
+            "rogue_sneak_strike": 719
+          },
+          "combo_gained": 1152,
+          "combo_spent": 810,
+          "cooldown_blocked_rounds": 707,
+          "critical_hits": 115,
+          "damage_by_action": {
+            "basic_attack": 0,
+            "rogue_bleeding_follow": 283,
+            "rogue_eviscerate": 68,
+            "rogue_sneak_strike": 89,
+            "stunned_skip": 0
+          },
+          "dodges_caused": 66,
+          "dot_damage": 2550,
+          "effects_applied": {
+            "bleed": 483
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1526,
+            "stunned_skip": 110
+          },
+          "resource_blocked_rounds": 973,
+          "resource_gained": 0,
+          "resource_spent": 39600,
+          "shield_absorbed": 0,
+          "skill_actions": 1528,
+          "total_damage": 440,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 108,
+            "rogue_bleeding_follow": 524,
+            "rogue_eviscerate": 285,
+            "rogue_sneak_strike": 719
+          },
+          "valid_actions": 1636,
+          "win_rate": 0.0,
+          "wins": 0
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "rogue",
+        "loser_top_actions": [
+          [
+            "rogue_sneak_strike",
+            719
+          ],
+          [
+            "rogue_bleeding_follow",
+            524
+          ],
+          [
+            "rogue_eviscerate",
+            285
+          ],
+          [
+            "basic_attack",
+            108
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "damage_output_gap"
+        ],
+        "winner_profile": "knight",
+        "winner_top_actions": [
+          [
+            "basic_attack",
+            768
+          ],
+          [
+            "knight_shield_bash",
+            457
+          ],
+          [
+            "knight_holy_protection",
+            411
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "knight": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 27.3,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 18375,
+              "rage_spent": 19415,
+              "raw_gained_signal": 18375,
+              "spent": 19415
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "rogue": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "avg_ending_combo": 1.75,
+              "combo_gained": 1152,
+              "combo_spent": 810,
+              "ending_value_legacy": 11.2,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 39600,
+              "family": "combat_energy_combo",
+              "raw_gained_signal": 0,
+              "spent": 39600
+            },
+            "stunned_skips": 110,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 110,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "knight": 100
+      }
+    },
+    {
+      "avg_rounds": 15.77,
+      "class_a": "knight",
+      "class_b": "mage",
+      "class_metrics": {
+        "knight": {
+          "actions": {
+            "basic_attack": 729,
+            "skill": 848
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 40.26,
+            "knight_holy_protection": 0.0,
+            "knight_shield_bash": 36.25
+          },
+          "avg_damage_per_trial": 442.12,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 284.98,
+          "avg_ending_resource": 27.3,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 15.77,
+          "basic_attacks": 729,
+          "chosen_skills": {
+            "knight_holy_protection": 438,
+            "knight_shield_bash": 410
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1386,
+          "critical_hits": 50,
+          "damage_by_action": {
+            "basic_attack": 29348,
+            "knight_holy_protection": 0,
+            "knight_shield_bash": 14864,
+            "stunned_skip": 0
+          },
+          "dodges_caused": 44,
+          "dot_damage": 0,
+          "effects_applied": {
+            "shield": 378,
+            "unknown": 103
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1474,
+            "stunned_skip": 103
+          },
+          "resource_blocked_rounds": 2924,
+          "resource_gained": 16440,
+          "resource_spent": 17370,
+          "shield_absorbed": 36647,
+          "skill_actions": 848,
+          "total_damage": 44212,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 729,
+            "knight_holy_protection": 438,
+            "knight_shield_bash": 410
+          },
+          "valid_actions": 1577,
+          "win_rate": 100.0,
+          "wins": 100
+        },
+        "mage": {
+          "actions": {
+            "basic_attack": 7,
+            "skill": 1570
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 20.71,
+            "mage_arcane_flow": 0.0,
+            "mage_fireball": 5.35,
+            "mage_thunder_spell": 22.46
+          },
+          "avg_damage_per_trial": 150.02,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 15.77,
+          "basic_attacks": 7,
+          "chosen_skills": {
+            "mage_arcane_flow": 101,
+            "mage_fireball": 1060,
+            "mage_thunder_spell": 409
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1190,
+          "critical_hits": 95,
+          "damage_by_action": {
+            "basic_attack": 145,
+            "mage_arcane_flow": 0,
+            "mage_fireball": 5672,
+            "mage_thunder_spell": 9185,
+            "stunned_skip": 0
+          },
+          "dodges_caused": 68,
+          "dot_damage": 0,
+          "effects_applied": {
+            "unknown": 201
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 1484,
+            "stunned_skip": 93
+          },
+          "resource_blocked_rounds": 307,
+          "resource_gained": -24500,
+          "resource_spent": 37685,
+          "shield_absorbed": 0,
+          "skill_actions": 1570,
+          "total_damage": 15002,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 7,
+            "mage_arcane_flow": 101,
+            "mage_fireball": 1060,
+            "mage_thunder_spell": 409
+          },
+          "valid_actions": 1577,
+          "win_rate": 0.0,
+          "wins": 0
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "mage",
+        "loser_top_actions": [
+          [
+            "mage_fireball",
+            1060
+          ],
+          [
+            "mage_thunder_spell",
+            409
+          ],
+          [
+            "mage_arcane_flow",
+            101
+          ],
+          [
+            "basic_attack",
+            7
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "damage_output_gap",
+          "shield_absorption_gap"
+        ],
+        "winner_profile": "knight",
+        "winner_top_actions": [
+          [
+            "basic_attack",
+            729
+          ],
+          [
+            "knight_holy_protection",
+            438
+          ],
+          [
+            "knight_shield_bash",
+            410
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "knight": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 27.3,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 16440,
+              "rage_spent": 17370,
+              "raw_gained_signal": 16440,
+              "spent": 17370
+            },
+            "stunned_skips": 103,
+            "terminal_cancelled_intents": 0
+          },
+          "mage": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 37685,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 37685
+            },
+            "stunned_skips": 93,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 196,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "knight": 100
+      }
+    },
+    {
+      "avg_rounds": 48.99,
+      "class_a": "knight",
+      "class_b": "priest",
+      "class_metrics": {
+        "knight": {
+          "actions": {
+            "basic_attack": 2212,
+            "skill": 2687
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 42.75,
+            "knight_holy_protection": 0.0,
+            "knight_shield_bash": 37.75
+          },
+          "avg_damage_per_trial": 1489.96,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 133.48,
+          "avg_ending_resource": 21.95,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 48.99,
+          "basic_attacks": 2212,
+          "chosen_skills": {
+            "knight_holy_protection": 1245,
+            "knight_shield_bash": 1442
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 4969,
+          "critical_hits": 199,
+          "damage_by_action": {
+            "basic_attack": 94557,
+            "knight_holy_protection": 0,
+            "knight_shield_bash": 54439
+          },
+          "dodges_caused": 191,
+          "dot_damage": 0,
+          "effects_applied": {
+            "shield": 1245,
+            "unknown": 363
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 4899
+          },
+          "resource_blocked_rounds": 8958,
+          "resource_gained": 54810,
+          "resource_spent": 59965,
+          "shield_absorbed": 92500,
+          "skill_actions": 2687,
+          "total_damage": 148996,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 2212,
+            "knight_holy_protection": 1245,
+            "knight_shield_bash": 1442
+          },
+          "valid_actions": 4899,
+          "win_rate": 62.0,
+          "wins": 62
+        },
+        "priest": {
+          "actions": {
+            "basic_attack": 705,
+            "skill": 4194
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 7.69,
+            "priest_healing_blessing": 0.0,
+            "priest_holy_ray": 9.31,
+            "priest_purify_faith": 0.0
+          },
+          "avg_damage_per_trial": 302.96,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 83.3,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 48.99,
+          "basic_attacks": 705,
+          "chosen_skills": {
+            "priest_healing_blessing": 852,
+            "priest_holy_ray": 2673,
+            "priest_purify_faith": 669
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 3417,
+          "critical_hits": 220,
+          "damage_by_action": {
+            "basic_attack": 5421,
+            "priest_healing_blessing": 0,
+            "priest_holy_ray": 24875,
+            "priest_purify_faith": 0,
+            "stunned_skip": 0
+          },
+          "dodges_caused": 155,
+          "dot_damage": 0,
+          "effects_applied": {
+            "hot": 784,
+            "mdef_buff": 617
+          },
+          "hot_healing": 118666,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 4542,
+            "stunned_skip": 357
+          },
+          "resource_blocked_rounds": 2370,
+          "resource_gained": -24500,
+          "resource_spent": 65872,
+          "shield_absorbed": 0,
+          "skill_actions": 4194,
+          "total_damage": 30296,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 705,
+            "priest_healing_blessing": 852,
+            "priest_holy_ray": 2673,
+            "priest_purify_faith": 669
+          },
+          "valid_actions": 4899,
+          "win_rate": 38.0,
+          "wins": 38
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "priest",
+        "loser_top_actions": [
+          [
+            "priest_holy_ray",
+            2673
+          ],
+          [
+            "priest_healing_blessing",
+            852
+          ],
+          [
+            "basic_attack",
+            705
+          ],
+          [
+            "priest_purify_faith",
+            669
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "damage_output_gap",
+          "shield_absorption_gap"
+        ],
+        "winner_profile": "knight",
+        "winner_top_actions": [
+          [
+            "basic_attack",
+            2212
+          ],
+          [
+            "knight_shield_bash",
+            1442
+          ],
+          [
+            "knight_holy_protection",
+            1245
+          ]
+        ]
+      },
+      "dominance_review": false,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "knight": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 21.95,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "rage",
+              "rage_gained": 54810,
+              "rage_spent": 59965,
+              "raw_gained_signal": 54810,
+              "spent": 59965
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "priest": {
+            "avg_effective_healing_per_trial": 1186.66,
+            "direct_healing": 0,
+            "effective_healing_total": 118666,
+            "hot_healing": 118666,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 65872,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 65872
+            },
+            "stunned_skips": 357,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 357,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 55.0,
+          "simultaneous_terminal_rate": 45.0
+        }
+      },
+      "terminal_reasons": {
+        "round_limit_hp_percent": 55,
+        "simultaneous": 45
+      },
+      "trials": 100,
+      "wins": {
+        "knight": 62,
+        "priest": 38
+      }
+    },
+    {
+      "avg_rounds": 20.73,
+      "class_a": "scout",
+      "class_b": "rogue",
+      "class_metrics": {
+        "rogue": {
+          "actions": {
+            "basic_attack": 310,
+            "skill": 1763
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 14.91,
+            "rogue_bleeding_follow": 10.85,
+            "rogue_eviscerate": 30.36,
+            "rogue_sneak_strike": 16.62
+          },
+          "avg_damage_per_trial": 345.19,
+          "avg_ending_combo": 2.21,
+          "avg_ending_hp": 84.99,
+          "avg_ending_resource": 11.9,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 20.73,
+          "basic_attacks": 310,
+          "chosen_skills": {
+            "rogue_bleeding_follow": 620,
+            "rogue_eviscerate": 304,
+            "rogue_sneak_strike": 839
+          },
+          "combo_gained": 1446,
+          "combo_spent": 909,
+          "cooldown_blocked_rounds": 897,
+          "critical_hits": 136,
+          "damage_by_action": {
+            "basic_attack": 4622,
+            "none": 0,
+            "rogue_bleeding_follow": 6724,
+            "rogue_eviscerate": 9229,
+            "rogue_sneak_strike": 13944
+          },
+          "dodges_caused": 103,
+          "dot_damage": 5705,
+          "effects_applied": {
+            "bleed": 613
+          },
+          "hot_healing": 0,
+          "invalid_actions": 17,
+          "outcome_reasons": {
+            "ok": 2056,
+            "terminal_before_actions": 17
+          },
+          "resource_blocked_rounds": 1889,
+          "resource_gained": 0,
+          "resource_spent": 48270,
+          "shield_absorbed": 0,
+          "skill_actions": 1763,
+          "total_damage": 34519,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 310,
+            "rogue_bleeding_follow": 620,
+            "rogue_eviscerate": 304,
+            "rogue_sneak_strike": 839
+          },
+          "valid_actions": 2056,
+          "win_rate": 99.0,
+          "wins": 99
+        },
+        "scout": {
+          "actions": {
+            "basic_attack": 356,
+            "skill": 1717
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 13.15,
+            "scout_aimed_shot": 27.98,
+            "scout_sting_arrow": 10.78,
+            "scout_trap": 0.0
+          },
+          "avg_damage_per_trial": 250.09,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 13.15,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 20.73,
+          "basic_attacks": 356,
+          "chosen_skills": {
+            "scout_aimed_shot": 487,
+            "scout_sting_arrow": 622,
+            "scout_trap": 608
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1750,
+          "critical_hits": 118,
+          "damage_by_action": {
+            "basic_attack": 4682,
+            "none": 0,
+            "scout_aimed_shot": 13624,
+            "scout_sting_arrow": 6703,
+            "scout_trap": 0
+          },
+          "dodges_caused": 84,
+          "dot_damage": 5995,
+          "effects_applied": {
+            "pdef_down": 605,
+            "poison": 615
+          },
+          "hot_healing": 0,
+          "invalid_actions": 17,
+          "outcome_reasons": {
+            "ok": 2056,
+            "terminal_before_actions": 17
+          },
+          "resource_blocked_rounds": 1318,
+          "resource_gained": 0,
+          "resource_spent": 48145,
+          "shield_absorbed": 0,
+          "skill_actions": 1717,
+          "total_damage": 25009,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 356,
+            "scout_aimed_shot": 487,
+            "scout_sting_arrow": 622,
+            "scout_trap": 608
+          },
+          "valid_actions": 2056,
+          "win_rate": 0.0,
+          "wins": 0
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "scout",
+        "loser_top_actions": [
+          [
+            "scout_sting_arrow",
+            622
+          ],
+          [
+            "scout_trap",
+            608
+          ],
+          [
+            "scout_aimed_shot",
+            487
+          ],
+          [
+            "basic_attack",
+            356
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [],
+        "winner_profile": "rogue",
+        "winner_top_actions": [
+          [
+            "rogue_sneak_strike",
+            839
+          ],
+          [
+            "rogue_bleeding_follow",
+            620
+          ],
+          [
+            "basic_attack",
+            310
+          ],
+          [
+            "rogue_eviscerate",
+            304
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 1.0,
+      "draws": 1,
+      "metric_semantics": {
+        "by_class": {
+          "rogue": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "avg_ending_combo": 2.21,
+              "combo_gained": 1446,
+              "combo_spent": 909,
+              "ending_value_legacy": 11.9,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 48270,
+              "family": "combat_energy_combo",
+              "raw_gained_signal": 0,
+              "spent": 48270
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 17
+          },
+          "scout": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 13.15,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 48145,
+              "family": "combat_energy",
+              "raw_gained_signal": 0,
+              "spent": 48145
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 17
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 0,
+        "terminal_cancelled_intents": 34,
+        "terminal_rates": {
+          "periodic_terminal_rate": 17.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 83.0
+        }
+      },
+      "terminal_reasons": {
+        "draw_simultaneous": 1,
+        "periodic": 17,
+        "simultaneous": 82
+      },
+      "trials": 100,
+      "wins": {
+        "rogue": 99
+      }
+    },
+    {
+      "avg_rounds": 19.6,
+      "class_a": "scout",
+      "class_b": "mage",
+      "class_metrics": {
+        "mage": {
+          "actions": {
+            "basic_attack": 95,
+            "skill": 1865
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 16.32,
+            "mage_arcane_flow": 0.0,
+            "mage_fireball": 21.44,
+            "mage_thunder_spell": 26.38
+          },
+          "avg_damage_per_trial": 402.36,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 35.6,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 19.6,
+          "basic_attacks": 95,
+          "chosen_skills": {
+            "mage_arcane_flow": 168,
+            "mage_fireball": 1231,
+            "mage_thunder_spell": 466
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1718,
+          "critical_hits": 103,
+          "damage_by_action": {
+            "basic_attack": 1550,
+            "mage_arcane_flow": 0,
+            "mage_fireball": 26393,
+            "mage_thunder_spell": 12293,
+            "none": 0
+          },
+          "dodges_caused": 96,
+          "dot_damage": 0,
+          "effects_applied": {
+            "unknown": 288
+          },
+          "hot_healing": 0,
+          "invalid_actions": 4,
+          "outcome_reasons": {
+            "ok": 1956,
+            "terminal_before_actions": 4
+          },
+          "resource_blocked_rounds": 732,
+          "resource_gained": -24500,
+          "resource_spent": 45460,
+          "shield_absorbed": 0,
+          "skill_actions": 1865,
+          "total_damage": 40236,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 95,
+            "mage_arcane_flow": 168,
+            "mage_fireball": 1231,
+            "mage_thunder_spell": 466
+          },
+          "valid_actions": 1956,
+          "win_rate": 73.0,
+          "wins": 73
+        },
+        "scout": {
+          "actions": {
+            "basic_attack": 237,
+            "skill": 1723
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 17.73,
+            "scout_aimed_shot": 28.99,
+            "scout_sting_arrow": 17.41,
+            "scout_trap": 0.0
+          },
+          "avg_damage_per_trial": 291.79,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 2.65,
+          "avg_ending_resource": 9.6,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 19.6,
+          "basic_attacks": 237,
+          "chosen_skills": {
+            "scout_aimed_shot": 488,
+            "scout_sting_arrow": 622,
+            "scout_trap": 613
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1655,
+          "critical_hits": 92,
+          "damage_by_action": {
+            "basic_attack": 4202,
+            "none": 0,
+            "scout_aimed_shot": 14149,
+            "scout_sting_arrow": 10828,
+            "scout_trap": 0,
+            "stunned_skip": 0
+          },
+          "dodges_caused": 64,
+          "dot_damage": 9070,
+          "effects_applied": {
+            "pdef_down": 578,
+            "poison": 601
+          },
+          "hot_healing": 0,
+          "invalid_actions": 4,
+          "outcome_reasons": {
+            "ok": 1843,
+            "stunned_skip": 113,
+            "terminal_before_actions": 4
+          },
+          "resource_blocked_rounds": 953,
+          "resource_gained": 0,
+          "resource_spent": 46155,
+          "shield_absorbed": 0,
+          "skill_actions": 1723,
+          "total_damage": 29179,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 237,
+            "scout_aimed_shot": 488,
+            "scout_sting_arrow": 622,
+            "scout_trap": 613
+          },
+          "valid_actions": 1956,
+          "win_rate": 11.0,
+          "wins": 11
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "scout",
+        "loser_top_actions": [
+          [
+            "scout_sting_arrow",
+            622
+          ],
+          [
+            "scout_trap",
+            613
+          ],
+          [
+            "scout_aimed_shot",
+            488
+          ],
+          [
+            "basic_attack",
+            237
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [],
+        "winner_profile": "mage",
+        "winner_top_actions": [
+          [
+            "mage_fireball",
+            1231
+          ],
+          [
+            "mage_thunder_spell",
+            466
+          ],
+          [
+            "mage_arcane_flow",
+            168
+          ],
+          [
+            "basic_attack",
+            95
+          ]
+        ]
+      },
+      "dominance_review": false,
+      "draw_rate": 16.0,
+      "draws": 16,
+      "metric_semantics": {
+        "by_class": {
+          "mage": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 45460,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 45460
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 4
+          },
+          "scout": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 9.6,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 46155,
+              "family": "combat_energy",
+              "raw_gained_signal": 0,
+              "spent": 46155
+            },
+            "stunned_skips": 113,
+            "terminal_cancelled_intents": 4
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 113,
+        "terminal_cancelled_intents": 8,
+        "terminal_rates": {
+          "periodic_terminal_rate": 4.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 96.0
+        }
+      },
+      "terminal_reasons": {
+        "draw_simultaneous": 16,
+        "periodic": 4,
+        "simultaneous": 80
+      },
+      "trials": 100,
+      "wins": {
+        "mage": 73,
+        "scout": 11
+      }
+    },
+    {
+      "avg_rounds": 21.26,
+      "class_a": "scout",
+      "class_b": "priest",
+      "class_metrics": {
+        "priest": {
+          "actions": {
+            "skill": 2126
+          },
+          "avg_damage_by_action_use": {
+            "priest_healing_blessing": 0.0,
+            "priest_holy_ray": 29.09,
+            "priest_purify_faith": 0.0
+          },
+          "avg_damage_per_trial": 409.0,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 275.02,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 21.26,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "priest_healing_blessing": 211,
+            "priest_holy_ray": 1406,
+            "priest_purify_faith": 509
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1835,
+          "critical_hits": 89,
+          "damage_by_action": {
+            "priest_healing_blessing": 0,
+            "priest_holy_ray": 40900,
+            "priest_purify_faith": 0
+          },
+          "dodges_caused": 65,
+          "dot_damage": 0,
+          "effects_applied": {
+            "hot": 211,
+            "mdef_buff": 509
+          },
+          "hot_healing": 30438,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2126
+          },
+          "resource_blocked_rounds": 0,
+          "resource_gained": -24500,
+          "resource_spent": 33382,
+          "shield_absorbed": 0,
+          "skill_actions": 2126,
+          "total_damage": 40900,
+          "total_healing": 0,
+          "uses_by_action": {
+            "priest_healing_blessing": 211,
+            "priest_holy_ray": 1406,
+            "priest_purify_faith": 509
+          },
+          "valid_actions": 2126,
+          "win_rate": 100.0,
+          "wins": 100
+        },
+        "scout": {
+          "actions": {
+            "basic_attack": 409,
+            "skill": 1717
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 20.34,
+            "scout_aimed_shot": 28.19,
+            "scout_sting_arrow": 19.34,
+            "scout_trap": 0.0
+          },
+          "avg_damage_per_trial": 319.95,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 15.05,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 21.26,
+          "basic_attacks": 409,
+          "chosen_skills": {
+            "scout_aimed_shot": 311,
+            "scout_sting_arrow": 771,
+            "scout_trap": 635
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1922,
+          "critical_hits": 115,
+          "damage_by_action": {
+            "basic_attack": 8321,
+            "scout_aimed_shot": 8766,
+            "scout_sting_arrow": 14908,
+            "scout_trap": 0
+          },
+          "dodges_caused": 80,
+          "dot_damage": 8941,
+          "effects_applied": {
+            "pdef_down": 635,
+            "poison": 771
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2126
+          },
+          "resource_blocked_rounds": 1462,
+          "resource_gained": 0,
+          "resource_spent": 49015,
+          "shield_absorbed": 0,
+          "skill_actions": 1717,
+          "total_damage": 31995,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 409,
+            "scout_aimed_shot": 311,
+            "scout_sting_arrow": 771,
+            "scout_trap": 635
+          },
+          "valid_actions": 2126,
+          "win_rate": 0.0,
+          "wins": 0
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "scout",
+        "loser_top_actions": [
+          [
+            "scout_sting_arrow",
+            771
+          ],
+          [
+            "scout_trap",
+            635
+          ],
+          [
+            "basic_attack",
+            409
+          ],
+          [
+            "scout_aimed_shot",
+            311
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "resource_availability_gap",
+          "healing_sustain_gap"
+        ],
+        "winner_profile": "priest",
+        "winner_top_actions": [
+          [
+            "priest_holy_ray",
+            1406
+          ],
+          [
+            "priest_purify_faith",
+            509
+          ],
+          [
+            "priest_healing_blessing",
+            211
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "priest": {
+            "avg_effective_healing_per_trial": 304.38,
+            "direct_healing": 0,
+            "effective_healing_total": 30438,
+            "hot_healing": 30438,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 33382,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 33382
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "scout": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 15.05,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 49015,
+              "family": "combat_energy",
+              "raw_gained_signal": 0,
+              "spent": 49015
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 0,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "priest": 100
+      }
+    },
+    {
+      "avg_rounds": 16.01,
+      "class_a": "rogue",
+      "class_b": "mage",
+      "class_metrics": {
+        "mage": {
+          "actions": {
+            "basic_attack": 11,
+            "skill": 1590
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 16.18,
+            "mage_arcane_flow": 0.0,
+            "mage_fireball": 21.28,
+            "mage_thunder_spell": 25.22
+          },
+          "avg_damage_per_trial": 334.14,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 0.22,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 16.01,
+          "basic_attacks": 11,
+          "chosen_skills": {
+            "mage_arcane_flow": 100,
+            "mage_fireball": 1101,
+            "mage_thunder_spell": 389
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 1213,
+          "critical_hits": 85,
+          "damage_by_action": {
+            "basic_attack": 178,
+            "mage_arcane_flow": 0,
+            "mage_fireball": 23427,
+            "mage_thunder_spell": 9809,
+            "none": 0
+          },
+          "dodges_caused": 91,
+          "dot_damage": 0,
+          "effects_applied": {
+            "unknown": 197
+          },
+          "hot_healing": 0,
+          "invalid_actions": 19,
+          "outcome_reasons": {
+            "ok": 1582,
+            "terminal_before_actions": 19
+          },
+          "resource_blocked_rounds": 359,
+          "resource_gained": -24500,
+          "resource_spent": 39035,
+          "shield_absorbed": 0,
+          "skill_actions": 1590,
+          "total_damage": 33414,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 11,
+            "mage_arcane_flow": 100,
+            "mage_fireball": 1101,
+            "mage_thunder_spell": 389
+          },
+          "valid_actions": 1582,
+          "win_rate": 1.0,
+          "wins": 1
+        },
+        "rogue": {
+          "actions": {
+            "basic_attack": 119,
+            "skill": 1482
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 17.68,
+            "rogue_bleeding_follow": 15.16,
+            "rogue_eviscerate": 44.14,
+            "rogue_sneak_strike": 21.51
+          },
+          "avg_damage_per_trial": 365.46,
+          "avg_ending_combo": 2.02,
+          "avg_ending_hp": 61.15,
+          "avg_ending_resource": 11.5,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 16.01,
+          "basic_attacks": 119,
+          "chosen_skills": {
+            "rogue_bleeding_follow": 498,
+            "rogue_eviscerate": 253,
+            "rogue_sneak_strike": 731
+          },
+          "combo_gained": 1143,
+          "combo_spent": 744,
+          "cooldown_blocked_rounds": 688,
+          "critical_hits": 102,
+          "damage_by_action": {
+            "basic_attack": 2104,
+            "none": 0,
+            "rogue_bleeding_follow": 7551,
+            "rogue_eviscerate": 11167,
+            "rogue_sneak_strike": 15724,
+            "stunned_skip": 0
+          },
+          "dodges_caused": 79,
+          "dot_damage": 6128,
+          "effects_applied": {
+            "bleed": 483
+          },
+          "hot_healing": 0,
+          "invalid_actions": 19,
+          "outcome_reasons": {
+            "ok": 1492,
+            "stunned_skip": 90,
+            "terminal_before_actions": 19
+          },
+          "resource_blocked_rounds": 1009,
+          "resource_gained": 0,
+          "resource_spent": 38495,
+          "shield_absorbed": 0,
+          "skill_actions": 1482,
+          "total_damage": 36546,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 119,
+            "rogue_bleeding_follow": 498,
+            "rogue_eviscerate": 253,
+            "rogue_sneak_strike": 731
+          },
+          "valid_actions": 1582,
+          "win_rate": 96.0,
+          "wins": 96
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "mage",
+        "loser_top_actions": [
+          [
+            "mage_fireball",
+            1101
+          ],
+          [
+            "mage_thunder_spell",
+            389
+          ],
+          [
+            "mage_arcane_flow",
+            100
+          ],
+          [
+            "basic_attack",
+            11
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "periodic_damage_gap"
+        ],
+        "winner_profile": "rogue",
+        "winner_top_actions": [
+          [
+            "rogue_sneak_strike",
+            731
+          ],
+          [
+            "rogue_bleeding_follow",
+            498
+          ],
+          [
+            "rogue_eviscerate",
+            253
+          ],
+          [
+            "basic_attack",
+            119
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 3.0,
+      "draws": 3,
+      "metric_semantics": {
+        "by_class": {
+          "mage": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 39035,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 39035
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 19
+          },
+          "rogue": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "avg_ending_combo": 2.02,
+              "combo_gained": 1143,
+              "combo_spent": 744,
+              "ending_value_legacy": 11.5,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 38495,
+              "family": "combat_energy_combo",
+              "raw_gained_signal": 0,
+              "spent": 38495
+            },
+            "stunned_skips": 90,
+            "terminal_cancelled_intents": 19
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 90,
+        "terminal_cancelled_intents": 38,
+        "terminal_rates": {
+          "periodic_terminal_rate": 19.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 81.0
+        }
+      },
+      "terminal_reasons": {
+        "draw_simultaneous": 3,
+        "periodic": 19,
+        "simultaneous": 78
+      },
+      "trials": 100,
+      "wins": {
+        "mage": 1,
+        "rogue": 96
+      }
+    },
+    {
+      "avg_rounds": 23.66,
+      "class_a": "rogue",
+      "class_b": "priest",
+      "class_metrics": {
+        "priest": {
+          "actions": {
+            "skill": 2366
+          },
+          "avg_damage_by_action_use": {
+            "priest_healing_blessing": 0.0,
+            "priest_holy_ray": 29.29,
+            "priest_purify_faith": 0.0
+          },
+          "avg_damage_per_trial": 410.62,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 219.76,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 23.66,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "priest_healing_blessing": 381,
+            "priest_holy_ray": 1402,
+            "priest_purify_faith": 583
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 2403,
+          "critical_hits": 99,
+          "damage_by_action": {
+            "priest_healing_blessing": 0,
+            "priest_holy_ray": 41062,
+            "priest_purify_faith": 0
+          },
+          "dodges_caused": 60,
+          "dot_damage": 0,
+          "effects_applied": {
+            "hot": 381,
+            "mdef_buff": 583
+          },
+          "hot_healing": 51224,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2366
+          },
+          "resource_blocked_rounds": 0,
+          "resource_gained": -24500,
+          "resource_spent": 39914,
+          "shield_absorbed": 0,
+          "skill_actions": 2366,
+          "total_damage": 41062,
+          "total_healing": 0,
+          "uses_by_action": {
+            "priest_healing_blessing": 381,
+            "priest_holy_ray": 1402,
+            "priest_purify_faith": 583
+          },
+          "valid_actions": 2366,
+          "win_rate": 100.0,
+          "wins": 100
+        },
+        "rogue": {
+          "actions": {
+            "basic_attack": 406,
+            "skill": 1960
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 22.41,
+            "rogue_bleeding_follow": 16.27,
+            "rogue_eviscerate": 45.87,
+            "rogue_sneak_strike": 24.8
+          },
+          "avg_damage_per_trial": 585.11,
+          "avg_ending_combo": 1.39,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 9.2,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 23.66,
+          "basic_attacks": 406,
+          "chosen_skills": {
+            "rogue_bleeding_follow": 795,
+            "rogue_eviscerate": 360,
+            "rogue_sneak_strike": 805
+          },
+          "combo_gained": 1600,
+          "combo_spent": 1080,
+          "cooldown_blocked_rounds": 1112,
+          "critical_hits": 164,
+          "damage_by_action": {
+            "basic_attack": 9100,
+            "rogue_bleeding_follow": 12933,
+            "rogue_eviscerate": 16514,
+            "rogue_sneak_strike": 19964
+          },
+          "dodges_caused": 137,
+          "dot_damage": 8737,
+          "effects_applied": {
+            "bleed": 795
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2366
+          },
+          "resource_blocked_rounds": 2318,
+          "resource_gained": 0,
+          "resource_spent": 54400,
+          "shield_absorbed": 0,
+          "skill_actions": 1960,
+          "total_damage": 58511,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 406,
+            "rogue_bleeding_follow": 795,
+            "rogue_eviscerate": 360,
+            "rogue_sneak_strike": 805
+          },
+          "valid_actions": 2366,
+          "win_rate": 0.0,
+          "wins": 0
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "rogue",
+        "loser_top_actions": [
+          [
+            "rogue_sneak_strike",
+            805
+          ],
+          [
+            "rogue_bleeding_follow",
+            795
+          ],
+          [
+            "basic_attack",
+            406
+          ],
+          [
+            "rogue_eviscerate",
+            360
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "resource_availability_gap",
+          "healing_sustain_gap"
+        ],
+        "winner_profile": "priest",
+        "winner_top_actions": [
+          [
+            "priest_holy_ray",
+            1402
+          ],
+          [
+            "priest_purify_faith",
+            583
+          ],
+          [
+            "priest_healing_blessing",
+            381
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "priest": {
+            "avg_effective_healing_per_trial": 512.24,
+            "direct_healing": 0,
+            "effective_healing_total": 51224,
+            "hot_healing": 51224,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 39914,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 39914
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "rogue": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "avg_ending_combo": 1.39,
+              "combo_gained": 1600,
+              "combo_spent": 1080,
+              "ending_value_legacy": 9.2,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "energy_gained": 0,
+              "energy_spent": 54400,
+              "family": "combat_energy_combo",
+              "raw_gained_signal": 0,
+              "spent": 54400
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 0,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "priest": 100
+      }
+    },
+    {
+      "avg_rounds": 27.93,
+      "class_a": "mage",
+      "class_b": "priest",
+      "class_metrics": {
+        "mage": {
+          "actions": {
+            "basic_attack": 253,
+            "skill": 2540
+          },
+          "avg_damage_by_action_use": {
+            "basic_attack": 2.87,
+            "mage_arcane_flow": 0.0,
+            "mage_fireball": 4.47,
+            "mage_thunder_spell": 5.4
+          },
+          "avg_damage_per_trial": 111.77,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 0.0,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 27.93,
+          "basic_attacks": 253,
+          "chosen_skills": {
+            "mage_arcane_flow": 330,
+            "mage_fireball": 1593,
+            "mage_thunder_spell": 617
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 2909,
+          "critical_hits": 154,
+          "damage_by_action": {
+            "basic_attack": 727,
+            "mage_arcane_flow": 0,
+            "mage_fireball": 7119,
+            "mage_thunder_spell": 3331
+          },
+          "dodges_caused": 122,
+          "dot_damage": 0,
+          "effects_applied": {
+            "unknown": 483
+          },
+          "hot_healing": 0,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2793
+          },
+          "resource_blocked_rounds": 1553,
+          "resource_gained": -24500,
+          "resource_spent": 59625,
+          "shield_absorbed": 0,
+          "skill_actions": 2540,
+          "total_damage": 11177,
+          "total_healing": 0,
+          "uses_by_action": {
+            "basic_attack": 253,
+            "mage_arcane_flow": 330,
+            "mage_fireball": 1593,
+            "mage_thunder_spell": 617
+          },
+          "valid_actions": 2793,
+          "win_rate": 0.0,
+          "wins": 0
+        },
+        "priest": {
+          "actions": {
+            "skill": 2793
+          },
+          "avg_damage_by_action_use": {
+            "priest_healing_blessing": 0.0,
+            "priest_holy_ray": 16.56,
+            "priest_purify_faith": 0.0
+          },
+          "avg_damage_per_trial": 424.38,
+          "avg_ending_combo": 0.0,
+          "avg_ending_hp": 270.37,
+          "avg_ending_resource": 100.0,
+          "avg_healing_per_trial": 0.0,
+          "avg_rounds": 27.93,
+          "basic_attacks": 0,
+          "chosen_skills": {
+            "priest_healing_blessing": 2,
+            "priest_holy_ray": 2563,
+            "priest_purify_faith": 228
+          },
+          "combo_gained": 0,
+          "combo_spent": 0,
+          "cooldown_blocked_rounds": 546,
+          "critical_hits": 172,
+          "damage_by_action": {
+            "priest_healing_blessing": 0,
+            "priest_holy_ray": 42438,
+            "priest_purify_faith": 0,
+            "stunned_skip": 0
+          },
+          "dodges_caused": 128,
+          "dot_damage": 0,
+          "effects_applied": {
+            "hot": 2,
+            "mdef_buff": 212
+          },
+          "hot_healing": 214,
+          "invalid_actions": 0,
+          "outcome_reasons": {
+            "ok": 2645,
+            "stunned_skip": 148
+          },
+          "resource_blocked_rounds": 0,
+          "resource_gained": -24500,
+          "resource_spent": 33472,
+          "shield_absorbed": 0,
+          "skill_actions": 2793,
+          "total_damage": 42438,
+          "total_healing": 0,
+          "uses_by_action": {
+            "priest_healing_blessing": 2,
+            "priest_holy_ray": 2563,
+            "priest_purify_faith": 228
+          },
+          "valid_actions": 2793,
+          "win_rate": 100.0,
+          "wins": 100
+        }
+      },
+      "diagnosis": {
+        "loser_profile": "mage",
+        "loser_top_actions": [
+          [
+            "mage_fireball",
+            1593
+          ],
+          [
+            "mage_thunder_spell",
+            617
+          ],
+          [
+            "mage_arcane_flow",
+            330
+          ],
+          [
+            "basic_attack",
+            253
+          ]
+        ],
+        "metric_semantics_version": "14.6.3b1",
+        "reason_signals": [
+          "damage_output_gap",
+          "resource_availability_gap"
+        ],
+        "winner_profile": "priest",
+        "winner_top_actions": [
+          [
+            "priest_holy_ray",
+            2563
+          ],
+          [
+            "priest_purify_faith",
+            228
+          ],
+          [
+            "priest_healing_blessing",
+            2
+          ]
+        ]
+      },
+      "dominance_review": true,
+      "draw_rate": 0.0,
+      "draws": 0,
+      "metric_semantics": {
+        "by_class": {
+          "mage": {
+            "avg_effective_healing_per_trial": 0.0,
+            "direct_healing": 0,
+            "effective_healing_total": 0,
+            "hot_healing": 0,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 59625,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 59625
+            },
+            "stunned_skips": 0,
+            "terminal_cancelled_intents": 0
+          },
+          "priest": {
+            "avg_effective_healing_per_trial": 2.14,
+            "direct_healing": 0,
+            "effective_healing_total": 214,
+            "hot_healing": 214,
+            "overhealing": null,
+            "overhealing_status": "not_emitted_by_current_round_events",
+            "policy_invalid_actions": 0,
+            "resource": {
+              "ending_value_legacy": 100.0,
+              "ending_value_semantics": "legacy_generic_field_not_used_for_balance_decisions",
+              "family": "mana",
+              "mp_restored_signal": 0,
+              "mp_spent": 33472,
+              "negative_resource_signal_ignored": -24500,
+              "raw_gained_signal": -24500,
+              "spent": 33472
+            },
+            "stunned_skips": 148,
+            "terminal_cancelled_intents": 0
+          }
+        },
+        "policy_invalid_actions": 0,
+        "stunned_skips": 148,
+        "terminal_cancelled_intents": 0,
+        "terminal_rates": {
+          "periodic_terminal_rate": 0.0,
+          "round_limit_rate": 0.0,
+          "simultaneous_terminal_rate": 100.0
+        }
+      },
+      "terminal_reasons": {
+        "simultaneous": 100
+      },
+      "trials": 100,
+      "wins": {
+        "priest": 100
+      }
+    }
+  ],
+  "skill_coverage": {
+    "expected_count": 18,
+    "expected_skill_keys": [
+      "knight_holy_protection",
+      "knight_judgement",
+      "knight_shield_bash",
+      "mage_arcane_flow",
+      "mage_fireball",
+      "mage_thunder_spell",
+      "priest_healing_blessing",
+      "priest_holy_ray",
+      "priest_purify_faith",
+      "rogue_bleeding_follow",
+      "rogue_eviscerate",
+      "rogue_sneak_strike",
+      "scout_aimed_shot",
+      "scout_sting_arrow",
+      "scout_trap",
+      "warrior_cleave",
+      "warrior_subjugation_strike",
+      "warrior_suppression"
+    ],
+    "missing_skill_keys": [
+      "knight_judgement"
+    ],
+    "observed_count": 17,
+    "observed_skill_keys": [
+      "knight_holy_protection",
+      "knight_shield_bash",
+      "mage_arcane_flow",
+      "mage_fireball",
+      "mage_thunder_spell",
+      "priest_healing_blessing",
+      "priest_holy_ray",
+      "priest_purify_faith",
+      "rogue_bleeding_follow",
+      "rogue_eviscerate",
+      "rogue_sneak_strike",
+      "scout_aimed_shot",
+      "scout_sting_arrow",
+      "scout_trap",
+      "warrior_cleave",
+      "warrior_subjugation_strike",
+      "warrior_suppression"
+    ],
+    "pass": false,
+    "unexpected_skill_keys": []
+  },
+  "stunned_skip_count": 1312,
+  "target_aware_policy_used": true,
+  "terminal_cancelled_intent_count": 80,
+  "trials_per_pair": 100,
+  "verdict": "PASS_WITH_REVIEW",
+  "version": "14.6.3b1"
+}

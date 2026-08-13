@@ -44,104 +44,175 @@ def _actor_display_name(actor: Mapping[str, Any], user_id: int) -> str:
     return name or f"Гравець #{int(user_id)}"
 
 
-def render_pvp_round_combat_log(payload: Mapping[str, Any], viewer_user_id: int) -> str:
-    """Render one resolved round from the viewer's perspective.
+def _round_word(value: int) -> str:
+    value = abs(int(value))
+    if value % 10 == 1 and value % 100 != 11:
+        return "раунд"
+    if value % 10 in {2, 3, 4} and value % 100 not in {12, 13, 14}:
+        return "раунди"
+    return "раундів"
 
-    This function is presentation-only. It does not mutate PvP or production state.
-    """
-    viewer = int(viewer_user_id)
+
+def _resource_meta(actor: Mapping[str, Any]) -> tuple[str, str]:
+    resource_type = str(actor.get("resource_type") or "")
+    if resource_type == "rage":
+        return "🔥", "Лють"
+    if resource_type in {"combat_energy", "combat_energy_combo"}:
+        return "⚡", "Енергія"
+    return "🔷", "Мана"
+
+
+def _resource_value(actor: Mapping[str, Any]) -> tuple[int, int]:
+    resource_type = str(actor.get("resource_type") or "")
+    if resource_type == "mana":
+        return int(actor.get("mp") or 0), int(actor.get("max_mp") or 0)
+    return int(actor.get("resource") or 0), 100
+
+
+def _state_lines(actors: Mapping[int, Mapping[str, Any]]) -> list[str]:
+    ordered = list(actors.items())
+    hp = " | ".join(
+        f"{escape(_actor_display_name(actor, uid))}: {int(actor.get('hp') or 0)}/{int(actor.get('max_hp') or 0)}"
+        for uid, actor in ordered
+    )
+    resources = []
+    for uid, actor in ordered:
+        icon, label = _resource_meta(actor)
+        current, maximum = _resource_value(actor)
+        resources.append(f"{icon} {escape(_actor_display_name(actor, uid))}: {current}/{maximum} {label}")
+    return [f"❤️ {hp}", " | ".join(resources)]
+
+
+def render_pvp_round_combat_log(payload: Mapping[str, Any], viewer_user_id: int) -> str:
+    """Render a compact PvP round log with resource events grouped by owner."""
     round_number = int(payload.get("round_number") or 0)
-    actors = {int(x.get("user_id")): x for x in payload.get("actors", ()) if isinstance(x, Mapping) and x.get("user_id") is not None}
-    lines = [f"⚔️ <b>Результат раунду {round_number}</b>"]
+    actors = {
+        int(item.get("user_id")): item
+        for item in payload.get("actors", ())
+        if isinstance(item, Mapping) and item.get("user_id") is not None
+    }
+    events = [item for item in payload.get("events", ()) if isinstance(item, Mapping)]
+    lines = [f"⚔️ <b>Раунд {round_number}</b>"]
+
+    action_rage: dict[int, list[Mapping[str, Any]]] = {}
+    damage_rage: list[Mapping[str, Any]] = []
+    for event in events:
+        kind = str(event.get("type") or "")
+        uid = int(event.get("user_id") or 0)
+        if kind in {"rage_gain_attack", "rage_gain_skill"}:
+            action_rage.setdefault(uid, []).append(event)
+        elif kind == "rage_gain_damage_taken":
+            damage_rage.append(event)
+
+    # Start-of-round events are displayed before combat actions.
+    for event in events:
+        kind = str(event.get("type") or "")
+        if kind not in {"dot_tick", "hot_tick", "combat_energy_regen", "effect_expired"}:
+            continue
+        uid = int(event.get("user_id") or 0)
+        who = escape(_actor_display_name(actors.get(uid, {}), uid))
+        value = int(event.get("value") or 0)
+        effect_label = escape(_effect_label(str(event.get("effect") or "effect")))
+        effect_text = effect_label.replace("🛡️ ", "").replace("🩸 ", "").replace("☠️ ", "")
+        if kind == "dot_tick":
+            lines.append(f"{effect_label}: <b>{who}</b> отримує <b>{value}</b> шкоди.")
+        elif kind == "hot_tick":
+            lines.append(f"🌿 <b>{who}</b>: відновлено <b>{value}</b> HP.")
+        elif kind == "combat_energy_regen":
+            before = int(event.get("before") or 0)
+            after = int(event.get("after") or 0)
+            maximum = int(event.get("maximum") or 100)
+            lines.append(f"⚡ <b>{who}</b>: +{value} Енергії → {after}/{maximum}")
+        elif kind == "effect_expired":
+            lines.append(f"⌛ <b>{who}</b>: {effect_text.lower()} завершилося")
 
     for outcome in payload.get("outcomes", ()):
         if not isinstance(outcome, Mapping):
             continue
         uid = int(outcome.get("user_id") or 0)
         actor = actors.get(uid, {})
-        who = _actor_display_name(actor, uid)
+        who = escape(_actor_display_name(actor, uid))
         action_type = str(outcome.get("action_type") or "")
+        lines.append("")
+
         if action_type == "afk_skip":
-            lines.append(f"\n⏳ <b>{escape(who)}</b>: пропуск через бездіяльність.")
+            lines.append(f"⏳ <b>{who}</b> пропускає хід через бездіяльність")
             continue
         if action_type == "stunned_skip":
-            lines.append(f"\n⚡ <b>{escape(who)}</b>: пропуск через оглушення.")
+            lines.append(f"⚡ <b>{who}</b> оглушений і пропускає хід")
             continue
         if not bool(outcome.get("valid")):
-            lines.append(f"\n⚠️ <b>{escape(who)}</b>: дія не виконана ({escape(str(outcome.get('reason') or 'невідома причина'))}).")
+            lines.append(f"⚠️ <b>{who}</b>: дію не виконано")
             continue
-        name = escape(_skill_name(str(actor.get("class_key") or ""), outcome.get("skill_key")))
-        lines.append(f"\n<b>{escape(who)}</b> використав: {name}.")
+
+        skill_name = escape(_skill_name(str(actor.get("class_key") or ""), outcome.get("skill_key")))
+        lines.append(f"<b>{who}</b> використав: {skill_name}.")
         if bool(outcome.get("dodged")):
-            lines.append("💨 Атаку було ухилено.")
+            lines.append("💨 Суперник ухилився від атаки")
         elif int(outcome.get("damage") or 0) > 0:
-            crit = " 💥 Критичний удар." if bool(outcome.get("critical")) else ""
-            lines.append(f"🗡 Завдано <b>{int(outcome.get('damage') or 0)}</b> шкоди.{crit}")
+            critical = " 💥 Критичний удар." if bool(outcome.get("critical")) else ""
+            lines.append(f"🗡 Завдано <b>{int(outcome.get('damage') or 0)}</b> шкоди.{critical}")
         if int(outcome.get("healing") or 0) > 0:
             lines.append(f"❤️ Відновлено <b>{int(outcome.get('healing') or 0)}</b> HP.")
-        if int(outcome.get("resource_spent") or 0) > 0:
-            lines.append(f"🔹 Витрачено ресурсу: {int(outcome.get('resource_spent') or 0)}.")
-        if int(outcome.get("resource_gained") or 0) > 0:
-            lines.append(f"🔹 Отримано ресурсу: {int(outcome.get('resource_gained') or 0)}.")
+
+        icon, label = _resource_meta(actor)
+        spent = int(outcome.get("resource_spent") or 0)
+        gained = int(outcome.get("resource_gained") or 0)
+        if spent > 0:
+            lines.append(f"{icon} {label}: −{spent}")
+
+        owner_rage = action_rage.get(uid, ())
+        if owner_rage:
+            total = sum(int(event.get("value") or 0) for event in owner_rage)
+            after = int(owner_rage[-1].get("after") or actor.get("resource") or 0)
+            lines.append(f"🔥 Лють: +{total} → {after}/100")
+        elif gained > 0:
+            lines.append(f"{icon} {label}: +{gained}")
+
         if int(outcome.get("combo_spent") or 0) > 0:
-            lines.append(f"🔗 Витрачено комбо: <b>{int(outcome.get('combo_spent') or 0)}</b>. Після навички: 0/3.")
+            lines.append(f"🔗 Комбо: −{int(outcome.get('combo_spent') or 0)} → 0/3")
         if int(outcome.get("combo_gained") or 0) > 0:
-            combo_after = int(actor.get("combo") or 0)
-            lines.append(f"🔗 Отримано комбо: {int(outcome.get('combo_gained') or 0)}. Тепер: {combo_after}/3.")
+            lines.append(f"🔗 Комбо: +{int(outcome.get('combo_gained') or 0)} → {int(actor.get('combo') or 0)}/3")
+
         for effect in outcome.get("applied_effects", ()):
             if not isinstance(effect, Mapping):
                 continue
             key = str(effect.get("effect_key") or effect.get("kind") or "effect")
-            label = escape(_effect_label(key))
             duration = int(effect.get("duration") or 0)
             power = int(round(float(effect.get("power") or 0)))
-            suffix = f" на {duration} раунд(и)" if duration > 0 else ""
+            suffix = f", {duration} {_round_word(duration)}" if duration > 0 else ""
             if key == "hot":
-                lines.append(f"🌿 Накладено відновлення здоров'я{suffix}: до {power} HP на початку кожного наступного раунду.")
+                lines.append(f"🌿 Відновлення здоров’я{suffix}")
             elif key == "shield":
-                lines.append(f"🛡️ Накладено щит{suffix}: {power} поглинання.")
+                lines.append(f"🛡️ Накладено щит на {duration} {_round_word(duration)}." if duration else "🛡️ Накладено щит.")
             elif key == "mana_restore":
-                lines.append(f"🔷 Відновлено мани: {power}.")
+                lines.append(f"🔷 Мана: +{power}")
             elif key == "stun_next":
-                lines.append("⚡ Накладено оглушення на наступний раунд.")
+                lines.append("⚡ Оглушення на наступний раунд")
+            elif key == "bleed":
+                lines.append(f"🩸 Кровотеча{suffix}")
+            elif key == "poison":
+                lines.append(f"☠️ Отруєння{suffix}")
             else:
-                lines.append(f"✨ Накладено ефект: {label}{suffix}.")
+                lines.append(f"{escape(_effect_label(key))}{suffix}")
 
-    for event in payload.get("events", ()):
-        if not isinstance(event, Mapping):
-            continue
-        kind = str(event.get("type") or "")
+    # Incoming-damage Rage belongs to the damaged character, so the owner name is mandatory.
+    for event in damage_rage:
         uid = int(event.get("user_id") or 0)
-        who = _actor_display_name(actors.get(uid, {}), uid)
+        who = escape(_actor_display_name(actors.get(uid, {}), uid))
         value = int(event.get("value") or 0)
-        effect = escape(_effect_label(str(event.get("effect") or "effect")))
-        if kind == "dot_tick":
-            lines.append(f"\n{effect}: <b>{escape(who)}</b> отримує <b>{value}</b> шкоди.")
-        elif kind == "hot_tick":
-            current_hp = event.get("hp_after")
-            max_hp = event.get("max_hp")
-            extra = f" HP стало {int(current_hp)}/{int(max_hp)}." if current_hp is not None and max_hp is not None else ""
-            lines.append(f"\n🌿 <b>{escape(who)}</b>: фактично відновлено <b>{value}</b> HP.{extra}")
-        elif kind == "shield_absorb":
-            lines.append(f"\n🛡️ <b>{escape(who)}</b>: щит поглинув <b>{value}</b> шкоди.")
-        elif kind == "effect_expired":
-            lines.append(f"\n⌛ <b>{escape(who)}</b>: ефект {effect} завершився.")
-        elif kind == "combat_energy_regen":
-            before = int(event.get("before") or 0)
-            after = int(event.get("after") or 0)
-            maximum = int(event.get("maximum") or 100)
-            lines.append(f"\n⚡ <b>{escape(who)}</b>: Енергія {before} → {after}/{maximum}.")
-        elif kind == "rage_gain_attack":
-            before = int(event.get("before") or 0)
-            after = int(event.get("after") or 0)
-            lines.append(f"\n🔥 <b>{escape(who)}</b>: +{value} Люті за атаку ({before} → {after}/100).")
-        elif kind == "rage_gain_skill":
-            before = int(event.get("before") or 0)
-            after = int(event.get("after") or 0)
-            lines.append(f"\n🔥 <b>{escape(who)}</b>: +{value} додаткової Люті від навички ({before} → {after}/100).")
-        elif kind == "rage_gain_damage_taken":
-            before = int(event.get("before") or 0)
-            after = int(event.get("after") or 0)
-            lines.append(f"\n🔥 <b>{escape(who)}</b>: +{value} Люті за отриману шкоду ({before} → {after}/100).")
+        after = int(event.get("after") or actors.get(uid, {}).get("resource") or 0)
+        lines.append(f"🔥 <b>{who}</b>: +{value} Люті від отриманої шкоди → {after}/100")
 
+    for event in events:
+        if str(event.get("type") or "") != "shield_absorb":
+            continue
+        uid = int(event.get("user_id") or 0)
+        who = escape(_actor_display_name(actors.get(uid, {}), uid))
+        value = int(event.get("value") or 0)
+        lines.append(f"🛡️ <b>{who}</b>: щит поглинув <b>{value}</b> шкоди.")
+
+    lines.append("")
+    lines.extend(_state_lines(actors))
     return "\n".join(lines)
+

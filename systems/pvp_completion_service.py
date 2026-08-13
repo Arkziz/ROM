@@ -8,17 +8,19 @@ from systems.pvp_system import complete_pvp_battle, get_pvp_battle, get_pvp_part
 TERMINAL_STATUSES = frozenset(("completed", "cancelled", "expired"))
 
 _REASON_TEXT = {
-    "hp_zero": "здоров’я суперника вичерпано",
-    "terminal": "здоров’я одного з учасників вичерпано",
-    "draw_periodic": "обидва персонажі втратили все здоров’я від періодичних ефектів",
+    "hp_zero": "перемога в бою",
+    "terminal": "перемога в бою",
+    "simultaneous": "перемога в бою",
+    "periodic": "перемога в бою",
+    "draw_periodic": "обидва персонажі одночасно втратили все здоров’я",
     "draw_simultaneous": "обидва персонажі одночасно втратили все здоров’я",
-    "technical_draw_both_afk": "обидва учасники п’ять разів поспіль пропустили дію",
-    "afk_limit": "суперник п’ять разів поспіль пропустив дію",
-    "surrender": "один з учасників добровільно здався",
-    "max_rounds_hp_percent": "дуель завершено за відсотком здоров’я після внутрішнього ліміту раундів",
-    "max_rounds_draw": "після внутрішнього ліміту раундів відсоток здоров’я однаковий",
-    "technical_cancel": "дуель безпечно скасовано через технічну помилку",
-    "server_restart_cancel": "дуель безпечно скасовано після перезапуску сервера",
+    "technical_draw_both_afk": "обидва учасники пропустили 5 ходів поспіль",
+    "afk_defeat": "5 пропущених ходів поспіль",
+    "afk_limit": "5 пропущених ходів поспіль",
+    "surrender": "один з учасників здався",
+    "technical_cancel": "дуель завершено через технічну помилку",
+    "server_restart_cancel": "дуель скасовано після перезапуску сервера",
+    "activity_session_acquire_failed": "не вдалося розпочати дуель",
 }
 
 
@@ -80,7 +82,7 @@ def render_pvp_terminal_text(battle_id: int, viewer_id: int) -> str:
     viewer_id = int(viewer_id)
     winner_id = battle.get("winner_id")
     reason = str(battle.get("result_reason") or "terminal")
-    reason_text = _REASON_TEXT.get(reason, reason.replace("_", " "))
+    reason_text = _REASON_TEXT.get(reason, "дуель завершено")
     viewer = participants.get(viewer_id)
     opponent = next((row for uid, row in participants.items() if uid != viewer_id), None)
     viewer_name = _name(viewer, f"Гравець #{viewer_id}")

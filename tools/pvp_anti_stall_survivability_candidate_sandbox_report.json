@@ -1,0 +1,3572 @@
+{
+  "fixture_values_changed": false,
+  "live_balance_changed": false,
+  "production_database_writes": 0,
+  "production_policy_used": true,
+  "production_round_resolver_used": true,
+  "production_skill_catalog_used": true,
+  "ranking": [
+    "dex_base_cap15",
+    "moderate_mage90",
+    "anti_stall_soft",
+    "anti_stall_strong",
+    "anti_stall_moderate",
+    "balanced_candidate",
+    "moderate_mage85",
+    "baseline_50"
+  ],
+  "recommendation_status": "SANDBOX_ONLY_NOT_APPROVED_FOR_LIVE",
+  "recommended_candidate": "dex_base_cap15",
+  "scenarios": {
+    "anti_stall_moderate": {
+      "config": {
+        "dex_scaling": true,
+        "pacing": "moderate",
+        "round_cap": 15
+      },
+      "rows": [
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 100.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "warrior",
+          "class_b": "knight",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 200
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 5618,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        },
+        {
+          "a_win_rate": 94.0,
+          "avg_rounds": 10.68,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "scout",
+          "damage_multiplier_rounds": {
+            "1.00": 399,
+            "1.15": 114,
+            "1.35": 21
+          },
+          "draw_rate": 6.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 21,
+            "mid": 114,
+            "normal": 399
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 3,
+            "simultaneous": 47
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 10.66,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 116,
+            "1.35": 17
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 17,
+            "mid": 116,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 84.0,
+          "avg_rounds": 11.18,
+          "b_win_rate": 6.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 131,
+            "1.35": 28
+          },
+          "draw_rate": 10.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 28,
+            "mid": 131,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 5,
+            "simultaneous": 45
+          }
+        },
+        {
+          "a_win_rate": 96.0,
+          "avg_rounds": 13.72,
+          "b_win_rate": 4.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 11
+          },
+          "class_a": "warrior",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 136
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2024,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 136,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 11,
+            "simultaneous": 39
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.12,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 9
+          },
+          "class_a": "knight",
+          "class_b": "scout",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 156
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 156,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 6232,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 9,
+            "simultaneous": 41
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.22,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 9
+          },
+          "class_a": "knight",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 161
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 161,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 6861,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 9,
+            "simultaneous": 41
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 13.42,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 5
+          },
+          "class_a": "knight",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 121
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 121,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 3218,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 5,
+            "simultaneous": 45
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "knight",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 200
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2480,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 4692,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        },
+        {
+          "a_win_rate": 82.0,
+          "avg_rounds": 10.32,
+          "b_win_rate": 6.0,
+          "cap_decisions": {},
+          "class_a": "scout",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 107,
+            "1.35": 9
+          },
+          "draw_rate": 12.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 9,
+            "mid": 107,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_periodic": 1,
+            "draw_simultaneous": 5,
+            "periodic": 5,
+            "simultaneous": 39
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 10.74,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "scout",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 118,
+            "1.35": 19
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 14,
+          "pacing_rounds": {
+            "late": 19,
+            "mid": 118,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 15,
+            "simultaneous": 35
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.24,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 21
+          },
+          "class_a": "scout",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 162
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2280,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 162,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 1,
+            "round_cap_hp_percent": 21,
+            "simultaneous": 28
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 10.64,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "rogue",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 119,
+            "1.35": 13
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 13,
+            "mid": 119,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 11,
+            "simultaneous": 39
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.2,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 13
+          },
+          "class_a": "rogue",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 160
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2302,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 160,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 13,
+            "simultaneous": 37
+          }
+        },
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 100.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "mage",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 200
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        }
+      ],
+      "score": {
+        "average_rounds_all_pairs": 12.88,
+        "class_average_win_rates": {
+          "knight": 100.0,
+          "mage": 1.2,
+          "priest": 20.8,
+          "rogue": 41.2,
+          "scout": 56.4,
+          "warrior": 74.8
+        },
+        "class_win_rate_spread_pp": 98.8,
+        "classes_above_80": 1,
+        "classes_below_20": 1,
+        "dominance_count": 13,
+        "high_draw_count": 0,
+        "objective": 1656.94,
+        "pairs_below_10_average_rounds": 0,
+        "pairs_in_10_15_average_round_target": 15,
+        "round_cap_decision_rate_pct": 29.07
+      }
+    },
+    "anti_stall_soft": {
+      "config": {
+        "dex_scaling": true,
+        "pacing": "soft",
+        "round_cap": 15
+      },
+      "rows": [
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 100.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "warrior",
+          "class_b": "knight",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.10": 150,
+            "1.25": 200
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 4238,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        },
+        {
+          "a_win_rate": 98.0,
+          "avg_rounds": 10.78,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "scout",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.10": 118,
+            "1.25": 21
+          },
+          "draw_rate": 2.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 21,
+            "mid": 118,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 1,
+            "simultaneous": 49
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 10.62,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.10": 115,
+            "1.25": 16
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 16,
+            "mid": 115,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 88.0,
+          "avg_rounds": 11.1,
+          "b_win_rate": 6.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.10": 125,
+            "1.25": 30
+          },
+          "draw_rate": 6.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 14,
+          "pacing_rounds": {
+            "late": 30,
+            "mid": 125,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 3,
+            "simultaneous": 47
+          }
+        },
+        {
+          "a_win_rate": 96.0,
+          "avg_rounds": 14.26,
+          "b_win_rate": 4.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 16
+          },
+          "class_a": "warrior",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.10": 150,
+            "1.25": 163
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 1811,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 163,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 16,
+            "simultaneous": 34
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.64,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 23
+          },
+          "class_a": "knight",
+          "class_b": "scout",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.10": 150,
+            "1.25": 182
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 182,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 5385,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 23,
+            "simultaneous": 27
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.86,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 19
+          },
+          "class_a": "knight",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.10": 150,
+            "1.25": 193
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 193,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 5977,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 19,
+            "simultaneous": 31
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.3,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 22
+          },
+          "class_a": "knight",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.10": 150,
+            "1.25": 165
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 165,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 2977,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 22,
+            "simultaneous": 28
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "knight",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.10": 150,
+            "1.25": 200
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 1821,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 4284,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        },
+        {
+          "a_win_rate": 84.0,
+          "avg_rounds": 10.44,
+          "b_win_rate": 10.0,
+          "cap_decisions": {},
+          "class_a": "scout",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.10": 114,
+            "1.25": 8
+          },
+          "draw_rate": 6.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 8,
+            "mid": 114,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 3,
+            "periodic": 5,
+            "simultaneous": 42
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 11.0,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "scout",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.10": 124,
+            "1.25": 26
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 26,
+            "mid": 124,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 12,
+            "simultaneous": 38
+          }
+        },
+        {
+          "a_win_rate": 98.0,
+          "avg_rounds": 14.8,
+          "b_win_rate": 2.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 42
+          },
+          "class_a": "scout",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.10": 150,
+            "1.25": 190
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 1992,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 190,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 42,
+            "simultaneous": 8
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 10.5,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "rogue",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.10": 113,
+            "1.25": 12
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 12,
+            "mid": 113,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 7,
+            "simultaneous": 43
+          }
+        },
+        {
+          "a_win_rate": 92.0,
+          "avg_rounds": 14.78,
+          "b_win_rate": 8.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 36
+          },
+          "class_a": "rogue",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.10": 150,
+            "1.25": 189
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2017,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 189,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 36,
+            "simultaneous": 14
+          }
+        },
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 100.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "mage",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.10": 150,
+            "1.25": 200
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        }
+      ],
+      "score": {
+        "average_rounds_all_pairs": 13.14,
+        "class_average_win_rates": {
+          "knight": 100.0,
+          "mage": 1.2,
+          "priest": 22.8,
+          "rogue": 40.4,
+          "scout": 56.4,
+          "warrior": 76.4
+        },
+        "class_win_rate_spread_pp": 98.8,
+        "classes_above_80": 1,
+        "classes_below_20": 1,
+        "dominance_count": 12,
+        "high_draw_count": 0,
+        "objective": 1580.94,
+        "pairs_below_10_average_rounds": 0,
+        "pairs_in_10_15_average_round_target": 15,
+        "round_cap_decision_rate_pct": 41.07
+      }
+    },
+    "anti_stall_strong": {
+      "config": {
+        "dex_scaling": true,
+        "pacing": "strong",
+        "round_cap": 15
+      },
+      "rows": [
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 100.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "warrior",
+          "class_b": "knight",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.20": 150,
+            "1.50": 200
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 5154,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        },
+        {
+          "a_win_rate": 98.0,
+          "avg_rounds": 10.56,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "scout",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.20": 114,
+            "1.50": 14
+          },
+          "draw_rate": 2.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 14,
+            "mid": 114,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 1,
+            "simultaneous": 49
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 10.44,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.20": 111,
+            "1.50": 11
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 12,
+          "pacing_rounds": {
+            "late": 11,
+            "mid": 111,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 84.0,
+          "avg_rounds": 10.88,
+          "b_win_rate": 6.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.20": 124,
+            "1.50": 20
+          },
+          "draw_rate": 10.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 20,
+            "mid": 124,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 5,
+            "simultaneous": 45
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 13.1,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.20": 150,
+            "1.50": 105
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2137,
+          "max_rounds_observed": 14,
+          "pacing_rounds": {
+            "late": 105,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.06,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 5
+          },
+          "class_a": "knight",
+          "class_b": "scout",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.20": 150,
+            "1.50": 153
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 153,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 6964,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 5,
+            "simultaneous": 45
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.04,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 4
+          },
+          "class_a": "knight",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.20": 150,
+            "1.50": 152
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 152,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 7877,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 4,
+            "simultaneous": 46
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 13.58,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 5
+          },
+          "class_a": "knight",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.20": 150,
+            "1.50": 129
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 129,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 3763,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 5,
+            "simultaneous": 45
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 43
+          },
+          "class_a": "knight",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.20": 150,
+            "1.50": 200
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 3208,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 5417,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 43,
+            "simultaneous": 7
+          }
+        },
+        {
+          "a_win_rate": 80.0,
+          "avg_rounds": 10.48,
+          "b_win_rate": 10.0,
+          "cap_decisions": {},
+          "class_a": "scout",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.20": 112,
+            "1.50": 12
+          },
+          "draw_rate": 10.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 12,
+            "mid": 112,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_periodic": 3,
+            "draw_simultaneous": 2,
+            "periodic": 13,
+            "simultaneous": 32
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 10.9,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "scout",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.20": 121,
+            "1.50": 24
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 24,
+            "mid": 121,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 18,
+            "simultaneous": 32
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 13.76,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 7
+          },
+          "class_a": "scout",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.20": 150,
+            "1.50": 138
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2597,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 138,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 2,
+            "round_cap_hp_percent": 7,
+            "simultaneous": 41
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 10.5,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "rogue",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.20": 114,
+            "1.50": 11
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 11,
+            "mid": 114,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 7,
+            "simultaneous": 43
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 13.6,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 5
+          },
+          "class_a": "rogue",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.20": 150,
+            "1.50": 130
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2514,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 130,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 1,
+            "round_cap_hp_percent": 5,
+            "simultaneous": 44
+          }
+        },
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 100.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "mage",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.20": 150,
+            "1.50": 200
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        }
+      ],
+      "score": {
+        "average_rounds_all_pairs": 12.73,
+        "class_average_win_rates": {
+          "knight": 100.0,
+          "mage": 1.2,
+          "priest": 20.0,
+          "rogue": 42.0,
+          "scout": 56.0,
+          "warrior": 76.4
+        },
+        "class_win_rate_spread_pp": 98.8,
+        "classes_above_80": 1,
+        "classes_below_20": 1,
+        "dominance_count": 13,
+        "high_draw_count": 0,
+        "objective": 1643.86,
+        "pairs_below_10_average_rounds": 0,
+        "pairs_in_10_15_average_round_target": 15,
+        "round_cap_decision_rate_pct": 22.53
+      }
+    },
+    "balanced_candidate": {
+      "config": {
+        "dex_scaling": true,
+        "knight_shield": 0.65,
+        "mage_physical_received": 0.9,
+        "pacing": "moderate",
+        "round_cap": 15,
+        "shield_bash_stun": 15
+      },
+      "rows": [
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 14.98,
+          "b_win_rate": 100.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 49
+          },
+          "class_a": "warrior",
+          "class_b": "knight",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 199
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 199,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 1990,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 49,
+            "simultaneous": 1
+          }
+        },
+        {
+          "a_win_rate": 98.0,
+          "avg_rounds": 10.3,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "scout",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 105,
+            "1.35": 10
+          },
+          "draw_rate": 2.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 10,
+            "mid": 105,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 1,
+            "simultaneous": 49
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 10.28,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 107,
+            "1.35": 7
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 7,
+            "mid": 107,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 70.0,
+          "avg_rounds": 11.7,
+          "b_win_rate": 14.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 138,
+            "1.35": 47
+          },
+          "draw_rate": 16.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 14,
+          "pacing_rounds": {
+            "late": 47,
+            "mid": 138,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 8,
+            "simultaneous": 42
+          }
+        },
+        {
+          "a_win_rate": 96.0,
+          "avg_rounds": 13.6,
+          "b_win_rate": 4.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 7
+          },
+          "class_a": "warrior",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 149,
+            "1.35": 131
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2000,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 131,
+            "mid": 149,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 7,
+            "simultaneous": 43
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.48,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 20
+          },
+          "class_a": "knight",
+          "class_b": "scout",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 174
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 174,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 3677,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 20,
+            "simultaneous": 30
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.58,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 16
+          },
+          "class_a": "knight",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 179
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 179,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 4433,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 16,
+            "simultaneous": 34
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.3,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 21
+          },
+          "class_a": "knight",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 165
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 165,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 1700,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 21,
+            "simultaneous": 29
+          }
+        },
+        {
+          "a_win_rate": 98.0,
+          "avg_rounds": 14.94,
+          "b_win_rate": 2.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 46
+          },
+          "class_a": "knight",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 197
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2492,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 197,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 2343,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 46,
+            "simultaneous": 4
+          }
+        },
+        {
+          "a_win_rate": 62.0,
+          "avg_rounds": 10.68,
+          "b_win_rate": 30.0,
+          "cap_decisions": {},
+          "class_a": "scout",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 120,
+            "1.35": 14
+          },
+          "draw_rate": 8.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 14,
+          "pacing_rounds": {
+            "late": 14,
+            "mid": 120,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 4,
+            "periodic": 9,
+            "simultaneous": 37
+          }
+        },
+        {
+          "a_win_rate": 98.0,
+          "avg_rounds": 11.72,
+          "b_win_rate": 2.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 1
+          },
+          "class_a": "scout",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 140,
+            "1.35": 46
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 46,
+            "mid": 140,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 7,
+            "round_cap_hp_percent": 1,
+            "simultaneous": 42
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.52,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 29
+          },
+          "class_a": "scout",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 176
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2393,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 176,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 1,
+            "round_cap_hp_percent": 29,
+            "simultaneous": 20
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 11.58,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "rogue",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 143,
+            "1.35": 36
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 36,
+            "mid": 143,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 6,
+            "simultaneous": 44
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.02,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 12
+          },
+          "class_a": "rogue",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 151
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2211,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 151,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 12,
+            "simultaneous": 38
+          }
+        },
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 100.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "mage",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 200
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        }
+      ],
+      "score": {
+        "average_rounds_all_pairs": 13.11,
+        "class_average_win_rates": {
+          "knight": 99.6,
+          "mage": 3.2,
+          "priest": 21.2,
+          "rogue": 46.0,
+          "scout": 52.0,
+          "warrior": 72.8
+        },
+        "class_win_rate_spread_pp": 96.4,
+        "classes_above_80": 1,
+        "classes_below_20": 1,
+        "dominance_count": 13,
+        "high_draw_count": 0,
+        "objective": 1663.34,
+        "pairs_below_10_average_rounds": 0,
+        "pairs_in_10_15_average_round_target": 15,
+        "round_cap_decision_rate_pct": 33.47
+      }
+    },
+    "baseline_50": {
+      "config": {
+        "dex_scaling": false,
+        "pacing": "none",
+        "round_cap": 50
+      },
+      "rows": [
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 23.1,
+          "b_win_rate": 100.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "knight",
+          "damage_multiplier_rounds": {
+            "1.00": 1155
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 28,
+          "pacing_rounds": {
+            "late": 605,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 50,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 11.8,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "scout",
+          "damage_multiplier_rounds": {
+            "1.00": 590
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 18,
+          "pacing_rounds": {
+            "late": 51,
+            "mid": 139,
+            "normal": 400
+          },
+          "round_cap": 50,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 11.06,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 553
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 16,
+          "pacing_rounds": {
+            "late": 34,
+            "mid": 119,
+            "normal": 400
+          },
+          "round_cap": 50,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 94.0,
+          "avg_rounds": 11.56,
+          "b_win_rate": 2.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 578
+          },
+          "draw_rate": 4.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 16,
+          "pacing_rounds": {
+            "late": 44,
+            "mid": 134,
+            "normal": 400
+          },
+          "round_cap": 50,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 2,
+            "simultaneous": 48
+          }
+        },
+        {
+          "a_win_rate": 2.0,
+          "avg_rounds": 22.6,
+          "b_win_rate": 96.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 1130
+          },
+          "draw_rate": 2.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 29,
+          "pacing_rounds": {
+            "late": 580,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 50,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 1,
+            "simultaneous": 49
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 16.3,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "knight",
+          "class_b": "scout",
+          "damage_multiplier_rounds": {
+            "1.00": 815
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 20,
+          "pacing_rounds": {
+            "late": 265,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 50,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 16.32,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "knight",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 816
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 21,
+          "pacing_rounds": {
+            "late": 266,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 50,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 15.72,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "knight",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 786
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 18,
+          "pacing_rounds": {
+            "late": 236,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 50,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 62.0,
+          "avg_rounds": 48.42,
+          "b_win_rate": 38.0,
+          "cap_decisions": {},
+          "class_a": "knight",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 2421
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 50,
+          "pacing_rounds": {
+            "late": 1871,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 50,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_limit_hp_percent": 21,
+            "simultaneous": 29
+          }
+        },
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 20.62,
+          "b_win_rate": 100.0,
+          "cap_decisions": {},
+          "class_a": "scout",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 1031
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 23,
+          "pacing_rounds": {
+            "late": 481,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 50,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 12,
+            "simultaneous": 38
+          }
+        },
+        {
+          "a_win_rate": 20.0,
+          "avg_rounds": 19.22,
+          "b_win_rate": 70.0,
+          "cap_decisions": {},
+          "class_a": "scout",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 961
+          },
+          "draw_rate": 10.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 21,
+          "pacing_rounds": {
+            "late": 411,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 50,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 5,
+            "periodic": 4,
+            "simultaneous": 41
+          }
+        },
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 21.5,
+          "b_win_rate": 100.0,
+          "cap_decisions": {},
+          "class_a": "scout",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 1075
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 28,
+          "pacing_rounds": {
+            "late": 525,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 50,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 92.0,
+          "avg_rounds": 15.9,
+          "b_win_rate": 4.0,
+          "cap_decisions": {},
+          "class_a": "rogue",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 795
+          },
+          "draw_rate": 4.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 19,
+          "pacing_rounds": {
+            "late": 245,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 50,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 2,
+            "periodic": 9,
+            "simultaneous": 39
+          }
+        },
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 23.66,
+          "b_win_rate": 100.0,
+          "cap_decisions": {},
+          "class_a": "rogue",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 1183
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 29,
+          "pacing_rounds": {
+            "late": 633,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 50,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 27.82,
+          "b_win_rate": 100.0,
+          "cap_decisions": {},
+          "class_a": "mage",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 1391
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 33,
+          "pacing_rounds": {
+            "late": 841,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 50,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        }
+      ],
+      "score": {
+        "average_rounds_all_pairs": 20.37,
+        "class_average_win_rates": {
+          "knight": 92.4,
+          "mage": 15.2,
+          "priest": 86.8,
+          "rogue": 38.4,
+          "scout": 4.0,
+          "warrior": 59.2
+        },
+        "class_win_rate_spread_pp": 88.4,
+        "classes_above_80": 2,
+        "classes_below_20": 2,
+        "dominance_count": 13,
+        "high_draw_count": 0,
+        "objective": 1788.4,
+        "pairs_below_10_average_rounds": 0,
+        "pairs_in_10_15_average_round_target": 3,
+        "round_cap_decision_rate_pct": 0.0
+      }
+    },
+    "dex_base_cap15": {
+      "config": {
+        "dex_scaling": true,
+        "pacing": "none",
+        "round_cap": 15
+      },
+      "rows": [
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 100.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "warrior",
+          "class_b": "knight",
+          "damage_multiplier_rounds": {
+            "1.00": 750
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        },
+        {
+          "a_win_rate": 94.0,
+          "avg_rounds": 11.98,
+          "b_win_rate": 2.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 1
+          },
+          "class_a": "warrior",
+          "class_b": "scout",
+          "damage_multiplier_rounds": {
+            "1.00": 599
+          },
+          "draw_rate": 4.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 55,
+            "mid": 144,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 2,
+            "round_cap_hp_percent": 1,
+            "simultaneous": 47
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 10.8,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 540
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 24,
+            "mid": 116,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 96.0,
+          "avg_rounds": 11.34,
+          "b_win_rate": 2.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 1
+          },
+          "class_a": "warrior",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 567
+          },
+          "draw_rate": 2.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 36,
+            "mid": 131,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 1,
+            "round_cap_hp_percent": 1,
+            "simultaneous": 48
+          }
+        },
+        {
+          "a_win_rate": 34.0,
+          "avg_rounds": 14.98,
+          "b_win_rate": 66.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 49
+          },
+          "class_a": "warrior",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 749
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 199,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 49,
+            "simultaneous": 1
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.96,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 36
+          },
+          "class_a": "knight",
+          "class_b": "scout",
+          "damage_multiplier_rounds": {
+            "1.00": 748
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 198,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 36,
+            "simultaneous": 14
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.96,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 33
+          },
+          "class_a": "knight",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 748
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 198,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 33,
+            "simultaneous": 17
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.48,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 25
+          },
+          "class_a": "knight",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 724
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 174,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 25,
+            "simultaneous": 25
+          }
+        },
+        {
+          "a_win_rate": 74.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 26.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "knight",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 750
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        },
+        {
+          "a_win_rate": 74.0,
+          "avg_rounds": 10.96,
+          "b_win_rate": 6.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 1
+          },
+          "class_a": "scout",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 548
+          },
+          "draw_rate": 20.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 23,
+            "mid": 125,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 10,
+            "periodic": 4,
+            "round_cap_hp_percent": 1,
+            "simultaneous": 35
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 10.94,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 1
+          },
+          "class_a": "scout",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 547
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 29,
+            "mid": 118,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 2,
+            "round_cap_hp_percent": 1,
+            "simultaneous": 47
+          }
+        },
+        {
+          "a_win_rate": 28.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 72.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "scout",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 750
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 10.76,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "rogue",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 538
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 13,
+            "mid": 125,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 9,
+            "simultaneous": 41
+          }
+        },
+        {
+          "a_win_rate": 58.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 42.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "rogue",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 750
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        },
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 100.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "mage",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 750
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        }
+      ],
+      "score": {
+        "average_rounds_all_pairs": 13.41,
+        "class_average_win_rates": {
+          "knight": 94.8,
+          "mage": 0.4,
+          "priest": 61.2,
+          "rogue": 32.8,
+          "scout": 40.8,
+          "warrior": 64.8
+        },
+        "class_win_rate_spread_pp": 94.4,
+        "classes_above_80": 1,
+        "classes_below_20": 1,
+        "dominance_count": 10,
+        "high_draw_count": 0,
+        "objective": 1400.26,
+        "pairs_below_10_average_rounds": 0,
+        "pairs_in_10_15_average_round_target": 15,
+        "round_cap_decision_rate_pct": 52.93
+      }
+    },
+    "moderate_mage85": {
+      "config": {
+        "dex_scaling": true,
+        "mage_physical_received": 0.85,
+        "pacing": "moderate",
+        "round_cap": 15
+      },
+      "rows": [
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 100.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "warrior",
+          "class_b": "knight",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 200
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 4777,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        },
+        {
+          "a_win_rate": 94.0,
+          "avg_rounds": 10.68,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "scout",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 115,
+            "1.35": 19
+          },
+          "draw_rate": 6.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 19,
+            "mid": 115,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 3,
+            "simultaneous": 47
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 10.36,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 109,
+            "1.35": 9
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 12,
+          "pacing_rounds": {
+            "late": 9,
+            "mid": 109,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 68.0,
+          "avg_rounds": 12.04,
+          "b_win_rate": 12.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 144,
+            "1.35": 58
+          },
+          "draw_rate": 20.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 58,
+            "mid": 144,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 10,
+            "simultaneous": 40
+          }
+        },
+        {
+          "a_win_rate": 98.0,
+          "avg_rounds": 13.78,
+          "b_win_rate": 2.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 11
+          },
+          "class_a": "warrior",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 139
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2084,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 139,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 11,
+            "simultaneous": 39
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.66,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 14
+          },
+          "class_a": "knight",
+          "class_b": "scout",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 183
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 183,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 6607,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 14,
+            "simultaneous": 36
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.6,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 11
+          },
+          "class_a": "knight",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 180
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 180,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 7242,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 11,
+            "simultaneous": 39
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.9,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 35
+          },
+          "class_a": "knight",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 195
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 195,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 3766,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 35,
+            "simultaneous": 15
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 49
+          },
+          "class_a": "knight",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 200
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2502,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 4686,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 49,
+            "simultaneous": 1
+          }
+        },
+        {
+          "a_win_rate": 66.0,
+          "avg_rounds": 10.66,
+          "b_win_rate": 20.0,
+          "cap_decisions": {},
+          "class_a": "scout",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 117,
+            "1.35": 16
+          },
+          "draw_rate": 14.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 16,
+            "mid": 117,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_periodic": 1,
+            "draw_simultaneous": 6,
+            "periodic": 4,
+            "simultaneous": 39
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 11.9,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 1
+          },
+          "class_a": "scout",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 141,
+            "1.35": 54
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 54,
+            "mid": 141,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 7,
+            "round_cap_hp_percent": 1,
+            "simultaneous": 42
+          }
+        },
+        {
+          "a_win_rate": 98.0,
+          "avg_rounds": 14.46,
+          "b_win_rate": 2.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 31
+          },
+          "class_a": "scout",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 173
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2397,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 173,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 31,
+            "simultaneous": 19
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 12.18,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "rogue",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 148,
+            "1.35": 61
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 14,
+          "pacing_rounds": {
+            "late": 61,
+            "mid": 148,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 18,
+            "simultaneous": 32
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.12,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 15
+          },
+          "class_a": "rogue",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 156
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2253,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 156,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 15,
+            "simultaneous": 35
+          }
+        },
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 100.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "mage",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 200
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        }
+      ],
+      "score": {
+        "average_rounds_all_pairs": 13.29,
+        "class_average_win_rates": {
+          "knight": 100.0,
+          "mage": 2.4,
+          "priest": 20.8,
+          "rogue": 44.0,
+          "scout": 52.8,
+          "warrior": 72.0
+        },
+        "class_win_rate_spread_pp": 97.6,
+        "classes_above_80": 1,
+        "classes_below_20": 1,
+        "dominance_count": 13,
+        "high_draw_count": 0,
+        "objective": 1668.8,
+        "pairs_below_10_average_rounds": 0,
+        "pairs_in_10_15_average_round_target": 15,
+        "round_cap_decision_rate_pct": 35.6
+      }
+    },
+    "moderate_mage90": {
+      "config": {
+        "dex_scaling": true,
+        "mage_physical_received": 0.9,
+        "pacing": "moderate",
+        "round_cap": 15
+      },
+      "rows": [
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 100.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "warrior",
+          "class_b": "knight",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 200
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 5311,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        },
+        {
+          "a_win_rate": 98.0,
+          "avg_rounds": 10.98,
+          "b_win_rate": 2.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "scout",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 122,
+            "1.35": 27
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 27,
+            "mid": 122,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 10.48,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 110,
+            "1.35": 14
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 14,
+            "mid": 110,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "simultaneous": 50
+          }
+        },
+        {
+          "a_win_rate": 58.0,
+          "avg_rounds": 11.78,
+          "b_win_rate": 8.0,
+          "cap_decisions": {},
+          "class_a": "warrior",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 137,
+            "1.35": 52
+          },
+          "draw_rate": 34.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 14,
+          "pacing_rounds": {
+            "late": 52,
+            "mid": 137,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_simultaneous": 17,
+            "simultaneous": 33
+          }
+        },
+        {
+          "a_win_rate": 94.0,
+          "avg_rounds": 13.76,
+          "b_win_rate": 6.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 7
+          },
+          "class_a": "warrior",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 138
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2061,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 138,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 7,
+            "simultaneous": 43
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.36,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 17
+          },
+          "class_a": "knight",
+          "class_b": "scout",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 168
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 168,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 6359,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 17,
+            "simultaneous": 33
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.46,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 9
+          },
+          "class_a": "knight",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 173
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 173,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 7045,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 9,
+            "simultaneous": 41
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.54,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 20
+          },
+          "class_a": "knight",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 177
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 177,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 3558,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 20,
+            "simultaneous": 30
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 49
+          },
+          "class_a": "knight",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 200
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2589,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 5051,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 49,
+            "simultaneous": 1
+          }
+        },
+        {
+          "a_win_rate": 70.0,
+          "avg_rounds": 10.6,
+          "b_win_rate": 16.0,
+          "cap_decisions": {},
+          "class_a": "scout",
+          "class_b": "rogue",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 121,
+            "1.35": 9
+          },
+          "draw_rate": 14.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 13,
+          "pacing_rounds": {
+            "late": 9,
+            "mid": 121,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "draw_periodic": 2,
+            "draw_simultaneous": 5,
+            "periodic": 7,
+            "simultaneous": 36
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 11.4,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "scout",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 137,
+            "1.35": 33
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 14,
+          "pacing_rounds": {
+            "late": 33,
+            "mid": 137,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 11,
+            "simultaneous": 39
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.42,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 23
+          },
+          "class_a": "scout",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 171
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2377,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 171,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 2,
+            "round_cap_hp_percent": 23,
+            "simultaneous": 25
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 11.7,
+          "b_win_rate": 0.0,
+          "cap_decisions": {},
+          "class_a": "rogue",
+          "class_b": "mage",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 147,
+            "1.35": 38
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 14,
+          "pacing_rounds": {
+            "late": 38,
+            "mid": 147,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "periodic": 11,
+            "simultaneous": 39
+          }
+        },
+        {
+          "a_win_rate": 100.0,
+          "avg_rounds": 14.16,
+          "b_win_rate": 0.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 15
+          },
+          "class_a": "rogue",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 158
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 2275,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 158,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 15,
+            "simultaneous": 35
+          }
+        },
+        {
+          "a_win_rate": 0.0,
+          "avg_rounds": 15.0,
+          "b_win_rate": 100.0,
+          "cap_decisions": {
+            "round_cap_hp_percent": 50
+          },
+          "class_a": "mage",
+          "class_b": "priest",
+          "damage_multiplier_rounds": {
+            "1.00": 400,
+            "1.15": 150,
+            "1.35": 200
+          },
+          "draw_rate": 0.0,
+          "hot_power_reduced_total": 0,
+          "max_rounds_observed": 15,
+          "pacing_rounds": {
+            "late": 200,
+            "mid": 150,
+            "normal": 400
+          },
+          "round_cap": 15,
+          "shield_remaining_reduced_total": 0,
+          "terminal_reasons": {
+            "round_cap_hp_percent": 50
+          }
+        }
+      ],
+      "score": {
+        "average_rounds_all_pairs": 13.18,
+        "class_average_win_rates": {
+          "knight": 100.0,
+          "mage": 1.6,
+          "priest": 21.2,
+          "rogue": 43.2,
+          "scout": 54.4,
+          "warrior": 70.0
+        },
+        "class_win_rate_spread_pp": 98.4,
+        "classes_above_80": 1,
+        "classes_below_20": 1,
+        "dominance_count": 12,
+        "high_draw_count": 0,
+        "objective": 1562.4,
+        "pairs_below_10_average_rounds": 0,
+        "pairs_in_10_15_average_round_target": 15,
+        "round_cap_decision_rate_pct": 32.0
+      }
+    }
+  },
+  "siege_readiness_note": "Preferred candidate should naturally finish most battles by round 15; HP-percent tiebreak remains emergency fallback only.",
+  "target_cap_decision_rate_max_pct": 15,
+  "target_round_range": [
+    10,
+    15
+  ],
+  "trials_per_pair": 50,
+  "verdict": "PASS_WITH_REVIEW",
+  "version": "14.6.4c"
+}

@@ -7,7 +7,11 @@ from systems.pvp_config import (
     PVP_COMBAT_ENERGY_MAX, PVP_CONSECUTIVE_AFK_LIMIT, PVP_DAMAGE_MULTIPLIER,
     PVP_DEBUFF_MULTIPLIER, PVP_HEALING_MULTIPLIER, PVP_MAX_ROUNDS,
     PVP_RAGE_GAIN_ON_ATTACK, PVP_RAGE_GAIN_ON_DAMAGE_TAKEN,
-    PVP_SHIELD_MULTIPLIER,
+    PVP_SHIELD_MULTIPLIER, PVP_CLASS_ATTACK_MULTIPLIER,
+    PVP_CLASS_DEFENSE_MULTIPLIER, PVP_CLASS_SKILL_DAMAGE_MULTIPLIER,
+    PVP_CLASS_PENETRATION, PVP_HEAVY_ARMOR_CLASSES,
+    PVP_ROGUE_HEAVY_ARMOR_BONUS_PENETRATION, PVP_DAMAGE_RECEIVED_BY_TYPE,
+    PVP_CLASS_HOT_POWER_MULTIPLIER,
 )
 from systems.pvp_models import PvpActionIntent, PvpActionOutcome, PvpActorState, PvpRoundResult
 from systems.pvp_skill_adapter import get_production_pvp_skill, load_production_pvp_skill_catalog
@@ -30,6 +34,7 @@ def _effect_value(effect: Mapping[str, Any], key: str, default: float = 0.0) -> 
 
 def _effective_defense(actor: PvpActorState, attack_type: str) -> float:
     base = actor.magical_defense if attack_type == "magical" else actor.physical_defense
+    base *= float(PVP_CLASS_DEFENSE_MULTIPLIER.get(actor.class_key, {}).get(attack_type, 1.0))
     down_key = "mdef_down" if attack_type == "magical" else "pdef_down"
     buff_key = "mdef_buff" if attack_type == "magical" else "pdef_buff"
     down = _effect_value(actor.effects.get(down_key, {}), "percent")
@@ -96,13 +101,19 @@ def _base_damage(attacker: PvpActorState, defender: PvpActorState, attack_type: 
         return 0, False, True
     if attack_type == "magical":
         weapon = rng.uniform(attacker.weapon_magical_min, attacker.weapon_magical_max)
-        attack = attacker.magical_attack
+        attack = attacker.magical_attack * float(PVP_CLASS_ATTACK_MULTIPLIER.get(attacker.class_key, 1.0))
         crit_chance = attacker.magical_crit_chance
     else:
         weapon = rng.uniform(attacker.weapon_physical_min, attacker.weapon_physical_max)
-        attack = attacker.physical_attack
+        attack = attacker.physical_attack * float(PVP_CLASS_ATTACK_MULTIPLIER.get(attacker.class_key, 1.0))
         crit_chance = attacker.physical_crit_chance
-    damage = max(1.0, weapon + attack - _effective_defense(defender, attack_type) * 0.5)
+    penetration = float(PVP_CLASS_PENETRATION.get(attacker.class_key, {}).get(attack_type, 0.0))
+    if attacker.class_key == "rogue" and attack_type == "physical" and defender.class_key in PVP_HEAVY_ARMOR_CLASSES:
+        penetration = 1.0 - (1.0 - penetration) * (1.0 - PVP_ROGUE_HEAVY_ARMOR_BONUS_PENETRATION)
+    penetration = max(0.0, min(0.90, penetration))
+    effective_defense = _effective_defense(defender, attack_type) * (1.0 - penetration)
+    damage = max(1.0, weapon + attack - effective_defense * 0.5)
+    damage *= float(PVP_DAMAGE_RECEIVED_BY_TYPE.get(defender.class_key, {}).get(attack_type, 1.0))
     critical = rng.random() * 100 < max(0.0, min(100.0, crit_chance))
     if critical:
         damage *= 1.5
@@ -161,7 +172,7 @@ def _special(actor: PvpActorState, target: PvpActorState, skill: Mapping[str, An
         applied.append(_replace_effect(actor, "shield", "shield", amount, duration or 3, actor.user_id))
         actor.effects["shield"]["remaining"] = amount
     elif effect == "player_hot":
-        amount = max(5, round(actor.max_hp * 0.10))
+        amount = max(5, round(actor.max_hp * 0.10 * float(PVP_CLASS_HOT_POWER_MULTIPLIER.get(actor.class_key, 1.0))))
         applied.append(_replace_effect(actor, "hot", "hot", amount, duration or 4, actor.user_id))
     elif effect == "restore_mana_percent":
         amount = max(1, round(actor.max_mp * 0.25))
@@ -265,6 +276,8 @@ def resolve_pvp_round(round_number: int, revision: int, actor_a: PvpActorState, 
         attack_type = str((skill or {}).get("attack_type") or ("magical" if actor.class_key in {"mage", "priest"} else "physical"))
         damage, critical, dodged = _base_damage(actor, target, attack_type, rng)
         multiplier = float((skill or {}).get("damage_multiplier") or 1.0)
+        if skill:
+            multiplier *= float(PVP_CLASS_SKILL_DAMAGE_MULTIPLIER.get(actor.class_key, 1.0))
         damage = 0 if dodged else max(1, round(damage * multiplier))
         # Production flags use the same PvE definitions; no PvP-specific constants are introduced.
         if skill and skill.get("scales_with_spent_rage"):
@@ -347,9 +360,4 @@ def resolve_pvp_round(round_number: int, revision: int, actor_a: PvpActorState, 
         terminal, winner, reason = True, a.user_id, "afk_defeat"
     else:
         terminal, winner, reason = _terminal(a, b, "simultaneous")
-    if not terminal and round_number >= PVP_MAX_ROUNDS:
-        a_pct = a.hp / max(1, a.max_hp); b_pct = b.hp / max(1, b.max_hp)
-        terminal = True
-        winner = a.user_id if a_pct > b_pct else b.user_id if b_pct > a_pct else None
-        reason = "round_limit_hp_percent" if winner is not None else "draw_round_limit_equal_hp_percent"
     return PvpRoundResult(round_number, revision, a.to_dict(), b.to_dict(), (outcomes[a.user_id], outcomes[b.user_id]), tuple(events), terminal, winner, reason)
