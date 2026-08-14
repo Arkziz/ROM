@@ -272,3 +272,231 @@ def generate_hunt_encounter(
     mob["is_boss"] = False
     mob["is_elite"] = False
     return {"enemy_type": "normal", "mob": mob}
+
+# ============================================================================
+# Stage 15.3.0: boss combat actions, player bleed and temporary self-buffs
+# ============================================================================
+
+PLAYER_BOSS_BLEED_EFFECT_KEY = "boss_bleed"
+
+
+def _boss_state(boss: dict[str, Any]) -> dict[str, Any]:
+    state = boss.get("boss_state")
+    if not isinstance(state, dict):
+        state = create_boss_state()
+        boss["boss_state"] = state
+    defaults = create_boss_state()
+    for key, value in defaults.items():
+        state.setdefault(key, value)
+    return state
+
+
+def get_effective_boss_attack(boss: Mapping[str, Any]) -> int:
+    """Return boss ATK after permanent enrage and temporary ATK buffs.
+
+    Different ATK buffs are additive. The same temporary buff never stacks;
+    applying it again only refreshes the duration in apply_boss_action_effects().
+    """
+    state = boss.get("boss_state") or {}
+    permanent = float(state.get("permanent_attack_buff_percent", 0.0) or 0.0)
+    temporary = 0.0
+    if int(state.get("attack_buff_turns", 0) or 0) > 0:
+        temporary = float(state.get("attack_buff_percent", 0.0) or 0.0)
+    multiplier = 1.0 + (permanent + temporary) / 100.0
+    return max(1, int(round(float(boss.get("attack", 1) or 1) * multiplier)))
+
+
+def get_effective_boss_defenses(boss: Mapping[str, Any]) -> tuple[int, int]:
+    state = boss.get("boss_state") or {}
+    pdef_percent = 0.0
+    mdef_percent = 0.0
+    if int(state.get("defense_buff_turns", 0) or 0) > 0:
+        pdef_percent = float(state.get("physical_defense_buff_percent", 0.0) or 0.0)
+        mdef_percent = float(state.get("magical_defense_buff_percent", 0.0) or 0.0)
+    pdef = max(0, int(round(float(boss.get("pdef", boss.get("def", 0)) or 0) * (1.0 + pdef_percent / 100.0))))
+    mdef = max(0, int(round(float(boss.get("mdef", boss.get("def", 0)) or 0) * (1.0 + mdef_percent / 100.0))))
+    return pdef, mdef
+
+
+def build_boss_action_plan(boss: dict[str, Any], rng=None, forced_skill_key=None) -> dict[str, Any]:
+    """Create a pure action plan without rolling dodge, crit or final damage."""
+    definition = boss.get("boss_definition") or {}
+    skills = definition.get("skills") or {}
+    if forced_skill_key is None:
+        selected = choose_boss_action(boss, rng=rng)
+        skill_key = selected["skill_key"]
+        skill = dict(selected["skill"])
+        phase = selected["phase"]
+    else:
+        skill_key = str(forced_skill_key)
+        skill = dict(skills.get(skill_key) or {})
+        if not skill:
+            raise ValueError(f"Unknown boss skill: {skill_key}")
+        phase = "forced"
+    no_damage = bool(skill.get("no_damage"))
+    return {
+        "boss_key": boss.get("boss_key"),
+        "skill_key": skill_key,
+        "skill_name": skill.get("name", skill_key),
+        "phase": phase,
+        "no_damage": no_damage,
+        "attack_type": None if no_damage else skill.get("attack_type", boss.get("attack_type", "physical")),
+        "damage_multiplier": 0.0 if no_damage else float(skill.get("damage_multiplier", 1.0) or 0.0),
+        "effective_attack": 0 if no_damage else get_effective_boss_attack(boss),
+        "skill": skill,
+    }
+
+
+def calculate_boss_bleed_damage(actual_damage: int, skill: Mapping[str, Any]) -> int:
+    """Bleed is based on actual post-defense damage and never crits."""
+    fraction = float(skill.get("bleed_damage_fraction", 0.0) or 0.0)
+    minimum = max(0, int(skill.get("bleed_min_damage", 1) or 1))
+    if fraction <= 0 or int(actual_damage or 0) <= 0:
+        return 0
+    return max(minimum, int(round(int(actual_damage) * fraction)))
+
+
+def apply_boss_action_effects(
+    boss: dict[str, Any],
+    action_plan: Mapping[str, Any],
+    actual_damage: int = 0,
+) -> dict[str, Any]:
+    """Apply boss self-buffs and return a player-effect instruction.
+
+    The returned player_effect is intentionally data-only. The production
+    handler integration in the next stage will insert it into player_effects.
+    """
+    state = _boss_state(boss)
+    skill = dict(action_plan.get("skill") or {})
+    skill_key = str(action_plan.get("skill_key") or "")
+    events = []
+    player_effect = None
+
+    if "attack_buff_percent" in skill:
+        state["attack_buff_percent"] = float(skill.get("attack_buff_percent", 0) or 0)
+        state["attack_buff_turns"] = max(0, int(skill.get("duration_turns", 0) or 0))
+        events.append({
+            "type": "boss_attack_buff",
+            "percent": state["attack_buff_percent"],
+            "turns": state["attack_buff_turns"],
+            "refresh_policy": skill.get("refresh_policy", "replace"),
+        })
+
+    if "pdef_buff_percent" in skill or "mdef_buff_percent" in skill:
+        state["physical_defense_buff_percent"] = float(skill.get("pdef_buff_percent", 0) or 0)
+        state["magical_defense_buff_percent"] = float(skill.get("mdef_buff_percent", 0) or 0)
+        state["defense_buff_turns"] = max(0, int(skill.get("duration_turns", 0) or 0))
+        events.append({
+            "type": "boss_defense_buff",
+            "pdef_percent": state["physical_defense_buff_percent"],
+            "mdef_percent": state["magical_defense_buff_percent"],
+            "turns": state["defense_buff_turns"],
+            "refresh_policy": skill.get("refresh_policy", "replace"),
+        })
+
+    bleed_damage = calculate_boss_bleed_damage(actual_damage, skill)
+    if bleed_damage > 0:
+        player_effect = {
+            "key": PLAYER_BOSS_BLEED_EFFECT_KEY,
+            "name": "🩸 Кровотеча",
+            "icon": "🩸",
+            "type": "dot",
+            "source": "boss",
+            "source_boss_key": boss.get("boss_key"),
+            "source_skill_key": skill_key,
+            "turns": max(1, int(skill.get("bleed_turns", 1) or 1)),
+            "damage": bleed_damage,
+            "can_crit": False,
+            "refresh_policy": skill.get("bleed_refresh_policy", "replace"),
+        }
+        events.append({
+            "type": "player_bleed_applied",
+            "damage": bleed_damage,
+            "turns": player_effect["turns"],
+            "refresh_policy": player_effect["refresh_policy"],
+        })
+
+    state["last_action_key"] = skill_key
+    return {
+        "boss_state": copy.deepcopy(state),
+        "events": events,
+        "player_effect": player_effect,
+    }
+
+
+def apply_player_effect_instruction(mob: dict[str, Any], effect_instruction: Mapping[str, Any] | None) -> dict[str, Any] | None:
+    """Insert/refresh the boss bleed instruction in combat player_effects."""
+    if not effect_instruction:
+        return None
+    effect = dict(effect_instruction)
+    key = str(effect.pop("key", PLAYER_BOSS_BLEED_EFFECT_KEY))
+    effects = mob.setdefault("player_effects", {})
+    effects[key] = effect
+    return effect
+
+
+def process_boss_player_dots(mob: dict[str, Any], current_hp: int) -> dict[str, Any]:
+    """Tick only boss-origin player DoTs at player-turn start.
+
+    This helper does not write game.db. It mutates the in-memory combat object
+    and returns the new HP so the handler can use its existing HP persistence.
+    """
+    hp = max(0, int(current_hp or 0))
+    effects = mob.setdefault("player_effects", {})
+    total_damage = 0
+    events = []
+    expired = []
+    for key, effect in list(effects.items()):
+        if effect.get("type") != "dot" or effect.get("source") != "boss":
+            continue
+        damage = max(0, int(effect.get("damage", 0) or 0))
+        applied = min(hp, damage)
+        hp -= applied
+        total_damage += applied
+        turns = int(effect.get("turns", 0) or 0) - 1
+        effect["turns"] = turns
+        events.append({"type": "boss_dot_tick", "key": key, "damage": applied, "turns_left": max(0, turns)})
+        if turns <= 0:
+            expired.append(key)
+    for key in expired:
+        effects.pop(key, None)
+    return {"current_hp": hp, "damage": total_damage, "events": events, "expired": expired}
+
+
+def tick_boss_temporary_buffs(boss: dict[str, Any]) -> dict[str, Any]:
+    """Decrement temporary boss buffs after a completed boss action."""
+    state = _boss_state(boss)
+    expired = []
+    if int(state.get("attack_buff_turns", 0) or 0) > 0:
+        state["attack_buff_turns"] = int(state["attack_buff_turns"]) - 1
+        if state["attack_buff_turns"] <= 0:
+            state["attack_buff_turns"] = 0
+            state["attack_buff_percent"] = 0.0
+            expired.append("attack_buff")
+    if int(state.get("defense_buff_turns", 0) or 0) > 0:
+        state["defense_buff_turns"] = int(state["defense_buff_turns"]) - 1
+        if state["defense_buff_turns"] <= 0:
+            state["defense_buff_turns"] = 0
+            state["physical_defense_buff_percent"] = 0.0
+            state["magical_defense_buff_percent"] = 0.0
+            expired.append("defense_buff")
+    return {"boss_state": copy.deepcopy(state), "expired": expired}
+
+
+def resolve_boss_combat_action(
+    boss: dict[str, Any],
+    rng=None,
+    forced_skill_key=None,
+    actual_damage: int | None = None,
+) -> dict[str, Any]:
+    """Resolve action selection and effects around the existing damage engine.
+
+    If actual_damage is None, the caller must calculate final damage through the
+    existing production calculate_mob_attack() and call apply_boss_action_effects
+    afterwards. Tests may pass actual_damage to verify bleed semantics.
+    """
+    plan = build_boss_action_plan(boss, rng=rng, forced_skill_key=forced_skill_key)
+    effects = None
+    if actual_damage is not None or plan["no_damage"]:
+        effects = apply_boss_action_effects(boss, plan, actual_damage=int(actual_damage or 0))
+    return {"plan": plan, "effects": effects}
