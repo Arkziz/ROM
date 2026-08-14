@@ -1,5 +1,70 @@
 from telebot import types
 
+from systems.boss_system import (
+    build_boss_damage_request,
+    finalize_boss_turn,
+    get_effective_boss_defenses,
+    prepare_boss_turn,
+    process_boss_player_dots,
+    render_boss_action_text,
+)
+
+
+# ============================================================================
+# Stage 15.5.0: boss bridge for every enemy action path
+# ============================================================================
+def _calculate_enemy_turn_15_5_0(
+    mob, player_pdef, player_mdef, player_dex, sta, level
+):
+    """Preserve normal/elite behavior; route bosses through Stage 15 bridge."""
+    if not mob.get("is_boss"):
+        result = calculate_mob_attack(
+            mob_attack=mob["attack"], player_pdef=player_pdef,
+            player_mdef=player_mdef, player_dex=player_dex,
+            mob_dex=mob["dex"], sta=sta, level=level,
+            attack_type=mob["attack_type"]
+        )
+        result["boss_turn"] = None
+        return result
+    turn = prepare_boss_turn(mob)
+    plan = turn["action_plan"]
+    request = build_boss_damage_request(plan)
+    if request is None:
+        return {
+            "damage": 0, "is_crit": False, "is_dodge": False,
+            "dodge_chance": 0.0, "boss_turn": turn,
+        }
+    result = calculate_mob_attack(
+        mob_attack=request["mob_attack"], player_pdef=player_pdef,
+        player_mdef=player_mdef, player_dex=player_dex,
+        mob_dex=mob["dex"], sta=sta, level=level,
+        attack_type=request["attack_type"]
+    )
+    result["boss_turn"] = turn
+    return result
+
+
+def _finalize_enemy_turn_15_5_0(mob, attack_result, actual_damage):
+    turn = attack_result.get("boss_turn")
+    if not turn:
+        return ""
+    finalize_boss_turn(mob, turn["action_plan"], actual_damage=actual_damage)
+    return render_boss_action_text(
+        mob, turn, actual_damage=actual_damage,
+        dodged=bool(attack_result.get("is_dodge"))
+    ) + "\n"
+
+
+def _apply_boss_dot_at_player_turn_15_5_0(mob):
+    if not mob.get("is_boss"):
+        return ""
+    result = process_boss_player_dots(mob, int(mob.get("player_hp", 0) or 0))
+    mob["player_hp"] = result["current_hp"]
+    if result["damage"] <= 0:
+        return ""
+    return f"🩸 Кровотеча: отримано {result['damage']} шкоди.\n"
+
+
 
 # ==============================
 # ROM 11.3.1 COMBAT CALLBACK / TELEGRAM RATE-LIMIT GUARD
@@ -392,6 +457,10 @@ def get_effective_mob_def(mob, attack_type):
         percent_key = "pdef_percent"
 
     effective_def = float(base_def)
+
+    if mob.get("is_boss"):
+        boss_pdef, boss_mdef = get_effective_boss_defenses(mob)
+        effective_def = float(boss_mdef if attack_type == "magical" else boss_pdef)
 
     for effect in mob["enemy_effects"].values():
         modifiers = effect.get("modifiers", {})
@@ -1933,6 +2002,7 @@ def register_combat_handlers(bot):
 
         cooldown_start_text = tick_skill_cooldowns_at_player_turn(mob)
         player_effects_text = process_player_turn_start_effects(user_id, mob)
+        player_effects_text += _apply_boss_dot_at_player_turn_15_5_0(mob)
         resource_start_text = regenerate_class_resource_at_player_turn(mob)
 
         stats = get_player_stats(user_id)
@@ -2032,15 +2102,13 @@ def register_combat_handlers(bot):
             mob["stunned_turns"] -= 1
             enemy_action_text = f"💫 {mob['name']} оглушений і пропускає хід.\n\n"
         else:
-            mob_attack_result = calculate_mob_attack(
-                mob_attack=mob["attack"],
+            mob_attack_result = _calculate_enemy_turn_15_5_0(
+                mob=mob,
                 player_pdef=player_pdef,
                 player_mdef=player_mdef,
                 player_dex=dex_,
-                mob_dex=mob["dex"],
                 sta=sta_,
                 level=lvl,
-                attack_type=mob["attack_type"]
             )
 
             mob_dmg = mob_attack_result["damage"]
@@ -2051,6 +2119,9 @@ def register_combat_handlers(bot):
 
             if not is_dodge and mob_dmg > 0:
                 mob_dmg, shield_text = apply_player_shield_absorb(mob, mob_dmg)
+            boss_action_text = _finalize_enemy_turn_15_5_0(
+                mob, mob_attack_result, mob_dmg
+            )
 
             player_hp -= mob_dmg
             mob["player_hp"] = player_hp
@@ -2067,6 +2138,9 @@ def register_combat_handlers(bot):
                 enemy_action_text = f"👹 {mob['name']} завдав {character_name} {mob_dmg} шкоди\n"
                 enemy_action_text += shield_text
                 enemy_action_text += "\n"
+
+        if mob.get("is_boss") and 'boss_action_text' in locals() and boss_action_text:
+            enemy_action_text = boss_action_text
 
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(
@@ -2242,6 +2316,7 @@ def register_combat_handlers(bot):
             
         cooldown_start_text = tick_skill_cooldowns_at_player_turn(mob)
         player_effects_text = process_player_turn_start_effects(user_id, mob)
+        player_effects_text += _apply_boss_dot_at_player_turn_15_5_0(mob)
         resource_start_text = regenerate_class_resource_at_player_turn(mob)
         
         pay_result = validate_and_pay_skill_cost(user_id, mob, skill)
@@ -2417,15 +2492,13 @@ def register_combat_handlers(bot):
             mob["stunned_turns"] -= 1
             enemy_action_text = f"💫 {mob['name']} оглушений і пропускає хід.\n\n"
         else:
-            mob_attack_result = calculate_mob_attack(
-                mob_attack=mob["attack"],
+            mob_attack_result = _calculate_enemy_turn_15_5_0(
+                mob=mob,
                 player_pdef=player_pdef,
                 player_mdef=player_mdef,
                 player_dex=dex_,
-                mob_dex=mob["dex"],
                 sta=sta_,
                 level=lvl,
-                attack_type=mob["attack_type"]
             )
             
             mob_dmg = mob_attack_result["damage"]
@@ -2435,6 +2508,9 @@ def register_combat_handlers(bot):
             shield_text = ""
             if not is_dodge and mob_dmg > 0:
                 mob_dmg, shield_text = apply_player_shield_absorb(mob, mob_dmg)
+            boss_action_text = _finalize_enemy_turn_15_5_0(
+                mob, mob_attack_result, mob_dmg
+            )
                 
             player_hp -= mob_dmg
             
@@ -2451,6 +2527,9 @@ def register_combat_handlers(bot):
                 enemy_action_text += shield_text
                 enemy_action_text += "\n"
                 
+        if mob.get("is_boss") and 'boss_action_text' in locals() and boss_action_text:
+            enemy_action_text = boss_action_text
+
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(
                 user_id=user_id,
@@ -2737,6 +2816,7 @@ def register_combat_handlers(bot):
             
         cooldown_start_text = tick_skill_cooldowns_at_player_turn(mob)
         player_effects_text = process_player_turn_start_effects(user_id, mob)
+        player_effects_text += _apply_boss_dot_at_player_turn_15_5_0(mob)
         resource_start_text = regenerate_class_resource_at_player_turn(mob)
         
         pay_result = validate_and_pay_skill_cost(user_id, mob, skill)
@@ -2942,15 +3022,13 @@ def register_combat_handlers(bot):
             mob["stunned_turns"] -= 1
             enemy_action_text = f"💫 {mob['name']} оглушений і пропускає хід.\n\n"
         else:
-            mob_attack_result = calculate_mob_attack(
-                mob_attack=mob["attack"],
+            mob_attack_result = _calculate_enemy_turn_15_5_0(
+                mob=mob,
                 player_pdef=player_pdef,
                 player_mdef=player_mdef,
                 player_dex=dex_,
-                mob_dex=mob["dex"],
                 sta=sta_,
                 level=lvl,
-                attack_type=mob["attack_type"]
             )
 
             mob_dmg = mob_attack_result["damage"]
@@ -2961,6 +3039,9 @@ def register_combat_handlers(bot):
 
             if not is_dodge and mob_dmg > 0:
                 mob_dmg, shield_text = apply_player_shield_absorb(mob, mob_dmg)
+            boss_action_text = _finalize_enemy_turn_15_5_0(
+                mob, mob_attack_result, mob_dmg
+            )
 
             player_hp -= mob_dmg
             mob["player_hp"] = player_hp
@@ -2977,6 +3058,9 @@ def register_combat_handlers(bot):
                 enemy_action_text = f"👹 {mob['name']} завдав {character_name} {mob_dmg} шкоди\n"
                 enemy_action_text += shield_text
                 enemy_action_text += "\n"
+
+        if mob.get("is_boss") and 'boss_action_text' in locals() and boss_action_text:
+            enemy_action_text = boss_action_text
 
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(
@@ -3372,4 +3456,3 @@ def patch_combat_bot_rate_limit_safe_send(bot):
 
     bot.send_message = safe_send_message
     bot._rom_safe_send_patched = True
-
