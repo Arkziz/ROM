@@ -500,3 +500,118 @@ def resolve_boss_combat_action(
     if actual_damage is not None or plan["no_damage"]:
         effects = apply_boss_action_effects(boss, plan, actual_damage=int(actual_damage or 0))
     return {"plan": plan, "effects": effects}
+
+# ============================================================================
+# Stage 15.4.0: one-time enrage transition and production combat bridge
+# ============================================================================
+
+def get_boss_enrage_threshold_hp(boss: Mapping[str, Any]) -> int:
+    definition=boss.get("boss_definition") or {}
+    enrage=definition.get("enrage") or {}
+    fraction=float(enrage.get("hp_threshold_fraction",0.25) or 0.25)
+    return max(1,int(float(boss.get("max_hp",1) or 1)*fraction))
+
+
+def should_trigger_boss_enrage(boss: Mapping[str, Any]) -> bool:
+    if not boss.get("is_boss") or int(boss.get("hp",0) or 0)<=0:
+        return False
+    state=boss.get("boss_state") or {}
+    if state.get("enrage_used"):
+        return False
+    return int(boss.get("hp",0) or 0)<=get_boss_enrage_threshold_hp(boss)
+
+
+def trigger_boss_enrage(boss: dict[str, Any]) -> dict[str, Any]:
+    """Atomically mark enrage and return the automatic special action plan."""
+    state=_boss_state(boss)
+    if not should_trigger_boss_enrage(boss):
+        return {"triggered":False,"reason":"not_eligible","action_plan":None,"events":[]}
+    definition=boss.get("boss_definition") or {}
+    enrage=definition.get("enrage") or {}
+    special=str(enrage.get("special_skill_key") or "")
+    state["enrage_used"]=True
+    state["special_attack_used"]=True
+    state["permanent_attack_buff_percent"]=float(enrage.get("permanent_attack_buff_percent",0) or 0)
+    plan=build_boss_action_plan(boss,forced_skill_key=special)
+    state["last_action_key"]=special
+    return {
+        "triggered":True,
+        "reason":"hp_threshold",
+        "action_plan":plan,
+        "special_replaces_regular_action":bool(enrage.get("special_replaces_regular_action",True)),
+        "events":[
+            {"type":"boss_enrage","attack_buff_percent":state["permanent_attack_buff_percent"]},
+            {"type":"boss_enrage_special","skill_key":special},
+        ],
+    }
+
+
+def prepare_boss_turn(boss: dict[str, Any], rng=None) -> dict[str, Any]:
+    """Select exactly one boss action for the current enemy turn.
+
+    Enrage special has priority and replaces the normal weighted action. Once
+    used, all future turns use the after-enrage AI table.
+    """
+    if not boss.get("is_boss"):
+        return {"is_boss":False,"enrage_triggered":False,"action_plan":None}
+    enrage=trigger_boss_enrage(boss)
+    if enrage["triggered"]:
+        return {"is_boss":True,"enrage_triggered":True,"action_plan":enrage["action_plan"],"events":enrage["events"]}
+    return {"is_boss":True,"enrage_triggered":False,"action_plan":build_boss_action_plan(boss,rng=rng),"events":[]}
+
+
+def build_boss_damage_request(action_plan: Mapping[str, Any]) -> dict[str, Any] | None:
+    """Translate a boss plan to arguments for production calculate_mob_attack()."""
+    if not action_plan or action_plan.get("no_damage"):
+        return None
+    return {
+        "mob_attack":max(1,int(round(float(action_plan.get("effective_attack",1) or 1)*float(action_plan.get("damage_multiplier",1.0) or 1.0)))),
+        "attack_type":str(action_plan.get("attack_type") or "physical"),
+    }
+
+
+def finalize_boss_turn(boss: dict[str, Any], action_plan: Mapping[str, Any], actual_damage: int=0) -> dict[str, Any]:
+    """Apply effects, then decrement buffs that existed before this action.
+
+    Newly applied Battle Cry/Defense Command must retain their full advertised
+    duration. Therefore existing timers are captured before effect application.
+    """
+    state=_boss_state(boss)
+    old_attack_turns=int(state.get("attack_buff_turns",0) or 0)
+    old_defense_turns=int(state.get("defense_buff_turns",0) or 0)
+    effects=apply_boss_action_effects(boss,action_plan,actual_damage=actual_damage)
+    skill=action_plan.get("skill") or {}
+    if "attack_buff_percent" not in skill and old_attack_turns>0:
+        state["attack_buff_turns"]=old_attack_turns-1
+        if state["attack_buff_turns"]<=0:
+            state["attack_buff_turns"]=0; state["attack_buff_percent"]=0.0
+    if not ("pdef_buff_percent" in skill or "mdef_buff_percent" in skill) and old_defense_turns>0:
+        state["defense_buff_turns"]=old_defense_turns-1
+        if state["defense_buff_turns"]<=0:
+            state["defense_buff_turns"]=0
+            state["physical_defense_buff_percent"]=0.0
+            state["magical_defense_buff_percent"]=0.0
+    player_effect=effects.get("player_effect")
+    if player_effect:
+        apply_player_effect_instruction(boss,player_effect)
+    return {"effects":effects,"boss_state":copy.deepcopy(state),"player_effect":player_effect}
+
+
+def render_boss_action_text(boss: Mapping[str, Any], turn: Mapping[str, Any], actual_damage: int=0, dodged: bool=False) -> str:
+    plan=turn.get("action_plan") or {}
+    lines=[]
+    if turn.get("enrage_triggered"):
+        percent=int((boss.get("boss_state") or {}).get("permanent_attack_buff_percent",0) or 0)
+        lines.append(f"🌕 {boss.get('name','Бос')} входить у Лють! ATK +{percent}% до кінця бою.")
+    name=plan.get("skill_name") or "Атака боса"
+    if plan.get("no_damage"):
+        skill=plan.get("skill") or {}
+        if "attack_buff_percent" in skill:
+            lines.append(f"{name}: ATK +{int(skill['attack_buff_percent'])}% на {int(skill.get('duration_turns',0))} ходи.")
+        else:
+            lines.append(f"{name}: PDEF і MDEF +30% на {int(skill.get('duration_turns',0))} ходи.")
+    elif dodged:
+        lines.append(f"💨 {name}: гравець ухилився.")
+    else:
+        lines.append(f"{name}: завдано {int(actual_damage)} шкоди.")
+    return "\n".join(lines)
