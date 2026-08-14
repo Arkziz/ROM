@@ -1,6 +1,8 @@
 import random
 
 from data.mobs import get_mobs_for_location
+from data.bosses import BOSS_ENCOUNTERS_ENABLED, BOSS_ENCOUNTER_CHANCE_PERCENT
+from systems.boss_system import generate_hunt_encounter
 
 
 # ==============================
@@ -165,22 +167,30 @@ def get_available_mobs(player_level, location_id="start_path"):
 
 
 def generate_mob(player_level, location_id="start_path"):
-    available_mobs = get_available_mobs(
+    def _build_normal_mob():
+        available_mobs = get_available_mobs(
+            player_level=player_level,
+            location_id=location_id
+        )
+
+        if not available_mobs:
+            selected_template = get_mobs_for_location(location_id)[0]
+        else:
+            selected_template = random.choice(available_mobs)
+
+        return build_mob(selected_template)
+
+    encounter = generate_hunt_encounter(
         player_level=player_level,
-        location_id=location_id
+        location_id=location_id,
+        normal_mob_factory=_build_normal_mob,
+        elite_modifier=apply_elite_modifier,
+        elite_roll=roll_is_elite,
+        rng=random,
+        boss_enabled=BOSS_ENCOUNTERS_ENABLED,
+        boss_chance_percent=BOSS_ENCOUNTER_CHANCE_PERCENT,
     )
-
-    if not available_mobs:
-        selected_template = get_mobs_for_location(location_id)[0]
-    else:
-        selected_template = random.choice(available_mobs)
-
-    mob = build_mob(selected_template)
-
-    if roll_is_elite():
-        mob = apply_elite_modifier(mob)
-
-    return mob
+    return encounter["mob"]
 
 
 # ==============================

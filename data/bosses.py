@@ -10,6 +10,11 @@ BOSS_HP_MULTIPLIER = 4.2
 BOSS_ATTACK_MULTIPLIER = 2.8
 BOSS_ENRAGE_HP_PERCENT = 0.25
 
+# Stage 15.2.0 safety gate. Encounter architecture is installed now, but live
+# boss encounters remain disabled until boss combat actions/enrage are wired.
+BOSS_ENCOUNTERS_ENABLED = False
+BOSS_ENCOUNTER_CHANCE_PERCENT = 1.0
+
 BOSS_DEFINITIONS = {
     "pack_leader": {
         "boss_key": "pack_leader",

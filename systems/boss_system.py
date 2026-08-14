@@ -15,6 +15,8 @@ from data.bosses import (
     BOSS_DEFINITIONS,
     BOSS_HP_MULTIPLIER,
     BOSS_SCHEMA_VERSION,
+    BOSS_ENCOUNTERS_ENABLED,
+    BOSS_ENCOUNTER_CHANCE_PERCENT,
     get_location_boss_definition,
 )
 from data.mobs import get_mobs_for_location
@@ -212,3 +214,61 @@ def validate_boss_definitions() -> dict[str, Any]:
         "location_count": len(locations),
         "findings": findings,
     }
+
+
+def roll_boss_encounter(rng=None, chance_percent=None, enabled=None) -> bool:
+    """Return whether the mutually exclusive hunt result is a boss.
+
+    The production default is controlled by BOSS_ENCOUNTERS_ENABLED. Tests and
+    future simulations can pass enabled=True explicitly without changing live
+    behavior. A single random() roll is used for deterministic distribution.
+    """
+    if enabled is None:
+        enabled = BOSS_ENCOUNTERS_ENABLED
+    if not enabled:
+        return False
+    if chance_percent is None:
+        chance_percent = BOSS_ENCOUNTER_CHANCE_PERCENT
+    chance = max(0.0, min(100.0, float(chance_percent)))
+    rng = rng or random
+    return float(rng.random()) < chance / 100.0
+
+
+def generate_hunt_encounter(
+    player_level: int,
+    location_id: str,
+    normal_mob_factory,
+    elite_modifier,
+    elite_roll,
+    rng=None,
+    boss_enabled=None,
+    boss_chance_percent=None,
+) -> dict[str, Any]:
+    """Resolve one exclusive hunt encounter using boss > elite > normal.
+
+    Boss is checked first. If no boss is selected, the existing production
+    normal factory and elite roll are called unchanged. The boss never receives
+    an elite modifier and always has player_level.
+    """
+    rng = rng or random
+    if roll_boss_encounter(
+        rng=rng,
+        chance_percent=boss_chance_percent,
+        enabled=boss_enabled,
+    ):
+        mob = build_location_boss(location_id, player_level, rng=rng)
+        return {"enemy_type": "boss", "mob": mob}
+
+    mob = normal_mob_factory()
+    if elite_roll():
+        mob = elite_modifier(mob)
+        mob["enemy_type"] = "elite"
+        mob["mob_type"] = "elite"
+        mob["is_boss"] = False
+        return {"enemy_type": "elite", "mob": mob}
+
+    mob["enemy_type"] = "normal"
+    mob["mob_type"] = "normal"
+    mob["is_boss"] = False
+    mob["is_elite"] = False
+    return {"enemy_type": "normal", "mob": mob}
