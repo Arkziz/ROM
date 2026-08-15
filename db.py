@@ -2286,78 +2286,274 @@ def get_player_attack_profile(user_id):
 # ==============================
 # ✅ DEV RESET HERO TOOL
 # ==============================
+_DEV_RESET_HERO_LOCK = None
+
+
+def _get_dev_reset_hero_lock():
+    global _DEV_RESET_HERO_LOCK
+    if _DEV_RESET_HERO_LOCK is None:
+        import threading
+        _DEV_RESET_HERO_LOCK = threading.RLock()
+    return _DEV_RESET_HERO_LOCK
+
+
+def _dev_reset_table_exists(table_name):
+    row = cursor.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",
+        (str(table_name),),
+    ).fetchone()
+    return bool(row)
+
+
+def _dev_reset_table_columns(table_name):
+    if not _dev_reset_table_exists(table_name):
+        return set()
+    return {str(row[1]) for row in cursor.execute(f'PRAGMA table_info("{table_name}")').fetchall()}
+
+
+def _dev_reset_delete_by_user_columns(table_name, user_id, candidate_columns):
+    columns = _dev_reset_table_columns(table_name)
+    matched = [column for column in candidate_columns if column in columns]
+    if not matched:
+        return 0
+    where_sql = " OR ".join(f'"{column}"=?' for column in matched)
+    result = cursor.execute(
+        f'DELETE FROM "{table_name}" WHERE {where_sql}',
+        tuple(int(user_id) for _ in matched),
+    )
+    return max(0, int(result.rowcount or 0))
+
 
 def reset_hero_for_test(user_id):
+    """Atomically reset character progress without deleting the users parent row.
+
+    Keeping users.user_id in place prevents RESTRICT foreign keys in trade and
+    interaction history from breaking the reset. All mutations are enclosed in
+    one BEGIN IMMEDIATE transaction. Every failure performs rollback so the
+    shared SQLite connection cannot retain a write lock.
     """
-    DEV-функція.
-    Повністю видаляє прогрес героя і створює персонажа заново.
+    import time
+    from datetime import datetime
 
-    Видаляє:
-    - users
-    - inventory
-    - equipment_slots
-    - active contracts
-    - daily quests
+    user_id = int(user_id)
+    lock = _get_dev_reset_hero_lock()
+    last_error = None
 
-    Потім викликає create_user(user_id).
-    """
+    with lock:
+        for attempt in range(1, 4):
+            stage = "prepare"
+            deleted = {}
+            try:
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
 
-    try:
-        cursor.execute("""
-        DELETE FROM inventory
-        WHERE user_id=?
-        """, (user_id,))
+                conn.execute("PRAGMA foreign_keys=ON")
+                conn.execute("PRAGMA busy_timeout=30000")
+                stage = "begin_immediate"
+                conn.execute("BEGIN IMMEDIATE")
 
-        cursor.execute("""
-        DELETE FROM equipment_slots
-        WHERE user_id=?
-        """, (user_id,))
+                row = cursor.execute(
+                    "SELECT user_id FROM users WHERE user_id=?",
+                    (user_id,),
+                ).fetchone()
+                if not row:
+                    conn.rollback()
+                    return {
+                        "success": False,
+                        "message": "❌ Персонажа не знайдено. Спочатку натисни /start.",
+                    }
 
-        try:
-            cursor.execute("""
-            DELETE FROM user_active_contracts
-            WHERE user_id=?
-            """, (user_id,))
-        except Exception:
-            pass
+                # Trade children must be removed before player_trades because
+                # some installations can have foreign_keys disabled historically.
+                stage = "trade_cleanup"
+                trade_ids = []
+                if _dev_reset_table_exists("player_trades"):
+                    trade_ids = [
+                        int(row[0])
+                        for row in cursor.execute(
+                            "SELECT id FROM player_trades WHERE initiator_user_id=? OR recipient_user_id=?",
+                            (user_id, user_id),
+                        ).fetchall()
+                    ]
+                if trade_ids:
+                    placeholders = ",".join("?" for _ in trade_ids)
+                    for table_name in (
+                        "inventory_reservations",
+                        "player_trade_offers",
+                        "player_trade_events",
+                        "player_trade_history",
+                    ):
+                        columns = _dev_reset_table_columns(table_name)
+                        if "trade_id" in columns:
+                            result = cursor.execute(
+                                f'DELETE FROM "{table_name}" WHERE trade_id IN ({placeholders})',
+                                tuple(trade_ids),
+                            )
+                            deleted[table_name] = deleted.get(table_name, 0) + max(0, int(result.rowcount or 0))
+                    result = cursor.execute(
+                        f'DELETE FROM player_trades WHERE id IN ({placeholders})',
+                        tuple(trade_ids),
+                    )
+                    deleted["player_trades"] = max(0, int(result.rowcount or 0))
 
-        try:
-            cursor.execute("""
-            DELETE FROM user_daily_quests
-            WHERE user_id=?
-            """, (user_id,))
-        except Exception:
-            pass
+                stage = "user_child_cleanup"
+                user_column_names = (
+                    "user_id",
+                    "owner_user_id",
+                    "initiator_user_id",
+                    "recipient_user_id",
+                    "actor_user_id",
+                    "challenger_user_id",
+                    "recipient_id",
+                    "initiator_id",
+                    "player_one_user_id",
+                    "player_two_user_id",
+                    "winner_user_id",
+                    "loser_user_id",
+                )
+                protected_tables = {"users", "items", "inventory", "equipment_slots", "inventory_runes"}
+                table_names = [
+                    str(row[0])
+                    for row in cursor.execute(
+                        "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+                    ).fetchall()
+                ]
+                for table_name in table_names:
+                    if table_name in protected_tables:
+                        continue
+                    count = _dev_reset_delete_by_user_columns(table_name, user_id, user_column_names)
+                    if count:
+                        deleted[table_name] = deleted.get(table_name, 0) + count
 
-        cursor.execute("""
-        DELETE FROM users
-        WHERE user_id=?
-        """, (user_id,))
+                stage = "inventory_dependency_cleanup"
+                if _dev_reset_table_exists("inventory_runes"):
+                    result = cursor.execute(
+                        "DELETE FROM inventory_runes WHERE inventory_id IN (SELECT id FROM inventory WHERE user_id=?)",
+                        (user_id,),
+                    )
+                    deleted["inventory_runes"] = max(0, int(result.rowcount or 0))
+                if _dev_reset_table_exists("inventory_reservations"):
+                    result = cursor.execute(
+                        "DELETE FROM inventory_reservations WHERE user_id=? OR inventory_id IN (SELECT id FROM inventory WHERE user_id=?)",
+                        (user_id, user_id),
+                    )
+                    deleted["inventory_reservations"] = deleted.get("inventory_reservations", 0) + max(0, int(result.rowcount or 0))
+                if _dev_reset_table_exists("equipment_slots"):
+                    result = cursor.execute("DELETE FROM equipment_slots WHERE user_id=?", (user_id,))
+                    deleted["equipment_slots"] = max(0, int(result.rowcount or 0))
+                if _dev_reset_table_exists("inventory"):
+                    result = cursor.execute("DELETE FROM inventory WHERE user_id=?", (user_id,))
+                    deleted["inventory"] = max(0, int(result.rowcount or 0))
 
-        conn.commit()
+                stage = "user_in_place_reset"
+                now_text = datetime.now().isoformat()
+                defaults = {
+                    "hp": 170,
+                    "max_hp": 170,
+                    "level": 1,
+                    "exp": 0,
+                    "gold": 0.0,
+                    "kills": 0,
+                    "bag_slots": int(globals().get("DEFAULT_BAG_SLOTS", 40)),
+                    "current_location": "start_path",
+                    "str": 10,
+                    "dex": 10,
+                    "intelligence": 10,
+                    "wis": 10,
+                    "sta": 10,
+                    "equipped_weapon": None,
+                    "equipped_armor": None,
+                    "daily_contracts_completed": 0,
+                    "daily_contract_date": "",
+                    "daily_hunts": 0,
+                    "daily_hunts_date": "",
+                    "energy": 0,
+                    "last_energy_update": now_text,
+                    "energy_full_notified": 1,
+                    "last_hp_regen_update": now_text,
+                    "hp_full_notified": 1,
+                    "character_name": "",
+                    "character_class": "",
+                    "class_selected_at": "",
+                    "class_change_available": 0,
+                    "mp": 0,
+                    "max_mp": 0,
+                    "last_regen_at": now_text,
+                    "last_activity_at": None,
+                }
+                user_columns = _dev_reset_table_columns("users")
+                assignments = []
+                values = []
+                for column, value in defaults.items():
+                    if column in user_columns:
+                        assignments.append(f'"{column}"=?')
+                        values.append(value)
+                if not assignments:
+                    raise RuntimeError("users table has no resettable columns")
+                values.append(user_id)
+                cursor.execute(
+                    f'UPDATE users SET {", ".join(assignments)} WHERE user_id=?',
+                    tuple(values),
+                )
 
-        create_user(user_id)
+                stage = "commit"
+                conn.commit()
 
-        return {
-            "success": True,
-            "message": (
-                "✅ DEV: герой повністю скинутий.\n\n"
-                "Створено нового персонажа з нуля:\n"
-                "🏆 Рівень: 1\n"
-                "✨ EXP: 0\n"
-                "🪙 Золото: 0\n"
-                "🎒 Інвентар очищено\n"
-                "📜 Контракти очищено\n"
-                "📆 Щоденні завдання очищено"
-            )
-        }
+                # Recreate empty slots only after the atomic reset committed.
+                stage = "post_commit_slots"
+                ensure_equipment_slots(user_id)
 
-    except Exception as error:
-        return {
-            "success": False,
-            "message": f"❌ DEV reset error: {error}"
-        }
+                foreign_key_errors = cursor.execute("PRAGMA foreign_key_check").fetchall()
+                if foreign_key_errors:
+                    return {
+                        "success": False,
+                        "message": (
+                            "❌ DEV reset completed, але foreign_key_check виявив помилки. "
+                            "Не продовжуй тестування до recovery."
+                        ),
+                        "foreign_key_errors": [tuple(row) for row in foreign_key_errors],
+                    }
 
+                return {
+                    "success": True,
+                    "deleted": deleted,
+                    "message": (
+                        "✅ DEV: герой повністю скинутий.\n\n"
+                        "Створено нового персонажа з нуля:\n"
+                        "🏆 Рівень: 1\n"
+                        "✨ EXP: 0\n"
+                        "🪙 Золото: 0\n"
+                        "🎒 Інвентар очищено\n"
+                        "🛡️ Спорядження і руни очищено\n"
+                        "📜 Контракти та активні взаємодії очищено\n"
+                        "📆 Щоденні завдання очищено\n\n"
+                        "✍️ Введи нове ім’я персонажа."
+                    ),
+                }
+
+            except Exception as error:
+                last_error = error
+                try:
+                    conn.rollback()
+                except Exception:
+                    pass
+                locked = isinstance(error, sqlite3.OperationalError) and "locked" in str(error).lower()
+                if locked and attempt < 3:
+                    time.sleep(0.35 * attempt)
+                    continue
+                return {
+                    "success": False,
+                    "stage": stage,
+                    "attempt": attempt,
+                    "message": f"❌ DEV reset error at {stage}: {error}",
+                }
+
+    return {
+        "success": False,
+        "message": f"❌ DEV reset error: {last_error}",
+    }
 # ==============================
 # ✅ ROLE-BASED EQUIPMENT GENERATION V1
 # ==============================

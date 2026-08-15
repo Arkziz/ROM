@@ -1637,6 +1637,53 @@ def build_death_text(durability_damage):
     return text
 
 
+def build_lethal_combat_log(turn_context, player_hp, player_max_hp, durability_damage):
+    """Preserve the terminal turn narrative before the standard death summary."""
+    context = dict(turn_context or {})
+    parts = []
+
+    for key in (
+        "cooldown_start_text",
+        "player_effects_text",
+        "resource_start_text",
+        "resource_attack_text",
+        "cooldown_set_text",
+        "special_effect_text",
+        "enemy_effect_text",
+    ):
+        value = context.get(key)
+        if value:
+            parts.append(str(value).strip())
+
+    skill = context.get("skill")
+    if isinstance(skill, dict) and skill.get("name"):
+        if skill.get("no_damage"):
+            parts.append(f"✨ {skill['name']}\n✨ Навичка застосована.")
+        elif context.get("dmg") is not None:
+            parts.append(f"✨ {skill['name']}\n✨ Ти завдав {max(0, int(context.get('dmg') or 0))} шкоди.")
+    elif context.get("dmg") is not None:
+        parts.append(f"⚔️ Ти завдав {max(0, int(context.get('dmg') or 0))} шкоди.")
+
+    enemy_action_text = context.get("enemy_action_text")
+    if enemy_action_text:
+        parts.append(str(enemy_action_text).strip())
+
+    unique_parts = []
+    for part in parts:
+        if part and part not in unique_parts:
+            unique_parts.append(part)
+
+    text = "💥 ОСТАННІ ПОДІЇ БОЮ\n\n"
+    if unique_parts:
+        text += "\n".join(unique_parts) + "\n\n"
+
+    current_hp = max(0, int(player_hp or 0))
+    maximum_hp = max(1, int(player_max_hp or 1))
+    text += f"❤️ Здоров’я перед поразкою: {current_hp}/{maximum_hp}\n\n"
+    text += build_death_text(durability_damage)
+    return text
+
+
 def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, daily_result, prefix_text=""):
     exp_result = reward["exp_result"]
 
@@ -2160,7 +2207,12 @@ def register_combat_handlers(bot):
             if user_id in bot.user_data:
                 del bot.user_data[user_id]
 
-            text = build_death_text(durability_damage)
+            text = build_lethal_combat_log(
+                turn_context=locals(),
+                player_hp=player_hp,
+                player_max_hp=player_max_hp,
+                durability_damage=durability_damage,
+            )
             text = append_mp_restore_text(text, mp_restore_result)
 
             bot.send_message(
@@ -2546,7 +2598,12 @@ def register_combat_handlers(bot):
             if user_id in bot.user_data:
                 del bot.user_data[user_id]
                 
-            text = build_death_text(durability_damage)
+            text = build_lethal_combat_log(
+                turn_context=locals(),
+                player_hp=player_hp,
+                player_max_hp=player_max_hp,
+                durability_damage=durability_damage,
+            )
             text = append_mp_restore_text(text, mp_restore_result)
             
             bot.send_message(
@@ -3080,7 +3137,12 @@ def register_combat_handlers(bot):
             if user_id in bot.user_data:
                 del bot.user_data[user_id]
 
-            text = build_death_text(durability_damage)
+            text = build_lethal_combat_log(
+                turn_context=locals(),
+                player_hp=player_hp,
+                player_max_hp=player_max_hp,
+                durability_damage=durability_damage,
+            )
             text = append_mp_restore_text(text, mp_restore_result)
 
             bot.send_message(

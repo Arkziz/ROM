@@ -332,6 +332,15 @@ def register_dev_handlers(bot):
 
         result = reset_hero_for_test(user_id)
 
+        if result.get("success"):
+            runtime_user_data = getattr(bot, "user_data", None)
+            if isinstance(runtime_user_data, dict):
+                runtime_user_data.pop(user_id, None)
+
+            from handlers.start import PENDING_CHARACTER_NAME
+            PENDING_CHARACTER_NAME.discard(user_id)
+            PENDING_CHARACTER_NAME.add(user_id)
+
         bot.send_message(
             message.chat.id,
             result["message"],

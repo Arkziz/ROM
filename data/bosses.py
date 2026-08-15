@@ -48,7 +48,7 @@ BOSS_DEFINITIONS = {
                 "attack_type": "physical",
             },
             "fang_rend": {
-                "name": "🩸 Розрив Іклами", "damage_multiplier": 1.5,
+                "name": "🩸 Розрив Іклами", "damage_multiplier": 1.4,
                 "attack_type": "physical", "bleed_turns": 2,
                 "bleed_damage_fraction": 0.20, "bleed_min_damage": 1,
                 "bleed_refresh_policy": "replace",
@@ -58,7 +58,7 @@ BOSS_DEFINITIONS = {
                 "attack_type": "magical",
             },
             "enraged_rend": {
-                "name": "🩸 Скажений Розрив", "damage_multiplier": 2.0,
+                "name": "🩸 Скажений Розрив", "damage_multiplier": 1.7,
                 "attack_type": "physical", "once_per_fight": True,
             },
         },
@@ -102,7 +102,7 @@ BOSS_DEFINITIONS = {
                 "attack_type": "physical",
             },
             "skull_splitter": {
-                "name": "🪓 Розкол Черепа", "damage_multiplier": 1.8,
+                "name": "🪓 Розкол Черепа", "damage_multiplier": 1.4,
                 "attack_type": "physical",
             },
             "battle_cry": {
@@ -116,7 +116,7 @@ BOSS_DEFINITIONS = {
                 "duration_turns": 2, "refresh_policy": "replace",
             },
             "tyrant_strike": {
-                "name": "☠️ Удар Тирана", "damage_multiplier": 2.5,
+                "name": "☠️ Удар Тирана", "damage_multiplier": 1.8,
                 "attack_type": "physical", "once_per_fight": True,
             },
         },
