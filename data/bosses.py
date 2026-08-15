@@ -14,7 +14,7 @@ BOSS_ENRAGE_HP_PERCENT = 0.25
 # Stage 15.2.0 safety gate. Encounter architecture is installed now, but live
 # boss encounters remain disabled until boss combat actions/enrage are wired.
 BOSS_ENCOUNTERS_ENABLED = True
-BOSS_ENCOUNTER_CHANCE_PERCENT = 100.0
+BOSS_ENCOUNTER_CHANCE_PERCENT = 1.0
 
 BOSS_DEFINITIONS = {
     "pack_leader": {
@@ -102,7 +102,7 @@ BOSS_DEFINITIONS = {
                 "attack_type": "physical",
             },
             "skull_splitter": {
-                "name": "🪓 Розкол Черепа", "damage_multiplier": 1.4,
+                "name": "🪓 Розкол Черепа", "damage_multiplier": 1.3,
                 "attack_type": "physical",
             },
             "battle_cry": {
@@ -116,7 +116,7 @@ BOSS_DEFINITIONS = {
                 "duration_turns": 2, "refresh_policy": "replace",
             },
             "tyrant_strike": {
-                "name": "☠️ Удар Тирана", "damage_multiplier": 1.8,
+                "name": "☠️ Удар Тирана", "damage_multiplier": 1.6,
                 "attack_type": "physical", "once_per_fight": True,
             },
         },
