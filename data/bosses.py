@@ -6,14 +6,15 @@ write to SQLite, award rewards, or call Telegram APIs.
 from __future__ import annotations
 
 BOSS_SCHEMA_VERSION = "15.1.0"
-BOSS_HP_MULTIPLIER = 4.2
-BOSS_ATTACK_MULTIPLIER = 2.8
+BOSS_CORE_STAT_MULTIPLIER = 2.0
+BOSS_HP_MULTIPLIER = BOSS_CORE_STAT_MULTIPLIER
+BOSS_ATTACK_MULTIPLIER = BOSS_CORE_STAT_MULTIPLIER
 BOSS_ENRAGE_HP_PERCENT = 0.25
 
 # Stage 15.2.0 safety gate. Encounter architecture is installed now, but live
 # boss encounters remain disabled until boss combat actions/enrage are wired.
-BOSS_ENCOUNTERS_ENABLED = False
-BOSS_ENCOUNTER_CHANCE_PERCENT = 1.0
+BOSS_ENCOUNTERS_ENABLED = True
+BOSS_ENCOUNTER_CHANCE_PERCENT = 100.0
 
 BOSS_DEFINITIONS = {
     "pack_leader": {

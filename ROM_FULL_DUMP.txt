@@ -3,11 +3,11 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-13 20:45:33 +03:00
+Created: 2026-08-15 22:23:03 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9168
-Included files: 399
-Excluded files: 4657
+Included files: 423
+Excluded files: 4785
 Maximum file size: 2 MB
 
 SECURITY EXCLUSIONS:
@@ -28,6 +28,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - config.py
 - data\__init__.py
 - data\balance.py
+- data\bosses.py
 - data\classes.py
 - data\drop_tables.py
 - data\equipment_profiles.py
@@ -66,6 +67,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - migrations\runner.py
 - systems\__init__.py
 - systems\auction_house_system.py
+- systems\boss_system.py
 - systems\character_system.py
 - systems\combat_system.py
 - systems\contract_system.py
@@ -148,6 +150,8 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\simulation\world_progression.py
 - systems\telegram_rate_limit.py
 - tools\audit_9_0_13_final_closure.py
+- tools\audit_boss_reward_contract.py
+- tools\audit_boss_stage13_simulation_reuse_15_7_1.py
 - tools\audit_central_drop_economy.py
 - tools\audit_character_duplicates.py
 - tools\audit_combat_mana_potion.py
@@ -155,6 +159,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\audit_contract_reward_dependency.py
 - tools\audit_db_startup_mutations.py
 - tools\audit_duplicate_defs.py
+- tools\audit_elite_boss_reference_architecture_15_7_2_1.py
 - tools\audit_equipment_readonly_duplicates.py
 - tools\audit_equipment_write_repair_trader.py
 - tools\audit_guild_actor_name_log.py
@@ -219,7 +224,11 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\pvp_stage_14_6_4d4_manifest.txt
 - tools\pvp_stage_14_6_4d5_manifest.txt
 - tools\pvp_stage_14_manifest.txt
+- tools\regression_test_boss_gate_normal_elite.py
 - tools\regression_test_pvp_stage_14_closure.py
+- tools\run_boss_balance_simulation_15_7_0.py
+- tools\run_boss_encounter_distribution_audit.py
+- tools\run_boss_production_parity_simulation_15_7_1.py
 - tools\run_economic_progression_v2.py
 - tools\run_economy_analysis.py
 - tools\run_economy_guild_acceptance_13_8_2.py
@@ -266,6 +275,17 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\simulation_world_progression_production_parity_13_6_1_manifest.txt
 - tools\smoke_test_auction_lifecycle_contracts.py
 - tools\smoke_test_auction_rune_category_and_transfer_policy_alignment.py
+- tools\smoke_test_boss_bleed.py
+- tools\smoke_test_boss_combat_actions.py
+- tools\smoke_test_boss_combat_bridge.py
+- tools\smoke_test_boss_completion_contract.py
+- tools\smoke_test_boss_data_model.py
+- tools\smoke_test_boss_drop_classification.py
+- tools\smoke_test_boss_enrage_transition.py
+- tools\smoke_test_boss_handler_integration.py
+- tools\smoke_test_boss_hunt_encounter.py
+- tools\smoke_test_boss_level_scaling.py
+- tools\smoke_test_boss_temporary_buffs.py
 - tools\smoke_test_capture_only_cleanup.py
 - tools\smoke_test_central_drop_config_model.py
 - tools\smoke_test_central_drop_equipment_migration.py
@@ -422,6 +442,10 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_world_progression_cli_direct_launch.py
 - tools\smoke_test_world_progression_production_parity.py
 - tools\smoke_test_world_progression_simulator.py
+- tools\validate_boss_balance_report_15_7_0.py
+- tools\validate_boss_root_cause_report_15_7_1.py
+- tools\validate_preserved_boss_candidate_report_15_7_2_1.py
+- tools\validate_preserved_short_comparison_15_7_3_2.py
 - utils.py
 
 ==================== FILE CONTENTS ====================
@@ -533,6 +557,157 @@ __all__ = [
     'REFINE_STONE_ITEM_ID',
     'get_balance_constant',
 ]
+
+
+============================================================
+FILE: data\bosses.py
+SIZE: 5244 bytes
+LAST WRITE: 2026-08-14 23:17:28
+============================================================
+
+"""Canonical location-boss definitions for ROM Stage 15.
+
+This module contains data only. It does not select encounters, mutate combat,
+write to SQLite, award rewards, or call Telegram APIs.
+"""
+from __future__ import annotations
+
+BOSS_SCHEMA_VERSION = "15.1.0"
+BOSS_HP_MULTIPLIER = 4.2
+BOSS_ATTACK_MULTIPLIER = 2.8
+BOSS_ENRAGE_HP_PERCENT = 0.25
+
+# Stage 15.2.0 safety gate. Encounter architecture is installed now, but live
+# boss encounters remain disabled until boss combat actions/enrage are wired.
+BOSS_ENCOUNTERS_ENABLED = False
+BOSS_ENCOUNTER_CHANCE_PERCENT = 1.0
+
+BOSS_DEFINITIONS = {
+    "pack_leader": {
+        "boss_key": "pack_leader",
+        "name": "👑🐺 Ватажок Зграї",
+        "location_id": "start_path",
+        "level_min": 1,
+        "level_max": 5,
+        "attack_type": "physical",
+        "reference_level": 5,
+        "reference_stats": {
+            "hp_min": 550, "hp_max": 650,
+            "attack_min": 60, "attack_max": 75,
+            "pdef_min": 12, "pdef_max": 16,
+            "mdef_min": 8, "mdef_max": 12,
+            "dex_min": 15, "dex_max": 18,
+        },
+        "ai_before_enrage": (
+            ("ferocious_bite", 0.55),
+            ("fang_rend", 0.25),
+            ("spectral_roar", 0.20),
+        ),
+        "ai_after_enrage": (
+            ("ferocious_bite", 0.55),
+            ("fang_rend", 0.25),
+            ("spectral_roar", 0.20),
+        ),
+        "skills": {
+            "ferocious_bite": {
+                "name": "🐾 Лютий Укус", "damage_multiplier": 1.0,
+                "attack_type": "physical",
+            },
+            "fang_rend": {
+                "name": "🩸 Розрив Іклами", "damage_multiplier": 1.5,
+                "attack_type": "physical", "bleed_turns": 2,
+                "bleed_damage_fraction": 0.20, "bleed_min_damage": 1,
+                "bleed_refresh_policy": "replace",
+            },
+            "spectral_roar": {
+                "name": "👻 Примарний Рик", "damage_multiplier": 1.3,
+                "attack_type": "magical",
+            },
+            "enraged_rend": {
+                "name": "🩸 Скажений Розрив", "damage_multiplier": 2.0,
+                "attack_type": "physical", "once_per_fight": True,
+            },
+        },
+        "enrage": {
+            "hp_threshold_fraction": 0.25,
+            "permanent_attack_buff_percent": 25,
+            "special_skill_key": "enraged_rend",
+            "special_replaces_regular_action": True,
+        },
+    },
+    "goblin_king": {
+        "boss_key": "goblin_king",
+        "name": "👑👺 Король Гоблінів",
+        "location_id": "dark_forest",
+        "level_min": 6,
+        "level_max": 10,
+        "attack_type": "physical",
+        "reference_level": 10,
+        "reference_stats": {
+            "hp_min": 1650, "hp_max": 1930,
+            "attack_min": 145, "attack_max": 175,
+            "pdef_min": 30, "pdef_max": 36,
+            "mdef_min": 16, "mdef_max": 22,
+            "dex_min": 16, "dex_max": 20,
+        },
+        "ai_before_enrage": (
+            ("chieftain_axe", 0.50),
+            ("skull_splitter", 0.25),
+            ("battle_cry", 0.15),
+            ("defense_command", 0.10),
+        ),
+        "ai_after_enrage": (
+            ("chieftain_axe", 0.40),
+            ("skull_splitter", 0.30),
+            ("battle_cry", 0.15),
+            ("defense_command", 0.15),
+        ),
+        "skills": {
+            "chieftain_axe": {
+                "name": "⚔️ Сокира Вождя", "damage_multiplier": 1.0,
+                "attack_type": "physical",
+            },
+            "skull_splitter": {
+                "name": "🪓 Розкол Черепа", "damage_multiplier": 1.8,
+                "attack_type": "physical",
+            },
+            "battle_cry": {
+                "name": "📣 Бойовий Клич", "no_damage": True,
+                "attack_buff_percent": 15, "duration_turns": 3,
+                "refresh_policy": "replace",
+            },
+            "defense_command": {
+                "name": "🛡️ Команда до Оборони", "no_damage": True,
+                "pdef_buff_percent": 30, "mdef_buff_percent": 30,
+                "duration_turns": 2, "refresh_policy": "replace",
+            },
+            "tyrant_strike": {
+                "name": "☠️ Удар Тирана", "damage_multiplier": 2.5,
+                "attack_type": "physical", "once_per_fight": True,
+            },
+        },
+        "enrage": {
+            "hp_threshold_fraction": 0.25,
+            "permanent_attack_buff_percent": 30,
+            "special_skill_key": "tyrant_strike",
+            "special_replaces_regular_action": True,
+        },
+    },
+}
+
+BOSS_KEY_BY_LOCATION = {
+    definition["location_id"]: boss_key
+    for boss_key, definition in BOSS_DEFINITIONS.items()
+}
+
+
+def get_boss_definition(boss_key):
+    return BOSS_DEFINITIONS.get(str(boss_key or ""))
+
+
+def get_location_boss_definition(location_id):
+    boss_key = BOSS_KEY_BY_LOCATION.get(str(location_id or ""))
+    return get_boss_definition(boss_key)
 
 
 ============================================================
@@ -18187,11 +18362,76 @@ def get_item_by_inventory_id_full(inventory_id):
 
 ============================================================
 FILE: handlers\combat.py
-SIZE: 114503 bytes
-LAST WRITE: 2026-08-01 00:03:10
+SIZE: 117753 bytes
+LAST WRITE: 2026-08-14 14:40:28
 ============================================================
 
 from telebot import types
+
+from systems.boss_system import (
+    build_boss_damage_request,
+    finalize_boss_turn,
+    get_effective_boss_defenses,
+    prepare_boss_turn,
+    process_boss_player_dots,
+    render_boss_action_text,
+)
+
+
+# ============================================================================
+# Stage 15.5.0: boss bridge for every enemy action path
+# ============================================================================
+def _calculate_enemy_turn_15_5_0(
+    mob, player_pdef, player_mdef, player_dex, sta, level
+):
+    """Preserve normal/elite behavior; route bosses through Stage 15 bridge."""
+    if not mob.get("is_boss"):
+        result = calculate_mob_attack(
+            mob_attack=mob["attack"], player_pdef=player_pdef,
+            player_mdef=player_mdef, player_dex=player_dex,
+            mob_dex=mob["dex"], sta=sta, level=level,
+            attack_type=mob["attack_type"]
+        )
+        result["boss_turn"] = None
+        return result
+    turn = prepare_boss_turn(mob)
+    plan = turn["action_plan"]
+    request = build_boss_damage_request(plan)
+    if request is None:
+        return {
+            "damage": 0, "is_crit": False, "is_dodge": False,
+            "dodge_chance": 0.0, "boss_turn": turn,
+        }
+    result = calculate_mob_attack(
+        mob_attack=request["mob_attack"], player_pdef=player_pdef,
+        player_mdef=player_mdef, player_dex=player_dex,
+        mob_dex=mob["dex"], sta=sta, level=level,
+        attack_type=request["attack_type"]
+    )
+    result["boss_turn"] = turn
+    return result
+
+
+def _finalize_enemy_turn_15_5_0(mob, attack_result, actual_damage):
+    turn = attack_result.get("boss_turn")
+    if not turn:
+        return ""
+    finalize_boss_turn(mob, turn["action_plan"], actual_damage=actual_damage)
+    return render_boss_action_text(
+        mob, turn, actual_damage=actual_damage,
+        dodged=bool(attack_result.get("is_dodge"))
+    ) + "\n"
+
+
+def _apply_boss_dot_at_player_turn_15_5_0(mob):
+    if not mob.get("is_boss"):
+        return ""
+    result = process_boss_player_dots(mob, int(mob.get("player_hp", 0) or 0))
+    mob["player_hp"] = result["current_hp"]
+    if result["damage"] <= 0:
+        return ""
+    return f"🩸 Кровотеча: отримано {result['damage']} шкоди.\n"
+
 
 
 # ==============================
@@ -18585,6 +18825,10 @@ def get_effective_mob_def(mob, attack_type):
         percent_key = "pdef_percent"
 
     effective_def = float(base_def)
+
+    if mob.get("is_boss"):
+        boss_pdef, boss_mdef = get_effective_boss_defenses(mob)
+        effective_def = float(boss_mdef if attack_type == "magical" else boss_pdef)
 
     for effect in mob["enemy_effects"].values():
         modifiers = effect.get("modifiers", {})
@@ -20126,6 +20370,7 @@ def register_combat_handlers(bot):
 
         cooldown_start_text = tick_skill_cooldowns_at_player_turn(mob)
         player_effects_text = process_player_turn_start_effects(user_id, mob)
+        player_effects_text += _apply_boss_dot_at_player_turn_15_5_0(mob)
         resource_start_text = regenerate_class_resource_at_player_turn(mob)
 
         stats = get_player_stats(user_id)
@@ -20225,15 +20470,13 @@ def register_combat_handlers(bot):
             mob["stunned_turns"] -= 1
             enemy_action_text = f"💫 {mob['name']} оглушений і пропускає хід.\n\n"
         else:
-            mob_attack_result = calculate_mob_attack(
-                mob_attack=mob["attack"],
+            mob_attack_result = _calculate_enemy_turn_15_5_0(
+                mob=mob,
                 player_pdef=player_pdef,
                 player_mdef=player_mdef,
                 player_dex=dex_,
-                mob_dex=mob["dex"],
                 sta=sta_,
                 level=lvl,
-                attack_type=mob["attack_type"]
             )
 
             mob_dmg = mob_attack_result["damage"]
@@ -20244,6 +20487,9 @@ def register_combat_handlers(bot):
 
             if not is_dodge and mob_dmg > 0:
                 mob_dmg, shield_text = apply_player_shield_absorb(mob, mob_dmg)
+            boss_action_text = _finalize_enemy_turn_15_5_0(
+                mob, mob_attack_result, mob_dmg
+            )
 
             player_hp -= mob_dmg
             mob["player_hp"] = player_hp
@@ -20260,6 +20506,9 @@ def register_combat_handlers(bot):
                 enemy_action_text = f"👹 {mob['name']} завдав {character_name} {mob_dmg} шкоди\n"
                 enemy_action_text += shield_text
                 enemy_action_text += "\n"
+
+        if mob.get("is_boss") and 'boss_action_text' in locals() and boss_action_text:
+            enemy_action_text = boss_action_text
 
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(
@@ -20435,6 +20684,7 @@ def register_combat_handlers(bot):
             
         cooldown_start_text = tick_skill_cooldowns_at_player_turn(mob)
         player_effects_text = process_player_turn_start_effects(user_id, mob)
+        player_effects_text += _apply_boss_dot_at_player_turn_15_5_0(mob)
         resource_start_text = regenerate_class_resource_at_player_turn(mob)
         
         pay_result = validate_and_pay_skill_cost(user_id, mob, skill)
@@ -20610,15 +20860,13 @@ def register_combat_handlers(bot):
             mob["stunned_turns"] -= 1
             enemy_action_text = f"💫 {mob['name']} оглушений і пропускає хід.\n\n"
         else:
-            mob_attack_result = calculate_mob_attack(
-                mob_attack=mob["attack"],
+            mob_attack_result = _calculate_enemy_turn_15_5_0(
+                mob=mob,
                 player_pdef=player_pdef,
                 player_mdef=player_mdef,
                 player_dex=dex_,
-                mob_dex=mob["dex"],
                 sta=sta_,
                 level=lvl,
-                attack_type=mob["attack_type"]
             )
             
             mob_dmg = mob_attack_result["damage"]
@@ -20628,6 +20876,9 @@ def register_combat_handlers(bot):
             shield_text = ""
             if not is_dodge and mob_dmg > 0:
                 mob_dmg, shield_text = apply_player_shield_absorb(mob, mob_dmg)
+            boss_action_text = _finalize_enemy_turn_15_5_0(
+                mob, mob_attack_result, mob_dmg
+            )
                 
             player_hp -= mob_dmg
             
@@ -20644,6 +20895,9 @@ def register_combat_handlers(bot):
                 enemy_action_text += shield_text
                 enemy_action_text += "\n"
                 
+        if mob.get("is_boss") and 'boss_action_text' in locals() and boss_action_text:
+            enemy_action_text = boss_action_text
+
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(
                 user_id=user_id,
@@ -20930,6 +21184,7 @@ def register_combat_handlers(bot):
             
         cooldown_start_text = tick_skill_cooldowns_at_player_turn(mob)
         player_effects_text = process_player_turn_start_effects(user_id, mob)
+        player_effects_text += _apply_boss_dot_at_player_turn_15_5_0(mob)
         resource_start_text = regenerate_class_resource_at_player_turn(mob)
         
         pay_result = validate_and_pay_skill_cost(user_id, mob, skill)
@@ -21135,15 +21390,13 @@ def register_combat_handlers(bot):
             mob["stunned_turns"] -= 1
             enemy_action_text = f"💫 {mob['name']} оглушений і пропускає хід.\n\n"
         else:
-            mob_attack_result = calculate_mob_attack(
-                mob_attack=mob["attack"],
+            mob_attack_result = _calculate_enemy_turn_15_5_0(
+                mob=mob,
                 player_pdef=player_pdef,
                 player_mdef=player_mdef,
                 player_dex=dex_,
-                mob_dex=mob["dex"],
                 sta=sta_,
                 level=lvl,
-                attack_type=mob["attack_type"]
             )
 
             mob_dmg = mob_attack_result["damage"]
@@ -21154,6 +21407,9 @@ def register_combat_handlers(bot):
 
             if not is_dodge and mob_dmg > 0:
                 mob_dmg, shield_text = apply_player_shield_absorb(mob, mob_dmg)
+            boss_action_text = _finalize_enemy_turn_15_5_0(
+                mob, mob_attack_result, mob_dmg
+            )
 
             player_hp -= mob_dmg
             mob["player_hp"] = player_hp
@@ -21170,6 +21426,9 @@ def register_combat_handlers(bot):
                 enemy_action_text = f"👹 {mob['name']} завдав {character_name} {mob_dmg} шкоди\n"
                 enemy_action_text += shield_text
                 enemy_action_text += "\n"
+
+        if mob.get("is_boss") and 'boss_action_text' in locals() and boss_action_text:
+            enemy_action_text = boss_action_text
 
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(
@@ -21565,7 +21824,6 @@ def patch_combat_bot_rate_limit_safe_send(bot):
 
     bot.send_message = safe_send_message
     bot._rom_safe_send_patched = True
-
 
 
 ============================================================
@@ -38434,6 +38692,631 @@ def _auction_buy_normalize_category(category):
 
 
 ============================================================
+FILE: systems\boss_system.py
+SIZE: 26772 bytes
+LAST WRITE: 2026-08-14 14:34:13
+============================================================
+
+"""Pure location-boss foundation for ROM Stage 15.1.0.
+
+Encounter selection and combat integration intentionally remain outside this
+stage. Functions accept an RNG object where randomness is needed so tests and
+simulations remain deterministic.
+"""
+from __future__ import annotations
+
+import copy
+import random
+from typing import Any, Mapping
+
+from data.bosses import (
+    BOSS_ATTACK_MULTIPLIER,
+    BOSS_DEFINITIONS,
+    BOSS_HP_MULTIPLIER,
+    BOSS_SCHEMA_VERSION,
+    BOSS_ENCOUNTERS_ENABLED,
+    BOSS_ENCOUNTER_CHANCE_PERCENT,
+    get_location_boss_definition,
+)
+from data.mobs import get_mobs_for_location
+
+STAT_RANGE_KEYS = (
+    "hp_min", "hp_max", "attack_min", "attack_max",
+    "pdef_min", "pdef_max", "mdef_min", "mdef_max",
+    "dex_min", "dex_max",
+)
+
+
+def _int(value: Any, default: int = 0) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return int(default)
+
+
+def _templates_for_level(location_id: str, level: int) -> list[Mapping[str, Any]]:
+    templates = list(get_mobs_for_location(location_id) or ())
+    exact = [row for row in templates if _int(row.get("level"), 1) == level]
+    if exact:
+        return exact
+    if not templates:
+        return []
+    distance = min(abs(_int(row.get("level"), 1) - level) for row in templates)
+    return [row for row in templates if abs(_int(row.get("level"), 1) - level) == distance]
+
+
+def _average_range(templates, minimum_key, maximum_key, fallback=1):
+    if not templates:
+        return int(fallback), int(fallback)
+    mins = [_int(row.get(minimum_key, fallback), fallback) for row in templates]
+    maxs = [_int(row.get(maximum_key, fallback), fallback) for row in templates]
+    return max(1, round(sum(mins) / len(mins))), max(1, round(sum(maxs) / len(maxs)))
+
+
+def derive_lower_anchor(definition: Mapping[str, Any]) -> dict[str, int]:
+    """Build the location-min-level anchor from production mob data."""
+    location_id = str(definition["location_id"])
+    level_min = _int(definition["level_min"], 1)
+    templates = _templates_for_level(location_id, level_min)
+    hp_min, hp_max = _average_range(templates, "hp_min", "hp_max")
+    atk_min, atk_max = _average_range(templates, "attack_min", "attack_max")
+    pdef_min, pdef_max = _average_range(templates, "pdef_min", "pdef_max")
+    mdef_min, mdef_max = _average_range(templates, "mdef_min", "mdef_max")
+    dex_min, dex_max = _average_range(templates, "dex_min", "dex_max")
+    return {
+        "hp_min": max(1, round(hp_min * BOSS_HP_MULTIPLIER)),
+        "hp_max": max(1, round(hp_max * BOSS_HP_MULTIPLIER)),
+        "attack_min": max(1, round(atk_min * BOSS_ATTACK_MULTIPLIER)),
+        "attack_max": max(1, round(atk_max * BOSS_ATTACK_MULTIPLIER)),
+        "pdef_min": pdef_min, "pdef_max": pdef_max,
+        "mdef_min": mdef_min, "mdef_max": mdef_max,
+        "dex_min": dex_min, "dex_max": dex_max,
+    }
+
+
+def scale_boss_stat_ranges(definition: Mapping[str, Any], player_level: int) -> dict[str, int]:
+    """Interpolate boss ranges between production-derived and PDF reference anchors."""
+    level_min = _int(definition["level_min"], 1)
+    level_max = _int(definition["level_max"], level_min)
+    level = max(level_min, min(level_max, _int(player_level, level_min)))
+    progress = (level - level_min) / max(1, level_max - level_min)
+    lower = derive_lower_anchor(definition)
+    upper = dict(definition["reference_stats"])
+    scaled = {}
+    for key in STAT_RANGE_KEYS:
+        start = _int(lower[key], 1)
+        end = _int(upper[key], start)
+        scaled[key] = max(1, round(start + (end - start) * progress))
+    for prefix in ("hp", "attack", "pdef", "mdef", "dex"):
+        lo, hi = f"{prefix}_min", f"{prefix}_max"
+        if scaled[hi] < scaled[lo]:
+            scaled[hi] = scaled[lo]
+    return scaled
+
+
+def create_boss_state() -> dict[str, Any]:
+    return {
+        "enrage_used": False,
+        "special_attack_used": False,
+        "permanent_attack_buff_percent": 0.0,
+        "attack_buff_turns": 0,
+        "attack_buff_percent": 0.0,
+        "defense_buff_turns": 0,
+        "physical_defense_buff_percent": 0.0,
+        "magical_defense_buff_percent": 0.0,
+        "last_action_key": None,
+    }
+
+
+def build_location_boss(location_id: str, player_level: int, rng=None) -> dict[str, Any]:
+    definition = get_location_boss_definition(location_id)
+    if not definition:
+        raise ValueError(f"No boss definition for location: {location_id}")
+    level_min = _int(definition["level_min"], 1)
+    level_max = _int(definition["level_max"], level_min)
+    level = _int(player_level, level_min)
+    if not level_min <= level <= level_max:
+        raise ValueError(
+            f"Player level {level} is outside boss location range {level_min}-{level_max}"
+        )
+    ranges = scale_boss_stat_ranges(definition, level)
+    rng = rng or random
+    hp = rng.randint(ranges["hp_min"], ranges["hp_max"])
+    attack = rng.randint(ranges["attack_min"], ranges["attack_max"])
+    pdef = rng.randint(ranges["pdef_min"], ranges["pdef_max"])
+    mdef = rng.randint(ranges["mdef_min"], ranges["mdef_max"])
+    dex = rng.randint(ranges["dex_min"], ranges["dex_max"])
+    return {
+        "boss_schema_version": BOSS_SCHEMA_VERSION,
+        "boss_key": definition["boss_key"],
+        "name": definition["name"],
+        "base_name": definition["name"],
+        "level": level,
+        "min_player_level": level,
+        "location_id": definition["location_id"],
+        "hp": hp, "max_hp": hp,
+        "attack": attack,
+        "pdef": pdef, "mdef": mdef,
+        "def": pdef if definition.get("attack_type") == "physical" else mdef,
+        "dex": dex,
+        "attack_type": definition.get("attack_type", "physical"),
+        "is_boss": True,
+        "is_elite": False,
+        "enemy_type": "boss",
+        "mob_type": "boss",
+        "elite_exp_multiplier": 1.0,
+        "elite_gold_multiplier": 1.0,
+        "enemy_effects": {},
+        "boss_state": create_boss_state(),
+        "boss_definition": copy.deepcopy(definition),
+        "boss_scaled_ranges": ranges,
+    }
+
+
+def choose_boss_action(boss: Mapping[str, Any], rng=None) -> dict[str, Any]:
+    definition = boss.get("boss_definition") or {}
+    state = boss.get("boss_state") or {}
+    phase_key = "ai_after_enrage" if state.get("enrage_used") else "ai_before_enrage"
+    choices = tuple(definition.get(phase_key) or ())
+    if not choices:
+        raise ValueError(f"Boss AI has no choices for phase: {phase_key}")
+    total = sum(float(weight) for _, weight in choices)
+    if total <= 0:
+        raise ValueError("Boss AI weights must be positive")
+    rng = rng or random
+    roll = rng.random() * total
+    running = 0.0
+    selected = choices[-1][0]
+    for skill_key, weight in choices:
+        running += float(weight)
+        if roll <= running:
+            selected = skill_key
+            break
+    skill = dict((definition.get("skills") or {}).get(selected) or {})
+    if not skill:
+        raise ValueError(f"Unknown boss skill: {selected}")
+    return {"skill_key": selected, "skill": skill, "phase": phase_key}
+
+
+def validate_boss_definitions() -> dict[str, Any]:
+    findings = []
+    locations = set()
+    for boss_key, definition in BOSS_DEFINITIONS.items():
+        if definition.get("boss_key") != boss_key:
+            findings.append(f"{boss_key}: boss_key mismatch")
+        location_id = str(definition.get("location_id") or "")
+        if not location_id:
+            findings.append(f"{boss_key}: location_id missing")
+        elif location_id in locations:
+            findings.append(f"{boss_key}: duplicate location_id {location_id}")
+        locations.add(location_id)
+        if _int(definition.get("level_min"), 0) > _int(definition.get("level_max"), 0):
+            findings.append(f"{boss_key}: invalid level range")
+        for phase in ("ai_before_enrage", "ai_after_enrage"):
+            rows = tuple(definition.get(phase) or ())
+            weight_sum = sum(float(weight) for _, weight in rows)
+            if abs(weight_sum - 1.0) > 1e-9:
+                findings.append(f"{boss_key}: {phase} weights={weight_sum}")
+            for skill_key, _ in rows:
+                if skill_key not in (definition.get("skills") or {}):
+                    findings.append(f"{boss_key}: missing skill {skill_key}")
+        enrage = definition.get("enrage") or {}
+        special = enrage.get("special_skill_key")
+        if special not in (definition.get("skills") or {}):
+            findings.append(f"{boss_key}: missing enrage special {special}")
+        if enrage.get("special_replaces_regular_action") is not True:
+            findings.append(f"{boss_key}: enrage special must replace regular action")
+    return {
+        "version": BOSS_SCHEMA_VERSION,
+        "verdict": "PASS" if not findings else "FAIL",
+        "boss_count": len(BOSS_DEFINITIONS),
+        "location_count": len(locations),
+        "findings": findings,
+    }
+
+
+def roll_boss_encounter(rng=None, chance_percent=None, enabled=None) -> bool:
+    """Return whether the mutually exclusive hunt result is a boss.
+
+    The production default is controlled by BOSS_ENCOUNTERS_ENABLED. Tests and
+    future simulations can pass enabled=True explicitly without changing live
+    behavior. A single random() roll is used for deterministic distribution.
+    """
+    if enabled is None:
+        enabled = BOSS_ENCOUNTERS_ENABLED
+    if not enabled:
+        return False
+    if chance_percent is None:
+        chance_percent = BOSS_ENCOUNTER_CHANCE_PERCENT
+    chance = max(0.0, min(100.0, float(chance_percent)))
+    rng = rng or random
+    return float(rng.random()) < chance / 100.0
+
+
+def generate_hunt_encounter(
+    player_level: int,
+    location_id: str,
+    normal_mob_factory,
+    elite_modifier,
+    elite_roll,
+    rng=None,
+    boss_enabled=None,
+    boss_chance_percent=None,
+) -> dict[str, Any]:
+    """Resolve one exclusive hunt encounter using boss > elite > normal.
+
+    Boss is checked first. If no boss is selected, the existing production
+    normal factory and elite roll are called unchanged. The boss never receives
+    an elite modifier and always has player_level.
+    """
+    rng = rng or random
+    if roll_boss_encounter(
+        rng=rng,
+        chance_percent=boss_chance_percent,
+        enabled=boss_enabled,
+    ):
+        mob = build_location_boss(location_id, player_level, rng=rng)
+        return {"enemy_type": "boss", "mob": mob}
+
+    mob = normal_mob_factory()
+    if elite_roll():
+        mob = elite_modifier(mob)
+        mob["enemy_type"] = "elite"
+        mob["mob_type"] = "elite"
+        mob["is_boss"] = False
+        return {"enemy_type": "elite", "mob": mob}
+
+    mob["enemy_type"] = "normal"
+    mob["mob_type"] = "normal"
+    mob["is_boss"] = False
+    mob["is_elite"] = False
+    return {"enemy_type": "normal", "mob": mob}
+
+# ============================================================================
+# Stage 15.3.0: boss combat actions, player bleed and temporary self-buffs
+# ============================================================================
+
+PLAYER_BOSS_BLEED_EFFECT_KEY = "boss_bleed"
+
+
+def _boss_state(boss: dict[str, Any]) -> dict[str, Any]:
+    state = boss.get("boss_state")
+    if not isinstance(state, dict):
+        state = create_boss_state()
+        boss["boss_state"] = state
+    defaults = create_boss_state()
+    for key, value in defaults.items():
+        state.setdefault(key, value)
+    return state
+
+
+def get_effective_boss_attack(boss: Mapping[str, Any]) -> int:
+    """Return boss ATK after permanent enrage and temporary ATK buffs.
+
+    Different ATK buffs are additive. The same temporary buff never stacks;
+    applying it again only refreshes the duration in apply_boss_action_effects().
+    """
+    state = boss.get("boss_state") or {}
+    permanent = float(state.get("permanent_attack_buff_percent", 0.0) or 0.0)
+    temporary = 0.0
+    if int(state.get("attack_buff_turns", 0) or 0) > 0:
+        temporary = float(state.get("attack_buff_percent", 0.0) or 0.0)
+    multiplier = 1.0 + (permanent + temporary) / 100.0
+    return max(1, int(round(float(boss.get("attack", 1) or 1) * multiplier)))
+
+
+def get_effective_boss_defenses(boss: Mapping[str, Any]) -> tuple[int, int]:
+    state = boss.get("boss_state") or {}
+    pdef_percent = 0.0
+    mdef_percent = 0.0
+    if int(state.get("defense_buff_turns", 0) or 0) > 0:
+        pdef_percent = float(state.get("physical_defense_buff_percent", 0.0) or 0.0)
+        mdef_percent = float(state.get("magical_defense_buff_percent", 0.0) or 0.0)
+    pdef = max(0, int(round(float(boss.get("pdef", boss.get("def", 0)) or 0) * (1.0 + pdef_percent / 100.0))))
+    mdef = max(0, int(round(float(boss.get("mdef", boss.get("def", 0)) or 0) * (1.0 + mdef_percent / 100.0))))
+    return pdef, mdef
+
+
+def build_boss_action_plan(boss: dict[str, Any], rng=None, forced_skill_key=None) -> dict[str, Any]:
+    """Create a pure action plan without rolling dodge, crit or final damage."""
+    definition = boss.get("boss_definition") or {}
+    skills = definition.get("skills") or {}
+    if forced_skill_key is None:
+        selected = choose_boss_action(boss, rng=rng)
+        skill_key = selected["skill_key"]
+        skill = dict(selected["skill"])
+        phase = selected["phase"]
+    else:
+        skill_key = str(forced_skill_key)
+        skill = dict(skills.get(skill_key) or {})
+        if not skill:
+            raise ValueError(f"Unknown boss skill: {skill_key}")
+        phase = "forced"
+    no_damage = bool(skill.get("no_damage"))
+    return {
+        "boss_key": boss.get("boss_key"),
+        "skill_key": skill_key,
+        "skill_name": skill.get("name", skill_key),
+        "phase": phase,
+        "no_damage": no_damage,
+        "attack_type": None if no_damage else skill.get("attack_type", boss.get("attack_type", "physical")),
+        "damage_multiplier": 0.0 if no_damage else float(skill.get("damage_multiplier", 1.0) or 0.0),
+        "effective_attack": 0 if no_damage else get_effective_boss_attack(boss),
+        "skill": skill,
+    }
+
+
+def calculate_boss_bleed_damage(actual_damage: int, skill: Mapping[str, Any]) -> int:
+    """Bleed is based on actual post-defense damage and never crits."""
+    fraction = float(skill.get("bleed_damage_fraction", 0.0) or 0.0)
+    minimum = max(0, int(skill.get("bleed_min_damage", 1) or 1))
+    if fraction <= 0 or int(actual_damage or 0) <= 0:
+        return 0
+    return max(minimum, int(round(int(actual_damage) * fraction)))
+
+
+def apply_boss_action_effects(
+    boss: dict[str, Any],
+    action_plan: Mapping[str, Any],
+    actual_damage: int = 0,
+) -> dict[str, Any]:
+    """Apply boss self-buffs and return a player-effect instruction.
+
+    The returned player_effect is intentionally data-only. The production
+    handler integration in the next stage will insert it into player_effects.
+    """
+    state = _boss_state(boss)
+    skill = dict(action_plan.get("skill") or {})
+    skill_key = str(action_plan.get("skill_key") or "")
+    events = []
+    player_effect = None
+
+    if "attack_buff_percent" in skill:
+        state["attack_buff_percent"] = float(skill.get("attack_buff_percent", 0) or 0)
+        state["attack_buff_turns"] = max(0, int(skill.get("duration_turns", 0) or 0))
+        events.append({
+            "type": "boss_attack_buff",
+            "percent": state["attack_buff_percent"],
+            "turns": state["attack_buff_turns"],
+            "refresh_policy": skill.get("refresh_policy", "replace"),
+        })
+
+    if "pdef_buff_percent" in skill or "mdef_buff_percent" in skill:
+        state["physical_defense_buff_percent"] = float(skill.get("pdef_buff_percent", 0) or 0)
+        state["magical_defense_buff_percent"] = float(skill.get("mdef_buff_percent", 0) or 0)
+        state["defense_buff_turns"] = max(0, int(skill.get("duration_turns", 0) or 0))
+        events.append({
+            "type": "boss_defense_buff",
+            "pdef_percent": state["physical_defense_buff_percent"],
+            "mdef_percent": state["magical_defense_buff_percent"],
+            "turns": state["defense_buff_turns"],
+            "refresh_policy": skill.get("refresh_policy", "replace"),
+        })
+
+    bleed_damage = calculate_boss_bleed_damage(actual_damage, skill)
+    if bleed_damage > 0:
+        player_effect = {
+            "key": PLAYER_BOSS_BLEED_EFFECT_KEY,
+            "name": "🩸 Кровотеча",
+            "icon": "🩸",
+            "type": "dot",
+            "source": "boss",
+            "source_boss_key": boss.get("boss_key"),
+            "source_skill_key": skill_key,
+            "turns": max(1, int(skill.get("bleed_turns", 1) or 1)),
+            "damage": bleed_damage,
+            "can_crit": False,
+            "refresh_policy": skill.get("bleed_refresh_policy", "replace"),
+        }
+        events.append({
+            "type": "player_bleed_applied",
+            "damage": bleed_damage,
+            "turns": player_effect["turns"],
+            "refresh_policy": player_effect["refresh_policy"],
+        })
+
+    state["last_action_key"] = skill_key
+    return {
+        "boss_state": copy.deepcopy(state),
+        "events": events,
+        "player_effect": player_effect,
+    }
+
+
+def apply_player_effect_instruction(mob: dict[str, Any], effect_instruction: Mapping[str, Any] | None) -> dict[str, Any] | None:
+    """Insert/refresh the boss bleed instruction in combat player_effects."""
+    if not effect_instruction:
+        return None
+    effect = dict(effect_instruction)
+    key = str(effect.pop("key", PLAYER_BOSS_BLEED_EFFECT_KEY))
+    effects = mob.setdefault("player_effects", {})
+    effects[key] = effect
+    return effect
+
+
+def process_boss_player_dots(mob: dict[str, Any], current_hp: int) -> dict[str, Any]:
+    """Tick only boss-origin player DoTs at player-turn start.
+
+    This helper does not write game.db. It mutates the in-memory combat object
+    and returns the new HP so the handler can use its existing HP persistence.
+    """
+    hp = max(0, int(current_hp or 0))
+    effects = mob.setdefault("player_effects", {})
+    total_damage = 0
+    events = []
+    expired = []
+    for key, effect in list(effects.items()):
+        if effect.get("type") != "dot" or effect.get("source") != "boss":
+            continue
+        damage = max(0, int(effect.get("damage", 0) or 0))
+        applied = min(hp, damage)
+        hp -= applied
+        total_damage += applied
+        turns = int(effect.get("turns", 0) or 0) - 1
+        effect["turns"] = turns
+        events.append({"type": "boss_dot_tick", "key": key, "damage": applied, "turns_left": max(0, turns)})
+        if turns <= 0:
+            expired.append(key)
+    for key in expired:
+        effects.pop(key, None)
+    return {"current_hp": hp, "damage": total_damage, "events": events, "expired": expired}
+
+
+def tick_boss_temporary_buffs(boss: dict[str, Any]) -> dict[str, Any]:
+    """Decrement temporary boss buffs after a completed boss action."""
+    state = _boss_state(boss)
+    expired = []
+    if int(state.get("attack_buff_turns", 0) or 0) > 0:
+        state["attack_buff_turns"] = int(state["attack_buff_turns"]) - 1
+        if state["attack_buff_turns"] <= 0:
+            state["attack_buff_turns"] = 0
+            state["attack_buff_percent"] = 0.0
+            expired.append("attack_buff")
+    if int(state.get("defense_buff_turns", 0) or 0) > 0:
+        state["defense_buff_turns"] = int(state["defense_buff_turns"]) - 1
+        if state["defense_buff_turns"] <= 0:
+            state["defense_buff_turns"] = 0
+            state["physical_defense_buff_percent"] = 0.0
+            state["magical_defense_buff_percent"] = 0.0
+            expired.append("defense_buff")
+    return {"boss_state": copy.deepcopy(state), "expired": expired}
+
+
+def resolve_boss_combat_action(
+    boss: dict[str, Any],
+    rng=None,
+    forced_skill_key=None,
+    actual_damage: int | None = None,
+) -> dict[str, Any]:
+    """Resolve action selection and effects around the existing damage engine.
+
+    If actual_damage is None, the caller must calculate final damage through the
+    existing production calculate_mob_attack() and call apply_boss_action_effects
+    afterwards. Tests may pass actual_damage to verify bleed semantics.
+    """
+    plan = build_boss_action_plan(boss, rng=rng, forced_skill_key=forced_skill_key)
+    effects = None
+    if actual_damage is not None or plan["no_damage"]:
+        effects = apply_boss_action_effects(boss, plan, actual_damage=int(actual_damage or 0))
+    return {"plan": plan, "effects": effects}
+
+# ============================================================================
+# Stage 15.4.0: one-time enrage transition and production combat bridge
+# ============================================================================
+
+def get_boss_enrage_threshold_hp(boss: Mapping[str, Any]) -> int:
+    definition=boss.get("boss_definition") or {}
+    enrage=definition.get("enrage") or {}
+    fraction=float(enrage.get("hp_threshold_fraction",0.25) or 0.25)
+    return max(1,int(float(boss.get("max_hp",1) or 1)*fraction))
+
+
+def should_trigger_boss_enrage(boss: Mapping[str, Any]) -> bool:
+    if not boss.get("is_boss") or int(boss.get("hp",0) or 0)<=0:
+        return False
+    state=boss.get("boss_state") or {}
+    if state.get("enrage_used"):
+        return False
+    return int(boss.get("hp",0) or 0)<=get_boss_enrage_threshold_hp(boss)
+
+
+def trigger_boss_enrage(boss: dict[str, Any]) -> dict[str, Any]:
+    """Atomically mark enrage and return the automatic special action plan."""
+    state=_boss_state(boss)
+    if not should_trigger_boss_enrage(boss):
+        return {"triggered":False,"reason":"not_eligible","action_plan":None,"events":[]}
+    definition=boss.get("boss_definition") or {}
+    enrage=definition.get("enrage") or {}
+    special=str(enrage.get("special_skill_key") or "")
+    state["enrage_used"]=True
+    state["special_attack_used"]=True
+    state["permanent_attack_buff_percent"]=float(enrage.get("permanent_attack_buff_percent",0) or 0)
+    plan=build_boss_action_plan(boss,forced_skill_key=special)
+    state["last_action_key"]=special
+    return {
+        "triggered":True,
+        "reason":"hp_threshold",
+        "action_plan":plan,
+        "special_replaces_regular_action":bool(enrage.get("special_replaces_regular_action",True)),
+        "events":[
+            {"type":"boss_enrage","attack_buff_percent":state["permanent_attack_buff_percent"]},
+            {"type":"boss_enrage_special","skill_key":special},
+        ],
+    }
+
+
+def prepare_boss_turn(boss: dict[str, Any], rng=None) -> dict[str, Any]:
+    """Select exactly one boss action for the current enemy turn.
+
+    Enrage special has priority and replaces the normal weighted action. Once
+    used, all future turns use the after-enrage AI table.
+    """
+    if not boss.get("is_boss"):
+        return {"is_boss":False,"enrage_triggered":False,"action_plan":None}
+    enrage=trigger_boss_enrage(boss)
+    if enrage["triggered"]:
+        return {"is_boss":True,"enrage_triggered":True,"action_plan":enrage["action_plan"],"events":enrage["events"]}
+    return {"is_boss":True,"enrage_triggered":False,"action_plan":build_boss_action_plan(boss,rng=rng),"events":[]}
+
+
+def build_boss_damage_request(action_plan: Mapping[str, Any]) -> dict[str, Any] | None:
+    """Translate a boss plan to arguments for production calculate_mob_attack()."""
+    if not action_plan or action_plan.get("no_damage"):
+        return None
+    return {
+        "mob_attack":max(1,int(round(float(action_plan.get("effective_attack",1) or 1)*float(action_plan.get("damage_multiplier",1.0) or 1.0)))),
+        "attack_type":str(action_plan.get("attack_type") or "physical"),
+    }
+
+
+def finalize_boss_turn(boss: dict[str, Any], action_plan: Mapping[str, Any], actual_damage: int=0) -> dict[str, Any]:
+    """Apply effects, then decrement buffs that existed before this action.
+
+    Newly applied Battle Cry/Defense Command must retain their full advertised
+    duration. Therefore existing timers are captured before effect application.
+    """
+    state=_boss_state(boss)
+    old_attack_turns=int(state.get("attack_buff_turns",0) or 0)
+    old_defense_turns=int(state.get("defense_buff_turns",0) or 0)
+    effects=apply_boss_action_effects(boss,action_plan,actual_damage=actual_damage)
+    skill=action_plan.get("skill") or {}
+    if "attack_buff_percent" not in skill and old_attack_turns>0:
+        state["attack_buff_turns"]=old_attack_turns-1
+        if state["attack_buff_turns"]<=0:
+            state["attack_buff_turns"]=0; state["attack_buff_percent"]=0.0
+    if not ("pdef_buff_percent" in skill or "mdef_buff_percent" in skill) and old_defense_turns>0:
+        state["defense_buff_turns"]=old_defense_turns-1
+        if state["defense_buff_turns"]<=0:
+            state["defense_buff_turns"]=0
+            state["physical_defense_buff_percent"]=0.0
+            state["magical_defense_buff_percent"]=0.0
+    player_effect=effects.get("player_effect")
+    if player_effect:
+        apply_player_effect_instruction(boss,player_effect)
+    return {"effects":effects,"boss_state":copy.deepcopy(state),"player_effect":player_effect}
+
+
+def render_boss_action_text(boss: Mapping[str, Any], turn: Mapping[str, Any], actual_damage: int=0, dodged: bool=False) -> str:
+    plan=turn.get("action_plan") or {}
+    lines=[]
+    if turn.get("enrage_triggered"):
+        percent=int((boss.get("boss_state") or {}).get("permanent_attack_buff_percent",0) or 0)
+        lines.append(f"🌕 {boss.get('name','Бос')} входить у Лють! ATK +{percent}% до кінця бою.")
+    name=plan.get("skill_name") or "Атака боса"
+    if plan.get("no_damage"):
+        skill=plan.get("skill") or {}
+        if "attack_buff_percent" in skill:
+            lines.append(f"{name}: ATK +{int(skill['attack_buff_percent'])}% на {int(skill.get('duration_turns',0))} ходи.")
+        else:
+            lines.append(f"{name}: PDEF і MDEF +30% на {int(skill.get('duration_turns',0))} ходи.")
+    elif dodged:
+        lines.append(f"💨 {name}: гравець ухилився.")
+    else:
+        lines.append(f"{name}: завдано {int(actual_damage)} шкоди.")
+    return "\n".join(lines)
+
+
+============================================================
 FILE: systems\character_system.py
 SIZE: 9738 bytes
 LAST WRITE: 2026-07-30 22:50:56
@@ -38754,13 +39637,15 @@ def get_max_mp(user_id):
 
 ============================================================
 FILE: systems\combat_system.py
-SIZE: 6594 bytes
-LAST WRITE: 2026-07-09 23:38:38
+SIZE: 7405 bytes
+LAST WRITE: 2026-08-14 14:19:51
 ============================================================
 
 import random
 
 from data.mobs import get_mobs_for_location
+from data.bosses import BOSS_ENCOUNTERS_ENABLED, BOSS_ENCOUNTER_CHANCE_PERCENT
+from systems.boss_system import generate_hunt_encounter
 
 
 # ==============================
@@ -38925,22 +39810,30 @@ def get_available_mobs(player_level, location_id="start_path"):
 
 
 def generate_mob(player_level, location_id="start_path"):
-    available_mobs = get_available_mobs(
+    def _build_normal_mob():
+        available_mobs = get_available_mobs(
+            player_level=player_level,
+            location_id=location_id
+        )
+
+        if not available_mobs:
+            selected_template = get_mobs_for_location(location_id)[0]
+        else:
+            selected_template = random.choice(available_mobs)
+
+        return build_mob(selected_template)
+
+    encounter = generate_hunt_encounter(
         player_level=player_level,
-        location_id=location_id
+        location_id=location_id,
+        normal_mob_factory=_build_normal_mob,
+        elite_modifier=apply_elite_modifier,
+        elite_roll=roll_is_elite,
+        rng=random,
+        boss_enabled=BOSS_ENCOUNTERS_ENABLED,
+        boss_chance_percent=BOSS_ENCOUNTER_CHANCE_PERCENT,
     )
-
-    if not available_mobs:
-        selected_template = get_mobs_for_location(location_id)[0]
-    else:
-        selected_template = random.choice(available_mobs)
-
-    mob = build_mob(selected_template)
-
-    if roll_is_elite():
-        mob = apply_elite_modifier(mob)
-
-    return mob
+    return encounter["mob"]
 
 
 # ==============================
@@ -39044,6 +39937,7 @@ def calculate_mob_attack(
         "is_dodge": False,
         "dodge_chance": dodge_chance
     }
+
 
 ============================================================
 FILE: systems\contract_system.py
@@ -60786,6 +61680,78 @@ if __name__ == "__main__":
 
 
 ============================================================
+FILE: tools\audit_boss_reward_contract.py
+SIZE: 3005 bytes
+LAST WRITE: 2026-08-14 22:23:20
+============================================================
+
+from __future__ import annotations
+import ast,json,re,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+paths={
+ 'bosses':ROOT/'data'/'bosses.py',
+ 'boss_system':ROOT/'systems'/'boss_system.py',
+ 'combat_system':ROOT/'systems'/'combat_system.py',
+ 'combat_handler':ROOT/'handlers'/'combat.py',
+ 'drop_system':ROOT/'systems'/'drop_system.py',
+ 'reward_system':ROOT/'systems'/'reward_system.py',
+ 'rune_system':ROOT/'systems'/'rune_system.py',
+}
+missing=[k for k,p in paths.items() if not p.exists()]
+assert not missing,{'missing_files':missing}
+text={k:p.read_text(encoding='utf-8') for k,p in paths.items()}
+for k,v in text.items():ast.parse(v,filename=str(paths[k]))
+findings=[];checks={}
+def check(name,condition,detail=''):
+ checks[name]={'pass':bool(condition),'detail':detail}
+ if not condition:findings.append(f'{name}: {detail}')
+check('boss_gate_disabled','BOSS_ENCOUNTERS_ENABLED = False' in text['bosses'],'live gate must remain disabled')
+check('builder_signals',all(s in text['boss_system'] for s in ('"is_boss": True','"is_elite": False','"enemy_type": "boss"','"mob_type": "boss"')),'boss builder must emit canonical signals')
+check('drop_classifier_priority','Return exactly one enemy type using boss > elite > normal priority' in text['drop_system'] and 'if "boss" in explicit_types' in text['drop_system'],'central drop classifier boss priority')
+check('rune_classifier_priority','Canonical priority: boss > elite > normal' in text['rune_system'],'rune classifier boss priority')
+check('single_reward_api',text['reward_system'].count('def process_victory_reward(')==1,'exactly one authoritative function expected')
+check('single_drop_call','drop_result = process_enemy_drops(user_id, mob)' in text['reward_system'],'reward must call central drops once')
+check('single_kill_increment',text['reward_system'].count('add_kill(user_id)')>=1,'victory reward increments kill')
+check('handler_victory_route',text['combat_handler'].count('process_victory(')>=3,'all combat paths route through victory handler')
+check('no_boss_direct_awards', not any(token in text['boss_system'] for token in ('add_item(', 'add_gold(', 'add_exp(', 'process_enemy_drops(', 'award_rune_drop(')), 'boss system must not award rewards')
+check('boss_not_elite_guild_hook','"is_elite": False' in text['boss_system'],'boss must not silently trigger elite-only guild hook')
+check('no_db_in_boss_system',not re.search(r'\b(import db|from db import|sqlite3)\b',text['boss_system']),'boss system must remain DB-free')
+result={'version':'15.6.1','verdict':'PASS' if not findings else 'FAIL','checks':checks,'findings':findings,'database_writes':0,'feature_gate':'disabled'}
+out=ROOT/'reports'/'boss_stage_15_6_0_reward_contract_audit.json';out.parent.mkdir(exist_ok=True);out.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+assert not findings,result
+print('[PASS] boss central reward/drop contract audit',{'checks':len(checks),'findings':0})
+
+
+============================================================
+FILE: tools\audit_boss_stage13_simulation_reuse_15_7_1.py
+SIZE: 1848 bytes
+LAST WRITE: 2026-08-14 22:39:17
+============================================================
+
+from __future__ import annotations
+import ast,inspect,json,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
+from systems.simulation.production_parity import run_required_parity,source_dependency_report
+from systems.simulation.skill_catalog import load_production_skill_catalog
+from systems.simulation.progression_provider import ProgressionProvider
+from systems.simulation.pve_battle import ExactPveBattleEngine
+catalog=load_production_skill_catalog(ROOT)
+parity=run_required_parity()
+deps=source_dependency_report()
+findings=[]
+if parity['verdict']!='PASS':findings.append('stage13_required_production_parity_failed')
+if set(catalog)!={'warrior','knight','scout','rogue','mage','priest'}:findings.append('skill_catalog_class_mismatch')
+if any(len(v)!=3 for v in catalog.values()):findings.append('skill_catalog_skill_count_mismatch')
+required_modules=['systems.simulation.production_parity','systems.simulation.skill_catalog','systems.simulation.progression_provider','systems.simulation.pve_battle','systems.simulation.combat_actor_stats']
+result={'version':'15.7.1','verdict':'PASS' if not findings else 'FAIL','stage13_parity_verdict':parity['verdict'],'stage13_parity_cases':parity['cases'],'stage13_parity_failed':parity['failed'],'production_skill_count':sum(len(v) for v in catalog.values()),'classes':sorted(catalog),'reused_modules':required_modules,'source_dependencies':deps,'findings':findings,'database_writes':0}
+out=ROOT/'reports'/'boss_stage_15_7_1_production_parity_audit.json';out.parent.mkdir(exist_ok=True);out.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+assert not findings,result
+print('[PASS] Stage 13 PvE simulation reuse and production parity',{'parity_cases':parity['cases'],'skills':result['production_skill_count']})
+
+
+============================================================
 FILE: tools\audit_central_drop_economy.py
 SIZE: 12804 bytes
 LAST WRITE: 2026-08-02 00:11:31
@@ -62596,6 +63562,82 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+============================================================
+FILE: tools\audit_elite_boss_reference_architecture_15_7_2_1.py
+SIZE: 2768 bytes
+LAST WRITE: 2026-08-15 20:36:40
+============================================================
+
+from __future__ import annotations
+import ast
+import json
+import re
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+paths = {
+    'combat_system': ROOT / 'systems' / 'combat_system.py',
+    'boss_system': ROOT / 'systems' / 'boss_system.py',
+    'bosses': ROOT / 'data' / 'bosses.py',
+    'mobs': ROOT / 'data' / 'mobs.py',
+}
+for p in paths.values():
+    assert p.exists(), p
+    ast.parse(p.read_text(encoding='utf-8-sig'), filename=str(p))
+
+text = {k: p.read_text(encoding='utf-8-sig') for k, p in paths.items()}
+findings = []
+
+elite_function_present = 'apply_elite_modifier' in text['combat_system']
+if not elite_function_present:
+    findings.append('apply_elite_modifier_not_found')
+
+# Audit-only source signals. No assumptions are made about exact current multipliers.
+elite_stat_signals = {
+    stat: bool(re.search(rf'\b{stat}\b', text['combat_system']))
+    for stat in ('hp', 'max_hp', 'attack', 'pdef', 'mdef', 'dex')
+}
+
+boss_builder_present = 'build_location_boss' in text['boss_system']
+boss_reference_signals = any(token in text['boss_system'] for token in (
+    'get_mobs_for_location', 'reference_mob', 'stat_archetype', 'median',
+))
+
+proposal = {
+    'normal_multiplier': 1.0,
+    'elite_core_stat_multiplier_candidate': 1.5,
+    'boss_core_stat_multiplier_candidate': 2.0,
+    'core_stats': ['hp', 'max_hp', 'attack', 'pdef', 'mdef', 'dex'],
+    'boss_reference_policy': 'deterministic same-location, same-level, same-attack-type reference profile; median when multiple mobs match',
+    'random_reference_mob_for_each_encounter': False,
+    'boss_unique_layer_preserved': ['skills', 'ai_weights', 'bleed_or_buffs', 'enrage', 'special_attack', 'boss_rewards'],
+    'requires_separate_read_only_comparison': True,
+    'requires_separate_mutation_patch': True,
+}
+
+result = {
+    'version': '15.7.2.1',
+    'verdict': 'PASS' if not findings else 'PASS_WITH_REVIEW',
+    'elite_function_present': elite_function_present,
+    'elite_stat_signals': elite_stat_signals,
+    'boss_builder_present': boss_builder_present,
+    'boss_already_uses_normal_reference_signals': boss_reference_signals,
+    'proposal': proposal,
+    'findings': findings,
+    'production_files_changed': False,
+    'database_writes': 0,
+    'feature_gate_changed': False,
+}
+out = ROOT / 'reports' / 'boss_stage_15_7_2_1_reference_architecture_audit.json'
+out.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
+assert boss_builder_present, result
+print(f"[{result['verdict']}] elite/boss reference architecture audit", {
+    'elite_function': elite_function_present,
+    'boss_builder': boss_builder_present,
+    'normal_reference_present': boss_reference_signals,
+})
 
 
 ============================================================
@@ -68010,6 +69052,28 @@ file=MD\PVP_IMPLEMENTATION_ROADMAP_14_0_0.md|sha256=cab5eec6507afd7825bfdd5edfd0
 
 
 ============================================================
+FILE: tools\regression_test_boss_gate_normal_elite.py
+SIZE: 651 bytes
+LAST WRITE: 2026-08-14 14:40:28
+============================================================
+
+from __future__ import annotations
+import random,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
+from systems.combat_system import generate_mob
+from data.bosses import BOSS_ENCOUNTERS_ENABLED
+assert BOSS_ENCOUNTERS_ENABLED is False
+random.seed(155000)
+for level,location in ((1,'start_path'),(5,'start_path'),(6,'dark_forest'),(10,'dark_forest')):
+ for _ in range(100):
+  mob=generate_mob(level,location)
+  assert not mob.get('is_boss')
+  assert mob.get('enemy_type') in {'normal','elite'}
+print('[PASS] 400 live hunt generations preserve normal/elite behavior while gate is disabled')
+
+
+============================================================
 FILE: tools\regression_test_pvp_stage_14_closure.py
 SIZE: 4983 bytes
 LAST WRITE: 2026-08-13 15:35:31
@@ -68056,6 +69120,199 @@ for expected in ("⚔️ <b>Раунд 7</b>","🗡 Завдано <b>36</b> ш�
 for forbidden in ("Результат раунду","раунд(и)","Витрачено ресурсу","Отримано ресурсу","Атаку було ухилено"): assert forbidden not in text
 summary={"version":"14.6.6","classes":list(CLASSES),"unique_matchups_checked":15,"knight_judgement_present":True,"round_limit_disabled":True,"round_999_continues":True,"five_afk_defeat":True,"both_afk_draw":True,"localized_terminal_reasons":True,"compact_resource_grouping":True,"production_state_mutation":False}
 print(json.dumps(summary,ensure_ascii=False,sort_keys=True)); print("[OK] Stage 14 PvP closure regression")
+
+
+============================================================
+FILE: tools\run_boss_balance_simulation_15_7_0.py
+SIZE: 6522 bytes
+LAST WRITE: 2026-08-14 22:29:28
+============================================================
+
+from __future__ import annotations
+import json,math,random,statistics,sys
+from collections import Counter,defaultdict
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
+from systems.boss_system import build_location_boss,prepare_boss_turn,build_boss_damage_request,finalize_boss_turn,get_effective_boss_defenses
+from systems.combat_system import calculate_mob_attack
+CLASSES=('warrior','knight','scout','rogue','mage','priest')
+LEVELS={'start_path':range(1,6),'dark_forest':range(6,11)}
+TRIALS_PER_CELL=200
+MAX_ROUNDS=80
+# Read-only standardized baseline. It intentionally uses the canonical level-up
+# stat rule and class-role coefficients; no users or DB fixtures are created.
+ROLE={
+ 'warrior':{'hp':1.12,'atk':1.12,'pdef':1.15,'mdef':0.90,'dodge':0.95},
+ 'knight': {'hp':1.22,'atk':0.92,'pdef':1.35,'mdef':1.00,'dodge':0.85},
+ 'scout':  {'hp':0.94,'atk':1.18,'pdef':0.90,'mdef':0.92,'dodge':1.25},
+ 'rogue':  {'hp':0.92,'atk':1.20,'pdef':0.88,'mdef':0.90,'dodge':1.30},
+ 'mage':   {'hp':0.86,'atk':1.28,'pdef':0.78,'mdef':1.18,'dodge':1.00},
+ 'priest': {'hp':0.98,'atk':0.96,'pdef':0.86,'mdef':1.30,'dodge':0.95},
+}
+def actor(cls,level):
+ base=10+level-1; r=ROLE[cls]
+ hp=round((100+level*20+base*5)*r['hp'])
+ atk=round(base*r['atk']+level*3)
+ pdef=round((base*.2+level*2)*r['pdef']);mdef=round((base+level)*r['mdef'])
+ dex=round(base*r['dodge']);wis=base;sta=base
+ return {'class':cls,'level':level,'hp':hp,'max_hp':hp,'attack':atk,'pdef':pdef,'mdef':mdef,'dex':dex,'wis':wis,'sta':sta,'attack_type':'magical' if cls in {'mage','priest'} else 'physical'}
+def player_hit(a,boss,rng):
+ pdef,mdef=get_effective_boss_defenses(boss); defense=mdef if a['attack_type']=='magical' else pdef
+ spread=rng.uniform(.88,1.12); raw=max(1,a['attack']*spread-defense*.5)
+ crit=rng.random()<.08; return max(1,round(raw*(1.5 if crit else 1)))
+def one(cls,level,location,seed):
+ rng=random.Random(seed);a=actor(cls,level);b=build_location_boss(location,level,rng=rng)
+ enrage=False;special=False;bleed_total=0;buff_rounds=Counter();actions=Counter()
+ for rnd in range(1,MAX_ROUNDS+1):
+  b['hp']-=player_hit(a,b,rng)
+  if b['hp']<=0:return {'win':1,'rounds':rnd,'hp_pct':max(0,a['hp'])/a['max_hp'],'enrage':enrage,'special':special,'bleed':bleed_total,'actions':actions,'buff_rounds':buff_rounds}
+  turn=prepare_boss_turn(b,rng=rng);plan=turn['action_plan'];actions[plan['skill_key']]+=1
+  enrage|=bool(turn.get('enrage_triggered'));special|=bool(turn.get('enrage_triggered'))
+  req=build_boss_damage_request(plan);damage=0
+  if req:
+   # Use production mob attack calculation with deterministic global random state.
+   state=random.getstate();random.seed(seed*100+rnd)
+   try:res=calculate_mob_attack(req['mob_attack'],a['pdef'],a['mdef'],a['dex'],b['dex'],a['sta'],level,req['attack_type'])
+   finally:random.setstate(state)
+   damage=int(res['damage'])
+  result=finalize_boss_turn(b,plan,damage)
+  pe=result.get('player_effect')
+  if pe: b.setdefault('_sim_bleed',{})['effect']=dict(pe)
+  if b['boss_state'].get('attack_buff_turns',0)>0:buff_rounds['attack']+=1
+  if b['boss_state'].get('defense_buff_turns',0)>0:buff_rounds['defense']+=1
+  a['hp']-=damage
+  effect=(b.get('_sim_bleed') or {}).get('effect')
+  if effect and a['hp']>0:
+   tick=min(a['hp'],int(effect['damage']));a['hp']-=tick;bleed_total+=tick;effect['turns']-=1
+   if effect['turns']<=0:b.pop('_sim_bleed',None)
+  if a['hp']<=0:return {'win':0,'rounds':rnd,'hp_pct':0.0,'enrage':enrage,'special':special,'bleed':bleed_total,'actions':actions,'buff_rounds':buff_rounds}
+ return {'win':0,'rounds':MAX_ROUNDS,'hp_pct':max(0,a['hp'])/a['max_hp'],'enrage':enrage,'special':special,'bleed':bleed_total,'actions':actions,'buff_rounds':buff_rounds,'round_cap':1}
+rows=[];totals=[]
+for location,levels in LEVELS.items():
+ for level in levels:
+  for cls in CLASSES:
+   runs=[one(cls,level,location,157000+level*100000+CLASSES.index(cls)*1000+i) for i in range(TRIALS_PER_CELL)]
+   wins=sum(x['win'] for x in runs);actions=Counter();buffs=Counter()
+   for x in runs:actions.update(x['actions']);buffs.update(x['buff_rounds'])
+   row={'location':location,'level':level,'class':cls,'trials':len(runs),'wins':wins,'win_rate':round(wins/len(runs),4),'death_rate':round(1-wins/len(runs),4),'avg_rounds':round(statistics.mean(x['rounds'] for x in runs),2),'avg_remaining_hp_percent':round(statistics.mean(x['hp_pct'] for x in runs)*100,2),'enrage_reach_rate':round(sum(x['enrage'] for x in runs)/len(runs),4),'special_use_rate':round(sum(x['special'] for x in runs)/len(runs),4),'avg_bleed_damage':round(statistics.mean(x['bleed'] for x in runs),2),'round_cap_count':sum(x.get('round_cap',0) for x in runs),'actions':dict(actions),'buff_rounds':dict(buffs)}
+   rows.append(row)
+class_summary={}
+for cls in CLASSES:
+ data=[x for x in rows if x['class']==cls];class_summary[cls]={'cells':len(data),'mean_win_rate':round(statistics.mean(x['win_rate'] for x in data),4),'min_win_rate':min(x['win_rate'] for x in data),'max_win_rate':max(x['win_rate'] for x in data),'mean_rounds':round(statistics.mean(x['avg_rounds'] for x in data),2)}
+all_rates=[x['win_rate'] for x in rows];spread=max(v['mean_win_rate'] for v in class_summary.values())-min(v['mean_win_rate'] for v in class_summary.values())
+findings=[]
+if any(x['round_cap_count'] for x in rows):findings.append('round_cap_reached')
+if spread>0.35:findings.append('class_win_rate_spread_over_35pp')
+if min(all_rates)<0.10:findings.append('one_or_more_cells_below_10pct_win_rate')
+if max(all_rates)>0.95:findings.append('one_or_more_cells_above_95pct_win_rate')
+verdict='PASS' if not findings else 'PASS_WITH_REVIEW'
+result={'version':'15.7.0','verdict':verdict,'model':'standardized_read_only_baseline','trials_per_cell':TRIALS_PER_CELL,'total_trials':len(rows)*TRIALS_PER_CELL,'cells':len(rows),'classes':list(CLASSES),'levels':{'start_path':[1,2,3,4,5],'dark_forest':[6,7,8,9,10]},'class_summary':class_summary,'class_mean_win_rate_spread':round(spread,4),'findings':findings,'rows':rows,'database_writes':0,'live_balance_changed':False,'feature_gate_changed':False}
+out=ROOT/'reports'/'boss_stage_15_7_0_balance_simulation.json';out.parent.mkdir(exist_ok=True);out.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+print(f"[{verdict}] boss balance simulation",{'cells':len(rows),'trials':result['total_trials'],'spread':result['class_mean_win_rate_spread'],'findings':findings})
+
+
+============================================================
+FILE: tools\run_boss_encounter_distribution_audit.py
+SIZE: 793 bytes
+LAST WRITE: 2026-08-14 14:19:51
+============================================================
+
+from __future__ import annotations
+import json,random,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
+from systems.boss_system import roll_boss_encounter
+trials=100000
+hits=sum(roll_boss_encounter(random.Random(152000+i),chance_percent=1.0,enabled=True) for i in range(trials))
+rate=hits/trials*100
+assert 0.85<=rate<=1.15,(hits,rate)
+result={"version":"15.2.0","trials":trials,"configured_percent":1.0,"boss_hits":hits,"actual_percent":round(rate,4),"acceptance_percent":[0.85,1.15],"verdict":"PASS"}
+out=ROOT/'reports'/'boss_stage_15_2_0_encounter_distribution.json'
+out.parent.mkdir(exist_ok=True)
+out.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+print("[PASS] encounter distribution",result)
+
+
+============================================================
+FILE: tools\run_boss_production_parity_simulation_15_7_1.py
+SIZE: 7623 bytes
+LAST WRITE: 2026-08-14 22:39:17
+============================================================
+
+from __future__ import annotations
+import copy,json,random,statistics,sys
+from collections import Counter
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
+from systems.boss_system import build_location_boss,prepare_boss_turn,build_boss_damage_request,finalize_boss_turn,get_effective_boss_defenses
+from systems.simulation.battle_models import BattleActor,BattleAction
+from systems.simulation.progression_provider import ProgressionProvider
+from systems.simulation.pve_battle import ExactPveBattleEngine
+from systems.simulation.canonical_rules import call_rule
+from systems.simulation.rng import SimulationRng
+CLASSES=('warrior','knight','scout','rogue','mage','priest')
+LOCATIONS={'start_path':range(1,6),'dark_forest':range(6,11)}
+PROFILES={
+ 'naked':{'hp':1.00,'attack':1.00,'defense':1.00,'weapon':0},
+ 'progression':{'hp':1.20,'attack':1.35,'defense':1.30,'weapon':3},
+ 'strong':{'hp':1.45,'attack':1.70,'defense':1.60,'weapon':6},
+}
+TRIALS=50;MAX_TURNS=100
+
+def actor(cls,level,profile):
+ p=ProgressionProvider().player_actor(cls,level);m=PROFILES[profile]
+ p.max_hp=max(1,round(p.max_hp*m['hp']));p.hp=p.max_hp
+ p.attack=max(1,round(p.attack*m['attack']));p.magic_attack=max(1,round(p.magic_attack*m['attack']))
+ p.pdef=max(0,round(p.pdef*m['defense']));p.mdef=max(0,round(p.mdef*m['defense']))
+ p.weapon_min_damage=max(0,level*m['weapon']);p.weapon_max_damage=max(p.weapon_min_damage,round(level*m['weapon']*1.35))
+ return p
+
+def boss_actor(data):
+ return BattleActor(data['name'],data['level'],data['hp'],data['max_hp'],data['attack'],data['attack'],data['pdef'],data['mdef'],data['dex'],0,0,data['attack_type'])
+
+def one(cls,level,location,profile,seed):
+ engine=ExactPveBattleEngine(ROOT,seed,max_turns=MAX_TURNS);p=actor(cls,level,profile);boss=build_location_boss(location,level,rng=random.Random(seed));m=boss_actor(boss);actions=[]
+ p.resource_type={'warrior':'rage','knight':'rage','scout':'combat_energy','rogue':'combat_energy_combo','mage':'mana','priest':'mana'}[cls]
+ if p.max_resource<=0:p.max_resource=100
+ p.resource=0 if p.resource_type=='rage' else p.max_resource
+ enrage=False;special=False;bleed_damage=0;boss_damage=0;player_damage=0
+ for turn in range(1,MAX_TURNS+1):
+  engine._tick_start(p,actions,turn);engine._tick_start(m,actions,turn)
+  # Synchronize boss effective defense/buffs into Stage 13 BattleActor.
+  ep,em=get_effective_boss_defenses(boss);m.pdef=ep;m.mdef=em;m.hp=boss['hp'];m.max_hp=boss['max_hp']
+  before=m.hp;engine._player_action(turn,cls,p,m,actions);boss['hp']=m.hp;player_damage+=max(0,before-m.hp)
+  if m.hp<=0:return {'win':1,'turns':turn,'player_hp_pct':p.hp/p.max_hp,'enrage':enrage,'special':special,'player_damage':player_damage,'boss_damage':boss_damage,'bleed_damage':bleed_damage,'skills':sum(a.actor=='player' and a.action!='basic_attack' for a in actions)}
+  bt=prepare_boss_turn(boss,rng=random.Random(seed*1000+turn));plan=bt['action_plan'];enrage|=bt['enrage_triggered'];special|=bt['enrage_triggered'];req=build_boss_damage_request(plan);damage=0
+  if req:
+   raw=call_rule('mob_attack',req['mob_attack'],p.pdef,p.mdef,p.dex,boss['dex'],p.sta,p.level,req['attack_type'],rng=engine.rng);damage=engine._absorb(p,int(raw['damage']));p.hp=max(0,p.hp-damage);boss_damage+=damage
+   if p.resource_type=='rage' and damage>0:p.resource=min(p.max_resource,p.resource+10)
+  fin=finalize_boss_turn(boss,plan,damage);pe=fin.get('player_effect')
+  if pe:p.effects['boss_bleed']={'type':'dot','turns':pe['turns'],'damage':pe['damage']}
+  if p.hp<=0:return {'win':0,'turns':turn,'player_hp_pct':0.0,'enrage':enrage,'special':special,'player_damage':player_damage,'boss_damage':boss_damage,'bleed_damage':sum(a.damage for a in actions if a.actor=='effect' and a.action=='boss_bleed'),'skills':sum(a.actor=='player' and a.action!='basic_attack' for a in actions)}
+ return {'win':0,'turns':MAX_TURNS,'player_hp_pct':p.hp/p.max_hp,'enrage':enrage,'special':special,'player_damage':player_damage,'boss_damage':boss_damage,'bleed_damage':sum(a.damage for a in actions if a.actor=='effect' and a.action=='boss_bleed'),'skills':sum(a.actor=='player' and a.action!='basic_attack' for a in actions),'cap':1}
+
+old=json.loads((ROOT/'reports'/'boss_stage_15_7_0_balance_simulation.json').read_text(encoding='utf-8'))
+old_zero=sum(1 for x in old['rows'] if x['win_rate']==0);old_summary={'cells':old['cells'],'zero_win_cells':old_zero,'all_classes_zero':all(v['mean_win_rate']==0 for v in old['class_summary'].values()),'mean_rounds_by_class':{k:v['mean_rounds'] for k,v in old['class_summary'].items()}}
+rows=[]
+for profile in PROFILES:
+ for location,levels in LOCATIONS.items():
+  for level in levels:
+   for cls in CLASSES:
+    runs=[one(cls,level,location,profile,157100000+list(PROFILES).index(profile)*1000000+level*10000+CLASSES.index(cls)*100+i) for i in range(TRIALS)]
+    rows.append({'profile':profile,'location':location,'level':level,'class':cls,'trials':TRIALS,'wins':sum(x['win'] for x in runs),'win_rate':round(statistics.mean(x['win'] for x in runs),4),'avg_turns':round(statistics.mean(x['turns'] for x in runs),2),'avg_remaining_hp_percent':round(statistics.mean(x['player_hp_pct'] for x in runs)*100,2),'enrage_reach_rate':round(statistics.mean(x['enrage'] for x in runs),4),'special_use_rate':round(statistics.mean(x['special'] for x in runs),4),'avg_player_damage':round(statistics.mean(x['player_damage'] for x in runs),2),'avg_boss_damage':round(statistics.mean(x['boss_damage'] for x in runs),2),'avg_bleed_damage':round(statistics.mean(x['bleed_damage'] for x in runs),2),'avg_skills_used':round(statistics.mean(x['skills'] for x in runs),2),'round_cap_count':sum(x.get('cap',0) for x in runs)})
+summary={}
+for profile in PROFILES:
+ data=[x for x in rows if x['profile']==profile];summary[profile]={'cells':len(data),'mean_win_rate':round(statistics.mean(x['win_rate'] for x in data),4),'zero_win_cells':sum(x['win_rate']==0 for x in data),'mean_turns':round(statistics.mean(x['avg_turns'] for x in data),2),'mean_skills_used':round(statistics.mean(x['avg_skills_used'] for x in data),2),'enrage_reach_rate':round(statistics.mean(x['enrage_reach_rate'] for x in data),4)}
+findings=[]
+if old_summary['zero_win_cells']==60:findings.append('stage_15_7_0_all_60_cells_zero_win_confirmed')
+if summary['progression']['mean_win_rate']<0.10:findings.append('production_parity_progression_profile_below_10pct')
+if summary['strong']['mean_win_rate']<0.25:findings.append('strong_profile_below_25pct')
+if all(summary[p]['zero_win_cells']==60 for p in summary):findings.append('all_profiles_all_cells_zero_win')
+verdict='PASS' if not findings else 'PASS_WITH_REVIEW'
+result={'version':'15.7.1','verdict':verdict,'model':'stage13_exact_pve_reuse_with_boss_turn_adapter','trials_per_cell':TRIALS,'profiles':PROFILES,'cells':len(rows),'total_trials':len(rows)*TRIALS,'stage_15_7_0_root_cause':old_summary,'profile_summary':summary,'findings':findings,'rows':rows,'reused_components':['ProgressionProvider.player_actor','ExactPveBattleEngine._tick_start','ExactPveBattleEngine._player_action','ExactPveBattleEngine skill catalog','canonical_rules.player_attack','canonical_rules.mob_attack'],'database_writes':0,'production_files_changed':False,'feature_gate_changed':False}
+out=ROOT/'reports'/'boss_stage_15_7_1_root_cause_and_parity.json';out.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+print(f'[{verdict}] root-cause and production-parity audit',{'trials':result['total_trials'],'summaries':summary,'findings':findings})
 
 
 ============================================================
@@ -69664,6 +70921,374 @@ def main():
     print("- protected active-lot migration classifier: OK")
     print("- isolated checks; real user mutations: 0")
 if __name__=='__main__': main()
+
+
+============================================================
+FILE: tools\smoke_test_boss_bleed.py
+SIZE: 1305 bytes
+LAST WRITE: 2026-08-14 14:28:39
+============================================================
+
+from __future__ import annotations
+import random,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
+from systems.boss_system import build_location_boss,resolve_boss_combat_action,apply_player_effect_instruction,process_boss_player_dots
+
+boss=build_location_boss("start_path",5,rng=random.Random(153010))
+result=resolve_boss_combat_action(boss,forced_skill_key="fang_rend",actual_damage=51)
+effect=result["effects"]["player_effect"]
+assert effect["damage"]==10 and effect["turns"]==2 and effect["can_crit"] is False
+mob={"player_effects":{}}
+apply_player_effect_instruction(mob,effect)
+first=process_boss_player_dots(mob,100)
+assert first["current_hp"]==90 and first["damage"]==10 and not first["expired"]
+second=process_boss_player_dots(mob,90)
+assert second["current_hp"]==80 and second["damage"]==10 and second["expired"]==["boss_bleed"]
+assert "boss_bleed" not in mob["player_effects"]
+# Reapplication replaces rather than stacks.
+apply_player_effect_instruction(mob,effect)
+newer=dict(effect); newer["damage"]=20
+apply_player_effect_instruction(mob,newer)
+assert len(mob["player_effects"])==1 and mob["player_effects"]["boss_bleed"]["damage"]==20
+print("[PASS] boss bleed: 20% actual damage, two ticks, no crit, replace policy")
+
+
+============================================================
+FILE: tools\smoke_test_boss_combat_actions.py
+SIZE: 1089 bytes
+LAST WRITE: 2026-08-14 14:28:39
+============================================================
+
+from __future__ import annotations
+import random,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
+from systems.boss_system import build_location_boss,build_boss_action_plan,resolve_boss_combat_action
+
+wolf=build_location_boss("start_path",5,rng=random.Random(153001))
+for key,mult,kind in (("ferocious_bite",1.0,"physical"),("fang_rend",1.5,"physical"),("spectral_roar",1.3,"magical"),("enraged_rend",2.0,"physical")):
+ plan=build_boss_action_plan(wolf,forced_skill_key=key)
+ assert plan["skill_key"]==key and plan["damage_multiplier"]==mult and plan["attack_type"]==kind
+ assert plan["effective_attack"]==wolf["attack"] and not plan["no_damage"]
+
+king=build_location_boss("dark_forest",10,rng=random.Random(153002))
+for key in ("battle_cry","defense_command"):
+ result=resolve_boss_combat_action(king,forced_skill_key=key)
+ assert result["plan"]["no_damage"] is True
+ assert result["plan"]["effective_attack"]==0
+ assert result["effects"] is not None
+print("[PASS] all boss combat action plans and no-damage actions")
+
+
+============================================================
+FILE: tools\smoke_test_boss_combat_bridge.py
+SIZE: 1233 bytes
+LAST WRITE: 2026-08-14 14:34:13
+============================================================
+
+from __future__ import annotations
+import random,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
+from systems.boss_system import build_location_boss,prepare_boss_turn,build_boss_damage_request,finalize_boss_turn,render_boss_action_text
+b=build_location_boss("start_path",5,rng=random.Random(154100))
+turn=prepare_boss_turn(b,rng=random.Random(1)); req=build_boss_damage_request(turn["action_plan"])
+assert req is not None and req["attack_type"] in {"physical","magical"}
+result=finalize_boss_turn(b,turn["action_plan"],actual_damage=50)
+assert isinstance(result["boss_state"],dict)
+text=render_boss_action_text(b,turn,actual_damage=50); assert turn["action_plan"]["skill_name"] in text
+# no-damage action returns no damage request and full timer survives its own cast
+k=build_location_boss("dark_forest",10,rng=random.Random(154101))
+from systems.boss_system import build_boss_action_plan
+plan=build_boss_action_plan(k,forced_skill_key="battle_cry")
+assert build_boss_damage_request(plan) is None
+finalize_boss_turn(k,plan,0); assert k["boss_state"]["attack_buff_turns"]==3
+print("[PASS] production combat bridge requests, effect finalization and localized text")
+
+
+============================================================
+FILE: tools\smoke_test_boss_completion_contract.py
+SIZE: 1807 bytes
+LAST WRITE: 2026-08-14 22:23:20
+============================================================
+
+from __future__ import annotations
+import ast,json
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+handler=(ROOT/'handlers'/'combat.py').read_text(encoding='utf-8');reward=(ROOT/'systems'/'reward_system.py').read_text(encoding='utf-8');boss=(ROOT/'systems'/'boss_system.py').read_text(encoding='utf-8')
+ast.parse(handler);ast.parse(reward);ast.parse(boss)
+metrics={
+ 'process_victory_calls':handler.count('process_victory('),
+ 'process_victory_reward_definitions':reward.count('def process_victory_reward('),
+ 'central_drop_calls_in_reward':reward.count('process_enemy_drops(user_id, mob)'),
+ 'boss_direct_reward_tokens':sum(boss.count(x) for x in ('add_item(','add_gold(','add_exp(','process_enemy_drops(','award_rune_drop(')),
+ 'boss_handler_bridge_calls':handler.count('mob_attack_result = _calculate_enemy_turn_15_5_0('),
+}
+findings=[]
+if metrics['process_victory_calls']<3:findings.append('combat completion paths insufficient')
+if metrics['process_victory_reward_definitions']!=1:findings.append('authoritative reward function count mismatch')
+if metrics['central_drop_calls_in_reward']<1:findings.append('central drop call missing')
+if metrics['boss_direct_reward_tokens']!=0:findings.append('boss system contains direct reward mutation')
+if metrics['boss_handler_bridge_calls']!=3:findings.append('boss handler bridge path count mismatch')
+result={'version':'15.6.1','verdict':'PASS' if not findings else 'FAIL','metrics':metrics,'findings':findings,'completion_contract':'single standard PvE victory pipeline'}
+out=ROOT/'reports'/'boss_stage_15_6_0_completion_contract.json';out.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+assert not findings,result
+print('[PASS] boss completion uses standard PvE victory pipeline',metrics)
+
+
+============================================================
+FILE: tools\smoke_test_boss_data_model.py
+SIZE: 825 bytes
+LAST WRITE: 2026-08-14 14:13:45
+============================================================
+
+from __future__ import annotations
+import sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
+from data.bosses import BOSS_DEFINITIONS,BOSS_KEY_BY_LOCATION,get_location_boss_definition
+from systems.boss_system import validate_boss_definitions
+assert set(BOSS_DEFINITIONS)=={"pack_leader","goblin_king"}
+assert BOSS_KEY_BY_LOCATION=={"start_path":"pack_leader","dark_forest":"goblin_king"}
+assert get_location_boss_definition("start_path")["name"]=="👑🐺 Ватажок Зграї"
+assert get_location_boss_definition("dark_forest")["name"]=="👑👺 Король Гоблінів"
+result=validate_boss_definitions()
+assert result["verdict"]=="PASS",result
+assert result["boss_count"]==2 and result["location_count"]==2
+print("[PASS] boss data model",result)
+
+
+============================================================
+FILE: tools\smoke_test_boss_drop_classification.py
+SIZE: 1089 bytes
+LAST WRITE: 2026-08-14 22:23:20
+============================================================
+
+from __future__ import annotations
+import json,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
+from systems.drop_system import classify_enemy
+from systems.rune_system import classify_rune_drop_enemy
+cases=[
+ ({'is_boss':True},'boss'),
+ ({'boss':True},'boss'),
+ ({'enemy_type':'boss'},'boss'),
+ ({'mob_type':'boss'},'boss'),
+ ({'is_boss':True,'is_elite':True},'boss'),
+ ({'is_elite':True},'elite'),
+ ({},'normal'),
+]
+rows=[]
+for mob,expected in cases:
+ central=classify_enemy(mob);rune=classify_rune_drop_enemy(mob)
+ assert central==expected,(mob,central,expected)
+ assert rune==expected,(mob,rune,expected)
+ rows.append({'mob':mob,'expected':expected,'central':central,'rune':rune})
+result={'version':'15.6.1','verdict':'PASS','cases':rows,'boss_priority_confirmed':True}
+out=ROOT/'reports'/'boss_stage_15_6_0_classification_matrix.json';out.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+print('[PASS] central and rune classification matrix',{'cases':len(rows),'boss_priority':True})
+
+
+============================================================
+FILE: tools\smoke_test_boss_enrage_transition.py
+SIZE: 1496 bytes
+LAST WRITE: 2026-08-14 14:34:13
+============================================================
+
+from __future__ import annotations
+import random,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
+from systems.boss_system import build_location_boss,get_boss_enrage_threshold_hp,prepare_boss_turn,build_boss_damage_request,finalize_boss_turn
+for location,level,special,buff in (("start_path",5,"enraged_rend",25),("dark_forest",10,"tyrant_strike",30)):
+ b=build_location_boss(location,level,rng=random.Random(154000+level)); threshold=get_boss_enrage_threshold_hp(b)
+ b["hp"]=threshold+1
+ ordinary=prepare_boss_turn(b,rng=random.Random(1)); assert not ordinary["enrage_triggered"]
+ b["hp"]=threshold
+ first=prepare_boss_turn(b,rng=random.Random(2)); assert first["enrage_triggered"]
+ assert first["action_plan"]["skill_key"]==special
+ assert b["boss_state"]["enrage_used"] and b["boss_state"]["special_attack_used"]
+ assert b["boss_state"]["permanent_attack_buff_percent"]==buff
+ request=build_boss_damage_request(first["action_plan"]); assert request and request["mob_attack"]>b["attack"]
+ second=prepare_boss_turn(b,rng=random.Random(3)); assert not second["enrage_triggered"]
+ assert second["action_plan"]["phase"]=="ai_after_enrage"
+ assert second["action_plan"]["skill_key"]!=special
+ dead=build_location_boss(location,level,rng=random.Random(4));dead["hp"]=0
+ assert not prepare_boss_turn(dead,rng=random.Random(5))["enrage_triggered"]
+print("[PASS] one-time enrage, automatic special, replacement and post-enrage AI")
+
+
+============================================================
+FILE: tools\smoke_test_boss_handler_integration.py
+SIZE: 2339 bytes
+LAST WRITE: 2026-08-14 14:46:52
+============================================================
+
+from __future__ import annotations
+import ast,json
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+handler=ROOT/'handlers'/'combat.py';text=handler.read_text(encoding='utf-8');tree=ast.parse(text)
+functions={n.name:n for n in ast.walk(tree) if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef))}
+required_helpers={'_calculate_enemy_turn_15_5_0','_finalize_enemy_turn_15_5_0','_apply_boss_dot_at_player_turn_15_5_0'}
+missing=sorted(required_helpers-set(functions))
+metrics={
+ 'calculate_helper_definitions':sum(1 for n in ast.walk(tree) if isinstance(n,ast.FunctionDef) and n.name=='_calculate_enemy_turn_15_5_0'),
+ 'finalize_helper_definitions':sum(1 for n in ast.walk(tree) if isinstance(n,ast.FunctionDef) and n.name=='_finalize_enemy_turn_15_5_0'),
+ 'dot_helper_definitions':sum(1 for n in ast.walk(tree) if isinstance(n,ast.FunctionDef) and n.name=='_apply_boss_dot_at_player_turn_15_5_0'),
+ 'calculate_bridge_calls':text.count('mob_attack_result = _calculate_enemy_turn_15_5_0('),
+ 'finalize_bridge_calls':text.count('boss_action_text = _finalize_enemy_turn_15_5_0('),
+ 'dot_bridge_calls':text.count('player_effects_text += _apply_boss_dot_at_player_turn_15_5_0(mob)'),
+ 'effective_defense_calls':text.count('boss_pdef, boss_mdef = get_effective_boss_defenses(mob)'),
+ 'feature_gate_disabled':'BOSS_ENCOUNTERS_ENABLED = False' in (ROOT/'data'/'bosses.py').read_text(encoding='utf-8'),
+}
+findings=[]
+if missing:findings.append('missing helpers: '+', '.join(missing))
+for key in ('calculate_helper_definitions','finalize_helper_definitions','dot_helper_definitions','effective_defense_calls'):
+ if metrics[key]!=1:findings.append(f'{key}={metrics[key]}, expected=1')
+for key in ('calculate_bridge_calls','finalize_bridge_calls','dot_bridge_calls'):
+ if metrics[key]!=3:findings.append(f'{key}={metrics[key]}, expected=3')
+if not metrics['feature_gate_disabled']:findings.append('feature gate is not disabled')
+result={'version':'15.5.1','verdict':'PASS' if not findings else 'FAIL','metrics':metrics,'findings':findings}
+out=ROOT/'reports'/'boss_stage_15_5_1_handler_validation.json';out.parent.mkdir(exist_ok=True);out.write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+assert not findings,result
+print('[PASS] semantic handler integration validation',metrics)
+
+
+============================================================
+FILE: tools\smoke_test_boss_hunt_encounter.py
+SIZE: 2239 bytes
+LAST WRITE: 2026-08-14 14:19:51
+============================================================
+
+from __future__ import annotations
+import random,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
+from data.bosses import BOSS_ENCOUNTERS_ENABLED,BOSS_ENCOUNTER_CHANCE_PERCENT
+from systems.boss_system import generate_hunt_encounter,roll_boss_encounter
+
+assert BOSS_ENCOUNTERS_ENABLED is False
+assert BOSS_ENCOUNTER_CHANCE_PERCENT==1.0
+assert not roll_boss_encounter(random.Random(1))
+
+normal_calls={"build":0,"elite":0}
+def factory():
+ normal_calls["build"]+=1
+ return {"name":"normal","level":3,"is_elite":False}
+def elite(mob):
+ mob=dict(mob); mob["is_elite"]=True; mob["name"]="elite"; return mob
+def never_elite(): normal_calls["elite"]+=1; return False
+
+# Live safety gate: boss is disabled and existing normal flow remains active.
+r=generate_hunt_encounter(3,"start_path",factory,elite,never_elite,rng=random.Random(1))
+assert r["enemy_type"]=="normal" and normal_calls=={"build":1,"elite":1}
+
+# Forced boss: boss is exclusive and normal/elite callbacks are never called.
+normal_calls={"build":0,"elite":0}
+r=generate_hunt_encounter(3,"start_path",factory,elite,never_elite,rng=random.Random(1),boss_enabled=True,boss_chance_percent=100)
+assert r["enemy_type"]=="boss"
+assert r["mob"]["is_boss"] is True and r["mob"]["is_elite"] is False
+assert r["mob"]["level"]==3 and r["mob"]["location_id"]=="start_path"
+assert normal_calls=={"build":0,"elite":0}
+
+# Forced elite when boss misses.
+normal_calls={"build":0,"elite":0}
+def yes_elite(): normal_calls["elite"]+=1; return True
+r=generate_hunt_encounter(3,"start_path",factory,elite,yes_elite,rng=random.Random(1),boss_enabled=True,boss_chance_percent=0)
+assert r["enemy_type"]=="elite"
+assert r["mob"]["is_elite"] is True and r["mob"]["is_boss"] is False
+assert normal_calls=={"build":1,"elite":1}
+
+# Forced normal when both boss and elite miss.
+normal_calls={"build":0,"elite":0}
+r=generate_hunt_encounter(3,"start_path",factory,elite,never_elite,rng=random.Random(1),boss_enabled=True,boss_chance_percent=0)
+assert r["enemy_type"]=="normal"
+assert r["mob"]["is_elite"] is False and r["mob"]["is_boss"] is False
+print("[PASS] boss > elite > normal encounter exclusivity and safety gate")
+
+
+============================================================
+FILE: tools\smoke_test_boss_level_scaling.py
+SIZE: 1320 bytes
+LAST WRITE: 2026-08-14 14:13:45
+============================================================
+
+from __future__ import annotations
+import random,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
+from data.bosses import get_location_boss_definition
+from systems.boss_system import build_location_boss,scale_boss_stat_ranges
+cases=(("start_path",1,5),("dark_forest",6,10))
+for location,level_min,level_max in cases:
+ definition=get_location_boss_definition(location)
+ prior=None
+ for level in range(level_min,level_max+1):
+  ranges=scale_boss_stat_ranges(definition,level)
+  assert ranges["hp_min"]<=ranges["hp_max"]
+  assert ranges["attack_min"]<=ranges["attack_max"]
+  if prior:
+   assert ranges["hp_min"]>=prior["hp_min"]
+   assert ranges["attack_min"]>=prior["attack_min"]
+  boss=build_location_boss(location,level,rng=random.Random(151000+level))
+  assert boss["level"]==level and boss["is_boss"] is True and boss["is_elite"] is False
+  assert boss["enemy_type"]==boss["mob_type"]=="boss"
+  assert boss["boss_state"]["enrage_used"] is False
+  prior=ranges
+ assert scale_boss_stat_ranges(definition,level_max)==definition["reference_stats"]
+try:
+ build_location_boss("start_path",6,rng=random.Random(1))
+ raise AssertionError("out-of-range level accepted")
+except ValueError:
+ pass
+print("[PASS] boss level scaling and runtime state")
+
+
+============================================================
+FILE: tools\smoke_test_boss_temporary_buffs.py
+SIZE: 1824 bytes
+LAST WRITE: 2026-08-14 14:28:39
+============================================================
+
+from __future__ import annotations
+import random,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
+from systems.boss_system import build_location_boss,resolve_boss_combat_action,get_effective_boss_attack,get_effective_boss_defenses,tick_boss_temporary_buffs
+
+boss=build_location_boss("dark_forest",10,rng=random.Random(153020))
+base_attack=boss["attack"]; base_pdef=boss["pdef"]; base_mdef=boss["mdef"]
+# Battle Cry: +15%, three completed actions, refresh without stacking.
+resolve_boss_combat_action(boss,forced_skill_key="battle_cry")
+assert boss["boss_state"]["attack_buff_turns"]==3
+assert get_effective_boss_attack(boss)==round(base_attack*1.15)
+tick_boss_temporary_buffs(boss); assert boss["boss_state"]["attack_buff_turns"]==2
+resolve_boss_combat_action(boss,forced_skill_key="battle_cry")
+assert boss["boss_state"]["attack_buff_turns"]==3
+assert get_effective_boss_attack(boss)==round(base_attack*1.15)
+for _ in range(3): tick_boss_temporary_buffs(boss)
+assert get_effective_boss_attack(boss)==base_attack
+# Defense Command: +30% PDEF/MDEF, two actions, replace policy.
+resolve_boss_combat_action(boss,forced_skill_key="defense_command")
+pdef,mdef=get_effective_boss_defenses(boss)
+assert pdef==round(base_pdef*1.30) and mdef==round(base_mdef*1.30)
+tick_boss_temporary_buffs(boss); assert boss["boss_state"]["defense_buff_turns"]==1
+tick_boss_temporary_buffs(boss); assert get_effective_boss_defenses(boss)==(base_pdef,base_mdef)
+# Permanent and temporary ATK are additive.
+boss["boss_state"]["permanent_attack_buff_percent"]=30
+resolve_boss_combat_action(boss,forced_skill_key="battle_cry")
+assert get_effective_boss_attack(boss)==round(base_attack*1.45)
+print("[PASS] temporary boss buffs, refresh semantics, expiry and additive ATK")
 
 
 ============================================================
@@ -81931,6 +83556,147 @@ def main():
     print("- inventory capacity 40/60 config: PASS")
     print("- database writes: 0")
 if __name__=="__main__":main()
+
+
+============================================================
+FILE: tools\validate_boss_balance_report_15_7_0.py
+SIZE: 757 bytes
+LAST WRITE: 2026-08-14 22:29:28
+============================================================
+
+from __future__ import annotations
+import json,sys
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+p=ROOT/'reports'/'boss_stage_15_7_0_balance_simulation.json';d=json.loads(p.read_text(encoding='utf-8'))
+assert d['version']=='15.7.0';assert d['total_trials']==12000;assert d['cells']==60
+assert set(d['classes'])=={'warrior','knight','scout','rogue','mage','priest'}
+assert d['database_writes']==0 and d['live_balance_changed'] is False and d['feature_gate_changed'] is False
+assert d['verdict'] in {'PASS','PASS_WITH_REVIEW'}
+assert len(d['rows'])==60 and all(x['trials']==200 for x in d['rows'])
+print('[PASS] boss simulation report schema and coverage',{'verdict':d['verdict'],'cells':d['cells'],'trials':d['total_trials']})
+
+
+============================================================
+FILE: tools\validate_boss_root_cause_report_15_7_1.py
+SIZE: 714 bytes
+LAST WRITE: 2026-08-14 22:39:17
+============================================================
+
+from __future__ import annotations
+import json
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+d=json.loads((ROOT/'reports'/'boss_stage_15_7_1_root_cause_and_parity.json').read_text(encoding='utf-8'))
+assert d['version']=='15.7.1';assert d['cells']==180;assert d['total_trials']==9000
+assert set(d['profile_summary'])=={'naked','progression','strong'}
+assert d['stage_15_7_0_root_cause']['zero_win_cells']==60
+assert d['database_writes']==0 and not d['production_files_changed'] and not d['feature_gate_changed']
+assert d['verdict'] in {'PASS','PASS_WITH_REVIEW'}
+print('[PASS] 15.7.1 report coverage and safety',{'cells':d['cells'],'trials':d['total_trials'],'verdict':d['verdict']})
+
+
+============================================================
+FILE: tools\validate_preserved_boss_candidate_report_15_7_2_1.py
+SIZE: 2034 bytes
+LAST WRITE: 2026-08-15 20:36:40
+============================================================
+
+from __future__ import annotations
+import json
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SOURCE = ROOT / 'reports' / 'boss_stage_15_7_2_candidate_search.json'
+assert SOURCE.exists(), f'missing preserved candidate report: {SOURCE}'
+d = json.loads(SOURCE.read_text(encoding='utf-8'))
+
+assert d['version'] == '15.7.2'
+assert d['mode'] == 'read_only_candidate_search'
+assert d['trial_count'] == 129600, d['trial_count']
+assert d['trials_per_cell'] == 15
+assert set(d['boss_results']) == {'pack_leader', 'goblin_king'}
+assert d['production_files_changed'] is False
+assert d['database_writes'] == 0
+assert d['feature_gate_changed'] is False
+
+summary = {}
+for boss_key, item in d['boss_results'].items():
+    assert item['candidate_count'] == 72, (boss_key, item['candidate_count'])
+    assert len(item['top_candidates']) == 10
+    rec = item['recommended']
+    assert rec['candidate_id']
+    assert set(rec['summary']) == {'progression', 'strong', 'class_spread'}
+    assert len(rec['cells']) == 60
+    summary[boss_key] = {
+        'candidate_id': rec['candidate_id'],
+        'start_hp_scale': rec['start_hp_scale'],
+        'end_hp_scale': rec['end_hp_scale'],
+        'start_atk_scale': rec['start_atk_scale'],
+        'end_atk_scale': rec['end_atk_scale'],
+        'skill_scale': rec['skill_scale'],
+        'summary': rec['summary'],
+        'score': rec['score'],
+    }
+
+out = {
+    'version': '15.7.2.1',
+    'verdict': 'PASS',
+    'source_report': 'reports/boss_stage_15_7_2_candidate_search.json',
+    'validated_trial_count': 129600,
+    'candidate_count': 144,
+    'recommendations': summary,
+    'long_search_rerun': False,
+    'production_files_changed': False,
+    'database_writes': 0,
+}
+path = ROOT / 'reports' / 'boss_stage_15_7_2_1_recovered_validation.json'
+path.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding='utf-8')
+print('[PASS] preserved 15.7.2 report validated without rerun', {'trials': 129600, 'candidates': 144})
+
+
+============================================================
+FILE: tools\validate_preserved_short_comparison_15_7_3_2.py
+SIZE: 2170 bytes
+LAST WRITE: 2026-08-15 22:00:50
+============================================================
+
+from __future__ import annotations
+import json
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+source=ROOT/'reports'/'boss_stage_15_7_3_short_reference_comparison.json'
+assert source.exists(), f'missing preserved report: {source}'
+d=json.loads(source.read_text(encoding='utf-8'))
+assert d['version']=='15.7.3'
+assert d['mode']=='short_bounded_read_only_comparison'
+assert d['trials_per_cell']==12
+assert d['executed_battles']==2016, d['executed_battles']
+assert d['logical_comparisons']==1440, d['logical_comparisons']
+assert len(d['elite_reference_manifest'])==8
+assert len(d['boss_reference_manifest'])==6
+assert set(d['elite_summary'])=={'normal','elite_x1_5'}
+assert set(d['boss_summary'])=={'pack_leader','goblin_king'}
+assert d['verdict'] in {'PASS','PASS_WITH_REVIEW'}
+assert not d['technical_findings']
+assert d['production_files_changed'] is False and d['database_writes']==0 and d['feature_gate_changed'] is False
+
+elite=d['elite_summary']['elite_x1_5']; pack=d['boss_summary']['pack_leader']; king=d['boss_summary']['goblin_king']
+conclusion={
+ 'elite_x1_5_too_easy': elite['win_rate']>0.85,
+ 'pack_leader_x2_too_easy': pack['progression']['win_rate']>0.70,
+ 'goblin_king_x2_too_easy': king['progression']['win_rate']>0.70,
+ 'do_not_apply_proposed_multipliers_yet': True,
+ 'next_action': 'targeted stat-reference audit using real generated normal mob instances; no battle simulation rerun',
+}
+out={
+ 'version':'15.7.3.2','verdict':'PASS','source_report':'reports/boss_stage_15_7_3_short_reference_comparison.json',
+ 'validated_executed_battles':2016,'validated_logical_comparisons':1440,'runtime_seconds':d['runtime_seconds'],'elite_summary':d['elite_summary'],
+ 'boss_summary':d['boss_summary'],'findings':d['findings'],'conclusion':conclusion,'simulation_rerun':False,
+ 'production_files_changed':False,'database_writes':0,
+}
+path=ROOT/'reports'/'boss_stage_15_7_3_2_recovered_validation.json';path.write_text(json.dumps(out,ensure_ascii=False,indent=2),encoding='utf-8')
+print('[PASS] preserved 15.7.3 report validated without simulation rerun',{'battles':2016,'runtime_seconds':d['runtime_seconds']})
 
 
 ============================================================

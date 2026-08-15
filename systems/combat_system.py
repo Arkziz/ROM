@@ -9,10 +9,11 @@ from systems.boss_system import generate_hunt_encounter
 # ✅ ELITE CONFIG
 # ==============================
 
-ELITE_CHANCE_PERCENT = 5
+ELITE_CHANCE_PERCENT = 5.0
 
-ELITE_HP_MULTIPLIER = 2.5
-ELITE_ATTACK_MULTIPLIER = 2.0
+ELITE_CORE_STAT_MULTIPLIER = 1.5
+ELITE_HP_MULTIPLIER = ELITE_CORE_STAT_MULTIPLIER
+ELITE_ATTACK_MULTIPLIER = ELITE_CORE_STAT_MULTIPLIER
 ELITE_EXP_MULTIPLIER = 3.0
 ELITE_GOLD_MULTIPLIER = 3.0
 
@@ -130,9 +131,10 @@ def apply_elite_modifier(mob):
 
     mob["attack"] = int(mob["attack"] * ELITE_ATTACK_MULTIPLIER)
 
-    mob["pdef"] = int(mob["pdef"] * 1.25)
-    mob["mdef"] = int(mob["mdef"] * 1.25)
-    mob["def"] = int(mob["def"] * 1.25)
+    mob["pdef"] = max(1, int(round(mob["pdef"] * ELITE_CORE_STAT_MULTIPLIER)))
+    mob["mdef"] = max(1, int(round(mob["mdef"] * ELITE_CORE_STAT_MULTIPLIER)))
+    mob["dex"] = max(1, int(round(mob["dex"] * ELITE_CORE_STAT_MULTIPLIER)))
+    mob["def"] = mob["pdef"] if mob.get("attack_type", "physical") == "physical" else mob["mdef"]
 
     mob["is_elite"] = True
     mob["elite_exp_multiplier"] = ELITE_EXP_MULTIPLIER
