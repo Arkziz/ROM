@@ -64,7 +64,7 @@ from db import (
     seed_location_trash_items,
     expand_bag_slots_to_40,
     init_character_class_system,
-    seed_class_reset_sphere_item
+    init_class_reset_sphere
 )
 from db import run_db_startup_maintenance
 from db import init_rune_system
@@ -139,7 +139,7 @@ seed_items()
 seed_location_trash_items()
 expand_bag_slots_to_40()
 init_character_class_system()
-seed_class_reset_sphere_item()
+init_class_reset_sphere()
 
 
 # ==============================

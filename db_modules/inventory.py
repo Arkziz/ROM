@@ -314,3 +314,69 @@ def find_first_item_stack_by_type(user_id, item_type):
     """, (user_id, item_type))
     
     return cursor.fetchone()
+
+
+# ==============================
+# SELL ITEMS
+# ==============================
+
+def sell_all_trash(user_id):
+    """
+    Продає всі trash предмети з інвентаря користувача.
+    Повертає інформацію про продані предмети та отримане золото.
+    """
+    cursor.execute("""
+    SELECT
+        inventory.id,
+        items.name,
+        inventory.quantity,
+        items.sell_price
+    FROM inventory
+    JOIN items ON inventory.item_id = items.id
+    WHERE inventory.user_id=?
+      AND items.category='trash'
+    """, (user_id,))
+
+    rows = cursor.fetchall()
+
+    if not rows:
+        return {
+            "sold_items_count": 0,
+            "gold_earned": 0.0,
+            "freed_slots": 0,
+            "details": []
+        }
+
+    total_gold = 0.0
+    freed_slots = 0
+    details = []
+
+    for inv_id, name, quantity, sell_price in rows:
+        quantity = quantity or 1
+        sell_price = sell_price or 0
+
+        earned = quantity * sell_price
+        total_gold += earned
+        freed_slots += 1
+
+        details.append(f"{name} x{quantity} = {earned:.2f} золота")
+
+        cursor.execute("""
+        DELETE FROM inventory
+        WHERE id=?
+        """, (inv_id,))
+
+    cursor.execute("""
+    UPDATE users
+    SET gold = gold + ?
+    WHERE user_id=?
+    """, (total_gold, user_id))
+
+    conn.commit()
+
+    return {
+        "sold_items_count": len(rows),
+        "gold_earned": total_gold,
+        "freed_slots": freed_slots,
+        "details": details
+    }

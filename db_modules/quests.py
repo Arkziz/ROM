@@ -206,3 +206,75 @@ def cleanup_old_daily_quests(days_to_keep=7):
     conn.commit()
     
     return deleted
+
+
+def process_daily_quest_progress_on_kill(user_id, mob=None):
+    """
+    Викликається після перемоги над будь-яким монстром.
+
+    Враховуються:
+    - звичайні монстри
+    - елітні монстри
+    - боси, коли вони будуть реалізовані
+    """
+    reset_daily_quest_if_needed(user_id)
+
+    status = get_daily_quest_status(user_id)
+
+    if not status["exists"]:
+        return {
+            "updated": False,
+            "completed": False,
+            "message": None
+        }
+
+    if status["reward_claimed"]:
+        return {
+            "updated": False,
+            "completed": False,
+            "message": None
+        }
+
+    if status["completed"]:
+        return {
+            "updated": False,
+            "completed": True,
+            "message": None
+        }
+
+    progress = status["progress"]
+    target_count = status["target_count"]
+
+    new_progress = min(target_count, progress + 1)
+    completed = 1 if new_progress >= target_count else 0
+
+    cursor.execute("""
+    UPDATE user_daily_quests
+    SET progress=?,
+        completed=?
+    WHERE user_id=?
+    """, (
+        new_progress,
+        completed,
+        user_id
+    ))
+
+    conn.commit()
+
+    if completed:
+        return {
+            "updated": True,
+            "completed": True,
+            "message": (
+                "📆 Щоденне завдання виконано!\n"
+                "✅ Прогрес: 25/25\n"
+                "🏛️ Поверніться до Ратуші за нагородою."
+            )
+        }
+
+    return {
+        "updated": True,
+        "completed": False,
+        "message": f"📆 Щоденне завдання: {new_progress}/{target_count}"
+    }
+

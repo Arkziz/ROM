@@ -27,25 +27,35 @@ from .player import (
     get_wallet, add_gold, add_kill,
     get_attack, get_magic_attack, get_physical_defense, get_magic_defense,
     get_physical_crit_chance_display, get_magical_crit_chance_display,
-    get_base_dodge_chance_display,
+    get_base_dodge_chance_display, get_enemy_crit_chance_against_player,
     get_max_hp, get_current_hp_raw, get_current_hp, set_current_hp,
-    sync_user_max_hp, create_user, get_user
+    sync_user_max_hp, create_user, get_user,
+    get_player_attack_profile
 )
 
 # Character
 from .character import (
+    CLASS_CONFIGS,
+    init_character_class_system,
     normalize_character_name, validate_character_name,
     get_character_name, set_character_name, is_character_name_taken,
+    needs_character_name, needs_character_class,
     get_character_class, set_character_class, get_character_class_display,
     get_character_resource_type,
-    get_user_mp, set_user_mp, get_max_mp, refresh_user_mp,
+    get_user_mp, set_user_mp, spend_user_mp, restore_user_mp_to_full,
+    get_max_mp, refresh_user_mp,
     grant_class_change_available, consume_class_change_available,
-    get_class_change_available, has_class_change_available
+    get_class_change_available, has_class_change_available,
+    get_character_profile_summary
 )
 
 # Equipment
 from .equipment import (
-    ensure_equipment_slots, get_all_equipped_items, get_equipped_items_for_repair,
+    EQUIPMENT_SLOTS, ARMOR_SLOTS, ARMOR_TYPE_LABELS, ITEM_SUBTYPE_LABELS,
+    normalize_equipment_restriction_value,
+    is_armor_slot, get_armor_type_label, get_item_subtype_label,
+    ensure_equipment_slots, get_all_equipped_items, get_all_equipped_slots,
+    get_equipped_items_for_repair, get_total_repair_cost,
     get_inventory_detailed, get_inventory_entry, get_item_by_inventory_id,
     get_item_by_inventory_id_full, get_item_bonuses, get_equipped_item_defenses,
     get_sellable_equipment_items,
@@ -59,6 +69,7 @@ from .equipment import (
     unequip_incompatible_items_after_class_change,
     repair_equipped_item, repair_all_equipped, calculate_repair_cost,
     damage_equipped_items_on_death,
+    apply_random_durability_wear_on_victory,
     sell_inventory_item_to_trader, buy_common_equipment_from_trader,
     buy_item_for_gold
 )
@@ -69,7 +80,8 @@ from .inventory import (
     get_inventory, get_item,
     add_item, consume_inventory_item,
     count_user_item, consume_user_item_by_item_id,
-    find_first_item_stack_by_type
+    find_first_item_stack_by_type,
+    sell_all_trash
 )
 
 # Location
@@ -104,11 +116,20 @@ from .quests import (
     get_user_daily_quest, add_daily_quest_progress,
     is_daily_quest_complete, claim_daily_quest_reward,
     get_daily_quest_progress_text,
-    cleanup_old_daily_quests
+    cleanup_old_daily_quests,
+    process_daily_quest_progress_on_kill
 )
 
 # Shop system
 from .shop import (
+    get_common_equipment_price_for_slot,
+    get_allowed_main_hand_subtypes_for_class, get_allowed_off_hand_subtypes_for_class,
+    get_allowed_shop_main_hand_profiles, get_allowed_shop_off_hand_profiles,
+    get_common_equipment_shop_offer, get_common_equipment_shop_suboffers,
+    cleanup_shop_previews_for_user, is_shop_profile_allowed_for_user,
+    create_common_equipment_shop_preview, get_shop_preview_item,
+    cancel_common_equipment_shop_preview, confirm_common_equipment_shop_preview,
+    get_shop_preview_weapon_damage_text,
     init_shop_preview_system,
     get_shop_preview_items, get_shop_preview_item_by_id,
     purchase_shop_preview_item, clear_shop_preview_items,
@@ -125,29 +146,40 @@ __all__ = [
     # Connection
     'conn', 'cursor', 'SLOT_ORDER', 'DEFAULT_BAG_SLOTS', 'init_db', 'seed_items',
     
-    # Player (18 functions)
+    # Player (20 functions)
     'get_player_level', 'get_player_stats', 'get_user_progress', 'add_exp',
     'get_wallet', 'add_gold', 'add_kill',
     'get_attack', 'get_magic_attack', 'get_physical_defense', 'get_magic_defense',
     'get_physical_crit_chance_display', 'get_magical_crit_chance_display',
-    'get_base_dodge_chance_display',
+    'get_base_dodge_chance_display', 'get_enemy_crit_chance_against_player',
     'get_max_hp', 'get_current_hp_raw', 'get_current_hp', 'set_current_hp',
     'sync_user_max_hp', 'create_user', 'get_user',
+    'get_player_attack_profile',
     
-    # Character (15 functions)
+    # Character (21 functions + 1 constant)
+    'CLASS_CONFIGS',
+    'init_character_class_system',
     'normalize_character_name', 'validate_character_name',
     'get_character_name', 'set_character_name', 'is_character_name_taken',
+    'needs_character_name', 'needs_character_class',
     'get_character_class', 'set_character_class', 'get_character_class_display',
     'get_character_resource_type',
-    'get_user_mp', 'set_user_mp', 'get_max_mp', 'refresh_user_mp',
+    'get_user_mp', 'set_user_mp', 'spend_user_mp', 'restore_user_mp_to_full',
+    'get_max_mp', 'refresh_user_mp',
     'grant_class_change_available', 'consume_class_change_available',
     'get_class_change_available', 'has_class_change_available',
+    'get_character_profile_summary',
     
-    # Equipment (33 functions)
-    'ensure_equipment_slots', 'get_all_equipped_items', 'get_equipped_items_for_repair',
+    # Equipment (43 functions + 4 constants)
+    'EQUIPMENT_SLOTS', 'ARMOR_SLOTS', 'ARMOR_TYPE_LABELS', 'ITEM_SUBTYPE_LABELS',
+    'normalize_equipment_restriction_value',
+    'is_armor_slot', 'get_armor_type_label', 'get_item_subtype_label',
+    'ensure_equipment_slots', 'get_all_equipped_items', 'get_all_equipped_slots',
+    'get_equipped_items_for_repair', 'get_total_repair_cost',
     'get_inventory_detailed', 'get_inventory_entry', 'get_item_by_inventory_id',
     'get_item_by_inventory_id_full', 'get_item_bonuses', 'get_equipped_item_defenses',
     'get_sellable_equipment_items',
+    'damage_equipped_items_on_death', 'apply_random_durability_wear_on_victory',
     'init_weapon_damage_system', 'calculate_weapon_damage_by_values',
     'get_weapon_damage_by_inventory_id', 'get_inventory_weapon_damage_display',
     'get_inventory_refine_level', 'get_inventory_refined_display_name',
@@ -157,16 +189,16 @@ __all__ = [
     'equip_inventory_item', 'unequip_inventory_item',
     'unequip_incompatible_items_after_class_change',
     'repair_equipped_item', 'repair_all_equipped', 'calculate_repair_cost',
-    'damage_equipped_items_on_death',
     'sell_inventory_item_to_trader', 'buy_common_equipment_from_trader',
     'buy_item_for_gold',
     
-    # Inventory (9 functions)
+    # Inventory (10 functions)
     'get_bag_capacity', 'get_inventory_used_slots',
     'get_inventory', 'get_item',
     'add_item', 'consume_inventory_item',
     'count_user_item', 'consume_user_item_by_item_id',
     'find_first_item_stack_by_type',
+    'sell_all_trash',
     
     # Location (2 functions)
     'get_current_location', 'set_current_location',
@@ -190,14 +222,23 @@ __all__ = [
     'ensure_refine_material_stack_sizes',
     'get_refine_material_stack_debug',
     
-    # Quests (6 functions)
+    # Quests (7 functions)
     'init_daily_quest_system',
     'get_user_daily_quest', 'add_daily_quest_progress',
     'is_daily_quest_complete', 'claim_daily_quest_reward',
     'get_daily_quest_progress_text',
     'cleanup_old_daily_quests',
+    'process_daily_quest_progress_on_kill',
     
-    # Shop (10 functions)
+    # Shop (23 functions)
+    'get_common_equipment_price_for_slot',
+    'get_allowed_main_hand_subtypes_for_class', 'get_allowed_off_hand_subtypes_for_class',
+    'get_allowed_shop_main_hand_profiles', 'get_allowed_shop_off_hand_profiles',
+    'get_common_equipment_shop_offer', 'get_common_equipment_shop_suboffers',
+    'cleanup_shop_previews_for_user', 'is_shop_profile_allowed_for_user',
+    'create_common_equipment_shop_preview', 'get_shop_preview_item',
+    'cancel_common_equipment_shop_preview', 'confirm_common_equipment_shop_preview',
+    'get_shop_preview_weapon_damage_text',
     'init_shop_preview_system',
     'get_shop_preview_items', 'get_shop_preview_item_by_id',
     'purchase_shop_preview_item', 'clear_shop_preview_items',
@@ -206,9 +247,10 @@ __all__ = [
     'generate_class_shop_equipment', 'populate_class_shop_for_user',
     
     # Systems wrappers (~200+ functions) - add dynamically
-    # Energy system (5)
+    # Energy system (6)
     'init_energy_system', 'get_user_energy', 'consume_energy_for_hunt',
     'restore_energy_for_test', 'get_users_for_energy_full_notification',
+    'reset_daily_hunts_if_needed',
     
     # Regen system (5)
     'init_hp_regen_system', 'init_passive_regen_system',
@@ -314,8 +356,9 @@ __all__ = [
     'get_rune_master_shop_state',
     'buy_simple_rune_extractor',
     
-    # Contract system (2 functions)
-    'init_contract_system', 'claim_contract_reward',
+    # Contract system (4 functions)
+    'init_contract_system', 'claim_contract_reward', 'get_contract_status',
+    'process_contract_progress_on_kill',
     
     # Player interaction (~50 functions)
     'init_player_interaction_foundation',

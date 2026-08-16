@@ -78,6 +78,22 @@ def get_base_dodge_chance_display(user_id):
     return _player_system().get_base_dodge_chance_display(user_id)
 
 
+def get_enemy_crit_chance_against_player(user_id):
+    """
+    Шанс криту ворога по гравцю.
+    Формула: max(0, 10 - STA // 25)
+    """
+    stats = get_player_stats(user_id)
+
+    if not stats:
+        return 10.0
+
+    total_str, total_dex, total_int, total_wis, total_sta, level = stats
+    chance = max(0, 10 - (total_sta // 25))
+    
+    return chance
+
+
 # ==============================
 # HP MANAGEMENT
 # ==============================
@@ -197,3 +213,82 @@ def get_user(user_id):
     """, (user_id,))
     
     return cursor.fetchone()
+
+
+# ==============================
+# COMBAT PROFILE
+# ==============================
+
+def get_player_attack_profile(user_id):
+    """
+    Повертає повний профіль атаки гравця для бою.
+
+    v1:
+    physical:
+        damage = random weapon damage + STR - DEF × 0.5
+
+    magical:
+        damage = random magic weapon damage + INT - DEF × 0.5
+    """
+    from .equipment import get_equipped_slot, get_weapon_damage_by_inventory_id
+
+    stats = get_player_stats(user_id)
+
+    if not stats:
+        return {
+            "attack_type": "physical",
+            "stat_attack": 0,
+            "weapon_min_damage": 0,
+            "weapon_max_damage": 0,
+            "display_attack": 0,
+            "weapon_text": "Без зброї"
+        }
+
+    total_str, total_dex, total_int, total_wis, total_sta, lvl = stats
+
+    main_hand_id = get_equipped_slot(user_id, "main_hand")
+
+    if not main_hand_id:
+        return {
+            "attack_type": "physical",
+            "stat_attack": total_str,
+            "weapon_min_damage": 0,
+            "weapon_max_damage": 0,
+            "display_attack": total_str,
+            "weapon_text": "Без зброї"
+        }
+
+    weapon_data = get_weapon_damage_by_inventory_id(main_hand_id)
+
+    if not weapon_data.get("is_weapon"):
+        return {
+            "attack_type": "physical",
+            "stat_attack": total_str,
+            "weapon_min_damage": 0,
+            "weapon_max_damage": 0,
+            "display_attack": total_str,
+            "weapon_text": "Без зброї"
+        }
+
+    attack_type = weapon_data["attack_type"]
+
+    if attack_type == "magical":
+        stat_attack = total_int
+        weapon_min = weapon_data["magic_min"]
+        weapon_max = weapon_data["magic_max"]
+    else:
+        stat_attack = total_str
+        weapon_min = weapon_data["physical_min"]
+        weapon_max = weapon_data["physical_max"]
+
+    display_attack = stat_attack + weapon_max
+
+    return {
+        "attack_type": attack_type,
+        "stat_attack": stat_attack,
+        "weapon_min_damage": weapon_min,
+        "weapon_max_damage": weapon_max,
+        "display_attack": display_attack,
+        "weapon_text": weapon_data.get("text")
+    }
+

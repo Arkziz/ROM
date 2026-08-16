@@ -9,6 +9,59 @@ def _equipment_system():
 
 
 # ==============================
+# IMPORTS FROM DATA
+# ==============================
+
+from data.equipment_profiles import (
+    EQUIPMENT_SLOTS,
+    ARMOR_TYPE_LABELS,
+    ITEM_SUBTYPE_LABELS
+)
+
+
+# ==============================
+# EQUIPMENT CONSTANTS
+# ==============================
+
+ARMOR_SLOTS = [
+    "helmet",
+    "shoulders",
+    "chest",
+    "gloves",
+    "legs",
+    "boots"
+]
+
+
+# ==============================
+# EQUIPMENT UTILITY FUNCTIONS
+# ==============================
+
+def normalize_equipment_restriction_value(value):
+    """Нормалізує значення обмеження екіпірування."""
+    if value is None:
+        return ""
+    return str(value).strip()
+
+
+def is_armor_slot(slot_key):
+    """Перевіряє чи є слот слотом броні."""
+    return slot_key in ARMOR_SLOTS
+
+
+def get_armor_type_label(armor_type):
+    """Повертає відображувальне ім'я типу броні."""
+    armor_type = normalize_equipment_restriction_value(armor_type)
+    return ARMOR_TYPE_LABELS.get(armor_type, armor_type or "Універсальний")
+
+
+def get_item_subtype_label(item_subtype):
+    """Повертає відображувальне ім'я підтипу предмета."""
+    item_subtype = normalize_equipment_restriction_value(item_subtype)
+    return ITEM_SUBTYPE_LABELS.get(item_subtype, item_subtype or "Універсальний")
+
+
+# ==============================
 # EQUIPMENT SLOTS
 # ==============================
 
@@ -20,8 +73,38 @@ def get_all_equipped_items(user_id):
     return _equipment_system().get_all_equipped_items(user_id)
 
 
+def get_all_equipped_slots(user_id):
+    """
+    Повертає словник {slot_key: inventory_id} для всіх слотів екіпірування.
+    """
+    from .connection import cursor, SLOT_ORDER
+    
+    ensure_equipment_slots(user_id)
+
+    cursor.execute("""
+    SELECT slot_key, inventory_id
+    FROM equipment_slots
+    WHERE user_id=?
+    """, (user_id,))
+
+    rows = cursor.fetchall()
+    result = {}
+
+    for slot_key, inventory_id in rows:
+        result[slot_key] = inventory_id
+
+    for slot_key in SLOT_ORDER:
+        result.setdefault(slot_key, None)
+
+    return result
+
+
 def get_equipped_items_for_repair(user_id):
     return _equipment_system().get_equipped_items_for_repair(user_id)
+
+
+def get_total_repair_cost(user_id):
+    return _equipment_system().get_total_repair_cost(user_id)
 
 
 # ==============================
@@ -174,6 +257,16 @@ def calculate_repair_cost(durability, sell_price, rarity):
 
 def damage_equipped_items_on_death(user_id):
     return _equipment_system().damage_equipped_items_on_death(user_id)
+
+
+def apply_random_durability_wear_on_victory(user_id, chance_percent=25):
+    """
+    Застосовує випадкове зношування спорядження після перемоги.
+    """
+    return _equipment_system().apply_random_durability_wear_on_victory(
+        user_id=user_id,
+        chance_percent=chance_percent
+    )
 
 
 # ==============================

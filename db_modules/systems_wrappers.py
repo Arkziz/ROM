@@ -40,6 +40,8 @@ def restore_energy_for_test(user_id, amount=40):
 def get_users_for_energy_full_notification():
     return _energy_system().get_users_for_energy_full_notification()
 
+def reset_daily_hunts_if_needed(user_id):
+    return _energy_system().reset_daily_hunts_if_needed(user_id)
 
 # ==============================
 # REGENERATION SYSTEM
@@ -717,6 +719,17 @@ def init_contract_system():
 
 def claim_contract_reward(user_id):
     return _contract_system().claim_contract_reward(user_id)
+
+
+def get_contract_status(user_id):
+    return _contract_system().get_contract_status(user_id)
+
+
+def process_contract_progress_on_kill(user_id, mob):
+    """
+    Обробляє прогрес контракту при вбивстві моба.
+    """
+    return _contract_system().process_contract_progress_on_kill(user_id, mob)
 
 
 # ==============================
