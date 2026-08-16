@@ -16,6 +16,8 @@ cursor = conn.cursor()
 # ✅ EQUIPMENT CONFIG
 # ==============================
 
+DEFAULT_BAG_SLOTS = 40
+
 SLOT_ORDER = [
     "main_hand",
     "off_hand",
