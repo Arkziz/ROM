@@ -1689,7 +1689,9 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
 
     victory_title = "🏆 ВИ ПЕРЕМОГЛИ!"
 
-    if mob.get("is_elite"):
+    if mob.get("is_boss"):
+        victory_title = "🏆👑 ВИ ПЕРЕМОГЛИ БОСА!"
+    elif mob.get("is_elite"):
         victory_title = "🏆 ВИ ПЕРЕМОГЛИ ЕЛІТНОГО ВОРОГА!"
 
     text = f"{victory_title}\n\n"
@@ -1960,7 +1962,12 @@ def register_combat_handlers(bot):
 
         elite_text = ""
 
-        if mob.get("is_elite"):
+        if mob.get("is_boss"):
+            elite_text = (
+                "👑 БОС ЛОКАЦІЇ!\n"
+                "⚠️ Надзвичайно небезпечний ворог із унікальними навичками та фазою Люті.\n\n"
+            )
+        elif mob.get("is_elite"):
             elite_text = (
                 "⭐ ЕЛІТНИЙ ВОРОГ!\n"
                 "Ця істота значно сильніша за звичайну.\n\n"

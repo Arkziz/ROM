@@ -64,7 +64,7 @@ BOSS_DEFINITIONS = {
         },
         "enrage": {
             "hp_threshold_fraction": 0.25,
-            "permanent_attack_buff_percent": 25,
+            "permanent_attack_buff_percent": 20,
             "special_skill_key": "enraged_rend",
             "special_replaces_regular_action": True,
         },
@@ -122,7 +122,7 @@ BOSS_DEFINITIONS = {
         },
         "enrage": {
             "hp_threshold_fraction": 0.25,
-            "permanent_attack_buff_percent": 30,
+            "permanent_attack_buff_percent": 20,
             "special_skill_key": "tyrant_strike",
             "special_replaces_regular_action": True,
         },
