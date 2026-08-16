@@ -717,6 +717,19 @@ def init_contract_system():
         pass
 
 
+
+
+def create_daily_contract(user_id, target_mob_name, target_mob_level, target_kills=None):
+    system = _contract_system()
+    if target_kills is None:
+        return system.create_daily_contract(user_id, target_mob_name, target_mob_level)
+    return system.create_daily_contract(user_id, target_mob_name, target_mob_level, target_kills)
+
+
+def abandon_active_contract(user_id):
+    return _contract_system().abandon_active_contract(user_id)
+
+
 def claim_contract_reward(user_id):
     return _contract_system().claim_contract_reward(user_id)
 

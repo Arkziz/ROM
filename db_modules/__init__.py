@@ -18,6 +18,34 @@ DB Modules - Розбитий db.py на логічні модулі
 Всі функції автоматично експортуються для використання через `import db`.
 """
 
+from .daily_compat import get_daily_quest_status
+
+from .systems_wrappers import create_daily_contract, abandon_active_contract
+
+from .dev_compat import (
+    set_player_level_for_test,
+    reset_player_level_for_test,
+    set_gold_for_test,
+    create_dev_armor_item_for_test,
+    create_dev_weapon_item_for_test,
+    reset_hero_for_test,
+    seed_class_reset_sphere_item,
+)
+
+from .inventory_compat import (
+    is_inventory_item_equipped,
+    find_equipped_slot_by_inventory_id,
+    get_item_required_level_by_inventory_id,
+    get_item_classification_by_inventory_id,
+    is_class_reset_sphere_inventory_item,
+    use_class_reset_sphere_from_inventory,
+    ARMOR_ALLOWED_BY_CLASS,
+    MAIN_HAND_ALLOWED_BY_CLASS,
+    OFF_HAND_ALLOWED_BY_CLASS,
+)
+
+from data.classes import CLASS_RESET_SPHERE_ITEM_ID
+
 # Connection
 from .connection import conn, cursor, SLOT_ORDER, DEFAULT_BAG_SLOTS, init_db, seed_items
 
@@ -73,6 +101,8 @@ from .equipment import (
     sell_inventory_item_to_trader, buy_common_equipment_from_trader,
     buy_item_for_gold
 )
+
+from .generated_equipment import create_generated_equipment_item, create_generated_equipment_item_for_slot
 
 # Inventory
 from .inventory import (
@@ -395,4 +425,27 @@ __all__ = [
     'get_tradeable_inventory_for_trade_category',
     'get_player_trade_category_counts',
     'recover_active_player_trades_after_restart',
+    'create_generated_equipment_item',
+    'create_generated_equipment_item_for_slot',
+    'CLASS_RESET_SPHERE_ITEM_ID',
+    'is_inventory_item_equipped',
+    'find_equipped_slot_by_inventory_id',
+    'get_item_required_level_by_inventory_id',
+    'get_item_classification_by_inventory_id',
+    'is_class_reset_sphere_inventory_item',
+    'use_class_reset_sphere_from_inventory',
+    'ARMOR_ALLOWED_BY_CLASS',
+    'MAIN_HAND_ALLOWED_BY_CLASS',
+    'OFF_HAND_ALLOWED_BY_CLASS',
+    'set_player_level_for_test',
+    'reset_player_level_for_test',
+    'set_gold_for_test',
+    'create_dev_armor_item_for_test',
+    'create_dev_weapon_item_for_test',
+    'reset_hero_for_test',
+    'seed_class_reset_sphere_item',
 ]
+
+__all__.extend(['create_daily_contract', 'abandon_active_contract'])
+
+__all__.append('get_daily_quest_status')
