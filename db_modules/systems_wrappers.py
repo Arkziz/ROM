@@ -171,7 +171,13 @@ def get_guild_role_label(role):
 
 
 def get_user_guild_profile_line(user_id):
-    return _guild_system().get_user_guild_profile_line(user_id)
+    guild = _guild_system().get_user_guild(user_id)
+    if not guild:
+        return "🏰 Гільдія: Без гільдії\n"
+
+    icon = guild["icon"] or "🏰"
+    tag = guild["tag"] or "???"
+    return f"🏰 Гільдія: {icon} [{tag}]\n"
 
 
 def get_public_guild_list(limit=50, offset=0):
@@ -972,3 +978,7 @@ def get_player_trade_category_counts(trade_id, user_id):
 
 def recover_active_player_trades_after_restart():
     return _player_interaction().recover_active_player_trades_after_restart()
+
+def get_contract_exp_for_level(level):
+    return _contract_system().get_contract_exp_for_level(level)
+

@@ -208,6 +208,54 @@ def cleanup_old_daily_quests(days_to_keep=7):
     return deleted
 
 
+def reset_daily_quest_if_needed(user_id):
+    """Reset a legacy daily row only when its stored date is older than today.
+
+    New daily_key rows are already date-scoped and need no in-place reset.
+    """
+    today = get_daily_today_str()
+    columns = {str(row[1]) for row in cursor.execute(
+        "PRAGMA table_info(user_daily_quests)"
+    ).fetchall()}
+
+    if "daily_key" in columns:
+        return {"success": True, "reset": False, "mode": "daily_key"}
+
+    date_column = next((name for name in (
+        "quest_date", "daily_date", "reset_date", "created_date", "date"
+    ) if name in columns), None)
+    if not date_column:
+        return {"success": True, "reset": False, "mode": "no_date_column"}
+
+    row = cursor.execute(
+        f"SELECT {date_column} FROM user_daily_quests WHERE user_id=?",
+        (int(user_id),),
+    ).fetchone()
+    if not row or str(row[0] or "") == str(today):
+        return {"success": True, "reset": False, "mode": date_column}
+
+    assignments = []
+    params = []
+    for name, value in (
+        ("progress", 0), ("completed", 0), ("reward_claimed", 0),
+        ("total_kills", 0), ("elite_kills", 0), ("pvp_kills", 0),
+        ("trades_completed", 0), ("status", "active"),
+        ("claimed_at", None), (date_column, today),
+    ):
+        if name in columns:
+            assignments.append(f"{name}=?")
+            params.append(value)
+    if not assignments:
+        return {"success": True, "reset": False, "mode": "no_reset_columns"}
+    params.append(int(user_id))
+    cursor.execute(
+        f"UPDATE user_daily_quests SET {', '.join(assignments)} WHERE user_id=?",
+        tuple(params),
+    )
+    conn.commit()
+    return {"success": True, "reset": True, "mode": date_column}
+
+
 def process_daily_quest_progress_on_kill(user_id, mob=None):
     """
     Викликається після перемоги над будь-яким монстром.
@@ -217,6 +265,7 @@ def process_daily_quest_progress_on_kill(user_id, mob=None):
     - елітні монстри
     - боси, коли вони будуть реалізовані
     """
+    from .daily_compat import get_daily_quest_status
     reset_daily_quest_if_needed(user_id)
 
     status = get_daily_quest_status(user_id)

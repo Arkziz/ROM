@@ -2,6 +2,12 @@
 Equipment management module - wrapper for systems.equipment_system
 """
 
+from .connection import SLOT_ORDER
+
+from .connection import conn
+
+from data.equipment_profiles import ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS
+
 
 def _equipment_system():
     from systems import equipment_system
@@ -99,6 +105,16 @@ def get_all_equipped_slots(user_id):
     return result
 
 
+
+
+def get_equipped_slot(user_id, slot_key):
+    """Return inventory_id equipped in one validated slot, or None."""
+    slot_key = str(slot_key or "")
+    if slot_key not in SLOT_ORDER:
+        return None
+    return get_all_equipped_slots(user_id).get(slot_key)
+
+
 def get_equipped_items_for_repair(user_id):
     return _equipment_system().get_equipped_items_for_repair(user_id)
 
@@ -115,8 +131,32 @@ def get_inventory_detailed(user_id):
     return _equipment_system().get_inventory_detailed(user_id)
 
 
-def get_inventory_entry(inventory_id):
-    return _equipment_system().get_inventory_entry(inventory_id)
+def get_inventory_entry(user_id_or_inventory_id, inventory_id=None):
+    """Return inventory entry with both historical call signatures.
+
+    Supported:
+    - get_inventory_entry(inventory_id)
+    - get_inventory_entry(user_id, inventory_id)
+    """
+    if inventory_id is None:
+        return _equipment_system().get_inventory_entry(user_id_or_inventory_id)
+
+    user_id = int(user_id_or_inventory_id)
+    inventory_id = int(inventory_id)
+    row = conn.execute(
+        "SELECT inv.id, inv.item_id, it.name, it.type, it.category, "
+        "COALESCE(inv.quantity, 1), COALESCE(inv.refine_level, 0) "
+        "FROM inventory inv JOIN items it ON it.id=inv.item_id "
+        "WHERE inv.user_id=? AND inv.id=?",
+        (user_id, inventory_id),
+    ).fetchone()
+    if not row:
+        return None
+
+    values = list(row)
+    values[2] = format_refined_item_name(values[2], values[-1])
+    values.pop()
+    return tuple(values)
 
 
 def get_item_by_inventory_id(inventory_id):
@@ -179,10 +219,8 @@ def get_inventory_refined_display_name(inventory_id, base_name=None):
 
 
 def format_refined_item_name(base_name, refine_level):
-    return _equipment_system().format_refined_item_name(
-        base_name=base_name,
-        refine_level=refine_level
-    )
+    """Preserve the public base_name contract while calling the system positionally."""
+    return _equipment_system().format_refined_item_name(base_name, refine_level)
 
 
 # ==============================
@@ -293,3 +331,53 @@ def buy_item_for_gold(user_id, item_id, quantity=1):
         item_id=item_id,
         quantity=quantity
     )
+
+def _compat_result(success, message=""):
+    return {"success": bool(success), "message": str(message or "")}
+
+
+def check_armor_compatibility_for_class(class_key, item_info):
+    slot_key = str((item_info or {}).get("slot_key") or "")
+    if slot_key not in {"helmet", "shoulders", "chest", "gloves", "legs", "boots"}:
+        return _compat_result(True)
+    armor_type = str((item_info or {}).get("armor_type") or "")
+    allowed = str(ARMOR_ALLOWED_BY_CLASS.get(class_key) or "")
+    if not armor_type or armor_type == allowed:
+        return _compat_result(True)
+    return _compat_result(False, "❌ Цей тип броні не підходить твоєму класу.")
+
+
+def check_main_hand_compatibility_for_class(class_key, item_info):
+    if str((item_info or {}).get("slot_key") or "") != "main_hand":
+        return _compat_result(True)
+    subtype = str((item_info or {}).get("item_subtype") or "")
+    if subtype in set(MAIN_HAND_ALLOWED_BY_CLASS.get(class_key) or []):
+        return _compat_result(True)
+    return _compat_result(False, "❌ Ця зброя не підходить твоєму класу.")
+
+
+def check_off_hand_compatibility_for_class(class_key, item_info):
+    if str((item_info or {}).get("slot_key") or "") != "off_hand":
+        return _compat_result(True)
+    subtype = str((item_info or {}).get("item_subtype") or "")
+    if subtype in set(OFF_HAND_ALLOWED_BY_CLASS.get(class_key) or []):
+        return _compat_result(True)
+    return _compat_result(False, "❌ Цей предмет для другої руки не підходить твоєму класу.")
+
+
+def check_two_handed_conflict_for_equip(user_id, item_info):
+    slot_key = str((item_info or {}).get("slot_key") or "")
+    if slot_key != "off_hand":
+        return _compat_result(True)
+    rows = get_all_equipped_slots(user_id) or {}
+    main_hand = rows.get("main_hand") if isinstance(rows, dict) else None
+    if not main_hand:
+        return _compat_result(True)
+    try:
+        main_info = get_item_classification_by_inventory_id(int(main_hand)) or {}
+    except Exception:
+        main_info = {}
+    if int(main_info.get("weapon_hands") or 1) == 2:
+        return _compat_result(False, "❌ Неможливо: дворучна зброя блокує другу руку")
+    return _compat_result(True)
+

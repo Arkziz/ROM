@@ -18,6 +18,16 @@ DB Modules - Розбитий db.py на логічні модулі
 Всі функції автоматично експортуються для використання через `import db`.
 """
 
+from .quests import reset_daily_quest_if_needed
+
+from .systems_wrappers import get_contract_exp_for_level
+
+from .equipment import get_equipped_slot
+
+from .equipment import check_armor_compatibility_for_class, check_main_hand_compatibility_for_class, check_off_hand_compatibility_for_class, check_two_handed_conflict_for_equip
+
+from .player import get_exp_to_next_level
+
 from .daily_compat import get_daily_quest_status
 
 from .systems_wrappers import create_daily_contract, abandon_active_contract
@@ -449,3 +459,13 @@ __all__ = [
 __all__.extend(['create_daily_contract', 'abandon_active_contract'])
 
 __all__.append('get_daily_quest_status')
+
+__all__.append('get_exp_to_next_level')
+
+__all__.extend(['check_armor_compatibility_for_class', 'check_main_hand_compatibility_for_class', 'check_off_hand_compatibility_for_class', 'check_two_handed_conflict_for_equip'])
+
+__all__.append('get_equipped_slot')
+
+__all__.append('get_contract_exp_for_level')
+
+__all__.append('reset_daily_quest_if_needed')

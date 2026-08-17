@@ -185,45 +185,64 @@ def add_item(user_id, item_id, quantity=1, durability=100):
 # CONSUME ITEMS
 # ==============================
 
-def consume_inventory_item(inventory_id, amount=1):
+def consume_inventory_item(user_id_or_inventory_id, inventory_id_or_amount=1, amount=None):
+    """Consume an inventory stack with both historical signatures.
+
+    Supported:
+    - consume_inventory_item(inventory_id, amount=1)
+    - consume_inventory_item(user_id, inventory_id, amount=1)
     """
-    Використовує предмет з інвентаря.
-    Зменшує кількість або видаляє стак.
-    """
-    cursor.execute("""
-    SELECT quantity
-    FROM inventory
-    WHERE id=?
-    """, (inventory_id,))
-    
+    if amount is None:
+        user_id = None
+        inventory_id = int(user_id_or_inventory_id)
+        amount = int(inventory_id_or_amount)
+    else:
+        user_id = int(user_id_or_inventory_id)
+        inventory_id = int(inventory_id_or_amount)
+        amount = int(amount)
+
+    if amount <= 0:
+        return False
+
+    if user_id is None:
+        cursor.execute("SELECT quantity FROM inventory WHERE id=?", (inventory_id,))
+    else:
+        cursor.execute(
+            "SELECT quantity FROM inventory WHERE id=? AND user_id=?",
+            (inventory_id, user_id),
+        )
     row = cursor.fetchone()
-    
     if not row:
         return False
-    
+
     try:
         quantity = int(row[0] or 0)
     except Exception:
         quantity = 0
-    
-    if quantity <= amount:
-        # Delete stack
-        cursor.execute("""
-        DELETE FROM inventory
-        WHERE id=?
-        """, (inventory_id,))
+    if quantity < amount:
+        return False
+
+    if quantity == amount:
+        if user_id is None:
+            cursor.execute("DELETE FROM inventory WHERE id=?", (inventory_id,))
+        else:
+            cursor.execute(
+                "DELETE FROM inventory WHERE id=? AND user_id=?",
+                (inventory_id, user_id),
+            )
     else:
-        # Decrease quantity
         new_quantity = quantity - amount
-        
-        cursor.execute("""
-        UPDATE inventory
-        SET quantity=?
-        WHERE id=?
-        """, (new_quantity, inventory_id))
-    
+        if user_id is None:
+            cursor.execute(
+                "UPDATE inventory SET quantity=? WHERE id=?",
+                (new_quantity, inventory_id),
+            )
+        else:
+            cursor.execute(
+                "UPDATE inventory SET quantity=? WHERE id=? AND user_id=?",
+                (new_quantity, inventory_id, user_id),
+            )
     conn.commit()
-    
     return True
 
 

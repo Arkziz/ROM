@@ -18,6 +18,13 @@ except Exception:
 
 DEFAULT_CONTRACT_TARGET_KILLS = 5
 
+def get_contract_exp_for_level(level):
+    """Return contract EXP as base level EXP multiplied by contract mob equivalent."""
+    from data.player_progression import get_base_exp_for_level
+    safe_level = max(1, int(level or 1))
+    return int(get_base_exp_for_level(safe_level)) * int(get_contract_mobs_equivalent())
+
+
 def get_contract_target_kills():
     return int(CONTRACT_TARGET_KILLS or DEFAULT_CONTRACT_TARGET_KILLS)
 

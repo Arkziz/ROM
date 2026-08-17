@@ -1694,7 +1694,30 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
     elif mob.get("is_elite"):
         victory_title = "🏆 ВИ ПЕРЕМОГЛИ ЕЛІТНОГО ВОРОГА!"
 
-    text = f"{victory_title}\n\n"
+    final_round_parts = []
+    last_damage = max(0, int(mob.get("_last_player_damage", 0) or 0))
+    defeated_by_effect = "повалений ефектами" in str(prefix_text or "").lower()
+
+    if last_damage > 0 and not defeated_by_effect:
+        character_name = get_character_name(user_id) or "Персонаж"
+        crit_label = "💥 КРИТ! " if mob.get("_last_player_crit") else "⚔️ "
+        final_round_parts.append(
+            f"{crit_label}{character_name} завдав {mob['name']} {last_damage} шкоди."
+        )
+    elif defeated_by_effect:
+        final_round_parts.append("☠️ Ворог отримав смертельну шкоду від ефекту.")
+
+    player_hp = max(1, int(mob.get("player_hp", get_current_hp_raw(user_id)) or 1))
+    player_max_hp = max(1, int(mob.get("player_max_hp", get_max_hp(user_id)) or 1))
+    player_hp = min(player_hp, player_max_hp)
+    final_round_parts.append(
+        f"❤️ Здоров’я після фінального ходу: {player_hp}/{player_max_hp}\n"
+        f"{hp_bar(player_hp, player_max_hp)}"
+    )
+
+    text = "💥 ФІНАЛЬНИЙ ХІД\n\n"
+    text += "\n".join(final_round_parts)
+    text += f"\n\n{victory_title}\n\n"
 
     text += (
         f"{mob['name']} повалений на землю.\n\n"
@@ -2460,6 +2483,8 @@ def register_combat_handlers(bot):
                 dmg = max(1, int(round(base_dmg * bonus_multiplier)))
                 
             mob["hp"] -= dmg
+            mob["_last_player_damage"] = int(dmg or 0)
+            mob["_last_player_crit"] = bool(is_player_crit)
             
         resource_attack_text = ""
         if not skill.get("no_damage"):
@@ -2987,6 +3012,8 @@ def register_combat_handlers(bot):
                 )
 
             mob["hp"] -= dmg
+            mob["_last_player_damage"] = int(dmg or 0)
+            mob["_last_player_crit"] = bool(is_player_crit)
 
         resource_attack_text = ""
 

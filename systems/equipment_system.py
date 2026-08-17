@@ -97,6 +97,14 @@ def format_refined_item_name(*args, **kwargs):
 # _legacy_equipment_ro_v1_* captures. Low-level classification and rule helpers
 # remain available through db.py compatibility APIs until their own extraction.
 
+_ARMOR_SLOT_KEYS = frozenset({"helmet", "shoulders", "chest", "gloves", "legs", "boots"})
+
+
+def is_armor_slot(slot_key):
+    """Return True only for the six physical armor slots."""
+    return str(slot_key or "") in _ARMOR_SLOT_KEYS
+
+
 def can_equip_item_by_class(user_id, item_info):
     db = _db()
 

@@ -173,18 +173,12 @@ def get_profile_for_generated_item(slot_key, item_profile):
 
 
 def get_shop_armor_type_for_user(user_id):
-    """Повертає тип броні для користувача на основі його класу."""
-    from systems.character_system import get_class_equipment_rules
+    """Return the canonical armor type allowed for the user's class."""
+    from data.equipment_profiles import ARMOR_ALLOWED_BY_CLASS
     from .character import get_character_class
-    
+
     class_key = get_character_class(user_id)
-    rules = get_class_equipment_rules(class_key)
-    allowed_armor = rules.get("allowed_armor_types", [])
-    
-    if allowed_armor:
-        return allowed_armor[0]
-    
-    return "cloth"
+    return str(ARMOR_ALLOWED_BY_CLASS.get(class_key) or "cloth")
 
 
 def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
