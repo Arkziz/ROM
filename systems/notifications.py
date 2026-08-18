@@ -590,64 +590,71 @@ def _worker_iso_to_dt_v1(value):
 
 
 def get_worker_armor_refine_hp_bonus_percent_v1(conn, user_id):
-    """
-    Calculates HP bonus from currently equipped refined armor for notification worker.
-
-    Current known rule from refine 6.0:
-    - armor +6 gives +4% max HP;
-    - therefore 1 refine level ~= 0.6667% max HP.
-
-    This mirrors the gameplay intent well enough for notification/full-HP checks.
-    """
-
+    """Mirror the canonical armor-refine HP table, including rarity multipliers."""
+    base_by_level = {0: 0.0, 1: 0.5, 2: 1.0, 3: 1.5, 4: 2.0, 5: 3.0, 6: 4.0}
+    rarity_multiplier = {"common": 1.0, "uncommon": 1.1, "rare": 1.2, "epic": 1.3}
     try:
-        equipment_cols = _worker_table_columns_v1(conn, "equipment_slots")
-        inventory_cols = _worker_table_columns_v1(conn, "inventory")
-        item_cols = _worker_table_columns_v1(conn, "items")
-
-        if not {"user_id", "slot_key", "inventory_id"}.issubset(equipment_cols):
-            return 0.0
-
-        if "refine_level" not in inventory_cols:
-            return 0.0
-
-        if "slot_key" not in item_cols:
-            return 0.0
-
-        rows = conn.execute("""
-        SELECT
-            es.slot_key AS equipped_slot,
-            COALESCE(inv.refine_level, 0) AS refine_level,
-            items.slot_key AS item_slot,
-            items.category AS category
-        FROM equipment_slots es
-        JOIN inventory inv ON inv.id = es.inventory_id
-        JOIN items ON items.id = inv.item_id
-        WHERE es.user_id=?
-          AND es.inventory_id IS NOT NULL
-        """, (user_id,)).fetchall()
-
-        total_percent = 0.0
-
-        for row in rows:
-            equipped_slot = row[0]
-            refine_level = int(row[1] or 0)
-            item_slot = row[2]
-
-            slot = equipped_slot or item_slot
-
-            if refine_level <= 0:
-                continue
-
-            if slot not in WORKER_ARMOR_SLOTS_FOR_HP_REFINE_V1:
-                continue
-
-            total_percent += refine_level * WORKER_ARMOR_HP_BONUS_PER_REFINE_LEVEL_V1
-
-        return max(0.0, total_percent)
-
+        rows = conn.execute(
+            """
+            SELECT COALESCE(es.slot_key, items.slot_key),
+                   COALESCE(inv.refine_level, 0),
+                   LOWER(COALESCE(items.rarity, 'common')),
+                   COALESCE(inv.durability, 100)
+            FROM equipment_slots es
+            JOIN inventory inv
+              ON inv.id=es.inventory_id AND inv.user_id=es.user_id
+            JOIN items ON items.id=inv.item_id
+            WHERE es.user_id=? AND es.inventory_id IS NOT NULL
+            """,
+            (int(user_id),),
+        ).fetchall()
     except Exception:
         return 0.0
+
+    total = 0.0
+    for slot_key, refine_level, rarity, durability in rows:
+        if str(slot_key or "") not in WORKER_ARMOR_SLOTS_FOR_HP_REFINE_V1:
+            continue
+        if int(durability or 0) <= 0:
+            continue
+        try:
+            level = max(0, min(6, int(refine_level or 0)))
+        except Exception:
+            level = 0
+        rarity_key = str(rarity or "common").strip().lower()
+        total += round(
+            base_by_level.get(level, 0.0) * rarity_multiplier.get(rarity_key, 1.0),
+            2,
+        )
+    return round(max(0.0, total), 4)
+
+
+
+def get_worker_equipped_rune_sta_bonus_v2(conn, user_id):
+    """Return active STA rune levels from equipped, non-broken inventory items."""
+    try:
+        tables = {str(row[0]) for row in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        ).fetchall()}
+        if "inventory_runes" not in tables:
+            return 0
+        row = conn.execute(
+            """
+            SELECT COALESCE(SUM(COALESCE(ir.rune_level, 0)), 0)
+            FROM equipment_slots es
+            JOIN inventory inv
+              ON inv.id=es.inventory_id AND inv.user_id=es.user_id
+            JOIN inventory_runes ir ON ir.inventory_id=inv.id
+            WHERE es.user_id=?
+              AND es.inventory_id IS NOT NULL
+              AND COALESCE(inv.durability, 100) > 0
+              AND LOWER(COALESCE(ir.rune_stat, ''))='sta'
+            """,
+            (int(user_id),),
+        ).fetchone()
+        return max(0, int((row[0] if row else 0) or 0))
+    except Exception:
+        return 0
 
 
 def get_worker_max_hp(conn, user_id):
@@ -665,6 +672,9 @@ def get_worker_max_hp(conn, user_id):
             base_hp = 100
     else:
         base_hp = 100
+
+    rune_sta = get_worker_equipped_rune_sta_bonus_v2(conn, user_id)
+    base_hp += int(rune_sta) * 5
 
     bonus_percent = get_worker_armor_refine_hp_bonus_percent_v1(conn, user_id)
     dynamic_max_hp = int(round(base_hp * (1 + bonus_percent / 100.0)))

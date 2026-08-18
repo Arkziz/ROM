@@ -212,9 +212,10 @@ def get_inventory_refine_level(inventory_id):
 
 
 def get_inventory_refined_display_name(inventory_id, base_name=None):
+    """Preserve the public base_name contract and bridge to the system positionally."""
     return _equipment_system().get_inventory_refined_display_name(
-        inventory_id=inventory_id,
-        base_name=base_name
+        inventory_id,
+        base_name
     )
 
 
@@ -325,11 +326,13 @@ def buy_common_equipment_from_trader(user_id, item_id):
     )
 
 
-def buy_item_for_gold(user_id, item_id, quantity=1):
+def buy_item_for_gold(user_id, item_id, price, quantity=1):
+    """Atomic generic purchase using the caller-provided total price."""
     return _equipment_system().buy_item_for_gold(
-        user_id=user_id,
-        item_id=item_id,
-        quantity=quantity
+        user_id,
+        item_id,
+        price,
+        quantity
     )
 
 def _compat_result(success, message=""):

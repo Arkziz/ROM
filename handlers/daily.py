@@ -2,7 +2,8 @@ from telebot import types
 
 from db import (
     get_daily_quest_status,
-    claim_daily_quest_reward
+    claim_daily_quest_reward,
+    reset_daily_quest_if_needed
 )
 
 from keyboards import townhall_kb
@@ -67,6 +68,7 @@ def register_daily_handlers(bot):
     def show_daily_quest(message):
         user_id = message.from_user.id
 
+        reset_daily_quest_if_needed(user_id)
         text, kb = build_daily_quest_text(user_id)
 
         bot.send_message(

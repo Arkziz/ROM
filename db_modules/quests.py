@@ -209,20 +209,19 @@ def cleanup_old_daily_quests(days_to_keep=7):
 
 
 def reset_daily_quest_if_needed(user_id):
-    """Reset a legacy daily row only when its stored date is older than today.
-
-    New daily_key rows are already date-scoped and need no in-place reset.
-    """
+    """Roll the single per-user daily row to today without requiring the bot to stay online."""
     today = get_daily_today_str()
     columns = {str(row[1]) for row in cursor.execute(
         "PRAGMA table_info(user_daily_quests)"
     ).fetchall()}
-
-    if "daily_key" in columns:
-        return {"success": True, "reset": False, "mode": "daily_key"}
+    if not columns:
+        init_daily_quest_system()
+        columns = {str(row[1]) for row in cursor.execute(
+            "PRAGMA table_info(user_daily_quests)"
+        ).fetchall()}
 
     date_column = next((name for name in (
-        "quest_date", "daily_date", "reset_date", "created_date", "date"
+        "daily_key", "quest_date", "daily_date", "reset_date", "created_date", "date"
     ) if name in columns), None)
     if not date_column:
         return {"success": True, "reset": False, "mode": "no_date_column"}
@@ -231,7 +230,10 @@ def reset_daily_quest_if_needed(user_id):
         f"SELECT {date_column} FROM user_daily_quests WHERE user_id=?",
         (int(user_id),),
     ).fetchone()
-    if not row or str(row[0] or "") == str(today):
+    if not row:
+        return {"success": True, "reset": False, "mode": date_column, "missing": True}
+    stored_date = str(row[0] or "")
+    if stored_date == str(today):
         return {"success": True, "reset": False, "mode": date_column}
 
     assignments = []
@@ -239,8 +241,8 @@ def reset_daily_quest_if_needed(user_id):
     for name, value in (
         ("progress", 0), ("completed", 0), ("reward_claimed", 0),
         ("total_kills", 0), ("elite_kills", 0), ("pvp_kills", 0),
-        ("trades_completed", 0), ("status", "active"),
-        ("claimed_at", None), (date_column, today),
+        ("trades_completed", 0), ("status", "active"), ("claimed_at", None),
+        (date_column, today),
     ):
         if name in columns:
             assignments.append(f"{name}=?")
@@ -253,7 +255,9 @@ def reset_daily_quest_if_needed(user_id):
         tuple(params),
     )
     conn.commit()
-    return {"success": True, "reset": True, "mode": date_column}
+    return {"success": True, "reset": True, "mode": date_column,
+            "from": stored_date, "to": str(today)}
+
 
 
 def process_daily_quest_progress_on_kill(user_id, mob=None):

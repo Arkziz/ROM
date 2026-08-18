@@ -1802,7 +1802,9 @@ def finalize_combat_state_before_victory(user_id, mob):
     if not mob:
         return
 
-    rollback_turn_start_hot_heal_on_victory(user_id, mob)
+    # A HoT tick applied at the start of the winning turn is legitimate healing.
+    # Keep the already-clamped mob["player_hp"] value instead of subtracting it again.
+    mob["_turn_start_hot_heal_applied"] = 0
 
     if "player_hp" in mob:
         try:

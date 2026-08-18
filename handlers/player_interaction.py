@@ -501,23 +501,26 @@ def _interaction_failure_message(reason):
 
 
 def _possible_pve_busy(user_id):
-    """Best-effort adapter over the existing in-memory PvE implementation."""
+    """Use the registered TeleBot combat state only; never scan unrelated module dictionaries."""
+    try:
+        uid = int(user_id)
+    except (TypeError, ValueError):
+        return False
+
+    bot = globals().get("_PLAYER_INTERACTION_COMBAT_BOT")
+    user_data = getattr(bot, "user_data", None) if bot is not None else None
+    if isinstance(user_data, dict):
+        return uid in user_data or str(uid) in user_data
+
     try:
         import handlers.combat as combat_module
+        explicit = getattr(combat_module, "is_player_in_active_combat", None)
+        if callable(explicit):
+            return bool(explicit(uid))
     except Exception:
-        return False
-    explicit = getattr(combat_module, "is_player_in_active_combat", None)
-    if callable(explicit):
-        try: return bool(explicit(int(user_id)))
-        except Exception: return False
-    uid=int(user_id)
-    for name,value in vars(combat_module).items():
-        low=name.lower()
-        if not isinstance(value,dict) or not any(token in low for token in ("battle","combat","fight")):
-            continue
-        if uid in value or str(uid) in value:
-            return True
+        pass
     return False
+
 
 # ROM 12.6.1 PLAYER TRADE OFFER EDITOR UX
 from systems.player_interaction_system import (
@@ -1828,6 +1831,8 @@ def _register_trade_confirmation_handlers_12_7_0(bot):
 
 def register_player_interaction_handlers(bot):
     """Register Stage 12 interaction plus Stage 14 PvP request handlers once."""
+    global _PLAYER_INTERACTION_COMBAT_BOT
+    _PLAYER_INTERACTION_COMBAT_BOT = bot
     from handlers.pvp_interaction import register_pvp_interaction_handlers
     register_pvp_interaction_handlers(bot)
     _register_trade_confirmation_handlers_12_7_0(bot)
