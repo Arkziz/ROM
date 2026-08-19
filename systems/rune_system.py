@@ -784,46 +784,90 @@ def _consume_stack_quantity(conn, user_id, item_id, quantity):
 
 
 def _add_stack_quantity_in_transaction(conn, user_id, item_id, quantity):
+    """Plan and apply a rune-system stack addition inside the caller transaction."""
+    # ROM 17.4.1 RUNE TRANSACTIONAL STACK CAPACITY RECOVERY
+    user_id = int(user_id)
+    item_id = int(item_id)
+    quantity = int(quantity)
+    if quantity <= 0:
+        return {"success": False, "code": "invalid_quantity"}
+
     item = conn.execute(
-        "SELECT name, max_stack FROM items WHERE id=?", (int(item_id),)
+        "SELECT name, max_stack FROM items WHERE id=?", (item_id,)
     ).fetchone()
     if not item:
         return {"success": False, "code": "result_missing"}
     name, max_stack = str(item[0]), max(1, int(item[1] or 1))
-    remaining = int(quantity)
+
     rows = conn.execute(
         "SELECT id, quantity FROM inventory "
-        "WHERE user_id=? AND item_id=? ORDER BY id",
-        (int(user_id), int(item_id)),
+        "WHERE user_id=? AND item_id=? ORDER BY id ASC",
+        (user_id, item_id),
     ).fetchall()
+
+    # Build the complete plan before any UPDATE/INSERT. This guarantees that a
+    # failed capacity check leaves even the caller's open transaction untouched.
+    remaining = quantity
+    updates = []
     for inventory_id, current in rows:
-        current = int(current or 0)
+        current = max(0, int(current or 0))
         add = min(max(0, max_stack - current), remaining)
         if add:
-            conn.execute(
-                "UPDATE inventory SET quantity=? WHERE id=? AND user_id=?",
-                (current + add, int(inventory_id), int(user_id)),
-            )
+            updates.append((current + add, int(inventory_id)))
             remaining -= add
         if remaining <= 0:
             break
+
+    required_new_rows = (
+        (remaining + max_stack - 1) // max_stack if remaining > 0 else 0
+    )
+    used = int(conn.execute(
+        "SELECT COUNT(*) FROM inventory WHERE user_id=?", (user_id,)
+    ).fetchone()[0] or 0)
+    user = conn.execute(
+        "SELECT bag_slots FROM users WHERE user_id=?", (user_id,)
+    ).fetchone()
+    capacity = max(40, int((user[0] if user else 40) or 40))
+
+    if used + required_new_rows > capacity:
+        return {
+            "success": False,
+            "code": "bag_full",
+            "name": name,
+            "added": 0,
+            "required_new_rows": required_new_rows,
+            "used_slots": used,
+            "capacity": capacity,
+        }
+
+    for new_quantity, inventory_id in updates:
+        changed = conn.execute(
+            "UPDATE inventory SET quantity=? WHERE id=? AND user_id=?",
+            (new_quantity, inventory_id, user_id),
+        ).rowcount
+        if changed != 1:
+            raise RuntimeError("Не вдалося оновити запланований стак руни.")
+
+    inserted_ids = []
     while remaining > 0:
-        used = int(conn.execute(
-            "SELECT COUNT(*) FROM inventory WHERE user_id=?", (int(user_id),)
-        ).fetchone()[0] or 0)
-        user = conn.execute(
-            "SELECT bag_slots FROM users WHERE user_id=?", (int(user_id),)
-        ).fetchone()
-        capacity = int((user[0] if user else 0) or 0)
-        if used >= capacity:
-            return {"success": False, "code": "bag_full"}
         add = min(max_stack, remaining)
-        conn.execute(
+        cursor = conn.execute(
             "INSERT INTO inventory (user_id,item_id,quantity) VALUES (?,?,?)",
-            (int(user_id), int(item_id), add),
+            (user_id, item_id, add),
         )
+        inserted_ids.append(int(cursor.lastrowid))
         remaining -= add
-    return {"success": True, "name": name, "added": int(quantity)}
+
+    return {
+        "success": True,
+        "name": name,
+        "added": quantity,
+        "required_new_rows": required_new_rows,
+        "inserted_inventory_ids": inserted_ids,
+        "used_slots": used + required_new_rows,
+        "capacity": capacity,
+    }
+
 
 
 def get_available_rune_fusion_recipes(user_id):
