@@ -1,3 +1,5 @@
+import json
+
 from telebot import types
 
 
@@ -36,6 +38,38 @@ def _auction_snapshot_typed_name_11_4_1(snapshot):
     return _auction_equipment_typed_name_11_4_1(
         snapshot.get("inventory_id"), snapshot.get("name")
     )
+
+def _auction_lot_typed_name_17_1_0(lot):
+    """Return lot name with snapshot armor/subtype label; no rune count."""
+    try:
+        name = str(lot["item_name"] or "Предмет")
+        if str(lot["category"] or "") != "equipment":
+            return name
+        raw = lot["item_snapshot_json"]
+        snapshot = json.loads(raw) if isinstance(raw, str) and raw else (raw or {})
+        if not isinstance(snapshot, dict):
+            return name
+        from data.equipment_profiles import ARMOR_TYPE_LABELS, ITEM_SUBTYPE_LABELS
+        armor_type = str(snapshot.get("armor_type") or "").strip()
+        item_subtype = str(snapshot.get("item_subtype") or "").strip()
+        label = ARMOR_TYPE_LABELS.get(armor_type) if armor_type else ITEM_SUBTYPE_LABELS.get(item_subtype)
+        label = str(label or armor_type or item_subtype or "").strip()
+        if not label or f"[{label}]" in name:
+            return name
+        marker = " рівня"
+        if marker in name:
+            index = name.rfind(marker)
+            before, after = name[:index], name[index:]
+            parts = before.rsplit(" ", 1)
+            if len(parts) == 2 and parts[1].isdigit():
+                return f"{parts[0]} [{label}] {parts[1]}{after}"
+        return f"{name} [{label}]"
+    except Exception:
+        try:
+            return str(lot["item_name"] or "Предмет")
+        except Exception:
+            return "Предмет"
+
 # ✅ AUCTION HOUSE POTION BUTTON CONFLICT FIX V1
 # Кнопка категорії зілля в Торговому Домі не має збігатися з бойовою кнопкою "🧪 Зілля".
 # Інакше бойовий handler перехоплює кнопку і відповідає: "❗ Ти не в бою".
@@ -1675,7 +1709,7 @@ def auction_buy_lots_inline_kb_v1(user_id, page=0):
     for lot in visible_lots:
         quantity = int(lot["quantity"] or 1)
         qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
-        label = f"🛒 {lot['item_name']}{qty} — {lot['price']} 💰"
+        label = f"🛒 {_auction_lot_typed_name_17_1_0(lot)}{qty} — {lot['price']} 💰"
         kb.add(types.InlineKeyboardButton(
             _auction_inline_truncate(label),
             callback_data=f"ah_buy_lot:{lot['id']}:{page}"
@@ -2155,7 +2189,7 @@ def auction_my_lots_inline_kb_v1(user_id, page=0):
     for lot in visible_lots:
         quantity = int(lot["quantity"] or 1)
         qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
-        label = f"📦 {lot['item_name']}{qty} — {lot['price']} 💰"
+        label = f"📦 {_auction_lot_typed_name_17_1_0(lot)}{qty} — {lot['price']} 💰"
         kb.add(types.InlineKeyboardButton(
             _auction_inline_truncate(label),
             callback_data=f"ah_my_lot:{lot['id']}:{page}"
@@ -2788,7 +2822,7 @@ def auction_buy_lots_inline_kb_v1(user_id, category="all", sort_key="new", page=
     for lot in visible_lots:
         quantity = int(lot["quantity"] or 1)
         qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
-        label = f"📦 {lot['item_name']}{qty} — {lot['price']} 💰"
+        label = f"📦 {_auction_lot_typed_name_17_1_0(lot)}{qty} — {lot['price']} 💰"
         kb.add(types.InlineKeyboardButton(
             _auction_inline_truncate(label),
             callback_data=f"ah_buy2_lot:{lot['id']}:{category}:{sort_key}:{page}"
@@ -3210,7 +3244,7 @@ def auction_buy_lots_inline_kb_v1(user_id, category="all", sort_key="new", page=
     for lot in visible_lots:
         quantity = int(lot["quantity"] or 1)
         qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
-        label = f"📦 {lot['item_name']}{qty} — {lot['price']} 💰"
+        label = f"📦 {_auction_lot_typed_name_17_1_0(lot)}{qty} — {lot['price']} 💰"
         kb.add(types.InlineKeyboardButton(
             _auction_inline_truncate(label),
             callback_data=f"ah_buy2_lot:{lot['id']}:{category}:{sort_key}:{page}"
@@ -4226,7 +4260,7 @@ def auction_search_results_inline_kb_v1(user_id, query, sort_key="new", page=0):
     for lot in visible_lots:
         quantity = int(lot["quantity"] or 1)
         qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
-        label = f"📦 {lot['item_name']}{qty} — {lot['price']} 💰"
+        label = f"📦 {_auction_lot_typed_name_17_1_0(lot)}{qty} — {lot['price']} 💰"
         kb.add(types.InlineKeyboardButton(
             _auction_inline_truncate(label),
             callback_data=f"ah_search_lot:{lot['id']}:{sort_key}:{page}"

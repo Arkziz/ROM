@@ -930,6 +930,112 @@ def _auction_is_equipment_row(row_dict):
     return False
 
 
+
+# ROM 17.1.0 CANONICAL AUCTION EQUIPMENT RUNE PRESERVATION
+
+def _auction_snapshot_inserted_runes(inventory_id):
+    """Read inserted rune sockets before the inventory row is removed."""
+    if not _auction_has_table("inventory_runes"):
+        return []
+    rows = cursor.execute(
+        """
+        SELECT ir.slot_index, ir.rune_item_id, ir.rune_stat, ir.rune_level,
+               ir.inserted_at, COALESCE(it.name, '')
+        FROM inventory_runes AS ir
+        LEFT JOIN items AS it ON it.id = ir.rune_item_id
+        WHERE ir.inventory_id=?
+        ORDER BY ir.slot_index ASC, ir.id ASC
+        """,
+        (int(inventory_id),),
+    ).fetchall()
+    return [
+        {
+            "slot_index": int(row[0]),
+            "rune_item_id": int(row[1]),
+            "rune_stat": str(row[2] or "").upper(),
+            "rune_level": int(row[3]),
+            "inserted_at": str(row[4] or ""),
+            "rune_name": str(row[5] or ""),
+        }
+        for row in rows
+    ]
+
+
+def _auction_restore_inserted_runes(inventory_id, snapshot):
+    """Restore snapshotted sockets on the newly created inventory row."""
+    runes = snapshot.get("inserted_runes") if isinstance(snapshot, dict) else None
+    if not isinstance(runes, list) or not runes:
+        return 0
+    if not _auction_has_table("inventory_runes"):
+        raise RuntimeError("inventory_runes table is missing")
+    restored = 0
+    seen = set()
+    for rune in runes:
+        slot_index = int(rune["slot_index"])
+        if slot_index in seen:
+            raise RuntimeError("duplicate rune slot in auction snapshot")
+        seen.add(slot_index)
+        cursor.execute(
+            """
+            INSERT INTO inventory_runes (
+                inventory_id, slot_index, rune_item_id,
+                rune_stat, rune_level, inserted_at
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                int(inventory_id), slot_index, int(rune["rune_item_id"]),
+                str(rune["rune_stat"]), int(rune["rune_level"]),
+                str(rune.get("inserted_at") or ""),
+            ),
+        )
+        restored += 1
+    return restored
+
+
+def _auction_equipment_type_label(snapshot):
+    if not isinstance(snapshot, dict):
+        return ""
+    from data.equipment_profiles import ARMOR_TYPE_LABELS, ITEM_SUBTYPE_LABELS
+    armor_type = str(snapshot.get("armor_type") or "").strip()
+    item_subtype = str(snapshot.get("item_subtype") or "").strip()
+    if armor_type:
+        return str(ARMOR_TYPE_LABELS.get(armor_type) or armor_type)
+    if item_subtype:
+        return str(ITEM_SUBTYPE_LABELS.get(item_subtype) or item_subtype)
+    return ""
+
+
+def _auction_equipment_type_line(snapshot):
+    label = _auction_equipment_type_label(snapshot)
+    return f"🏷 Тип предмета: [{label}]" if label else ""
+
+
+def _auction_rune_socket_lines(snapshot):
+    if not isinstance(snapshot, dict):
+        return []
+    slot_key = str(snapshot.get("slot_key") or "")
+    try:
+        from data.runes import get_rune_slot_limit
+        limit = int(get_rune_slot_limit(slot_key))
+    except Exception:
+        limit = 0
+    if limit <= 0:
+        return []
+    runes = snapshot.get("inserted_runes")
+    runes = runes if isinstance(runes, list) else []
+    by_slot = {int(row["slot_index"]): row for row in runes}
+    lines = [f"💠 Рунічні слоти: {len(by_slot)}/{limit}"]
+    for slot_index in range(limit):
+        rune = by_slot.get(slot_index)
+        if rune is None:
+            lines.append(f"• Слот {slot_index + 1}: порожній")
+            continue
+        name = str(rune.get("rune_name") or "").strip()
+        if not name:
+            name = f"Руна {rune.get('rune_stat', '')} {rune.get('rune_level', '')}".strip()
+        lines.append(f"• Слот {slot_index + 1}: {name}")
+    return lines
+
 def get_inventory_item_snapshot_for_auction(user_id, inventory_id):
     """
     Builds a full enough snapshot of an inventory item for Auction House listing.
@@ -959,6 +1065,9 @@ def get_inventory_item_snapshot_for_auction(user_id, inventory_id):
     slot_key = _auction_get_str(data, "item_slot_key", "slot_key", default="")
     item_type = _auction_get_str(data, "item_type", "type", default="")
     item_category = _auction_get_str(data, "item_category", "category", default="")
+    armor_type = _auction_get_str(data, "armor_type", "item_armor_type", default="")
+    item_subtype = _auction_get_str(data, "item_subtype", "item_item_subtype", default="")
+    inserted_runes = _auction_snapshot_inserted_runes(inventory_id)
 
     snapshot = {
         "inventory_id": int(inventory_id),
@@ -972,6 +1081,9 @@ def get_inventory_item_snapshot_for_auction(user_id, inventory_id):
         "slot_key": slot_key,
         "item_type": item_type,
         "item_category": item_category,
+        "armor_type": armor_type,
+        "item_subtype": item_subtype,
+        "inserted_runes": inserted_runes,
         "durability_current": durability_current,
         "durability_max": durability_max,
         "row": data,
@@ -1830,7 +1942,10 @@ def _auction_insert_inventory_from_snapshot(user_id, snapshot, quantity=None):
     placeholders = ", ".join(["?"] * len(insert_cols))
     sql = f"INSERT INTO inventory ({', '.join(insert_cols)}) VALUES ({placeholders})"
     cursor.execute(sql, tuple(insert_values))
-    return cursor.lastrowid
+    restored_inventory_id = cursor.lastrowid
+    if not is_stack:
+        _auction_restore_inserted_runes(restored_inventory_id, snapshot)
+    return restored_inventory_id
 
 
 def get_public_auction_lots_for_buyer(user_id, category=None, search_text=None, limit=8, offset=0, sort="new"):
@@ -2423,6 +2538,7 @@ def create_equipment_auction_lot(user_id, inventory_id, price):
 
         snapshot = check_inside["snapshot"]
         snapshot = _auction_enrich_equipment_snapshot_with_runtime_details(user_id, inventory_id, snapshot)
+        # Rune/type data is now fully captured before inventory deletion.
 
         cursor.execute("""
         INSERT INTO auction_lots (
@@ -2993,6 +3109,9 @@ def build_auction_sell_item_review_text(user_id, inventory_id, category):
         lines.append("")
         lines.append(_auction_inventory_style_type_line(AUCTION_CATEGORY_EQUIPMENT))
         lines.append(f"🎯 Слот: {_auction_inventory_style_slot(snapshot, slot_key, item_type)}")
+        type_line = _auction_equipment_type_line(snapshot)
+        if type_line:
+            lines.append(type_line)
 
         class_line = _auction_allowed_classes_line(snapshot)
         if class_line:
@@ -3029,6 +3148,11 @@ def build_auction_sell_item_review_text(user_id, inventory_id, category):
         if not damage_lines and not defense_lines and not bonus_lines:
             lines.append("")
             lines.append("ℹ️ Детальні характеристики для цього предмета не знайдені у snapshot.")
+
+        rune_lines = _auction_rune_socket_lines(snapshot)
+        if rune_lines:
+            lines.append("")
+            lines.extend(rune_lines)
 
         lines.append("")
         lines.append("Перевір характеристики предмета перед тим, як ввести ціну.")
@@ -3163,6 +3287,9 @@ def build_user_auction_lot_details(user_id, lot_id):
         lines.append("")
         lines.append(_auction_inventory_style_type_line(AUCTION_CATEGORY_EQUIPMENT))
         lines.append(f"🎯 Слот: {_auction_inventory_style_slot(snapshot, slot_key, item_type)}")
+        type_line = _auction_equipment_type_line(snapshot)
+        if type_line:
+            lines.append(type_line)
         if level:
             lines.append(f"🏷 Рівень предмета: {level} 🔒")
         if refine_level:
@@ -3183,6 +3310,10 @@ def build_user_auction_lot_details(user_id, lot_id):
             lines.append("")
             lines.append("📊 Бонуси:")
             lines.extend(bonus_lines)
+        rune_lines = _auction_rune_socket_lines(snapshot)
+        if rune_lines:
+            lines.append("")
+            lines.extend(rune_lines)
     else:
         lines.append("")
         lines.append(_auction_inventory_style_type_line(category))
@@ -4117,6 +4248,9 @@ def build_auction_buy_lot_details_v2(buyer_user_id, lot_id):
 
         lines.append(_auction_inventory_style_type_line(AUCTION_CATEGORY_EQUIPMENT))
         lines.append(f"🎯 Слот: {_auction_inventory_style_slot(snapshot, slot_key, item_type)}")
+        type_line = _auction_equipment_type_line(snapshot)
+        if type_line:
+            lines.append(type_line)
 
         try:
             allowed_classes = _auction_inventory_style_allowed_classes(snapshot)
@@ -4151,6 +4285,10 @@ def build_auction_buy_lot_details_v2(buyer_user_id, lot_id):
             lines.append("")
             lines.append("📊 Бонуси:")
             lines.extend(bonus_lines)
+        rune_lines = _auction_rune_socket_lines(snapshot)
+        if rune_lines:
+            lines.append("")
+            lines.extend(rune_lines)
     else:
         lines.append(_auction_inventory_style_type_line(category))
         lines.append(f"📦 Кількість: {quantity}")

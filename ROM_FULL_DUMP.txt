@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-19 00:00:51 +03:00
+Created: 2026-08-19 23:39:10 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9168
-Scanned files: 5737
+Scanned files: 5811
 Included files: 484
-Excluded files: 5253
-Included source size: 3,13 MB
+Excluded files: 5327
+Included source size: 3,12 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 5247
+- excluded directory: 5321
 - excluded file name or pattern: 6
 - unsupported file type: 0
 
@@ -85,7 +85,6 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - handlers\start.py
 - keyboards.py
 - main.py
-- make_rom_dump.ps1
 - migrations\__init__.py
 - migrations\000_runner_smoke_test.py
 - migrations\010_rune_system_data_model.py
@@ -301,6 +300,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\simulation_world_progression_cli_13_6_0a_manifest.txt
 - tools\simulation_world_progression_production_parity_13_6_1_manifest.txt
 - tools\smoke_test_atomic_resethero_15_7_7.py
+- tools\smoke_test_auction_equipment_runes_canonical_17_1_0.py
 - tools\smoke_test_auction_lifecycle_contracts.py
 - tools\smoke_test_auction_rune_category_and_transfer_policy_alignment.py
 - tools\smoke_test_boss_bleed.py
@@ -11157,8 +11157,8 @@ LAST WRITE: 2026-07-09 23:38:37
 
 ============================================================
 FILE: handlers\auction_house.py
-SIZE: 215926 bytes
-LAST WRITE: 2026-08-03 15:12:58
+SIZE: 212169 bytes
+LAST WRITE: 2026-08-19 23:32:07
 ============================================================
 
 from telebot import types
@@ -11199,6 +11199,38 @@ def _auction_snapshot_typed_name_11_4_1(snapshot):
     return _auction_equipment_typed_name_11_4_1(
         snapshot.get("inventory_id"), snapshot.get("name")
     )
+
+def _auction_lot_typed_name_17_1_0(lot):
+    """Return lot name with snapshot armor/subtype label; no rune count."""
+    try:
+        name = str(lot["item_name"] or "Предмет")
+        if str(lot["category"] or "") != "equipment":
+            return name
+        raw = lot["item_snapshot_json"]
+        snapshot = json.loads(raw) if isinstance(raw, str) and raw else (raw or {})
+        if not isinstance(snapshot, dict):
+            return name
+        from data.equipment_profiles import ARMOR_TYPE_LABELS, ITEM_SUBTYPE_LABELS
+        armor_type = str(snapshot.get("armor_type") or "").strip()
+        item_subtype = str(snapshot.get("item_subtype") or "").strip()
+        label = ARMOR_TYPE_LABELS.get(armor_type) if armor_type else ITEM_SUBTYPE_LABELS.get(item_subtype)
+        label = str(label or armor_type or item_subtype or "").strip()
+        if not label or f"[{label}]" in name:
+            return name
+        marker = " рівня"
+        if marker in name:
+            index = name.rfind(marker)
+            before, after = name[:index], name[index:]
+            parts = before.rsplit(" ", 1)
+            if len(parts) == 2 and parts[1].isdigit():
+                return f"{parts[0]} [{label}] {parts[1]}{after}"
+        return f"{name} [{label}]"
+    except Exception:
+        try:
+            return str(lot["item_name"] or "Предмет")
+        except Exception:
+            return "Предмет"
+
 # ✅ AUCTION HOUSE POTION BUTTON CONFLICT FIX V1
 # Кнопка категорії зілля в Торговому Домі не має збігатися з бойовою кнопкою "🧪 Зілля".
 # Інакше бойовий handler перехоплює кнопку і відповідає: "❗ Ти не в бою".
@@ -12838,7 +12870,7 @@ def auction_buy_lots_inline_kb_v1(user_id, page=0):
     for lot in visible_lots:
         quantity = int(lot["quantity"] or 1)
         qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
-        label = f"🛒 {lot['item_name']}{qty} — {lot['price']} 💰"
+        label = f"🛒 {_auction_lot_typed_name_17_1_0(lot)}{qty} — {lot['price']} 💰"
         kb.add(types.InlineKeyboardButton(
             _auction_inline_truncate(label),
             callback_data=f"ah_buy_lot:{lot['id']}:{page}"
@@ -13318,7 +13350,7 @@ def auction_my_lots_inline_kb_v1(user_id, page=0):
     for lot in visible_lots:
         quantity = int(lot["quantity"] or 1)
         qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
-        label = f"📦 {lot['item_name']}{qty} — {lot['price']} 💰"
+        label = f"📦 {_auction_lot_typed_name_17_1_0(lot)}{qty} — {lot['price']} 💰"
         kb.add(types.InlineKeyboardButton(
             _auction_inline_truncate(label),
             callback_data=f"ah_my_lot:{lot['id']}:{page}"
@@ -13951,7 +13983,7 @@ def auction_buy_lots_inline_kb_v1(user_id, category="all", sort_key="new", page=
     for lot in visible_lots:
         quantity = int(lot["quantity"] or 1)
         qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
-        label = f"📦 {lot['item_name']}{qty} — {lot['price']} 💰"
+        label = f"📦 {_auction_lot_typed_name_17_1_0(lot)}{qty} — {lot['price']} 💰"
         kb.add(types.InlineKeyboardButton(
             _auction_inline_truncate(label),
             callback_data=f"ah_buy2_lot:{lot['id']}:{category}:{sort_key}:{page}"
@@ -14373,7 +14405,7 @@ def auction_buy_lots_inline_kb_v1(user_id, category="all", sort_key="new", page=
     for lot in visible_lots:
         quantity = int(lot["quantity"] or 1)
         qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
-        label = f"📦 {lot['item_name']}{qty} — {lot['price']} 💰"
+        label = f"📦 {_auction_lot_typed_name_17_1_0(lot)}{qty} — {lot['price']} 💰"
         kb.add(types.InlineKeyboardButton(
             _auction_inline_truncate(label),
             callback_data=f"ah_buy2_lot:{lot['id']}:{category}:{sort_key}:{page}"
@@ -15389,7 +15421,7 @@ def auction_search_results_inline_kb_v1(user_id, query, sort_key="new", page=0):
     for lot in visible_lots:
         quantity = int(lot["quantity"] or 1)
         qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
-        label = f"📦 {lot['item_name']}{qty} — {lot['price']} 💰"
+        label = f"📦 {_auction_lot_typed_name_17_1_0(lot)}{qty} — {lot['price']} 💰"
         kb.add(types.InlineKeyboardButton(
             _auction_inline_truncate(label),
             callback_data=f"ah_search_lot:{lot['id']}:{sort_key}:{page}"
@@ -33652,400 +33684,6 @@ except Exception as e:
 
 
 ============================================================
-FILE: make_rom_dump.ps1
-SIZE: 9099 bytes
-LAST WRITE: 2026-08-18 23:54:00
-============================================================
-
-#requires -Version 5.1
-
-$ErrorActionPreference = "Stop"
-
-# Use the folder where this script is located.
-# This avoids encoding problems in paths with non-ASCII characters.
-$ProjectRoot = $PSScriptRoot
-$OutputFile = Join-Path $ProjectRoot "ROM_FULL_DUMP.txt"
-
-$MaxFileSizeMB = 2
-$MaxFileSizeBytes = $MaxFileSizeMB * 1MB
-
-$ExcludeDirectoryNames = @(
-    ".git",
-    ".github",
-    ".idea",
-    ".vscode",
-    ".venv",
-    "venv",
-    "env",
-    "__pycache__",
-    ".pytest_cache",
-    ".mypy_cache",
-    ".ruff_cache",
-    "htmlcov",
-    "node_modules",
-    "dist",
-    "build",
-    "logs",
-    "log",
-    "tmp",
-    "temp",
-    "patch",
-    "backup",
-	"MD",
-	"simulation_reports",
-	"reports"
-)
-
-$ExcludeExactFileNames = @(
-    ".env",
-    ".env.local",
-    ".env.development",
-    ".env.production",
-    ".env.test",
-    "game.db",
-    "game.db-shm",
-    "game.db-wal",
-    "changes.diff"
-)
-
-$ExcludeFilePatterns = @(
-    "ROM_FULL_DUMP*.txt",
-    "*.db",
-    "*.db-shm",
-    "*.db-wal",
-    "*.sqlite",
-    "*.sqlite3",
-    "*.pyc",
-    "*.pyo",
-    "*.pyd",
-    "*.dll",
-    "*.exe",
-    "*.msi",
-    "*.bin",
-    "*.dat",
-    "*.zip",
-    "*.7z",
-    "*.rar",
-    "*.tar",
-    "*.gz",
-    "*.png",
-    "*.jpg",
-    "*.jpeg",
-    "*.gif",
-    "*.webp",
-    "*.ico",
-    "*.bmp",
-    "*.pdf",
-    "*.doc",
-    "*.docx",
-    "*.xls",
-    "*.xlsx",
-    "*.ppt",
-    "*.pptx",
-    "*.log",
-    "*.tmp",
-    "*.bak"
-)
-
-$AllowedExtensions = @(
-    ".py",
-    ".pyi",
-    ".pyw",
-    ".md",
-    ".txt",
-    ".json",
-    ".jsonc",
-    ".yaml",
-    ".yml",
-    ".toml",
-    ".ini",
-    ".cfg",
-    ".conf",
-    ".csv",
-    ".sql",
-    ".ps1",
-    ".psm1",
-    ".psd1",
-    ".bat",
-    ".cmd",
-    ".sh"
-)
-
-$AllowedExactFileNames = @(
-    ".gitignore",
-    ".gitattributes",
-    ".editorconfig",
-    "requirements.txt",
-    "README",
-    "LICENSE"
-)
-
-function Get-RelativePathSafe {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$BasePath,
-
-        [Parameter(Mandatory = $true)]
-        [string]$FullPath
-    )
-
-    $NormalizedBase = $BasePath.TrimEnd("\", "/")
-
-    if ($FullPath.StartsWith($NormalizedBase, [System.StringComparison]::OrdinalIgnoreCase)) {
-        return $FullPath.Substring($NormalizedBase.Length).TrimStart("\", "/")
-    }
-
-    return $FullPath
-}
-
-function Test-IsExcludedDirectory {
-    param(
-        [AllowEmptyString()]
-        [string]$RelativeDirectory
-    )
-
-    if ([string]::IsNullOrWhiteSpace($RelativeDirectory)) {
-        return $false
-    }
-
-    $Parts = $RelativeDirectory -split "[\\/]+"
-
-    foreach ($Part in $Parts) {
-        foreach ($ExcludedName in $ExcludeDirectoryNames) {
-            if ($Part -ieq $ExcludedName) {
-                return $true
-            }
-        }
-    }
-
-    return $false
-}
-
-function Test-IsExcludedFileName {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$FileName
-    )
-
-    foreach ($ExcludedName in $ExcludeExactFileNames) {
-        if ($FileName -ieq $ExcludedName) {
-            return $true
-        }
-    }
-
-    foreach ($Pattern in $ExcludeFilePatterns) {
-        if ($FileName -like $Pattern) {
-            return $true
-        }
-    }
-
-    return $false
-}
-
-function Test-IsAllowedTextFile {
-    param(
-        [Parameter(Mandatory = $true)]
-        [System.IO.FileInfo]$File
-    )
-
-    foreach ($AllowedName in $AllowedExactFileNames) {
-        if ($File.Name -ieq $AllowedName) {
-            return $true
-        }
-    }
-
-    return ($AllowedExtensions -contains $File.Extension.ToLowerInvariant())
-}
-
-function Test-ShouldIncludeFile {
-    param(
-        [Parameter(Mandatory = $true)]
-        [System.IO.FileInfo]$File
-    )
-
-    $RelativePath = Get-RelativePathSafe -BasePath $ProjectRoot -FullPath $File.FullName
-    $RelativeDirectory = Split-Path $RelativePath -Parent
-
-    if (Test-IsExcludedDirectory -RelativeDirectory $RelativeDirectory) {
-        return $false
-    }
-
-    if (Test-IsExcludedFileName -FileName $File.Name) {
-        return $false
-    }
-
-    if (-not (Test-IsAllowedTextFile -File $File)) {
-        return $false
-    }
-
-    if ($File.Length -gt $MaxFileSizeBytes) {
-        return $false
-    }
-
-    return $true
-}
-
-function Add-DumpLine {
-    param(
-        [AllowEmptyString()]
-        [string]$Text = ""
-    )
-
-    Add-Content -LiteralPath $OutputFile -Value $Text -Encoding UTF8
-}
-
-function Get-SafeFileContent {
-    param(
-        [Parameter(Mandatory = $true)]
-        [System.IO.FileInfo]$File
-    )
-
-    try {
-        return Get-Content -LiteralPath $File.FullName -Raw -Encoding UTF8 -ErrorAction Stop
-    }
-    catch {
-        try {
-            return Get-Content -LiteralPath $File.FullName -Raw -ErrorAction Stop
-        }
-        catch {
-            return "[FILE READ ERROR: $($_.Exception.Message)]"
-        }
-    }
-}
-
-if ([string]::IsNullOrWhiteSpace($ProjectRoot)) {
-    Write-Host "ERROR: PSScriptRoot is empty." -ForegroundColor Red
-    exit 1
-}
-
-if (-not (Test-Path -LiteralPath $ProjectRoot -PathType Container)) {
-    Write-Host "ERROR: Project directory was not found:" -ForegroundColor Red
-    Write-Host $ProjectRoot -ForegroundColor Red
-    exit 1
-}
-
-if (-not (Test-Path -LiteralPath (Join-Path $ProjectRoot "db.py") -PathType Leaf)) {
-    Write-Host "ERROR: db.py was not found in the project root:" -ForegroundColor Red
-    Write-Host $ProjectRoot -ForegroundColor Red
-    exit 1
-}
-
-Write-Host ""
-Write-Host "Scanning project files..." -ForegroundColor Cyan
-
-$AllFiles = @(
-    Get-ChildItem -LiteralPath $ProjectRoot -Recurse -File -Force -ErrorAction SilentlyContinue
-)
-
-$IncludedFiles = @(
-    $AllFiles |
-        Where-Object { Test-ShouldIncludeFile -File $_ } |
-        Sort-Object FullName
-)
-
-$ExcludedFilesCount = $AllFiles.Count - $IncludedFiles.Count
-
-if (Test-Path -LiteralPath $OutputFile) {
-    Remove-Item -LiteralPath $OutputFile -Force
-}
-
-Set-Content -LiteralPath $OutputFile -Value "" -Encoding UTF8
-
-$CreatedAt = Get-Date -Format "yyyy-MM-dd HH:mm:ss K"
-$PowerShellVersion = $PSVersionTable.PSVersion.ToString()
-
-Add-DumpLine "============================================================"
-Add-DumpLine "ROM PROJECT SAFE FULL DUMP"
-Add-DumpLine "============================================================"
-Add-DumpLine ""
-Add-DumpLine "Created: $CreatedAt"
-Add-DumpLine "Project root: $ProjectRoot"
-Add-DumpLine "PowerShell: $PowerShellVersion"
-Add-DumpLine "Included files: $($IncludedFiles.Count)"
-Add-DumpLine "Excluded files: $ExcludedFilesCount"
-Add-DumpLine "Maximum file size: $MaxFileSizeMB MB"
-Add-DumpLine ""
-Add-DumpLine "SECURITY EXCLUSIONS:"
-Add-DumpLine "- environment secrets"
-Add-DumpLine "- SQLite databases and WAL/SHM files"
-Add-DumpLine "- virtual environments"
-Add-DumpLine "- IDE metadata"
-Add-DumpLine "- Git internals"
-Add-DumpLine "- patch and backup history"
-Add-DumpLine "- caches and compiled files"
-Add-DumpLine "- binary and archive files"
-Add-DumpLine "- previous ROM_FULL_DUMP files"
-Add-DumpLine ""
-Add-DumpLine "==================== PROJECT TREE ===================="
-Add-DumpLine ""
-Add-DumpLine $ProjectRoot
-
-if ($IncludedFiles.Count -eq 0) {
-    Add-DumpLine "[NO FILES INCLUDED]"
-}
-else {
-    foreach ($File in $IncludedFiles) {
-        $RelativePath = Get-RelativePathSafe -BasePath $ProjectRoot -FullPath $File.FullName
-        Add-DumpLine "- $RelativePath"
-    }
-}
-
-Add-DumpLine ""
-Add-DumpLine "==================== FILE CONTENTS ===================="
-Add-DumpLine ""
-
-$CurrentIndex = 0
-
-foreach ($File in $IncludedFiles) {
-    $CurrentIndex++
-    $RelativePath = Get-RelativePathSafe -BasePath $ProjectRoot -FullPath $File.FullName
-
-    $Percent = 0
-    if ($IncludedFiles.Count -gt 0) {
-        $Percent = [int](($CurrentIndex / $IncludedFiles.Count) * 100)
-    }
-
-    Write-Progress `
-        -Activity "Creating ROM_FULL_DUMP.txt" `
-        -Status "$CurrentIndex of $($IncludedFiles.Count): $RelativePath" `
-        -PercentComplete $Percent
-
-    Add-DumpLine "============================================================"
-    Add-DumpLine "FILE: $RelativePath"
-    Add-DumpLine "SIZE: $($File.Length) bytes"
-    Add-DumpLine "LAST WRITE: $($File.LastWriteTime.ToString('yyyy-MM-dd HH:mm:ss'))"
-    Add-DumpLine "============================================================"
-    Add-DumpLine ""
-
-    $Content = Get-SafeFileContent -File $File
-
-    if ([string]::IsNullOrEmpty($Content)) {
-        Add-DumpLine "[EMPTY FILE]"
-    }
-    else {
-        Add-DumpLine $Content
-    }
-
-    Add-DumpLine ""
-}
-
-Write-Progress -Activity "Creating ROM_FULL_DUMP.txt" -Completed
-
-$DumpItem = Get-Item -LiteralPath $OutputFile
-$SizeMB = $DumpItem.Length / 1MB
-
-Write-Host ""
-Write-Host "DONE" -ForegroundColor Green
-Write-Host "Dump created:" -ForegroundColor Green
-Write-Host $OutputFile -ForegroundColor Cyan
-Write-Host ""
-Write-Host "Included files: $($IncludedFiles.Count)" -ForegroundColor Green
-Write-Host "Excluded files: $ExcludedFilesCount" -ForegroundColor Green
-Write-Host ("Dump size: {0:N2} MB" -f $SizeMB) -ForegroundColor Green
-Write-Host ""
-Write-Host "The dump excludes environment secrets, databases, patch, backup and virtual environments." -ForegroundColor Yellow
-
-============================================================
 FILE: migrations\__init__.py
 SIZE: 40 bytes
 LAST WRITE: 2026-07-25 00:30:43
@@ -34330,8 +33968,8 @@ LAST WRITE: 2026-07-09 23:38:38
 
 ============================================================
 FILE: systems\auction_house_system.py
-SIZE: 174419 bytes
-LAST WRITE: 2026-08-03 15:12:58
+SIZE: 174263 bytes
+LAST WRITE: 2026-08-19 23:32:07
 ============================================================
 
 from datetime import datetime, timedelta
@@ -35266,6 +34904,112 @@ def _auction_is_equipment_row(row_dict):
     return False
 
 
+
+# ROM 17.1.0 CANONICAL AUCTION EQUIPMENT RUNE PRESERVATION
+
+def _auction_snapshot_inserted_runes(inventory_id):
+    """Read inserted rune sockets before the inventory row is removed."""
+    if not _auction_has_table("inventory_runes"):
+        return []
+    rows = cursor.execute(
+        """
+        SELECT ir.slot_index, ir.rune_item_id, ir.rune_stat, ir.rune_level,
+               ir.inserted_at, COALESCE(it.name, '')
+        FROM inventory_runes AS ir
+        LEFT JOIN items AS it ON it.id = ir.rune_item_id
+        WHERE ir.inventory_id=?
+        ORDER BY ir.slot_index ASC, ir.id ASC
+        """,
+        (int(inventory_id),),
+    ).fetchall()
+    return [
+        {
+            "slot_index": int(row[0]),
+            "rune_item_id": int(row[1]),
+            "rune_stat": str(row[2] or "").upper(),
+            "rune_level": int(row[3]),
+            "inserted_at": str(row[4] or ""),
+            "rune_name": str(row[5] or ""),
+        }
+        for row in rows
+    ]
+
+
+def _auction_restore_inserted_runes(inventory_id, snapshot):
+    """Restore snapshotted sockets on the newly created inventory row."""
+    runes = snapshot.get("inserted_runes") if isinstance(snapshot, dict) else None
+    if not isinstance(runes, list) or not runes:
+        return 0
+    if not _auction_has_table("inventory_runes"):
+        raise RuntimeError("inventory_runes table is missing")
+    restored = 0
+    seen = set()
+    for rune in runes:
+        slot_index = int(rune["slot_index"])
+        if slot_index in seen:
+            raise RuntimeError("duplicate rune slot in auction snapshot")
+        seen.add(slot_index)
+        cursor.execute(
+            """
+            INSERT INTO inventory_runes (
+                inventory_id, slot_index, rune_item_id,
+                rune_stat, rune_level, inserted_at
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                int(inventory_id), slot_index, int(rune["rune_item_id"]),
+                str(rune["rune_stat"]), int(rune["rune_level"]),
+                str(rune.get("inserted_at") or ""),
+            ),
+        )
+        restored += 1
+    return restored
+
+
+def _auction_equipment_type_label(snapshot):
+    if not isinstance(snapshot, dict):
+        return ""
+    from data.equipment_profiles import ARMOR_TYPE_LABELS, ITEM_SUBTYPE_LABELS
+    armor_type = str(snapshot.get("armor_type") or "").strip()
+    item_subtype = str(snapshot.get("item_subtype") or "").strip()
+    if armor_type:
+        return str(ARMOR_TYPE_LABELS.get(armor_type) or armor_type)
+    if item_subtype:
+        return str(ITEM_SUBTYPE_LABELS.get(item_subtype) or item_subtype)
+    return ""
+
+
+def _auction_equipment_type_line(snapshot):
+    label = _auction_equipment_type_label(snapshot)
+    return f"🏷 Тип предмета: [{label}]" if label else ""
+
+
+def _auction_rune_socket_lines(snapshot):
+    if not isinstance(snapshot, dict):
+        return []
+    slot_key = str(snapshot.get("slot_key") or "")
+    try:
+        from data.runes import get_rune_slot_limit
+        limit = int(get_rune_slot_limit(slot_key))
+    except Exception:
+        limit = 0
+    if limit <= 0:
+        return []
+    runes = snapshot.get("inserted_runes")
+    runes = runes if isinstance(runes, list) else []
+    by_slot = {int(row["slot_index"]): row for row in runes}
+    lines = [f"💠 Рунічні слоти: {len(by_slot)}/{limit}"]
+    for slot_index in range(limit):
+        rune = by_slot.get(slot_index)
+        if rune is None:
+            lines.append(f"• Слот {slot_index + 1}: порожній")
+            continue
+        name = str(rune.get("rune_name") or "").strip()
+        if not name:
+            name = f"Руна {rune.get('rune_stat', '')} {rune.get('rune_level', '')}".strip()
+        lines.append(f"• Слот {slot_index + 1}: {name}")
+    return lines
+
 def get_inventory_item_snapshot_for_auction(user_id, inventory_id):
     """
     Builds a full enough snapshot of an inventory item for Auction House listing.
@@ -35295,6 +35039,9 @@ def get_inventory_item_snapshot_for_auction(user_id, inventory_id):
     slot_key = _auction_get_str(data, "item_slot_key", "slot_key", default="")
     item_type = _auction_get_str(data, "item_type", "type", default="")
     item_category = _auction_get_str(data, "item_category", "category", default="")
+    armor_type = _auction_get_str(data, "armor_type", "item_armor_type", default="")
+    item_subtype = _auction_get_str(data, "item_subtype", "item_item_subtype", default="")
+    inserted_runes = _auction_snapshot_inserted_runes(inventory_id)
 
     snapshot = {
         "inventory_id": int(inventory_id),
@@ -35308,6 +35055,9 @@ def get_inventory_item_snapshot_for_auction(user_id, inventory_id):
         "slot_key": slot_key,
         "item_type": item_type,
         "item_category": item_category,
+        "armor_type": armor_type,
+        "item_subtype": item_subtype,
+        "inserted_runes": inserted_runes,
         "durability_current": durability_current,
         "durability_max": durability_max,
         "row": data,
@@ -36166,7 +35916,10 @@ def _auction_insert_inventory_from_snapshot(user_id, snapshot, quantity=None):
     placeholders = ", ".join(["?"] * len(insert_cols))
     sql = f"INSERT INTO inventory ({', '.join(insert_cols)}) VALUES ({placeholders})"
     cursor.execute(sql, tuple(insert_values))
-    return cursor.lastrowid
+    restored_inventory_id = cursor.lastrowid
+    if not is_stack:
+        _auction_restore_inserted_runes(restored_inventory_id, snapshot)
+    return restored_inventory_id
 
 
 def get_public_auction_lots_for_buyer(user_id, category=None, search_text=None, limit=8, offset=0, sort="new"):
@@ -36759,6 +36512,7 @@ def create_equipment_auction_lot(user_id, inventory_id, price):
 
         snapshot = check_inside["snapshot"]
         snapshot = _auction_enrich_equipment_snapshot_with_runtime_details(user_id, inventory_id, snapshot)
+        # Rune/type data is now fully captured before inventory deletion.
 
         cursor.execute("""
         INSERT INTO auction_lots (
@@ -37329,6 +37083,9 @@ def build_auction_sell_item_review_text(user_id, inventory_id, category):
         lines.append("")
         lines.append(_auction_inventory_style_type_line(AUCTION_CATEGORY_EQUIPMENT))
         lines.append(f"🎯 Слот: {_auction_inventory_style_slot(snapshot, slot_key, item_type)}")
+        type_line = _auction_equipment_type_line(snapshot)
+        if type_line:
+            lines.append(type_line)
 
         class_line = _auction_allowed_classes_line(snapshot)
         if class_line:
@@ -37365,6 +37122,11 @@ def build_auction_sell_item_review_text(user_id, inventory_id, category):
         if not damage_lines and not defense_lines and not bonus_lines:
             lines.append("")
             lines.append("ℹ️ Детальні характеристики для цього предмета не знайдені у snapshot.")
+
+        rune_lines = _auction_rune_socket_lines(snapshot)
+        if rune_lines:
+            lines.append("")
+            lines.extend(rune_lines)
 
         lines.append("")
         lines.append("Перевір характеристики предмета перед тим, як ввести ціну.")
@@ -37499,6 +37261,9 @@ def build_user_auction_lot_details(user_id, lot_id):
         lines.append("")
         lines.append(_auction_inventory_style_type_line(AUCTION_CATEGORY_EQUIPMENT))
         lines.append(f"🎯 Слот: {_auction_inventory_style_slot(snapshot, slot_key, item_type)}")
+        type_line = _auction_equipment_type_line(snapshot)
+        if type_line:
+            lines.append(type_line)
         if level:
             lines.append(f"🏷 Рівень предмета: {level} 🔒")
         if refine_level:
@@ -37519,6 +37284,10 @@ def build_user_auction_lot_details(user_id, lot_id):
             lines.append("")
             lines.append("📊 Бонуси:")
             lines.extend(bonus_lines)
+        rune_lines = _auction_rune_socket_lines(snapshot)
+        if rune_lines:
+            lines.append("")
+            lines.extend(rune_lines)
     else:
         lines.append("")
         lines.append(_auction_inventory_style_type_line(category))
@@ -38453,6 +38222,9 @@ def build_auction_buy_lot_details_v2(buyer_user_id, lot_id):
 
         lines.append(_auction_inventory_style_type_line(AUCTION_CATEGORY_EQUIPMENT))
         lines.append(f"🎯 Слот: {_auction_inventory_style_slot(snapshot, slot_key, item_type)}")
+        type_line = _auction_equipment_type_line(snapshot)
+        if type_line:
+            lines.append(type_line)
 
         try:
             allowed_classes = _auction_inventory_style_allowed_classes(snapshot)
@@ -38487,6 +38259,10 @@ def build_auction_buy_lot_details_v2(buyer_user_id, lot_id):
             lines.append("")
             lines.append("📊 Бонуси:")
             lines.extend(bonus_lines)
+        rune_lines = _auction_rune_socket_lines(snapshot)
+        if rune_lines:
+            lines.append("")
+            lines.extend(rune_lines)
     else:
         lines.append(_auction_inventory_style_type_line(category))
         lines.append(f"📦 Кількість: {quantity}")
@@ -72223,6 +71999,49 @@ print("[PASS] atomic resethero contract", {
     "lock_retries": 3,
     "handler_memory_cleanup": True,
 })
+
+============================================================
+FILE: tools\smoke_test_auction_equipment_runes_canonical_17_1_0.py
+SIZE: 1650 bytes
+LAST WRITE: 2026-08-19 23:32:07
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import ast
+import sys
+from pathlib import Path
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from systems import auction_house_system as auction
+
+def require(value, message):
+    if not value:
+        raise AssertionError(message)
+
+def main():
+    snapshot = {
+        "slot_key": "chest", "armor_type": "cloth",
+        "inserted_runes": [{"slot_index": 0, "rune_item_id": 501,
+            "rune_stat": "INT", "rune_level": 2,
+            "rune_name": "💠 Руна Інтелекту II"}],
+    }
+    require(auction._auction_equipment_type_line(snapshot) == "🏷 Тип предмета: [Тканина]", "type formatter")
+    lines = auction._auction_rune_socket_lines(snapshot)
+    require(lines[0] == "💠 Рунічні слоти: 1/3", "socket count")
+    require("Слот 1: 💠 Руна Інтелекту II" in lines[1], "inserted rune")
+    require(lines[3] == "• Слот 3: порожній", "empty socket")
+    source = (ROOT / "systems" / "auction_house_system.py").read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    for name in ("get_inventory_item_snapshot_for_auction", "_auction_insert_inventory_from_snapshot",
+                 "build_auction_sell_item_review_text", "build_user_auction_lot_details",
+                 "build_auction_buy_lot_details_v2"):
+        count = sum(isinstance(n, ast.FunctionDef) and n.name == name for n in tree.body)
+        require(count >= 1, f"missing {name}")
+    print("[PASS] Stage 17.1.0 canonical auction rune preservation")
+if __name__ == "__main__":
+    main()
 
 ============================================================
 FILE: tools\smoke_test_auction_lifecycle_contracts.py
