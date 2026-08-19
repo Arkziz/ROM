@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-20 00:38:25 +03:00
+Created: 2026-08-20 00:51:34 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9168
-Scanned files: 5779
-Included files: 414
-Excluded files: 5365
+Scanned files: 5793
+Included files: 415
+Excluded files: 5378
 Included source size: 3,08 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 5359
+- excluded directory: 5372
 - excluded file name or pattern: 6
 - unsupported file type: 0
 
@@ -401,6 +401,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_refined_display_name_signature_16_1_17.py
 - tools\smoke_test_refined_item_name_signature_16_1_5.py
 - tools\smoke_test_regen_contracts.py
+- tools\smoke_test_remove_redundant_player_hp_before_defeat_17_3_0_2.py
 - tools\smoke_test_resethero_registration_state_15_7_7_4.py
 - tools\smoke_test_resethero_telebot_state_cleanup_15_7_7_2.py
 - tools\smoke_test_rng_patch_regression.py
@@ -1019,7 +1020,7 @@ __all__ = [
 ============================================================
 FILE: data\bosses.py
 SIZE: 5320 bytes
-LAST WRITE: 2026-08-16 22:30:03
+LAST WRITE: 2026-08-20 00:45:16
 ============================================================
 
 """Canonical location-boss definitions for ROM Stage 15.
@@ -19254,8 +19255,8 @@ def get_item_by_inventory_id_full(inventory_id):
 
 ============================================================
 FILE: handlers\combat.py
-SIZE: 119258 bytes
-LAST WRITE: 2026-08-20 00:24:06
+SIZE: 119124 bytes
+LAST WRITE: 2026-08-20 00:40:32
 ============================================================
 
 from telebot import types
@@ -20939,10 +20940,7 @@ def build_lethal_combat_log(turn_context, player_hp, player_max_hp, durability_d
     if unique_parts:
         text += "\n".join(unique_parts) + "\n\n"
 
-    current_hp = max(0, int(player_hp or 0))
-    maximum_hp = max(1, int(player_max_hp or 1))
-    text += f"❤️ Здоров’я перед поразкою: {current_hp}/{maximum_hp}\n\n"
-
+    # ROM 17.3.0.2 REMOVE REDUNDANT PLAYER HP BEFORE DEFEAT
     mob = context.get("mob")
     if isinstance(mob, dict):
         enemy_name = str(mob.get("name") or "Противник")
@@ -81854,6 +81852,59 @@ print("[OK] regen runtime contracts")
 print("- before:", before_hp, "/", max_hp)
 print("- after:", after_hp, "/", db.get_max_hp(user_id))
 print("- result:", result)
+
+============================================================
+FILE: tools\smoke_test_remove_redundant_player_hp_before_defeat_17_3_0_2.py
+SIZE: 1878 bytes
+LAST WRITE: 2026-08-20 00:40:32
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import ast
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SOURCE = ROOT / "handlers" / "combat.py"
+
+
+def require(value, message):
+    if not value:
+        raise AssertionError(message)
+
+
+def main():
+    source = SOURCE.read_text(encoding="utf-8")
+    tree = ast.parse(source)
+    functions = [
+        node for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == "build_lethal_combat_log"
+    ]
+    require(len(functions) == 1, "build_lethal_combat_log must remain unique")
+    function_source = ast.get_source_segment(source, functions[0])
+    require("Здоров’я перед поразкою" not in function_source, "redundant player HP line remains")
+    require("Здоров’я противника" in function_source, "enemy HP line was removed")
+    require("Противник:" in function_source, "enemy name line was removed")
+    require("build_death_text" in function_source, "death summary call was removed")
+    require(source.count("# ROM 17.3.0.2 REMOVE REDUNDANT PLAYER HP BEFORE DEFEAT") == 1, "marker count")
+
+    namespace = {"build_death_text": lambda durability: "DEATH"}
+    exec(function_source, namespace)
+    text = namespace["build_lethal_combat_log"](
+        {"mob": {"name": "Ворог", "hp": 84, "max_hp": 310}},
+        0,
+        409,
+        {},
+    )
+    require("Здоров’я перед поразкою" not in text, "runtime redundant player HP line remains")
+    require("👹 Противник: Ворог" in text, "runtime enemy name missing")
+    require("❤️ Здоров’я противника: 84/310" in text, "runtime enemy HP missing")
+    require("DEATH" in text, "runtime death summary missing")
+    print("[PASS] Stage 17.3.0.2 redundant player HP line removed")
+
+
+if __name__ == "__main__":
+    main()
 
 ============================================================
 FILE: tools\smoke_test_resethero_registration_state_15_7_7_4.py
