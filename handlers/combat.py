@@ -1637,8 +1637,10 @@ def build_death_text(durability_damage):
     return text
 
 
+# ROM 17.3.0.1 DEATH DURABILITY CALL SIGNATURE RECOVERY
 def build_lethal_combat_log(turn_context, player_hp, player_max_hp, durability_damage):
-    """Preserve the terminal turn narrative before the standard death summary."""
+    """Preserve the terminal turn narrative and live enemy HP before death cleanup."""
+    # ROM 17.3.0 PVE DEFEAT ENEMY HP
     context = dict(turn_context or {})
     parts = []
 
@@ -1677,11 +1679,25 @@ def build_lethal_combat_log(turn_context, player_hp, player_max_hp, durability_d
     if unique_parts:
         text += "\n".join(unique_parts) + "\n\n"
 
-    current_hp = max(0, int(player_hp or 0))
-    maximum_hp = max(1, int(player_max_hp or 1))
-    text += f"❤️ Здоров’я перед поразкою: {current_hp}/{maximum_hp}\n\n"
+    # ROM 17.3.0.2 REMOVE REDUNDANT PLAYER HP BEFORE DEFEAT
+    mob = context.get("mob")
+    if isinstance(mob, dict):
+        enemy_name = str(mob.get("name") or "Противник")
+        try:
+            enemy_current_hp = max(0, int(round(float(mob.get("hp", 0) or 0))))
+        except Exception:
+            enemy_current_hp = 0
+        try:
+            enemy_max_hp = max(1, int(round(float(mob.get("max_hp", enemy_current_hp) or enemy_current_hp or 1))))
+        except Exception:
+            enemy_max_hp = max(1, enemy_current_hp)
+        enemy_current_hp = min(enemy_current_hp, enemy_max_hp)
+        text += f"👹 Противник: {enemy_name}\n"
+        text += f"❤️ Здоров’я противника: {enemy_current_hp}/{enemy_max_hp}\n\n"
+
     text += build_death_text(durability_damage)
     return text
+
 
 
 def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, daily_result, prefix_text=""):
@@ -2223,8 +2239,7 @@ def register_combat_handlers(bot):
 
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(
-                user_id=user_id,
-                amount=5
+                user_id=user_id
             )
 
             set_current_hp(user_id, 1)
@@ -2618,8 +2633,7 @@ def register_combat_handlers(bot):
 
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(
-                user_id=user_id,
-                amount=5
+                user_id=user_id
             )
             set_current_hp(user_id, 1)
             try:
@@ -3157,8 +3171,7 @@ def register_combat_handlers(bot):
 
         if player_hp <= 0:
             durability_damage = damage_equipped_items_on_death(
-                user_id=user_id,
-                amount=5
+                user_id=user_id
             )
 
             set_current_hp(user_id, 1)
