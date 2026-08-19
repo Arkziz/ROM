@@ -89,96 +89,122 @@ def get_item(item_id):
 # ADD ITEMS
 # ==============================
 
-def add_item(user_id, item_id, quantity=1, durability=100):
-    """
-    Додає предмет в інвентар.
-    Підтримує стакування.
-    """
-    capacity = get_bag_capacity(user_id)
-    used_slots = get_inventory_used_slots(user_id)
-    
-    if used_slots >= capacity:
-        return {
-            "success": False,
-            "message": "🎒 Сумка переповнена!"
-        }
-    
-    # Get item info
-    item = get_item(item_id)
-    
-    if not item:
-        return {
-            "success": False,
-            "message": "❌ Предмет не знайдено."
-        }
-    
-    max_stack = item[6] if len(item) > 6 else 1  # max_stack field
-    
+
+# ROM 17.2.0 CANONICAL STACK NORMALIZATION
+
+def _inventory_table_exists(table_name):
+    row = cursor.execute(
+        "SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",
+        (str(table_name),),
+    ).fetchone()
+    return bool(row)
+
+
+def _inventory_reserved_ids_for_item(user_id, item_id):
+    """Return reserved row IDs; a reservation protects the whole user/item group."""
+    if not _inventory_table_exists("inventory_reservations"):
+        return set()
     try:
-        max_stack = int(max_stack or 1)
+        rows = cursor.execute(
+            """
+            SELECT DISTINCT r.inventory_id
+            FROM inventory_reservations AS r
+            JOIN inventory AS inv ON inv.id=r.inventory_id
+            WHERE inv.user_id=? AND inv.item_id=? AND COALESCE(r.quantity, 0)>0
+            """,
+            (int(user_id), int(item_id)),
+        ).fetchall()
+        return {int(row[0]) for row in rows}
+    except Exception:
+        return set()
+
+
+def _inventory_required_new_stacks(quantity, free_space, max_stack):
+    remaining = max(0, int(quantity) - max(0, int(free_space)))
+    if remaining <= 0:
+        return 0
+    return (remaining + int(max_stack) - 1) // int(max_stack)
+
+def add_item(user_id, item_id, quantity=1, durability=100):
+    """Atomically add an item, filling every compatible partial stack first."""
+    try:
+        user_id = int(user_id)
+        item_id = int(item_id)
+        quantity = int(quantity)
+    except Exception:
+        return {"success": False, "message": "❌ Некоректні дані предмета."}
+    if quantity <= 0:
+        return {"success": False, "message": "❌ Кількість має бути більшою за нуль."}
+
+    item = get_item(item_id)
+    if not item:
+        return {"success": False, "message": "❌ Предмет не знайдено."}
+    try:
+        max_stack = max(1, int(item[6] or 1))
     except Exception:
         max_stack = 1
-    
-    # If stackable, try to add to existing stack
-    if max_stack > 1:
-        cursor.execute("""
-        SELECT id, quantity
-        FROM inventory
-        WHERE user_id=? AND item_id=? AND quantity < ?
-        ORDER BY quantity DESC
-        LIMIT 1
-        """, (user_id, item_id, max_stack))
-        
-        existing = cursor.fetchone()
-        
-        if existing:
-            inventory_id, current_quantity = existing
-            
-            try:
-                current_quantity = int(current_quantity or 0)
-            except Exception:
-                current_quantity = 0
-            
-            space_in_stack = max_stack - current_quantity
-            
-            if space_in_stack > 0:
-                add_to_stack = min(quantity, space_in_stack)
-                new_quantity = current_quantity + add_to_stack
-                
-                cursor.execute("""
-                UPDATE inventory
-                SET quantity=?
-                WHERE id=?
-                """, (new_quantity, inventory_id))
-                
-                conn.commit()
-                
-                quantity -= add_to_stack
-                
-                if quantity <= 0:
-                    return {
-                        "success": True,
-                        "message": f"✅ Додано {item[1]} x{add_to_stack}"
-                    }
-    
-    # Create new stack
-    if quantity > 0:
-        cursor.execute("""
-        INSERT INTO inventory (user_id, item_id, quantity, durability)
-        VALUES (?, ?, ?, ?)
-        """, (user_id, item_id, quantity, durability))
-        
+
+    original_quantity = quantity
+    savepoint = "rom_add_item_17_2_0"
+    try:
+        cursor.execute(f"SAVEPOINT {savepoint}")
+        capacity = get_bag_capacity(user_id)
+        used_slots = get_inventory_used_slots(user_id)
+
+        partial = []
+        free_space = 0
+        if max_stack > 1 and not _inventory_reserved_ids_for_item(user_id, item_id):
+            partial = cursor.execute(
+                """
+                SELECT id, quantity
+                FROM inventory
+                WHERE user_id=? AND item_id=? AND quantity>0 AND quantity<?
+                ORDER BY id ASC
+                """,
+                (user_id, item_id, max_stack),
+            ).fetchall()
+            free_space = sum(max(0, max_stack-int(row[1] or 0)) for row in partial)
+
+        new_stacks = _inventory_required_new_stacks(quantity, free_space, max_stack)
+        if used_slots + new_stacks > capacity:
+            cursor.execute(f"ROLLBACK TO {savepoint}")
+            cursor.execute(f"RELEASE {savepoint}")
+            return {"success": False, "message": "🎒 Сумка переповнена!"}
+
+        for inventory_id, current in partial:
+            if quantity <= 0:
+                break
+            current = max(0, int(current or 0))
+            moved = min(quantity, max_stack-current)
+            if moved > 0:
+                cursor.execute(
+                    "UPDATE inventory SET quantity=? WHERE id=? AND user_id=? AND item_id=?",
+                    (current+moved, int(inventory_id), user_id, item_id),
+                )
+                if cursor.rowcount != 1:
+                    raise RuntimeError("Не вдалося оновити існуючий стак.")
+                quantity -= moved
+
+        while quantity > 0:
+            stack_quantity = min(quantity, max_stack)
+            cursor.execute(
+                "INSERT INTO inventory (user_id, item_id, quantity, durability) VALUES (?, ?, ?, ?)",
+                (user_id, item_id, stack_quantity, durability),
+            )
+            quantity -= stack_quantity
+
+        cursor.execute(f"RELEASE {savepoint}")
         conn.commit()
-        
-        return {
-            "success": True,
-            "message": f"✅ Додано {item[1]} x{quantity}"
-        }
-    
-    return {
-        "success": True,
-        "message": "✅ Предмет додано"
-    }
+        return {"success": True, "message": f"✅ Додано {item[1]} x{original_quantity}"}
+    except Exception as error:
+        try:
+            cursor.execute(f"ROLLBACK TO {savepoint}")
+            cursor.execute(f"RELEASE {savepoint}")
+        except Exception:
+            conn.rollback()
+        return {"success": False, "message": f"❌ Не вдалося додати предмет: {error}"}
+
+
 
 
 # ==============================
