@@ -40,35 +40,70 @@ def _auction_snapshot_typed_name_11_4_1(snapshot):
     )
 
 def _auction_lot_typed_name_17_1_0(lot):
-    """Return lot name with snapshot armor/subtype label; no rune count."""
+    """Use [armor type] only for armor slots; never type weapons or jewelry."""
+    # ROM 17.4.4.1 AUCTION ARMOR-ONLY LOT DISPLAY NAME
     try:
         name = str(lot["item_name"] or "Предмет")
         if str(lot["category"] or "") != "equipment":
             return name
+
         raw = lot["item_snapshot_json"]
         snapshot = json.loads(raw) if isinstance(raw, str) and raw else (raw or {})
         if not isinstance(snapshot, dict):
             return name
+
         from data.equipment_profiles import ARMOR_TYPE_LABELS, ITEM_SUBTYPE_LABELS
-        armor_type = str(snapshot.get("armor_type") or "").strip()
-        item_subtype = str(snapshot.get("item_subtype") or "").strip()
-        label = ARMOR_TYPE_LABELS.get(armor_type) if armor_type else ITEM_SUBTYPE_LABELS.get(item_subtype)
-        label = str(label or armor_type or item_subtype or "").strip()
-        if not label or f"[{label}]" in name:
+
+        slot_key = str(snapshot.get("slot_key") or "").strip().lower()
+        armor_type = str(snapshot.get("armor_type") or "").strip().lower()
+        item_subtype = str(snapshot.get("item_subtype") or "").strip().lower()
+        armor_slots = frozenset((
+            "helmet", "shoulders", "chest", "gloves", "legs", "boots",
+        ))
+
+        # Normalize display-only artifacts from older formatters. The stored lot
+        # name and snapshot are never mutated.
+        known_labels = set()
+        if armor_type:
+            known_labels.add(str(ARMOR_TYPE_LABELS.get(armor_type) or armor_type).strip())
+        if item_subtype:
+            known_labels.add(str(ITEM_SUBTYPE_LABELS.get(item_subtype) or item_subtype).strip())
+
+        if slot_key not in armor_slots:
+            for label in known_labels:
+                if label:
+                    name = name.replace(f" [{label}]", "")
             return name
+
+        if not armor_type:
+            return name
+        armor_label = str(ARMOR_TYPE_LABELS.get(armor_type) or armor_type).strip()
+        if not armor_label:
+            return name
+
+        # Remove an obsolete subtype token before applying the armor-only token.
+        for label in known_labels:
+            if label and label != armor_label:
+                name = name.replace(f" [{label}]", "")
+
+        typed_token = f"[{armor_label}]"
+        if typed_token.casefold() in name.casefold():
+            return name
+
         marker = " рівня"
         if marker in name:
             index = name.rfind(marker)
             before, after = name[:index], name[index:]
             parts = before.rsplit(" ", 1)
             if len(parts) == 2 and parts[1].isdigit():
-                return f"{parts[0]} [{label}] {parts[1]}{after}"
-        return f"{name} [{label}]"
+                return f"{parts[0]} {typed_token} {parts[1]}{after}"
+        return f"{name} {typed_token}"
     except Exception:
         try:
             return str(lot["item_name"] or "Предмет")
         except Exception:
             return "Предмет"
+
 
 # ✅ AUCTION HOUSE POTION BUTTON CONFLICT FIX V1
 # Кнопка категорії зілля в Торговому Домі не має збігатися з бойовою кнопкою "🧪 Зілля".
