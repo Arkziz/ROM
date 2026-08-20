@@ -1288,6 +1288,11 @@ def _trade_base_build_item_snapshot_12_6_3(user_id, inventory_id, *, db_path=Non
             ("rarity", ("rarity",)),
             ("level", ("level", "required_level")),
             ("tradeable", ("tradeable",)),
+            # ROM 17.4.3 TRADE SNAPSHOT EQUIPMENT TYPE FIELDS
+            ("slot_key", ("slot_key", "equipment_slot", "slot")),
+            ("armor_type", ("armor_type",)),
+            ("item_subtype", ("item_subtype", "subtype")),
+            ("type", ("type",)),
         ):
             column = _first_existing(item_columns, candidates)
             item_select.append(f'i."{column}" AS "{output}"' if column else f'NULL AS "{output}"')

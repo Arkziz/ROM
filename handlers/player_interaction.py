@@ -118,7 +118,8 @@ TRADE_EDITOR_PAGE_SIZE = 8
 
 def _trade_offer_name(offer):
     snapshot = offer.get("snapshot") or {}
-    return str(snapshot.get("item_name") or snapshot.get("name") or f"Предмет #{offer.get('item_id')}")
+    return _trade_add_list_display_name_12_6_3a(snapshot)
+
 
 
 def _trade_offer_lines(offers):
@@ -144,7 +145,7 @@ def _trade_inventory_kb(result):
     kb = types.InlineKeyboardMarkup(row_width=1)
     for item in result.get("items", []):
         snapshot = item.get("snapshot") or {}
-        name = str(snapshot.get("item_name") or snapshot.get("name") or f"Предмет #{snapshot.get('item_id')}")
+        name = _trade_add_list_display_name_12_6_3a(snapshot)
         available = int(item.get("available_quantity") or 1)
         kb.add(types.InlineKeyboardButton(
             f"{name} (доступно {available})",
@@ -531,7 +532,8 @@ from systems.player_interaction_system import (
 
 def _trade_ux_offer_name(offer):
     snapshot = offer.get("snapshot") or {}
-    return str(snapshot.get("item_name") or snapshot.get("name") or f"Предмет #{offer.get('item_id')}")
+    return _trade_add_list_display_name_12_6_3a(snapshot)
+
 
 
 def _trade_ux_is_equipment(snapshot):
@@ -753,8 +755,11 @@ def _trade_editor_text(state):
 
 def _trade_preview_text_12_6_2(preview):
     snapshot = preview.get("snapshot") or {}
-    name = str(snapshot.get("item_name") or snapshot.get("name") or f"Предмет #{preview.get('inventory_id')}")
-    lines = [f"📦 <b>{name}</b>", ""]
+    name = _trade_add_list_display_name_12_6_3a(snapshot)
+    if preview.get("is_equipment"):
+        lines = ["📦 Предмет", "", f"<b>{name}</b>", ""]
+    else:
+        lines = [f"📦 <b>{name}</b>", ""]
     lines.extend(_trade_snapshot_lines_12_6_2(snapshot, include_quantity=preview.get("is_stack")))
     if preview.get("is_equipment"):
         lines.extend(["", "Додати цей предмет до пропозиції?"])
@@ -768,6 +773,8 @@ def _trade_preview_text_12_6_2(preview):
             "", "Змініть кількість кнопками нижче або додайте весь доступний стек.",
         ])
     return "\n".join(lines)
+
+
 
 
 def _trade_preview_equipment_kb_12_6_2(trade_id, inventory_id, page):
@@ -1014,26 +1021,58 @@ _TRADE_ARMOR_SLOT_KEYS_12_6_3A = frozenset((
 
 
 def _trade_add_list_display_name_12_6_3a(snapshot):
-    """Build the add-list name and restore canonical [Armor type] display."""
+    """Mirror inventory naming: rarity icon, armor type before level, no other type suffix."""
+    # ROM 17.4.3.1 RESTORE TRADE RARITY ICONS AND ARMOR-ONLY TYPE
     snapshot = snapshot or {}
     name = str(
         snapshot.get("item_name")
         or snapshot.get("name")
         or f"Предмет #{snapshot.get('item_id')}"
     )
+    category = str(snapshot.get("category") or "").strip().lower()
     slot_key = str(snapshot.get("slot_key") or "").strip().lower()
     armor_type = str(snapshot.get("armor_type") or "").strip().lower()
-    if slot_key in _TRADE_ARMOR_SLOT_KEYS_12_6_3A and armor_type:
-        armor_label = ARMOR_TYPE_LABELS.get(armor_type, armor_type)
-        typed_suffix = f"[{armor_label}]"
-        if typed_suffix.casefold() not in name.casefold():
-            level_token = str(snapshot.get("item_level") or snapshot.get("level") or "").strip()
-            if level_token:
-                marker = f" {level_token} рівня"
-                if marker in name:
-                    return name.replace(marker, f" {typed_suffix}{marker}", 1)
-            return f"{name} {typed_suffix}"
-    return name
+    equipment_like = (
+        category in ("equipment", "weapon", "armor", "jewelry")
+        or bool(slot_key)
+        or snapshot.get("durability") is not None
+        or snapshot.get("max_durability") is not None
+    )
+    if not equipment_like:
+        return name
+
+    # Keep the same rarity markers used by the regular inventory UI.
+    rarity = str(snapshot.get("rarity") or "").strip().lower()
+    rarity_icon = {
+        "common": "⚪",
+        "uncommon": "🟢",
+        "rare": "🔵",
+        "epic": "🟣",
+    }.get(rarity, "")
+    visible_rarity_icons = ("⚪", "⚪️", "🟢", "🔵", "🟣")
+    if rarity_icon and not name.lstrip().startswith(visible_rarity_icons):
+        name = f"{rarity_icon} {name}"
+
+    # Canonical inventory rule: square-bracket type is armor-only.
+    if slot_key not in _TRADE_ARMOR_SLOT_KEYS_12_6_3A or not armor_type:
+        return name
+    armor_label = str(ARMOR_TYPE_LABELS.get(armor_type, armor_type))
+    if not armor_label:
+        return name
+    typed_token = f"[{armor_label}]"
+    if typed_token.casefold() in name.casefold():
+        return name
+
+    level_token = str(
+        snapshot.get("item_level") or snapshot.get("level") or ""
+    ).strip()
+    if level_token:
+        marker = f" {level_token} рівня"
+        if marker in name:
+            return name.replace(marker, f" {typed_token}{marker}", 1)
+    return f"{name} {typed_token}"
+
+
 
 
 # Final override of the add-list keyboard. It preserves 12.6.2 preview routing
@@ -1104,85 +1143,123 @@ def _trade_equipment_usage_label_12_6_3b(snapshot):
     return ""
 
 
+def _trade_allowed_classes_text_17_4_3_2(snapshot):
+    """Build the same class-compatibility line used by equipment inventory details."""
+    from data.classes import CLASS_CONFIGS
+    from data.equipment_profiles import (
+        ARMOR_ALLOWED_BY_CLASS,
+        MAIN_HAND_ALLOWED_BY_CLASS,
+        OFF_HAND_ALLOWED_BY_CLASS,
+    )
+
+    slot_key = str(snapshot.get("slot_key") or "").strip().lower()
+    armor_type = str(snapshot.get("armor_type") or "").strip().lower()
+    subtype = str(snapshot.get("item_subtype") or "").strip().lower()
+    allowed = []
+    if slot_key in _TRADE_ARMOR_SLOT_KEYS_12_6_3A:
+        if not armor_type:
+            return "👥 Підходить класам: усім класам (універсальна броня)"
+        allowed = [key for key, value in ARMOR_ALLOWED_BY_CLASS.items() if value == armor_type]
+    elif slot_key == "main_hand":
+        if not subtype:
+            return "👥 Підходить класам: усім класам (універсальна зброя)"
+        allowed = [key for key, values in MAIN_HAND_ALLOWED_BY_CLASS.items() if subtype in values]
+    elif slot_key == "off_hand":
+        if not subtype:
+            return "👥 Підходить класам: усім класам (універсальний предмет другої руки)"
+        allowed = [key for key, values in OFF_HAND_ALLOWED_BY_CLASS.items() if subtype in values]
+    else:
+        return "👥 Підходить класам: усім класам"
+    if not allowed:
+        return "👥 Підходить класам: не визначено"
+    names = [str(CLASS_CONFIGS.get(key, {}).get("name", key)) for key in allowed]
+    return f"👥 Підходить класам: {', '.join(names)}"
+
+
 def _trade_snapshot_lines_12_6_2(snapshot, include_quantity=False):
-    """Final 12.6.3b preview formatter.
-
-    Stackable items show `Кількість: N`. Technical weapon_hands defaults are
-    ignored outside main/off-hand equipment. Weapons show readable usage.
-    """
+    """Render trade details in the established inventory style without comparison block."""
+    # ROM 17.4.3.2 ALIGN TRADE EQUIPMENT PREVIEW WITH INVENTORY
     snapshot = snapshot or {}
-    lines = []
-    lines.append(f"Категорія: {_trade_category_ua_12_6_3(snapshot.get('category'))}")
+    category = str(snapshot.get("category") or "").strip().lower()
+    slot_key = str(snapshot.get("slot_key") or "").strip().lower()
+    is_equipment = (
+        category in ("equipment", "weapon", "armor", "jewelry")
+        or bool(slot_key)
+        or snapshot.get("durability") is not None
+        or snapshot.get("max_durability") is not None
+    )
+    if not is_equipment:
+        lines = [f"Категорія: {_trade_category_ua_12_6_3(category)}"]
+        if include_quantity and snapshot.get("quantity") is not None:
+            lines.append(f"Кількість: {int(snapshot.get('quantity') or 0)}")
+        return lines
 
-    rarity = str(snapshot.get("rarity") or "").strip().lower()
-    if rarity:
-        lines.append(f"Рідкість: {_TRADE_RARITY_LABELS_12_6_2.get(rarity, rarity)}")
-
+    lines = [
+        "🧰 Тип: спорядження",
+        f"🎯 Слот: {EQUIPMENT_SLOTS.get(slot_key, slot_key)}",
+        _trade_allowed_classes_text_17_4_3_2(snapshot),
+    ]
     level = snapshot.get("item_level")
     if level is None:
         level = snapshot.get("level")
     if level is not None:
-        lines.append(f"Рівень предмета: {level}")
+        lines.append(f"🏷 Рівень предмета: {level}")
 
-    slot_key = str(snapshot.get("slot_key") or "").strip().lower()
-    if slot_key:
-        lines.append(f"Слот: {EQUIPMENT_SLOTS.get(slot_key, slot_key)}")
+    owner_id = snapshot.get("user_id")
+    if owner_id is not None:
+        try:
+            from db import get_player_level
+            player_level = int(get_player_level(int(owner_id)))
+            if level is not None:
+                lines[-1] += " ✅" if player_level >= int(level) else " 🔒"
+            lines.append(f"👤 Твій рівень: {player_level}")
+        except Exception:
+            pass
 
-    armor_type = str(snapshot.get("armor_type") or "").strip().lower()
-    if armor_type:
-        lines.append(f"Тип броні: {ARMOR_TYPE_LABELS.get(armor_type, armor_type)}")
-
-    subtype = str(snapshot.get("item_subtype") or "").strip().lower()
-    if subtype:
-        lines.append(f"Тип предмета: {ITEM_SUBTYPE_LABELS.get(subtype, subtype)}")
-
-    usage = _trade_equipment_usage_label_12_6_3b(snapshot)
-    if usage:
-        lines.append(f"Використання: {usage}")
-
-    attack_type = str(snapshot.get("weapon_attack_type") or "").strip().lower()
-    if attack_type:
-        lines.append(f"Тип атаки: {_TRADE_ATTACK_LABELS_12_6_3.get(attack_type, attack_type)}")
+    durability = snapshot.get("durability")
+    max_durability = snapshot.get("max_durability")
+    if durability is not None:
+        lines.append(
+            f"🧱 Міцність: {durability}/{max_durability if max_durability is not None else 100}"
+        )
 
     physical_min = int(snapshot.get("weapon_min_damage") or 0)
     physical_max = int(snapshot.get("weapon_max_damage") or 0)
     magic_min = int(snapshot.get("weapon_min_magic_damage") or 0)
     magic_max = int(snapshot.get("weapon_max_magic_damage") or 0)
     if physical_min or physical_max:
-        lines.append(f"Фізична шкода: {physical_min}-{physical_max}")
+        lines.append(f"⚔️ Фізична шкода: {physical_min}-{physical_max}")
     if magic_min or magic_max:
-        lines.append(f"Магічна шкода: {magic_min}-{magic_max}")
+        lines.append(f"🔮 Магічна шкода: {magic_min}-{magic_max}")
 
-    durability = snapshot.get("durability")
-    max_durability = snapshot.get("max_durability")
-    if durability is not None:
-        lines.append(
-            f"Міцність: {durability}/{max_durability if max_durability is not None else 100}"
-        )
-
-    refine_level = int(snapshot.get("refine_level") or 0)
-    if refine_level:
-        lines.append(f"Заточка: +{refine_level}")
-
-    stats = []
-    for key, label in _TRADE_STAT_LABELS_12_6_3.items():
+    stat_labels = {
+        "bonus_str": "💪 Сила",
+        "bonus_dex": "🎯 Спритність",
+        "bonus_int": "🔮 Інтелект",
+        "bonus_wis": "🦉 Мудрість",
+        "bonus_sta": "🛡 Витривалість",
+        "pdef": "🛡 Фіз. захист",
+        "mdef": "🔮 Маг. захист",
+    }
+    bonuses = []
+    for key, label in stat_labels.items():
         value = int(snapshot.get(key) or 0)
         if value:
-            stats.append(f"• {label}: +{value}")
-    if stats:
-        lines.extend(["", "Характеристики:", *stats])
+            bonuses.append(f"• {label} +{value}")
+    lines.extend(["", "📊 Бонуси:"])
+    lines.extend(bonuses or ["• немає"])
 
-    runes = list(snapshot.get("runes") or [])
-    if runes:
-        lines.extend([
-            "", "Вставлені руни:",
-            *[f"• {row.get('rune_name') or row.get('rune_item_id')}" for row in runes],
-        ])
-
-    if include_quantity and snapshot.get("quantity") is not None:
-        lines.append(f"Кількість: {int(snapshot.get('quantity') or 0)}")
-
+    inventory_id = snapshot.get("inventory_id")
+    if owner_id is not None and inventory_id is not None:
+        try:
+            from systems.rune_system import format_equipment_rune_slots_text
+            rune_block = format_equipment_rune_slots_text(int(owner_id), int(inventory_id)).strip()
+            if rune_block:
+                lines.extend(["", *rune_block.splitlines()])
+        except Exception:
+            pass
     return lines
+
 
 # ROM 12.6.4 PLAYER TRADE NAVIGATION LOCK AND ITEM CATEGORIES
 from keyboards import main_kb

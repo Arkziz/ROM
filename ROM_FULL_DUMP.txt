@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-20 14:18:38 +03:00
+Created: 2026-08-20 15:07:03 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9168
-Scanned files: 5829
-Included files: 417
-Excluded files: 5412
+Scanned files: 5859
+Included files: 419
+Excluded files: 5440
 Included source size: 3,09 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 5406
+- excluded directory: 5434
 - excluded file name or pattern: 6
 - unsupported file type: 0
 
@@ -225,6 +225,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\run_rng_patch_regression.py
 - tools\run_simulation_canonical_parity_report.py
 - tools\run_world_progression_sim.py
+- tools\smoke_test_atomic_quest_shop_contract_17_5_1.py
 - tools\smoke_test_atomic_resethero_15_7_7.py
 - tools\smoke_test_auction_equipment_runes_canonical_17_1_0.py
 - tools\smoke_test_auction_lifecycle_contracts.py
@@ -434,6 +435,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_stage_11_final_audit.py
 - tools\smoke_test_static_item_seed_contracts.py
 - tools\smoke_test_trade_cancel_callback_routing.py
+- tools\smoke_test_trade_equipment_type_ui_17_4_3.py
 - tools\smoke_test_trade_pve_busy_detection_16_1_20.py
 - tools\smoke_test_trade_request_sender_feedback.py
 - tools\smoke_test_trader_auction_equipment_type_display.py
@@ -7041,8 +7043,8 @@ __all__ = ['create_generated_equipment_item', 'create_generated_equipment_item_f
 
 ============================================================
 FILE: db_modules\inventory.py
-SIZE: 13039 bytes
-LAST WRITE: 2026-08-20 00:57:34
+SIZE: 12928 bytes
+LAST WRITE: 2026-08-20 14:27:50
 ============================================================
 
 """
@@ -7172,9 +7174,9 @@ def _inventory_required_new_stacks(quantity, free_space, max_stack):
         return 0
     return (remaining + int(max_stack) - 1) // int(max_stack)
 
-def add_item(user_id, item_id, quantity=1, durability=100):
-    """Atomically add items, respecting max_stack and the canonical award result contract."""
-    # ROM 17.2.0.3 CENTRAL DROP STACK AWARD CONTRACT RECOVERY
+def add_item(user_id, item_id, quantity=1, durability=100, commit=True):
+    """Add items atomically; commit=False leaves final transaction ownership to caller."""
+    # ROM 17.5.1 ADD_ITEM TRANSACTION OWNERSHIP
     try:
         user_id = int(user_id)
         item_id = int(item_id)
@@ -7186,12 +7188,8 @@ def add_item(user_id, item_id, quantity=1, durability=100):
         return {"success": False, "name": "Предмет", "added": 0, "lost": 0,
                 "message": "❌ Кількість має бути більшою за нуль."}
 
-    # Never use positional SELECT * indexes for max_stack. The items schema puts
-    # weapon_hands before max_stack, which previously made every rune/potion act
-    # as max_stack=1 during runtime awards.
     item = cursor.execute(
-        "SELECT name, COALESCE(max_stack, 1) FROM items WHERE id=?",
-        (item_id,),
+        "SELECT name, COALESCE(max_stack, 1) FROM items WHERE id=?", (item_id,)
     ).fetchone()
     if not item:
         return {"success": False, "name": "Предмет", "added": 0, "lost": quantity,
@@ -7199,7 +7197,7 @@ def add_item(user_id, item_id, quantity=1, durability=100):
     name = str(item[0] or "Предмет")
     max_stack = max(1, int(item[1] or 1))
     requested = quantity
-    savepoint = "rom_add_item_17_2_0_3"
+    savepoint = "rom_add_item_17_5_1"
 
     try:
         cursor.execute(f"SAVEPOINT {savepoint}")
@@ -7207,7 +7205,6 @@ def add_item(user_id, item_id, quantity=1, durability=100):
         used_slots = get_inventory_used_slots(user_id)
         partial = []
         free_space = 0
-
         if max_stack > 1 and not _inventory_reserved_ids_for_item(user_id, item_id):
             partial = cursor.execute(
                 """SELECT id, quantity FROM inventory
@@ -7222,7 +7219,7 @@ def add_item(user_id, item_id, quantity=1, durability=100):
             cursor.execute(f"ROLLBACK TO {savepoint}")
             cursor.execute(f"RELEASE {savepoint}")
             return {"success": False, "name": name, "added": 0, "lost": requested,
-                    "used_slots": used_slots, "capacity": capacity,
+                    "inventory_id": None, "used_slots": used_slots, "capacity": capacity,
                     "message": "🎒 Сумка переповнена!"}
 
         first_inventory_id = None
@@ -7251,7 +7248,8 @@ def add_item(user_id, item_id, quantity=1, durability=100):
             quantity -= stack_quantity
 
         cursor.execute(f"RELEASE {savepoint}")
-        conn.commit()
+        if commit:
+            conn.commit()
         return {"success": True, "name": name, "added": requested, "lost": 0,
                 "inventory_id": first_inventory_id,
                 "used_slots": get_inventory_used_slots(user_id), "capacity": capacity,
@@ -7261,9 +7259,12 @@ def add_item(user_id, item_id, quantity=1, durability=100):
             cursor.execute(f"ROLLBACK TO {savepoint}")
             cursor.execute(f"RELEASE {savepoint}")
         except Exception:
-            conn.rollback()
+            if commit:
+                conn.rollback()
         return {"success": False, "name": name, "added": 0, "lost": requested,
+                "inventory_id": None,
                 "message": f"❌ Не вдалося додати предмет: {error}"}
+
 
 
 
@@ -8377,8 +8378,8 @@ def get_player_attack_profile(user_id):
 
 ============================================================
 FILE: db_modules\quests.py
-SIZE: 10791 bytes
-LAST WRITE: 2026-08-18 21:39:57
+SIZE: 11992 bytes
+LAST WRITE: 2026-08-20 14:27:50
 ============================================================
 
 """
@@ -8503,46 +8504,67 @@ def is_daily_quest_complete(user_id):
 
 
 def claim_daily_quest_reward(user_id):
-    """Отримує винагороду за щоденний квест. Returns (success, message, rewards)"""
+    """Atomically grant all daily quest rewards and mark the claim."""
+    # ROM 17.5.1 ATOMIC DAILY QUEST REWARD
     from data.balance import DAILY_QUEST_REWARDS
     from .inventory import add_item
-    from .player import add_gold
-    
+
     quest = get_user_daily_quest(user_id)
-    
     if quest["status"] == "claimed":
         return (False, "⚠️ Ви вже отримали винагороду за сьогодні!", None)
-    
     if not is_daily_quest_complete(user_id):
         return (False, "⚠️ Квест ще не виконано!", None)
-    
-    # Award rewards
-    rewards = {}
-    
-    # Gold
-    if "gold" in DAILY_QUEST_REWARDS:
-        gold_amount = DAILY_QUEST_REWARDS["gold"]
-        add_gold(user_id, gold_amount)
-        rewards["gold"] = gold_amount
-    
-    # Items
-    if "items" in DAILY_QUEST_REWARDS:
-        rewards["items"] = []
-        for item_id, quantity in DAILY_QUEST_REWARDS["items"]:
-            add_item(user_id, item_id, quantity)
-            rewards["items"].append((item_id, quantity))
-    
-    # Mark as claimed
+
     today = get_daily_today_str()
-    cursor.execute("""
-    UPDATE user_daily_quests
-    SET status = 'claimed',
-        claimed_at = CURRENT_TIMESTAMP
-    WHERE user_id=? AND daily_key=?
-    """, (user_id, today))
-    conn.commit()
-    
-    return (True, "✅ Винагорода отримана!", rewards)
+    rewards = {}
+    try:
+        cursor.execute("BEGIN IMMEDIATE")
+        current = cursor.execute(
+            "SELECT status FROM user_daily_quests WHERE user_id=? AND daily_key=?",
+            (user_id, today),
+        ).fetchone()
+        if not current or str(current[0]) == "claimed":
+            conn.rollback()
+            return (False, "⚠️ Винагорода вже отримана або квест недоступний.", None)
+
+        item_results = []
+        for item_id, quantity in DAILY_QUEST_REWARDS.get("items", []):
+            result = add_item(user_id, item_id, quantity, commit=False)
+            if (not result.get("success") or
+                    int(result.get("added", 0) or 0) != int(quantity) or
+                    int(result.get("lost", 0) or 0) != 0):
+                conn.rollback()
+                name = result.get("name", f"ID {item_id}")
+                reason = result.get("message", "Предмет не вдалося додати.")
+                return (False, f"❌ Не вдалося отримати нагороду: {name}. {reason}", None)
+            item_results.append((item_id, quantity))
+
+        gold_amount = float(DAILY_QUEST_REWARDS.get("gold", 0) or 0)
+        if gold_amount:
+            changed = cursor.execute(
+                "UPDATE users SET gold=COALESCE(gold,0)+? WHERE user_id=?",
+                (gold_amount, user_id),
+            ).rowcount
+            if changed != 1:
+                raise RuntimeError("Не вдалося видати золото щоденного завдання.")
+            rewards["gold"] = gold_amount
+        if "items" in DAILY_QUEST_REWARDS:
+            rewards["items"] = item_results
+
+        changed = cursor.execute(
+            """UPDATE user_daily_quests
+               SET status='claimed', claimed_at=CURRENT_TIMESTAMP
+               WHERE user_id=? AND daily_key=? AND status<>'claimed'""",
+            (user_id, today),
+        ).rowcount
+        if changed != 1:
+            raise RuntimeError("Не вдалося зафіксувати отримання нагороди.")
+        conn.commit()
+        return (True, "✅ Винагорода отримана!", rewards)
+    except Exception as error:
+        conn.rollback()
+        return (False, f"❌ Не вдалося отримати нагороду: {error}", None)
+
 
 
 def get_daily_quest_progress_text(user_id):
@@ -9182,8 +9204,8 @@ def get_refine_material_stack_debug():
 
 ============================================================
 FILE: db_modules\shop.py
-SIZE: 28662 bytes
-LAST WRITE: 2026-08-18 01:09:16
+SIZE: 29115 bytes
+LAST WRITE: 2026-08-20 14:27:50
 ============================================================
 
 """
@@ -9859,27 +9881,56 @@ def get_shop_preview_item_by_id(item_id):
 
 
 def purchase_shop_preview_item(user_id, item_id):
-    """Купує предмет з магазину. Returns (success, message)"""
-    from .player import get_wallet, add_gold
+    """Atomically revalidate, deliver, and charge for a shop-preview item."""
+    # ROM 17.5.1 ATOMIC SHOP PURCHASE
     from .inventory import add_item
-    
-    item = get_shop_preview_item_by_id(item_id)
-    if not item:
-        return (False, "❌ Предмет не знайдено в магазині!")
-    
-    price = item["price"]
-    wallet = get_wallet(user_id)
-    
-    if wallet < price:
-        return (False, f"❌ Недостатньо золота! Потрібно: {price}, є: {wallet}")
-    
-    # Deduct gold
-    add_gold(user_id, -price)
-    
-    # Add item
-    add_item(user_id, item_id, quantity=1, durability=100)
-    
-    return (True, f"✅ Куплено {item['name']} за {price} золота!")
+
+    try:
+        cursor.execute("BEGIN IMMEDIATE")
+        row = cursor.execute(
+            """SELECT id, name, shop_preview_price
+               FROM items
+               WHERE id=? AND shop_preview_owner IS NOT NULL
+                 AND shop_preview_price>0""",
+            (item_id,),
+        ).fetchone()
+        if not row:
+            conn.rollback()
+            return (False, "❌ Предмет не знайдено в магазині!")
+        current_item_id = int(row[0])
+        name = str(row[1] or "Предмет")
+        price = float(row[2] or 0)
+        wallet_row = cursor.execute(
+            "SELECT COALESCE(gold,0) FROM users WHERE user_id=?", (user_id,)
+        ).fetchone()
+        wallet = float(wallet_row[0] or 0) if wallet_row else 0.0
+        if wallet < price:
+            conn.rollback()
+            return (False, f"❌ Недостатньо золота! Потрібно: {price}, є: {wallet}")
+
+        result = add_item(
+            user_id, current_item_id, quantity=1, durability=100, commit=False
+        )
+        if (not result.get("success") or
+                int(result.get("added", 0) or 0) != 1 or
+                int(result.get("lost", 0) or 0) != 0):
+            conn.rollback()
+            return (False, result.get("message", "❌ Предмет не вдалося додати."))
+
+        changed = cursor.execute(
+            """UPDATE users SET gold=COALESCE(gold,0)-?
+               WHERE user_id=? AND COALESCE(gold,0)>=?""",
+            (price, user_id, price),
+        ).rowcount
+        if changed != 1:
+            conn.rollback()
+            return (False, "❌ Баланс змінився. Покупку скасовано.")
+        conn.commit()
+        return (True, f"✅ Куплено {name} за {price} золота!")
+    except Exception as error:
+        conn.rollback()
+        return (False, f"❌ Не вдалося завершити покупку: {error}")
+
 
 
 def clear_shop_preview_items():
@@ -28728,8 +28779,8 @@ def register_map_handlers(bot):
 
 ============================================================
 FILE: handlers\player_interaction.py
-SIZE: 98957 bytes
-LAST WRITE: 2026-08-18 22:03:09
+SIZE: 97429 bytes
+LAST WRITE: 2026-08-20 14:53:58
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -28852,7 +28903,8 @@ TRADE_EDITOR_PAGE_SIZE = 8
 
 def _trade_offer_name(offer):
     snapshot = offer.get("snapshot") or {}
-    return str(snapshot.get("item_name") or snapshot.get("name") or f"Предмет #{offer.get('item_id')}")
+    return _trade_add_list_display_name_12_6_3a(snapshot)
+
 
 
 def _trade_offer_lines(offers):
@@ -28878,7 +28930,7 @@ def _trade_inventory_kb(result):
     kb = types.InlineKeyboardMarkup(row_width=1)
     for item in result.get("items", []):
         snapshot = item.get("snapshot") or {}
-        name = str(snapshot.get("item_name") or snapshot.get("name") or f"Предмет #{snapshot.get('item_id')}")
+        name = _trade_add_list_display_name_12_6_3a(snapshot)
         available = int(item.get("available_quantity") or 1)
         kb.add(types.InlineKeyboardButton(
             f"{name} (доступно {available})",
@@ -29265,7 +29317,8 @@ from systems.player_interaction_system import (
 
 def _trade_ux_offer_name(offer):
     snapshot = offer.get("snapshot") or {}
-    return str(snapshot.get("item_name") or snapshot.get("name") or f"Предмет #{offer.get('item_id')}")
+    return _trade_add_list_display_name_12_6_3a(snapshot)
+
 
 
 def _trade_ux_is_equipment(snapshot):
@@ -29487,7 +29540,7 @@ def _trade_editor_text(state):
 
 def _trade_preview_text_12_6_2(preview):
     snapshot = preview.get("snapshot") or {}
-    name = str(snapshot.get("item_name") or snapshot.get("name") or f"Предмет #{preview.get('inventory_id')}")
+    name = _trade_add_list_display_name_12_6_3a(snapshot)
     lines = [f"📦 <b>{name}</b>", ""]
     lines.extend(_trade_snapshot_lines_12_6_2(snapshot, include_quantity=preview.get("is_stack")))
     if preview.get("is_equipment"):
@@ -29502,6 +29555,7 @@ def _trade_preview_text_12_6_2(preview):
             "", "Змініть кількість кнопками нижче або додайте весь доступний стек.",
         ])
     return "\n".join(lines)
+
 
 
 def _trade_preview_equipment_kb_12_6_2(trade_id, inventory_id, page):
@@ -29748,26 +29802,51 @@ _TRADE_ARMOR_SLOT_KEYS_12_6_3A = frozenset((
 
 
 def _trade_add_list_display_name_12_6_3a(snapshot):
-    """Build the add-list name and restore canonical [Armor type] display."""
+    """Return canonical short trade name with equipment type before level."""
+    # ROM 17.4.3 CANONICAL TRADE EQUIPMENT TYPE FORMATTER
     snapshot = snapshot or {}
     name = str(
         snapshot.get("item_name")
         or snapshot.get("name")
         or f"Предмет #{snapshot.get('item_id')}"
     )
+    category = str(snapshot.get("category") or "").strip().lower()
     slot_key = str(snapshot.get("slot_key") or "").strip().lower()
     armor_type = str(snapshot.get("armor_type") or "").strip().lower()
+    subtype = str(snapshot.get("item_subtype") or "").strip().lower()
+
+    equipment_like = (
+        category in ("equipment", "weapon", "armor", "jewelry")
+        or bool(slot_key)
+        or snapshot.get("durability") is not None
+        or snapshot.get("max_durability") is not None
+    )
+    if not equipment_like:
+        return name
+
+    type_label = ""
     if slot_key in _TRADE_ARMOR_SLOT_KEYS_12_6_3A and armor_type:
-        armor_label = ARMOR_TYPE_LABELS.get(armor_type, armor_type)
-        typed_suffix = f"[{armor_label}]"
-        if typed_suffix.casefold() not in name.casefold():
-            level_token = str(snapshot.get("item_level") or snapshot.get("level") or "").strip()
-            if level_token:
-                marker = f" {level_token} рівня"
-                if marker in name:
-                    return name.replace(marker, f" {typed_suffix}{marker}", 1)
-            return f"{name} {typed_suffix}"
-    return name
+        type_label = str(ARMOR_TYPE_LABELS.get(armor_type, armor_type))
+    elif subtype:
+        type_label = str(ITEM_SUBTYPE_LABELS.get(subtype, subtype))
+    elif armor_type:
+        type_label = str(ARMOR_TYPE_LABELS.get(armor_type, armor_type))
+
+    if not type_label:
+        return name
+    typed_token = f"[{type_label}]"
+    if typed_token.casefold() in name.casefold():
+        return name
+
+    level_token = str(
+        snapshot.get("item_level") or snapshot.get("level") or ""
+    ).strip()
+    if level_token:
+        marker = f" {level_token} рівня"
+        if marker in name:
+            return name.replace(marker, f" {typed_token}{marker}", 1)
+    return f"{name} {typed_token}"
+
 
 
 # Final override of the add-list keyboard. It preserves 12.6.2 preview routing
@@ -48295,8 +48374,8 @@ def apply_hp_regen(conn, user_id):
 
 ============================================================
 FILE: systems\player_interaction_system.py
-SIZE: 110426 bytes
-LAST WRITE: 2026-08-06 22:45:26
+SIZE: 108407 bytes
+LAST WRITE: 2026-08-20 14:53:58
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -49589,6 +49668,11 @@ def _trade_base_build_item_snapshot_12_6_3(user_id, inventory_id, *, db_path=Non
             ("rarity", ("rarity",)),
             ("level", ("level", "required_level")),
             ("tradeable", ("tradeable",)),
+            # ROM 17.4.3 TRADE SNAPSHOT EQUIPMENT TYPE FIELDS
+            ("slot_key", ("slot_key", "equipment_slot", "slot")),
+            ("armor_type", ("armor_type",)),
+            ("item_subtype", ("item_subtype", "subtype")),
+            ("type", ("type",)),
         ):
             column = _first_existing(item_columns, candidates)
             item_select.append(f'i."{column}" AS "{output}"' if column else f'NULL AS "{output}"')
@@ -70528,6 +70612,31 @@ def main():
 if __name__=="__main__":main()
 
 ============================================================
+FILE: tools\smoke_test_atomic_quest_shop_contract_17_5_1.py
+SIZE: 1283 bytes
+LAST WRITE: 2026-08-20 14:27:50
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import ast
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+def fn(rel,name):
+ s=(ROOT/rel).read_text(encoding='utf-8'); t=ast.parse(s); n=[x for x in t.body if isinstance(x,ast.FunctionDef) and x.name==name]; assert len(n)==1,(name,len(n)); return ast.get_source_segment(s,n[0]),s
+inv,_=fn('db_modules/inventory.py','add_item'); quest,_=fn('db_modules/quests.py','claim_daily_quest_reward'); shop,_=fn('db_modules/shop.py','purchase_shop_preview_item')
+assert 'commit=True' in inv and 'if commit:' in inv and 'commit=False' in quest and 'commit=False' in shop
+assert 'BEGIN IMMEDIATE' in quest and 'conn.rollback()' in quest and 'conn.commit()' in quest
+assert "status='claimed'" in quest and 'result.get("added"' in quest and 'result.get("lost"' in quest
+assert 'BEGIN IMMEDIATE' in shop and 'conn.rollback()' in shop and 'conn.commit()' in shop
+assert shop.find('add_item(') < shop.find('UPDATE users SET gold=COALESCE(gold,0)-?')
+assert 'AND COALESCE(gold,0)>=?' in shop
+assert inv.count('ROM 17.5.1 ADD_ITEM TRANSACTION OWNERSHIP')==1
+assert quest.count('ROM 17.5.1 ATOMIC DAILY QUEST REWARD')==1
+assert shop.count('ROM 17.5.1 ATOMIC SHOP PURCHASE')==1
+print('[PASS] Stage 17.5.1 atomic quest and shop contracts')
+
+============================================================
 FILE: tools\smoke_test_atomic_resethero_15_7_7.py
 SIZE: 1699 bytes
 LAST WRITE: 2026-08-15 23:48:25
@@ -84242,6 +84351,40 @@ def main():
     print("- non-active cancel stays idempotent: OK")
     print("- database mutations in isolated test: 0")
 if __name__=="__main__": main()
+
+============================================================
+FILE: tools\smoke_test_trade_equipment_type_ui_17_4_3.py
+SIZE: 2437 bytes
+LAST WRITE: 2026-08-20 14:53:58
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import ast
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+h=(ROOT/'handlers/player_interaction.py').read_text(encoding='utf-8')
+s=(ROOT/'systems/player_interaction_system.py').read_text(encoding='utf-8')
+t=ast.parse(h)
+functions={n.name:n for n in t.body if isinstance(n,ast.FunctionDef)}
+for name in ('_trade_add_list_display_name_12_6_3a','_trade_offer_name','_trade_ux_offer_name','_trade_preview_text_12_6_2'):
+ assert name in functions,name
+fmt=ast.get_source_segment(h,functions['_trade_add_list_display_name_12_6_3a'])
+ns={'ARMOR_TYPE_LABELS':{'cloth':'Тканина'},'ITEM_SUBTYPE_LABELS':{'staff_2h':'Посох'},'_TRADE_ARMOR_SLOT_KEYS_12_6_3A':frozenset(('chest',))}
+exec(fmt,ns); f=ns['_trade_add_list_display_name_12_6_3a']
+assert f({'item_name':'Обладунок 8 рівня [+5]','category':'equipment','slot_key':'chest','armor_type':'cloth','item_level':8})=='Обладунок [Тканина] 8 рівня [+5]'
+assert f({'item_name':'Дворучний посох 8 рівня [+5]','category':'weapon','slot_key':'main_hand','item_subtype':'staff_2h','item_level':8})=='Дворучний посох [Посох] 8 рівня [+5]'
+assert f({'item_name':'Мале зілля здоров’я','category':'potion','item_subtype':'potion'})=='Мале зілля здоров’я'
+assert f({'item_name':'Обладунок [Тканина] 8 рівня [+5]','category':'equipment','slot_key':'chest','armor_type':'cloth','item_level':8})=='Обладунок [Тканина] 8 рівня [+5]'
+assert h.count('ROM 17.4.3 CANONICAL TRADE EQUIPMENT TYPE FORMATTER')==1
+assert s.count('ROM 17.4.3 TRADE SNAPSHOT EQUIPMENT TYPE FIELDS')==1
+base=[n for n in ast.parse(s).body if isinstance(n,ast.FunctionDef) and n.name=='_trade_base_build_item_snapshot_12_6_3']
+assert len(base)==1
+b=ast.get_source_segment(s,base[0]); assert '("armor_type", ("armor_type",))' in b and '("item_subtype", ("item_subtype", "subtype"))' in b
+assert '_trade_add_list_display_name_12_6_3a(snapshot)' in ast.get_source_segment(h,functions['_trade_offer_name'])
+assert '_trade_add_list_display_name_12_6_3a(snapshot)' in ast.get_source_segment(h,functions['_trade_ux_offer_name'])
+assert '_trade_add_list_display_name_12_6_3a(snapshot)' in ast.get_source_segment(h,functions['_trade_preview_text_12_6_2'])
+print('[PASS] Stage 17.4.3 canonical trade equipment type UI')
 
 ============================================================
 FILE: tools\smoke_test_trade_pve_busy_detection_16_1_20.py
