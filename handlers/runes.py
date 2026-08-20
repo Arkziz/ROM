@@ -1,3 +1,4 @@
+# ROM 17.9.1 GLOBAL PAGINATION BUTTON LABELS
 from telebot import types
 
 from db import (
@@ -45,11 +46,11 @@ def build_rune_master_home(user_id, page=0):
     navigation = []
     if page > 0:
         navigation.append(types.InlineKeyboardButton(
-            text="⬅️", callback_data=f"rm:home:{page - 1}"
+            text="⬅️ Назад", callback_data=f"rm:home:{page - 1}"
         ))
     if page + 1 < total_pages:
         navigation.append(types.InlineKeyboardButton(
-            text="➡️", callback_data=f"rm:home:{page + 1}"
+            text="➡️ Далі", callback_data=f"rm:home:{page + 1}"
         ))
     if navigation:
         keyboard.row(*navigation)
@@ -284,11 +285,11 @@ def build_rune_fusion_home(user_id, page=0):
     nav = []
     if page > 0:
         nav.append(types.InlineKeyboardButton(
-            text="⬅️", callback_data=f"rf:home:{page - 1}"
+            text="⬅️ Назад", callback_data=f"rf:home:{page - 1}"
         ))
     if page + 1 < total_pages:
         nav.append(types.InlineKeyboardButton(
-            text="➡️", callback_data=f"rf:home:{page + 1}"
+            text="➡️ Далі", callback_data=f"rf:home:{page + 1}"
         ))
     if nav:
         keyboard.row(*nav)

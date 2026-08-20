@@ -1,3 +1,4 @@
+# ROM 17.9.1 GLOBAL PAGINATION BUTTON LABELS
 from telebot import types
 
 from db import (
@@ -89,9 +90,9 @@ def guild_list_kb(user_id, page=0):
 
     nav = []
     if page > 0:
-        nav.append("⬅️ Попередні гільдії")
+        nav.append("⬅️ Назад")
     if len(rows) > GUILD_LIST_PAGE_SIZE:
-        nav.append("➡️ Наступні гільдії")
+        nav.append("➡️ Далі")
     if nav:
         kb.add(*nav)
 
@@ -651,11 +652,11 @@ def handle_guild_list_message(bot, message):
     if not state:
         return False
 
-    if text == "⬅️ Попередні гільдії":
+    if text == "⬅️ Назад":
         show_guild_list(bot, message, max(0, state.get("page", 0) - 1))
         return True
 
-    if text == "➡️ Наступні гільдії":
+    if text == "➡️ Далі":
         show_guild_list(bot, message, state.get("page", 0) + 1)
         return True
 
@@ -842,9 +843,9 @@ def guild_list_kb(user_id, page=0):
 
     nav = []
     if page > 0:
-        nav.append("⬅️ Попередні гільдії")
+        nav.append("⬅️ Назад")
     if len(rows) > GUILD_LIST_PAGE_SIZE:
-        nav.append("➡️ Наступні гільдії")
+        nav.append("➡️ Далі")
     if nav:
         kb.add(*nav)
 
@@ -2240,9 +2241,9 @@ def guild_logs_kb(user_id, page=0):
 
     nav = []
     if page > 0:
-        nav.append("⬅️ Попередні записи")
+        nav.append("⬅️ Назад")
     if page < max_page:
-        nav.append("➡️ Наступні записи")
+        nav.append("➡️ Далі")
     if nav:
         kb.add(*nav)
 
@@ -2333,11 +2334,11 @@ def handle_guild_logs_message(bot, message):
         show_guild_logs(bot, message, page)
         return True
 
-    if text == "⬅️ Попередні записи":
+    if text == "⬅️ Назад":
         show_guild_logs(bot, message, max(0, page - 1))
         return True
 
-    if text == "➡️ Наступні записи":
+    if text == "➡️ Далі":
         show_guild_logs(bot, message, page + 1)
         return True
 

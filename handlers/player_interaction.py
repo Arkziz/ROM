@@ -1,3 +1,4 @@
+# ROM 17.9.1 GLOBAL PAGINATION BUTTON LABELS
 # -*- coding: utf-8 -*-
 """Map-based player discovery and interaction menu, ROM 12.2.0."""
 from __future__ import annotations
@@ -69,9 +70,9 @@ def build_location_players_kb(result):
     nav = []
     page = int(result.get("page", 0))
     if result.get("has_previous"):
-        nav.append(types.InlineKeyboardButton("⬅️", callback_data=f"pi:list:{page-1}"))
+        nav.append(types.InlineKeyboardButton("⬅️ Назад", callback_data=f"pi:list:{page-1}"))
     if result.get("has_next"):
-        nav.append(types.InlineKeyboardButton("➡️", callback_data=f"pi:list:{page+1}"))
+        nav.append(types.InlineKeyboardButton("➡️ Далі", callback_data=f"pi:list:{page+1}"))
     if nav:
         kb.row(*nav)
     kb.row(types.InlineKeyboardButton("🔄 Оновити", callback_data=f"pi:list:{page}"))
@@ -153,9 +154,9 @@ def _trade_inventory_kb(result):
         ))
     nav = []
     if result.get("has_previous"):
-        nav.append(types.InlineKeyboardButton("⬅️", callback_data=f"pi:te:list:{trade_id}:{page-1}"))
+        nav.append(types.InlineKeyboardButton("⬅️ Назад", callback_data=f"pi:te:list:{trade_id}:{page-1}"))
     if result.get("has_next"):
-        nav.append(types.InlineKeyboardButton("➡️", callback_data=f"pi:te:list:{trade_id}:{page+1}"))
+        nav.append(types.InlineKeyboardButton("➡️ Далі", callback_data=f"pi:te:list:{trade_id}:{page+1}"))
     if nav:
         kb.row(*nav)
     kb.row(types.InlineKeyboardButton("🔙 До обміну", callback_data=f"pi:te:open:{trade_id}"))
@@ -1093,10 +1094,10 @@ def _trade_ux_inventory_kb(result):
     nav = []
     if result.get("has_previous"):
         nav.append(types.InlineKeyboardButton(
-            "⬅️", callback_data=f"pi:teux:list:{trade_id}:{page-1}"))
+            "⬅️ Назад", callback_data=f"pi:teux:list:{trade_id}:{page-1}"))
     if result.get("has_next"):
         nav.append(types.InlineKeyboardButton(
-            "➡️", callback_data=f"pi:teux:list:{trade_id}:{page+1}"))
+            "➡️ Далі", callback_data=f"pi:teux:list:{trade_id}:{page+1}"))
     if nav:
         kb.row(*nav)
     kb.row(types.InlineKeyboardButton(
@@ -1960,12 +1961,12 @@ def _trade_category_list_kb_12_6_4(result):
 
     if result.get("has_previous"):
         kb.row(types.InlineKeyboardButton(
-            "⬅️ Попередні",
+            "⬅️ Назад",
             callback_data=f"pi:tec:list:{trade_id}:{category}:{page-1}",
         ))
     if result.get("has_next"):
         kb.row(types.InlineKeyboardButton(
-            "➡️ Наступні",
+            "➡️ Далі",
             callback_data=f"pi:tec:list:{trade_id}:{category}:{page+1}",
         ))
 

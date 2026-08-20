@@ -1,3 +1,4 @@
+# ROM 17.9.1 GLOBAL PAGINATION BUTTON LABELS
 import json
 
 from telebot import types
@@ -1472,9 +1473,9 @@ def auction_sell_items_inline_kb_v1(user_id, category, page=0):
 
     nav = []
     if page > 0:
-        nav.append(types.InlineKeyboardButton("⬅️ Попередні", callback_data=f"ah_sell_page:{category}:{page - 1}"))
+        nav.append(types.InlineKeyboardButton("⬅️ Назад", callback_data=f"ah_sell_page:{category}:{page - 1}"))
     if has_next:
-        nav.append(types.InlineKeyboardButton("➡️ Наступні", callback_data=f"ah_sell_page:{category}:{page + 1}"))
+        nav.append(types.InlineKeyboardButton("➡️ Далі", callback_data=f"ah_sell_page:{category}:{page + 1}"))
     if nav:
         kb.row(*nav)
 
@@ -1752,9 +1753,9 @@ def auction_buy_lots_inline_kb_v1(user_id, page=0):
 
     nav = []
     if page > 0:
-        nav.append(types.InlineKeyboardButton("⬅️ Попередні", callback_data=f"ah_buy_page:{page - 1}"))
+        nav.append(types.InlineKeyboardButton("⬅️ Назад", callback_data=f"ah_buy_page:{page - 1}"))
     if has_next:
-        nav.append(types.InlineKeyboardButton("➡️ Наступні", callback_data=f"ah_buy_page:{page + 1}"))
+        nav.append(types.InlineKeyboardButton("➡️ Далі", callback_data=f"ah_buy_page:{page + 1}"))
     if nav:
         kb.row(*nav)
 
@@ -2232,9 +2233,9 @@ def auction_my_lots_inline_kb_v1(user_id, page=0):
 
     nav = []
     if page > 0:
-        nav.append(types.InlineKeyboardButton("⬅️ Попередні", callback_data=f"ah_my_page:{page - 1}"))
+        nav.append(types.InlineKeyboardButton("⬅️ Назад", callback_data=f"ah_my_page:{page - 1}"))
     if has_next:
-        nav.append(types.InlineKeyboardButton("➡️ Наступні", callback_data=f"ah_my_page:{page + 1}"))
+        nav.append(types.InlineKeyboardButton("➡️ Далі", callback_data=f"ah_my_page:{page + 1}"))
     if nav:
         kb.row(*nav)
 
@@ -2428,9 +2429,9 @@ def auction_unclaimed_items_inline_kb_v1(user_id, page=0):
 
     nav = []
     if page > 0:
-        nav.append(types.InlineKeyboardButton("⬅️ Попередні", callback_data=f"ah_uncl_page:{page - 1}"))
+        nav.append(types.InlineKeyboardButton("⬅️ Назад", callback_data=f"ah_uncl_page:{page - 1}"))
     if has_next:
-        nav.append(types.InlineKeyboardButton("➡️ Наступні", callback_data=f"ah_uncl_page:{page + 1}"))
+        nav.append(types.InlineKeyboardButton("➡️ Далі", callback_data=f"ah_uncl_page:{page + 1}"))
     if nav:
         kb.row(*nav)
 
@@ -2623,9 +2624,9 @@ def auction_completed_sales_inline_kb_v1(user_id, page=0):
 
     nav = []
     if page > 0:
-        nav.append(types.InlineKeyboardButton("⬅️ Попередні", callback_data=f"ah_sale_page:{page - 1}"))
+        nav.append(types.InlineKeyboardButton("⬅️ Назад", callback_data=f"ah_sale_page:{page - 1}"))
     if has_next:
-        nav.append(types.InlineKeyboardButton("➡️ Наступні", callback_data=f"ah_sale_page:{page + 1}"))
+        nav.append(types.InlineKeyboardButton("➡️ Далі", callback_data=f"ah_sale_page:{page + 1}"))
     if nav:
         kb.row(*nav)
 
@@ -2865,9 +2866,9 @@ def auction_buy_lots_inline_kb_v1(user_id, category="all", sort_key="new", page=
 
     nav = []
     if page > 0:
-        nav.append(types.InlineKeyboardButton("⬅️ Попередні", callback_data=f"ah_buy2_page:{category}:{sort_key}:{page - 1}"))
+        nav.append(types.InlineKeyboardButton("⬅️ Назад", callback_data=f"ah_buy2_page:{category}:{sort_key}:{page - 1}"))
     if has_next:
-        nav.append(types.InlineKeyboardButton("➡️ Наступні", callback_data=f"ah_buy2_page:{category}:{sort_key}:{page + 1}"))
+        nav.append(types.InlineKeyboardButton("➡️ Далі", callback_data=f"ah_buy2_page:{category}:{sort_key}:{page + 1}"))
     if nav:
         kb.row(*nav)
 
@@ -3287,9 +3288,9 @@ def auction_buy_lots_inline_kb_v1(user_id, category="all", sort_key="new", page=
 
     nav = []
     if page > 0:
-        nav.append(types.InlineKeyboardButton("⬅️ Попередні", callback_data=f"ah_buy2_page:{category}:{sort_key}:{page - 1}"))
+        nav.append(types.InlineKeyboardButton("⬅️ Назад", callback_data=f"ah_buy2_page:{category}:{sort_key}:{page - 1}"))
     if has_next:
-        nav.append(types.InlineKeyboardButton("➡️ Наступні", callback_data=f"ah_buy2_page:{category}:{sort_key}:{page + 1}"))
+        nav.append(types.InlineKeyboardButton("➡️ Далі", callback_data=f"ah_buy2_page:{category}:{sort_key}:{page + 1}"))
     if nav:
         kb.row(*nav)
 
@@ -4303,9 +4304,9 @@ def auction_search_results_inline_kb_v1(user_id, query, sort_key="new", page=0):
 
     nav = []
     if page > 0:
-        nav.append(types.InlineKeyboardButton("⬅️ Попередні", callback_data=f"ah_search_page:{sort_key}:{page - 1}"))
+        nav.append(types.InlineKeyboardButton("⬅️ Назад", callback_data=f"ah_search_page:{sort_key}:{page - 1}"))
     if has_next:
-        nav.append(types.InlineKeyboardButton("➡️ Наступні", callback_data=f"ah_search_page:{sort_key}:{page + 1}"))
+        nav.append(types.InlineKeyboardButton("➡️ Далі", callback_data=f"ah_search_page:{sort_key}:{page + 1}"))
     if nav:
         kb.row(*nav)
 
@@ -4597,9 +4598,9 @@ def auction_history_inline_kb_v1(mode="all", page=0, has_next=False):
 
     nav = []
     if int(page) > 0:
-        nav.append(types.InlineKeyboardButton("⬅️ Попередні", callback_data=f"ah_hist:{mode}:{int(page) - 1}"))
+        nav.append(types.InlineKeyboardButton("⬅️ Назад", callback_data=f"ah_hist:{mode}:{int(page) - 1}"))
     if has_next:
-        nav.append(types.InlineKeyboardButton("➡️ Наступні", callback_data=f"ah_hist:{mode}:{int(page) + 1}"))
+        nav.append(types.InlineKeyboardButton("➡️ Далі", callback_data=f"ah_hist:{mode}:{int(page) + 1}"))
     if nav:
         kb.row(*nav)
 
