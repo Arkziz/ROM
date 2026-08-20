@@ -424,7 +424,8 @@ def build_inventory_home(user_id):
         f"🎒 Інвентар\n\n"
         f"🎒 Сумка: {used_slots}/{capacity}\n"
         f"✅ Вільно: {free_slots}\n\n"
-        f"Оберіть розділ інвентаря:"
+        # ROM 17.6.1 INVENTORY MOBILE MESSAGE WIDTH
+        f"Оберіть потрібний розділ вашого інвентаря:"
     )
 
     kb = types.InlineKeyboardMarkup(row_width=2)
@@ -521,7 +522,7 @@ def build_category_list(user_id, category_key, page=0):
         else:
             text += "Слот порожній.\n\n"
 
-    text += "Оберіть предмет:"
+    text += "Оберіть предмет для перегляду або виконання доступної дії:"
 
     kb = types.InlineKeyboardMarkup()
 
@@ -1398,14 +1399,14 @@ def build_category_list(user_id, category_key, page=0):
         if isinstance(result, tuple) and len(result) >= 2:
             text, keyboard = result[0], result[1]
             text = text.replace(
-                "Оберіть предмет:",
+                "Оберіть предмет для перегляду або виконання доступної дії:",
                 "Оберіть предмет для ознайомлення:",
                 1,
             )
             return (text, keyboard, *result[2:])
         if isinstance(result, str):
             return result.replace(
-                "Оберіть предмет:",
+                "Оберіть предмет для перегляду або виконання доступної дії:",
                 "Оберіть предмет для ознайомлення:",
                 1,
             )

@@ -30,7 +30,8 @@ def build_rune_master_home(user_id, page=0):
         "⚠️ Після вставки руна закріплюється за предметом. "
         "Для майбутнього вилучення знадобиться Екстрактор рун.\n\n"
         f"📄 Сторінка: {page + 1}/{total_pages}\n"
-        "Оберіть предмет спорядження:"
+        # ROM 17.6.1 RUNE MOBILE MESSAGE WIDTH
+        "Оберіть предмет спорядження для роботи з рунними слотами:"
     )
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     for item in selected:
@@ -104,7 +105,7 @@ def build_rune_selection(user_id, equipment_inventory_id, slot_index, page=0):
         "💠 Вибір руни\n\n"
         f"⚔️ Спорядження: {info['name']}\n"
         f"▫️ Слот: {int(slot_index) + 1}/{info['capacity']}\n\n"
-        "Оберіть руну:"
+        "Оберіть руну, яку потрібно вставити у вибраний слот:"
     )
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     for rune in runes:
@@ -268,7 +269,7 @@ def build_rune_fusion_home(user_id, page=0):
         "→ 1 руна наступного рівня.\n\n"
         "Шанс успіху: 100%.\n"
         f"📄 Сторінка: {page + 1}/{total_pages}\n\n"
-        "Оберіть рецепт:"
+        "Оберіть доступний рецепт для переробки рун:"
     )
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     for recipe in selected:
@@ -372,7 +373,7 @@ def build_extractor_home(user_id,page=0):
           "Після цього оберіть тип Екстрактора.\n\nДоступні матеріали:\n"
           f"• 🧰 Простий Екстрактор рун: {counts['simple']}\n"
           f"• ✨ Досконалий Екстрактор рун: {counts['perfect']}\n\n"
-          f"📄 Сторінка: {page+1}/{pages}\nОберіть знятий предмет із рунами:")
+          f"📄 Сторінка: {page+1}/{pages}\nОберіть знятий предмет спорядження зі вставленими рунами:")
     kb=types.InlineKeyboardMarkup(row_width=1)
     for item in items[page*ITEMS_PER_PAGE:(page+1)*ITEMS_PER_PAGE]:
         kb.add(types.InlineKeyboardButton(text=_short_name(f"{item['name']} [рун: {item['rune_count']}]",56),
