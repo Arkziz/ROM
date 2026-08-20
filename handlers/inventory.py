@@ -1236,6 +1236,88 @@ def get_category_items(user_id, category_key):
         if len(item) > 5 and item[5] == "rune"
     ]
 
+# ==============================
+# ROM 17.7.1 INVENTORY CANONICAL UI SORTING
+# ==============================
+
+_STAGE_17_7_1_BASE_GET_CATEGORY_ITEMS = get_category_items
+_STAGE_17_7_1_RARITY_PREFIXES = ("⚪️", "⚪", "🟢", "🔵", "🟣")
+_STAGE_17_7_1_CATEGORY_ORDER = (
+    "main_hand",
+    "off_hand",
+    "helmet",
+    "shoulders",
+    "chest",
+    "gloves",
+    "legs",
+    "boots",
+    "necklace",
+    "ring",
+    "trash",
+    "rune",
+    "material",
+    "potion",
+)
+_STAGE_17_7_1_CATEGORY_RANK = {
+    category_key: index
+    for index, category_key in enumerate(_STAGE_17_7_1_CATEGORY_ORDER)
+}
+
+
+def _inventory_ui_normalized_name_17_7_1(item):
+    """Return case-insensitive item name without a leading rarity marker."""
+    try:
+        name = str(item[2] or "").strip()
+    except Exception:
+        name = ""
+    for prefix in _STAGE_17_7_1_RARITY_PREFIXES:
+        if name.startswith(prefix):
+            name = name[len(prefix):].lstrip()
+            break
+    return name.casefold()
+
+
+def _inventory_ui_category_key_17_7_1(item):
+    """Map one inventory tuple to the approved logical category in the all view."""
+    try:
+        category = str(item[5] or "").strip().lower()
+        slot_key = str(item[6] or "").strip().lower()
+    except Exception:
+        return ""
+    if category == "equipment" and slot_key:
+        return slot_key
+    return category
+
+
+def _inventory_ui_sort_key_17_7_1(item, include_category=False):
+    """Sort by category rank, normalized name, then newest inventory ID first."""
+    try:
+        inventory_id = int(item[0])
+    except Exception:
+        inventory_id = 0
+    name_key = _inventory_ui_normalized_name_17_7_1(item)
+    if not include_category:
+        return (name_key, -inventory_id)
+    category_key = _inventory_ui_category_key_17_7_1(item)
+    category_rank = _STAGE_17_7_1_CATEGORY_RANK.get(
+        category_key,
+        len(_STAGE_17_7_1_CATEGORY_ORDER),
+    )
+    return (category_rank, name_key, -inventory_id)
+
+
+def get_category_items(user_id, category_key):
+    """Return final filtered inventory UI items in canonical Stage 17.7 order."""
+    items = list(_STAGE_17_7_1_BASE_GET_CATEGORY_ITEMS(user_id, category_key) or [])
+    return sorted(
+        items,
+        key=lambda item: _inventory_ui_sort_key_17_7_1(
+            item,
+            include_category=(category_key == "all"),
+        ),
+    )
+
+
 
 def get_category_count(user_id, category_key):
     return len(get_category_items(user_id, category_key))
