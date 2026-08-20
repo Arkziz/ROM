@@ -1,3 +1,4 @@
+# ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
 from telebot import types
 
 from db import (
@@ -313,7 +314,7 @@ def build_item_button_label(user_id, item):
     )
 
     if max_stack and max_stack > 1:
-        label += f" x{quantity}"
+        label += f" ×{quantity}"
 
     if category == "equipment":
         if durability is not None:
@@ -1428,12 +1429,12 @@ def build_item_button_label(user_id, item):
         category = str(item[5] or "")
         quantity = int(item[8] or 0)
         if category == "rune":
-            label = label.replace(f" x{quantity}", "")
+            label = label.replace(f" ×{quantity}", "")
             label = label.replace(f" ×{quantity}", "")
             if quantity > 1:
                 label += f" ×{quantity}"
         else:
-            label = label.replace(f" x{quantity}", f" ×{quantity}")
+            label = label.replace(f" ×{quantity}", f" ×{quantity}")
     except Exception:
         pass
     return label

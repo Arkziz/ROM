@@ -1,3 +1,4 @@
+# ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
 from telebot import types
 
 from systems.boss_system import (
@@ -1590,7 +1591,7 @@ def build_combat_potion_kb(user_id, cooldown=0):
 
         if cooldown > 0:
             button_text = (
-                f"⏳ {name} x{quantity}, "
+                f"⏳ {name} ×{quantity}, "
                 f"доступно через {format_combat_turns_uk(cooldown)}"
             )
         else:
@@ -1598,7 +1599,7 @@ def build_combat_potion_kb(user_id, cooldown=0):
                 5 if type_ in ("potion_hp_medium", "potion_mp_medium") else 3
             )
             button_text = (
-                f"{name} x{quantity} — "
+                f"{name} ×{quantity} — "
                 f"cooldown {format_combat_turns_uk(potion_cooldown)}"
             )
 

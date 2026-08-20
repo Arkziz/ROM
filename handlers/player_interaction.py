@@ -1,3 +1,4 @@
+# ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
 # ROM 17.9.1 GLOBAL PAGINATION BUTTON LABELS
 # -*- coding: utf-8 -*-
 """Map-based player discovery and interaction menu, ROM 12.2.0."""
@@ -167,7 +168,7 @@ def _trade_item_kb(trade_id, inventory_id, quantity, page=0):
     kb = types.InlineKeyboardMarkup(row_width=3)
     kb.row(
         types.InlineKeyboardButton("➖", callback_data=f"pi:te:set:{trade_id}:{inventory_id}:{max(0, quantity-1)}:{page}"),
-        types.InlineKeyboardButton(f"x{quantity}", callback_data=f"pi:te:open:{trade_id}"),
+        types.InlineKeyboardButton(f"×{quantity}", callback_data=f"pi:te:open:{trade_id}"),
         types.InlineKeyboardButton("➕", callback_data=f"pi:te:set:{trade_id}:{inventory_id}:{quantity+1}:{page}"),
     )
     kb.row(types.InlineKeyboardButton("🗑️ Прибрати", callback_data=f"pi:te:remove:{trade_id}:{inventory_id}:{page}"))
@@ -560,7 +561,7 @@ def _trade_ux_stack_kb(trade_id, inventory_id, quantity, maximum, back_callback)
     kb = types.InlineKeyboardMarkup(row_width=3)
     kb.row(
         types.InlineKeyboardButton("➖", callback_data=f"pi:teux:set:{trade_id}:{inventory_id}:{max(0, quantity-1)}"),
-        types.InlineKeyboardButton(f"x{quantity}", callback_data=back_callback),
+        types.InlineKeyboardButton(f"×{quantity}", callback_data=back_callback),
         types.InlineKeyboardButton("➕", callback_data=f"pi:teux:set:{trade_id}:{inventory_id}:{min(maximum, quantity+1)}"),
     )
     if quantity < maximum:
@@ -922,7 +923,7 @@ def _trade_preview_stack_kb_12_6_2(preview,page):
     trade_id=int(preview["trade_id"]); inventory_id=int(preview["inventory_id"])
     quantity=int(preview.get("offered_quantity") or 0); maximum=int(preview.get("maximum_quantity") or quantity)
     kb=types.InlineKeyboardMarkup(row_width=3)
-    kb.row(types.InlineKeyboardButton("➖",callback_data=f"pi:tep:set:{trade_id}:{inventory_id}:{max(0,quantity-1)}:{page}"),types.InlineKeyboardButton(f"x{quantity}",callback_data=f"pi:tep:view:{trade_id}:{inventory_id}:{page}"),types.InlineKeyboardButton("➕",callback_data=f"pi:tep:set:{trade_id}:{inventory_id}:{min(maximum,quantity+1)}:{page}"))
+    kb.row(types.InlineKeyboardButton("➖",callback_data=f"pi:tep:set:{trade_id}:{inventory_id}:{max(0,quantity-1)}:{page}"),types.InlineKeyboardButton(f"×{quantity}",callback_data=f"pi:tep:view:{trade_id}:{inventory_id}:{page}"),types.InlineKeyboardButton("➕",callback_data=f"pi:tep:set:{trade_id}:{inventory_id}:{min(maximum,quantity+1)}:{page}"))
     if quantity<maximum: kb.row(types.InlineKeyboardButton("📦 Додати все доступне",callback_data=f"pi:tep:all:{trade_id}:{inventory_id}:{page}"))
     kb.row(types.InlineKeyboardButton("⌨️ Ввести кількість",callback_data=f"pi:tea:qinput:{trade_id}:{inventory_id}:{page}"))
     kb.row(types.InlineKeyboardButton("🔙 До предметів",callback_data=f"pi:teux:list:{trade_id}:{page}"))

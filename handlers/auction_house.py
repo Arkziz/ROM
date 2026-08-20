@@ -1,3 +1,4 @@
+# ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
 # ROM 17.9.1 GLOBAL PAGINATION BUTTON LABELS
 import json
 
@@ -730,7 +731,7 @@ def auction_stack_items_kb_v2(user_id, category, page=0):
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
     for item in visible_items:
-        button_text = f"📦 #{item['inventory_id']} {item['name']} x{item['quantity']}"
+        button_text = f"📦 #{item['inventory_id']} {item['name']} ×{item['quantity']}"
         if len(button_text) > 90:
             button_text = button_text[:87] + "..."
         kb.add(button_text)
@@ -781,7 +782,7 @@ def build_auction_stack_quantity_prompt_v2(snapshot, category):
 def build_auction_stack_price_prompt_v2(snapshot, quantity):
     return (
         "💰 Введення ціни\n\n"
-        f"📦 {snapshot['name']} x{quantity}\n\n"
+        f"📦 {snapshot['name']} ×{quantity}\n\n"
         "Введіть ціну за весь лот у золоті.\n"
         "Приклади:\n"
         "• 10\n"
@@ -795,7 +796,7 @@ def build_auction_stack_price_prompt_v2(snapshot, quantity):
 def build_auction_stack_confirm_text_v2(snapshot, quantity, price):
     return (
         "📦 Новий лот\n\n"
-        f"{snapshot['name']} x{quantity}\n\n"
+        f"{snapshot['name']} ×{quantity}\n\n"
         f"💰 Ціна: {price} золота\n"
         "⏳ Термін: 7 днів\n\n"
         "Після виставлення ця кількість буде перенесена з інвентаря до Торгового Дому.\n\n"
@@ -1132,7 +1133,7 @@ def auction_buy_lots_kb(user_id, page=0):
 
     for lot in visible_lots:
         quantity = int(lot["quantity"] or 1)
-        qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
+        qty = f" ×{quantity}" if quantity > 1 and f"×{quantity}" not in lot["item_name"] else ""
         button_text = f"🛒 #{lot['id']} {lot['item_name']}{qty} — {lot['price']} 💰"
         if len(button_text) > 95:
             button_text = button_text[:92] + "..."
@@ -1464,7 +1465,7 @@ def auction_sell_items_inline_kb_v1(user_id, category, page=0):
             typed_name = _auction_equipment_typed_name_11_4_1(item['inventory_id'], item['name'])
             label = f"📦 {typed_name}{durability}"
         else:
-            label = f"📦 {item['name']} x{item['quantity']}"
+            label = f"📦 {item['name']} ×{item['quantity']}"
 
         kb.add(types.InlineKeyboardButton(
             _auction_inline_truncate(label),
@@ -1744,7 +1745,7 @@ def auction_buy_lots_inline_kb_v1(user_id, page=0):
 
     for lot in visible_lots:
         quantity = int(lot["quantity"] or 1)
-        qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
+        qty = f" ×{quantity}" if quantity > 1 and f"×{quantity}" not in lot["item_name"] else ""
         label = f"🛒 {_auction_lot_typed_name_17_1_0(lot)}{qty} — {lot['price']} 💰"
         kb.add(types.InlineKeyboardButton(
             _auction_inline_truncate(label),
@@ -2224,7 +2225,7 @@ def auction_my_lots_inline_kb_v1(user_id, page=0):
 
     for lot in visible_lots:
         quantity = int(lot["quantity"] or 1)
-        qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
+        qty = f" ×{quantity}" if quantity > 1 and f"×{quantity}" not in lot["item_name"] else ""
         label = f"📦 {_auction_lot_typed_name_17_1_0(lot)}{qty} — {lot['price']} 💰"
         kb.add(types.InlineKeyboardButton(
             _auction_inline_truncate(label),
@@ -2420,7 +2421,7 @@ def auction_unclaimed_items_inline_kb_v1(user_id, page=0):
 
     for lot in visible_lots:
         quantity = int(lot["quantity"] or 1)
-        qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
+        qty = f" ×{quantity}" if quantity > 1 and f"×{quantity}" not in lot["item_name"] else ""
         label = f"📬 {lot['item_name']}{qty}"
         kb.add(types.InlineKeyboardButton(
             _auction_inline_truncate(label),
@@ -2857,7 +2858,7 @@ def auction_buy_lots_inline_kb_v1(user_id, category="all", sort_key="new", page=
 
     for lot in visible_lots:
         quantity = int(lot["quantity"] or 1)
-        qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
+        qty = f" ×{quantity}" if quantity > 1 and f"×{quantity}" not in lot["item_name"] else ""
         label = f"📦 {_auction_lot_typed_name_17_1_0(lot)}{qty} — {lot['price']} 💰"
         kb.add(types.InlineKeyboardButton(
             _auction_inline_truncate(label),
@@ -3279,7 +3280,7 @@ def auction_buy_lots_inline_kb_v1(user_id, category="all", sort_key="new", page=
 
     for lot in visible_lots:
         quantity = int(lot["quantity"] or 1)
-        qty = f" x{quantity}" if quantity > 1 and f"x{quantity}" not in lot["item_name"] else ""
+        qty = f" ×{quantity}" if quantity > 1 and f"×{quantity}" not in lot["item_name"] else ""
         label = f"📦 {_auction_lot_typed_name_17_1_0(lot)}{qty} — {lot['price']} 💰"
         kb.add(types.InlineKeyboardButton(
             _auction_inline_truncate(label),

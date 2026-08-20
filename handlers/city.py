@@ -1,3 +1,4 @@
+# ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
 from telebot import types
 
 from data.locations import LOCATIONS
@@ -884,7 +885,7 @@ def build_sell_equipment_confirm_text(user_id, inventory_id, page=0):
     text = (
         f"💰 Підтвердження продажу\n\n"
         f"Ти точно хочеш продати цей предмет торговцю?\n\n"
-        f"📦 {name} x{quantity}\n"
+        f"📦 {name} ×{quantity}\n"
         f"💰 Ціна: {format_gold(total_price)}\n"
     )
 

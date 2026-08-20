@@ -1,3 +1,4 @@
+# ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
 from pathlib import Path
 from db import (
     add_item,
@@ -965,7 +966,7 @@ def register_dev_handlers(bot):
 
         text = (
             f"✅ DEV: видано предмет зміни класу.\n\n"
-            f"🔮 Сфера нового шляху x{result.get('added', quantity)}\n"
+            f"🔮 Сфера нового шляху ×{result.get('added', quantity)}\n"
             f"🎒 Сумка: {result.get('used_slots', 0)}/{result.get('capacity', 40)}"
         )
 

@@ -1,3 +1,4 @@
+# ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
 from datetime import datetime, timedelta
 from decimal import Decimal, InvalidOperation, ROUND_DOWN
 import json
@@ -1661,7 +1662,7 @@ def create_stack_auction_lot(user_id, inventory_id, category, quantity, price):
 
         item_name = snapshot_for_lot["name"]
         if quantity > 1:
-            item_name = f"{item_name} x{quantity}"
+            item_name = f"{item_name} ×{quantity}"
 
         cursor.execute("""
         INSERT INTO auction_lots (

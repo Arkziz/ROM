@@ -1,3 +1,4 @@
+# ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
 """
 Inventory management module
 """
@@ -418,7 +419,7 @@ def sell_all_trash(user_id):
         total_gold += earned
         freed_slots += 1
 
-        details.append(f"{name} x{quantity} = {earned:.2f} золота")
+        details.append(f"{name} ×{quantity} = {earned:.2f} золота")
 
         cursor.execute("""
         DELETE FROM inventory
