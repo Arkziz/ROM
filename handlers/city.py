@@ -1,3 +1,6 @@
+# ROM 17.11.1.2 TRADE SUBMENU CITY BUTTON RECOVERY
+# ROM 17.11.1.1 BASE EQUIPMENT CONTEXT NAVIGATION RECOVERY
+# ROM 17.11.1 TRADE DISTRICT TEXT NAVIGATION
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
 from telebot import types
 
@@ -63,6 +66,8 @@ from systems.potion_system import (
 
 
 SELL_EQUIPMENT_ITEMS_PER_PAGE = 10
+TRADE_DISTRICT_BACK_BUTTON_17_11_1 = "🔙 Торговий ряд"
+TRADE_DISTRICT_CITY_BUTTON_17_11_1 = "⬅️ Місто"
 
 
 # ==============================
@@ -97,11 +102,7 @@ def build_trade_district_text(user_id):
         f"💰 Твоє золото: {format_gold(gold)}\n\n"
         f"Вузька вулиця заставлена возами, ящиками та прилавками. "
         f"Торговці скуповують сірий лут, непотрібне спорядження "
-        f"і продають прості речі для мандрівників.\n\n"
-        f"Доступні дії:\n"
-        f"• 🪙 Продати весь хлам\n"
-        f"• 🧰 Продати спорядження\n"
-        f"• ⚪ Базове спорядження"
+        f"і продають прості речі для мандрівників."
     )
 
 
@@ -477,11 +478,6 @@ def build_common_equipment_shop_text(user_id):
             callback_data=callback_data
         ))
 
-    kb.add(types.InlineKeyboardButton(
-        text="⬅️ До торгового ряду",
-        callback_data="back_to_trade_district"
-    ))
-
     return text, kb
 
 
@@ -539,11 +535,6 @@ def build_common_equipment_slot_choice_text(user_id, slot_key):
     kb.add(types.InlineKeyboardButton(
         text="⬅️ Назад до слотів",
         callback_data="common_equipment_back_to_slots"
-    ))
-
-    kb.add(types.InlineKeyboardButton(
-        text="⬅️ До торгового ряду",
-        callback_data="back_to_trade_district"
     ))
 
     return text, kb
@@ -611,6 +602,21 @@ def build_shop_preview_display_name(name, slot_key, armor_type):
             return f"{parts[0]} [{armor_label}] {parts[1]}{after_level}"
 
     return f"{name} [{armor_label}]"
+
+
+def build_base_equipment_return_view_17_11_1_1(user_id, slot_key=None):
+    """Return to the closest valid base-equipment list after preview completion."""
+    if slot_key in ("main_hand", "off_hand"):
+        return build_common_equipment_slot_choice_text(user_id, slot_key)
+    return build_common_equipment_shop_text(user_id)
+
+
+def get_base_equipment_preview_slot_17_11_1_1(user_id, item_id):
+    """Read preview context before confirm/cancel can remove the temporary item."""
+    preview = get_shop_preview_item(item_id, user_id)
+    if not preview or len(preview) <= 5:
+        return None
+    return preview[5]
 
 
 def build_common_shop_preview_text(user_id, item_id):
@@ -749,11 +755,6 @@ def build_sell_equipment_list_text(user_id, page=0):
         )
 
         kb = types.InlineKeyboardMarkup()
-        kb.add(types.InlineKeyboardButton(
-            text="⬅️ До торгового ряду",
-            callback_data="back_to_trade_district"
-        ))
-
         return text, kb
 
     total_items = len(items)
@@ -834,11 +835,6 @@ def build_sell_equipment_list_text(user_id, page=0):
     if nav_buttons:
         kb.add(*nav_buttons)
 
-    kb.add(types.InlineKeyboardButton(
-        text="⬅️ До торгового ряду",
-        callback_data="back_to_trade_district"
-    ))
-
     return text, kb
 
 
@@ -913,6 +909,23 @@ def build_sell_equipment_confirm_text(user_id, inventory_id, page=0):
 # HANDLERS
 # ==============================
 
+def trade_district_submenu_kb_17_11_1():
+    """Reply navigation used inside Trade District sell/buy submenus."""
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=1)
+    kb.add(TRADE_DISTRICT_BACK_BUTTON_17_11_1)
+    kb.add(TRADE_DISTRICT_CITY_BUTTON_17_11_1)
+    return kb
+
+
+def send_trade_district_submenu_17_11_1(bot, chat_id):
+    """Replace persistent Trade District actions with contextual navigation."""
+    bot.send_message(
+        chat_id,
+        "Оберіть дію зі списку нижче.",
+        reply_markup=trade_district_submenu_kb_17_11_1(),
+    )
+
+
 def register_city_handlers(bot):
 
     # ==============================
@@ -939,7 +952,7 @@ def register_city_handlers(bot):
             reply_markup=main_kb()
         )
 
-    @bot.message_handler(func=lambda m: m.text == "🔙 Місто")
+    @bot.message_handler(func=lambda m: m.text in ("🔙 Місто", "⬅️ Місто"))
     def back_to_city(message):
         user_id = message.from_user.id
 
@@ -1037,7 +1050,7 @@ def register_city_handlers(bot):
     # TRADING DISTRICT
     # ==============================
 
-    @bot.message_handler(func=lambda m: m.text == "🪙 Продати весь хлам")
+    @bot.message_handler(func=lambda m: m.text == "🪙 Продати весь мотлох")
     def sell_trash(message):
         user_id = message.from_user.id
 
@@ -1073,6 +1086,7 @@ def register_city_handlers(bot):
 
         text, kb = build_sell_equipment_list_text(user_id, page=0)
 
+        send_trade_district_submenu_17_11_1(bot, message.chat.id)
         bot.send_message(
             message.chat.id,
             text,
@@ -1134,7 +1148,7 @@ def register_city_handlers(bot):
         bot.send_message(
             call.message.chat.id,
             result["message"],
-            reply_markup=trader_kb()
+            reply_markup=trade_district_submenu_kb_17_11_1()
         )
 
         text, kb = build_sell_equipment_list_text(user_id, page=page)
@@ -1155,6 +1169,7 @@ def register_city_handlers(bot):
 
         text, kb = build_common_equipment_shop_text(user_id)
 
+        send_trade_district_submenu_17_11_1(bot, message.chat.id)
         bot.send_message(
             message.chat.id,
             text,
@@ -1210,7 +1225,7 @@ def register_city_handlers(bot):
             bot.send_message(
                 call.message.chat.id,
                 result["message"],
-                reply_markup=trader_kb()
+                reply_markup=trade_district_submenu_kb_17_11_1()
             )
             return
 
@@ -1229,6 +1244,7 @@ def register_city_handlers(bot):
     def confirm_common_shop_purchase(call):
         user_id = call.from_user.id
         item_id = int(call.data.split(":")[1])
+        slot_key = get_base_equipment_preview_slot_17_11_1_1(user_id, item_id)
 
         result = confirm_common_equipment_shop_preview(
             user_id=user_id,
@@ -1240,10 +1256,10 @@ def register_city_handlers(bot):
         bot.send_message(
             call.message.chat.id,
             result["message"],
-            reply_markup=trader_kb()
+            reply_markup=trade_district_submenu_kb_17_11_1()
         )
 
-        text, kb = build_common_equipment_shop_text(user_id)
+        text, kb = build_base_equipment_return_view_17_11_1_1(user_id, slot_key)
 
         bot.send_message(
             call.message.chat.id,
@@ -1255,6 +1271,7 @@ def register_city_handlers(bot):
     def cancel_common_shop_purchase(call):
         user_id = call.from_user.id
         item_id = int(call.data.split(":")[1])
+        slot_key = get_base_equipment_preview_slot_17_11_1_1(user_id, item_id)
 
         result = cancel_common_equipment_shop_preview(
             user_id=user_id,
@@ -1266,10 +1283,10 @@ def register_city_handlers(bot):
         bot.send_message(
             call.message.chat.id,
             result["message"],
-            reply_markup=trader_kb()
+            reply_markup=trade_district_submenu_kb_17_11_1()
         )
 
-        text, kb = build_common_equipment_shop_text(user_id)
+        text, kb = build_base_equipment_return_view_17_11_1_1(user_id, slot_key)
 
         bot.send_message(
             call.message.chat.id,

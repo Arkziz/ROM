@@ -1,3 +1,4 @@
+# ROM 17.11.1 TRADE DISTRICT TEXT NAVIGATION
 from telebot import types
 
 
@@ -53,7 +54,7 @@ def city_kb():
 
 def trader_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.add("🪙 Продати весь хлам")
+    kb.add("🪙 Продати весь мотлох")
     kb.add("🧰 Продати спорядження")
     kb.add("⚪ Базове спорядження")
     kb.add("🔙 Місто")
