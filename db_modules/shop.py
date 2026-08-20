@@ -671,27 +671,56 @@ def get_shop_preview_item_by_id(item_id):
 
 
 def purchase_shop_preview_item(user_id, item_id):
-    """Купує предмет з магазину. Returns (success, message)"""
-    from .player import get_wallet, add_gold
+    """Atomically revalidate, deliver, and charge for a shop-preview item."""
+    # ROM 17.5.1 ATOMIC SHOP PURCHASE
     from .inventory import add_item
-    
-    item = get_shop_preview_item_by_id(item_id)
-    if not item:
-        return (False, "❌ Предмет не знайдено в магазині!")
-    
-    price = item["price"]
-    wallet = get_wallet(user_id)
-    
-    if wallet < price:
-        return (False, f"❌ Недостатньо золота! Потрібно: {price}, є: {wallet}")
-    
-    # Deduct gold
-    add_gold(user_id, -price)
-    
-    # Add item
-    add_item(user_id, item_id, quantity=1, durability=100)
-    
-    return (True, f"✅ Куплено {item['name']} за {price} золота!")
+
+    try:
+        cursor.execute("BEGIN IMMEDIATE")
+        row = cursor.execute(
+            """SELECT id, name, shop_preview_price
+               FROM items
+               WHERE id=? AND shop_preview_owner IS NOT NULL
+                 AND shop_preview_price>0""",
+            (item_id,),
+        ).fetchone()
+        if not row:
+            conn.rollback()
+            return (False, "❌ Предмет не знайдено в магазині!")
+        current_item_id = int(row[0])
+        name = str(row[1] or "Предмет")
+        price = float(row[2] or 0)
+        wallet_row = cursor.execute(
+            "SELECT COALESCE(gold,0) FROM users WHERE user_id=?", (user_id,)
+        ).fetchone()
+        wallet = float(wallet_row[0] or 0) if wallet_row else 0.0
+        if wallet < price:
+            conn.rollback()
+            return (False, f"❌ Недостатньо золота! Потрібно: {price}, є: {wallet}")
+
+        result = add_item(
+            user_id, current_item_id, quantity=1, durability=100, commit=False
+        )
+        if (not result.get("success") or
+                int(result.get("added", 0) or 0) != 1 or
+                int(result.get("lost", 0) or 0) != 0):
+            conn.rollback()
+            return (False, result.get("message", "❌ Предмет не вдалося додати."))
+
+        changed = cursor.execute(
+            """UPDATE users SET gold=COALESCE(gold,0)-?
+               WHERE user_id=? AND COALESCE(gold,0)>=?""",
+            (price, user_id, price),
+        ).rowcount
+        if changed != 1:
+            conn.rollback()
+            return (False, "❌ Баланс змінився. Покупку скасовано.")
+        conn.commit()
+        return (True, f"✅ Куплено {name} за {price} золота!")
+    except Exception as error:
+        conn.rollback()
+        return (False, f"❌ Не вдалося завершити покупку: {error}")
+
 
 
 def clear_shop_preview_items():

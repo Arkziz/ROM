@@ -125,9 +125,9 @@ def _inventory_required_new_stacks(quantity, free_space, max_stack):
         return 0
     return (remaining + int(max_stack) - 1) // int(max_stack)
 
-def add_item(user_id, item_id, quantity=1, durability=100):
-    """Atomically add items, respecting max_stack and the canonical award result contract."""
-    # ROM 17.2.0.3 CENTRAL DROP STACK AWARD CONTRACT RECOVERY
+def add_item(user_id, item_id, quantity=1, durability=100, commit=True):
+    """Add items atomically; commit=False leaves final transaction ownership to caller."""
+    # ROM 17.5.1 ADD_ITEM TRANSACTION OWNERSHIP
     try:
         user_id = int(user_id)
         item_id = int(item_id)
@@ -139,12 +139,8 @@ def add_item(user_id, item_id, quantity=1, durability=100):
         return {"success": False, "name": "Предмет", "added": 0, "lost": 0,
                 "message": "❌ Кількість має бути більшою за нуль."}
 
-    # Never use positional SELECT * indexes for max_stack. The items schema puts
-    # weapon_hands before max_stack, which previously made every rune/potion act
-    # as max_stack=1 during runtime awards.
     item = cursor.execute(
-        "SELECT name, COALESCE(max_stack, 1) FROM items WHERE id=?",
-        (item_id,),
+        "SELECT name, COALESCE(max_stack, 1) FROM items WHERE id=?", (item_id,)
     ).fetchone()
     if not item:
         return {"success": False, "name": "Предмет", "added": 0, "lost": quantity,
@@ -152,7 +148,7 @@ def add_item(user_id, item_id, quantity=1, durability=100):
     name = str(item[0] or "Предмет")
     max_stack = max(1, int(item[1] or 1))
     requested = quantity
-    savepoint = "rom_add_item_17_2_0_3"
+    savepoint = "rom_add_item_17_5_1"
 
     try:
         cursor.execute(f"SAVEPOINT {savepoint}")
@@ -160,7 +156,6 @@ def add_item(user_id, item_id, quantity=1, durability=100):
         used_slots = get_inventory_used_slots(user_id)
         partial = []
         free_space = 0
-
         if max_stack > 1 and not _inventory_reserved_ids_for_item(user_id, item_id):
             partial = cursor.execute(
                 """SELECT id, quantity FROM inventory
@@ -175,7 +170,7 @@ def add_item(user_id, item_id, quantity=1, durability=100):
             cursor.execute(f"ROLLBACK TO {savepoint}")
             cursor.execute(f"RELEASE {savepoint}")
             return {"success": False, "name": name, "added": 0, "lost": requested,
-                    "used_slots": used_slots, "capacity": capacity,
+                    "inventory_id": None, "used_slots": used_slots, "capacity": capacity,
                     "message": "🎒 Сумка переповнена!"}
 
         first_inventory_id = None
@@ -204,7 +199,8 @@ def add_item(user_id, item_id, quantity=1, durability=100):
             quantity -= stack_quantity
 
         cursor.execute(f"RELEASE {savepoint}")
-        conn.commit()
+        if commit:
+            conn.commit()
         return {"success": True, "name": name, "added": requested, "lost": 0,
                 "inventory_id": first_inventory_id,
                 "used_slots": get_inventory_used_slots(user_id), "capacity": capacity,
@@ -214,9 +210,12 @@ def add_item(user_id, item_id, quantity=1, durability=100):
             cursor.execute(f"ROLLBACK TO {savepoint}")
             cursor.execute(f"RELEASE {savepoint}")
         except Exception:
-            conn.rollback()
+            if commit:
+                conn.rollback()
         return {"success": False, "name": name, "added": 0, "lost": requested,
+                "inventory_id": None,
                 "message": f"❌ Не вдалося додати предмет: {error}"}
+
 
 
 

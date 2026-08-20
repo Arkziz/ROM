@@ -120,46 +120,67 @@ def is_daily_quest_complete(user_id):
 
 
 def claim_daily_quest_reward(user_id):
-    """Отримує винагороду за щоденний квест. Returns (success, message, rewards)"""
+    """Atomically grant all daily quest rewards and mark the claim."""
+    # ROM 17.5.1 ATOMIC DAILY QUEST REWARD
     from data.balance import DAILY_QUEST_REWARDS
     from .inventory import add_item
-    from .player import add_gold
-    
+
     quest = get_user_daily_quest(user_id)
-    
     if quest["status"] == "claimed":
         return (False, "⚠️ Ви вже отримали винагороду за сьогодні!", None)
-    
     if not is_daily_quest_complete(user_id):
         return (False, "⚠️ Квест ще не виконано!", None)
-    
-    # Award rewards
-    rewards = {}
-    
-    # Gold
-    if "gold" in DAILY_QUEST_REWARDS:
-        gold_amount = DAILY_QUEST_REWARDS["gold"]
-        add_gold(user_id, gold_amount)
-        rewards["gold"] = gold_amount
-    
-    # Items
-    if "items" in DAILY_QUEST_REWARDS:
-        rewards["items"] = []
-        for item_id, quantity in DAILY_QUEST_REWARDS["items"]:
-            add_item(user_id, item_id, quantity)
-            rewards["items"].append((item_id, quantity))
-    
-    # Mark as claimed
+
     today = get_daily_today_str()
-    cursor.execute("""
-    UPDATE user_daily_quests
-    SET status = 'claimed',
-        claimed_at = CURRENT_TIMESTAMP
-    WHERE user_id=? AND daily_key=?
-    """, (user_id, today))
-    conn.commit()
-    
-    return (True, "✅ Винагорода отримана!", rewards)
+    rewards = {}
+    try:
+        cursor.execute("BEGIN IMMEDIATE")
+        current = cursor.execute(
+            "SELECT status FROM user_daily_quests WHERE user_id=? AND daily_key=?",
+            (user_id, today),
+        ).fetchone()
+        if not current or str(current[0]) == "claimed":
+            conn.rollback()
+            return (False, "⚠️ Винагорода вже отримана або квест недоступний.", None)
+
+        item_results = []
+        for item_id, quantity in DAILY_QUEST_REWARDS.get("items", []):
+            result = add_item(user_id, item_id, quantity, commit=False)
+            if (not result.get("success") or
+                    int(result.get("added", 0) or 0) != int(quantity) or
+                    int(result.get("lost", 0) or 0) != 0):
+                conn.rollback()
+                name = result.get("name", f"ID {item_id}")
+                reason = result.get("message", "Предмет не вдалося додати.")
+                return (False, f"❌ Не вдалося отримати нагороду: {name}. {reason}", None)
+            item_results.append((item_id, quantity))
+
+        gold_amount = float(DAILY_QUEST_REWARDS.get("gold", 0) or 0)
+        if gold_amount:
+            changed = cursor.execute(
+                "UPDATE users SET gold=COALESCE(gold,0)+? WHERE user_id=?",
+                (gold_amount, user_id),
+            ).rowcount
+            if changed != 1:
+                raise RuntimeError("Не вдалося видати золото щоденного завдання.")
+            rewards["gold"] = gold_amount
+        if "items" in DAILY_QUEST_REWARDS:
+            rewards["items"] = item_results
+
+        changed = cursor.execute(
+            """UPDATE user_daily_quests
+               SET status='claimed', claimed_at=CURRENT_TIMESTAMP
+               WHERE user_id=? AND daily_key=? AND status<>'claimed'""",
+            (user_id, today),
+        ).rowcount
+        if changed != 1:
+            raise RuntimeError("Не вдалося зафіксувати отримання нагороди.")
+        conn.commit()
+        return (True, "✅ Винагорода отримана!", rewards)
+    except Exception as error:
+        conn.rollback()
+        return (False, f"❌ Не вдалося отримати нагороду: {error}", None)
+
 
 
 def get_daily_quest_progress_text(user_id):
