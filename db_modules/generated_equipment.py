@@ -41,9 +41,13 @@ def get_bag_capacity(user_id):
     row = cursor.fetchone()
 
     if not row or row[0] is None:
-        return 20
+        return DEFAULT_BAG_SLOTS
 
-    return row[0]
+    try:
+        capacity = int(row[0] or DEFAULT_BAG_SLOTS)
+    except Exception:
+        capacity = DEFAULT_BAG_SLOTS
+    return max(DEFAULT_BAG_SLOTS, capacity)
 
 def get_inventory_used_slots(user_id):
     cursor.execute("""

@@ -166,7 +166,7 @@ def create_user(user_id):
         0,
         0.0,
         0,
-        40,  # DEFAULT_BAG_SLOTS
+        DEFAULT_BAG_SLOTS,  # ROM 17.8.1 BASE BAG CAPACITY 60
         "start_path",
         10,
         10,

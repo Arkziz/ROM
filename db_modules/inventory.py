@@ -2,7 +2,7 @@
 Inventory management module
 """
 
-from .connection import conn, cursor
+from .connection import conn, cursor, DEFAULT_BAG_SLOTS
 
 
 # ==============================
@@ -20,14 +20,14 @@ def get_bag_capacity(user_id):
     row = cursor.fetchone()
     
     if not row:
-        return 40  # DEFAULT_BAG_SLOTS
+        return DEFAULT_BAG_SLOTS
     
     try:
-        capacity = int(row[0] or 40)
+        capacity = int(row[0] or DEFAULT_BAG_SLOTS)
     except Exception:
-        capacity = 40
+        capacity = DEFAULT_BAG_SLOTS
     
-    return max(40, capacity)
+    return max(DEFAULT_BAG_SLOTS, capacity)
 
 
 def get_inventory_used_slots(user_id):

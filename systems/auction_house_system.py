@@ -1822,7 +1822,7 @@ def _auction_count_inventory_rows(user_id):
 
 
 def _auction_get_inventory_limit(user_id):
-    # Current project uses 40 slots by default. If a user/bag column exists later,
+    # Stage 17.8 uses a canonical 60-slot base. If a user/bag column exists later,
     # this helper can be expanded without touching buy logic.
     try:
         cursor.execute("SELECT bag_slots FROM users WHERE user_id=?", (user_id,))
@@ -1850,7 +1850,7 @@ def _auction_get_inventory_limit(user_id):
     except Exception:
         pass
 
-    return 40
+    return 60  # ROM 17.8.1 BASE BAG CAPACITY 60
 
 
 def _auction_has_inventory_space(user_id, required_slots=1):

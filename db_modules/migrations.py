@@ -5,11 +5,9 @@ Database migrations and startup maintenance module.
 from .connection import conn, cursor, DEFAULT_BAG_SLOTS
 
 
-def expand_bag_slots_to_40():
-    """
-    Робить базовий розмір сумки 40 слотів.
-    Для існуючих персонажів, у кого менше 40, піднімає до 40.
-    """
+def expand_bag_slots_to_60():
+    """Raise the base bag capacity to 60 without decreasing larger bags."""
+    # ROM 17.8.1 BASE BAG CAPACITY 60
 
     try:
         cursor.execute("""
@@ -21,6 +19,11 @@ def expand_bag_slots_to_40():
         conn.commit()
     except Exception:
         pass
+
+
+def expand_bag_slots_to_40():
+    """Backward-compatible startup alias for the Stage 17.8 baseline."""
+    return expand_bag_slots_to_60()
 
 
 def seed_location_trash_items():

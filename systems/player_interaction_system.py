@@ -2114,7 +2114,7 @@ def _commit_player_trade_12_7_0(conn, trade, offers, stamp):
     if wallets.get(a,0) < gold[a] or wallets.get(b,0) < gold[b]: return _trade_commit_fail_12_7_0(conn, "insufficient_gold", "Недостатньо золота для завершення обміну.")
     # Conservative capacity check after outgoing full rows and incoming new slots.
     for recipient in (a,b):
-        used = int(conn.execute("SELECT COUNT(*) FROM inventory WHERE user_id=?", (recipient,)).fetchone()[0]); cap = int(conn.execute("SELECT COALESCE(bag_slots,40) FROM users WHERE user_id=?", (recipient,)).fetchone()[0] or 40)
+        used = int(conn.execute("SELECT COUNT(*) FROM inventory WHERE user_id=?", (recipient,)).fetchone()[0]); cap = int(conn.execute("SELECT COALESCE(bag_slots,60) FROM users WHERE user_id=?", (recipient,)).fetchone()[0] or 60)  # ROM 17.8.1 BASE BAG CAPACITY 60
         outgoing_full = sum(1 for offer, inv, item in validated if int(offer["owner_user_id"]) == recipient and int(inv["quantity"] or 0) == int(offer["quantity"]) and int(item.get("max_stack") or 1) <= 1)
         incoming = 0
         for offer, inv, item in validated:

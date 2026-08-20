@@ -16,7 +16,7 @@ cursor = conn.cursor()
 # ✅ EQUIPMENT CONFIG
 # ==============================
 
-DEFAULT_BAG_SLOTS = 40
+DEFAULT_BAG_SLOTS = 60  # ROM 17.8.1 BASE BAG CAPACITY 60
 
 SLOT_ORDER = [
     "main_hand",
@@ -108,7 +108,7 @@ def init_db():
     migrations = [
         ("users", "gold", "REAL DEFAULT 0"),
         ("users", "kills", "INTEGER DEFAULT 0"),
-        ("users", "bag_slots", "INTEGER DEFAULT 20"),
+        ("users", "bag_slots", "INTEGER DEFAULT 60"),
         ("users", "current_location", "TEXT DEFAULT 'start_path'"),
 
         ("inventory", "quantity", "INTEGER DEFAULT 1"),
@@ -146,7 +146,10 @@ def init_db():
 
     cursor.execute("UPDATE users SET gold = 0 WHERE gold IS NULL")
     cursor.execute("UPDATE users SET kills = 0 WHERE kills IS NULL")
-    cursor.execute("UPDATE users SET bag_slots = 20 WHERE bag_slots IS NULL")
+    cursor.execute(
+        "UPDATE users SET bag_slots = ? WHERE bag_slots IS NULL",
+        (DEFAULT_BAG_SLOTS,),
+    )  # ROM 17.8.1.1 PARAMETERIZED BAG DEFAULT
 
     cursor.execute("""
     UPDATE users

@@ -827,7 +827,7 @@ def _add_stack_quantity_in_transaction(conn, user_id, item_id, quantity):
     user = conn.execute(
         "SELECT bag_slots FROM users WHERE user_id=?", (user_id,)
     ).fetchone()
-    capacity = max(40, int((user[0] if user else 40) or 40))
+    capacity = max(60, int((user[0] if user else 60) or 60))  # ROM 17.8.1
 
     if used + required_new_rows > capacity:
         return {

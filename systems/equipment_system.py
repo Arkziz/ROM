@@ -1789,10 +1789,10 @@ def _trader_wallet_9_0_12h3(db, user_id):
 
 def _trader_bag_state_9_0_12h3(db, user_id):
     row = db.conn.execute(
-        "SELECT COALESCE(bag_slots,40) FROM users WHERE user_id=?",
+        "SELECT COALESCE(bag_slots,60) FROM users WHERE user_id=?",
         (int(user_id),),
     ).fetchone()
-    capacity = int(row[0] or 40) if row else 40
+    capacity = max(60, int(row[0] or 60)) if row else 60  # ROM 17.8.1
     used = int(db.conn.execute(
         "SELECT COUNT(*) FROM inventory WHERE user_id=?",
         (int(user_id),),

@@ -36,9 +36,13 @@ def get_bag_capacity(user_id):
     row = cursor.fetchone()
 
     if not row or row[0] is None:
-        return 20
+        return DEFAULT_BAG_SLOTS
 
-    return row[0]
+    try:
+        capacity = int(row[0] or DEFAULT_BAG_SLOTS)
+    except Exception:
+        capacity = DEFAULT_BAG_SLOTS
+    return max(DEFAULT_BAG_SLOTS, capacity)
 
 def get_inventory_used_slots(user_id):
     cursor.execute("""
@@ -407,7 +411,7 @@ def reset_hero_for_test(user_id):
                     "exp": 0,
                     "gold": 0.0,
                     "kills": 0,
-                    "bag_slots": int(globals().get("DEFAULT_BAG_SLOTS", 40)),
+                    "bag_slots": int(globals().get("DEFAULT_BAG_SLOTS", 60)),  # ROM 17.8.1
                     "current_location": "start_path",
                     "str": 10,
                     "dex": 10,
