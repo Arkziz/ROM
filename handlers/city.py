@@ -1,3 +1,5 @@
+# ROM 17.11.2.1 CITY CRAFT TAVERN TEXT CLEANUP
+# ROM 17.11.2 COMPACT TEXT LOCATION DESCRIPTION
 # ROM 17.11.1.2 TRADE SUBMENU CITY BUTTON RECOVERY
 # ROM 17.11.1.1 BASE EQUIPMENT CONTEXT NAVIGATION RECOVERY
 # ROM 17.11.1 TRADE DISTRICT TEXT NAVIGATION
@@ -1918,4 +1920,128 @@ def get_item_by_inventory_id_full(inventory_id):
         return tuple(values) if isinstance(row, tuple) else values
     except Exception:
         return row
+
+# Stage 17.11.2 compact text and location description toggle.
+_BASE_BUILD_MAIN_MENU_TEXT_17_11_2 = build_main_menu_text
+_BASE_BUILD_TOWNHALL_TEXT_17_11_2 = build_townhall_text
+_BASE_BUILD_BLACKSMITH_TEXT_17_11_2 = build_blacksmith_text
+_BASE_REGISTER_CITY_HANDLERS_17_11_2 = register_city_handlers
+
+
+def _remove_static_actions_block_17_11_2(text, stop_marker=None):
+    marker = "\n\nДоступні дії:\n"
+    if marker not in text:
+        marker = "Доступні дії:\n"
+    if marker not in text:
+        return text
+    start = text.index(marker)
+    if stop_marker and stop_marker in text[start:]:
+        end = text.index(stop_marker, start)
+        return (text[:start].rstrip() + "\n\n" + text[end:].lstrip()).strip()
+    return text[:start].rstrip()
+
+
+def build_main_menu_text(user_id, show_location_description=False):
+    text = _BASE_BUILD_MAIN_MENU_TEXT_17_11_2(user_id)
+    location_id = get_current_location(user_id)
+    location = LOCATIONS.get(location_id, LOCATIONS["start_path"])
+    description_line = f"📖 {location['description']}\n\n"
+    text = text.replace(description_line, "", 1)
+    text = _remove_static_actions_block_17_11_2(text)
+    if show_location_description:
+        anchor = f"{location['name']}\n\n"
+        if anchor in text:
+            text = text.replace(anchor, anchor + description_line, 1)
+    return text.strip()
+
+
+def build_townhall_text(*args, **kwargs):
+    return _remove_static_actions_block_17_11_2(
+        _BASE_BUILD_TOWNHALL_TEXT_17_11_2(*args, **kwargs)
+    )
+
+
+def build_blacksmith_text(*args, **kwargs):
+    return _remove_static_actions_block_17_11_2(
+        _BASE_BUILD_BLACKSMITH_TEXT_17_11_2(*args, **kwargs),
+        stop_marker="💰 Твоє золото:",
+    )
+
+
+def location_description_kb_17_11_2(expanded=False):
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    if expanded:
+        kb.add(types.InlineKeyboardButton(
+            text="🔙 Сховати опис",
+            callback_data="location_desc:hide",
+        ))
+    else:
+        kb.add(types.InlineKeyboardButton(
+            text="📖 Опис локації",
+            callback_data="location_desc:show",
+        ))
+    return kb
+
+
+def register_city_handlers(bot):
+    _BASE_REGISTER_CITY_HANDLERS_17_11_2(bot)
+
+    @bot.callback_query_handler(
+        func=lambda call: call.data in ("location_desc:show", "location_desc:hide")
+    )
+    def location_description_toggle_17_11_2(call):
+        expanded = call.data == "location_desc:show"
+        user_id = call.from_user.id
+        try:
+            bot.edit_message_text(
+                build_main_menu_text(user_id, show_location_description=expanded),
+                chat_id=call.message.chat.id,
+                message_id=call.message.message_id,
+                reply_markup=location_description_kb_17_11_2(expanded),
+            )
+        except Exception:
+            # No send_message fallback: a stale or unchanged message must not spam chat.
+            pass
+        finally:
+            try:
+                bot.answer_callback_query(call.id)
+            except Exception:
+                pass
+
+# Stage 17.11.2.1 City, Craft District and Tavern text cleanup.
+_BASE_BUILD_CITY_TEXT_17_11_2_1 = build_city_text
+_BASE_BUILD_CRAFT_DISTRICT_TEXT_17_11_2_1 = build_craft_district_text
+_BASE_BUILD_TAVERN_TEXT_17_11_2_1 = build_tavern_text
+
+
+def build_city_text(user_id):
+    location_id = get_current_location(user_id)
+    location = LOCATIONS.get(location_id, LOCATIONS["start_path"])
+    return (
+        f"🏙️ Місто\n\n"
+        f"📍 Регіон:\n"
+        f"{location['name']}\n\n"
+        f"Перед тобою центральна площа табору мандрівників, де сходяться "
+        f"дороги торговців, ремісників і шукачів пригод. З майстерень "
+        f"долинає дзенькіт металу, торговці закликають оглянути товари, "
+        f"а біля дошок оголошень збираються найманці. Тут можна "
+        f"підготуватися до нової подорожі, поповнити припаси та дізнатися "
+        f"останні новини."
+    )
+
+
+def build_craft_district_text(user_id):
+    text = _BASE_BUILD_CRAFT_DISTRICT_TEXT_17_11_2_1(user_id)
+    marker = "\n\nДоступні місця:\n"
+    if marker in text:
+        text = text.split(marker, 1)[0]
+    return text.rstrip()
+
+
+def build_tavern_text():
+    text = _BASE_BUILD_TAVERN_TEXT_17_11_2_1()
+    marker = "\n\nℹ️ Пізніше тут можна буде додати:\n"
+    if marker in text:
+        text = text.split(marker, 1)[0]
+    return text.rstrip()
 

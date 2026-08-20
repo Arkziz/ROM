@@ -1,3 +1,4 @@
+# ROM 17.11.2 COMPACT TEXT LOCATION DESCRIPTION
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
 # ROM 17.9.1 GLOBAL PAGINATION BUTTON LABELS
 import json
@@ -5350,4 +5351,49 @@ def auction_buy_category_kb_v1():
     kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["material"], AUCTION_BUY_CATEGORY_BUTTONS_V1["rune"])
     kb.row(AUCTION_BACK_TO_MENU_BUTTON)
     return kb
+
+# Stage 17.11.2 compact Auction House text wrappers.
+def _compact_action_list_17_11_2(text, stop_marker=None):
+    marker = "\n\nДоступні дії:\n"
+    if marker not in text:
+        marker = "Доступні дії:\n"
+    if marker not in text:
+        return text
+    start = text.index(marker)
+    if stop_marker and stop_marker in text[start:]:
+        end = text.index(stop_marker, start)
+        return (text[:start].rstrip() + "\n\n" + text[end:].lstrip()).strip()
+    return text[:start].rstrip()
+
+_BASE_BUILD_AUCTION_HOUSE_TEXT_17_11_2 = build_auction_house_text
+_BASE_AUCTION_MAIN_MENU_TEXT_V1_17_11_2 = _auction_main_menu_text_v1
+_BASE_AUCTION_MAIN_MENU_TEXT_V2_17_11_2 = _auction_main_menu_text_v2
+_BASE_AUCTION_BUY_CATEGORY_TEXT_17_11_2 = build_auction_buy_category_text_v1
+
+
+def build_auction_house_text(*args, **kwargs):
+    return _compact_action_list_17_11_2(
+        _BASE_BUILD_AUCTION_HOUSE_TEXT_17_11_2(*args, **kwargs),
+        stop_marker="ℹ️ Правила:",
+    )
+
+
+def _auction_main_menu_text_v1(*args, **kwargs):
+    return _compact_action_list_17_11_2(
+        _BASE_AUCTION_MAIN_MENU_TEXT_V1_17_11_2(*args, **kwargs)
+    )
+
+
+def _auction_main_menu_text_v2(*args, **kwargs):
+    return _compact_action_list_17_11_2(
+        _BASE_AUCTION_MAIN_MENU_TEXT_V2_17_11_2(*args, **kwargs)
+    )
+
+
+def build_auction_buy_category_text_v1(*args, **kwargs):
+    text = _BASE_AUCTION_BUY_CATEGORY_TEXT_17_11_2(*args, **kwargs)
+    return _compact_action_list_17_11_2(
+        text,
+        stop_marker="Продавці приховані.",
+    )
 

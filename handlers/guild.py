@@ -1,3 +1,4 @@
+# ROM 17.11.2 COMPACT TEXT LOCATION DESCRIPTION
 # ROM 17.9.1 GLOBAL PAGINATION BUTTON LABELS
 from telebot import types
 
@@ -2805,4 +2806,39 @@ def register_guild_handlers(bot):
             format_guild_cleanup_result_text(result),
             reply_markup=guild_hall_kb(message.from_user.id)
         )
+
+# Stage 17.11.2 compact Guild text wrappers.
+def _compact_guild_actions_17_11_2(text, stop_marker=None):
+    marker = "\n\nДоступні дії:\n"
+    if marker not in text:
+        marker = "Доступні дії:\n"
+    if marker not in text:
+        return text
+    start = text.index(marker)
+    if stop_marker and stop_marker in text[start:]:
+        end = text.index(stop_marker, start)
+        return (text[:start].rstrip() + "\n\n" + text[end:].lstrip()).strip()
+    return text[:start].rstrip()
+
+_BASE_GUILD_HALL_NO_GUILD_TEXT_17_11_2 = build_guild_hall_no_guild_text
+_BASE_GUILD_HALL_MEMBER_TEXT_17_11_2 = build_guild_hall_member_text
+_BASE_GUILD_MEMBER_DETAIL_TEXT_17_11_2 = build_guild_member_detail_text
+
+
+def build_guild_hall_no_guild_text(*args, **kwargs):
+    return _compact_guild_actions_17_11_2(
+        _BASE_GUILD_HALL_NO_GUILD_TEXT_17_11_2(*args, **kwargs),
+        stop_marker="Поточний рейтинговий сезон:",
+    )
+
+
+def build_guild_hall_member_text(*args, **kwargs):
+    return _compact_guild_actions_17_11_2(
+        _BASE_GUILD_HALL_MEMBER_TEXT_17_11_2(*args, **kwargs)
+    )
+
+
+def build_guild_member_detail_text(*args, **kwargs):
+    text = _BASE_GUILD_MEMBER_DETAIL_TEXT_17_11_2(*args, **kwargs)
+    return text.replace("Доступні дії:\n", "Керування:\n")
 
