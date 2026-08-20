@@ -957,22 +957,68 @@ def register_inventory_handlers(bot):
             return
 
         # Звичайні зілля
+        # ROM 17.5.1.1 KEEP POTION PREVIEW OPEN
         result = use_potion_from_inventory(user_id, inventory_id)
+        result_message = str(result.get("message") or "Не вдалося використати зілля.")
 
-        bot.answer_callback_query(call.id)
+        if result.get("success"):
+            bot.answer_callback_query(call.id)
+            bot.send_message(call.message.chat.id, result_message)
+            canonical_inventory_id = result.get("inventory_id")
+            if canonical_inventory_id is not None:
+                text, kb = build_item_details(
+                    user_id=user_id,
+                    inventory_id=int(canonical_inventory_id),
+                    back_category=back_category,
+                    page=page,
+                )
+            else:
+                text, kb = build_category_list(user_id, back_category, page)
+            try:
+                bot.edit_message_text(
+                    text,
+                    chat_id=call.message.chat.id,
+                    message_id=call.message.message_id,
+                    reply_markup=kb,
+                )
+            except Exception:
+                try:
+                    bot.edit_message_reply_markup(
+                        chat_id=call.message.chat.id,
+                        message_id=call.message.message_id,
+                        reply_markup=None,
+                    )
+                except Exception:
+                    pass
+                bot.send_message(call.message.chat.id, text, reply_markup=kb)
+            return
 
-        bot.send_message(
-            call.message.chat.id,
-            result["message"]
-        )
+        stale_inventory = "Предмет не знайдено в інвентарі" in result_message
+        if stale_inventory:
+            bot.answer_callback_query(call.id, text=result_message, show_alert=True)
+            text, kb = build_category_list(user_id, back_category, page)
+            try:
+                bot.edit_message_text(
+                    text,
+                    chat_id=call.message.chat.id,
+                    message_id=call.message.message_id,
+                    reply_markup=kb,
+                )
+            except Exception:
+                try:
+                    bot.edit_message_reply_markup(
+                        chat_id=call.message.chat.id,
+                        message_id=call.message.message_id,
+                        reply_markup=None,
+                    )
+                except Exception:
+                    pass
+                bot.send_message(call.message.chat.id, text, reply_markup=kb)
+            return
 
-        text, kb = build_category_list(user_id, back_category, page)
+        bot.answer_callback_query(call.id, text=result_message, show_alert=True)
+        return
 
-        bot.send_message(
-            call.message.chat.id,
-            text,
-            reply_markup=kb
-        )
 
 # ==============================
 # ✅ REFINE MATERIALS INVENTORY CATEGORY V1
