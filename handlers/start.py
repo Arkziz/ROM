@@ -1,3 +1,5 @@
+# ROM 17.13.1.2 CLASS SKILL PREVIEW SPACING
+# ROM 17.13.1 CLASS SELECTION PREVIEW CONFIRMATION
 from telebot import types
 
 from db import (
@@ -366,7 +368,7 @@ def register_start_handlers(bot):
     # INITIAL CLASS SELECTION
     # ==============================
 
-    @bot.callback_query_handler(func=lambda call: call.data.startswith("select_class:"))
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("legacy_disabled_select_class:"))
     def select_class(call):
         user_id = call.from_user.id
         class_key = call.data.split(":")[1]
@@ -400,7 +402,7 @@ def register_start_handlers(bot):
     # CLASS CHANGE BY SPHERE
     # ==============================
 
-    @bot.callback_query_handler(func=lambda call: call.data.startswith("change_class:"))
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("legacy_disabled_change_class:"))
     def change_class(call):
         user_id = call.from_user.id
         class_key = call.data.split(":")[1]
@@ -474,3 +476,185 @@ def register_start_handlers(bot):
             build_main_menu_text(user_id),
             reply_markup=main_kb()
         )
+
+# Stage 17.13.1 class preview and explicit confirmation flow.
+_BASE_REGISTER_START_HANDLERS_17_13_1 = register_start_handlers
+
+
+def _class_mode_17_13_1(mode):
+    return "change" if str(mode) == "change" else "register"
+
+
+def build_class_selection_kb(mode="register"):
+    mode = _class_mode_17_13_1(mode)
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    for class_key, config in CLASS_CONFIGS.items():
+        kb.add(types.InlineKeyboardButton(
+            text=config["name"],
+            callback_data=f"class_preview:{mode}:{class_key}",
+        ))
+    return kb
+
+
+def build_class_selection_text(user_id, mode="register"):
+    mode = _class_mode_17_13_1(mode)
+    character_name = get_character_name(user_id)
+    if mode == "change":
+        return (
+            f"🔮 Сфера нового шляху\n\n"
+            f"Герой: {character_name}\n"
+            f"Поточний клас: {get_character_class_display(user_id)}\n\n"
+            f"Оберіть новий клас. Перед підтвердженням можна переглянути його опис і навички."
+        )
+    return (
+        f"🧭 Вибір класу\n\n"
+        f"Герой: {character_name}\n\n"
+        f"Оберіть шлях персонажа. Перед підтвердженням можна переглянути опис класу та його навички."
+    )
+
+
+def _skill_cost_text_17_13_1(skill):
+    cost_type = skill.get("cost_type", "")
+    cost = int(skill.get("cost", 0) or 0)
+    if cost_type == "rage_all_min":
+        return f"Вартість: уся Лють, мінімум {int(skill.get('min_cost', 0) or 0)}"
+    labels = {
+        "rage": "Люті",
+        "combat_energy": "Енергії",
+        "combat_energy_combo": "Енергії",
+        "mana": "Мани",
+    }
+    label = labels.get(cost_type, "ресурсу")
+    text = f"Вартість: {cost} {label}"
+    if cost_type == "combat_energy_combo" and skill.get("min_combo"):
+        text += f" + мінімум {int(skill.get('min_combo') or 0)} комбо"
+    return text
+
+
+def build_class_preview_text_17_13_1(user_id, mode, class_key):
+    mode = _class_mode_17_13_1(mode)
+    config = CLASS_CONFIGS.get(class_key)
+    if not config:
+        return None
+    from handlers.combat import CLASS_SKILLS_V1
+    skills = CLASS_SKILLS_V1.get(class_key, [])
+    text = f"{config['name']}\n\n{config['description']}\n\n✨ Навички першого рівня:\n"
+    for index, skill in enumerate(skills):
+        if index:
+            text += "\n"
+        text += f"\n• {skill['name']}\n  {skill['description']}\n  {_skill_cost_text_17_13_1(skill)}"
+        cooldown = int(skill.get("cooldown", 0) or 0)
+        text += f"\n  Перезарядка: {cooldown} ход."
+    if mode == "change":
+        text += "\n\n⚠️ Право на зміну буде витрачено лише після підтвердження."
+    return text
+
+
+def build_class_preview_kb_17_13_1(mode, class_key):
+    mode = _class_mode_17_13_1(mode)
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton(
+        text="✅ Обрати клас",
+        callback_data=f"class_confirm:{mode}:{class_key}",
+    ))
+    kb.add(types.InlineKeyboardButton(
+        text="⬅️ Назад до вибору",
+        callback_data=f"class_back:{mode}",
+    ))
+    return kb
+
+
+def _safe_class_edit_17_13_1(bot, call, text, reply_markup):
+    try:
+        bot.edit_message_text(
+            text,
+            chat_id=call.message.chat.id,
+            message_id=call.message.message_id,
+            reply_markup=reply_markup,
+        )
+        return True
+    except Exception:
+        try:
+            bot.answer_callback_query(call.id, "Не вдалося оновити повідомлення. Спробуй ще раз.", show_alert=True)
+        except Exception:
+            pass
+        return False
+
+
+def register_start_handlers(bot):
+    _BASE_REGISTER_START_HANDLERS_17_13_1(bot)
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("class_preview:"))
+    def class_preview_17_13_1(call):
+        parts = call.data.split(":", 2)
+        if len(parts) != 3:
+            bot.answer_callback_query(call.id, "Некоректний вибір класу.", show_alert=True)
+            return
+        mode, class_key = _class_mode_17_13_1(parts[1]), parts[2]
+        if class_key not in CLASS_CONFIGS:
+            bot.answer_callback_query(call.id, "Невідомий клас.", show_alert=True)
+            return
+        if mode == "register" and not needs_character_class(call.from_user.id):
+            bot.answer_callback_query(call.id, "Клас персонажа вже обрано.", show_alert=True)
+            return
+        if mode == "change" and not has_class_change_available(call.from_user.id):
+            bot.answer_callback_query(call.id, "Зміна класу недоступна.", show_alert=True)
+            return
+        text = build_class_preview_text_17_13_1(call.from_user.id, mode, class_key)
+        if _safe_class_edit_17_13_1(bot, call, text, build_class_preview_kb_17_13_1(mode, class_key)):
+            bot.answer_callback_query(call.id)
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("class_back:"))
+    def class_back_17_13_1(call):
+        mode = _class_mode_17_13_1(call.data.split(":", 1)[1])
+        if mode == "change" and not has_class_change_available(call.from_user.id):
+            bot.answer_callback_query(call.id, "Зміна класу недоступна.", show_alert=True)
+            return
+        if _safe_class_edit_17_13_1(
+            bot, call,
+            build_class_selection_text(call.from_user.id, mode=mode),
+            build_class_selection_kb(mode=mode),
+        ):
+            bot.answer_callback_query(call.id)
+
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("class_confirm:"))
+    def class_confirm_17_13_1(call):
+        parts = call.data.split(":", 2)
+        if len(parts) != 3:
+            bot.answer_callback_query(call.id, "Некоректне підтвердження.", show_alert=True)
+            return
+        mode, class_key = _class_mode_17_13_1(parts[1]), parts[2]
+        if class_key not in CLASS_CONFIGS:
+            bot.answer_callback_query(call.id, "Невідомий клас.", show_alert=True)
+            return
+        from systems.character_system import (
+            confirm_initial_character_class_17_13_1,
+            confirm_character_class_change_17_13_1,
+        )
+        if mode == "register":
+            result = confirm_initial_character_class_17_13_1(call.from_user.id, class_key)
+            bot.answer_callback_query(call.id)
+            if not result["success"]:
+                bot.send_message(call.message.chat.id, result["message"])
+                return
+            bot.send_message(call.message.chat.id, f"{result['message']}\n\nТвій шлях починається.")
+        else:
+            old_class = get_character_class_display(call.from_user.id)
+            result = confirm_character_class_change_17_13_1(call.from_user.id, class_key)
+            bot.answer_callback_query(call.id)
+            if not result["success"]:
+                bot.send_message(call.message.chat.id, result["message"])
+                return
+            unequip_result = unequip_incompatible_items_after_class_change(call.from_user.id)
+            unequip_text = build_class_change_unequip_text_local(unequip_result)
+            new_class = get_character_class_display(call.from_user.id)
+            bot.send_message(
+                call.message.chat.id,
+                f"🔮 Клас змінено.\n\nБуло: {old_class}\nСтало: {new_class}{unequip_text}",
+            )
+        bot.send_message(
+            call.message.chat.id,
+            build_main_menu_text(call.from_user.id),
+            reply_markup=main_kb(),
+        )
+

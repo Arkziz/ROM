@@ -1,3 +1,4 @@
+# ROM 17.13.1 CLASS SELECTION PREVIEW CONFIRMATION
 # ROM 17.12.1.2 FORBIDDEN NON-UKRAINIAN CYRILLIC NAME LETTERS
 # ROM 17.12.1 CHARACTER NAME VALIDATION
 # ROM 9.0.12b character system real implementation
@@ -316,4 +317,86 @@ def get_max_mp(user_id):
     intelligence += int(rune.get("int", 0) or 0)
     wisdom += int(rune.get("wis", 0) or 0)
     return max(0, 100 + level * 20 + intelligence * 3 + wisdom * 2)
+
+# Stage 17.13.1 atomic confirmation services.
+def confirm_initial_character_class_17_13_1(user_id, class_key):
+    init_character_class_system()
+    db = _db()
+    key = str(class_key or "").strip().lower()
+    if key not in CLASS_CONFIGS:
+        return {"success": False, "message": "❌ Невідомий клас персонажа."}
+    try:
+        db.conn.execute("BEGIN IMMEDIATE")
+        row = db.cursor.execute(
+            "SELECT TRIM(COALESCE(character_name,'')), TRIM(COALESCE(character_class,'')) FROM users WHERE user_id=?",
+            (user_id,),
+        ).fetchone()
+        if not row or not row[0]:
+            db.conn.rollback()
+            return {"success": False, "message": "❌ Спочатку потрібно вказати ім’я персонажа."}
+        if row[1]:
+            db.conn.rollback()
+            return {"success": False, "message": "ℹ️ Клас персонажа вже обрано."}
+        db.cursor.execute(
+            "UPDATE users SET character_class=?, class_selected_at=? WHERE user_id=? AND TRIM(COALESCE(character_class,''))=''",
+            (key, datetime.now().isoformat(), user_id),
+        )
+        if db.cursor.rowcount != 1:
+            db.conn.rollback()
+            return {"success": False, "message": "ℹ️ Клас персонажа вже обрано."}
+        db.conn.commit()
+    except Exception as error:
+        try:
+            db.conn.rollback()
+        except Exception:
+            pass
+        return {"success": False, "message": f"❌ Не вдалося підтвердити клас: {error}"}
+    refresh_user_mp(user_id)
+    return {"success": True, "message": f"✅ Обрано клас: {CLASS_CONFIGS[key]['name']}", "class_key": key}
+
+
+def confirm_character_class_change_17_13_1(user_id, class_key):
+    init_character_class_system()
+    db = _db()
+    key = str(class_key or "").strip().lower()
+    if key not in CLASS_CONFIGS:
+        return {"success": False, "message": "❌ Невідомий клас персонажа."}
+    try:
+        db.conn.execute("BEGIN IMMEDIATE")
+        row = db.cursor.execute(
+            "SELECT TRIM(COALESCE(character_class,'')), COALESCE(class_change_available,0) FROM users WHERE user_id=?",
+            (user_id,),
+        ).fetchone()
+        if not row:
+            db.conn.rollback()
+            return {"success": False, "message": "❌ Персонажа не знайдено."}
+        old_key = str(row[0] or "")
+        if int(row[1] or 0) <= 0:
+            db.conn.rollback()
+            return {"success": False, "message": "❌ Зміна класу недоступна."}
+        if old_key == key:
+            db.conn.rollback()
+            return {"success": False, "message": "ℹ️ Цей клас уже обрано."}
+        db.cursor.execute(
+            "UPDATE users SET character_class=?, class_selected_at=?, class_change_available=class_change_available-1 "
+            "WHERE user_id=? AND COALESCE(class_change_available,0)>0 AND TRIM(COALESCE(character_class,''))<>?",
+            (key, datetime.now().isoformat(), user_id, key),
+        )
+        if db.cursor.rowcount != 1:
+            db.conn.rollback()
+            return {"success": False, "message": "❌ Не вдалося підтвердити зміну класу."}
+        db.conn.commit()
+    except Exception as error:
+        try:
+            db.conn.rollback()
+        except Exception:
+            pass
+        return {"success": False, "message": f"❌ Не вдалося підтвердити зміну класу: {error}"}
+    refresh_user_mp(user_id)
+    return {
+        "success": True,
+        "message": f"✅ Обрано клас: {CLASS_CONFIGS[key]['name']}",
+        "class_key": key,
+        "old_class_key": old_key,
+    }
 

@@ -1,10 +1,11 @@
+# ROM 17.13.1.1 DEFAULT BAG SLOTS IMPORT RECOVERY
 """
 Player management module - wrapper for systems.player_system
 """
 
 from data.player_progression import get_exp_to_next_level
 
-from .connection import conn, cursor
+from .connection import conn, cursor, DEFAULT_BAG_SLOTS
 
 
 # ==============================
