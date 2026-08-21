@@ -1,3 +1,4 @@
+# ROM 17.14.1 LEVEL UP REWARDS
 # ✅ ROM 9.0.2 PLAYER SYSTEM V1
 """
 ROM Player System v1.
@@ -733,4 +734,74 @@ def get_player_stats(user_id: int):
         int(base_sta or 0) + int(rune.get("sta", 0) or 0),
         int(level or 1),
     )
+
+# Stage 17.14.1 authoritative transactional EXP override.
+def add_exp(user_id: int, amount):
+    """Apply EXP, stats, HP and exactly-once level rewards in one transaction."""
+    db = _db_module()
+    from systems.level_up_reward_system import (
+        apply_level_up_rewards_in_transaction,
+        build_level_up_reward_message,
+        init_level_up_reward_system,
+    )
+
+    init_level_up_reward_system(db)
+    db.conn.execute("BEGIN IMMEDIATE")
+    try:
+        row = db.cursor.execute(
+            "SELECT level, exp FROM users WHERE user_id=?",
+            (user_id,),
+        ).fetchone()
+        if not row:
+            db.conn.rollback()
+            return None
+
+        old_level = int(_row_get(row, "level", 0, 1) or 1)
+        level = old_level
+        exp = int(_row_get(row, "exp", 1, 0) or 0) + int(amount)
+        reached_levels = []
+
+        while exp >= db.get_exp_to_next_level(level):
+            exp -= db.get_exp_to_next_level(level)
+            level += 1
+            reached_levels.append(level)
+
+        level_ups = len(reached_levels)
+        if level_ups:
+            db.cursor.execute(
+                """UPDATE users SET
+                       str=str+?, dex=dex+?, intelligence=intelligence+?,
+                       wis=wis+?, sta=sta+?
+                     WHERE user_id=?""",
+                (level_ups, level_ups, level_ups, level_ups, level_ups, user_id),
+            )
+
+        db.cursor.execute(
+            "UPDATE users SET level=?, exp=? WHERE user_id=?",
+            (level, exp, user_id),
+        )
+        max_hp = get_max_hp(user_id)
+        db.cursor.execute(
+            "UPDATE users SET max_hp=? WHERE user_id=?",
+            (max_hp, user_id),
+        )
+
+        reward_result = apply_level_up_rewards_in_transaction(
+            db, user_id, old_level, level
+        )
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
+
+    return {
+        "old_level": old_level,
+        "level": level,
+        "exp": exp,
+        "exp_to_next": db.get_exp_to_next_level(level),
+        "level_ups": level_ups,
+        "reached_levels": reached_levels,
+        "level_up_rewards": reward_result,
+        "level_up_reward_message": build_level_up_reward_message(reward_result),
+    }
 

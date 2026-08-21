@@ -1,3 +1,4 @@
+# ROM 17.14.1.1 SEPARATE LEVEL REWARD MESSAGE AND DEV EXP SETTER
 import random
 
 from telebot import types
@@ -279,6 +280,10 @@ def register_contract_handlers(bot):
             result["message"],
             reply_markup=contracts_kb()
         )
+
+        reward_message = str(result.get("level_up_reward_message") or "")
+        if reward_message:
+            bot.send_message(call.message.chat.id, reward_message)
 
         text, kb = build_contracts_text(user_id)
 

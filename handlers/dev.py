@@ -1,3 +1,4 @@
+# ROM 17.14.1.1 SEPARATE LEVEL REWARD MESSAGE AND DEV EXP SETTER
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
 from pathlib import Path
 from db import (
@@ -1049,3 +1050,31 @@ def register_dev_handlers(bot):
     if _register_dev_handlers_before_pvp_fixture_audit_14_6_2a:
         _register_dev_handlers_before_pvp_fixture_audit_14_6_2a(bot)
     _register_pvp_fixture_audit_handlers_14_6_2a(bot)
+
+# Stage 17.14.1.1: exact current-level EXP setter for fast reward testing.
+_BASE_REGISTER_DEV_HANDLERS_17_14_1_1 = register_dev_handlers
+
+
+def register_dev_handlers(bot):
+    _BASE_REGISTER_DEV_HANDLERS_17_14_1_1(bot)
+
+    @bot.message_handler(commands=["setexp"])
+    def set_exp_17_14_1_1(message):
+        if not DEV_MODE:
+            return
+        parts = str(message.text or "").split()
+        if len(parts) != 2:
+            bot.send_message(
+                message.chat.id,
+                "❌ Формат: /setexp <кількість> або /setexp near",
+                reply_markup=main_kb(),
+            )
+            return
+        from db_modules.dev_compat import set_current_exp_for_test_17_14_1_1
+        result = set_current_exp_for_test_17_14_1_1(message.from_user.id, parts[1])
+        bot.send_message(
+            message.chat.id,
+            result.get("message", "❌ Не вдалося встановити досвід."),
+            reply_markup=main_kb(),
+        )
+

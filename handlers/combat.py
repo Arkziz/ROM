@@ -1,3 +1,5 @@
+# ROM 17.14.1.1 SEPARATE LEVEL REWARD MESSAGE AND DEV EXP SETTER
+# ROM 17.14.1 LEVEL UP REWARDS
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
 from telebot import types
 
@@ -1745,8 +1747,7 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
     if exp_result:
         text += f" ({exp_result['exp']}/{exp_result['exp_to_next']})"
 
-        if exp_result["level_ups"] > 0:
-            text += f"\n🏆 Новий рівень: {exp_result['level']}!"
+        # Stage 17.14.1.1 sends level-up information separately.
 
     text += f"\n💰 Золото: +{reward['gold']}\n"
 
@@ -1901,6 +1902,10 @@ def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=""):
         text,
         reply_markup=main_kb()
     )
+
+    reward_message = str(reward.get("exp_result", {}).get("level_up_reward_message") or "")
+    if reward_message:
+        bot.send_message(chat_id, reward_message)
 
 
 # ==============================

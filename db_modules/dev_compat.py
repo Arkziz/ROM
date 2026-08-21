@@ -1,3 +1,4 @@
+# ROM 17.14.1.1 SEPARATE LEVEL REWARD MESSAGE AND DEV EXP SETTER
 # ROM 17.12.1.1 DEV RESET HERO LOCK INITIALIZATION
 """DEV compatibility API restored from final legacy db.py definitions."""
 
@@ -1571,3 +1572,52 @@ def get_player_level(user_id):
     return _player_system_v2().get_player_level(user_id)
 
 __all__ = ['set_player_level_for_test', 'reset_player_level_for_test', 'set_gold_for_test', 'create_dev_armor_item_for_test', 'create_dev_weapon_item_for_test', 'reset_hero_for_test', 'seed_class_reset_sphere_item']
+
+# Stage 17.14.1.1 DEV-only current-level EXP setter.
+def set_current_exp_for_test_17_14_1_1(user_id, requested):
+    row = cursor.execute(
+        "SELECT level, exp FROM users WHERE user_id=?",
+        (int(user_id),),
+    ).fetchone()
+    if not row:
+        return {"success": False, "message": "❌ Персонажа не знайдено."}
+
+    level = max(1, int(row[0] or 1))
+    from data.player_progression import get_exp_to_next_level
+    required = int(get_exp_to_next_level(level))
+
+    if str(requested).strip().casefold() == "near":
+        value = max(0, required - 1)
+    else:
+        try:
+            value = int(str(requested).strip())
+        except Exception:
+            return {
+                "success": False,
+                "message": "❌ Формат: /setexp <0..поріг-1> або /setexp near",
+            }
+
+    if value < 0 or value >= required:
+        return {
+            "success": False,
+            "message": f"❌ Для {level} рівня EXP має бути в межах 0–{required - 1}.",
+            "level": level,
+            "required": required,
+        }
+
+    cursor.execute("UPDATE users SET exp=? WHERE user_id=?", (value, int(user_id)))
+    conn.commit()
+    return {
+        "success": True,
+        "level": level,
+        "exp": value,
+        "required": required,
+        "remaining": required - value,
+        "message": (
+            "✅ DEV: досвід персонажа встановлено.\n\n"
+            f"Рівень: {level}\n"
+            f"Досвід: {value}/{required}\n"
+            f"До нового рівня: {required - value} EXP"
+        ),
+    }
+
