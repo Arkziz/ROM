@@ -1,3 +1,4 @@
+# ROM 17.12.1.1 DEV RESET HERO LOCK INITIALIZATION
 """DEV compatibility API restored from final legacy db.py definitions."""
 
 import sqlite3
@@ -247,6 +248,9 @@ def set_gold_for_test(user_id, amount):
         "gold": amount,
         "message": f"✅ DEV: золото встановлено {amount:.2f} 🪙"
     }
+
+_DEV_RESET_HERO_LOCK = None
+
 
 def _get_dev_reset_hero_lock():
     global _DEV_RESET_HERO_LOCK

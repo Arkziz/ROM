@@ -1,14 +1,18 @@
+# ROM 17.12.1.2 FORBIDDEN NON-UKRAINIAN CYRILLIC NAME LETTERS
+# ROM 17.12.1 CHARACTER NAME VALIDATION
 # ROM 9.0.12b character system real implementation
 from __future__ import annotations
 
 from datetime import datetime
 import re
+import unicodedata
 
 from data.classes import CLASS_CONFIGS, CLASS_RESET_SPHERE_ITEM_ID
 
 NAME_MIN_LENGTH = 2
 NAME_MAX_LENGTH = 24
 NAME_PATTERN = re.compile(r"^[A-Za-zА-Яа-яІіЇїЄєҐґ0-9 _'-]+$")
+FORBIDDEN_NON_UKRAINIAN_CYRILLIC_LETTERS = frozenset("ёЁъЪыЫэЭ")
 
 
 def _db():
@@ -37,7 +41,9 @@ def init_character_class_system():
 
 
 def normalize_character_name(name):
-    return re.sub(r"\s+", " ", str(name or "").strip())
+    value = str(name or "").strip()
+    value = unicodedata.normalize("NFC", value)
+    return re.sub(r"\s+", " ", value)
 
 
 def validate_character_name(name):
@@ -46,8 +52,10 @@ def validate_character_name(name):
         return False, f"Ім’я має містити щонайменше {NAME_MIN_LENGTH} символи."
     if len(value) > NAME_MAX_LENGTH:
         return False, f"Ім’я має містити не більше {NAME_MAX_LENGTH} символів."
-    if not NAME_PATTERN.fullmatch(value):
-        return False, "Ім’я містить недозволені символи."
+    if any(char in FORBIDDEN_NON_UKRAINIAN_CYRILLIC_LETTERS for char in value):
+        return False, "Ім'я не повинно містити літери мови ворога."
+    if not any(char.isalpha() for char in value):
+        return False, "Ім’я має містити хоча б одну літеру."
     return True, ""
 
 
