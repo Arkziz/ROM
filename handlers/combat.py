@@ -1,3 +1,4 @@
+# ROM 17.16.1 PVE SKILL BUTTON STATES
 # ROM 17.15.1 PERSISTENT MANA REGENERATION
 # ROM 17.14.1.1 SEPARATE LEVEL REWARD MESSAGE AND DEV EXP SETTER
 # ROM 17.14.1 LEVEL UP REWARDS
@@ -1038,72 +1039,28 @@ def get_player_skill_by_key(user_id, skill_key):
 
 
 def build_skill_menu_text(user_id, mob):
+    from systems.pve_skill_action_state import get_pve_skill_action_state
+
     skills = get_player_class_skills(user_id)
     class_resource_text = get_class_resource_line(mob)
-
     if not skills:
-        return (
-            "✨ Навички\n\n"
-            "❌ Для твого класу ще немає доступних навичок."
-        ), None
+        return "✨ Навички\n\n❌ Для твого класу ще немає доступних навичок.", None
 
-    text = "✨ Навички\n\n"
-    text += f"{class_resource_text}\n"
-
+    text = "✨ Навички\n\n" + f"{class_resource_text}\n"
     kb = types.InlineKeyboardMarkup()
-
     for skill in skills:
-        cooldown = get_skill_cooldown(mob, skill["key"])
-
-        text += (
-            f"{skill['name']}\n"
-            f"{skill['description']}\n"
-            f"Вартість: {skill.get('cost', 0)}"
-        )
-
-        if skill["cost_type"] == "rage":
-            text += " Люті\n"
-        elif skill["cost_type"] == "rage_all_min":
-            text += f" Люті, мінімум {skill.get('min_cost', 30)}\n"
-        elif skill["cost_type"] == "combat_energy":
-            text += " Енергії\n"
-        elif skill["cost_type"] == "combat_energy_combo":
-            text += f" Енергії + мінімум {skill.get('min_combo', 1)} комбо\n"
-        elif skill["cost_type"] == "mana":
-            text += " MP\n"
-        else:
-            text += "\n"
-
-        if skill.get("cooldown", 0) > 0:
-            text += f"Перезарядка: {skill['cooldown']} ход.\n"
-
-        if cooldown > 0:
-            text += f"⏳ Поточна перезарядка: {cooldown} ход.\n\n"
-            button_text = f"🔒 {skill['name']} — {cooldown} ход."
-            callback_data = f"skill_locked:{skill['key']}"
-        else:
-            text += "✅ Навичка доступна.\n\n"
-            button_text = skill["name"]
-            callback_data = f"use_skill:{skill['key']}"
-
+        state = get_pve_skill_action_state(user_id, mob, skill)
+        text += f"{skill['name']}\n{skill['description']}\n"
+        text += "✅ Навичка доступна.\n\n" if state["available"] else f"{state['message']}\n\n"
         kb.add(types.InlineKeyboardButton(
-            text=button_text,
-            callback_data=callback_data
+            text=state["label"], callback_data=state["callback_data"]
         ))
 
     enemy_effects_text = get_enemy_effects_text(mob)
     player_effects_text = get_player_effects_text(mob)
-
     if enemy_effects_text or player_effects_text:
-        text += "\n"
-        text += enemy_effects_text
-        text += player_effects_text
-
-    kb.add(types.InlineKeyboardButton(
-        text="⬅️ Назад до бою",
-        callback_data="combat_back"
-    ))
-
+        text += "\n" + enemy_effects_text + player_effects_text
+    kb.add(types.InlineKeyboardButton(text="⬅️ Назад до бою", callback_data="combat_back"))
     return text, kb
 
 
@@ -2742,63 +2699,31 @@ def register_combat_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("skill_locked:"))
     def skill_locked(call):
-        user_id = call.from_user.id
+            from systems.pve_skill_action_state import get_pve_skill_action_state
 
-        if not hasattr(bot, "user_data") or user_id not in bot.user_data:
-            bot.answer_callback_query(call.id)
+            user_id = call.from_user.id
+            if not hasattr(bot, "user_data") or user_id not in bot.user_data:
+                bot.answer_callback_query(call.id, "❗ Бій уже завершено")
+                return
 
-            bot.send_message(
-                call.message.chat.id,
-                "❗ Бій уже завершено",
-                reply_markup=main_kb()
+            mob = bot.user_data[user_id]
+            parts = str(call.data or "").split(":", 2)
+            skill_key = parts[1] if len(parts) > 1 else ""
+            skill = get_player_skill_by_key(user_id, skill_key)
+            if not skill:
+                bot.answer_callback_query(call.id, "❌ Навичку не знайдено")
+                return
+
+            state = get_pve_skill_action_state(user_id, mob, skill)
+            if state.get("available"):
+                bot.answer_callback_query(call.id, "✅ Навичка вже доступна")
+                return
+
+            bot.answer_callback_query(
+                call.id,
+                state.get("message") or "🔒 Навичка зараз недоступна.",
+                show_alert=True,
             )
-            return
-
-        mob = bot.user_data[user_id]
-        skill_key = call.data.split(":")[1]
-        skill = get_player_skill_by_key(user_id, skill_key)
-
-        bot.answer_callback_query(call.id)
-
-        if not skill:
-    
-            bot.send_message(
-                call.message.chat.id,
-                "❌ Навичку не знайдено.",
-                reply_markup=build_combat_inline_kb(user_id, mob)
-            )
-            return
-
-        cooldown = get_skill_cooldown(mob, skill["key"])
-
-        if cooldown <= 0:
-            text, kb = build_skill_menu_text(user_id, mob)
-            if kb:
-                bot.send_message(
-                    call.message.chat.id,
-                    text,
-                    reply_markup=kb
-                )
-            else:
-        
-                bot.send_message(
-                    call.message.chat.id,
-                    text,
-                    reply_markup=build_combat_inline_kb(user_id, mob)
-                )
-            return
-
-
-        bot.send_message(
-            call.message.chat.id,
-            (
-                f"⏳ Навичка ще перезаряджається.\n\n"
-                f"{skill['name']}\n"
-                f"Залишилось: {cooldown} ход.\n\n"
-                f"ℹ️ Виконай реальний хід: атакуй або використай доступну навичку."
-            ),
-            reply_markup=build_combat_inline_kb(user_id, mob)
-        )
 
     # ==========================================
     # НОВІ ОБРОБНИКИ INLINE КНОПОК БОЮ

@@ -1,3 +1,4 @@
+# ROM 17.16.1 PVE SKILL BUTTON STATES
 # ROM 17.11.1 TRADE DISTRICT TEXT NAVIGATION
 from telebot import types
 
@@ -112,47 +113,26 @@ def tavern_kb():
 # ==============================
 
 def build_combat_inline_kb(user_id, mob):
-    """
-    Будує inline клавіатуру для бою з основними опціями та навичками.
-    Навички отримуються напряму з класу гравця.
-    """
-    from handlers.combat import get_player_class_skills, get_skill_cooldown
-    
+    """Build the current authoritative PvE inline combat keyboard."""
+    from handlers.combat import get_player_class_skills
+    from systems.pve_skill_action_state import get_pve_skill_action_state
+
     kb = types.InlineKeyboardMarkup()
-    
-    # Основні кнопки
     kb.add(
         types.InlineKeyboardButton("⚔️ Атакувати", callback_data="combat_attack"),
         types.InlineKeyboardButton("🧪 Зілля", callback_data="combat_potion"),
         types.InlineKeyboardButton("🏃 Втекти", callback_data="combat_flee")
     )
-    
-    # Навички гравця (якщо вони є)
+
     try:
-        skills = get_player_class_skills(user_id)
-        if skills:
-            for skill in skills:
-                cooldown = get_skill_cooldown(mob, skill["key"])
-                
-                if cooldown > 0:
-                    # Навичка в перезарядці
-                    kb.add(
-                        types.InlineKeyboardButton(
-                            f"🔒 {skill['name']} ({cooldown}ч)",
-                            callback_data=f"skill_locked:{skill['key']}"
-                        )
-                    )
-                else:
-                    # Навичка доступна
-                    kb.add(
-                        types.InlineKeyboardButton(
-                            f"✨ {skill['name']}",
-                            callback_data=f"combat_use_skill:{skill['key']}"
-                        )
-                    )
+        for skill in get_player_class_skills(user_id) or []:
+            state = get_pve_skill_action_state(user_id, mob, skill)
+            kb.add(types.InlineKeyboardButton(
+                text=state["label"],
+                callback_data=state["callback_data"],
+            ))
     except Exception:
         pass
-    
     return kb
 
 
