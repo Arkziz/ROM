@@ -1,3 +1,4 @@
+# ROM 17.17.1.5 WARRIOR SMALL SHIELD
 # ROM 17.14.1.1 SEPARATE LEVEL REWARD MESSAGE AND DEV EXP SETTER
 # ROM 17.12.1.1 DEV RESET HERO LOCK INITIALIZATION
 """DEV compatibility API restored from final legacy db.py definitions."""
@@ -619,6 +620,12 @@ def generate_dynamic_equipment_stats(slot_key, item_level, rarity, weapon_hands=
         if profile_key == "shield":
             stats["pdef"] = get_dynamic_stat_value(item_level, rarity, 1.35)
             stats["bonus_sta"] = get_dynamic_stat_value(item_level, rarity, 0.55)
+
+        elif profile_key == "warrior_shield":
+            # 60% of Knight shield PDEF: 1.35 * 0.60 = 0.81.
+            stats["pdef"] = get_dynamic_stat_value(item_level, rarity, 0.81)
+            stats["bonus_str"] = get_dynamic_stat_value(item_level, rarity, 0.65)
+            stats["bonus_sta"] = get_dynamic_stat_value(item_level, rarity, 0.35)
 
         elif profile_key == "talisman":
             stats["mdef"] = get_dynamic_stat_value(item_level, rarity, 1.35)

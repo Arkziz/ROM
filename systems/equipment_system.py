@@ -1,3 +1,4 @@
+# ROM 17.17.1.5 WARRIOR SMALL SHIELD
 """
 ROM Equipment System — Read-only Facade
 =======================================
@@ -1144,50 +1145,46 @@ def _equipment_write_main_hand_two_handed_v5(user_id):
 
 
 def equip_inventory_item(user_id, inventory_id):
-    """Direct SQL equip implementation preserving the historical string contract."""
+    """Atomically equip an owned item while preserving the historical string contract."""
     uid = int(user_id)
     iid = int(inventory_id)
     item = _equipment_write_item_v5(uid, iid)
-
     if not item:
         return "❌ Предмет не знайдено"
     if item.get("category") != "equipment":
         return "❌ Цей предмет не можна одягти"
-
     slot_key = str(item.get("slot_key") or "")
     if not slot_key:
         return "❌ Для цього предмета не вказано слот"
     if slot_key not in _EQUIPMENT_WRITE_SLOT_ORDER_V5:
         return "❌ Невідомий слот екіпірування"
-
     player_level = _equipment_write_player_level_v5(uid)
     required_level = _equipment_write_required_level_v5(iid, item.get("item_level", 1))
     if player_level < required_level:
-        return (
-            "🔒 Ти ще не можеш одягти цей предмет.\n\n"
-            f"📦 Предмет: {item['name']}\n"
-            f"🏷 Потрібний рівень: {required_level}\n"
-            f"👤 Твій рівень: {player_level}"
-        )
-
+        return ("🔒 Ти ще не можеш одягти цей предмет.\n\n"
+                f"📦 Предмет: {item['name']}\n"
+                f"🏷 Потрібний рівень: {required_level}\n"
+                f"👤 Твій рівень: {player_level}")
     class_check = can_equip_inventory_item_by_class(uid, iid)
     if isinstance(class_check, dict) and not class_check.get("success"):
         return class_check.get("message", "❌ Цей предмет не підходить твоєму класу.")
-
     if slot_key == "off_hand" and _equipment_write_main_hand_two_handed_v5(uid):
         return "❌ Неможливо: дворучна зброя блокує другу руку"
-
-    if slot_key == "main_hand" and int(item.get("weapon_hands") or 1) == 2:
-        _equipment_write_set_slot_v5(uid, "off_hand", None)
-
-    # One inventory row may occupy only one slot.
-    old_slot = _equipment_write_find_slot_v5(uid, iid)
-    if old_slot and old_slot != slot_key:
-        _equipment_write_set_slot_v5(uid, old_slot, None)
-
-    _equipment_write_set_slot_v5(uid, slot_key, iid)
+    db = _equipment_write_db_v5()
+    try:
+        db.conn.execute("BEGIN IMMEDIATE")
+        # Equipped items remain in inventory, so clearing off_hand needs no new bag slot.
+        if slot_key == "main_hand" and int(item.get("weapon_hands") or 1) == 2:
+            db.conn.execute("UPDATE equipment_slots SET inventory_id=NULL WHERE user_id=? AND slot_key='off_hand'", (uid,))
+        db.conn.execute("UPDATE equipment_slots SET inventory_id=NULL WHERE user_id=? AND inventory_id=? AND slot_key<>?", (uid, iid, slot_key))
+        db.conn.execute("UPDATE equipment_slots SET inventory_id=? WHERE user_id=? AND slot_key=?", (iid, uid, slot_key))
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
     _equipment_write_sync_hp_v5(uid)
     return f"✅ Одягнуто: {item['name']}"
+
 
 
 def unequip_inventory_item(user_id, inventory_id):
