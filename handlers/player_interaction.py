@@ -1,3 +1,4 @@
+# ROM 17.18.2.5 BOW CROSSBOW DAMAGE UI PARITY
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
 # ROM 17.9.1 GLOBAL PAGINATION BUTTON LABELS
 # -*- coding: utf-8 -*-
@@ -1230,6 +1231,13 @@ def _trade_snapshot_lines_12_6_2(snapshot, include_quantity=False):
     magic_min = int(snapshot.get("weapon_min_magic_damage") or 0)
     magic_max = int(snapshot.get("weapon_max_magic_damage") or 0)
     if physical_min or physical_max:
+        from systems.equipment_system import get_effective_weapon_display_range_17_18_2_5
+        physical_min, physical_max = get_effective_weapon_display_range_17_18_2_5(
+            physical_min,
+            physical_max,
+            snapshot.get("item_subtype"),
+        )
+    if physical_min or physical_max:
         lines.append(f"⚔️ Фізична шкода: {physical_min}-{physical_max}")
     if magic_min or magic_max:
         lines.append(f"🔮 Магічна шкода: {magic_min}-{magic_max}")
@@ -1261,6 +1269,7 @@ def _trade_snapshot_lines_12_6_2(snapshot, include_quantity=False):
         except Exception:
             pass
     return lines
+
 
 
 # ROM 12.6.4 PLAYER TRADE NAVIGATION LOCK AND ITEM CATEGORIES

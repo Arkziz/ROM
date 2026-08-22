@@ -1,3 +1,4 @@
+# ROM 17.18.2.5 BOW CROSSBOW DAMAGE UI PARITY
 """
 Shop system and class-based equipment restrictions
 """
@@ -512,11 +513,11 @@ def confirm_common_equipment_shop_preview(user_id, item_id):
 
 
 def get_shop_preview_weapon_damage_text(item_id):
-    """Повертає текст опису шкоди зброї для preview предмета."""
+    """Повертає ефективний бойовий діапазон шкоди для preview предмета."""
     from .equipment import init_weapon_damage_system
-    
-    init_weapon_damage_system()
+    from systems.equipment_system import get_effective_weapon_display_range_17_18_2_5
 
+    init_weapon_damage_system()
     cursor.execute("""
     SELECT
         name,
@@ -525,34 +526,35 @@ def get_shop_preview_weapon_damage_text(item_id):
         weapon_max_damage,
         weapon_min_magic_damage,
         weapon_max_magic_damage,
-        weapon_attack_type
+        weapon_attack_type,
+        COALESCE(item_subtype, '')
     FROM items
     WHERE id=?
     """, (item_id,))
-    
     row = cursor.fetchone()
-    
     if not row:
         return ""
-    
+
     slot_key = row[1]
     weapon_min_damage = row[2] or 0
     weapon_max_damage = row[3] or 0
     weapon_min_magic_damage = row[4] or 0
     weapon_max_magic_damage = row[5] or 0
     weapon_attack_type = row[6] or ""
-    
+    item_subtype = row[7] or ""
+
     if slot_key not in ["main_hand", "off_hand"]:
         return ""
-    
     if weapon_attack_type == "magical":
         if weapon_min_magic_damage > 0 or weapon_max_magic_damage > 0:
             return f"✨ Магічна шкода: {weapon_min_magic_damage}-{weapon_max_magic_damage}"
-    else:
-        if weapon_min_damage > 0 or weapon_max_damage > 0:
-            return f"⚔️ Фізична шкода: {weapon_min_damage}-{weapon_max_damage}"
-    
+    elif weapon_min_damage > 0 or weapon_max_damage > 0:
+        display_min, display_max = get_effective_weapon_display_range_17_18_2_5(
+            weapon_min_damage, weapon_max_damage, item_subtype
+        )
+        return f"⚔️ Фізична шкода: {display_min}-{display_max}"
     return ""
+
 
 
 # ==============================

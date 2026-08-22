@@ -1,3 +1,4 @@
+# ROM 17.18.2.2 BOW CROSSBOW DAMAGE DIFFERENTIATION
 # ROM 17.13.1.1 DEFAULT BAG SLOTS IMPORT RECOVERY
 """
 Player management module - wrapper for systems.player_system
@@ -239,6 +240,7 @@ def get_player_attack_profile(user_id):
 
     if not stats:
         return {
+                   "weapon_subtype": "",
             "attack_type": "physical",
             "stat_attack": 0,
             "weapon_min_damage": 0,
@@ -253,6 +255,7 @@ def get_player_attack_profile(user_id):
 
     if not main_hand_id:
         return {
+                   "weapon_subtype": "",
             "attack_type": "physical",
             "stat_attack": total_str,
             "weapon_min_damage": 0,
@@ -265,6 +268,7 @@ def get_player_attack_profile(user_id):
 
     if not weapon_data.get("is_weapon"):
         return {
+                   "weapon_subtype": "",
             "attack_type": "physical",
             "stat_attack": total_str,
             "weapon_min_damage": 0,
@@ -287,6 +291,7 @@ def get_player_attack_profile(user_id):
     display_attack = stat_attack + weapon_max
 
     return {
+               "weapon_subtype": str(weapon_data.get("item_subtype") or "").strip().lower(),
         "attack_type": attack_type,
         "stat_attack": stat_attack,
         "weapon_min_damage": weapon_min,
@@ -294,4 +299,5 @@ def get_player_attack_profile(user_id):
         "display_attack": display_attack,
         "weapon_text": weapon_data.get("text")
     }
+
 

@@ -1,3 +1,4 @@
+# ROM 17.18.2.2 BOW CROSSBOW DAMAGE DIFFERENTIATION
 import random
 
 from data.mobs import get_mobs_for_location
@@ -199,6 +200,7 @@ def generate_mob(player_level, location_id="start_path"):
 # ✅ DAMAGE CALCULATION
 # ==============================
 
+# ROM 17.18.2.4 BOW CROSSBOW RISK STABILITY BALANCE
 def calculate_player_attack(
     player_stat_attack,
     mob_def,
@@ -207,7 +209,8 @@ def calculate_player_attack(
     level,
     attack_type="physical",
     weapon_min_damage=0,
-    weapon_max_damage=0
+    weapon_max_damage=0,
+    weapon_subtype=""
 ):
     weapon_min_damage = int(weapon_min_damage or 0)
     weapon_max_damage = int(weapon_max_damage or 0)
@@ -218,7 +221,18 @@ def calculate_player_attack(
     weapon_damage = 0
 
     if weapon_max_damage > 0:
-        weapon_damage = random.randint(weapon_min_damage, weapon_max_damage)
+        weapon_subtype = str(weapon_subtype or "").strip().lower()
+        effective_min = weapon_min_damage
+        effective_max = weapon_max_damage
+        if weapon_subtype == "bow_2h":
+            # Bow identity: higher floor and lower peak for stable damage.
+            effective_min = max(1, int(round(weapon_min_damage * 1.05)))
+            effective_max = max(effective_min, int(round(weapon_max_damage * 0.95)))
+        elif weapon_subtype == "crossbow_2h":
+            # Crossbow identity: lower floor and higher peak for risky damage.
+            effective_min = max(1, int(round(weapon_min_damage * 0.85)))
+            effective_max = max(effective_min, int(round(weapon_max_damage * 1.15)))
+        weapon_damage = random.randint(effective_min, effective_max)
 
     base_damage = weapon_damage + player_stat_attack - (mob_def * 0.5)
 
@@ -244,6 +258,8 @@ def calculate_player_attack(
         "weapon_damage": weapon_damage,
         "attack_type": attack_type
     }
+
+
 
 
 def calculate_mob_attack(

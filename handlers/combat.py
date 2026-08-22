@@ -1,3 +1,4 @@
+# ROM 17.18.2.2 BOW CROSSBOW DAMAGE DIFFERENTIATION
 # ROM 17.16.1 PVE SKILL BUTTON STATES
 # ROM 17.15.1 PERSISTENT MANA REGENERATION
 # ROM 17.14.1.1 SEPARATE LEVEL REWARD MESSAGE AND DEV EXP SETTER
@@ -2112,7 +2113,8 @@ def register_combat_handlers(bot):
             level=lvl,
             attack_type=attack_profile["attack_type"],
             weapon_min_damage=attack_profile["weapon_min_damage"],
-            weapon_max_damage=attack_profile["weapon_max_damage"]
+            weapon_max_damage=attack_profile["weapon_max_damage"],
+            weapon_subtype=attack_profile.get("weapon_subtype", ""),
         )
 
         dmg = player_attack_result["damage"]
@@ -2446,7 +2448,8 @@ def register_combat_handlers(bot):
                 level=lvl,
                 attack_type=skill_attack_type,
                 weapon_min_damage=attack_profile["weapon_min_damage"],
-                weapon_max_damage=attack_profile["weapon_max_damage"]
+                weapon_max_damage=attack_profile["weapon_max_damage"],
+                weapon_subtype=attack_profile.get("weapon_subtype", ""),
             )
             
             base_dmg = player_attack_result["damage"]
@@ -2927,7 +2930,8 @@ def register_combat_handlers(bot):
                 level=lvl,
                 attack_type=skill_attack_type,
                 weapon_min_damage=attack_profile["weapon_min_damage"],
-                weapon_max_damage=attack_profile["weapon_max_damage"]
+                weapon_max_damage=attack_profile["weapon_max_damage"],
+                weapon_subtype=attack_profile.get("weapon_subtype", ""),
             )
 
             base_dmg = player_attack_result["damage"]
