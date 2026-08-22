@@ -1,3 +1,4 @@
+# ROM 17.15.1 PERSISTENT MANA REGENERATION
 # ROM 17.14.1.1 SEPARATE LEVEL REWARD MESSAGE AND DEV EXP SETTER
 # ROM 17.14.1 LEVEL UP REWARDS
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
@@ -205,6 +206,11 @@ from db import (
     restore_user_mp_to_full
 )
 
+from systems.character_system import (
+    apply_post_combat_mp_floor_17_15_1,
+    begin_mp_combat_pause_17_15_1,
+)
+
 from keyboards import main_kb, fight_kb, build_combat_inline_kb, combat_placeholder_kb
 from utils import hp_bar
 
@@ -243,6 +249,7 @@ def init_class_combat_resource(user_id, mob):
             mob["player_max_combo_points"] = 3
 
     elif resource_type == "mana":
+        begin_mp_combat_pause_17_15_1(user_id)
         mp_data = get_user_mp(user_id)
 
         mob["player_mp"] = mp_data.get("mp", 0)
@@ -1469,7 +1476,7 @@ def apply_skill_special_effect(user_id, mob, skill, damage_done):
 def append_mp_restore_text(text, mp_restore_result):
     if mp_restore_result and mp_restore_result.get("restored"):
         text += (
-            f"\n🔵 Мана відновлена: "
+            f"\n🔵 Мана після бою: "
             f"{mp_restore_result['mp']}/{mp_restore_result['max_mp']}"
         )
 
@@ -1768,7 +1775,7 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
     if daily_result and daily_result.get("message"):
         text += f"\n{daily_result['message']}\n"
 
-    mp_restore_result = restore_user_mp_to_full(user_id)
+    mp_restore_result = apply_post_combat_mp_floor_17_15_1(user_id)
     text = append_mp_restore_text(text, mp_restore_result)
 
     text += f"\n🎒 Сумка: {reward['used_slots']}/{reward['capacity']} слотів"
@@ -2255,7 +2262,7 @@ def register_combat_handlers(bot):
             except Exception:
                 pass
 
-            mp_restore_result = restore_user_mp_to_full(user_id)
+            mp_restore_result = apply_post_combat_mp_floor_17_15_1(user_id)
 
             if user_id in bot.user_data:
                 del bot.user_data[user_id]
@@ -2647,7 +2654,7 @@ def register_combat_handlers(bot):
                 reset_hp_regen_timers_now(user_id)
             except Exception:
                 pass
-            mp_restore_result = restore_user_mp_to_full(user_id)
+            mp_restore_result = apply_post_combat_mp_floor_17_15_1(user_id)
             
             if user_id in bot.user_data:
                 del bot.user_data[user_id]
@@ -3187,7 +3194,7 @@ def register_combat_handlers(bot):
             except Exception:
                 pass
 
-            mp_restore_result = restore_user_mp_to_full(user_id)
+            mp_restore_result = apply_post_combat_mp_floor_17_15_1(user_id)
 
             if user_id in bot.user_data:
                 del bot.user_data[user_id]
@@ -3469,7 +3476,7 @@ def register_combat_handlers(bot):
             if "player_hp" in mob:
                 set_current_hp(user_id, mob["player_hp"])
 
-        mp_restore_result = restore_user_mp_to_full(user_id)
+        mp_restore_result = apply_post_combat_mp_floor_17_15_1(user_id)
 
         if hasattr(bot, "user_data") and user_id in bot.user_data:
             del bot.user_data[user_id]

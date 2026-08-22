@@ -1,3 +1,5 @@
+# ROM 17.15.1.1 NOTIFICATION WORKER DYNAMIC RUNE MAX MP RECOVERY
+# ROM 17.15.1 PERSISTENT MANA REGENERATION
 import time
 import threading
 import sqlite3
@@ -496,6 +498,7 @@ def notification_worker(bot_instance):
         try:
             notify_energy_full(bot_instance, conn)
             notify_hp_restored(bot_instance, conn)
+            notify_mp_restored_17_15_1(bot_instance, conn)
 
             # Майбутні повідомлення:
             # notify_daily_contracts_reset(bot_instance, conn)
@@ -839,4 +842,150 @@ def apply_hp_regen(conn, user_id):
         "hp": new_hp,
         "max_hp": max_hp,
     }
+
+# Stage 17.15.1 worker-side persistent MP regeneration.
+MP_REGEN_PERCENT_PER_MINUTE_17_15_1 = 0.30
+
+
+def init_mp_columns_worker_17_15_1(conn):
+    columns = {str(row[1]) for row in conn.execute("PRAGMA table_info(users)").fetchall()}
+    additions = {
+        "last_mp_regen_update": "TEXT DEFAULT ''",
+        "mp_full_notified": "INTEGER DEFAULT 1",
+        "mp_regen_paused": "INTEGER DEFAULT 0",
+    }
+    for name, declaration in additions.items():
+        if name not in columns:
+            conn.execute(f"ALTER TABLE users ADD COLUMN {name} {declaration}")
+    conn.commit()
+
+
+def get_worker_max_mp_17_15_1(conn, user_id):
+    row = conn.execute(
+        "SELECT level, intelligence, wis, character_class FROM users WHERE user_id=?",
+        (int(user_id),),
+    ).fetchone()
+    if not row or str(row[3] or "") not in ("mage", "priest"):
+        return 0
+    level, intelligence, wisdom = (int(row[0] or 0), int(row[1] or 0), int(row[2] or 0))
+    return max(0, 100 + level * 20 + intelligence * 3 + wisdom * 2)
+
+
+def apply_mp_regen_worker_17_15_1(conn, user_id, now=None):
+    init_mp_columns_worker_17_15_1(conn)
+    maximum = get_worker_max_mp_17_15_1(conn, user_id)
+    if maximum <= 0:
+        return {"mp": 0, "max_mp": 0, "became_full": False}
+    row = conn.execute(
+        "SELECT mp,last_mp_regen_update,COALESCE(mp_regen_paused,0) FROM users WHERE user_id=?",
+        (int(user_id),),
+    ).fetchone()
+    if not row:
+        return {"mp": 0, "max_mp": maximum, "became_full": False}
+    current = max(0, min(int(row[0] or 0), maximum))
+    current_time = now or datetime.now()
+    try:
+        last = datetime.fromisoformat(str(row[1] or ""))
+    except Exception:
+        last = current_time
+    if int(row[2] or 0):
+        return {"mp": current, "max_mp": maximum, "became_full": False}
+    ticks = max(0, int((current_time-last).total_seconds()//60))
+    new_mp = current
+    new_stamp = last
+    if ticks > 0 and current < maximum:
+        new_mp = min(maximum, current + max(1, int(maximum*MP_REGEN_PERCENT_PER_MINUTE_17_15_1))*ticks)
+        new_stamp = datetime.fromtimestamp(last.timestamp()+ticks*60)
+    conn.execute(
+        "UPDATE users SET mp=?,max_mp=?,last_mp_regen_update=?,mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
+        (new_mp,maximum,new_stamp.isoformat(),new_mp,maximum,int(user_id)),
+    )
+    conn.commit()
+    return {"mp":new_mp,"max_mp":maximum,"became_full":current<maximum and new_mp>=maximum}
+
+
+def get_users_for_mp_full_notification_worker_17_15_1(conn):
+    init_mp_columns_worker_17_15_1(conn)
+    candidates=[]
+    for (user_id,) in conn.execute("SELECT user_id FROM users").fetchall():
+        data=apply_mp_regen_worker_17_15_1(conn,user_id)
+        if data["max_mp"]<=0 or data["mp"]<data["max_mp"]:
+            continue
+        row=conn.execute("SELECT COALESCE(mp_full_notified,1) FROM users WHERE user_id=?",(user_id,)).fetchone()
+        if row and not int(row[0] or 0):
+            candidates.append(int(user_id))
+    return candidates
+
+
+def notify_mp_restored_17_15_1(bot_instance, conn):
+    for user_id in get_users_for_mp_full_notification_worker_17_15_1(conn):
+        try:
+            bot_instance.send_message(
+                user_id,
+                "🔵 Мана повністю відновлена!\n\nПерсонаж готовий використовувати всі магічні здібності.",
+            )
+            conn.execute("UPDATE users SET mp_full_notified=1 WHERE user_id=?", (user_id,))
+            conn.commit()
+        except Exception as send_error:
+            print(f"⚠️ Не вдалося надіслати MP notification {user_id}: {send_error}")
+
+# Stage 17.15.1.1: match notification-worker max MP to production rune-aware logic.
+def get_worker_equipped_rune_int_wis_bonus_17_15_1_1(conn, user_id):
+    """Return active INT/WIS rune levels from equipped, non-broken items."""
+    try:
+        tables = {str(row[0]) for row in conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        ).fetchall()}
+        required = {"equipment_slots", "inventory", "inventory_runes"}
+        if not required.issubset(tables):
+            return {"int": 0, "wis": 0}
+        rows = conn.execute(
+            """
+            SELECT LOWER(COALESCE(ir.rune_stat, '')),
+                   COALESCE(SUM(COALESCE(ir.rune_level, 0)), 0)
+            FROM equipment_slots es
+            JOIN inventory inv
+              ON inv.id=es.inventory_id AND inv.user_id=es.user_id
+            JOIN inventory_runes ir ON ir.inventory_id=inv.id
+            WHERE es.user_id=?
+              AND es.inventory_id IS NOT NULL
+              AND COALESCE(inv.durability, 100) > 0
+              AND LOWER(COALESCE(ir.rune_stat, '')) IN ('int', 'wis')
+            GROUP BY LOWER(COALESCE(ir.rune_stat, ''))
+            """,
+            (int(user_id),),
+        ).fetchall()
+        result = {"int": 0, "wis": 0}
+        for stat, amount in rows:
+            if stat in result:
+                result[stat] = max(0, int(amount or 0))
+        return result
+    except Exception:
+        return {"int": 0, "wis": 0}
+
+
+def get_worker_max_mp_17_15_1(conn, user_id):
+    """Production-equivalent max MP for Mage/Priest, including active runes."""
+    row = conn.execute(
+        "SELECT level, intelligence, wis, character_class FROM users WHERE user_id=?",
+        (int(user_id),),
+    ).fetchone()
+    if not row or str(row[3] or "").strip().lower() not in ("mage", "priest"):
+        return 0
+    level = int(row[0] or 0)
+    intelligence = int(row[1] or 0)
+    wisdom = int(row[2] or 0)
+    rune = get_worker_equipped_rune_int_wis_bonus_17_15_1_1(conn, user_id)
+    intelligence += int(rune.get("int", 0) or 0)
+    wisdom += int(rune.get("wis", 0) or 0)
+    dynamic_max_mp = max(0, 100 + level * 20 + intelligence * 3 + wisdom * 2)
+    try:
+        conn.execute(
+            "UPDATE users SET max_mp=? WHERE user_id=?",
+            (dynamic_max_mp, int(user_id)),
+        )
+        conn.commit()
+    except Exception:
+        pass
+    return dynamic_max_mp
 

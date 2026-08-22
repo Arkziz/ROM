@@ -1,3 +1,4 @@
+# ROM 17.15.1 PERSISTENT MANA REGENERATION
 from db import (
     get_inventory_entry,
     consume_inventory_item,
@@ -253,3 +254,27 @@ def use_first_hp_potion(user_id):
         }
 
     return use_potion_from_inventory(user_id, inventory_id)
+
+# Stage 17.15.1 synchronize potion MP writes with passive-regeneration metadata.
+_BASE_USE_POTION_FROM_INVENTORY_17_15_1 = use_potion_from_inventory
+
+
+def use_potion_from_inventory(user_id, inventory_id):
+    result = _BASE_USE_POTION_FROM_INVENTORY_17_15_1(user_id, inventory_id)
+    if result and result.get("success"):
+        try:
+            from db_modules.connection import conn, cursor
+            columns = {str(row[1]) for row in cursor.execute("PRAGMA table_info(users)").fetchall()}
+            if "last_mp_regen_update" in columns:
+                row = cursor.execute("SELECT mp,max_mp FROM users WHERE user_id=?", (int(user_id),)).fetchone()
+                if row and int(row[1] or 0) > 0:
+                    current, maximum = int(row[0] or 0), int(row[1] or 0)
+                    cursor.execute(
+                        "UPDATE users SET last_mp_regen_update=?, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
+                        (datetime.now().isoformat(), current, maximum, int(user_id)),
+                    )
+                    conn.commit()
+        except Exception:
+            pass
+    return result
+

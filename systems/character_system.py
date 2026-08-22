@@ -1,3 +1,4 @@
+# ROM 17.15.1 PERSISTENT MANA REGENERATION
 # ROM 17.13.1 CLASS SELECTION PREVIEW CONFIRMATION
 # ROM 17.12.1.2 FORBIDDEN NON-UKRAINIAN CYRILLIC NAME LETTERS
 # ROM 17.12.1 CHARACTER NAME VALIDATION
@@ -399,4 +400,111 @@ def confirm_character_class_change_17_13_1(user_id, class_key):
         "class_key": key,
         "old_class_key": old_key,
     }
+
+# Stage 17.15.1 persistent MP helpers.
+MP_REGEN_PERCENT_PER_MINUTE_17_15_1 = 0.30
+MP_POST_COMBAT_FLOOR_PERCENT_17_15_1 = 0.30
+
+
+def init_persistent_mp_columns_17_15_1():
+    db = _db()
+    columns = {str(row[1]) for row in db.cursor.execute("PRAGMA table_info(users)").fetchall()}
+    additions = {
+        "last_mp_regen_update": "TEXT DEFAULT ''",
+        "mp_full_notified": "INTEGER DEFAULT 1",
+        "mp_regen_paused": "INTEGER DEFAULT 0",
+    }
+    for name, declaration in additions.items():
+        if name not in columns:
+            db.cursor.execute(f"ALTER TABLE users ADD COLUMN {name} {declaration}")
+    db.conn.commit()
+
+
+def reset_mp_regen_clock_17_15_1(user_id, paused=None):
+    init_persistent_mp_columns_17_15_1()
+    db = _db()
+    now = datetime.now().isoformat()
+    if paused is None:
+        db.cursor.execute(
+            "UPDATE users SET last_mp_regen_update=? WHERE user_id=?",
+            (now, int(user_id)),
+        )
+    else:
+        db.cursor.execute(
+            "UPDATE users SET last_mp_regen_update=?, mp_regen_paused=? WHERE user_id=?",
+            (now, 1 if paused else 0, int(user_id)),
+        )
+    db.conn.commit()
+
+
+def begin_mp_combat_pause_17_15_1(user_id):
+    result = apply_lazy_mp_regeneration_17_15_1(user_id)
+    reset_mp_regen_clock_17_15_1(user_id, paused=True)
+    return result
+
+
+def apply_lazy_mp_regeneration_17_15_1(user_id, now=None):
+    init_persistent_mp_columns_17_15_1()
+    db = _db()
+    maximum = int(get_max_mp(user_id) or 0)
+    if maximum <= 0:
+        return {"success": True, "restored": 0, "mp": 0, "max_mp": 0, "ticks": 0}
+    row = db.cursor.execute(
+        "SELECT mp, last_mp_regen_update, COALESCE(mp_regen_paused,0) FROM users WHERE user_id=?",
+        (int(user_id),),
+    ).fetchone()
+    if not row:
+        return {"success": False, "restored": 0, "mp": 0, "max_mp": maximum, "ticks": 0}
+    current = max(0, min(int(row[0] or 0), maximum))
+    paused = bool(int(row[2] or 0))
+    current_time = now or datetime.now()
+    try:
+        last = datetime.fromisoformat(str(row[1] or ""))
+    except Exception:
+        last = current_time
+        db.cursor.execute(
+            "UPDATE users SET last_mp_regen_update=?, max_mp=? WHERE user_id=?",
+            (last.isoformat(), maximum, int(user_id)),
+        )
+        db.conn.commit()
+        return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0}
+    if paused or current >= maximum:
+        db.cursor.execute(
+            "UPDATE users SET mp=?, max_mp=?, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
+            (current, maximum, current, maximum, int(user_id)),
+        )
+        db.conn.commit()
+        return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0}
+    ticks = max(0, int((current_time - last).total_seconds() // 60))
+    if ticks <= 0:
+        return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0}
+    per_tick = max(1, int(maximum * MP_REGEN_PERCENT_PER_MINUTE_17_15_1))
+    new_mp = min(maximum, current + per_tick * ticks)
+    consumed_time = last.timestamp() + ticks * 60
+    new_stamp = datetime.fromtimestamp(consumed_time).isoformat()
+    db.cursor.execute(
+        "UPDATE users SET mp=?, max_mp=?, last_mp_regen_update=?, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
+        (new_mp, maximum, new_stamp, new_mp, maximum, int(user_id)),
+    )
+    db.conn.commit()
+    return {"success": True, "restored": new_mp-current, "mp": new_mp, "max_mp": maximum, "ticks": ticks}
+
+
+def apply_post_combat_mp_floor_17_15_1(user_id):
+    init_persistent_mp_columns_17_15_1()
+    db = _db()
+    maximum = int(get_max_mp(user_id) or 0)
+    if maximum <= 0:
+        reset_mp_regen_clock_17_15_1(user_id, paused=False)
+        return {"success": True, "restored": False, "mp": 0, "max_mp": 0}
+    row = db.cursor.execute("SELECT mp FROM users WHERE user_id=?", (int(user_id),)).fetchone()
+    current = max(0, min(int((row[0] if row else 0) or 0), maximum))
+    floor_value = max(1, int(maximum * MP_POST_COMBAT_FLOOR_PERCENT_17_15_1))
+    new_mp = max(current, floor_value)
+    db.cursor.execute(
+        "UPDATE users SET mp=?, max_mp=?, last_mp_regen_update=?, mp_regen_paused=0, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
+        (new_mp, maximum, datetime.now().isoformat(), new_mp, maximum, int(user_id)),
+    )
+    db.conn.commit()
+    return {"success": True, "restored": new_mp>current, "mp": new_mp, "max_mp": maximum}
 
