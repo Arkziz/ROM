@@ -1,3 +1,4 @@
+# ROM 17.19.1 MANA POTION PRICE BALANCE
 """
 Database connection and initialization module.
 """
@@ -183,9 +184,9 @@ def seed_items():
     """
     items = [
         (201, "🔴 Мале зілля здоров'я", "potion_hp", "common", "potion", None, 1, 10, 1.00, 0, 0, 0, 0, 0, 0, 0),
-        (202, "🔵 Мале зілля мани", "potion_mp", "common", "potion", None, 1, 10, 1.20, 0, 0, 0, 0, 0, 0, 0),
+        (202, "🔵 Мале зілля мани", "potion_mp", "common", "potion", None, 1, 10, 0.80, 0, 0, 0, 0, 0, 0, 0),
         (203, "🔴 Середнє зілля здоров'я", "potion_hp_medium", "common", "potion", None, 1, 10, 3.00, 0, 0, 0, 0, 0, 0, 0),
-        (204, "🔵 Середнє зілля мани", "potion_mp_medium", "common", "potion", None, 1, 10, 3.60, 0, 0, 0, 0, 0, 0, 0),
+        (204, "🔵 Середнє зілля мани", "potion_mp_medium", "common", "potion", None, 1, 10, 2.50, 0, 0, 0, 0, 0, 0, 0),
     ]
 
     for item in items:

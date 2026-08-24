@@ -63,7 +63,10 @@ from keyboards import (
 
 from systems.potion_system import (
     POTIONS,
-    ALCHEMIST_SHOP
+    ALCHEMIST_SHOP,
+    get_alchemist_potion_stock_17_19_3,
+    buy_alchemist_potion_17_19_3,
+    sell_alchemist_potion_17_19_3
 )
 
 
@@ -321,6 +324,135 @@ def build_main_menu_text(user_id):
 # ==============================
 # HELPERS: SERVICES
 # ==============================
+
+# ROM 17.19.3 ALCHEMIST POTION BUY SELL
+_ALCHEMIST_INPUT_17_19_3 = {}
+
+# ROM 17.19.3.6 ALCHEMIST SELL QUANTITY CONTROLS
+
+# ROM 17.19.3.5 ALCHEMIST BUY RETURN POTION STACK NORMALIZATION
+
+# ROM 17.19.3.4 ALCHEMIST CATALOG ORDER AND DB RECOVERY
+def alchemist_reply_kb_17_19_3_1():
+    """Persistent Alchemist navigation: two actions in one row, return below."""
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+    kb.row("🛒 Купити зілля", "💰 Продати зілля")
+    kb.row("🔙 Ремісничий квартал")
+    return kb
+
+
+def build_alchemist_root_17_19_3(user_id):
+    gold=get_wallet(user_id); kb=types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("🛒 Купити зілля",callback_data="alchemist:buy"))
+    kb.add(types.InlineKeyboardButton("💰 Продати зілля",callback_data="alchemist:sell"))
+    return f"🧪 Алхімік\n\n💰 Твоє золото: {format_gold(gold)}\n\nОберіть дію:",kb
+
+def build_alchemist_buy_list_17_19_3(user_id):
+    gold = get_wallet(user_id)
+    kb = types.InlineKeyboardMarkup(row_width=1)
+    text = (
+        f"🛒 Купівля зіль\n\n"
+        f"💰 Твоє золото: {format_gold(gold)}\n\n"
+        f"Оберіть зілля для перегляду покупки:\n\n"
+    )
+    for item_id in ALCHEMIST_SHOP:
+        potion = POTIONS[item_id]
+        effect = f"+{potion['restore']} {'HP' if potion['type'] == 'hp' else 'MP'}"
+        text += (
+            f"{potion['name']}\n"
+            f"Ефект: {effect}\n"
+            f"Ціна: {format_gold(potion['buy_price'])}\n"
+            f"Стак: {potion['max_stack']}\n\n"
+        )
+        kb.add(types.InlineKeyboardButton(
+            text=f"{potion['name']} — {format_gold(potion['buy_price'])}",
+            callback_data=f"alchemist:buyitem:{item_id}",
+        ))
+    return text, kb
+
+def build_alchemist_buy_preview_17_19_3(user_id,item_id,quantity=1):
+    potion=POTIONS.get(int(item_id)); quantity=max(1,min(999,int(quantity)))
+    if not potion: return "❌ Зілля не знайдено.",types.InlineKeyboardMarkup()
+    total=round(float(potion["buy_price"])*quantity,2); gold=get_wallet(user_id)
+    effect=f"+{potion['restore']} {'HP' if potion['type']=='hp' else 'MP'}"
+    text=(f"🛒 Купівля зілля\n\n{potion['name']}\nЕфект: {effect}\nЦіна за одне: {format_gold(potion['buy_price'])}\n📦 Кількість: {quantity}\n💳 Загальна вартість: {format_gold(total)}\n💰 Твоє золото: {format_gold(gold)}")
+    kb=types.InlineKeyboardMarkup(row_width=3)
+    kb.row(types.InlineKeyboardButton("➖",callback_data=f"alchemist:buyset:{item_id}:{max(1,quantity-1)}"),types.InlineKeyboardButton(f"×{quantity}",callback_data=f"alchemist:buyqty:{item_id}"),types.InlineKeyboardButton("➕",callback_data=f"alchemist:buyset:{item_id}:{min(999,quantity+1)}"))
+    kb.add(types.InlineKeyboardButton("✏️ Вказати кількість",callback_data=f"alchemist:buyqty:{item_id}"))
+    kb.add(types.InlineKeyboardButton(f"✅ Купити за {format_gold(total)}",callback_data=f"alchemist:buydo:{item_id}:{quantity}"))
+    kb.add(types.InlineKeyboardButton("🔙 До зіль",callback_data="alchemist:buy"))
+    return text,kb
+
+def build_alchemist_sell_list_17_19_3(user_id):
+    rows=get_alchemist_potion_stock_17_19_3(user_id); kb=types.InlineKeyboardMarkup(row_width=1)
+    text=f"💰 Продаж зіль\n\n💰 Твоє золото: {format_gold(get_wallet(user_id))}\n\n"
+    available=[r for r in rows if r['available']>0]
+    if not available: text+="У тебе немає доступних зіль для продажу."
+    else:
+        text+="Оберіть зілля:\n"
+        for r in available: kb.add(types.InlineKeyboardButton(f"{r['name']} ×{r['available']} — {format_gold(r['sell_price'])}/шт.",callback_data=f"alchemist:sellitem:{r['item_id']}"))
+    kb.add(types.InlineKeyboardButton("🔙 До Алхіміка",callback_data="alchemist:root")); return text,kb
+
+def build_alchemist_sell_preview_17_19_3(user_id,item_id,quantity=1):
+    potion = POTIONS.get(int(item_id))
+    stock = next(
+        (row for row in get_alchemist_potion_stock_17_19_3(user_id)
+         if row["item_id"] == int(item_id)),
+        None,
+    )
+    available = int((stock or {}).get("available", 0))
+    if not potion or available <= 0:
+        return build_alchemist_sell_list_17_19_3(user_id)
+
+    quantity = max(1, min(available, int(quantity)))
+    total = round(float(potion["sell_price"]) * quantity, 2)
+    text = (
+        f"💰 Продаж зілля\n\n"
+        f"{potion['name']}\n"
+        f"🎒 Доступно: {available}\n"
+        f"🔒 Зарезервовано: {int((stock or {}).get('reserved', 0))}\n"
+        f"Ціна за одне: {format_gold(potion['sell_price'])}\n"
+        f"📦 Кількість: {quantity}\n"
+        f"💰 Отримаєш: {format_gold(total)}"
+    )
+
+    kb = types.InlineKeyboardMarkup(row_width=3)
+    kb.row(
+        types.InlineKeyboardButton(
+            "➖",
+            callback_data=f"alchemist:sellset:{item_id}:{max(1, quantity - 1)}",
+        ),
+        types.InlineKeyboardButton(
+            f"×{quantity}",
+            callback_data=f"alchemist:sellqty:{item_id}",
+        ),
+        types.InlineKeyboardButton(
+            "➕",
+            callback_data=f"alchemist:sellset:{item_id}:{min(available, quantity + 1)}",
+        ),
+    )
+    kb.add(types.InlineKeyboardButton(
+        f"📦 Продати все ×{available}",
+        callback_data=f"alchemist:sellset:{item_id}:{available}",
+    ))
+    kb.add(types.InlineKeyboardButton(
+        "✏️ Вказати кількість",
+        callback_data=f"alchemist:sellqty:{item_id}",
+    ))
+    kb.add(types.InlineKeyboardButton(
+        f"✅ Продати за {format_gold(total)}",
+        callback_data=f"alchemist:sellconfirm:{item_id}:{quantity}",
+    ))
+    kb.add(types.InlineKeyboardButton(
+        "🔙 До списку",
+        callback_data="alchemist:sell",
+    ))
+    return text, kb
+
+def build_alchemist_sell_confirm_17_19_3(user_id,item_id,quantity):
+    potion=POTIONS.get(int(item_id)); quantity=int(quantity); total=round(float(potion['sell_price'])*quantity,2)
+    kb=types.InlineKeyboardMarkup(row_width=1); kb.add(types.InlineKeyboardButton("✅ Продати",callback_data=f"alchemist:selldo:{item_id}:{quantity}")); kb.add(types.InlineKeyboardButton("❌ Скасувати",callback_data=f"alchemist:sellitem:{item_id}"))
+    return f"Продати {potion['name']} ×{quantity}?\n\nЦіна за одне: {format_gold(potion['sell_price'])}\nОтримаєш: {format_gold(total)}",kb
 
 def build_alchemist_catalog(user_id):
     gold = get_wallet(user_id)
@@ -1031,6 +1163,7 @@ def register_city_handlers(bot):
     @bot.message_handler(func=lambda m: m.text == "🔙 Ремісничий квартал")
     def back_to_craft_district_message(message):
         user_id = message.from_user.id
+        _ALCHEMIST_INPUT_17_19_3.pop(int(user_id), None)
 
         bot.send_message(
             message.chat.id,
@@ -1322,67 +1455,76 @@ def register_city_handlers(bot):
 
     # ==============================
     # CRAFT DISTRICT: ALCHEMIST
-    # ==============================
-
+    # ROM 17.19.3 ALCHEMIST POTION BUY SELL
     @bot.message_handler(func=lambda m: m.text == "🧪 Алхімік")
     def show_alchemist(message):
-        user_id = message.from_user.id
-
-        bot.send_message(
-            message.chat.id,
-            "🧪 Ти підійшов до Алхіміка.",
-            reply_markup=alchemist_kb()
-        )
-
-        text, kb = build_alchemist_catalog(user_id)
-
+        user_id = int(message.from_user.id)
+        _ALCHEMIST_INPUT_17_19_3.pop(user_id, None)
+        text, _ = build_alchemist_root_17_19_3(user_id)
         bot.send_message(
             message.chat.id,
             text,
-            reply_markup=kb
+            reply_markup=alchemist_reply_kb_17_19_3_1(),
         )
 
-    @bot.callback_query_handler(func=lambda call: call.data.startswith("buy_potion_"))
-    def buy_potion(call):
-        user_id = call.from_user.id
-        item_id = int(call.data.split("_")[2])
+    @bot.callback_query_handler(func=lambda call: str(call.data).startswith("alchemist:"))
+    def alchemist_trade_17_19_3(call):
+        user_id=int(call.from_user.id); data=str(call.data); parts=data.split(":")
+        try: bot.answer_callback_query(call.id)
+        except Exception: pass
+        if data=="alchemist:root": text,kb=build_alchemist_root_17_19_3(user_id)
+        elif data=="alchemist:buy": text,kb=build_alchemist_buy_list_17_19_3(user_id)
+        elif data=="alchemist:sell": text,kb=build_alchemist_sell_list_17_19_3(user_id)
+        elif parts[1]=="buyitem": text,kb=build_alchemist_buy_preview_17_19_3(user_id,int(parts[2]),1)
+        elif parts[1]=="buyset": text,kb=build_alchemist_buy_preview_17_19_3(user_id,int(parts[2]),int(parts[3]))
+        elif parts[1]=="buyqty":
+            _ALCHEMIST_INPUT_17_19_3[user_id]={"mode":"buy","item_id":int(parts[2]),"chat_id":call.message.chat.id}
+            bot.send_message(call.message.chat.id,"Введи кількість зіль для купівлі, від 1 до 999."); return
+        elif parts[1]=="buydo":
+            result=buy_alchemist_potion_17_19_3(user_id,int(parts[2]),int(parts[3]))
+            bot.send_message(call.message.chat.id,result['message'],reply_markup=alchemist_reply_kb_17_19_3_1())
+            if result.get("success"):
+                text,kb=build_alchemist_buy_list_17_19_3(user_id)
+            else:
+                text,kb=build_alchemist_buy_preview_17_19_3(user_id,int(parts[2]),int(parts[3]))
+        elif parts[1]=="sellitem": text,kb=build_alchemist_sell_preview_17_19_3(user_id,int(parts[2]),1)
+        elif parts[1]=="sellset": text,kb=build_alchemist_sell_preview_17_19_3(user_id,int(parts[2]),int(parts[3]))
+        elif parts[1]=="sellqty":
+            _ALCHEMIST_INPUT_17_19_3[user_id]={"mode":"sell","item_id":int(parts[2]),"chat_id":call.message.chat.id}
+            bot.send_message(call.message.chat.id,"Введи кількість зіль для продажу."); return
+        elif parts[1]=="sellconfirm": text,kb=build_alchemist_sell_confirm_17_19_3(user_id,int(parts[2]),int(parts[3]))
+        elif parts[1]=="selldo":
+            result=sell_alchemist_potion_17_19_3(user_id,int(parts[2]),int(parts[3])); bot.send_message(call.message.chat.id,result['message'],reply_markup=alchemist_reply_kb_17_19_3_1()); text,kb=build_alchemist_sell_list_17_19_3(user_id)
+        else: return
+        bot.send_message(call.message.chat.id,text,reply_markup=kb)
 
-        potion = POTIONS.get(item_id)
+    @bot.message_handler(func=lambda m: m.text == "🛒 Купити зілля")
+    def alchemist_buy_message_17_19_3_1(message):
+        user_id = int(message.from_user.id)
+        _ALCHEMIST_INPUT_17_19_3.pop(user_id, None)
+        text, kb = build_alchemist_buy_list_17_19_3(user_id)
+        bot.send_message(message.chat.id, text, reply_markup=kb)
 
-        if not potion:
-            bot.answer_callback_query(call.id)
+    @bot.message_handler(func=lambda m: m.text == "💰 Продати зілля")
+    def alchemist_sell_message_17_19_3_1(message):
+        user_id = int(message.from_user.id)
+        _ALCHEMIST_INPUT_17_19_3.pop(user_id, None)
+        text, kb = build_alchemist_sell_list_17_19_3(user_id)
+        bot.send_message(message.chat.id, text, reply_markup=kb)
 
-            bot.send_message(
-                call.message.chat.id,
-                "❌ Такого зілля немає в магазині.",
-                reply_markup=alchemist_kb()
-            )
-            return
+    @bot.message_handler(func=lambda m: int(getattr(m.from_user,"id",0)) in _ALCHEMIST_INPUT_17_19_3)
+    def alchemist_exact_quantity_17_19_3(message):
+        user_id=int(message.from_user.id); state=_ALCHEMIST_INPUT_17_19_3.pop(user_id,None)
+        try: quantity=int(str(message.text).strip())
+        except Exception: bot.send_message(message.chat.id,"❌ Введи ціле число."); return
+        if quantity<1: bot.send_message(message.chat.id,"❌ Кількість має бути більшою за нуль."); return
+        if state['mode']=="buy": text,kb=build_alchemist_buy_preview_17_19_3(user_id,state['item_id'],quantity)
+        else:
+            stock=next((r for r in get_alchemist_potion_stock_17_19_3(user_id) if r['item_id']==state['item_id']),None); available=int((stock or {}).get('available',0))
+            if quantity>available: bot.send_message(message.chat.id,f"❌ Доступно для продажу лише {available}."); return
+            text,kb=build_alchemist_sell_confirm_17_19_3(user_id,state['item_id'],quantity)
+        bot.send_message(message.chat.id,text,reply_markup=kb)
 
-        result = buy_item_for_gold(
-            user_id=user_id,
-            item_id=item_id,
-            price=potion["buy_price"],
-            quantity=1
-        )
-
-        bot.answer_callback_query(call.id)
-
-        bot.send_message(
-            call.message.chat.id,
-            result["message"],
-            reply_markup=alchemist_kb()
-        )
-
-        text, kb = build_alchemist_catalog(user_id)
-
-        bot.send_message(
-            call.message.chat.id,
-            text,
-            reply_markup=kb
-        )
-
-    # ==============================
     # CRAFT DISTRICT: BLACKSMITH
     # ==============================
 
