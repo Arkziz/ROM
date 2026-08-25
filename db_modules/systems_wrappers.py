@@ -254,6 +254,21 @@ def kick_guild_member(actor_user_id, target_user_id):
     return _guild_system().kick_guild_member(actor_user_id=actor_user_id, target_user_id=target_user_id)
 
 
+# ROM 17.21.1 GUILD LEAVE COOLDOWN
+
+def get_guild_join_cooldown(user_id):
+    return _guild_system().get_guild_join_cooldown(user_id)
+
+def format_guild_join_cooldown_remaining(user_id):
+    return _guild_system().format_guild_join_cooldown_remaining(user_id)
+
+def can_user_join_or_create_guild(user_id):
+    return _guild_system().can_user_join_or_create_guild(user_id)
+
+def leave_guild(user_id):
+    return _guild_system().leave_guild(user_id)
+
+
 def get_guild_officer_count(guild_id):
     return _guild_system().get_guild_officer_count(guild_id)
 

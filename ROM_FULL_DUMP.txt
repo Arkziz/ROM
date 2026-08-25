@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-25 00:47:09 +03:00
+Created: 2026-08-26 00:47:27 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9168
-Scanned files: 6466
-Included files: 460
-Excluded files: 6006
-Included source size: 3,24 MB
+Scanned files: 6510
+Included files: 462
+Excluded files: 6048
+Included source size: 3,25 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 6000
+- excluded directory: 6042
 - excluded file name or pattern: 6
 - unsupported file type: 0
 
@@ -106,6 +106,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\player_interaction_system.py
 - systems\player_system.py
 - systems\potion_system.py
+- systems\production_logging.py
 - systems\pve_skill_action_state.py
 - systems\pvp_action_validation.py
 - systems\pvp_adaptive_balance_optimizer.py
@@ -288,6 +289,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_contract_handler_db_api_16_0_5_2.py
 - tools\smoke_test_contract_reward_direct_facade.py
 - tools\smoke_test_create_user_contracts.py
+- tools\smoke_test_critical_production_logging_print_contract_recovery_17_20_1_1.py
 - tools\smoke_test_daily_firius_token_reward.py
 - tools\smoke_test_daily_handler_db_api_16_0_6.py
 - tools\smoke_test_daily_quest_reset_db_export_16_1_13_1.py
@@ -19834,10 +19836,14 @@ def build_tavern_text():
 
 ============================================================
 FILE: handlers\combat.py
-SIZE: 121623 bytes
-LAST WRITE: 2026-08-23 01:17:26
+SIZE: 121963 bytes
+LAST WRITE: 2026-08-25 22:03:44
 ============================================================
 
+
+# ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
+from systems.production_logging import get_production_logger, production_log_print as PRODUCTION_LOG_PRINT
+PRODUCTION_LOGGER=get_production_logger('handlers.combat')
 # ROM 17.18.2.2 BOW CROSSBOW DAMAGE DIFFERENTIATION
 # ROM 17.16.1 PVE SKILL BUTTON STATES
 # ROM 17.15.1 PERSISTENT MANA REGENERATION
@@ -19958,10 +19964,8 @@ def _install_combat_safe_send_11_3_1(bot):
             _COMBAT_TELEGRAM_BLOCKED_UNTIL_11_3_1[chat_id] = (
                 _combat_rate_time_11_3_1.monotonic() + retry_after
             )
-            print(
-                f"⚠️ Telegram 429 for chat {chat_id}: presentation suppressed "
-                f"for {retry_after}s; combat state will not be replayed."
-            )
+            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram 429 for chat {chat_id}: presentation suppressed "
+                f"for {retry_after}s; combat state will not be replayed.")
             return None
 
     bot.send_message = safe_send_message
@@ -23340,11 +23344,11 @@ def patch_combat_bot_rate_limit_safe_send(bot):
 
             try:
                 import time
-                print(f"⚠️ Telegram rate limit 429. Waiting {retry_after + 1}s before retry send_message.")
+                PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram rate limit 429. Waiting {retry_after + 1}s before retry send_message.")
                 time.sleep(retry_after + 1)
                 return original_send_message(chat_id, text, *args, **kwargs)
             except Exception as retry_error:
-                print(f"❌ send_message retry failed after 429: {retry_error}")
+                PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'error', f"❌ send_message retry failed after 429: {retry_error}")
                 return None
 
     bot.send_message = safe_send_message
@@ -34401,10 +34405,15 @@ def rune_master_kb():
 
 ============================================================
 FILE: main.py
-SIZE: 8662 bytes
-LAST WRITE: 2026-08-17 00:21:07
+SIZE: 9577 bytes
+LAST WRITE: 2026-08-25 22:03:44
 ============================================================
 
+
+# ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
+from systems.production_logging import configure_production_logging, get_production_logger, production_log_print as PRODUCTION_LOG_PRINT
+configure_production_logging()
+PRODUCTION_LOGGER=get_production_logger('rom.main')
 
 # ✅ TELEGRAM POLLING TIMEOUT RESILIENCE V3
 import time as _rom_polling_time
@@ -34449,16 +34458,16 @@ def run_bot_polling_resilient(bot):
                     pass
 
             if is_timeout or "Read timed out" in error_text or "ReadTimeout" in error_name:
-                print(f"⚠️ Telegram polling read timeout, restarting polling in 5s: {error}")
+                PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram polling read timeout, restarting polling in 5s: {error}")
                 _rom_polling_time.sleep(5)
                 continue
 
             if is_connection or "Connection" in error_name or "connection" in error_text.lower():
-                print(f"⚠️ Telegram polling connection error, restarting polling in 10s: {error}")
+                PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram polling connection error, restarting polling in 10s: {error}")
                 _rom_polling_time.sleep(10)
                 continue
 
-            print(f"⚠️ Telegram polling unexpected error, restarting polling in 10s: {error}")
+            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram polling unexpected error, restarting polling in 10s: {error}")
             _rom_polling_time.sleep(10)
 
 import telebot
@@ -34512,16 +34521,16 @@ bot = telebot.TeleBot(TOKEN, threaded=False)
 # ROM 12.1.0 PLAYER PRESENCE AND ACTIVITY SESSIONS
 from systems.player_interaction_system import init_player_interaction_foundation, install_player_presence_tracking, cleanup_player_interaction_state, init_player_trade_foundation, init_player_trade_item_policy_and_reservations, recover_active_player_trades_after_restart
 init_db()
-print('✅ PLAYER INTERACTION FOUNDATION:', init_player_interaction_foundation())
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER INTERACTION FOUNDATION:', init_player_interaction_foundation())
 # ROM 12.3.2 INTERACTION SESSION TIMEOUT AND RECOVERY
-print('✅ PLAYER INTERACTION RECOVERY:', cleanup_player_interaction_state())
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER INTERACTION RECOVERY:', cleanup_player_interaction_state())
 # ROM 12.4.0 PLAYER TRADE DATABASE AND HISTORY FOUNDATION
-print('✅ PLAYER TRADE FOUNDATION:', init_player_trade_foundation())
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER TRADE FOUNDATION:', init_player_trade_foundation())
 # ROM 12.5.0 PLAYER TRADE ITEM POLICY AND RESERVATIONS
-print('✅ PLAYER TRADE ITEM POLICY:', init_player_trade_item_policy_and_reservations())
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER TRADE ITEM POLICY:', init_player_trade_item_policy_and_reservations())
 # ROM 12.6.5: process restarts invalidate all unfinished trade UI/input state.
 _PLAYER_TRADE_RESTART_RECOVERY = recover_active_player_trades_after_restart()
-print('✅ PLAYER TRADE RESTART RECOVERY:', _PLAYER_TRADE_RESTART_RECOVERY)
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER TRADE RESTART RECOVERY:', _PLAYER_TRADE_RESTART_RECOVERY)
 
 # ==============================
 # ✅ REFACTOR 9.0.11: RUN MIGRATIONS ON STARTUP
@@ -34530,17 +34539,17 @@ try:
     import db as _rom_db_for_migrations
     _migration_result = _rom_db_for_migrations.run_pending_migrations()
     if _migration_result.get("applied"):
-        print(f"✅ DB MIGRATIONS APPLIED: {_migration_result.get('applied')}")
+        PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', f"✅ DB MIGRATIONS APPLIED: {_migration_result.get('applied')}")
 except Exception as migration_error:
-    print(f"⚠️ DB migrations skipped/error: {migration_error}")
+    PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ DB migrations skipped/error: {migration_error}")
 
 _db_startup_maintenance_result = run_db_startup_maintenance()
 if _db_startup_maintenance_result.get("success"):
-    print(f"✅ DB STARTUP MAINTENANCE: {_db_startup_maintenance_result}")
+    PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', f"✅ DB STARTUP MAINTENANCE: {_db_startup_maintenance_result}")
 
 _rune_system_init_result = init_rune_system()
 if _rune_system_init_result.get("success"):
-    print(f"✅ RUNE SYSTEM DATA MODEL: {_rune_system_init_result}")
+    PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', f"✅ RUNE SYSTEM DATA MODEL: {_rune_system_init_result}")
 
 seed_items()
 seed_location_trash_items()
@@ -34585,7 +34594,7 @@ register_refine_handlers(bot)
 # ==============================
 install_global_telegram_rate_limit_guard(bot)
 
-print('✅ PLAYER PRESENCE TRACKER:', install_player_presence_tracking(bot))
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER PRESENCE TRACKER:', install_player_presence_tracking(bot))
 # ROM 12.2.0 MAP LOCATION PLAYER DISCOVERY
 from handlers.player_interaction import register_player_interaction_handlers
 register_player_interaction_handlers(bot)
@@ -34601,10 +34610,8 @@ for _trade_recovery_user_id in _PLAYER_TRADE_RESTART_RECOVERY.get('participant_u
             reply_markup=_player_trade_recovery_main_kb(),
         )
     except Exception as _trade_recovery_notify_error:
-        print(
-            f"⚠️ PLAYER TRADE RESTART NOTICE FAILED: "
-            f"user={_trade_recovery_user_id}, error={_trade_recovery_notify_error}"
-        )
+        PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ PLAYER TRADE RESTART NOTICE FAILED: "
+            f"user={_trade_recovery_user_id}, error={_trade_recovery_notify_error}")
 start_notification_worker(bot)
 
 
@@ -34621,7 +34628,7 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-print("✅ BOT STARTED")
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', "✅ BOT STARTED")
 
 try:
     bot.infinity_polling()
@@ -48884,10 +48891,14 @@ def build_level_up_reward_message(result):
 
 ============================================================
 FILE: systems\notifications.py
-SIZE: 27956 bytes
-LAST WRITE: 2026-08-22 22:58:04
+SIZE: 29541 bytes
+LAST WRITE: 2026-08-25 22:03:44
 ============================================================
 
+
+# ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
+from systems.production_logging import get_production_logger, production_log_print as PRODUCTION_LOG_PRINT
+PRODUCTION_LOGGER=get_production_logger('systems.notifications')
 # ROM 17.15.1.1 NOTIFICATION WORKER DYNAMIC RUNE MAX MP RECOVERY
 # ROM 17.15.1 PERSISTENT MANA REGENERATION
 import time
@@ -49336,7 +49347,7 @@ def notify_energy_full(bot_instance, conn):
                 )
             )
         except Exception as send_error:
-            print(f"⚠️ Не вдалося надіслати energy notification {user_id}: {send_error}")
+            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Не вдалося надіслати energy notification {user_id}: {send_error}")
 
 
 # ==============================
@@ -49356,7 +49367,7 @@ def notify_hp_restored(bot_instance, conn):
                 )
             )
         except Exception as send_error:
-            print(f"⚠️ Не вдалося надіслати HP notification {user_id}: {send_error}")
+            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Не вдалося надіслати HP notification {user_id}: {send_error}")
 
 
 # ==============================
@@ -49382,7 +49393,7 @@ def notify_craft_or_repair_ready(bot_instance, conn):
 def notification_worker(bot_instance):
     conn = create_worker_connection()
 
-    print("✅ NOTIFICATION WORKER DB CONNECTION READY")
+    PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', "✅ NOTIFICATION WORKER DB CONNECTION READY")
 
     while True:
         try:
@@ -49395,7 +49406,7 @@ def notification_worker(bot_instance):
             # notify_craft_or_repair_ready(bot_instance, conn)
 
         except Exception as error:
-            print(f"⚠️ NOTIFICATION WORKER ERROR: {error}")
+            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ NOTIFICATION WORKER ERROR: {error}")
 
             try:
                 conn.close()
@@ -49404,9 +49415,9 @@ def notification_worker(bot_instance):
 
             try:
                 conn = create_worker_connection()
-                print("✅ NOTIFICATION WORKER DB CONNECTION RECREATED")
+                PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', "✅ NOTIFICATION WORKER DB CONNECTION RECREATED")
             except Exception as reconnect_error:
-                print(f"❌ NOTIFICATION WORKER DB RECONNECT ERROR: {reconnect_error}")
+                PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'error', f"❌ NOTIFICATION WORKER DB RECONNECT ERROR: {reconnect_error}")
 
         time.sleep(NOTIFICATION_CHECK_INTERVAL_SECONDS)
 
@@ -49420,7 +49431,7 @@ def start_notification_worker(bot_instance):
 
     thread.start()
 
-    print("✅ NOTIFICATION WORKER STARTED")
+    PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', "✅ NOTIFICATION WORKER STARTED")
 
 
 # ==============================
@@ -49817,7 +49828,7 @@ def notify_mp_restored_17_15_1(bot_instance, conn):
             conn.execute("UPDATE users SET mp_full_notified=1 WHERE user_id=?", (user_id,))
             conn.commit()
         except Exception as send_error:
-            print(f"⚠️ Не вдалося надіслати MP notification {user_id}: {send_error}")
+            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Не вдалося надіслати MP notification {user_id}: {send_error}")
 
 # Stage 17.15.1.1: match notification-worker max MP to production rune-aware logic.
 def get_worker_equipped_rune_int_wis_bonus_17_15_1_1(conn, user_id):
@@ -53705,6 +53716,82 @@ def sell_alchemist_potion_17_19_3(user_id,item_id,quantity):
     except Exception as e:
         conn.rollback(); return {"success":False,"message":f"❌ Продаж не завершено: {e}"}
 
+
+============================================================
+FILE: systems\production_logging.py
+SIZE: 4431 bytes
+LAST WRITE: 2026-08-25 22:03:44
+============================================================
+
+# -*- coding: utf-8 -*-
+# ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
+from __future__ import annotations
+import builtins, logging, os, re, sys, threading
+from logging.handlers import TimedRotatingFileHandler
+from pathlib import Path
+_LOCK=threading.RLock();_CONFIGURED=False
+_ROOT=Path(__file__).resolve().parents[1];_LOG_ROOT=_ROOT/"logs"
+_PATTERNS=(
+ re.compile(r"(?i)(bot[_-]?token|telegram[_-]?token|api[_-]?token)(\s*[:=]\s*)([^\s,;]+)"),
+ re.compile(r"(?i)(authorization)(\s*[:=]\s*)(?:bearer\s+)?([^\s,;]+)"),
+ re.compile(r"(?i)(password|passwd|pwd|secret|private[_-]?key|session[_-]?token|auth[_-]?key)(\s*[:=]\s*)([^\s,;]+)"),
+ re.compile(r"(?i)bearer\s+[a-z0-9._~+\-/]+=*"),
+)
+def redact_log_text(value):
+ text=str(value)
+ for i,p in enumerate(_PATTERNS):
+  if i==3:text=p.sub("Bearer [REDACTED]",text)
+  else:text=p.sub(lambda m:f"{m.group(1)}{m.group(2)}[REDACTED]",text)
+ return text
+class RedactingFormatter(logging.Formatter):
+ def format(self,record):return redact_log_text(super().format(record))
+class MaxLevel(logging.Filter):
+ def __init__(self,n):super().__init__();self.n=n
+ def filter(self,r):return r.levelno<=self.n
+class SecurityOnly(logging.Filter):
+ def filter(self,r):return r.name=="rom.security" or r.name.startswith("rom.security.")
+class NonSecurity(logging.Filter):
+ def filter(self,r):return not (r.name=="rom.security" or r.name.startswith("rom.security."))
+def _level():
+ x=str(os.getenv("ROM_LOG_LEVEL","INFO")).strip().upper();return getattr(logging,x,logging.INFO) if x in {"DEBUG","INFO","WARNING","ERROR","CRITICAL"} else logging.INFO
+def _handler(path,level,days):
+ path.parent.mkdir(parents=True,exist_ok=True);h=TimedRotatingFileHandler(path,when="midnight",interval=1,backupCount=days,encoding="utf-8",delay=True);h.setLevel(level);h.suffix="%Y-%m-%d";return h
+def configure_production_logging(force=False):
+ global _CONFIGURED
+ with _LOCK:
+  root=logging.getLogger()
+  if _CONFIGURED and not force:return logging_status()
+  if force:
+   for h in list(root.handlers):
+    if getattr(h,"_rom_production_handler",False):root.removeHandler(h);h.close()
+  _LOG_ROOT.mkdir(parents=True,exist_ok=True);level=_level();fmt=RedactingFormatter("%(asctime)s.%(msecs)03d | %(levelname)s | %(name)s | %(threadName)s | %(message)s",datefmt="%Y-%m-%d %H:%M:%S")
+  console=logging.StreamHandler();console.setLevel(level);console.setFormatter(fmt);console.addFilter(NonSecurity())
+  app=_handler(_LOG_ROOT/"log"/"rom.log",level,14);app.setFormatter(fmt);app.addFilter(NonSecurity());app.addFilter(MaxLevel(logging.WARNING))
+  error=_handler(_LOG_ROOT/"error"/"rom_error.log",logging.ERROR,30);error.setFormatter(fmt);error.addFilter(NonSecurity())
+  security=_handler(_LOG_ROOT/"security"/"rom_security.log",logging.INFO,30);security.setFormatter(fmt);security.addFilter(SecurityOnly())
+  for h in (console,app,error,security):h._rom_production_handler=True;root.addHandler(h)
+  root.setLevel(logging.DEBUG);logging.captureWarnings(True);_CONFIGURED=True
+  logging.getLogger("rom.logging").info("production_logging_configured level=%s retention=14/30/30",logging.getLevelName(level));return logging_status()
+def logging_status():
+ return {"configured":_CONFIGURED,"level":logging.getLevelName(_level()),"paths":{"app":str(_LOG_ROOT/"log"/"rom.log"),"error":str(_LOG_ROOT/"error"/"rom_error.log"),"security":str(_LOG_ROOT/"security"/"rom_security.log")},"retention_days":{"app":14,"error":30,"security":30}}
+def get_production_logger(name):
+ if not _CONFIGURED:configure_production_logging()
+ name=str(name or "rom");return logging.getLogger(name if name=="rom" or name.startswith("rom.") else "rom."+name)
+def get_security_logger(subsystem="audit"):
+ if not _CONFIGURED:configure_production_logging()
+ return logging.getLogger("rom.security."+str(subsystem or "audit").replace(" ","_"))
+def production_log_print(logger, log_level, *values, sep=" ", end="\n", file=None, flush=False):
+ if file not in (None, sys.stdout, sys.stderr):
+  builtins.print(*values, sep=sep, end=end, file=file, flush=flush);return
+ message=str(sep).join(str(value) for value in values)
+ if end not in (None, "", "\n"):
+  message += str(end)
+ method=getattr(logger, str(log_level or "info").lower(), logger.info)
+ method(message)
+ if flush:
+  for handler in logging.getLogger().handlers:
+   try:handler.flush()
+   except Exception:pass
 
 ============================================================
 FILE: systems\pve_skill_action_state.py
@@ -64706,14 +64793,18 @@ class WorldProgressionSimulator:
 
 ============================================================
 FILE: systems\telegram_rate_limit.py
-SIZE: 5716 bytes
-LAST WRITE: 2026-08-01 23:08:13
+SIZE: 6046 bytes
+LAST WRITE: 2026-08-25 22:03:44
 ============================================================
 
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Global, process-local Telegram flood-control containment for ROM."""
 from __future__ import annotations
+
+# ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
+from systems.production_logging import get_production_logger, production_log_print as PRODUCTION_LOG_PRINT
+PRODUCTION_LOGGER=get_production_logger('systems.telegram_rate_limit')
 
 import re
 import threading
@@ -64812,10 +64903,8 @@ def _record_suppressed(method_name, chat_id, remaining):
         _SUPPRESSED_COUNTS[key] = count
     # Avoid console floods while still leaving periodic diagnostics.
     if count == 1 or count in (5, 10) or count % 25 == 0:
-        print(
-            f"⚠️ Telegram cooldown active: suppressed {method_name} "
-            f"for chat {chat_id}; remaining about {remaining}s; count={count}"
-        )
+        PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram cooldown active: suppressed {method_name} "
+            f"for chat {chat_id}; remaining about {remaining}s; count={count}")
 
 
 def _guard_method(bot, method_name):
@@ -64839,11 +64928,9 @@ def _guard_method(bot, method_name):
             if retry_after is None:
                 raise
             _register_flood_wait(chat_id, retry_after)
-            print(
-                f"⚠️ Telegram 429 contained globally: method={method_name}, "
+            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram 429 contained globally: method={method_name}, "
                 f"chat={chat_id}, retry_after={retry_after}s. "
-                "Presentation was not retried; gameplay mutation will not be replayed."
-            )
+                "Presentation was not retried; gameplay mutation will not be replayed.")
             return None
 
     guarded._rom_global_429_guard_11_9_1 = True
@@ -64864,7 +64951,7 @@ def install_global_telegram_rate_limit_guard(bot):
             installed.append(method_name)
     with _LOCK:
         _INSTALLED_BOTS.add(marker)
-    print(f"✅ GLOBAL TELEGRAM 429 GUARD: {', '.join(installed)}")
+    PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"✅ GLOBAL TELEGRAM 429 GUARD: {', '.join(installed)}")
     return {"installed": True, "methods": tuple(installed)}
 
 
@@ -76859,6 +76946,32 @@ def main():
  print("- isolated fixture cleanup: OK")
  print("- real user mutations: 0")
 if __name__=="__main__": main()
+
+============================================================
+FILE: tools\smoke_test_critical_production_logging_print_contract_recovery_17_20_1_1.py
+SIZE: 2030 bytes
+LAST WRITE: 2026-08-25 22:03:44
+============================================================
+
+import ast,logging,sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1];sys.path.insert(0,str(R))
+for rel in ("systems/production_logging.py","main.py","systems/notifications.py","systems/telegram_rate_limit.py","handlers/combat.py"):
+ s=(R/rel).read_text(encoding="utf-8");ast.parse(s);assert s.count("ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY")==1,rel
+from systems.production_logging import configure_production_logging,get_production_logger,get_security_logger,logging_status,redact_log_text,production_log_print
+configure_production_logging(force=True);assert len([h for h in logging.getLogger().handlers if getattr(h,"_rom_production_handler",False)])==4
+configure_production_logging();assert len([h for h in logging.getLogger().handlers if getattr(h,"_rom_production_handler",False)])==4
+x=redact_log_text("BOT_TOKEN=123:ABC authorization=Bearer value password=hidden");assert "123:ABC" not in x and "value" not in x and "hidden" not in x
+production_log_print(get_production_logger("smoke"),"info","smoke","info",sep="_");production_log_print(get_production_logger("smoke"),"error","smoke_error","bot_token=123:ABC",flush=True);get_security_logger("smoke").warning("smoke_security user_id=1")
+for h in logging.getLogger().handlers:
+ try:h.flush()
+ except Exception:pass
+p=logging_status()["paths"]
+for q in p.values():assert Path(q).exists() and "123:ABC" not in Path(q).read_text(encoding="utf-8")
+assert "smoke_info" in Path(p["app"]).read_text(encoding="utf-8");assert "smoke_error" in Path(p["error"]).read_text(encoding="utf-8");assert "smoke_security" in Path(p["security"]).read_text(encoding="utf-8")
+for rel in ("main.py","systems/notifications.py","systems/telegram_rate_limit.py","handlers/combat.py"):
+ t=ast.parse((R/rel).read_text(encoding="utf-8"));assert not any(isinstance(n,ast.Call) and isinstance(n.func,ast.Name) and n.func.id=="print" for n in ast.walk(t)),rel
+print("[PASS] Stage 17.20.1.1 critical production logging print contract recovery")
 
 ============================================================
 FILE: tools\smoke_test_daily_firius_token_reward.py

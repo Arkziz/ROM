@@ -195,6 +195,22 @@ def init_guild_system():
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_guild_logs_guild_created ON guild_logs(guild_id, created_at DESC)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_guild_season_history_season ON guild_season_history(season_key, monthly_score DESC)")
 
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS guild_membership_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        guild_id INTEGER NOT NULL,
+        event_type TEXT NOT NULL,
+        event_reason TEXT NOT NULL DEFAULT '',
+        actor_user_id INTEGER,
+        occurred_at TEXT NOT NULL,
+        join_blocked_until TEXT NOT NULL
+    )
+    """)
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_guild_membership_history_user_blocked ON guild_membership_history(user_id, join_blocked_until DESC)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_guild_membership_history_guild_occurred ON guild_membership_history(guild_id, occurred_at DESC)")
+
     conn.commit()
 
     ensure_all_guild_monthly_seasons()
@@ -448,6 +464,127 @@ def validate_guild_create_input(name, tag, icon="🏰"):
     }
 
 
+# ROM 17.21.1 GUILD LEAVE COOLDOWN
+from datetime import timezone as _guild_timezone_17_21_1, timedelta as _guild_timedelta_17_21_1
+
+GUILD_LEAVE_COOLDOWN_HOURS = 24
+_GUILD_EVENT_LEAVE_17_21_1 = "voluntary_leave"
+_GUILD_EVENT_KICK_17_21_1 = "kicked"
+
+def _guild_utc_now_17_21_1():
+    return datetime.now(_guild_timezone_17_21_1)
+
+def _guild_utc_iso_17_21_1(value=None):
+    value = value or _guild_utc_now_17_21_1()
+    return value.astimezone(_guild_timezone_17_21_1).isoformat()
+
+def _guild_parse_utc_17_21_1(value):
+    text = str(value or "").strip()
+    if not text:
+        return None
+    try:
+        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except Exception:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=_guild_timezone_17_21_1.utc)
+    return parsed.astimezone(_guild_timezone_17_21_1.utc)
+
+def _init_guild_membership_history_17_21_1(commit=True):
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS guild_membership_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        guild_id INTEGER NOT NULL,
+        event_type TEXT NOT NULL,
+        event_reason TEXT NOT NULL DEFAULT '',
+        actor_user_id INTEGER,
+        occurred_at TEXT NOT NULL,
+        join_blocked_until TEXT NOT NULL
+    )
+    """)
+    cursor.execute("""
+    CREATE INDEX IF NOT EXISTS idx_guild_membership_history_user_blocked
+    ON guild_membership_history(user_id, join_blocked_until DESC)
+    """)
+    cursor.execute("""
+    CREATE INDEX IF NOT EXISTS idx_guild_membership_history_guild_occurred
+    ON guild_membership_history(guild_id, occurred_at DESC)
+    """)
+    if commit:
+        conn.commit()
+    return True
+
+def get_guild_join_cooldown(user_id):
+    _init_guild_membership_history_17_21_1(commit=False)
+    row = cursor.execute("""
+        SELECT guild_id, event_type, event_reason, actor_user_id,
+               occurred_at, join_blocked_until
+        FROM guild_membership_history
+        WHERE user_id=?
+        ORDER BY join_blocked_until DESC, id DESC
+        LIMIT 1
+    """, (int(user_id),)).fetchone()
+    if not row:
+        return {"active": False, "remaining_seconds": 0, "remaining_minutes": 0}
+    blocked_until = _guild_parse_utc_17_21_1(row[5])
+    now = _guild_utc_now_17_21_1()
+    remaining = max(0, int((blocked_until - now).total_seconds())) if blocked_until else 0
+    return {
+        "active": remaining > 0,
+        "remaining_seconds": remaining,
+        "remaining_minutes": (remaining + 59) // 60 if remaining else 0,
+        "guild_id": int(row[0]),
+        "event_type": str(row[1]),
+        "event_reason": str(row[2] or ""),
+        "actor_user_id": row[3],
+        "occurred_at": str(row[4]),
+        "join_blocked_until": str(row[5]),
+    }
+
+def format_guild_join_cooldown_remaining(user_id):
+    state = get_guild_join_cooldown(user_id)
+    if not state.get("active"):
+        return ""
+    minutes = max(1, int(state.get("remaining_minutes") or 1))
+    hours, minute_part = divmod(minutes, 60)
+    if hours and minute_part:
+        return f"{hours} год {minute_part} хв"
+    if hours:
+        return f"{hours} год"
+    return f"{minute_part} хв"
+
+def can_user_join_or_create_guild(user_id):
+    state = get_guild_join_cooldown(user_id)
+    if not state.get("active"):
+        return {"success": True, "active": False, "message": ""}
+    remaining = format_guild_join_cooldown_remaining(user_id)
+    return {
+        "success": False,
+        "active": True,
+        "remaining": remaining,
+        "join_blocked_until": state.get("join_blocked_until"),
+        "message": (
+            "⏳ Вступ до гільдії тимчасово недоступний.\n"
+            f"Залишилося: {remaining}."
+        ),
+    }
+
+def _record_guild_departure_17_21_1(user_id, guild_id, event_type, reason="", actor_user_id=None):
+    occurred = _guild_utc_now_17_21_1()
+    blocked = occurred + _guild_timedelta_17_21_1(hours=GUILD_LEAVE_COOLDOWN_HOURS)
+    cursor.execute("""
+        INSERT INTO guild_membership_history (
+            user_id, guild_id, event_type, event_reason, actor_user_id,
+            occurred_at, join_blocked_until
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (
+        int(user_id), int(guild_id), str(event_type), str(reason or ""),
+        int(actor_user_id) if actor_user_id is not None else None,
+        _guild_utc_iso_17_21_1(occurred), _guild_utc_iso_17_21_1(blocked),
+    ))
+    return _guild_utc_iso_17_21_1(blocked)
+
 def create_guild(user_id, name, tag, icon="🏰"):
     """
     Створює гільдію.
@@ -457,6 +594,10 @@ def create_guild(user_id, name, tag, icon="🏰"):
     """
 
     init_guild_system()
+
+    gate = can_user_join_or_create_guild(user_id)
+    if not gate.get("success"):
+        return gate
 
     if is_user_in_guild(user_id):
         return {
@@ -1539,54 +1680,108 @@ def demote_guild_officer(actor_user_id, target_user_id):
 
 
 def kick_guild_member(actor_user_id, target_user_id):
-    """
-    Виключити учасника з гільдії.
-
-    Правила:
-    - Голова може виключати учасників і заступників, але не себе.
-    - Заступник може виключати тільки звичайних учасників.
-    - Учасник не може виключати нікого.
-    - Голову не можна виключити.
-    """
-
     init_guild_system()
     actor_member = get_user_guild_member(actor_user_id)
     target_member = get_user_guild_member(target_user_id)
-
     if not actor_member:
         return {"success": False, "message": "❌ Ти не перебуваєш у гільдії."}
-
     if not target_member or int(target_member["guild_id"]) != int(actor_member["guild_id"]):
         return {"success": False, "message": "❌ Цей гравець не перебуває у твоїй гільдії."}
-
-    guild_id = actor_member["guild_id"]
-
+    guild_id = int(actor_member["guild_id"])
     if int(actor_user_id) == int(target_user_id):
         return {"success": False, "message": "❌ Не можна виключити самого себе."}
-
-    if target_member["role"] == GUILD_ROLE_LEADER:
+    if str(target_member["role"]) == GUILD_ROLE_LEADER:
         return {"success": False, "message": "❌ Голову гільдії не можна виключити."}
-
-    if actor_member["role"] == GUILD_ROLE_MEMBER:
+    if str(actor_member["role"]) == GUILD_ROLE_MEMBER:
         return {"success": False, "message": "❌ Учасник не може виключати інших учасників."}
-
-    if actor_member["role"] == GUILD_ROLE_OFFICER and target_member["role"] != GUILD_ROLE_MEMBER:
+    if str(actor_member["role"]) == GUILD_ROLE_OFFICER and str(target_member["role"]) != GUILD_ROLE_MEMBER:
         return {"success": False, "message": "❌ Заступник може виключати тільки звичайних учасників."}
-
-    cursor.execute(
-        "DELETE FROM guild_members WHERE guild_id=? AND user_id=?",
-        (guild_id, target_user_id)
-    )
-    conn.commit()
-
     target_name = get_character_name_by_user_id(target_user_id)
-    add_guild_log(
-        guild_id=guild_id,
-        event_type="member_kicked",
-        text=f"{target_name} виключений з гільдії."
-    )
+    savepoint = "guild_kick_17_21_1"
+    try:
+        cursor.execute(f"SAVEPOINT {savepoint}")
+        cursor.execute("DELETE FROM guild_members WHERE guild_id=? AND user_id=?", (guild_id, int(target_user_id)))
+        if cursor.rowcount != 1:
+            raise RuntimeError("guild membership delete did not affect exactly one row")
+        cursor.execute("""
+            UPDATE guild_applications
+            SET status=?, processed_at=?, processed_by=?
+            WHERE user_id=? AND status=?
+        """, (GUILD_APPLICATION_CANCELLED, _guild_utc_iso_17_21_1(), int(actor_user_id), int(target_user_id), GUILD_APPLICATION_PENDING))
+        blocked_until = _record_guild_departure_17_21_1(
+            target_user_id, guild_id, _GUILD_EVENT_KICK_17_21_1,
+            reason="kicked", actor_user_id=actor_user_id,
+        )
+        cursor.execute("""
+            INSERT INTO guild_logs (guild_id, event_type, text, created_at)
+            VALUES (?, ?, ?, ?)
+        """, (guild_id, "member_kicked", f"Учасника виключено з гільдії: {target_name}.", _guild_utc_iso_17_21_1()))
+        cursor.execute(f"RELEASE {savepoint}")
+        conn.commit()
+        return {
+            "success": True, "join_blocked_until": blocked_until,
+            "message": f"✅ {target_name} виключений з гільдії."
+        }
+    except Exception as error:
+        try:
+            cursor.execute(f"ROLLBACK TO {savepoint}")
+            cursor.execute(f"RELEASE {savepoint}")
+        except Exception:
+            conn.rollback()
+        return {"success": False, "message": f"❌ Не вдалося виключити учасника: {error}"}
 
-    return {"success": True, "message": f"✅ {target_name} виключений з гільдії."}
+def leave_guild(user_id):
+    init_guild_system()
+    member = get_user_guild_member(user_id)
+    if not member:
+        return {"success": False, "message": "❌ Ти не перебуваєш у гільдії."}
+    guild_id = int(member["guild_id"])
+    if str(member["role"]) == GUILD_ROLE_LEADER:
+        return {
+            "success": False,
+            "leader_blocked": True,
+            "message": "❌ Голова не може покинути гільдію без передачі керівництва."
+        }
+    actor_name = get_character_name_by_user_id(user_id)
+    savepoint = "guild_leave_17_21_1"
+    try:
+        cursor.execute(f"SAVEPOINT {savepoint}")
+        cursor.execute("DELETE FROM guild_members WHERE guild_id=? AND user_id=?", (guild_id, int(user_id)))
+        if cursor.rowcount != 1:
+            raise RuntimeError("guild membership delete did not affect exactly one row")
+        cursor.execute("""
+            UPDATE guild_applications
+            SET status=?, processed_at=?, processed_by=?
+            WHERE user_id=? AND status=?
+        """, (GUILD_APPLICATION_CANCELLED, _guild_utc_iso_17_21_1(), int(user_id), int(user_id), GUILD_APPLICATION_PENDING))
+        blocked_until = _record_guild_departure_17_21_1(
+            user_id, guild_id, _GUILD_EVENT_LEAVE_17_21_1,
+            reason="voluntary_leave", actor_user_id=user_id,
+        )
+        cursor.execute("""
+            INSERT INTO guild_logs (guild_id, event_type, text, created_at)
+            VALUES (?, ?, ?, ?)
+        """, (guild_id, "member_left", f"Учасник покинув гільдію: {actor_name}.", _guild_utc_iso_17_21_1()))
+        cursor.execute(f"RELEASE {savepoint}")
+        conn.commit()
+        return {
+            "success": True,
+            "guild_id": guild_id,
+            "join_blocked_until": blocked_until,
+            "message": (
+                "✅ Ти покинув гільдію.\n\n"
+                "⏳ Вступ до іншої гільдії та створення власної "
+                "будуть недоступні протягом 24 годин."
+            ),
+        }
+    except Exception as error:
+        try:
+            cursor.execute(f"ROLLBACK TO {savepoint}")
+            cursor.execute(f"RELEASE {savepoint}")
+        except Exception:
+            conn.rollback()
+        return {"success": False, "message": f"❌ Не вдалося покинути гільдію: {error}"}
+
 
 
 # ==============================
@@ -2192,6 +2387,10 @@ def create_guild_application(user_id, guild_id):
     """
 
     init_guild_system()
+
+    gate = can_user_join_or_create_guild(user_id)
+    if not gate.get("success"):
+        return gate
 
     if is_user_in_guild(user_id):
         return {

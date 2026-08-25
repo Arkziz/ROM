@@ -1785,6 +1785,7 @@ def _guild_progress_bar(percent, width=10):
     return "█" * filled + "░" * (width - filled)
 
 
+# ROM 17.21.1 GUILD LEAVE COOLDOWN
 def guild_hall_kb(user_id):
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
@@ -1794,6 +1795,7 @@ def guild_hall_kb(user_id):
         kb.add("📨 Заявки", "📜 Журнал")
         kb.add("🏆 Місячний рейтинг")
         kb.add("🏆 Рейтинг за весь час")
+        kb.add("🚪 Покинути гільдію")
         kb.add("🔙 Місто")
     else:
         kb.add("🏗️ Створити гільдію")
@@ -2806,6 +2808,36 @@ def register_guild_handlers(bot):
             format_guild_cleanup_result_text(result),
             reply_markup=guild_hall_kb(message.from_user.id)
         )
+    @bot.message_handler(func=lambda message: getattr(message, 'text', None) == '🚪 Покинути гільдію')
+    def guild_leave_prompt_17_21_1(message):
+        from db import get_user_guild_role
+        user_id = int(message.from_user.id)
+        guild = get_user_guild(user_id)
+        if not guild:
+            bot.send_message(message.chat.id, '❌ Ти не перебуваєш у гільдії.', reply_markup=guild_hall_kb(user_id))
+            return
+        if str(get_user_guild_role(user_id) or '') == 'leader':
+            bot.send_message(message.chat.id, '❌ Голова не може покинути гільдію без передачі керівництва.', reply_markup=guild_hall_kb(user_id))
+            return
+        kb = types.InlineKeyboardMarkup()
+        kb.row(types.InlineKeyboardButton('✅ Покинути', callback_data='guild_leave:confirm'), types.InlineKeyboardButton('❌ Скасувати', callback_data='guild_leave:cancel'))
+        bot.send_message(message.chat.id, f"Покинути гільдію {get_guild_display_name(guild)}?\n\nПісля виходу ти не зможеш вступити до іншої гільдії або створити власну протягом 24 годин.", reply_markup=kb)
+
+    @bot.callback_query_handler(func=lambda call: str(getattr(call, 'data', '')).startswith('guild_leave:'))
+    def guild_leave_callback_17_21_1(call):
+        from db import leave_guild
+        user_id = int(call.from_user.id)
+        action = str(call.data).split(':', 1)[1]
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+        if action == 'cancel':
+            bot.send_message(call.message.chat.id, 'ℹ️ Вихід із гільдії скасовано.', reply_markup=guild_hall_kb(user_id))
+            return
+        result = leave_guild(user_id)
+        bot.send_message(call.message.chat.id, result.get('message', '❌ Не вдалося виконати дію.'), reply_markup=guild_hall_kb(user_id))
+
 
 # Stage 17.11.2 compact Guild text wrappers.
 def _compact_guild_actions_17_11_2(text, stop_marker=None):
