@@ -1,3 +1,7 @@
+
+# ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
+from systems.production_logging import get_production_logger, production_log_print as PRODUCTION_LOG_PRINT
+PRODUCTION_LOGGER=get_production_logger('systems.notifications')
 # ROM 17.15.1.1 NOTIFICATION WORKER DYNAMIC RUNE MAX MP RECOVERY
 # ROM 17.15.1 PERSISTENT MANA REGENERATION
 import time
@@ -446,7 +450,7 @@ def notify_energy_full(bot_instance, conn):
                 )
             )
         except Exception as send_error:
-            print(f"⚠️ Не вдалося надіслати energy notification {user_id}: {send_error}")
+            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Не вдалося надіслати energy notification {user_id}: {send_error}")
 
 
 # ==============================
@@ -466,7 +470,7 @@ def notify_hp_restored(bot_instance, conn):
                 )
             )
         except Exception as send_error:
-            print(f"⚠️ Не вдалося надіслати HP notification {user_id}: {send_error}")
+            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Не вдалося надіслати HP notification {user_id}: {send_error}")
 
 
 # ==============================
@@ -492,7 +496,7 @@ def notify_craft_or_repair_ready(bot_instance, conn):
 def notification_worker(bot_instance):
     conn = create_worker_connection()
 
-    print("✅ NOTIFICATION WORKER DB CONNECTION READY")
+    PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', "✅ NOTIFICATION WORKER DB CONNECTION READY")
 
     while True:
         try:
@@ -505,7 +509,7 @@ def notification_worker(bot_instance):
             # notify_craft_or_repair_ready(bot_instance, conn)
 
         except Exception as error:
-            print(f"⚠️ NOTIFICATION WORKER ERROR: {error}")
+            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ NOTIFICATION WORKER ERROR: {error}")
 
             try:
                 conn.close()
@@ -514,9 +518,9 @@ def notification_worker(bot_instance):
 
             try:
                 conn = create_worker_connection()
-                print("✅ NOTIFICATION WORKER DB CONNECTION RECREATED")
+                PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', "✅ NOTIFICATION WORKER DB CONNECTION RECREATED")
             except Exception as reconnect_error:
-                print(f"❌ NOTIFICATION WORKER DB RECONNECT ERROR: {reconnect_error}")
+                PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'error', f"❌ NOTIFICATION WORKER DB RECONNECT ERROR: {reconnect_error}")
 
         time.sleep(NOTIFICATION_CHECK_INTERVAL_SECONDS)
 
@@ -530,7 +534,7 @@ def start_notification_worker(bot_instance):
 
     thread.start()
 
-    print("✅ NOTIFICATION WORKER STARTED")
+    PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', "✅ NOTIFICATION WORKER STARTED")
 
 
 # ==============================
@@ -927,7 +931,7 @@ def notify_mp_restored_17_15_1(bot_instance, conn):
             conn.execute("UPDATE users SET mp_full_notified=1 WHERE user_id=?", (user_id,))
             conn.commit()
         except Exception as send_error:
-            print(f"⚠️ Не вдалося надіслати MP notification {user_id}: {send_error}")
+            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Не вдалося надіслати MP notification {user_id}: {send_error}")
 
 # Stage 17.15.1.1: match notification-worker max MP to production rune-aware logic.
 def get_worker_equipped_rune_int_wis_bonus_17_15_1_1(conn, user_id):

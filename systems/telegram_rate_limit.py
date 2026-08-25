@@ -3,6 +3,10 @@
 """Global, process-local Telegram flood-control containment for ROM."""
 from __future__ import annotations
 
+# ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
+from systems.production_logging import get_production_logger, production_log_print as PRODUCTION_LOG_PRINT
+PRODUCTION_LOGGER=get_production_logger('systems.telegram_rate_limit')
+
 import re
 import threading
 import time
@@ -100,10 +104,8 @@ def _record_suppressed(method_name, chat_id, remaining):
         _SUPPRESSED_COUNTS[key] = count
     # Avoid console floods while still leaving periodic diagnostics.
     if count == 1 or count in (5, 10) or count % 25 == 0:
-        print(
-            f"⚠️ Telegram cooldown active: suppressed {method_name} "
-            f"for chat {chat_id}; remaining about {remaining}s; count={count}"
-        )
+        PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram cooldown active: suppressed {method_name} "
+            f"for chat {chat_id}; remaining about {remaining}s; count={count}")
 
 
 def _guard_method(bot, method_name):
@@ -127,11 +129,9 @@ def _guard_method(bot, method_name):
             if retry_after is None:
                 raise
             _register_flood_wait(chat_id, retry_after)
-            print(
-                f"⚠️ Telegram 429 contained globally: method={method_name}, "
+            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram 429 contained globally: method={method_name}, "
                 f"chat={chat_id}, retry_after={retry_after}s. "
-                "Presentation was not retried; gameplay mutation will not be replayed."
-            )
+                "Presentation was not retried; gameplay mutation will not be replayed.")
             return None
 
     guarded._rom_global_429_guard_11_9_1 = True
@@ -152,7 +152,7 @@ def install_global_telegram_rate_limit_guard(bot):
             installed.append(method_name)
     with _LOCK:
         _INSTALLED_BOTS.add(marker)
-    print(f"✅ GLOBAL TELEGRAM 429 GUARD: {', '.join(installed)}")
+    PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"✅ GLOBAL TELEGRAM 429 GUARD: {', '.join(installed)}")
     return {"installed": True, "methods": tuple(installed)}
 
 

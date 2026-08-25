@@ -1,4 +1,9 @@
 
+# ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
+from systems.production_logging import configure_production_logging, get_production_logger, production_log_print as PRODUCTION_LOG_PRINT
+configure_production_logging()
+PRODUCTION_LOGGER=get_production_logger('rom.main')
+
 # ✅ TELEGRAM POLLING TIMEOUT RESILIENCE V3
 import time as _rom_polling_time
 
@@ -42,16 +47,16 @@ def run_bot_polling_resilient(bot):
                     pass
 
             if is_timeout or "Read timed out" in error_text or "ReadTimeout" in error_name:
-                print(f"⚠️ Telegram polling read timeout, restarting polling in 5s: {error}")
+                PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram polling read timeout, restarting polling in 5s: {error}")
                 _rom_polling_time.sleep(5)
                 continue
 
             if is_connection or "Connection" in error_name or "connection" in error_text.lower():
-                print(f"⚠️ Telegram polling connection error, restarting polling in 10s: {error}")
+                PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram polling connection error, restarting polling in 10s: {error}")
                 _rom_polling_time.sleep(10)
                 continue
 
-            print(f"⚠️ Telegram polling unexpected error, restarting polling in 10s: {error}")
+            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram polling unexpected error, restarting polling in 10s: {error}")
             _rom_polling_time.sleep(10)
 
 import telebot
@@ -105,16 +110,16 @@ bot = telebot.TeleBot(TOKEN, threaded=False)
 # ROM 12.1.0 PLAYER PRESENCE AND ACTIVITY SESSIONS
 from systems.player_interaction_system import init_player_interaction_foundation, install_player_presence_tracking, cleanup_player_interaction_state, init_player_trade_foundation, init_player_trade_item_policy_and_reservations, recover_active_player_trades_after_restart
 init_db()
-print('✅ PLAYER INTERACTION FOUNDATION:', init_player_interaction_foundation())
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER INTERACTION FOUNDATION:', init_player_interaction_foundation())
 # ROM 12.3.2 INTERACTION SESSION TIMEOUT AND RECOVERY
-print('✅ PLAYER INTERACTION RECOVERY:', cleanup_player_interaction_state())
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER INTERACTION RECOVERY:', cleanup_player_interaction_state())
 # ROM 12.4.0 PLAYER TRADE DATABASE AND HISTORY FOUNDATION
-print('✅ PLAYER TRADE FOUNDATION:', init_player_trade_foundation())
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER TRADE FOUNDATION:', init_player_trade_foundation())
 # ROM 12.5.0 PLAYER TRADE ITEM POLICY AND RESERVATIONS
-print('✅ PLAYER TRADE ITEM POLICY:', init_player_trade_item_policy_and_reservations())
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER TRADE ITEM POLICY:', init_player_trade_item_policy_and_reservations())
 # ROM 12.6.5: process restarts invalidate all unfinished trade UI/input state.
 _PLAYER_TRADE_RESTART_RECOVERY = recover_active_player_trades_after_restart()
-print('✅ PLAYER TRADE RESTART RECOVERY:', _PLAYER_TRADE_RESTART_RECOVERY)
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER TRADE RESTART RECOVERY:', _PLAYER_TRADE_RESTART_RECOVERY)
 
 # ==============================
 # ✅ REFACTOR 9.0.11: RUN MIGRATIONS ON STARTUP
@@ -123,17 +128,17 @@ try:
     import db as _rom_db_for_migrations
     _migration_result = _rom_db_for_migrations.run_pending_migrations()
     if _migration_result.get("applied"):
-        print(f"✅ DB MIGRATIONS APPLIED: {_migration_result.get('applied')}")
+        PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', f"✅ DB MIGRATIONS APPLIED: {_migration_result.get('applied')}")
 except Exception as migration_error:
-    print(f"⚠️ DB migrations skipped/error: {migration_error}")
+    PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ DB migrations skipped/error: {migration_error}")
 
 _db_startup_maintenance_result = run_db_startup_maintenance()
 if _db_startup_maintenance_result.get("success"):
-    print(f"✅ DB STARTUP MAINTENANCE: {_db_startup_maintenance_result}")
+    PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', f"✅ DB STARTUP MAINTENANCE: {_db_startup_maintenance_result}")
 
 _rune_system_init_result = init_rune_system()
 if _rune_system_init_result.get("success"):
-    print(f"✅ RUNE SYSTEM DATA MODEL: {_rune_system_init_result}")
+    PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', f"✅ RUNE SYSTEM DATA MODEL: {_rune_system_init_result}")
 
 seed_items()
 seed_location_trash_items()
@@ -178,7 +183,7 @@ register_refine_handlers(bot)
 # ==============================
 install_global_telegram_rate_limit_guard(bot)
 
-print('✅ PLAYER PRESENCE TRACKER:', install_player_presence_tracking(bot))
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER PRESENCE TRACKER:', install_player_presence_tracking(bot))
 # ROM 12.2.0 MAP LOCATION PLAYER DISCOVERY
 from handlers.player_interaction import register_player_interaction_handlers
 register_player_interaction_handlers(bot)
@@ -194,10 +199,8 @@ for _trade_recovery_user_id in _PLAYER_TRADE_RESTART_RECOVERY.get('participant_u
             reply_markup=_player_trade_recovery_main_kb(),
         )
     except Exception as _trade_recovery_notify_error:
-        print(
-            f"⚠️ PLAYER TRADE RESTART NOTICE FAILED: "
-            f"user={_trade_recovery_user_id}, error={_trade_recovery_notify_error}"
-        )
+        PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ PLAYER TRADE RESTART NOTICE FAILED: "
+            f"user={_trade_recovery_user_id}, error={_trade_recovery_notify_error}")
 start_notification_worker(bot)
 
 
@@ -214,7 +217,7 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-print("✅ BOT STARTED")
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', "✅ BOT STARTED")
 
 try:
     bot.infinity_polling()

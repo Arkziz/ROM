@@ -1,3 +1,7 @@
+
+# ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
+from systems.production_logging import get_production_logger, production_log_print as PRODUCTION_LOG_PRINT
+PRODUCTION_LOGGER=get_production_logger('handlers.combat')
 # ROM 17.18.2.2 BOW CROSSBOW DAMAGE DIFFERENTIATION
 # ROM 17.16.1 PVE SKILL BUTTON STATES
 # ROM 17.15.1 PERSISTENT MANA REGENERATION
@@ -118,10 +122,8 @@ def _install_combat_safe_send_11_3_1(bot):
             _COMBAT_TELEGRAM_BLOCKED_UNTIL_11_3_1[chat_id] = (
                 _combat_rate_time_11_3_1.monotonic() + retry_after
             )
-            print(
-                f"⚠️ Telegram 429 for chat {chat_id}: presentation suppressed "
-                f"for {retry_after}s; combat state will not be replayed."
-            )
+            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram 429 for chat {chat_id}: presentation suppressed "
+                f"for {retry_after}s; combat state will not be replayed.")
             return None
 
     bot.send_message = safe_send_message
@@ -3500,11 +3502,11 @@ def patch_combat_bot_rate_limit_safe_send(bot):
 
             try:
                 import time
-                print(f"⚠️ Telegram rate limit 429. Waiting {retry_after + 1}s before retry send_message.")
+                PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram rate limit 429. Waiting {retry_after + 1}s before retry send_message.")
                 time.sleep(retry_after + 1)
                 return original_send_message(chat_id, text, *args, **kwargs)
             except Exception as retry_error:
-                print(f"❌ send_message retry failed after 429: {retry_error}")
+                PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'error', f"❌ send_message retry failed after 429: {retry_error}")
                 return None
 
     bot.send_message = safe_send_message
