@@ -300,7 +300,7 @@ __all__ = [
     # Guild system (~80 functions)
     'init_guild_system', 'get_current_guild_season_key',
     'ensure_all_guild_monthly_seasons', 'ensure_guild_monthly_season',
-    'create_guild', 'get_user_guild', 'get_user_guild_member',
+    'create_guild', 'get_guild_creation_terms', 'get_user_guild', 'get_user_guild_member',
     'get_user_guild_role', 'is_user_in_guild',
     'get_guild_by_id', 'get_guild_by_name_or_tag',
     'get_guild_members', 'get_guild_member_count',

@@ -16,6 +16,7 @@ from db import (
     get_guild_role_label,
     get_current_guild_season_key,
     create_guild,
+    get_guild_creation_terms,
     get_guild_by_name_or_tag,
     get_guild_by_id,
     get_public_guild_list,
@@ -511,18 +512,10 @@ def build_guild_create_icon_prompt(name, tag):
     )
 
 
-def build_guild_create_confirm_text(state):
-    name = state.get("name", "")
-    tag = state.get("tag", "")
-    icon = state.get("icon", "🏰")
-    return (
-        "🏗️ Створення гільдії\n\n"
-        "Крок 4/4 — підтвердження.\n\n"
-        f"Майбутня гільдія:\n"
-        f"{icon} [{tag}] {name}\n\n"
-        "Вартість створення: 0 золота.\n\n"
-        "Підтвердити створення?"
-    )
+def build_guild_create_confirm_text(state, user_id=None):
+    name = state.get("name", ""); tag = state.get("tag", ""); icon = state.get("icon", "🏰")
+    terms = get_guild_creation_terms(user_id) if user_id is not None else {"cost_gold": 100.0, "gold_balance": 0.0, "member_limit": 10}
+    return ("🏗️ Створення гільдії\n\nКрок 4/4 — підтвердження.\n\n" f"Майбутня гільдія:\n{icon} [{tag}] {name}\n\n" f"Вартість: {terms['cost_gold']:.2f} 🪙\n" f"Твій баланс: {terms['gold_balance']:.2f} 🪙\n" f"Початковий ліміт: {terms['member_limit']} учасників.\n\n" "Підтвердити створення?")
 
 
 # ==============================
@@ -628,7 +621,7 @@ def handle_guild_creation_message(bot, message):
             return True
         state["icon"] = result
         state["step"] = "confirm"
-        bot.send_message(message.chat.id, build_guild_create_confirm_text(state), reply_markup=guild_create_confirm_kb())
+        bot.send_message(message.chat.id, build_guild_create_confirm_text(state, user_id), reply_markup=guild_create_confirm_kb())
         return True
 
     if step == "confirm":

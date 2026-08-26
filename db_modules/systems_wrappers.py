@@ -101,6 +101,10 @@ def create_guild(user_id, name, tag, icon="🏰"):
     return _guild_system().create_guild(user_id=user_id, name=name, tag=tag, icon=icon)
 
 
+def get_guild_creation_terms(user_id):
+    return _guild_system().get_guild_creation_terms(user_id)
+
+
 def get_user_guild(user_id):
     return _guild_system().get_user_guild(user_id)
 

@@ -28,8 +28,8 @@ except Exception:
 
 
 
-GUILD_CREATE_COST_GOLD = 0
-DEFAULT_GUILD_MEMBER_LIMIT = 30
+GUILD_CREATE_COST_GOLD = 100.0
+DEFAULT_GUILD_MEMBER_LIMIT = 10
 GUILD_ROLE_LEADER = "leader"
 GUILD_ROLE_OFFICER = "officer"
 GUILD_ROLE_MEMBER = "member"
@@ -586,91 +586,52 @@ def _record_guild_departure_17_21_1(user_id, guild_id, event_type, reason="", ac
     return _guild_utc_iso_17_21_1(blocked)
 
 def create_guild(user_id, name, tag, icon="🏰"):
-    """
-    Створює гільдію.
-
-    На 7.0.1 створення безкоштовне.
-    Вартість можна додати пізніше через GUILD_CREATE_COST_GOLD.
-    """
-
+    """Атомарно створює гільдію за золото з базовим лімітом учасників."""
     init_guild_system()
-
-    gate = can_user_join_or_create_guild(user_id)
-    if not gate.get("success"):
-        return gate
-
-    if is_user_in_guild(user_id):
-        return {
-            "success": False,
-            "message": "❌ Ти вже перебуваєш у гільдії."
-        }
-
+    user_id = int(user_id)
     validation = validate_guild_create_input(name, tag, icon)
-
     if not validation.get("success"):
         return validation
+    savepoint = "paid_guild_creation_17_23_1"
+    try:
+        cursor.execute(f"SAVEPOINT {savepoint}")
+        gate = can_user_join_or_create_guild(user_id)
+        if not gate.get("success"):
+            raise ValueError(gate.get("message") or "⏳ Створення гільдії тимчасово недоступне.")
+        if is_user_in_guild(user_id):
+            raise ValueError("❌ Ти вже перебуваєш у гільдії.")
+        # Revalidate uniqueness inside the same transaction.
+        validation = validate_guild_create_input(validation["name"], validation["tag"], validation["icon"])
+        if not validation.get("success"):
+            raise ValueError(validation.get("message") or "❌ Дані гільдії більше не доступні.")
+        cursor.execute("UPDATE users SET gold=ROUND(gold-?, 2) WHERE user_id=? AND gold>=?", (GUILD_CREATE_COST_GOLD, user_id, GUILD_CREATE_COST_GOLD))
+        if cursor.rowcount != 1:
+            row = cursor.execute("SELECT COALESCE(gold,0) FROM users WHERE user_id=?", (user_id,)).fetchone()
+            balance = float(row[0] if row else 0.0)
+            raise ValueError(f"❌ Недостатньо золота. Потрібно: {GUILD_CREATE_COST_GOLD:.2f} 🪙. Твій баланс: {balance:.2f} 🪙.")
+        now = now_iso(); season_key = get_current_guild_season_key()
+        cursor.execute("""INSERT INTO guilds (name,name_norm,tag,tag_norm,icon,leader_user_id,level,exp,resource,member_limit,created_at,updated_at,season_key) VALUES (?,?,?,?,?,?,1,0,0,?,?,?,?)""", (validation["name"],normalize_guild_name(validation["name"]),validation["tag"],normalize_guild_tag(validation["tag"]),validation["icon"],user_id,DEFAULT_GUILD_MEMBER_LIMIT,now,now,season_key))
+        guild_id = int(cursor.lastrowid)
+        cursor.execute("INSERT INTO guild_members (guild_id,user_id,role,joined_at) VALUES (?,?,?,?)", (guild_id,user_id,GUILD_ROLE_LEADER,now))
+        cursor.execute("INSERT INTO guild_logs (guild_id,event_type,text,created_at) VALUES (?,?,?,?)", (guild_id,"guild_created",f"Гільдію {validation['icon']} [{validation['tag']}] {validation['name']} створено за {GUILD_CREATE_COST_GOLD:.2f} золота.",now))
+        row = cursor.execute("SELECT COALESCE(gold,0) FROM users WHERE user_id=?", (user_id,)).fetchone(); balance=float(row[0] if row else 0.0)
+        cursor.execute(f"RELEASE {savepoint}"); conn.commit()
+        return {"success":True,"guild_id":guild_id,"cost_gold":GUILD_CREATE_COST_GOLD,"gold_balance":balance,"member_limit":DEFAULT_GUILD_MEMBER_LIMIT,"message":f"✅ Гільдію {validation['icon']} [{validation['tag']}] {validation['name']} створено за {GUILD_CREATE_COST_GOLD:.2f} 🪙.\nЗалишок: {balance:.2f} 🪙."}
+    except ValueError as error:
+        try: cursor.execute(f"ROLLBACK TO {savepoint}"); cursor.execute(f"RELEASE {savepoint}")
+        except Exception: conn.rollback()
+        return {"success":False,"message":str(error),"cost_gold":GUILD_CREATE_COST_GOLD}
+    except Exception as error:
+        try: cursor.execute(f"ROLLBACK TO {savepoint}"); cursor.execute(f"RELEASE {savepoint}")
+        except Exception: conn.rollback()
+        return {"success":False,"message":f"❌ Не вдалося створити гільдію: {error}","cost_gold":GUILD_CREATE_COST_GOLD}
 
-    now = now_iso()
-    season_key = get_current_guild_season_key()
 
-    cursor.execute("""
-    INSERT INTO guilds (
-        name,
-        name_norm,
-        tag,
-        tag_norm,
-        icon,
-        leader_user_id,
-        level,
-        exp,
-        resource,
-        member_limit,
-        created_at,
-        updated_at,
-        season_key
-    ) VALUES (?, ?, ?, ?, ?, ?, 1, 0, 0, ?, ?, ?, ?)
-    """, (
-        validation["name"],
-        normalize_guild_name(validation["name"]),
-        validation["tag"],
-        normalize_guild_tag(validation["tag"]),
-        validation["icon"],
-        user_id,
-        DEFAULT_GUILD_MEMBER_LIMIT,
-        now,
-        now,
-        season_key,
-    ))
-
-    guild_id = cursor.lastrowid
-
-    cursor.execute("""
-    INSERT INTO guild_members (
-        guild_id,
-        user_id,
-        role,
-        joined_at
-    ) VALUES (?, ?, ?, ?)
-    """, (
-        guild_id,
-        user_id,
-        GUILD_ROLE_LEADER,
-        now,
-    ))
-
-    conn.commit()
-
-    add_guild_log(
-        guild_id=guild_id,
-        event_type="guild_created",
-        text=f"Гільдію {validation['icon']} [{validation['tag']}] {validation['name']} створено."
-    )
-
-    return {
-        "success": True,
-        "guild_id": guild_id,
-        "message": f"✅ Гільдію {validation['icon']} [{validation['tag']}] {validation['name']} створено."
-    }
+def get_guild_creation_terms(user_id):
+    init_guild_system()
+    row = cursor.execute("SELECT COALESCE(gold,0) FROM users WHERE user_id=?", (int(user_id),)).fetchone()
+    balance = float(row[0] if row else 0.0)
+    return {"cost_gold":float(GUILD_CREATE_COST_GOLD),"gold_balance":balance,"member_limit":int(DEFAULT_GUILD_MEMBER_LIMIT),"can_afford":balance>=float(GUILD_CREATE_COST_GOLD)}
 
 
 # ==============================
