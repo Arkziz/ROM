@@ -472,11 +472,11 @@ _GUILD_EVENT_LEAVE_17_21_1 = "voluntary_leave"
 _GUILD_EVENT_KICK_17_21_1 = "kicked"
 
 def _guild_utc_now_17_21_1():
-    return datetime.now(_guild_timezone_17_21_1)
+    return datetime.now(_guild_timezone_17_21_1.utc)
 
 def _guild_utc_iso_17_21_1(value=None):
     value = value or _guild_utc_now_17_21_1()
-    return value.astimezone(_guild_timezone_17_21_1).isoformat()
+    return value.astimezone(_guild_timezone_17_21_1.utc).isoformat()
 
 def _guild_parse_utc_17_21_1(value):
     text = str(value or "").strip()

@@ -1,3 +1,6 @@
+# ROM 17.21.3.4 GUILD MEMBER LIST EXPLICIT ACTOR RECOVERY
+# ROM 17.21.3.2.3.4 KICK CONFIRMATION DB NEUTRAL SMOKE RECOVERY
+# ROM 17.21.3.2.1 KICK CONFIRMATION HANDLER HASH NEWLINE RECOVERY
 # ROM 17.11.2 COMPACT TEXT LOCATION DESCRIPTION
 # ROM 17.9.1 GLOBAL PAGINATION BUTTON LABELS
 from telebot import types
@@ -19,6 +22,7 @@ from db import (
     create_guild_application,
     get_user_guild_applications,
     has_pending_guild_application,
+    get_character_name_by_user_id,
 )
 
 from keyboards import city_kb
@@ -1617,17 +1621,36 @@ def build_guild_member_detail_text(actor_user_id, target_user_id):
 
 
 # Override entering members menu: clear stale browse/application states.
-def show_guild_members_manage(bot, message):
-    user_id = message.from_user.id
+def send_guild_members_manage_for_actor_17_21_3_4(bot, chat_id, user_id):
+    user_id = int(user_id)
     _guild_safe_reset_other_states_for_members_v2(user_id)
     bot.send_message(
-        message.chat.id,
+        chat_id,
         build_guild_member_manage_text(user_id),
         reply_markup=guild_members_manage_kb(user_id)
     )
 
 
+def show_guild_members_manage(bot, message):
+    send_guild_members_manage_for_actor_17_21_3_4(
+        bot,
+        message.chat.id,
+        message.from_user.id,
+    )
+
+
 # Override handler to make sure selected member buttons are not swallowed by stale states.
+def guild_kick_confirmation_kb_17_21_3_2(target_user_id):
+    """Build confirmation controls for the selected guild member."""
+    target_user_id = int(target_user_id)
+    kb = types.InlineKeyboardMarkup()
+    kb.row(
+        types.InlineKeyboardButton("✅ Виключити", callback_data=f"guild_kick_confirm:{target_user_id}"),
+        types.InlineKeyboardButton("❌ Скасувати", callback_data=f"guild_kick_cancel:{target_user_id}")
+    )
+    return kb
+
+
 def handle_guild_member_manage_message(bot, message):
     user_id = message.from_user.id
     text = (message.text or "").strip()
@@ -1674,9 +1697,14 @@ def handle_guild_member_manage_message(bot, message):
         if not selected_user_id:
             bot.send_message(message.chat.id, "❌ Спочатку обери учасника.", reply_markup=guild_members_manage_kb(user_id))
             return True
-        result = kick_guild_member(user_id, selected_user_id)
-        bot.send_message(message.chat.id, result.get("message", ""), reply_markup=guild_members_manage_kb(user_id))
-        show_guild_members_manage(bot, message)
+        target_name = get_character_name_by_user_id(selected_user_id)
+        bot.send_message(
+            message.chat.id,
+            f"Виключити {target_name} з гільдії?\n\n"
+            "Після виключення гравець не зможе вступити до іншої гільдії "
+            "або створити власну протягом 24 годин.",
+            reply_markup=guild_kick_confirmation_kb_17_21_3_2(selected_user_id)
+        )
         return True
 
     return False
@@ -1793,15 +1821,13 @@ def guild_hall_kb(user_id):
         kb.add("ℹ️ Інформація", "👥 Учасники")
         kb.add("📊 Внесок", "🏛 Прогрес гільдії")
         kb.add("📨 Заявки", "📜 Журнал")
-        kb.add("🏆 Місячний рейтинг")
-        kb.add("🏆 Рейтинг за весь час")
+        kb.row("🏆 Місячний рейтинг", "🏆 Рейтинг за весь час")
         kb.add("🚪 Покинути гільдію")
         kb.add("🔙 Місто")
     else:
         kb.add("🏗️ Створити гільдію")
         kb.add("📜 Переглянути гільдії")
-        kb.add("🏆 Місячний рейтинг")
-        kb.add("🏆 Рейтинг за весь час")
+        kb.row("🏆 Місячний рейтинг", "🏆 Рейтинг за весь час")
         kb.add("📨 Мої заявки")
         kb.add("🔙 Місто")
 
@@ -2837,6 +2863,39 @@ def register_guild_handlers(bot):
             return
         result = leave_guild(user_id)
         bot.send_message(call.message.chat.id, result.get('message', '❌ Не вдалося виконати дію.'), reply_markup=guild_hall_kb(user_id))
+
+    @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith(("guild_kick_confirm:", "guild_kick_cancel:")))
+    def guild_kick_confirmation_callback_17_21_3_2(call):
+        user_id = int(call.from_user.id)
+        data = str(getattr(call, "data", ""))
+        try:
+            action, target_raw = data.split(":", 1)
+            target_user_id = int(target_raw)
+        except (TypeError, ValueError):
+            try:
+                bot.answer_callback_query(call.id, "Некоректна дія.", show_alert=True)
+            except Exception:
+                pass
+            return
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+        if action == "guild_kick_cancel":
+            bot.send_message(
+                call.message.chat.id,
+                "ℹ️ Виключення учасника скасовано.",
+                reply_markup=guild_member_detail_kb(user_id, target_user_id)
+            )
+            return
+        result = kick_guild_member(user_id, target_user_id)
+        bot.send_message(
+            call.message.chat.id,
+            result.get("message", "❌ Не вдалося виконати дію."),
+            reply_markup=guild_members_manage_kb(user_id)
+        )
+        send_guild_members_manage_for_actor_17_21_3_4(bot, call.message.chat.id, user_id)
+
 
 
 # Stage 17.11.2 compact Guild text wrappers.
