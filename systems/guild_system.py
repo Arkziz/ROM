@@ -30,6 +30,23 @@ except Exception:
 
 GUILD_CREATE_COST_GOLD = 100.0
 DEFAULT_GUILD_MEMBER_LIMIT = 10
+MIN_GUILD_ACCESS_LEVEL = 3
+
+
+def get_guild_access_level_state(user_id):
+    """Повертає canonical перевірку мінімального рівня для створення/вступу."""
+    init_guild_system()
+    row = cursor.execute("SELECT COALESCE(level, 0) FROM users WHERE user_id=?", (int(user_id),)).fetchone()
+    level = int(row[0] if row else 0)
+    return {
+        "success": level >= MIN_GUILD_ACCESS_LEVEL,
+        "level": level,
+        "min_level": MIN_GUILD_ACCESS_LEVEL,
+        "message": "" if level >= MIN_GUILD_ACCESS_LEVEL else (
+            f"❌ Створення гільдії та вступ до гільдії доступні з {MIN_GUILD_ACCESS_LEVEL} рівня.\n"
+            f"Твій поточний рівень: {level}."
+        ),
+    }
 GUILD_ROLE_LEADER = "leader"
 GUILD_ROLE_OFFICER = "officer"
 GUILD_ROLE_MEMBER = "member"
@@ -588,6 +605,9 @@ def _record_guild_departure_17_21_1(user_id, guild_id, event_type, reason="", ac
 def create_guild(user_id, name, tag, icon="🏰"):
     """Атомарно створює гільдію за золото з базовим лімітом учасників."""
     init_guild_system()
+    level_gate = get_guild_access_level_state(user_id)
+    if not level_gate.get("success"):
+        return level_gate
     user_id = int(user_id)
     validation = validate_guild_create_input(name, tag, icon)
     if not validation.get("success"):
@@ -631,7 +651,16 @@ def get_guild_creation_terms(user_id):
     init_guild_system()
     row = cursor.execute("SELECT COALESCE(gold,0) FROM users WHERE user_id=?", (int(user_id),)).fetchone()
     balance = float(row[0] if row else 0.0)
-    return {"cost_gold":float(GUILD_CREATE_COST_GOLD),"gold_balance":balance,"member_limit":int(DEFAULT_GUILD_MEMBER_LIMIT),"can_afford":balance>=float(GUILD_CREATE_COST_GOLD)}
+    level_gate = get_guild_access_level_state(user_id)
+    return {
+        "cost_gold": float(GUILD_CREATE_COST_GOLD),
+        "gold_balance": balance,
+        "member_limit": int(DEFAULT_GUILD_MEMBER_LIMIT),
+        "can_afford": balance >= float(GUILD_CREATE_COST_GOLD),
+        "level": level_gate["level"],
+        "min_level": level_gate["min_level"],
+        "level_allowed": level_gate["success"],
+    }
 
 
 # ==============================
@@ -1925,6 +1954,21 @@ def accept_guild_application(actor_user_id, application_id):
     guild_id = app["guild_id"]
     applicant_user_id = app["user_id"]
 
+    applicant_level_gate = get_guild_access_level_state(applicant_user_id)
+    if not applicant_level_gate.get("success"):
+        _guild_safe_set_application_status(
+            application_id,
+            GUILD_APPLICATION_REJECTED,
+            processed_by=actor_user_id,
+        )
+        return {
+            "success": False,
+            "message": (
+                f"❌ Заявку відхилено: вступ доступний з {MIN_GUILD_ACCESS_LEVEL} рівня. "
+                f"Поточний рівень гравця: {applicant_level_gate.get('level', 0)}."
+            ),
+        }
+
     if app["status"] != GUILD_APPLICATION_PENDING:
         return {"success": False, "message": "❌ Ця заявка вже не очікує розгляду."}
 
@@ -2357,6 +2401,15 @@ def create_guild_application(user_id, guild_id):
     """
 
     init_guild_system()
+    level_gate = get_guild_access_level_state(user_id)
+    if not level_gate.get("success"):
+        return {
+            "success": False,
+            "message": (
+                f"❌ Вступ до гільдії доступний з {MIN_GUILD_ACCESS_LEVEL} рівня.\n"
+                f"Твій поточний рівень: {level_gate.get('level', 0)}."
+            ),
+        }
 
     gate = can_user_join_or_create_guild(user_id)
     if not gate.get("success"):

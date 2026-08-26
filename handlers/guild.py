@@ -562,6 +562,14 @@ def show_guild_detail(bot, message, guild_id):
 def start_guild_creation(bot, message):
     user_id = message.from_user.id
     init_guild_system()
+    terms = get_guild_creation_terms(user_id)
+    if not terms.get("level_allowed"):
+        bot.send_message(
+            message.chat.id,
+            f"❌ Створення гільдії доступне з {terms.get('min_level', 3)} рівня.\nТвій поточний рівень: {terms.get('level', 0)}.",
+            reply_markup=guild_hall_kb(user_id),
+        )
+        return
 
     if get_user_guild(user_id):
         bot.send_message(message.chat.id, "❌ Ти вже перебуваєш у гільдії.", reply_markup=guild_hall_kb(user_id))
@@ -1813,13 +1821,17 @@ def _guild_progress_bar(percent, width=10):
 # ROM 17.21.1 GUILD LEAVE COOLDOWN
 def guild_hall_kb(user_id):
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-
-    if get_user_guild(user_id):
+    guild = get_user_guild(user_id)
+    role = str(get_user_guild_role(user_id) or "") if guild else ""
+    if guild:
         kb.add("ℹ️ Інформація", "👥 Учасники")
         kb.add("📊 Внесок", "🏛 Прогрес гільдії")
         kb.add("📨 Заявки", "📜 Журнал")
         kb.row("🏆 Місячний рейтинг", "🏆 Рейтинг за весь час")
-        kb.add("🚪 Покинути гільдію")
+        if role == "leader":
+            kb.row("🚪 Покинути гільдію", "👑 Передати керівництво")
+        else:
+            kb.add("🚪 Покинути гільдію")
         kb.add("🔙 Місто")
     else:
         kb.add("🏗️ Створити гільдію")
@@ -1827,9 +1839,6 @@ def guild_hall_kb(user_id):
         kb.row("🏆 Місячний рейтинг", "🏆 Рейтинг за весь час")
         kb.add("📨 Мої заявки")
         kb.add("🔙 Місто")
-
-    if str(get_user_guild_role(user_id) or "")=="leader":
-        kb.add("👑 Передати керівництво")
     return kb
 
 
