@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-26 21:59:54 +03:00
+Created: 2026-08-26 23:43:31 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9168
-Scanned files: 6557
-Included files: 464
-Excluded files: 6093
-Included source size: 3,27 MB
+Scanned files: 6637
+Included files: 469
+Excluded files: 6168
+Included source size: 3,29 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 6087
+- excluded directory: 6162
 - excluded file name or pattern: 6
 - unsupported file type: 0
 
@@ -330,8 +330,11 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_global_telegram_rate_limit_guard.py
 - tools\smoke_test_guild_actor_name_log.py
 - tools\smoke_test_guild_contract_target_log.py
+- tools\smoke_test_guild_leadership_transfer_and_leader_exit_17_22_1.py
+- tools\smoke_test_guild_leadership_transfer_handler_imports_17_22_1.py
 - tools\smoke_test_guild_leave_cooldown_17_21_1.py
 - tools\smoke_test_guild_leave_timezone_db_neutral_17_21_1_3.py
+- tools\smoke_test_guild_member_list_explicit_actor_recovery_17_21_3_4.py
 - tools\smoke_test_guild_profile_line_runtime_16_1_1.py
 - tools\smoke_test_interaction_session_timeout_and_recovery.py
 - tools\smoke_test_inventory_canonical_ui_sorting_17_7_1.py
@@ -342,6 +345,8 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_inventory_stack_normalization_17_2_0.py
 - tools\smoke_test_is_armor_slot_runtime_16_1_15.py
 - tools\smoke_test_item_quantity_display_format_17_10_1.py
+- tools\smoke_test_kick_confirmation_db_neutral_smoke_recovery_17_21_3_2_3_4.py
+- tools\smoke_test_kick_confirmation_handler_hash_newline_recovery_17_21_3_2_1.py
 - tools\smoke_test_legacy_drop_cleanup.py
 - tools\smoke_test_lethal_enemy_action_combat_log_15_7_5_1.py
 - tools\smoke_test_level_up_reward_balance_expansion_17_14_1_2.py
@@ -2757,8 +2762,8 @@ from db_modules import *
 
 ============================================================
 FILE: db_modules\__init__.py
-SIZE: 20728 bytes
-LAST WRITE: 2026-08-26 01:10:42
+SIZE: 20796 bytes
+LAST WRITE: 2026-08-26 23:34:59
 ============================================================
 
 """
@@ -3081,7 +3086,7 @@ __all__ = [
     'is_guild_leader', 'is_guild_officer',
     'promote_guild_member_to_officer', 'demote_guild_officer',
     'kick_guild_member', 'get_guild_join_cooldown', 'format_guild_join_cooldown_remaining',
-    'can_user_join_or_create_guild', 'leave_guild', 'get_guild_officer_count',
+    'can_user_join_or_create_guild', 'leave_guild', 'transfer_guild_leadership', 'transfer_guild_leadership_and_leave', 'get_guild_officer_count',
     'get_guild_officer_member', 'cleanup_stale_guild_applications',
     'get_guild_exp_required_for_level', 'calculate_guild_level_from_exp',
     'get_guild_next_level_info', 'recalculate_guild_level',
@@ -10296,8 +10301,8 @@ def populate_class_shop_for_user(user_id):
 
 ============================================================
 FILE: db_modules\systems_wrappers.py
-SIZE: 31287 bytes
-LAST WRITE: 2026-08-26 01:10:42
+SIZE: 31674 bytes
+LAST WRITE: 2026-08-26 23:34:59
 ============================================================
 
 """
@@ -10569,6 +10574,13 @@ def can_user_join_or_create_guild(user_id):
 
 def leave_guild(user_id):
     return _guild_system().leave_guild(user_id)
+
+# ROM 17.22.1 GUILD LEADERSHIP TRANSFER AND LEADER EXIT
+def transfer_guild_leadership(actor_user_id, successor_user_id):
+    return _guild_system().transfer_guild_leadership(actor_user_id,successor_user_id)
+
+def transfer_guild_leadership_and_leave(actor_user_id, successor_user_id):
+    return _guild_system().transfer_guild_leadership_and_leave(actor_user_id,successor_user_id)
 
 
 def get_guild_officer_count(guild_id):
@@ -24897,10 +24909,13 @@ def register_dev_handlers(bot):
 
 ============================================================
 FILE: handlers\guild.py
-SIZE: 106318 bytes
-LAST WRITE: 2026-08-26 01:10:42
+SIZE: 113610 bytes
+LAST WRITE: 2026-08-26 23:40:52
 ============================================================
 
+# ROM 17.21.3.4 GUILD MEMBER LIST EXPLICIT ACTOR RECOVERY
+# ROM 17.21.3.2.3.4 KICK CONFIRMATION DB NEUTRAL SMOKE RECOVERY
+# ROM 17.21.3.2.1 KICK CONFIRMATION HANDLER HASH NEWLINE RECOVERY
 # ROM 17.11.2 COMPACT TEXT LOCATION DESCRIPTION
 # ROM 17.9.1 GLOBAL PAGINATION BUTTON LABELS
 from telebot import types
@@ -24922,6 +24937,11 @@ from db import (
     create_guild_application,
     get_user_guild_applications,
     has_pending_guild_application,
+    get_character_name_by_user_id,
+    get_user_guild_role,
+    get_guild_member,
+    transfer_guild_leadership,
+    transfer_guild_leadership_and_leave,
 )
 
 from keyboards import city_kb
@@ -26520,17 +26540,36 @@ def build_guild_member_detail_text(actor_user_id, target_user_id):
 
 
 # Override entering members menu: clear stale browse/application states.
-def show_guild_members_manage(bot, message):
-    user_id = message.from_user.id
+def send_guild_members_manage_for_actor_17_21_3_4(bot, chat_id, user_id):
+    user_id = int(user_id)
     _guild_safe_reset_other_states_for_members_v2(user_id)
     bot.send_message(
-        message.chat.id,
+        chat_id,
         build_guild_member_manage_text(user_id),
         reply_markup=guild_members_manage_kb(user_id)
     )
 
 
+def show_guild_members_manage(bot, message):
+    send_guild_members_manage_for_actor_17_21_3_4(
+        bot,
+        message.chat.id,
+        message.from_user.id,
+    )
+
+
 # Override handler to make sure selected member buttons are not swallowed by stale states.
+def guild_kick_confirmation_kb_17_21_3_2(target_user_id):
+    """Build confirmation controls for the selected guild member."""
+    target_user_id = int(target_user_id)
+    kb = types.InlineKeyboardMarkup()
+    kb.row(
+        types.InlineKeyboardButton("✅ Виключити", callback_data=f"guild_kick_confirm:{target_user_id}"),
+        types.InlineKeyboardButton("❌ Скасувати", callback_data=f"guild_kick_cancel:{target_user_id}")
+    )
+    return kb
+
+
 def handle_guild_member_manage_message(bot, message):
     user_id = message.from_user.id
     text = (message.text or "").strip()
@@ -26577,9 +26616,14 @@ def handle_guild_member_manage_message(bot, message):
         if not selected_user_id:
             bot.send_message(message.chat.id, "❌ Спочатку обери учасника.", reply_markup=guild_members_manage_kb(user_id))
             return True
-        result = kick_guild_member(user_id, selected_user_id)
-        bot.send_message(message.chat.id, result.get("message", ""), reply_markup=guild_members_manage_kb(user_id))
-        show_guild_members_manage(bot, message)
+        target_name = get_character_name_by_user_id(selected_user_id)
+        bot.send_message(
+            message.chat.id,
+            f"Виключити {target_name} з гільдії?\n\n"
+            "Після виключення гравець не зможе вступити до іншої гільдії "
+            "або створити власну протягом 24 годин.",
+            reply_markup=guild_kick_confirmation_kb_17_21_3_2(selected_user_id)
+        )
         return True
 
     return False
@@ -26696,18 +26740,18 @@ def guild_hall_kb(user_id):
         kb.add("ℹ️ Інформація", "👥 Учасники")
         kb.add("📊 Внесок", "🏛 Прогрес гільдії")
         kb.add("📨 Заявки", "📜 Журнал")
-        kb.add("🏆 Місячний рейтинг")
-        kb.add("🏆 Рейтинг за весь час")
+        kb.row("🏆 Місячний рейтинг", "🏆 Рейтинг за весь час")
         kb.add("🚪 Покинути гільдію")
         kb.add("🔙 Місто")
     else:
         kb.add("🏗️ Створити гільдію")
         kb.add("📜 Переглянути гільдії")
-        kb.add("🏆 Місячний рейтинг")
-        kb.add("🏆 Рейтинг за весь час")
+        kb.row("🏆 Місячний рейтинг", "🏆 Рейтинг за весь час")
         kb.add("📨 Мої заявки")
         kb.add("🔙 Місто")
 
+    if str(get_user_guild_role(user_id) or "")=="leader":
+        kb.add("👑 Передати керівництво")
     return kb
 
 
@@ -27686,6 +27730,20 @@ except Exception:
     _base_register_guild_handlers_before_cleanup_diag_v1 = None
 
 
+# ROM 17.22.1 GUILD LEADERSHIP TRANSFER AND LEADER EXIT
+_GUILD_LEADERSHIP_STATE_17_22_1={}
+def _guild_leadership_candidates_17_22_1(user_id):
+    guild=get_user_guild(user_id)
+    return [] if not guild else [r for r in get_guild_members(guild["id"]) if int(_member_row_get(r,"user_id",0) or 0)!=int(user_id)]
+def _guild_leadership_select_kb_17_22_1(user_id,mode):
+    kb=types.InlineKeyboardMarkup(row_width=1)
+    for r in _guild_leadership_candidates_17_22_1(user_id):
+        uid=int(_member_row_get(r,"user_id",0) or 0); name=str(_member_row_get(r,"character_name","Гравець") or "Гравець")
+        kb.add(types.InlineKeyboardButton(name,callback_data=f"guild_leadership_select:{mode}:{uid}"))
+    kb.add(types.InlineKeyboardButton("❌ Скасувати",callback_data="guild_leadership_cancel")); return kb
+def _guild_leadership_confirm_kb_17_22_1(mode,target_id):
+    kb=types.InlineKeyboardMarkup(row_width=1); kb.add(types.InlineKeyboardButton("✅ Підтвердити",callback_data=f"guild_leadership_confirm:{mode}:{int(target_id)}")); kb.add(types.InlineKeyboardButton("❌ Скасувати",callback_data="guild_leadership_cancel")); return kb
+
 def register_guild_handlers(bot):
     if _base_register_guild_handlers_before_cleanup_diag_v1 is not None:
         _base_register_guild_handlers_before_cleanup_diag_v1(bot)
@@ -27720,7 +27778,10 @@ def register_guild_handlers(bot):
             bot.send_message(message.chat.id, '❌ Ти не перебуваєш у гільдії.', reply_markup=guild_hall_kb(user_id))
             return
         if str(get_user_guild_role(user_id) or '') == 'leader':
-            bot.send_message(message.chat.id, '❌ Голова не може покинути гільдію без передачі керівництва.', reply_markup=guild_hall_kb(user_id))
+            candidates=_guild_leadership_candidates_17_22_1(user_id)
+            if not candidates: bot.send_message(message.chat.id,"❌ Голова не може покинути одноосібну гільдію.",reply_markup=guild_hall_kb(user_id)); return
+            _GUILD_LEADERSHIP_STATE_17_22_1[user_id]={"mode":"leave"}
+            bot.send_message(message.chat.id,"Оберіть нового голову. Після підтвердження ти покинеш гільдію.",reply_markup=_guild_leadership_select_kb_17_22_1(user_id,"leave"))
             return
         kb = types.InlineKeyboardMarkup()
         kb.row(types.InlineKeyboardButton('✅ Покинути', callback_data='guild_leave:confirm'), types.InlineKeyboardButton('❌ Скасувати', callback_data='guild_leave:cancel'))
@@ -27740,6 +27801,62 @@ def register_guild_handlers(bot):
             return
         result = leave_guild(user_id)
         bot.send_message(call.message.chat.id, result.get('message', '❌ Не вдалося виконати дію.'), reply_markup=guild_hall_kb(user_id))
+
+    @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith(("guild_kick_confirm:", "guild_kick_cancel:")))
+    def guild_kick_confirmation_callback_17_21_3_2(call):
+        user_id = int(call.from_user.id)
+        data = str(getattr(call, "data", ""))
+        try:
+            action, target_raw = data.split(":", 1)
+            target_user_id = int(target_raw)
+        except (TypeError, ValueError):
+            try:
+                bot.answer_callback_query(call.id, "Некоректна дія.", show_alert=True)
+            except Exception:
+                pass
+            return
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+        if action == "guild_kick_cancel":
+            bot.send_message(
+                call.message.chat.id,
+                "ℹ️ Виключення учасника скасовано.",
+                reply_markup=guild_member_detail_kb(user_id, target_user_id)
+            )
+            return
+        result = kick_guild_member(user_id, target_user_id)
+        bot.send_message(
+            call.message.chat.id,
+            result.get("message", "❌ Не вдалося виконати дію."),
+            reply_markup=guild_members_manage_kb(user_id)
+        )
+        send_guild_members_manage_for_actor_17_21_3_4(bot, call.message.chat.id, user_id)
+    # ROM 17.22.1 GUILD LEADERSHIP TRANSFER AND LEADER EXIT
+    @bot.message_handler(func=lambda m:getattr(m,"text",None)=="👑 Передати керівництво")
+    def guild_leadership_start_17_22_1(message):
+        uid=int(message.from_user.id); candidates=_guild_leadership_candidates_17_22_1(uid)
+        if str(get_user_guild_role(uid) or "")!="leader": bot.send_message(message.chat.id,"❌ Передавати керівництво може тільки голова."); return
+        if not candidates: bot.send_message(message.chat.id,"❌ У гільдії немає іншого учасника.",reply_markup=guild_hall_kb(uid)); return
+        _GUILD_LEADERSHIP_STATE_17_22_1[uid]={"mode":"transfer"}; bot.send_message(message.chat.id,"Оберіть нового голову:",reply_markup=_guild_leadership_select_kb_17_22_1(uid,"transfer"))
+    @bot.callback_query_handler(func=lambda c:str(getattr(c,"data","")).startswith("guild_leadership_"))
+    def guild_leadership_callback_17_22_1(call):
+        uid=int(call.from_user.id); data=str(call.data)
+        try: bot.answer_callback_query(call.id)
+        except Exception: pass
+        if data=="guild_leadership_cancel": _GUILD_LEADERSHIP_STATE_17_22_1.pop(uid,None); bot.send_message(call.message.chat.id,"❌ Операцію скасовано.",reply_markup=guild_hall_kb(uid)); return
+        parts=data.split(":")
+        if len(parts)!=3 or parts[0] not in {"guild_leadership_select","guild_leadership_confirm"} or parts[1] not in {"transfer","leave"}: return
+        mode,target_id=parts[1],int(parts[2]); guild=get_user_guild(uid); target=get_guild_member(guild["id"],target_id) if guild else None
+        if str(get_user_guild_role(uid) or "")!="leader" or not target: _GUILD_LEADERSHIP_STATE_17_22_1.pop(uid,None); bot.send_message(call.message.chat.id,"❌ Склад гільдії змінився. Почніть знову.",reply_markup=guild_hall_kb(uid)); return
+        name=get_character_name_by_user_id(target_id)
+        if parts[0]=="guild_leadership_select": _GUILD_LEADERSHIP_STATE_17_22_1[uid]={"mode":mode,"target_id":target_id}; bot.send_message(call.message.chat.id,f"Новий голова — {name}. Підтвердити?",reply_markup=_guild_leadership_confirm_kb_17_22_1(mode,target_id)); return
+        state=_GUILD_LEADERSHIP_STATE_17_22_1.pop(uid,None)
+        if not state or state.get("mode")!=mode or int(state.get("target_id",0))!=target_id: bot.send_message(call.message.chat.id,"❌ Підтвердження застаріло.",reply_markup=guild_hall_kb(uid)); return
+        result=transfer_guild_leadership(uid,target_id) if mode=="transfer" else transfer_guild_leadership_and_leave(uid,target_id)
+        bot.send_message(call.message.chat.id,result.get("message","❌ Операцію не завершено."),reply_markup=guild_hall_kb(uid))
+
 
 
 # Stage 17.11.2 compact Guild text wrappers.
@@ -46173,8 +46290,8 @@ def buy_common_equipment_from_trader(user_id, slot_key, item_profile=None):
 
 ============================================================
 FILE: systems\guild_system.py
-SIZE: 85532 bytes
-LAST WRITE: 2026-08-26 21:42:48
+SIZE: 91082 bytes
+LAST WRITE: 2026-08-26 23:34:59
 ============================================================
 
 from datetime import datetime
@@ -47776,46 +47893,24 @@ def is_guild_officer(user_id, guild_id):
 
 
 def promote_guild_member_to_officer(actor_user_id, target_user_id):
-    """
-    Призначити заступника.
-    Дозволено тільки голові гільдії.
-    """
-
+    """Призначити єдиного заступника. Дозволено тільки голові."""
     init_guild_system()
-    actor_member = get_user_guild_member(actor_user_id)
-    target_member = get_user_guild_member(target_user_id)
-
-    if not actor_member:
-        return {"success": False, "message": "❌ Ти не перебуваєш у гільдії."}
-
-    if not target_member or int(target_member["guild_id"]) != int(actor_member["guild_id"]):
-        return {"success": False, "message": "❌ Цей гравець не перебуває у твоїй гільдії."}
-
-    guild_id = actor_member["guild_id"]
-
-    if actor_member["role"] != GUILD_ROLE_LEADER:
-        return {"success": False, "message": "❌ Призначати заступників може тільки 👑 Голова гільдії."}
-
-    if target_member["role"] == GUILD_ROLE_LEADER:
-        return {"success": False, "message": "❌ Голова гільдії вже має найвищу роль."}
-
-    if target_member["role"] == GUILD_ROLE_OFFICER:
-        return {"success": False, "message": "ℹ️ Цей гравець уже є 🛡 Заступником."}
-
-    cursor.execute(
-        "UPDATE guild_members SET role=? WHERE guild_id=? AND user_id=?",
-        (GUILD_ROLE_OFFICER, guild_id, target_user_id)
-    )
-    conn.commit()
-
-    target_name = get_character_name_by_user_id(target_user_id)
-    add_guild_log(
-        guild_id=guild_id,
-        event_type="member_promoted",
-        text=f"{target_name} призначений 🛡 Заступником."
-    )
-
-    return {"success": True, "message": f"✅ {target_name} тепер 🛡 Заступник гільдії."}
+    actor=get_user_guild_member(actor_user_id); target=get_user_guild_member(target_user_id)
+    if not actor: return {"success":False,"message":"❌ Ти не перебуваєш у гільдії."}
+    if not target or int(target["guild_id"])!=int(actor["guild_id"]): return {"success":False,"message":"❌ Цей гравець не перебуває у твоїй гільдії."}
+    gid=int(actor["guild_id"])
+    if str(actor["role"])!=GUILD_ROLE_LEADER: return {"success":False,"message":"❌ Призначати заступника може тільки 👑 Голова."}
+    if str(target["role"])==GUILD_ROLE_LEADER: return {"success":False,"message":"❌ Голова вже має найвищу роль."}
+    if str(target["role"])==GUILD_ROLE_OFFICER: return {"success":False,"message":"ℹ️ Цей гравець уже є 🛡 Заступником."}
+    officer=get_guild_officer_member(gid)
+    if officer:
+        name=get_character_name_by_user_id(officer["user_id"])
+        return {"success":False,"message":f"❌ У гільдії вже є 🛡 Заступник: {name}. Спочатку зніми його з посади."}
+    cursor.execute("UPDATE guild_members SET role=? WHERE guild_id=? AND user_id=? AND role=?",(GUILD_ROLE_OFFICER,gid,int(target_user_id),GUILD_ROLE_MEMBER))
+    if cursor.rowcount!=1: conn.rollback(); return {"success":False,"message":"❌ Роль учасника змінилася. Операцію скасовано."}
+    conn.commit(); name=get_character_name_by_user_id(target_user_id)
+    add_guild_log(guild_id=gid,event_type="member_promoted",text=f"{name} призначений 🛡 Заступником.")
+    return {"success":True,"message":f"✅ {name} тепер 🛡 Заступник гільдії."}
 
 
 def demote_guild_officer(actor_user_id, target_user_id):
@@ -47961,6 +48056,70 @@ def leave_guild(user_id):
             conn.rollback()
         return {"success": False, "message": f"❌ Не вдалося покинути гільдію: {error}"}
 
+# ROM 17.22.1 GUILD LEADERSHIP TRANSFER AND LEADER EXIT
+def _validate_guild_leadership_transfer_17_22_1(actor_user_id, successor_user_id):
+    actor_user_id=int(actor_user_id); successor_user_id=int(successor_user_id)
+    if actor_user_id==successor_user_id: return None,None,{"success":False,"message":"❌ Не можна передати керівництво самому собі."}
+    actor=get_user_guild_member(actor_user_id); successor=get_user_guild_member(successor_user_id)
+    if not actor or str(actor["role"])!=GUILD_ROLE_LEADER: return None,None,{"success":False,"message":"❌ Передавати керівництво може тільки чинний голова."}
+    gid=int(actor["guild_id"])
+    if not successor or int(successor["guild_id"])!=gid: return None,None,{"success":False,"message":"❌ Обраний гравець не перебуває у твоїй гільдії."}
+    guild=cursor.execute("SELECT leader_user_id FROM guilds WHERE id=?",(gid,)).fetchone()
+    leaders=cursor.execute("SELECT user_id FROM guild_members WHERE guild_id=? AND role=?",(gid,GUILD_ROLE_LEADER)).fetchall()
+    if not guild or int(guild[0])!=actor_user_id or len(leaders)!=1 or int(leaders[0][0])!=actor_user_id:
+        return None,None,{"success":False,"data_inconsistent":True,"message":"❌ Дані керівництва гільдії неузгоджені. Передачу скасовано."}
+    return actor,successor,None
+
+def transfer_guild_leadership(actor_user_id, successor_user_id):
+    """Атомарно передає керівництво; попередній голова стає заступником."""
+    init_guild_system(); actor,successor,error=_validate_guild_leadership_transfer_17_22_1(actor_user_id,successor_user_id)
+    if error: return error
+    gid=int(actor["guild_id"]); actor_user_id=int(actor_user_id); successor_user_id=int(successor_user_id)
+    old_name=get_character_name_by_user_id(actor_user_id); new_name=get_character_name_by_user_id(successor_user_id); sp='guild_transfer_17_22_1'
+    try:
+        cursor.execute(f"SAVEPOINT {sp}")
+        cursor.execute("UPDATE guild_members SET role=? WHERE guild_id=? AND role=? AND user_id NOT IN (?,?)",(GUILD_ROLE_MEMBER,gid,GUILD_ROLE_OFFICER,actor_user_id,successor_user_id))
+        cursor.execute("UPDATE guild_members SET role=? WHERE guild_id=? AND user_id=? AND role=?",(GUILD_ROLE_LEADER,gid,successor_user_id,str(successor["role"])))
+        if cursor.rowcount!=1: raise RuntimeError('successor role changed')
+        cursor.execute("UPDATE guild_members SET role=? WHERE guild_id=? AND user_id=? AND role=?",(GUILD_ROLE_OFFICER,gid,actor_user_id,GUILD_ROLE_LEADER))
+        if cursor.rowcount!=1: raise RuntimeError('leader role changed')
+        cursor.execute("UPDATE guilds SET leader_user_id=?,updated_at=? WHERE id=? AND leader_user_id=?",(successor_user_id,_guild_utc_iso_17_21_1(),gid,actor_user_id))
+        if cursor.rowcount!=1: raise RuntimeError('guild leader changed')
+        cursor.execute("INSERT INTO guild_logs(guild_id,event_type,text,created_at) VALUES(?,?,?,?)",(gid,'leadership_transferred',f"{old_name} передав керівництво гравцю {new_name}.",_guild_utc_iso_17_21_1()))
+        cursor.execute(f"RELEASE {sp}"); conn.commit()
+        return {"success":True,"guild_id":gid,"successor_user_id":successor_user_id,"message":f"✅ Керівництво передано гравцю {new_name}. Ти тепер 🛡 Заступник."}
+    except Exception as e:
+        try: cursor.execute(f"ROLLBACK TO {sp}"); cursor.execute(f"RELEASE {sp}")
+        except Exception: conn.rollback()
+        return {"success":False,"message":f"❌ Не вдалося передати керівництво: {e}"}
+
+def transfer_guild_leadership_and_leave(actor_user_id, successor_user_id):
+    """Атомарно передає керівництво, видаляє колишнього голову та вмикає cooldown."""
+    init_guild_system(); actor,successor,error=_validate_guild_leadership_transfer_17_22_1(actor_user_id,successor_user_id)
+    if error: return error
+    gid=int(actor["guild_id"]); actor_user_id=int(actor_user_id); successor_user_id=int(successor_user_id)
+    count=int(cursor.execute("SELECT COUNT(*) FROM guild_members WHERE guild_id=?",(gid,)).fetchone()[0] or 0)
+    if count<=1: return {"success":False,"sole_member":True,"message":"❌ Голова не може покинути одноосібну гільдію."}
+    old_name=get_character_name_by_user_id(actor_user_id); new_name=get_character_name_by_user_id(successor_user_id); sp='guild_leader_exit_17_22_1'
+    try:
+        cursor.execute(f"SAVEPOINT {sp}")
+        cursor.execute("UPDATE guild_members SET role=? WHERE guild_id=? AND role=? AND user_id<>?",(GUILD_ROLE_MEMBER,gid,GUILD_ROLE_OFFICER,successor_user_id))
+        cursor.execute("UPDATE guild_members SET role=? WHERE guild_id=? AND user_id=? AND role=?",(GUILD_ROLE_LEADER,gid,successor_user_id,str(successor["role"])))
+        if cursor.rowcount!=1: raise RuntimeError('successor role changed')
+        cursor.execute("UPDATE guilds SET leader_user_id=?,updated_at=? WHERE id=? AND leader_user_id=?",(successor_user_id,_guild_utc_iso_17_21_1(),gid,actor_user_id))
+        if cursor.rowcount!=1: raise RuntimeError('guild leader changed')
+        cursor.execute("DELETE FROM guild_members WHERE guild_id=? AND user_id=? AND role=?",(gid,actor_user_id,GUILD_ROLE_LEADER))
+        if cursor.rowcount!=1: raise RuntimeError('former leader membership changed')
+        cursor.execute("UPDATE guild_applications SET status=?,processed_at=?,processed_by=? WHERE user_id=? AND status=?",(GUILD_APPLICATION_CANCELLED,_guild_utc_iso_17_21_1(),actor_user_id,actor_user_id,GUILD_APPLICATION_PENDING))
+        blocked=_record_guild_departure_17_21_1(actor_user_id,gid,_GUILD_EVENT_LEAVE_17_21_1,reason='leadership_transfer_leave',actor_user_id=actor_user_id)
+        cursor.execute("INSERT INTO guild_logs(guild_id,event_type,text,created_at) VALUES(?,?,?,?)",(gid,'leadership_transferred_leader_left',f"{old_name} передав керівництво гравцю {new_name} і покинув гільдію.",_guild_utc_iso_17_21_1()))
+        cursor.execute(f"RELEASE {sp}"); conn.commit()
+        return {"success":True,"guild_id":gid,"successor_user_id":successor_user_id,"join_blocked_until":blocked,"message":f"✅ Керівництво передано гравцю {new_name}. Ти покинув гільдію.\n\n⏳ Вступ і створення гільдії недоступні 24 години."}
+    except Exception as e:
+        try: cursor.execute(f"ROLLBACK TO {sp}"); cursor.execute(f"RELEASE {sp}")
+        except Exception: conn.rollback()
+        return {"success":False,"message":f"❌ Не вдалося передати керівництво та вийти: {e}"}
+
 
 
 # ==============================
@@ -47999,39 +48158,6 @@ except Exception:
     _base_promote_guild_member_to_officer_before_single_officer_v1 = None
 
 
-def promote_guild_member_to_officer(actor_user_id, target_user_id):
-    """
-    FINAL OVERRIDE:
-    Призначає заступника, але тільки якщо у гільдії ще немає іншого заступника.
-    """
-
-    actor_member = get_user_guild_member(actor_user_id)
-    target_member = get_user_guild_member(target_user_id)
-
-    if not actor_member:
-        return {"success": False, "message": "❌ Ти не перебуваєш у гільдії."}
-
-    if not target_member or int(target_member["guild_id"]) != int(actor_member["guild_id"]):
-        return {"success": False, "message": "❌ Цей гравець не перебуває у твоїй гільдії."}
-
-    guild_id = actor_member["guild_id"]
-
-    if target_member["role"] == GUILD_ROLE_OFFICER:
-        return {"success": False, "message": "ℹ️ Цей гравець уже є 🛡 Заступником."}
-
-    officer = get_guild_officer_member(guild_id)
-
-    if officer:
-        officer_name = get_character_name_by_user_id(officer["user_id"])
-        return {
-            "success": False,
-            "message": f"❌ У гільдії вже є 🛡 Заступник: {officer_name}. Спочатку зніми його з посади."
-        }
-
-    if _base_promote_guild_member_to_officer_before_single_officer_v1 is None:
-        return {"success": False, "message": "❌ Функція призначення заступника недоступна."}
-
-    return _base_promote_guild_member_to_officer_before_single_officer_v1(actor_user_id, target_user_id)
 
 
 # ==============================
@@ -79878,6 +80004,46 @@ if __name__ == "__main__":
     main()
 
 ============================================================
+FILE: tools\smoke_test_guild_leadership_transfer_and_leader_exit_17_22_1.py
+SIZE: 1243 bytes
+LAST WRITE: 2026-08-26 23:34:59
+============================================================
+
+import ast,sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1];sys.path.insert(0,str(R))
+for rel in ("systems/guild_system.py","db_modules/systems_wrappers.py","db_modules/__init__.py","handlers/guild.py"): ast.parse((R/rel).read_text(encoding="utf-8"),filename=rel)
+s=(R/"systems/guild_system.py").read_text(encoding="utf-8");t=ast.parse(s)
+promote_nodes=[n for n in t.body if isinstance(n,ast.FunctionDef) and n.name=="promote_guild_member_to_officer"]
+assert len(promote_nodes)==1
+assert "FINAL OVERRIDE" not in (ast.get_docstring(promote_nodes[0]) or "")
+assert not any(isinstance(n,(ast.Assign,ast.AnnAssign)) and any(isinstance(x,ast.Name) and x.id=="_base_promote_guild_member_to_officer_before_single_officer_v1" for x in (n.targets if isinstance(n,ast.Assign) else [n.target])) for n in t.body)
+import db
+assert callable(db.transfer_guild_leadership) and callable(db.transfer_guild_leadership_and_leave)
+h=(R/"handlers/guild.py").read_text(encoding="utf-8")
+for token in ("👑 Передати керівництво","guild_leadership_select:","guild_leadership_confirm:","transfer_guild_leadership_and_leave"): assert token in h,token
+print("[PASS] Stage 17.22.1 canonical leadership transfer contract")
+
+============================================================
+FILE: tools\smoke_test_guild_leadership_transfer_handler_imports_17_22_1.py
+SIZE: 681 bytes
+LAST WRITE: 2026-08-26 23:40:52
+============================================================
+
+import ast, importlib, sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(R))
+source=(R/"handlers/guild.py").read_text(encoding="utf-8")
+ast.parse(source,filename="handlers/guild.py")
+module=importlib.import_module("handlers.guild")
+required=("get_user_guild_role","get_user_guild","get_guild_member","get_character_name_by_user_id","transfer_guild_leadership","transfer_guild_leadership_and_leave")
+missing=[name for name in required if not callable(getattr(module,name,None))]
+assert not missing, missing
+assert "👑 Передати керівництво" in source
+print("[PASS] Stage 17.22.1 guild handler runtime imports")
+
+============================================================
 FILE: tools\smoke_test_guild_leave_cooldown_17_21_1.py
 SIZE: 892 bytes
 LAST WRITE: 2026-08-26 01:10:42
@@ -79929,6 +80095,55 @@ assert text.endswith("+00:00"), text
 parsed = namespace["_guild_parse_utc_17_21_1"](text)
 assert parsed is not None and parsed.utcoffset().total_seconds() == 0
 print("[PASS] Stage 17.21.1.3 DB-neutral UTC timezone smoke")
+
+============================================================
+FILE: tools\smoke_test_guild_member_list_explicit_actor_recovery_17_21_3_4.py
+SIZE: 1937 bytes
+LAST WRITE: 2026-08-26 22:56:35
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import ast
+from pathlib import Path
+R = Path(__file__).resolve().parents[1]
+P = R / "handlers/guild.py"
+source = P.read_text(encoding="utf-8")
+tree = ast.parse(source, filename=str(P))
+
+def defs(name):
+    return [n for n in tree.body if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.name==name]
+
+def call_name(node):
+    if isinstance(node,ast.Name): return node.id
+    if isinstance(node,ast.Attribute):
+        owner=call_name(node.value)
+        return f"{owner}.{node.attr}" if owner else node.attr
+    return ""
+
+def calls(node,suffix):
+    return [n for n in ast.walk(node) if isinstance(n,ast.Call) and call_name(n.func).endswith(suffix)]
+
+assert source.count("ROM 17.21.3.4 GUILD MEMBER LIST EXPLICIT ACTOR RECOVERY")==1
+assert len(defs("show_guild_members_manage"))==2
+assert len(defs("send_guild_members_manage_for_actor_17_21_3_4"))==1
+assert len(defs("register_guild_handlers"))==6
+helper=defs("send_guild_members_manage_for_actor_17_21_3_4")[0]
+assert [a.arg for a in helper.args.args]==["bot","chat_id","user_id"]
+assert len(calls(helper,"build_guild_member_manage_text"))==1
+assert len(calls(helper,"guild_members_manage_kb"))==1
+active=defs("show_guild_members_manage")[-1]
+assert len(calls(active,"send_guild_members_manage_for_actor_17_21_3_4"))==1
+callbacks=[]
+for register in defs("register_guild_handlers"):
+    callbacks += [n for n in register.body if isinstance(n,ast.FunctionDef) and n.name=="guild_kick_confirmation_callback_17_21_3_2"]
+assert len(callbacks)==1
+cb=callbacks[0]
+assert len(calls(cb,"kick_guild_member"))==1
+cb_text=ast.get_source_segment(source,cb) or ""
+assert "show_guild_members_manage(bot, call.message)" not in cb_text
+assert "send_guild_members_manage_for_actor_17_21_3_4(bot, call.message.chat.id, user_id)" in cb_text
+print("[PASS] Stage 17.21.3.4 explicit actor rendering contract")
 
 ============================================================
 FILE: tools\smoke_test_guild_profile_line_runtime_16_1_1.py
@@ -80436,6 +80651,106 @@ assert "hide redundant ×1" in inventory
 runes = (ROOT / "handlers/runes.py").read_text(encoding="utf-8")
 assert "×3" in runes and "×1" in runes
 print(f"[PASS] Stage 17.10.1 item quantity display format; canonical={canonical}")
+
+============================================================
+FILE: tools\smoke_test_kick_confirmation_db_neutral_smoke_recovery_17_21_3_2_3_4.py
+SIZE: 1777 bytes
+LAST WRITE: 2026-08-26 22:41:57
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+import ast
+from pathlib import Path
+R = Path(__file__).resolve().parents[1]
+GUILD = R / "handlers/guild.py"
+DB_INIT = R / "db_modules/__init__.py"
+WRAPPERS = R / "db_modules/systems_wrappers.py"
+source = GUILD.read_text(encoding="utf-8")
+tree = ast.parse(source, filename=str(GUILD))
+imports = [n for n in tree.body if isinstance(n, ast.ImportFrom) and n.module == "db"]
+assert sum(1 for n in imports for a in n.names if a.name == "get_character_name_by_user_id" and a.asname is None) == 1
+assert source.count("ROM 17.21.3.2.3.4 KICK CONFIRMATION DB NEUTRAL SMOKE RECOVERY") == 1
+members = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "handle_guild_member_manage_message"]
+assert len(members) == 3
+assert any(isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == "get_character_name_by_user_id" for n in ast.walk(members[1]))
+assert not any(isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == "kick_guild_member" for n in ast.walk(members[1]))
+wrapper_source = WRAPPERS.read_text(encoding="utf-8")
+wrapper_tree = ast.parse(wrapper_source, filename=str(WRAPPERS))
+assert len([n for n in wrapper_tree.body if isinstance(n, ast.FunctionDef) and n.name == "get_character_name_by_user_id"]) == 1
+init_source = DB_INIT.read_text(encoding="utf-8")
+init_tree = ast.parse(init_source, filename=str(DB_INIT))
+exports=[]
+for n in ast.walk(init_tree):
+    if isinstance(n,(ast.List,ast.Tuple,ast.Set)):
+        exports.extend(e.value for e in n.elts if isinstance(e,ast.Constant) and isinstance(e.value,str))
+assert "get_character_name_by_user_id" in exports
+print("[PASS] Stage 17.21.3.2.3.4 character-name import and DB-neutral smoke contract")
+
+============================================================
+FILE: tools\smoke_test_kick_confirmation_handler_hash_newline_recovery_17_21_3_2_1.py
+SIZE: 2864 bytes
+LAST WRITE: 2026-08-26 22:20:43
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from __future__ import annotations
+import ast
+import hashlib
+import sys
+from pathlib import Path
+R = Path(__file__).resolve().parents[1]
+P = R / "handlers/guild.py"
+source = P.read_text(encoding="utf-8")
+tree = ast.parse(source, filename=str(P))
+
+def defs(name):
+    return [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and n.name == name]
+
+def call_name(node):
+    if isinstance(node, ast.Name): return node.id
+    if isinstance(node, ast.Attribute):
+        p=call_name(node.value); return f"{p}.{node.attr}" if p else node.attr
+    return ""
+
+def calls(node, suffix):
+    return [n for n in ast.walk(node) if isinstance(n, ast.Call) and call_name(n.func).endswith(suffix)]
+
+def names(node):
+    targets=node.targets if isinstance(node,ast.Assign) else [node.target]
+    return [t.id for t in targets if isinstance(t,ast.Name)]
+
+assert source.count("ROM 17.21.3.2.1 KICK CONFIRMATION HANDLER HASH NEWLINE RECOVERY") == 1
+members=defs("handle_guild_member_manage_message")
+registers=defs("register_guild_handlers")
+keyboards=defs("guild_hall_kb")
+assert (len(members),len(registers),len(keyboards)) == (3,6,2)
+inactive=ast.get_source_segment(source,members[0]) or ""
+inactive=inactive.replace("\r\n","\n").replace("\r","\n")
+assert hashlib.sha256(inactive.encode("utf-8")).hexdigest() == "796add7b4c53db6644da2137c57b318d5e9426d1091864cc38cec8f632b5103c"
+bindings=[]
+for n in ast.walk(tree):
+    if isinstance(n,(ast.Assign,ast.AnnAssign)) and "_base_handle_guild_member_manage_message_before_progress_order_v1" in names(n):
+        if isinstance(n.value,ast.Name) and n.value.id=="handle_guild_member_manage_message": bindings.append(n)
+assert len(bindings)==1
+active=max((n for n in members if n.end_lineno < bindings[0].lineno),key=lambda n:n.lineno)
+assert active is members[1]
+assert not calls(active,"kick_guild_member")
+helpers=defs("guild_kick_confirmation_kb_17_21_3_2")
+assert len(helpers)==1
+final_register=registers[-1]
+callbacks=[n for n in final_register.body if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.name=="guild_kick_confirmation_callback_17_21_3_2"]
+assert len(callbacks)==1
+callback=callbacks[0]
+assert len(calls(callback,"kick_guild_member"))==1
+cb=ast.get_source_segment(source,callback) or ""
+assert cb.find('action == "guild_kick_cancel"') < cb.find("kick_guild_member(user_id, target_user_id)")
+kb=ast.get_source_segment(source,keyboards[-1]) or ""
+assert kb.count('kb.row("🏆 Місячний рейтинг", "🏆 Рейтинг за весь час")')==2
+assert 'kb.add("🏆 Місячний рейтинг")' not in kb
+assert 'kb.add("🏆 Рейтинг за весь час")' not in kb
+print("[PASS] Stage 17.21.3.2.1 kick confirmation handler hash/newline contract")
 
 ============================================================
 FILE: tools\smoke_test_legacy_drop_cleanup.py

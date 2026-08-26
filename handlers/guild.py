@@ -23,6 +23,10 @@ from db import (
     get_user_guild_applications,
     has_pending_guild_application,
     get_character_name_by_user_id,
+    get_user_guild_role,
+    get_guild_member,
+    transfer_guild_leadership,
+    transfer_guild_leadership_and_leave,
 )
 
 from keyboards import city_kb
@@ -1831,6 +1835,8 @@ def guild_hall_kb(user_id):
         kb.add("📨 Мої заявки")
         kb.add("🔙 Місто")
 
+    if str(get_user_guild_role(user_id) or "")=="leader":
+        kb.add("👑 Передати керівництво")
     return kb
 
 
@@ -2809,7 +2815,74 @@ except Exception:
     _base_register_guild_handlers_before_cleanup_diag_v1 = None
 
 
+# ROM 17.22.1 GUILD LEADERSHIP TRANSFER AND LEADER EXIT
+_GUILD_LEADERSHIP_STATE_17_22_1={}
+def _guild_leadership_candidates_17_22_1(user_id):
+    guild=get_user_guild(user_id)
+    return [] if not guild else [r for r in get_guild_members(guild["id"]) if int(_member_row_get(r,"user_id",0) or 0)!=int(user_id)]
+def _guild_leadership_select_kb_17_22_1(user_id,mode):
+    kb=types.InlineKeyboardMarkup(row_width=1)
+    for r in _guild_leadership_candidates_17_22_1(user_id):
+        uid=int(_member_row_get(r,"user_id",0) or 0); name=str(_member_row_get(r,"character_name","Гравець") or "Гравець")
+        kb.add(types.InlineKeyboardButton(name,callback_data=f"guild_leadership_select:{mode}:{uid}"))
+    kb.add(types.InlineKeyboardButton("❌ Скасувати",callback_data="guild_leadership_cancel")); return kb
+def _guild_leadership_confirm_kb_17_22_1(mode,target_id):
+    kb=types.InlineKeyboardMarkup(row_width=1); kb.add(types.InlineKeyboardButton("✅ Підтвердити",callback_data=f"guild_leadership_confirm:{mode}:{int(target_id)}")); kb.add(types.InlineKeyboardButton("❌ Скасувати",callback_data="guild_leadership_cancel")); return kb
+
 def register_guild_handlers(bot):
+    @bot.message_handler(func=lambda message: getattr(message, 'text', None) == '🚪 Покинути гільдію')
+    def guild_leave_prompt_17_21_1(message):
+        from db import get_user_guild_role
+        user_id = int(message.from_user.id)
+        guild = get_user_guild(user_id)
+        if not guild:
+            bot.send_message(message.chat.id, '❌ Ти не перебуваєш у гільдії.', reply_markup=guild_hall_kb(user_id))
+            return
+        if str(get_user_guild_role(user_id) or '') == 'leader':
+            candidates=_guild_leadership_candidates_17_22_1(user_id)
+            if not candidates: bot.send_message(message.chat.id,"❌ Голова не може покинути одноосібну гільдію.",reply_markup=guild_hall_kb(user_id)); return
+            _GUILD_LEADERSHIP_STATE_17_22_1[user_id]={"mode":"leave"}
+            bot.send_message(message.chat.id,"Оберіть нового голову. Після підтвердження ти покинеш гільдію.",reply_markup=_guild_leadership_select_kb_17_22_1(user_id,"leave"))
+            return
+        kb = types.InlineKeyboardMarkup()
+        kb.row(types.InlineKeyboardButton('✅ Покинути', callback_data='guild_leave:confirm'), types.InlineKeyboardButton('❌ Скасувати', callback_data='guild_leave:cancel'))
+        bot.send_message(message.chat.id, f"Покинути гільдію {get_guild_display_name(guild)}?\n\nПісля виходу ти не зможеш вступити до іншої гільдії або створити власну протягом 24 годин.", reply_markup=kb)
+    @bot.callback_query_handler(func=lambda call: str(getattr(call, 'data', '')).startswith('guild_leave:'))
+    def guild_leave_callback_17_21_1(call):
+        from db import leave_guild
+        user_id = int(call.from_user.id)
+        action = str(call.data).split(':', 1)[1]
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+        if action == 'cancel':
+            bot.send_message(call.message.chat.id, 'ℹ️ Вихід із гільдії скасовано.', reply_markup=guild_hall_kb(user_id))
+            return
+        result = leave_guild(user_id)
+        bot.send_message(call.message.chat.id, result.get('message', '❌ Не вдалося виконати дію.'), reply_markup=guild_hall_kb(user_id))
+    @bot.message_handler(func=lambda m:getattr(m,"text",None)=="👑 Передати керівництво")
+    def guild_leadership_start_17_22_1(message):
+        uid=int(message.from_user.id); candidates=_guild_leadership_candidates_17_22_1(uid)
+        if str(get_user_guild_role(uid) or "")!="leader": bot.send_message(message.chat.id,"❌ Передавати керівництво може тільки голова."); return
+        if not candidates: bot.send_message(message.chat.id,"❌ У гільдії немає іншого учасника.",reply_markup=guild_hall_kb(uid)); return
+        _GUILD_LEADERSHIP_STATE_17_22_1[uid]={"mode":"transfer"}; bot.send_message(message.chat.id,"Оберіть нового голову:",reply_markup=_guild_leadership_select_kb_17_22_1(uid,"transfer"))
+    @bot.callback_query_handler(func=lambda c:str(getattr(c,"data","")).startswith("guild_leadership_"))
+    def guild_leadership_callback_17_22_1(call):
+        uid=int(call.from_user.id); data=str(call.data)
+        try: bot.answer_callback_query(call.id)
+        except Exception: pass
+        if data=="guild_leadership_cancel": _GUILD_LEADERSHIP_STATE_17_22_1.pop(uid,None); bot.send_message(call.message.chat.id,"❌ Операцію скасовано.",reply_markup=guild_hall_kb(uid)); return
+        parts=data.split(":")
+        if len(parts)!=3 or parts[0] not in {"guild_leadership_select","guild_leadership_confirm"} or parts[1] not in {"transfer","leave"}: return
+        mode,target_id=parts[1],int(parts[2]); guild=get_user_guild(uid); target=get_guild_member(guild["id"],target_id) if guild else None
+        if str(get_user_guild_role(uid) or "")!="leader" or not target: _GUILD_LEADERSHIP_STATE_17_22_1.pop(uid,None); bot.send_message(call.message.chat.id,"❌ Склад гільдії змінився. Почніть знову.",reply_markup=guild_hall_kb(uid)); return
+        name=get_character_name_by_user_id(target_id)
+        if parts[0]=="guild_leadership_select": _GUILD_LEADERSHIP_STATE_17_22_1[uid]={"mode":mode,"target_id":target_id}; bot.send_message(call.message.chat.id,f"Новий голова — {name}. Підтвердити?",reply_markup=_guild_leadership_confirm_kb_17_22_1(mode,target_id)); return
+        state=_GUILD_LEADERSHIP_STATE_17_22_1.pop(uid,None)
+        if not state or state.get("mode")!=mode or int(state.get("target_id",0))!=target_id: bot.send_message(call.message.chat.id,"❌ Підтвердження застаріло.",reply_markup=guild_hall_kb(uid)); return
+        result=transfer_guild_leadership(uid,target_id) if mode=="transfer" else transfer_guild_leadership_and_leave(uid,target_id)
+        bot.send_message(call.message.chat.id,result.get("message","❌ Операцію не завершено."),reply_markup=guild_hall_kb(uid))
     if _base_register_guild_handlers_before_cleanup_diag_v1 is not None:
         _base_register_guild_handlers_before_cleanup_diag_v1(bot)
 
@@ -2834,35 +2907,7 @@ def register_guild_handlers(bot):
             format_guild_cleanup_result_text(result),
             reply_markup=guild_hall_kb(message.from_user.id)
         )
-    @bot.message_handler(func=lambda message: getattr(message, 'text', None) == '🚪 Покинути гільдію')
-    def guild_leave_prompt_17_21_1(message):
-        from db import get_user_guild_role
-        user_id = int(message.from_user.id)
-        guild = get_user_guild(user_id)
-        if not guild:
-            bot.send_message(message.chat.id, '❌ Ти не перебуваєш у гільдії.', reply_markup=guild_hall_kb(user_id))
-            return
-        if str(get_user_guild_role(user_id) or '') == 'leader':
-            bot.send_message(message.chat.id, '❌ Голова не може покинути гільдію без передачі керівництва.', reply_markup=guild_hall_kb(user_id))
-            return
-        kb = types.InlineKeyboardMarkup()
-        kb.row(types.InlineKeyboardButton('✅ Покинути', callback_data='guild_leave:confirm'), types.InlineKeyboardButton('❌ Скасувати', callback_data='guild_leave:cancel'))
-        bot.send_message(message.chat.id, f"Покинути гільдію {get_guild_display_name(guild)}?\n\nПісля виходу ти не зможеш вступити до іншої гільдії або створити власну протягом 24 годин.", reply_markup=kb)
 
-    @bot.callback_query_handler(func=lambda call: str(getattr(call, 'data', '')).startswith('guild_leave:'))
-    def guild_leave_callback_17_21_1(call):
-        from db import leave_guild
-        user_id = int(call.from_user.id)
-        action = str(call.data).split(':', 1)[1]
-        try:
-            bot.answer_callback_query(call.id)
-        except Exception:
-            pass
-        if action == 'cancel':
-            bot.send_message(call.message.chat.id, 'ℹ️ Вихід із гільдії скасовано.', reply_markup=guild_hall_kb(user_id))
-            return
-        result = leave_guild(user_id)
-        bot.send_message(call.message.chat.id, result.get('message', '❌ Не вдалося виконати дію.'), reply_markup=guild_hall_kb(user_id))
 
     @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith(("guild_kick_confirm:", "guild_kick_cancel:")))
     def guild_kick_confirmation_callback_17_21_3_2(call):
@@ -2895,6 +2940,7 @@ def register_guild_handlers(bot):
             reply_markup=guild_members_manage_kb(user_id)
         )
         send_guild_members_manage_for_actor_17_21_3_4(bot, call.message.chat.id, user_id)
+    # ROM 17.22.1 GUILD LEADERSHIP TRANSFER AND LEADER EXIT
 
 
 

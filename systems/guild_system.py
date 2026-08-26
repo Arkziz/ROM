@@ -1597,46 +1597,24 @@ def is_guild_officer(user_id, guild_id):
 
 
 def promote_guild_member_to_officer(actor_user_id, target_user_id):
-    """
-    Призначити заступника.
-    Дозволено тільки голові гільдії.
-    """
-
+    """Призначити єдиного заступника. Дозволено тільки голові."""
     init_guild_system()
-    actor_member = get_user_guild_member(actor_user_id)
-    target_member = get_user_guild_member(target_user_id)
-
-    if not actor_member:
-        return {"success": False, "message": "❌ Ти не перебуваєш у гільдії."}
-
-    if not target_member or int(target_member["guild_id"]) != int(actor_member["guild_id"]):
-        return {"success": False, "message": "❌ Цей гравець не перебуває у твоїй гільдії."}
-
-    guild_id = actor_member["guild_id"]
-
-    if actor_member["role"] != GUILD_ROLE_LEADER:
-        return {"success": False, "message": "❌ Призначати заступників може тільки 👑 Голова гільдії."}
-
-    if target_member["role"] == GUILD_ROLE_LEADER:
-        return {"success": False, "message": "❌ Голова гільдії вже має найвищу роль."}
-
-    if target_member["role"] == GUILD_ROLE_OFFICER:
-        return {"success": False, "message": "ℹ️ Цей гравець уже є 🛡 Заступником."}
-
-    cursor.execute(
-        "UPDATE guild_members SET role=? WHERE guild_id=? AND user_id=?",
-        (GUILD_ROLE_OFFICER, guild_id, target_user_id)
-    )
-    conn.commit()
-
-    target_name = get_character_name_by_user_id(target_user_id)
-    add_guild_log(
-        guild_id=guild_id,
-        event_type="member_promoted",
-        text=f"{target_name} призначений 🛡 Заступником."
-    )
-
-    return {"success": True, "message": f"✅ {target_name} тепер 🛡 Заступник гільдії."}
+    actor=get_user_guild_member(actor_user_id); target=get_user_guild_member(target_user_id)
+    if not actor: return {"success":False,"message":"❌ Ти не перебуваєш у гільдії."}
+    if not target or int(target["guild_id"])!=int(actor["guild_id"]): return {"success":False,"message":"❌ Цей гравець не перебуває у твоїй гільдії."}
+    gid=int(actor["guild_id"])
+    if str(actor["role"])!=GUILD_ROLE_LEADER: return {"success":False,"message":"❌ Призначати заступника може тільки 👑 Голова."}
+    if str(target["role"])==GUILD_ROLE_LEADER: return {"success":False,"message":"❌ Голова вже має найвищу роль."}
+    if str(target["role"])==GUILD_ROLE_OFFICER: return {"success":False,"message":"ℹ️ Цей гравець уже є 🛡 Заступником."}
+    officer=get_guild_officer_member(gid)
+    if officer:
+        name=get_character_name_by_user_id(officer["user_id"])
+        return {"success":False,"message":f"❌ У гільдії вже є 🛡 Заступник: {name}. Спочатку зніми його з посади."}
+    cursor.execute("UPDATE guild_members SET role=? WHERE guild_id=? AND user_id=? AND role=?",(GUILD_ROLE_OFFICER,gid,int(target_user_id),GUILD_ROLE_MEMBER))
+    if cursor.rowcount!=1: conn.rollback(); return {"success":False,"message":"❌ Роль учасника змінилася. Операцію скасовано."}
+    conn.commit(); name=get_character_name_by_user_id(target_user_id)
+    add_guild_log(guild_id=gid,event_type="member_promoted",text=f"{name} призначений 🛡 Заступником.")
+    return {"success":True,"message":f"✅ {name} тепер 🛡 Заступник гільдії."}
 
 
 def demote_guild_officer(actor_user_id, target_user_id):
@@ -1782,6 +1760,70 @@ def leave_guild(user_id):
             conn.rollback()
         return {"success": False, "message": f"❌ Не вдалося покинути гільдію: {error}"}
 
+# ROM 17.22.1 GUILD LEADERSHIP TRANSFER AND LEADER EXIT
+def _validate_guild_leadership_transfer_17_22_1(actor_user_id, successor_user_id):
+    actor_user_id=int(actor_user_id); successor_user_id=int(successor_user_id)
+    if actor_user_id==successor_user_id: return None,None,{"success":False,"message":"❌ Не можна передати керівництво самому собі."}
+    actor=get_user_guild_member(actor_user_id); successor=get_user_guild_member(successor_user_id)
+    if not actor or str(actor["role"])!=GUILD_ROLE_LEADER: return None,None,{"success":False,"message":"❌ Передавати керівництво може тільки чинний голова."}
+    gid=int(actor["guild_id"])
+    if not successor or int(successor["guild_id"])!=gid: return None,None,{"success":False,"message":"❌ Обраний гравець не перебуває у твоїй гільдії."}
+    guild=cursor.execute("SELECT leader_user_id FROM guilds WHERE id=?",(gid,)).fetchone()
+    leaders=cursor.execute("SELECT user_id FROM guild_members WHERE guild_id=? AND role=?",(gid,GUILD_ROLE_LEADER)).fetchall()
+    if not guild or int(guild[0])!=actor_user_id or len(leaders)!=1 or int(leaders[0][0])!=actor_user_id:
+        return None,None,{"success":False,"data_inconsistent":True,"message":"❌ Дані керівництва гільдії неузгоджені. Передачу скасовано."}
+    return actor,successor,None
+
+def transfer_guild_leadership(actor_user_id, successor_user_id):
+    """Атомарно передає керівництво; попередній голова стає заступником."""
+    init_guild_system(); actor,successor,error=_validate_guild_leadership_transfer_17_22_1(actor_user_id,successor_user_id)
+    if error: return error
+    gid=int(actor["guild_id"]); actor_user_id=int(actor_user_id); successor_user_id=int(successor_user_id)
+    old_name=get_character_name_by_user_id(actor_user_id); new_name=get_character_name_by_user_id(successor_user_id); sp='guild_transfer_17_22_1'
+    try:
+        cursor.execute(f"SAVEPOINT {sp}")
+        cursor.execute("UPDATE guild_members SET role=? WHERE guild_id=? AND role=? AND user_id NOT IN (?,?)",(GUILD_ROLE_MEMBER,gid,GUILD_ROLE_OFFICER,actor_user_id,successor_user_id))
+        cursor.execute("UPDATE guild_members SET role=? WHERE guild_id=? AND user_id=? AND role=?",(GUILD_ROLE_LEADER,gid,successor_user_id,str(successor["role"])))
+        if cursor.rowcount!=1: raise RuntimeError('successor role changed')
+        cursor.execute("UPDATE guild_members SET role=? WHERE guild_id=? AND user_id=? AND role=?",(GUILD_ROLE_OFFICER,gid,actor_user_id,GUILD_ROLE_LEADER))
+        if cursor.rowcount!=1: raise RuntimeError('leader role changed')
+        cursor.execute("UPDATE guilds SET leader_user_id=?,updated_at=? WHERE id=? AND leader_user_id=?",(successor_user_id,_guild_utc_iso_17_21_1(),gid,actor_user_id))
+        if cursor.rowcount!=1: raise RuntimeError('guild leader changed')
+        cursor.execute("INSERT INTO guild_logs(guild_id,event_type,text,created_at) VALUES(?,?,?,?)",(gid,'leadership_transferred',f"{old_name} передав керівництво гравцю {new_name}.",_guild_utc_iso_17_21_1()))
+        cursor.execute(f"RELEASE {sp}"); conn.commit()
+        return {"success":True,"guild_id":gid,"successor_user_id":successor_user_id,"message":f"✅ Керівництво передано гравцю {new_name}. Ти тепер 🛡 Заступник."}
+    except Exception as e:
+        try: cursor.execute(f"ROLLBACK TO {sp}"); cursor.execute(f"RELEASE {sp}")
+        except Exception: conn.rollback()
+        return {"success":False,"message":f"❌ Не вдалося передати керівництво: {e}"}
+
+def transfer_guild_leadership_and_leave(actor_user_id, successor_user_id):
+    """Атомарно передає керівництво, видаляє колишнього голову та вмикає cooldown."""
+    init_guild_system(); actor,successor,error=_validate_guild_leadership_transfer_17_22_1(actor_user_id,successor_user_id)
+    if error: return error
+    gid=int(actor["guild_id"]); actor_user_id=int(actor_user_id); successor_user_id=int(successor_user_id)
+    count=int(cursor.execute("SELECT COUNT(*) FROM guild_members WHERE guild_id=?",(gid,)).fetchone()[0] or 0)
+    if count<=1: return {"success":False,"sole_member":True,"message":"❌ Голова не може покинути одноосібну гільдію."}
+    old_name=get_character_name_by_user_id(actor_user_id); new_name=get_character_name_by_user_id(successor_user_id); sp='guild_leader_exit_17_22_1'
+    try:
+        cursor.execute(f"SAVEPOINT {sp}")
+        cursor.execute("UPDATE guild_members SET role=? WHERE guild_id=? AND role=? AND user_id<>?",(GUILD_ROLE_MEMBER,gid,GUILD_ROLE_OFFICER,successor_user_id))
+        cursor.execute("UPDATE guild_members SET role=? WHERE guild_id=? AND user_id=? AND role=?",(GUILD_ROLE_LEADER,gid,successor_user_id,str(successor["role"])))
+        if cursor.rowcount!=1: raise RuntimeError('successor role changed')
+        cursor.execute("UPDATE guilds SET leader_user_id=?,updated_at=? WHERE id=? AND leader_user_id=?",(successor_user_id,_guild_utc_iso_17_21_1(),gid,actor_user_id))
+        if cursor.rowcount!=1: raise RuntimeError('guild leader changed')
+        cursor.execute("DELETE FROM guild_members WHERE guild_id=? AND user_id=? AND role=?",(gid,actor_user_id,GUILD_ROLE_LEADER))
+        if cursor.rowcount!=1: raise RuntimeError('former leader membership changed')
+        cursor.execute("UPDATE guild_applications SET status=?,processed_at=?,processed_by=? WHERE user_id=? AND status=?",(GUILD_APPLICATION_CANCELLED,_guild_utc_iso_17_21_1(),actor_user_id,actor_user_id,GUILD_APPLICATION_PENDING))
+        blocked=_record_guild_departure_17_21_1(actor_user_id,gid,_GUILD_EVENT_LEAVE_17_21_1,reason='leadership_transfer_leave',actor_user_id=actor_user_id)
+        cursor.execute("INSERT INTO guild_logs(guild_id,event_type,text,created_at) VALUES(?,?,?,?)",(gid,'leadership_transferred_leader_left',f"{old_name} передав керівництво гравцю {new_name} і покинув гільдію.",_guild_utc_iso_17_21_1()))
+        cursor.execute(f"RELEASE {sp}"); conn.commit()
+        return {"success":True,"guild_id":gid,"successor_user_id":successor_user_id,"join_blocked_until":blocked,"message":f"✅ Керівництво передано гравцю {new_name}. Ти покинув гільдію.\n\n⏳ Вступ і створення гільдії недоступні 24 години."}
+    except Exception as e:
+        try: cursor.execute(f"ROLLBACK TO {sp}"); cursor.execute(f"RELEASE {sp}")
+        except Exception: conn.rollback()
+        return {"success":False,"message":f"❌ Не вдалося передати керівництво та вийти: {e}"}
+
 
 
 # ==============================
@@ -1820,39 +1862,6 @@ except Exception:
     _base_promote_guild_member_to_officer_before_single_officer_v1 = None
 
 
-def promote_guild_member_to_officer(actor_user_id, target_user_id):
-    """
-    FINAL OVERRIDE:
-    Призначає заступника, але тільки якщо у гільдії ще немає іншого заступника.
-    """
-
-    actor_member = get_user_guild_member(actor_user_id)
-    target_member = get_user_guild_member(target_user_id)
-
-    if not actor_member:
-        return {"success": False, "message": "❌ Ти не перебуваєш у гільдії."}
-
-    if not target_member or int(target_member["guild_id"]) != int(actor_member["guild_id"]):
-        return {"success": False, "message": "❌ Цей гравець не перебуває у твоїй гільдії."}
-
-    guild_id = actor_member["guild_id"]
-
-    if target_member["role"] == GUILD_ROLE_OFFICER:
-        return {"success": False, "message": "ℹ️ Цей гравець уже є 🛡 Заступником."}
-
-    officer = get_guild_officer_member(guild_id)
-
-    if officer:
-        officer_name = get_character_name_by_user_id(officer["user_id"])
-        return {
-            "success": False,
-            "message": f"❌ У гільдії вже є 🛡 Заступник: {officer_name}. Спочатку зніми його з посади."
-        }
-
-    if _base_promote_guild_member_to_officer_before_single_officer_v1 is None:
-        return {"success": False, "message": "❌ Функція призначення заступника недоступна."}
-
-    return _base_promote_guild_member_to_officer_before_single_officer_v1(actor_user_id, target_user_id)
 
 
 # ==============================

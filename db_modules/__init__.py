@@ -318,7 +318,7 @@ __all__ = [
     'is_guild_leader', 'is_guild_officer',
     'promote_guild_member_to_officer', 'demote_guild_officer',
     'kick_guild_member', 'get_guild_join_cooldown', 'format_guild_join_cooldown_remaining',
-    'can_user_join_or_create_guild', 'leave_guild', 'get_guild_officer_count',
+    'can_user_join_or_create_guild', 'leave_guild', 'transfer_guild_leadership', 'transfer_guild_leadership_and_leave', 'get_guild_officer_count',
     'get_guild_officer_member', 'cleanup_stale_guild_applications',
     'get_guild_exp_required_for_level', 'calculate_guild_level_from_exp',
     'get_guild_next_level_info', 'recalculate_guild_level',

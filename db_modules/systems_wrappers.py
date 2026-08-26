@@ -268,6 +268,13 @@ def can_user_join_or_create_guild(user_id):
 def leave_guild(user_id):
     return _guild_system().leave_guild(user_id)
 
+# ROM 17.22.1 GUILD LEADERSHIP TRANSFER AND LEADER EXIT
+def transfer_guild_leadership(actor_user_id, successor_user_id):
+    return _guild_system().transfer_guild_leadership(actor_user_id,successor_user_id)
+
+def transfer_guild_leadership_and_leave(actor_user_id, successor_user_id):
+    return _guild_system().transfer_guild_leadership_and_leave(actor_user_id,successor_user_id)
+
 
 def get_guild_officer_count(guild_id):
     return _guild_system().get_guild_officer_count(guild_id)
