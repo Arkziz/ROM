@@ -1078,3 +1078,45 @@ def register_dev_handlers(bot):
             reply_markup=main_kb(),
         )
 
+    @bot.message_handler(commands=["crystals"])
+    def crystal_balance_17_25_1(message):
+        if not DEV_MODE:return
+        from systems.crystal_wallet_system import get_crystal_balance
+        balance=get_crystal_balance(message.from_user.id)
+        bot.send_message(message.chat.id,f"💎 Кристали: {balance}\n🆔 Account ID: {message.from_user.id}",reply_markup=main_kb())
+
+    @bot.message_handler(commands=["crystal_credit"])
+    def crystal_credit_17_25_1(message):
+        if not DEV_MODE:return
+        from systems.crystal_wallet_system import credit_crystals
+        parts=str(message.text or "").split()
+        try:amount=int(parts[1])
+        except Exception:
+            bot.send_message(message.chat.id,"❌ Формат: /crystal_credit N",reply_markup=main_kb());return
+        result=credit_crystals(message.from_user.id,amount,"dev_credit",f"dev:credit:{message.from_user.id}:{message.message_id}",metadata={"telegram_message_id":message.message_id})
+        text=f"✅ DEV: +{amount} 💎\nБаланс: {result.get('balance',0)}" if result.get("success") else f"❌ {result.get('message','Помилка')}"
+        bot.send_message(message.chat.id,text,reply_markup=main_kb())
+
+    @bot.message_handler(commands=["crystal_debit"])
+    def crystal_debit_17_25_1(message):
+        if not DEV_MODE:return
+        from systems.crystal_wallet_system import debit_crystals
+        parts=str(message.text or "").split()
+        try:amount=int(parts[1])
+        except Exception:
+            bot.send_message(message.chat.id,"❌ Формат: /crystal_debit N",reply_markup=main_kb());return
+        result=debit_crystals(message.from_user.id,amount,"dev_debit",f"dev:debit:{message.from_user.id}:{message.message_id}",metadata={"telegram_message_id":message.message_id})
+        text=f"✅ DEV: -{amount} 💎\nБаланс: {result.get('balance',0)}" if result.get("success") else f"❌ {result.get('message','Помилка')}"
+        bot.send_message(message.chat.id,text,reply_markup=main_kb())
+
+    @bot.message_handler(commands=["crystal_history"])
+    def crystal_history_17_25_1(message):
+        if not DEV_MODE:return
+        from systems.crystal_wallet_system import get_crystal_transactions
+        data=get_crystal_transactions(message.from_user.id,page=0,page_size=10);lines=["💎 Останні транзакції:"]
+        for row in data["items"]:
+            sign="+" if row["operation"]=="credit" else "-";lines.append(f"#{row['id']} {sign}{row['amount']} | {row['reason_code']} | баланс {row['balance_after']}")
+        if not data["items"]:lines.append("Записів немає.")
+        bot.send_message(message.chat.id,"\n".join(lines),reply_markup=main_kb())
+
+

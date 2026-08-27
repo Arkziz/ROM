@@ -374,7 +374,7 @@ def reset_hero_for_test(user_id):
                     "winner_user_id",
                     "loser_user_id",
                 )
-                protected_tables = {"users", "items", "inventory", "equipment_slots", "inventory_runes"}
+                protected_tables = {"users", "items", "inventory", "equipment_slots", "inventory_runes", "crystal_wallets", "crystal_transactions"}
                 table_names = [
                     str(row[0])
                     for row in cursor.execute(

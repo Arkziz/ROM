@@ -1,3 +1,13 @@
+from systems.crystal_wallet_system import (
+    init_crystal_wallet_system,
+    get_crystal_wallet,
+    get_crystal_balance,
+    credit_crystals,
+    debit_crystals,
+    get_crystal_transactions,
+    compensate_crystal_transaction,
+)
+
 """
 DB Modules - Розбитий db.py на логічні модулі
 
@@ -470,3 +480,5 @@ __all__.append('get_equipped_slot')
 __all__.append('get_contract_exp_for_level')
 
 __all__.append('reset_daily_quest_if_needed')
+
+__all__.extend(['init_crystal_wallet_system','get_crystal_wallet','get_crystal_balance','credit_crystals','debit_crystals','get_crystal_transactions','compensate_crystal_transaction'])
