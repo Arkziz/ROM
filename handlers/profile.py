@@ -27,6 +27,7 @@ from db import (
 
 from keyboards import profile_kb, main_kb
 from utils import hp_bar
+from systems.profile_history_system import init_profile_history, get_trade_history, get_trade_history_detail, get_pvp_history, get_pvp_history_detail
 
 # Імпортуємо навички з боєчного модуля, щоб показувати їх у профілі
 from handlers.combat import CLASS_SKILLS_V1
@@ -386,7 +387,46 @@ def build_skills_text(user_id):
 # HANDLERS
 # ==============================
 
+
+
+def _history_menu_kb():
+    kb=types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("🤝 Історія обмінів",callback_data="profile_history_trade:0"))
+    kb.add(types.InlineKeyboardButton("⚔️ Історія PvP",callback_data="profile_history_pvp:0"))
+    kb.add(types.InlineKeyboardButton("🔙 Профіль",callback_data="profile_character"))
+    return kb
+
+def _history_list_kb(kind,data):
+    kb=types.InlineKeyboardMarkup(row_width=1)
+    prefix="profile_history_trade_detail" if kind=="trade" else "profile_history_pvp_detail"
+    for item in data.get("items",[]):
+        label=("🤝 "+item["other_name"] if kind=="trade" else (("🏆 " if item["won"] else "💀 ")+item["other_name"]))
+        kb.add(types.InlineKeyboardButton(label,callback_data=f"{prefix}:{item['id']}:{data['page']}"))
+    nav=[]
+    if data.get("has_prev"):nav.append(types.InlineKeyboardButton("⬅️",callback_data=f"profile_history_{kind}:{data['page']-1}"))
+    if data.get("has_next"):nav.append(types.InlineKeyboardButton("➡️",callback_data=f"profile_history_{kind}:{data['page']+1}"))
+    if nav:kb.row(*nav)
+    kb.add(types.InlineKeyboardButton("🔙 Історія",callback_data="profile_history"));return kb
+
+def _history_list_text(kind,data):
+    title="🤝 Історія обмінів" if kind=="trade" else "⚔️ Історія PvP"
+    lines=[title,"",f"Сторінка {data['page']+1}"]
+    if not data.get("items"):lines += ["","Записів поки немає."]
+    for item in data.get("items",[]):
+        if kind=="trade":lines += ["",f"🤝 {item['other_name']}",f"📅 {item['completed_at']}"]
+        else:lines += ["",f"{'🏆 Перемога проти' if item['won'] else '💀 Поразка від'} {item['other_name']}",f"📅 {item['completed_at']}",f"⚔️ Раундів: {item['rounds']}"]
+    return "\n".join(lines)
+
 def register_profile_handlers(bot):
+    init_profile_history()
+
+    @bot.message_handler(func=lambda message: getattr(message, "text", None) == "📜 Історія")
+    def profile_history_reply_message_17_24_1_1(message):
+        bot.send_message(
+            message.chat.id,
+            "📜 Історія\n\nОберіть розділ:",
+            reply_markup=_history_menu_kb(),
+        )
 
     # ==============================
     # PROFILE ROOT
@@ -505,3 +545,21 @@ def register_profile_handlers(bot):
             "🏕️ Повернення до табору.",
             reply_markup=main_kb()
         )
+    @bot.callback_query_handler(func=lambda call: str(getattr(call,"data","")).startswith("profile_history"))
+    def profile_history_callback(call):
+        data=str(call.data);uid=int(call.from_user.id)
+        try:bot.answer_callback_query(call.id)
+        except Exception:pass
+        if data=="profile_history":
+            bot.send_message(call.message.chat.id,"📜 Історія\n\nОберіть розділ:",reply_markup=_history_menu_kb());return
+        parts=data.split(":")
+        if data.startswith("profile_history_trade_detail:"):
+            item=get_trade_history_detail(uid,int(parts[1]));page=int(parts[2])
+            text=("🤝 Завершений обмін\n\n"+f"Учасник: {item['other_name']}\nДата: {item['completed_at']}\n\n📤 Ти передав:\n"+"\n".join(item['give_lines'])+"\n\n📥 Ти отримав:\n"+"\n".join(item['take_lines'])) if item else "Запис не знайдено."
+            kb=types.InlineKeyboardMarkup();kb.add(types.InlineKeyboardButton("🔙 До обмінів",callback_data=f"profile_history_trade:{page}"));bot.send_message(call.message.chat.id,text,reply_markup=kb);return
+        if data.startswith("profile_history_pvp_detail:"):
+            item=get_pvp_history_detail(uid,int(parts[1]));page=int(parts[2])
+            text=(f"⚔️ PvP-бій\n\nРезультат: {'🏆 Перемога' if item['won'] else '💀 Поразка'}\nСуперник: {item['other_name']}\nДата: {item['completed_at']}\nРаундів: {item['rounds']}\nПричина: {item['reason']}") if item else "Запис не знайдено."
+            kb=types.InlineKeyboardMarkup();kb.add(types.InlineKeyboardButton("🔙 До PvP",callback_data=f"profile_history_pvp:{page}"));bot.send_message(call.message.chat.id,text,reply_markup=kb);return
+        kind="trade" if data.startswith("profile_history_trade:") else "pvp";page=max(0,int(parts[1]));result=get_trade_history(uid,page,5) if kind=="trade" else get_pvp_history(uid,page,5)
+        bot.send_message(call.message.chat.id,_history_list_text(kind,result),reply_markup=_history_list_kb(kind,result))
