@@ -7,6 +7,7 @@ def main_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.add("🔎 Полювання", "🗺️ Мапа")
     kb.add("👤 Профіль", "👀 Роззирнутися")
+    kb.add("📋 Меню")
     return kb
 
 

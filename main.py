@@ -89,6 +89,8 @@ from handlers.blacksmith import register_blacksmith_repair_hotfix_handlers
 from handlers.guild import register_guild_handlers
 from handlers.auction_house import register_auction_house_handlers
 from handlers.blacksmith_repair_confirm import register_blacksmith_repair_confirmation_handlers
+from handlers.crystal_shop import register_crystal_shop_handlers
+from systems.crystal_shop_system import init_crystal_shop_system
 
 from systems.notifications import start_notification_worker
 from systems.telegram_rate_limit import install_global_telegram_rate_limit_guard
@@ -151,6 +153,8 @@ init_class_reset_sphere()
 # HANDLERS
 # ==============================
 
+init_crystal_shop_system()
+
 register_start_handlers(bot)
 register_profile_handlers(bot)
 register_inventory_handlers(bot)
@@ -171,6 +175,7 @@ register_rune_master_shop_handlers(bot)
 
 
 register_refine_handlers(bot)
+register_crystal_shop_handlers(bot)
 # ==============================
 # NOTIFICATIONS
 # ==============================
