@@ -231,7 +231,7 @@ DROP_RULES_BY_ID = {rule["rule_id"]: rule for rule in DROP_RULES}
 # remain in DROP_RULES so future sources can be configured without scattering
 # item IDs through gameplay code.
 SPECIAL_MATERIAL_MOB_DROP_POLICY_VERSION = "11.7.0"
-SPECIAL_MATERIAL_MOB_DROP_DENYLIST = frozenset((402, 527, 528))
+SPECIAL_MATERIAL_MOB_DROP_DENYLIST = frozenset((301, 402, 527, 528))
 SPECIAL_MATERIAL_SOURCE_POLICY = {
     402: {
         "rule_id": "success_rune",

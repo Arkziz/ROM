@@ -1119,4 +1119,17 @@ def register_dev_handlers(bot):
         if not data["items"]:lines.append("Записів немає.")
         bot.send_message(message.chat.id,"\n".join(lines),reply_markup=main_kb())
 
+    @bot.message_handler(commands=["dev_premium_item"])
+    def dev_premium_item_17_26_1(message):
+        if not DEV_MODE:return
+        from systems.premium_item_policy_system import grant_item_from_source
+        parts=str(message.text or "").split()
+        try:item_id=int(parts[1]);quantity=int(parts[2]) if len(parts)>2 else 1
+        except Exception:
+            bot.send_message(message.chat.id,"❌ Формат: /dev_premium_item item_id [quantity]",reply_markup=main_kb());return
+        result=grant_item_from_source(message.from_user.id,item_id,quantity,"dev_command",f"dev:premium:{message.from_user.id}:{message.message_id}",metadata={"telegram_message_id":message.message_id},dev_mode=True)
+        text=(f"✅ DEV: видано предмет {item_id} ×{quantity}." if result.get("success") else f"❌ {result.get('message','Видачу відхилено.')}")
+        bot.send_message(message.chat.id,text,reply_markup=main_kb())
+
+
 

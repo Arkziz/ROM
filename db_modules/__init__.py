@@ -1,3 +1,11 @@
+from systems.premium_item_policy_system import (
+    init_premium_item_policy,
+    get_premium_item_policy,
+    can_grant_item_from_source,
+    grant_item_from_source,
+    get_premium_item_grants,
+)
+
 from systems.crystal_wallet_system import (
     init_crystal_wallet_system,
     get_crystal_wallet,
@@ -482,3 +490,5 @@ __all__.append('get_contract_exp_for_level')
 __all__.append('reset_daily_quest_if_needed')
 
 __all__.extend(['init_crystal_wallet_system','get_crystal_wallet','get_crystal_balance','credit_crystals','debit_crystals','get_crystal_transactions','compensate_crystal_transaction'])
+
+__all__.extend(['init_premium_item_policy','get_premium_item_policy','can_grant_item_from_source','grant_item_from_source','get_premium_item_grants'])
