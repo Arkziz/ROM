@@ -1497,3 +1497,32 @@ def build_category_list(user_id, category_key, page=0):
         return result
     return result
 
+# ROM 17.28.1.3 NAME RUNE INVENTORY PRESENTATION
+_NAME_RUNE_ITEM_ID_17_28_1_3 = 10000
+_base_build_item_details_before_name_rune_17_28_1_3 = build_item_details
+
+def build_item_details(user_id, inventory_id, back_category="all", page=0):
+    text, kb = _base_build_item_details_before_name_rune_17_28_1_3(
+        user_id, inventory_id, back_category, page
+    )
+    try:
+        from db_modules.connection import cursor
+        row = cursor.execute(
+            "SELECT item_id FROM inventory WHERE id=? AND user_id=?",
+            (int(inventory_id), int(user_id)),
+        ).fetchone()
+        if row and int(row[0]) == _NAME_RUNE_ITEM_ID_17_28_1_3:
+            text = text.replace("Руна імені", "✍️ Руна імені")
+            text = text.replace("📦 Категорія: material", "📦 Категорія: Матеріали")
+            button = types.InlineKeyboardButton(
+                text="✍️ Використати Руну імені",
+                callback_data=f"name_rune_use:{int(inventory_id)}",
+            )
+            if getattr(kb, "keyboard", None) is not None:
+                kb.keyboard.insert(0, [button])
+            else:
+                kb.add(button)
+    except Exception:
+        pass
+    return text, kb
+

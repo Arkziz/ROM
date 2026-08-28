@@ -5,7 +5,7 @@ import json, sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 DB_PATH=Path(__file__).resolve().parents[1]/'game.db'
-CRYSTAL_SHOP_CATALOG={301:{'name':'🔮 Сфера нового шляху','price':150},402:{'name':'🍀 Руна Успіху','price':40},528:{'name':'💠 Досконалий Екстрактор','price':25}}
+CRYSTAL_SHOP_CATALOG={301:{'name':'🔮 Сфера нового шляху','price':150},402:{'name':'🍀 Руна Успіху','price':40},528:{'name':'💠 Досконалий Екстрактор','price':25},10000:{'name':'✍️ Руна імені','price':50}}
 def _utc():return datetime.now(timezone.utc).isoformat()
 def _connect(path=None):
  c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
@@ -45,7 +45,7 @@ def purchase_crystal_shop_item(user_id,item_id,quantity,idempotency_key,db_path=
  try:
   c.execute('BEGIN IMMEDIATE');old=c.execute('SELECT * FROM crystal_shop_purchases WHERE idempotency_key=?',(key,)).fetchone()
   if old:c.commit();return {'success':True,'idempotent_replay':True,'purchase':dict(old),'balance':int(old['balance_after'])}
-  allowed={301:{'crystal_shop'},402:{'crystal_shop'},528:{'crystal_shop'}}
+  allowed={301:{'crystal_shop'},402:{'crystal_shop'},528:{'crystal_shop'},10000:{'crystal_shop'}}
   if 'crystal_shop' not in allowed.get(iid,set()):c.rollback();return {'success':False,'message':'❌ Джерело видачі заборонене.'}
   wallet=c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(uid,)).fetchone();item=c.execute('SELECT id FROM items WHERE id=?',(iid,)).fetchone()
   if not wallet or not item:c.rollback();return {'success':False,'message':'❌ Гаманець або предмет не знайдено.'}

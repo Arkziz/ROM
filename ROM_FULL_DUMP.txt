@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-28 20:21:23 +03:00
+Created: 2026-08-28 20:54:55 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9168
-Scanned files: 6850
-Included files: 484
-Excluded files: 6366
-Included source size: 3,35 MB
+Scanned files: 6882
+Included files: 488
+Excluded files: 6394
+Included source size: 3,37 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 6360
+- excluded directory: 6388
 - excluded file name or pattern: 6
 - unsupported file type: 0
 
@@ -77,6 +77,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - handlers\guild.py
 - handlers\inventory.py
 - handlers\map.py
+- handlers\name_rune.py
 - handlers\player_interaction.py
 - handlers\profile.py
 - handlers\pvp_interaction.py
@@ -106,6 +107,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\equipment_system.py
 - systems\guild_system.py
 - systems\level_up_reward_system.py
+- systems\name_rune_system.py
 - systems\notifications.py
 - systems\player_interaction_system.py
 - systems\player_system.py
@@ -298,6 +300,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_critical_production_logging_print_contract_recovery_17_20_1_1.py
 - tools\smoke_test_crystal_shop_17_27_1.py
 - tools\smoke_test_crystal_shop_stale_menu_cleanup_17_27_1_1.py
+- tools\smoke_test_crystal_shop_unique_back_button_17_27_1_2.py
 - tools\smoke_test_crystal_wallet_smoke_import_recovery_17_25_1_1.py
 - tools\smoke_test_daily_firius_token_reward.py
 - tools\smoke_test_daily_handler_db_api_16_0_6.py
@@ -366,6 +369,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_mana_potion_price_balance_17_19_1.py
 - tools\smoke_test_map_location_player_discovery.py
 - tools\smoke_test_map_player_discovery_refresh_and_keyboard.py
+- tools\smoke_test_name_rune_17_28_1_1.py
 - tools\smoke_test_notification_worker_dynamic_rune_max_mp_recovery_17_15_1_1.py
 - tools\smoke_test_notification_worker_refine_formula_16_1_23.py
 - tools\smoke_test_notification_worker_rune_hp_16_1_22.py
@@ -1330,8 +1334,8 @@ def exported_names():
 
 ============================================================
 FILE: data\drop_tables.py
-SIZE: 8927 bytes
-LAST WRITE: 2026-08-28 00:07:53
+SIZE: 8934 bytes
+LAST WRITE: 2026-08-28 20:52:04
 ============================================================
 
 """Canonical central-drop configuration model for ROM Stage 11.
@@ -1567,7 +1571,7 @@ DROP_RULES_BY_ID = {rule["rule_id"]: rule for rule in DROP_RULES}
 # remain in DROP_RULES so future sources can be configured without scattering
 # item IDs through gameplay code.
 SPECIAL_MATERIAL_MOB_DROP_POLICY_VERSION = "11.7.0"
-SPECIAL_MATERIAL_MOB_DROP_DENYLIST = frozenset((301, 402, 527, 528))
+SPECIAL_MATERIAL_MOB_DROP_DENYLIST = frozenset((301, 402, 527, 528, 10000))
 SPECIAL_MATERIAL_SOURCE_POLICY = {
     402: {
         "rule_id": "success_rune",
@@ -23772,8 +23776,8 @@ def register_contract_handlers(bot):
 
 ============================================================
 FILE: handlers\crystal_shop.py
-SIZE: 8879 bytes
-LAST WRITE: 2026-08-28 00:55:14
+SIZE: 8898 bytes
+LAST WRITE: 2026-08-28 20:27:24
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -23781,7 +23785,7 @@ from telebot import types
 from keyboards import main_kb
 from systems.crystal_shop_system import CRYSTAL_SHOP_CATALOG,get_crystal_shop_catalog,preview_crystal_shop_purchase,purchase_crystal_shop_item
 from systems.crystal_wallet_system import get_crystal_balance
-MENU_BUTTON='📋 Меню';SHOP_BUTTON='💎 Магазин кристалів';BACK='🔙 Назад';states={}
+MENU_BUTTON='📋 Меню';SHOP_BUTTON='💎 Магазин кристалів';BACK='🔙 Закрити магазин';states={}
 def _menu_kb():
  k=types.ReplyKeyboardMarkup(resize_keyboard=True);k.add(SHOP_BUTTON);k.add(BACK);return k
 def _shop_kb():
@@ -29877,6 +29881,37 @@ def register_map_handlers(bot):
         )
 
 ============================================================
+FILE: handlers\name_rune.py
+SIZE: 2610 bytes
+LAST WRITE: 2026-08-28 20:52:04
+============================================================
+
+# -*- coding: utf-8 -*-
+from telebot import types
+from systems.name_rune_system import NAME_RUNE_ITEM_ID,get_name_rune_inventory,preview_name_change,rename_with_name_rune
+states={}
+def register_name_rune_handlers(bot):
+ @bot.message_handler(commands=['name_rune'])
+ def start(message):
+  rune=get_name_rune_inventory(message.from_user.id)
+  if not rune:bot.send_message(message.chat.id,'❌ Руну імені не знайдено в інвентарі.');return
+  states[message.from_user.id]={'stage':'input'};msg=bot.send_message(message.chat.id,'✍️ Введіть нове ім’я персонажа:');bot.register_next_step_handler(msg,input_name)
+ def input_name(message):
+  uid=message.from_user.id
+  if uid not in states:return
+  p=preview_name_change(uid,message.text)
+  if not p['success']:states.pop(uid,None);bot.send_message(message.chat.id,'❌ '+p['message']);return
+  states[uid]={'stage':'confirm','new_name':p['new_name']};kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton('✅ Підтвердити',callback_data='nr:confirm'),types.InlineKeyboardButton('❌ Скасувати',callback_data='nr:cancel'));sent=bot.send_message(message.chat.id,f"✍️ Зміна імені персонажа\n\nПоточне ім’я: {p['old_name']}\nНове ім’я: {p['new_name']}\n\nРуна імені буде використана.",reply_markup=kb);states[uid].update(chat_id=sent.chat.id,message_id=sent.message_id)
+ @bot.callback_query_handler(func=lambda c:str(c.data or '').startswith('nr:'))
+ def callback(call):
+  uid=call.from_user.id;state=states.get(uid)
+  if not state or state.get('stage')!='confirm' or state.get('message_id')!=call.message.message_id:bot.answer_callback_query(call.id,'Це меню вже неактивне.',show_alert=True);return
+  if call.data=='nr:cancel':states.pop(uid,None);bot.edit_message_text('❌ Зміну імені скасовано.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id);return
+  key=f"telegram:name_rune:{uid}:{call.message.chat.id}:{call.message.message_id}";result=rename_with_name_rune(uid,state['new_name'],key)
+  if result['success']:states.pop(uid,None);bot.edit_message_text(f"✅ Ім’я персонажа змінено.\n\n{result.get('old_name',result.get('change',{}).get('old_name'))} → {result.get('new_name',result.get('change',{}).get('new_name'))}",call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Готово')
+  else:bot.answer_callback_query(call.id,result['message'],show_alert=True)
+
+============================================================
 FILE: handlers\player_interaction.py
 SIZE: 102514 bytes
 LAST WRITE: 2026-08-23 01:39:23
@@ -34904,8 +34939,8 @@ def rune_master_kb():
 
 ============================================================
 FILE: main.py
-SIZE: 9776 bytes
-LAST WRITE: 2026-08-28 00:39:02
+SIZE: 9955 bytes
+LAST WRITE: 2026-08-28 20:52:04
 ============================================================
 
 
@@ -35000,6 +35035,8 @@ from handlers.guild import register_guild_handlers
 from handlers.auction_house import register_auction_house_handlers
 from handlers.blacksmith_repair_confirm import register_blacksmith_repair_confirmation_handlers
 from handlers.crystal_shop import register_crystal_shop_handlers
+from handlers.name_rune import register_name_rune_handlers
+from systems.name_rune_system import init_name_rune_system
 from systems.crystal_shop_system import init_crystal_shop_system
 
 from systems.notifications import start_notification_worker
@@ -35064,6 +35101,7 @@ init_class_reset_sphere()
 # ==============================
 
 init_crystal_shop_system()
+init_name_rune_system()
 
 register_start_handlers(bot)
 register_profile_handlers(bot)
@@ -35086,6 +35124,7 @@ register_rune_master_shop_handlers(bot)
 
 register_refine_handlers(bot)
 register_crystal_shop_handlers(bot)
+register_name_rune_handlers(bot)
 # ==============================
 # NOTIFICATIONS
 # ==============================
@@ -43003,8 +43042,8 @@ def migrate_contract_target_kills_to_v2(*args, **kwargs):
 
 ============================================================
 FILE: systems\crystal_shop_system.py
-SIZE: 8413 bytes
-LAST WRITE: 2026-08-28 00:39:02
+SIZE: 8491 bytes
+LAST WRITE: 2026-08-28 20:52:04
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -43014,7 +43053,7 @@ import json, sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 DB_PATH=Path(__file__).resolve().parents[1]/'game.db'
-CRYSTAL_SHOP_CATALOG={301:{'name':'🔮 Сфера нового шляху','price':150},402:{'name':'🍀 Руна Успіху','price':40},528:{'name':'💠 Досконалий Екстрактор','price':25}}
+CRYSTAL_SHOP_CATALOG={301:{'name':'🔮 Сфера нового шляху','price':150},402:{'name':'🍀 Руна Успіху','price':40},528:{'name':'💠 Досконалий Екстрактор','price':25},10000:{'name':'✍️ Руна імені','price':50}}
 def _utc():return datetime.now(timezone.utc).isoformat()
 def _connect(path=None):
  c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
@@ -43054,7 +43093,7 @@ def purchase_crystal_shop_item(user_id,item_id,quantity,idempotency_key,db_path=
  try:
   c.execute('BEGIN IMMEDIATE');old=c.execute('SELECT * FROM crystal_shop_purchases WHERE idempotency_key=?',(key,)).fetchone()
   if old:c.commit();return {'success':True,'idempotent_replay':True,'purchase':dict(old),'balance':int(old['balance_after'])}
-  allowed={301:{'crystal_shop'},402:{'crystal_shop'},528:{'crystal_shop'}}
+  allowed={301:{'crystal_shop'},402:{'crystal_shop'},528:{'crystal_shop'},10000:{'crystal_shop'}}
   if 'crystal_shop' not in allowed.get(iid,set()):c.rollback();return {'success':False,'message':'❌ Джерело видачі заборонене.'}
   wallet=c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(uid,)).fetchone();item=c.execute('SELECT id FROM items WHERE id=?',(iid,)).fetchone()
   if not wallet or not item:c.rollback();return {'success':False,'message':'❌ Гаманець або предмет не знайдено.'}
@@ -49815,6 +49854,78 @@ def build_level_up_reward_message(result):
     return "\n".join(lines)
 
 ============================================================
+FILE: systems\name_rune_system.py
+SIZE: 5887 bytes
+LAST WRITE: 2026-08-28 20:52:04
+============================================================
+
+# -*- coding: utf-8 -*-
+from __future__ import annotations
+import re,sqlite3,unicodedata
+from datetime import datetime,timezone
+from pathlib import Path
+DB_PATH=Path(__file__).resolve().parents[1]/'game.db';NAME_RUNE_ITEM_ID=10000;NAME_RUNE_PRICE=50
+def _conn(path=None):
+ c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
+def normalize_name(value):return unicodedata.normalize('NFKC',str(value or '').strip())
+def validate_name(value):
+ name=normalize_name(value)
+ if len(name)<3 or len(name)>20:return {'success':False,'message':'Ім’я має містити від 3 до 20 символів.'}
+ if not re.fullmatch(r"[A-Za-zА-Яа-яІіЇїЄєҐґ0-9'’_-]+",name):return {'success':False,'message':'Ім’я містить недозволені символи.'}
+ return {'success':True,'name':name,'key':name.casefold()}
+def init_name_rune_system(db_path=None):
+ c=_conn(db_path)
+ try:
+  row=c.execute('SELECT name FROM items WHERE id=?',(NAME_RUNE_ITEM_ID,)).fetchone()
+  if row and str(row[0])!='Руна імені':raise RuntimeError('Item ID 10000 is occupied by another item')
+  cols={r[1] for r in c.execute('PRAGMA table_info(items)')};values={'id':10000,'name':'Руна імені','type':'material','rarity':'epic','category':'material','max_stack':999,'sell_price':0,'buy_price':0,'tradeable':0,'premium_bound':1}
+  names=[k for k in values if k in cols]
+  if not row:c.execute('INSERT INTO items('+','.join(names)+') VALUES('+','.join('?' for _ in names)+')',[values[k] for k in names])
+  c.executescript("""CREATE TABLE IF NOT EXISTS character_name_changes(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,old_name TEXT NOT NULL,new_name TEXT NOT NULL,normalized_new_name TEXT NOT NULL,inventory_id INTEGER NOT NULL,item_id INTEGER NOT NULL,idempotency_key TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,FOREIGN KEY(item_id) REFERENCES items(id) ON DELETE RESTRICT);CREATE INDEX IF NOT EXISTS ix_character_name_changes_user ON character_name_changes(user_id,id DESC);""");c.commit();return {'success':True,'item_id':10000}
+ finally:c.close()
+def get_name_rune_inventory(user_id,db_path=None):
+ c=_conn(db_path)
+ try:
+  row=c.execute('SELECT id,quantity FROM inventory WHERE user_id=? AND item_id=? AND quantity>0 ORDER BY id LIMIT 1',(int(user_id),10000)).fetchone();return dict(row) if row else None
+ finally:c.close()
+def preview_name_change(user_id,new_name,db_path=None):
+ v=validate_name(new_name)
+ if not v['success']:return v
+ c=_conn(db_path)
+ try:
+  row=c.execute('SELECT character_name FROM users WHERE user_id=?',(int(user_id),)).fetchone()
+  if not row:return {'success':False,'message':'Персонажа не знайдено.'}
+  old=str(row[0] or '')
+  if normalize_name(old).casefold()==v['key']:return {'success':False,'message':'Нове ім’я збігається з поточним.'}
+  for other in c.execute("SELECT user_id,character_name FROM users WHERE user_id<>? AND TRIM(COALESCE(character_name,''))<>''",(int(user_id),)):
+   if normalize_name(other['character_name']).casefold()==v['key']:return {'success':False,'message':'Це ім’я вже зайняте.'}
+  rune=get_name_rune_inventory(user_id,db_path)
+  if not rune:return {'success':False,'message':'Руну імені не знайдено в інвентарі.'}
+  return {'success':True,'old_name':old,'new_name':v['name'],'inventory_id':int(rune['id'])}
+ finally:c.close()
+def rename_with_name_rune(user_id,new_name,idempotency_key,db_path=None):
+ uid=int(user_id);key=str(idempotency_key or '').strip();v=validate_name(new_name)
+ if not key:return {'success':False,'message':'Відсутній ключ операції.'}
+ if not v['success']:return v
+ c=_conn(db_path)
+ try:
+  c.execute('BEGIN IMMEDIATE');existing=c.execute('SELECT * FROM character_name_changes WHERE idempotency_key=?',(key,)).fetchone()
+  if existing:c.commit();return {'success':True,'idempotent_replay':True,'change':dict(existing)}
+  user=c.execute('SELECT character_name FROM users WHERE user_id=?',(uid,)).fetchone()
+  if not user:c.rollback();return {'success':False,'message':'Персонажа не знайдено.'}
+  old=str(user[0] or '')
+  if normalize_name(old).casefold()==v['key']:c.rollback();return {'success':False,'message':'Нове ім’я збігається з поточним.'}
+  for other in c.execute("SELECT character_name FROM users WHERE user_id<>? AND TRIM(COALESCE(character_name,''))<>''",(uid,)):
+   if normalize_name(other[0]).casefold()==v['key']:c.rollback();return {'success':False,'message':'Це ім’я вже зайняте.'}
+  rune=c.execute('SELECT id,quantity FROM inventory WHERE user_id=? AND item_id=10000 AND quantity>0 ORDER BY id LIMIT 1',(uid,)).fetchone()
+  if not rune:c.rollback();return {'success':False,'message':'Руну імені не знайдено в інвентарі.'}
+  if int(rune['quantity'])==1:c.execute('DELETE FROM inventory WHERE id=? AND user_id=?',(int(rune['id']),uid))
+  else:c.execute('UPDATE inventory SET quantity=quantity-1 WHERE id=? AND user_id=? AND quantity>1',(int(rune['id']),uid))
+  c.execute('UPDATE users SET character_name=? WHERE user_id=?',(v['name'],uid));now=datetime.now(timezone.utc).isoformat();cur=c.execute('INSERT INTO character_name_changes(user_id,old_name,new_name,normalized_new_name,inventory_id,item_id,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?)',(uid,old,v['name'],v['key'],int(rune['id']),10000,key,now));cid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'change_id':cid,'old_name':old,'new_name':v['name']}
+ except Exception:c.rollback();raise
+ finally:c.close()
+
+============================================================
 FILE: systems\notifications.py
 SIZE: 29541 bytes
 LAST WRITE: 2026-08-25 22:03:44
@@ -54644,8 +54755,8 @@ def sell_alchemist_potion_17_19_3(user_id,item_id,quantity):
 
 ============================================================
 FILE: systems\premium_item_policy_system.py
-SIZE: 7462 bytes
-LAST WRITE: 2026-08-28 00:07:53
+SIZE: 7651 bytes
+LAST WRITE: 2026-08-28 20:52:04
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -54660,6 +54771,7 @@ PREMIUM_ITEM_POLICY={
  301:{'name':'Сфера нового шляху','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_MILESTONE,SOURCE_ADMIN)),'milestone_levels':frozenset((5,10))},
  402:{'name':'Руна Успіху','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
  528:{'name':'Досконалий Екстрактор','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
+ 10000:{'name':'Руна імені','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
 }
 DENIED_TRANSFER_ITEM_IDS=frozenset(PREMIUM_ITEM_POLICY)
 
@@ -78124,6 +78236,25 @@ assert "stages=('quantity','confirm')" in s
 print('[PASS] Stage 17.27.1.1 stale menu cleanup contract')
 
 ============================================================
+FILE: tools\smoke_test_crystal_shop_unique_back_button_17_27_1_2.py
+SIZE: 558 bytes
+LAST WRITE: 2026-08-28 20:27:24
+============================================================
+
+import ast,re,sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+p=R/'handlers/crystal_shop.py';s=p.read_text(encoding='utf-8');ast.parse(s)
+assert "BACK='🔙 Закрити магазин'" in s
+assert "BACK='🔙 Назад'" not in s
+assert 'k.add(BACK)' in s
+assert 'm.text==BACK' in s
+assert '_close_shop_session(bot,message.from_user.id)' in s
+assert '_active_shop_callback' in s
+assert 'Це меню покупки вже неактивне.' in s
+print('[PASS] Stage 17.27.1.2 unique Crystal Shop back button contract')
+
+============================================================
 FILE: tools\smoke_test_crystal_wallet_smoke_import_recovery_17_25_1_1.py
 SIZE: 1565 bytes
 LAST WRITE: 2026-08-27 23:15:28
@@ -82108,6 +82239,22 @@ def main():
     print("- bottom row: Back: OK")
     print("- database mutations: 0")
 if __name__=="__main__": main()
+
+============================================================
+FILE: tools\smoke_test_name_rune_17_28_1_1.py
+SIZE: 1485 bytes
+LAST WRITE: 2026-08-28 20:52:04
+============================================================
+
+import sqlite3,sys,tempfile
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+if str(R) not in sys.path:sys.path.insert(0,str(R))
+from systems.name_rune_system import *
+with tempfile.TemporaryDirectory() as d:
+ p=Path(d)/'x.db';c=sqlite3.connect(p);c.executescript("CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT);CREATE TABLE items(id INTEGER PRIMARY KEY,name TEXT,type TEXT,rarity TEXT,category TEXT,max_stack INTEGER,sell_price REAL,buy_price REAL,tradeable INTEGER,premium_bound INTEGER);CREATE TABLE inventory(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,item_id INTEGER,quantity INTEGER);INSERT INTO users VALUES(1,'Alpha');INSERT INTO users VALUES(2,'Beta');");c.commit();c.close();init_name_rune_system(p);c=sqlite3.connect(p);c.execute('INSERT INTO inventory(user_id,item_id,quantity) VALUES(1,10000,2)');c.commit();c.close()
+ assert not preview_name_change(1,'alpha',p)['success'];assert not preview_name_change(1,'BETA',p)['success'];a=rename_with_name_rune(1,'Gamma','k1',p);assert a['success'];b=rename_with_name_rune(1,'Gamma','k1',p);assert b['idempotent_replay'];c=sqlite3.connect(p);assert c.execute('SELECT character_name FROM users WHERE user_id=1').fetchone()[0]=='Gamma';assert c.execute('SELECT quantity FROM inventory WHERE user_id=1 AND item_id=10000').fetchone()[0]==1;assert c.execute('SELECT COUNT(*) FROM character_name_changes').fetchone()[0]==1;c.close()
+print('[PASS] Stage 17.28.1 Name Rune contracts')
 
 ============================================================
 FILE: tools\smoke_test_notification_worker_dynamic_rune_max_mp_recovery_17_15_1_1.py
