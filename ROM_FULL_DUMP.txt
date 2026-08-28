@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-28 20:54:55 +03:00
+Created: 2026-08-28 23:19:29 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9168
-Scanned files: 6882
-Included files: 488
-Excluded files: 6394
-Included source size: 3,37 MB
+Scanned files: 6963
+Included files: 495
+Excluded files: 6468
+Included source size: 3,39 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 6388
+- excluded directory: 6462
 - excluded file name or pattern: 6
 - unsupported file type: 0
 
@@ -85,6 +85,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - handlers\refine.py
 - handlers\runes.py
 - handlers\start.py
+- handlers\timed_exp_bonus.py
 - keyboards.py
 - main.py
 - migrations\__init__.py
@@ -186,6 +187,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\simulation\survival_state.py
 - systems\simulation\world_progression.py
 - systems\telegram_rate_limit.py
+- systems\timed_exp_bonus_system.py
 - tools\audit_9_0_13_final_closure.py
 - tools\audit_boss_reward_contract.py
 - tools\audit_boss_stage13_simulation_reuse_15_7_1.py
@@ -299,6 +301,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_create_user_contracts.py
 - tools\smoke_test_critical_production_logging_print_contract_recovery_17_20_1_1.py
 - tools\smoke_test_crystal_shop_17_27_1.py
+- tools\smoke_test_crystal_shop_handler_priority_17_28_1_2.py
 - tools\smoke_test_crystal_shop_stale_menu_cleanup_17_27_1_1.py
 - tools\smoke_test_crystal_shop_unique_back_button_17_27_1_2.py
 - tools\smoke_test_crystal_wallet_smoke_import_recovery_17_25_1_1.py
@@ -329,6 +332,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_equipment_trader_contracts.py
 - tools\smoke_test_equipment_write_contracts.py
 - tools\smoke_test_exact_pve_battle_simulator.py
+- tools\smoke_test_exp_bonus_menu_status_17_30_1_1.py
 - tools\smoke_test_explicit_db_startup_maintenance.py
 - tools\smoke_test_extractor_button_rune_master_menu.py
 - tools\smoke_test_final_combat_round_summary_16_1_11.py
@@ -370,6 +374,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_map_location_player_discovery.py
 - tools\smoke_test_map_player_discovery_refresh_and_keyboard.py
 - tools\smoke_test_name_rune_17_28_1_1.py
+- tools\smoke_test_name_rune_inventory_use_17_28_1_3.py
 - tools\smoke_test_notification_worker_dynamic_rune_max_mp_recovery_17_15_1_1.py
 - tools\smoke_test_notification_worker_refine_formula_16_1_23.py
 - tools\smoke_test_notification_worker_rune_hp_16_1_22.py
@@ -498,6 +503,8 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_special_material_drop_policy.py
 - tools\smoke_test_stage_11_final_audit.py
 - tools\smoke_test_static_item_seed_contracts.py
+- tools\smoke_test_success_rune_guaranteed_refine_17_29_1.py
+- tools\smoke_test_timed_exp_bonus_17_30_1.py
 - tools\smoke_test_trade_cancel_callback_routing.py
 - tools\smoke_test_trade_district_text_navigation_17_11_1.py
 - tools\smoke_test_trade_equipment_preview_inventory_style_17_4_3_2.py
@@ -17737,8 +17744,8 @@ def register_blacksmith_repair_confirmation_handlers(bot):
 
 ============================================================
 FILE: handlers\city.py
-SIZE: 78519 bytes
-LAST WRITE: 2026-08-25 00:09:03
+SIZE: 80216 bytes
+LAST WRITE: 2026-08-28 23:11:27
 ============================================================
 
 # ROM 17.11.2.1 CITY CRAFT TAVERN TEXT CLEANUP
@@ -19930,11 +19937,50 @@ def build_tavern_text():
         text = text.split(marker, 1)[0]
     return text.rstrip()
 
+# ROM Stage 17.30.1.1 main menu account and Premium status.
+_BUILD_MAIN_MENU_TEXT_BEFORE_EXP_BONUS_STATUS_17_30_1_1 = build_main_menu_text
+
+def _format_account_utc_17_30_1_1(value):
+    if not value:
+        return "не зафіксована"
+    try:
+        from datetime import datetime, timezone
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc).strftime("%d.%m.%Y %H:%M UTC")
+    except Exception:
+        return "не зафіксована"
+
+def build_main_menu_text(user_id, show_location_description=False):
+    text = _BUILD_MAIN_MENU_TEXT_BEFORE_EXP_BONUS_STATUS_17_30_1_1(
+        user_id, show_location_description=show_location_description
+    )
+    from systems.timed_exp_bonus_system import get_exp_bonus_account_summary
+    summary = get_exp_bonus_account_summary(user_id)
+    lines = [
+        f"🆔 ID: {int(user_id)}",
+        f"📅 Дата реєстрації: {_format_account_utc_17_30_1_1(summary.get('registered_at'))}",
+    ]
+    if summary.get("active"):
+        lines.extend([
+            "💎 Premium: активний",
+            "📈 Бонус за вбивство мобів: +25% EXP",
+            f"⏳ Діє до: {_format_account_utc_17_30_1_1(summary.get('expires_at'))}",
+        ])
+    else:
+        lines.append("💎 Premium: неактивний")
+    block = "\n".join(lines)
+    title = "📋 Меню"
+    if title in text:
+        return text.replace(title, title + "\n\n" + block, 1)
+    return title + "\n\n" + block + "\n\n" + text
+
 
 ============================================================
 FILE: handlers\combat.py
-SIZE: 121963 bytes
-LAST WRITE: 2026-08-25 22:03:44
+SIZE: 122480 bytes
+LAST WRITE: 2026-08-28 23:11:27
 ============================================================
 
 
@@ -21647,11 +21693,21 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
     text += (
         f"{mob['name']} повалений на землю.\n\n"
         f"📈 Нагорода:\n"
-        f"✨ Досвід: +{reward['exp']} EXP"
     )
 
-    if exp_result:
-        text += f" ({exp_result['exp']}/{exp_result['exp_to_next']})"
+    premium_bonus = int(reward.get("premium_exp_bonus", 0) or 0)
+    if bool(reward.get("exp_bonus_active")) and premium_bonus > 0:
+        text += (
+            f"✨ Досвід: +{reward['exp']} EXP\n"
+            f"   ├ Базовий: {int(reward.get('base_exp', reward['exp']))} EXP\n"
+            f"   ├ Premium +25%: +{premium_bonus} EXP"
+        )
+        if exp_result:
+            text += f"\n   └ Прогрес: {exp_result['exp']}/{exp_result['exp_to_next']}"
+    else:
+        text += f"✨ Досвід: +{reward['exp']} EXP"
+        if exp_result:
+            text += f" ({exp_result['exp']}/{exp_result['exp_to_next']})"
 
         # Stage 17.14.1.1 sends level-up information separately.
 
@@ -23776,8 +23832,8 @@ def register_contract_handlers(bot):
 
 ============================================================
 FILE: handlers\crystal_shop.py
-SIZE: 8898 bytes
-LAST WRITE: 2026-08-28 20:27:24
+SIZE: 8742 bytes
+LAST WRITE: 2026-08-28 23:18:17
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -23785,12 +23841,13 @@ from telebot import types
 from keyboards import main_kb
 from systems.crystal_shop_system import CRYSTAL_SHOP_CATALOG,get_crystal_shop_catalog,preview_crystal_shop_purchase,purchase_crystal_shop_item
 from systems.crystal_wallet_system import get_crystal_balance
-MENU_BUTTON='📋 Меню';SHOP_BUTTON='💎 Магазин кристалів';BACK='🔙 Закрити магазин';states={}
+MENU_BUTTON='📋 Меню';SHOP_BUTTON='💎 Магазин кристалів';BACK='🔙 Закрити магазин';EXP_BONUS_BUTTON='📈 Бонус досвіду +25%';states={}
 def _menu_kb():
  k=types.ReplyKeyboardMarkup(resize_keyboard=True);k.add(SHOP_BUTTON);k.add(BACK);return k
 def _shop_kb():
  k=types.ReplyKeyboardMarkup(resize_keyboard=True)
  for iid,v in get_crystal_shop_catalog().items():k.add(f"{v['name']} — {v['price']} 💎")
+ k.add(EXP_BONUS_BUTTON)
  k.add(BACK);return k
 def _qty_kb(iid,qty):
  k=types.InlineKeyboardMarkup();k.row(types.InlineKeyboardButton('➖',callback_data=f'cs:q:{iid}:{max(1,qty-1)}'),types.InlineKeyboardButton(f'×{qty}',callback_data='cs:noop'),types.InlineKeyboardButton('➕',callback_data=f'cs:q:{iid}:{qty+1}'));k.row(types.InlineKeyboardButton('✍️ Ввести кількість',callback_data=f'cs:input:{iid}'));k.row(types.InlineKeyboardButton('✅ Продовжити',callback_data=f'cs:review:{iid}:{qty}'),types.InlineKeyboardButton('❌ Скасувати',callback_data='cs:cancel'));return k
@@ -23861,10 +23918,6 @@ def _reject_stale_shop_callback(bot, call):
 
 
 def register_crystal_shop_handlers(bot):
- @bot.message_handler(func=lambda m:m.text==MENU_BUTTON)
- def menu(message):
-  _close_shop_session(bot,message.from_user.id)
-  bot.send_message(message.chat.id,'📋 Меню\n\nОберіть розділ:',reply_markup=_menu_kb())
  @bot.message_handler(func=lambda m:m.text==SHOP_BUTTON)
  def shop(message):
   _close_shop_session(bot,message.from_user.id)
@@ -28174,8 +28227,8 @@ def build_guild_member_detail_text(*args, **kwargs):
 
 ============================================================
 FILE: handlers\inventory.py
-SIZE: 47240 bytes
-LAST WRITE: 2026-08-21 01:21:40
+SIZE: 50036 bytes
+LAST WRITE: 2026-08-28 21:10:44
 ============================================================
 
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
@@ -29677,6 +29730,35 @@ def build_category_list(user_id, category_key, page=0):
         return result
     return result
 
+# ROM 17.28.1.3 NAME RUNE INVENTORY PRESENTATION
+_NAME_RUNE_ITEM_ID_17_28_1_3 = 10000
+_base_build_item_details_before_name_rune_17_28_1_3 = build_item_details
+
+def build_item_details(user_id, inventory_id, back_category="all", page=0):
+    text, kb = _base_build_item_details_before_name_rune_17_28_1_3(
+        user_id, inventory_id, back_category, page
+    )
+    try:
+        from db_modules.connection import cursor
+        row = cursor.execute(
+            "SELECT item_id FROM inventory WHERE id=? AND user_id=?",
+            (int(inventory_id), int(user_id)),
+        ).fetchone()
+        if row and int(row[0]) == _NAME_RUNE_ITEM_ID_17_28_1_3:
+            text = text.replace("Руна імені", "✍️ Руна імені")
+            text = text.replace("📦 Категорія: material", "📦 Категорія: Матеріали")
+            button = types.InlineKeyboardButton(
+                text="✍️ Використати Руну імені",
+                callback_data=f"name_rune_use:{int(inventory_id)}",
+            )
+            if getattr(kb, "keyboard", None) is not None:
+                kb.keyboard.insert(0, [button])
+            else:
+                kb.add(button)
+    except Exception:
+        pass
+    return text, kb
+
 
 ============================================================
 FILE: handlers\map.py
@@ -29882,8 +29964,8 @@ def register_map_handlers(bot):
 
 ============================================================
 FILE: handlers\name_rune.py
-SIZE: 2610 bytes
-LAST WRITE: 2026-08-28 20:52:04
+SIZE: 3629 bytes
+LAST WRITE: 2026-08-28 21:10:44
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -29891,22 +29973,32 @@ from telebot import types
 from systems.name_rune_system import NAME_RUNE_ITEM_ID,get_name_rune_inventory,preview_name_change,rename_with_name_rune
 states={}
 def register_name_rune_handlers(bot):
+ def begin(chat_id,user_id,inventory_id=None):
+  rune=get_name_rune_inventory(user_id)
+  if not rune or (inventory_id is not None and int(rune['id'])!=int(inventory_id)):
+   bot.send_message(chat_id,'❌ ✍️ Руну імені не знайдено в інвентарі.');return
+  states[user_id]={'stage':'input','inventory_id':int(rune['id'])};msg=bot.send_message(chat_id,'✍️ Введіть нове ім’я персонажа:');bot.register_next_step_handler(msg,input_name)
  @bot.message_handler(commands=['name_rune'])
- def start(message):
-  rune=get_name_rune_inventory(message.from_user.id)
-  if not rune:bot.send_message(message.chat.id,'❌ Руну імені не знайдено в інвентарі.');return
-  states[message.from_user.id]={'stage':'input'};msg=bot.send_message(message.chat.id,'✍️ Введіть нове ім’я персонажа:');bot.register_next_step_handler(msg,input_name)
+ def start(message):begin(message.chat.id,message.from_user.id)
+ @bot.callback_query_handler(func=lambda c:str(c.data or '').startswith('name_rune_use:'))
+ def inventory_use(call):
+  try:inventory_id=int(call.data.split(':',1)[1])
+  except Exception:bot.answer_callback_query(call.id,'Некоректна дія.',show_alert=True);return
+  bot.answer_callback_query(call.id);begin(call.message.chat.id,call.from_user.id,inventory_id)
  def input_name(message):
-  uid=message.from_user.id
-  if uid not in states:return
+  uid=message.from_user.id;state=states.get(uid)
+  if not state or state.get('stage')!='input':return
   p=preview_name_change(uid,message.text)
   if not p['success']:states.pop(uid,None);bot.send_message(message.chat.id,'❌ '+p['message']);return
-  states[uid]={'stage':'confirm','new_name':p['new_name']};kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton('✅ Підтвердити',callback_data='nr:confirm'),types.InlineKeyboardButton('❌ Скасувати',callback_data='nr:cancel'));sent=bot.send_message(message.chat.id,f"✍️ Зміна імені персонажа\n\nПоточне ім’я: {p['old_name']}\nНове ім’я: {p['new_name']}\n\nРуна імені буде використана.",reply_markup=kb);states[uid].update(chat_id=sent.chat.id,message_id=sent.message_id)
+  if int(p['inventory_id'])!=int(state['inventory_id']):states.pop(uid,None);bot.send_message(message.chat.id,'❌ Це меню вже неактивне.');return
+  states[uid]={'stage':'confirm','new_name':p['new_name'],'inventory_id':int(p['inventory_id'])};kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton('✅ Підтвердити',callback_data='nr:confirm'),types.InlineKeyboardButton('❌ Скасувати',callback_data='nr:cancel'));sent=bot.send_message(message.chat.id,f"✍️ Зміна імені персонажа\n\nПоточне ім’я: {p['old_name']}\nНове ім’я: {p['new_name']}\n\nБуде використано:\n✍️ Руна імені ×1",reply_markup=kb);states[uid].update(chat_id=sent.chat.id,message_id=sent.message_id)
  @bot.callback_query_handler(func=lambda c:str(c.data or '').startswith('nr:'))
  def callback(call):
   uid=call.from_user.id;state=states.get(uid)
   if not state or state.get('stage')!='confirm' or state.get('message_id')!=call.message.message_id:bot.answer_callback_query(call.id,'Це меню вже неактивне.',show_alert=True);return
   if call.data=='nr:cancel':states.pop(uid,None);bot.edit_message_text('❌ Зміну імені скасовано.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id);return
+  rune=get_name_rune_inventory(uid)
+  if not rune or int(rune['id'])!=int(state['inventory_id']):states.pop(uid,None);bot.answer_callback_query(call.id,'Це меню вже неактивне.',show_alert=True);return
   key=f"telegram:name_rune:{uid}:{call.message.chat.id}:{call.message.message_id}";result=rename_with_name_rune(uid,state['new_name'],key)
   if result['success']:states.pop(uid,None);bot.edit_message_text(f"✅ Ім’я персонажа змінено.\n\n{result.get('old_name',result.get('change',{}).get('old_name'))} → {result.get('new_name',result.get('change',{}).get('new_name'))}",call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Готово')
   else:bot.answer_callback_query(call.id,result['message'],show_alert=True)
@@ -32943,8 +33035,8 @@ def register_pvp_round_ui_handlers(bot):
 
 ============================================================
 FILE: handlers\refine.py
-SIZE: 16715 bytes
-LAST WRITE: 2026-07-20 00:31:59
+SIZE: 18551 bytes
+LAST WRITE: 2026-08-28 22:18:23
 ============================================================
 
 from telebot import types
@@ -33403,37 +33495,33 @@ def register_refine_handlers(bot):
         inventory_id = int(parts[1])
         use_success_rune = parts[2] == "1"
         page = int(parts[3]) if len(parts) > 3 else 0
-
-        before_info = get_inventory_item_refine_info(inventory_id)
-
-        result = perform_refine_attempt(
-            user_id=call.from_user.id,
-            inventory_id=inventory_id,
-            use_success_rune=use_success_rune
-        )
-
-        after_info = get_inventory_item_refine_info(inventory_id)
-
+        info = get_inventory_item_refine_info(inventory_id)
+        check = can_refine_item(info)
+        resources = get_refine_resource_counts(call.from_user.id)
+        if not info or int(info.get("user_id", 0)) != int(call.from_user.id) or not check.get("success"):
+            bot.answer_callback_query(call.id, "Предмет більше недоступний.", show_alert=True); return
+        if resources.get("stone", 0) <= 0 or (use_success_rune and resources.get("success_rune", 0) <= 0):
+            bot.answer_callback_query(call.id, "Недостатньо матеріалів.", show_alert=True); return
+        chance = 100 if use_success_rune else get_refine_success_chance(check["refine_kind"], check["current_level"])
+        kb = types.InlineKeyboardMarkup(row_width=1)
+        kb.add(types.InlineKeyboardButton("✅ Підтвердити заточку", callback_data=f"refine_exec:{inventory_id}:{1 if use_success_rune else 0}:{page}"))
+        kb.add(types.InlineKeyboardButton("❌ Скасувати", callback_data=f"refine_item:{inventory_id}:{page}"))
+        rune_text = "\n💎 Руна Успіху: буде використана" if use_success_rune else ""
+        _send_or_edit(bot=bot, chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"⚒️ Підтвердження заточки\n\n{info.get('name','Предмет')} [+{check['current_level']}]\n🎯 Шанс успіху: {chance}%\n🪨 Камінь Посилення: ×1{rune_text}\n\nПідтвердити операцію?", reply_markup=kb)
         bot.answer_callback_query(call.id)
 
-        result_text = build_refine_attempt_result_text(
-            user_id=call.from_user.id,
-            inventory_id=inventory_id,
-            before_info=before_info,
-            after_info=after_info,
-            result=result,
-            use_success_rune=use_success_rune
-        )
-
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("refine_exec:"))
+    def refine_exec_callback(call):
+        parts = call.data.split(":")
+        inventory_id = int(parts[1]); use_success_rune = parts[2] == "1"; page = int(parts[3]) if len(parts) > 3 else 0
+        before_info = get_inventory_item_refine_info(inventory_id)
+        key = f"telegram:refine:{call.from_user.id}:{call.message.chat.id}:{call.message.message_id}:{inventory_id}:{1 if use_success_rune else 0}"
+        result = perform_refine_attempt(call.from_user.id, inventory_id, use_success_rune, idempotency_key=key)
+        after_info = get_inventory_item_refine_info(inventory_id)
+        bot.answer_callback_query(call.id, "Готово" if result.get("success") else "Заточку скасовано")
+        result_text = build_refine_attempt_result_text(call.from_user.id, inventory_id, before_info, after_info, result, use_success_rune)
         item_text = build_refine_item_text(call.from_user.id, inventory_id)
-
-        _send_or_edit(
-            bot=bot,
-            chat_id=call.message.chat.id,
-            message_id=call.message.message_id,
-            text=f"{result_text}\n\n{item_text}",
-            reply_markup=build_refine_item_kb(call.from_user.id, inventory_id, page)
-        )
+        _send_or_edit(bot=bot, chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{result_text}\n\n{item_text}", reply_markup=build_refine_item_kb(call.from_user.id, inventory_id, page))
 
     @bot.callback_query_handler(func=lambda call: call.data == "refine_noop")
     def refine_noop_callback(call):
@@ -34770,6 +34858,36 @@ def register_start_handlers(bot):
 
 
 ============================================================
+FILE: handlers\timed_exp_bonus.py
+SIZE: 3004 bytes
+LAST WRITE: 2026-08-28 22:47:59
+============================================================
+
+# -*- coding: utf-8 -*-
+from datetime import datetime
+from telebot import types
+from systems.timed_exp_bonus_system import get_exp_bonus_status,preview_exp_bonus_purchase,purchase_exp_bonus
+BUTTON='📈 Бонус досвіду +25%'
+def _fmt(value):
+ try:return datetime.fromisoformat(value).astimezone().strftime('%d.%m.%Y %H:%M')
+ except Exception:return 'неактивний'
+def register_timed_exp_bonus_handlers(bot):
+ @bot.message_handler(func=lambda m:m.text==BUTTON)
+ def open_bonus(message):
+  st=get_exp_bonus_status(message.from_user.id);kb=types.InlineKeyboardMarkup(row_width=1);kb.add(types.InlineKeyboardButton('15 днів — 70 💎',callback_data='expb:preview:15'));kb.add(types.InlineKeyboardButton('30 днів — 120 💎',callback_data='expb:preview:30'));text='📈 Бонус досвіду +25%\n\nДіє лише за вбивство звичайних, елітних мобів і босів.\nКонтракти та Гільдія Найманців бонус не отримують.\n\nСтатус: '+('активний до '+_fmt(st['expires_at']) if st['active'] else 'неактивний');bot.send_message(message.chat.id,text,reply_markup=kb)
+ @bot.callback_query_handler(func=lambda c:str(c.data or '').startswith('expb:'))
+ def callbacks(call):
+  parts=call.data.split(':');action=parts[1];days=int(parts[2]);uid=call.from_user.id
+  if action=='preview':
+   p=preview_exp_bonus_purchase(uid,days)
+   if not p['success']:bot.answer_callback_query(call.id,p['message'],show_alert=True);return
+   kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton('✅ Придбати',callback_data=f'expb:buy:{days}'),types.InlineKeyboardButton('❌ Скасувати',callback_data=f'expb:cancel:{days}'));bot.edit_message_text(f"📈 Бонус досвіду +25%\n\nТривалість: {days} днів\nЦіна: {p['price']} 💎\nБаланс: {p['balance']} → {p['balance_after']} 💎\nДіятиме до: {_fmt(p['expires_at_after'])}\n\nБонус діє тільки за вбивство мобів.",call.message.chat.id,call.message.message_id,reply_markup=kb);bot.answer_callback_query(call.id);return
+  if action=='cancel':bot.edit_message_text('❌ Покупку бонусу досвіду скасовано.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id);return
+  key=f"telegram:exp_bonus:{uid}:{call.message.chat.id}:{call.message.message_id}:{days}";res=purchase_exp_bonus(uid,days,key)
+  if res['success']:bot.edit_message_text(f"✅ Бонус досвіду +25% активовано.\n\nТривалість: {days} днів\nСписано: {res.get('price',res.get('purchase',{}).get('price_crystals'))} 💎\nБаланс: {res['balance']} 💎\nДіє до: {_fmt(res['expires_at_after'])}",call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Готово')
+  else:bot.answer_callback_query(call.id,res['message'],show_alert=True)
+
+============================================================
 FILE: keyboards.py
 SIZE: 5489 bytes
 LAST WRITE: 2026-08-28 00:39:02
@@ -34939,8 +35057,8 @@ def rune_master_kb():
 
 ============================================================
 FILE: main.py
-SIZE: 9955 bytes
-LAST WRITE: 2026-08-28 20:52:04
+SIZE: 10170 bytes
+LAST WRITE: 2026-08-28 22:47:59
 ============================================================
 
 
@@ -35035,6 +35153,8 @@ from handlers.guild import register_guild_handlers
 from handlers.auction_house import register_auction_house_handlers
 from handlers.blacksmith_repair_confirm import register_blacksmith_repair_confirmation_handlers
 from handlers.crystal_shop import register_crystal_shop_handlers
+from handlers.timed_exp_bonus import register_timed_exp_bonus_handlers
+from systems.timed_exp_bonus_system import init_timed_exp_bonus_system
 from handlers.name_rune import register_name_rune_handlers
 from systems.name_rune_system import init_name_rune_system
 from systems.crystal_shop_system import init_crystal_shop_system
@@ -35101,8 +35221,11 @@ init_class_reset_sphere()
 # ==============================
 
 init_crystal_shop_system()
+init_timed_exp_bonus_system()
 init_name_rune_system()
 
+register_crystal_shop_handlers(bot)
+register_timed_exp_bonus_handlers(bot)
 register_start_handlers(bot)
 register_profile_handlers(bot)
 register_inventory_handlers(bot)
@@ -35123,7 +35246,6 @@ register_rune_master_shop_handlers(bot)
 
 
 register_refine_handlers(bot)
-register_crystal_shop_handlers(bot)
 register_name_rune_handlers(bot)
 # ==============================
 # NOTIFICATIONS
@@ -49855,8 +49977,8 @@ def build_level_up_reward_message(result):
 
 ============================================================
 FILE: systems\name_rune_system.py
-SIZE: 5887 bytes
-LAST WRITE: 2026-08-28 20:52:04
+SIZE: 5901 bytes
+LAST WRITE: 2026-08-28 21:10:44
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -49877,8 +49999,8 @@ def init_name_rune_system(db_path=None):
  c=_conn(db_path)
  try:
   row=c.execute('SELECT name FROM items WHERE id=?',(NAME_RUNE_ITEM_ID,)).fetchone()
-  if row and str(row[0])!='Руна імені':raise RuntimeError('Item ID 10000 is occupied by another item')
-  cols={r[1] for r in c.execute('PRAGMA table_info(items)')};values={'id':10000,'name':'Руна імені','type':'material','rarity':'epic','category':'material','max_stack':999,'sell_price':0,'buy_price':0,'tradeable':0,'premium_bound':1}
+  if row and str(row[0])!='✍️ Руна імені':raise RuntimeError('Item ID 10000 is occupied by another item')
+  cols={r[1] for r in c.execute('PRAGMA table_info(items)')};values={'id':10000,'name':'✍️ Руна імені','type':'material','rarity':'epic','category':'material','max_stack':999,'sell_price':0,'buy_price':0,'tradeable':0,'premium_bound':1}
   names=[k for k in values if k in cols]
   if not row:c.execute('INSERT INTO items('+','.join(names)+') VALUES('+','.join('?' for _ in names)+')',[values[k] for k in names])
   c.executescript("""CREATE TABLE IF NOT EXISTS character_name_changes(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,old_name TEXT NOT NULL,new_name TEXT NOT NULL,normalized_new_name TEXT NOT NULL,inventory_id INTEGER NOT NULL,item_id INTEGER NOT NULL,idempotency_key TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,FOREIGN KEY(item_id) REFERENCES items(id) ON DELETE RESTRICT);CREATE INDEX IF NOT EXISTS ix_character_name_changes_user ON character_name_changes(user_id,id DESC);""");c.commit();return {'success':True,'item_id':10000}
@@ -59660,8 +59782,8 @@ def start_pvp_timer_worker(on_battle_changed=None, poll_seconds: float=1.0):
 
 ============================================================
 FILE: systems\refine_system.py
-SIZE: 6923 bytes
-LAST WRITE: 2026-07-19 22:49:31
+SIZE: 10861 bytes
+LAST WRITE: 2026-08-28 22:11:31
 ============================================================
 
 """
@@ -59775,38 +59897,92 @@ def roll_refine_success(refine_kind, current_level, use_success_rune=False):
     return {"success": roll <= chance, "chance": chance, "roll": roll}
 
 
-def perform_refine_attempt(user_id, inventory_id, use_success_rune=False):
-    from db import init_refine_system, get_inventory_item_refine_info, count_user_item, consume_user_item_by_item_id, set_inventory_refine_level
-    init_refine_system()
-    item_info = get_inventory_item_refine_info(inventory_id)
-    if not item_info:
-        return {"success": False, "message": "❌ Предмет не знайдено."}
-    if int(item_info.get("user_id", 0)) != int(user_id):
-        return {"success": False, "message": "❌ Це не твій предмет."}
-    refine_check = can_refine_item(item_info)
-    if not refine_check.get("success"):
-        return refine_check
-    if count_user_item(user_id, REFINE_STONE_ITEM_ID) <= 0:
-        return {"success": False, "message": "❌ Потрібен 🪨 Камінь Посилення."}
-    if use_success_rune and count_user_item(user_id, SUCCESS_RUNE_ITEM_ID) <= 0:
-        return {"success": False, "message": "❌ Потрібна 💎 Руна Успіху."}
-    consume_user_item_by_item_id(user_id, REFINE_STONE_ITEM_ID, 1)
-    if use_success_rune:
-        consume_user_item_by_item_id(user_id, SUCCESS_RUNE_ITEM_ID, 1)
-    refine_kind = refine_check["refine_kind"]
-    current_level = refine_check["current_level"]
-    roll_result = roll_refine_success(refine_kind, current_level, use_success_rune)
-    if roll_result["success"]:
-        new_level = current_level + 1
-        set_inventory_refine_level(inventory_id, new_level)
-        return {"success": True, "refine_success": True, "refine_kind": refine_kind, "old_level": current_level, "new_level": new_level, "chance": roll_result["chance"], "roll": roll_result["roll"], "used_success_rune": bool(use_success_rune), "message": f"✅ Заточка успішна: +{current_level} → +{new_level}"}
-    new_level = get_refine_failure_level(refine_kind, current_level)
-    set_inventory_refine_level(inventory_id, new_level)
-    if new_level < current_level:
-        message = f"❌ Заточка не вдалася: +{current_level} → +{new_level}"
-    else:
-        message = f"❌ Заточка не вдалася: +{current_level} без змін"
-    return {"success": True, "refine_success": False, "refine_kind": refine_kind, "old_level": current_level, "new_level": new_level, "chance": roll_result["chance"], "roll": roll_result["roll"], "used_success_rune": bool(use_success_rune), "message": message}
+def perform_refine_attempt(user_id, inventory_id, use_success_rune=False, idempotency_key=None, db_path=None):
+    """Atomically consume resources, apply refine result, and persist one attempt."""
+    import json
+    import sqlite3
+    from datetime import datetime, timezone
+    from pathlib import Path
+    uid = int(user_id)
+    inv_id = int(inventory_id)
+    use_rune = bool(use_success_rune)
+    key = str(idempotency_key or "").strip()
+    if not key:
+        return {"success": False, "message": "❌ Відсутній ключ операції заточки."}
+    path = Path(db_path) if db_path is not None else Path(__file__).resolve().parents[1] / "game.db"
+    conn = sqlite3.connect(str(path), timeout=30)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys=ON")
+    conn.execute("PRAGMA busy_timeout=30000")
+    try:
+        conn.executescript("""CREATE TABLE IF NOT EXISTS refine_attempts(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            inventory_id INTEGER NOT NULL,
+            item_id INTEGER NOT NULL,
+            refine_kind TEXT NOT NULL,
+            old_level INTEGER NOT NULL,
+            new_level INTEGER NOT NULL,
+            success_chance INTEGER NOT NULL,
+            roll INTEGER,
+            refine_success INTEGER NOT NULL,
+            used_success_rune INTEGER NOT NULL,
+            stone_quantity INTEGER NOT NULL DEFAULT 1,
+            success_rune_quantity INTEGER NOT NULL DEFAULT 0,
+            idempotency_key TEXT NOT NULL UNIQUE,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE RESTRICT,
+            FOREIGN KEY(item_id) REFERENCES items(id) ON DELETE RESTRICT
+        );CREATE INDEX IF NOT EXISTS ix_refine_attempts_user ON refine_attempts(user_id,id DESC);""")
+        conn.commit()
+        conn.execute("BEGIN IMMEDIATE")
+        old_attempt = conn.execute("SELECT * FROM refine_attempts WHERE idempotency_key=?", (key,)).fetchone()
+        if old_attempt:
+            conn.commit()
+            row = dict(old_attempt)
+            return {"success": True, "idempotent_replay": True, "refine_success": bool(row["refine_success"]), "refine_kind": row["refine_kind"], "old_level": row["old_level"], "new_level": row["new_level"], "chance": row["success_chance"], "roll": row["roll"], "used_success_rune": bool(row["used_success_rune"]), "message": "ℹ️ Цю спробу заточки вже виконано."}
+        item = conn.execute("""SELECT inventory.id,inventory.user_id,inventory.item_id,COALESCE(inventory.refine_level,0) refine_level,items.name,items.type,items.category,items.slot_key,items.weapon_hands,items.item_subtype,items.armor_type FROM inventory JOIN items ON items.id=inventory.item_id WHERE inventory.id=?""", (inv_id,)).fetchone()
+        if not item:
+            conn.rollback(); return {"success": False, "message": "❌ Предмет не знайдено."}
+        if int(item["user_id"]) != uid:
+            conn.rollback(); return {"success": False, "message": "❌ Це не твій предмет."}
+        info = dict(item)
+        check = can_refine_item(info)
+        if not check.get("success"):
+            conn.rollback(); return check
+        def total(item_id):
+            return int(conn.execute("SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=? AND quantity>0", (uid,item_id)).fetchone()[0])
+        if total(REFINE_STONE_ITEM_ID) < 1:
+            conn.rollback(); return {"success": False, "message": "❌ Потрібен 🪨 Камінь Посилення."}
+        if use_rune and total(SUCCESS_RUNE_ITEM_ID) < 1:
+            conn.rollback(); return {"success": False, "message": "❌ Потрібна 💎 Руна Успіху."}
+        def consume(item_id):
+            row = conn.execute("SELECT id,quantity FROM inventory WHERE user_id=? AND item_id=? AND quantity>0 ORDER BY id LIMIT 1", (uid,item_id)).fetchone()
+            if not row: raise RuntimeError("resource disappeared during refine")
+            if int(row["quantity"]) == 1: conn.execute("DELETE FROM inventory WHERE id=? AND user_id=?", (int(row["id"]),uid))
+            else: conn.execute("UPDATE inventory SET quantity=quantity-1 WHERE id=? AND user_id=? AND quantity>1", (int(row["id"]),uid))
+        kind = check["refine_kind"]
+        current = int(check["current_level"])
+        roll_result = roll_refine_success(kind,current,use_rune)
+        new_level = current + 1 if roll_result["success"] else get_refine_failure_level(kind,current)
+        consume(REFINE_STONE_ITEM_ID)
+        if use_rune: consume(SUCCESS_RUNE_ITEM_ID)
+        changed = conn.execute("UPDATE inventory SET refine_level=? WHERE id=? AND user_id=? AND COALESCE(refine_level,0)=?", (new_level,inv_id,uid,current)).rowcount
+        if changed != 1: raise RuntimeError("refine target changed concurrently")
+        now = datetime.now(timezone.utc).isoformat()
+        conn.execute("INSERT INTO refine_attempts(user_id,inventory_id,item_id,refine_kind,old_level,new_level,success_chance,roll,refine_success,used_success_rune,stone_quantity,success_rune_quantity,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (uid,inv_id,int(item["item_id"]),kind,current,new_level,int(roll_result["chance"]),roll_result["roll"],1 if roll_result["success"] else 0,1 if use_rune else 0,1,1 if use_rune else 0,key,now))
+        conn.commit()
+        if roll_result["success"]: message=f"✅ Заточка успішна: +{current} → +{new_level}"
+        elif new_level < current: message=f"❌ Заточка не вдалася: +{current} → +{new_level}"
+        else: message=f"❌ Заточка не вдалася: +{current} без змін"
+        return {"success": True, "idempotent_replay": False, "refine_success": bool(roll_result["success"]), "refine_kind": kind, "old_level": current, "new_level": new_level, "chance": int(roll_result["chance"]), "roll": roll_result["roll"], "used_success_rune": use_rune, "message": message}
+    except Exception as error:
+        try: conn.rollback()
+        except Exception: pass
+        return {"success": False, "message": f"❌ Заточку скасовано без списання ресурсів: {error}"}
+    finally:
+        conn.close()
+
 
 ============================================================
 FILE: systems\regen_system.py
@@ -60189,8 +60365,8 @@ def get_mp_regen_status(user_id):
 
 ============================================================
 FILE: systems\reward_system.py
-SIZE: 15512 bytes
-LAST WRITE: 2026-08-04 21:52:46
+SIZE: 15860 bytes
+LAST WRITE: 2026-08-28 22:47:59
 ============================================================
 
 import random
@@ -60682,18 +60858,21 @@ def roll_loot(user_id, mob):
 
 
 def process_victory_reward(user_id, player_level, mob):
-    """Single authoritative victory transaction composition after 11.9.0."""
-    exp = calculate_exp_reward(player_level=player_level, mob=mob)
+    """Victory reward with +25% timed EXP only for normal, elite and boss mob kills."""
+    base_exp = calculate_exp_reward(player_level=player_level, mob=mob)
     gold = calculate_gold_reward(player_level=player_level, mob=mob)
-
+    from systems.timed_exp_bonus_system import calculate_mob_kill_exp
+    exp_breakdown = calculate_mob_kill_exp(user_id, base_exp)
+    exp = int(exp_breakdown["final_exp"])
     exp_result = add_exp(user_id, exp)
     add_gold(user_id, gold)
     add_kill(user_id)
-
     drop_result = process_enemy_drops(user_id, mob)
-
     return {
         "exp": exp,
+        "base_exp": int(base_exp),
+        "premium_exp_bonus": int(exp_breakdown["bonus_exp"]),
+        "exp_bonus_active": bool(exp_breakdown["active"]),
         "gold": gold,
         "exp_result": exp_result,
         "loot_messages": drop_result["messages"],
@@ -60702,6 +60881,7 @@ def process_victory_reward(user_id, player_level, mob):
         "used_slots": get_inventory_used_slots(user_id),
         "capacity": get_bag_capacity(user_id),
     }
+
 
 
 ============================================================
@@ -66190,6 +66370,93 @@ def get_telegram_rate_limit_status(chat_id=None):
         "chat_id": chat_id,
         "suppressed_total": sum(_SUPPRESSED_COUNTS.values()),
     }
+
+============================================================
+FILE: systems\timed_exp_bonus_system.py
+SIZE: 7626 bytes
+LAST WRITE: 2026-08-28 23:11:27
+============================================================
+
+# -*- coding: utf-8 -*-
+from __future__ import annotations
+import json,sqlite3
+from datetime import datetime,timedelta,timezone
+from pathlib import Path
+DB_PATH=Path(__file__).resolve().parents[1]/'game.db';BONUS_PERCENT=25
+PLANS={15:70,30:120}
+def _utc():return datetime.now(timezone.utc)
+def _parse(v):
+ try:return datetime.fromisoformat(str(v).replace('Z','+00:00')).astimezone(timezone.utc)
+ except Exception:return None
+def _conn(path=None):
+ c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
+def init_timed_exp_bonus_system(db_path=None):
+ c=_conn(db_path)
+ try:
+  c.executescript("""CREATE TABLE IF NOT EXISTS account_exp_bonus_entitlements(user_id INTEGER PRIMARY KEY,bonus_percent INTEGER NOT NULL DEFAULT 25 CHECK(bonus_percent=25),expires_at TEXT NOT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE);CREATE TABLE IF NOT EXISTS exp_bonus_purchases(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,product_code TEXT NOT NULL,duration_days INTEGER NOT NULL CHECK(duration_days IN (15,30)),bonus_percent INTEGER NOT NULL CHECK(bonus_percent=25),price_crystals INTEGER NOT NULL,balance_before INTEGER NOT NULL,balance_after INTEGER NOT NULL,expires_at_before TEXT,expires_at_after TEXT NOT NULL,crystal_transaction_id INTEGER NOT NULL UNIQUE,idempotency_key TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE RESTRICT,FOREIGN KEY(crystal_transaction_id) REFERENCES crystal_transactions(id) ON DELETE RESTRICT);CREATE INDEX IF NOT EXISTS ix_exp_bonus_purchases_user ON exp_bonus_purchases(user_id,id DESC);""");c.commit();return {'success':True}
+ finally:c.close()
+def get_exp_bonus_status(user_id,db_path=None,now=None):
+ c=_conn(db_path)
+ try:
+  row=c.execute('SELECT * FROM account_exp_bonus_entitlements WHERE user_id=?',(int(user_id),)).fetchone();dt=_parse(row['expires_at']) if row else None;n=now or _utc();active=bool(dt and dt>n);return {'active':active,'bonus_percent':25 if active else 0,'expires_at':dt.isoformat() if dt else None}
+ finally:c.close()
+def calculate_mob_kill_exp(user_id,base_exp,db_path=None,now=None):
+ base=max(0,int(base_exp));st=get_exp_bonus_status(user_id,db_path,now);bonus=(base*25)//100 if st['active'] else 0;return {'active':st['active'],'base_exp':base,'bonus_exp':bonus,'final_exp':base+bonus,'expires_at':st['expires_at']}
+def preview_exp_bonus_purchase(user_id,duration_days,db_path=None,now=None):
+ days=int(duration_days);price=PLANS.get(days)
+ if not price:return {'success':False,'message':'❌ Невідомий тариф.'}
+ c=_conn(db_path)
+ try:
+  wallet=c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(int(user_id),)).fetchone();balance=int(wallet[0]) if wallet else 0;n=now or _utc();st=get_exp_bonus_status(user_id,db_path,n);old=_parse(st['expires_at']);base=old if old and old>n else n;new=base+timedelta(days=days);return {'success':balance>=price,'duration_days':days,'price':price,'balance':balance,'balance_after':balance-price,'expires_at_before':old.isoformat() if old else None,'expires_at_after':new.isoformat(),'message':'OK' if balance>=price else '❌ Недостатньо кристалів.'}
+ finally:c.close()
+def purchase_exp_bonus(user_id,duration_days,idempotency_key,db_path=None,now=None):
+ uid=int(user_id);days=int(duration_days);price=PLANS.get(days);key=str(idempotency_key or '').strip()
+ if not price or not key:return {'success':False,'message':'❌ Некоректна покупка.'}
+ c=_conn(db_path)
+ try:
+  c.execute('BEGIN IMMEDIATE');old=c.execute('SELECT * FROM exp_bonus_purchases WHERE idempotency_key=?',(key,)).fetchone()
+  if old:c.commit();return {'success':True,'idempotent_replay':True,'purchase':dict(old),'balance':int(old['balance_after']),'expires_at_after':old['expires_at_after']}
+  wallet=c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(uid,)).fetchone()
+  if not wallet:c.rollback();return {'success':False,'message':'❌ Гаманець не знайдено.'}
+  before=int(wallet[0])
+  if before<price:c.rollback();return {'success':False,'message':'❌ Недостатньо кристалів.'}
+  n=now or _utc();ent=c.execute('SELECT expires_at,created_at FROM account_exp_bonus_entitlements WHERE user_id=?',(uid,)).fetchone();old_exp=_parse(ent['expires_at']) if ent else None;base=old_exp if old_exp and old_exp>n else n;new_exp=base+timedelta(days=days);after=before-price;stamp=n.isoformat()
+  if c.execute('UPDATE crystal_wallets SET balance=?,updated_at=? WHERE user_id=? AND balance=?',(after,stamp,uid,before)).rowcount!=1:raise RuntimeError('wallet changed concurrently')
+  txkey='exp_bonus:debit:'+key;cur=c.execute("INSERT INTO crystal_transactions(user_id,operation,amount,reason_code,balance_before,balance_after,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",(uid,'debit',price,'timed_exp_bonus_purchase',before,after,txkey,key,json.dumps({'duration_days':days,'bonus_percent':25},sort_keys=True),stamp));txid=int(cur.lastrowid)
+  if ent:c.execute('UPDATE account_exp_bonus_entitlements SET bonus_percent=25,expires_at=?,updated_at=? WHERE user_id=?',(new_exp.isoformat(),stamp,uid))
+  else:c.execute('INSERT INTO account_exp_bonus_entitlements(user_id,bonus_percent,expires_at,created_at,updated_at) VALUES(?,?,?,?,?)',(uid,25,new_exp.isoformat(),stamp,stamp))
+  code=f'exp25_{days}d';cur=c.execute('INSERT INTO exp_bonus_purchases(user_id,product_code,duration_days,bonus_percent,price_crystals,balance_before,balance_after,expires_at_before,expires_at_after,crystal_transaction_id,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',(uid,code,days,25,price,before,after,old_exp.isoformat() if old_exp else None,new_exp.isoformat(),txid,key,stamp));pid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'purchase_id':pid,'duration_days':days,'price':price,'balance':after,'expires_at_after':new_exp.isoformat()}
+ except Exception as e:
+  c.rollback();return {'success':False,'message':f'❌ Покупку скасовано без списання: {e}'}
+ finally:c.close()
+
+# ROM Stage 17.30.1.1 account presentation helpers.
+def get_exp_bonus_account_summary(user_id, db_path=None, now=None):
+    uid = int(user_id)
+    status = get_exp_bonus_status(uid, db_path=db_path, now=now)
+    connection = _conn(db_path)
+    try:
+        columns = {str(row[1]) for row in connection.execute("PRAGMA table_info(users)")}
+        registration_value = None
+        registration_column = None
+        for candidate in ("registered_at", "created_at", "registration_date", "registered_date"):
+            if candidate in columns:
+                registration_column = candidate
+                row = connection.execute(f"SELECT {candidate} FROM users WHERE user_id=?", (uid,)).fetchone()
+                registration_value = row[0] if row else None
+                break
+        registration_dt = _parse(registration_value) if registration_value else None
+        return {
+            "user_id": uid,
+            "active": bool(status["active"]),
+            "bonus_percent": int(status["bonus_percent"]),
+            "expires_at": status["expires_at"],
+            "registered_at": registration_dt.isoformat() if registration_dt else None,
+            "registration_column": registration_column,
+        }
+    finally:
+        connection.close()
+
 
 ============================================================
 FILE: tools\audit_9_0_13_final_closure.py
@@ -78219,6 +78486,23 @@ with tempfile.TemporaryDirectory() as d:
  print('[PASS] Stage 17.27.1 atomic shop contracts')
 
 ============================================================
+FILE: tools\smoke_test_crystal_shop_handler_priority_17_28_1_2.py
+SIZE: 720 bytes
+LAST WRITE: 2026-08-28 21:00:34
+============================================================
+
+import ast,sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1];s=(R/'main.py').read_text(encoding='utf-8');ast.parse(s)
+assert s.count('register_crystal_shop_handlers(bot)')==1
+assert s.index('register_crystal_shop_handlers(bot)') < s.index('register_start_handlers(bot)')
+assert s.index('register_crystal_shop_handlers(bot)') < s.index('register_inventory_handlers(bot)')
+assert s.index('register_crystal_shop_handlers(bot)') < s.index('register_city_handlers(bot)')
+assert s.index('register_crystal_shop_handlers(bot)') < s.index('register_player_interaction_handlers(bot)')
+assert 'register_name_rune_handlers(bot)' in s
+print('[PASS] Stage 17.28.1.2 Crystal Shop handler priority contract')
+
+============================================================
 FILE: tools\smoke_test_crystal_shop_stale_menu_cleanup_17_27_1_1.py
 SIZE: 546 bytes
 LAST WRITE: 2026-08-28 00:55:14
@@ -79771,6 +80055,26 @@ def main():
     print("- skills/resources/cooldowns/effects: PASS")
     print("- database writes: 0")
 if __name__=="__main__": main()
+
+============================================================
+FILE: tools\smoke_test_exp_bonus_menu_status_17_30_1_1.py
+SIZE: 892 bytes
+LAST WRITE: 2026-08-28 23:11:27
+============================================================
+
+import ast,sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+city=(R/'handlers/city.py').read_text(encoding='utf-8');combat=(R/'handlers/combat.py').read_text(encoding='utf-8');system=(R/'systems/timed_exp_bonus_system.py').read_text(encoding='utf-8')
+for s in (city,combat,system):ast.parse(s)
+assert '💎 Premium: активний' in city and '💎 Premium: неактивний' in city
+assert '📈 Бонус за вбивство мобів: +25% EXP' in city
+assert 'Дата реєстрації: {_format_account_utc_17_30_1_1' in city
+assert 'Premium +25%: +{premium_bonus} EXP' in combat
+assert 'Базовий:' in combat and 'Прогрес:' in combat
+assert 'premium_exp_bonus' in combat and 'exp_bonus_active' in combat
+assert 'get_exp_bonus_account_summary' in system
+print('[PASS] Stage 17.30.1.1 menu status and reward breakdown contracts')
 
 ============================================================
 FILE: tools\smoke_test_explicit_db_startup_maintenance.py
@@ -82255,6 +82559,24 @@ with tempfile.TemporaryDirectory() as d:
  p=Path(d)/'x.db';c=sqlite3.connect(p);c.executescript("CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT);CREATE TABLE items(id INTEGER PRIMARY KEY,name TEXT,type TEXT,rarity TEXT,category TEXT,max_stack INTEGER,sell_price REAL,buy_price REAL,tradeable INTEGER,premium_bound INTEGER);CREATE TABLE inventory(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,item_id INTEGER,quantity INTEGER);INSERT INTO users VALUES(1,'Alpha');INSERT INTO users VALUES(2,'Beta');");c.commit();c.close();init_name_rune_system(p);c=sqlite3.connect(p);c.execute('INSERT INTO inventory(user_id,item_id,quantity) VALUES(1,10000,2)');c.commit();c.close()
  assert not preview_name_change(1,'alpha',p)['success'];assert not preview_name_change(1,'BETA',p)['success'];a=rename_with_name_rune(1,'Gamma','k1',p);assert a['success'];b=rename_with_name_rune(1,'Gamma','k1',p);assert b['idempotent_replay'];c=sqlite3.connect(p);assert c.execute('SELECT character_name FROM users WHERE user_id=1').fetchone()[0]=='Gamma';assert c.execute('SELECT quantity FROM inventory WHERE user_id=1 AND item_id=10000').fetchone()[0]==1;assert c.execute('SELECT COUNT(*) FROM character_name_changes').fetchone()[0]==1;c.close()
 print('[PASS] Stage 17.28.1 Name Rune contracts')
+
+============================================================
+FILE: tools\smoke_test_name_rune_inventory_use_17_28_1_3.py
+SIZE: 699 bytes
+LAST WRITE: 2026-08-28 21:10:44
+============================================================
+
+import ast,sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+inv=(R/'handlers/inventory.py').read_text(encoding='utf-8');nrh=(R/'handlers/name_rune.py').read_text(encoding='utf-8');nrs=(R/'systems/name_rune_system.py').read_text(encoding='utf-8')
+for s in (inv,nrh,nrs):ast.parse(s)
+assert '✍️ Використати Руну імені' in inv
+assert '📦 Категорія: Матеріали' in inv
+assert 'name_rune_use:' in inv and 'name_rune_use:' in nrh
+assert "'✍️ Руна імені'" in nrs
+assert 'inventory_id' in nrh and 'Це меню вже неактивне.' in nrh
+print('[PASS] Stage 17.28.1.3 inventory action and localization contract')
 
 ============================================================
 FILE: tools\smoke_test_notification_worker_dynamic_rune_max_mp_recovery_17_15_1_1.py
@@ -89972,6 +90294,41 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+============================================================
+FILE: tools\smoke_test_success_rune_guaranteed_refine_17_29_1.py
+SIZE: 2131 bytes
+LAST WRITE: 2026-08-28 22:11:31
+============================================================
+
+import ast,sqlite3,sys,tempfile
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+for p in (R/'systems/refine_system.py',R/'handlers/refine.py'):ast.parse(p.read_text(encoding='utf-8'))
+s=(R/'systems/refine_system.py').read_text(encoding='utf-8');h=(R/'handlers/refine.py').read_text(encoding='utf-8');assert 'BEGIN IMMEDIATE' in s and 'refine_attempts' in s and 'idempotency_key' in s;assert 'refine_exec:' in h and 'Підтвердити заточку' in h
+if str(R) not in sys.path:sys.path.insert(0,str(R))
+from systems.refine_system import perform_refine_attempt
+with tempfile.TemporaryDirectory() as d:
+ p=Path(d)/'t.db';c=sqlite3.connect(p);c.executescript("CREATE TABLE users(user_id INTEGER PRIMARY KEY);CREATE TABLE items(id INTEGER PRIMARY KEY,name TEXT,type TEXT,category TEXT,slot_key TEXT,weapon_hands INTEGER,item_subtype TEXT,armor_type TEXT);CREATE TABLE inventory(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,item_id INTEGER,quantity INTEGER,refine_level INTEGER);INSERT INTO users VALUES(1);INSERT INTO items VALUES(1,'Sword','weapon','equipment','main_hand',1,'sword','');INSERT INTO items VALUES(401,'Stone','material','material','',1,'','');INSERT INTO items VALUES(402,'Rune','success_rune','material','',1,'','');INSERT INTO inventory(user_id,item_id,quantity,refine_level) VALUES(1,1,1,2);INSERT INTO inventory(user_id,item_id,quantity,refine_level) VALUES(1,401,2,0);INSERT INTO inventory(user_id,item_id,quantity,refine_level) VALUES(1,402,2,0);");c.commit();c.close();a=perform_refine_attempt(1,1,True,'k1',p);assert a['success'] and a['chance']==100 and a['new_level']==3;b=perform_refine_attempt(1,1,True,'k1',p);assert b['idempotent_replay'];c=sqlite3.connect(p);assert c.execute('SELECT refine_level FROM inventory WHERE id=1').fetchone()[0]==3;assert c.execute('SELECT quantity FROM inventory WHERE item_id=401').fetchone()[0]==1;assert c.execute('SELECT quantity FROM inventory WHERE item_id=402').fetchone()[0]==1;assert c.execute('SELECT COUNT(*) FROM refine_attempts').fetchone()[0]==1;c.close()
+print('[PASS] Stage 17.29.1 atomic idempotent refine contract')
+
+============================================================
+FILE: tools\smoke_test_timed_exp_bonus_17_30_1.py
+SIZE: 1691 bytes
+LAST WRITE: 2026-08-28 22:47:59
+============================================================
+
+import ast,sqlite3,sys,tempfile
+from datetime import datetime,timezone
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+for p in ('main.py','handlers/crystal_shop.py','handlers/timed_exp_bonus.py','systems/timed_exp_bonus_system.py','systems/reward_system.py'):ast.parse((R/p).read_text(encoding='utf-8'))
+assert 'calculate_mob_kill_exp' in (R/'systems/reward_system.py').read_text(encoding='utf-8');assert 'contract_system' not in (R/'systems/timed_exp_bonus_system.py').read_text(encoding='utf-8')
+if str(R) not in sys.path:sys.path.insert(0,str(R))
+from systems.timed_exp_bonus_system import *
+with tempfile.TemporaryDirectory() as d:
+ p=Path(d)/'t.db';c=sqlite3.connect(p);c.executescript("CREATE TABLE users(user_id INTEGER PRIMARY KEY);CREATE TABLE crystal_wallets(user_id INTEGER PRIMARY KEY,balance INTEGER,created_at TEXT,updated_at TEXT);CREATE TABLE crystal_transactions(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,operation TEXT,amount INTEGER,reason_code TEXT,balance_before INTEGER,balance_after INTEGER,idempotency_key TEXT UNIQUE,external_reference TEXT,metadata_json TEXT,created_at TEXT);INSERT INTO users VALUES(1);INSERT INTO crystal_wallets VALUES(1,500,'','');");c.commit();c.close();init_timed_exp_bonus_system(p);a=purchase_exp_bonus(1,15,'k1',p);assert a['success'] and a['balance']==430;b=purchase_exp_bonus(1,15,'k1',p);assert b['idempotent_replay'] and b['balance']==430;x=calculate_mob_kill_exp(1,100,p);assert x['bonus_exp']==25 and x['final_exp']==125;c=sqlite3.connect(p);assert c.execute('SELECT COUNT(*) FROM exp_bonus_purchases').fetchone()[0]==1;c.close()
+print('[PASS] Stage 17.30.1 timed mob-kill EXP bonus contracts')
 
 ============================================================
 FILE: tools\smoke_test_trade_cancel_callback_routing.py

@@ -2187,3 +2187,97 @@ def build_tavern_text():
         text = text.split(marker, 1)[0]
     return text.rstrip()
 
+# ROM Stage 17.30.1.1 main menu account and Premium status.
+_BUILD_MAIN_MENU_TEXT_BEFORE_EXP_BONUS_STATUS_17_30_1_1 = build_main_menu_text
+
+def _format_account_utc_17_30_1_1(value):
+    if not value:
+        return "не зафіксована"
+    try:
+        from datetime import datetime, timezone
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc).strftime("%d.%m.%Y %H:%M UTC")
+    except Exception:
+        return "не зафіксована"
+
+def build_main_menu_text(user_id, show_location_description=False):
+    text = _BUILD_MAIN_MENU_TEXT_BEFORE_EXP_BONUS_STATUS_17_30_1_1(
+        user_id, show_location_description=show_location_description
+    )
+    from systems.timed_exp_bonus_system import get_exp_bonus_account_summary
+    summary = get_exp_bonus_account_summary(user_id)
+    lines = [
+        f"🆔 ID: {int(user_id)}",
+        f"📅 Дата реєстрації: {_format_account_utc_17_30_1_1(summary.get('registered_at'))}",
+    ]
+    if summary.get("active"):
+        lines.extend([
+            "💎 Premium: активний",
+            "📈 Бонус за вбивство мобів: +25% EXP",
+            f"⏳ Діє до: {_format_account_utc_17_30_1_1(summary.get('expires_at'))}",
+        ])
+    else:
+        lines.append("💎 Premium: неактивний")
+    block = "\n".join(lines)
+    title = "📋 Меню"
+    if title in text:
+        return text.replace(title, title + "\n\n" + block, 1)
+    return title + "\n\n" + block + "\n\n" + text
+
+# ROM Stage 17.30.1.3 explicit permanent Main Menu routing.
+_REGISTER_CITY_HANDLERS_BEFORE_MAIN_MENU_RECOVERY_17_30_1_3 = register_city_handlers
+
+def register_city_handlers(bot):
+    _REGISTER_CITY_HANDLERS_BEFORE_MAIN_MENU_RECOVERY_17_30_1_3(bot)
+
+    @bot.message_handler(func=lambda message: str(getattr(message, "text", "") or "") == "📋 Меню")
+    def open_main_menu_17_30_1_3(message):
+        # Invalidate an unfinished Crystal Shop inline session without letting the
+        # shop own or render the permanent Main Menu route.
+        try:
+            from handlers.crystal_shop import _close_shop_session
+            _close_shop_session(bot, message.from_user.id)
+        except Exception:
+            pass
+
+        bot.send_message(
+            message.chat.id,
+            build_account_menu_text_17_30_1_4(message.from_user.id),
+            reply_markup=account_menu_kb_17_30_1_4(),
+        )
+
+# ROM Stage 17.30.1.4 separates account Menu from the location overview.
+def build_account_menu_text_17_30_1_4(user_id):
+    from systems.timed_exp_bonus_system import get_exp_bonus_account_summary
+    summary = get_exp_bonus_account_summary(user_id)
+    lines = [
+        "📋 Меню",
+        "",
+        f"🆔 ID: {int(user_id)}",
+        f"📅 Дата реєстрації: {_format_account_utc_17_30_1_1(summary.get('registered_at'))}",
+    ]
+    if summary.get("active"):
+        lines.extend([
+            "💎 Premium: активний",
+            "📈 Бонус за вбивство мобів: +25% EXP",
+            f"⏳ Діє до: {_format_account_utc_17_30_1_1(summary.get('expires_at'))}",
+        ])
+    else:
+        lines.append("💎 Premium: неактивний")
+    lines.extend(["", "Оберіть розділ:"])
+    return "\n".join(lines)
+
+def account_menu_kb_17_30_1_4():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("💎 Магазин кристалів")
+    kb.add("🔙 Назад")
+    return kb
+
+# Restore the location/gameplay builder used by 👀 Роззирнутися.
+def build_main_menu_text(user_id, show_location_description=False):
+    return _BUILD_MAIN_MENU_TEXT_BEFORE_EXP_BONUS_STATUS_17_30_1_1(
+        user_id, show_location_description=show_location_description
+    )
+

@@ -487,18 +487,21 @@ def roll_loot(user_id, mob):
 
 
 def process_victory_reward(user_id, player_level, mob):
-    """Single authoritative victory transaction composition after 11.9.0."""
-    exp = calculate_exp_reward(player_level=player_level, mob=mob)
+    """Victory reward with +25% timed EXP only for normal, elite and boss mob kills."""
+    base_exp = calculate_exp_reward(player_level=player_level, mob=mob)
     gold = calculate_gold_reward(player_level=player_level, mob=mob)
-
+    from systems.timed_exp_bonus_system import calculate_mob_kill_exp
+    exp_breakdown = calculate_mob_kill_exp(user_id, base_exp)
+    exp = int(exp_breakdown["final_exp"])
     exp_result = add_exp(user_id, exp)
     add_gold(user_id, gold)
     add_kill(user_id)
-
     drop_result = process_enemy_drops(user_id, mob)
-
     return {
         "exp": exp,
+        "base_exp": int(base_exp),
+        "premium_exp_bonus": int(exp_breakdown["bonus_exp"]),
+        "exp_bonus_active": bool(exp_breakdown["active"]),
         "gold": gold,
         "exp_result": exp_result,
         "loot_messages": drop_result["messages"],
@@ -507,4 +510,5 @@ def process_victory_reward(user_id, player_level, mob):
         "used_slots": get_inventory_used_slots(user_id),
         "capacity": get_bag_capacity(user_id),
     }
+
 

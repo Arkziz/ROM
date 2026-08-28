@@ -3,12 +3,13 @@ from telebot import types
 from keyboards import main_kb
 from systems.crystal_shop_system import CRYSTAL_SHOP_CATALOG,get_crystal_shop_catalog,preview_crystal_shop_purchase,purchase_crystal_shop_item
 from systems.crystal_wallet_system import get_crystal_balance
-MENU_BUTTON='📋 Меню';SHOP_BUTTON='💎 Магазин кристалів';BACK='🔙 Закрити магазин';states={}
+MENU_BUTTON='📋 Меню';SHOP_BUTTON='💎 Магазин кристалів';BACK='🔙 Закрити магазин';EXP_BONUS_BUTTON='📈 Бонус досвіду +25%';states={}
 def _menu_kb():
  k=types.ReplyKeyboardMarkup(resize_keyboard=True);k.add(SHOP_BUTTON);k.add(BACK);return k
 def _shop_kb():
  k=types.ReplyKeyboardMarkup(resize_keyboard=True)
  for iid,v in get_crystal_shop_catalog().items():k.add(f"{v['name']} — {v['price']} 💎")
+ k.add(EXP_BONUS_BUTTON)
  k.add(BACK);return k
 def _qty_kb(iid,qty):
  k=types.InlineKeyboardMarkup();k.row(types.InlineKeyboardButton('➖',callback_data=f'cs:q:{iid}:{max(1,qty-1)}'),types.InlineKeyboardButton(f'×{qty}',callback_data='cs:noop'),types.InlineKeyboardButton('➕',callback_data=f'cs:q:{iid}:{qty+1}'));k.row(types.InlineKeyboardButton('✍️ Ввести кількість',callback_data=f'cs:input:{iid}'));k.row(types.InlineKeyboardButton('✅ Продовжити',callback_data=f'cs:review:{iid}:{qty}'),types.InlineKeyboardButton('❌ Скасувати',callback_data='cs:cancel'));return k
@@ -79,10 +80,6 @@ def _reject_stale_shop_callback(bot, call):
 
 
 def register_crystal_shop_handlers(bot):
- @bot.message_handler(func=lambda m:m.text==MENU_BUTTON)
- def menu(message):
-  _close_shop_session(bot,message.from_user.id)
-  bot.send_message(message.chat.id,'📋 Меню\n\nОберіть розділ:',reply_markup=_menu_kb())
  @bot.message_handler(func=lambda m:m.text==SHOP_BUTTON)
  def shop(message):
   _close_shop_session(bot,message.from_user.id)
@@ -90,7 +87,8 @@ def register_crystal_shop_handlers(bot):
  @bot.message_handler(func=lambda m:m.text==BACK)
  def back(message):
   _close_shop_session(bot,message.from_user.id)
-  bot.send_message(message.chat.id,'Головне меню.',reply_markup=main_kb())
+  from handlers.city import build_account_menu_text_17_30_1_4, account_menu_kb_17_30_1_4
+  bot.send_message(message.chat.id,build_account_menu_text_17_30_1_4(message.from_user.id),reply_markup=account_menu_kb_17_30_1_4())
  @bot.message_handler(func=lambda m:_item_from_text(m.text) is not None)
  def choose(message):
   iid=_item_from_text(message.text)

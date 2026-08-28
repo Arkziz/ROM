@@ -1708,11 +1708,21 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
     text += (
         f"{mob['name']} повалений на землю.\n\n"
         f"📈 Нагорода:\n"
-        f"✨ Досвід: +{reward['exp']} EXP"
     )
 
-    if exp_result:
-        text += f" ({exp_result['exp']}/{exp_result['exp_to_next']})"
+    premium_bonus = int(reward.get("premium_exp_bonus", 0) or 0)
+    if bool(reward.get("exp_bonus_active")) and premium_bonus > 0:
+        text += (
+            f"✨ Досвід: +{reward['exp']} EXP\n"
+            f"   ├ Базовий: {int(reward.get('base_exp', reward['exp']))} EXP\n"
+            f"   ├ Premium +25%: +{premium_bonus} EXP"
+        )
+        if exp_result:
+            text += f"\n   └ Прогрес: {exp_result['exp']}/{exp_result['exp_to_next']}"
+    else:
+        text += f"✨ Досвід: +{reward['exp']} EXP"
+        if exp_result:
+            text += f" ({exp_result['exp']}/{exp_result['exp_to_next']})"
 
         # Stage 17.14.1.1 sends level-up information separately.
 

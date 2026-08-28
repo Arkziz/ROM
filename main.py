@@ -90,6 +90,8 @@ from handlers.guild import register_guild_handlers
 from handlers.auction_house import register_auction_house_handlers
 from handlers.blacksmith_repair_confirm import register_blacksmith_repair_confirmation_handlers
 from handlers.crystal_shop import register_crystal_shop_handlers
+from handlers.timed_exp_bonus import register_timed_exp_bonus_handlers
+from systems.timed_exp_bonus_system import init_timed_exp_bonus_system
 from handlers.name_rune import register_name_rune_handlers
 from systems.name_rune_system import init_name_rune_system
 from systems.crystal_shop_system import init_crystal_shop_system
@@ -156,9 +158,11 @@ init_class_reset_sphere()
 # ==============================
 
 init_crystal_shop_system()
+init_timed_exp_bonus_system()
 init_name_rune_system()
 
 register_crystal_shop_handlers(bot)
+register_timed_exp_bonus_handlers(bot)
 register_start_handlers(bot)
 register_profile_handlers(bot)
 register_inventory_handlers(bot)
