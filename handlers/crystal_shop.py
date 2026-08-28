@@ -3,7 +3,7 @@ from telebot import types
 from keyboards import main_kb
 from systems.crystal_shop_system import CRYSTAL_SHOP_CATALOG,get_crystal_shop_catalog,preview_crystal_shop_purchase,purchase_crystal_shop_item
 from systems.crystal_wallet_system import get_crystal_balance
-MENU_BUTTON='📋 Меню';SHOP_BUTTON='💎 Магазин кристалів';BACK='🔙 Назад';states={}
+MENU_BUTTON='📋 Меню';SHOP_BUTTON='💎 Магазин кристалів';BACK='🔙 Закрити магазин';states={}
 def _menu_kb():
  k=types.ReplyKeyboardMarkup(resize_keyboard=True);k.add(SHOP_BUTTON);k.add(BACK);return k
 def _shop_kb():

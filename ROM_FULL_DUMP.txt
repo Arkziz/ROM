@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-26 23:43:31 +03:00
+Created: 2026-08-28 20:21:23 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9168
-Scanned files: 6637
-Included files: 469
-Excluded files: 6168
-Included source size: 3,29 MB
+Scanned files: 6850
+Included files: 484
+Excluded files: 6366
+Included source size: 3,35 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 6162
+- excluded directory: 6360
 - excluded file name or pattern: 6
 - unsupported file type: 0
 
@@ -71,6 +71,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - handlers\city.py
 - handlers\combat.py
 - handlers\contracts.py
+- handlers\crystal_shop.py
 - handlers\daily.py
 - handlers\dev.py
 - handlers\guild.py
@@ -90,12 +91,15 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - migrations\010_rune_system_data_model.py
 - migrations\README.md
 - migrations\runner.py
+- requirements.txt
 - systems\__init__.py
 - systems\auction_house_system.py
 - systems\boss_system.py
 - systems\character_system.py
 - systems\combat_system.py
 - systems\contract_system.py
+- systems\crystal_shop_system.py
+- systems\crystal_wallet_system.py
 - systems\drop_system.py
 - systems\dynamic_equipment_system.py
 - systems\energy_system.py
@@ -106,7 +110,9 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\player_interaction_system.py
 - systems\player_system.py
 - systems\potion_system.py
+- systems\premium_item_policy_system.py
 - systems\production_logging.py
+- systems\profile_history_system.py
 - systems\pve_skill_action_state.py
 - systems\pvp_action_validation.py
 - systems\pvp_adaptive_balance_optimizer.py
@@ -290,6 +296,9 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_contract_reward_direct_facade.py
 - tools\smoke_test_create_user_contracts.py
 - tools\smoke_test_critical_production_logging_print_contract_recovery_17_20_1_1.py
+- tools\smoke_test_crystal_shop_17_27_1.py
+- tools\smoke_test_crystal_shop_stale_menu_cleanup_17_27_1_1.py
+- tools\smoke_test_crystal_wallet_smoke_import_recovery_17_25_1_1.py
 - tools\smoke_test_daily_firius_token_reward.py
 - tools\smoke_test_daily_handler_db_api_16_0_6.py
 - tools\smoke_test_daily_quest_reset_db_export_16_1_13_1.py
@@ -330,10 +339,12 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_global_telegram_rate_limit_guard.py
 - tools\smoke_test_guild_actor_name_log.py
 - tools\smoke_test_guild_contract_target_log.py
+- tools\smoke_test_guild_leader_exit_handler_routing_recovery_17_22_1_2.py
 - tools\smoke_test_guild_leadership_transfer_and_leader_exit_17_22_1.py
 - tools\smoke_test_guild_leadership_transfer_handler_imports_17_22_1.py
 - tools\smoke_test_guild_leave_cooldown_17_21_1.py
 - tools\smoke_test_guild_leave_timezone_db_neutral_17_21_1_3.py
+- tools\smoke_test_guild_level_gate_db_neutral_recovery_17_23_1_1_1.py
 - tools\smoke_test_guild_member_list_explicit_actor_recovery_17_21_3_4.py
 - tools\smoke_test_guild_profile_line_runtime_16_1_1.py
 - tools\smoke_test_interaction_session_timeout_and_recovery.py
@@ -358,6 +369,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_notification_worker_dynamic_rune_max_mp_recovery_17_15_1_1.py
 - tools\smoke_test_notification_worker_refine_formula_16_1_23.py
 - tools\smoke_test_notification_worker_rune_hp_16_1_22.py
+- tools\smoke_test_paid_guild_creation_and_member_limit_10_17_23_1.py
 - tools\smoke_test_perfect_rune_extractor.py
 - tools\smoke_test_persistent_mana_regeneration_17_15_1.py
 - tools\smoke_test_player_combat_stats.py
@@ -396,8 +408,11 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_player_trade_status_button_noop.py
 - tools\smoke_test_player_trade_status_button_stub.py
 - tools\smoke_test_player_trade_synchronized_confirmation_status_ui.py
+- tools\smoke_test_premium_item_smoke_path_recovery_17_26_1_1.py
 - tools\smoke_test_preserve_final_turn_hot_healing_16_1_21.py
 - tools\smoke_test_production_combat_actor_parity.py
+- tools\smoke_test_profile_history_button_and_pvp_reason_localization_17_24_1_1.py
+- tools\smoke_test_profile_trade_and_pvp_history_17_24_1.py
 - tools\smoke_test_progression_asset_snapshot_economic_ledger.py
 - tools\smoke_test_progression_wall_delta_asset_valuation.py
 - tools\smoke_test_pve_analysis_performance.py
@@ -505,19 +520,30 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 
 ============================================================
 FILE: .gitignore
-SIZE: 100 bytes
-LAST WRITE: 2026-08-13 20:43:40
+SIZE: 235 bytes
+LAST WRITE: 2026-08-27 00:56:34
 ============================================================
 
+# Runtime logs
+logs/**/*.log
+logs/**/*.log.*
+
+# Environment and databases
 .env
 *.db
 *.db-shm
 *.db-wal
 
+# Runtime logs
+logs/**/*.log
+logs/**/*.log.*
+
+# Python
 __pycache__/
 *.pyc
-
 .venv/
+
+# IDE
 .vscode/
 .idea/
 
@@ -1304,8 +1330,8 @@ def exported_names():
 
 ============================================================
 FILE: data\drop_tables.py
-SIZE: 8922 bytes
-LAST WRITE: 2026-08-20 01:00:46
+SIZE: 8927 bytes
+LAST WRITE: 2026-08-28 00:07:53
 ============================================================
 
 """Canonical central-drop configuration model for ROM Stage 11.
@@ -1541,7 +1567,7 @@ DROP_RULES_BY_ID = {rule["rule_id"]: rule for rule in DROP_RULES}
 # remain in DROP_RULES so future sources can be configured without scattering
 # item IDs through gameplay code.
 SPECIAL_MATERIAL_MOB_DROP_POLICY_VERSION = "11.7.0"
-SPECIAL_MATERIAL_MOB_DROP_DENYLIST = frozenset((402, 527, 528))
+SPECIAL_MATERIAL_MOB_DROP_DENYLIST = frozenset((301, 402, 527, 528))
 SPECIAL_MATERIAL_SOURCE_POLICY = {
     402: {
         "rule_id": "success_rune",
@@ -2762,9 +2788,36 @@ from db_modules import *
 
 ============================================================
 FILE: db_modules\__init__.py
-SIZE: 20796 bytes
-LAST WRITE: 2026-08-26 23:34:59
+SIZE: 22046 bytes
+LAST WRITE: 2026-08-28 00:39:02
 ============================================================
+
+from systems.crystal_shop_system import (
+    CRYSTAL_SHOP_CATALOG,
+    init_crystal_shop_system,
+    get_crystal_shop_catalog,
+    preview_crystal_shop_purchase,
+    purchase_crystal_shop_item,
+    get_crystal_shop_purchases,
+)
+
+from systems.premium_item_policy_system import (
+    init_premium_item_policy,
+    get_premium_item_policy,
+    can_grant_item_from_source,
+    grant_item_from_source,
+    get_premium_item_grants,
+)
+
+from systems.crystal_wallet_system import (
+    init_crystal_wallet_system,
+    get_crystal_wallet,
+    get_crystal_balance,
+    credit_crystals,
+    debit_crystals,
+    get_crystal_transactions,
+    compensate_crystal_transaction,
+)
 
 """
 DB Modules - Розбитий db.py на логічні модулі
@@ -3068,7 +3121,7 @@ __all__ = [
     # Guild system (~80 functions)
     'init_guild_system', 'get_current_guild_season_key',
     'ensure_all_guild_monthly_seasons', 'ensure_guild_monthly_season',
-    'create_guild', 'get_user_guild', 'get_user_guild_member',
+    'create_guild', 'get_guild_creation_terms', 'get_user_guild', 'get_user_guild_member',
     'get_user_guild_role', 'is_user_in_guild',
     'get_guild_by_id', 'get_guild_by_name_or_tag',
     'get_guild_members', 'get_guild_member_count',
@@ -3238,6 +3291,12 @@ __all__.append('get_equipped_slot')
 __all__.append('get_contract_exp_for_level')
 
 __all__.append('reset_daily_quest_if_needed')
+
+__all__.extend(['init_crystal_wallet_system','get_crystal_wallet','get_crystal_balance','credit_crystals','debit_crystals','get_crystal_transactions','compensate_crystal_transaction'])
+
+__all__.extend(['init_premium_item_policy','get_premium_item_policy','can_grant_item_from_source','grant_item_from_source','get_premium_item_grants'])
+
+__all__.extend(['CRYSTAL_SHOP_CATALOG','init_crystal_shop_system','get_crystal_shop_catalog','preview_crystal_shop_purchase','purchase_crystal_shop_item','get_crystal_shop_purchases'])
 
 ============================================================
 FILE: db_modules\character.py
@@ -3908,8 +3967,8 @@ __all__ = ['get_daily_quest_status']
 
 ============================================================
 FILE: db_modules\dev_compat.py
-SIZE: 51307 bytes
-LAST WRITE: 2026-08-23 00:20:27
+SIZE: 51350 bytes
+LAST WRITE: 2026-08-27 23:15:28
 ============================================================
 
 # ROM 17.17.1.5 WARRIOR SMALL SHIELD
@@ -4288,7 +4347,7 @@ def reset_hero_for_test(user_id):
                     "winner_user_id",
                     "loser_user_id",
                 )
-                protected_tables = {"users", "items", "inventory", "equipment_slots", "inventory_runes"}
+                protected_tables = {"users", "items", "inventory", "equipment_slots", "inventory_runes", "crystal_wallets", "crystal_transactions"}
                 table_names = [
                     str(row[0])
                     for row in cursor.execute(
@@ -10301,8 +10360,8 @@ def populate_class_shop_for_user(user_id):
 
 ============================================================
 FILE: db_modules\systems_wrappers.py
-SIZE: 31674 bytes
-LAST WRITE: 2026-08-26 23:34:59
+SIZE: 31780 bytes
+LAST WRITE: 2026-08-27 00:11:02
 ============================================================
 
 """
@@ -10406,6 +10465,10 @@ def ensure_guild_monthly_season(guild_id):
 
 def create_guild(user_id, name, tag, icon="🏰"):
     return _guild_system().create_guild(user_id=user_id, name=name, tag=tag, icon=icon)
+
+
+def get_guild_creation_terms(user_id):
+    return _guild_system().get_guild_creation_terms(user_id)
 
 
 def get_user_guild(user_id):
@@ -23708,6 +23771,159 @@ def register_contract_handlers(bot):
         )
 
 ============================================================
+FILE: handlers\crystal_shop.py
+SIZE: 8879 bytes
+LAST WRITE: 2026-08-28 00:55:14
+============================================================
+
+# -*- coding: utf-8 -*-
+from telebot import types
+from keyboards import main_kb
+from systems.crystal_shop_system import CRYSTAL_SHOP_CATALOG,get_crystal_shop_catalog,preview_crystal_shop_purchase,purchase_crystal_shop_item
+from systems.crystal_wallet_system import get_crystal_balance
+MENU_BUTTON='📋 Меню';SHOP_BUTTON='💎 Магазин кристалів';BACK='🔙 Назад';states={}
+def _menu_kb():
+ k=types.ReplyKeyboardMarkup(resize_keyboard=True);k.add(SHOP_BUTTON);k.add(BACK);return k
+def _shop_kb():
+ k=types.ReplyKeyboardMarkup(resize_keyboard=True)
+ for iid,v in get_crystal_shop_catalog().items():k.add(f"{v['name']} — {v['price']} 💎")
+ k.add(BACK);return k
+def _qty_kb(iid,qty):
+ k=types.InlineKeyboardMarkup();k.row(types.InlineKeyboardButton('➖',callback_data=f'cs:q:{iid}:{max(1,qty-1)}'),types.InlineKeyboardButton(f'×{qty}',callback_data='cs:noop'),types.InlineKeyboardButton('➕',callback_data=f'cs:q:{iid}:{qty+1}'));k.row(types.InlineKeyboardButton('✍️ Ввести кількість',callback_data=f'cs:input:{iid}'));k.row(types.InlineKeyboardButton('✅ Продовжити',callback_data=f'cs:review:{iid}:{qty}'),types.InlineKeyboardButton('❌ Скасувати',callback_data='cs:cancel'));return k
+def _item_from_text(text):
+ for iid,v in CRYSTAL_SHOP_CATALOG.items():
+  if str(text or '').startswith(v['name']):return iid
+ return None
+
+def _remember_shop_message(user_id, chat_id, message_id, item_id, quantity, stage):
+    states[int(user_id)] = {
+        "chat_id": int(chat_id),
+        "message_id": int(message_id),
+        "item_id": int(item_id),
+        "quantity": int(quantity),
+        "stage": str(stage),
+    }
+
+
+def _close_shop_session(bot, user_id, text="❌ Вибір покупки закрито."):
+    state = states.pop(int(user_id), None)
+    if not state:
+        return False
+    try:
+        bot.edit_message_text(
+            text,
+            int(state["chat_id"]),
+            int(state["message_id"]),
+            reply_markup=None,
+        )
+    except Exception:
+        try:
+            bot.edit_message_reply_markup(
+                int(state["chat_id"]),
+                int(state["message_id"]),
+                reply_markup=None,
+            )
+        except Exception:
+            pass
+    return True
+
+
+def _active_shop_callback(call, *, item_id=None, quantity=None, stages=()):
+    state = states.get(int(call.from_user.id))
+    if not state:
+        return False
+    if int(state.get("chat_id", -1)) != int(call.message.chat.id):
+        return False
+    if int(state.get("message_id", -1)) != int(call.message.message_id):
+        return False
+    if item_id is not None and int(state.get("item_id", -1)) != int(item_id):
+        return False
+    if quantity is not None and int(state.get("quantity", -1)) != int(quantity):
+        return False
+    if stages and str(state.get("stage")) not in set(stages):
+        return False
+    return True
+
+
+def _reject_stale_shop_callback(bot, call):
+    try:
+        bot.answer_callback_query(
+            call.id,
+            "Це меню покупки вже неактивне.",
+            show_alert=True,
+        )
+    except Exception:
+        pass
+
+
+def register_crystal_shop_handlers(bot):
+ @bot.message_handler(func=lambda m:m.text==MENU_BUTTON)
+ def menu(message):
+  _close_shop_session(bot,message.from_user.id)
+  bot.send_message(message.chat.id,'📋 Меню\n\nОберіть розділ:',reply_markup=_menu_kb())
+ @bot.message_handler(func=lambda m:m.text==SHOP_BUTTON)
+ def shop(message):
+  _close_shop_session(bot,message.from_user.id)
+  bot.send_message(message.chat.id,f"💎 Магазин кристалів\n\nБаланс: {get_crystal_balance(message.from_user.id)} 💎\n\nОберіть предмет:",reply_markup=_shop_kb())
+ @bot.message_handler(func=lambda m:m.text==BACK)
+ def back(message):
+  _close_shop_session(bot,message.from_user.id)
+  bot.send_message(message.chat.id,'Головне меню.',reply_markup=main_kb())
+ @bot.message_handler(func=lambda m:_item_from_text(m.text) is not None)
+ def choose(message):
+  iid=_item_from_text(message.text)
+  _close_shop_session(bot,message.from_user.id)
+  v=CRYSTAL_SHOP_CATALOG[iid]
+  sent=bot.send_message(message.chat.id,f"{v['name']}\nЦіна: {v['price']} 💎\nКількість: 1\nРазом: {v['price']} 💎",reply_markup=_qty_kb(iid,1))
+  _remember_shop_message(message.from_user.id,sent.chat.id,sent.message_id,iid,1,'quantity')
+ @bot.callback_query_handler(func=lambda c:str(c.data or '').startswith('cs:'))
+ def callback(call):
+  data=call.data;uid=call.from_user.id
+  if data=='cs:noop':bot.answer_callback_query(call.id);return
+  if data=='cs:cancel':
+   if not _active_shop_callback(call,stages=('quantity','confirm')):
+    _reject_stale_shop_callback(bot,call);return
+   _close_shop_session(bot,uid,'❌ Покупку скасовано.')
+   bot.answer_callback_query(call.id,'Скасовано');return
+  parts=data.split(':');action=parts[1]
+  if action=='q':
+   iid=int(parts[2]);qty=max(1,min(999,int(parts[3])))
+   if not _active_shop_callback(call,item_id=iid,stages=('quantity',)):
+    _reject_stale_shop_callback(bot,call);return
+   _remember_shop_message(uid,call.message.chat.id,call.message.message_id,iid,qty,'quantity')
+   v=CRYSTAL_SHOP_CATALOG[iid];bot.edit_message_text(f"{v['name']}\nЦіна: {v['price']} 💎\nКількість: {qty}\nРазом: {v['price']*qty} 💎",call.message.chat.id,call.message.message_id,reply_markup=_qty_kb(iid,qty));bot.answer_callback_query(call.id);return
+  if action=='input':
+   iid=int(parts[2])
+   if not _active_shop_callback(call,item_id=iid,stages=('quantity',)):
+    _reject_stale_shop_callback(bot,call);return
+   msg=bot.send_message(call.message.chat.id,'✍️ Введіть кількість від 1 до 999:');bot.register_next_step_handler(msg,manual_quantity,iid,call.message.message_id);bot.answer_callback_query(call.id);return
+  if action=='review':
+   iid=int(parts[2]);qty=int(parts[3])
+   if not _active_shop_callback(call,item_id=iid,quantity=qty,stages=('quantity',)):
+    _reject_stale_shop_callback(bot,call);return
+   p=preview_crystal_shop_purchase(uid,iid,qty)
+   if not p['success']:bot.answer_callback_query(call.id,p['message'],show_alert=True);return
+   k=types.InlineKeyboardMarkup();k.row(types.InlineKeyboardButton('✅ Підтвердити покупку',callback_data=f'cs:buy:{iid}:{qty}'),types.InlineKeyboardButton('❌ Скасувати',callback_data='cs:cancel'));bot.edit_message_text(f"✅ Підтвердження покупки\n\n{p['name']}\nКількість: {qty}\nЦіна за 1: {p['unit_price']} 💎\nРазом: {p['total_price']} 💎\nБаланс: {p['balance']} → {p['balance_after']} 💎",call.message.chat.id,call.message.message_id,reply_markup=k);_remember_shop_message(uid,call.message.chat.id,call.message.message_id,iid,qty,'confirm');bot.answer_callback_query(call.id);return
+  if action=='buy':
+   iid=int(parts[2]);qty=int(parts[3])
+   if not _active_shop_callback(call,item_id=iid,quantity=qty,stages=('confirm',)):
+    _reject_stale_shop_callback(bot,call);return
+   key=f"telegram:crystal_shop:{uid}:{call.message.chat.id}:{call.message.message_id}";res=purchase_crystal_shop_item(uid,iid,qty,key)
+   if res['success']:
+    _close_shop_session(bot,uid,f"✅ Покупку завершено.\n\n{res.get('name',CRYSTAL_SHOP_CATALOG[iid]['name'])} ×{qty}\nСписано: {res.get('total_price',CRYSTAL_SHOP_CATALOG[iid]['price']*qty)} 💎\nБаланс: {res.get('balance',res.get('purchase',{}).get('balance_after'))} 💎");bot.answer_callback_query(call.id,'Готово')
+   else:bot.answer_callback_query(call.id,res['message'],show_alert=True)
+ def manual_quantity(message,iid,source_message_id):
+  try:qty=int(str(message.text).strip())
+  except Exception:bot.send_message(message.chat.id,'❌ Введіть ціле число від 1 до 999.');return
+  if qty<1 or qty>999:bot.send_message(message.chat.id,'❌ Кількість має бути від 1 до 999.');return
+  state=states.get(message.from_user.id)
+  if not state or int(state.get('message_id',-1))!=int(source_message_id) or int(state.get('item_id',-1))!=int(iid) or state.get('stage')!='quantity':
+   bot.send_message(message.chat.id,'Це меню покупки вже неактивне.');return
+  v=CRYSTAL_SHOP_CATALOG[iid];sent=bot.send_message(message.chat.id,f"{v['name']}\nЦіна: {v['price']} 💎\nКількість: {qty}\nРазом: {v['price']*qty} 💎",reply_markup=_qty_kb(iid,qty))
+  _close_shop_session(bot,message.from_user.id)
+  _remember_shop_message(message.from_user.id,sent.chat.id,sent.message_id,iid,qty,'quantity')
+
+============================================================
 FILE: handlers\daily.py
 SIZE: 3132 bytes
 LAST WRITE: 2026-08-18 21:39:57
@@ -23822,8 +24038,8 @@ def register_daily_handlers(bot):
 
 ============================================================
 FILE: handlers\dev.py
-SIZE: 39163 bytes
-LAST WRITE: 2026-08-22 00:12:58
+SIZE: 43985 bytes
+LAST WRITE: 2026-08-28 00:07:53
 ============================================================
 
 # ROM 17.14.1.1 SEPARATE LEVEL REWARD MESSAGE AND DEV EXP SETTER
@@ -24906,11 +25122,66 @@ def register_dev_handlers(bot):
             reply_markup=main_kb(),
         )
 
+    @bot.message_handler(commands=["crystals"])
+    def crystal_balance_17_25_1(message):
+        if not DEV_MODE:return
+        from systems.crystal_wallet_system import get_crystal_balance
+        balance=get_crystal_balance(message.from_user.id)
+        bot.send_message(message.chat.id,f"💎 Кристали: {balance}\n🆔 Account ID: {message.from_user.id}",reply_markup=main_kb())
+
+    @bot.message_handler(commands=["crystal_credit"])
+    def crystal_credit_17_25_1(message):
+        if not DEV_MODE:return
+        from systems.crystal_wallet_system import credit_crystals
+        parts=str(message.text or "").split()
+        try:amount=int(parts[1])
+        except Exception:
+            bot.send_message(message.chat.id,"❌ Формат: /crystal_credit N",reply_markup=main_kb());return
+        result=credit_crystals(message.from_user.id,amount,"dev_credit",f"dev:credit:{message.from_user.id}:{message.message_id}",metadata={"telegram_message_id":message.message_id})
+        text=f"✅ DEV: +{amount} 💎\nБаланс: {result.get('balance',0)}" if result.get("success") else f"❌ {result.get('message','Помилка')}"
+        bot.send_message(message.chat.id,text,reply_markup=main_kb())
+
+    @bot.message_handler(commands=["crystal_debit"])
+    def crystal_debit_17_25_1(message):
+        if not DEV_MODE:return
+        from systems.crystal_wallet_system import debit_crystals
+        parts=str(message.text or "").split()
+        try:amount=int(parts[1])
+        except Exception:
+            bot.send_message(message.chat.id,"❌ Формат: /crystal_debit N",reply_markup=main_kb());return
+        result=debit_crystals(message.from_user.id,amount,"dev_debit",f"dev:debit:{message.from_user.id}:{message.message_id}",metadata={"telegram_message_id":message.message_id})
+        text=f"✅ DEV: -{amount} 💎\nБаланс: {result.get('balance',0)}" if result.get("success") else f"❌ {result.get('message','Помилка')}"
+        bot.send_message(message.chat.id,text,reply_markup=main_kb())
+
+    @bot.message_handler(commands=["crystal_history"])
+    def crystal_history_17_25_1(message):
+        if not DEV_MODE:return
+        from systems.crystal_wallet_system import get_crystal_transactions
+        data=get_crystal_transactions(message.from_user.id,page=0,page_size=10);lines=["💎 Останні транзакції:"]
+        for row in data["items"]:
+            sign="+" if row["operation"]=="credit" else "-";lines.append(f"#{row['id']} {sign}{row['amount']} | {row['reason_code']} | баланс {row['balance_after']}")
+        if not data["items"]:lines.append("Записів немає.")
+        bot.send_message(message.chat.id,"\n".join(lines),reply_markup=main_kb())
+
+    @bot.message_handler(commands=["dev_premium_item"])
+    def dev_premium_item_17_26_1(message):
+        if not DEV_MODE:return
+        from systems.premium_item_policy_system import grant_item_from_source
+        parts=str(message.text or "").split()
+        try:item_id=int(parts[1]);quantity=int(parts[2]) if len(parts)>2 else 1
+        except Exception:
+            bot.send_message(message.chat.id,"❌ Формат: /dev_premium_item item_id [quantity]",reply_markup=main_kb());return
+        result=grant_item_from_source(message.from_user.id,item_id,quantity,"dev_command",f"dev:premium:{message.from_user.id}:{message.message_id}",metadata={"telegram_message_id":message.message_id},dev_mode=True)
+        text=(f"✅ DEV: видано предмет {item_id} ×{quantity}." if result.get("success") else f"❌ {result.get('message','Видачу відхилено.')}")
+        bot.send_message(message.chat.id,text,reply_markup=main_kb())
+
+
+
 
 ============================================================
 FILE: handlers\guild.py
-SIZE: 113610 bytes
-LAST WRITE: 2026-08-26 23:40:52
+SIZE: 114384 bytes
+LAST WRITE: 2026-08-27 00:27:47
 ============================================================
 
 # ROM 17.21.3.4 GUILD MEMBER LIST EXPLICIT ACTOR RECOVERY
@@ -24931,6 +25202,7 @@ from db import (
     get_guild_role_label,
     get_current_guild_season_key,
     create_guild,
+    get_guild_creation_terms,
     get_guild_by_name_or_tag,
     get_guild_by_id,
     get_public_guild_list,
@@ -25426,18 +25698,10 @@ def build_guild_create_icon_prompt(name, tag):
     )
 
 
-def build_guild_create_confirm_text(state):
-    name = state.get("name", "")
-    tag = state.get("tag", "")
-    icon = state.get("icon", "🏰")
-    return (
-        "🏗️ Створення гільдії\n\n"
-        "Крок 4/4 — підтвердження.\n\n"
-        f"Майбутня гільдія:\n"
-        f"{icon} [{tag}] {name}\n\n"
-        "Вартість створення: 0 золота.\n\n"
-        "Підтвердити створення?"
-    )
+def build_guild_create_confirm_text(state, user_id=None):
+    name = state.get("name", ""); tag = state.get("tag", ""); icon = state.get("icon", "🏰")
+    terms = get_guild_creation_terms(user_id) if user_id is not None else {"cost_gold": 100.0, "gold_balance": 0.0, "member_limit": 10}
+    return ("🏗️ Створення гільдії\n\nКрок 4/4 — підтвердження.\n\n" f"Майбутня гільдія:\n{icon} [{tag}] {name}\n\n" f"Вартість: {terms['cost_gold']:.2f} 🪙\n" f"Твій баланс: {terms['gold_balance']:.2f} 🪙\n" f"Початковий ліміт: {terms['member_limit']} учасників.\n\n" "Підтвердити створення?")
 
 
 # ==============================
@@ -25484,6 +25748,14 @@ def show_guild_detail(bot, message, guild_id):
 def start_guild_creation(bot, message):
     user_id = message.from_user.id
     init_guild_system()
+    terms = get_guild_creation_terms(user_id)
+    if not terms.get("level_allowed"):
+        bot.send_message(
+            message.chat.id,
+            f"❌ Створення гільдії доступне з {terms.get('min_level', 3)} рівня.\nТвій поточний рівень: {terms.get('level', 0)}.",
+            reply_markup=guild_hall_kb(user_id),
+        )
+        return
 
     if get_user_guild(user_id):
         bot.send_message(message.chat.id, "❌ Ти вже перебуваєш у гільдії.", reply_markup=guild_hall_kb(user_id))
@@ -25543,7 +25815,7 @@ def handle_guild_creation_message(bot, message):
             return True
         state["icon"] = result
         state["step"] = "confirm"
-        bot.send_message(message.chat.id, build_guild_create_confirm_text(state), reply_markup=guild_create_confirm_kb())
+        bot.send_message(message.chat.id, build_guild_create_confirm_text(state, user_id), reply_markup=guild_create_confirm_kb())
         return True
 
     if step == "confirm":
@@ -26735,13 +27007,17 @@ def _guild_progress_bar(percent, width=10):
 # ROM 17.21.1 GUILD LEAVE COOLDOWN
 def guild_hall_kb(user_id):
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-
-    if get_user_guild(user_id):
+    guild = get_user_guild(user_id)
+    role = str(get_user_guild_role(user_id) or "") if guild else ""
+    if guild:
         kb.add("ℹ️ Інформація", "👥 Учасники")
         kb.add("📊 Внесок", "🏛 Прогрес гільдії")
         kb.add("📨 Заявки", "📜 Журнал")
         kb.row("🏆 Місячний рейтинг", "🏆 Рейтинг за весь час")
-        kb.add("🚪 Покинути гільдію")
+        if role == "leader":
+            kb.row("🚪 Покинути гільдію", "👑 Передати керівництво")
+        else:
+            kb.add("🚪 Покинути гільдію")
         kb.add("🔙 Місто")
     else:
         kb.add("🏗️ Створити гільдію")
@@ -26749,9 +27025,6 @@ def guild_hall_kb(user_id):
         kb.row("🏆 Місячний рейтинг", "🏆 Рейтинг за весь час")
         kb.add("📨 Мої заявки")
         kb.add("🔙 Місто")
-
-    if str(get_user_guild_role(user_id) or "")=="leader":
-        kb.add("👑 Передати керівництво")
     return kb
 
 
@@ -27745,6 +28018,59 @@ def _guild_leadership_confirm_kb_17_22_1(mode,target_id):
     kb=types.InlineKeyboardMarkup(row_width=1); kb.add(types.InlineKeyboardButton("✅ Підтвердити",callback_data=f"guild_leadership_confirm:{mode}:{int(target_id)}")); kb.add(types.InlineKeyboardButton("❌ Скасувати",callback_data="guild_leadership_cancel")); return kb
 
 def register_guild_handlers(bot):
+    @bot.message_handler(func=lambda message: getattr(message, 'text', None) == '🚪 Покинути гільдію')
+    def guild_leave_prompt_17_21_1(message):
+        from db import get_user_guild_role
+        user_id = int(message.from_user.id)
+        guild = get_user_guild(user_id)
+        if not guild:
+            bot.send_message(message.chat.id, '❌ Ти не перебуваєш у гільдії.', reply_markup=guild_hall_kb(user_id))
+            return
+        if str(get_user_guild_role(user_id) or '') == 'leader':
+            candidates=_guild_leadership_candidates_17_22_1(user_id)
+            if not candidates: bot.send_message(message.chat.id,"❌ Голова не може покинути одноосібну гільдію.",reply_markup=guild_hall_kb(user_id)); return
+            _GUILD_LEADERSHIP_STATE_17_22_1[user_id]={"mode":"leave"}
+            bot.send_message(message.chat.id,"Оберіть нового голову. Після підтвердження ти покинеш гільдію.",reply_markup=_guild_leadership_select_kb_17_22_1(user_id,"leave"))
+            return
+        kb = types.InlineKeyboardMarkup()
+        kb.row(types.InlineKeyboardButton('✅ Покинути', callback_data='guild_leave:confirm'), types.InlineKeyboardButton('❌ Скасувати', callback_data='guild_leave:cancel'))
+        bot.send_message(message.chat.id, f"Покинути гільдію {get_guild_display_name(guild)}?\n\nПісля виходу ти не зможеш вступити до іншої гільдії або створити власну протягом 24 годин.", reply_markup=kb)
+    @bot.callback_query_handler(func=lambda call: str(getattr(call, 'data', '')).startswith('guild_leave:'))
+    def guild_leave_callback_17_21_1(call):
+        from db import leave_guild
+        user_id = int(call.from_user.id)
+        action = str(call.data).split(':', 1)[1]
+        try:
+            bot.answer_callback_query(call.id)
+        except Exception:
+            pass
+        if action == 'cancel':
+            bot.send_message(call.message.chat.id, 'ℹ️ Вихід із гільдії скасовано.', reply_markup=guild_hall_kb(user_id))
+            return
+        result = leave_guild(user_id)
+        bot.send_message(call.message.chat.id, result.get('message', '❌ Не вдалося виконати дію.'), reply_markup=guild_hall_kb(user_id))
+    @bot.message_handler(func=lambda m:getattr(m,"text",None)=="👑 Передати керівництво")
+    def guild_leadership_start_17_22_1(message):
+        uid=int(message.from_user.id); candidates=_guild_leadership_candidates_17_22_1(uid)
+        if str(get_user_guild_role(uid) or "")!="leader": bot.send_message(message.chat.id,"❌ Передавати керівництво може тільки голова."); return
+        if not candidates: bot.send_message(message.chat.id,"❌ У гільдії немає іншого учасника.",reply_markup=guild_hall_kb(uid)); return
+        _GUILD_LEADERSHIP_STATE_17_22_1[uid]={"mode":"transfer"}; bot.send_message(message.chat.id,"Оберіть нового голову:",reply_markup=_guild_leadership_select_kb_17_22_1(uid,"transfer"))
+    @bot.callback_query_handler(func=lambda c:str(getattr(c,"data","")).startswith("guild_leadership_"))
+    def guild_leadership_callback_17_22_1(call):
+        uid=int(call.from_user.id); data=str(call.data)
+        try: bot.answer_callback_query(call.id)
+        except Exception: pass
+        if data=="guild_leadership_cancel": _GUILD_LEADERSHIP_STATE_17_22_1.pop(uid,None); bot.send_message(call.message.chat.id,"❌ Операцію скасовано.",reply_markup=guild_hall_kb(uid)); return
+        parts=data.split(":")
+        if len(parts)!=3 or parts[0] not in {"guild_leadership_select","guild_leadership_confirm"} or parts[1] not in {"transfer","leave"}: return
+        mode,target_id=parts[1],int(parts[2]); guild=get_user_guild(uid); target=get_guild_member(guild["id"],target_id) if guild else None
+        if str(get_user_guild_role(uid) or "")!="leader" or not target: _GUILD_LEADERSHIP_STATE_17_22_1.pop(uid,None); bot.send_message(call.message.chat.id,"❌ Склад гільдії змінився. Почніть знову.",reply_markup=guild_hall_kb(uid)); return
+        name=get_character_name_by_user_id(target_id)
+        if parts[0]=="guild_leadership_select": _GUILD_LEADERSHIP_STATE_17_22_1[uid]={"mode":mode,"target_id":target_id}; bot.send_message(call.message.chat.id,f"Новий голова — {name}. Підтвердити?",reply_markup=_guild_leadership_confirm_kb_17_22_1(mode,target_id)); return
+        state=_GUILD_LEADERSHIP_STATE_17_22_1.pop(uid,None)
+        if not state or state.get("mode")!=mode or int(state.get("target_id",0))!=target_id: bot.send_message(call.message.chat.id,"❌ Підтвердження застаріло.",reply_markup=guild_hall_kb(uid)); return
+        result=transfer_guild_leadership(uid,target_id) if mode=="transfer" else transfer_guild_leadership_and_leave(uid,target_id)
+        bot.send_message(call.message.chat.id,result.get("message","❌ Операцію не завершено."),reply_markup=guild_hall_kb(uid))
     if _base_register_guild_handlers_before_cleanup_diag_v1 is not None:
         _base_register_guild_handlers_before_cleanup_diag_v1(bot)
 
@@ -27769,38 +28095,7 @@ def register_guild_handlers(bot):
             format_guild_cleanup_result_text(result),
             reply_markup=guild_hall_kb(message.from_user.id)
         )
-    @bot.message_handler(func=lambda message: getattr(message, 'text', None) == '🚪 Покинути гільдію')
-    def guild_leave_prompt_17_21_1(message):
-        from db import get_user_guild_role
-        user_id = int(message.from_user.id)
-        guild = get_user_guild(user_id)
-        if not guild:
-            bot.send_message(message.chat.id, '❌ Ти не перебуваєш у гільдії.', reply_markup=guild_hall_kb(user_id))
-            return
-        if str(get_user_guild_role(user_id) or '') == 'leader':
-            candidates=_guild_leadership_candidates_17_22_1(user_id)
-            if not candidates: bot.send_message(message.chat.id,"❌ Голова не може покинути одноосібну гільдію.",reply_markup=guild_hall_kb(user_id)); return
-            _GUILD_LEADERSHIP_STATE_17_22_1[user_id]={"mode":"leave"}
-            bot.send_message(message.chat.id,"Оберіть нового голову. Після підтвердження ти покинеш гільдію.",reply_markup=_guild_leadership_select_kb_17_22_1(user_id,"leave"))
-            return
-        kb = types.InlineKeyboardMarkup()
-        kb.row(types.InlineKeyboardButton('✅ Покинути', callback_data='guild_leave:confirm'), types.InlineKeyboardButton('❌ Скасувати', callback_data='guild_leave:cancel'))
-        bot.send_message(message.chat.id, f"Покинути гільдію {get_guild_display_name(guild)}?\n\nПісля виходу ти не зможеш вступити до іншої гільдії або створити власну протягом 24 годин.", reply_markup=kb)
 
-    @bot.callback_query_handler(func=lambda call: str(getattr(call, 'data', '')).startswith('guild_leave:'))
-    def guild_leave_callback_17_21_1(call):
-        from db import leave_guild
-        user_id = int(call.from_user.id)
-        action = str(call.data).split(':', 1)[1]
-        try:
-            bot.answer_callback_query(call.id)
-        except Exception:
-            pass
-        if action == 'cancel':
-            bot.send_message(call.message.chat.id, 'ℹ️ Вихід із гільдії скасовано.', reply_markup=guild_hall_kb(user_id))
-            return
-        result = leave_guild(user_id)
-        bot.send_message(call.message.chat.id, result.get('message', '❌ Не вдалося виконати дію.'), reply_markup=guild_hall_kb(user_id))
 
     @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith(("guild_kick_confirm:", "guild_kick_cancel:")))
     def guild_kick_confirmation_callback_17_21_3_2(call):
@@ -27834,28 +28129,6 @@ def register_guild_handlers(bot):
         )
         send_guild_members_manage_for_actor_17_21_3_4(bot, call.message.chat.id, user_id)
     # ROM 17.22.1 GUILD LEADERSHIP TRANSFER AND LEADER EXIT
-    @bot.message_handler(func=lambda m:getattr(m,"text",None)=="👑 Передати керівництво")
-    def guild_leadership_start_17_22_1(message):
-        uid=int(message.from_user.id); candidates=_guild_leadership_candidates_17_22_1(uid)
-        if str(get_user_guild_role(uid) or "")!="leader": bot.send_message(message.chat.id,"❌ Передавати керівництво може тільки голова."); return
-        if not candidates: bot.send_message(message.chat.id,"❌ У гільдії немає іншого учасника.",reply_markup=guild_hall_kb(uid)); return
-        _GUILD_LEADERSHIP_STATE_17_22_1[uid]={"mode":"transfer"}; bot.send_message(message.chat.id,"Оберіть нового голову:",reply_markup=_guild_leadership_select_kb_17_22_1(uid,"transfer"))
-    @bot.callback_query_handler(func=lambda c:str(getattr(c,"data","")).startswith("guild_leadership_"))
-    def guild_leadership_callback_17_22_1(call):
-        uid=int(call.from_user.id); data=str(call.data)
-        try: bot.answer_callback_query(call.id)
-        except Exception: pass
-        if data=="guild_leadership_cancel": _GUILD_LEADERSHIP_STATE_17_22_1.pop(uid,None); bot.send_message(call.message.chat.id,"❌ Операцію скасовано.",reply_markup=guild_hall_kb(uid)); return
-        parts=data.split(":")
-        if len(parts)!=3 or parts[0] not in {"guild_leadership_select","guild_leadership_confirm"} or parts[1] not in {"transfer","leave"}: return
-        mode,target_id=parts[1],int(parts[2]); guild=get_user_guild(uid); target=get_guild_member(guild["id"],target_id) if guild else None
-        if str(get_user_guild_role(uid) or "")!="leader" or not target: _GUILD_LEADERSHIP_STATE_17_22_1.pop(uid,None); bot.send_message(call.message.chat.id,"❌ Склад гільдії змінився. Почніть знову.",reply_markup=guild_hall_kb(uid)); return
-        name=get_character_name_by_user_id(target_id)
-        if parts[0]=="guild_leadership_select": _GUILD_LEADERSHIP_STATE_17_22_1[uid]={"mode":mode,"target_id":target_id}; bot.send_message(call.message.chat.id,f"Новий голова — {name}. Підтвердити?",reply_markup=_guild_leadership_confirm_kb_17_22_1(mode,target_id)); return
-        state=_GUILD_LEADERSHIP_STATE_17_22_1.pop(uid,None)
-        if not state or state.get("mode")!=mode or int(state.get("target_id",0))!=target_id: bot.send_message(call.message.chat.id,"❌ Підтвердження застаріло.",reply_markup=guild_hall_kb(uid)); return
-        result=transfer_guild_leadership(uid,target_id) if mode=="transfer" else transfer_guild_leadership_and_leave(uid,target_id)
-        bot.send_message(call.message.chat.id,result.get("message","❌ Операцію не завершено."),reply_markup=guild_hall_kb(uid))
 
 
 
@@ -31678,8 +31951,8 @@ def _trade_ux_mine_kb(state):
 
 ============================================================
 FILE: handlers\profile.py
-SIZE: 15750 bytes
-LAST WRITE: 2026-07-21 14:53:25
+SIZE: 20369 bytes
+LAST WRITE: 2026-08-27 14:36:43
 ============================================================
 
 from db import get_user_guild_profile_line
@@ -31711,6 +31984,7 @@ from db import (
 
 from keyboards import profile_kb, main_kb
 from utils import hp_bar
+from systems.profile_history_system import init_profile_history, get_trade_history, get_trade_history_detail, get_pvp_history, get_pvp_history_detail
 
 # Імпортуємо навички з боєчного модуля, щоб показувати їх у профілі
 from handlers.combat import CLASS_SKILLS_V1
@@ -32070,7 +32344,46 @@ def build_skills_text(user_id):
 # HANDLERS
 # ==============================
 
+
+
+def _history_menu_kb():
+    kb=types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("🤝 Історія обмінів",callback_data="profile_history_trade:0"))
+    kb.add(types.InlineKeyboardButton("⚔️ Історія PvP",callback_data="profile_history_pvp:0"))
+    kb.add(types.InlineKeyboardButton("🔙 Профіль",callback_data="profile_character"))
+    return kb
+
+def _history_list_kb(kind,data):
+    kb=types.InlineKeyboardMarkup(row_width=1)
+    prefix="profile_history_trade_detail" if kind=="trade" else "profile_history_pvp_detail"
+    for item in data.get("items",[]):
+        label=("🤝 "+item["other_name"] if kind=="trade" else (("🏆 " if item["won"] else "💀 ")+item["other_name"]))
+        kb.add(types.InlineKeyboardButton(label,callback_data=f"{prefix}:{item['id']}:{data['page']}"))
+    nav=[]
+    if data.get("has_prev"):nav.append(types.InlineKeyboardButton("⬅️",callback_data=f"profile_history_{kind}:{data['page']-1}"))
+    if data.get("has_next"):nav.append(types.InlineKeyboardButton("➡️",callback_data=f"profile_history_{kind}:{data['page']+1}"))
+    if nav:kb.row(*nav)
+    kb.add(types.InlineKeyboardButton("🔙 Історія",callback_data="profile_history"));return kb
+
+def _history_list_text(kind,data):
+    title="🤝 Історія обмінів" if kind=="trade" else "⚔️ Історія PvP"
+    lines=[title,"",f"Сторінка {data['page']+1}"]
+    if not data.get("items"):lines += ["","Записів поки немає."]
+    for item in data.get("items",[]):
+        if kind=="trade":lines += ["",f"🤝 {item['other_name']}",f"📅 {item['completed_at']}"]
+        else:lines += ["",f"{'🏆 Перемога проти' if item['won'] else '💀 Поразка від'} {item['other_name']}",f"📅 {item['completed_at']}",f"⚔️ Раундів: {item['rounds']}"]
+    return "\n".join(lines)
+
 def register_profile_handlers(bot):
+    init_profile_history()
+
+    @bot.message_handler(func=lambda message: getattr(message, "text", None) == "📜 Історія")
+    def profile_history_reply_message_17_24_1_1(message):
+        bot.send_message(
+            message.chat.id,
+            "📜 Історія\n\nОберіть розділ:",
+            reply_markup=_history_menu_kb(),
+        )
 
     # ==============================
     # PROFILE ROOT
@@ -32189,6 +32502,24 @@ def register_profile_handlers(bot):
             "🏕️ Повернення до табору.",
             reply_markup=main_kb()
         )
+    @bot.callback_query_handler(func=lambda call: str(getattr(call,"data","")).startswith("profile_history"))
+    def profile_history_callback(call):
+        data=str(call.data);uid=int(call.from_user.id)
+        try:bot.answer_callback_query(call.id)
+        except Exception:pass
+        if data=="profile_history":
+            bot.send_message(call.message.chat.id,"📜 Історія\n\nОберіть розділ:",reply_markup=_history_menu_kb());return
+        parts=data.split(":")
+        if data.startswith("profile_history_trade_detail:"):
+            item=get_trade_history_detail(uid,int(parts[1]));page=int(parts[2])
+            text=("🤝 Завершений обмін\n\n"+f"Учасник: {item['other_name']}\nДата: {item['completed_at']}\n\n📤 Ти передав:\n"+"\n".join(item['give_lines'])+"\n\n📥 Ти отримав:\n"+"\n".join(item['take_lines'])) if item else "Запис не знайдено."
+            kb=types.InlineKeyboardMarkup();kb.add(types.InlineKeyboardButton("🔙 До обмінів",callback_data=f"profile_history_trade:{page}"));bot.send_message(call.message.chat.id,text,reply_markup=kb);return
+        if data.startswith("profile_history_pvp_detail:"):
+            item=get_pvp_history_detail(uid,int(parts[1]));page=int(parts[2])
+            text=(f"⚔️ PvP-бій\n\nРезультат: {'🏆 Перемога' if item['won'] else '💀 Поразка'}\nСуперник: {item['other_name']}\nДата: {item['completed_at']}\nРаундів: {item['rounds']}\nПричина: {item['reason']}") if item else "Запис не знайдено."
+            kb=types.InlineKeyboardMarkup();kb.add(types.InlineKeyboardButton("🔙 До PvP",callback_data=f"profile_history_pvp:{page}"));bot.send_message(call.message.chat.id,text,reply_markup=kb);return
+        kind="trade" if data.startswith("profile_history_trade:") else "pvp";page=max(0,int(parts[1]));result=get_trade_history(uid,page,5) if kind=="trade" else get_pvp_history(uid,page,5)
+        bot.send_message(call.message.chat.id,_history_list_text(kind,result),reply_markup=_history_list_kb(kind,result))
 
 ============================================================
 FILE: handlers\pvp_interaction.py
@@ -34405,8 +34736,8 @@ def register_start_handlers(bot):
 
 ============================================================
 FILE: keyboards.py
-SIZE: 5277 bytes
-LAST WRITE: 2026-08-22 23:22:13
+SIZE: 5489 bytes
+LAST WRITE: 2026-08-28 00:39:02
 ============================================================
 
 # ROM 17.16.1 PVE SKILL BUTTON STATES
@@ -34418,6 +34749,7 @@ def main_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.add("🔎 Полювання", "🗺️ Мапа")
     kb.add("👤 Профіль", "👀 Роззирнутися")
+    kb.add("📋 Меню")
     return kb
 
 
@@ -34432,7 +34764,7 @@ def map_kb():
 
 def profile_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.add("🎒 Інвентар")
+    kb.row("🎒 Інвентар", "📜 Історія")
     kb.add("🔙 Назад")
     return kb
 
@@ -34572,8 +34904,8 @@ def rune_master_kb():
 
 ============================================================
 FILE: main.py
-SIZE: 9577 bytes
-LAST WRITE: 2026-08-25 22:03:44
+SIZE: 9776 bytes
+LAST WRITE: 2026-08-28 00:39:02
 ============================================================
 
 
@@ -34667,6 +34999,8 @@ from handlers.blacksmith import register_blacksmith_repair_hotfix_handlers
 from handlers.guild import register_guild_handlers
 from handlers.auction_house import register_auction_house_handlers
 from handlers.blacksmith_repair_confirm import register_blacksmith_repair_confirmation_handlers
+from handlers.crystal_shop import register_crystal_shop_handlers
+from systems.crystal_shop_system import init_crystal_shop_system
 
 from systems.notifications import start_notification_worker
 from systems.telegram_rate_limit import install_global_telegram_rate_limit_guard
@@ -34729,6 +35063,8 @@ init_class_reset_sphere()
 # HANDLERS
 # ==============================
 
+init_crystal_shop_system()
+
 register_start_handlers(bot)
 register_profile_handlers(bot)
 register_inventory_handlers(bot)
@@ -34749,6 +35085,7 @@ register_rune_master_shop_handlers(bot)
 
 
 register_refine_handlers(bot)
+register_crystal_shop_handlers(bot)
 # ==============================
 # NOTIFICATIONS
 # ==============================
@@ -35081,6 +35418,28 @@ def get_migration_status(conn: sqlite3.Connection, migrations_dir: Path | None =
         "applied_count": len(applied),
         "pending_count": len(pending),
     }
+
+============================================================
+FILE: requirements.txt
+SIZE: 288 bytes
+LAST WRITE: 2026-08-27 01:14:08
+============================================================
+
+aiohappyeyeballs==2.6.2
+aiohttp==3.14.1
+aiosignal==1.4.0
+attrs==26.1.0
+certifi==2026.5.20
+charset-normalizer==3.4.7
+frozenlist==1.8.0
+idna==3.18
+multidict==6.7.1
+propcache==0.5.2
+pyTelegramBotAPI==4.34.0
+python-dotenv==1.2.2
+requests==2.34.2
+urllib3==2.7.0
+yarl==1.24.2
 
 ============================================================
 FILE: systems\__init__.py
@@ -42643,6 +43002,183 @@ def migrate_contract_target_kills_to_v2(*args, **kwargs):
     return migrate_active_contracts_target_kills_to_5()
 
 ============================================================
+FILE: systems\crystal_shop_system.py
+SIZE: 8413 bytes
+LAST WRITE: 2026-08-28 00:39:02
+============================================================
+
+# -*- coding: utf-8 -*-
+"""Atomic crystal shop. Telegram Stars and XTR payments are intentionally absent."""
+from __future__ import annotations
+import json, sqlite3
+from datetime import datetime, timezone
+from pathlib import Path
+DB_PATH=Path(__file__).resolve().parents[1]/'game.db'
+CRYSTAL_SHOP_CATALOG={301:{'name':'🔮 Сфера нового шляху','price':150},402:{'name':'🍀 Руна Успіху','price':40},528:{'name':'💠 Досконалий Екстрактор','price':25}}
+def _utc():return datetime.now(timezone.utc).isoformat()
+def _connect(path=None):
+ c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
+def init_crystal_shop_system(db_path=None):
+ c=_connect(db_path)
+ try:
+  c.executescript("""CREATE TABLE IF NOT EXISTS crystal_shop_purchases(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,item_id INTEGER NOT NULL,quantity INTEGER NOT NULL CHECK(quantity>0),unit_price INTEGER NOT NULL CHECK(unit_price>0),total_price INTEGER NOT NULL CHECK(total_price>0),balance_before INTEGER NOT NULL CHECK(balance_before>=0),balance_after INTEGER NOT NULL CHECK(balance_after>=0),idempotency_key TEXT NOT NULL UNIQUE,crystal_transaction_id INTEGER NOT NULL UNIQUE,premium_grant_id INTEGER NOT NULL UNIQUE,created_at TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE RESTRICT,FOREIGN KEY(item_id) REFERENCES items(id) ON DELETE RESTRICT,FOREIGN KEY(crystal_transaction_id) REFERENCES crystal_transactions(id) ON DELETE RESTRICT,FOREIGN KEY(premium_grant_id) REFERENCES premium_item_grants(id) ON DELETE RESTRICT);CREATE INDEX IF NOT EXISTS ix_crystal_shop_purchases_user ON crystal_shop_purchases(user_id,id DESC);""");c.commit();return {'success':True}
+ finally:c.close()
+def get_crystal_shop_catalog():return {k:dict(v) for k,v in CRYSTAL_SHOP_CATALOG.items()}
+def _capacity(c,uid,iid,qty):
+ item=c.execute('SELECT COALESCE(max_stack,1) FROM items WHERE id=?',(iid,)).fetchone();max_stack=max(1,int(item[0] or 1));used=int(c.execute('SELECT COUNT(*) FROM inventory WHERE user_id=? AND COALESCE(quantity,0)>0',(uid,)).fetchone()[0]);cap=int(c.execute('SELECT COALESCE(bag_slots,60) FROM users WHERE user_id=?',(uid,)).fetchone()[0]);rows=c.execute('SELECT COALESCE(quantity,0) FROM inventory WHERE user_id=? AND item_id=? AND COALESCE(quantity,0)<?',(uid,iid,max_stack)).fetchall();free=sum(max_stack-int(x[0]) for x in rows);remain=max(0,qty-free);needed=(remain+max_stack-1)//max_stack;return used,cap,needed,max_stack
+def preview_crystal_shop_purchase(user_id,item_id,quantity,db_path=None):
+ try:uid=int(user_id);iid=int(item_id);qty=int(quantity)
+ except Exception:return {'success':False,'message':'❌ Некоректні дані покупки.'}
+ if iid not in CRYSTAL_SHOP_CATALOG:return {'success':False,'message':'❌ Предмет відсутній у магазині.'}
+ if qty<=0:return {'success':False,'message':'❌ Кількість має бути більшою за нуль.'}
+ c=_connect(db_path)
+ try:
+  wallet=c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(uid,)).fetchone()
+  if not wallet:return {'success':False,'message':'❌ Гаманець кристалів не знайдено.'}
+  used,cap,needed,_=_capacity(c,uid,iid,qty);price=CRYSTAL_SHOP_CATALOG[iid]['price'];total=price*qty;balance=int(wallet[0]);return {'success':balance>=total and used+needed<=cap,'item_id':iid,'name':CRYSTAL_SHOP_CATALOG[iid]['name'],'quantity':qty,'unit_price':price,'total_price':total,'balance':balance,'balance_after':balance-total,'used_slots':used,'capacity':cap,'needed_slots':needed,'message':'OK' if balance>=total and used+needed<=cap else ('🎒 Сумка переповнена. Кристали не списано.' if used+needed>cap else '❌ Недостатньо кристалів.')}
+ finally:c.close()
+def _stack(c,uid,iid,qty,max_stack):
+ first=None
+ for row in c.execute('SELECT id,COALESCE(quantity,0) FROM inventory WHERE user_id=? AND item_id=? AND COALESCE(quantity,0)<? ORDER BY id',(uid,iid,max_stack)).fetchall():
+  if qty<=0:break
+  moved=min(qty,max_stack-int(row[1]));c.execute('UPDATE inventory SET quantity=quantity+? WHERE id=?',(moved,int(row[0])));first=first or int(row[0]);qty-=moved
+ while qty>0:
+  moved=min(qty,max_stack);cur=c.execute('INSERT INTO inventory(user_id,item_id,quantity,durability) VALUES(?,?,?,NULL)',(uid,iid,moved));first=first or int(cur.lastrowid);qty-=moved
+ return first
+def purchase_crystal_shop_item(user_id,item_id,quantity,idempotency_key,db_path=None):
+ try:uid=int(user_id);iid=int(item_id);qty=int(quantity)
+ except Exception:return {'success':False,'message':'❌ Некоректні дані покупки.'}
+ key=str(idempotency_key or '').strip()
+ if iid not in CRYSTAL_SHOP_CATALOG or qty<=0 or not key:return {'success':False,'message':'❌ Некоректна або неповна покупка.'}
+ c=_connect(db_path)
+ try:
+  c.execute('BEGIN IMMEDIATE');old=c.execute('SELECT * FROM crystal_shop_purchases WHERE idempotency_key=?',(key,)).fetchone()
+  if old:c.commit();return {'success':True,'idempotent_replay':True,'purchase':dict(old),'balance':int(old['balance_after'])}
+  allowed={301:{'crystal_shop'},402:{'crystal_shop'},528:{'crystal_shop'}}
+  if 'crystal_shop' not in allowed.get(iid,set()):c.rollback();return {'success':False,'message':'❌ Джерело видачі заборонене.'}
+  wallet=c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(uid,)).fetchone();item=c.execute('SELECT id FROM items WHERE id=?',(iid,)).fetchone()
+  if not wallet or not item:c.rollback();return {'success':False,'message':'❌ Гаманець або предмет не знайдено.'}
+  before=int(wallet[0]);unit=int(CRYSTAL_SHOP_CATALOG[iid]['price']);total=unit*qty;used,cap,needed,max_stack=_capacity(c,uid,iid,qty)
+  if used+needed>cap:c.rollback();return {'success':False,'message':'🎒 Сумка переповнена. Кристали не списано.','balance':before}
+  if before<total:c.rollback();return {'success':False,'message':'❌ Недостатньо кристалів.','balance':before}
+  after=before-total;now=_utc();changed=c.execute('UPDATE crystal_wallets SET balance=?,updated_at=? WHERE user_id=? AND balance=?',(after,now,uid,before)).rowcount
+  if changed!=1:raise RuntimeError('Баланс змінився. Покупку скасовано.')
+  tx_key='shop:debit:'+key;cur=c.execute("INSERT INTO crystal_transactions(user_id,operation,amount,reason_code,balance_before,balance_after,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",(uid,'debit',total,'crystal_shop_purchase',before,after,tx_key,key,json.dumps({'item_id':iid,'quantity':qty},sort_keys=True),now));txid=int(cur.lastrowid)
+  inv_id=_stack(c,uid,iid,qty,max_stack);grant_key='shop:grant:'+key;cur=c.execute('INSERT INTO premium_item_grants(user_id,item_id,quantity,source,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?)',(uid,iid,qty,'crystal_shop',grant_key,key,json.dumps({'total_price':total},sort_keys=True),now));gid=int(cur.lastrowid)
+  cur=c.execute('INSERT INTO crystal_shop_purchases(user_id,item_id,quantity,unit_price,total_price,balance_before,balance_after,idempotency_key,crystal_transaction_id,premium_grant_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(uid,iid,qty,unit,total,before,after,key,txid,gid,now));pid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'purchase_id':pid,'transaction_id':txid,'grant_id':gid,'inventory_id':inv_id,'item_id':iid,'name':CRYSTAL_SHOP_CATALOG[iid]['name'],'quantity':qty,'unit_price':unit,'total_price':total,'balance_before':before,'balance_after':after,'balance':after}
+ except Exception as e:c.rollback();return {'success':False,'message':f'❌ Покупку скасовано: {e}'}
+ finally:c.close()
+def get_crystal_shop_purchases(user_id,page=0,page_size=20,db_path=None):
+ c=_connect(db_path)
+ try:return [dict(r) for r in c.execute('SELECT * FROM crystal_shop_purchases WHERE user_id=? ORDER BY id DESC LIMIT ? OFFSET ?',(int(user_id),max(1,min(100,int(page_size))),max(0,int(page))*max(1,min(100,int(page_size))))).fetchall()]
+ finally:c.close()
+
+============================================================
+FILE: systems\crystal_wallet_system.py
+SIZE: 7461 bytes
+LAST WRITE: 2026-08-27 23:15:28
+============================================================
+
+# -*- coding: utf-8 -*-
+"""Account-level crystal wallet with an append-only, idempotent SQLite ledger."""
+from __future__ import annotations
+import json, sqlite3
+from datetime import datetime, timezone
+from pathlib import Path
+DB_PATH=Path(__file__).resolve().parents[1]/"game.db"
+CRYSTAL_HISTORY_PAGE_SIZE=10
+
+def _utc():return datetime.now(timezone.utc).isoformat()
+def _connect(db_path=None):
+ c=sqlite3.connect(str(db_path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
+def init_crystal_wallet_system(db_path=None):
+ c=_connect(db_path)
+ try:
+  c.executescript("""
+  CREATE TABLE IF NOT EXISTS crystal_wallets(
+   user_id INTEGER PRIMARY KEY,
+   balance INTEGER NOT NULL DEFAULT 0 CHECK(balance>=0),
+   created_at TEXT NOT NULL,
+   updated_at TEXT NOT NULL,
+   FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE RESTRICT
+  );
+  CREATE TABLE IF NOT EXISTS crystal_transactions(
+   id INTEGER PRIMARY KEY AUTOINCREMENT,
+   user_id INTEGER NOT NULL,
+   operation TEXT NOT NULL CHECK(operation IN ('credit','debit')),
+   amount INTEGER NOT NULL CHECK(amount>0),
+   reason_code TEXT NOT NULL,
+   balance_before INTEGER NOT NULL CHECK(balance_before>=0),
+   balance_after INTEGER NOT NULL CHECK(balance_after>=0),
+   idempotency_key TEXT NOT NULL UNIQUE,
+   external_reference TEXT,
+   metadata_json TEXT NOT NULL DEFAULT '{}',
+   compensates_transaction_id INTEGER,
+   created_at TEXT NOT NULL,
+   FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE RESTRICT,
+   FOREIGN KEY(compensates_transaction_id) REFERENCES crystal_transactions(id) ON DELETE RESTRICT
+  );
+  CREATE INDEX IF NOT EXISTS ix_crystal_transactions_user_created ON crystal_transactions(user_id,id DESC);
+  CREATE INDEX IF NOT EXISTS ix_crystal_transactions_external_reference ON crystal_transactions(external_reference);
+  """)
+  now=_utc();c.execute("INSERT OR IGNORE INTO crystal_wallets(user_id,balance,created_at,updated_at) SELECT user_id,0,?,? FROM users",(now,now));c.commit()
+  return {'success':True,'wallets':c.execute('SELECT COUNT(*) FROM crystal_wallets').fetchone()[0]}
+ finally:c.close()
+def _ensure_wallet(c,user_id):
+ uid=int(user_id);row=c.execute('SELECT user_id FROM users WHERE user_id=?',(uid,)).fetchone()
+ if not row:raise ValueError('Акаунт не знайдено. Спочатку натисни /start.')
+ now=_utc();c.execute('INSERT OR IGNORE INTO crystal_wallets(user_id,balance,created_at,updated_at) VALUES(?,0,?,?)',(uid,now,now))
+def get_crystal_wallet(user_id,db_path=None):
+ c=_connect(db_path)
+ try:
+  c.execute('BEGIN IMMEDIATE');_ensure_wallet(c,user_id);row=c.execute('SELECT user_id,balance,created_at,updated_at FROM crystal_wallets WHERE user_id=?',(int(user_id),)).fetchone();c.commit();return dict(row)
+ except Exception:c.rollback();raise
+ finally:c.close()
+def get_crystal_balance(user_id,db_path=None):return int(get_crystal_wallet(user_id,db_path)['balance'])
+def _apply(user_id,amount,operation,reason_code,idempotency_key,external_reference=None,metadata=None,compensates_transaction_id=None,db_path=None):
+ uid=int(user_id);amount=int(amount);key=str(idempotency_key or '').strip();reason=str(reason_code or '').strip()
+ if amount<=0:return {'success':False,'message':'Кількість кристалів має бути більшою за нуль.'}
+ if not key:return {'success':False,'message':'idempotency_key є обов’язковим.'}
+ if not reason:return {'success':False,'message':'reason_code є обов’язковим.'}
+ c=_connect(db_path)
+ try:
+  c.execute('BEGIN IMMEDIATE');existing=c.execute('SELECT * FROM crystal_transactions WHERE idempotency_key=?',(key,)).fetchone()
+  if existing:
+   c.commit();return {'success':True,'idempotent_replay':True,'transaction':dict(existing),'balance':int(existing['balance_after'])}
+  _ensure_wallet(c,uid);before=int(c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(uid,)).fetchone()[0]);after=before+amount if operation=='credit' else before-amount
+  if after<0:c.rollback();return {'success':False,'message':'Недостатньо кристалів.','balance':before}
+  now=_utc();changed=c.execute('UPDATE crystal_wallets SET balance=?,updated_at=? WHERE user_id=? AND balance=?',(after,now,uid,before)).rowcount
+  if changed!=1:raise RuntimeError('Баланс змінився. Операцію скасовано.')
+  payload=json.dumps(metadata or {},ensure_ascii=False,sort_keys=True,separators=(',',':'))
+  cur=c.execute('INSERT INTO crystal_transactions(user_id,operation,amount,reason_code,balance_before,balance_after,idempotency_key,external_reference,metadata_json,compensates_transaction_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(uid,operation,amount,reason,before,after,key,external_reference,payload,compensates_transaction_id,now));tid=int(cur.lastrowid);c.commit()
+  return {'success':True,'idempotent_replay':False,'transaction_id':tid,'operation':operation,'amount':amount,'balance_before':before,'balance_after':after,'balance':after}
+ except sqlite3.IntegrityError:
+  c.rollback();row=c.execute('SELECT * FROM crystal_transactions WHERE idempotency_key=?',(key,)).fetchone()
+  if row:return {'success':True,'idempotent_replay':True,'transaction':dict(row),'balance':int(row['balance_after'])}
+  raise
+ except Exception:c.rollback();raise
+ finally:c.close()
+def credit_crystals(user_id,amount,reason_code,idempotency_key,external_reference=None,metadata=None,db_path=None):return _apply(user_id,amount,'credit',reason_code,idempotency_key,external_reference,metadata,None,db_path)
+def debit_crystals(user_id,amount,reason_code,idempotency_key,external_reference=None,metadata=None,db_path=None):return _apply(user_id,amount,'debit',reason_code,idempotency_key,external_reference,metadata,None,db_path)
+def get_crystal_transactions(user_id,page=0,page_size=CRYSTAL_HISTORY_PAGE_SIZE,db_path=None):
+ page=max(0,int(page));size=max(1,min(50,int(page_size)));c=_connect(db_path)
+ try:
+  rows=c.execute('SELECT * FROM crystal_transactions WHERE user_id=? ORDER BY id DESC LIMIT ? OFFSET ?',(int(user_id),size,page*size)).fetchall();total=c.execute('SELECT COUNT(*) FROM crystal_transactions WHERE user_id=?',(int(user_id),)).fetchone()[0];return {'items':[dict(x) for x in rows],'page':page,'total':int(total),'has_next':(page+1)*size<int(total)}
+ finally:c.close()
+def compensate_crystal_transaction(original_transaction_id,idempotency_key,reason_code='dev_compensation',db_path=None):
+ c=_connect(db_path)
+ try:row=c.execute('SELECT * FROM crystal_transactions WHERE id=?',(int(original_transaction_id),)).fetchone()
+ finally:c.close()
+ if not row:return {'success':False,'message':'Початкову транзакцію не знайдено.'}
+ func=debit_crystals if row['operation']=='credit' else credit_crystals
+ result=func(int(row['user_id']),int(row['amount']),reason_code,idempotency_key,external_reference=f"compensates:{int(row['id'])}",metadata={'original_transaction_id':int(row['id'])},db_path=db_path)
+ if result.get('success') and not result.get('idempotent_replay'):
+  c=_connect(db_path)
+  try:c.execute('UPDATE crystal_transactions SET compensates_transaction_id=? WHERE id=? AND compensates_transaction_id IS NULL',(int(row['id']),int(result['transaction_id'])));c.commit()
+  finally:c.close()
+ return result
+
+============================================================
 FILE: systems\drop_system.py
 SIZE: 29647 bytes
 LAST WRITE: 2026-08-01 23:37:52
@@ -46290,8 +46826,8 @@ def buy_common_equipment_from_trader(user_id, slot_key, item_profile=None):
 
 ============================================================
 FILE: systems\guild_system.py
-SIZE: 91082 bytes
-LAST WRITE: 2026-08-26 23:34:59
+SIZE: 95295 bytes
+LAST WRITE: 2026-08-27 00:27:47
 ============================================================
 
 from datetime import datetime
@@ -46324,8 +46860,25 @@ except Exception:
 
 
 
-GUILD_CREATE_COST_GOLD = 0
-DEFAULT_GUILD_MEMBER_LIMIT = 30
+GUILD_CREATE_COST_GOLD = 100.0
+DEFAULT_GUILD_MEMBER_LIMIT = 10
+MIN_GUILD_ACCESS_LEVEL = 3
+
+
+def get_guild_access_level_state(user_id):
+    """Повертає canonical перевірку мінімального рівня для створення/вступу."""
+    init_guild_system()
+    row = cursor.execute("SELECT COALESCE(level, 0) FROM users WHERE user_id=?", (int(user_id),)).fetchone()
+    level = int(row[0] if row else 0)
+    return {
+        "success": level >= MIN_GUILD_ACCESS_LEVEL,
+        "level": level,
+        "min_level": MIN_GUILD_ACCESS_LEVEL,
+        "message": "" if level >= MIN_GUILD_ACCESS_LEVEL else (
+            f"❌ Створення гільдії та вступ до гільдії доступні з {MIN_GUILD_ACCESS_LEVEL} рівня.\n"
+            f"Твій поточний рівень: {level}."
+        ),
+    }
 GUILD_ROLE_LEADER = "leader"
 GUILD_ROLE_OFFICER = "officer"
 GUILD_ROLE_MEMBER = "member"
@@ -46882,90 +47435,63 @@ def _record_guild_departure_17_21_1(user_id, guild_id, event_type, reason="", ac
     return _guild_utc_iso_17_21_1(blocked)
 
 def create_guild(user_id, name, tag, icon="🏰"):
-    """
-    Створює гільдію.
-
-    На 7.0.1 створення безкоштовне.
-    Вартість можна додати пізніше через GUILD_CREATE_COST_GOLD.
-    """
-
+    """Атомарно створює гільдію за золото з базовим лімітом учасників."""
     init_guild_system()
-
-    gate = can_user_join_or_create_guild(user_id)
-    if not gate.get("success"):
-        return gate
-
-    if is_user_in_guild(user_id):
-        return {
-            "success": False,
-            "message": "❌ Ти вже перебуваєш у гільдії."
-        }
-
+    level_gate = get_guild_access_level_state(user_id)
+    if not level_gate.get("success"):
+        return level_gate
+    user_id = int(user_id)
     validation = validate_guild_create_input(name, tag, icon)
-
     if not validation.get("success"):
         return validation
+    savepoint = "paid_guild_creation_17_23_1"
+    try:
+        cursor.execute(f"SAVEPOINT {savepoint}")
+        gate = can_user_join_or_create_guild(user_id)
+        if not gate.get("success"):
+            raise ValueError(gate.get("message") or "⏳ Створення гільдії тимчасово недоступне.")
+        if is_user_in_guild(user_id):
+            raise ValueError("❌ Ти вже перебуваєш у гільдії.")
+        # Revalidate uniqueness inside the same transaction.
+        validation = validate_guild_create_input(validation["name"], validation["tag"], validation["icon"])
+        if not validation.get("success"):
+            raise ValueError(validation.get("message") or "❌ Дані гільдії більше не доступні.")
+        cursor.execute("UPDATE users SET gold=ROUND(gold-?, 2) WHERE user_id=? AND gold>=?", (GUILD_CREATE_COST_GOLD, user_id, GUILD_CREATE_COST_GOLD))
+        if cursor.rowcount != 1:
+            row = cursor.execute("SELECT COALESCE(gold,0) FROM users WHERE user_id=?", (user_id,)).fetchone()
+            balance = float(row[0] if row else 0.0)
+            raise ValueError(f"❌ Недостатньо золота. Потрібно: {GUILD_CREATE_COST_GOLD:.2f} 🪙. Твій баланс: {balance:.2f} 🪙.")
+        now = now_iso(); season_key = get_current_guild_season_key()
+        cursor.execute("""INSERT INTO guilds (name,name_norm,tag,tag_norm,icon,leader_user_id,level,exp,resource,member_limit,created_at,updated_at,season_key) VALUES (?,?,?,?,?,?,1,0,0,?,?,?,?)""", (validation["name"],normalize_guild_name(validation["name"]),validation["tag"],normalize_guild_tag(validation["tag"]),validation["icon"],user_id,DEFAULT_GUILD_MEMBER_LIMIT,now,now,season_key))
+        guild_id = int(cursor.lastrowid)
+        cursor.execute("INSERT INTO guild_members (guild_id,user_id,role,joined_at) VALUES (?,?,?,?)", (guild_id,user_id,GUILD_ROLE_LEADER,now))
+        cursor.execute("INSERT INTO guild_logs (guild_id,event_type,text,created_at) VALUES (?,?,?,?)", (guild_id,"guild_created",f"Гільдію {validation['icon']} [{validation['tag']}] {validation['name']} створено за {GUILD_CREATE_COST_GOLD:.2f} золота.",now))
+        row = cursor.execute("SELECT COALESCE(gold,0) FROM users WHERE user_id=?", (user_id,)).fetchone(); balance=float(row[0] if row else 0.0)
+        cursor.execute(f"RELEASE {savepoint}"); conn.commit()
+        return {"success":True,"guild_id":guild_id,"cost_gold":GUILD_CREATE_COST_GOLD,"gold_balance":balance,"member_limit":DEFAULT_GUILD_MEMBER_LIMIT,"message":f"✅ Гільдію {validation['icon']} [{validation['tag']}] {validation['name']} створено за {GUILD_CREATE_COST_GOLD:.2f} 🪙.\nЗалишок: {balance:.2f} 🪙."}
+    except ValueError as error:
+        try: cursor.execute(f"ROLLBACK TO {savepoint}"); cursor.execute(f"RELEASE {savepoint}")
+        except Exception: conn.rollback()
+        return {"success":False,"message":str(error),"cost_gold":GUILD_CREATE_COST_GOLD}
+    except Exception as error:
+        try: cursor.execute(f"ROLLBACK TO {savepoint}"); cursor.execute(f"RELEASE {savepoint}")
+        except Exception: conn.rollback()
+        return {"success":False,"message":f"❌ Не вдалося створити гільдію: {error}","cost_gold":GUILD_CREATE_COST_GOLD}
 
-    now = now_iso()
-    season_key = get_current_guild_season_key()
 
-    cursor.execute("""
-    INSERT INTO guilds (
-        name,
-        name_norm,
-        tag,
-        tag_norm,
-        icon,
-        leader_user_id,
-        level,
-        exp,
-        resource,
-        member_limit,
-        created_at,
-        updated_at,
-        season_key
-    ) VALUES (?, ?, ?, ?, ?, ?, 1, 0, 0, ?, ?, ?, ?)
-    """, (
-        validation["name"],
-        normalize_guild_name(validation["name"]),
-        validation["tag"],
-        normalize_guild_tag(validation["tag"]),
-        validation["icon"],
-        user_id,
-        DEFAULT_GUILD_MEMBER_LIMIT,
-        now,
-        now,
-        season_key,
-    ))
-
-    guild_id = cursor.lastrowid
-
-    cursor.execute("""
-    INSERT INTO guild_members (
-        guild_id,
-        user_id,
-        role,
-        joined_at
-    ) VALUES (?, ?, ?, ?)
-    """, (
-        guild_id,
-        user_id,
-        GUILD_ROLE_LEADER,
-        now,
-    ))
-
-    conn.commit()
-
-    add_guild_log(
-        guild_id=guild_id,
-        event_type="guild_created",
-        text=f"Гільдію {validation['icon']} [{validation['tag']}] {validation['name']} створено."
-    )
-
+def get_guild_creation_terms(user_id):
+    init_guild_system()
+    row = cursor.execute("SELECT COALESCE(gold,0) FROM users WHERE user_id=?", (int(user_id),)).fetchone()
+    balance = float(row[0] if row else 0.0)
+    level_gate = get_guild_access_level_state(user_id)
     return {
-        "success": True,
-        "guild_id": guild_id,
-        "message": f"✅ Гільдію {validation['icon']} [{validation['tag']}] {validation['name']} створено."
+        "cost_gold": float(GUILD_CREATE_COST_GOLD),
+        "gold_balance": balance,
+        "member_limit": int(DEFAULT_GUILD_MEMBER_LIMIT),
+        "can_afford": balance >= float(GUILD_CREATE_COST_GOLD),
+        "level": level_gate["level"],
+        "min_level": level_gate["min_level"],
+        "level_allowed": level_gate["success"],
     }
 
 
@@ -48260,6 +48786,21 @@ def accept_guild_application(actor_user_id, application_id):
     guild_id = app["guild_id"]
     applicant_user_id = app["user_id"]
 
+    applicant_level_gate = get_guild_access_level_state(applicant_user_id)
+    if not applicant_level_gate.get("success"):
+        _guild_safe_set_application_status(
+            application_id,
+            GUILD_APPLICATION_REJECTED,
+            processed_by=actor_user_id,
+        )
+        return {
+            "success": False,
+            "message": (
+                f"❌ Заявку відхилено: вступ доступний з {MIN_GUILD_ACCESS_LEVEL} рівня. "
+                f"Поточний рівень гравця: {applicant_level_gate.get('level', 0)}."
+            ),
+        }
+
     if app["status"] != GUILD_APPLICATION_PENDING:
         return {"success": False, "message": "❌ Ця заявка вже не очікує розгляду."}
 
@@ -48692,6 +49233,15 @@ def create_guild_application(user_id, guild_id):
     """
 
     init_guild_system()
+    level_gate = get_guild_access_level_state(user_id)
+    if not level_gate.get("success"):
+        return {
+            "success": False,
+            "message": (
+                f"❌ Вступ до гільдії доступний з {MIN_GUILD_ACCESS_LEVEL} рівня.\n"
+                f"Твій поточний рівень: {level_gate.get('level', 0)}."
+            ),
+        }
 
     gate = can_user_join_or_create_guild(user_id)
     if not gate.get("success"):
@@ -54093,6 +54643,100 @@ def sell_alchemist_potion_17_19_3(user_id,item_id,quantity):
 
 
 ============================================================
+FILE: systems\premium_item_policy_system.py
+SIZE: 7462 bytes
+LAST WRITE: 2026-08-28 00:07:53
+============================================================
+
+# -*- coding: utf-8 -*-
+"""Canonical source policy for character-bound premium inventory grants."""
+from __future__ import annotations
+import json, os, sqlite3
+from datetime import datetime, timezone
+from pathlib import Path
+DB_PATH=Path(__file__).resolve().parents[1]/'game.db'
+SOURCE_DEV='dev_command';SOURCE_SHOP='crystal_shop';SOURCE_MILESTONE='level_milestone_reward';SOURCE_ADMIN='admin_compensation'
+PREMIUM_ITEM_POLICY={
+ 301:{'name':'Сфера нового шляху','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_MILESTONE,SOURCE_ADMIN)),'milestone_levels':frozenset((5,10))},
+ 402:{'name':'Руна Успіху','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
+ 528:{'name':'Досконалий Екстрактор','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
+}
+DENIED_TRANSFER_ITEM_IDS=frozenset(PREMIUM_ITEM_POLICY)
+
+def _utc():return datetime.now(timezone.utc).isoformat()
+def _conn(db_path=None):
+ c=sqlite3.connect(str(db_path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
+def _dev_enabled(value=None):
+ if value is not None:return bool(value)
+ return str(os.getenv('DEV_MODE','false')).strip().lower()=='true'
+def init_premium_item_policy(db_path=None):
+ c=_conn(db_path)
+ try:
+  c.executescript("""
+  CREATE TABLE IF NOT EXISTS premium_item_grants(
+   id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,item_id INTEGER NOT NULL,quantity INTEGER NOT NULL CHECK(quantity>0),
+   source TEXT NOT NULL,idempotency_key TEXT NOT NULL UNIQUE,external_reference TEXT,metadata_json TEXT NOT NULL DEFAULT '{}',created_at TEXT NOT NULL,
+   FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,FOREIGN KEY(item_id) REFERENCES items(id) ON DELETE RESTRICT
+  );
+  CREATE INDEX IF NOT EXISTS ix_premium_item_grants_user_created ON premium_item_grants(user_id,id DESC);
+  CREATE INDEX IF NOT EXISTS ix_premium_item_grants_item_source ON premium_item_grants(item_id,source,id DESC);
+  """);c.commit();return {'success':True}
+ finally:c.close()
+def get_premium_item_policy(item_id):
+ p=PREMIUM_ITEM_POLICY.get(int(item_id));return None if p is None else {**p,'allowed_sources':sorted(p['allowed_sources']),'milestone_levels':sorted(p['milestone_levels'])}
+def can_grant_item_from_source(user_id,item_id,quantity,source,*,milestone_level=None,dev_mode=None,db_path=None):
+ try:uid=int(user_id);iid=int(item_id);qty=int(quantity)
+ except Exception:return {'success':False,'reason':'invalid_arguments','message':'Некоректні параметри видачі.'}
+ policy=PREMIUM_ITEM_POLICY.get(iid);src=str(source or '').strip()
+ if not policy:return {'success':False,'reason':'not_premium_catalog_item','message':'Предмет відсутній у premium policy.'}
+ if qty<=0:return {'success':False,'reason':'invalid_quantity','message':'Кількість має бути більшою за нуль.'}
+ if src not in policy['allowed_sources']:return {'success':False,'reason':'source_denied','message':'Це джерело видачі заборонене для предмета.'}
+ if src==SOURCE_DEV and not _dev_enabled(dev_mode):return {'success':False,'reason':'dev_mode_required','message':'DEV-видача вимкнена у цьому середовищі.'}
+ if src==SOURCE_MILESTONE:
+  try:level=int(milestone_level)
+  except Exception:return {'success':False,'reason':'milestone_level_required','message':'Потрібно вказати milestone-рівень.'}
+  if level not in policy['milestone_levels']:return {'success':False,'reason':'milestone_denied','message':'Цей milestone не дозволений для предмета.'}
+ c=_conn(db_path)
+ try:
+  if not c.execute('SELECT 1 FROM users WHERE user_id=?',(uid,)).fetchone():return {'success':False,'reason':'user_missing','message':'Акаунт не знайдено.'}
+  if not c.execute('SELECT 1 FROM items WHERE id=?',(iid,)).fetchone():return {'success':False,'reason':'item_missing','message':'Предмет не знайдено.'}
+ finally:c.close()
+ return {'success':True,'user_id':uid,'item_id':iid,'quantity':qty,'source':src,'milestone_level':milestone_level,'policy':get_premium_item_policy(iid)}
+def _inventory_columns(c):return {r[1] for r in c.execute('PRAGMA table_info(inventory)')}
+def _grant_stack(c,uid,iid,qty):
+ cols=_inventory_columns(c);row=c.execute('SELECT id,quantity FROM inventory WHERE user_id=? AND item_id=? ORDER BY id LIMIT 1',(uid,iid)).fetchone()
+ if row:c.execute('UPDATE inventory SET quantity=quantity+? WHERE id=?',(qty,int(row['id'])));return int(row['id'])
+ names=['user_id','item_id','quantity'];values=[uid,iid,qty]
+ if 'durability' in cols:names.append('durability');values.append(None)
+ if 'max_durability' in cols:names.append('max_durability');values.append(None)
+ if 'refine_level' in cols:names.append('refine_level');values.append(0)
+ cur=c.execute('INSERT INTO inventory('+','.join(names)+') VALUES('+','.join('?' for _ in names)+')',values);return int(cur.lastrowid)
+def grant_item_from_source(user_id,item_id,quantity,source,idempotency_key,*,external_reference=None,metadata=None,milestone_level=None,dev_mode=None,db_path=None):
+ check=can_grant_item_from_source(user_id,item_id,quantity,source,milestone_level=milestone_level,dev_mode=dev_mode,db_path=db_path)
+ if not check['success']:return check
+ key=str(idempotency_key or '').strip()
+ if not key:return {'success':False,'reason':'idempotency_required','message':'idempotency_key є обов’язковим.'}
+ c=_conn(db_path)
+ try:
+  c.execute('BEGIN IMMEDIATE');existing=c.execute('SELECT * FROM premium_item_grants WHERE idempotency_key=?',(key,)).fetchone()
+  if existing:c.commit();return {'success':True,'idempotent_replay':True,'grant':dict(existing)}
+  payload=dict(metadata or {})
+  if milestone_level is not None:payload['milestone_level']=int(milestone_level)
+  inventory_id=_grant_stack(c,check['user_id'],check['item_id'],check['quantity']);now=_utc()
+  cur=c.execute('INSERT INTO premium_item_grants(user_id,item_id,quantity,source,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?)',(check['user_id'],check['item_id'],check['quantity'],check['source'],key,external_reference,json.dumps(payload,ensure_ascii=False,sort_keys=True,separators=(',',':')),now));grant_id=int(cur.lastrowid);c.commit()
+  return {'success':True,'idempotent_replay':False,'grant_id':grant_id,'inventory_id':inventory_id,**check}
+ except sqlite3.IntegrityError:
+  c.rollback();row=c.execute('SELECT * FROM premium_item_grants WHERE idempotency_key=?',(key,)).fetchone()
+  if row:return {'success':True,'idempotent_replay':True,'grant':dict(row)}
+  raise
+ except Exception:c.rollback();raise
+ finally:c.close()
+def get_premium_item_grants(user_id,page=0,page_size=20,db_path=None):
+ c=_conn(db_path)
+ try:return [dict(r) for r in c.execute('SELECT * FROM premium_item_grants WHERE user_id=? ORDER BY id DESC LIMIT ? OFFSET ?',(int(user_id),max(1,min(100,int(page_size))),max(0,int(page))*max(1,min(100,int(page_size))))).fetchall()]
+ finally:c.close()
+
+============================================================
 FILE: systems\production_logging.py
 SIZE: 4431 bytes
 LAST WRITE: 2026-08-25 22:03:44
@@ -54167,6 +54811,102 @@ def production_log_print(logger, log_level, *values, sep=" ", end="\n", file=Non
   for handler in logging.getLogger().handlers:
    try:handler.flush()
    except Exception:pass
+
+============================================================
+FILE: systems\profile_history_system.py
+SIZE: 7594 bytes
+LAST WRITE: 2026-08-27 14:36:43
+============================================================
+
+# -*- coding: utf-8 -*-
+"""Stage 17.24 durable profile history readers and retention."""
+import json, sqlite3
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+DB_PATH=Path(__file__).resolve().parents[1]/"game.db"
+HISTORY_PAGE_SIZE=5
+HISTORY_RETENTION_RECORDS_PER_USER=100
+HISTORY_RETENTION_MIN_DAYS=60
+PVP_REASON_UA={
+ 'afk_defeat':'поразка через бездіяльність',
+ 'opponent_afk':'перемога через бездіяльність суперника',
+ 'surrender':'власна здача' ,
+ 'opponent_surrender':'суперник здався',
+ 'hp_depleted':'завершення через втрату всіх ОЗ',
+ 'knockout':'перемога в бою',
+ 'max_rounds':'завершення після максимальної кількості раундів',
+ 'terminal':'бій завершено',
+}
+def localize_pvp_reason(reason, won=False):
+ key=str(reason or '').strip().lower()
+ if key=='surrender': return 'суперник здався' if won else 'власна здача'
+ if key=='afk_defeat': return 'перемога через бездіяльність суперника' if won else 'поразка через бездіяльність'
+ return PVP_REASON_UA.get(key,'бій завершено')
+
+def _conn():
+ c=sqlite3.connect(str(DB_PATH),timeout=30);c.row_factory=sqlite3.Row;return c
+def _loads(value,fallback):
+ try:return json.loads(value or '')
+ except Exception:return fallback
+def _name(c,uid):
+ row=c.execute("SELECT COALESCE(character_name,'Гравець') FROM users WHERE user_id=?",(int(uid),)).fetchone();return str(row[0]) if row else 'Гравець'
+def _fmt(value):
+ if not value:return 'невідомо'
+ try:
+  dt=datetime.fromisoformat(str(value).replace('Z','+00:00'));return dt.astimezone().strftime('%d.%m.%Y %H:%M')
+ except Exception:return str(value)
+def init_profile_history():
+ c=_conn()
+ try:
+  c.executescript("""CREATE INDEX IF NOT EXISTS ix_trade_history_completed_i ON player_trade_history(initiator_user_id,status,id DESC); CREATE INDEX IF NOT EXISTS ix_trade_history_completed_r ON player_trade_history(recipient_user_id,status,id DESC); CREATE INDEX IF NOT EXISTS ix_pvp_history_challenger ON pvp_battles(challenger_id,status,id DESC); CREATE INDEX IF NOT EXISTS ix_pvp_history_opponent ON pvp_battles(opponent_id,status,id DESC);""");c.commit()
+ finally:c.close()
+ return {'success':True}
+def get_trade_history(user_id,page=0,page_size=HISTORY_PAGE_SIZE):
+ uid=int(user_id);page=max(0,int(page));size=max(1,min(10,int(page_size)));c=_conn()
+ try:
+  total=c.execute("SELECT COUNT(*) FROM player_trade_history WHERE status='completed' AND (initiator_user_id=? OR recipient_user_id=?)",(uid,uid)).fetchone()[0]
+  rows=c.execute("SELECT * FROM player_trade_history WHERE status='completed' AND (initiator_user_id=? OR recipient_user_id=?) ORDER BY COALESCE(completed_at,created_at) DESC,id DESC LIMIT ? OFFSET ?",(uid,uid,size,page*size)).fetchall();items=[]
+  for row in rows:
+   x=dict(row);other=int(x['recipient_user_id']) if uid==int(x['initiator_user_id']) else int(x['initiator_user_id']);own='initiator' if uid==int(x['initiator_user_id']) else 'recipient';give=_loads(x[own+'_offer_snapshot'],[]);take=_loads(x[('recipient' if own=='initiator' else 'initiator')+'_offer_snapshot'],[])
+   items.append({'id':int(x['id']),'other_name':_name(c,other),'completed_at':_fmt(x.get('completed_at') or x.get('created_at')),'give':give,'take':take})
+  return {'items':items,'page':page,'total':int(total),'has_prev':page>0,'has_next':(page+1)*size<int(total)}
+ finally:c.close()
+def _offer_lines(offers):
+ lines=[]
+ for o in offers or []:
+  if o.get('asset_type')=='gold':lines.append(f"• {float(o.get('gold_amount') or 0):.2f} золота");continue
+  snap=_loads(o.get('snapshot_json'),{}) if isinstance(o.get('snapshot_json'),str) else (o.get('snapshot') or {})
+  name=str(snap.get('item_name') or snap.get('name') or 'Предмет');qty=int(o.get('quantity') or 1);ref=int(snap.get('refine_level') or 0);lines.append(f"• {name}{' +'+str(ref) if ref else ''} ×{qty}")
+ return lines or ['• нічого']
+def get_trade_history_detail(user_id,history_id):
+ data=get_trade_history(user_id,0,100000)
+ for x in data['items']:
+  if x['id']==int(history_id):return {**x,'give_lines':_offer_lines(x['give']),'take_lines':_offer_lines(x['take'])}
+ return None
+def get_pvp_history(user_id,page=0,page_size=HISTORY_PAGE_SIZE):
+ uid=int(user_id);page=max(0,int(page));size=max(1,min(10,int(page_size)));c=_conn()
+ try:
+  where="status='completed' AND winner_id IS NOT NULL AND (challenger_id=? OR opponent_id=?)"
+  total=c.execute('SELECT COUNT(*) FROM pvp_battles WHERE '+where,(uid,uid)).fetchone()[0]
+  rows=c.execute('SELECT * FROM pvp_battles WHERE '+where+' ORDER BY COALESCE(completed_at,created_at) DESC,id DESC LIMIT ? OFFSET ?',(uid,uid,size,page*size)).fetchall();items=[]
+  for row in rows:
+   x=dict(row);other=int(x['opponent_id']) if uid==int(x['challenger_id']) else int(x['challenger_id']);win=uid==int(x['winner_id'])
+   items.append({'id':int(x['id']),'other_name':_name(c,other),'result':'Перемога' if win else 'Поразка','won':win,'rounds':int(x.get('round_number') or 1),'reason':localize_pvp_reason(x.get('result_reason'),win),'completed_at':_fmt(x.get('completed_at') or x.get('created_at'))})
+  return {'items':items,'page':page,'total':int(total),'has_prev':page>0,'has_next':(page+1)*size<int(total)}
+ finally:c.close()
+def get_pvp_history_detail(user_id,battle_id):
+ data=get_pvp_history(user_id,0,100000)
+ return next((x for x in data['items'] if x['id']==int(battle_id)),None)
+def cleanup_history_retention(preview=True,now=None):
+ """Delete only shared records old >60d and outside last 100 for both users."""
+ cutoff=(now or datetime.now(timezone.utc))-timedelta(days=HISTORY_RETENTION_MIN_DAYS);cut=cutoff.isoformat();c=_conn()
+ try:
+  trade=[r[0] for r in c.execute("""SELECT h.id FROM player_trade_history h WHERE h.status='completed' AND COALESCE(h.completed_at,h.created_at)<? AND h.id NOT IN (SELECT id FROM player_trade_history x WHERE x.status='completed' AND (x.initiator_user_id=h.initiator_user_id OR x.recipient_user_id=h.initiator_user_id) ORDER BY COALESCE(x.completed_at,x.created_at) DESC,x.id DESC LIMIT 100) AND h.id NOT IN (SELECT id FROM player_trade_history y WHERE y.status='completed' AND (y.initiator_user_id=h.recipient_user_id OR y.recipient_user_id=h.recipient_user_id) ORDER BY COALESCE(y.completed_at,y.created_at) DESC,y.id DESC LIMIT 100)""",(cut,))]
+  pvp=[r[0] for r in c.execute("""SELECT b.id FROM pvp_battles b WHERE b.status='completed' AND b.winner_id IS NOT NULL AND COALESCE(b.completed_at,b.created_at)<? AND b.id NOT IN (SELECT id FROM pvp_battles x WHERE x.status='completed' AND x.winner_id IS NOT NULL AND (x.challenger_id=b.challenger_id OR x.opponent_id=b.challenger_id) ORDER BY COALESCE(x.completed_at,x.created_at) DESC,x.id DESC LIMIT 100) AND b.id NOT IN (SELECT id FROM pvp_battles y WHERE y.status='completed' AND y.winner_id IS NOT NULL AND (y.challenger_id=b.opponent_id OR y.opponent_id=b.opponent_id) ORDER BY COALESCE(y.completed_at,y.created_at) DESC,y.id DESC LIMIT 100)""",(cut,))]
+  if not preview:
+   c.executemany('DELETE FROM player_trade_history WHERE id=?',[(x,) for x in trade]);c.executemany('DELETE FROM pvp_battles WHERE id=?',[(x,) for x in pvp]);c.commit()
+  return {'preview':bool(preview),'trade_ids':trade,'pvp_ids':pvp,'cutoff':cut}
+ finally:c.close()
 
 ============================================================
 FILE: systems\pve_skill_action_state.py
@@ -77349,6 +78089,64 @@ for rel in ("main.py","systems/notifications.py","systems/telegram_rate_limit.py
 print("[PASS] Stage 17.20.1.1 critical production logging print contract recovery")
 
 ============================================================
+FILE: tools\smoke_test_crystal_shop_17_27_1.py
+SIZE: 2076 bytes
+LAST WRITE: 2026-08-28 00:39:02
+============================================================
+
+import sqlite3,sys,tempfile
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+if str(R) not in sys.path:sys.path.insert(0,str(R))
+from systems.crystal_shop_system import *
+with tempfile.TemporaryDirectory() as d:
+ p=Path(d)/'t.db';c=sqlite3.connect(p);c.executescript("CREATE TABLE users(user_id INTEGER PRIMARY KEY,bag_slots INTEGER);CREATE TABLE items(id INTEGER PRIMARY KEY,name TEXT,max_stack INTEGER);CREATE TABLE inventory(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,item_id INTEGER,quantity INTEGER,durability INTEGER);CREATE TABLE crystal_wallets(user_id INTEGER PRIMARY KEY,balance INTEGER,created_at TEXT,updated_at TEXT);CREATE TABLE crystal_transactions(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,operation TEXT,amount INTEGER,reason_code TEXT,balance_before INTEGER,balance_after INTEGER,idempotency_key TEXT UNIQUE,external_reference TEXT,metadata_json TEXT,compensates_transaction_id INTEGER,created_at TEXT);CREATE TABLE premium_item_grants(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,item_id INTEGER,quantity INTEGER,source TEXT,idempotency_key TEXT UNIQUE,external_reference TEXT,metadata_json TEXT,created_at TEXT);INSERT INTO users VALUES(1,2);INSERT INTO crystal_wallets VALUES(1,500,'x','x');INSERT INTO items VALUES(301,'Sphere',10);INSERT INTO items VALUES(402,'Rune',10);INSERT INTO items VALUES(528,'Extractor',999);");c.commit();c.close();init_crystal_shop_system(p)
+ a=purchase_crystal_shop_item(1,301,2,'k1',p);assert a['success'] and a['balance']==200
+ b=purchase_crystal_shop_item(1,301,2,'k1',p);assert b['idempotent_replay']
+ c=sqlite3.connect(p);assert c.execute('SELECT balance FROM crystal_wallets').fetchone()[0]==200;assert c.execute('SELECT quantity FROM inventory').fetchone()[0]==2;assert c.execute('SELECT COUNT(*) FROM crystal_shop_purchases').fetchone()[0]==1;assert c.execute('SELECT COUNT(*) FROM crystal_transactions').fetchone()[0]==1;assert c.execute('SELECT COUNT(*) FROM premium_item_grants').fetchone()[0]==1;c.close()
+ print('[PASS] Stage 17.27.1 atomic shop contracts')
+
+============================================================
+FILE: tools\smoke_test_crystal_shop_stale_menu_cleanup_17_27_1_1.py
+SIZE: 546 bytes
+LAST WRITE: 2026-08-28 00:55:14
+============================================================
+
+import ast,sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+p=R/'handlers/crystal_shop.py';s=p.read_text(encoding='utf-8');ast.parse(s)
+for token in ('_close_shop_session','_active_shop_callback','_reject_stale_shop_callback','message_id','Це меню покупки вже неактивне.'):
+ assert token in s,token
+assert "def back(message):\n  _close_shop_session" in s
+assert "stages=('confirm',)" in s
+assert "stages=('quantity','confirm')" in s
+print('[PASS] Stage 17.27.1.1 stale menu cleanup contract')
+
+============================================================
+FILE: tools\smoke_test_crystal_wallet_smoke_import_recovery_17_25_1_1.py
+SIZE: 1565 bytes
+LAST WRITE: 2026-08-27 23:15:28
+============================================================
+
+import sqlite3,tempfile,sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+if str(R) not in sys.path:sys.path.insert(0,str(R))
+from systems.crystal_wallet_system import init_crystal_wallet_system,get_crystal_balance,credit_crystals,debit_crystals,get_crystal_transactions,compensate_crystal_transaction
+with tempfile.TemporaryDirectory() as d:
+ p=Path(d)/'test.db';c=sqlite3.connect(p);c.execute('CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT)');c.executemany('INSERT INTO users(user_id,character_name) VALUES(?,?)',[(101,'A'),(202,'B')]);c.commit();c.close()
+ assert init_crystal_wallet_system(p)['wallets']==2 and get_crystal_balance(101,p)==0
+ a=credit_crystals(101,50,'dev_credit','k1',db_path=p);assert a['success'] and a['balance']==50
+ replay=credit_crystals(101,50,'dev_credit','k1',db_path=p);assert replay['idempotent_replay'] and get_crystal_balance(101,p)==50
+ b=debit_crystals(101,20,'dev_debit','k2',db_path=p);assert b['success'] and b['balance']==30
+ bad=debit_crystals(101,31,'dev_debit','k3',db_path=p);assert not bad['success'] and get_crystal_balance(101,p)==30
+ comp=compensate_crystal_transaction(b['transaction_id'],'k4',db_path=p);assert comp['success'] and get_crystal_balance(101,p)==50
+ rows=get_crystal_transactions(101,0,20,db_path=p)['items'];assert len(rows)==3
+ c=sqlite3.connect(p);assert c.execute('PRAGMA quick_check').fetchone()[0]=='ok';assert not c.execute('PRAGMA foreign_key_check').fetchall();c.close()
+print('[PASS] Stage 17.25.1 crystal wallet temporary-DB contracts')
+
+============================================================
 FILE: tools\smoke_test_daily_firius_token_reward.py
 SIZE: 6852 bytes
 LAST WRITE: 2026-07-30 15:14:37
@@ -80004,6 +80802,41 @@ if __name__ == "__main__":
     main()
 
 ============================================================
+FILE: tools\smoke_test_guild_leader_exit_handler_routing_recovery_17_22_1_2.py
+SIZE: 2076 bytes
+LAST WRITE: 2026-08-26 23:54:46
+============================================================
+
+import ast,importlib,sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1];sys.path.insert(0,str(R))
+p=R/"handlers/guild.py";s=p.read_text(encoding="utf-8");t=ast.parse(s)
+regs=[n for n in t.body if isinstance(n,ast.FunctionDef) and n.name=="register_guild_handlers"];assert regs
+r=regs[-1];names=("guild_leave_prompt_17_21_1","guild_leave_callback_17_21_1","guild_leadership_start_17_22_1","guild_leadership_callback_17_22_1")
+found={n.name:n for n in r.body if isinstance(n,ast.FunctionDef) and n.name in names};assert set(found)==set(names),found
+chains=[]
+for statement in r.body:
+    receives=False
+    for call in (n for n in ast.walk(statement) if isinstance(n,ast.Call)):
+        if any(isinstance(a,ast.Name) and a.id=="bot" for a in call.args) or any(k.arg=="bot" and isinstance(k.value,ast.Name) and k.value.id=="bot" for k in call.keywords): receives=True
+    if receives: chains.append(statement)
+assert chains
+assert max(found[x].lineno for x in names)<min(n.lineno for n in chains)
+module=importlib.import_module("handlers.guild")
+for name in ("get_user_guild_role","transfer_guild_leadership","transfer_guild_leadership_and_leave"):assert callable(getattr(module,name,None)),name
+leave_node=found["guild_leave_prompt_17_21_1"]
+leave_source=ast.get_source_segment(s,leave_node) or ""
+decorator_constants={n.value for decorator in leave_node.decorator_list for n in ast.walk(decorator) if isinstance(n,ast.Constant) and isinstance(n.value,str)}
+assert "🚪 Покинути гільдію" in decorator_constants
+assert "_guild_leadership_candidates_17_22_1" in leave_source
+assert "_guild_leadership_select_kb_17_22_1" in leave_source
+leave_constants={n.value for n in ast.walk(leave_node) if isinstance(n,ast.Constant) and isinstance(n.value,str)}
+assert "leave" in leave_constants
+callback_source=ast.get_source_segment(s,found["guild_leadership_callback_17_22_1"]) or ""
+assert "transfer_guild_leadership_and_leave" in callback_source
+print("[PASS] Stage 17.22.1.2 leader exit routes precede legacy guild handlers")
+
+============================================================
 FILE: tools\smoke_test_guild_leadership_transfer_and_leader_exit_17_22_1.py
 SIZE: 1243 bytes
 LAST WRITE: 2026-08-26 23:34:59
@@ -80095,6 +80928,33 @@ assert text.endswith("+00:00"), text
 parsed = namespace["_guild_parse_utc_17_21_1"](text)
 assert parsed is not None and parsed.utcoffset().total_seconds() == 0
 print("[PASS] Stage 17.21.1.3 DB-neutral UTC timezone smoke")
+
+============================================================
+FILE: tools\smoke_test_guild_level_gate_db_neutral_recovery_17_23_1_1_1.py
+SIZE: 1534 bytes
+LAST WRITE: 2026-08-27 00:27:47
+============================================================
+
+import ast, importlib, sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+system=(R/"systems/guild_system.py").read_text(encoding="utf-8")
+handler=(R/"handlers/guild.py").read_text(encoding="utf-8")
+st=ast.parse(system); ht=ast.parse(handler)
+assert "MIN_GUILD_ACCESS_LEVEL = 3" in system
+for name in ("create_guild","create_guild_application","accept_guild_application","get_guild_creation_terms"):
+    nodes=[n for n in st.body if isinstance(n,ast.FunctionDef) and n.name==name]
+    assert nodes, name
+    assert "get_guild_access_level_state" in (ast.get_source_segment(system,nodes[-1]) or ""), name
+halls=[n for n in ht.body if isinstance(n,ast.FunctionDef) and n.name=="guild_hall_kb"]
+active=ast.get_source_segment(handler,halls[-1]) or ""
+assert 'kb.row("🚪 Покинути гільдію", "👑 Передати керівництво")' in active
+assert active.find("👑 Передати керівництво") < active.find("🔙 Місто")
+starts=[n for n in ht.body if isinstance(n,ast.FunctionDef) and n.name=="start_guild_creation"]
+assert "level_allowed" in (ast.get_source_segment(handler,starts[-1]) or "")
+constant_nodes=[n for n in st.body if isinstance(n,(ast.Assign,ast.AnnAssign))]
+assert any(isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=="MIN_GUILD_ACCESS_LEVEL" for t in n.targets) and isinstance(n.value,ast.Constant) and n.value.value==3 for n in constant_nodes)
+print("[PASS] Stage 17.23.1.1.1 static level gate and button layout contract")
 
 ============================================================
 FILE: tools\smoke_test_guild_member_list_explicit_actor_recovery_17_21_3_4.py
@@ -81389,6 +82249,25 @@ assert 100+8*20+(17+9+3)*5==405
 c.execute("UPDATE inventory SET durability=0 WHERE id=20")
 assert n.get_worker_equipped_rune_sta_bonus_v2(c,1)==0
 print("[PASS] notification worker equipped STA rune HP contract")
+
+============================================================
+FILE: tools\smoke_test_paid_guild_creation_and_member_limit_10_17_23_1.py
+SIZE: 862 bytes
+LAST WRITE: 2026-08-27 00:11:02
+============================================================
+
+import ast,sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1];sys.path.insert(0,str(R))
+for rel in ("systems/guild_system.py","db_modules/systems_wrappers.py","db_modules/__init__.py","handlers/guild.py"):ast.parse((R/rel).read_text(encoding="utf-8"),filename=rel)
+s=(R/"systems/guild_system.py").read_text(encoding="utf-8");t=ast.parse(s)
+assert "GUILD_CREATE_COST_GOLD = 100.0" in s and "DEFAULT_GUILD_MEMBER_LIMIT = 10" in s
+assert len([n for n in t.body if isinstance(n,ast.FunctionDef) and n.name=="create_guild"])==1
+import db
+assert callable(db.create_guild) and callable(db.get_guild_creation_terms)
+h=(R/"handlers/guild.py").read_text(encoding="utf-8")
+assert "get_guild_creation_terms" in h and "Вартість:" in h and "Початковий ліміт:" in h
+print("[PASS] Stage 17.23.1 static paid creation contract")
 
 ============================================================
 FILE: tools\smoke_test_perfect_rune_extractor.py
@@ -84444,6 +85323,27 @@ if __name__ == "__main__":
     main()
 
 ============================================================
+FILE: tools\smoke_test_premium_item_smoke_path_recovery_17_26_1_1.py
+SIZE: 1640 bytes
+LAST WRITE: 2026-08-28 00:07:53
+============================================================
+
+import os,sqlite3,sys,tempfile
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+if str(R) not in sys.path:sys.path.insert(0,str(R))
+from systems.premium_item_policy_system import *
+with tempfile.TemporaryDirectory() as d:
+ p=Path(d)/'t.db';c=sqlite3.connect(p);c.executescript("CREATE TABLE users(user_id INTEGER PRIMARY KEY);CREATE TABLE items(id INTEGER PRIMARY KEY,name TEXT);CREATE TABLE inventory(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,item_id INTEGER,quantity INTEGER,durability INTEGER,max_durability INTEGER,refine_level INTEGER);INSERT INTO users VALUES(1);INSERT INTO items VALUES(301,'Sphere');INSERT INTO items VALUES(402,'Success');INSERT INTO items VALUES(528,'Perfect');");c.commit();c.close();init_premium_item_policy(p)
+ assert not can_grant_item_from_source(1,301,1,'dev_command',dev_mode=False,db_path=p)['success']
+ a=grant_item_from_source(1,301,1,'dev_command','k1',dev_mode=True,db_path=p);assert a['success']
+ b=grant_item_from_source(1,301,1,'dev_command','k1',dev_mode=True,db_path=p);assert b['idempotent_replay']
+ assert not can_grant_item_from_source(1,402,1,'level_milestone_reward',milestone_level=5,db_path=p)['success']
+ assert can_grant_item_from_source(1,301,1,'level_milestone_reward',milestone_level=5,db_path=p)['success']
+ c=sqlite3.connect(p);assert c.execute('SELECT quantity FROM inventory WHERE user_id=1 AND item_id=301').fetchone()[0]==1;assert c.execute('SELECT COUNT(*) FROM premium_item_grants').fetchone()[0]==1;assert c.execute('PRAGMA quick_check').fetchone()[0]=='ok';c.close()
+print('[PASS] Stage 17.26.1 premium policy temporary-DB contracts')
+
+============================================================
 FILE: tools\smoke_test_preserve_final_turn_hot_healing_16_1_21.py
 SIZE: 982 bytes
 LAST WRITE: 2026-08-18 22:35:42
@@ -84502,6 +85402,42 @@ def main():
  print('- weapon refine damage and resource type: PASS')
  print('- database writes: 0')
 if __name__=='__main__':main()
+
+============================================================
+FILE: tools\smoke_test_profile_history_button_and_pvp_reason_localization_17_24_1_1.py
+SIZE: 1175 bytes
+LAST WRITE: 2026-08-27 14:36:43
+============================================================
+
+import ast,sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+for rel in ("keyboards.py","handlers/profile.py","systems/profile_history_system.py"):ast.parse((R/rel).read_text(encoding="utf-8"),filename=rel)
+k=(R/"keyboards.py").read_text(encoding="utf-8");p=(R/"handlers/profile.py").read_text(encoding="utf-8");m=(R/"systems/profile_history_system.py").read_text(encoding="utf-8")
+assert 'kb.row("🎒 Інвентар", "📜 Історія")' in k
+assert 'active_tab != "history"' not in p and 'profile_history_reply_message_17_24_1_1' in p
+assert 'PVP_REASON_UA' in m and 'localize_pvp_reason' in m and "'afk_defeat':'поразка через бездіяльність'" in m
+sys.path.insert(0,str(R));from systems.profile_history_system import localize_pvp_reason
+assert localize_pvp_reason('afk_defeat',False)=='поразка через бездіяльність'
+assert localize_pvp_reason('afk_defeat',True)=='перемога через бездіяльність суперника'
+assert localize_pvp_reason('unknown_reason',False)=='бій завершено'
+print("[PASS] Stage 17.24.1.1 profile button and PvP localization")
+
+============================================================
+FILE: tools\smoke_test_profile_trade_and_pvp_history_17_24_1.py
+SIZE: 732 bytes
+LAST WRITE: 2026-08-27 14:26:23
+============================================================
+
+import ast,sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+for rel in ("handlers/profile.py","systems/profile_history_system.py"):ast.parse((R/rel).read_text(encoding="utf-8"),filename=rel)
+sys.path.insert(0,str(R));from systems.profile_history_system import HISTORY_RETENTION_RECORDS_PER_USER,HISTORY_RETENTION_MIN_DAYS,cleanup_history_retention
+assert HISTORY_RETENTION_RECORDS_PER_USER==100 and HISTORY_RETENTION_MIN_DAYS==60
+assert cleanup_history_retention(preview=True)["preview"] is True
+p=(R/"handlers/profile.py").read_text(encoding="utf-8");assert "📜 Історія" in p and "profile_history_trade" in p and "profile_history_pvp" in p
+print("[PASS] Stage 17.24.1 profile history contract")
 
 ============================================================
 FILE: tools\smoke_test_progression_asset_snapshot_economic_ledger.py
