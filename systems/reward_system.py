@@ -469,6 +469,11 @@ def process_enemy_drops(user_id, mob):
         else:
             raise RuntimeError(f"unsupported production victory rule: {rule_id}")
 
+    fatigue_artifact_message = roll_fatigue_artifact_drop(user_id, mob)
+    executed.append("fatigue_artifact")
+    if fatigue_artifact_message:
+        messages.append(fatigue_artifact_message)
+
     guild_message = _central_guild_elite_reward_11_9_0(user_id, mob)
     if guild_message:
         messages.append(guild_message)
@@ -511,4 +516,15 @@ def process_victory_reward(user_id, player_level, mob):
         "capacity": get_bag_capacity(user_id),
     }
 
+def roll_fatigue_artifact_drop(user_id, mob, random_func=None):
+    import random
+    from systems.fatigue_artifact_system import FATIGUE_ARTIFACT_ITEM_ID, add_fatigue_artifacts
+    rng = random_func or random.random
+    chance = 0.10 if mob.get("is_boss") else (0.025 if mob.get("is_elite") else 0.005)
+    if float(rng()) >= chance:
+        return None
+    result = add_fatigue_artifacts(user_id, 1)
+    if result.get("added"):
+        return "💠 Артефакт відновлення сил ×1"
+    return "⚠️ Не влізло в сумку: 💠 Артефакт відновлення сил ×1"
 

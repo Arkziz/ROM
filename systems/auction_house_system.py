@@ -5491,3 +5491,16 @@ def _auction_buy_normalize_category(category):
         return AUCTION_CATEGORY_RUNE
     return _auction_base_buy_normalize_category_12_6_3c(category)
 
+# fatigue_artifact_consumable_17_31_1_1
+_AUCTION_BASE_IS_MATERIAL_17_31_1_1 = _auction_is_material_snapshot
+
+def _auction_is_material_snapshot(snapshot):
+    try:
+        if int(snapshot.get("item_id", 0) or 0) == 50000:
+            return True
+        if str(snapshot.get("item_category", "") or "").lower() == "consumable":
+            return True
+    except Exception:
+        pass
+    return _AUCTION_BASE_IS_MATERIAL_17_31_1_1(snapshot)
+

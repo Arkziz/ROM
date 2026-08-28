@@ -1526,3 +1526,81 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
         pass
     return text, kb
 
+# ROM Stage 17.31.1.2 consumables inventory presentation.
+if ("consumable", "🧰 Витратні предмети") not in INVENTORY_CATEGORIES:
+    INVENTORY_CATEGORIES.append(("consumable", "🧰 Витратні предмети"))
+_FATIGUE_ARTIFACT_BASE_DETAILS_17_31_1_1 = build_item_details
+
+def build_item_details(user_id, inventory_id, back_category="all", page=0):
+    text, kb = _FATIGUE_ARTIFACT_BASE_DETAILS_17_31_1_1(user_id, inventory_id, back_category, page)
+    try:
+        from db_modules.connection import cursor
+        row = cursor.execute("SELECT item_id FROM inventory WHERE id=? AND user_id=?", (int(inventory_id), int(user_id))).fetchone()
+        if row and int(row[0]) == 50000:
+            from systems.energy_system import get_user_energy
+            fatigue = int(get_user_energy(user_id).get("energy", 0))
+            text = (f"💠 Артефакт відновлення сил\n\n"
+                    f"🧰 Категорія: Витратні предмети\n"
+                    f"📦 Одноразовий предмет\n\n"
+                    f"Зменшує поточну втому на 5, але не нижче 0.\n\n"
+                    f"😴 Поточна втома: {fatigue}/40\n"
+                    f"Після одного: {max(0, fatigue-5)}/40")
+            button = types.InlineKeyboardButton("💠 Використати", callback_data=f"fa:q:{int(inventory_id)}:1")
+            kb.keyboard.insert(0, [button])
+    except Exception:
+        pass
+    return text, kb
+
+# ROM Stage 17.31.1.3 consumables category filter and richer artifact card.
+_CONSUMABLE_BASE_GET_CATEGORY_ITEMS_17_31_1_3 = get_category_items
+
+def get_category_items(user_id, category_key):
+    if str(category_key) != "consumable":
+        return _CONSUMABLE_BASE_GET_CATEGORY_ITEMS_17_31_1_3(user_id, category_key)
+    result = []
+    for item in get_inventory_full_items(user_id):
+        try:
+            item_id = int(item[1])
+            item_type = str(item[3] or "").strip().lower()
+            category = str(item[5] or "").strip().lower()
+        except Exception:
+            continue
+        if item_id == 50000 or item_type == "consumable" or category == "consumable":
+            result.append(item)
+    return sorted(result, key=lambda item: _inventory_ui_sort_key_17_7_1(item, include_category=False))
+
+_CONSUMABLE_BASE_BUILD_ITEM_DETAILS_17_31_1_3 = build_item_details
+
+def build_item_details(user_id, inventory_id, back_category="all", page=0):
+    text, kb = _CONSUMABLE_BASE_BUILD_ITEM_DETAILS_17_31_1_3(
+        user_id, inventory_id, back_category, page
+    )
+    try:
+        from db_modules.connection import cursor
+        row = cursor.execute(
+            "SELECT inv.item_id, inv.quantity FROM inventory inv WHERE inv.id=? AND inv.user_id=?",
+            (int(inventory_id), int(user_id)),
+        ).fetchone()
+        if row and int(row[0]) == 50000:
+            from systems.energy_system import get_user_energy
+            fatigue = max(0, int(get_user_energy(user_id).get("energy", 0)))
+            quantity = max(1, int(row[1] or 1))
+            useful_now = min(quantity, max(1, (fatigue + 4) // 5)) if fatigue > 0 else 0
+            text = (
+                "💠 Артефакт відновлення сил\n\n"
+                "🧰 Категорія: Витратні предмети\n"
+                f"📦 У цьому стакі: ×{quantity}/10\n"
+                "🔄 Одноразовий предмет\n\n"
+                "Стародавній кристалічний артефакт накопичує запас відновлювальної сили. "
+                "Після використання зменшує накопичену втому персонажа на 5 за кожен артефакт, "
+                "але ніколи не знижує втому нижче 0.\n\n"
+                f"😴 Поточна втома: {fatigue}/40\n"
+                f"💠 Після одного артефакту: {max(0, fatigue - 5)}/40\n"
+                f"✅ Корисно використати зараз: до ×{useful_now}\n\n"
+                "ℹ️ Використання недоступне при втомі 0/40 та під час активного бою. "
+                "Зайві артефакти не списуються."
+            )
+    except Exception:
+        pass
+    return text, kb
+

@@ -77,6 +77,8 @@ from db import init_rune_system
 from handlers.start import register_start_handlers
 from handlers.profile import register_profile_handlers
 from handlers.inventory import register_inventory_handlers
+from handlers.fatigue_artifact import register_fatigue_artifact_handlers
+from systems.fatigue_artifact_system import init_fatigue_artifact_system
 from handlers.combat import register_combat_handlers
 from handlers.dev import register_dev_handlers
 from handlers.map import register_map_handlers
@@ -160,12 +162,14 @@ init_class_reset_sphere()
 init_crystal_shop_system()
 init_timed_exp_bonus_system()
 init_name_rune_system()
+init_fatigue_artifact_system()
 
 register_crystal_shop_handlers(bot)
 register_timed_exp_bonus_handlers(bot)
 register_start_handlers(bot)
 register_profile_handlers(bot)
 register_inventory_handlers(bot)
+register_fatigue_artifact_handlers(bot)
 register_combat_handlers(bot)
 register_dev_handlers(bot)
 register_map_handlers(bot)
