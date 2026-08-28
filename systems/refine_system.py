@@ -109,35 +109,89 @@ def roll_refine_success(refine_kind, current_level, use_success_rune=False):
     return {"success": roll <= chance, "chance": chance, "roll": roll}
 
 
-def perform_refine_attempt(user_id, inventory_id, use_success_rune=False):
-    from db import init_refine_system, get_inventory_item_refine_info, count_user_item, consume_user_item_by_item_id, set_inventory_refine_level
-    init_refine_system()
-    item_info = get_inventory_item_refine_info(inventory_id)
-    if not item_info:
-        return {"success": False, "message": "❌ Предмет не знайдено."}
-    if int(item_info.get("user_id", 0)) != int(user_id):
-        return {"success": False, "message": "❌ Це не твій предмет."}
-    refine_check = can_refine_item(item_info)
-    if not refine_check.get("success"):
-        return refine_check
-    if count_user_item(user_id, REFINE_STONE_ITEM_ID) <= 0:
-        return {"success": False, "message": "❌ Потрібен 🪨 Камінь Посилення."}
-    if use_success_rune and count_user_item(user_id, SUCCESS_RUNE_ITEM_ID) <= 0:
-        return {"success": False, "message": "❌ Потрібна 💎 Руна Успіху."}
-    consume_user_item_by_item_id(user_id, REFINE_STONE_ITEM_ID, 1)
-    if use_success_rune:
-        consume_user_item_by_item_id(user_id, SUCCESS_RUNE_ITEM_ID, 1)
-    refine_kind = refine_check["refine_kind"]
-    current_level = refine_check["current_level"]
-    roll_result = roll_refine_success(refine_kind, current_level, use_success_rune)
-    if roll_result["success"]:
-        new_level = current_level + 1
-        set_inventory_refine_level(inventory_id, new_level)
-        return {"success": True, "refine_success": True, "refine_kind": refine_kind, "old_level": current_level, "new_level": new_level, "chance": roll_result["chance"], "roll": roll_result["roll"], "used_success_rune": bool(use_success_rune), "message": f"✅ Заточка успішна: +{current_level} → +{new_level}"}
-    new_level = get_refine_failure_level(refine_kind, current_level)
-    set_inventory_refine_level(inventory_id, new_level)
-    if new_level < current_level:
-        message = f"❌ Заточка не вдалася: +{current_level} → +{new_level}"
-    else:
-        message = f"❌ Заточка не вдалася: +{current_level} без змін"
-    return {"success": True, "refine_success": False, "refine_kind": refine_kind, "old_level": current_level, "new_level": new_level, "chance": roll_result["chance"], "roll": roll_result["roll"], "used_success_rune": bool(use_success_rune), "message": message}
+def perform_refine_attempt(user_id, inventory_id, use_success_rune=False, idempotency_key=None, db_path=None):
+    """Atomically consume resources, apply refine result, and persist one attempt."""
+    import json
+    import sqlite3
+    from datetime import datetime, timezone
+    from pathlib import Path
+    uid = int(user_id)
+    inv_id = int(inventory_id)
+    use_rune = bool(use_success_rune)
+    key = str(idempotency_key or "").strip()
+    if not key:
+        return {"success": False, "message": "❌ Відсутній ключ операції заточки."}
+    path = Path(db_path) if db_path is not None else Path(__file__).resolve().parents[1] / "game.db"
+    conn = sqlite3.connect(str(path), timeout=30)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys=ON")
+    conn.execute("PRAGMA busy_timeout=30000")
+    try:
+        conn.executescript("""CREATE TABLE IF NOT EXISTS refine_attempts(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            inventory_id INTEGER NOT NULL,
+            item_id INTEGER NOT NULL,
+            refine_kind TEXT NOT NULL,
+            old_level INTEGER NOT NULL,
+            new_level INTEGER NOT NULL,
+            success_chance INTEGER NOT NULL,
+            roll INTEGER,
+            refine_success INTEGER NOT NULL,
+            used_success_rune INTEGER NOT NULL,
+            stone_quantity INTEGER NOT NULL DEFAULT 1,
+            success_rune_quantity INTEGER NOT NULL DEFAULT 0,
+            idempotency_key TEXT NOT NULL UNIQUE,
+            created_at TEXT NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE RESTRICT,
+            FOREIGN KEY(item_id) REFERENCES items(id) ON DELETE RESTRICT
+        );CREATE INDEX IF NOT EXISTS ix_refine_attempts_user ON refine_attempts(user_id,id DESC);""")
+        conn.commit()
+        conn.execute("BEGIN IMMEDIATE")
+        old_attempt = conn.execute("SELECT * FROM refine_attempts WHERE idempotency_key=?", (key,)).fetchone()
+        if old_attempt:
+            conn.commit()
+            row = dict(old_attempt)
+            return {"success": True, "idempotent_replay": True, "refine_success": bool(row["refine_success"]), "refine_kind": row["refine_kind"], "old_level": row["old_level"], "new_level": row["new_level"], "chance": row["success_chance"], "roll": row["roll"], "used_success_rune": bool(row["used_success_rune"]), "message": "ℹ️ Цю спробу заточки вже виконано."}
+        item = conn.execute("""SELECT inventory.id,inventory.user_id,inventory.item_id,COALESCE(inventory.refine_level,0) refine_level,items.name,items.type,items.category,items.slot_key,items.weapon_hands,items.item_subtype,items.armor_type FROM inventory JOIN items ON items.id=inventory.item_id WHERE inventory.id=?""", (inv_id,)).fetchone()
+        if not item:
+            conn.rollback(); return {"success": False, "message": "❌ Предмет не знайдено."}
+        if int(item["user_id"]) != uid:
+            conn.rollback(); return {"success": False, "message": "❌ Це не твій предмет."}
+        info = dict(item)
+        check = can_refine_item(info)
+        if not check.get("success"):
+            conn.rollback(); return check
+        def total(item_id):
+            return int(conn.execute("SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=? AND quantity>0", (uid,item_id)).fetchone()[0])
+        if total(REFINE_STONE_ITEM_ID) < 1:
+            conn.rollback(); return {"success": False, "message": "❌ Потрібен 🪨 Камінь Посилення."}
+        if use_rune and total(SUCCESS_RUNE_ITEM_ID) < 1:
+            conn.rollback(); return {"success": False, "message": "❌ Потрібна 💎 Руна Успіху."}
+        def consume(item_id):
+            row = conn.execute("SELECT id,quantity FROM inventory WHERE user_id=? AND item_id=? AND quantity>0 ORDER BY id LIMIT 1", (uid,item_id)).fetchone()
+            if not row: raise RuntimeError("resource disappeared during refine")
+            if int(row["quantity"]) == 1: conn.execute("DELETE FROM inventory WHERE id=? AND user_id=?", (int(row["id"]),uid))
+            else: conn.execute("UPDATE inventory SET quantity=quantity-1 WHERE id=? AND user_id=? AND quantity>1", (int(row["id"]),uid))
+        kind = check["refine_kind"]
+        current = int(check["current_level"])
+        roll_result = roll_refine_success(kind,current,use_rune)
+        new_level = current + 1 if roll_result["success"] else get_refine_failure_level(kind,current)
+        consume(REFINE_STONE_ITEM_ID)
+        if use_rune: consume(SUCCESS_RUNE_ITEM_ID)
+        changed = conn.execute("UPDATE inventory SET refine_level=? WHERE id=? AND user_id=? AND COALESCE(refine_level,0)=?", (new_level,inv_id,uid,current)).rowcount
+        if changed != 1: raise RuntimeError("refine target changed concurrently")
+        now = datetime.now(timezone.utc).isoformat()
+        conn.execute("INSERT INTO refine_attempts(user_id,inventory_id,item_id,refine_kind,old_level,new_level,success_chance,roll,refine_success,used_success_rune,stone_quantity,success_rune_quantity,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (uid,inv_id,int(item["item_id"]),kind,current,new_level,int(roll_result["chance"]),roll_result["roll"],1 if roll_result["success"] else 0,1 if use_rune else 0,1,1 if use_rune else 0,key,now))
+        conn.commit()
+        if roll_result["success"]: message=f"✅ Заточка успішна: +{current} → +{new_level}"
+        elif new_level < current: message=f"❌ Заточка не вдалася: +{current} → +{new_level}"
+        else: message=f"❌ Заточка не вдалася: +{current} без змін"
+        return {"success": True, "idempotent_replay": False, "refine_success": bool(roll_result["success"]), "refine_kind": kind, "old_level": current, "new_level": new_level, "chance": int(roll_result["chance"]), "roll": roll_result["roll"], "used_success_rune": use_rune, "message": message}
+    except Exception as error:
+        try: conn.rollback()
+        except Exception: pass
+        return {"success": False, "message": f"❌ Заточку скасовано без списання ресурсів: {error}"}
+    finally:
+        conn.close()
+

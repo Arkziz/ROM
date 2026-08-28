@@ -454,37 +454,33 @@ def register_refine_handlers(bot):
         inventory_id = int(parts[1])
         use_success_rune = parts[2] == "1"
         page = int(parts[3]) if len(parts) > 3 else 0
-
-        before_info = get_inventory_item_refine_info(inventory_id)
-
-        result = perform_refine_attempt(
-            user_id=call.from_user.id,
-            inventory_id=inventory_id,
-            use_success_rune=use_success_rune
-        )
-
-        after_info = get_inventory_item_refine_info(inventory_id)
-
+        info = get_inventory_item_refine_info(inventory_id)
+        check = can_refine_item(info)
+        resources = get_refine_resource_counts(call.from_user.id)
+        if not info or int(info.get("user_id", 0)) != int(call.from_user.id) or not check.get("success"):
+            bot.answer_callback_query(call.id, "Предмет більше недоступний.", show_alert=True); return
+        if resources.get("stone", 0) <= 0 or (use_success_rune and resources.get("success_rune", 0) <= 0):
+            bot.answer_callback_query(call.id, "Недостатньо матеріалів.", show_alert=True); return
+        chance = 100 if use_success_rune else get_refine_success_chance(check["refine_kind"], check["current_level"])
+        kb = types.InlineKeyboardMarkup(row_width=1)
+        kb.add(types.InlineKeyboardButton("✅ Підтвердити заточку", callback_data=f"refine_exec:{inventory_id}:{1 if use_success_rune else 0}:{page}"))
+        kb.add(types.InlineKeyboardButton("❌ Скасувати", callback_data=f"refine_item:{inventory_id}:{page}"))
+        rune_text = "\n💎 Руна Успіху: буде використана" if use_success_rune else ""
+        _send_or_edit(bot=bot, chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"⚒️ Підтвердження заточки\n\n{info.get('name','Предмет')} [+{check['current_level']}]\n🎯 Шанс успіху: {chance}%\n🪨 Камінь Посилення: ×1{rune_text}\n\nПідтвердити операцію?", reply_markup=kb)
         bot.answer_callback_query(call.id)
 
-        result_text = build_refine_attempt_result_text(
-            user_id=call.from_user.id,
-            inventory_id=inventory_id,
-            before_info=before_info,
-            after_info=after_info,
-            result=result,
-            use_success_rune=use_success_rune
-        )
-
+    @bot.callback_query_handler(func=lambda call: call.data.startswith("refine_exec:"))
+    def refine_exec_callback(call):
+        parts = call.data.split(":")
+        inventory_id = int(parts[1]); use_success_rune = parts[2] == "1"; page = int(parts[3]) if len(parts) > 3 else 0
+        before_info = get_inventory_item_refine_info(inventory_id)
+        key = f"telegram:refine:{call.from_user.id}:{call.message.chat.id}:{call.message.message_id}:{inventory_id}:{1 if use_success_rune else 0}"
+        result = perform_refine_attempt(call.from_user.id, inventory_id, use_success_rune, idempotency_key=key)
+        after_info = get_inventory_item_refine_info(inventory_id)
+        bot.answer_callback_query(call.id, "Готово" if result.get("success") else "Заточку скасовано")
+        result_text = build_refine_attempt_result_text(call.from_user.id, inventory_id, before_info, after_info, result, use_success_rune)
         item_text = build_refine_item_text(call.from_user.id, inventory_id)
-
-        _send_or_edit(
-            bot=bot,
-            chat_id=call.message.chat.id,
-            message_id=call.message.message_id,
-            text=f"{result_text}\n\n{item_text}",
-            reply_markup=build_refine_item_kb(call.from_user.id, inventory_id, page)
-        )
+        _send_or_edit(bot=bot, chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{result_text}\n\n{item_text}", reply_markup=build_refine_item_kb(call.from_user.id, inventory_id, page))
 
     @bot.callback_query_handler(func=lambda call: call.data == "refine_noop")
     def refine_noop_callback(call):

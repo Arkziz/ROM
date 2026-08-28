@@ -1,0 +1,10 @@
+import ast,sqlite3,sys,tempfile
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+for p in (R/'systems/refine_system.py',R/'handlers/refine.py'):ast.parse(p.read_text(encoding='utf-8'))
+s=(R/'systems/refine_system.py').read_text(encoding='utf-8');h=(R/'handlers/refine.py').read_text(encoding='utf-8');assert 'BEGIN IMMEDIATE' in s and 'refine_attempts' in s and 'idempotency_key' in s;assert 'refine_exec:' in h and 'Підтвердити заточку' in h
+if str(R) not in sys.path:sys.path.insert(0,str(R))
+from systems.refine_system import perform_refine_attempt
+with tempfile.TemporaryDirectory() as d:
+ p=Path(d)/'t.db';c=sqlite3.connect(p);c.executescript("CREATE TABLE users(user_id INTEGER PRIMARY KEY);CREATE TABLE items(id INTEGER PRIMARY KEY,name TEXT,type TEXT,category TEXT,slot_key TEXT,weapon_hands INTEGER,item_subtype TEXT,armor_type TEXT);CREATE TABLE inventory(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,item_id INTEGER,quantity INTEGER,refine_level INTEGER);INSERT INTO users VALUES(1);INSERT INTO items VALUES(1,'Sword','weapon','equipment','main_hand',1,'sword','');INSERT INTO items VALUES(401,'Stone','material','material','',1,'','');INSERT INTO items VALUES(402,'Rune','success_rune','material','',1,'','');INSERT INTO inventory(user_id,item_id,quantity,refine_level) VALUES(1,1,1,2);INSERT INTO inventory(user_id,item_id,quantity,refine_level) VALUES(1,401,2,0);INSERT INTO inventory(user_id,item_id,quantity,refine_level) VALUES(1,402,2,0);");c.commit();c.close();a=perform_refine_attempt(1,1,True,'k1',p);assert a['success'] and a['chance']==100 and a['new_level']==3;b=perform_refine_attempt(1,1,True,'k1',p);assert b['idempotent_replay'];c=sqlite3.connect(p);assert c.execute('SELECT refine_level FROM inventory WHERE id=1').fetchone()[0]==3;assert c.execute('SELECT quantity FROM inventory WHERE item_id=401').fetchone()[0]==1;assert c.execute('SELECT quantity FROM inventory WHERE item_id=402').fetchone()[0]==1;assert c.execute('SELECT COUNT(*) FROM refine_attempts').fetchone()[0]==1;c.close()
+print('[PASS] Stage 17.29.1 atomic idempotent refine contract')
