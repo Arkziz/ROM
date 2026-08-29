@@ -5347,9 +5347,13 @@ def _auction_inventory_style_weapon_type_line(snapshot):
     return f"✋ Тип зброї: {weapon_type_label}"
 
 # ROM 12.6.3c AUCTION RUNE CATEGORY AND TRANSFER POLICY ALIGNMENT
+# ROM Stage 17.31.1.7 exclusive consumable category and Name Rune deny policy
+# ROM Stage 17.31.1.9 potion and consumable exclusive categories
 AUCTION_CATEGORY_RUNE = "rune"
+AUCTION_CATEGORY_CONSUMABLE = "consumable"
 AUCTION_ALLOWED_CATEGORIES.add(AUCTION_CATEGORY_RUNE)
-AUCTION_PROTECTED_TRANSFER_ITEM_IDS = frozenset((301, 402, 526, 528))
+AUCTION_ALLOWED_CATEGORIES.add(AUCTION_CATEGORY_CONSUMABLE)
+AUCTION_PROTECTED_TRANSFER_ITEM_IDS = frozenset((301, 402, 526, 528, 10000))
 AUCTION_ALLOWED_SPECIAL_TRANSFER_ITEM_IDS = frozenset((401, 527))
 AUCTION_FORBIDDEN_AUCTION_ITEM_IDS = set(AUCTION_FORBIDDEN_AUCTION_ITEM_IDS) | set(AUCTION_PROTECTED_TRANSFER_ITEM_IDS)
 
@@ -5359,6 +5363,8 @@ def normalize_auction_category(category):
     raw = str(category or "").strip().lower()
     if raw in ("💠 руни", "руни", "руна", "rune", "runes"):
         return AUCTION_CATEGORY_RUNE
+    if raw in ("🧰 витратні предмети", "витратні предмети", "consumable", "consumables"):
+        return AUCTION_CATEGORY_CONSUMABLE
     return _auction_base_normalize_category_12_6_3c(category)
 
 
@@ -5382,15 +5388,35 @@ def _auction_is_protected_transfer_snapshot_12_6_3c(snapshot):
 
 
 def _auction_stack_category_matches(snapshot, category):
+    """Return one mutually exclusive Auction category for a stack snapshot."""
+
+    snapshot = snapshot or {}
     category = normalize_auction_category(category)
+    item_id = _auction_item_id_12_6_3c(snapshot)
+    item_type = str(snapshot.get("item_type") or "").strip().lower()
+    item_category = str(snapshot.get("item_category") or "").strip().lower()
+
+    is_rune = _auction_is_rune_snapshot_12_6_3c(snapshot)
+    is_potion = _auction_is_potion_snapshot(snapshot)
+    is_consumable = (
+        item_id == 50000
+        or item_type == "consumable"
+        or item_category == "consumable"
+    ) and not is_rune and not is_potion
+
     if category == AUCTION_CATEGORY_RUNE:
-        return _auction_is_rune_snapshot_12_6_3c(snapshot)
-    if _auction_is_rune_snapshot_12_6_3c(snapshot):
-        return False
+        return is_rune
     if category == AUCTION_CATEGORY_POTION:
-        return _auction_is_potion_snapshot(snapshot)
+        return is_potion and not is_rune
+    if category == AUCTION_CATEGORY_CONSUMABLE:
+        return is_consumable
     if category == AUCTION_CATEGORY_MATERIAL:
-        return _auction_is_material_snapshot(snapshot)
+        return (
+            not is_rune
+            and not is_potion
+            and not is_consumable
+            and _auction_is_material_snapshot(snapshot)
+        )
     return False
 
 
@@ -5416,7 +5442,7 @@ def validate_inventory_stack_item_for_auction(user_id, inventory_id, category, q
         category = normalize_auction_category(category)
     except ValueError as exc:
         return {"success": False, "message": f"❌ {exc}"}
-    if category not in (AUCTION_CATEGORY_POTION, AUCTION_CATEGORY_MATERIAL, AUCTION_CATEGORY_RUNE):
+    if category not in (AUCTION_CATEGORY_POTION, AUCTION_CATEGORY_MATERIAL, AUCTION_CATEGORY_RUNE, AUCTION_CATEGORY_CONSUMABLE):
         return {"success": False, "message": "❌ Некоректна категорія стекового предмета."}
     snapshot_result = get_inventory_item_snapshot_for_auction(user_id, inventory_id)
     if not snapshot_result.get("success"):
@@ -5427,6 +5453,7 @@ def validate_inventory_stack_item_for_auction(user_id, inventory_id, category, q
         names = {
             301: "Сферу нового шляху", 402: "Руну Успіху",
             526: "Жетони Фіріуса", 528: "Досконалий Екстрактор",
+            10000: "Руну імені",
         }
         return {"success": False, "message": f"❌ {names.get(item_id, 'Цей предмет')} не можна виставити на Торговий Дім."}
     if not _auction_stack_category_matches(snapshot, category):
@@ -5485,22 +5512,19 @@ def get_user_sellable_stack_items_for_auction(user_id, category, limit=50, offse
 
 _auction_base_buy_normalize_category_12_6_3c = _auction_buy_normalize_category
 
+# ROM Stage 17.31.1.13 consumable buy-category normalization recovery
 def _auction_buy_normalize_category(category):
     raw = str(category or AUCTION_BUY_CATEGORY_ALL).strip().lower()
     if raw in ("rune", "runes", "руна", "руни", "💠 руни"):
         return AUCTION_CATEGORY_RUNE
+    if raw in (
+        "consumable",
+        "consumables",
+        "витратні предмети",
+        "🧰 витратні предмети",
+        "🧰 витратні предмети в продажу",
+    ):
+        return AUCTION_CATEGORY_CONSUMABLE
     return _auction_base_buy_normalize_category_12_6_3c(category)
 
-# fatigue_artifact_consumable_17_31_1_1
-_AUCTION_BASE_IS_MATERIAL_17_31_1_1 = _auction_is_material_snapshot
-
-def _auction_is_material_snapshot(snapshot):
-    try:
-        if int(snapshot.get("item_id", 0) or 0) == 50000:
-            return True
-        if str(snapshot.get("item_category", "") or "").lower() == "consumable":
-            return True
-    except Exception:
-        pass
-    return _AUCTION_BASE_IS_MATERIAL_17_31_1_1(snapshot)
-
+# ROM Stage 17.31.1 canonical consumables integration

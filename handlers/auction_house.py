@@ -264,7 +264,6 @@ def register_auction_house_handlers(bot):
             reply_markup=auction_house_kb()
         )
 
-    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_BUTTON)
     def auction_sell_placeholder(message):
         bot.send_message(
             message.chat.id,
@@ -473,7 +472,6 @@ def _auction_parse_inventory_id_from_button(text):
 
 def _auction_register_sell_equipment_handlers(bot):
 
-    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_BUTTON)
     def auction_sell_start_v1(message):
         user_id = message.from_user.id
         AUCTION_SELL_STATE[user_id] = {
@@ -822,7 +820,6 @@ def _auction_open_item_list_v2(bot, message, user_id, category, page=0):
 
 def _auction_register_sell_all_handlers_v2(bot):
 
-    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_BUTTON)
     def auction_sell_start_v2(message):
         user_id = message.from_user.id
         clear_auction_sell_state_v2(user_id)
@@ -1505,7 +1502,6 @@ def build_auction_sell_inline_list_text_v1(user_id, category, page=0):
 
 def _auction_register_sell_inline_handlers_v1(bot):
 
-    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_BUTTON)
     def auction_sell_start_inline_v1(message):
         user_id = message.from_user.id
         _auction_clear_all_sell_states_v1(user_id)
@@ -1968,7 +1964,6 @@ def _auction_send_sell_review_v1(bot, chat_id, user_id, inventory_id, category, 
 
 def _auction_register_sell_review_before_price_handlers_v1(bot):
 
-    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_BUTTON)
     def auction_sell_start_review_v1(message):
         user_id = message.from_user.id
         _auction_clear_sell_review_state_v1(user_id)
@@ -2929,7 +2924,6 @@ def _auction_register_buy_filters_handlers_v1(bot):
             reply_markup=auction_buy_category_kb_v1()
         )
 
-    @bot.message_handler(func=lambda m: m.text in AUCTION_BUY_CATEGORY_BY_BUTTON_V1)
     def auction_buy_category_selected_v1(message):
         user_id = message.from_user.id
         category = AUCTION_BUY_CATEGORY_BY_BUTTON_V1.get(message.text, "all")
@@ -3370,12 +3364,20 @@ def auction_buy_lots_reply_back_kb_v1():
     return kb
 
 
+# ROM Stage 17.31.1.12 canonical buy-category handler mapping
 def _auction_register_buy_category_keyboard_cleanup_v1(bot):
 
     @bot.message_handler(func=lambda m: m.text in AUCTION_BUY_CATEGORY_BY_BUTTON_V1)
     def auction_buy_category_selected_clean_keyboard_v1(message):
         user_id = message.from_user.id
-        category = AUCTION_BUY_CATEGORY_BY_BUTTON_V1.get(message.text, "all")
+        category = AUCTION_BUY_CATEGORY_BY_BUTTON_V1.get(message.text)
+        if category is None:
+            bot.send_message(
+                message.chat.id,
+                "❌ Невідома категорія лотів.",
+                reply_markup=auction_buy_category_kb_v1(),
+            )
+            return
         sort_key = "new"
         page = 0
 
@@ -3440,6 +3442,7 @@ def register_auction_house_handlers(bot):
 
 # ==============================
 # ✅ AUCTION HOUSE SELL CATEGORY KEYBOARD CLEANUP V1
+# ROM Stage 17.31.1.3 canonical Auction sell-route consolidation
 # ==============================
 
 AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V1 = "ah_sell_categories"
@@ -3449,6 +3452,8 @@ AUCTION_SELL_CATEGORY_BUTTONS_V1 = {
     "equipment": "⚔️ Спорядження",
     "potion": "🧪 Зілля для продажу",
     "material": "🪨 Матеріали",
+    "rune": "💠 Руни",
+    "consumable": "🧰 Витратні предмети",
 }
 
 
@@ -3457,7 +3462,8 @@ def auction_sell_category_kb_v1():
 
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V1["equipment"], AUCTION_SELL_CATEGORY_BUTTONS_V1["potion"])
-    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V1["material"])
+    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V1["material"], AUCTION_SELL_CATEGORY_BUTTONS_V1["rune"])
+    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V1["consumable"])
     kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V1)
     return kb
 
@@ -3482,7 +3488,9 @@ def build_auction_sell_category_text_v1():
         "Доступно зараз:\n"
         "• ⚔️ Спорядження — зброя, броня, щити, біжутерія.\n"
         "• 🧪 Зілля — стекові предмети, можна виставляти частинами.\n"
-        "• 🪨 Матеріали — камені та матеріали, можна виставляти частинами.\n\n"
+        "• 🪨 Матеріали — камені та матеріали, можна виставляти частинами.\n"
+        "• 💠 Руни — дозволені руни, які не належать до захищених предметів.\n"
+        "• 🧰 Витратні предмети — їжа, напої та інші стекові предмети для використання.\n\n"
         "Обмеження:\n"
         "• 💎 Руну Успіху не можна продавати через Торговий Дім.\n"
         "• Екіпіровані та зламані предмети не можна виставляти.\n"
@@ -3583,50 +3591,59 @@ def _auction_try_stack_sell_list_v1(user_id, category, page=0):
     return None
 
 
+# ROM Stage 17.31.1.6 canonical inline category dispatch
 def _auction_send_sell_category_listing_v1(bot, message, category):
+    """Open one sell category through the canonical inline item-list flow."""
+
     user_id = message.from_user.id
-    page = 0
+    category = str(category or "").strip().lower()
+    allowed_categories = {"equipment", "potion", "material", "rune", "consumable"}
 
-    # Перемикаємо нижню ReplyKeyboard на одну кнопку повернення.
-    bot.send_message(
-        message.chat.id,
-        "📂 Категорію відкрито. Для повернення до категорій використай inline-кнопку «🔙 Категорії виставлення» під списком.",
-        reply_markup=auction_sell_listing_back_kb_v1()
-    )
-
-    if category == "equipment":
-        result = _auction_call_equipment_sell_list_v1(user_id, page=page)
-        if result:
-            text, inline_kb = result
-            inline_kb = _auction_sanitize_sell_inline_kb_v1(inline_kb)
-            bot.send_message(message.chat.id, text, reply_markup=inline_kb)
-            return
-
+    if category not in allowed_categories:
         bot.send_message(
             message.chat.id,
-            "⚠️ Не вдалося відкрити список спорядження для продажу.",
-            reply_markup=auction_sell_listing_back_kb_v1()
+            "❌ Невідома категорія товару.",
+            reply_markup=auction_sell_category_kb_v1(),
         )
         return
 
-    stack_category = "potion" if category == "potion" else "material"
-    result = _auction_try_stack_sell_list_v1(user_id, stack_category, page=page)
-
-    if result:
-        text, inline_kb = result
-        inline_kb = _auction_sanitize_sell_inline_kb_v1(inline_kb)
-        bot.send_message(message.chat.id, text, reply_markup=inline_kb)
-        return
-
-    # Якщо helper має іншу назву, краще показати зрозумілий текст, а не мовчати.
-    label = "зілля" if category == "potion" else "матеріалів"
+    # A concrete category must never remain in the persistent reply keyboard.
+    # The item list itself is always rendered by InlineKeyboardMarkup.
     bot.send_message(
         message.chat.id,
-        f"⚠️ Не вдалося відкрити список {label} для продажу. Якщо це повториться — скинь handlers/auction_house.py, я підключу точний helper.",
-        reply_markup=auction_sell_listing_back_kb_v1()
+        "📂 Категорію відкрито. Для повернення до категорій використай inline-кнопку «🔙 Категорії виставлення» під списком.",
+        reply_markup=auction_sell_listing_back_kb_v1(),
     )
 
+    try:
+        text, inline_kb = build_auction_sell_inline_list_text_v1(
+            user_id=user_id,
+            category=category,
+            page=0,
+        )
+    except TypeError:
+        text, inline_kb = build_auction_sell_inline_list_text_v1(user_id, category, 0)
+    except Exception as error:
+        bot.send_message(
+            message.chat.id,
+            f"❌ Не вдалося відкрити категорію: {error}",
+            reply_markup=auction_sell_listing_back_kb_v1(),
+        )
+        return
 
+    if not isinstance(inline_kb, types.InlineKeyboardMarkup):
+        bot.send_message(
+            message.chat.id,
+            "❌ Список категорії має некоректний формат клавіатури.",
+            reply_markup=auction_sell_listing_back_kb_v1(),
+        )
+        return
+
+    inline_kb = _auction_sanitize_sell_inline_kb_v1(inline_kb)
+    bot.send_message(message.chat.id, text, reply_markup=inline_kb)
+
+
+# ROM Stage 17.31.1.4 canonical sell-entry registration
 def _auction_register_sell_category_keyboard_cleanup_v1(bot):
 
     @bot.message_handler(func=lambda m: m.text == "➕ Виставити товар")
@@ -3649,6 +3666,14 @@ def _auction_register_sell_category_keyboard_cleanup_v1(bot):
     @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_CATEGORY_BUTTONS_V1["material"])
     def auction_sell_category_material_v1(message):
         _auction_send_sell_category_listing_v1(bot, message, "material")
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_CATEGORY_BUTTONS_V1["rune"])
+    def auction_sell_category_rune_v1(message):
+        _auction_send_sell_category_listing_v1(bot, message, "rune")
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_CATEGORY_BUTTONS_V1["consumable"])
+    def auction_sell_category_consumable_v1(message):
+        _auction_send_sell_category_listing_v1(bot, message, "consumable")
 
     @bot.callback_query_handler(func=lambda call: call.data == AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V1)
     def auction_sell_back_to_categories_callback_v1(call):
@@ -3680,6 +3705,7 @@ def register_auction_house_handlers(bot):
 
 # ==============================
 # ✅ AUCTION HOUSE RESTORE SELL INLINE FLOW V1
+# ROM Stage 17.31.1.5 canonical sell registration reachability
 # ==============================
 
 # ВАЖЛИВО:
@@ -3749,232 +3775,14 @@ def register_auction_house_handlers(bot):
     working fixes, including buy category cleanup and reply back to Auction House.
     """
 
-    # Register this first so normal ReplyKeyboard back remains responsive.
+    # Register navigation and the single canonical sell-entry route before the legacy chain.
     _auction_register_reply_back_to_house_restore_v1(bot)
+    _auction_register_sell_category_keyboard_cleanup_v1(bot)
 
     if _auction_register_before_broken_sell_cleanup_v1:
         _auction_register_before_broken_sell_cleanup_v1(bot)
     elif _auction_current_register_before_restore_sell_inline_v1:
         _auction_current_register_before_restore_sell_inline_v1(bot)
-
-
-# ==============================
-# ✅ AUCTION HOUSE SELL CATEGORY KEYBOARD CLEANUP SAFE V2
-# ==============================
-
-# Цей patch робить те саме, що планувалося у 8.0.9d, але без виклику старого
-# reply-based helper-а. Він використовує вже робочий inline-flow:
-# build_auction_sell_inline_list_text_v1() / auction_sell_items_inline_kb_v1().
-
-AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2 = "ah_sell_categories_v2"
-AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V2 = "🔙 Торговий дім"
-
-AUCTION_SELL_CATEGORY_BUTTONS_V2 = {
-    "equipment": "⚔️ Спорядження",
-    "potion": "🧪 Зілля для продажу",
-    "material": "🪨 Матеріали",
-}
-
-AUCTION_SELL_CATEGORY_BY_BUTTON_V2 = {
-    value: key for key, value in AUCTION_SELL_CATEGORY_BUTTONS_V2.items()
-}
-
-
-def auction_sell_category_kb_v2_safe():
-    """ReplyKeyboard з категоріями виставлення товару."""
-
-    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V2["equipment"], AUCTION_SELL_CATEGORY_BUTTONS_V2["potion"])
-    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V2["material"])
-    kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V2)
-    return kb
-
-
-def auction_sell_listing_reply_back_kb_v2_safe():
-    """ReplyKeyboard після відкриття конкретної категорії: тільки назад у Торговий Дім."""
-
-    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V2)
-    return kb
-
-
-def build_auction_sell_category_text_v2_safe():
-    try:
-        if "build_auction_sell_start_text_inline_v1" in globals():
-            return build_auction_sell_start_text_inline_v1()
-    except Exception:
-        pass
-
-    try:
-        if "build_auction_sell_start_text_v2" in globals():
-            return build_auction_sell_start_text_v2()
-    except Exception:
-        pass
-
-    return (
-        "➕ Виставити товар\n\n"
-        "Оберіть категорію товару, який хочете виставити на продаж.\n\n"
-        "Доступно зараз:\n"
-        "• ⚔️ Спорядження — зброя, броня, щити, біжутерія.\n"
-        "• 🧪 Зілля для продажу — стекові предмети, можна виставляти частинами.\n"
-        "• 🪨 Матеріали — камені та матеріали, можна виставляти частинами.\n\n"
-        "Обмеження:\n"
-        "• 💎 Руну Успіху не можна продавати через Торговий Дім.\n"
-        "• Екіпіровані та зламані предмети не можна виставляти.\n"
-        "• Активний лот існує 7 днів.\n"
-        "• Максимум активних лотів: 20."
-    )
-
-
-def _auction_sanitize_sell_inline_keyboard_v2_safe(kb):
-    """
-    Видаляє inline 🔙 Торговий дім і додає inline 🔙 Категорії виставлення.
-    """
-
-    try:
-        new_keyboard = []
-        for row in getattr(kb, "keyboard", []) or []:
-            new_row = []
-            for button in row:
-                text = getattr(button, "text", "") or ""
-                callback_data = getattr(button, "callback_data", "") or ""
-
-                if callback_data == "ah_menu":
-                    continue
-                if "Торговий дім" in text:
-                    continue
-                if callback_data == AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2:
-                    continue
-
-                new_row.append(button)
-
-            if new_row:
-                new_keyboard.append(new_row)
-
-        kb.keyboard = new_keyboard
-    except Exception:
-        pass
-
-    try:
-        kb.add(types.InlineKeyboardButton("🔙 Категорії виставлення", callback_data=AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2))
-    except Exception:
-        pass
-
-    return kb
-
-
-try:
-    _auction_base_sell_items_inline_kb_before_sell_cleanup_v2 = auction_sell_items_inline_kb_v1
-except NameError:
-    _auction_base_sell_items_inline_kb_before_sell_cleanup_v2 = None
-
-
-def auction_sell_items_inline_kb_v1(user_id, category, page=0):
-    """
-    Override робочого inline-list helper-а:
-    - предмети залишаються inline;
-    - прибираємо inline 🔙 Торговий дім;
-    - додаємо inline 🔙 Категорії виставлення.
-    """
-
-    if not _auction_base_sell_items_inline_kb_before_sell_cleanup_v2:
-        kb = types.InlineKeyboardMarkup(row_width=1)
-        kb.add(types.InlineKeyboardButton("🔙 Категорії виставлення", callback_data=AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2))
-        return kb, [], False
-
-    kb, items, has_next = _auction_base_sell_items_inline_kb_before_sell_cleanup_v2(user_id, category, page=page)
-    kb = _auction_sanitize_sell_inline_keyboard_v2_safe(kb)
-    return kb, items, has_next
-
-
-try:
-    _auction_base_sell_review_kb_before_sell_cleanup_v2 = auction_sell_review_kb_v1
-except NameError:
-    _auction_base_sell_review_kb_before_sell_cleanup_v2 = None
-
-
-def auction_sell_review_kb_v1(category, inventory_id, page=0):
-    """
-    Override review-кнопок на екрані огляду товару перед ціною:
-    - прибираємо inline 🔙 Торговий дім;
-    - додаємо inline 🔙 Категорії виставлення.
-    """
-
-    if not _auction_base_sell_review_kb_before_sell_cleanup_v2:
-        kb = types.InlineKeyboardMarkup(row_width=1)
-        kb.add(types.InlineKeyboardButton("🔙 Категорії виставлення", callback_data=AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2))
-        return kb
-
-    kb = _auction_base_sell_review_kb_before_sell_cleanup_v2(category, inventory_id, page=page)
-    kb = _auction_sanitize_sell_inline_keyboard_v2_safe(kb)
-    return kb
-
-
-def _auction_open_sell_inline_category_v2_safe(bot, message, category):
-    user_id = message.from_user.id
-    page = 0
-
-    # Спершу прибираємо нижні категорії і залишаємо тільки звичайну кнопку назад.
-    bot.send_message(
-        message.chat.id,
-        "📂 Категорію відкрито. Для повернення до категорій використай inline-кнопку «🔙 Категорії виставлення» під списком.",
-        reply_markup=auction_sell_listing_reply_back_kb_v2_safe()
-    )
-
-    try:
-        text, inline_kb = build_auction_sell_inline_list_text_v1(user_id, category, page=page)
-        inline_kb = _auction_sanitize_sell_inline_keyboard_v2_safe(inline_kb)
-        bot.send_message(message.chat.id, text, reply_markup=inline_kb)
-    except Exception as error:
-        bot.send_message(
-            message.chat.id,
-            f"⚠️ Не вдалося відкрити список товарів цієї категорії: {error}",
-            reply_markup=auction_sell_listing_reply_back_kb_v2_safe()
-        )
-
-
-def _auction_register_sell_category_keyboard_cleanup_v2_safe(bot):
-
-    @bot.message_handler(func=lambda m: m.text == "➕ Виставити товар")
-    def auction_sell_start_categories_v2_safe(message):
-        # При вході у виставлення повертаємо нижні кнопки категорій.
-        bot.send_message(
-            message.chat.id,
-            build_auction_sell_category_text_v2_safe(),
-            reply_markup=auction_sell_category_kb_v2_safe()
-        )
-
-    @bot.message_handler(func=lambda m: m.text in AUCTION_SELL_CATEGORY_BY_BUTTON_V2)
-    def auction_sell_category_selected_v2_safe(message):
-        category = AUCTION_SELL_CATEGORY_BY_BUTTON_V2.get(message.text, "equipment")
-        _auction_open_sell_inline_category_v2_safe(bot, message, category)
-
-    @bot.callback_query_handler(func=lambda call: call.data == AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2)
-    def auction_sell_back_to_categories_v2_safe(call):
-        try:
-            bot.answer_callback_query(call.id)
-        except Exception:
-            pass
-
-        bot.send_message(
-            call.message.chat.id,
-            build_auction_sell_category_text_v2_safe(),
-            reply_markup=auction_sell_category_kb_v2_safe()
-        )
-
-
-try:
-    _auction_base_register_handlers_before_sell_keyboard_cleanup_v2_safe = register_auction_house_handlers
-except NameError:
-    _auction_base_register_handlers_before_sell_keyboard_cleanup_v2_safe = None
-
-
-def register_auction_house_handlers(bot):
-    # Цей handler має бути раніше старих sell category handlers, щоб коректно керувати ReplyKeyboard.
-    _auction_register_sell_category_keyboard_cleanup_v2_safe(bot)
-
-    if _auction_base_register_handlers_before_sell_keyboard_cleanup_v2_safe:
-        _auction_base_register_handlers_before_sell_keyboard_cleanup_v2_safe(bot)
 
 
 # ==============================
@@ -5298,12 +5106,16 @@ def register_auction_house_handlers(bot):
         _auction_base_register_handlers_before_admin_guard_v1(bot)
 
 # ROM 12.6.3c AUCTION RUNE CATEGORY AND TRANSFER POLICY ALIGNMENT
+# ROM Stage 17.31.1.8 distinct Auction buy labels
 AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C = "💠 Руни"
+AUCTION_BUY_RUNE_CATEGORY_BUTTON_17_31_1_8 = "💠 Руни в продажу"
+AUCTION_BUY_CONSUMABLE_CATEGORY_BUTTON_17_31_1_8 = "🧰 Витратні предмети в продажу"
 AUCTION_SELL_INLINE_CATEGORY_BUTTONS[AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C] = "rune"
-AUCTION_SELL_CATEGORY_BUTTONS_V2["rune"] = AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C
-AUCTION_SELL_CATEGORY_BY_BUTTON_V2[AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C] = "rune"
-AUCTION_BUY_CATEGORY_BUTTONS_V1["rune"] = AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C
-AUCTION_BUY_CATEGORY_BY_BUTTON_V1[AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C] = "rune"
+AUCTION_SELL_CATEGORY_BUTTONS_V1["rune"] = AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C
+AUCTION_BUY_CATEGORY_BUTTONS_V1["rune"] = AUCTION_BUY_RUNE_CATEGORY_BUTTON_17_31_1_8
+AUCTION_BUY_CATEGORY_BUTTONS_V1["consumable"] = AUCTION_BUY_CONSUMABLE_CATEGORY_BUTTON_17_31_1_8
+AUCTION_BUY_CATEGORY_BY_BUTTON_V1[AUCTION_BUY_RUNE_CATEGORY_BUTTON_17_31_1_8] = "rune"
+AUCTION_BUY_CATEGORY_BY_BUTTON_V1[AUCTION_BUY_CONSUMABLE_CATEGORY_BUTTON_17_31_1_8] = "consumable"
 
 
 def auction_sell_inline_category_kb_v1():
@@ -5311,14 +5123,6 @@ def auction_sell_inline_category_kb_v1():
     kb.row(AUCTION_EQUIPMENT_CATEGORY_BUTTON, globals().get("AUCTION_STACK_CATEGORY_POTION_BUTTON", "🧪 Зілля для продажу"))
     kb.row(globals().get("AUCTION_STACK_CATEGORY_MATERIAL_BUTTON", "🪨 Матеріали"), AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C)
     kb.row(AUCTION_BACK_TO_MENU_BUTTON)
-    return kb
-
-
-def auction_sell_category_kb_v2_safe():
-    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V2["equipment"], AUCTION_SELL_CATEGORY_BUTTONS_V2["potion"])
-    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V2["material"], AUCTION_SELL_CATEGORY_BUTTONS_V2["rune"])
-    kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V2)
     return kb
 
 
@@ -5349,6 +5153,7 @@ def auction_buy_category_kb_v1():
     kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["all"])
     kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["equipment"], AUCTION_BUY_CATEGORY_BUTTONS_V1["potion"])
     kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["material"], AUCTION_BUY_CATEGORY_BUTTONS_V1["rune"])
+    kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["consumable"])
     kb.row(AUCTION_BACK_TO_MENU_BUTTON)
     return kb
 
@@ -5397,3 +5202,5 @@ def build_auction_buy_category_text_v1(*args, **kwargs):
         stop_marker="Продавці приховані.",
     )
 
+
+# ROM Stage 17.31.1 canonical consumables integration

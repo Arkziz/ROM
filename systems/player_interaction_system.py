@@ -2218,7 +2218,7 @@ def confirm_player_trade(trade_id, user_id, *, expected_revision=None, now=None,
 
 # ROM 12.6.4 PLAYER TRADE NAVIGATION LOCK AND ITEM CATEGORIES
 PLAYER_TRADE_ITEM_CATEGORY_PAGE_SIZE = 8
-PLAYER_TRADE_ITEM_CATEGORIES = ("equipment", "potion", "material", "rune")
+PLAYER_TRADE_ITEM_CATEGORIES = ("equipment", "potion", "material", "rune", "consumable")
 
 
 def _player_trade_item_category_12_6_4(item):
@@ -2229,7 +2229,9 @@ def _player_trade_item_category_12_6_4(item):
     item_id = int(snapshot.get("item_id") or 0)
     if 501 <= item_id <= 525 or category in ("rune", "runes", "stat_rune"):
         return "rune"
-    if category in ("potion", "potions", "consumable", "heal_potion", "mana_potion"):
+    if item_id == 50000 or category == "consumable":
+        return "consumable"
+    if category in ("potion", "potions", "heal_potion", "mana_potion"):
         return "potion"
     return "material"
 
@@ -2287,3 +2289,5 @@ def get_player_trade_category_counts(trade_id, user_id, *, db_path=None):
         counts[category] = int(result.get("total") or 0)
     return {"success": True, "trade_id": int(trade_id), "counts": counts}
 
+
+# ROM Stage 17.31.1 canonical consumables integration

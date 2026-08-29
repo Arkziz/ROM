@@ -1287,6 +1287,7 @@ _PLAYER_TRADE_CATEGORY_LABELS_12_6_4 = {
     "potion": "🧪 Зілля",
     "material": "🪨 Матеріали",
     "rune": "💠 Руни",
+    "consumable": "🧰 Витратні предмети",
 }
 _PLAYER_TRADE_ALLOWED_CALLBACK_PREFIXES_12_6_4 = (
     "pi:te:", "pi:teux:", "pi:tep:", "pi:tea:", "pi:tec:", "pi:tcf:",
@@ -1306,7 +1307,8 @@ def _trade_category_text_12_6_4(counts):
         f"⚔️ Спорядження: {int(counts.get('equipment', 0))}\n"
         f"🧪 Зілля: {int(counts.get('potion', 0))}\n"
         f"🪨 Матеріали: {int(counts.get('material', 0))}\n"
-        f"💠 Руни: {int(counts.get('rune', 0))}"
+        f"💠 Руни: {int(counts.get('rune', 0))}\n"
+        f"🧰 Витратні предмети: {int(counts.get('consumable', 0))}"
     )
 
 
@@ -1328,6 +1330,9 @@ def _trade_category_kb_12_6_4(trade_id, counts):
             f"💠 Руни ({int(counts.get('rune', 0))})",
             callback_data=f"pi:tec:list:{trade_id}:rune:0"),
     )
+    kb.row(types.InlineKeyboardButton(
+        f"🧰 Витратні предмети ({int(counts.get('consumable', 0))})",
+        callback_data=f"pi:tec:list:{trade_id}:consumable:0"))
     kb.row(types.InlineKeyboardButton(
         "✏️ Моя пропозиція", callback_data=f"pi:teux:mine:{trade_id}"))
     kb.row(types.InlineKeyboardButton(
@@ -2064,3 +2069,5 @@ def _trade_ux_mine_kb(state):
 # ROM 12.7.0C PLAYER TRADE FIRST READY STATUS AND COMPLETION TEXT FIX
 
 # ROM 12.7.0D PLAYER TRADE INDEPENDENT OFFER READY STATE
+
+# ROM Stage 17.31.1 canonical consumables integration

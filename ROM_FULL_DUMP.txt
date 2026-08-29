@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-28 23:19:29 +03:00
+Created: 2026-08-29 23:34:26 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9168
-Scanned files: 6963
-Included files: 495
-Excluded files: 6468
-Included source size: 3,39 MB
+Scanned files: 7119
+Included files: 512
+Excluded files: 6607
+Included source size: 3,43 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 6462
+- excluded directory: 6601
 - excluded file name or pattern: 6
 - unsupported file type: 0
 
@@ -74,6 +74,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - handlers\crystal_shop.py
 - handlers\daily.py
 - handlers\dev.py
+- handlers\fatigue_artifact.py
 - handlers\guild.py
 - handlers\inventory.py
 - handlers\map.py
@@ -106,6 +107,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\dynamic_equipment_system.py
 - systems\energy_system.py
 - systems\equipment_system.py
+- systems\fatigue_artifact_system.py
 - systems\guild_system.py
 - systems\level_up_reward_system.py
 - systems\name_rune_system.py
@@ -245,10 +247,19 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_atomic_quest_shop_contract_17_5_1.py
 - tools\smoke_test_atomic_resethero_15_7_7.py
 - tools\smoke_test_auction_armor_only_lot_display_name_17_4_4_1.py
+- tools\smoke_test_auction_buy_category_handler_mapping_17_31_1_12.py
+- tools\smoke_test_auction_consumable_exclusive_category_name_rune_17_31_1_7.py
+- tools\smoke_test_auction_consumables_sell_route_17_31_1_6.py
 - tools\smoke_test_auction_equipment_runes_canonical_17_1_0.py
 - tools\smoke_test_auction_lifecycle_contracts.py
 - tools\smoke_test_auction_list_type_json_import_17_1_0_1.py
+- tools\smoke_test_auction_potion_consumable_exclusive_17_31_1_9.py
 - tools\smoke_test_auction_rune_category_and_transfer_policy_alignment.py
+- tools\smoke_test_auction_rune_consumable_buy_sell_collision_17_31_1_8.py
+- tools\smoke_test_auction_sell_canonical_registration_reachability_17_31_1_5.py
+- tools\smoke_test_auction_sell_category_inline_dispatch_17_31_1_6.py
+- tools\smoke_test_auction_sell_entry_registration_17_31_1_4.py
+- tools\smoke_test_auction_sell_route_canonical_consolidation_17_31_1_3.py
 - tools\smoke_test_base_bag_capacity_60_17_8_1.py
 - tools\smoke_test_base_equipment_context_navigation_recovery_17_11_1_1.py
 - tools\smoke_test_boss_bleed.py
@@ -293,6 +304,9 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_compact_text_location_description_17_11_2.py
 - tools\smoke_test_connection_bag_default_sql_recovery_17_8_1_1.py
 - tools\smoke_test_constants_canonicalization.py
+- tools\smoke_test_consumables_inventory_category_17_31_1_3.py
+- tools\smoke_test_consumables_trade_auction_17_31_1_5.py
+- tools\smoke_test_consumables_trade_auction_canonical_17_31_1.py
 - tools\smoke_test_consume_inventory_item_signature_16_1_6.py
 - tools\smoke_test_contract_contracts.py
 - tools\smoke_test_contract_exp_runtime_16_1_10_1.py
@@ -316,6 +330,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_default_bag_slots_import_recovery_17_13_1_1.py
 - tools\smoke_test_dev_handler_db_api_16_0_4.py
 - tools\smoke_test_dev_reset_hero_lock_initialization_17_12_1_1.py
+- tools\smoke_test_distinct_account_menu_17_30_1_4.py
 - tools\smoke_test_drop_balance_economy_audit.py
 - tools\smoke_test_dynamic_equipment_repair_contracts.py
 - tools\smoke_test_dynamic_equipment_system_16_1_14.py
@@ -335,6 +350,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_exp_bonus_menu_status_17_30_1_1.py
 - tools\smoke_test_explicit_db_startup_maintenance.py
 - tools\smoke_test_extractor_button_rune_master_menu.py
+- tools\smoke_test_fatigue_artifact_17_31_1_1.py
 - tools\smoke_test_final_combat_round_summary_16_1_11.py
 - tools\smoke_test_final_victory_reward_integration.py
 - tools\smoke_test_firius_token_inventory_description.py
@@ -370,6 +386,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_level_up_reward_balance_expansion_17_14_1_2.py
 - tools\smoke_test_level_up_rewards_17_14_1.py
 - tools\smoke_test_live_proportional_enemy_balance_15_7_4_1.py
+- tools\smoke_test_main_menu_explicit_handler_17_30_1_3.py
 - tools\smoke_test_mana_potion_price_balance_17_19_1.py
 - tools\smoke_test_map_location_player_discovery.py
 - tools\smoke_test_map_player_discovery_refresh_and_keyboard.py
@@ -11430,8 +11447,8 @@ LAST WRITE: 2026-07-09 23:38:37
 
 ============================================================
 FILE: handlers\auction_house.py
-SIZE: 214906 bytes
-LAST WRITE: 2026-08-21 02:19:47
+SIZE: 212179 bytes
+LAST WRITE: 2026-08-29 23:32:55
 ============================================================
 
 # ROM 17.11.2 COMPACT TEXT LOCATION DESCRIPTION
@@ -11700,7 +11717,6 @@ def register_auction_house_handlers(bot):
             reply_markup=auction_house_kb()
         )
 
-    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_BUTTON)
     def auction_sell_placeholder(message):
         bot.send_message(
             message.chat.id,
@@ -11909,7 +11925,6 @@ def _auction_parse_inventory_id_from_button(text):
 
 def _auction_register_sell_equipment_handlers(bot):
 
-    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_BUTTON)
     def auction_sell_start_v1(message):
         user_id = message.from_user.id
         AUCTION_SELL_STATE[user_id] = {
@@ -12258,7 +12273,6 @@ def _auction_open_item_list_v2(bot, message, user_id, category, page=0):
 
 def _auction_register_sell_all_handlers_v2(bot):
 
-    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_BUTTON)
     def auction_sell_start_v2(message):
         user_id = message.from_user.id
         clear_auction_sell_state_v2(user_id)
@@ -12941,7 +12955,6 @@ def build_auction_sell_inline_list_text_v1(user_id, category, page=0):
 
 def _auction_register_sell_inline_handlers_v1(bot):
 
-    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_BUTTON)
     def auction_sell_start_inline_v1(message):
         user_id = message.from_user.id
         _auction_clear_all_sell_states_v1(user_id)
@@ -13404,7 +13417,6 @@ def _auction_send_sell_review_v1(bot, chat_id, user_id, inventory_id, category, 
 
 def _auction_register_sell_review_before_price_handlers_v1(bot):
 
-    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_BUTTON)
     def auction_sell_start_review_v1(message):
         user_id = message.from_user.id
         _auction_clear_sell_review_state_v1(user_id)
@@ -14365,7 +14377,6 @@ def _auction_register_buy_filters_handlers_v1(bot):
             reply_markup=auction_buy_category_kb_v1()
         )
 
-    @bot.message_handler(func=lambda m: m.text in AUCTION_BUY_CATEGORY_BY_BUTTON_V1)
     def auction_buy_category_selected_v1(message):
         user_id = message.from_user.id
         category = AUCTION_BUY_CATEGORY_BY_BUTTON_V1.get(message.text, "all")
@@ -14806,12 +14817,20 @@ def auction_buy_lots_reply_back_kb_v1():
     return kb
 
 
+# ROM Stage 17.31.1.12 canonical buy-category handler mapping
 def _auction_register_buy_category_keyboard_cleanup_v1(bot):
 
     @bot.message_handler(func=lambda m: m.text in AUCTION_BUY_CATEGORY_BY_BUTTON_V1)
     def auction_buy_category_selected_clean_keyboard_v1(message):
         user_id = message.from_user.id
-        category = AUCTION_BUY_CATEGORY_BY_BUTTON_V1.get(message.text, "all")
+        category = AUCTION_BUY_CATEGORY_BY_BUTTON_V1.get(message.text)
+        if category is None:
+            bot.send_message(
+                message.chat.id,
+                "❌ Невідома категорія лотів.",
+                reply_markup=auction_buy_category_kb_v1(),
+            )
+            return
         sort_key = "new"
         page = 0
 
@@ -14876,6 +14895,7 @@ def register_auction_house_handlers(bot):
 
 # ==============================
 # ✅ AUCTION HOUSE SELL CATEGORY KEYBOARD CLEANUP V1
+# ROM Stage 17.31.1.3 canonical Auction sell-route consolidation
 # ==============================
 
 AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V1 = "ah_sell_categories"
@@ -14885,6 +14905,8 @@ AUCTION_SELL_CATEGORY_BUTTONS_V1 = {
     "equipment": "⚔️ Спорядження",
     "potion": "🧪 Зілля для продажу",
     "material": "🪨 Матеріали",
+    "rune": "💠 Руни",
+    "consumable": "🧰 Витратні предмети",
 }
 
 
@@ -14893,7 +14915,8 @@ def auction_sell_category_kb_v1():
 
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V1["equipment"], AUCTION_SELL_CATEGORY_BUTTONS_V1["potion"])
-    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V1["material"])
+    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V1["material"], AUCTION_SELL_CATEGORY_BUTTONS_V1["rune"])
+    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V1["consumable"])
     kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V1)
     return kb
 
@@ -14918,7 +14941,9 @@ def build_auction_sell_category_text_v1():
         "Доступно зараз:\n"
         "• ⚔️ Спорядження — зброя, броня, щити, біжутерія.\n"
         "• 🧪 Зілля — стекові предмети, можна виставляти частинами.\n"
-        "• 🪨 Матеріали — камені та матеріали, можна виставляти частинами.\n\n"
+        "• 🪨 Матеріали — камені та матеріали, можна виставляти частинами.\n"
+        "• 💠 Руни — дозволені руни, які не належать до захищених предметів.\n"
+        "• 🧰 Витратні предмети — їжа, напої та інші стекові предмети для використання.\n\n"
         "Обмеження:\n"
         "• 💎 Руну Успіху не можна продавати через Торговий Дім.\n"
         "• Екіпіровані та зламані предмети не можна виставляти.\n"
@@ -15019,50 +15044,59 @@ def _auction_try_stack_sell_list_v1(user_id, category, page=0):
     return None
 
 
+# ROM Stage 17.31.1.6 canonical inline category dispatch
 def _auction_send_sell_category_listing_v1(bot, message, category):
+    """Open one sell category through the canonical inline item-list flow."""
+
     user_id = message.from_user.id
-    page = 0
+    category = str(category or "").strip().lower()
+    allowed_categories = {"equipment", "potion", "material", "rune", "consumable"}
 
-    # Перемикаємо нижню ReplyKeyboard на одну кнопку повернення.
-    bot.send_message(
-        message.chat.id,
-        "📂 Категорію відкрито. Для повернення до категорій використай inline-кнопку «🔙 Категорії виставлення» під списком.",
-        reply_markup=auction_sell_listing_back_kb_v1()
-    )
-
-    if category == "equipment":
-        result = _auction_call_equipment_sell_list_v1(user_id, page=page)
-        if result:
-            text, inline_kb = result
-            inline_kb = _auction_sanitize_sell_inline_kb_v1(inline_kb)
-            bot.send_message(message.chat.id, text, reply_markup=inline_kb)
-            return
-
+    if category not in allowed_categories:
         bot.send_message(
             message.chat.id,
-            "⚠️ Не вдалося відкрити список спорядження для продажу.",
-            reply_markup=auction_sell_listing_back_kb_v1()
+            "❌ Невідома категорія товару.",
+            reply_markup=auction_sell_category_kb_v1(),
         )
         return
 
-    stack_category = "potion" if category == "potion" else "material"
-    result = _auction_try_stack_sell_list_v1(user_id, stack_category, page=page)
-
-    if result:
-        text, inline_kb = result
-        inline_kb = _auction_sanitize_sell_inline_kb_v1(inline_kb)
-        bot.send_message(message.chat.id, text, reply_markup=inline_kb)
-        return
-
-    # Якщо helper має іншу назву, краще показати зрозумілий текст, а не мовчати.
-    label = "зілля" if category == "potion" else "матеріалів"
+    # A concrete category must never remain in the persistent reply keyboard.
+    # The item list itself is always rendered by InlineKeyboardMarkup.
     bot.send_message(
         message.chat.id,
-        f"⚠️ Не вдалося відкрити список {label} для продажу. Якщо це повториться — скинь handlers/auction_house.py, я підключу точний helper.",
-        reply_markup=auction_sell_listing_back_kb_v1()
+        "📂 Категорію відкрито. Для повернення до категорій використай inline-кнопку «🔙 Категорії виставлення» під списком.",
+        reply_markup=auction_sell_listing_back_kb_v1(),
     )
 
+    try:
+        text, inline_kb = build_auction_sell_inline_list_text_v1(
+            user_id=user_id,
+            category=category,
+            page=0,
+        )
+    except TypeError:
+        text, inline_kb = build_auction_sell_inline_list_text_v1(user_id, category, 0)
+    except Exception as error:
+        bot.send_message(
+            message.chat.id,
+            f"❌ Не вдалося відкрити категорію: {error}",
+            reply_markup=auction_sell_listing_back_kb_v1(),
+        )
+        return
 
+    if not isinstance(inline_kb, types.InlineKeyboardMarkup):
+        bot.send_message(
+            message.chat.id,
+            "❌ Список категорії має некоректний формат клавіатури.",
+            reply_markup=auction_sell_listing_back_kb_v1(),
+        )
+        return
+
+    inline_kb = _auction_sanitize_sell_inline_kb_v1(inline_kb)
+    bot.send_message(message.chat.id, text, reply_markup=inline_kb)
+
+
+# ROM Stage 17.31.1.4 canonical sell-entry registration
 def _auction_register_sell_category_keyboard_cleanup_v1(bot):
 
     @bot.message_handler(func=lambda m: m.text == "➕ Виставити товар")
@@ -15085,6 +15119,14 @@ def _auction_register_sell_category_keyboard_cleanup_v1(bot):
     @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_CATEGORY_BUTTONS_V1["material"])
     def auction_sell_category_material_v1(message):
         _auction_send_sell_category_listing_v1(bot, message, "material")
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_CATEGORY_BUTTONS_V1["rune"])
+    def auction_sell_category_rune_v1(message):
+        _auction_send_sell_category_listing_v1(bot, message, "rune")
+
+    @bot.message_handler(func=lambda m: m.text == AUCTION_SELL_CATEGORY_BUTTONS_V1["consumable"])
+    def auction_sell_category_consumable_v1(message):
+        _auction_send_sell_category_listing_v1(bot, message, "consumable")
 
     @bot.callback_query_handler(func=lambda call: call.data == AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V1)
     def auction_sell_back_to_categories_callback_v1(call):
@@ -15116,6 +15158,7 @@ def register_auction_house_handlers(bot):
 
 # ==============================
 # ✅ AUCTION HOUSE RESTORE SELL INLINE FLOW V1
+# ROM Stage 17.31.1.5 canonical sell registration reachability
 # ==============================
 
 # ВАЖЛИВО:
@@ -15185,232 +15228,14 @@ def register_auction_house_handlers(bot):
     working fixes, including buy category cleanup and reply back to Auction House.
     """
 
-    # Register this first so normal ReplyKeyboard back remains responsive.
+    # Register navigation and the single canonical sell-entry route before the legacy chain.
     _auction_register_reply_back_to_house_restore_v1(bot)
+    _auction_register_sell_category_keyboard_cleanup_v1(bot)
 
     if _auction_register_before_broken_sell_cleanup_v1:
         _auction_register_before_broken_sell_cleanup_v1(bot)
     elif _auction_current_register_before_restore_sell_inline_v1:
         _auction_current_register_before_restore_sell_inline_v1(bot)
-
-
-# ==============================
-# ✅ AUCTION HOUSE SELL CATEGORY KEYBOARD CLEANUP SAFE V2
-# ==============================
-
-# Цей patch робить те саме, що планувалося у 8.0.9d, але без виклику старого
-# reply-based helper-а. Він використовує вже робочий inline-flow:
-# build_auction_sell_inline_list_text_v1() / auction_sell_items_inline_kb_v1().
-
-AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2 = "ah_sell_categories_v2"
-AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V2 = "🔙 Торговий дім"
-
-AUCTION_SELL_CATEGORY_BUTTONS_V2 = {
-    "equipment": "⚔️ Спорядження",
-    "potion": "🧪 Зілля для продажу",
-    "material": "🪨 Матеріали",
-}
-
-AUCTION_SELL_CATEGORY_BY_BUTTON_V2 = {
-    value: key for key, value in AUCTION_SELL_CATEGORY_BUTTONS_V2.items()
-}
-
-
-def auction_sell_category_kb_v2_safe():
-    """ReplyKeyboard з категоріями виставлення товару."""
-
-    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V2["equipment"], AUCTION_SELL_CATEGORY_BUTTONS_V2["potion"])
-    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V2["material"])
-    kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V2)
-    return kb
-
-
-def auction_sell_listing_reply_back_kb_v2_safe():
-    """ReplyKeyboard після відкриття конкретної категорії: тільки назад у Торговий Дім."""
-
-    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V2)
-    return kb
-
-
-def build_auction_sell_category_text_v2_safe():
-    try:
-        if "build_auction_sell_start_text_inline_v1" in globals():
-            return build_auction_sell_start_text_inline_v1()
-    except Exception:
-        pass
-
-    try:
-        if "build_auction_sell_start_text_v2" in globals():
-            return build_auction_sell_start_text_v2()
-    except Exception:
-        pass
-
-    return (
-        "➕ Виставити товар\n\n"
-        "Оберіть категорію товару, який хочете виставити на продаж.\n\n"
-        "Доступно зараз:\n"
-        "• ⚔️ Спорядження — зброя, броня, щити, біжутерія.\n"
-        "• 🧪 Зілля для продажу — стекові предмети, можна виставляти частинами.\n"
-        "• 🪨 Матеріали — камені та матеріали, можна виставляти частинами.\n\n"
-        "Обмеження:\n"
-        "• 💎 Руну Успіху не можна продавати через Торговий Дім.\n"
-        "• Екіпіровані та зламані предмети не можна виставляти.\n"
-        "• Активний лот існує 7 днів.\n"
-        "• Максимум активних лотів: 20."
-    )
-
-
-def _auction_sanitize_sell_inline_keyboard_v2_safe(kb):
-    """
-    Видаляє inline 🔙 Торговий дім і додає inline 🔙 Категорії виставлення.
-    """
-
-    try:
-        new_keyboard = []
-        for row in getattr(kb, "keyboard", []) or []:
-            new_row = []
-            for button in row:
-                text = getattr(button, "text", "") or ""
-                callback_data = getattr(button, "callback_data", "") or ""
-
-                if callback_data == "ah_menu":
-                    continue
-                if "Торговий дім" in text:
-                    continue
-                if callback_data == AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2:
-                    continue
-
-                new_row.append(button)
-
-            if new_row:
-                new_keyboard.append(new_row)
-
-        kb.keyboard = new_keyboard
-    except Exception:
-        pass
-
-    try:
-        kb.add(types.InlineKeyboardButton("🔙 Категорії виставлення", callback_data=AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2))
-    except Exception:
-        pass
-
-    return kb
-
-
-try:
-    _auction_base_sell_items_inline_kb_before_sell_cleanup_v2 = auction_sell_items_inline_kb_v1
-except NameError:
-    _auction_base_sell_items_inline_kb_before_sell_cleanup_v2 = None
-
-
-def auction_sell_items_inline_kb_v1(user_id, category, page=0):
-    """
-    Override робочого inline-list helper-а:
-    - предмети залишаються inline;
-    - прибираємо inline 🔙 Торговий дім;
-    - додаємо inline 🔙 Категорії виставлення.
-    """
-
-    if not _auction_base_sell_items_inline_kb_before_sell_cleanup_v2:
-        kb = types.InlineKeyboardMarkup(row_width=1)
-        kb.add(types.InlineKeyboardButton("🔙 Категорії виставлення", callback_data=AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2))
-        return kb, [], False
-
-    kb, items, has_next = _auction_base_sell_items_inline_kb_before_sell_cleanup_v2(user_id, category, page=page)
-    kb = _auction_sanitize_sell_inline_keyboard_v2_safe(kb)
-    return kb, items, has_next
-
-
-try:
-    _auction_base_sell_review_kb_before_sell_cleanup_v2 = auction_sell_review_kb_v1
-except NameError:
-    _auction_base_sell_review_kb_before_sell_cleanup_v2 = None
-
-
-def auction_sell_review_kb_v1(category, inventory_id, page=0):
-    """
-    Override review-кнопок на екрані огляду товару перед ціною:
-    - прибираємо inline 🔙 Торговий дім;
-    - додаємо inline 🔙 Категорії виставлення.
-    """
-
-    if not _auction_base_sell_review_kb_before_sell_cleanup_v2:
-        kb = types.InlineKeyboardMarkup(row_width=1)
-        kb.add(types.InlineKeyboardButton("🔙 Категорії виставлення", callback_data=AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2))
-        return kb
-
-    kb = _auction_base_sell_review_kb_before_sell_cleanup_v2(category, inventory_id, page=page)
-    kb = _auction_sanitize_sell_inline_keyboard_v2_safe(kb)
-    return kb
-
-
-def _auction_open_sell_inline_category_v2_safe(bot, message, category):
-    user_id = message.from_user.id
-    page = 0
-
-    # Спершу прибираємо нижні категорії і залишаємо тільки звичайну кнопку назад.
-    bot.send_message(
-        message.chat.id,
-        "📂 Категорію відкрито. Для повернення до категорій використай inline-кнопку «🔙 Категорії виставлення» під списком.",
-        reply_markup=auction_sell_listing_reply_back_kb_v2_safe()
-    )
-
-    try:
-        text, inline_kb = build_auction_sell_inline_list_text_v1(user_id, category, page=page)
-        inline_kb = _auction_sanitize_sell_inline_keyboard_v2_safe(inline_kb)
-        bot.send_message(message.chat.id, text, reply_markup=inline_kb)
-    except Exception as error:
-        bot.send_message(
-            message.chat.id,
-            f"⚠️ Не вдалося відкрити список товарів цієї категорії: {error}",
-            reply_markup=auction_sell_listing_reply_back_kb_v2_safe()
-        )
-
-
-def _auction_register_sell_category_keyboard_cleanup_v2_safe(bot):
-
-    @bot.message_handler(func=lambda m: m.text == "➕ Виставити товар")
-    def auction_sell_start_categories_v2_safe(message):
-        # При вході у виставлення повертаємо нижні кнопки категорій.
-        bot.send_message(
-            message.chat.id,
-            build_auction_sell_category_text_v2_safe(),
-            reply_markup=auction_sell_category_kb_v2_safe()
-        )
-
-    @bot.message_handler(func=lambda m: m.text in AUCTION_SELL_CATEGORY_BY_BUTTON_V2)
-    def auction_sell_category_selected_v2_safe(message):
-        category = AUCTION_SELL_CATEGORY_BY_BUTTON_V2.get(message.text, "equipment")
-        _auction_open_sell_inline_category_v2_safe(bot, message, category)
-
-    @bot.callback_query_handler(func=lambda call: call.data == AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V2)
-    def auction_sell_back_to_categories_v2_safe(call):
-        try:
-            bot.answer_callback_query(call.id)
-        except Exception:
-            pass
-
-        bot.send_message(
-            call.message.chat.id,
-            build_auction_sell_category_text_v2_safe(),
-            reply_markup=auction_sell_category_kb_v2_safe()
-        )
-
-
-try:
-    _auction_base_register_handlers_before_sell_keyboard_cleanup_v2_safe = register_auction_house_handlers
-except NameError:
-    _auction_base_register_handlers_before_sell_keyboard_cleanup_v2_safe = None
-
-
-def register_auction_house_handlers(bot):
-    # Цей handler має бути раніше старих sell category handlers, щоб коректно керувати ReplyKeyboard.
-    _auction_register_sell_category_keyboard_cleanup_v2_safe(bot)
-
-    if _auction_base_register_handlers_before_sell_keyboard_cleanup_v2_safe:
-        _auction_base_register_handlers_before_sell_keyboard_cleanup_v2_safe(bot)
 
 
 # ==============================
@@ -16734,12 +16559,16 @@ def register_auction_house_handlers(bot):
         _auction_base_register_handlers_before_admin_guard_v1(bot)
 
 # ROM 12.6.3c AUCTION RUNE CATEGORY AND TRANSFER POLICY ALIGNMENT
+# ROM Stage 17.31.1.8 distinct Auction buy labels
 AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C = "💠 Руни"
+AUCTION_BUY_RUNE_CATEGORY_BUTTON_17_31_1_8 = "💠 Руни в продажу"
+AUCTION_BUY_CONSUMABLE_CATEGORY_BUTTON_17_31_1_8 = "🧰 Витратні предмети в продажу"
 AUCTION_SELL_INLINE_CATEGORY_BUTTONS[AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C] = "rune"
-AUCTION_SELL_CATEGORY_BUTTONS_V2["rune"] = AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C
-AUCTION_SELL_CATEGORY_BY_BUTTON_V2[AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C] = "rune"
-AUCTION_BUY_CATEGORY_BUTTONS_V1["rune"] = AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C
-AUCTION_BUY_CATEGORY_BY_BUTTON_V1[AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C] = "rune"
+AUCTION_SELL_CATEGORY_BUTTONS_V1["rune"] = AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C
+AUCTION_BUY_CATEGORY_BUTTONS_V1["rune"] = AUCTION_BUY_RUNE_CATEGORY_BUTTON_17_31_1_8
+AUCTION_BUY_CATEGORY_BUTTONS_V1["consumable"] = AUCTION_BUY_CONSUMABLE_CATEGORY_BUTTON_17_31_1_8
+AUCTION_BUY_CATEGORY_BY_BUTTON_V1[AUCTION_BUY_RUNE_CATEGORY_BUTTON_17_31_1_8] = "rune"
+AUCTION_BUY_CATEGORY_BY_BUTTON_V1[AUCTION_BUY_CONSUMABLE_CATEGORY_BUTTON_17_31_1_8] = "consumable"
 
 
 def auction_sell_inline_category_kb_v1():
@@ -16747,14 +16576,6 @@ def auction_sell_inline_category_kb_v1():
     kb.row(AUCTION_EQUIPMENT_CATEGORY_BUTTON, globals().get("AUCTION_STACK_CATEGORY_POTION_BUTTON", "🧪 Зілля для продажу"))
     kb.row(globals().get("AUCTION_STACK_CATEGORY_MATERIAL_BUTTON", "🪨 Матеріали"), AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C)
     kb.row(AUCTION_BACK_TO_MENU_BUTTON)
-    return kb
-
-
-def auction_sell_category_kb_v2_safe():
-    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V2["equipment"], AUCTION_SELL_CATEGORY_BUTTONS_V2["potion"])
-    kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V2["material"], AUCTION_SELL_CATEGORY_BUTTONS_V2["rune"])
-    kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V2)
     return kb
 
 
@@ -16785,6 +16606,7 @@ def auction_buy_category_kb_v1():
     kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["all"])
     kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["equipment"], AUCTION_BUY_CATEGORY_BUTTONS_V1["potion"])
     kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["material"], AUCTION_BUY_CATEGORY_BUTTONS_V1["rune"])
+    kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["consumable"])
     kb.row(AUCTION_BACK_TO_MENU_BUTTON)
     return kb
 
@@ -16833,6 +16655,8 @@ def build_auction_buy_category_text_v1(*args, **kwargs):
         stop_marker="Продавці приховані.",
     )
 
+
+# ROM Stage 17.31.1 canonical consumables integration
 
 ============================================================
 FILE: handlers\blacksmith.py
@@ -17744,8 +17568,8 @@ def register_blacksmith_repair_confirmation_handlers(bot):
 
 ============================================================
 FILE: handlers\city.py
-SIZE: 80216 bytes
-LAST WRITE: 2026-08-28 23:11:27
+SIZE: 82545 bytes
+LAST WRITE: 2026-08-28 23:40:58
 ============================================================
 
 # ROM 17.11.2.1 CITY CRAFT TAVERN TEXT CLEANUP
@@ -19975,6 +19799,61 @@ def build_main_menu_text(user_id, show_location_description=False):
     if title in text:
         return text.replace(title, title + "\n\n" + block, 1)
     return title + "\n\n" + block + "\n\n" + text
+
+# ROM Stage 17.30.1.3 explicit permanent Main Menu routing.
+_REGISTER_CITY_HANDLERS_BEFORE_MAIN_MENU_RECOVERY_17_30_1_3 = register_city_handlers
+
+def register_city_handlers(bot):
+    _REGISTER_CITY_HANDLERS_BEFORE_MAIN_MENU_RECOVERY_17_30_1_3(bot)
+
+    @bot.message_handler(func=lambda message: str(getattr(message, "text", "") or "") == "📋 Меню")
+    def open_main_menu_17_30_1_3(message):
+        # Invalidate an unfinished Crystal Shop inline session without letting the
+        # shop own or render the permanent Main Menu route.
+        try:
+            from handlers.crystal_shop import _close_shop_session
+            _close_shop_session(bot, message.from_user.id)
+        except Exception:
+            pass
+
+        bot.send_message(
+            message.chat.id,
+            build_account_menu_text_17_30_1_4(message.from_user.id),
+            reply_markup=account_menu_kb_17_30_1_4(),
+        )
+
+# ROM Stage 17.30.1.4 separates account Menu from the location overview.
+def build_account_menu_text_17_30_1_4(user_id):
+    from systems.timed_exp_bonus_system import get_exp_bonus_account_summary
+    summary = get_exp_bonus_account_summary(user_id)
+    lines = [
+        "📋 Меню",
+        "",
+        f"🆔 ID: {int(user_id)}",
+        f"📅 Дата реєстрації: {_format_account_utc_17_30_1_1(summary.get('registered_at'))}",
+    ]
+    if summary.get("active"):
+        lines.extend([
+            "💎 Premium: активний",
+            "📈 Бонус за вбивство мобів: +25% EXP",
+            f"⏳ Діє до: {_format_account_utc_17_30_1_1(summary.get('expires_at'))}",
+        ])
+    else:
+        lines.append("💎 Premium: неактивний")
+    lines.extend(["", "Оберіть розділ:"])
+    return "\n".join(lines)
+
+def account_menu_kb_17_30_1_4():
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("💎 Магазин кристалів")
+    kb.add("🔙 Назад")
+    return kb
+
+# Restore the location/gameplay builder used by 👀 Роззирнутися.
+def build_main_menu_text(user_id, show_location_description=False):
+    return _BUILD_MAIN_MENU_TEXT_BEFORE_EXP_BONUS_STATUS_17_30_1_1(
+        user_id, show_location_description=show_location_description
+    )
 
 
 ============================================================
@@ -23832,8 +23711,8 @@ def register_contract_handlers(bot):
 
 ============================================================
 FILE: handlers\crystal_shop.py
-SIZE: 8742 bytes
-LAST WRITE: 2026-08-28 23:18:17
+SIZE: 8879 bytes
+LAST WRITE: 2026-08-28 23:40:58
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -23925,7 +23804,8 @@ def register_crystal_shop_handlers(bot):
  @bot.message_handler(func=lambda m:m.text==BACK)
  def back(message):
   _close_shop_session(bot,message.from_user.id)
-  bot.send_message(message.chat.id,'Головне меню.',reply_markup=main_kb())
+  from handlers.city import build_account_menu_text_17_30_1_4, account_menu_kb_17_30_1_4
+  bot.send_message(message.chat.id,build_account_menu_text_17_30_1_4(message.from_user.id),reply_markup=account_menu_kb_17_30_1_4())
  @bot.message_handler(func=lambda m:_item_from_text(m.text) is not None)
  def choose(message):
   iid=_item_from_text(message.text)
@@ -25234,6 +25114,37 @@ def register_dev_handlers(bot):
 
 
 
+
+============================================================
+FILE: handlers\fatigue_artifact.py
+SIZE: 2537 bytes
+LAST WRITE: 2026-08-29 00:26:22
+============================================================
+
+# -*- coding: utf-8 -*-
+import os
+from telebot import types
+from systems.fatigue_artifact_system import add_fatigue_artifacts,get_total,use_fatigue_artifacts
+states={}
+def _kb(inv,qty,maximum):
+ k=types.InlineKeyboardMarkup();k.row(types.InlineKeyboardButton('➖',callback_data=f'fa:q:{inv}:{max(1,qty-1)}'),types.InlineKeyboardButton(f'×{qty}',callback_data='fa:noop'),types.InlineKeyboardButton('➕',callback_data=f'fa:q:{inv}:{min(maximum,qty+1)}'));k.row(types.InlineKeyboardButton('✅ Використати',callback_data=f'fa:use:{inv}:{qty}'),types.InlineKeyboardButton('❌ Скасувати',callback_data='fa:cancel'));return k
+def register_fatigue_artifact_handlers(bot):
+ @bot.callback_query_handler(func=lambda c:str(c.data or '').startswith('fa:'))
+ def callback(call):
+  if call.data=='fa:noop':bot.answer_callback_query(call.id);return
+  if call.data=='fa:cancel':bot.edit_message_reply_markup(call.message.chat.id,call.message.message_id,reply_markup=None);bot.answer_callback_query(call.id,'Скасовано');return
+  parts=call.data.split(':');action=parts[1];inv=int(parts[2]);qty=int(parts[3]);owned=get_total(call.from_user.id)
+  if action=='q':
+   qty=max(1,min(qty,owned));bot.edit_message_reply_markup(call.message.chat.id,call.message.message_id,reply_markup=_kb(inv,qty,max(1,owned)));bot.answer_callback_query(call.id);return
+  key=f'telegram:fatigue_artifact:{call.from_user.id}:{call.message.chat.id}:{call.message.message_id}';res=use_fatigue_artifacts(call.from_user.id,inv,qty,key)
+  if res.get('success'):bot.edit_message_text(f"✅ Використано: 💠 Артефакт відновлення сил ×{res['used_quantity']}\n\n😴 Втома: {res['fatigue_before']} → {res['fatigue_after']}\n📦 Залишилося: ×{res['remaining']}",call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Готово')
+  else:bot.answer_callback_query(call.id,res['message'],show_alert=True)
+ @bot.message_handler(commands=['give_fatigue_artifact'])
+ def dev_grant(message):
+  if str(os.getenv('DEV_MODE','')).lower() not in ('1','true','yes','on'):return
+  try:qty=max(1,min(999,int(message.text.split(maxsplit=1)[1])))
+  except Exception:qty=1
+  res=add_fatigue_artifacts(message.from_user.id,qty);bot.send_message(message.chat.id,f"✅ DEV: видано 💠 Артефакт відновлення сил ×{res['added']}.\nЗагалом: ×{res['total']}" + (f"\nНе вмістилося: ×{res['lost']}" if res['lost'] else ''))
 
 ============================================================
 FILE: handlers\guild.py
@@ -28227,8 +28138,8 @@ def build_guild_member_detail_text(*args, **kwargs):
 
 ============================================================
 FILE: handlers\inventory.py
-SIZE: 50036 bytes
-LAST WRITE: 2026-08-28 21:10:44
+SIZE: 54562 bytes
+LAST WRITE: 2026-08-29 00:36:33
 ============================================================
 
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
@@ -29759,6 +29670,84 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
         pass
     return text, kb
 
+# ROM Stage 17.31.1.2 consumables inventory presentation.
+if ("consumable", "🧰 Витратні предмети") not in INVENTORY_CATEGORIES:
+    INVENTORY_CATEGORIES.append(("consumable", "🧰 Витратні предмети"))
+_FATIGUE_ARTIFACT_BASE_DETAILS_17_31_1_1 = build_item_details
+
+def build_item_details(user_id, inventory_id, back_category="all", page=0):
+    text, kb = _FATIGUE_ARTIFACT_BASE_DETAILS_17_31_1_1(user_id, inventory_id, back_category, page)
+    try:
+        from db_modules.connection import cursor
+        row = cursor.execute("SELECT item_id FROM inventory WHERE id=? AND user_id=?", (int(inventory_id), int(user_id))).fetchone()
+        if row and int(row[0]) == 50000:
+            from systems.energy_system import get_user_energy
+            fatigue = int(get_user_energy(user_id).get("energy", 0))
+            text = (f"💠 Артефакт відновлення сил\n\n"
+                    f"🧰 Категорія: Витратні предмети\n"
+                    f"📦 Одноразовий предмет\n\n"
+                    f"Зменшує поточну втому на 5, але не нижче 0.\n\n"
+                    f"😴 Поточна втома: {fatigue}/40\n"
+                    f"Після одного: {max(0, fatigue-5)}/40")
+            button = types.InlineKeyboardButton("💠 Використати", callback_data=f"fa:q:{int(inventory_id)}:1")
+            kb.keyboard.insert(0, [button])
+    except Exception:
+        pass
+    return text, kb
+
+# ROM Stage 17.31.1.3 consumables category filter and richer artifact card.
+_CONSUMABLE_BASE_GET_CATEGORY_ITEMS_17_31_1_3 = get_category_items
+
+def get_category_items(user_id, category_key):
+    if str(category_key) != "consumable":
+        return _CONSUMABLE_BASE_GET_CATEGORY_ITEMS_17_31_1_3(user_id, category_key)
+    result = []
+    for item in get_inventory_full_items(user_id):
+        try:
+            item_id = int(item[1])
+            item_type = str(item[3] or "").strip().lower()
+            category = str(item[5] or "").strip().lower()
+        except Exception:
+            continue
+        if item_id == 50000 or item_type == "consumable" or category == "consumable":
+            result.append(item)
+    return sorted(result, key=lambda item: _inventory_ui_sort_key_17_7_1(item, include_category=False))
+
+_CONSUMABLE_BASE_BUILD_ITEM_DETAILS_17_31_1_3 = build_item_details
+
+def build_item_details(user_id, inventory_id, back_category="all", page=0):
+    text, kb = _CONSUMABLE_BASE_BUILD_ITEM_DETAILS_17_31_1_3(
+        user_id, inventory_id, back_category, page
+    )
+    try:
+        from db_modules.connection import cursor
+        row = cursor.execute(
+            "SELECT inv.item_id, inv.quantity FROM inventory inv WHERE inv.id=? AND inv.user_id=?",
+            (int(inventory_id), int(user_id)),
+        ).fetchone()
+        if row and int(row[0]) == 50000:
+            from systems.energy_system import get_user_energy
+            fatigue = max(0, int(get_user_energy(user_id).get("energy", 0)))
+            quantity = max(1, int(row[1] or 1))
+            useful_now = min(quantity, max(1, (fatigue + 4) // 5)) if fatigue > 0 else 0
+            text = (
+                "💠 Артефакт відновлення сил\n\n"
+                "🧰 Категорія: Витратні предмети\n"
+                f"📦 У цьому стакі: ×{quantity}/10\n"
+                "🔄 Одноразовий предмет\n\n"
+                "Стародавній кристалічний артефакт накопичує запас відновлювальної сили. "
+                "Після використання зменшує накопичену втому персонажа на 5 за кожен артефакт, "
+                "але ніколи не знижує втому нижче 0.\n\n"
+                f"😴 Поточна втома: {fatigue}/40\n"
+                f"💠 Після одного артефакту: {max(0, fatigue - 5)}/40\n"
+                f"✅ Корисно використати зараз: до ×{useful_now}\n\n"
+                "ℹ️ Використання недоступне при втомі 0/40 та під час активного бою. "
+                "Зайві артефакти не списуються."
+            )
+    except Exception:
+        pass
+    return text, kb
+
 
 ============================================================
 FILE: handlers\map.py
@@ -30005,8 +29994,8 @@ def register_name_rune_handlers(bot):
 
 ============================================================
 FILE: handlers\player_interaction.py
-SIZE: 102514 bytes
-LAST WRITE: 2026-08-23 01:39:23
+SIZE: 102914 bytes
+LAST WRITE: 2026-08-29 21:55:12
 ============================================================
 
 # ROM 17.18.2.5 BOW CROSSBOW DAMAGE UI PARITY
@@ -31298,6 +31287,7 @@ _PLAYER_TRADE_CATEGORY_LABELS_12_6_4 = {
     "potion": "🧪 Зілля",
     "material": "🪨 Матеріали",
     "rune": "💠 Руни",
+    "consumable": "🧰 Витратні предмети",
 }
 _PLAYER_TRADE_ALLOWED_CALLBACK_PREFIXES_12_6_4 = (
     "pi:te:", "pi:teux:", "pi:tep:", "pi:tea:", "pi:tec:", "pi:tcf:",
@@ -31317,7 +31307,8 @@ def _trade_category_text_12_6_4(counts):
         f"⚔️ Спорядження: {int(counts.get('equipment', 0))}\n"
         f"🧪 Зілля: {int(counts.get('potion', 0))}\n"
         f"🪨 Матеріали: {int(counts.get('material', 0))}\n"
-        f"💠 Руни: {int(counts.get('rune', 0))}"
+        f"💠 Руни: {int(counts.get('rune', 0))}\n"
+        f"🧰 Витратні предмети: {int(counts.get('consumable', 0))}"
     )
 
 
@@ -31339,6 +31330,9 @@ def _trade_category_kb_12_6_4(trade_id, counts):
             f"💠 Руни ({int(counts.get('rune', 0))})",
             callback_data=f"pi:tec:list:{trade_id}:rune:0"),
     )
+    kb.row(types.InlineKeyboardButton(
+        f"🧰 Витратні предмети ({int(counts.get('consumable', 0))})",
+        callback_data=f"pi:tec:list:{trade_id}:consumable:0"))
     kb.row(types.InlineKeyboardButton(
         "✏️ Моя пропозиція", callback_data=f"pi:teux:mine:{trade_id}"))
     kb.row(types.InlineKeyboardButton(
@@ -32075,6 +32069,8 @@ def _trade_ux_mine_kb(state):
 # ROM 12.7.0C PLAYER TRADE FIRST READY STATUS AND COMPLETION TEXT FIX
 
 # ROM 12.7.0D PLAYER TRADE INDEPENDENT OFFER READY STATE
+
+# ROM Stage 17.31.1 canonical consumables integration
 
 ============================================================
 FILE: handlers\profile.py
@@ -35057,8 +35053,8 @@ def rune_master_kb():
 
 ============================================================
 FILE: main.py
-SIZE: 10170 bytes
-LAST WRITE: 2026-08-28 22:47:59
+SIZE: 10391 bytes
+LAST WRITE: 2026-08-29 00:26:22
 ============================================================
 
 
@@ -35140,6 +35136,8 @@ from db import init_rune_system
 from handlers.start import register_start_handlers
 from handlers.profile import register_profile_handlers
 from handlers.inventory import register_inventory_handlers
+from handlers.fatigue_artifact import register_fatigue_artifact_handlers
+from systems.fatigue_artifact_system import init_fatigue_artifact_system
 from handlers.combat import register_combat_handlers
 from handlers.dev import register_dev_handlers
 from handlers.map import register_map_handlers
@@ -35223,12 +35221,14 @@ init_class_reset_sphere()
 init_crystal_shop_system()
 init_timed_exp_bonus_system()
 init_name_rune_system()
+init_fatigue_artifact_system()
 
 register_crystal_shop_handlers(bot)
 register_timed_exp_bonus_handlers(bot)
 register_start_handlers(bot)
 register_profile_handlers(bot)
 register_inventory_handlers(bot)
+register_fatigue_artifact_handlers(bot)
 register_combat_handlers(bot)
 register_dev_handlers(bot)
 register_map_handlers(bot)
@@ -35612,8 +35612,8 @@ LAST WRITE: 2026-07-09 23:38:38
 
 ============================================================
 FILE: systems\auction_house_system.py
-SIZE: 174342 bytes
-LAST WRITE: 2026-08-21 01:21:42
+SIZE: 181064 bytes
+LAST WRITE: 2026-08-29 23:16:36
 ============================================================
 
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
@@ -40965,9 +40965,13 @@ def _auction_inventory_style_weapon_type_line(snapshot):
     return f"✋ Тип зброї: {weapon_type_label}"
 
 # ROM 12.6.3c AUCTION RUNE CATEGORY AND TRANSFER POLICY ALIGNMENT
+# ROM Stage 17.31.1.7 exclusive consumable category and Name Rune deny policy
+# ROM Stage 17.31.1.9 potion and consumable exclusive categories
 AUCTION_CATEGORY_RUNE = "rune"
+AUCTION_CATEGORY_CONSUMABLE = "consumable"
 AUCTION_ALLOWED_CATEGORIES.add(AUCTION_CATEGORY_RUNE)
-AUCTION_PROTECTED_TRANSFER_ITEM_IDS = frozenset((301, 402, 526, 528))
+AUCTION_ALLOWED_CATEGORIES.add(AUCTION_CATEGORY_CONSUMABLE)
+AUCTION_PROTECTED_TRANSFER_ITEM_IDS = frozenset((301, 402, 526, 528, 10000))
 AUCTION_ALLOWED_SPECIAL_TRANSFER_ITEM_IDS = frozenset((401, 527))
 AUCTION_FORBIDDEN_AUCTION_ITEM_IDS = set(AUCTION_FORBIDDEN_AUCTION_ITEM_IDS) | set(AUCTION_PROTECTED_TRANSFER_ITEM_IDS)
 
@@ -40977,6 +40981,8 @@ def normalize_auction_category(category):
     raw = str(category or "").strip().lower()
     if raw in ("💠 руни", "руни", "руна", "rune", "runes"):
         return AUCTION_CATEGORY_RUNE
+    if raw in ("🧰 витратні предмети", "витратні предмети", "consumable", "consumables"):
+        return AUCTION_CATEGORY_CONSUMABLE
     return _auction_base_normalize_category_12_6_3c(category)
 
 
@@ -41000,15 +41006,35 @@ def _auction_is_protected_transfer_snapshot_12_6_3c(snapshot):
 
 
 def _auction_stack_category_matches(snapshot, category):
+    """Return one mutually exclusive Auction category for a stack snapshot."""
+
+    snapshot = snapshot or {}
     category = normalize_auction_category(category)
+    item_id = _auction_item_id_12_6_3c(snapshot)
+    item_type = str(snapshot.get("item_type") or "").strip().lower()
+    item_category = str(snapshot.get("item_category") or "").strip().lower()
+
+    is_rune = _auction_is_rune_snapshot_12_6_3c(snapshot)
+    is_potion = _auction_is_potion_snapshot(snapshot)
+    is_consumable = (
+        item_id == 50000
+        or item_type == "consumable"
+        or item_category == "consumable"
+    ) and not is_rune and not is_potion
+
     if category == AUCTION_CATEGORY_RUNE:
-        return _auction_is_rune_snapshot_12_6_3c(snapshot)
-    if _auction_is_rune_snapshot_12_6_3c(snapshot):
-        return False
+        return is_rune
     if category == AUCTION_CATEGORY_POTION:
-        return _auction_is_potion_snapshot(snapshot)
+        return is_potion and not is_rune
+    if category == AUCTION_CATEGORY_CONSUMABLE:
+        return is_consumable
     if category == AUCTION_CATEGORY_MATERIAL:
-        return _auction_is_material_snapshot(snapshot)
+        return (
+            not is_rune
+            and not is_potion
+            and not is_consumable
+            and _auction_is_material_snapshot(snapshot)
+        )
     return False
 
 
@@ -41034,7 +41060,7 @@ def validate_inventory_stack_item_for_auction(user_id, inventory_id, category, q
         category = normalize_auction_category(category)
     except ValueError as exc:
         return {"success": False, "message": f"❌ {exc}"}
-    if category not in (AUCTION_CATEGORY_POTION, AUCTION_CATEGORY_MATERIAL, AUCTION_CATEGORY_RUNE):
+    if category not in (AUCTION_CATEGORY_POTION, AUCTION_CATEGORY_MATERIAL, AUCTION_CATEGORY_RUNE, AUCTION_CATEGORY_CONSUMABLE):
         return {"success": False, "message": "❌ Некоректна категорія стекового предмета."}
     snapshot_result = get_inventory_item_snapshot_for_auction(user_id, inventory_id)
     if not snapshot_result.get("success"):
@@ -41045,6 +41071,7 @@ def validate_inventory_stack_item_for_auction(user_id, inventory_id, category, q
         names = {
             301: "Сферу нового шляху", 402: "Руну Успіху",
             526: "Жетони Фіріуса", 528: "Досконалий Екстрактор",
+            10000: "Руну імені",
         }
         return {"success": False, "message": f"❌ {names.get(item_id, 'Цей предмет')} не можна виставити на Торговий Дім."}
     if not _auction_stack_category_matches(snapshot, category):
@@ -41109,6 +41136,7 @@ def _auction_buy_normalize_category(category):
         return AUCTION_CATEGORY_RUNE
     return _auction_base_buy_normalize_category_12_6_3c(category)
 
+# ROM Stage 17.31.1 canonical consumables integration
 
 ============================================================
 FILE: systems\boss_system.py
@@ -46986,6 +47014,67 @@ def buy_common_equipment_from_trader(user_id, slot_key, item_profile=None):
 
 
 ============================================================
+FILE: systems\fatigue_artifact_system.py
+SIZE: 6086 bytes
+LAST WRITE: 2026-08-29 00:26:22
+============================================================
+
+# -*- coding: utf-8 -*-
+from __future__ import annotations
+import json,math,sqlite3
+from datetime import datetime,timezone
+from pathlib import Path
+FATIGUE_ARTIFACT_ITEM_ID=50000;MAX_STACK=10;DB_PATH=Path(__file__).resolve().parents[1]/'game.db'
+def _conn(path=None):
+ c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
+def init_fatigue_artifact_system(db_path=None):
+ c=_conn(db_path)
+ try:
+  c.executescript("""CREATE TABLE IF NOT EXISTS fatigue_artifact_usage_events(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,inventory_id INTEGER NOT NULL,selected_quantity INTEGER NOT NULL,used_quantity INTEGER NOT NULL,fatigue_before INTEGER NOT NULL,fatigue_after INTEGER NOT NULL,idempotency_key TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE RESTRICT);CREATE INDEX IF NOT EXISTS ix_fatigue_artifact_usage_user ON fatigue_artifact_usage_events(user_id,id DESC);""")
+  cols=[r[1] for r in c.execute('PRAGMA table_info(items)')];row=c.execute('SELECT name FROM items WHERE id=?',(FATIGUE_ARTIFACT_ITEM_ID,)).fetchone()
+  if row and row[0]!='💠 Артефакт відновлення сил':raise RuntimeError('Item ID 50000 is occupied')
+  values={'id':50000,'name':'💠 Артефакт відновлення сил','type':'consumable','rarity':'uncommon','category':'consumable','slot_key':'','weapon_hands':0,'max_stack':10,'sell_price':0,'item_level':1,'is_generated':0,'item_subtype':'fatigue_reducer'}
+  if not row:
+   names=[k for k in values if k in cols];c.execute('INSERT INTO items('+','.join(names)+') VALUES('+','.join('?' for _ in names)+')',[values[k] for k in names])
+  else:c.execute('UPDATE items SET name=?,type=?,category=?,max_stack=?,sell_price=0,item_subtype=? WHERE id=?',('💠 Артефакт відновлення сил','consumable','consumable',10,'fatigue_reducer',50000))
+  c.commit();return {'success':True,'item_id':50000}
+ finally:c.close()
+def _repack(c,user_id,total):
+ rows=c.execute('SELECT id FROM inventory WHERE user_id=? AND item_id=? ORDER BY id',(int(user_id),50000)).fetchall();c.execute('DELETE FROM inventory WHERE user_id=? AND item_id=?',(int(user_id),50000));remaining=int(total)
+ while remaining>0:
+  qty=min(10,remaining);c.execute('INSERT INTO inventory(user_id,item_id,quantity) VALUES(?,?,?)',(int(user_id),50000,qty));remaining-=qty
+def add_fatigue_artifacts(user_id,quantity,db_path=None):
+ qty=max(0,int(quantity));c=_conn(db_path)
+ try:
+  c.execute('BEGIN IMMEDIATE');owned=int(c.execute('SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?',(int(user_id),50000)).fetchone()[0]);slots=int(c.execute('SELECT COALESCE(bag_slots,40) FROM users WHERE user_id=?',(int(user_id),)).fetchone()[0]);used=int(c.execute('SELECT COUNT(*) FROM inventory WHERE user_id=?',(int(user_id),)).fetchone()[0]);capacity=max(0,(slots-used)*10 + (10-owned%10 if owned%10 else 0));added=min(qty,capacity);_repack(c,user_id,owned+added);c.commit();return {'success':True,'added':added,'lost':qty-added,'total':owned+added}
+ except Exception:c.rollback();raise
+ finally:c.close()
+def get_total(user_id,db_path=None):
+ c=_conn(db_path)
+ try:return int(c.execute('SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?',(int(user_id),50000)).fetchone()[0])
+ finally:c.close()
+def use_fatigue_artifacts(user_id,inventory_id,selected,idempotency_key,db_path=None):
+ uid=int(user_id);inv=int(inventory_id);selected=max(1,int(selected));key=str(idempotency_key or '').strip();c=_conn(db_path)
+ try:
+  c.execute('BEGIN IMMEDIATE');old=c.execute('SELECT * FROM fatigue_artifact_usage_events WHERE idempotency_key=?',(key,)).fetchone()
+  if old:c.commit();return {'success':True,'idempotent_replay':True,**dict(old)}
+  target=c.execute('SELECT 1 FROM inventory WHERE id=? AND user_id=? AND item_id=?',(inv,uid,50000)).fetchone()
+  if not target:c.rollback();return {'success':False,'message':'❌ Предмет більше недоступний.'}
+  active=False
+  if 'player_activity_sessions' in {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'")}:
+   cols={r[1] for r in c.execute('PRAGMA table_info(player_activity_sessions)')}
+   if 'user_id' in cols and 'activity_type' in cols:
+    active=bool(c.execute("SELECT 1 FROM player_activity_sessions WHERE user_id=? AND lower(activity_type) LIKE '%combat%' LIMIT 1",(uid,)).fetchone())
+  if active:c.rollback();return {'success':False,'message':'❌ Неможливо використати предмет під час бою.'}
+  row=c.execute('SELECT energy FROM users WHERE user_id=?',(uid,)).fetchone();fatigue=max(0,int(row[0] if row else 0))
+  if fatigue<=0:c.rollback();return {'success':False,'message':'❌ Персонаж не втомлений. Предмет не використано.'}
+  owned=int(c.execute('SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?',(uid,50000)).fetchone()[0]);actual=min(selected,owned,int(math.ceil(fatigue/5.0)));after=max(0,fatigue-actual*5)
+  if actual<=0:c.rollback();return {'success':False,'message':'❌ Немає доступних артефактів.'}
+  _repack(c,uid,owned-actual);c.execute('UPDATE users SET energy=?,energy_full_notified=? WHERE user_id=?',(after,1 if after<=0 else 0,uid));stamp=datetime.now(timezone.utc).isoformat();c.execute('INSERT INTO fatigue_artifact_usage_events(user_id,inventory_id,selected_quantity,used_quantity,fatigue_before,fatigue_after,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?)',(uid,inv,selected,actual,fatigue,after,key,stamp));c.commit();return {'success':True,'idempotent_replay':False,'used_quantity':actual,'fatigue_before':fatigue,'fatigue_after':after,'remaining':owned-actual}
+ except Exception as e:c.rollback();return {'success':False,'message':f'❌ Використання скасовано без списання: {e}'}
+ finally:c.close()
+
+============================================================
 FILE: systems\guild_system.py
 SIZE: 95295 bytes
 LAST WRITE: 2026-08-27 00:27:47
@@ -51051,8 +51140,8 @@ def get_worker_max_mp_17_15_1(conn, user_id):
 
 ============================================================
 FILE: systems\player_interaction_system.py
-SIZE: 108442 bytes
-LAST WRITE: 2026-08-21 00:07:57
+SIZE: 110871 bytes
+LAST WRITE: 2026-08-29 21:55:12
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -53275,7 +53364,7 @@ def confirm_player_trade(trade_id, user_id, *, expected_revision=None, now=None,
 
 # ROM 12.6.4 PLAYER TRADE NAVIGATION LOCK AND ITEM CATEGORIES
 PLAYER_TRADE_ITEM_CATEGORY_PAGE_SIZE = 8
-PLAYER_TRADE_ITEM_CATEGORIES = ("equipment", "potion", "material", "rune")
+PLAYER_TRADE_ITEM_CATEGORIES = ("equipment", "potion", "material", "rune", "consumable")
 
 
 def _player_trade_item_category_12_6_4(item):
@@ -53286,7 +53375,9 @@ def _player_trade_item_category_12_6_4(item):
     item_id = int(snapshot.get("item_id") or 0)
     if 501 <= item_id <= 525 or category in ("rune", "runes", "stat_rune"):
         return "rune"
-    if category in ("potion", "potions", "consumable", "heal_potion", "mana_potion"):
+    if item_id == 50000 or category == "consumable":
+        return "consumable"
+    if category in ("potion", "potions", "heal_potion", "mana_potion"):
         return "potion"
     return "material"
 
@@ -53344,6 +53435,8 @@ def get_player_trade_category_counts(trade_id, user_id, *, db_path=None):
         counts[category] = int(result.get("total") or 0)
     return {"success": True, "trade_id": int(trade_id), "counts": counts}
 
+
+# ROM Stage 17.31.1 canonical consumables integration
 
 ============================================================
 FILE: systems\player_system.py
@@ -60365,8 +60458,8 @@ def get_mp_regen_status(user_id):
 
 ============================================================
 FILE: systems\reward_system.py
-SIZE: 15860 bytes
-LAST WRITE: 2026-08-28 22:47:59
+SIZE: 16684 bytes
+LAST WRITE: 2026-08-29 00:26:22
 ============================================================
 
 import random
@@ -60840,6 +60933,11 @@ def process_enemy_drops(user_id, mob):
         else:
             raise RuntimeError(f"unsupported production victory rule: {rule_id}")
 
+    fatigue_artifact_message = roll_fatigue_artifact_drop(user_id, mob)
+    executed.append("fatigue_artifact")
+    if fatigue_artifact_message:
+        messages.append(fatigue_artifact_message)
+
     guild_message = _central_guild_elite_reward_11_9_0(user_id, mob)
     if guild_message:
         messages.append(guild_message)
@@ -60882,6 +60980,17 @@ def process_victory_reward(user_id, player_level, mob):
         "capacity": get_bag_capacity(user_id),
     }
 
+def roll_fatigue_artifact_drop(user_id, mob, random_func=None):
+    import random
+    from systems.fatigue_artifact_system import FATIGUE_ARTIFACT_ITEM_ID, add_fatigue_artifacts
+    rng = random_func or random.random
+    chance = 0.10 if mob.get("is_boss") else (0.025 if mob.get("is_elite") else 0.005)
+    if float(rng()) >= chance:
+        return None
+    result = add_fatigue_artifacts(user_id, 1)
+    if result.get("added"):
+        return "💠 Артефакт відновлення сил ×1"
+    return "⚠️ Не влізло в сумку: 💠 Артефакт відновлення сил ×1"
 
 
 ============================================================
@@ -74687,6 +74796,79 @@ assert "ITEM_SUBTYPE_LABELS.get(item_subtype)" in function_source
 print("[PASS] Stage 17.4.4.1 auction armor-only lot display name")
 
 ============================================================
+FILE: tools\smoke_test_auction_buy_category_handler_mapping_17_31_1_12.py
+SIZE: 1547 bytes
+LAST WRITE: 2026-08-29 23:32:55
+============================================================
+
+import ast
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+s=(R/'handlers/auction_house.py').read_text(encoding='utf-8')
+t=ast.parse(s)
+handlers=[]
+all_names=set()
+canonical=None
+for n in ast.walk(t):
+ if isinstance(n,ast.FunctionDef):
+  all_names.add(n.name)
+  decorators='\n'.join(ast.get_source_segment(s,d) or '' for d in n.decorator_list)
+  if 'message_handler' in decorators and 'AUCTION_BUY_CATEGORY_BY_BUTTON_V1' in decorators:
+   handlers.append(n.name)
+  if n.name=='auction_buy_category_selected_clean_keyboard_v1':
+   canonical=ast.get_source_segment(s,n) or ''
+assert handlers==['auction_buy_category_selected_clean_keyboard_v1'],handlers
+assert 'auction_buy_category_selected_v1' in all_names
+assert canonical is not None
+assert 'AUCTION_BUY_CATEGORY_BY_BUTTON_V1.get(message.text)' in canonical
+assert '.get(message.text, "all")' not in canonical
+assert 'if category is None:' in canonical
+assert '❌ Невідома категорія лотів.' in canonical
+assert 'AUCTION_BUY_CATEGORY_BY_BUTTON_V1[AUCTION_BUY_RUNE_CATEGORY_BUTTON_17_31_1_8] = "rune"' in s
+assert 'AUCTION_BUY_CATEGORY_BY_BUTTON_V1[AUCTION_BUY_CONSUMABLE_CATEGORY_BUTTON_17_31_1_8] = "consumable"' in s
+assert 'AUCTION_BUY_RUNE_CATEGORY_BUTTON_17_31_1_8 = "💠 Руни в продажу"' in s
+assert 'AUCTION_BUY_CONSUMABLE_CATEGORY_BUTTON_17_31_1_8 = "🧰 Витратні предмети в продажу"' in s
+print('[PASS] Exactly one canonical buy-category handler remains and mapping is fail-closed')
+
+============================================================
+FILE: tools\smoke_test_auction_consumable_exclusive_category_name_rune_17_31_1_7.py
+SIZE: 1127 bytes
+LAST WRITE: 2026-08-29 22:55:33
+============================================================
+
+import ast
+from pathlib import Path
+R=Path(__file__).resolve().parents[1];s=(R/'systems/auction_house_system.py').read_text(encoding='utf-8');t=ast.parse(s)
+assert 'AUCTION_PROTECTED_TRANSFER_ITEM_IDS = frozenset((301, 402, 526, 528, 10000))' in s
+assert '10000: "Руну імені"' in s
+assert 'is_consumable = item_id == 50000 or item_type == "consumable" or item_category == "consumable"' in s
+assert 'if category == AUCTION_CATEGORY_CONSUMABLE:\n        return is_consumable\n    if is_consumable:\n        return False' in s
+assert 'AUCTION_CATEGORY_RUNE, AUCTION_CATEGORY_CONSUMABLE' in s
+assert '_AUCTION_BASE_IS_MATERIAL_17_31_1_1' not in s
+assert 'fatigue_artifact_consumable_17_31_1_1' not in s
+nodes=[n for n in t.body if isinstance(n,ast.FunctionDef) and n.name=='_auction_stack_category_matches'];assert len(nodes)==2,len(nodes)
+active=ast.get_source_segment(s,nodes[-1]) or ''
+assert active.index('if category == AUCTION_CATEGORY_CONSUMABLE') < active.index('if category == AUCTION_CATEGORY_MATERIAL')
+print('[PASS] Consumables are exclusive and Name Rune is denied by canonical auction policy')
+
+============================================================
+FILE: tools\smoke_test_auction_consumables_sell_route_17_31_1_6.py
+SIZE: 675 bytes
+LAST WRITE: 2026-08-29 21:22:42
+============================================================
+
+import ast
+from pathlib import Path
+R=Path(__file__).resolve().parents[1];h=(R/'handlers/auction_house.py').read_text(encoding='utf-8');s=(R/'systems/auction_house_system.py').read_text(encoding='utf-8');ast.parse(h);ast.parse(s)
+assert 'AUCTION_BUY_CATEGORY_BY_BUTTON_V1.pop("🧰 Витратні предмети", None)' in h
+assert 'AUCTION_SELL_CATEGORY_BY_BUTTON_V1["🧰 Витратні предмети"] = "consumable"' in h
+assert 'kb.keyboard = cleaned' in h
+assert 'if not exists:' in h
+assert 'AUCTION_CATEGORY_CONSUMABLE = "consumable"' in s
+assert 'item_id", 0) or 0) == 50000' in s
+print('[PASS] Stage 17.31.1.6 consumables sell-route contracts')
+
+============================================================
 FILE: tools\smoke_test_auction_equipment_runes_canonical_17_1_0.py
 SIZE: 1650 bytes
 LAST WRITE: 2026-08-19 23:32:07
@@ -74926,6 +75108,31 @@ if __name__ == "__main__":
     main()
 
 ============================================================
+FILE: tools\smoke_test_auction_potion_consumable_exclusive_17_31_1_9.py
+SIZE: 942 bytes
+LAST WRITE: 2026-08-29 23:16:36
+============================================================
+
+import ast
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+s=(R/'systems/auction_house_system.py').read_text(encoding='utf-8')
+t=ast.parse(s)
+nodes=[n for n in t.body if isinstance(n,ast.FunctionDef) and n.name=='_auction_stack_category_matches']
+assert len(nodes)>=1
+body=ast.get_source_segment(s,nodes[-1]) or ''
+assert 'is_rune = _auction_is_rune_snapshot_12_6_3c(snapshot)' in body
+assert 'is_potion = _auction_is_potion_snapshot(snapshot)' in body
+assert ') and not is_rune and not is_potion' in body
+assert 'return is_potion and not is_rune' in body
+assert 'return is_consumable' in body
+assert 'and not is_potion' in body
+assert 'and not is_consumable' in body
+assert 'AUCTION_PROTECTED_TRANSFER_ITEM_IDS = frozenset((301, 402, 526, 528, 10000))' in s
+assert '_AUCTION_BASE_IS_MATERIAL_17_31_1_1' not in s
+print('[PASS] Potion, consumable, material and rune Auction categories are mutually exclusive')
+
+============================================================
 FILE: tools\smoke_test_auction_rune_category_and_transfer_policy_alignment.py
 SIZE: 2529 bytes
 LAST WRITE: 2026-08-03 15:12:58
@@ -74967,6 +75174,152 @@ def main():
     print("- protected active-lot migration classifier: OK")
     print("- isolated checks; real user mutations: 0")
 if __name__=='__main__': main()
+
+============================================================
+FILE: tools\smoke_test_auction_rune_consumable_buy_sell_collision_17_31_1_8.py
+SIZE: 1204 bytes
+LAST WRITE: 2026-08-29 23:08:55
+============================================================
+
+import ast
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+s=(R/'handlers/auction_house.py').read_text(encoding='utf-8')
+ast.parse(s)
+assert 'AUCTION_BUY_RUNE_CATEGORY_BUTTON_17_31_1_8 = "💠 Руни в продажу"' in s
+assert 'AUCTION_BUY_CONSUMABLE_CATEGORY_BUTTON_17_31_1_8 = "🧰 Витратні предмети в продажу"' in s
+assert 'AUCTION_BUY_CATEGORY_BY_BUTTON_V1[AUCTION_BUY_RUNE_CATEGORY_BUTTON_17_31_1_8] = "rune"' in s
+assert 'AUCTION_BUY_CATEGORY_BY_BUTTON_V1[AUCTION_BUY_CONSUMABLE_CATEGORY_BUTTON_17_31_1_8] = "consumable"' in s
+assert 'AUCTION_SELL_CATEGORY_BUTTONS_V1["rune"] = AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C' in s
+assert '"rune": "💠 Руни"' in s
+assert '"consumable": "🧰 Витратні предмети"' in s
+assert 'AUCTION_BUY_CATEGORY_BY_BUTTON_V1[AUCTION_RUNE_CATEGORY_BUTTON_12_6_3C]' not in s
+assert 'AUCTION_BUY_CATEGORY_BUTTONS_V1["consumable"] = "🧰 Витратні предмети"' not in s
+assert 'kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["consumable"])\n    kb.row(AUCTION_BACK_TO_MENU_BUTTON)' in s
+print('[PASS] Rune and consumable buy labels are distinct from sell labels and retain buy mappings')
+
+============================================================
+FILE: tools\smoke_test_auction_sell_canonical_registration_reachability_17_31_1_5.py
+SIZE: 1565 bytes
+LAST WRITE: 2026-08-29 22:31:31
+============================================================
+
+import ast
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+s=(R/'handlers/auction_house.py').read_text(encoding='utf-8')
+t=ast.parse(s)
+restore=[]
+for n in t.body:
+ if isinstance(n,ast.FunctionDef) and n.name=='register_auction_house_handlers':
+  src=ast.get_source_segment(s,n) or ''
+  if 'Restore handler chain before the broken 8.0.9d sell-category wrapper.' in src:
+   restore.append(n)
+assert len(restore)==1,len(restore)
+node=restore[0]
+ordered=[]
+for statement in node.body:
+ if isinstance(statement,ast.Expr) and isinstance(statement.value,ast.Call) and isinstance(statement.value.func,ast.Name):
+  ordered.append(statement.value.func.id)
+assert ordered[:2]==['_auction_register_reply_back_to_house_restore_v1','_auction_register_sell_category_keyboard_cleanup_v1'],ordered
+registered=[]
+for n in ast.walk(t):
+ if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)) and n.decorator_list:
+  decorators='\n'.join(ast.get_source_segment(s,d) or '' for d in n.decorator_list)
+  if 'message_handler' in decorators and ('AUCTION_SELL_BUTTON' in decorators or '➕ Виставити товар' in decorators):
+   registered.append(n.name)
+assert registered==['auction_sell_start_categories_v1'],registered
+assert 'auction_sell_start_categories_v2_safe' not in s
+assert 'AUCTION_SELL_CATEGORY_BUTTONS_V1["consumable"])\n    kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V1)' in s
+assert 'auction_sell_category_consumable_v1' in s
+print('[PASS] Canonical V1 sell registration is directly reachable before the legacy chain')
+
+============================================================
+FILE: tools\smoke_test_auction_sell_category_inline_dispatch_17_31_1_6.py
+SIZE: 1265 bytes
+LAST WRITE: 2026-08-29 22:42:26
+============================================================
+
+import ast
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+s=(R/'handlers/auction_house.py').read_text(encoding='utf-8')
+t=ast.parse(s)
+nodes=[n for n in t.body if isinstance(n,ast.FunctionDef) and n.name=='_auction_send_sell_category_listing_v1']
+assert len(nodes)==1,len(nodes)
+body=ast.get_source_segment(s,nodes[0]) or ''
+assert 'build_auction_sell_inline_list_text_v1' in body
+assert 'isinstance(inline_kb, types.InlineKeyboardMarkup)' in body
+assert '_auction_call_equipment_sell_list_v1(' not in body
+assert '_auction_try_stack_sell_list_v1(' not in body
+assert 'скинь handlers/auction_house.py' not in body
+for category in ('equipment','potion','material','rune','consumable'):
+ assert f'"{category}"' in body,category
+assert 'reply_markup=auction_sell_listing_back_kb_v1()' in body
+assert '_auction_sanitize_sell_inline_kb_v1(inline_kb)' in body
+assert 'callback_data=AUCTION_SELL_BACK_TO_CATEGORIES_CALLBACK_V1' in s
+assert 'AUCTION_SELL_CATEGORY_BUTTONS_V1["consumable"])\n    kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V1)' in s
+assert 'auction_sell_category_consumable_v1' in s
+assert 'auction_sell_category_rune_v1' in s
+print('[PASS] All Auction sell categories use the canonical inline item-list dispatcher')
+
+============================================================
+FILE: tools\smoke_test_auction_sell_entry_registration_17_31_1_4.py
+SIZE: 1296 bytes
+LAST WRITE: 2026-08-29 22:26:01
+============================================================
+
+import ast
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+s=(R/'handlers/auction_house.py').read_text(encoding='utf-8')
+t=ast.parse(s)
+registered=[]
+legacy={'auction_sell_placeholder','auction_sell_start_v1','auction_sell_start_v2','auction_sell_start_inline_v1','auction_sell_start_review_v1'}
+all_names=set()
+for n in ast.walk(t):
+ if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef)):
+  all_names.add(n.name)
+  decorators='\n'.join(ast.get_source_segment(s,d) or '' for d in n.decorator_list)
+  if 'message_handler' in decorators and ('AUCTION_SELL_BUTTON' in decorators or '➕ Виставити товар' in decorators):
+   registered.append(n.name)
+assert registered==['auction_sell_start_categories_v1'],registered
+assert legacy.issubset(all_names),legacy-all_names
+assert 'auction_sell_start_categories_v2_safe' not in all_names
+assert 'AUCTION_SELL_CATEGORY_BUTTONS_V1["material"], AUCTION_SELL_CATEGORY_BUTTONS_V1["rune"]' in s
+assert 'AUCTION_SELL_CATEGORY_BUTTONS_V1["consumable"])\n    kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V1)' in s
+assert 'auction_sell_category_rune_v1' in all_names
+assert 'auction_sell_category_consumable_v1' in all_names
+print('[PASS] Exactly one Auction sell-entry handler is registered and it is canonical V1')
+
+============================================================
+FILE: tools\smoke_test_auction_sell_route_canonical_consolidation_17_31_1_3.py
+SIZE: 1820 bytes
+LAST WRITE: 2026-08-29 22:18:39
+============================================================
+
+import ast
+from pathlib import Path
+R=Path(__file__).resolve().parents[1];p=R/'handlers/auction_house.py';s=p.read_text(encoding='utf-8');t=ast.parse(s)
+for name in ('auction_sell_category_kb_v1','build_auction_sell_category_text_v1','_auction_send_sell_category_listing_v1','_auction_register_sell_category_keyboard_cleanup_v1'):
+ nodes=[n for n in t.body if isinstance(n,ast.FunctionDef) and n.name==name];assert len(nodes)==1,(name,len(nodes))
+for name in ('auction_sell_category_kb_v2_safe','build_auction_sell_category_text_v2_safe','_auction_register_sell_category_keyboard_cleanup_v2_safe'):
+ assert not [n for n in t.body if isinstance(n,ast.FunctionDef) and n.name==name],name
+assert 'AUCTION_SELL_CATEGORY_BUTTONS_V1["material"], AUCTION_SELL_CATEGORY_BUTTONS_V1["rune"]' in s
+assert 'AUCTION_SELL_CATEGORY_BUTTONS_V1["consumable"])\n    kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V1)' in s
+assert 'auction_sell_category_rune_v1' in s and 'auction_sell_category_consumable_v1' in s
+assert 'category in ("potion", "material", "rune", "consumable")' in s
+sell_handlers=[]
+for n in ast.walk(t):
+ if isinstance(n,ast.FunctionDef) and n.decorator_list:
+  decorators='\n'.join(ast.get_source_segment(s,d) or '' for d in n.decorator_list)
+  if '➕ Виставити товар' in decorators or 'AUCTION_SELL_BUTTON' in decorators:
+   sell_handlers.append(n.name)
+assert 'auction_sell_start_categories_v1' in sell_handlers,sell_handlers
+assert 'auction_sell_start_categories_v2_safe' not in sell_handlers,sell_handlers
+# Registration chain must not contain the removed V2 registration layer.
+assert '_auction_base_register_handlers_before_sell_keyboard_cleanup_v2_safe' not in s
+print('[PASS] Canonical V1 route contains equipment, potion, material, rune and consumable; V2 safe route removed')
 
 ============================================================
 FILE: tools\smoke_test_base_bag_capacity_60_17_8_1.py
@@ -78016,6 +78369,69 @@ if __name__ == "__main__":
     main()
 
 ============================================================
+FILE: tools\smoke_test_consumables_inventory_category_17_31_1_3.py
+SIZE: 682 bytes
+LAST WRITE: 2026-08-29 00:36:33
+============================================================
+
+import ast
+from pathlib import Path
+R=Path(__file__).resolve().parents[1];s=(R/'handlers/inventory.py').read_text(encoding='utf-8');ast.parse(s)
+assert 'def get_category_items(user_id, category_key):' in s
+assert 'item_id == 50000 or item_type == "consumable" or category == "consumable"' in s
+assert '🧰 Категорія: Витратні предмети' in s
+assert '📦 У цьому стакі: ×{quantity}/10' in s
+assert '✅ Корисно використати зараз: до ×{useful_now}' in s
+assert 'Зайві артефакти не списуються' in s
+print('[PASS] Stage 17.31.1.3 consumables filter and artifact description contracts')
+
+============================================================
+FILE: tools\smoke_test_consumables_trade_auction_17_31_1_5.py
+SIZE: 910 bytes
+LAST WRITE: 2026-08-29 21:08:53
+============================================================
+
+import ast
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+files={p:(R/p).read_text(encoding='utf-8') for p in ('handlers/player_interaction.py','systems/player_interaction_system.py','handlers/auction_house.py','systems/auction_house_system.py')}
+for s in files.values():ast.parse(s)
+assert '"consumable": "🧰 Витратні предмети"' in files['handlers/player_interaction.py']
+assert ':consumable:0' in files['handlers/player_interaction.py']
+assert '"consumable")' in files['systems/player_interaction_system.py']
+assert 'AUCTION_CATEGORY_CONSUMABLE = "consumable"' in files['systems/auction_house_system.py']
+assert 'item_id", 0) or 0) == 50000' in files['systems/auction_house_system.py']
+assert files['handlers/auction_house.py'].count('🧰 Витратні предмети') >= 4
+print('[PASS] Stage 17.31.1.5 trade and auction consumables category contracts')
+
+============================================================
+FILE: tools\smoke_test_consumables_trade_auction_canonical_17_31_1.py
+SIZE: 1343 bytes
+LAST WRITE: 2026-08-29 21:55:12
+============================================================
+
+import ast
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+paths=['handlers/player_interaction.py','systems/player_interaction_system.py','handlers/auction_house.py','systems/auction_house_system.py']
+text={p:(R/p).read_text(encoding='utf-8') for p in paths}
+for p,s in text.items(): ast.parse(s,filename=p)
+assert '_PLAYER_TRADE_CATEGORY_LABELS_12_6_4' in text[paths[0]] and ':consumable:0' in text[paths[0]]
+assert 'PLAYER_TRADE_ITEM_CATEGORIES = ("equipment", "potion", "material", "rune", "consumable")' in text[paths[1]]
+assert 'item_id == 50000 or category == "consumable"' in text[paths[1]]
+ah=text[paths[2]]
+assert '"consumable": "🧰 Витратні предмети"' in ah
+assert 'auction_sell_category_consumable_v1' in ah
+assert 'kb.row(AUCTION_SELL_CATEGORY_BUTTONS_V1["consumable"])\n    kb.row(AUCTION_SELL_BACK_TO_HOUSE_BUTTON_V1)' in ah
+assert 'kb.row(AUCTION_BUY_CATEGORY_BUTTONS_V1["consumable"])\n    kb.row(AUCTION_BACK_TO_MENU_BUTTON)' in ah
+asys=text[paths[3]]
+assert 'AUCTION_CATEGORY_CONSUMABLE = "consumable"' in asys
+assert 'category == AUCTION_CATEGORY_CONSUMABLE' in asys
+for marker in ('_AH_BUY_CATEGORY_KB_BEFORE','_AH_SELL_CATEGORY_KB_BEFORE','consumables_auction_ui_17_31_1_5'):
+ assert marker not in ah
+print('[PASS] canonical consumables trade and auction integration')
+
+============================================================
 FILE: tools\smoke_test_consume_inventory_item_signature_16_1_6.py
 SIZE: 1299 bytes
 LAST WRITE: 2026-08-17 23:46:50
@@ -79122,6 +79538,28 @@ assert first.acquire(blocking=False)
 first.release()
 assert sha256(DB) == before
 print("[PASS] Stage 17.12.1.1 DEV reset hero lock initialization contract")
+
+============================================================
+FILE: tools\smoke_test_distinct_account_menu_17_30_1_4.py
+SIZE: 927 bytes
+LAST WRITE: 2026-08-28 23:40:58
+============================================================
+
+import ast
+from pathlib import Path
+R=Path(__file__).resolve().parents[1];city=(R/'handlers/city.py').read_text(encoding='utf-8');shop=(R/'handlers/crystal_shop.py').read_text(encoding='utf-8')
+ast.parse(city);ast.parse(shop)
+assert 'def build_account_menu_text_17_30_1_4' in city
+assert 'def account_menu_kb_17_30_1_4' in city
+assert 'build_account_menu_text_17_30_1_4(message.from_user.id)' in city
+assert 'reply_markup=account_menu_kb_17_30_1_4()' in city
+assert 'return _BUILD_MAIN_MENU_TEXT_BEFORE_EXP_BONUS_STATUS_17_30_1_1' in city
+assert city.count('💎 Магазин кристалів') >= 1
+assert "kb.add(\"🔙 Назад\")" in city
+assert 'from handlers.city import build_account_menu_text_17_30_1_4' in shop
+assert "m.text==SHOP_BUTTON" in shop and "m.text==BACK" in shop
+assert "m.text==MENU_BUTTON" not in shop
+print('[PASS] Stage 17.30.1.4 distinct account Menu and shop submenu contracts')
 
 ============================================================
 FILE: tools\smoke_test_drop_balance_economy_audit.py
@@ -80366,6 +80804,23 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+============================================================
+FILE: tools\smoke_test_fatigue_artifact_17_31_1_1.py
+SIZE: 1811 bytes
+LAST WRITE: 2026-08-29 00:26:22
+============================================================
+
+import ast,sqlite3,sys,tempfile
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+for p in ('main.py','handlers/inventory.py','handlers/fatigue_artifact.py','systems/fatigue_artifact_system.py','systems/reward_system.py','systems/auction_house_system.py'):ast.parse((R/p).read_text(encoding='utf-8'))
+assert 'give_fatigue_artifact' in (R/'handlers/fatigue_artifact.py').read_text(encoding='utf-8');assert '✍️' not in (R/'handlers/fatigue_artifact.py').read_text(encoding='utf-8')
+if str(R) not in sys.path:sys.path.insert(0,str(R))
+from systems.fatigue_artifact_system import *
+with tempfile.TemporaryDirectory() as d:
+ p=Path(d)/'t.db';c=sqlite3.connect(p);c.executescript("CREATE TABLE users(user_id INTEGER PRIMARY KEY,energy INTEGER,energy_full_notified INTEGER,bag_slots INTEGER);CREATE TABLE items(id INTEGER PRIMARY KEY,name TEXT,type TEXT,rarity TEXT,category TEXT,slot_key TEXT,weapon_hands INTEGER,max_stack INTEGER,sell_price REAL,item_level INTEGER,is_generated INTEGER,item_subtype TEXT);CREATE TABLE inventory(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,item_id INTEGER,quantity INTEGER);INSERT INTO users VALUES(1,17,0,40);");c.commit();c.close();init_fatigue_artifact_system(p);add_fatigue_artifacts(1,12,p);c=sqlite3.connect(p);inv=c.execute('SELECT id FROM inventory WHERE user_id=1 AND item_id=50000 ORDER BY id LIMIT 1').fetchone()[0];c.close();a=use_fatigue_artifacts(1,inv,3,'k1',p);assert a['used_quantity']==3 and a['fatigue_after']==2 and a['remaining']==9;b=use_fatigue_artifacts(1,inv,3,'k1',p);assert b['idempotent_replay'];c=sqlite3.connect(p);assert c.execute('SELECT group_concat(quantity) FROM inventory WHERE item_id=50000').fetchone()[0]=='9';c.close()
+print('[PASS] Stage 17.31.1.2 artifact, stack normalization and idempotency contracts')
 
 ============================================================
 FILE: tools\smoke_test_final_combat_round_summary_16_1_11.py
@@ -82379,6 +82834,29 @@ for location,levels in (("start_path",(1,3,5)),("dark_forest",(6,8,10))):
    assert elite[stat]==expected,(stat,value,elite[stat],expected)
 assert BOSS_ENCOUNTERS_ENABLED is False
 print("[PASS] live proportional elite/boss stat contract",{"elite":1.5,"boss":2.0,"boss_gate":False})
+
+============================================================
+FILE: tools\smoke_test_main_menu_explicit_handler_17_30_1_3.py
+SIZE: 663 bytes
+LAST WRITE: 2026-08-28 23:25:22
+============================================================
+
+import ast
+from pathlib import Path
+R = Path(__file__).resolve().parents[1]
+city = (R / "handlers/city.py").read_text(encoding="utf-8")
+shop = (R / "handlers/crystal_shop.py").read_text(encoding="utf-8")
+ast.parse(city)
+ast.parse(shop)
+assert city.count('== "📋 Меню"') == 1
+assert "open_main_menu_17_30_1_3" in city
+assert "build_main_menu_text(message.from_user.id)" in city
+assert "reply_markup=main_kb()" in city
+assert "💎 Premium: активний" in city
+assert "m.text==MENU_BUTTON" not in shop
+assert "m.text==SHOP_BUTTON" in shop
+assert "m.text==BACK" in shop
+print("[PASS] Stage 17.30.1.3 explicit Main Menu handler contract")
 
 ============================================================
 FILE: tools\smoke_test_mana_potion_price_balance_17_19_1.py
