@@ -25,7 +25,7 @@ def _repack(c,user_id,total):
 def add_fatigue_artifacts(user_id,quantity,db_path=None):
  qty=max(0,int(quantity));c=_conn(db_path)
  try:
-  c.execute('BEGIN IMMEDIATE');owned=int(c.execute('SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?',(int(user_id),50000)).fetchone()[0]);slots=int(c.execute('SELECT COALESCE(bag_slots,40) FROM users WHERE user_id=?',(int(user_id),)).fetchone()[0]);used=int(c.execute('SELECT COUNT(*) FROM inventory WHERE user_id=?',(int(user_id),)).fetchone()[0]);capacity=max(0,(slots-used)*10 + (10-owned%10 if owned%10 else 0));added=min(qty,capacity);_repack(c,user_id,owned+added);c.commit();return {'success':True,'added':added,'lost':qty-added,'total':owned+added}
+  c.execute('BEGIN IMMEDIATE');owned=int(c.execute('SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?',(int(user_id),50000)).fetchone()[0]);slots=int(c.execute('SELECT COALESCE(bag_slots,60) FROM users WHERE user_id=?',(int(user_id),)).fetchone()[0]);used=int(c.execute('SELECT COUNT(*) FROM inventory WHERE user_id=?',(int(user_id),)).fetchone()[0]);capacity=max(0,(slots-used)*10 + (10-owned%10 if owned%10 else 0));added=min(qty,capacity);_repack(c,user_id,owned+added);c.commit();return {'success':True,'added':added,'lost':qty-added,'total':owned+added}
  except Exception:c.rollback();raise
  finally:c.close()
 def get_total(user_id,db_path=None):

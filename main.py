@@ -97,6 +97,7 @@ from systems.timed_exp_bonus_system import init_timed_exp_bonus_system
 from handlers.name_rune import register_name_rune_handlers
 from systems.name_rune_system import init_name_rune_system
 from systems.crystal_shop_system import init_crystal_shop_system
+from systems.crystal_bag_expansion_system import init_crystal_bag_expansion_system
 
 from systems.notifications import start_notification_worker
 from systems.telegram_rate_limit import install_global_telegram_rate_limit_guard
@@ -160,6 +161,7 @@ init_class_reset_sphere()
 # ==============================
 
 init_crystal_shop_system()
+init_crystal_bag_expansion_system()
 init_timed_exp_bonus_system()
 init_name_rune_system()
 init_fatigue_artifact_system()

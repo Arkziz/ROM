@@ -3,13 +3,15 @@ from telebot import types
 from keyboards import main_kb
 from systems.crystal_shop_system import CRYSTAL_SHOP_CATALOG,get_crystal_shop_catalog,preview_crystal_shop_purchase,purchase_crystal_shop_item
 from systems.crystal_wallet_system import get_crystal_balance
-MENU_BUTTON='📋 Меню';SHOP_BUTTON='💎 Магазин кристалів';BACK='🔙 Закрити магазин';EXP_BONUS_BUTTON='📈 Бонус досвіду +25%';states={}
+from systems.crystal_bag_expansion_system import preview_crystal_bag_expansion,purchase_crystal_bag_expansion
+MENU_BUTTON='📋 Меню';SHOP_BUTTON='💎 Магазин кристалів';BACK='🔙 Закрити магазин';EXP_BONUS_BUTTON='📈 Бонус досвіду +25%';BAG_EXPANSION_BUTTON='🎒 Розширення сумки';states={}
 def _menu_kb():
  k=types.ReplyKeyboardMarkup(resize_keyboard=True);k.add(SHOP_BUTTON);k.add(BACK);return k
 def _shop_kb():
  k=types.ReplyKeyboardMarkup(resize_keyboard=True)
  for iid,v in get_crystal_shop_catalog().items():k.add(f"{v['name']} — {v['price']} 💎")
  k.add(EXP_BONUS_BUTTON)
+ k.add(BAG_EXPANSION_BUTTON)
  k.add(BACK);return k
 def _qty_kb(iid,qty):
  k=types.InlineKeyboardMarkup();k.row(types.InlineKeyboardButton('➖',callback_data=f'cs:q:{iid}:{max(1,qty-1)}'),types.InlineKeyboardButton(f'×{qty}',callback_data='cs:noop'),types.InlineKeyboardButton('➕',callback_data=f'cs:q:{iid}:{qty+1}'));k.row(types.InlineKeyboardButton('✍️ Ввести кількість',callback_data=f'cs:input:{iid}'));k.row(types.InlineKeyboardButton('✅ Продовжити',callback_data=f'cs:review:{iid}:{qty}'),types.InlineKeyboardButton('❌ Скасувати',callback_data='cs:cancel'));return k
@@ -89,6 +91,24 @@ def register_crystal_shop_handlers(bot):
   _close_shop_session(bot,message.from_user.id)
   from handlers.city import build_account_menu_text_17_30_1_4, account_menu_kb_17_30_1_4
   bot.send_message(message.chat.id,build_account_menu_text_17_30_1_4(message.from_user.id),reply_markup=account_menu_kb_17_30_1_4())
+ @bot.message_handler(func=lambda m:m.text==BAG_EXPANSION_BUTTON)
+ def bag_expansion(message):
+  _close_shop_session(bot,message.from_user.id)
+  p=preview_crystal_bag_expansion(message.from_user.id)
+  if p.get('maximum_reached') or not p.get('next_capacity'):
+   bot.send_message(message.chat.id,p.get('message','🎒 Розширення недоступне.'),reply_markup=_shop_kb());return
+  kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton('✅ Придбати',callback_data=f"bg:buy:{p['next_capacity']}"),types.InlineKeyboardButton('❌ Скасувати',callback_data='bg:cancel'))
+  bot.send_message(message.chat.id,f"🎒 Розширення сумки\n\nПоточна місткість: {p['current_capacity']} слотів\nПісля розширення: {p['next_capacity']} слотів\nВартість: {p['price']} 💎\nБаланс: {p['balance']} 💎",reply_markup=kb)
+ @bot.callback_query_handler(func=lambda c:str(c.data or '').startswith('bg:'))
+ def bag_expansion_callback(call):
+  data=str(call.data or '');uid=call.from_user.id
+  if data=='bg:cancel':
+   bot.edit_message_text('❌ Розширення сумки скасовано.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Скасовано');return
+  target=int(data.split(':')[2]);key=f"telegram:bag_expansion:{uid}:{call.message.chat.id}:{call.message.message_id}:{target}";res=purchase_crystal_bag_expansion(uid,target,key)
+  if res.get('success'):
+   bot.edit_message_text(f"✅ Сумку розширено до {res['current_capacity']} слотів.\nСписано: {res['price']} 💎\nБаланс: {res['balance']} 💎",call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Готово')
+  else:
+   bot.answer_callback_query(call.id,res.get('message','Покупку не завершено.'),show_alert=True)
  @bot.message_handler(func=lambda m:_item_from_text(m.text) is not None)
  def choose(message):
   iid=_item_from_text(message.text)

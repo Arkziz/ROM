@@ -417,7 +417,7 @@ def reset_hero_for_test(user_id):
                     "exp": 0,
                     "gold": 0.0,
                     "kills": 0,
-                    "bag_slots": int(globals().get("DEFAULT_BAG_SLOTS", 60)),  # ROM 17.8.1
+                    "bag_slots": max(int(globals().get("DEFAULT_BAG_SLOTS", 60)), int(get_bag_capacity(user_id))),  # ROM 17.32.1 preserve account entitlement
                     "current_location": "start_path",
                     "str": 10,
                     "dex": 10,
