@@ -503,3 +503,6 @@ __all__.extend(['init_crystal_wallet_system','get_crystal_wallet','get_crystal_b
 __all__.extend(['init_premium_item_policy','get_premium_item_policy','can_grant_item_from_source','grant_item_from_source','get_premium_item_grants'])
 
 __all__.extend(['CRYSTAL_SHOP_CATALOG','init_crystal_shop_system','get_crystal_shop_catalog','preview_crystal_shop_purchase','purchase_crystal_shop_item','get_crystal_shop_purchases'])
+
+# Stage 18.1.2a canonical concrete daily quest owner
+from .daily_compat import reset_daily_quest_if_needed

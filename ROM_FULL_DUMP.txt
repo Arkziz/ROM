@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-29 23:34:26 +03:00
+Created: 2026-08-30 20:33:54 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9168
-Scanned files: 7119
-Included files: 512
-Excluded files: 6607
-Included source size: 3,43 MB
+Scanned files: 7216
+Included files: 519
+Excluded files: 6697
+Included source size: 3,46 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 6601
+- excluded directory: 6691
 - excluded file name or pattern: 6
 - unsupported file type: 0
 
@@ -80,6 +80,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - handlers\map.py
 - handlers\name_rune.py
 - handlers\player_interaction.py
+- handlers\player_rankings.py
 - handlers\profile.py
 - handlers\pvp_interaction.py
 - handlers\pvp_round_ui.py
@@ -101,6 +102,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\character_system.py
 - systems\combat_system.py
 - systems\contract_system.py
+- systems\crystal_bag_expansion_system.py
 - systems\crystal_shop_system.py
 - systems\crystal_wallet_system.py
 - systems\drop_system.py
@@ -113,6 +115,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\name_rune_system.py
 - systems\notifications.py
 - systems\player_interaction_system.py
+- systems\player_rankings_system.py
 - systems\player_system.py
 - systems\potion_system.py
 - systems\premium_item_policy_system.py
@@ -248,6 +251,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_atomic_resethero_15_7_7.py
 - tools\smoke_test_auction_armor_only_lot_display_name_17_4_4_1.py
 - tools\smoke_test_auction_buy_category_handler_mapping_17_31_1_12.py
+- tools\smoke_test_auction_buy_consumable_category_normalization_17_31_1_13.py
 - tools\smoke_test_auction_consumable_exclusive_category_name_rune_17_31_1_7.py
 - tools\smoke_test_auction_consumables_sell_route_17_31_1_6.py
 - tools\smoke_test_auction_equipment_runes_canonical_17_1_0.py
@@ -314,6 +318,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_contract_reward_direct_facade.py
 - tools\smoke_test_create_user_contracts.py
 - tools\smoke_test_critical_production_logging_print_contract_recovery_17_20_1_1.py
+- tools\smoke_test_crystal_bag_expansion_17_32_1.py
 - tools\smoke_test_crystal_shop_17_27_1.py
 - tools\smoke_test_crystal_shop_handler_priority_17_28_1_2.py
 - tools\smoke_test_crystal_shop_stale_menu_cleanup_17_27_1_1.py
@@ -405,6 +410,8 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_player_progression_db_api_16_1_0.py
 - tools\smoke_test_player_progression_direct.py
 - tools\smoke_test_player_progression_legacy_audit.py
+- tools\smoke_test_player_rankings_17_33_1.py
+- tools\smoke_test_player_rankings_inline_categories_17_33_1_2.py
 - tools\smoke_test_player_trade_amount_cancel_and_lock_recovery.py
 - tools\smoke_test_player_trade_category_pagination_labels.py
 - tools\smoke_test_player_trade_compact_quantity_parentheses_fix.py
@@ -3995,8 +4002,8 @@ __all__ = ['get_daily_quest_status']
 
 ============================================================
 FILE: db_modules\dev_compat.py
-SIZE: 51350 bytes
-LAST WRITE: 2026-08-27 23:15:28
+SIZE: 51417 bytes
+LAST WRITE: 2026-08-30 00:05:39
 ============================================================
 
 # ROM 17.17.1.5 WARRIOR SMALL SHIELD
@@ -4418,7 +4425,7 @@ def reset_hero_for_test(user_id):
                     "exp": 0,
                     "gold": 0.0,
                     "kills": 0,
-                    "bag_slots": int(globals().get("DEFAULT_BAG_SLOTS", 60)),  # ROM 17.8.1
+                    "bag_slots": max(int(globals().get("DEFAULT_BAG_SLOTS", 60)), int(get_bag_capacity(user_id))),  # ROM 17.32.1 preserve account entitlement
                     "current_location": "start_path",
                     "str": 10,
                     "dex": 10,
@@ -17568,8 +17575,8 @@ def register_blacksmith_repair_confirmation_handlers(bot):
 
 ============================================================
 FILE: handlers\city.py
-SIZE: 82545 bytes
-LAST WRITE: 2026-08-28 23:40:58
+SIZE: 82580 bytes
+LAST WRITE: 2026-08-30 00:22:51
 ============================================================
 
 # ROM 17.11.2.1 CITY CRAFT TAVERN TEXT CLEANUP
@@ -19846,6 +19853,7 @@ def build_account_menu_text_17_30_1_4(user_id):
 def account_menu_kb_17_30_1_4():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.add("💎 Магазин кристалів")
+    kb.add("🏆 Рейтинг")
     kb.add("🔙 Назад")
     return kb
 
@@ -23711,8 +23719,8 @@ def register_contract_handlers(bot):
 
 ============================================================
 FILE: handlers\crystal_shop.py
-SIZE: 8879 bytes
-LAST WRITE: 2026-08-28 23:40:58
+SIZE: 11001 bytes
+LAST WRITE: 2026-08-30 00:05:39
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -23720,13 +23728,15 @@ from telebot import types
 from keyboards import main_kb
 from systems.crystal_shop_system import CRYSTAL_SHOP_CATALOG,get_crystal_shop_catalog,preview_crystal_shop_purchase,purchase_crystal_shop_item
 from systems.crystal_wallet_system import get_crystal_balance
-MENU_BUTTON='📋 Меню';SHOP_BUTTON='💎 Магазин кристалів';BACK='🔙 Закрити магазин';EXP_BONUS_BUTTON='📈 Бонус досвіду +25%';states={}
+from systems.crystal_bag_expansion_system import preview_crystal_bag_expansion,purchase_crystal_bag_expansion
+MENU_BUTTON='📋 Меню';SHOP_BUTTON='💎 Магазин кристалів';BACK='🔙 Закрити магазин';EXP_BONUS_BUTTON='📈 Бонус досвіду +25%';BAG_EXPANSION_BUTTON='🎒 Розширення сумки';states={}
 def _menu_kb():
  k=types.ReplyKeyboardMarkup(resize_keyboard=True);k.add(SHOP_BUTTON);k.add(BACK);return k
 def _shop_kb():
  k=types.ReplyKeyboardMarkup(resize_keyboard=True)
  for iid,v in get_crystal_shop_catalog().items():k.add(f"{v['name']} — {v['price']} 💎")
  k.add(EXP_BONUS_BUTTON)
+ k.add(BAG_EXPANSION_BUTTON)
  k.add(BACK);return k
 def _qty_kb(iid,qty):
  k=types.InlineKeyboardMarkup();k.row(types.InlineKeyboardButton('➖',callback_data=f'cs:q:{iid}:{max(1,qty-1)}'),types.InlineKeyboardButton(f'×{qty}',callback_data='cs:noop'),types.InlineKeyboardButton('➕',callback_data=f'cs:q:{iid}:{qty+1}'));k.row(types.InlineKeyboardButton('✍️ Ввести кількість',callback_data=f'cs:input:{iid}'));k.row(types.InlineKeyboardButton('✅ Продовжити',callback_data=f'cs:review:{iid}:{qty}'),types.InlineKeyboardButton('❌ Скасувати',callback_data='cs:cancel'));return k
@@ -23806,6 +23816,24 @@ def register_crystal_shop_handlers(bot):
   _close_shop_session(bot,message.from_user.id)
   from handlers.city import build_account_menu_text_17_30_1_4, account_menu_kb_17_30_1_4
   bot.send_message(message.chat.id,build_account_menu_text_17_30_1_4(message.from_user.id),reply_markup=account_menu_kb_17_30_1_4())
+ @bot.message_handler(func=lambda m:m.text==BAG_EXPANSION_BUTTON)
+ def bag_expansion(message):
+  _close_shop_session(bot,message.from_user.id)
+  p=preview_crystal_bag_expansion(message.from_user.id)
+  if p.get('maximum_reached') or not p.get('next_capacity'):
+   bot.send_message(message.chat.id,p.get('message','🎒 Розширення недоступне.'),reply_markup=_shop_kb());return
+  kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton('✅ Придбати',callback_data=f"bg:buy:{p['next_capacity']}"),types.InlineKeyboardButton('❌ Скасувати',callback_data='bg:cancel'))
+  bot.send_message(message.chat.id,f"🎒 Розширення сумки\n\nПоточна місткість: {p['current_capacity']} слотів\nПісля розширення: {p['next_capacity']} слотів\nВартість: {p['price']} 💎\nБаланс: {p['balance']} 💎",reply_markup=kb)
+ @bot.callback_query_handler(func=lambda c:str(c.data or '').startswith('bg:'))
+ def bag_expansion_callback(call):
+  data=str(call.data or '');uid=call.from_user.id
+  if data=='bg:cancel':
+   bot.edit_message_text('❌ Розширення сумки скасовано.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Скасовано');return
+  target=int(data.split(':')[2]);key=f"telegram:bag_expansion:{uid}:{call.message.chat.id}:{call.message.message_id}:{target}";res=purchase_crystal_bag_expansion(uid,target,key)
+  if res.get('success'):
+   bot.edit_message_text(f"✅ Сумку розширено до {res['current_capacity']} слотів.\nСписано: {res['price']} 💎\nБаланс: {res['balance']} 💎",call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Готово')
+  else:
+   bot.answer_callback_query(call.id,res.get('message','Покупку не завершено.'),show_alert=True)
  @bot.message_handler(func=lambda m:_item_from_text(m.text) is not None)
  def choose(message):
   iid=_item_from_text(message.text)
@@ -32073,6 +32101,73 @@ def _trade_ux_mine_kb(state):
 # ROM Stage 17.31.1 canonical consumables integration
 
 ============================================================
+FILE: handlers\player_rankings.py
+SIZE: 4613 bytes
+LAST WRITE: 2026-08-30 00:29:31
+============================================================
+
+# -*- coding: utf-8 -*-
+from telebot import types
+from systems.player_rankings_system import get_player_ranking_categories,get_player_ranking_page
+RANKING_BUTTON='🏆 Рейтинг';BACK_TO_MENU='🔙 Меню'
+CATEGORY_ORDER=('total_exp','gold','str','sta','dex','intelligence','wis')
+LABEL_TO_KEY={value['label']:key for key,value in get_player_ranking_categories().items()}
+# ROM Stage 17.33.1.2 inline category navigation
+def player_rankings_exit_kb():
+ kb=types.ReplyKeyboardMarkup(resize_keyboard=True)
+ kb.row(BACK_TO_MENU)
+ return kb
+
+def player_rankings_category_inline_kb():
+ kb=types.InlineKeyboardMarkup()
+ categories=get_player_ranking_categories()
+ buttons=[types.InlineKeyboardButton(categories[key]['label'],callback_data=f'pr:category:{key}') for key in CATEGORY_ORDER]
+ for index in range(0,len(buttons),2):kb.row(*buttons[index:index+2])
+ return kb
+def _format_value(key,value):
+ if key=='gold':return f'{float(value or 0):.2f}'
+ return f'{int(value or 0):,}'.replace(',',' ')
+def _page_kb(data):
+ kb=types.InlineKeyboardMarkup();nav=[];key=data['ranking_key'];page=data['page']
+ if data['has_previous']:nav.append(types.InlineKeyboardButton('⬅️ Назад',callback_data=f'pr:{key}:{page-1}'))
+ nav.append(types.InlineKeyboardButton(f"{page+1}/{data['pages']}",callback_data='pr:noop'))
+ if data['has_next']:nav.append(types.InlineKeyboardButton('Далі ➡️',callback_data=f'pr:{key}:{page+1}'))
+ kb.row(*nav);kb.row(types.InlineKeyboardButton('🔙 Категорії',callback_data='pr:categories'));return kb
+def _build_text(data,viewer_user_id):
+ category=data['category'];lines=[f"🏆 Рейтинг: {category['label']}",'']
+ for row in data['items']:
+  own=' 👤' if int(row['user_id'])==int(viewer_user_id) else ''
+  lines.extend([f"{row['position']}. {row['character_name']}{own}",f"   Рівень: {int(row['level'])} | {category['value_label']}: {_format_value(data['ranking_key'],row['value'])}"])
+ if not data['items']:lines.append('У рейтингу ще немає персонажів.')
+ viewer=data.get('viewer')
+ if viewer and not data.get('viewer_on_page'):
+  lines.extend(['',f"Твоє місце: {viewer['position']}",f"Твоє значення: {_format_value(data['ranking_key'],viewer['value'])}"])
+ return '\n'.join(lines)
+def register_player_rankings_handlers(bot):
+ @bot.message_handler(func=lambda m:str(getattr(m,'text','') or '')==RANKING_BUTTON)
+ def rankings_menu(message):
+  bot.send_message(message.chat.id,'🏆 Рейтинг гравців\n\nОберіть категорію:',reply_markup=player_rankings_exit_kb())
+  bot.send_message(message.chat.id,'Оберіть категорію рейтингу:',reply_markup=player_rankings_category_inline_kb())
+ @bot.message_handler(func=lambda m:str(getattr(m,'text','') or '')==BACK_TO_MENU)
+ def rankings_back(message):
+  from handlers.city import build_account_menu_text_17_30_1_4,account_menu_kb_17_30_1_4
+  bot.send_message(message.chat.id,build_account_menu_text_17_30_1_4(message.from_user.id),reply_markup=account_menu_kb_17_30_1_4())
+ @bot.callback_query_handler(func=lambda c:str(getattr(c,'data','') or '').startswith('pr:'))
+ def ranking_callback(call):
+  data=str(call.data or '')
+  if data=='pr:noop':bot.answer_callback_query(call.id);return
+  if data=='pr:categories':
+   bot.edit_message_text('🏆 Рейтинг гравців\n\nОберіть категорію:',call.message.chat.id,call.message.message_id,reply_markup=player_rankings_category_inline_kb());bot.answer_callback_query(call.id);return
+  if data.startswith('pr:category:'):
+   key=data.split(':',2)[2];result=get_player_ranking_page(key,call.from_user.id,0)
+   if not result.get('success'):bot.answer_callback_query(call.id,result.get('message','Помилка рейтингу.'),show_alert=True);return
+   bot.edit_message_text(_build_text(result,call.from_user.id),call.message.chat.id,call.message.message_id,reply_markup=_page_kb(result));bot.answer_callback_query(call.id);return
+  try:key,page=data.split(':')[1],int(data.split(':')[2]);result=get_player_ranking_page(key,call.from_user.id,page)
+  except Exception:bot.answer_callback_query(call.id,'Некоректна сторінка.',show_alert=True);return
+  if not result.get('success'):bot.answer_callback_query(call.id,result.get('message','Помилка рейтингу.'),show_alert=True);return
+  bot.edit_message_text(_build_text(result,call.from_user.id),call.message.chat.id,call.message.message_id,reply_markup=_page_kb(result));bot.answer_callback_query(call.id)
+
+============================================================
 FILE: handlers\profile.py
 SIZE: 20369 bytes
 LAST WRITE: 2026-08-27 14:36:43
@@ -35053,8 +35148,8 @@ def rune_master_kb():
 
 ============================================================
 FILE: main.py
-SIZE: 10391 bytes
-LAST WRITE: 2026-08-29 00:26:22
+SIZE: 10624 bytes
+LAST WRITE: 2026-08-30 00:22:51
 ============================================================
 
 
@@ -35151,11 +35246,13 @@ from handlers.guild import register_guild_handlers
 from handlers.auction_house import register_auction_house_handlers
 from handlers.blacksmith_repair_confirm import register_blacksmith_repair_confirmation_handlers
 from handlers.crystal_shop import register_crystal_shop_handlers
+from handlers.player_rankings import register_player_rankings_handlers
 from handlers.timed_exp_bonus import register_timed_exp_bonus_handlers
 from systems.timed_exp_bonus_system import init_timed_exp_bonus_system
 from handlers.name_rune import register_name_rune_handlers
 from systems.name_rune_system import init_name_rune_system
 from systems.crystal_shop_system import init_crystal_shop_system
+from systems.crystal_bag_expansion_system import init_crystal_bag_expansion_system
 
 from systems.notifications import start_notification_worker
 from systems.telegram_rate_limit import install_global_telegram_rate_limit_guard
@@ -35219,11 +35316,13 @@ init_class_reset_sphere()
 # ==============================
 
 init_crystal_shop_system()
+init_crystal_bag_expansion_system()
 init_timed_exp_bonus_system()
 init_name_rune_system()
 init_fatigue_artifact_system()
 
 register_crystal_shop_handlers(bot)
+register_player_rankings_handlers(bot)
 register_timed_exp_bonus_handlers(bot)
 register_start_handlers(bot)
 register_profile_handlers(bot)
@@ -35612,8 +35711,8 @@ LAST WRITE: 2026-07-09 23:38:38
 
 ============================================================
 FILE: systems\auction_house_system.py
-SIZE: 181064 bytes
-LAST WRITE: 2026-08-29 23:16:36
+SIZE: 181417 bytes
+LAST WRITE: 2026-08-29 23:42:10
 ============================================================
 
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
@@ -41130,10 +41229,19 @@ def get_user_sellable_stack_items_for_auction(user_id, category, limit=50, offse
 
 _auction_base_buy_normalize_category_12_6_3c = _auction_buy_normalize_category
 
+# ROM Stage 17.31.1.13 consumable buy-category normalization recovery
 def _auction_buy_normalize_category(category):
     raw = str(category or AUCTION_BUY_CATEGORY_ALL).strip().lower()
     if raw in ("rune", "runes", "руна", "руни", "💠 руни"):
         return AUCTION_CATEGORY_RUNE
+    if raw in (
+        "consumable",
+        "consumables",
+        "витратні предмети",
+        "🧰 витратні предмети",
+        "🧰 витратні предмети в продажу",
+    ):
+        return AUCTION_CATEGORY_CONSUMABLE
     return _auction_base_buy_normalize_category_12_6_3c(category)
 
 # ROM Stage 17.31.1 canonical consumables integration
@@ -43189,6 +43297,80 @@ def get_daily_contract_reset_info(user_id=None):
 
 def migrate_contract_target_kills_to_v2(*args, **kwargs):
     return migrate_active_contracts_target_kills_to_5()
+
+============================================================
+FILE: systems\crystal_bag_expansion_system.py
+SIZE: 6938 bytes
+LAST WRITE: 2026-08-30 00:05:39
+============================================================
+
+# -*- coding: utf-8 -*-
+"""Account-level, atomic and idempotent crystal bag expansion."""
+from __future__ import annotations
+import json, sqlite3
+from datetime import datetime, timezone
+from pathlib import Path
+DB_PATH=Path(__file__).resolve().parents[1]/'game.db'
+BASE_BAG_CAPACITY=60
+MAX_BAG_CAPACITY=100
+BAG_EXPANSION_TIERS={60:{'target_capacity':80,'price':75},80:{'target_capacity':100,'price':150}}
+def _utc():return datetime.now(timezone.utc).isoformat()
+def _connect(path=None):
+ c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
+def init_crystal_bag_expansion_system(db_path=None):
+ c=_connect(db_path)
+ try:
+  c.executescript("""CREATE TABLE IF NOT EXISTS account_bag_expansion_purchases(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,from_capacity INTEGER NOT NULL,to_capacity INTEGER NOT NULL,crystal_price INTEGER NOT NULL,balance_before INTEGER NOT NULL,balance_after INTEGER NOT NULL,idempotency_key TEXT NOT NULL UNIQUE,crystal_transaction_id INTEGER NOT NULL UNIQUE,created_at TEXT NOT NULL,UNIQUE(user_id,to_capacity),FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE RESTRICT,FOREIGN KEY(crystal_transaction_id) REFERENCES crystal_transactions(id) ON DELETE RESTRICT);CREATE INDEX IF NOT EXISTS ix_account_bag_expansion_user ON account_bag_expansion_purchases(user_id,id DESC);""");c.commit();return {'success':True}
+ finally:c.close()
+def _state(c,user_id):
+ user=c.execute('SELECT COALESCE(bag_slots,60) AS bag_slots FROM users WHERE user_id=?',(int(user_id),)).fetchone()
+ if not user:return None
+ capacity=max(BASE_BAG_CAPACITY,int(user['bag_slots'] or BASE_BAG_CAPACITY));wallet=c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(int(user_id),)).fetchone();balance=int(wallet['balance']) if wallet else 0;tier=BAG_EXPANSION_TIERS.get(capacity)
+ return {'user_id':int(user_id),'current_capacity':capacity,'maximum_capacity':MAX_BAG_CAPACITY,'balance':balance,'next_capacity':tier['target_capacity'] if tier else None,'price':tier['price'] if tier else None,'maximum_reached':capacity>=MAX_BAG_CAPACITY,'supported_capacity':capacity in BAG_EXPANSION_TIERS or capacity>=MAX_BAG_CAPACITY}
+def get_crystal_bag_expansion_state(user_id,db_path=None):
+ c=_connect(db_path)
+ try:return _state(c,user_id)
+ finally:c.close()
+def preview_crystal_bag_expansion(user_id,db_path=None):
+ state=get_crystal_bag_expansion_state(user_id,db_path)
+ if not state:return {'success':False,'message':'❌ Користувача не знайдено.'}
+ if state['maximum_reached']:return {**state,'success':False,'message':f"🎒 Сумка вже має максимальну місткість: {state['current_capacity']} слотів."}
+ if not state['supported_capacity']:return {**state,'success':False,'message':'❌ Поточний рівень сумки не підтримує автоматичне розширення.'}
+ ok=state['balance']>=state['price'];return {**state,'success':ok,'balance_after':state['balance']-state['price'],'message':'OK' if ok else '❌ Недостатньо кристалів.'}
+def purchase_crystal_bag_expansion(user_id,target_capacity,idempotency_key,db_path=None):
+ uid=int(user_id);target=int(target_capacity);key=str(idempotency_key or '').strip()
+ if not key:return {'success':False,'message':'❌ Відсутній ключ операції.'}
+ c=_connect(db_path)
+ try:
+  c.execute('BEGIN IMMEDIATE')
+  previous=c.execute('SELECT * FROM account_bag_expansion_purchases WHERE idempotency_key=?',(key,)).fetchone()
+  if previous:
+   c.commit();row=dict(previous);row.update({'success':True,'idempotent_replay':True,'current_capacity':int(row['to_capacity']),'balance':int(row['balance_after'])});return row
+  state=_state(c,uid)
+  if not state:c.rollback();return {'success':False,'message':'❌ Користувача не знайдено.'}
+  if state['maximum_reached']:c.rollback();return {**state,'success':False,'message':f"🎒 Сумка вже має максимальну місткість: {state['current_capacity']} слотів."}
+  tier=BAG_EXPANSION_TIERS.get(state['current_capacity'])
+  if not tier or target!=tier['target_capacity']:c.rollback();return {**state,'success':False,'message':'❌ Доступне лише наступне послідовне розширення сумки.'}
+  price=int(tier['price']);before=int(state['balance'])
+  if before<price:c.rollback();return {**state,'success':False,'message':'❌ Недостатньо кристалів.'}
+  after=before-price;now=_utc();txkey='bag_expansion:debit:'+key
+  tx=c.execute("INSERT INTO crystal_transactions(user_id,operation,amount,reason_code,balance_before,balance_after,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",(uid,'debit',price,'bag_expansion_purchase',before,after,txkey,key,json.dumps({'from_capacity':state['current_capacity'],'to_capacity':target},sort_keys=True),now));txid=int(tx.lastrowid)
+  changed=c.execute('UPDATE crystal_wallets SET balance=?,updated_at=? WHERE user_id=? AND balance=?',(after,now,uid,before)).rowcount
+  if changed!=1:raise RuntimeError('wallet concurrent update')
+  changed=c.execute('UPDATE users SET bag_slots=? WHERE user_id=? AND COALESCE(bag_slots,60)=?',(target,uid,state['current_capacity'])).rowcount
+  if changed!=1:raise RuntimeError('bag capacity concurrent update')
+  cur=c.execute('INSERT INTO account_bag_expansion_purchases(user_id,from_capacity,to_capacity,crystal_price,balance_before,balance_after,idempotency_key,crystal_transaction_id,created_at) VALUES(?,?,?,?,?,?,?,?,?)',(uid,state['current_capacity'],target,price,before,after,key,txid,now));pid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'purchase_id':pid,'transaction_id':txid,'from_capacity':state['current_capacity'],'to_capacity':target,'current_capacity':target,'price':price,'balance_before':before,'balance_after':after,'balance':after}
+ except sqlite3.IntegrityError:
+  c.rollback();row=c.execute('SELECT * FROM account_bag_expansion_purchases WHERE idempotency_key=?',(key,)).fetchone()
+  if row:
+   data=dict(row);data.update({'success':True,'idempotent_replay':True,'current_capacity':int(data['to_capacity']),'balance':int(data['balance_after'])});return data
+  return {'success':False,'message':'❌ Це розширення вже придбано.'}
+ except Exception as error:c.rollback();return {'success':False,'message':f'❌ Покупку не завершено: {error}'}
+ finally:c.close()
+def get_crystal_bag_expansion_purchases(user_id,db_path=None):
+ c=_connect(db_path)
+ try:return [dict(row) for row in c.execute('SELECT * FROM account_bag_expansion_purchases WHERE user_id=? ORDER BY id DESC',(int(user_id),)).fetchall()]
+ finally:c.close()
 
 ============================================================
 FILE: systems\crystal_shop_system.py
@@ -47016,7 +47198,7 @@ def buy_common_equipment_from_trader(user_id, slot_key, item_profile=None):
 ============================================================
 FILE: systems\fatigue_artifact_system.py
 SIZE: 6086 bytes
-LAST WRITE: 2026-08-29 00:26:22
+LAST WRITE: 2026-08-30 00:05:39
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -47046,7 +47228,7 @@ def _repack(c,user_id,total):
 def add_fatigue_artifacts(user_id,quantity,db_path=None):
  qty=max(0,int(quantity));c=_conn(db_path)
  try:
-  c.execute('BEGIN IMMEDIATE');owned=int(c.execute('SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?',(int(user_id),50000)).fetchone()[0]);slots=int(c.execute('SELECT COALESCE(bag_slots,40) FROM users WHERE user_id=?',(int(user_id),)).fetchone()[0]);used=int(c.execute('SELECT COUNT(*) FROM inventory WHERE user_id=?',(int(user_id),)).fetchone()[0]);capacity=max(0,(slots-used)*10 + (10-owned%10 if owned%10 else 0));added=min(qty,capacity);_repack(c,user_id,owned+added);c.commit();return {'success':True,'added':added,'lost':qty-added,'total':owned+added}
+  c.execute('BEGIN IMMEDIATE');owned=int(c.execute('SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?',(int(user_id),50000)).fetchone()[0]);slots=int(c.execute('SELECT COALESCE(bag_slots,60) FROM users WHERE user_id=?',(int(user_id),)).fetchone()[0]);used=int(c.execute('SELECT COUNT(*) FROM inventory WHERE user_id=?',(int(user_id),)).fetchone()[0]);capacity=max(0,(slots-used)*10 + (10-owned%10 if owned%10 else 0));added=min(qty,capacity);_repack(c,user_id,owned+added);c.commit();return {'success':True,'added':added,'lost':qty-added,'total':owned+added}
  except Exception:c.rollback();raise
  finally:c.close()
 def get_total(user_id,db_path=None):
@@ -53437,6 +53619,56 @@ def get_player_trade_category_counts(trade_id, user_id, *, db_path=None):
 
 
 # ROM Stage 17.31.1 canonical consumables integration
+
+============================================================
+FILE: systems\player_rankings_system.py
+SIZE: 3362 bytes
+LAST WRITE: 2026-08-30 00:22:51
+============================================================
+
+# -*- coding: utf-8 -*-
+"""Read-only player rankings: top 100, 20 per page, deterministic ordering."""
+from __future__ import annotations
+import sqlite3
+from pathlib import Path
+from data.player_progression import get_exp_to_next_level
+DB_PATH=Path(__file__).resolve().parents[1]/'game.db'
+TOP_LIMIT=100
+PAGE_SIZE=20
+RANKING_CATEGORIES={
+ 'total_exp':{'label':'⭐ Загальний досвід','value_label':'Досвід'},
+ 'gold':{'label':'💰 Золото','value_label':'Золото'},
+ 'str':{'label':'💪 Сила','value_label':'Сила'},
+ 'sta':{'label':'🛡️ Витривалість','value_label':'Витривалість'},
+ 'dex':{'label':'🏹 Спритність','value_label':'Спритність'},
+ 'intelligence':{'label':'🔮 Інтелект','value_label':'Інтелект'},
+ 'wis':{'label':'📘 Мудрість','value_label':'Мудрість'},
+}
+def calculate_cumulative_player_exp(level,current_exp):
+ level=max(1,int(level or 1));return sum(int(get_exp_to_next_level(n)) for n in range(1,level))+max(0,int(current_exp or 0))
+def get_player_ranking_categories():return {key:dict(value) for key,value in RANKING_CATEGORIES.items()}
+def _connect(path=None):
+ c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA query_only=ON');c.execute('PRAGMA busy_timeout=30000');return c
+def _eligible(c):
+ rows=c.execute("SELECT user_id,character_name,level,exp,gold,str,sta,dex,intelligence,wis FROM users WHERE TRIM(COALESCE(character_name,''))<>''").fetchall();result=[]
+ for row in rows:
+  item=dict(row);item['total_exp']=calculate_cumulative_player_exp(item['level'],item['exp']);result.append(item)
+ return result
+def _ranked(rows,key):
+ if key=='total_exp':rows.sort(key=lambda x:(-int(x['total_exp']),int(x['user_id'])))
+ else:rows.sort(key=lambda x:(-float(x.get(key) or 0),-int(x.get('level') or 1),int(x['user_id'])))
+ for index,row in enumerate(rows,1):row['position']=index;row['value']=row['total_exp'] if key=='total_exp' else row.get(key)
+ return rows
+def get_player_ranking_page(ranking_key,viewer_user_id,page=0,page_size=PAGE_SIZE,top_limit=TOP_LIMIT,db_path=None):
+ key=str(ranking_key or '').strip().lower()
+ if key not in RANKING_CATEGORIES:return {'success':False,'message':'❌ Невідома категорія рейтингу.'}
+ size=max(1,min(PAGE_SIZE,int(page_size or PAGE_SIZE)));limit=max(1,min(TOP_LIMIT,int(top_limit or TOP_LIMIT)));page=max(0,int(page or 0));c=_connect(db_path)
+ try:ranked=_ranked(_eligible(c),key)
+ finally:c.close()
+ top=ranked[:limit];pages=max(1,(len(top)+size-1)//size);page=min(page,pages-1);start=page*size;items=top[start:start+size];viewer=next((dict(row) for row in ranked if int(row['user_id'])==int(viewer_user_id)),None)
+ return {'success':True,'ranking_key':key,'category':dict(RANKING_CATEGORIES[key]),'items':items,'page':page,'page_size':size,'pages':pages,'top_limit':limit,'total_eligible':len(ranked),'has_previous':page>0,'has_next':page+1<pages,'viewer':viewer,'viewer_on_page':bool(viewer and any(int(x['user_id'])==int(viewer_user_id) for x in items))}
+def get_player_ranking_position(ranking_key,user_id,db_path=None):
+ data=get_player_ranking_page(ranking_key,user_id,0,PAGE_SIZE,TOP_LIMIT,db_path);return data.get('viewer') if data.get('success') else None
 
 ============================================================
 FILE: systems\player_system.py
@@ -74831,6 +75063,48 @@ assert 'AUCTION_BUY_CONSUMABLE_CATEGORY_BUTTON_17_31_1_8 = "🧰 Витратн�
 print('[PASS] Exactly one canonical buy-category handler remains and mapping is fail-closed')
 
 ============================================================
+FILE: tools\smoke_test_auction_buy_consumable_category_normalization_17_31_1_13.py
+SIZE: 1595 bytes
+LAST WRITE: 2026-08-29 23:42:10
+============================================================
+
+import ast
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+s=(R/'systems/auction_house_system.py').read_text(encoding='utf-8')
+t=ast.parse(s)
+nodes=[n for n in t.body if isinstance(n,ast.FunctionDef) and n.name=='_auction_buy_normalize_category']
+assert nodes
+node=nodes[-1]
+module=ast.Module(body=[node],type_ignores=[])
+ast.fix_missing_locations(module)
+ns={
+ 'AUCTION_BUY_CATEGORY_ALL':'all',
+ 'AUCTION_CATEGORY_RUNE':'rune',
+ 'AUCTION_CATEGORY_CONSUMABLE':'consumable',
+ '_auction_base_buy_normalize_category_12_6_3c':lambda value: {
+   'all':'all','equipment':'equipment','potion':'potion','material':'material'
+ }.get(str(value or 'all').strip().lower(),'all'),
+}
+exec(compile(module,'<auction-normalizer-smoke>','exec'),ns)
+f=ns['_auction_buy_normalize_category']
+expected={
+ None:'all','all':'all','equipment':'equipment','potion':'potion','material':'material',
+ 'rune':'rune','runes':'rune','руна':'rune','руни':'rune','💠 руни':'rune',
+ 'consumable':'consumable','consumables':'consumable',
+ 'витратні предмети':'consumable','🧰 витратні предмети':'consumable',
+ '🧰 Витратні предмети в продажу':'consumable',
+}
+for raw,want in expected.items():
+ got=f(raw)
+ assert got==want,(raw,got,want)
+assert f('consumable')!='all'
+active=ast.get_source_segment(s,node) or ''
+assert 'return AUCTION_CATEGORY_CONSUMABLE' in active
+assert 'where.append("category=?")' in s
+print('[PASS] Consumable buy category remains consumable and reaches exact SQL category filtering')
+
+============================================================
 FILE: tools\smoke_test_auction_consumable_exclusive_category_name_rune_17_31_1_7.py
 SIZE: 1127 bytes
 LAST WRITE: 2026-08-29 22:55:33
@@ -78882,6 +79156,32 @@ assert "smoke_info" in Path(p["app"]).read_text(encoding="utf-8");assert "smoke_
 for rel in ("main.py","systems/notifications.py","systems/telegram_rate_limit.py","handlers/combat.py"):
  t=ast.parse((R/rel).read_text(encoding="utf-8"));assert not any(isinstance(n,ast.Call) and isinstance(n.func,ast.Name) and n.func.id=="print" for n in ast.walk(t)),rel
 print("[PASS] Stage 17.20.1.1 critical production logging print contract recovery")
+
+============================================================
+FILE: tools\smoke_test_crystal_bag_expansion_17_32_1.py
+SIZE: 2842 bytes
+LAST WRITE: 2026-08-30 00:05:39
+============================================================
+
+import ast,importlib.util,sqlite3,tempfile
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+for p in ('systems/crystal_bag_expansion_system.py','handlers/crystal_shop.py','db_modules/dev_compat.py','main.py','systems/fatigue_artifact_system.py'):ast.parse((R/p).read_text(encoding='utf-8'),filename=p)
+spec=importlib.util.spec_from_file_location('bag',R/'systems/crystal_bag_expansion_system.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+with tempfile.TemporaryDirectory() as d:
+ p=Path(d)/'t.db';c=sqlite3.connect(p);c.executescript("""PRAGMA foreign_keys=ON;CREATE TABLE users(user_id INTEGER PRIMARY KEY,bag_slots INTEGER);CREATE TABLE crystal_wallets(user_id INTEGER PRIMARY KEY,balance INTEGER,created_at TEXT,updated_at TEXT);CREATE TABLE crystal_transactions(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,operation TEXT,amount INTEGER,reason_code TEXT,balance_before INTEGER,balance_after INTEGER,idempotency_key TEXT UNIQUE,external_reference TEXT,metadata_json TEXT,created_at TEXT);INSERT INTO users VALUES(1,60),(2,60),(3,80),(4,100),(5,120);INSERT INTO crystal_wallets VALUES(1,225,'',''),(2,74,'',''),(3,150,'',''),(4,999,'',''),(5,999,'','');""");c.commit();c.close();m.init_crystal_bag_expansion_system(p)
+ a=m.purchase_crystal_bag_expansion(1,80,'k1',p);assert a['success'] and a['balance']==150 and a['current_capacity']==80
+ replay=m.purchase_crystal_bag_expansion(1,80,'k1',p);assert replay['success'] and replay['idempotent_replay']
+ duplicate=m.purchase_crystal_bag_expansion(1,80,'k2',p);assert not duplicate['success']
+ b=m.purchase_crystal_bag_expansion(1,100,'k3',p);assert b['success'] and b['balance']==0 and b['current_capacity']==100
+ assert not m.purchase_crystal_bag_expansion(2,80,'low',p)['success']
+ assert m.purchase_crystal_bag_expansion(3,100,'k4',p)['success']
+ assert not m.purchase_crystal_bag_expansion(4,100,'max',p)['success']
+ assert not m.purchase_crystal_bag_expansion(5,100,'over',p)['success']
+ c=sqlite3.connect(p);assert c.execute('SELECT bag_slots FROM users WHERE user_id=1').fetchone()[0]==100;assert c.execute('SELECT balance FROM crystal_wallets WHERE user_id=1').fetchone()[0]==0;assert c.execute('SELECT COUNT(*) FROM account_bag_expansion_purchases WHERE user_id=1').fetchone()[0]==2;assert c.execute('SELECT COUNT(*) FROM crystal_transactions WHERE user_id=1').fetchone()[0]==2;c.close()
+text=(R/'db_modules/dev_compat.py').read_text(encoding='utf-8');assert 'max(int(globals().get("DEFAULT_BAG_SLOTS", 60)), int(get_bag_capacity(user_id)))' in text
+handler=(R/'handlers/crystal_shop.py').read_text(encoding='utf-8');assert "BAG_EXPANSION_BUTTON='🎒 Розширення сумки'" in handler and "startswith('bg:')" in handler
+print('[PASS] Stage 17.32.1 atomic, sequential, idempotent bag expansion contracts')
 
 ============================================================
 FILE: tools\smoke_test_crystal_shop_17_27_1.py
@@ -84053,6 +84353,62 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+============================================================
+FILE: tools\smoke_test_player_rankings_17_33_1.py
+SIZE: 1970 bytes
+LAST WRITE: 2026-08-30 00:22:51
+============================================================
+
+import ast,importlib.util,sqlite3,tempfile,sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+if str(R) not in sys.path:sys.path.insert(0,str(R))
+for p in ('systems/player_rankings_system.py','handlers/player_rankings.py','handlers/city.py','main.py'):ast.parse((R/p).read_text(encoding='utf-8'),filename=p)
+spec=importlib.util.spec_from_file_location('rank',R/'systems/player_rankings_system.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
+with tempfile.TemporaryDirectory() as d:
+ p=Path(d)/'t.db';c=sqlite3.connect(p);c.execute('CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT,level INTEGER,exp INTEGER,gold REAL,str INTEGER,sta INTEGER,dex INTEGER,intelligence INTEGER,wis INTEGER)')
+ rows=[]
+ for i in range(1,126):rows.append((i,'' if i==125 else 'P'+str(i),2 if i<120 else 3,i,10 if i<3 else i,10,10,10,10,10))
+ c.executemany('INSERT INTO users VALUES(?,?,?,?,?,?,?,?,?,?)',rows);c.commit();c.close()
+ assert m.calculate_cumulative_player_exp(1,5)==5
+ data=m.get_player_ranking_page('gold',124,0,20,100,p);assert data['success'] and len(data['items'])==20 and data['pages']==5 and data['total_eligible']==124
+ last=m.get_player_ranking_page('gold',1,99,20,100,p);assert last['page']==4 and not last['has_next']
+ assert data['viewer']['position']==1
+ assert not m.get_player_ranking_page('bad',1,0,20,100,p)['success']
+handler=(R/'handlers/player_rankings.py').read_text(encoding='utf-8')
+assert "for index in range(0,len(labels),2):kb.row(*labels[index:index+2])" in handler
+assert "kb.row(BACK_TO_MENU)" in handler
+assert handler.count("@bot.message_handler(func=lambda m:str(getattr(m,'text','') or '')==RANKING_BUTTON)")==1
+assert "startswith('pr:')" in handler
+city=(R/'handlers/city.py').read_text(encoding='utf-8');assert city.count('kb.add("🏆 Рейтинг")')==1
+print('[PASS] Stage 17.33.1 rankings, top-100, pagination, tie-breakers and 2-per-row category keyboard')
+
+============================================================
+FILE: tools\smoke_test_player_rankings_inline_categories_17_33_1_2.py
+SIZE: 1139 bytes
+LAST WRITE: 2026-08-30 00:29:31
+============================================================
+
+import ast,sys
+from pathlib import Path
+R=Path(__file__).resolve().parents[1]
+if str(R) not in sys.path:sys.path.insert(0,str(R))
+p=R/'handlers/player_rankings.py';s=p.read_text(encoding='utf-8');ast.parse(s)
+assert 'def player_rankings_exit_kb():' in s
+assert 'kb.row(BACK_TO_MENU)' in s
+assert 'def player_rankings_category_inline_kb():' in s
+assert "callback_data=f'pr:category:{key}'" in s
+assert 'for index in range(0,len(buttons),2):kb.row(*buttons[index:index+2])' in s
+assert "if data.startswith('pr:category:'):" in s
+assert "reply_markup=player_rankings_category_inline_kb()" in s
+assert "callback_data='pr:categories'" in s
+assert 'def player_rankings_category_kb():' not in s
+assert "str(getattr(m,'text','') or '') in LABEL_TO_KEY" not in s
+assert 'нижній клавіатурі' not in s
+assert s.count("@bot.message_handler(func=lambda m:str(getattr(m,'text','') or '')==BACK_TO_MENU)")==1
+assert s.count("@bot.callback_query_handler(func=lambda c:str(getattr(c,'data','') or '').startswith('pr:'))")==1
+print('[PASS] Stage 17.33.1.2 inline categories, two per row, and persistent Back-to-Menu only')
 
 ============================================================
 FILE: tools\smoke_test_player_trade_amount_cancel_and_lock_recovery.py

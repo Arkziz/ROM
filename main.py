@@ -1,6 +1,7 @@
 
 # ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
 from systems.production_logging import configure_production_logging, get_production_logger, production_log_print as PRODUCTION_LOG_PRINT
+from systems.fresh_database_bootstrap import run_fresh_database_schema_bootstrap
 configure_production_logging()
 PRODUCTION_LOGGER=get_production_logger('rom.main')
 
@@ -120,6 +121,10 @@ bot = telebot.TeleBot(TOKEN, threaded=False)
 # ROM 12.1.0 PLAYER PRESENCE AND ACTIVITY SESSIONS
 from systems.player_interaction_system import init_player_interaction_foundation, install_player_presence_tracking, cleanup_player_interaction_state, init_player_trade_foundation, init_player_trade_item_policy_and_reservations, recover_active_player_trades_after_restart
 init_db()
+
+# Stage 18.1.0-a.0-b: deterministic schema owners before handlers/polling.
+_fresh_schema_bootstrap_result = run_fresh_database_schema_bootstrap()
+print(f"✅ FRESH DATABASE SCHEMA BOOTSTRAP: {_fresh_schema_bootstrap_result}")
 PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER INTERACTION FOUNDATION:', init_player_interaction_foundation())
 # ROM 12.3.2 INTERACTION SESSION TIMEOUT AND RECOVERY
 PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER INTERACTION RECOVERY:', cleanup_player_interaction_state())
@@ -248,4 +253,3 @@ except Exception as e:
 
 # ✅ ROM 9.0.8d MAIN REPAIR CONFIRMATION ORDER FIX
 # Repair confirmation handlers are registered before old hotfix/city handlers.
-

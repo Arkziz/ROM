@@ -69,6 +69,8 @@ def init_db():
         item_id INTEGER,
         quantity INTEGER,
         durability INTEGER
+    ,
+        refine_level INTEGER DEFAULT 0
     )
     """)
 
@@ -94,6 +96,24 @@ def init_db():
 
         pdef INTEGER,
         mdef INTEGER
+    ,
+        item_subtype TEXT DEFAULT ''
+    ,
+        armor_type TEXT DEFAULT ''
+    ,
+        weapon_min_damage INTEGER DEFAULT 0
+    ,
+        weapon_max_damage INTEGER DEFAULT 0
+    ,
+        weapon_min_magic_damage INTEGER DEFAULT 0
+    ,
+        weapon_max_magic_damage INTEGER DEFAULT 0
+    ,
+        weapon_attack_type TEXT DEFAULT ''
+    ,
+        shop_preview_owner INTEGER DEFAULT NULL
+    ,
+        shop_preview_price INTEGER DEFAULT 0
     )
     """)
 

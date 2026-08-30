@@ -14,7 +14,7 @@ def init_daily_quest_system():
     """Ініціалізує таблиці та колонки для щоденних квестів."""
     try:
         cursor.execute("""
-        CREATE TABLE IF NOT EXISTS user_daily_quests (
+        CREATE TABLE IF NOT EXISTS user_daily_activity (
             user_id INTEGER PRIMARY KEY,
             daily_key TEXT NOT NULL,
             total_kills INTEGER DEFAULT 0,
@@ -30,7 +30,7 @@ def init_daily_quest_system():
         
         cursor.execute("""
         CREATE INDEX IF NOT EXISTS idx_udq_user_daily
-        ON user_daily_quests(user_id, daily_key)
+        ON user_daily_activity(user_id, daily_key)
         """)
         
         conn.commit()
@@ -47,7 +47,7 @@ def get_user_daily_quest(user_id):
     cursor.execute("""
     SELECT user_id, daily_key, total_kills, elite_kills, pvp_kills, 
            trades_completed, status, claimed_at
-    FROM user_daily_quests
+    FROM user_daily_activity
     WHERE user_id=? AND daily_key=?
     """, (user_id, today))
     
@@ -55,7 +55,7 @@ def get_user_daily_quest(user_id):
     if not row:
         # Create new quest for today
         cursor.execute("""
-        INSERT INTO user_daily_quests 
+        INSERT INTO user_daily_activity 
         (user_id, daily_key, total_kills, elite_kills, pvp_kills, trades_completed, status)
         VALUES (?, ?, 0, 0, 0, 0, 'active')
         """, (user_id, today))
@@ -92,7 +92,7 @@ def add_daily_quest_progress(user_id, total_kills=0, elite_kills=0, pvp_kills=0,
     quest = get_user_daily_quest(user_id)
     
     cursor.execute("""
-    UPDATE user_daily_quests
+    UPDATE user_daily_activity
     SET total_kills = total_kills + ?,
         elite_kills = elite_kills + ?,
         pvp_kills = pvp_kills + ?,
@@ -136,7 +136,7 @@ def claim_daily_quest_reward(user_id):
     try:
         cursor.execute("BEGIN IMMEDIATE")
         current = cursor.execute(
-            "SELECT status FROM user_daily_quests WHERE user_id=? AND daily_key=?",
+            "SELECT status FROM user_daily_activity WHERE user_id=? AND daily_key=?",
             (user_id, today),
         ).fetchone()
         if not current or str(current[0]) == "claimed":
@@ -168,7 +168,7 @@ def claim_daily_quest_reward(user_id):
             rewards["items"] = item_results
 
         changed = cursor.execute(
-            """UPDATE user_daily_quests
+            """UPDATE user_daily_activity
                SET status='claimed', claimed_at=CURRENT_TIMESTAMP
                WHERE user_id=? AND daily_key=? AND status<>'claimed'""",
             (user_id, today),
@@ -219,7 +219,7 @@ def cleanup_old_daily_quests(days_to_keep=7):
     init_daily_quest_system()
     
     cursor.execute("""
-    DELETE FROM user_daily_quests
+    DELETE FROM user_daily_activity
     WHERE created_at < date('now', '-' || ? || ' days')
     """, (days_to_keep,))
     
@@ -233,12 +233,12 @@ def reset_daily_quest_if_needed(user_id):
     """Roll the single per-user daily row to today without requiring the bot to stay online."""
     today = get_daily_today_str()
     columns = {str(row[1]) for row in cursor.execute(
-        "PRAGMA table_info(user_daily_quests)"
+        "PRAGMA table_info(user_daily_activity)"
     ).fetchall()}
     if not columns:
         init_daily_quest_system()
         columns = {str(row[1]) for row in cursor.execute(
-            "PRAGMA table_info(user_daily_quests)"
+            "PRAGMA table_info(user_daily_activity)"
         ).fetchall()}
 
     date_column = next((name for name in (
@@ -248,7 +248,7 @@ def reset_daily_quest_if_needed(user_id):
         return {"success": True, "reset": False, "mode": "no_date_column"}
 
     row = cursor.execute(
-        f"SELECT {date_column} FROM user_daily_quests WHERE user_id=?",
+        f"SELECT {date_column} FROM user_daily_activity WHERE user_id=?",
         (int(user_id),),
     ).fetchone()
     if not row:
@@ -272,7 +272,7 @@ def reset_daily_quest_if_needed(user_id):
         return {"success": True, "reset": False, "mode": "no_reset_columns"}
     params.append(int(user_id))
     cursor.execute(
-        f"UPDATE user_daily_quests SET {', '.join(assignments)} WHERE user_id=?",
+        f"UPDATE user_daily_activity SET {', '.join(assignments)} WHERE user_id=?",
         tuple(params),
     )
     conn.commit()
@@ -290,8 +290,8 @@ def process_daily_quest_progress_on_kill(user_id, mob=None):
     - елітні монстри
     - боси, коли вони будуть реалізовані
     """
-    from .daily_compat import get_daily_quest_status
-    reset_daily_quest_if_needed(user_id)
+    from .daily_compat import get_daily_quest_status, reset_daily_quest_if_needed as _reset_canonical_daily_quest_if_needed
+    _reset_canonical_daily_quest_if_needed(user_id)
 
     status = get_daily_quest_status(user_id)
 
