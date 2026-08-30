@@ -231,6 +231,9 @@ def init_guild_system():
     conn.commit()
 
     ensure_all_guild_monthly_seasons()
+    # Stage 18.1.4b: enforce unique guild icons only after guild schema creation.
+    make_existing_guild_icons_unique()
+    ensure_unique_guild_icon_index()
 
 
 # ==============================
@@ -1358,10 +1361,6 @@ def validate_guild_create_input(name, tag, icon="🏰"):
 
 
 # Ensure uniqueness whenever module is loaded after the patch.
-try:
-    ensure_unique_guild_icon_index()
-except Exception as _guild_icon_unique_error:
-    print(f"⚠️ Failed to ensure unique guild icon index: {_guild_icon_unique_error}")
 
 
 # ==============================
