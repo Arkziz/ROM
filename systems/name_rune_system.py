@@ -27,7 +27,7 @@ def get_name_rune_inventory(user_id,db_path=None):
  try:
   row=c.execute('SELECT id,quantity FROM inventory WHERE user_id=? AND item_id=? AND quantity>0 ORDER BY id LIMIT 1',(int(user_id),502)).fetchone();return dict(row) if row else None
  finally:c.close()
-def preview_name_change(user_id,new_name,db_path=None):
+def preview_name_change(user_id,new_name,db_path=None,inventory_id=None):
  v=validate_name(new_name)
  if not v['success']:return v
  c=_conn(db_path)
@@ -38,11 +38,12 @@ def preview_name_change(user_id,new_name,db_path=None):
   if normalize_name(old).casefold()==v['key']:return {'success':False,'message':'Нове ім’я збігається з поточним.'}
   for other in c.execute("SELECT user_id,character_name FROM users WHERE user_id<>? AND TRIM(COALESCE(character_name,''))<>''",(int(user_id),)):
    if normalize_name(other['character_name']).casefold()==v['key']:return {'success':False,'message':'Це ім’я вже зайняте.'}
-  rune=get_name_rune_inventory(user_id,db_path)
+  if inventory_id is None:rune=get_name_rune_inventory(user_id,db_path)
+  else:rune=c.execute('SELECT id,quantity FROM inventory WHERE id=? AND user_id=? AND item_id=? AND quantity>0',(int(inventory_id),int(user_id),NAME_RUNE_ITEM_ID)).fetchone()
   if not rune:return {'success':False,'message':'Руну імені не знайдено в інвентарі.'}
   return {'success':True,'old_name':old,'new_name':v['name'],'inventory_id':int(rune['id'])}
  finally:c.close()
-def rename_with_name_rune(user_id,new_name,idempotency_key,db_path=None):
+def rename_with_name_rune(user_id,new_name,idempotency_key,db_path=None,inventory_id=None):
  uid=int(user_id);key=str(idempotency_key or '').strip();v=validate_name(new_name)
  if not key:return {'success':False,'message':'Відсутній ключ операції.'}
  if not v['success']:return v
@@ -56,7 +57,8 @@ def rename_with_name_rune(user_id,new_name,idempotency_key,db_path=None):
   if normalize_name(old).casefold()==v['key']:c.rollback();return {'success':False,'message':'Нове ім’я збігається з поточним.'}
   for other in c.execute("SELECT character_name FROM users WHERE user_id<>? AND TRIM(COALESCE(character_name,''))<>''",(uid,)):
    if normalize_name(other[0]).casefold()==v['key']:c.rollback();return {'success':False,'message':'Це ім’я вже зайняте.'}
-  rune=c.execute('SELECT id,quantity FROM inventory WHERE user_id=? AND item_id=10000 AND quantity>0 ORDER BY id LIMIT 1',(uid,)).fetchone()
+  if inventory_id is None:rune=c.execute('SELECT id,quantity FROM inventory WHERE user_id=? AND item_id=? AND quantity>0 ORDER BY id LIMIT 1',(uid,NAME_RUNE_ITEM_ID)).fetchone()
+  else:rune=c.execute('SELECT id,quantity FROM inventory WHERE id=? AND user_id=? AND item_id=? AND quantity>0',(int(inventory_id),uid,NAME_RUNE_ITEM_ID)).fetchone()
   if not rune:c.rollback();return {'success':False,'message':'Руну імені не знайдено в інвентарі.'}
   if int(rune['quantity'])==1:c.execute('DELETE FROM inventory WHERE id=? AND user_id=?',(int(rune['id']),uid))
   else:c.execute('UPDATE inventory SET quantity=quantity-1 WHERE id=? AND user_id=? AND quantity>1',(int(rune['id']),uid))

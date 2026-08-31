@@ -18,7 +18,7 @@ def register_name_rune_handlers(bot):
  def input_name(message):
   uid=message.from_user.id;state=states.get(uid)
   if not state or state.get('stage')!='input':return
-  p=preview_name_change(uid,message.text)
+  p=preview_name_change(uid,message.text,inventory_id=state['inventory_id'])
   if not p['success']:states.pop(uid,None);bot.send_message(message.chat.id,'❌ '+p['message']);return
   if int(p['inventory_id'])!=int(state['inventory_id']):states.pop(uid,None);bot.send_message(message.chat.id,'❌ Це меню вже неактивне.');return
   states[uid]={'stage':'confirm','new_name':p['new_name'],'inventory_id':int(p['inventory_id'])};kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton('✅ Підтвердити',callback_data='nr:confirm'),types.InlineKeyboardButton('❌ Скасувати',callback_data='nr:cancel'));sent=bot.send_message(message.chat.id,f"✍️ Зміна імені персонажа\n\nПоточне ім’я: {p['old_name']}\nНове ім’я: {p['new_name']}\n\nБуде використано:\n✍️ Руна імені ×1",reply_markup=kb);states[uid].update(chat_id=sent.chat.id,message_id=sent.message_id)
@@ -29,6 +29,6 @@ def register_name_rune_handlers(bot):
   if call.data=='nr:cancel':states.pop(uid,None);bot.edit_message_text('❌ Зміну імені скасовано.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id);return
   rune=get_name_rune_inventory(uid)
   if not rune or int(rune['id'])!=int(state['inventory_id']):states.pop(uid,None);bot.answer_callback_query(call.id,'Це меню вже неактивне.',show_alert=True);return
-  key=f"telegram:name_rune:{uid}:{call.message.chat.id}:{call.message.message_id}";result=rename_with_name_rune(uid,state['new_name'],key)
+  key=f"telegram:name_rune:{uid}:{call.message.chat.id}:{call.message.message_id}";result=rename_with_name_rune(uid,state['new_name'],key,inventory_id=state['inventory_id'])
   if result['success']:states.pop(uid,None);bot.edit_message_text(f"✅ Ім’я персонажа змінено.\n\n{result.get('old_name',result.get('change',{}).get('old_name'))} → {result.get('new_name',result.get('change',{}).get('new_name'))}",call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Готово')
   else:bot.answer_callback_query(call.id,result['message'],show_alert=True)

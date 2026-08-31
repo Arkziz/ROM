@@ -11,7 +11,24 @@ def _q(name):
 def _columns(conn, table):
     return {str(r[1]) for r in conn.execute(f"PRAGMA table_info({_q(table)})")}
 
+def _stage_18_1_8f_canonical_state(conn):
+    legacy_ids = (201,202,203,204,301,900,10000,50000)
+    canonical_ids = (401,402,403,404,501,502,503,601,602,*range(701,729))
+    legacy = int(conn.execute("SELECT COUNT(*) FROM items WHERE id IN (%s)" % ','.join('?' for _ in legacy_ids), legacy_ids).fetchone()[0])
+    present = {int(row[0]) for row in conn.execute("SELECT id FROM items WHERE id IN (%s)" % ','.join('?' for _ in canonical_ids), canonical_ids)}
+    return legacy, present == set(canonical_ids)
+
 def migrate(conn):
+    legacy_count, canonical_complete = _stage_18_1_8f_canonical_state(conn)
+    if canonical_complete:
+        if conn.execute("SELECT 1 FROM items WHERE id=900").fetchone():
+            for table, column in DIRECT_ITEM_COLUMNS:
+                if column in _columns(conn, table):
+                    conn.execute(f"UPDATE {_q(table)} SET {_q(column)}=501 WHERE {_q(column)}=900")
+            conn.execute("DELETE FROM items WHERE id=900")
+            if not conn.in_transaction:
+                conn.commit()
+        return {"success": True, "already_canonical": True, "legacy_900_reconciled": bool(legacy_count), "mapping_entries": len(MAPPING)}
     own_transaction = not conn.in_transaction
     fk_before = int(conn.execute("PRAGMA foreign_keys").fetchone()[0])
     if own_transaction:
