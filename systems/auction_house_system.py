@@ -5453,7 +5453,7 @@ def validate_inventory_stack_item_for_auction(user_id, inventory_id, category, q
         names = {
             501: "Сферу нового шляху", 602: "Руну Успіху",
             726: "Жетони Фіріуса", 728: "Досконалий Екстрактор",
-            10000: "Руну імені",
+            502: "Руну імені",
         }
         return {"success": False, "message": f"❌ {names.get(item_id, 'Цей предмет')} не можна виставити на Торговий Дім."}
     if not _auction_stack_category_matches(snapshot, category):

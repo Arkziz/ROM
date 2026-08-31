@@ -1536,7 +1536,7 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
     try:
         from db_modules.connection import cursor
         row = cursor.execute("SELECT item_id FROM inventory WHERE id=? AND user_id=?", (int(inventory_id), int(user_id))).fetchone()
-        if row and int(row[0]) == 50000:
+        if row and int(row[0]) == 503:
             from systems.energy_system import get_user_energy
             fatigue = int(get_user_energy(user_id).get("energy", 0))
             text = (f"💠 Артефакт відновлення сил\n\n"
@@ -1581,7 +1581,7 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
             "SELECT inv.item_id, inv.quantity FROM inventory inv WHERE inv.id=? AND inv.user_id=?",
             (int(inventory_id), int(user_id)),
         ).fetchone()
-        if row and int(row[0]) == 50000:
+        if row and int(row[0]) == 503:
             from systems.energy_system import get_user_energy
             fatigue = max(0, int(get_user_energy(user_id).get("energy", 0)))
             quantity = max(1, int(row[1] or 1))
