@@ -33,6 +33,10 @@ def init_premium_item_policy(db_path=None):
   CREATE INDEX IF NOT EXISTS ix_premium_item_grants_item_source ON premium_item_grants(item_id,source,id DESC);
   """);c.commit();return {'success':True}
  finally:c.close()
+def init_premium_item_policy_system(db_path=None):
+ """Bootstrap-compatible alias for the canonical premium policy schema owner."""
+ return init_premium_item_policy(db_path)
+
 def get_premium_item_policy(item_id):
  p=PREMIUM_ITEM_POLICY.get(int(item_id));return None if p is None else {**p,'allowed_sources':sorted(p['allowed_sources']),'milestone_levels':sorted(p['milestone_levels'])}
 def can_grant_item_from_source(user_id,item_id,quantity,source,*,milestone_level=None,dev_mode=None,db_path=None):

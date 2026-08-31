@@ -97,14 +97,30 @@ def register_crystal_shop_handlers(bot):
   p=preview_crystal_bag_expansion(message.from_user.id)
   if p.get('maximum_reached') or not p.get('next_capacity'):
    bot.send_message(message.chat.id,p.get('message','🎒 Розширення недоступне.'),reply_markup=_shop_kb());return
-  kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton('✅ Придбати',callback_data=f"bg:buy:{p['next_capacity']}"),types.InlineKeyboardButton('❌ Скасувати',callback_data='bg:cancel'))
+  kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton('➡️ Продовжити',callback_data=f"bg:review:{p['next_capacity']}"),types.InlineKeyboardButton('❌ Скасувати',callback_data='bg:cancel'))
   bot.send_message(message.chat.id,f"🎒 Розширення сумки\n\nПоточна місткість: {p['current_capacity']} слотів\nПісля розширення: {p['next_capacity']} слотів\nВартість: {p['price']} 💎\nБаланс: {p['balance']} 💎",reply_markup=kb)
  @bot.callback_query_handler(func=lambda c:str(c.data or '').startswith('bg:'))
  def bag_expansion_callback(call):
   data=str(call.data or '');uid=call.from_user.id
   if data=='bg:cancel':
    bot.edit_message_text('❌ Розширення сумки скасовано.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Скасовано');return
-  target=int(data.split(':')[2]);key=f"telegram:bag_expansion:{uid}:{call.message.chat.id}:{call.message.message_id}:{target}";res=purchase_crystal_bag_expansion(uid,target,key)
+  parts=data.split(':');action=parts[1]
+  if action in ('review','back'):
+   target=int(parts[2]);p=preview_crystal_bag_expansion(uid)
+   if not p.get('success') or int(p.get('next_capacity') or 0)!=target:
+    bot.answer_callback_query(call.id,p.get('message','Розширення недоступне.'),show_alert=True);return
+   kb=types.InlineKeyboardMarkup()
+   if action=='review':
+    kb.row(types.InlineKeyboardButton('✅ Так, придбати',callback_data=f'bg:buy:{target}'),types.InlineKeyboardButton('↩️ Ні, повернутися',callback_data=f'bg:back:{target}'))
+    kb.row(types.InlineKeyboardButton('❌ Скасувати',callback_data='bg:cancel'))
+    text=f"⚠️ Ви впевнені?\n\nБуде списано {p['price']} 💎.\nМісткість сумки збільшиться до {target} слотів.\nОперацію не можна скасувати після виконання."
+   else:
+    kb.row(types.InlineKeyboardButton('➡️ Продовжити',callback_data=f'bg:review:{target}'),types.InlineKeyboardButton('❌ Скасувати',callback_data='bg:cancel'))
+    text=f"🎒 Розширення сумки\n\nПоточна місткість: {p['current_capacity']} слотів\nПісля розширення: {target} слотів\nВартість: {p['price']} 💎\nБаланс: {p['balance']} 💎"
+   bot.edit_message_text(text,call.message.chat.id,call.message.message_id,reply_markup=kb);bot.answer_callback_query(call.id);return
+  if action!='buy':
+   bot.answer_callback_query(call.id,'Невідома дія.',show_alert=True);return
+  target=int(parts[2]);key=f"telegram:bag_expansion:{uid}:{call.message.chat.id}:{call.message.message_id}:{target}";res=purchase_crystal_bag_expansion(uid,target,key)
   if res.get('success'):
    bot.edit_message_text(f"✅ Сумку розширено до {res['current_capacity']} слотів.\nСписано: {res['price']} 💎\nБаланс: {res['balance']} 💎",call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Готово')
   else:
@@ -147,6 +163,15 @@ def register_crystal_shop_handlers(bot):
   if action=='buy':
    iid=int(parts[2]);qty=int(parts[3])
    if not _active_shop_callback(call,item_id=iid,quantity=qty,stages=('confirm',)):
+    _reject_stale_shop_callback(bot,call);return
+   p=preview_crystal_shop_purchase(uid,iid,qty)
+   if not p['success']:
+    bot.answer_callback_query(call.id,p['message'],show_alert=True);return
+   k=types.InlineKeyboardMarkup();k.row(types.InlineKeyboardButton('✅ Так, купити',callback_data=f'cs:execute:{iid}:{qty}'),types.InlineKeyboardButton('↩️ Ні, повернутися',callback_data=f'cs:review:{iid}:{qty}'));k.row(types.InlineKeyboardButton('❌ Скасувати',callback_data='cs:cancel'))
+   bot.edit_message_text(f"⚠️ Остаточне підтвердження\n\nПредмет: {p['name']}\nКількість: {qty}\nБуде списано: {p['total_price']} 💎\nБаланс після покупки: {p['balance_after']} 💎",call.message.chat.id,call.message.message_id,reply_markup=k);_remember_shop_message(uid,call.message.chat.id,call.message.message_id,iid,qty,'final_confirm');bot.answer_callback_query(call.id);return
+  if action=='execute':
+   iid=int(parts[2]);qty=int(parts[3])
+   if not _active_shop_callback(call,item_id=iid,quantity=qty,stages=('final_confirm',)):
     _reject_stale_shop_callback(bot,call);return
    key=f"telegram:crystal_shop:{uid}:{call.message.chat.id}:{call.message.message_id}";res=purchase_crystal_shop_item(uid,iid,qty,key)
    if res['success']:
