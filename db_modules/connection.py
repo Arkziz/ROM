@@ -203,10 +203,10 @@ def seed_items():
     Rune of Strength definition for ID 301 were retired in ROM 9.0.13b.
     """
     items = [
-        (201, "🔴 Мале зілля здоров'я", "potion_hp", "common", "potion", None, 1, 10, 1.00, 0, 0, 0, 0, 0, 0, 0),
-        (202, "🔵 Мале зілля мани", "potion_mp", "common", "potion", None, 1, 10, 0.80, 0, 0, 0, 0, 0, 0, 0),
-        (203, "🔴 Середнє зілля здоров'я", "potion_hp_medium", "common", "potion", None, 1, 10, 3.00, 0, 0, 0, 0, 0, 0, 0),
-        (204, "🔵 Середнє зілля мани", "potion_mp_medium", "common", "potion", None, 1, 10, 2.50, 0, 0, 0, 0, 0, 0, 0),
+        (401, "🔴 Мале зілля здоров'я", "potion_hp", "common", "potion", None, 1, 10, 1.00, 0, 0, 0, 0, 0, 0, 0),
+        (402, "🔵 Мале зілля мани", "potion_mp", "common", "potion", None, 1, 10, 0.80, 0, 0, 0, 0, 0, 0, 0),
+        (403, "🔴 Середнє зілля здоров'я", "potion_hp_medium", "common", "potion", None, 1, 10, 3.00, 0, 0, 0, 0, 0, 0, 0),
+        (404, "🔵 Середнє зілля мани", "potion_mp_medium", "common", "potion", None, 1, 10, 2.50, 0, 0, 0, 0, 0, 0, 0),
     ]
 
     for item in items:

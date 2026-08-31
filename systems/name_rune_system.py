@@ -3,7 +3,7 @@ from __future__ import annotations
 import re,sqlite3,unicodedata
 from datetime import datetime,timezone
 from pathlib import Path
-DB_PATH=Path(__file__).resolve().parents[1]/'game.db';NAME_RUNE_ITEM_ID=10000;NAME_RUNE_PRICE=50
+DB_PATH=Path(__file__).resolve().parents[1]/'game.db';NAME_RUNE_ITEM_ID=502;NAME_RUNE_PRICE=50
 def _conn(path=None):
  c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
 def normalize_name(value):return unicodedata.normalize('NFKC',str(value or '').strip())
@@ -17,15 +17,15 @@ def init_name_rune_system(db_path=None):
  try:
   row=c.execute('SELECT name FROM items WHERE id=?',(NAME_RUNE_ITEM_ID,)).fetchone()
   if row and str(row[0])!='✍️ Руна імені':raise RuntimeError('Item ID 10000 is occupied by another item')
-  cols={r[1] for r in c.execute('PRAGMA table_info(items)')};values={'id':10000,'name':'✍️ Руна імені','type':'material','rarity':'epic','category':'material','max_stack':999,'sell_price':0,'buy_price':0,'tradeable':0,'premium_bound':1}
+  cols={r[1] for r in c.execute('PRAGMA table_info(items)')};values={'id':502,'name':'✍️ Руна імені','type':'material','rarity':'epic','category':'material','max_stack':999,'sell_price':0,'buy_price':0,'tradeable':0,'premium_bound':1}
   names=[k for k in values if k in cols]
   if not row:c.execute('INSERT INTO items('+','.join(names)+') VALUES('+','.join('?' for _ in names)+')',[values[k] for k in names])
-  c.executescript("""CREATE TABLE IF NOT EXISTS character_name_changes(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,old_name TEXT NOT NULL,new_name TEXT NOT NULL,normalized_new_name TEXT NOT NULL,inventory_id INTEGER NOT NULL,item_id INTEGER NOT NULL,idempotency_key TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,FOREIGN KEY(item_id) REFERENCES items(id) ON DELETE RESTRICT);CREATE INDEX IF NOT EXISTS ix_character_name_changes_user ON character_name_changes(user_id,id DESC);""");c.commit();return {'success':True,'item_id':10000}
+  c.executescript("""CREATE TABLE IF NOT EXISTS character_name_changes(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,old_name TEXT NOT NULL,new_name TEXT NOT NULL,normalized_new_name TEXT NOT NULL,inventory_id INTEGER NOT NULL,item_id INTEGER NOT NULL,idempotency_key TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,FOREIGN KEY(item_id) REFERENCES items(id) ON DELETE RESTRICT);CREATE INDEX IF NOT EXISTS ix_character_name_changes_user ON character_name_changes(user_id,id DESC);""");c.commit();return {'success':True,'item_id':502}
  finally:c.close()
 def get_name_rune_inventory(user_id,db_path=None):
  c=_conn(db_path)
  try:
-  row=c.execute('SELECT id,quantity FROM inventory WHERE user_id=? AND item_id=? AND quantity>0 ORDER BY id LIMIT 1',(int(user_id),10000)).fetchone();return dict(row) if row else None
+  row=c.execute('SELECT id,quantity FROM inventory WHERE user_id=? AND item_id=? AND quantity>0 ORDER BY id LIMIT 1',(int(user_id),502)).fetchone();return dict(row) if row else None
  finally:c.close()
 def preview_name_change(user_id,new_name,db_path=None):
  v=validate_name(new_name)
@@ -60,6 +60,6 @@ def rename_with_name_rune(user_id,new_name,idempotency_key,db_path=None):
   if not rune:c.rollback();return {'success':False,'message':'Руну імені не знайдено в інвентарі.'}
   if int(rune['quantity'])==1:c.execute('DELETE FROM inventory WHERE id=? AND user_id=?',(int(rune['id']),uid))
   else:c.execute('UPDATE inventory SET quantity=quantity-1 WHERE id=? AND user_id=? AND quantity>1',(int(rune['id']),uid))
-  c.execute('UPDATE users SET character_name=? WHERE user_id=?',(v['name'],uid));now=datetime.now(timezone.utc).isoformat();cur=c.execute('INSERT INTO character_name_changes(user_id,old_name,new_name,normalized_new_name,inventory_id,item_id,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?)',(uid,old,v['name'],v['key'],int(rune['id']),10000,key,now));cid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'change_id':cid,'old_name':old,'new_name':v['name']}
+  c.execute('UPDATE users SET character_name=? WHERE user_id=?',(v['name'],uid));now=datetime.now(timezone.utc).isoformat();cur=c.execute('INSERT INTO character_name_changes(user_id,old_name,new_name,normalized_new_name,inventory_id,item_id,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?)',(uid,old,v['name'],v['key'],int(rune['id']),502,key,now));cid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'change_id':cid,'old_name':old,'new_name':v['name']}
  except Exception:c.rollback();raise
  finally:c.close()

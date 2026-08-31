@@ -176,7 +176,7 @@ def format_universal_drop_simulation(result):
     if result["rune_stats"]:
         lines.extend(("","Характеристики рун:")); lines.extend(f"• {k}: {v}" for k,v in sorted(result["rune_stats"].items()))
     if result["potion_items"]:
-        names={201:"Мале HP",202:"Мале MP",203:"Середнє HP",204:"Середнє MP"}; lines.extend(("","Зілля:")); lines.extend(f"• {names.get(k,k)}: {v}" for k,v in sorted(result["potion_items"].items()))
+        names={401:"Мале HP",402:"Мале MP",403:"Середнє HP",404:"Середнє MP"}; lines.extend(("","Зілля:")); lines.extend(f"• {names.get(k,k)}: {v}" for k,v in sorted(result["potion_items"].items()))
     lines.extend(("",f"Усього результатів: {result['total_results']}","DB writes: 0","Generated equipment rows: 0"))
     return "\n".join(lines)
 

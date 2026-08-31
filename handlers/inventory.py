@@ -1070,7 +1070,7 @@ def get_category_items(user_id, category_key):
         except Exception:
             continue
 
-        if category == "material" or item_id in [401, 402]:
+        if category == "material" or item_id in [601, 602]:
             result.append(item)
 
     return result
@@ -1098,7 +1098,7 @@ def get_refine_material_description_text(item_id):
     except Exception:
         return ""
 
-    if item_id == 401:
+    if item_id == 601:
         return (
             "\nℹ️ Опис:\n"
             "🪨 Камінь Посилення використовується у Коваля для спроби заточки спорядження.\n\n"
@@ -1109,7 +1109,7 @@ def get_refine_material_description_text(item_id):
             "• шанс успіху залежить від поточного рівня заточки.\n"
         )
 
-    if item_id == 402:
+    if item_id == 602:
         return (
             "\nℹ️ Опис:\n"
             "💎 Руна Успіху — особлива руна для безпечної заточки.\n\n"
@@ -1120,7 +1120,7 @@ def get_refine_material_description_text(item_id):
         )
 
 
-    if item_id == 526:
+    if item_id == 726:
         return (
             "\nℹ️ Опис:\n"
             "🪙 Жетон Фіріуса — особливий матеріал для переробки рун у Рунного Майстра.\n\n"
@@ -1197,7 +1197,7 @@ def _inject_refine_material_description(text, inventory_id):
         if not item:
             return result
         item_id = int(item[1])
-        if item_id in (401, 402, 526):
+        if item_id in (601, 602, 726):
             result = result.replace("📦 Категорія: material", "📦 Категорія: Матеріали")
     except Exception:
         pass
@@ -1403,9 +1403,9 @@ def _inject_refine_material_description(text, inventory_id):
             return result
         item_id = int(item[1])
         category = str(item[5] or "") if len(item) > 5 else ""
-        if category == "rune" or 501 <= item_id <= 525:
+        if category == "rune" or 701 <= item_id <= 725:
             result = result.replace("📦 Категорія: rune", "📦 Категорія: Руни")
-        if item_id in (401, 402, 526, 527, 528):
+        if item_id in (601, 602, 726, 727, 728):
             result = result.replace(
                 "📦 Категорія: material",
                 "📦 Категорія: Матеріали",
@@ -1498,7 +1498,7 @@ def build_category_list(user_id, category_key, page=0):
     return result
 
 # ROM 17.28.1.3 NAME RUNE INVENTORY PRESENTATION
-_NAME_RUNE_ITEM_ID_17_28_1_3 = 10000
+_NAME_RUNE_ITEM_ID_17_28_1_3 = 502
 _base_build_item_details_before_name_rune_17_28_1_3 = build_item_details
 
 def build_item_details(user_id, inventory_id, back_category="all", page=0):
@@ -1565,7 +1565,7 @@ def get_category_items(user_id, category_key):
             category = str(item[5] or "").strip().lower()
         except Exception:
             continue
-        if item_id == 50000 or item_type == "consumable" or category == "consumable":
+        if item_id == 503 or item_type == "consumable" or category == "consumable":
             result.append(item)
     return sorted(result, key=lambda item: _inventory_ui_sort_key_17_7_1(item, include_category=False))
 

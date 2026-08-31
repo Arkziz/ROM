@@ -63,7 +63,7 @@ CLASS_CONFIGS = {
     }
 }
 
-CLASS_RESET_SPHERE_ITEM_ID = 301
+CLASS_RESET_SPHERE_ITEM_ID = 501
 
 
 def exported_names():

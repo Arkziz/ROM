@@ -1421,7 +1421,7 @@ def _auction_get_inventory_row(inventory_id, user_id=None):
 
 AUCTION_STACK_PAGE_SIZE = 8
 AUCTION_FORBIDDEN_AUCTION_ITEM_IDS = {
-    402,  # 💎 Руна Успіху — майбутній premium/crystal item, не продається на ринку.
+    602,  # 💎 Руна Успіху — майбутній premium/crystal item, не продається на ринку.
 }
 
 
@@ -1454,7 +1454,7 @@ def _auction_is_material_snapshot(snapshot):
     item_category = str(snapshot.get("item_category", "") or "").lower()
     name = str(snapshot.get("name", "") or snapshot.get("raw_name", "")).lower()
 
-    if item_id == 401:
+    if item_id == 601:
         return True
 
     if item_type in ["material", "refine_stone", "craft_material"]:
@@ -2352,7 +2352,7 @@ def _auction_collect_stack_description_lines(snapshot):
     item_id = _auction_int_or_none(snapshot.get("item_id"))
     name = str(snapshot.get("name") or snapshot.get("raw_name") or "")
 
-    if item_id == 401 or "Камінь Посилення" in name:
+    if item_id == 601 or "Камінь Посилення" in name:
         lines.append("ℹ️ Використовується у Коваля для спроби заточки спорядження.")
         lines.append("• Витрачається при кожній спробі заточки.")
         lines.append("• Не гарантує успіх.")
@@ -5353,8 +5353,8 @@ AUCTION_CATEGORY_RUNE = "rune"
 AUCTION_CATEGORY_CONSUMABLE = "consumable"
 AUCTION_ALLOWED_CATEGORIES.add(AUCTION_CATEGORY_RUNE)
 AUCTION_ALLOWED_CATEGORIES.add(AUCTION_CATEGORY_CONSUMABLE)
-AUCTION_PROTECTED_TRANSFER_ITEM_IDS = frozenset((301, 402, 526, 528, 10000))
-AUCTION_ALLOWED_SPECIAL_TRANSFER_ITEM_IDS = frozenset((401, 527))
+AUCTION_PROTECTED_TRANSFER_ITEM_IDS = frozenset((501, 602, 726, 728, 502))
+AUCTION_ALLOWED_SPECIAL_TRANSFER_ITEM_IDS = frozenset((601, 727))
 AUCTION_FORBIDDEN_AUCTION_ITEM_IDS = set(AUCTION_FORBIDDEN_AUCTION_ITEM_IDS) | set(AUCTION_PROTECTED_TRANSFER_ITEM_IDS)
 
 _auction_base_normalize_category_12_6_3c = normalize_auction_category
@@ -5380,7 +5380,7 @@ def _auction_is_rune_snapshot_12_6_3c(snapshot):
     item_id = _auction_item_id_12_6_3c(snapshot)
     item_type = str(snapshot.get("item_type") or "").strip().lower()
     item_category = str(snapshot.get("item_category") or "").strip().lower()
-    return (501 <= item_id <= 525) or item_type in ("rune", "stat_rune") or item_category in ("rune", "runes")
+    return (701 <= item_id <= 725) or item_type in ("rune", "stat_rune") or item_category in ("rune", "runes")
 
 
 def _auction_is_protected_transfer_snapshot_12_6_3c(snapshot):
@@ -5399,7 +5399,7 @@ def _auction_stack_category_matches(snapshot, category):
     is_rune = _auction_is_rune_snapshot_12_6_3c(snapshot)
     is_potion = _auction_is_potion_snapshot(snapshot)
     is_consumable = (
-        item_id == 50000
+        item_id == 503
         or item_type == "consumable"
         or item_category == "consumable"
     ) and not is_rune and not is_potion
@@ -5451,8 +5451,8 @@ def validate_inventory_stack_item_for_auction(user_id, inventory_id, category, q
     item_id = _auction_item_id_12_6_3c(snapshot)
     if _auction_is_protected_transfer_snapshot_12_6_3c(snapshot):
         names = {
-            301: "Сферу нового шляху", 402: "Руну Успіху",
-            526: "Жетони Фіріуса", 528: "Досконалий Екстрактор",
+            501: "Сферу нового шляху", 602: "Руну Успіху",
+            726: "Жетони Фіріуса", 728: "Досконалий Екстрактор",
             10000: "Руну імені",
         }
         return {"success": False, "message": f"❌ {names.get(item_id, 'Цей предмет')} не можна виставити на Торговий Дім."}

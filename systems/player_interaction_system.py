@@ -1135,8 +1135,8 @@ def expire_stale_player_trades(*, now=None, db_path=None):
     finally: conn.close()
 
 # ROM 12.5.0 PLAYER TRADE ITEM POLICY AND RESERVATIONS
-TRADE_BLOCKED_ITEM_IDS = frozenset((301, 402, 526, 528))
-TRADE_ALLOWED_SPECIAL_ITEM_IDS = frozenset((401, 527))
+TRADE_BLOCKED_ITEM_IDS = frozenset((501, 602, 726, 728))
+TRADE_ALLOWED_SPECIAL_ITEM_IDS = frozenset((601, 727))
 TRADE_BLOCKED_CATEGORIES = frozenset(("trash", "gray_loot", "grey_loot", "quest", "dev", "premium_bound"))
 TRADE_RESERVATION_TYPE = "player_trade"
 
@@ -1369,10 +1369,10 @@ def get_item_trade_policy(user_id, inventory_id, requested_quantity=1, *, trade_
 
         if item_id in TRADE_BLOCKED_ITEM_IDS:
             messages = {
-                301: "Сферу нового шляху не можна передавати.",
-                402: "Руну Успіху не можна передавати.",
-                526: "Жетони Фіріуса не можна передавати.",
-                528: "Досконалий Екстрактор не можна передавати.",
+                501: "Сферу нового шляху не можна передавати.",
+                602: "Руну Успіху не можна передавати.",
+                726: "Жетони Фіріуса не можна передавати.",
+                728: "Досконалий Екстрактор не можна передавати.",
             }
             return _trade_policy_result(False, "protected_item", messages[item_id], item_id=item_id)
         if category in TRADE_BLOCKED_CATEGORIES or "trash" in category:
@@ -2068,7 +2068,7 @@ def _trade_commit_validate_item_12_7_0(conn, trade_id, offer):
     reserved = conn.execute("SELECT COALESCE(SUM(quantity),0) FROM inventory_reservations WHERE inventory_id=? AND user_id=? AND reservation_type=? AND reference_id=?", (int(offer["inventory_id"]), int(offer["owner_user_id"]), TRADE_RESERVATION_TYPE, int(trade_id))).fetchone()[0]
     if int(reserved or 0) != quantity: return None, "Резервування предмета змінилося."
     item = conn.execute("SELECT * FROM items WHERE id=?", (int(inv["item_id"]),)).fetchone()
-    if not item or int(inv["item_id"]) in (301, 402, 526, 528) or str(item["category"] or "").lower() == "trash": return None, "Предмет заборонено передавати."
+    if not item or int(inv["item_id"]) in (501, 602, 726, 728) or str(item["category"] or "").lower() == "trash": return None, "Предмет заборонено передавати."
     equipped = conn.execute("SELECT 1 FROM equipment_slots WHERE user_id=? AND inventory_id=?", (int(offer["owner_user_id"]), int(offer["inventory_id"]))).fetchone()
     if equipped: return None, "Екіпірований предмет не можна передати."
     return (dict(inv), dict(item)), None
@@ -2227,9 +2227,9 @@ def _player_trade_item_category_12_6_4(item):
         return "equipment"
     category = str(snapshot.get("category") or "").strip().lower()
     item_id = int(snapshot.get("item_id") or 0)
-    if 501 <= item_id <= 525 or category in ("rune", "runes", "stat_rune"):
+    if 701 <= item_id <= 725 or category in ("rune", "runes", "stat_rune"):
         return "rune"
-    if item_id == 50000 or category == "consumable":
+    if item_id == 503 or category == "consumable":
         return "consumable"
     if category in ("potion", "potions", "heal_potion", "mana_potion"):
         return "potion"

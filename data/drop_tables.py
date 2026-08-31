@@ -89,7 +89,7 @@ DROP_RULES = (
         "enabled": True,
         "production_enabled": True,
         "resolver": "static_item",
-        "item_id": 401,
+        "item_id": 601,
         "enemy": {
             "normal": {"chance": 0.08},
             "elite": {"chance": 0.20},
@@ -142,9 +142,9 @@ DROP_RULES = (
             "boss": {"chance": 0.45},
         },
         "item_weights": {
-            "normal": ((201, 4 / 6), (202, 2 / 6)),
-            "elite": ((201, 10 / 19), (202, 6 / 19), (203, 2 / 19), (204, 1 / 19)),
-            "boss": ((201, 20 / 45), (202, 12 / 45), (203, 8 / 45), (204, 5 / 45)),
+            "normal": ((401, 4 / 6), (402, 2 / 6)),
+            "elite": ((401, 10 / 19), (402, 6 / 19), (403, 2 / 19), (404, 1 / 19)),
+            "boss": ((401, 20 / 45), (402, 12 / 45), (403, 8 / 45), (404, 5 / 45)),
         },
         "quantity": {"min": 1, "max": 1},
         "max_per_kill": 1,
@@ -159,7 +159,7 @@ DROP_RULES = (
         "enabled": False,
         "production_enabled": False,
         "resolver": "static_item",
-        "item_id": 527,
+        "item_id": 727,
         "enemy": {
             "normal": {"chance": 0.0},
             "elite": {"chance": 0.0},
@@ -179,7 +179,7 @@ DROP_RULES = (
         "enabled": False,
         "production_enabled": False,
         "resolver": "static_item",
-        "item_id": 528,
+        "item_id": 728,
         "enemy": {
             "normal": {"chance": 0.0},
             "elite": {"chance": 0.0},
@@ -199,7 +199,7 @@ DROP_RULES = (
         "enabled": False,
         "production_enabled": False,
         "resolver": "static_item",
-        "item_id": 402,
+        "item_id": 602,
         "enemy": {
             "normal": {"chance": 0.0},
             "elite": {"chance": 0.0},
@@ -231,16 +231,16 @@ DROP_RULES_BY_ID = {rule["rule_id"]: rule for rule in DROP_RULES}
 # remain in DROP_RULES so future sources can be configured without scattering
 # item IDs through gameplay code.
 SPECIAL_MATERIAL_MOB_DROP_POLICY_VERSION = "11.7.0"
-SPECIAL_MATERIAL_MOB_DROP_DENYLIST = frozenset((301, 402, 527, 528, 10000))
+SPECIAL_MATERIAL_MOB_DROP_DENYLIST = frozenset((501, 602, 727, 728, 502))
 SPECIAL_MATERIAL_SOURCE_POLICY = {
-    402: {
+    602: {
         "rule_id": "success_rune",
         "name": "Руна Успіху",
         "mob_drop": False,
         "primary_source": "future_crystal_shop",
         "bound_policy": "future_decision_required",
     },
-    527: {
+    727: {
         "rule_id": "simple_extractor",
         "name": "Простий Екстрактор",
         "mob_drop": False,
@@ -249,7 +249,7 @@ SPECIAL_MATERIAL_SOURCE_POLICY = {
         "candidate_enabled": False,
         "bound_policy": "tradeable_current_item_policy",
     },
-    528: {
+    728: {
         "rule_id": "perfect_extractor",
         "name": "Досконалий Екстрактор",
         "mob_drop": False,

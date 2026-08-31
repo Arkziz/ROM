@@ -773,7 +773,7 @@ def use_class_reset_sphere(user_id):
     from .inventory import count_user_item, consume_user_item_by_item_id
     from .character import set_character_class, grant_class_change_available
     
-    CLASS_RESET_SPHERE_ITEM_ID = 900
+    CLASS_RESET_SPHERE_ITEM_ID = 501
     
     init_class_reset_sphere()
     

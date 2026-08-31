@@ -577,7 +577,7 @@ def validate_special_material_drop_policy(rules=None):
             # The Simple Extractor retains a documented disabled 1% boss
             # candidate. It is safe only while both enable flags remain False.
             allowed_candidate = (
-                item_id == 527
+                item_id == 727
                 and enemy_type == "boss"
                 and chance == policy.get("boss_candidate_chance")
                 and not rule.get("enabled")

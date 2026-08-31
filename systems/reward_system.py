@@ -268,7 +268,7 @@ def get_random_quantity(value):
 # 🪨 Камінь Посилення падає з мобів.
 # 💎 Руна Успіху НЕ падає з мобів — буде за кристали пізніше.
 
-REFINE_STONE_ITEM_ID = 401
+REFINE_STONE_ITEM_ID = 601
 NORMAL_REFINE_STONE_DROP_CHANCE = 0.08
 ELITE_REFINE_STONE_DROP_CHANCE = 0.20
 

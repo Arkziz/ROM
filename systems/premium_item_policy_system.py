@@ -7,10 +7,10 @@ from pathlib import Path
 DB_PATH=Path(__file__).resolve().parents[1]/'game.db'
 SOURCE_DEV='dev_command';SOURCE_SHOP='crystal_shop';SOURCE_MILESTONE='level_milestone_reward';SOURCE_ADMIN='admin_compensation'
 PREMIUM_ITEM_POLICY={
- 301:{'name':'Сфера нового шляху','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_MILESTONE,SOURCE_ADMIN)),'milestone_levels':frozenset((5,10))},
- 402:{'name':'Руна Успіху','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
- 528:{'name':'Досконалий Екстрактор','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
- 10000:{'name':'Руна імені','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
+ 501:{'name':'Сфера нового шляху','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_MILESTONE,SOURCE_ADMIN)),'milestone_levels':frozenset((5,10))},
+ 602:{'name':'Руна Успіху','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
+ 728:{'name':'Досконалий Екстрактор','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
+ 502:{'name':'Руна імені','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
 }
 DENIED_TRANSFER_ITEM_IDS=frozenset(PREMIUM_ITEM_POLICY)
 

@@ -12,7 +12,7 @@ SLOTS=("main_hand","off_hand","helmet","shoulders","chest","gloves","legs","boot
 ARMOR_BY_CLASS={"warrior":"chain","knight":"plate","scout":"leather","rogue":"leather","mage":"cloth","priest":"cloth"}
 RARITY_MULT={"common":1.0,"uncommon":1.35,"rare":1.85,"epic":2.60}
 SELL_MULT={"common":0.30,"uncommon":0.90,"rare":2.25,"epic":6.00}
-POTIONS={201:("HP potion",38,"hp_potion"),202:("Large HP potion",77,"hp_potion"),203:("MP potion",38,"mp_potion"),204:("Large MP potion",77,"mp_potion")}
+POTIONS={401:("HP potion",38,"hp_potion"),402:("Large HP potion",77,"hp_potion"),403:("MP potion",38,"mp_potion"),404:("Large MP potion",77,"mp_potion")}
 
 @dataclass
 class VictoryLootResult:
@@ -58,7 +58,7 @@ class SimulationLootEquipmentCityService:
             award=None
             if resolver=="equipment":award=self._equipment_award(mob,payload);out.equipment+=1
             elif resolver=="rune":
-                stat=str(payload.get("stat","STA")).upper();level=int(payload.get("level",1));item_id=501+("STR","STA","DEX","INT","WIS").index(stat)*5+level-1;award=self._stack_award(item_id)
+                stat=str(payload.get("stat","STA")).upper();level=int(payload.get("level",1));item_id=701+("STR","STA","DEX","INT","WIS").index(stat)*5+level-1;award=self._stack_award(item_id)
             elif payload.get("item_id") is not None:award=self._stack_award(int(payload["item_id"]),int(payload.get("quantity",1)))
             if award is None:continue
             applied=self.engine.award(award,True);out.rolled+=award.quantity;out.awarded+=applied.awarded;out.lost+=applied.lost

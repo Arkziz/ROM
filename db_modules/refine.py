@@ -9,8 +9,8 @@ from .connection import conn, cursor
 # REFINE SYSTEM CONSTANTS
 # ==============================
 
-REFINE_STONE_ITEM_ID = 401
-SUCCESS_RUNE_ITEM_ID = 402
+REFINE_STONE_ITEM_ID = 601
+SUCCESS_RUNE_ITEM_ID = 602
 
 
 # ==============================
