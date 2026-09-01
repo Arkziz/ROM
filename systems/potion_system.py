@@ -560,18 +560,21 @@ def use_potion_from_inventory(user_id, inventory_id):
 
 # ROM 17.19.3 ALCHEMIST POTION BUY SELL
 def get_alchemist_potion_stock_17_19_3(user_id):
-    """Return total, reserved and sellable quantities for potion IDs 201-204."""
+    """Return total, reserved and sellable quantities for canonical Alchemist potions."""
     from db_modules.connection import cursor
     try:
         from systems.player_interaction_system import get_inventory_reserved_quantity
     except Exception:
         get_inventory_reserved_quantity = None
+    potion_ids = tuple(int(item_id) for item_id in ALCHEMIST_SHOP)
+    placeholders = ",".join("?" for _ in potion_ids)
     rows = cursor.execute(
-        """SELECT inv.id, inv.item_id, COALESCE(inv.quantity,0),
-                  it.name, COALESCE(it.sell_price,0)
-           FROM inventory inv JOIN items it ON it.id=inv.item_id
-           WHERE inv.user_id=? AND inv.item_id IN (201,202,203,204)
-           ORDER BY inv.item_id, inv.id""", (int(user_id),)
+        f"""SELECT inv.id, inv.item_id, COALESCE(inv.quantity,0),
+                   it.name, COALESCE(it.sell_price,0)
+            FROM inventory inv JOIN items it ON it.id=inv.item_id
+            WHERE inv.user_id=? AND inv.item_id IN ({placeholders})
+            ORDER BY inv.item_id, inv.id""",
+        (int(user_id), *potion_ids),
     ).fetchall()
     grouped = {}
     for inventory_id,item_id,quantity,name,sell_price in rows:

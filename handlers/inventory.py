@@ -454,7 +454,7 @@ def build_inventory_home(user_id):
         kb.add(*row)
 
     kb.add(types.InlineKeyboardButton(
-        text="👤 Профіль",
+        text="🔙 Профіль",
         callback_data="inv_profile"
     ))
 
@@ -825,6 +825,11 @@ def register_inventory_handlers(bot):
         from handlers.profile import build_character_text, profile_inline_kb
 
         bot.answer_callback_query(call.id)
+        bot.send_message(
+            call.message.chat.id,
+            "👤 Розділ персонажа відкрито",
+            reply_markup=profile_kb()
+        )
         bot.send_message(
             call.message.chat.id,
             build_character_text(call.from_user.id),
