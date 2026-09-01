@@ -453,6 +453,11 @@ def build_inventory_home(user_id):
     if row:
         kb.add(*row)
 
+    kb.add(types.InlineKeyboardButton(
+        text="👤 Профіль",
+        callback_data="inv_profile"
+    ))
+
     return text, kb
 
 
@@ -813,6 +818,17 @@ def register_inventory_handlers(bot):
             call.message.chat.id,
             text,
             reply_markup=kb if kb else profile_kb()
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "inv_profile")
+    def inventory_profile_callback(call):
+        from handlers.profile import build_character_text, profile_inline_kb
+
+        bot.answer_callback_query(call.id)
+        bot.send_message(
+            call.message.chat.id,
+            build_character_text(call.from_user.id),
+            reply_markup=profile_inline_kb(active_tab="character")
         )
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("invcat:"))

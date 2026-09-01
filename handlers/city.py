@@ -391,7 +391,7 @@ def build_alchemist_sell_list_17_19_3(user_id):
     else:
         text+="Оберіть зілля:\n"
         for r in available: kb.add(types.InlineKeyboardButton(f"{r['name']} ×{r['available']} — {format_gold(r['sell_price'])}/шт.",callback_data=f"alchemist:sellitem:{r['item_id']}"))
-    kb.add(types.InlineKeyboardButton("🔙 До Алхіміка",callback_data="alchemist:root")); return text,kb
+    return text, kb
 
 def build_alchemist_sell_preview_17_19_3(user_id,item_id,quantity=1):
     potion = POTIONS.get(int(item_id))
