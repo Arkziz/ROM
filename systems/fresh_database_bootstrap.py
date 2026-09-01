@@ -9,6 +9,7 @@ from __future__ import annotations
 import importlib
 
 INITIALIZERS = (
+    ("systems.item_id_allocator_system", "init_item_id_allocator_system"),
     ("db_modules.daily_compat", "init_daily_quest_system"),
     ("db_modules.refine", "init_refine_system"),
     ("db_modules.shop", "init_shop_preview_system"),

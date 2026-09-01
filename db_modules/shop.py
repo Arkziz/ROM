@@ -4,6 +4,7 @@ Shop system and class-based equipment restrictions
 """
 
 from .connection import conn, cursor, SLOT_ORDER
+from systems.item_id_allocator_system import allocate_shop_preview_item_id, promote_shop_preview_item
 from data.equipment_profiles import (
     EQUIPMENT_SLOTS,
     MAIN_HAND_PROFILES,
@@ -297,8 +298,10 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
             weapon_min_damage = min_dmg
             weapon_max_damage = max_dmg
 
+    item_id = allocate_shop_preview_item_id(conn)
     cursor.execute("""
     INSERT INTO items (
+        id,
         name,
         type,
         rarity,
@@ -326,8 +329,9 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
         shop_preview_owner,
         shop_preview_price
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
+        item_id,
         name,
         type_,
         rarity,
@@ -356,7 +360,6 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
         price
     ))
 
-    item_id = cursor.lastrowid
     conn.commit()
 
     return {
@@ -689,7 +692,8 @@ def purchase_shop_preview_item(user_id, item_id):
         if not row:
             conn.rollback()
             return (False, "❌ Предмет не знайдено в магазині!")
-        current_item_id = int(row[0])
+        preview_item_id = int(row[0])
+        current_item_id = promote_shop_preview_item(conn, preview_item_id)
         name = str(row[1] or "Предмет")
         price = float(row[2] or 0)
         wallet_row = cursor.execute(
@@ -717,6 +721,7 @@ def purchase_shop_preview_item(user_id, item_id):
         if changed != 1:
             conn.rollback()
             return (False, "❌ Баланс змінився. Покупку скасовано.")
+        cursor.execute("DELETE FROM items WHERE id=?", (preview_item_id,))
         conn.commit()
         return (True, f"✅ Куплено {name} за {price} золота!")
     except Exception as error:
@@ -895,8 +900,10 @@ def populate_class_shop_for_user(user_id):
         # Calculate price based on item level
         base_price = 100 * item.get("item_level", 1)
         
+        item_id = allocate_shop_preview_item_id(conn)
         cursor.execute("""
         INSERT INTO items (
+            id,
             name, type, rarity, category, slot_key, max_stack,
             bonus_str, bonus_dex, bonus_int, bonus_wis, bonus_sta,
             pdef, mdef, item_level, armor_type,
@@ -905,8 +912,9 @@ def populate_class_shop_for_user(user_id):
             weapon_attack_type, weapon_hands,
             shop_preview_owner, shop_preview_price,
             is_generated, item_subtype, sell_price
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
+            item_id,
             item.get("name", "Item"),
             item.get("type", "equipment"),
             item.get("rarity", "common"),

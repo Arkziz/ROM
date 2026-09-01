@@ -6,6 +6,7 @@
 import sqlite3
 
 from .connection import conn, cursor, DEFAULT_BAG_SLOTS, SLOT_ORDER
+from systems.item_id_allocator_system import allocate_generated_item_id
 
 from .equipment import ensure_equipment_slots
 
@@ -1268,8 +1269,10 @@ def create_dev_armor_item_for_test(user_id, armor_type, slot_key="chest", item_l
 
     sell_price = get_dynamic_sell_price(item_level, rarity)
 
+    item_id = allocate_generated_item_id(conn)
     cursor.execute("""
     INSERT INTO items (
+        id,
         name,
         type,
         rarity,
@@ -1295,8 +1298,9 @@ def create_dev_armor_item_for_test(user_id, armor_type, slot_key="chest", item_l
         weapon_attack_type,
         armor_type
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
+        item_id,
         name,
         slot_key,
         rarity,
@@ -1323,7 +1327,6 @@ def create_dev_armor_item_for_test(user_id, armor_type, slot_key="chest", item_l
         armor_type
     ))
 
-    item_id = cursor.lastrowid
 
     cursor.execute("""
     INSERT INTO inventory (
@@ -1461,8 +1464,10 @@ def create_dev_weapon_item_for_test(user_id, item_profile, item_level=None, rari
             weapon_min_damage = min_dmg
             weapon_max_damage = max_dmg
 
+    item_id = allocate_generated_item_id(conn)
     cursor.execute("""
     INSERT INTO items (
+        id,
         name,
         type,
         rarity,
@@ -1488,8 +1493,9 @@ def create_dev_weapon_item_for_test(user_id, item_profile, item_level=None, rari
         weapon_attack_type,
         armor_type
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
+        item_id,
         name,
         type_,
         rarity,
@@ -1516,7 +1522,6 @@ def create_dev_weapon_item_for_test(user_id, item_profile, item_level=None, rari
         ""
     ))
 
-    item_id = cursor.lastrowid
 
     cursor.execute("""
     INSERT INTO inventory (
