@@ -4540,7 +4540,9 @@ def get_auction_lots_for_buy_search(buyer_user_id, search_text, sort_key="new", 
 # ==============================
 
 AUCTION_HISTORY_PAGE_SIZE = 8
-AUCTION_PRICE_HISTORY_LIMIT = 10
+AUCTION_PRICE_HISTORY_RECENT_DISPLAY_LIMIT = 10
+AUCTION_USER_HISTORY_MAX_RECORDS = 100
+AUCTION_HISTORY_MIN_RETENTION_DAYS = 60
 
 
 def _auction_table_columns_v1(table_name):
@@ -4603,6 +4605,9 @@ def get_user_auction_history(user_id, mode="all", limit=8, offset=0):
 
     limit = max(1, min(50, limit))
     offset = max(0, offset)
+    if offset >= AUCTION_USER_HISTORY_MAX_RECORDS:
+        return []
+    limit = min(limit, AUCTION_USER_HISTORY_MAX_RECORDS - offset)
 
     sold_statuses = _auction_sold_statuses_v1()
     params = list(sold_statuses)
@@ -4675,14 +4680,12 @@ def get_auction_lot_market_price_stats(lot_id):
     WHERE status IN (?, ?)
       AND {name_expr}=?
     ORDER BY COALESCE({date_col}, created_at) DESC, id DESC
-    LIMIT ?
     """
 
     cursor.execute(sql, (
         AUCTION_STATUS_SOLD_UNCLAIMED,
         AUCTION_STATUS_SOLD_CLAIMED,
         norm,
-        AUCTION_PRICE_HISTORY_LIMIT,
     ))
     rows = cursor.fetchall()
 

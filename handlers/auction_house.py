@@ -1976,9 +1976,14 @@ def _auction_register_sell_review_before_price_handlers_v1(bot):
         state = AUCTION_SELL_REVIEW_STATE.get(user_id) or {}
         step = state.get("step")
 
-        if text == AUCTION_BACK_TO_MENU_BUTTON:
-            _auction_clear_sell_review_state_v1(user_id)
+        if text in (AUCTION_MENU_BUTTON, AUCTION_BACK_TO_MENU_BUTTON):
+            clear_auction_sell_state(user_id)
             bot.send_message(message.chat.id, build_auction_house_text(user_id), reply_markup=auction_house_kb())
+            return
+
+        if text in (AUCTION_BACK_TO_CITY_BUTTON, "🏙️ Місто", "🔙 Місто"):
+            clear_auction_sell_state(user_id)
+            bot.send_message(message.chat.id, "🏙️ Місто", reply_markup=get_city_reply_keyboard())
             return
 
         if text == AUCTION_CANCEL_BUTTON:
@@ -3141,6 +3146,7 @@ def _auction_register_back_to_menu_callback_v1(bot):
     @bot.callback_query_handler(func=lambda call: call.data == "ah_menu")
     def auction_back_to_menu_callback_v1(call):
         user_id = call.from_user.id
+        clear_auction_sell_state(user_id)
         _auction_clear_runtime_states_v1(user_id)
 
         try:
