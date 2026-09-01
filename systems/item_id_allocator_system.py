@@ -70,3 +70,20 @@ def promote_shop_preview_item(conn,preview_item_id):
     conn.execute("INSERT INTO items("+",".join('"'+c+'"' for c in columns)+") VALUES("+",".join('?' for _ in columns)+")",values)
     record_item_id_mapping(conn,preview_item_id,target,"shop_preview_purchase","18.1.9a")
     return target
+def recover_stranded_preview_item(conn,source_item_id):
+    """Move an already-purchased item out of preview namespace atomically."""
+    source_item_id=int(source_item_id)
+    row=conn.execute("SELECT * FROM items WHERE id=? AND shop_preview_owner IS NULL AND COALESCE(shop_preview_price,0)=0",(source_item_id,)).fetchone()
+    if not row: raise RuntimeError("Stranded preview item not found")
+    columns=[str(r[1]) for r in conn.execute("PRAGMA table_info(items)")]
+    target=allocate_generated_item_id(conn)
+    values=list(row); values[columns.index("id")]=target
+    conn.execute("INSERT INTO items("+",".join('"'+c+'"' for c in columns)+") VALUES("+",".join('?' for _ in columns)+")",values)
+    reference_columns=(("auction_lots","item_ref_id"),("character_name_changes","item_id"),("crystal_shop_purchases","item_id"),("inventory","item_id"),("inventory_runes","rune_item_id"),("player_trade_offers","item_id"),("premium_item_grants","item_id"),("refine_attempts","item_id"))
+    for table,column in reference_columns:
+        known={str(r[1]) for r in conn.execute('PRAGMA table_info("'+table+'")')}
+        if column in known: conn.execute(f'UPDATE "{table}" SET "{column}"=? WHERE "{column}"=?',(target,source_item_id))
+    record_item_id_mapping(conn,source_item_id,target,"shop_preview_purchase_recovery","18.1.9b")
+    conn.execute("DELETE FROM items WHERE id=?",(source_item_id,))
+    return target
+

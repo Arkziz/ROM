@@ -433,84 +433,24 @@ def cancel_common_equipment_shop_preview(user_id, item_id):
 
 
 def confirm_common_equipment_shop_preview(user_id, item_id):
-    """Підтверджує та завершує покупку preview предмета."""
-    from .player import get_wallet
-    from .inventory import get_bag_capacity, get_inventory_used_slots
+    """Canonical UI adapter for the atomic preview purchase path."""
     from .utils import format_gold
-    
-    init_shop_preview_system()
-
     preview = get_shop_preview_item(item_id, user_id)
-
     if not preview:
-        return {
-            "success": False,
-            "message": "❌ Попередній перегляд предмета не знайдено або застарів."
-        }
-
-    price = preview[24] or 0
-    name = preview[1]
-
-    gold = get_wallet(user_id)
-
-    if gold < price:
-        return {
-            "success": False,
-            "message": (
-                f"❌ Недостатньо золота.\n\n"
-                f"💳 Потрібно: {format_gold(price)}\n"
-                f"💰 У тебе: {format_gold(gold)}"
-            )
-        }
-
-    capacity = get_bag_capacity(user_id)
-    used_slots = get_inventory_used_slots(user_id)
-
-    if used_slots >= capacity:
-        return {
-            "success": False,
-            "message": "🎒 Сумка переповнена. Предмет не куплено."
-        }
-
-    cursor.execute("""
-    INSERT INTO inventory (
-        user_id,
-        item_id,
-        quantity,
-        durability
-    )
-    VALUES (?, ?, ?, ?)
-    """, (
-        user_id,
-        item_id,
-        1,
-        100
-    ))
-
-    cursor.execute("""
-    UPDATE users
-    SET gold = gold - ?
-    WHERE user_id=?
-    """, (price, user_id))
-
-    cursor.execute("""
-    UPDATE items
-    SET shop_preview_owner=NULL,
-        shop_preview_price=0
-    WHERE id=?
-    """, (item_id,))
-
-    conn.commit()
-
-    new_gold = get_wallet(user_id)
-
+        return {"success": False, "message": "❌ Попередній перегляд предмета не знайдено або застарів."}
+    price = float(preview[24] or 0)
+    name = str(preview[1] or "Предмет")
+    success, message = purchase_shop_preview_item(user_id, item_id)
+    if not success:
+        return {"success": False, "message": message}
+    from .player import get_wallet
     return {
         "success": True,
         "message": (
             f"✅ Куплено базове спорядження.\n\n"
             f"📦 {name}\n"
             f"💳 Сплачено: {format_gold(price)}\n"
-            f"💰 Залишилось: {format_gold(new_gold)}"
+            f"💰 Залишилось: {format_gold(get_wallet(user_id))}"
         )
     }
 
@@ -685,9 +625,9 @@ def purchase_shop_preview_item(user_id, item_id):
         row = cursor.execute(
             """SELECT id, name, shop_preview_price
                FROM items
-               WHERE id=? AND shop_preview_owner IS NOT NULL
+               WHERE id=? AND shop_preview_owner=?
                  AND shop_preview_price>0""",
-            (item_id,),
+            (item_id, user_id),
         ).fetchone()
         if not row:
             conn.rollback()
