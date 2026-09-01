@@ -137,7 +137,7 @@ AUCTION_SELL_BUTTON = "➕ Виставити товар"
 AUCTION_MY_LOTS_BUTTON = "📦 Мої лоти"
 AUCTION_UNCLAIMED_ITEMS_BUTTON = "📬 Незабрані предмети"
 AUCTION_SOLD_BUTTON = "💰 Завершені продажі"
-AUCTION_HISTORY_BUTTON = "📜 Історія"
+AUCTION_HISTORY_BUTTON = "📜 Історія аукціону"
 AUCTION_BACK_TO_CITY_BUTTON = "🔙 Місто"
 
 
@@ -335,7 +335,16 @@ AUCTION_NEXT_SELL_ITEMS_BUTTON = "➡️ Наступні предмети"
 
 
 def clear_auction_sell_state(user_id):
-    AUCTION_SELL_STATE.pop(user_id, None)
+    """Canonical idempotent cleanup for every auction sell input state."""
+    for state_name in (
+        "AUCTION_SELL_STATE",
+        "AUCTION_SELL_STATE_V2",
+        "AUCTION_SELL_INLINE_STATE",
+        "AUCTION_SELL_REVIEW_STATE",
+    ):
+        state = globals().get(state_name)
+        if isinstance(state, dict):
+            state.pop(user_id, None)
 
 
 def auction_sell_category_kb():
@@ -681,11 +690,7 @@ AUCTION_SELL_CATEGORY_LABELS = {
 
 
 def clear_auction_sell_state_v2(user_id):
-    AUCTION_SELL_STATE_V2.pop(user_id, None)
-    try:
-        clear_auction_sell_state(user_id)
-    except Exception:
-        pass
+    clear_auction_sell_state(user_id)
 
 
 def auction_sell_category_kb_v2():
@@ -1379,13 +1384,7 @@ AUCTION_SELL_INLINE_CATEGORY_BUTTONS = {
 
 
 def _auction_clear_all_sell_states_v1(user_id):
-    AUCTION_SELL_INLINE_STATE.pop(user_id, None)
-
-    for state_name in ["AUCTION_SELL_STATE", "AUCTION_SELL_STATE_V2"]:
-        try:
-            globals().get(state_name, {}).pop(user_id, None)
-        except Exception:
-            pass
+    clear_auction_sell_state(user_id)
 
 
 def _auction_clear_all_buy_states_v1(user_id):
@@ -1912,11 +1911,7 @@ AUCTION_SELL_REVIEW_STATE = {}
 
 
 def _auction_clear_sell_review_state_v1(user_id):
-    AUCTION_SELL_REVIEW_STATE.pop(user_id, None)
-    try:
-        _auction_clear_all_sell_states_v1(user_id)
-    except Exception:
-        pass
+    clear_auction_sell_state(user_id)
 
 
 def auction_sell_review_kb_v1(category, inventory_id, page=0):
