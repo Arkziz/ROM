@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-08-30 20:33:54 +03:00
+Created: 2026-09-02 00:20:06 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9168
-Scanned files: 7216
-Included files: 519
-Excluded files: 6697
-Included source size: 3,46 MB
+Scanned files: 7525
+Included files: 525
+Excluded files: 7000
+Included source size: 3,48 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 6691
+- excluded directory: 6994
 - excluded file name or pattern: 6
 - unsupported file type: 0
 
@@ -93,6 +93,10 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - migrations\__init__.py
 - migrations\000_runner_smoke_test.py
 - migrations\010_rune_system_data_model.py
+- migrations\020_fresh_database_schema_parity.py
+- migrations\030_static_item_namespace.py
+- migrations\040_generated_equipment_namespace.py
+- migrations\041_shop_preview_promotion_recovery.py
 - migrations\README.md
 - migrations\runner.py
 - requirements.txt
@@ -110,7 +114,9 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\energy_system.py
 - systems\equipment_system.py
 - systems\fatigue_artifact_system.py
+- systems\fresh_database_bootstrap.py
 - systems\guild_system.py
+- systems\item_id_allocator_system.py
 - systems\level_up_reward_system.py
 - systems\name_rune_system.py
 - systems\notifications.py
@@ -1074,7 +1080,7 @@ LAST WRITE: 2026-07-09 23:38:37
 ============================================================
 FILE: data\balance.py
 SIZE: 1432 bytes
-LAST WRITE: 2026-07-25 00:23:25
+LAST WRITE: 2026-08-31 23:16:20
 ============================================================
 
 """
@@ -1097,7 +1103,7 @@ CONTRACT_MOBS_EQUIVALENT = 20
 CONTRACT_TARGET_KILLS = 5
 DAILY_CONTRACT_LIMIT = 5
 DAILY_QUEST_ID_KILL_MONSTERS = 'kill_25_monsters'
-DAILY_QUEST_REWARD_ITEM_ID = 201
+DAILY_QUEST_REWARD_ITEM_ID = 401
 DAILY_QUEST_REWARD_QUANTITY = 3
 DAILY_QUEST_TARGET_KILLS = 25
 ENERGY_MAX = 40
@@ -1106,7 +1112,7 @@ HP_REGEN_MINUTES = 1
 HP_REGEN_PERCENT = 0.1
 RARITY_REPAIR_MULTIPLIERS = {'common': 1.0, 'uncommon': 2.5, 'rare': 7.0, 'epic': 18.0}
 REFINE_MATERIAL_MAX_STACK = 999
-REFINE_STONE_ITEM_ID = 401
+REFINE_STONE_ITEM_ID = 601
 
 
 def get_balance_constant(name, default=None):
@@ -1286,7 +1292,7 @@ def get_location_boss_definition(location_id):
 ============================================================
 FILE: data\classes.py
 SIZE: 2787 bytes
-LAST WRITE: 2026-07-25 00:11:14
+LAST WRITE: 2026-08-31 23:16:20
 ============================================================
 
 """
@@ -1354,7 +1360,7 @@ CLASS_CONFIGS = {
     }
 }
 
-CLASS_RESET_SPHERE_ITEM_ID = 301
+CLASS_RESET_SPHERE_ITEM_ID = 501
 
 
 def exported_names():
@@ -1365,8 +1371,8 @@ def exported_names():
 
 ============================================================
 FILE: data\drop_tables.py
-SIZE: 8934 bytes
-LAST WRITE: 2026-08-28 20:52:04
+SIZE: 8932 bytes
+LAST WRITE: 2026-08-31 23:16:20
 ============================================================
 
 """Canonical central-drop configuration model for ROM Stage 11.
@@ -1460,7 +1466,7 @@ DROP_RULES = (
         "enabled": True,
         "production_enabled": True,
         "resolver": "static_item",
-        "item_id": 401,
+        "item_id": 601,
         "enemy": {
             "normal": {"chance": 0.08},
             "elite": {"chance": 0.20},
@@ -1513,9 +1519,9 @@ DROP_RULES = (
             "boss": {"chance": 0.45},
         },
         "item_weights": {
-            "normal": ((201, 4 / 6), (202, 2 / 6)),
-            "elite": ((201, 10 / 19), (202, 6 / 19), (203, 2 / 19), (204, 1 / 19)),
-            "boss": ((201, 20 / 45), (202, 12 / 45), (203, 8 / 45), (204, 5 / 45)),
+            "normal": ((401, 4 / 6), (402, 2 / 6)),
+            "elite": ((401, 10 / 19), (402, 6 / 19), (403, 2 / 19), (404, 1 / 19)),
+            "boss": ((401, 20 / 45), (402, 12 / 45), (403, 8 / 45), (404, 5 / 45)),
         },
         "quantity": {"min": 1, "max": 1},
         "max_per_kill": 1,
@@ -1530,7 +1536,7 @@ DROP_RULES = (
         "enabled": False,
         "production_enabled": False,
         "resolver": "static_item",
-        "item_id": 527,
+        "item_id": 727,
         "enemy": {
             "normal": {"chance": 0.0},
             "elite": {"chance": 0.0},
@@ -1550,7 +1556,7 @@ DROP_RULES = (
         "enabled": False,
         "production_enabled": False,
         "resolver": "static_item",
-        "item_id": 528,
+        "item_id": 728,
         "enemy": {
             "normal": {"chance": 0.0},
             "elite": {"chance": 0.0},
@@ -1570,7 +1576,7 @@ DROP_RULES = (
         "enabled": False,
         "production_enabled": False,
         "resolver": "static_item",
-        "item_id": 402,
+        "item_id": 602,
         "enemy": {
             "normal": {"chance": 0.0},
             "elite": {"chance": 0.0},
@@ -1602,16 +1608,16 @@ DROP_RULES_BY_ID = {rule["rule_id"]: rule for rule in DROP_RULES}
 # remain in DROP_RULES so future sources can be configured without scattering
 # item IDs through gameplay code.
 SPECIAL_MATERIAL_MOB_DROP_POLICY_VERSION = "11.7.0"
-SPECIAL_MATERIAL_MOB_DROP_DENYLIST = frozenset((301, 402, 527, 528, 10000))
+SPECIAL_MATERIAL_MOB_DROP_DENYLIST = frozenset((501, 602, 727, 728, 502))
 SPECIAL_MATERIAL_SOURCE_POLICY = {
-    402: {
+    602: {
         "rule_id": "success_rune",
         "name": "Руна Успіху",
         "mob_drop": False,
         "primary_source": "future_crystal_shop",
         "bound_policy": "future_decision_required",
     },
-    527: {
+    727: {
         "rule_id": "simple_extractor",
         "name": "Простий Екстрактор",
         "mob_drop": False,
@@ -1620,7 +1626,7 @@ SPECIAL_MATERIAL_SOURCE_POLICY = {
         "candidate_enabled": False,
         "bound_policy": "tradeable_current_item_policy",
     },
-    528: {
+    728: {
         "rule_id": "perfect_extractor",
         "name": "Досконалий Екстрактор",
         "mob_drop": False,
@@ -2639,7 +2645,7 @@ RUNE_DROP_BALANCE_VERSION = "10.11.0"
 ============================================================
 FILE: data\runes.py
 SIZE: 3550 bytes
-LAST WRITE: 2026-07-31 22:31:37
+LAST WRITE: 2026-08-31 23:16:20
 ============================================================
 
 """Canonical Rune System data for ROM 10.x."""
@@ -2667,11 +2673,11 @@ RUNE_SLOT_LIMITS = {
     "necklace": 1,
     "ring": 1,
 }
-RUNE_ITEM_ID_START = 501
-RUNE_ITEM_ID_END = 525
-FIRIUS_TOKEN_ITEM_ID = 526
-RUNE_EXTRACTOR_ITEM_ID = 527
-PERFECT_RUNE_EXTRACTOR_ITEM_ID = 528
+RUNE_ITEM_ID_START = 701
+RUNE_ITEM_ID_END = 725
+FIRIUS_TOKEN_ITEM_ID = 726
+RUNE_EXTRACTOR_ITEM_ID = 727
+PERFECT_RUNE_EXTRACTOR_ITEM_ID = 728
 FIRIUS_TOKENS_PER_DAILY_REWARD = 10
 RUNE_FUSION_SOURCE_QUANTITY = 3
 RUNE_FUSION_TOKEN_QUANTITY = 1
@@ -2823,8 +2829,8 @@ from db_modules import *
 
 ============================================================
 FILE: db_modules\__init__.py
-SIZE: 22046 bytes
-LAST WRITE: 2026-08-28 00:39:02
+SIZE: 22157 bytes
+LAST WRITE: 2026-08-31 00:08:57
 ============================================================
 
 from systems.crystal_shop_system import (
@@ -3333,6 +3339,9 @@ __all__.extend(['init_premium_item_policy','get_premium_item_policy','can_grant_
 
 __all__.extend(['CRYSTAL_SHOP_CATALOG','init_crystal_shop_system','get_crystal_shop_catalog','preview_crystal_shop_purchase','purchase_crystal_shop_item','get_crystal_shop_purchases'])
 
+# Stage 18.1.2a canonical concrete daily quest owner
+from .daily_compat import reset_daily_quest_if_needed
+
 ============================================================
 FILE: db_modules\character.py
 SIZE: 6917 bytes
@@ -3613,8 +3622,8 @@ def get_character_profile_summary(user_id):
 
 ============================================================
 FILE: db_modules\connection.py
-SIZE: 6585 bytes
-LAST WRITE: 2026-08-24 23:00:10
+SIZE: 7100 bytes
+LAST WRITE: 2026-08-31 23:16:20
 ============================================================
 
 # ROM 17.19.1 MANA POTION PRICE BALANCE
@@ -3688,6 +3697,8 @@ def init_db():
         item_id INTEGER,
         quantity INTEGER,
         durability INTEGER
+    ,
+        refine_level INTEGER DEFAULT 0
     )
     """)
 
@@ -3713,6 +3724,24 @@ def init_db():
 
         pdef INTEGER,
         mdef INTEGER
+    ,
+        item_subtype TEXT DEFAULT ''
+    ,
+        armor_type TEXT DEFAULT ''
+    ,
+        weapon_min_damage INTEGER DEFAULT 0
+    ,
+        weapon_max_damage INTEGER DEFAULT 0
+    ,
+        weapon_min_magic_damage INTEGER DEFAULT 0
+    ,
+        weapon_max_magic_damage INTEGER DEFAULT 0
+    ,
+        weapon_attack_type TEXT DEFAULT ''
+    ,
+        shop_preview_owner INTEGER DEFAULT NULL
+    ,
+        shop_preview_price INTEGER DEFAULT 0
     )
     """)
 
@@ -3802,10 +3831,10 @@ def seed_items():
     Rune of Strength definition for ID 301 were retired in ROM 9.0.13b.
     """
     items = [
-        (201, "🔴 Мале зілля здоров'я", "potion_hp", "common", "potion", None, 1, 10, 1.00, 0, 0, 0, 0, 0, 0, 0),
-        (202, "🔵 Мале зілля мани", "potion_mp", "common", "potion", None, 1, 10, 0.80, 0, 0, 0, 0, 0, 0, 0),
-        (203, "🔴 Середнє зілля здоров'я", "potion_hp_medium", "common", "potion", None, 1, 10, 3.00, 0, 0, 0, 0, 0, 0, 0),
-        (204, "🔵 Середнє зілля мани", "potion_mp_medium", "common", "potion", None, 1, 10, 2.50, 0, 0, 0, 0, 0, 0, 0),
+        (401, "🔴 Мале зілля здоров'я", "potion_hp", "common", "potion", None, 1, 10, 1.00, 0, 0, 0, 0, 0, 0, 0),
+        (402, "🔵 Мале зілля мани", "potion_mp", "common", "potion", None, 1, 10, 0.80, 0, 0, 0, 0, 0, 0, 0),
+        (403, "🔴 Середнє зілля здоров'я", "potion_hp_medium", "common", "potion", None, 1, 10, 3.00, 0, 0, 0, 0, 0, 0, 0),
+        (404, "🔵 Середнє зілля мани", "potion_mp_medium", "common", "potion", None, 1, 10, 2.50, 0, 0, 0, 0, 0, 0, 0),
     ]
 
     for item in items:
@@ -4002,8 +4031,8 @@ __all__ = ['get_daily_quest_status']
 
 ============================================================
 FILE: db_modules\dev_compat.py
-SIZE: 51417 bytes
-LAST WRITE: 2026-08-30 00:05:39
+SIZE: 51590 bytes
+LAST WRITE: 2026-09-01 22:46:25
 ============================================================
 
 # ROM 17.17.1.5 WARRIOR SMALL SHIELD
@@ -4014,6 +4043,7 @@ LAST WRITE: 2026-08-30 00:05:39
 import sqlite3
 
 from .connection import conn, cursor, DEFAULT_BAG_SLOTS, SLOT_ORDER
+from systems.item_id_allocator_system import allocate_generated_item_id
 
 from .equipment import ensure_equipment_slots
 
@@ -5276,8 +5306,10 @@ def create_dev_armor_item_for_test(user_id, armor_type, slot_key="chest", item_l
 
     sell_price = get_dynamic_sell_price(item_level, rarity)
 
+    item_id = allocate_generated_item_id(conn)
     cursor.execute("""
     INSERT INTO items (
+        id,
         name,
         type,
         rarity,
@@ -5303,8 +5335,9 @@ def create_dev_armor_item_for_test(user_id, armor_type, slot_key="chest", item_l
         weapon_attack_type,
         armor_type
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
+        item_id,
         name,
         slot_key,
         rarity,
@@ -5331,7 +5364,6 @@ def create_dev_armor_item_for_test(user_id, armor_type, slot_key="chest", item_l
         armor_type
     ))
 
-    item_id = cursor.lastrowid
 
     cursor.execute("""
     INSERT INTO inventory (
@@ -5469,8 +5501,10 @@ def create_dev_weapon_item_for_test(user_id, item_profile, item_level=None, rari
             weapon_min_damage = min_dmg
             weapon_max_damage = max_dmg
 
+    item_id = allocate_generated_item_id(conn)
     cursor.execute("""
     INSERT INTO items (
+        id,
         name,
         type,
         rarity,
@@ -5496,8 +5530,9 @@ def create_dev_weapon_item_for_test(user_id, item_profile, item_level=None, rari
         weapon_attack_type,
         armor_type
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
+        item_id,
         name,
         type_,
         rarity,
@@ -5524,7 +5559,6 @@ def create_dev_weapon_item_for_test(user_id, item_profile, item_level=None, rari
         ""
     ))
 
-    item_id = cursor.lastrowid
 
     cursor.execute("""
     INSERT INTO inventory (
@@ -6032,8 +6066,8 @@ def check_two_handed_conflict_for_equip(user_id, item_info):
 
 ============================================================
 FILE: db_modules\generated_equipment.py
-SIZE: 35780 bytes
-LAST WRITE: 2026-08-23 00:20:27
+SIZE: 35953 bytes
+LAST WRITE: 2026-09-01 22:46:25
 ============================================================
 
 # ROM 17.17.1.5 WARRIOR SMALL SHIELD
@@ -6042,6 +6076,7 @@ Generated by patch 16.0.1. Do not add unrelated APIs here.
 """
 
 from .connection import conn, cursor, DEFAULT_BAG_SLOTS, SLOT_ORDER
+from systems.item_id_allocator_system import allocate_generated_item_id
 
 import random
 
@@ -6460,8 +6495,10 @@ def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_k
             weapon_min_damage = min_dmg
             weapon_max_damage = max_dmg
 
+    item_id = allocate_generated_item_id(conn)
     cursor.execute("""
     INSERT INTO items (
+        id,
         name,
         type,
         rarity,
@@ -6486,8 +6523,9 @@ def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_k
         weapon_max_magic_damage,
         weapon_attack_type
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
+        item_id,
         name,
         type_,
         rarity,
@@ -6513,7 +6551,6 @@ def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_k
         weapon_attack_type
     ))
 
-    item_id = cursor.lastrowid
 
     cursor.execute("""
     INSERT INTO inventory (
@@ -7164,8 +7201,10 @@ def create_generated_equipment_item(
             weapon_min_damage = min_dmg
             weapon_max_damage = max_dmg
 
+    item_id = allocate_generated_item_id(conn)
     cursor.execute("""
     INSERT INTO items (
+        id,
         name,
         type,
         rarity,
@@ -7191,8 +7230,9 @@ def create_generated_equipment_item(
         weapon_attack_type,
         armor_type
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
+        item_id,
         name,
         type_,
         rarity,
@@ -7219,7 +7259,6 @@ def create_generated_equipment_item(
         armor_type
     ))
 
-    item_id = cursor.lastrowid
 
     cursor.execute("""
     INSERT INTO inventory (
@@ -8622,8 +8661,8 @@ def get_player_attack_profile(user_id):
 
 ============================================================
 FILE: db_modules\quests.py
-SIZE: 11992 bytes
-LAST WRITE: 2026-08-20 14:27:50
+SIZE: 12452 bytes
+LAST WRITE: 2026-08-31 00:08:57
 ============================================================
 
 """
@@ -8642,7 +8681,7 @@ def init_daily_quest_system():
     """Ініціалізує таблиці та колонки для щоденних квестів."""
     try:
         cursor.execute("""
-        CREATE TABLE IF NOT EXISTS user_daily_quests (
+        CREATE TABLE IF NOT EXISTS user_daily_activity (
             user_id INTEGER PRIMARY KEY,
             daily_key TEXT NOT NULL,
             total_kills INTEGER DEFAULT 0,
@@ -8658,7 +8697,7 @@ def init_daily_quest_system():
         
         cursor.execute("""
         CREATE INDEX IF NOT EXISTS idx_udq_user_daily
-        ON user_daily_quests(user_id, daily_key)
+        ON user_daily_activity(user_id, daily_key)
         """)
         
         conn.commit()
@@ -8675,7 +8714,7 @@ def get_user_daily_quest(user_id):
     cursor.execute("""
     SELECT user_id, daily_key, total_kills, elite_kills, pvp_kills, 
            trades_completed, status, claimed_at
-    FROM user_daily_quests
+    FROM user_daily_activity
     WHERE user_id=? AND daily_key=?
     """, (user_id, today))
     
@@ -8683,7 +8722,7 @@ def get_user_daily_quest(user_id):
     if not row:
         # Create new quest for today
         cursor.execute("""
-        INSERT INTO user_daily_quests 
+        INSERT INTO user_daily_activity 
         (user_id, daily_key, total_kills, elite_kills, pvp_kills, trades_completed, status)
         VALUES (?, ?, 0, 0, 0, 0, 'active')
         """, (user_id, today))
@@ -8720,7 +8759,7 @@ def add_daily_quest_progress(user_id, total_kills=0, elite_kills=0, pvp_kills=0,
     quest = get_user_daily_quest(user_id)
     
     cursor.execute("""
-    UPDATE user_daily_quests
+    UPDATE user_daily_activity
     SET total_kills = total_kills + ?,
         elite_kills = elite_kills + ?,
         pvp_kills = pvp_kills + ?,
@@ -8764,7 +8803,7 @@ def claim_daily_quest_reward(user_id):
     try:
         cursor.execute("BEGIN IMMEDIATE")
         current = cursor.execute(
-            "SELECT status FROM user_daily_quests WHERE user_id=? AND daily_key=?",
+            "SELECT status FROM user_daily_activity WHERE user_id=? AND daily_key=?",
             (user_id, today),
         ).fetchone()
         if not current or str(current[0]) == "claimed":
@@ -8796,7 +8835,7 @@ def claim_daily_quest_reward(user_id):
             rewards["items"] = item_results
 
         changed = cursor.execute(
-            """UPDATE user_daily_quests
+            """UPDATE user_daily_activity
                SET status='claimed', claimed_at=CURRENT_TIMESTAMP
                WHERE user_id=? AND daily_key=? AND status<>'claimed'""",
             (user_id, today),
@@ -8847,7 +8886,7 @@ def cleanup_old_daily_quests(days_to_keep=7):
     init_daily_quest_system()
     
     cursor.execute("""
-    DELETE FROM user_daily_quests
+    DELETE FROM user_daily_activity
     WHERE created_at < date('now', '-' || ? || ' days')
     """, (days_to_keep,))
     
@@ -8861,12 +8900,12 @@ def reset_daily_quest_if_needed(user_id):
     """Roll the single per-user daily row to today without requiring the bot to stay online."""
     today = get_daily_today_str()
     columns = {str(row[1]) for row in cursor.execute(
-        "PRAGMA table_info(user_daily_quests)"
+        "PRAGMA table_info(user_daily_activity)"
     ).fetchall()}
     if not columns:
         init_daily_quest_system()
         columns = {str(row[1]) for row in cursor.execute(
-            "PRAGMA table_info(user_daily_quests)"
+            "PRAGMA table_info(user_daily_activity)"
         ).fetchall()}
 
     date_column = next((name for name in (
@@ -8876,7 +8915,7 @@ def reset_daily_quest_if_needed(user_id):
         return {"success": True, "reset": False, "mode": "no_date_column"}
 
     row = cursor.execute(
-        f"SELECT {date_column} FROM user_daily_quests WHERE user_id=?",
+        f"SELECT {date_column} FROM user_daily_activity WHERE user_id=?",
         (int(user_id),),
     ).fetchone()
     if not row:
@@ -8900,7 +8939,7 @@ def reset_daily_quest_if_needed(user_id):
         return {"success": True, "reset": False, "mode": "no_reset_columns"}
     params.append(int(user_id))
     cursor.execute(
-        f"UPDATE user_daily_quests SET {', '.join(assignments)} WHERE user_id=?",
+        f"UPDATE user_daily_activity SET {', '.join(assignments)} WHERE user_id=?",
         tuple(params),
     )
     conn.commit()
@@ -8918,8 +8957,8 @@ def process_daily_quest_progress_on_kill(user_id, mob=None):
     - елітні монстри
     - боси, коли вони будуть реалізовані
     """
-    from .daily_compat import get_daily_quest_status
-    reset_daily_quest_if_needed(user_id)
+    from .daily_compat import get_daily_quest_status, reset_daily_quest_if_needed as _reset_canonical_daily_quest_if_needed
+    _reset_canonical_daily_quest_if_needed(user_id)
 
     status = get_daily_quest_status(user_id)
 
@@ -9164,7 +9203,7 @@ LAST WRITE: 2026-08-16 23:02:17
 ============================================================
 FILE: db_modules\refine.py
 SIZE: 8228 bytes
-LAST WRITE: 2026-08-16 23:36:19
+LAST WRITE: 2026-08-31 23:16:20
 ============================================================
 
 """
@@ -9178,8 +9217,8 @@ from .connection import conn, cursor
 # REFINE SYSTEM CONSTANTS
 # ==============================
 
-REFINE_STONE_ITEM_ID = 401
-SUCCESS_RUNE_ITEM_ID = 402
+REFINE_STONE_ITEM_ID = 601
+SUCCESS_RUNE_ITEM_ID = 602
 
 
 # ==============================
@@ -9448,8 +9487,8 @@ def get_refine_material_stack_debug():
 
 ============================================================
 FILE: db_modules\shop.py
-SIZE: 30369 bytes
-LAST WRITE: 2026-08-23 01:39:23
+SIZE: 29573 bytes
+LAST WRITE: 2026-09-01 23:13:09
 ============================================================
 
 # ROM 17.18.2.5 BOW CROSSBOW DAMAGE UI PARITY
@@ -9458,6 +9497,7 @@ Shop system and class-based equipment restrictions
 """
 
 from .connection import conn, cursor, SLOT_ORDER
+from systems.item_id_allocator_system import allocate_shop_preview_item_id, promote_shop_preview_item
 from data.equipment_profiles import (
     EQUIPMENT_SLOTS,
     MAIN_HAND_PROFILES,
@@ -9751,8 +9791,10 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
             weapon_min_damage = min_dmg
             weapon_max_damage = max_dmg
 
+    item_id = allocate_shop_preview_item_id(conn)
     cursor.execute("""
     INSERT INTO items (
+        id,
         name,
         type,
         rarity,
@@ -9780,8 +9822,9 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
         shop_preview_owner,
         shop_preview_price
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
+        item_id,
         name,
         type_,
         rarity,
@@ -9810,7 +9853,6 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
         price
     ))
 
-    item_id = cursor.lastrowid
     conn.commit()
 
     return {
@@ -9884,84 +9926,24 @@ def cancel_common_equipment_shop_preview(user_id, item_id):
 
 
 def confirm_common_equipment_shop_preview(user_id, item_id):
-    """Підтверджує та завершує покупку preview предмета."""
-    from .player import get_wallet
-    from .inventory import get_bag_capacity, get_inventory_used_slots
+    """Canonical UI adapter for the atomic preview purchase path."""
     from .utils import format_gold
-    
-    init_shop_preview_system()
-
     preview = get_shop_preview_item(item_id, user_id)
-
     if not preview:
-        return {
-            "success": False,
-            "message": "❌ Попередній перегляд предмета не знайдено або застарів."
-        }
-
-    price = preview[24] or 0
-    name = preview[1]
-
-    gold = get_wallet(user_id)
-
-    if gold < price:
-        return {
-            "success": False,
-            "message": (
-                f"❌ Недостатньо золота.\n\n"
-                f"💳 Потрібно: {format_gold(price)}\n"
-                f"💰 У тебе: {format_gold(gold)}"
-            )
-        }
-
-    capacity = get_bag_capacity(user_id)
-    used_slots = get_inventory_used_slots(user_id)
-
-    if used_slots >= capacity:
-        return {
-            "success": False,
-            "message": "🎒 Сумка переповнена. Предмет не куплено."
-        }
-
-    cursor.execute("""
-    INSERT INTO inventory (
-        user_id,
-        item_id,
-        quantity,
-        durability
-    )
-    VALUES (?, ?, ?, ?)
-    """, (
-        user_id,
-        item_id,
-        1,
-        100
-    ))
-
-    cursor.execute("""
-    UPDATE users
-    SET gold = gold - ?
-    WHERE user_id=?
-    """, (price, user_id))
-
-    cursor.execute("""
-    UPDATE items
-    SET shop_preview_owner=NULL,
-        shop_preview_price=0
-    WHERE id=?
-    """, (item_id,))
-
-    conn.commit()
-
-    new_gold = get_wallet(user_id)
-
+        return {"success": False, "message": "❌ Попередній перегляд предмета не знайдено або застарів."}
+    price = float(preview[24] or 0)
+    name = str(preview[1] or "Предмет")
+    success, message = purchase_shop_preview_item(user_id, item_id)
+    if not success:
+        return {"success": False, "message": message}
+    from .player import get_wallet
     return {
         "success": True,
         "message": (
             f"✅ Куплено базове спорядження.\n\n"
             f"📦 {name}\n"
             f"💳 Сплачено: {format_gold(price)}\n"
-            f"💰 Залишилось: {format_gold(new_gold)}"
+            f"💰 Залишилось: {format_gold(get_wallet(user_id))}"
         )
     }
 
@@ -10136,14 +10118,15 @@ def purchase_shop_preview_item(user_id, item_id):
         row = cursor.execute(
             """SELECT id, name, shop_preview_price
                FROM items
-               WHERE id=? AND shop_preview_owner IS NOT NULL
+               WHERE id=? AND shop_preview_owner=?
                  AND shop_preview_price>0""",
-            (item_id,),
+            (item_id, user_id),
         ).fetchone()
         if not row:
             conn.rollback()
             return (False, "❌ Предмет не знайдено в магазині!")
-        current_item_id = int(row[0])
+        preview_item_id = int(row[0])
+        current_item_id = promote_shop_preview_item(conn, preview_item_id)
         name = str(row[1] or "Предмет")
         price = float(row[2] or 0)
         wallet_row = cursor.execute(
@@ -10171,6 +10154,7 @@ def purchase_shop_preview_item(user_id, item_id):
         if changed != 1:
             conn.rollback()
             return (False, "❌ Баланс змінився. Покупку скасовано.")
+        cursor.execute("DELETE FROM items WHERE id=?", (preview_item_id,))
         conn.commit()
         return (True, f"✅ Куплено {name} за {price} золота!")
     except Exception as error:
@@ -10227,7 +10211,7 @@ def use_class_reset_sphere(user_id):
     from .inventory import count_user_item, consume_user_item_by_item_id
     from .character import set_character_class, grant_class_change_available
     
-    CLASS_RESET_SPHERE_ITEM_ID = 900
+    CLASS_RESET_SPHERE_ITEM_ID = 501
     
     init_class_reset_sphere()
     
@@ -10349,8 +10333,10 @@ def populate_class_shop_for_user(user_id):
         # Calculate price based on item level
         base_price = 100 * item.get("item_level", 1)
         
+        item_id = allocate_shop_preview_item_id(conn)
         cursor.execute("""
         INSERT INTO items (
+            id,
             name, type, rarity, category, slot_key, max_stack,
             bonus_str, bonus_dex, bonus_int, bonus_wis, bonus_sta,
             pdef, mdef, item_level, armor_type,
@@ -10359,8 +10345,9 @@ def populate_class_shop_for_user(user_id):
             weapon_attack_type, weapon_hands,
             shop_preview_owner, shop_preview_price,
             is_generated, item_subtype, sell_price
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
+            item_id,
             item.get("name", "Item"),
             item.get("type", "equipment"),
             item.get("rarity", "common"),
@@ -11454,8 +11441,8 @@ LAST WRITE: 2026-07-09 23:38:37
 
 ============================================================
 FILE: handlers\auction_house.py
-SIZE: 212179 bytes
-LAST WRITE: 2026-08-29 23:32:55
+SIZE: 212108 bytes
+LAST WRITE: 2026-09-01 23:56:04
 ============================================================
 
 # ROM 17.11.2 COMPACT TEXT LOCATION DESCRIPTION
@@ -11597,7 +11584,7 @@ AUCTION_SELL_BUTTON = "➕ Виставити товар"
 AUCTION_MY_LOTS_BUTTON = "📦 Мої лоти"
 AUCTION_UNCLAIMED_ITEMS_BUTTON = "📬 Незабрані предмети"
 AUCTION_SOLD_BUTTON = "💰 Завершені продажі"
-AUCTION_HISTORY_BUTTON = "📜 Історія"
+AUCTION_HISTORY_BUTTON = "📜 Історія аукціону"
 AUCTION_BACK_TO_CITY_BUTTON = "🔙 Місто"
 
 
@@ -11795,7 +11782,16 @@ AUCTION_NEXT_SELL_ITEMS_BUTTON = "➡️ Наступні предмети"
 
 
 def clear_auction_sell_state(user_id):
-    AUCTION_SELL_STATE.pop(user_id, None)
+    """Canonical idempotent cleanup for every auction sell input state."""
+    for state_name in (
+        "AUCTION_SELL_STATE",
+        "AUCTION_SELL_STATE_V2",
+        "AUCTION_SELL_INLINE_STATE",
+        "AUCTION_SELL_REVIEW_STATE",
+    ):
+        state = globals().get(state_name)
+        if isinstance(state, dict):
+            state.pop(user_id, None)
 
 
 def auction_sell_category_kb():
@@ -12141,11 +12137,7 @@ AUCTION_SELL_CATEGORY_LABELS = {
 
 
 def clear_auction_sell_state_v2(user_id):
-    AUCTION_SELL_STATE_V2.pop(user_id, None)
-    try:
-        clear_auction_sell_state(user_id)
-    except Exception:
-        pass
+    clear_auction_sell_state(user_id)
 
 
 def auction_sell_category_kb_v2():
@@ -12839,13 +12831,7 @@ AUCTION_SELL_INLINE_CATEGORY_BUTTONS = {
 
 
 def _auction_clear_all_sell_states_v1(user_id):
-    AUCTION_SELL_INLINE_STATE.pop(user_id, None)
-
-    for state_name in ["AUCTION_SELL_STATE", "AUCTION_SELL_STATE_V2"]:
-        try:
-            globals().get(state_name, {}).pop(user_id, None)
-        except Exception:
-            pass
+    clear_auction_sell_state(user_id)
 
 
 def _auction_clear_all_buy_states_v1(user_id):
@@ -13372,11 +13358,7 @@ AUCTION_SELL_REVIEW_STATE = {}
 
 
 def _auction_clear_sell_review_state_v1(user_id):
-    AUCTION_SELL_REVIEW_STATE.pop(user_id, None)
-    try:
-        _auction_clear_all_sell_states_v1(user_id)
-    except Exception:
-        pass
+    clear_auction_sell_state(user_id)
 
 
 def auction_sell_review_kb_v1(category, inventory_id, page=0):
@@ -23719,8 +23701,8 @@ def register_contract_handlers(bot):
 
 ============================================================
 FILE: handlers\crystal_shop.py
-SIZE: 11001 bytes
-LAST WRITE: 2026-08-30 00:05:39
+SIZE: 13785 bytes
+LAST WRITE: 2026-08-31 23:48:07
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -23822,14 +23804,30 @@ def register_crystal_shop_handlers(bot):
   p=preview_crystal_bag_expansion(message.from_user.id)
   if p.get('maximum_reached') or not p.get('next_capacity'):
    bot.send_message(message.chat.id,p.get('message','🎒 Розширення недоступне.'),reply_markup=_shop_kb());return
-  kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton('✅ Придбати',callback_data=f"bg:buy:{p['next_capacity']}"),types.InlineKeyboardButton('❌ Скасувати',callback_data='bg:cancel'))
+  kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton('➡️ Продовжити',callback_data=f"bg:review:{p['next_capacity']}"),types.InlineKeyboardButton('❌ Скасувати',callback_data='bg:cancel'))
   bot.send_message(message.chat.id,f"🎒 Розширення сумки\n\nПоточна місткість: {p['current_capacity']} слотів\nПісля розширення: {p['next_capacity']} слотів\nВартість: {p['price']} 💎\nБаланс: {p['balance']} 💎",reply_markup=kb)
  @bot.callback_query_handler(func=lambda c:str(c.data or '').startswith('bg:'))
  def bag_expansion_callback(call):
   data=str(call.data or '');uid=call.from_user.id
   if data=='bg:cancel':
    bot.edit_message_text('❌ Розширення сумки скасовано.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Скасовано');return
-  target=int(data.split(':')[2]);key=f"telegram:bag_expansion:{uid}:{call.message.chat.id}:{call.message.message_id}:{target}";res=purchase_crystal_bag_expansion(uid,target,key)
+  parts=data.split(':');action=parts[1]
+  if action in ('review','back'):
+   target=int(parts[2]);p=preview_crystal_bag_expansion(uid)
+   if not p.get('success') or int(p.get('next_capacity') or 0)!=target:
+    bot.answer_callback_query(call.id,p.get('message','Розширення недоступне.'),show_alert=True);return
+   kb=types.InlineKeyboardMarkup()
+   if action=='review':
+    kb.row(types.InlineKeyboardButton('✅ Так, придбати',callback_data=f'bg:buy:{target}'),types.InlineKeyboardButton('↩️ Ні, повернутися',callback_data=f'bg:back:{target}'))
+    kb.row(types.InlineKeyboardButton('❌ Скасувати',callback_data='bg:cancel'))
+    text=f"⚠️ Ви впевнені?\n\nБуде списано {p['price']} 💎.\nМісткість сумки збільшиться до {target} слотів.\nОперацію не можна скасувати після виконання."
+   else:
+    kb.row(types.InlineKeyboardButton('➡️ Продовжити',callback_data=f'bg:review:{target}'),types.InlineKeyboardButton('❌ Скасувати',callback_data='bg:cancel'))
+    text=f"🎒 Розширення сумки\n\nПоточна місткість: {p['current_capacity']} слотів\nПісля розширення: {target} слотів\nВартість: {p['price']} 💎\nБаланс: {p['balance']} 💎"
+   bot.edit_message_text(text,call.message.chat.id,call.message.message_id,reply_markup=kb);bot.answer_callback_query(call.id);return
+  if action!='buy':
+   bot.answer_callback_query(call.id,'Невідома дія.',show_alert=True);return
+  target=int(parts[2]);key=f"telegram:bag_expansion:{uid}:{call.message.chat.id}:{call.message.message_id}:{target}";res=purchase_crystal_bag_expansion(uid,target,key)
   if res.get('success'):
    bot.edit_message_text(f"✅ Сумку розширено до {res['current_capacity']} слотів.\nСписано: {res['price']} 💎\nБаланс: {res['balance']} 💎",call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Готово')
   else:
@@ -23872,6 +23870,15 @@ def register_crystal_shop_handlers(bot):
   if action=='buy':
    iid=int(parts[2]);qty=int(parts[3])
    if not _active_shop_callback(call,item_id=iid,quantity=qty,stages=('confirm',)):
+    _reject_stale_shop_callback(bot,call);return
+   p=preview_crystal_shop_purchase(uid,iid,qty)
+   if not p['success']:
+    bot.answer_callback_query(call.id,p['message'],show_alert=True);return
+   k=types.InlineKeyboardMarkup();k.row(types.InlineKeyboardButton('✅ Так, купити',callback_data=f'cs:execute:{iid}:{qty}'),types.InlineKeyboardButton('↩️ Ні, повернутися',callback_data=f'cs:review:{iid}:{qty}'));k.row(types.InlineKeyboardButton('❌ Скасувати',callback_data='cs:cancel'))
+   bot.edit_message_text(f"⚠️ Остаточне підтвердження\n\nПредмет: {p['name']}\nКількість: {qty}\nБуде списано: {p['total_price']} 💎\nБаланс після покупки: {p['balance_after']} 💎",call.message.chat.id,call.message.message_id,reply_markup=k);_remember_shop_message(uid,call.message.chat.id,call.message.message_id,iid,qty,'final_confirm');bot.answer_callback_query(call.id);return
+  if action=='execute':
+   iid=int(parts[2]);qty=int(parts[3])
+   if not _active_shop_callback(call,item_id=iid,quantity=qty,stages=('final_confirm',)):
     _reject_stale_shop_callback(bot,call);return
    key=f"telegram:crystal_shop:{uid}:{call.message.chat.id}:{call.message.message_id}";res=purchase_crystal_shop_item(uid,iid,qty,key)
    if res['success']:
@@ -24004,7 +24011,7 @@ def register_daily_handlers(bot):
 ============================================================
 FILE: handlers\dev.py
 SIZE: 43985 bytes
-LAST WRITE: 2026-08-28 00:07:53
+LAST WRITE: 2026-08-31 23:16:20
 ============================================================
 
 # ROM 17.14.1.1 SEPARATE LEVEL REWARD MESSAGE AND DEV EXP SETTER
@@ -24185,7 +24192,7 @@ def format_universal_drop_simulation(result):
     if result["rune_stats"]:
         lines.extend(("","Характеристики рун:")); lines.extend(f"• {k}: {v}" for k,v in sorted(result["rune_stats"].items()))
     if result["potion_items"]:
-        names={201:"Мале HP",202:"Мале MP",203:"Середнє HP",204:"Середнє MP"}; lines.extend(("","Зілля:")); lines.extend(f"• {names.get(k,k)}: {v}" for k,v in sorted(result["potion_items"].items()))
+        names={401:"Мале HP",402:"Мале MP",403:"Середнє HP",404:"Середнє MP"}; lines.extend(("","Зілля:")); lines.extend(f"• {names.get(k,k)}: {v}" for k,v in sorted(result["potion_items"].items()))
     lines.extend(("",f"Усього результатів: {result['total_results']}","DB writes: 0","Generated equipment rows: 0"))
     return "\n".join(lines)
 
@@ -28166,8 +28173,8 @@ def build_guild_member_detail_text(*args, **kwargs):
 
 ============================================================
 FILE: handlers\inventory.py
-SIZE: 54562 bytes
-LAST WRITE: 2026-08-29 00:36:33
+SIZE: 54554 bytes
+LAST WRITE: 2026-08-31 23:24:12
 ============================================================
 
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
@@ -29242,7 +29249,7 @@ def get_category_items(user_id, category_key):
         except Exception:
             continue
 
-        if category == "material" or item_id in [401, 402]:
+        if category == "material" or item_id in [601, 602]:
             result.append(item)
 
     return result
@@ -29270,7 +29277,7 @@ def get_refine_material_description_text(item_id):
     except Exception:
         return ""
 
-    if item_id == 401:
+    if item_id == 601:
         return (
             "\nℹ️ Опис:\n"
             "🪨 Камінь Посилення використовується у Коваля для спроби заточки спорядження.\n\n"
@@ -29281,7 +29288,7 @@ def get_refine_material_description_text(item_id):
             "• шанс успіху залежить від поточного рівня заточки.\n"
         )
 
-    if item_id == 402:
+    if item_id == 602:
         return (
             "\nℹ️ Опис:\n"
             "💎 Руна Успіху — особлива руна для безпечної заточки.\n\n"
@@ -29292,7 +29299,7 @@ def get_refine_material_description_text(item_id):
         )
 
 
-    if item_id == 526:
+    if item_id == 726:
         return (
             "\nℹ️ Опис:\n"
             "🪙 Жетон Фіріуса — особливий матеріал для переробки рун у Рунного Майстра.\n\n"
@@ -29369,7 +29376,7 @@ def _inject_refine_material_description(text, inventory_id):
         if not item:
             return result
         item_id = int(item[1])
-        if item_id in (401, 402, 526):
+        if item_id in (601, 602, 726):
             result = result.replace("📦 Категорія: material", "📦 Категорія: Матеріали")
     except Exception:
         pass
@@ -29575,9 +29582,9 @@ def _inject_refine_material_description(text, inventory_id):
             return result
         item_id = int(item[1])
         category = str(item[5] or "") if len(item) > 5 else ""
-        if category == "rune" or 501 <= item_id <= 525:
+        if category == "rune" or 701 <= item_id <= 725:
             result = result.replace("📦 Категорія: rune", "📦 Категорія: Руни")
-        if item_id in (401, 402, 526, 527, 528):
+        if item_id in (601, 602, 726, 727, 728):
             result = result.replace(
                 "📦 Категорія: material",
                 "📦 Категорія: Матеріали",
@@ -29670,7 +29677,7 @@ def build_category_list(user_id, category_key, page=0):
     return result
 
 # ROM 17.28.1.3 NAME RUNE INVENTORY PRESENTATION
-_NAME_RUNE_ITEM_ID_17_28_1_3 = 10000
+_NAME_RUNE_ITEM_ID_17_28_1_3 = 502
 _base_build_item_details_before_name_rune_17_28_1_3 = build_item_details
 
 def build_item_details(user_id, inventory_id, back_category="all", page=0):
@@ -29708,7 +29715,7 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
     try:
         from db_modules.connection import cursor
         row = cursor.execute("SELECT item_id FROM inventory WHERE id=? AND user_id=?", (int(inventory_id), int(user_id))).fetchone()
-        if row and int(row[0]) == 50000:
+        if row and int(row[0]) == 503:
             from systems.energy_system import get_user_energy
             fatigue = int(get_user_energy(user_id).get("energy", 0))
             text = (f"💠 Артефакт відновлення сил\n\n"
@@ -29737,7 +29744,7 @@ def get_category_items(user_id, category_key):
             category = str(item[5] or "").strip().lower()
         except Exception:
             continue
-        if item_id == 50000 or item_type == "consumable" or category == "consumable":
+        if item_id == 503 or item_type == "consumable" or category == "consumable":
             result.append(item)
     return sorted(result, key=lambda item: _inventory_ui_sort_key_17_7_1(item, include_category=False))
 
@@ -29753,7 +29760,7 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
             "SELECT inv.item_id, inv.quantity FROM inventory inv WHERE inv.id=? AND inv.user_id=?",
             (int(inventory_id), int(user_id)),
         ).fetchone()
-        if row and int(row[0]) == 50000:
+        if row and int(row[0]) == 503:
             from systems.energy_system import get_user_energy
             fatigue = max(0, int(get_user_energy(user_id).get("energy", 0)))
             quantity = max(1, int(row[1] or 1))
@@ -29981,8 +29988,8 @@ def register_map_handlers(bot):
 
 ============================================================
 FILE: handlers\name_rune.py
-SIZE: 3629 bytes
-LAST WRITE: 2026-08-28 21:10:44
+SIZE: 3699 bytes
+LAST WRITE: 2026-09-01 00:06:42
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -30005,7 +30012,7 @@ def register_name_rune_handlers(bot):
  def input_name(message):
   uid=message.from_user.id;state=states.get(uid)
   if not state or state.get('stage')!='input':return
-  p=preview_name_change(uid,message.text)
+  p=preview_name_change(uid,message.text,inventory_id=state['inventory_id'])
   if not p['success']:states.pop(uid,None);bot.send_message(message.chat.id,'❌ '+p['message']);return
   if int(p['inventory_id'])!=int(state['inventory_id']):states.pop(uid,None);bot.send_message(message.chat.id,'❌ Це меню вже неактивне.');return
   states[uid]={'stage':'confirm','new_name':p['new_name'],'inventory_id':int(p['inventory_id'])};kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton('✅ Підтвердити',callback_data='nr:confirm'),types.InlineKeyboardButton('❌ Скасувати',callback_data='nr:cancel'));sent=bot.send_message(message.chat.id,f"✍️ Зміна імені персонажа\n\nПоточне ім’я: {p['old_name']}\nНове ім’я: {p['new_name']}\n\nБуде використано:\n✍️ Руна імені ×1",reply_markup=kb);states[uid].update(chat_id=sent.chat.id,message_id=sent.message_id)
@@ -30016,7 +30023,7 @@ def register_name_rune_handlers(bot):
   if call.data=='nr:cancel':states.pop(uid,None);bot.edit_message_text('❌ Зміну імені скасовано.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id);return
   rune=get_name_rune_inventory(uid)
   if not rune or int(rune['id'])!=int(state['inventory_id']):states.pop(uid,None);bot.answer_callback_query(call.id,'Це меню вже неактивне.',show_alert=True);return
-  key=f"telegram:name_rune:{uid}:{call.message.chat.id}:{call.message.message_id}";result=rename_with_name_rune(uid,state['new_name'],key)
+  key=f"telegram:name_rune:{uid}:{call.message.chat.id}:{call.message.message_id}";result=rename_with_name_rune(uid,state['new_name'],key,inventory_id=state['inventory_id'])
   if result['success']:states.pop(uid,None);bot.edit_message_text(f"✅ Ім’я персонажа змінено.\n\n{result.get('old_name',result.get('change',{}).get('old_name'))} → {result.get('new_name',result.get('change',{}).get('new_name'))}",call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Готово')
   else:bot.answer_callback_query(call.id,result['message'],show_alert=True)
 
@@ -35148,13 +35155,14 @@ def rune_master_kb():
 
 ============================================================
 FILE: main.py
-SIZE: 10624 bytes
-LAST WRITE: 2026-08-30 00:22:51
+SIZE: 10935 bytes
+LAST WRITE: 2026-08-30 23:47:25
 ============================================================
 
 
 # ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
 from systems.production_logging import configure_production_logging, get_production_logger, production_log_print as PRODUCTION_LOG_PRINT
+from systems.fresh_database_bootstrap import run_fresh_database_schema_bootstrap
 configure_production_logging()
 PRODUCTION_LOGGER=get_production_logger('rom.main')
 
@@ -35274,6 +35282,10 @@ bot = telebot.TeleBot(TOKEN, threaded=False)
 # ROM 12.1.0 PLAYER PRESENCE AND ACTIVITY SESSIONS
 from systems.player_interaction_system import init_player_interaction_foundation, install_player_presence_tracking, cleanup_player_interaction_state, init_player_trade_foundation, init_player_trade_item_policy_and_reservations, recover_active_player_trades_after_restart
 init_db()
+
+# Stage 18.1.0-a.0-b: deterministic schema owners before handlers/polling.
+_fresh_schema_bootstrap_result = run_fresh_database_schema_bootstrap()
+print(f"✅ FRESH DATABASE SCHEMA BOOTSTRAP: {_fresh_schema_bootstrap_result}")
 PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER INTERACTION FOUNDATION:', init_player_interaction_foundation())
 # ROM 12.3.2 INTERACTION SESSION TIMEOUT AND RECOVERY
 PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER INTERACTION RECOVERY:', cleanup_player_interaction_state())
@@ -35403,7 +35415,6 @@ except Exception as e:
 # ✅ ROM 9.0.8d MAIN REPAIR CONFIRMATION ORDER FIX
 # Repair confirmation handlers are registered before old hotfix/city handlers.
 
-
 ============================================================
 FILE: migrations\__init__.py
 SIZE: 40 bytes
@@ -35467,6 +35478,194 @@ def up(conn):
         "CREATE INDEX IF NOT EXISTS idx_inventory_runes_rune_item_id "
         "ON inventory_runes(rune_item_id)"
     )
+
+============================================================
+FILE: migrations\020_fresh_database_schema_parity.py
+SIZE: 1621 bytes
+LAST WRITE: 2026-08-30 23:37:21
+============================================================
+
+# -*- coding: utf-8 -*-
+"""Stage 18.1.0-a.0-b: non-ambiguous fresh-schema parity contracts."""
+
+
+def _columns(conn, table):
+    return {str(row[1]) for row in conn.execute(f"PRAGMA table_info({table})").fetchall()}
+
+
+def _add_column(conn, table, column, declaration):
+    if column not in _columns(conn, table):
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {declaration}")
+
+
+def up(conn):
+    tables = {str(row[0]) for row in conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table'"
+    ).fetchall()}
+    if "inventory" not in tables or "items" not in tables:
+        raise RuntimeError("base tables inventory/items must exist before migration 020")
+
+    _add_column(conn, "inventory", "refine_level", "INTEGER DEFAULT 0")
+    _add_column(conn, "items", "item_subtype", "TEXT DEFAULT ''")
+    _add_column(conn, "items", "armor_type", "TEXT DEFAULT ''")
+    _add_column(conn, "items", "weapon_min_damage", "INTEGER DEFAULT 0")
+    _add_column(conn, "items", "weapon_max_damage", "INTEGER DEFAULT 0")
+    _add_column(conn, "items", "weapon_min_magic_damage", "INTEGER DEFAULT 0")
+    _add_column(conn, "items", "weapon_max_magic_damage", "INTEGER DEFAULT 0")
+    _add_column(conn, "items", "weapon_attack_type", "TEXT DEFAULT ''")
+    _add_column(conn, "items", "shop_preview_owner", "INTEGER DEFAULT NULL")
+    _add_column(conn, "items", "shop_preview_price", "INTEGER DEFAULT 0")
+    conn.execute("UPDATE inventory SET refine_level=0 WHERE refine_level IS NULL")
+    conn.execute("UPDATE items SET shop_preview_price=0 WHERE shop_preview_price IS NULL")
+
+============================================================
+FILE: migrations\030_static_item_namespace.py
+SIZE: 4712 bytes
+LAST WRITE: 2026-09-01 00:06:42
+============================================================
+
+# ROM Stage 18.1.8a: idempotent static item namespace migration.
+import sqlite3
+
+MAPPING = {201: 401, 202: 402, 203: 403, 204: 404, 301: 501, 401: 601, 402: 602, 501: 701, 502: 702, 503: 703, 504: 704, 505: 705, 506: 706, 507: 707, 508: 708, 509: 709, 510: 710, 511: 711, 512: 712, 513: 713, 514: 714, 515: 715, 516: 716, 517: 717, 518: 718, 519: 719, 520: 720, 521: 721, 522: 722, 523: 723, 524: 724, 525: 725, 526: 726, 527: 727, 528: 728, 900: 501, 10000: 502, 50000: 503}
+DIRECT_ITEM_COLUMNS = (('auction_lots', 'item_ref_id'), ('character_name_changes', 'item_id'), ('crystal_shop_purchases', 'item_id'), ('inventory', 'item_id'), ('inventory_runes', 'rune_item_id'), ('player_trade_offers', 'item_id'))
+TEMP_OFFSET = 900000000
+
+def _q(name):
+    return '"' + str(name).replace('"', '""') + '"'
+
+def _columns(conn, table):
+    return {str(r[1]) for r in conn.execute(f"PRAGMA table_info({_q(table)})")}
+
+def _stage_18_1_8f_canonical_state(conn):
+    legacy_ids = (201,202,203,204,301,900,10000,50000)
+    canonical_ids = (401,402,403,404,501,502,503,601,602,*range(701,729))
+    legacy = int(conn.execute("SELECT COUNT(*) FROM items WHERE id IN (%s)" % ','.join('?' for _ in legacy_ids), legacy_ids).fetchone()[0])
+    present = {int(row[0]) for row in conn.execute("SELECT id FROM items WHERE id IN (%s)" % ','.join('?' for _ in canonical_ids), canonical_ids)}
+    return legacy, present == set(canonical_ids)
+
+def migrate(conn):
+    legacy_count, canonical_complete = _stage_18_1_8f_canonical_state(conn)
+    if canonical_complete:
+        if conn.execute("SELECT 1 FROM items WHERE id=900").fetchone():
+            for table, column in DIRECT_ITEM_COLUMNS:
+                if column in _columns(conn, table):
+                    conn.execute(f"UPDATE {_q(table)} SET {_q(column)}=501 WHERE {_q(column)}=900")
+            conn.execute("DELETE FROM items WHERE id=900")
+            if not conn.in_transaction:
+                conn.commit()
+        return {"success": True, "already_canonical": True, "legacy_900_reconciled": bool(legacy_count), "mapping_entries": len(MAPPING)}
+    own_transaction = not conn.in_transaction
+    fk_before = int(conn.execute("PRAGMA foreign_keys").fetchone()[0])
+    if own_transaction:
+        conn.execute("PRAGMA foreign_keys=OFF")
+        conn.execute("BEGIN IMMEDIATE")
+    try:
+        # Phase 0: merge legacy row 900 into canonical old identity 301 before renumbering.
+        legacy_exists = conn.execute("SELECT 1 FROM items WHERE id=900").fetchone()
+        canonical_old_exists = conn.execute("SELECT 1 FROM items WHERE id=301").fetchone()
+        if legacy_exists:
+            if not canonical_old_exists:
+                conn.execute("UPDATE items SET id=301 WHERE id=900")
+            else:
+                for table, column in DIRECT_ITEM_COLUMNS:
+                    if column in _columns(conn, table):
+                        conn.execute(f"UPDATE {_q(table)} SET {_q(column)}=301 WHERE {_q(column)}=900")
+                conn.execute("DELETE FROM items WHERE id=900")
+        effective_mapping = {old: new for old, new in MAPPING.items() if old != 900}
+        present = {int(r[0]) for r in conn.execute("SELECT id FROM items WHERE id IN (%s)" % ','.join('?' for _ in effective_mapping), tuple(effective_mapping))}
+        # Phase 1: unique source identities move to temporary IDs.
+        for table, column in DIRECT_ITEM_COLUMNS:
+            if column not in _columns(conn, table):
+                continue
+            for old in present:
+                conn.execute(f"UPDATE {_q(table)} SET {_q(column)}=? WHERE {_q(column)}=?", (TEMP_OFFSET + old, old))
+        for old in present:
+            conn.execute("UPDATE items SET id=? WHERE id=?", (TEMP_OFFSET + old, old))
+        # Phase 2: temporary IDs move to final canonical IDs.
+        for old, new in effective_mapping.items():
+            temp = TEMP_OFFSET + old
+            if not conn.execute("SELECT 1 FROM items WHERE id=?", (temp,)).fetchone():
+                continue
+            conn.execute("UPDATE items SET id=? WHERE id=?", (new, temp))
+            for table, column in DIRECT_ITEM_COLUMNS:
+                if column in _columns(conn, table):
+                    conn.execute(f"UPDATE {_q(table)} SET {_q(column)}=? WHERE {_q(column)}=?", (new, temp))
+        if own_transaction:
+            conn.commit()
+    except Exception:
+        if own_transaction:
+            conn.rollback()
+        raise
+    finally:
+        if own_transaction:
+            conn.execute(f"PRAGMA foreign_keys={fk_before}")
+    return {"success": True, "mapping_entries": len(MAPPING)}
+
+def run(conn):
+    return migrate(conn)
+
+============================================================
+FILE: migrations\040_generated_equipment_namespace.py
+SIZE: 2491 bytes
+LAST WRITE: 2026-09-01 22:46:25
+============================================================
+
+# -*- coding: utf-8 -*-
+"""Stage 18.1.9a: migrate permanent generated equipment to 10000+."""
+from datetime import datetime, timezone
+from systems.item_id_allocator_system import init_item_id_allocator_system, record_item_id_mapping
+DIRECT_COLUMNS=(("auction_lots","item_ref_id"),("character_name_changes","item_id"),("crystal_shop_purchases","item_id"),("inventory","item_id"),("inventory_runes","rune_item_id"),("player_trade_offers","item_id"),("premium_item_grants","item_id"),("refine_attempts","item_id"))
+def _columns(conn,table): return {str(r[1]) for r in conn.execute('PRAGMA table_info("'+table+'")')}
+def migrate(conn):
+    rows=conn.execute("SELECT id FROM items WHERE is_generated=1 AND shop_preview_owner IS NULL AND COALESCE(shop_preview_price,0)=0 ORDER BY id").fetchall()
+    old=[int(r[0]) for r in rows if int(r[0])>=50001 and int(r[0])<1000000]
+    if not old:
+        init_item_id_allocator_system(conn=conn); return {"success":True,"already_migrated":True}
+    targets=list(range(10000,10000+len(old)))
+    occupied=conn.execute("SELECT id FROM items WHERE id IN ("+','.join('?' for _ in targets)+")",targets).fetchall()
+    if occupied: raise RuntimeError("Generated migration targets are occupied")
+    init_item_id_allocator_system(conn=conn)
+    fk=conn.execute("PRAGMA foreign_keys").fetchone()[0]; conn.execute("PRAGMA foreign_keys=OFF")
+    try:
+        for old_id,new_id in zip(old,targets):
+            temporary=920000000+old_id
+            conn.execute("UPDATE items SET id=? WHERE id=?",(temporary,old_id))
+            for table,column in DIRECT_COLUMNS:
+                if column in _columns(conn,table): conn.execute(f'UPDATE "{table}" SET "{column}"=? WHERE "{column}"=?',(temporary,old_id))
+            conn.execute("UPDATE items SET id=? WHERE id=?",(new_id,temporary))
+            for table,column in DIRECT_COLUMNS:
+                if column in _columns(conn,table): conn.execute(f'UPDATE "{table}" SET "{column}"=? WHERE "{column}"=?',(new_id,temporary))
+            record_item_id_mapping(conn,old_id,new_id,"initial_namespace_migration","18.1.9a")
+        init_item_id_allocator_system(conn=conn)
+        conn.execute("UPDATE item_id_allocator SET last_issued_id=? WHERE namespace='generated_equipment'",(targets[-1],))
+        return {"success":True,"migrated":len(old),"first":targets[0],"last":targets[-1]}
+    finally:
+        conn.execute(f"PRAGMA foreign_keys={int(fk)}")
+def run(conn): return migrate(conn)
+
+============================================================
+FILE: migrations\041_shop_preview_promotion_recovery.py
+SIZE: 796 bytes
+LAST WRITE: 2026-09-01 23:13:09
+============================================================
+
+# -*- coding: utf-8 -*-
+"""Stage 18.1.9b: recover permanent inventory items stranded in preview namespace."""
+from systems.item_id_allocator_system import recover_stranded_preview_item
+
+def migrate(conn):
+    rows=conn.execute("""SELECT DISTINCT it.id FROM items it JOIN inventory inv ON inv.item_id=it.id
+        WHERE it.id BETWEEN 10010000 AND 11009999
+          AND it.shop_preview_owner IS NULL AND COALESCE(it.shop_preview_price,0)=0
+        ORDER BY it.id""").fetchall()
+    recovered=[]
+    for row in rows:
+        source=int(row[0]); target=recover_stranded_preview_item(conn,source)
+        recovered.append({"source_item_id":source,"target_item_id":target})
+    return {"success":True,"recovered":recovered,"count":len(recovered)}
+
+def run(conn): return migrate(conn)
 
 ============================================================
 FILE: migrations\README.md
@@ -35711,8 +35910,8 @@ LAST WRITE: 2026-07-09 23:38:38
 
 ============================================================
 FILE: systems\auction_house_system.py
-SIZE: 181417 bytes
-LAST WRITE: 2026-08-29 23:42:10
+SIZE: 181411 bytes
+LAST WRITE: 2026-08-31 23:24:12
 ============================================================
 
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
@@ -37138,7 +37337,7 @@ def _auction_get_inventory_row(inventory_id, user_id=None):
 
 AUCTION_STACK_PAGE_SIZE = 8
 AUCTION_FORBIDDEN_AUCTION_ITEM_IDS = {
-    402,  # 💎 Руна Успіху — майбутній premium/crystal item, не продається на ринку.
+    602,  # 💎 Руна Успіху — майбутній premium/crystal item, не продається на ринку.
 }
 
 
@@ -37171,7 +37370,7 @@ def _auction_is_material_snapshot(snapshot):
     item_category = str(snapshot.get("item_category", "") or "").lower()
     name = str(snapshot.get("name", "") or snapshot.get("raw_name", "")).lower()
 
-    if item_id == 401:
+    if item_id == 601:
         return True
 
     if item_type in ["material", "refine_stone", "craft_material"]:
@@ -38069,7 +38268,7 @@ def _auction_collect_stack_description_lines(snapshot):
     item_id = _auction_int_or_none(snapshot.get("item_id"))
     name = str(snapshot.get("name") or snapshot.get("raw_name") or "")
 
-    if item_id == 401 or "Камінь Посилення" in name:
+    if item_id == 601 or "Камінь Посилення" in name:
         lines.append("ℹ️ Використовується у Коваля для спроби заточки спорядження.")
         lines.append("• Витрачається при кожній спробі заточки.")
         lines.append("• Не гарантує успіх.")
@@ -41070,8 +41269,8 @@ AUCTION_CATEGORY_RUNE = "rune"
 AUCTION_CATEGORY_CONSUMABLE = "consumable"
 AUCTION_ALLOWED_CATEGORIES.add(AUCTION_CATEGORY_RUNE)
 AUCTION_ALLOWED_CATEGORIES.add(AUCTION_CATEGORY_CONSUMABLE)
-AUCTION_PROTECTED_TRANSFER_ITEM_IDS = frozenset((301, 402, 526, 528, 10000))
-AUCTION_ALLOWED_SPECIAL_TRANSFER_ITEM_IDS = frozenset((401, 527))
+AUCTION_PROTECTED_TRANSFER_ITEM_IDS = frozenset((501, 602, 726, 728, 502))
+AUCTION_ALLOWED_SPECIAL_TRANSFER_ITEM_IDS = frozenset((601, 727))
 AUCTION_FORBIDDEN_AUCTION_ITEM_IDS = set(AUCTION_FORBIDDEN_AUCTION_ITEM_IDS) | set(AUCTION_PROTECTED_TRANSFER_ITEM_IDS)
 
 _auction_base_normalize_category_12_6_3c = normalize_auction_category
@@ -41097,7 +41296,7 @@ def _auction_is_rune_snapshot_12_6_3c(snapshot):
     item_id = _auction_item_id_12_6_3c(snapshot)
     item_type = str(snapshot.get("item_type") or "").strip().lower()
     item_category = str(snapshot.get("item_category") or "").strip().lower()
-    return (501 <= item_id <= 525) or item_type in ("rune", "stat_rune") or item_category in ("rune", "runes")
+    return (701 <= item_id <= 725) or item_type in ("rune", "stat_rune") or item_category in ("rune", "runes")
 
 
 def _auction_is_protected_transfer_snapshot_12_6_3c(snapshot):
@@ -41116,7 +41315,7 @@ def _auction_stack_category_matches(snapshot, category):
     is_rune = _auction_is_rune_snapshot_12_6_3c(snapshot)
     is_potion = _auction_is_potion_snapshot(snapshot)
     is_consumable = (
-        item_id == 50000
+        item_id == 503
         or item_type == "consumable"
         or item_category == "consumable"
     ) and not is_rune and not is_potion
@@ -41168,9 +41367,9 @@ def validate_inventory_stack_item_for_auction(user_id, inventory_id, category, q
     item_id = _auction_item_id_12_6_3c(snapshot)
     if _auction_is_protected_transfer_snapshot_12_6_3c(snapshot):
         names = {
-            301: "Сферу нового шляху", 402: "Руну Успіху",
-            526: "Жетони Фіріуса", 528: "Досконалий Екстрактор",
-            10000: "Руну імені",
+            501: "Сферу нового шляху", 602: "Руну Успіху",
+            726: "Жетони Фіріуса", 728: "Досконалий Екстрактор",
+            502: "Руну імені",
         }
         return {"success": False, "message": f"❌ {names.get(item_id, 'Цей предмет')} не можна виставити на Торговий Дім."}
     if not _auction_stack_category_matches(snapshot, category):
@@ -43374,8 +43573,8 @@ def get_crystal_bag_expansion_purchases(user_id,db_path=None):
 
 ============================================================
 FILE: systems\crystal_shop_system.py
-SIZE: 8491 bytes
-LAST WRITE: 2026-08-28 20:52:04
+SIZE: 8487 bytes
+LAST WRITE: 2026-08-31 23:16:20
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -43385,7 +43584,7 @@ import json, sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 DB_PATH=Path(__file__).resolve().parents[1]/'game.db'
-CRYSTAL_SHOP_CATALOG={301:{'name':'🔮 Сфера нового шляху','price':150},402:{'name':'🍀 Руна Успіху','price':40},528:{'name':'💠 Досконалий Екстрактор','price':25},10000:{'name':'✍️ Руна імені','price':50}}
+CRYSTAL_SHOP_CATALOG={501:{'name':'🔮 Сфера нового шляху','price':150},602:{'name':'🍀 Руна Успіху','price':40},728:{'name':'💠 Досконалий Екстрактор','price':25},502:{'name':'✍️ Руна імені','price':50}}
 def _utc():return datetime.now(timezone.utc).isoformat()
 def _connect(path=None):
  c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
@@ -43425,7 +43624,7 @@ def purchase_crystal_shop_item(user_id,item_id,quantity,idempotency_key,db_path=
  try:
   c.execute('BEGIN IMMEDIATE');old=c.execute('SELECT * FROM crystal_shop_purchases WHERE idempotency_key=?',(key,)).fetchone()
   if old:c.commit();return {'success':True,'idempotent_replay':True,'purchase':dict(old),'balance':int(old['balance_after'])}
-  allowed={301:{'crystal_shop'},402:{'crystal_shop'},528:{'crystal_shop'},10000:{'crystal_shop'}}
+  allowed={501:{'crystal_shop'},602:{'crystal_shop'},728:{'crystal_shop'},502:{'crystal_shop'}}
   if 'crystal_shop' not in allowed.get(iid,set()):c.rollback();return {'success':False,'message':'❌ Джерело видачі заборонене.'}
   wallet=c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(uid,)).fetchone();item=c.execute('SELECT id FROM items WHERE id=?',(iid,)).fetchone()
   if not wallet or not item:c.rollback();return {'success':False,'message':'❌ Гаманець або предмет не знайдено.'}
@@ -43552,7 +43751,7 @@ def compensate_crystal_transaction(original_transaction_id,idempotency_key,reaso
 ============================================================
 FILE: systems\drop_system.py
 SIZE: 29647 bytes
-LAST WRITE: 2026-08-01 23:37:52
+LAST WRITE: 2026-08-31 23:16:20
 ============================================================
 
 """Pure central-drop engine foundation for ROM Stage 11.
@@ -44134,7 +44333,7 @@ def validate_special_material_drop_policy(rules=None):
             # The Simple Extractor retains a documented disabled 1% boss
             # candidate. It is safe only while both enable flags remain False.
             allowed_candidate = (
-                item_id == 527
+                item_id == 727
                 and enemy_type == "boss"
                 and chance == policy.get("boss_candidate_chance")
                 and not rule.get("enabled")
@@ -47197,8 +47396,8 @@ def buy_common_equipment_from_trader(user_id, slot_key, item_profile=None):
 
 ============================================================
 FILE: systems\fatigue_artifact_system.py
-SIZE: 6086 bytes
-LAST WRITE: 2026-08-30 00:05:39
+SIZE: 6064 bytes
+LAST WRITE: 2026-08-31 23:16:20
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -47206,7 +47405,7 @@ from __future__ import annotations
 import json,math,sqlite3
 from datetime import datetime,timezone
 from pathlib import Path
-FATIGUE_ARTIFACT_ITEM_ID=50000;MAX_STACK=10;DB_PATH=Path(__file__).resolve().parents[1]/'game.db'
+FATIGUE_ARTIFACT_ITEM_ID=503;MAX_STACK=10;DB_PATH=Path(__file__).resolve().parents[1]/'game.db'
 def _conn(path=None):
  c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
 def init_fatigue_artifact_system(db_path=None):
@@ -47215,32 +47414,32 @@ def init_fatigue_artifact_system(db_path=None):
   c.executescript("""CREATE TABLE IF NOT EXISTS fatigue_artifact_usage_events(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,inventory_id INTEGER NOT NULL,selected_quantity INTEGER NOT NULL,used_quantity INTEGER NOT NULL,fatigue_before INTEGER NOT NULL,fatigue_after INTEGER NOT NULL,idempotency_key TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE RESTRICT);CREATE INDEX IF NOT EXISTS ix_fatigue_artifact_usage_user ON fatigue_artifact_usage_events(user_id,id DESC);""")
   cols=[r[1] for r in c.execute('PRAGMA table_info(items)')];row=c.execute('SELECT name FROM items WHERE id=?',(FATIGUE_ARTIFACT_ITEM_ID,)).fetchone()
   if row and row[0]!='💠 Артефакт відновлення сил':raise RuntimeError('Item ID 50000 is occupied')
-  values={'id':50000,'name':'💠 Артефакт відновлення сил','type':'consumable','rarity':'uncommon','category':'consumable','slot_key':'','weapon_hands':0,'max_stack':10,'sell_price':0,'item_level':1,'is_generated':0,'item_subtype':'fatigue_reducer'}
+  values={'id':503,'name':'💠 Артефакт відновлення сил','type':'consumable','rarity':'uncommon','category':'consumable','slot_key':'','weapon_hands':0,'max_stack':10,'sell_price':0,'item_level':1,'is_generated':0,'item_subtype':'fatigue_reducer'}
   if not row:
    names=[k for k in values if k in cols];c.execute('INSERT INTO items('+','.join(names)+') VALUES('+','.join('?' for _ in names)+')',[values[k] for k in names])
-  else:c.execute('UPDATE items SET name=?,type=?,category=?,max_stack=?,sell_price=0,item_subtype=? WHERE id=?',('💠 Артефакт відновлення сил','consumable','consumable',10,'fatigue_reducer',50000))
-  c.commit();return {'success':True,'item_id':50000}
+  else:c.execute('UPDATE items SET name=?,type=?,category=?,max_stack=?,sell_price=0,item_subtype=? WHERE id=?',('💠 Артефакт відновлення сил','consumable','consumable',10,'fatigue_reducer',503))
+  c.commit();return {'success':True,'item_id':503}
  finally:c.close()
 def _repack(c,user_id,total):
- rows=c.execute('SELECT id FROM inventory WHERE user_id=? AND item_id=? ORDER BY id',(int(user_id),50000)).fetchall();c.execute('DELETE FROM inventory WHERE user_id=? AND item_id=?',(int(user_id),50000));remaining=int(total)
+ rows=c.execute('SELECT id FROM inventory WHERE user_id=? AND item_id=? ORDER BY id',(int(user_id),503)).fetchall();c.execute('DELETE FROM inventory WHERE user_id=? AND item_id=?',(int(user_id),503));remaining=int(total)
  while remaining>0:
-  qty=min(10,remaining);c.execute('INSERT INTO inventory(user_id,item_id,quantity) VALUES(?,?,?)',(int(user_id),50000,qty));remaining-=qty
+  qty=min(10,remaining);c.execute('INSERT INTO inventory(user_id,item_id,quantity) VALUES(?,?,?)',(int(user_id),503,qty));remaining-=qty
 def add_fatigue_artifacts(user_id,quantity,db_path=None):
  qty=max(0,int(quantity));c=_conn(db_path)
  try:
-  c.execute('BEGIN IMMEDIATE');owned=int(c.execute('SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?',(int(user_id),50000)).fetchone()[0]);slots=int(c.execute('SELECT COALESCE(bag_slots,60) FROM users WHERE user_id=?',(int(user_id),)).fetchone()[0]);used=int(c.execute('SELECT COUNT(*) FROM inventory WHERE user_id=?',(int(user_id),)).fetchone()[0]);capacity=max(0,(slots-used)*10 + (10-owned%10 if owned%10 else 0));added=min(qty,capacity);_repack(c,user_id,owned+added);c.commit();return {'success':True,'added':added,'lost':qty-added,'total':owned+added}
+  c.execute('BEGIN IMMEDIATE');owned=int(c.execute('SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?',(int(user_id),503)).fetchone()[0]);slots=int(c.execute('SELECT COALESCE(bag_slots,60) FROM users WHERE user_id=?',(int(user_id),)).fetchone()[0]);used=int(c.execute('SELECT COUNT(*) FROM inventory WHERE user_id=?',(int(user_id),)).fetchone()[0]);capacity=max(0,(slots-used)*10 + (10-owned%10 if owned%10 else 0));added=min(qty,capacity);_repack(c,user_id,owned+added);c.commit();return {'success':True,'added':added,'lost':qty-added,'total':owned+added}
  except Exception:c.rollback();raise
  finally:c.close()
 def get_total(user_id,db_path=None):
  c=_conn(db_path)
- try:return int(c.execute('SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?',(int(user_id),50000)).fetchone()[0])
+ try:return int(c.execute('SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?',(int(user_id),503)).fetchone()[0])
  finally:c.close()
 def use_fatigue_artifacts(user_id,inventory_id,selected,idempotency_key,db_path=None):
  uid=int(user_id);inv=int(inventory_id);selected=max(1,int(selected));key=str(idempotency_key or '').strip();c=_conn(db_path)
  try:
   c.execute('BEGIN IMMEDIATE');old=c.execute('SELECT * FROM fatigue_artifact_usage_events WHERE idempotency_key=?',(key,)).fetchone()
   if old:c.commit();return {'success':True,'idempotent_replay':True,**dict(old)}
-  target=c.execute('SELECT 1 FROM inventory WHERE id=? AND user_id=? AND item_id=?',(inv,uid,50000)).fetchone()
+  target=c.execute('SELECT 1 FROM inventory WHERE id=? AND user_id=? AND item_id=?',(inv,uid,503)).fetchone()
   if not target:c.rollback();return {'success':False,'message':'❌ Предмет більше недоступний.'}
   active=False
   if 'player_activity_sessions' in {r[0] for r in c.execute("SELECT name FROM sqlite_master WHERE type='table'")}:
@@ -47250,16 +47449,71 @@ def use_fatigue_artifacts(user_id,inventory_id,selected,idempotency_key,db_path=
   if active:c.rollback();return {'success':False,'message':'❌ Неможливо використати предмет під час бою.'}
   row=c.execute('SELECT energy FROM users WHERE user_id=?',(uid,)).fetchone();fatigue=max(0,int(row[0] if row else 0))
   if fatigue<=0:c.rollback();return {'success':False,'message':'❌ Персонаж не втомлений. Предмет не використано.'}
-  owned=int(c.execute('SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?',(uid,50000)).fetchone()[0]);actual=min(selected,owned,int(math.ceil(fatigue/5.0)));after=max(0,fatigue-actual*5)
+  owned=int(c.execute('SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?',(uid,503)).fetchone()[0]);actual=min(selected,owned,int(math.ceil(fatigue/5.0)));after=max(0,fatigue-actual*5)
   if actual<=0:c.rollback();return {'success':False,'message':'❌ Немає доступних артефактів.'}
   _repack(c,uid,owned-actual);c.execute('UPDATE users SET energy=?,energy_full_notified=? WHERE user_id=?',(after,1 if after<=0 else 0,uid));stamp=datetime.now(timezone.utc).isoformat();c.execute('INSERT INTO fatigue_artifact_usage_events(user_id,inventory_id,selected_quantity,used_quantity,fatigue_before,fatigue_after,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?)',(uid,inv,selected,actual,fatigue,after,key,stamp));c.commit();return {'success':True,'idempotent_replay':False,'used_quantity':actual,'fatigue_before':fatigue,'fatigue_after':after,'remaining':owned-actual}
  except Exception as e:c.rollback();return {'success':False,'message':f'❌ Використання скасовано без списання: {e}'}
  finally:c.close()
 
 ============================================================
+FILE: systems\fresh_database_bootstrap.py
+SIZE: 1941 bytes
+LAST WRITE: 2026-09-01 22:46:25
+============================================================
+
+# -*- coding: utf-8 -*-
+"""Deterministic Stage 18 schema bootstrap orchestration.
+
+Initializers remain authoritative owners of their tables. This module only
+orders and invokes available idempotent initializers before handlers/polling.
+"""
+from __future__ import annotations
+
+import importlib
+
+INITIALIZERS = (
+    ("systems.item_id_allocator_system", "init_item_id_allocator_system"),
+    ("db_modules.daily_compat", "init_daily_quest_system"),
+    ("db_modules.refine", "init_refine_system"),
+    ("db_modules.shop", "init_shop_preview_system"),
+    ("systems.crystal_system", "init_crystal_system"),
+    ("systems.crystal_wallet_system", "init_crystal_wallet_system"),
+    ("systems.premium_item_policy_system", "init_premium_item_policy_system"),
+    ("systems.auction_house_system", "init_auction_house"),
+    ("systems.guild_system", "init_guild_system"),
+)
+
+
+def run_fresh_database_schema_bootstrap():
+    results = []
+    seen = set()
+    for module_name, function_name in INITIALIZERS:
+        try:
+            module = importlib.import_module(module_name)
+        except ModuleNotFoundError as exc:
+            if exc.name == module_name:
+                results.append({"module": module_name, "function": function_name,
+                                "status": "not_present"})
+                continue
+            raise
+        fn = getattr(module, function_name, None)
+        if not callable(fn):
+            results.append({"module": module_name, "function": function_name,
+                            "status": "not_present"})
+            continue
+        key = (module_name, function_name)
+        if key in seen:
+            continue
+        seen.add(key)
+        value = fn()
+        results.append({"module": module_name, "function": function_name,
+                        "status": "called", "result": repr(value)[:2000]})
+    return {"success": True, "results": results}
+
+============================================================
 FILE: systems\guild_system.py
-SIZE: 95295 bytes
-LAST WRITE: 2026-08-27 00:27:47
+SIZE: 95274 bytes
+LAST WRITE: 2026-08-31 00:31:14
 ============================================================
 
 from datetime import datetime
@@ -47495,6 +47749,9 @@ def init_guild_system():
     conn.commit()
 
     ensure_all_guild_monthly_seasons()
+    # Stage 18.1.4b: enforce unique guild icons only after guild schema creation.
+    make_existing_guild_icons_unique()
+    ensure_unique_guild_icon_index()
 
 
 # ==============================
@@ -48622,10 +48879,6 @@ def validate_guild_create_input(name, tag, icon="🏰"):
 
 
 # Ensure uniqueness whenever module is loaded after the patch.
-try:
-    ensure_unique_guild_icon_index()
-except Exception as _guild_icon_unique_error:
-    print(f"⚠️ Failed to ensure unique guild icon index: {_guild_icon_unique_error}")
 
 
 # ==============================
@@ -50016,9 +50269,105 @@ def run_guild_sanity_cleanup():
 
 
 ============================================================
+FILE: systems\item_id_allocator_system.py
+SIZE: 5972 bytes
+LAST WRITE: 2026-09-01 23:13:09
+============================================================
+
+# -*- coding: utf-8 -*-
+"""Canonical never-reuse item ID allocator for generated equipment and previews."""
+from __future__ import annotations
+import sqlite3
+from datetime import datetime, timezone
+
+PRIMARY_MIN=10000
+PRIMARY_MAX=5009999
+OVERFLOW_MIN=5010000
+OVERFLOW_MAX=10009999
+PREVIEW_MIN=10010000
+PREVIEW_MAX=11009999
+PERMANENT_NAMESPACE="generated_equipment"
+PREVIEW_NAMESPACE="shop_preview"
+
+class ItemIdPoolExhausted(RuntimeError):
+    pass
+
+def init_item_id_allocator_system(db_path=None, conn=None):
+    own=conn is None
+    if own: conn=sqlite3.connect(db_path or "game.db")
+    try:
+        conn.execute("""CREATE TABLE IF NOT EXISTS item_id_allocator(
+            namespace TEXT PRIMARY KEY,last_issued_id INTEGER NOT NULL,
+            range_min INTEGER NOT NULL,range_max INTEGER NOT NULL,
+            updated_at TEXT NOT NULL)""")
+        conn.execute("""CREATE TABLE IF NOT EXISTS generated_item_id_migrations(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,source_item_id INTEGER NOT NULL,
+            target_item_id INTEGER NOT NULL UNIQUE,operation TEXT NOT NULL,
+            migration_stage TEXT NOT NULL,created_at TEXT NOT NULL,
+            UNIQUE(source_item_id,target_item_id,operation))""")
+        now=datetime.now(timezone.utc).isoformat()
+        permanent_max=conn.execute("SELECT COALESCE(MAX(id),?) FROM items WHERE is_generated=1 AND shop_preview_owner IS NULL AND COALESCE(shop_preview_price,0)=0 AND id BETWEEN ? AND ?",(PRIMARY_MIN-1,PRIMARY_MIN,OVERFLOW_MAX)).fetchone()[0]
+        preview_max=conn.execute("SELECT COALESCE(MAX(id),?) FROM items WHERE (shop_preview_owner IS NOT NULL OR COALESCE(shop_preview_price,0)>0) AND id BETWEEN ? AND ?",(PREVIEW_MIN-1,PREVIEW_MIN,PREVIEW_MAX)).fetchone()[0]
+        conn.execute("INSERT OR IGNORE INTO item_id_allocator(namespace,last_issued_id,range_min,range_max,updated_at) VALUES(?,?,?,?,?)",(PERMANENT_NAMESPACE,max(PRIMARY_MIN-1,int(permanent_max)),PRIMARY_MIN,OVERFLOW_MAX,now))
+        conn.execute("INSERT OR IGNORE INTO item_id_allocator(namespace,last_issued_id,range_min,range_max,updated_at) VALUES(?,?,?,?,?)",(PREVIEW_NAMESPACE,max(PREVIEW_MIN-1,int(preview_max)),PREVIEW_MIN,PREVIEW_MAX,now))
+        if own: conn.commit()
+        return {"success":True}
+    finally:
+        if own: conn.close()
+
+def _allocate(conn,namespace):
+    init_item_id_allocator_system(conn=conn)
+    row=conn.execute("SELECT last_issued_id,range_min,range_max FROM item_id_allocator WHERE namespace=?",(namespace,)).fetchone()
+    if not row: raise RuntimeError("Allocator namespace is not initialized")
+    next_id=max(int(row[0])+1,int(row[1]))
+    if next_id>int(row[2]): raise ItemIdPoolExhausted(f"Item ID pool exhausted: {namespace}")
+    if conn.execute("SELECT 1 FROM items WHERE id=?",(next_id,)).fetchone(): raise RuntimeError(f"Allocator collision at {next_id}")
+    conn.execute("UPDATE item_id_allocator SET last_issued_id=?,updated_at=? WHERE namespace=?",(next_id,datetime.now(timezone.utc).isoformat(),namespace))
+    return next_id
+
+def allocate_generated_item_id(conn):
+    return _allocate(conn,PERMANENT_NAMESPACE)
+
+def allocate_shop_preview_item_id(conn):
+    return _allocate(conn,PREVIEW_NAMESPACE)
+
+def record_item_id_mapping(conn,source_item_id,target_item_id,operation,migration_stage):
+    conn.execute("INSERT OR IGNORE INTO generated_item_id_migrations(source_item_id,target_item_id,operation,migration_stage,created_at) VALUES(?,?,?,?,?)",(int(source_item_id),int(target_item_id),str(operation),str(migration_stage),datetime.now(timezone.utc).isoformat()))
+
+def promote_shop_preview_item(conn,preview_item_id):
+    preview_item_id=int(preview_item_id)
+    row=conn.execute("SELECT * FROM items WHERE id=? AND shop_preview_owner IS NOT NULL AND COALESCE(shop_preview_price,0)>0",(preview_item_id,)).fetchone()
+    if not row: raise RuntimeError("Shop preview item not found")
+    columns=[str(r[1]) for r in conn.execute("PRAGMA table_info(items)")]
+    target=allocate_generated_item_id(conn)
+    values=list(row); values[columns.index("id")]=target
+    if "shop_preview_owner" in columns: values[columns.index("shop_preview_owner")]=None
+    if "shop_preview_price" in columns: values[columns.index("shop_preview_price")]=0
+    conn.execute("INSERT INTO items("+",".join('"'+c+'"' for c in columns)+") VALUES("+",".join('?' for _ in columns)+")",values)
+    record_item_id_mapping(conn,preview_item_id,target,"shop_preview_purchase","18.1.9a")
+    return target
+def recover_stranded_preview_item(conn,source_item_id):
+    """Move an already-purchased item out of preview namespace atomically."""
+    source_item_id=int(source_item_id)
+    row=conn.execute("SELECT * FROM items WHERE id=? AND shop_preview_owner IS NULL AND COALESCE(shop_preview_price,0)=0",(source_item_id,)).fetchone()
+    if not row: raise RuntimeError("Stranded preview item not found")
+    columns=[str(r[1]) for r in conn.execute("PRAGMA table_info(items)")]
+    target=allocate_generated_item_id(conn)
+    values=list(row); values[columns.index("id")]=target
+    conn.execute("INSERT INTO items("+",".join('"'+c+'"' for c in columns)+") VALUES("+",".join('?' for _ in columns)+")",values)
+    reference_columns=(("auction_lots","item_ref_id"),("character_name_changes","item_id"),("crystal_shop_purchases","item_id"),("inventory","item_id"),("inventory_runes","rune_item_id"),("player_trade_offers","item_id"),("premium_item_grants","item_id"),("refine_attempts","item_id"))
+    for table,column in reference_columns:
+        known={str(r[1]) for r in conn.execute('PRAGMA table_info("'+table+'")')}
+        if column in known: conn.execute(f'UPDATE "{table}" SET "{column}"=? WHERE "{column}"=?',(target,source_item_id))
+    record_item_id_mapping(conn,source_item_id,target,"shop_preview_purchase_recovery","18.1.9b")
+    conn.execute("DELETE FROM items WHERE id=?",(source_item_id,))
+    return target
+
+
+============================================================
 FILE: systems\level_up_reward_system.py
-SIZE: 9739 bytes
-LAST WRITE: 2026-08-22 00:27:40
+SIZE: 9963 bytes
+LAST WRITE: 2026-08-31 23:16:21
 ============================================================
 
 # ROM 17.14.1.2 LEVEL UP REWARD BALANCE EXPANSION
@@ -50030,10 +50379,10 @@ from datetime import datetime
 
 from data.balance import REFINE_STONE_ITEM_ID
 
-SMALL_HEALTH_POTION_ITEM_ID = 201
-SMALL_MANA_POTION_ITEM_ID = 202
-MEDIUM_HEALTH_POTION_ITEM_ID = 203
-MEDIUM_MANA_POTION_ITEM_ID = 204
+SMALL_HEALTH_POTION_ITEM_ID = 401
+SMALL_MANA_POTION_ITEM_ID = 402
+MEDIUM_HEALTH_POTION_ITEM_ID = 403
+MEDIUM_MANA_POTION_ITEM_ID = 404
 CRYSTAL_REWARD_ENABLED = False
 
 
@@ -50248,8 +50597,8 @@ def build_level_up_reward_message(result):
 
 ============================================================
 FILE: systems\name_rune_system.py
-SIZE: 5901 bytes
-LAST WRITE: 2026-08-28 21:10:44
+SIZE: 6331 bytes
+LAST WRITE: 2026-09-01 00:06:42
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -50257,7 +50606,7 @@ from __future__ import annotations
 import re,sqlite3,unicodedata
 from datetime import datetime,timezone
 from pathlib import Path
-DB_PATH=Path(__file__).resolve().parents[1]/'game.db';NAME_RUNE_ITEM_ID=10000;NAME_RUNE_PRICE=50
+DB_PATH=Path(__file__).resolve().parents[1]/'game.db';NAME_RUNE_ITEM_ID=502;NAME_RUNE_PRICE=50
 def _conn(path=None):
  c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
 def normalize_name(value):return unicodedata.normalize('NFKC',str(value or '').strip())
@@ -50271,17 +50620,17 @@ def init_name_rune_system(db_path=None):
  try:
   row=c.execute('SELECT name FROM items WHERE id=?',(NAME_RUNE_ITEM_ID,)).fetchone()
   if row and str(row[0])!='✍️ Руна імені':raise RuntimeError('Item ID 10000 is occupied by another item')
-  cols={r[1] for r in c.execute('PRAGMA table_info(items)')};values={'id':10000,'name':'✍️ Руна імені','type':'material','rarity':'epic','category':'material','max_stack':999,'sell_price':0,'buy_price':0,'tradeable':0,'premium_bound':1}
+  cols={r[1] for r in c.execute('PRAGMA table_info(items)')};values={'id':502,'name':'✍️ Руна імені','type':'material','rarity':'epic','category':'material','max_stack':999,'sell_price':0,'buy_price':0,'tradeable':0,'premium_bound':1}
   names=[k for k in values if k in cols]
   if not row:c.execute('INSERT INTO items('+','.join(names)+') VALUES('+','.join('?' for _ in names)+')',[values[k] for k in names])
-  c.executescript("""CREATE TABLE IF NOT EXISTS character_name_changes(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,old_name TEXT NOT NULL,new_name TEXT NOT NULL,normalized_new_name TEXT NOT NULL,inventory_id INTEGER NOT NULL,item_id INTEGER NOT NULL,idempotency_key TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,FOREIGN KEY(item_id) REFERENCES items(id) ON DELETE RESTRICT);CREATE INDEX IF NOT EXISTS ix_character_name_changes_user ON character_name_changes(user_id,id DESC);""");c.commit();return {'success':True,'item_id':10000}
+  c.executescript("""CREATE TABLE IF NOT EXISTS character_name_changes(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,old_name TEXT NOT NULL,new_name TEXT NOT NULL,normalized_new_name TEXT NOT NULL,inventory_id INTEGER NOT NULL,item_id INTEGER NOT NULL,idempotency_key TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,FOREIGN KEY(item_id) REFERENCES items(id) ON DELETE RESTRICT);CREATE INDEX IF NOT EXISTS ix_character_name_changes_user ON character_name_changes(user_id,id DESC);""");c.commit();return {'success':True,'item_id':502}
  finally:c.close()
 def get_name_rune_inventory(user_id,db_path=None):
  c=_conn(db_path)
  try:
-  row=c.execute('SELECT id,quantity FROM inventory WHERE user_id=? AND item_id=? AND quantity>0 ORDER BY id LIMIT 1',(int(user_id),10000)).fetchone();return dict(row) if row else None
+  row=c.execute('SELECT id,quantity FROM inventory WHERE user_id=? AND item_id=? AND quantity>0 ORDER BY id LIMIT 1',(int(user_id),502)).fetchone();return dict(row) if row else None
  finally:c.close()
-def preview_name_change(user_id,new_name,db_path=None):
+def preview_name_change(user_id,new_name,db_path=None,inventory_id=None):
  v=validate_name(new_name)
  if not v['success']:return v
  c=_conn(db_path)
@@ -50292,11 +50641,12 @@ def preview_name_change(user_id,new_name,db_path=None):
   if normalize_name(old).casefold()==v['key']:return {'success':False,'message':'Нове ім’я збігається з поточним.'}
   for other in c.execute("SELECT user_id,character_name FROM users WHERE user_id<>? AND TRIM(COALESCE(character_name,''))<>''",(int(user_id),)):
    if normalize_name(other['character_name']).casefold()==v['key']:return {'success':False,'message':'Це ім’я вже зайняте.'}
-  rune=get_name_rune_inventory(user_id,db_path)
+  if inventory_id is None:rune=get_name_rune_inventory(user_id,db_path)
+  else:rune=c.execute('SELECT id,quantity FROM inventory WHERE id=? AND user_id=? AND item_id=? AND quantity>0',(int(inventory_id),int(user_id),NAME_RUNE_ITEM_ID)).fetchone()
   if not rune:return {'success':False,'message':'Руну імені не знайдено в інвентарі.'}
   return {'success':True,'old_name':old,'new_name':v['name'],'inventory_id':int(rune['id'])}
  finally:c.close()
-def rename_with_name_rune(user_id,new_name,idempotency_key,db_path=None):
+def rename_with_name_rune(user_id,new_name,idempotency_key,db_path=None,inventory_id=None):
  uid=int(user_id);key=str(idempotency_key or '').strip();v=validate_name(new_name)
  if not key:return {'success':False,'message':'Відсутній ключ операції.'}
  if not v['success']:return v
@@ -50310,11 +50660,12 @@ def rename_with_name_rune(user_id,new_name,idempotency_key,db_path=None):
   if normalize_name(old).casefold()==v['key']:c.rollback();return {'success':False,'message':'Нове ім’я збігається з поточним.'}
   for other in c.execute("SELECT character_name FROM users WHERE user_id<>? AND TRIM(COALESCE(character_name,''))<>''",(uid,)):
    if normalize_name(other[0]).casefold()==v['key']:c.rollback();return {'success':False,'message':'Це ім’я вже зайняте.'}
-  rune=c.execute('SELECT id,quantity FROM inventory WHERE user_id=? AND item_id=10000 AND quantity>0 ORDER BY id LIMIT 1',(uid,)).fetchone()
+  if inventory_id is None:rune=c.execute('SELECT id,quantity FROM inventory WHERE user_id=? AND item_id=? AND quantity>0 ORDER BY id LIMIT 1',(uid,NAME_RUNE_ITEM_ID)).fetchone()
+  else:rune=c.execute('SELECT id,quantity FROM inventory WHERE id=? AND user_id=? AND item_id=? AND quantity>0',(int(inventory_id),uid,NAME_RUNE_ITEM_ID)).fetchone()
   if not rune:c.rollback();return {'success':False,'message':'Руну імені не знайдено в інвентарі.'}
   if int(rune['quantity'])==1:c.execute('DELETE FROM inventory WHERE id=? AND user_id=?',(int(rune['id']),uid))
   else:c.execute('UPDATE inventory SET quantity=quantity-1 WHERE id=? AND user_id=? AND quantity>1',(int(rune['id']),uid))
-  c.execute('UPDATE users SET character_name=? WHERE user_id=?',(v['name'],uid));now=datetime.now(timezone.utc).isoformat();cur=c.execute('INSERT INTO character_name_changes(user_id,old_name,new_name,normalized_new_name,inventory_id,item_id,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?)',(uid,old,v['name'],v['key'],int(rune['id']),10000,key,now));cid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'change_id':cid,'old_name':old,'new_name':v['name']}
+  c.execute('UPDATE users SET character_name=? WHERE user_id=?',(v['name'],uid));now=datetime.now(timezone.utc).isoformat();cur=c.execute('INSERT INTO character_name_changes(user_id,old_name,new_name,normalized_new_name,inventory_id,item_id,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?)',(uid,old,v['name'],v['key'],int(rune['id']),502,key,now));cid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'change_id':cid,'old_name':old,'new_name':v['name']}
  except Exception:c.rollback();raise
  finally:c.close()
 
@@ -51322,8 +51673,8 @@ def get_worker_max_mp_17_15_1(conn, user_id):
 
 ============================================================
 FILE: systems\player_interaction_system.py
-SIZE: 110871 bytes
-LAST WRITE: 2026-08-29 21:55:12
+SIZE: 110869 bytes
+LAST WRITE: 2026-08-31 23:16:21
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -52463,8 +52814,8 @@ def expire_stale_player_trades(*, now=None, db_path=None):
     finally: conn.close()
 
 # ROM 12.5.0 PLAYER TRADE ITEM POLICY AND RESERVATIONS
-TRADE_BLOCKED_ITEM_IDS = frozenset((301, 402, 526, 528))
-TRADE_ALLOWED_SPECIAL_ITEM_IDS = frozenset((401, 527))
+TRADE_BLOCKED_ITEM_IDS = frozenset((501, 602, 726, 728))
+TRADE_ALLOWED_SPECIAL_ITEM_IDS = frozenset((601, 727))
 TRADE_BLOCKED_CATEGORIES = frozenset(("trash", "gray_loot", "grey_loot", "quest", "dev", "premium_bound"))
 TRADE_RESERVATION_TYPE = "player_trade"
 
@@ -52697,10 +53048,10 @@ def get_item_trade_policy(user_id, inventory_id, requested_quantity=1, *, trade_
 
         if item_id in TRADE_BLOCKED_ITEM_IDS:
             messages = {
-                301: "Сферу нового шляху не можна передавати.",
-                402: "Руну Успіху не можна передавати.",
-                526: "Жетони Фіріуса не можна передавати.",
-                528: "Досконалий Екстрактор не можна передавати.",
+                501: "Сферу нового шляху не можна передавати.",
+                602: "Руну Успіху не можна передавати.",
+                726: "Жетони Фіріуса не можна передавати.",
+                728: "Досконалий Екстрактор не можна передавати.",
             }
             return _trade_policy_result(False, "protected_item", messages[item_id], item_id=item_id)
         if category in TRADE_BLOCKED_CATEGORIES or "trash" in category:
@@ -53396,7 +53747,7 @@ def _trade_commit_validate_item_12_7_0(conn, trade_id, offer):
     reserved = conn.execute("SELECT COALESCE(SUM(quantity),0) FROM inventory_reservations WHERE inventory_id=? AND user_id=? AND reservation_type=? AND reference_id=?", (int(offer["inventory_id"]), int(offer["owner_user_id"]), TRADE_RESERVATION_TYPE, int(trade_id))).fetchone()[0]
     if int(reserved or 0) != quantity: return None, "Резервування предмета змінилося."
     item = conn.execute("SELECT * FROM items WHERE id=?", (int(inv["item_id"]),)).fetchone()
-    if not item or int(inv["item_id"]) in (301, 402, 526, 528) or str(item["category"] or "").lower() == "trash": return None, "Предмет заборонено передавати."
+    if not item or int(inv["item_id"]) in (501, 602, 726, 728) or str(item["category"] or "").lower() == "trash": return None, "Предмет заборонено передавати."
     equipped = conn.execute("SELECT 1 FROM equipment_slots WHERE user_id=? AND inventory_id=?", (int(offer["owner_user_id"]), int(offer["inventory_id"]))).fetchone()
     if equipped: return None, "Екіпірований предмет не можна передати."
     return (dict(inv), dict(item)), None
@@ -53555,9 +53906,9 @@ def _player_trade_item_category_12_6_4(item):
         return "equipment"
     category = str(snapshot.get("category") or "").strip().lower()
     item_id = int(snapshot.get("item_id") or 0)
-    if 501 <= item_id <= 525 or category in ("rune", "runes", "stat_rune"):
+    if 701 <= item_id <= 725 or category in ("rune", "runes", "stat_rune"):
         return "rune"
-    if item_id == 50000 or category == "consumable":
+    if item_id == 503 or category == "consumable":
         return "consumable"
     if category in ("potion", "potions", "heal_potion", "mana_potion"):
         return "potion"
@@ -54487,7 +54838,7 @@ def add_exp(user_id: int, amount):
 ============================================================
 FILE: systems\potion_system.py
 SIZE: 20742 bytes
-LAST WRITE: 2026-08-25 00:01:04
+LAST WRITE: 2026-08-31 23:16:21
 ============================================================
 
 # ROM 17.19.1 MANA POTION PRICE BALANCE
@@ -54528,7 +54879,7 @@ from db import (
 
 POTIONS = {
 
-    201: {
+    401: {
 
         "name": "🔴 Мале зілля здоров’я",
 
@@ -54544,7 +54895,7 @@ POTIONS = {
 
     },
 
-    203: {
+    403: {
 
         "name": "🔴 Середнє зілля здоров’я",
 
@@ -54560,7 +54911,7 @@ POTIONS = {
 
     },
 
-    202: {
+    402: {
 
         "name": "🔵 Мале зілля мани",
 
@@ -54576,7 +54927,7 @@ POTIONS = {
 
     },
 
-    204: {
+    404: {
 
         "name": "🔵 Середнє зілля мани",
 
@@ -54598,7 +54949,7 @@ POTIONS = {
 
 
 
-ALCHEMIST_SHOP = [201, 203, 202, 204]
+ALCHEMIST_SHOP = [401, 403, 402, 404]
 
 
 
@@ -55202,8 +55553,8 @@ def sell_alchemist_potion_17_19_3(user_id,item_id,quantity):
 
 ============================================================
 FILE: systems\premium_item_policy_system.py
-SIZE: 7651 bytes
-LAST WRITE: 2026-08-28 20:52:04
+SIZE: 7828 bytes
+LAST WRITE: 2026-08-31 23:48:07
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -55215,10 +55566,10 @@ from pathlib import Path
 DB_PATH=Path(__file__).resolve().parents[1]/'game.db'
 SOURCE_DEV='dev_command';SOURCE_SHOP='crystal_shop';SOURCE_MILESTONE='level_milestone_reward';SOURCE_ADMIN='admin_compensation'
 PREMIUM_ITEM_POLICY={
- 301:{'name':'Сфера нового шляху','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_MILESTONE,SOURCE_ADMIN)),'milestone_levels':frozenset((5,10))},
- 402:{'name':'Руна Успіху','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
- 528:{'name':'Досконалий Екстрактор','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
- 10000:{'name':'Руна імені','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
+ 501:{'name':'Сфера нового шляху','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_MILESTONE,SOURCE_ADMIN)),'milestone_levels':frozenset((5,10))},
+ 602:{'name':'Руна Успіху','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
+ 728:{'name':'Досконалий Екстрактор','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
+ 502:{'name':'Руна імені','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},
 }
 DENIED_TRANSFER_ITEM_IDS=frozenset(PREMIUM_ITEM_POLICY)
 
@@ -55241,6 +55592,10 @@ def init_premium_item_policy(db_path=None):
   CREATE INDEX IF NOT EXISTS ix_premium_item_grants_item_source ON premium_item_grants(item_id,source,id DESC);
   """);c.commit();return {'success':True}
  finally:c.close()
+def init_premium_item_policy_system(db_path=None):
+ """Bootstrap-compatible alias for the canonical premium policy schema owner."""
+ return init_premium_item_policy(db_path)
+
 def get_premium_item_policy(item_id):
  p=PREMIUM_ITEM_POLICY.get(int(item_id));return None if p is None else {**p,'allowed_sources':sorted(p['allowed_sources']),'milestone_levels':sorted(p['milestone_levels'])}
 def can_grant_item_from_source(user_id,item_id,quantity,source,*,milestone_level=None,dev_mode=None,db_path=None):
@@ -60108,7 +60463,7 @@ def start_pvp_timer_worker(on_battle_changed=None, poll_seconds: float=1.0):
 ============================================================
 FILE: systems\refine_system.py
 SIZE: 10861 bytes
-LAST WRITE: 2026-08-28 22:11:31
+LAST WRITE: 2026-08-31 23:16:21
 ============================================================
 
 """
@@ -60118,8 +60473,8 @@ Rune Magic RPG - Refine System Core v1
 
 import random
 
-REFINE_STONE_ITEM_ID = 401
-SUCCESS_RUNE_ITEM_ID = 402
+REFINE_STONE_ITEM_ID = 601
+SUCCESS_RUNE_ITEM_ID = 602
 WEAPON_MAX_REFINE_LEVEL = 10
 ARMOR_MAX_REFINE_LEVEL = 6
 
@@ -60691,7 +61046,7 @@ def get_mp_regen_status(user_id):
 ============================================================
 FILE: systems\reward_system.py
 SIZE: 16684 bytes
-LAST WRITE: 2026-08-29 00:26:22
+LAST WRITE: 2026-08-31 23:16:21
 ============================================================
 
 import random
@@ -60964,7 +61319,7 @@ def get_random_quantity(value):
 # 🪨 Камінь Посилення падає з мобів.
 # 💎 Руна Успіху НЕ падає з мобів — буде за кристали пізніше.
 
-REFINE_STONE_ITEM_ID = 401
+REFINE_STONE_ITEM_ID = 601
 NORMAL_REFINE_STONE_DROP_CHANCE = 0.08
 ELITE_REFINE_STONE_DROP_CHANCE = 0.20
 
@@ -64528,7 +64883,7 @@ class SimulationInventoryEngine:
 ============================================================
 FILE: systems\simulation\loot_equipment_city.py
 SIZE: 5794 bytes
-LAST WRITE: 2026-08-04 22:31:52
+LAST WRITE: 2026-08-31 23:16:21
 ============================================================
 
 from __future__ import annotations
@@ -64545,7 +64900,7 @@ SLOTS=("main_hand","off_hand","helmet","shoulders","chest","gloves","legs","boot
 ARMOR_BY_CLASS={"warrior":"chain","knight":"plate","scout":"leather","rogue":"leather","mage":"cloth","priest":"cloth"}
 RARITY_MULT={"common":1.0,"uncommon":1.35,"rare":1.85,"epic":2.60}
 SELL_MULT={"common":0.30,"uncommon":0.90,"rare":2.25,"epic":6.00}
-POTIONS={201:("HP potion",38,"hp_potion"),202:("Large HP potion",77,"hp_potion"),203:("MP potion",38,"mp_potion"),204:("Large MP potion",77,"mp_potion")}
+POTIONS={401:("HP potion",38,"hp_potion"),402:("Large HP potion",77,"hp_potion"),403:("MP potion",38,"mp_potion"),404:("Large MP potion",77,"mp_potion")}
 
 @dataclass
 class VictoryLootResult:
@@ -64591,7 +64946,7 @@ class SimulationLootEquipmentCityService:
             award=None
             if resolver=="equipment":award=self._equipment_award(mob,payload);out.equipment+=1
             elif resolver=="rune":
-                stat=str(payload.get("stat","STA")).upper();level=int(payload.get("level",1));item_id=501+("STR","STA","DEX","INT","WIS").index(stat)*5+level-1;award=self._stack_award(item_id)
+                stat=str(payload.get("stat","STA")).upper();level=int(payload.get("level",1));item_id=701+("STR","STA","DEX","INT","WIS").index(stat)*5+level-1;award=self._stack_award(item_id)
             elif payload.get("item_id") is not None:award=self._stack_award(int(payload["item_id"]),int(payload.get("quantity",1)))
             if award is None:continue
             applied=self.engine.award(award,True);out.rolled+=award.quantity;out.awarded+=applied.awarded;out.lost+=applied.lost
@@ -64622,7 +64977,7 @@ class SimulationLootEquipmentCityService:
 ============================================================
 FILE: systems\simulation\meta_progression.py
 SIZE: 6616 bytes
-LAST WRITE: 2026-08-04 22:49:42
+LAST WRITE: 2026-08-31 23:16:21
 ============================================================
 
 from __future__ import annotations
@@ -64638,10 +64993,10 @@ CONTRACT_TARGET_KILLS=5
 DAILY_CONTRACT_LIMIT=5
 CONTRACT_MOBS_EQUIVALENT=20
 DAILY_TARGET_KILLS=25
-DAILY_REWARD_ITEM_ID=201
+DAILY_REWARD_ITEM_ID=401
 DAILY_REWARD_QUANTITY=3
 DAILY_FIRIUS_TOKENS=10
-REFINE_STONE_ITEM_ID=401
+REFINE_STONE_ITEM_ID=601
 GUILD_ELITE_KILL_EXP_REWARD=25
 GUILD_CONTRACT_EXP_REWARD=50
 WEAPON_REFINE_SUCCESS_CHANCES={0:100,1:100,2:100,3:80,4:70,5:60,6:50,7:40,8:30,9:20}
