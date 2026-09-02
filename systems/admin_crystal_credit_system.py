@@ -56,5 +56,5 @@ def get_admin_adjustment_history(admin_user_id,page=0,page_size=10,db_path=None)
  if not is_admin(admin_user_id):return {'success':False,'message':'Доступ заборонено.'}
  size=max(1,min(20,int(page_size)));page=max(0,int(page));c=_connect(db_path)
  try:
-  rows=[dict(r) for r in c.execute('SELECT * FROM admin_crystal_credit_audit ORDER BY id DESC LIMIT ? OFFSET ?',(size+1,page*size)).fetchall()];return {'success':True,'items':rows[:size],'page':page,'has_next':len(rows)>size}
+  total=int(c.execute('SELECT COUNT(*) FROM admin_crystal_credit_audit').fetchone()[0]);rows=[dict(r) for r in c.execute('SELECT * FROM admin_crystal_credit_audit ORDER BY id DESC LIMIT ? OFFSET ?',(size,page*size)).fetchall()];total_pages=max(1,(total+size-1)//size);return {'success':True,'items':rows,'page':page,'page_size':size,'total':total,'total_pages':total_pages,'has_next':page+1<total_pages,'has_previous':page>0}
  finally:c.close()
