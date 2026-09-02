@@ -6,7 +6,7 @@ try:
 except ImportError:
  ZoneInfo=None
  class ZoneInfoNotFoundError(Exception):pass
-from systems.admin_crystal_credit_system import is_admin,preview_admin_adjustment,execute_admin_adjustment,get_admin_adjustment_history
+from systems.admin_crystal_credit_system import is_admin,preview_admin_adjustment,execute_admin_adjustment,get_admin_adjustment_history,get_admin_adjustment_detail
 states={};COMMAND='/admin_crystals'
 def _menu():
  k=types.ReplyKeyboardMarkup(resize_keyboard=True);k.row('➕ Нарахувати кристали','➖ Вилучити кристали');k.row('📜 Історія адмін-операцій','❌ Закрити адмін-меню');return k
@@ -28,18 +28,27 @@ def _notify_target(bot,target_user_id,result,reason):
  if result.get('idempotent_replay'):return {'attempted':False,'delivered':False,'reason':'idempotent_replay'}
  try:bot.send_message(int(target_user_id),_notification_text(result,reason));return {'attempted':True,'delivered':True}
  except Exception as error:return {'attempted':True,'delivered':False,'error_type':type(error).__name__}
+def _display_name(row):
+ name=str(row.get('character_name') or '').strip()
+ return name or 'без персонажа'
+def _button_name(row,limit=24):
+ name=_display_name(row)
+ return name if len(name)<=limit else name[:max(1,limit-1)].rstrip()+'…'
 def _history_text(result):
- lines=['📜 Історія адміністративних операцій']
- if not result.get('items'):return '\n\n'.join((lines[0],'Операцій ще немає.'))
- for row in result['items']:
-  operation='➕ Нарахування' if row['operation']=='credit' else '➖ Вилучення'
-  created=_format_history_time(row['created_at'])
-  block=[f"#{row['id']} · {operation}",f"👤 Користувач: {row['target_user_id']}",f"💎 Запитано: {row['requested_amount']}",f"✅ Фактично: {row['actual_amount']}",f"💰 Баланс: {row['balance_before']} → {row['balance_after']}",f"📝 Причина: {row['reason']}",f"🕒 {created}"]
-  if row['operation']=='debit' and row['actual_amount']<row['requested_amount']:block.append('⚠️ Вилучено лише доступний залишок')
-  lines.append('\n'.join(block))
- return '\n\n'.join(lines)
+ total=int(result.get('total',0))
+ return '📜 Історія адміністративних операцій\n\nОперацій ще немає.' if total==0 else f'📜 Історія адміністративних операцій\n\nОберіть операцію для перегляду.\nУсього операцій: {total}'
+def _detail_text(row):
+ operation='➕ Нарахування' if row['operation']=='credit' else '➖ Вилучення'
+ lines=[f"📜 Адміністративна операція #{row['id']}",'',operation,'',f"👤 Telegram user ID: {row['target_user_id']}",f"🧙 Персонаж: {_display_name(row)}",f"💎 Запитано: {row['requested_amount']}",f"✅ Фактично: {row['actual_amount']}",f"💰 Баланс: {row['balance_before']} → {row['balance_after']}",f"📝 Причина: {row['reason']}",f"🕒 {_format_history_time(row['created_at'])}"]
+ if row['operation']=='debit' and row['actual_amount']<row['requested_amount']:lines.extend(('', '⚠️ Вилучено лише доступний залишок'))
+ return '\n'.join(lines)
+def _detail_kb(page):
+ k=types.InlineKeyboardMarkup();k.row(types.InlineKeyboardButton('🔙 До списку',callback_data=f'ac:history:{max(0,int(page))}'));k.row(types.InlineKeyboardButton('❌ Закрити історію',callback_data='ac:history_close'));return k
 def _history_kb(result):
  k=types.InlineKeyboardMarkup();buttons=[];page=int(result.get('page',0));total_pages=max(1,int(result.get('total_pages',1)))
+ for row in result.get('items',[]):
+  symbol='➕ Нарахування' if row['operation']=='credit' else '➖ Вилучення'
+  k.row(types.InlineKeyboardButton(f"#{row['id']} · {symbol} ({_button_name(row)})",callback_data=f"ac:history_detail:{row['id']}:{page}"))
  if page>0:buttons.append(types.InlineKeyboardButton('⬅️ Назад',callback_data=f'ac:history:{page-1}'))
  buttons.append(types.InlineKeyboardButton(f'{page+1}/{total_pages}',callback_data='ac:noop'))
  if result.get('has_next'):buttons.append(types.InlineKeyboardButton('Далі ➡️',callback_data=f'ac:history:{page+1}'))
@@ -67,6 +76,10 @@ def register_admin_crystal_credit_handlers(bot):
   state=states.get(uid);data=str(call.data)
   if data=='ac:noop':bot.answer_callback_query(call.id);return
   if data=='ac:history_close':bot.edit_message_text('✅ Історію закрито.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id);return
+  if data.startswith('ac:history_detail:'):
+   parts=data.split(':');audit_id=int(parts[2]);page=max(0,int(parts[3]));result=get_admin_adjustment_detail(uid,audit_id)
+   if not result.get('success'):bot.answer_callback_query(call.id,result.get('message','Операцію не знайдено.'),show_alert=True);return
+   bot.edit_message_text(_detail_text(result['item']),call.message.chat.id,call.message.message_id,reply_markup=_detail_kb(page));bot.answer_callback_query(call.id);return
   if data.startswith('ac:history:'):
    page=max(0,int(data.rsplit(':',1)[1]));result=get_admin_adjustment_history(uid,page=page,page_size=10);bot.edit_message_text(_history_text(result),call.message.chat.id,call.message.message_id,reply_markup=_history_kb(result));bot.answer_callback_query(call.id);return
   if data=='ac:cancel':_clear(uid);bot.edit_message_text('❌ Операцію скасовано.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id);return
