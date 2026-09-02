@@ -160,23 +160,16 @@ def register_crystal_shop_handlers(bot):
    p=preview_crystal_shop_purchase(uid,iid,qty)
    if not p['success']:bot.answer_callback_query(call.id,p['message'],show_alert=True);return
    k=types.InlineKeyboardMarkup();k.row(types.InlineKeyboardButton('✅ Підтвердити покупку',callback_data=f'cs:buy:{iid}:{qty}'),types.InlineKeyboardButton('❌ Скасувати',callback_data='cs:cancel'));bot.edit_message_text(f"✅ Підтвердження покупки\n\n{p['name']}\nКількість: {qty}\nЦіна за 1: {p['unit_price']} 💎\nРазом: {p['total_price']} 💎\nБаланс: {p['balance']} → {p['balance_after']} 💎",call.message.chat.id,call.message.message_id,reply_markup=k);_remember_shop_message(uid,call.message.chat.id,call.message.message_id,iid,qty,'confirm');bot.answer_callback_query(call.id);return
-  if action=='buy':
+  if action in ('buy','execute'):
    iid=int(parts[2]);qty=int(parts[3])
-   if not _active_shop_callback(call,item_id=iid,quantity=qty,stages=('confirm',)):
-    _reject_stale_shop_callback(bot,call);return
-   p=preview_crystal_shop_purchase(uid,iid,qty)
-   if not p['success']:
-    bot.answer_callback_query(call.id,p['message'],show_alert=True);return
-   k=types.InlineKeyboardMarkup();k.row(types.InlineKeyboardButton('✅ Так, купити',callback_data=f'cs:execute:{iid}:{qty}'),types.InlineKeyboardButton('↩️ Ні, повернутися',callback_data=f'cs:review:{iid}:{qty}'));k.row(types.InlineKeyboardButton('❌ Скасувати',callback_data='cs:cancel'))
-   bot.edit_message_text(f"⚠️ Остаточне підтвердження\n\nПредмет: {p['name']}\nКількість: {qty}\nБуде списано: {p['total_price']} 💎\nБаланс після покупки: {p['balance_after']} 💎",call.message.chat.id,call.message.message_id,reply_markup=k);_remember_shop_message(uid,call.message.chat.id,call.message.message_id,iid,qty,'final_confirm');bot.answer_callback_query(call.id);return
-  if action=='execute':
-   iid=int(parts[2]);qty=int(parts[3])
-   if not _active_shop_callback(call,item_id=iid,quantity=qty,stages=('final_confirm',)):
+   allowed_stages=('confirm',) if action=='buy' else ('confirm','final_confirm')
+   if not _active_shop_callback(call,item_id=iid,quantity=qty,stages=allowed_stages):
     _reject_stale_shop_callback(bot,call);return
    key=f"telegram:crystal_shop:{uid}:{call.message.chat.id}:{call.message.message_id}";res=purchase_crystal_shop_item(uid,iid,qty,key)
    if res['success']:
     _close_shop_session(bot,uid,f"✅ Покупку завершено.\n\n{res.get('name',CRYSTAL_SHOP_CATALOG[iid]['name'])} ×{qty}\nСписано: {res.get('total_price',CRYSTAL_SHOP_CATALOG[iid]['price']*qty)} 💎\nБаланс: {res.get('balance',res.get('purchase',{}).get('balance_after'))} 💎");bot.answer_callback_query(call.id,'Готово')
    else:bot.answer_callback_query(call.id,res['message'],show_alert=True)
+   return
  def manual_quantity(message,iid,source_message_id):
   try:qty=int(str(message.text).strip())
   except Exception:bot.send_message(message.chat.id,'❌ Введіть ціле число від 1 до 999.');return
