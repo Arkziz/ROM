@@ -1,18 +1,39 @@
 # -*- coding: utf-8 -*-
 from telebot import types
 from datetime import datetime
-from zoneinfo import ZoneInfo
+try:
+ from zoneinfo import ZoneInfo,ZoneInfoNotFoundError
+except ImportError:
+ ZoneInfo=None
+ class ZoneInfoNotFoundError(Exception):pass
 from systems.admin_crystal_credit_system import is_admin,preview_admin_adjustment,execute_admin_adjustment,get_admin_adjustment_history
 states={};COMMAND='/admin_crystals'
 def _menu():
  k=types.ReplyKeyboardMarkup(resize_keyboard=True);k.row('➕ Нарахувати кристали','➖ Вилучити кристали');k.row('📜 Історія адмін-операцій','❌ Закрити адмін-меню');return k
 def _clear(uid):states.pop(int(uid),None)
+def _format_history_time(value):
+ try:
+  parsed=datetime.fromisoformat(str(value or '').replace('Z','+00:00'))
+  if parsed.tzinfo is None:parsed=parsed.replace(tzinfo=datetime.now().astimezone().tzinfo)
+  try:
+   target=ZoneInfo('Europe/Kyiv') if ZoneInfo is not None else None
+  except (ZoneInfoNotFoundError,ModuleNotFoundError,KeyError):target=None
+  return parsed.astimezone(target or datetime.now().astimezone().tzinfo).strftime('%d.%m.%Y %H:%M')
+ except Exception:return str(value or 'Час невідомий')
+def _notification_text(result,reason):
+ if result['operation']=='credit':return f"💎 Адміністратор зарахував вам кристали\n\nНараховано: {result['actual_amount']} 💎\nБаланс: {result['balance_before']} → {result['balance_after']} 💎\nПричина: {reason}"
+ requested=result['requested_amount'];actual=result['actual_amount'];amount_line=f"Вилучено: {actual} 💎" if requested==actual else f"Запитано вилучити: {requested} 💎\nФактично вилучено: {actual} 💎"
+ return f"💎 Адміністратор скоригував ваш баланс кристалів\n\n{amount_line}\nБаланс: {result['balance_before']} → {result['balance_after']} 💎\nПричина: {reason}"
+def _notify_target(bot,target_user_id,result,reason):
+ if result.get('idempotent_replay'):return {'attempted':False,'delivered':False,'reason':'idempotent_replay'}
+ try:bot.send_message(int(target_user_id),_notification_text(result,reason));return {'attempted':True,'delivered':True}
+ except Exception as error:return {'attempted':True,'delivered':False,'error_type':type(error).__name__}
 def _history_text(result):
  lines=['📜 Історія адміністративних операцій']
  if not result.get('items'):return '\n\n'.join((lines[0],'Операцій ще немає.'))
  for row in result['items']:
   operation='➕ Нарахування' if row['operation']=='credit' else '➖ Вилучення'
-  created=datetime.fromisoformat(row['created_at']).astimezone(ZoneInfo('Europe/Kyiv')).strftime('%d.%m.%Y %H:%M')
+  created=_format_history_time(row['created_at'])
   block=[f"#{row['id']} · {operation}",f"👤 Користувач: {row['target_user_id']}",f"💎 Запитано: {row['requested_amount']}",f"✅ Фактично: {row['actual_amount']}",f"💰 Баланс: {row['balance_before']} → {row['balance_after']}",f"📝 Причина: {row['reason']}",f"🕒 {created}"]
   if row['operation']=='debit' and row['actual_amount']<row['requested_amount']:block.append('⚠️ Вилучено лише доступний залишок')
   lines.append('\n'.join(block))
@@ -54,7 +75,8 @@ def register_admin_crystal_credit_handlers(bot):
    if not state or state.get('step')!='confirm' or state.get('nonce')!=nonce:bot.answer_callback_query(call.id,'Ця кнопка застаріла.',show_alert=True);return
    key=f"telegram:admin_crystal:{uid}:{call.message.chat.id}:{call.message.message_id}:{nonce}";result=execute_admin_adjustment(uid,state['target'],state['operation'],state['amount'],state['reason'],key)
    if result.get('success'):
-    _clear(uid);bot.edit_message_text(f"✅ Операцію завершено.\nЗапитано: {result['requested_amount']} 💎\nФактично: {result['actual_amount']} 💎\nБаланс: {result['balance_before']} → {result['balance_after']} 💎",call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Готово')
+    delivery=_notify_target(bot,state['target'],result,state['reason']);delivery_note='' if delivery.get('delivered') or not delivery.get('attempted') else '\n⚠️ Повідомлення користувачу не доставлено.'
+    _clear(uid);bot.edit_message_text(f"✅ Операцію завершено.\nЗапитано: {result['requested_amount']} 💎\nФактично: {result['actual_amount']} 💎\nБаланс: {result['balance_before']} → {result['balance_after']} 💎{delivery_note}",call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Готово')
    else:bot.answer_callback_query(call.id,result.get('message','Операцію не виконано.'),show_alert=True)
  @bot.message_handler(func=lambda m:is_admin(m.from_user.id) and m.from_user.id in states)
  def input_router(message):
