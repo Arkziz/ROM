@@ -2286,8 +2286,6 @@ def register_combat_handlers(bot):
         else:
             text += f"🗡️ {character_name} завдав {mob['name']} {dmg} шкоди"
 
-        if weapon_damage > 0:
-            text += f" (зброя: {weapon_damage})"
 
         text += "\n"
         text += enemy_action_text
@@ -2682,8 +2680,6 @@ def register_combat_handlers(bot):
             else:
                 text += f"✨ {character_name} завдав {mob['name']} {dmg} шкоди"
                 
-            if weapon_damage > 0:
-                text += f" (зброя: {weapon_damage})"
                 
             text += "\n"
             
@@ -3199,8 +3195,6 @@ def register_combat_handlers(bot):
             else:
                 text += f"✨ {character_name} завдав {mob['name']} {dmg} шкоди"
 
-            if weapon_damage > 0:
-                text += f" (зброя: {weapon_damage})"
 
             text += "\n"
 
