@@ -1533,8 +1533,12 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
             (int(inventory_id), int(user_id)),
         ).fetchone()
         if row and int(row[0]) == _NAME_RUNE_ITEM_ID_17_28_1_3:
+            from systems.name_rune_system import NAME_RUNE_DESCRIPTION
+
             text = text.replace("Руна імені", "✍️ Руна імені")
             text = text.replace("📦 Категорія: material", "📦 Категорія: Матеріали")
+            if NAME_RUNE_DESCRIPTION not in text:
+                text = f"{text.rstrip()}\n\n📖 Опис: {NAME_RUNE_DESCRIPTION}"
             button = types.InlineKeyboardButton(
                 text="✍️ Використати Руну імені",
                 callback_data=f"name_rune_use:{int(inventory_id)}",

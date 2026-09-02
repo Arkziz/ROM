@@ -4,6 +4,11 @@ import re,sqlite3,unicodedata
 from datetime import datetime,timezone
 from pathlib import Path
 DB_PATH=Path(__file__).resolve().parents[1]/'game.db';NAME_RUNE_ITEM_ID=502;NAME_RUNE_PRICE=50
+NAME_RUNE_DESCRIPTION = (
+    "Дозволяє один раз змінити ім’я персонажа. "
+    "Після успішного перейменування витрачається одна Руна імені. "
+    "Нове ім’я має відповідати чинним правилам і не може бути зайняте іншим персонажем."
+)
 def _conn(path=None):
  c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
 def normalize_name(value):return unicodedata.normalize('NFKC',str(value or '').strip())

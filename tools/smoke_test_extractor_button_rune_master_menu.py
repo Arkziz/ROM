@@ -31,7 +31,7 @@ def main():
     rune_master = function_source(source, tree, "rune_master_kb")
     required = (
         'kb.add("💠 Вставити руну", "🔄 Переробити руни")',
-        'kb.add("🧰 Екстрактор")',
+        'kb.add("🧰 Екстрактор", "🛒 Крамниця")',
         'kb.add("🔙 Ремісничий квартал")',
     )
     for marker in required:
@@ -47,7 +47,7 @@ def main():
         if not isinstance(node, ast.FunctionDef) or node.name == "rune_master_kb":
             continue
         block = ast.get_source_segment(source, node) or ""
-        if 'kb.add("🧰 Екстрактор")' in block:
+        if '🧰 Екстрактор' in block or '🛒 Крамниця' in block:
             wrong_functions.append(node.name)
     if wrong_functions:
         fail(f"Extractor button leaked into other keyboards: {wrong_functions}")
@@ -74,7 +74,7 @@ def main():
 
     print("[OK] Extractor button Rune Master menu contracts")
     print("- Rune Master Extractor reply button: OK")
-    print("- button order: Insert/Fuse -> Extractor -> Back")
+    print("- button order: Insert/Fuse -> Extractor/Shop -> Back")
     print("- Extractor button in other keyboards: 0")
     print("- Extractor message handler: OK")
     print("- database mutations: 0")

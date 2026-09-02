@@ -154,8 +154,7 @@ def rune_master_kb():
     """Dedicated Rune Master menu without Blacksmith/Alchemist buttons."""
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.add("💠 Вставити руну", "🔄 Переробити руни")
-    kb.add("🧰 Екстрактор")
-    kb.add("🛒 Крамниця")
+    kb.add("🧰 Екстрактор", "🛒 Крамниця")
     kb.add("🔙 Ремісничий квартал")
     return kb
 
