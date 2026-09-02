@@ -93,6 +93,7 @@ from handlers.guild import register_guild_handlers
 from handlers.auction_house import register_auction_house_handlers
 from handlers.blacksmith_repair_confirm import register_blacksmith_repair_confirmation_handlers
 from handlers.crystal_shop import register_crystal_shop_handlers
+from handlers.admin_crystal_credit import register_admin_crystal_credit_handlers
 from handlers.player_rankings import register_player_rankings_handlers
 from handlers.timed_exp_bonus import register_timed_exp_bonus_handlers
 from systems.timed_exp_bonus_system import init_timed_exp_bonus_system
@@ -173,6 +174,7 @@ init_name_rune_system()
 init_fatigue_artifact_system()
 
 register_crystal_shop_handlers(bot)
+register_admin_crystal_credit_handlers(bot)
 register_player_rankings_handlers(bot)
 register_timed_exp_bonus_handlers(bot)
 register_start_handlers(bot)
