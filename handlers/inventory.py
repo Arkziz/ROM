@@ -1629,3 +1629,207 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
         pass
     return text, kb
 
+# === ROM STAGE 18.11.1 EQUIPMENT RUNE COMPARISON START ===
+# Initial item details remain concise. The equipped item is rendered only after
+# an ownership-safe, read-only inline callback.
+_EQUIPMENT_COMPARISON_BASE_BUILD_ITEM_DETAILS_18_11_1 = build_item_details
+_EQUIPMENT_COMPARISON_BASE_REGISTER_HANDLERS_18_11_1 = register_inventory_handlers
+_EQUIPMENT_COMPARISON_BASE_TEXT_18_11_1 = build_equipped_comparison_text
+_EQUIPMENT_COMPARISON_MARKER_18_11_1 = "⚖️ Зараз вдягнено для порівняння:"
+_EQUIPMENT_RUNE_MARKER_18_11_1 = "💠 Рунні слоти:"
+
+
+def _inventory_comparison_owned_item_18_11_1(user_id, inventory_id):
+    """Return the current owned inventory tuple or None; never trusts callback text."""
+    try:
+        from db_modules.connection import cursor
+        row = cursor.execute(
+            "SELECT id FROM inventory WHERE id=? AND user_id=? AND COALESCE(quantity,0)>0",
+            (int(inventory_id), int(user_id)),
+        ).fetchone()
+        if not row:
+            return None
+        return get_item_by_inventory_id_full(int(inventory_id))
+    except Exception:
+        return None
+
+
+def _inventory_comparison_target_18_11_1(user_id, inventory_id):
+    """Reload the selected row and the currently equipped row for its exact slot."""
+    item = _inventory_comparison_owned_item_18_11_1(user_id, inventory_id)
+    if not item or len(item) <= 6:
+        return None
+    slot_key = str(item[6] or "").strip()
+    if not slot_key:
+        return None
+    try:
+        equipped_id = get_all_equipped_slots(int(user_id)).get(slot_key)
+        if not equipped_id or int(equipped_id) == int(inventory_id):
+            return None
+        equipped = _inventory_comparison_owned_item_18_11_1(user_id, equipped_id)
+        if not equipped:
+            return None
+        return {
+            "selected": item,
+            "slot_key": slot_key,
+            "equipped_inventory_id": int(equipped_id),
+            "equipped": equipped,
+        }
+    except Exception:
+        return None
+
+
+def _inventory_remove_automatic_comparison_18_11_1(text):
+    """Remove old auto-comparison while preserving the selected item's rune block."""
+    value = str(text or "")
+    marker = value.find(_EQUIPMENT_COMPARISON_MARKER_18_11_1)
+    if marker < 0:
+        return value
+    rune = value.find(_EQUIPMENT_RUNE_MARKER_18_11_1, marker)
+    selected_prefix = value[:marker].rstrip()
+    if rune >= 0:
+        return selected_prefix + "\n\n" + value[rune:].lstrip()
+    return selected_prefix
+
+
+def _inventory_insert_compare_button_18_11_1(keyboard, inventory_id, category, page):
+    """Insert Compare before navigation without disturbing existing equip actions."""
+    if keyboard is None:
+        return keyboard
+    callback = f"itemcmp:{int(inventory_id)}:{str(category or 'all')}:{int(page or 0)}"
+    try:
+        rows = getattr(keyboard, "keyboard", None)
+        if rows is None:
+            return keyboard
+        for row in rows:
+            for button in row:
+                if str(getattr(button, "callback_data", "")) == callback:
+                    return keyboard
+        button = types.InlineKeyboardButton(text="⚖️ Порівняти", callback_data=callback)
+        navigation_prefixes = ("item:", "invcat:", "inv_home", "inventory", "inv_")
+        insert_at = len(rows)
+        for index, row in enumerate(rows):
+            callbacks = [str(getattr(item, "callback_data", "")) for item in row]
+            labels = [str(getattr(item, "text", "")) for item in row]
+            if any(value.startswith(navigation_prefixes) for value in callbacks) or any("Назад" in label or "До розділів" in label for label in labels):
+                insert_at = index
+                break
+        rows.insert(insert_at, [button])
+    except Exception:
+        return keyboard
+    return keyboard
+
+
+def build_equipped_comparison_text(user_id, slot_key, current_inventory_id):
+    """Existing equipped-item card plus that equipped row's own rune sockets."""
+    text = _EQUIPMENT_COMPARISON_BASE_TEXT_18_11_1(user_id, slot_key, current_inventory_id)
+    target = _inventory_comparison_target_18_11_1(user_id, current_inventory_id)
+    if not text or not target:
+        return text
+    try:
+        from systems.rune_system import format_equipment_rune_slots_text
+        rune_block = format_equipment_rune_slots_text(
+            int(user_id), target["equipped_inventory_id"]
+        )
+        if rune_block and _EQUIPMENT_RUNE_MARKER_18_11_1 not in text:
+            text = text.rstrip() + "\n" + str(rune_block)
+    except Exception:
+        pass
+    return text
+
+
+def build_item_details(user_id, inventory_id, back_category="all", page=0):
+    """Selected item only; add Compare iff another item is equipped in the slot."""
+    result = _EQUIPMENT_COMPARISON_BASE_BUILD_ITEM_DETAILS_18_11_1(
+        user_id, inventory_id, back_category, page
+    )
+    if not isinstance(result, tuple) or len(result) < 2:
+        return result
+    text, keyboard = result[0], result[1]
+    text = _inventory_remove_automatic_comparison_18_11_1(text)
+    if _inventory_comparison_target_18_11_1(user_id, inventory_id):
+        keyboard = _inventory_insert_compare_button_18_11_1(
+            keyboard, inventory_id, back_category, page
+        )
+    return (text, keyboard, *result[2:])
+
+
+def _inventory_comparison_keyboard_18_11_1(keyboard, inventory_id, category, page):
+    """Replace Compare with a canonical return to the selected-item card."""
+    try:
+        rows = getattr(keyboard, "keyboard", None)
+        if rows is None:
+            return keyboard
+        compare_prefix = f"itemcmp:{int(inventory_id)}:"
+        replacement = types.InlineKeyboardButton(
+            text="⬅️ Назад до предмета",
+            callback_data=f"item:{int(inventory_id)}:{str(category or 'all')}:{int(page or 0)}",
+        )
+        replaced = False
+        for index, row in enumerate(rows):
+            if any(str(getattr(button, "callback_data", "")).startswith(compare_prefix) for button in row):
+                rows[index] = [replacement]
+                replaced = True
+                break
+        if not replaced:
+            rows.insert(0, [replacement])
+    except Exception:
+        pass
+    return keyboard
+
+
+def register_inventory_handlers(bot):
+    """Register comparison before legacy inventory callbacks to preserve priority."""
+    @bot.callback_query_handler(
+        func=lambda call: str(getattr(call, "data", "") or "").startswith("itemcmp:")
+    )
+    def equipment_comparison_callback_18_11_1(call):
+        try:
+            parts = str(call.data or "").split(":")
+            if len(parts) != 4:
+                raise ValueError("invalid callback")
+            inventory_id = int(parts[1])
+            category = str(parts[2] or "all")
+            page = int(parts[3])
+        except Exception:
+            bot.answer_callback_query(call.id, "Некоректна дія.", show_alert=True)
+            return
+
+        user_id = int(call.from_user.id)
+        target = _inventory_comparison_target_18_11_1(user_id, inventory_id)
+        if not target:
+            bot.answer_callback_query(
+                call.id,
+                "Предмет або спорядження для порівняння більше недоступні.",
+                show_alert=True,
+            )
+            return
+
+        result = build_item_details(user_id, inventory_id, category, page)
+        if not isinstance(result, tuple) or len(result) < 2:
+            bot.answer_callback_query(call.id, "Предмет більше недоступний.", show_alert=True)
+            return
+        text, keyboard = result[0], result[1]
+        comparison = build_equipped_comparison_text(
+            user_id, target["slot_key"], inventory_id
+        )
+        if not comparison:
+            bot.answer_callback_query(
+                call.id, "Спорядження для порівняння більше недоступне.", show_alert=True
+            )
+            return
+        keyboard = _inventory_comparison_keyboard_18_11_1(
+            keyboard, inventory_id, category, page
+        )
+        bot.edit_message_text(
+            str(text).rstrip() + comparison,
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboard,
+        )
+        bot.answer_callback_query(call.id)
+
+    return _EQUIPMENT_COMPARISON_BASE_REGISTER_HANDLERS_18_11_1(bot)
+
+# === ROM STAGE 18.11.1 EQUIPMENT RUNE COMPARISON END ===
+
