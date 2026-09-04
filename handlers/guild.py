@@ -247,15 +247,15 @@ def build_guild_hall_member_text(user_id):
         f"Рівень гільдії: {guild['level']}\n"
         f"Учасники: {member_count}/{guild['member_limit']}\n\n"
         f"Місячний рейтинг ({season_key}):\n"
-        f"• EXP: {guild['monthly_exp']}\n"
+        f"• Досвід: {guild['monthly_exp']}\n"
         f"• Ресурс: {guild['monthly_resource']}\n"
         f"• Вбивства: {guild['monthly_kills']}\n"
         f"• Контракти: {guild['monthly_contracts']}\n"
-        f"• Score: {guild['monthly_score']}\n\n"
+        f"• Бали: {guild['monthly_score']}\n\n"
         f"За весь час:\n"
-        f"• EXP: {guild['total_exp']}\n"
+        f"• Досвід: {guild['total_exp']}\n"
         f"• Ресурс: {guild['total_resource']}\n"
-        f"• Score: {guild['total_score']}\n\n"
+        f"• Бали: {guild['total_score']}\n\n"
         "Доступні дії:\n"
         "• ℹ️ Інформація\n"
         "• 👥 Учасники\n"
@@ -333,7 +333,7 @@ def build_guild_members_text(user_id):
         monthly_score = member["monthly_contribution_score"] or 0
         text += (
             f"{index}. {role_label} {character_name}\n"
-            f"   Рівень: {level} | Score: {score} | Місяць: {monthly_score}\n"
+            f"   Рівень: {level} | Бали: {score} | Місяць: {monthly_score}\n"
         )
 
     return text.strip()
@@ -365,7 +365,7 @@ def build_guild_ranking_text(scope="monthly"):
             resource = guild["monthly_resource"] or 0
         text += (
             f"{index}. {name}\n"
-            f"   Score: {score} | EXP: {exp} | Ресурс: {resource}\n"
+            f"   Бали: {score} | Досвід: {exp} | Ресурс: {resource}\n"
         )
 
     return text.strip()
@@ -414,13 +414,13 @@ def build_guild_detail_text(user_id, guild_id):
         f"Учасники: {member_count}/{guild['member_limit']}\n"
         f"Створено: {format_ua_date(guild['created_at'])}\n\n"
         f"Поточний сезон:\n"
-        f"• EXP: {guild['monthly_exp']}\n"
+        f"• Досвід: {guild['monthly_exp']}\n"
         f"• Ресурс: {guild['monthly_resource']}\n"
-        f"• Score: {guild['monthly_score']}\n\n"
+        f"• Бали: {guild['monthly_score']}\n\n"
         f"За весь час:\n"
-        f"• EXP: {guild['total_exp']}\n"
+        f"• Досвід: {guild['total_exp']}\n"
         f"• Ресурс: {guild['total_resource']}\n"
-        f"• Score: {guild['total_score']}"
+        f"• Бали: {guild['total_score']}"
         f"{pending_text}"
     )
 
@@ -1229,7 +1229,7 @@ def build_guild_member_manage_text(user_id):
         monthly_score = _member_row_get(member, "monthly_contribution_score", 0) or 0
         text += (
             f"{index}. {role_label} {name}\n"
-            f"   Рівень: {level} | Score: {score} | Місяць: {monthly_score}\n"
+            f"   Рівень: {level} | Бали: {score} | Місяць: {monthly_score}\n"
         )
 
     text += "\nОбери учасника кнопкою нижче, щоб переглянути дії."
@@ -1845,21 +1845,21 @@ def build_guild_progress_text(user_id):
         f"🏛 Прогрес гільдії\n\n"
         f"{get_guild_display_name(guild)}\n\n"
         f"Рівень: {guild['level']}\n"
-        f"EXP до наступного рівня:\n"
+        f"Досвід до наступного рівня:\n"
         f"{bar} {info['progress_percent']:.1f}%\n"
-        f"{info['progress_exp']}/{info['needed_exp']} EXP\n\n"
+        f"{info['progress_exp']}/{info['needed_exp']} досвіду\n\n"
         f"Поточний сезон:\n"
-        f"• EXP: {guild['monthly_exp']}\n"
+        f"• Досвід: {guild['monthly_exp']}\n"
         f"• Ресурс: {guild['monthly_resource']}\n"
         f"• Вбивства: {guild['monthly_kills']}\n"
         f"• Контракти: {guild['monthly_contracts']}\n"
-        f"• Score: {guild['monthly_score']}\n\n"
+        f"• Бали: {guild['monthly_score']}\n\n"
         f"За весь час:\n"
-        f"• EXP: {guild['total_exp']}\n"
+        f"• Досвід: {guild['total_exp']}\n"
         f"• Ресурс: {guild['total_resource']}\n"
         f"• Вбивства: {guild['total_kills']}\n"
         f"• Контракти: {guild['total_contracts']}\n"
-        f"• Score: {guild['total_score']}"
+        f"• Бали: {guild['total_score']}"
     )
 
 
@@ -1900,7 +1900,7 @@ def build_guild_contribution_text(user_id, scope="monthly"):
 
         text += (
             f"{index}. {role_label} {name}\n"
-            f"   Score: {score} | EXP: {exp} | Ресурс: {resource}\n"
+            f"   Бали: {score} | Досвід: {exp} | Ресурс: {resource}\n"
             f"   Вбивства: {kills} | Контракти: {contracts}\n"
         )
 
@@ -2676,15 +2676,15 @@ def format_guild_debug_text(user_id):
 
     text += f"Level: {guild['level']}\n"
     if next_level:
-        text += f"Level progress: {next_level.get('progress_exp', 0)}/{next_level.get('needed_exp', 0)} EXP ({next_level.get('progress_percent', 0):.1f}%)\n"
+        text += f"Прогрес рівня: {next_level.get('progress_exp', 0)}/{next_level.get('needed_exp', 0)} EXP ({next_level.get('progress_percent', 0):.1f}%)\n"
 
     text += "\nMonthly:\n"
-    text += f"EXP: {guild['monthly_exp']} | Resource: {guild['monthly_resource']} | Kills: {guild['monthly_kills']} | Contracts: {guild['monthly_contracts']}\n"
-    text += f"Score: {guild['monthly_score']}\n"
+    text += f"Досвід: {guild['monthly_exp']} | Ресурс: {guild['monthly_resource']} | Вбивства: {guild['monthly_kills']} | Контракти: {guild['monthly_contracts']}\n"
+    text += f"Бали: {guild['monthly_score']}\n"
 
     text += "\nTotal:\n"
-    text += f"EXP: {guild['total_exp']} | Resource: {guild['total_resource']} | Kills: {guild['total_kills']} | Contracts: {guild['total_contracts']}\n"
-    text += f"Score: {guild['total_score']}"
+    text += f"Досвід: {guild['total_exp']} | Ресурс: {guild['total_resource']} | Вбивства: {guild['total_kills']} | Контракти: {guild['total_contracts']}\n"
+    text += f"Бали: {guild['total_score']}"
 
     if diagnostics.get("error"):
         text += f"\n\nError: {diagnostics.get('error')}"
