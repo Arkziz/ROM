@@ -78,8 +78,23 @@ def normalize_guild_name(value):
     return (value or "").strip().casefold()
 
 
+GUILD_TAG_LATIN_LETTERS = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+GUILD_TAG_UKRAINIAN_LETTERS = frozenset("АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЬЮЯ")
+GUILD_TAG_ALLOWED_LETTERS = GUILD_TAG_LATIN_LETTERS | GUILD_TAG_UKRAINIAN_LETTERS
+
+
 def normalize_guild_tag(value):
     return (value or "").strip().upper()
+
+
+def validate_guild_tag_contract(value):
+    tag = normalize_guild_tag(value)
+    if len(tag) != 3:
+        return {"success": False, "message": "❌ Абревіатура гільдії має складатися рівно з 3 літер."}
+    if any(character not in GUILD_TAG_ALLOWED_LETTERS for character in tag):
+        return {"success": False, "message": "❌ Дозволені лише українські та латинські літери."}
+    return {"success": True, "tag": tag}
+
 
 
 def calculate_guild_score(exp=0, resource=0, kills=0, contracts=0):
@@ -429,59 +444,6 @@ def get_user_guild_role(user_id):
         return None
 
     return member["role"]
-
-
-def validate_guild_create_input(name, tag, icon="🏰"):
-    name = (name or "").strip()
-    tag = normalize_guild_tag(tag)
-    icon = (icon or "🏰").strip() or "🏰"
-
-    if len(name) < 3:
-        return {
-            "success": False,
-            "message": "❌ Назва гільдії має містити мінімум 3 символи."
-        }
-
-    if len(name) > 32:
-        return {
-            "success": False,
-            "message": "❌ Назва гільдії має бути не довша за 32 символи."
-        }
-
-    if len(tag) < 2:
-        return {
-            "success": False,
-            "message": "❌ Абревіатура гільдії має містити мінімум 2 символи."
-        }
-
-    if len(tag) > 5:
-        return {
-            "success": False,
-            "message": "❌ Абревіатура гільдії має бути не довша за 5 символів."
-        }
-
-    existing = get_guild_by_name_or_tag(name)
-
-    if existing:
-        return {
-            "success": False,
-            "message": "❌ Гільдія з такою назвою або абревіатурою вже існує."
-        }
-
-    existing_tag = get_guild_by_name_or_tag(tag)
-
-    if existing_tag:
-        return {
-            "success": False,
-            "message": "❌ Гільдія з такою назвою або абревіатурою вже існує."
-        }
-
-    return {
-        "success": True,
-        "name": name,
-        "tag": tag,
-        "icon": icon,
-    }
 
 
 # ROM 17.21.1 GUILD LEAVE COOLDOWN
@@ -1320,17 +1282,10 @@ def validate_guild_create_input(name, tag, icon="🏰"):
             "message": "❌ Назва гільдії має бути не довша за 32 символи."
         }
 
-    if len(tag) < 2:
-        return {
-            "success": False,
-            "message": "❌ Абревіатура гільдії має містити мінімум 2 символи."
-        }
-
-    if len(tag) > 5:
-        return {
-            "success": False,
-            "message": "❌ Абревіатура гільдії має бути не довша за 5 символів."
-        }
+    tag_validation = validate_guild_tag_contract(tag)
+    if not tag_validation["success"]:
+        return tag_validation
+    tag = tag_validation["tag"]
 
     existing = get_guild_by_name_or_tag(name)
     if existing:
@@ -1358,6 +1313,7 @@ def validate_guild_create_input(name, tag, icon="🏰"):
         "tag": tag,
         "icon": icon,
     }
+
 
 
 # Ensure uniqueness whenever module is loaded after the patch.

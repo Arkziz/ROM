@@ -4,6 +4,7 @@
 # ROM 17.11.2 COMPACT TEXT LOCATION DESCRIPTION
 # ROM 17.9.1 GLOBAL PAGINATION BUTTON LABELS
 from telebot import types
+from systems.guild_system import validate_guild_tag_contract
 
 from db import (
     init_guild_system,
@@ -168,20 +169,14 @@ def validate_guild_name_for_ui(name):
 
 
 def validate_guild_tag_for_ui(tag):
-    tag = normalize_guild_tag_input(tag)
-
-    if len(tag) < 2:
-        return False, "❌ Абревіатура гільдії має містити мінімум 2 символи."
-    if len(tag) > 5:
-        return False, "❌ Абревіатура гільдії має бути не довша за 5 символів."
-
-    allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЬЮЯ"
-    if any(ch not in allowed for ch in tag):
-        return False, "❌ Абревіатура може містити тільки літери та цифри."
+    validation = validate_guild_tag_contract(tag)
+    if not validation["success"]:
+        return False, validation["message"]
+    tag = validation["tag"]
     if get_guild_by_name_or_tag(tag):
-        return False, "❌ Гільдія з такою назвою або абревіатурою вже існує."
-
+        return False, "❌ Гільдія з такою абревіатурою вже існує."
     return True, tag
+
 
 
 def validate_guild_icon_for_ui(icon):
@@ -492,12 +487,14 @@ def build_guild_create_tag_prompt(name):
         "🏗️ Створення гільдії\n\n"
         "Крок 2/4 — абревіатура.\n\n"
         f"Назва: {name}\n\n"
-        "Введи короткий TAG гільдії.\n"
+        "Введи TAG гільдії.\n"
         "Вимоги:\n"
-        "• від 2 до 5 символів;\n"
-        "• тільки літери та цифри;\n"
-        "• буде показуватись у рейтингах, наприклад [ROM]."
+        "• рівно 3 літери;\n"
+        "• тільки українські або латинські літери;\n"
+        "• цифри, пробіли та інші символи заборонені;\n"
+        "• буде показуватись у квадратних дужках, наприклад [ROM]."
     )
+
 
 
 def build_guild_create_icon_prompt(name, tag):
