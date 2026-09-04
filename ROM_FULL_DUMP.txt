@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-09-02 00:20:06 +03:00
+Created: 2026-09-04 14:06:07 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9168
-Scanned files: 7525
-Included files: 525
-Excluded files: 7000
-Included source size: 3,48 MB
+Scanned files: 8715
+Included files: 534
+Excluded files: 8181
+Included source size: 3,51 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 6994
+- excluded directory: 8175
 - excluded file name or pattern: 6
 - unsupported file type: 0
 
@@ -65,6 +65,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - db_modules\systems_wrappers.py
 - db_modules\utils.py
 - handlers\__init__.py
+- handlers\admin_crystal_credit.py
 - handlers\auction_house.py
 - handlers\blacksmith.py
 - handlers\blacksmith_repair_confirm.py
@@ -101,6 +102,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - migrations\runner.py
 - requirements.txt
 - systems\__init__.py
+- systems\admin_crystal_credit_system.py
 - systems\auction_house_system.py
 - systems\boss_system.py
 - systems\character_system.py
@@ -249,6 +251,10 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\run_rng_patch_regression.py
 - tools\run_simulation_canonical_parity_report.py
 - tools\run_world_progression_sim.py
+- tools\smoke_test_admin_crystal_credit_and_clamped_debit_18_3_1.py
+- tools\smoke_test_admin_history_inline_details_and_character_names_18_3_1c.py
+- tools\smoke_test_admin_history_timezone_and_user_notifications_18_3_1b.py
+- tools\smoke_test_admin_menu_close_and_history_pagination_18_3_1a.py
 - tools\smoke_test_alchemist_buy_return_and_potion_stack_normalization_17_19_3_5.py
 - tools\smoke_test_alchemist_catalog_order_and_db_recovery_17_19_3_4.py
 - tools\smoke_test_alchemist_potion_buy_sell_17_19_3.py
@@ -310,6 +316,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_combat_callback_rate_limit_hotfix.py
 - tools\smoke_test_combat_mana_potion_contracts.py
 - tools\smoke_test_combat_potion_cooldown_menu_ux.py
+- tools\smoke_test_combat_weapon_number_text_cleanup_18_2_4.py
 - tools\smoke_test_compact_guild_profile_line_16_1_2.py
 - tools\smoke_test_compact_text_location_description_17_11_2.py
 - tools\smoke_test_connection_bag_default_sql_recovery_17_8_1_1.py
@@ -327,6 +334,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_crystal_bag_expansion_17_32_1.py
 - tools\smoke_test_crystal_shop_17_27_1.py
 - tools\smoke_test_crystal_shop_handler_priority_17_28_1_2.py
+- tools\smoke_test_crystal_shop_single_confirmation_18_2_3g.py
 - tools\smoke_test_crystal_shop_stale_menu_cleanup_17_27_1_1.py
 - tools\smoke_test_crystal_shop_unique_back_button_17_27_1_2.py
 - tools\smoke_test_crystal_wallet_smoke_import_recovery_17_25_1_1.py
@@ -515,6 +523,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_rune_master_extractor_shop.py
 - tools\smoke_test_rune_master_inline_navigation_cleanup.py
 - tools\smoke_test_rune_master_insertion.py
+- tools\smoke_test_rune_master_layout_and_name_rune_description_18_2_3c.py
 - tools\smoke_test_rune_master_menu_ui.py
 - tools\smoke_test_rune_master_shop_refresh_hotfix.py
 - tools\smoke_test_rune_stat_ukrainian_labels.py
@@ -595,8 +604,8 @@ reports/
 
 ============================================================
 FILE: config.py
-SIZE: 168 bytes
-LAST WRITE: 2026-07-09 23:38:37
+SIZE: 812 bytes
+LAST WRITE: 2026-09-02 23:13:57
 ============================================================
 
 import os
@@ -605,6 +614,21 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv("BOT_TOKEN")
+
+def _positive_int_env(name, default):
+    raw = str(os.getenv(name, default)).strip()
+    value = int(raw)
+    if value <= 0:
+        raise RuntimeError(f"{name} має бути додатним цілим числом")
+    return value
+
+def _admin_ids_env():
+    raw = str(os.getenv("ROM_ADMIN_USER_IDS", "")).strip()
+    return frozenset(int(part.strip()) for part in raw.split(",") if part.strip())
+
+ROM_ADMIN_USER_IDS = _admin_ids_env()
+ROM_ADMIN_CRYSTAL_CREDIT_MAX = _positive_int_env("ROM_ADMIN_CRYSTAL_CREDIT_MAX", "10000")
+ROM_ADMIN_CRYSTAL_DEBIT_MAX = _positive_int_env("ROM_ADMIN_CRYSTAL_DEBIT_MAX", "10000")
 
 if not TOKEN:
     raise RuntimeError("BOT_TOKEN не знайдено у .env")
@@ -11440,9 +11464,126 @@ LAST WRITE: 2026-07-09 23:38:37
 [EMPTY FILE]
 
 ============================================================
+FILE: handlers\admin_crystal_credit.py
+SIZE: 11265 bytes
+LAST WRITE: 2026-09-03 00:07:46
+============================================================
+
+# -*- coding: utf-8 -*-
+from telebot import types
+from datetime import datetime
+try:
+ from zoneinfo import ZoneInfo,ZoneInfoNotFoundError
+except ImportError:
+ ZoneInfo=None
+ class ZoneInfoNotFoundError(Exception):pass
+from systems.admin_crystal_credit_system import is_admin,preview_admin_adjustment,execute_admin_adjustment,get_admin_adjustment_history,get_admin_adjustment_detail
+states={};COMMAND='/admin_crystals'
+def _menu():
+ k=types.ReplyKeyboardMarkup(resize_keyboard=True);k.row('➕ Нарахувати кристали','➖ Вилучити кристали');k.row('📜 Історія адмін-операцій','❌ Закрити адмін-меню');return k
+def _clear(uid):states.pop(int(uid),None)
+def _format_history_time(value):
+ try:
+  parsed=datetime.fromisoformat(str(value or '').replace('Z','+00:00'))
+  if parsed.tzinfo is None:parsed=parsed.replace(tzinfo=datetime.now().astimezone().tzinfo)
+  try:
+   target=ZoneInfo('Europe/Kyiv') if ZoneInfo is not None else None
+  except (ZoneInfoNotFoundError,ModuleNotFoundError,KeyError):target=None
+  return parsed.astimezone(target or datetime.now().astimezone().tzinfo).strftime('%d.%m.%Y %H:%M')
+ except Exception:return str(value or 'Час невідомий')
+def _notification_text(result,reason):
+ if result['operation']=='credit':return f"💎 Адміністратор зарахував вам кристали\n\nНараховано: {result['actual_amount']} 💎\nБаланс: {result['balance_before']} → {result['balance_after']} 💎\nПричина: {reason}"
+ requested=result['requested_amount'];actual=result['actual_amount'];amount_line=f"Вилучено: {actual} 💎" if requested==actual else f"Запитано вилучити: {requested} 💎\nФактично вилучено: {actual} 💎"
+ return f"💎 Адміністратор скоригував ваш баланс кристалів\n\n{amount_line}\nБаланс: {result['balance_before']} → {result['balance_after']} 💎\nПричина: {reason}"
+def _notify_target(bot,target_user_id,result,reason):
+ if result.get('idempotent_replay'):return {'attempted':False,'delivered':False,'reason':'idempotent_replay'}
+ try:bot.send_message(int(target_user_id),_notification_text(result,reason));return {'attempted':True,'delivered':True}
+ except Exception as error:return {'attempted':True,'delivered':False,'error_type':type(error).__name__}
+def _display_name(row):
+ name=str(row.get('character_name') or '').strip()
+ return name or 'без персонажа'
+def _button_name(row,limit=24):
+ name=_display_name(row)
+ return name if len(name)<=limit else name[:max(1,limit-1)].rstrip()+'…'
+def _history_text(result):
+ total=int(result.get('total',0))
+ return '📜 Історія адміністративних операцій\n\nОперацій ще немає.' if total==0 else f'📜 Історія адміністративних операцій\n\nОберіть операцію для перегляду.\nУсього операцій: {total}'
+def _detail_text(row):
+ operation='➕ Нарахування' if row['operation']=='credit' else '➖ Вилучення'
+ lines=[f"📜 Адміністративна операція #{row['id']}",'',operation,'',f"👤 Telegram user ID: {row['target_user_id']}",f"🧙 Персонаж: {_display_name(row)}",f"💎 Запитано: {row['requested_amount']}",f"✅ Фактично: {row['actual_amount']}",f"💰 Баланс: {row['balance_before']} → {row['balance_after']}",f"📝 Причина: {row['reason']}",f"🕒 {_format_history_time(row['created_at'])}"]
+ if row['operation']=='debit' and row['actual_amount']<row['requested_amount']:lines.extend(('', '⚠️ Вилучено лише доступний залишок'))
+ return '\n'.join(lines)
+def _detail_kb(page):
+ k=types.InlineKeyboardMarkup();k.row(types.InlineKeyboardButton('🔙 До списку',callback_data=f'ac:history:{max(0,int(page))}'));k.row(types.InlineKeyboardButton('❌ Закрити історію',callback_data='ac:history_close'));return k
+def _history_kb(result):
+ k=types.InlineKeyboardMarkup();buttons=[];page=int(result.get('page',0));total_pages=max(1,int(result.get('total_pages',1)))
+ for row in result.get('items',[]):
+  symbol='➕ Нарахування' if row['operation']=='credit' else '➖ Вилучення'
+  k.row(types.InlineKeyboardButton(f"#{row['id']} · {symbol} ({_button_name(row)})",callback_data=f"ac:history_detail:{row['id']}:{page}"))
+ if page>0:buttons.append(types.InlineKeyboardButton('⬅️ Назад',callback_data=f'ac:history:{page-1}'))
+ buttons.append(types.InlineKeyboardButton(f'{page+1}/{total_pages}',callback_data='ac:noop'))
+ if result.get('has_next'):buttons.append(types.InlineKeyboardButton('Далі ➡️',callback_data=f'ac:history:{page+1}'))
+ k.row(*buttons);k.row(types.InlineKeyboardButton('❌ Закрити історію',callback_data='ac:history_close'));return k
+def register_admin_crystal_credit_handlers(bot):
+ @bot.message_handler(commands=['admin_crystals'])
+ def open_admin(message):
+  if not is_admin(message.from_user.id):return
+  _clear(message.from_user.id);bot.send_message(message.chat.id,'🛡️ Адміністративні операції з кристалами',reply_markup=_menu())
+ @bot.message_handler(func=lambda m:is_admin(m.from_user.id) and m.text in ('➕ Нарахувати кристали','➖ Вилучити кристали'))
+ def choose(message):
+  states[message.from_user.id]={'step':'target','operation':'credit' if message.text.startswith('➕') else 'debit'};bot.send_message(message.chat.id,'Введіть Telegram user ID отримувача:')
+ @bot.message_handler(func=lambda m:is_admin(m.from_user.id) and m.text=='📜 Історія адмін-операцій')
+ def history(message):
+  result=get_admin_adjustment_history(message.from_user.id,page=0,page_size=10);bot.send_message(message.chat.id,_history_text(result),reply_markup=_history_kb(result))
+ @bot.message_handler(func=lambda m:is_admin(m.from_user.id) and m.text=='❌ Закрити адмін-меню')
+ def close(message):
+  _clear(message.from_user.id)
+  from handlers.city import build_account_menu_text_17_30_1_4,account_menu_kb_17_30_1_4
+  bot.send_message(message.chat.id,build_account_menu_text_17_30_1_4(message.from_user.id),reply_markup=account_menu_kb_17_30_1_4())
+ @bot.callback_query_handler(func=lambda c:str(c.data or '').startswith('ac:'))
+ def callback(call):
+  uid=call.from_user.id
+  if not is_admin(uid):bot.answer_callback_query(call.id,'Доступ заборонено.',show_alert=True);return
+  state=states.get(uid);data=str(call.data)
+  if data=='ac:noop':bot.answer_callback_query(call.id);return
+  if data=='ac:history_close':bot.edit_message_text('✅ Історію закрито.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id);return
+  if data.startswith('ac:history_detail:'):
+   parts=data.split(':');audit_id=int(parts[2]);page=max(0,int(parts[3]));result=get_admin_adjustment_detail(uid,audit_id)
+   if not result.get('success'):bot.answer_callback_query(call.id,result.get('message','Операцію не знайдено.'),show_alert=True);return
+   bot.edit_message_text(_detail_text(result['item']),call.message.chat.id,call.message.message_id,reply_markup=_detail_kb(page));bot.answer_callback_query(call.id);return
+  if data.startswith('ac:history:'):
+   page=max(0,int(data.rsplit(':',1)[1]));result=get_admin_adjustment_history(uid,page=page,page_size=10);bot.edit_message_text(_history_text(result),call.message.chat.id,call.message.message_id,reply_markup=_history_kb(result));bot.answer_callback_query(call.id);return
+  if data=='ac:cancel':_clear(uid);bot.edit_message_text('❌ Операцію скасовано.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id);return
+  if data.startswith('ac:confirm:'):
+   nonce=data.split(':',2)[2]
+   if not state or state.get('step')!='confirm' or state.get('nonce')!=nonce:bot.answer_callback_query(call.id,'Ця кнопка застаріла.',show_alert=True);return
+   key=f"telegram:admin_crystal:{uid}:{call.message.chat.id}:{call.message.message_id}:{nonce}";result=execute_admin_adjustment(uid,state['target'],state['operation'],state['amount'],state['reason'],key)
+   if result.get('success'):
+    delivery=_notify_target(bot,state['target'],result,state['reason']);delivery_note='' if delivery.get('delivered') or not delivery.get('attempted') else '\n⚠️ Повідомлення користувачу не доставлено.'
+    _clear(uid);bot.edit_message_text(f"✅ Операцію завершено.\nЗапитано: {result['requested_amount']} 💎\nФактично: {result['actual_amount']} 💎\nБаланс: {result['balance_before']} → {result['balance_after']} 💎{delivery_note}",call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Готово')
+   else:bot.answer_callback_query(call.id,result.get('message','Операцію не виконано.'),show_alert=True)
+ @bot.message_handler(func=lambda m:is_admin(m.from_user.id) and m.from_user.id in states)
+ def input_router(message):
+  uid=message.from_user.id;state=states.get(uid,{});text=str(message.text or '').strip()
+  if state.get('step')=='target':
+   try:state['target']=int(text)
+   except Exception:bot.send_message(message.chat.id,'❌ Введіть цілий Telegram user ID.');return
+   state['step']='amount';bot.send_message(message.chat.id,'Введіть кількість від 1 до 10000:');return
+  if state.get('step')=='amount':
+   try:state['amount']=int(text)
+   except Exception:bot.send_message(message.chat.id,'❌ Введіть ціле число.');return
+   state['step']='reason';bot.send_message(message.chat.id,'Введіть обов’язкову причину операції:');return
+  if state.get('step')=='reason':
+   state['reason']=text;preview=preview_admin_adjustment(uid,state['target'],state['operation'],state['amount'],text)
+   if not preview.get('success'):_clear(uid);bot.send_message(message.chat.id,preview.get('message','Операцію не можна підготувати.'),reply_markup=_menu());return
+   nonce=f"{uid:x}{message.message_id:x}";state.update({'step':'confirm','nonce':nonce});warning='\n⚠️ Буде вилучено лише доступний залишок.' if preview.get('clamped') else ''
+   k=types.InlineKeyboardMarkup();k.row(types.InlineKeyboardButton('✅ Підтвердити операцію',callback_data=f'ac:confirm:{nonce}'),types.InlineKeyboardButton('❌ Скасувати',callback_data='ac:cancel'))
+   bot.send_message(message.chat.id,f"🛡️ Підтвердження\n\nОперація: {preview['operation']}\nКористувач: {preview['target_user_id']}\nЗапитано: {preview['requested_amount']} 💎\nФактично: {preview['actual_amount']} 💎\nБаланс: {preview['balance_before']} → {preview['balance_after']} 💎\nПричина: {preview['reason']}{warning}",reply_markup=k)
+
+============================================================
 FILE: handlers\auction_house.py
-SIZE: 212108 bytes
-LAST WRITE: 2026-09-01 23:56:04
+SIZE: 212433 bytes
+LAST WRITE: 2026-09-02 00:26:57
 ============================================================
 
 # ROM 17.11.2 COMPACT TEXT LOCATION DESCRIPTION
@@ -13423,9 +13564,14 @@ def _auction_register_sell_review_before_price_handlers_v1(bot):
         state = AUCTION_SELL_REVIEW_STATE.get(user_id) or {}
         step = state.get("step")
 
-        if text == AUCTION_BACK_TO_MENU_BUTTON:
-            _auction_clear_sell_review_state_v1(user_id)
+        if text in (AUCTION_MENU_BUTTON, AUCTION_BACK_TO_MENU_BUTTON):
+            clear_auction_sell_state(user_id)
             bot.send_message(message.chat.id, build_auction_house_text(user_id), reply_markup=auction_house_kb())
+            return
+
+        if text in (AUCTION_BACK_TO_CITY_BUTTON, "🏙️ Місто", "🔙 Місто"):
+            clear_auction_sell_state(user_id)
+            bot.send_message(message.chat.id, "🏙️ Місто", reply_markup=get_city_reply_keyboard())
             return
 
         if text == AUCTION_CANCEL_BUTTON:
@@ -14588,6 +14734,7 @@ def _auction_register_back_to_menu_callback_v1(bot):
     @bot.callback_query_handler(func=lambda call: call.data == "ah_menu")
     def auction_back_to_menu_callback_v1(call):
         user_id = call.from_user.id
+        clear_auction_sell_state(user_id)
         _auction_clear_runtime_states_v1(user_id)
 
         try:
@@ -17557,8 +17704,8 @@ def register_blacksmith_repair_confirmation_handlers(bot):
 
 ============================================================
 FILE: handlers\city.py
-SIZE: 82580 bytes
-LAST WRITE: 2026-08-30 00:22:51
+SIZE: 82484 bytes
+LAST WRITE: 2026-09-02 00:40:43
 ============================================================
 
 # ROM 17.11.2.1 CITY CRAFT TAVERN TEXT CLEANUP
@@ -17954,7 +18101,7 @@ def build_alchemist_sell_list_17_19_3(user_id):
     else:
         text+="Оберіть зілля:\n"
         for r in available: kb.add(types.InlineKeyboardButton(f"{r['name']} ×{r['available']} — {format_gold(r['sell_price'])}/шт.",callback_data=f"alchemist:sellitem:{r['item_id']}"))
-    kb.add(types.InlineKeyboardButton("🔙 До Алхіміка",callback_data="alchemist:root")); return text,kb
+    return text, kb
 
 def build_alchemist_sell_preview_17_19_3(user_id,item_id,quantity=1):
     potion = POTIONS.get(int(item_id))
@@ -19848,8 +19995,8 @@ def build_main_menu_text(user_id, show_location_description=False):
 
 ============================================================
 FILE: handlers\combat.py
-SIZE: 122480 bytes
-LAST WRITE: 2026-08-28 23:11:27
+SIZE: 122206 bytes
+LAST WRITE: 2026-09-02 22:24:54
 ============================================================
 
 
@@ -22140,8 +22287,6 @@ def register_combat_handlers(bot):
         else:
             text += f"🗡️ {character_name} завдав {mob['name']} {dmg} шкоди"
 
-        if weapon_damage > 0:
-            text += f" (зброя: {weapon_damage})"
 
         text += "\n"
         text += enemy_action_text
@@ -22536,8 +22681,6 @@ def register_combat_handlers(bot):
             else:
                 text += f"✨ {character_name} завдав {mob['name']} {dmg} шкоди"
                 
-            if weapon_damage > 0:
-                text += f" (зброя: {weapon_damage})"
                 
             text += "\n"
             
@@ -23053,8 +23196,6 @@ def register_combat_handlers(bot):
             else:
                 text += f"✨ {character_name} завдав {mob['name']} {dmg} шкоди"
 
-            if weapon_damage > 0:
-                text += f" (зброя: {weapon_damage})"
 
             text += "\n"
 
@@ -23701,8 +23842,8 @@ def register_contract_handlers(bot):
 
 ============================================================
 FILE: handlers\crystal_shop.py
-SIZE: 13785 bytes
-LAST WRITE: 2026-08-31 23:48:07
+SIZE: 12753 bytes
+LAST WRITE: 2026-09-02 22:04:07
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -23867,23 +24008,16 @@ def register_crystal_shop_handlers(bot):
    p=preview_crystal_shop_purchase(uid,iid,qty)
    if not p['success']:bot.answer_callback_query(call.id,p['message'],show_alert=True);return
    k=types.InlineKeyboardMarkup();k.row(types.InlineKeyboardButton('✅ Підтвердити покупку',callback_data=f'cs:buy:{iid}:{qty}'),types.InlineKeyboardButton('❌ Скасувати',callback_data='cs:cancel'));bot.edit_message_text(f"✅ Підтвердження покупки\n\n{p['name']}\nКількість: {qty}\nЦіна за 1: {p['unit_price']} 💎\nРазом: {p['total_price']} 💎\nБаланс: {p['balance']} → {p['balance_after']} 💎",call.message.chat.id,call.message.message_id,reply_markup=k);_remember_shop_message(uid,call.message.chat.id,call.message.message_id,iid,qty,'confirm');bot.answer_callback_query(call.id);return
-  if action=='buy':
+  if action in ('buy','execute'):
    iid=int(parts[2]);qty=int(parts[3])
-   if not _active_shop_callback(call,item_id=iid,quantity=qty,stages=('confirm',)):
-    _reject_stale_shop_callback(bot,call);return
-   p=preview_crystal_shop_purchase(uid,iid,qty)
-   if not p['success']:
-    bot.answer_callback_query(call.id,p['message'],show_alert=True);return
-   k=types.InlineKeyboardMarkup();k.row(types.InlineKeyboardButton('✅ Так, купити',callback_data=f'cs:execute:{iid}:{qty}'),types.InlineKeyboardButton('↩️ Ні, повернутися',callback_data=f'cs:review:{iid}:{qty}'));k.row(types.InlineKeyboardButton('❌ Скасувати',callback_data='cs:cancel'))
-   bot.edit_message_text(f"⚠️ Остаточне підтвердження\n\nПредмет: {p['name']}\nКількість: {qty}\nБуде списано: {p['total_price']} 💎\nБаланс після покупки: {p['balance_after']} 💎",call.message.chat.id,call.message.message_id,reply_markup=k);_remember_shop_message(uid,call.message.chat.id,call.message.message_id,iid,qty,'final_confirm');bot.answer_callback_query(call.id);return
-  if action=='execute':
-   iid=int(parts[2]);qty=int(parts[3])
-   if not _active_shop_callback(call,item_id=iid,quantity=qty,stages=('final_confirm',)):
+   allowed_stages=('confirm',) if action=='buy' else ('confirm','final_confirm')
+   if not _active_shop_callback(call,item_id=iid,quantity=qty,stages=allowed_stages):
     _reject_stale_shop_callback(bot,call);return
    key=f"telegram:crystal_shop:{uid}:{call.message.chat.id}:{call.message.message_id}";res=purchase_crystal_shop_item(uid,iid,qty,key)
    if res['success']:
     _close_shop_session(bot,uid,f"✅ Покупку завершено.\n\n{res.get('name',CRYSTAL_SHOP_CATALOG[iid]['name'])} ×{qty}\nСписано: {res.get('total_price',CRYSTAL_SHOP_CATALOG[iid]['price']*qty)} 💎\nБаланс: {res.get('balance',res.get('purchase',{}).get('balance_after'))} 💎");bot.answer_callback_query(call.id,'Готово')
    else:bot.answer_callback_query(call.id,res['message'],show_alert=True)
+   return
  def manual_quantity(message,iid,source_message_id):
   try:qty=int(str(message.text).strip())
   except Exception:bot.send_message(message.chat.id,'❌ Введіть ціле число від 1 до 999.');return
@@ -28173,8 +28307,8 @@ def build_guild_member_detail_text(*args, **kwargs):
 
 ============================================================
 FILE: handlers\inventory.py
-SIZE: 54554 bytes
-LAST WRITE: 2026-08-31 23:24:12
+SIZE: 55513 bytes
+LAST WRITE: 2026-09-02 21:38:02
 ============================================================
 
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
@@ -28632,6 +28766,11 @@ def build_inventory_home(user_id):
     if row:
         kb.add(*row)
 
+    kb.add(types.InlineKeyboardButton(
+        text="🔙 Профіль",
+        callback_data="inv_profile"
+    ))
+
     return text, kb
 
 
@@ -28992,6 +29131,22 @@ def register_inventory_handlers(bot):
             call.message.chat.id,
             text,
             reply_markup=kb if kb else profile_kb()
+        )
+
+    @bot.callback_query_handler(func=lambda call: call.data == "inv_profile")
+    def inventory_profile_callback(call):
+        from handlers.profile import build_character_text, profile_inline_kb
+
+        bot.answer_callback_query(call.id)
+        bot.send_message(
+            call.message.chat.id,
+            "👤 Розділ персонажа відкрито",
+            reply_markup=profile_kb()
+        )
+        bot.send_message(
+            call.message.chat.id,
+            build_character_text(call.from_user.id),
+            reply_markup=profile_inline_kb(active_tab="character")
         )
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("invcat:"))
@@ -29691,8 +29846,12 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
             (int(inventory_id), int(user_id)),
         ).fetchone()
         if row and int(row[0]) == _NAME_RUNE_ITEM_ID_17_28_1_3:
+            from systems.name_rune_system import NAME_RUNE_DESCRIPTION
+
             text = text.replace("Руна імені", "✍️ Руна імені")
             text = text.replace("📦 Категорія: material", "📦 Категорія: Матеріали")
+            if NAME_RUNE_DESCRIPTION not in text:
+                text = f"{text.rstrip()}\n\n📖 Опис: {NAME_RUNE_DESCRIPTION}"
             button = types.InlineKeyboardButton(
                 text="✍️ Використати Руну імені",
                 callback_data=f"name_rune_use:{int(inventory_id)}",
@@ -34987,8 +35146,8 @@ def register_timed_exp_bonus_handlers(bot):
 
 ============================================================
 FILE: keyboards.py
-SIZE: 5489 bytes
-LAST WRITE: 2026-08-28 00:39:02
+SIZE: 5477 bytes
+LAST WRITE: 2026-09-02 21:38:02
 ============================================================
 
 # ROM 17.16.1 PVE SKILL BUTTON STATES
@@ -35147,16 +35306,15 @@ def rune_master_kb():
     """Dedicated Rune Master menu without Blacksmith/Alchemist buttons."""
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.add("💠 Вставити руну", "🔄 Переробити руни")
-    kb.add("🧰 Екстрактор")
-    kb.add("🛒 Крамниця")
+    kb.add("🧰 Екстрактор", "🛒 Крамниця")
     kb.add("🔙 Ремісничий квартал")
     return kb
 
 
 ============================================================
 FILE: main.py
-SIZE: 10935 bytes
-LAST WRITE: 2026-08-30 23:47:25
+SIZE: 11062 bytes
+LAST WRITE: 2026-09-02 23:13:57
 ============================================================
 
 
@@ -35254,6 +35412,7 @@ from handlers.guild import register_guild_handlers
 from handlers.auction_house import register_auction_house_handlers
 from handlers.blacksmith_repair_confirm import register_blacksmith_repair_confirmation_handlers
 from handlers.crystal_shop import register_crystal_shop_handlers
+from handlers.admin_crystal_credit import register_admin_crystal_credit_handlers
 from handlers.player_rankings import register_player_rankings_handlers
 from handlers.timed_exp_bonus import register_timed_exp_bonus_handlers
 from systems.timed_exp_bonus_system import init_timed_exp_bonus_system
@@ -35334,6 +35493,7 @@ init_name_rune_system()
 init_fatigue_artifact_system()
 
 register_crystal_shop_handlers(bot)
+register_admin_crystal_credit_handlers(bot)
 register_player_rankings_handlers(bot)
 register_timed_exp_bonus_handlers(bot)
 register_start_handlers(bot)
@@ -35909,9 +36069,87 @@ LAST WRITE: 2026-07-09 23:38:38
 [EMPTY FILE]
 
 ============================================================
+FILE: systems\admin_crystal_credit_system.py
+SIZE: 8227 bytes
+LAST WRITE: 2026-09-03 00:07:46
+============================================================
+
+# -*- coding: utf-8 -*-
+"""Production-safe admin crystal adjustments with immutable audit records."""
+import json, sqlite3
+from datetime import datetime, timezone
+from pathlib import Path
+from config import ROM_ADMIN_USER_IDS, ROM_ADMIN_CRYSTAL_CREDIT_MAX, ROM_ADMIN_CRYSTAL_DEBIT_MAX
+DB_PATH=Path(__file__).resolve().parents[1]/"game.db"
+def _utc():return datetime.now(timezone.utc).isoformat()
+def _connect(db_path=None):
+ c=sqlite3.connect(str(db_path or DB_PATH));c.row_factory=sqlite3.Row;return c
+def is_admin(user_id):return int(user_id) in ROM_ADMIN_USER_IDS
+def init_admin_crystal_credit_system(db_path=None):
+ c=_connect(db_path)
+ try:
+  c.executescript("""CREATE TABLE IF NOT EXISTS admin_crystal_credit_audit(id INTEGER PRIMARY KEY AUTOINCREMENT,admin_user_id INTEGER NOT NULL,target_user_id INTEGER NOT NULL,operation TEXT NOT NULL CHECK(operation IN ('credit','debit')),requested_amount INTEGER NOT NULL CHECK(requested_amount>0),actual_amount INTEGER NOT NULL CHECK(actual_amount>0),balance_before INTEGER NOT NULL CHECK(balance_before>=0),balance_after INTEGER NOT NULL CHECK(balance_after>=0),reason TEXT NOT NULL,idempotency_key TEXT NOT NULL UNIQUE,crystal_transaction_id INTEGER NOT NULL UNIQUE,created_at TEXT NOT NULL,FOREIGN KEY(target_user_id) REFERENCES users(user_id) ON DELETE RESTRICT,FOREIGN KEY(crystal_transaction_id) REFERENCES crystal_transactions(id) ON DELETE RESTRICT);CREATE INDEX IF NOT EXISTS ix_admin_crystal_audit_admin_id ON admin_crystal_credit_audit(admin_user_id,id DESC);CREATE INDEX IF NOT EXISTS ix_admin_crystal_audit_target_id ON admin_crystal_credit_audit(target_user_id,id DESC);""");c.commit()
+ finally:c.close()
+def preview_admin_adjustment(admin_user_id,target_user_id,operation,requested_amount,reason,db_path=None):
+ if not is_admin(admin_user_id):return {'success':False,'message':'Доступ заборонено.'}
+ try:target=int(target_user_id);amount=int(requested_amount)
+ except Exception:return {'success':False,'message':'ID користувача та сума мають бути цілими числами.'}
+ op=str(operation);limit=ROM_ADMIN_CRYSTAL_CREDIT_MAX if op=='credit' else ROM_ADMIN_CRYSTAL_DEBIT_MAX
+ if op not in ('credit','debit'):return {'success':False,'message':'Невідома операція.'}
+ if amount<1 or amount>limit:return {'success':False,'message':f'Сума має бути від 1 до {limit}.'}
+ reason=str(reason or '').strip()
+ if not reason:return {'success':False,'message':'Причина є обов’язковою.'}
+ c=_connect(db_path)
+ try:
+  user=c.execute('SELECT user_id FROM users WHERE user_id=?',(target,)).fetchone()
+  if not user:return {'success':False,'message':'Користувача не знайдено.'}
+  c.execute('INSERT OR IGNORE INTO crystal_wallets(user_id,balance,created_at,updated_at) VALUES(?,0,?,?)',(target,_utc(),_utc()));c.commit();before=int(c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(target,)).fetchone()[0])
+ finally:c.close()
+ actual=amount if op=='credit' else min(amount,before)
+ if op=='debit' and actual==0:return {'success':False,'message':'У користувача немає кристалів для вилучення.','balance':0}
+ return {'success':True,'admin_user_id':int(admin_user_id),'target_user_id':target,'operation':op,'requested_amount':amount,'actual_amount':actual,'balance_before':before,'balance_after':before+actual if op=='credit' else before-actual,'reason':reason,'clamped':op=='debit' and actual<amount}
+def execute_admin_adjustment(admin_user_id,target_user_id,operation,requested_amount,reason,idempotency_key,db_path=None):
+ key=str(idempotency_key or '').strip()
+ if not key:return {'success':False,'message':'Відсутній idempotency key.'}
+ c=_connect(db_path)
+ try:
+  c.execute('BEGIN IMMEDIATE');existing=c.execute('SELECT * FROM admin_crystal_credit_audit WHERE idempotency_key=?',(key,)).fetchone()
+  if existing:c.commit();return {'success':True,'idempotent_replay':True,'audit':dict(existing),'balance':int(existing['balance_after'])}
+  if not is_admin(admin_user_id):raise ValueError('Доступ заборонено.')
+  target=int(target_user_id);amount=int(requested_amount);op=str(operation);reason=str(reason or '').strip();limit=ROM_ADMIN_CRYSTAL_CREDIT_MAX if op=='credit' else ROM_ADMIN_CRYSTAL_DEBIT_MAX
+  if op not in ('credit','debit') or amount<1 or amount>limit or not reason:raise ValueError('Параметри операції більше не валідні.')
+  if not c.execute('SELECT 1 FROM users WHERE user_id=?',(target,)).fetchone():raise ValueError('Користувача не знайдено.')
+  now=_utc();c.execute('INSERT OR IGNORE INTO crystal_wallets(user_id,balance,created_at,updated_at) VALUES(?,0,?,?)',(target,now,now));before=int(c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(target,)).fetchone()[0]);actual=amount if op=='credit' else min(amount,before)
+  if actual<=0:raise ValueError('У користувача немає кристалів для вилучення.')
+  after=before+actual if op=='credit' else before-actual
+  changed=c.execute('UPDATE crystal_wallets SET balance=?,updated_at=? WHERE user_id=? AND balance=?',(after,now,target,before)).rowcount
+  if changed!=1:raise RuntimeError('Баланс змінився. Операцію скасовано.')
+  txkey='admin:'+key;cur=c.execute('INSERT INTO crystal_transactions(user_id,operation,amount,reason_code,balance_before,balance_after,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)',(target,op,actual,'admin_crystal_'+op,before,after,txkey,key,json.dumps({'admin_operation':True,'requested_amount':amount,'reason':reason},ensure_ascii=False,sort_keys=True),now));txid=int(cur.lastrowid)
+  cur=c.execute('INSERT INTO admin_crystal_credit_audit(admin_user_id,target_user_id,operation,requested_amount,actual_amount,balance_before,balance_after,reason,idempotency_key,crystal_transaction_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(int(admin_user_id),target,op,amount,actual,before,after,reason,key,txid,now));aid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'audit_id':aid,'transaction_id':txid,'operation':op,'requested_amount':amount,'actual_amount':actual,'balance_before':before,'balance_after':after,'balance':after,'clamped':op=='debit' and actual<amount}
+ except Exception as e:c.rollback();return {'success':False,'message':f'Операцію скасовано: {e}'}
+ finally:c.close()
+def get_admin_adjustment_history(admin_user_id,page=0,page_size=10,db_path=None):
+ if not is_admin(admin_user_id):return {'success':False,'message':'Доступ заборонено.'}
+ size=max(1,min(20,int(page_size)));page=max(0,int(page));c=_connect(db_path)
+ try:
+  total=int(c.execute('SELECT COUNT(*) FROM admin_crystal_credit_audit').fetchone()[0]);rows=[dict(r) for r in c.execute("SELECT a.*,TRIM(COALESCE(u.character_name,'')) AS character_name FROM admin_crystal_credit_audit a LEFT JOIN users u ON u.user_id=a.target_user_id ORDER BY a.id DESC LIMIT ? OFFSET ?",(size,page*size)).fetchall()];total_pages=max(1,(total+size-1)//size);return {'success':True,'items':rows,'page':page,'page_size':size,'total':total,'total_pages':total_pages,'has_next':page+1<total_pages,'has_previous':page>0}
+ finally:c.close()
+
+def get_admin_adjustment_detail(admin_user_id,audit_id,db_path=None):
+ if not is_admin(admin_user_id):return {'success':False,'message':'Доступ заборонено.'}
+ try:identifier=int(audit_id)
+ except Exception:return {'success':False,'message':'Некоректний номер операції.'}
+ if identifier<=0:return {'success':False,'message':'Некоректний номер операції.'}
+ c=_connect(db_path)
+ try:
+  row=c.execute("SELECT a.*,TRIM(COALESCE(u.character_name,'')) AS character_name FROM admin_crystal_credit_audit a LEFT JOIN users u ON u.user_id=a.target_user_id WHERE a.id=?",(identifier,)).fetchone()
+  return {'success':True,'item':dict(row)} if row else {'success':False,'message':'Операцію не знайдено.'}
+ finally:c.close()
+
+============================================================
 FILE: systems\auction_house_system.py
-SIZE: 181411 bytes
-LAST WRITE: 2026-08-31 23:24:12
+SIZE: 181594 bytes
+LAST WRITE: 2026-09-02 00:26:57
 ============================================================
 
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
@@ -40456,7 +40694,9 @@ def get_auction_lots_for_buy_search(buyer_user_id, search_text, sort_key="new", 
 # ==============================
 
 AUCTION_HISTORY_PAGE_SIZE = 8
-AUCTION_PRICE_HISTORY_LIMIT = 10
+AUCTION_PRICE_HISTORY_RECENT_DISPLAY_LIMIT = 10
+AUCTION_USER_HISTORY_MAX_RECORDS = 100
+AUCTION_HISTORY_MIN_RETENTION_DAYS = 60
 
 
 def _auction_table_columns_v1(table_name):
@@ -40519,6 +40759,9 @@ def get_user_auction_history(user_id, mode="all", limit=8, offset=0):
 
     limit = max(1, min(50, limit))
     offset = max(0, offset)
+    if offset >= AUCTION_USER_HISTORY_MAX_RECORDS:
+        return []
+    limit = min(limit, AUCTION_USER_HISTORY_MAX_RECORDS - offset)
 
     sold_statuses = _auction_sold_statuses_v1()
     params = list(sold_statuses)
@@ -40591,14 +40834,12 @@ def get_auction_lot_market_price_stats(lot_id):
     WHERE status IN (?, ?)
       AND {name_expr}=?
     ORDER BY COALESCE({date_col}, created_at) DESC, id DESC
-    LIMIT ?
     """
 
     cursor.execute(sql, (
         AUCTION_STATUS_SOLD_UNCLAIMED,
         AUCTION_STATUS_SOLD_CLAIMED,
         norm,
-        AUCTION_PRICE_HISTORY_LIMIT,
     ))
     rows = cursor.fetchall()
 
@@ -50597,8 +50838,8 @@ def build_level_up_reward_message(result):
 
 ============================================================
 FILE: systems\name_rune_system.py
-SIZE: 6331 bytes
-LAST WRITE: 2026-09-01 00:06:42
+SIZE: 6729 bytes
+LAST WRITE: 2026-09-02 21:38:02
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -50607,6 +50848,11 @@ import re,sqlite3,unicodedata
 from datetime import datetime,timezone
 from pathlib import Path
 DB_PATH=Path(__file__).resolve().parents[1]/'game.db';NAME_RUNE_ITEM_ID=502;NAME_RUNE_PRICE=50
+NAME_RUNE_DESCRIPTION = (
+    "Дозволяє один раз змінити ім’я персонажа. "
+    "Після успішного перейменування витрачається одна Руна імені. "
+    "Нове ім’я має відповідати чинним правилам і не може бути зайняте іншим персонажем."
+)
 def _conn(path=None):
  c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
 def normalize_name(value):return unicodedata.normalize('NFKC',str(value or '').strip())
@@ -54837,8 +55083,8 @@ def add_exp(user_id: int, amount):
 
 ============================================================
 FILE: systems\potion_system.py
-SIZE: 20742 bytes
-LAST WRITE: 2026-08-31 23:16:21
+SIZE: 20899 bytes
+LAST WRITE: 2026-09-02 00:51:25
 ============================================================
 
 # ROM 17.19.1 MANA POTION PRICE BALANCE
@@ -55403,18 +55649,21 @@ def use_potion_from_inventory(user_id, inventory_id):
 
 # ROM 17.19.3 ALCHEMIST POTION BUY SELL
 def get_alchemist_potion_stock_17_19_3(user_id):
-    """Return total, reserved and sellable quantities for potion IDs 201-204."""
+    """Return total, reserved and sellable quantities for canonical Alchemist potions."""
     from db_modules.connection import cursor
     try:
         from systems.player_interaction_system import get_inventory_reserved_quantity
     except Exception:
         get_inventory_reserved_quantity = None
+    potion_ids = tuple(int(item_id) for item_id in ALCHEMIST_SHOP)
+    placeholders = ",".join("?" for _ in potion_ids)
     rows = cursor.execute(
-        """SELECT inv.id, inv.item_id, COALESCE(inv.quantity,0),
-                  it.name, COALESCE(it.sell_price,0)
-           FROM inventory inv JOIN items it ON it.id=inv.item_id
-           WHERE inv.user_id=? AND inv.item_id IN (201,202,203,204)
-           ORDER BY inv.item_id, inv.id""", (int(user_id),)
+        f"""SELECT inv.id, inv.item_id, COALESCE(inv.quantity,0),
+                   it.name, COALESCE(it.sell_price,0)
+            FROM inventory inv JOIN items it ON it.id=inv.item_id
+            WHERE inv.user_id=? AND inv.item_id IN ({placeholders})
+            ORDER BY inv.item_id, inv.id""",
+        (int(user_id), *potion_ids),
     ).fetchall()
     grouped = {}
     for inventory_id,item_id,quantity,name,sell_price in rows:
@@ -75095,6 +75344,95 @@ def main():
 if __name__=="__main__":main()
 
 ============================================================
+FILE: tools\smoke_test_admin_crystal_credit_and_clamped_debit_18_3_1.py
+SIZE: 1531 bytes
+LAST WRITE: 2026-09-02 23:13:57
+============================================================
+
+#!/usr/bin/env python3
+from pathlib import Path
+import os,sqlite3,sys,tempfile
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
+os.environ['ROM_ADMIN_USER_IDS']='243129101';os.environ['ROM_ADMIN_CRYSTAL_CREDIT_MAX']='10000';os.environ['ROM_ADMIN_CRYSTAL_DEBIT_MAX']='10000'
+from systems.admin_crystal_credit_system import init_admin_crystal_credit_system,execute_admin_adjustment
+p=Path(tempfile.mkdtemp())/'t.db';c=sqlite3.connect(p);c.executescript("CREATE TABLE users(user_id INTEGER PRIMARY KEY);CREATE TABLE crystal_wallets(user_id INTEGER PRIMARY KEY,balance INTEGER NOT NULL,created_at TEXT,updated_at TEXT);CREATE TABLE crystal_transactions(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,operation TEXT,amount INTEGER,reason_code TEXT,balance_before INTEGER,balance_after INTEGER,idempotency_key TEXT UNIQUE,external_reference TEXT,metadata_json TEXT,compensates_transaction_id INTEGER,created_at TEXT);INSERT INTO users VALUES(1);INSERT INTO crystal_wallets VALUES(1,40,'x','x');");c.commit();c.close();init_admin_crystal_credit_system(p)
+r=execute_admin_adjustment(243129101,1,'debit',100,'test','k1',p);assert r['success'] and r['actual_amount']==40 and r['balance']==0,r
+r2=execute_admin_adjustment(243129101,1,'debit',100,'test','k1',p);assert r2['success'] and r2['idempotent_replay'],r2
+r3=execute_admin_adjustment(243129101,1,'debit',1,'test','k2',p);assert not r3['success'],r3
+print('PASS: authorized clamped debit, zero floor and idempotency')
+
+============================================================
+FILE: tools\smoke_test_admin_history_inline_details_and_character_names_18_3_1c.py
+SIZE: 1901 bytes
+LAST WRITE: 2026-09-03 00:07:46
+============================================================
+
+#!/usr/bin/env python3
+from pathlib import Path
+import ast,os,sqlite3,sys,tempfile
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
+os.environ.setdefault('ROM_ADMIN_USER_IDS','243129101')
+from systems.admin_crystal_credit_system import init_admin_crystal_credit_system,get_admin_adjustment_history,get_admin_adjustment_detail
+from handlers.admin_crystal_credit import _history_text,_history_kb,_detail_text,_button_name
+p=Path(tempfile.mkdtemp())/'t.db';c=sqlite3.connect(p);c.executescript("CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT);CREATE TABLE crystal_transactions(id INTEGER PRIMARY KEY);INSERT INTO users VALUES(1,'Олег');INSERT INTO crystal_transactions VALUES(1);");c.commit();c.close();init_admin_crystal_credit_system(p);c=sqlite3.connect(p);c.execute("INSERT INTO admin_crystal_credit_audit(admin_user_id,target_user_id,operation,requested_amount,actual_amount,balance_before,balance_after,reason,idempotency_key,crystal_transaction_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)",(243129101,1,'credit',100,100,0,100,'Test','k',1,'2026-09-02T20:00:00+00:00'));c.commit();c.close()
+r=get_admin_adjustment_history(243129101,0,10,p);assert r['items'][0]['character_name']=='Олег';assert 'Оберіть операцію' in _history_text(r)
+kb=_history_kb(r);payload=str(kb.to_dict());assert '#1 · ➕ Нарахування (Олег)' in payload and 'ac:history_detail:1:0' in payload
+d=get_admin_adjustment_detail(243129101,1,p);assert d['success'];text=_detail_text(d['item']);assert 'Telegram user ID: 1' in text and 'Персонаж: Олег' in text
+assert len(_button_name({'character_name':'ДужеДовгеІмяПерсонажа123456'},10))<=10
+assert not get_admin_adjustment_detail(2,1,p)['success']
+print('PASS: named inline list, admin-only detail and return-page contract')
+
+============================================================
+FILE: tools\smoke_test_admin_history_timezone_and_user_notifications_18_3_1b.py
+SIZE: 1406 bytes
+LAST WRITE: 2026-09-02 23:49:07
+============================================================
+
+#!/usr/bin/env python3
+from pathlib import Path
+import ast,os,sys
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
+from handlers.admin_crystal_credit import _format_history_time,_notification_text,_notify_target
+assert _format_history_time('2026-09-02T20:00:00+00:00')
+assert _format_history_time('not-a-time')=='not-a-time'
+credit={'operation':'credit','requested_amount':100,'actual_amount':100,'balance_before':40,'balance_after':140}
+debit={'operation':'debit','requested_amount':100,'actual_amount':40,'balance_before':40,'balance_after':0}
+assert 'Нараховано: 100' in _notification_text(credit,'test')
+assert 'Запитано вилучити: 100' in _notification_text(debit,'test') and 'Фактично вилучено: 40' in _notification_text(debit,'test')
+class Bot:
+ def __init__(self,fail=False):self.sent=[];self.fail=fail
+ def send_message(self,uid,text):
+  if self.fail:raise RuntimeError('blocked')
+  self.sent.append((uid,text))
+b=Bot();r=_notify_target(b,1,credit,'test');assert r['delivered'] and len(b.sent)==1
+r=_notify_target(b,1,dict(credit,idempotent_replay=True),'test');assert not r['attempted'] and len(b.sent)==1
+r=_notify_target(Bot(True),1,debit,'test');assert r['attempted'] and not r['delivered']
+print('PASS: timezone fallback, credit/debit notifications, replay and delivery failure')
+
+============================================================
+FILE: tools\smoke_test_admin_menu_close_and_history_pagination_18_3_1a.py
+SIZE: 839 bytes
+LAST WRITE: 2026-09-02 23:35:34
+============================================================
+
+#!/usr/bin/env python3
+from pathlib import Path
+import ast
+ROOT=Path(__file__).resolve().parents[1]
+h=(ROOT/'handlers'/'admin_crystal_credit.py').read_text(encoding='utf-8-sig');s=(ROOT/'systems'/'admin_crystal_credit_system.py').read_text(encoding='utf-8-sig')
+ast.parse(h);ast.parse(s)
+assert 'account_menu_kb_17_30_1_4()' in h
+assert "page_size=10" in h and "ac:history:" in h and "ac:history_close" in h
+assert "ZoneInfo('Europe/Kyiv')" in h and '%d.%m.%Y %H:%M' in h
+assert 'Операцій ще немає.' in h and 'Вилучено лише доступний залишок' in h
+assert 'SELECT COUNT(*) FROM admin_crystal_credit_audit' in s and "'total_pages':total_pages" in s
+assert 'DELETE FROM admin_crystal_credit_audit' not in s
+print('PASS: canonical menu restore, permanent history, localized pagination')
+
+============================================================
 FILE: tools\smoke_test_alchemist_buy_return_and_potion_stack_normalization_17_19_3_5.py
 SIZE: 1453 bytes
 LAST WRITE: 2026-08-25 00:01:04
@@ -78758,6 +79096,28 @@ if __name__ == "__main__":
     main()
 
 ============================================================
+FILE: tools\smoke_test_combat_weapon_number_text_cleanup_18_2_4.py
+SIZE: 1053 bytes
+LAST WRITE: 2026-09-02 22:24:54
+============================================================
+
+#!/usr/bin/env python3
+from pathlib import Path
+import ast,sys
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
+def main():
+ path=ROOT/'handlers'/'combat.py';src=path.read_text(encoding='utf-8-sig');tree=ast.parse(src)
+ assert '(зброя:' not in src
+ assignments=[node for node in ast.walk(tree) if isinstance(node,ast.Assign) and any(isinstance(target,ast.Name) and target.id=='weapon_damage' for target in node.targets)]
+ assert len(assignments)>=3, len(assignments)
+ assert any(isinstance(node.value,ast.Call) and isinstance(node.value.func,ast.Attribute) and node.value.func.attr=='get' and any(isinstance(arg,ast.Constant) and arg.value=='weapon_damage' for arg in node.value.args) for node in assignments)
+ assert 'dmg' in src and 'enemy_action_text' in src
+ assert any(isinstance(n,ast.FunctionDef) and n.name=='register_combat_handlers' for n in ast.walk(tree))
+ print('PASS: technical weapon number removed; combat calculation inputs retained')
+if __name__=='__main__':main()
+
+============================================================
 FILE: tools\smoke_test_compact_guild_profile_line_16_1_2.py
 SIZE: 1003 bytes
 LAST WRITE: 2026-08-17 23:10:59
@@ -79572,6 +79932,32 @@ assert s.index('register_crystal_shop_handlers(bot)') < s.index('register_city_h
 assert s.index('register_crystal_shop_handlers(bot)') < s.index('register_player_interaction_handlers(bot)')
 assert 'register_name_rune_handlers(bot)' in s
 print('[PASS] Stage 17.28.1.2 Crystal Shop handler priority contract')
+
+============================================================
+FILE: tools\smoke_test_crystal_shop_single_confirmation_18_2_3g.py
+SIZE: 1228 bytes
+LAST WRITE: 2026-09-02 22:04:07
+============================================================
+
+#!/usr/bin/env python3
+from pathlib import Path
+import ast,sys
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
+def main():
+ src=(ROOT/'handlers'/'crystal_shop.py').read_text(encoding='utf-8-sig');tree=ast.parse(src)
+ cb=[n for n in ast.walk(tree) if isinstance(n,ast.FunctionDef) and n.name=='callback'];assert len(cb)==1
+ block=ast.get_source_segment(src,cb[0]) or ''
+ assert "if action in ('buy','execute'):" in block
+ assert block.count('purchase_crystal_shop_item(uid,iid,qty,key)')==1
+ assert '⚠️ Остаточне підтвердження' not in block and '✅ Так, купити' not in block and 'cs:execute:' not in block
+ assert '✅ Підтвердити покупку' in block and 'cs:buy:' in block
+ module_block=src
+ assert 'EXP_BONUS_BUTTON' in module_block and 'k.add(EXP_BONUS_BUTTON)' in module_block
+ assert 'BAG_EXPANSION_BUTTON' in module_block and 'def bag_expansion_callback(call):' in module_block
+ assert "startswith('bg:')" in module_block and 'purchase_crystal_bag_expansion' in module_block
+ print('PASS: single confirmation, compatibility route, bonus and bag entry points preserved')
+if __name__=='__main__':main()
 
 ============================================================
 FILE: tools\smoke_test_crystal_shop_stale_menu_cleanup_17_27_1_1.py
@@ -81371,8 +81757,8 @@ if __name__ == "__main__":
 
 ============================================================
 FILE: tools\smoke_test_extractor_button_rune_master_menu.py
-SIZE: 2996 bytes
-LAST WRITE: 2026-07-30 23:47:42
+SIZE: 3052 bytes
+LAST WRITE: 2026-09-02 21:38:02
 ============================================================
 
 #!/usr/bin/env python3
@@ -81408,7 +81794,7 @@ def main():
     rune_master = function_source(source, tree, "rune_master_kb")
     required = (
         'kb.add("💠 Вставити руну", "🔄 Переробити руни")',
-        'kb.add("🧰 Екстрактор")',
+        'kb.add("🧰 Екстрактор", "🛒 Крамниця")',
         'kb.add("🔙 Ремісничий квартал")',
     )
     for marker in required:
@@ -81424,7 +81810,7 @@ def main():
         if not isinstance(node, ast.FunctionDef) or node.name == "rune_master_kb":
             continue
         block = ast.get_source_segment(source, node) or ""
-        if 'kb.add("🧰 Екстрактор")' in block:
+        if '🧰 Екстрактор' in block or '🛒 Крамниця' in block:
             wrong_functions.append(node.name)
     if wrong_functions:
         fail(f"Extractor button leaked into other keyboards: {wrong_functions}")
@@ -81451,7 +81837,7 @@ def main():
 
     print("[OK] Extractor button Rune Master menu contracts")
     print("- Rune Master Extractor reply button: OK")
-    print("- button order: Insert/Fuse -> Extractor -> Back")
+    print("- button order: Insert/Fuse -> Extractor/Shop -> Back")
     print("- Extractor button in other keyboards: 0")
     print("- Extractor message handler: OK")
     print("- database mutations: 0")
@@ -90355,6 +90741,35 @@ def main():
 
 
 if __name__ == "__main__": main()
+
+============================================================
+FILE: tools\smoke_test_rune_master_layout_and_name_rune_description_18_2_3c.py
+SIZE: 1035 bytes
+LAST WRITE: 2026-09-02 21:38:02
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from pathlib import Path
+import ast, sys
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path: sys.path.insert(0,str(ROOT))
+from keyboards import rune_master_kb
+from systems.name_rune_system import NAME_RUNE_DESCRIPTION, NAME_RUNE_ITEM_ID
+
+def main():
+ def text_of(button):
+  if isinstance(button, dict):
+   return str(button.get("text", ""))
+  return str(getattr(button, "text", button))
+ rows=[[text_of(button) for button in row] for row in rune_master_kb().keyboard]
+ assert rows.count(["🧰 Екстрактор","🛒 Крамниця"])==1, rows
+ assert NAME_RUNE_ITEM_ID==502 and NAME_RUNE_DESCRIPTION.strip()
+ src=(ROOT/"handlers"/"inventory.py").read_text(encoding="utf-8-sig");ast.parse(src)
+ assert src.count("from systems.name_rune_system import NAME_RUNE_DESCRIPTION")==1
+ assert src.count("📖 Опис: {NAME_RUNE_DESCRIPTION}")==1
+ print("PASS: Rune Master row and canonical Name Rune description")
+if __name__=="__main__": main()
 
 ============================================================
 FILE: tools\smoke_test_rune_master_menu_ui.py
