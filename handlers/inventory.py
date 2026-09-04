@@ -1680,16 +1680,28 @@ def _inventory_comparison_target_18_11_1(user_id, inventory_id):
 
 
 def _inventory_remove_automatic_comparison_18_11_1(text):
-    """Remove old auto-comparison while preserving the selected item's rune block."""
+    """Remove the inherited comparison and every ambiguous inherited rune block."""
     value = str(text or "")
     marker = value.find(_EQUIPMENT_COMPARISON_MARKER_18_11_1)
-    if marker < 0:
-        return value
-    rune = value.find(_EQUIPMENT_RUNE_MARKER_18_11_1, marker)
-    selected_prefix = value[:marker].rstrip()
+    if marker >= 0:
+        value = value[:marker].rstrip()
+    rune = value.find(_EQUIPMENT_RUNE_MARKER_18_11_1)
     if rune >= 0:
-        return selected_prefix + "\n\n" + value[rune:].lstrip()
-    return selected_prefix
+        value = value[:rune].rstrip()
+    return value
+
+
+def _inventory_selected_rune_block_18_11_2(user_id, inventory_id):
+    """Build rune sockets only from the exact selected owned inventory row."""
+    if not _inventory_comparison_owned_item_18_11_1(user_id, inventory_id):
+        return ""
+    try:
+        from systems.rune_system import format_equipment_rune_slots_text
+        return str(format_equipment_rune_slots_text(
+            int(user_id), int(inventory_id)
+        ) or "")
+    except Exception:
+        return ""
 
 
 def _inventory_insert_compare_button_18_11_1(keyboard, inventory_id, category, page):
@@ -1747,6 +1759,9 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
         return result
     text, keyboard = result[0], result[1]
     text = _inventory_remove_automatic_comparison_18_11_1(text)
+    selected_runes = _inventory_selected_rune_block_18_11_2(user_id, inventory_id)
+    if selected_runes:
+        text = text.rstrip() + "\n\n" + selected_runes.lstrip()
     if _inventory_comparison_target_18_11_1(user_id, inventory_id):
         keyboard = _inventory_insert_compare_button_18_11_1(
             keyboard, inventory_id, back_category, page
