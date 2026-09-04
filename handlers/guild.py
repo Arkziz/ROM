@@ -4,7 +4,7 @@
 # ROM 17.11.2 COMPACT TEXT LOCATION DESCRIPTION
 # ROM 17.9.1 GLOBAL PAGINATION BUTTON LABELS
 from telebot import types
-from systems.guild_system import validate_guild_tag_contract
+from systems.guild_system import validate_guild_tag_contract, validate_guild_name_contract, validate_guild_icon_contract
 
 from db import (
     init_guild_system,
@@ -156,16 +156,14 @@ def set_selected_guild(user_id, guild_id):
 
 
 def validate_guild_name_for_ui(name):
-    name = (name or "").strip()
-
-    if len(name) < 3:
-        return False, "❌ Назва гільдії має містити мінімум 3 символи."
-    if len(name) > 32:
-        return False, "❌ Назва гільдії має бути не довша за 32 символи."
+    validation = validate_guild_name_contract(name)
+    if not validation["success"]:
+        return False, validation["message"]
+    name = validation["name"]
     if get_guild_by_name_or_tag(name):
         return False, "❌ Гільдія з такою назвою або абревіатурою вже існує."
-
     return True, name
+
 
 
 def validate_guild_tag_for_ui(tag):
@@ -177,17 +175,6 @@ def validate_guild_tag_for_ui(tag):
         return False, "❌ Гільдія з такою абревіатурою вже існує."
     return True, tag
 
-
-
-def validate_guild_icon_for_ui(icon):
-    icon = (icon or "").strip()
-
-    if not icon:
-        return True, "🏰"
-    if len(icon) > 4:
-        return False, "❌ Іконка має бути короткою. Найкраще — один emoji."
-
-    return True, icon
 
 
 def reset_guild_create_state(user_id):
@@ -477,9 +464,12 @@ def build_guild_create_name_prompt():
         "Введи назву гільдії.\n"
         "Вимоги:\n"
         "• від 3 до 32 символів;\n"
-        "• назва має бути унікальною.\n\n"
-        "Створення гільдії зараз безкоштовне."
+        "• українські або латинські літери без змішування;\n"
+        "• дозволені одинарні пробіли, апостроф і дефіс;\n"
+        "• цифри та emoji заборонені;\n"
+        "• назва має бути унікальною."
     )
+
 
 
 def build_guild_create_tag_prompt(name):
@@ -503,10 +493,13 @@ def build_guild_create_icon_prompt(name, tag):
         "Крок 3/4 — іконка.\n\n"
         f"Назва: {name}\n"
         f"TAG: [{tag}]\n\n"
-        "Надішли один emoji для іконки гільдії.\n"
+        "Надішли рівно один emoji для іконки гільдії.\n"
+        "Літери, цифри, текст і кілька emoji заборонені.\n"
+        "Іконка має бути унікальною.\n"
         "Наприклад: 🏰, 🐺, 🔥, 🍒\n\n"
         "Якщо хочеш стандартну іконку — надішли 🏰."
     )
+
 
 
 def build_guild_create_confirm_text(state, user_id=None):
@@ -782,20 +775,15 @@ def register_guild_handlers(bot):
 
 
 def validate_guild_icon_for_ui(icon):
-    icon = (icon or "").strip() or "🏰"
-
-    # Telegram emoji may be several codepoints, so only prevent very long text.
-    if len(icon) > 4:
-        return False, "❌ Іконка має бути короткою. Найкраще — один emoji."
-
-    try:
-        from db import is_guild_icon_taken
-        if is_guild_icon_taken(icon):
-            return False, "❌ Така іконка вже використовується іншою гільдією. Обери іншу іконку."
-    except Exception:
-        pass
-
+    validation = validate_guild_icon_contract(icon)
+    if not validation["success"]:
+        return False, validation["message"]
+    icon = validation["icon"]
+    from db import is_guild_icon_taken
+    if is_guild_icon_taken(icon):
+        return False, "❌ Така іконка вже використовується іншою гільдією. Обери іншу іконку."
     return True, icon
+
 
 
 # ==============================

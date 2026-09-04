@@ -74,8 +74,98 @@ def get_current_guild_season_key():
     return datetime.now().strftime("%Y-%m")
 
 
+GUILD_NAME_LATIN_LETTERS = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+GUILD_NAME_UKRAINIAN_LETTERS = frozenset("АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЬЮЯабвгґдеєжзиіїйклмнопрстуфхцчшщьюя")
+GUILD_NAME_APOSTROPHES = frozenset(("'", "’", "ʼ"))
+_GUILD_EMOJI_VARIATION_SELECTORS = frozenset((0xFE0E, 0xFE0F))
+_GUILD_EMOJI_ZWJ = 0x200D
+_GUILD_EMOJI_KEYCAP = 0x20E3
+
+
 def normalize_guild_name(value):
-    return (value or "").strip().casefold()
+    import unicodedata
+    return unicodedata.normalize("NFC", str(value or "").strip())
+
+
+def normalize_guild_name_key(value):
+    return normalize_guild_name(value).casefold()
+
+
+def validate_guild_name_contract(value):
+    name = normalize_guild_name(value)
+    if len(name) < 3:
+        return {"success": False, "message": "❌ Назва гільдії має містити мінімум 3 символи."}
+    if len(name) > 32:
+        return {"success": False, "message": "❌ Назва гільдії має бути не довша за 32 символи."}
+    allowed = GUILD_NAME_LATIN_LETTERS | GUILD_NAME_UKRAINIAN_LETTERS | GUILD_NAME_APOSTROPHES | {"-", " "}
+    if any(character not in allowed for character in name):
+        return {"success": False, "message": "❌ Дозволені лише українські або латинські літери, одинарні пробіли, апостроф і дефіс. Цифри та emoji заборонені."}
+    has_latin = any(character in GUILD_NAME_LATIN_LETTERS for character in name)
+    has_ukrainian = any(character in GUILD_NAME_UKRAINIAN_LETTERS for character in name)
+    if has_latin and has_ukrainian:
+        return {"success": False, "message": "❌ Не змішуй українські та латинські літери в одній назві."}
+    if "  " in name or "--" in name or name.startswith("-") or name.endswith("-"):
+        return {"success": False, "message": "❌ Використовуй лише одинарні пробіли й дефіси між частинами назви."}
+    return {"success": True, "name": name}
+
+
+def _guild_is_regional_indicator(codepoint):
+    return 0x1F1E6 <= codepoint <= 0x1F1FF
+
+
+def _guild_is_emoji_modifier(codepoint):
+    return 0x1F3FB <= codepoint <= 0x1F3FF
+
+
+def _guild_is_emoji_base(codepoint):
+    return (
+        0x1F000 <= codepoint <= 0x1FAFF
+        or 0x2600 <= codepoint <= 0x27BF
+        or 0x2300 <= codepoint <= 0x23FF
+        or codepoint in {0x00A9, 0x00AE, 0x203C, 0x2049, 0x2122, 0x2139, 0x3030, 0x303D, 0x3297, 0x3299}
+    )
+
+
+def _guild_consume_emoji_component(codepoints, index):
+    if index >= len(codepoints) or not _guild_is_emoji_base(codepoints[index]):
+        return None
+    index += 1
+    while index < len(codepoints) and (
+        codepoints[index] in _GUILD_EMOJI_VARIATION_SELECTORS
+        or _guild_is_emoji_modifier(codepoints[index])
+    ):
+        index += 1
+    return index
+
+
+def is_single_guild_emoji(value):
+    import unicodedata
+    text = unicodedata.normalize("NFC", str(value or "").strip())
+    codepoints = [ord(character) for character in text]
+    if not codepoints:
+        return False
+    if len(codepoints) == 2 and all(_guild_is_regional_indicator(cp) for cp in codepoints):
+        return True
+    if len(codepoints) in (2, 3) and codepoints[-1] == _GUILD_EMOJI_KEYCAP and chr(codepoints[0]) in "#*0123456789":
+        return len(codepoints) == 2 or codepoints[1] in _GUILD_EMOJI_VARIATION_SELECTORS
+    index = _guild_consume_emoji_component(codepoints, 0)
+    if index is None:
+        return False
+    while index < len(codepoints):
+        if codepoints[index] != _GUILD_EMOJI_ZWJ:
+            return False
+        index = _guild_consume_emoji_component(codepoints, index + 1)
+        if index is None:
+            return False
+    return True
+
+
+def validate_guild_icon_contract(value):
+    icon = normalize_guild_icon(value)
+    if not is_single_guild_emoji(icon):
+        return {"success": False, "message": "❌ Іконка гільдії має містити рівно один emoji."}
+    return {"success": True, "icon": icon}
+
 
 
 GUILD_TAG_LATIN_LETTERS = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -595,7 +685,7 @@ def create_guild(user_id, name, tag, icon="🏰"):
             balance = float(row[0] if row else 0.0)
             raise ValueError(f"❌ Недостатньо золота. Потрібно: {GUILD_CREATE_COST_GOLD:.2f} 🪙. Твій баланс: {balance:.2f} 🪙.")
         now = now_iso(); season_key = get_current_guild_season_key()
-        cursor.execute("""INSERT INTO guilds (name,name_norm,tag,tag_norm,icon,leader_user_id,level,exp,resource,member_limit,created_at,updated_at,season_key) VALUES (?,?,?,?,?,?,1,0,0,?,?,?,?)""", (validation["name"],normalize_guild_name(validation["name"]),validation["tag"],normalize_guild_tag(validation["tag"]),validation["icon"],user_id,DEFAULT_GUILD_MEMBER_LIMIT,now,now,season_key))
+        cursor.execute("""INSERT INTO guilds (name,name_norm,tag,tag_norm,icon,leader_user_id,level,exp,resource,member_limit,created_at,updated_at,season_key) VALUES (?,?,?,?,?,?,1,0,0,?,?,?,?)""", (validation["name"],normalize_guild_name_key(validation["name"]),validation["tag"],normalize_guild_tag(validation["tag"]),validation["icon"],user_id,DEFAULT_GUILD_MEMBER_LIMIT,now,now,season_key))
         guild_id = int(cursor.lastrowid)
         cursor.execute("INSERT INTO guild_members (guild_id,user_id,role,joined_at) VALUES (?,?,?,?)", (guild_id,user_id,GUILD_ROLE_LEADER,now))
         cursor.execute("INSERT INTO guild_logs (guild_id,event_type,text,created_at) VALUES (?,?,?,?)", (guild_id,"guild_created",f"Гільдію {validation['icon']} [{validation['tag']}] {validation['name']} створено за {GUILD_CREATE_COST_GOLD:.2f} золота.",now))
@@ -1266,21 +1356,15 @@ def ensure_unique_guild_icon_index():
 
 # Override validation from 7.0.1 with icon uniqueness check.
 def validate_guild_create_input(name, tag, icon="🏰"):
-    name = (name or "").strip()
+    name_validation = validate_guild_name_contract(name)
+    if not name_validation["success"]:
+        return name_validation
+    name = name_validation["name"]
     tag = normalize_guild_tag(tag)
-    icon = normalize_guild_icon(icon)
-
-    if len(name) < 3:
-        return {
-            "success": False,
-            "message": "❌ Назва гільдії має містити мінімум 3 символи."
-        }
-
-    if len(name) > 32:
-        return {
-            "success": False,
-            "message": "❌ Назва гільдії має бути не довша за 32 символи."
-        }
+    icon_validation = validate_guild_icon_contract(icon)
+    if not icon_validation["success"]:
+        return icon_validation
+    icon = icon_validation["icon"]
 
     tag_validation = validate_guild_tag_contract(tag)
     if not tag_validation["success"]:
@@ -1313,6 +1397,7 @@ def validate_guild_create_input(name, tag, icon="🏰"):
         "tag": tag,
         "icon": icon,
     }
+
 
 
 
