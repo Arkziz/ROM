@@ -67,13 +67,13 @@ def main():
             fail("base reward quantity mismatch")
         if quantity(db.conn, FIXTURE_USER_ID, FIRIUS_TOKEN_ITEM_ID) - token_before != FIRIUS_TOKENS_PER_DAILY_REWARD:
             fail("Firius token reward quantity mismatch")
-        if "Жетон Фіріуса" not in first.get("message", "") or "×10" not in first.get("message", ""):
+        if "Жетон Фіріуса" not in first.get("message", "") or "×5" not in first.get("message", ""):
             fail(f"success message missing token reward: {first}")
 
         second = db.claim_daily_quest_reward(FIXTURE_USER_ID)
         if second.get("success") is not False:
             fail("repeat claim unexpectedly succeeded")
-        if quantity(db.conn, FIXTURE_USER_ID, FIRIUS_TOKEN_ITEM_ID) != token_before + 10:
+        if quantity(db.conn, FIXTURE_USER_ID, FIRIUS_TOKEN_ITEM_ID) != token_before + 5:
             fail("repeat claim changed token quantity")
 
         # Simulate the next day by creating a fresh claimable daily row.
@@ -140,7 +140,7 @@ def main():
 
         print("[OK] Daily Quest Firius Token reward contracts")
         print("- base reward preserved: 3 small HP potions")
-        print("- Firius Tokens per successful claim: 10")
+        print("- Firius Tokens per successful claim: 5")
         print("- repeat claim token duplication: 0")
         print("- tokens accumulate across daily resets: yes")
         print("- full-bag partial reward: 0")

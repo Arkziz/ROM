@@ -49,8 +49,8 @@ def main():
         fail("expected 25 canonical rune definitions")
     if sum(runes.RUNE_SLOT_LIMITS.values()) != 14:
         fail("expected 14 total equipment rune slots")
-    if runes.FIRIUS_TOKENS_PER_DAILY_REWARD != 10:
-        fail("daily Firius token reward must be 10")
+    if runes.FIRIUS_TOKENS_PER_DAILY_REWARD != 5:
+        fail("daily Firius token reward must be 5")
 
     same = db.validate_rune_fusion_selection([501, 501, 501])
     mixed_type = db.validate_rune_fusion_selection([501, 506, 501])
@@ -80,7 +80,7 @@ def main():
     print("- seeded item rows 501-528: 28")
     print("- normalized inventory_runes schema: OK")
     print("- equipment rune slots total: 14")
-    print("- Firius Tokens per daily reward: 10")
+    print("- Firius Tokens per daily reward: 5")
     print("- mixed rune type/level validation: OK")
     print("- user message: Потрібно вибрати 3 однакові руни одного типу й рівня.")
     print("- Rune V fusion rejection: OK")

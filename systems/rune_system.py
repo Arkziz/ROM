@@ -301,7 +301,7 @@ def _apply_stack_plan(conn, user_id, plan):
 
 
 def claim_daily_quest_reward_with_firius_tokens(user_id):
-    """Atomically claim the old reward plus 10 cumulative Firius Tokens."""
+    """Atomically claim the base reward plus 5 cumulative Firius Tokens."""
     from data.balance import DAILY_QUEST_REWARD_ITEM_ID, DAILY_QUEST_REWARD_QUANTITY
 
     db = _db()

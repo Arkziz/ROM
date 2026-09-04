@@ -110,8 +110,8 @@ class WorldProgressionSimulator:
                         exp_gained += contract_exp
                         events.append(ProgressionEvent(elapsed, day, "contract_claim", {"exp": contract_exp, "contracts": meta.state.contracts_completed_today}))
                     if meta.claim_daily():
-                        items_awarded += 13
-                        events.append(ProgressionEvent(elapsed, day, "daily_claim", {"potions": 3, "firius_tokens": 10}))
+                        items_awarded += 8
+                        events.append(ProgressionEvent(elapsed, day, "daily_claim", {"potions": 3, "firius_tokens": 5}))
                     loot = loot_city.process_victory(selected)
                     items_awarded += loot.awarded
                     items_lost += loot.lost

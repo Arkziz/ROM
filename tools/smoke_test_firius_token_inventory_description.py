@@ -47,7 +47,7 @@ def main():
         "1 жетон",
         "3 однакові руни одного типу й рівня",
         "не зникають наступного дня",
-        "10 жетонів",
+        "5 жетонів",
         "щоденного завдання",
     )
     missing = [text for text in required if text not in token]
@@ -72,7 +72,7 @@ def main():
     print("- fusion cost 1 token: OK")
     print("- 3 identical rune requirement: OK")
     print("- cumulative/no-reset rule: OK")
-    print("- daily reward quantity 10: OK")
+    print("- daily reward quantity 5: OK")
     print("- existing refine material descriptions preserved: 2")
     print("- category label for IDs 401/402/526: Матеріали")
     print("- literal \\n sequences: 0")
