@@ -8,6 +8,9 @@ import time
 import threading
 import sqlite3
 from datetime import datetime, timedelta
+from systems.inactivity_reminder_system import process_inactivity_reminders, INACTIVITY_SCAN_INTERVAL_SECONDS
+
+_INACTIVITY_REMINDER_NEXT_SCAN_MONOTONIC = 0.0
 
 
 # ==============================
@@ -503,6 +506,14 @@ def notification_worker(bot_instance):
             notify_energy_full(bot_instance, conn)
             notify_hp_restored(bot_instance, conn)
             notify_mp_restored_17_15_1(bot_instance, conn)
+
+            global _INACTIVITY_REMINDER_NEXT_SCAN_MONOTONIC
+            _now_monotonic = time.monotonic()
+            if _now_monotonic >= _INACTIVITY_REMINDER_NEXT_SCAN_MONOTONIC:
+                _result = process_inactivity_reminders(bot_instance)
+                _INACTIVITY_REMINDER_NEXT_SCAN_MONOTONIC = _now_monotonic + INACTIVITY_SCAN_INTERVAL_SECONDS
+                if any(_result.values()):
+                    PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', f"INACTIVITY REMINDER SCAN: {_result}")
 
             # Майбутні повідомлення:
             # notify_daily_contracts_reset(bot_instance, conn)

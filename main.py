@@ -105,6 +105,7 @@ from systems.crystal_shop_system import init_crystal_shop_system
 from systems.crystal_bag_expansion_system import init_crystal_bag_expansion_system
 
 from systems.notifications import start_notification_worker
+from systems.inactivity_reminder_system import init_inactivity_reminder_system
 from systems.telegram_rate_limit import install_global_telegram_rate_limit_guard
 
 
@@ -174,6 +175,7 @@ init_crystal_bag_expansion_system()
 init_timed_exp_bonus_system()
 init_name_rune_system()
 init_fatigue_artifact_system()
+init_inactivity_reminder_system()
 
 register_crystal_shop_handlers(bot)
 register_admin_crystal_credit_handlers(bot)
