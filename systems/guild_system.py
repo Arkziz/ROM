@@ -494,7 +494,7 @@ def get_guild_by_id(guild_id, ensure_season=True):
 
 
 def get_guild_by_name_or_tag(value):
-    name_norm = normalize_guild_name(value)
+    name_norm = normalize_guild_name_key(value)
     tag_norm = normalize_guild_tag(value)
 
     cursor.execute("""
@@ -506,6 +506,7 @@ def get_guild_by_name_or_tag(value):
     ))
 
     return cursor.fetchone()
+
 
 
 def is_user_in_guild(user_id):
