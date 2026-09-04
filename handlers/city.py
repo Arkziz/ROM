@@ -2271,8 +2271,8 @@ def build_account_menu_text_17_30_1_4(user_id):
 
 def account_menu_kb_17_30_1_4():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.add("💎 Магазин кристалів")
-    kb.add("🏆 Рейтинг")
+    kb.row("💎 Магазин кристалів", "🏆 Рейтинг")
+    kb.add("📖 Про гру")
     kb.add("🔙 Назад")
     return kb
 
