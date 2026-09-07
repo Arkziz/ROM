@@ -16,6 +16,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Optional
 from data.player_hp import calculate_base_max_hp, get_starting_max_hp
+from data.player_combat_chances import CRIT_BASE_CHANCE, DODGE_BASE_CHANCE, calculate_magical_crit_chance, calculate_physical_crit_chance
 
 
 def _db_module():
@@ -284,25 +285,13 @@ def get_magic_defense(user_id: int):
     return int(wis)
 
 
-def get_physical_crit_chance_display(user_id: int):
-    legacy = _legacy_function("get_physical_crit_chance_display")
-    if legacy:
-        return legacy(user_id)
-    return 5.0
 
 
-def get_magical_crit_chance_display(user_id: int):
-    legacy = _legacy_function("get_magical_crit_chance_display")
-    if legacy:
-        return legacy(user_id)
-    return 5.0
 
 
-def get_base_dodge_chance_display(user_id: int):
-    legacy = _legacy_function("get_base_dodge_chance_display")
-    if legacy:
-        return legacy(user_id)
-    return 5.0
+
+
+
 
 
 # ==============================
@@ -682,23 +671,17 @@ def get_magic_defense(user_id: int):
 
 
 def get_physical_crit_chance_display(user_id: int):
-    stats = get_player_stats(user_id)
-    if not stats:
-        return 5.0
-    chance = 5.0 + ((float(stats[1]) - 10.0) / max(1, int(stats[5]))) * 0.5
-    return max(1.0, min(35.0, chance))
+    stats=get_player_stats(user_id)
+    return calculate_physical_crit_chance(stats[1]) if stats else CRIT_BASE_CHANCE
 
 
 def get_magical_crit_chance_display(user_id: int):
-    stats = get_player_stats(user_id)
-    if not stats:
-        return 5.0
-    chance = 5.0 + ((float(stats[3]) - 10.0) / max(1, int(stats[5]))) * 0.5
-    return max(1.0, min(35.0, chance))
+    stats=get_player_stats(user_id)
+    return calculate_magical_crit_chance(stats[3]) if stats else CRIT_BASE_CHANCE
 
 
 def get_base_dodge_chance_display(user_id: int):
-    return 5.0
+    return DODGE_BASE_CHANCE
 
 # ==============================
 # ROM 10.7.0 EQUIPPED RUNE STAT BONUSES

@@ -15,6 +15,7 @@ from systems.pvp_config import (
 )
 from systems.pvp_models import PvpActionIntent, PvpActionOutcome, PvpActorState, PvpRoundResult
 from systems.pvp_skill_adapter import get_production_pvp_skill, load_production_pvp_skill_catalog
+from data.player_combat_chances import CRITICAL_DAMAGE_MULTIPLIER, calculate_dodge_chance, roll_chance
 
 
 class PvpRoundError(RuntimeError):
@@ -96,7 +97,8 @@ def _terminal(a: PvpActorState, b: PvpActorState, reason: str) -> tuple[bool, in
 
 
 def _base_damage(attacker: PvpActorState, defender: PvpActorState, attack_type: str, rng: random.Random) -> tuple[int, bool, bool]:
-    dodge = rng.random() * 100 < max(0.0, min(100.0, defender.dodge_chance))
+    dodge_chance = calculate_dodge_chance(defender.dex, attacker.dex)
+    dodge = roll_chance(dodge_chance, rng)
     if dodge:
         return 0, False, True
     if attack_type == "magical":
@@ -114,9 +116,9 @@ def _base_damage(attacker: PvpActorState, defender: PvpActorState, attack_type: 
     effective_defense = _effective_defense(defender, attack_type) * (1.0 - penetration)
     damage = max(1.0, weapon + attack - effective_defense * 0.5)
     damage *= float(PVP_DAMAGE_RECEIVED_BY_TYPE.get(defender.class_key, {}).get(attack_type, 1.0))
-    critical = rng.random() * 100 < max(0.0, min(100.0, crit_chance))
+    critical = roll_chance(crit_chance, rng)
     if critical:
-        damage *= 1.5
+        damage *= CRITICAL_DAMAGE_MULTIPLIER
     return max(1, int(round(damage * PVP_DAMAGE_MULTIPLIER))), critical, False
 
 

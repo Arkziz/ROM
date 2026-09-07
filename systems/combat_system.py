@@ -4,6 +4,7 @@ import random
 from data.mobs import get_mobs_for_location
 from data.bosses import BOSS_ENCOUNTERS_ENABLED, BOSS_ENCOUNTER_CHANCE_PERCENT
 from systems.boss_system import generate_hunt_encounter
+from data.player_combat_chances import CRITICAL_DAMAGE_MULTIPLIER, calculate_dodge_chance, calculate_enemy_crit_chance, calculate_magical_crit_chance, calculate_physical_crit_chance, roll_chance
 
 
 # ==============================
@@ -23,31 +24,16 @@ ELITE_GOLD_MULTIPLIER = 3.0
 # ✅ CRIT / DODGE HELPERS
 # ==============================
 
-def get_physical_crit_chance(dex, level):
-    if level <= 0:
-        level = 1
-
-    chance = 5 + ((dex - 10) / max(1, level)) * 0.5
-
-    return max(1, min(35, chance))
+def get_physical_crit_chance(dex, level=None):
+    return calculate_physical_crit_chance(dex)
 
 
-def get_magical_crit_chance(wis, level):
-    if level <= 0:
-        level = 1
-
-    chance = 5 + ((wis - 10) / max(1, level)) * 0.5
-
-    return max(1, min(35, chance))
+def get_magical_crit_chance(wis, level=None):
+    return calculate_magical_crit_chance(wis)
 
 
-def get_dodge_chance(player_dex, mob_dex, level):
-    if level <= 0:
-        level = 1
-
-    chance = 5 + ((player_dex - mob_dex) / max(1, level)) * 0.8
-
-    return max(1, min(30, chance))
+def get_dodge_chance(player_dex, mob_dex, level=None):
+    return calculate_dodge_chance(player_dex, mob_dex)
 
 
 # ==============================
@@ -244,10 +230,10 @@ def calculate_player_attack(
     else:
         crit_chance = get_physical_crit_chance(dex, level)
 
-    is_crit = random.uniform(0, 100) <= crit_chance
+    is_crit = roll_chance(crit_chance, random)
 
     if is_crit:
-        base_damage *= 1.5
+        base_damage *= CRITICAL_DAMAGE_MULTIPLIER
 
     damage = max(1, int(round(base_damage)))
 
@@ -278,7 +264,7 @@ def calculate_mob_attack(
         level=level
     )
 
-    is_dodge = random.uniform(0, 100) <= dodge_chance
+    is_dodge = roll_chance(dodge_chance, random)
 
     if is_dodge:
         return {
@@ -298,11 +284,11 @@ def calculate_mob_attack(
     if damage < 1:
         damage = 1
 
-    enemy_crit_chance = max(0, 10 - (sta // 25))
-    is_crit = random.uniform(0, 100) <= enemy_crit_chance
+    enemy_crit_chance = calculate_enemy_crit_chance(sta)
+    is_crit = roll_chance(enemy_crit_chance, random)
 
     if is_crit:
-        damage *= 1.5
+        damage *= CRITICAL_DAMAGE_MULTIPLIER
 
     damage = max(1, int(round(damage)))
 

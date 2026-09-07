@@ -40,6 +40,7 @@ class PvpActorState:
     effects: dict[str, dict[str, Any]] = field(default_factory=dict)
     consecutive_afk: int = 0
     stunned_next: bool = False
+    dex: float = 10.0
 
     def clone(self) -> "PvpActorState":
         return PvpActorState.from_dict(self.to_dict())

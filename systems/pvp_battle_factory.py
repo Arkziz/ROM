@@ -9,6 +9,7 @@ from systems.player_interaction_system import (
     release_player_activity_session,
 )
 from systems.pvp_system import complete_pvp_battle, create_pvp_battle, init_pvp_foundation
+from data.player_combat_chances import DODGE_BASE_CHANCE
 
 LOGGER = logging.getLogger(__name__)
 SnapshotProvider = Callable[[int], Mapping[str, Any]]
@@ -48,6 +49,8 @@ def build_production_pvp_snapshot(user_id: int) -> dict[str, Any]:
     max_hp = max(1, int(_call(db, "get_max_hp", uid, 1)))
     max_mp = max(0, int(_call(db, "get_max_mp", uid, 0)))
     attack_profile = _call(db, "get_player_attack_profile", uid, {}) or {}
+    player_stats = _call(db, "get_player_stats", uid, None)
+    total_dex = float(player_stats[1]) if player_stats and len(player_stats) > 1 else 10.0
     attack_type = str(attack_profile.get("attack_type") or "physical")
     weapon_min = float(attack_profile.get("weapon_min_damage") or 0)
     weapon_max = float(attack_profile.get("weapon_max_damage") or 0)
@@ -64,7 +67,8 @@ def build_production_pvp_snapshot(user_id: int) -> dict[str, Any]:
         "magical_defense": float(_call(db, "get_magic_defense", uid, 0)),
         "physical_crit_chance": float(_call(db, "get_physical_crit_chance_display", uid, 0)),
         "magical_crit_chance": float(_call(db, "get_magical_crit_chance_display", uid, 0)),
-        "dodge_chance": float(_call(db, "get_base_dodge_chance_display", uid, 0)),
+        "dex": total_dex,
+        "dodge_chance": DODGE_BASE_CHANCE,
         "weapon_physical_min": weapon_min if attack_type == "physical" else 0.0,
         "weapon_physical_max": weapon_max if attack_type == "physical" else 0.0,
         "weapon_magical_min": weapon_min if attack_type == "magical" else 0.0,
