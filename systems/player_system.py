@@ -17,6 +17,7 @@ from __future__ import annotations
 from typing import Any, Callable, Optional
 from data.player_hp import calculate_base_max_hp, get_starting_max_hp
 from data.player_combat_chances import CRIT_BASE_CHANCE, DODGE_BASE_CHANCE, calculate_magical_crit_chance, calculate_physical_crit_chance
+from data.defense_policy import calculate_total_defense
 
 
 def _db_module():
@@ -653,21 +654,23 @@ def get_max_hp(user_id: int):
 
 
 def get_physical_defense(user_id: int):
+    """Return active item PDEF plus the approved symmetric STA layer."""
     stats = get_player_stats(user_id)
     if not stats:
         return 0
     db = _player_combat_db_9_0_12g()
     item_pdef, _item_mdef = db.get_equipped_item_defenses(int(user_id))
-    return int(int(item_pdef or 0) + int(stats[4]) * 0.2)
+    return int(calculate_total_defense(item_pdef, stats[4]))
 
 
 def get_magic_defense(user_id: int):
+    """Return active item MDEF plus the approved symmetric WIS layer."""
     stats = get_player_stats(user_id)
     if not stats:
         return 0
     db = _player_combat_db_9_0_12g()
     _item_pdef, item_mdef = db.get_equipped_item_defenses(int(user_id))
-    return int(int(item_mdef or 0) + int(stats[3]))
+    return int(calculate_total_defense(item_mdef, stats[3]))
 
 
 def get_physical_crit_chance_display(user_id: int):
