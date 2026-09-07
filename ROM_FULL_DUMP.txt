@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-09-04 14:06:07 +03:00
+Created: 2026-09-07 23:28:12 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9168
-Scanned files: 8715
-Included files: 534
-Excluded files: 8181
-Included source size: 3,51 MB
+Scanned files: 9915
+Included files: 554
+Excluded files: 9361
+Included source size: 3,58 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 8175
+- excluded directory: 9355
 - excluded file name or pattern: 6
 - unsupported file type: 0
 
@@ -35,13 +35,16 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - config.py
 - create_rom_full_dump.ps1
 - data\__init__.py
+- data\about_game.py
 - data\balance.py
 - data\bosses.py
 - data\classes.py
 - data\drop_tables.py
 - data\equipment_profiles.py
+- data\guild_resource_policy.py
 - data\locations.py
 - data\mobs.py
+- data\player_hp.py
 - data\player_progression.py
 - data\rune_drop_balance.py
 - data\runes.py
@@ -65,6 +68,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - db_modules\systems_wrappers.py
 - db_modules\utils.py
 - handlers\__init__.py
+- handlers\about_game.py
 - handlers\admin_crystal_credit.py
 - handlers\auction_house.py
 - handlers\blacksmith.py
@@ -75,6 +79,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - handlers\crystal_shop.py
 - handlers\daily.py
 - handlers\dev.py
+- handlers\external_links.py
 - handlers\fatigue_artifact.py
 - handlers\guild.py
 - handlers\inventory.py
@@ -117,7 +122,9 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\equipment_system.py
 - systems\fatigue_artifact_system.py
 - systems\fresh_database_bootstrap.py
+- systems\guild_resource_system.py
 - systems\guild_system.py
+- systems\inactivity_reminder_system.py
 - systems\item_id_allocator_system.py
 - systems\level_up_reward_system.py
 - systems\name_rune_system.py
@@ -227,6 +234,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\check_imports.py
 - tools\db_cleanup_readiness.py
 - tools\final_db_cleanup_closure_audit.py
+- tools\manual_test_inactivity_reminder_18_6_1.py
 - tools\migration_status.py
 - tools\pvp_class_effect_and_isolation_regression.py
 - tools\regression_test_boss_gate_normal_elite.py
@@ -251,6 +259,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\run_rng_patch_regression.py
 - tools\run_simulation_canonical_parity_report.py
 - tools\run_world_progression_sim.py
+- tools\smoke_test_about_game_lore_and_navigation_18_4_1.py
 - tools\smoke_test_admin_crystal_credit_and_clamped_debit_18_3_1.py
 - tools\smoke_test_admin_history_inline_details_and_character_names_18_3_1c.py
 - tools\smoke_test_admin_history_timezone_and_user_notifications_18_3_1b.py
@@ -334,6 +343,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_crystal_bag_expansion_17_32_1.py
 - tools\smoke_test_crystal_shop_17_27_1.py
 - tools\smoke_test_crystal_shop_handler_priority_17_28_1_2.py
+- tools\smoke_test_crystal_shop_prices_18_10_1.py
 - tools\smoke_test_crystal_shop_single_confirmation_18_2_3g.py
 - tools\smoke_test_crystal_shop_stale_menu_cleanup_17_27_1_1.py
 - tools\smoke_test_crystal_shop_unique_back_button_17_27_1_2.py
@@ -342,6 +352,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_daily_handler_db_api_16_0_6.py
 - tools\smoke_test_daily_quest_reset_db_export_16_1_13_1.py
 - tools\smoke_test_daily_quest_reset_runtime_16_1_8.py
+- tools\smoke_test_daily_reward_firius_tokens_five_18_9_1.py
 - tools\smoke_test_daily_reward_newline_hotfix.py
 - tools\smoke_test_daily_rollover_and_ui_16_1_19.py
 - tools\smoke_test_daily_status_runtime_dependency_16_1_9.py
@@ -362,12 +373,15 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_equipment_compatibility_db_api_16_1_3.py
 - tools\smoke_test_equipment_durability_contracts.py
 - tools\smoke_test_equipment_readonly_core.py
+- tools\smoke_test_equipment_rune_comparison_18_11_1.py
+- tools\smoke_test_equipment_rune_comparison_item_identity_18_11_2.py
 - tools\smoke_test_equipment_rune_slots.py
 - tools\smoke_test_equipment_trader_contracts.py
 - tools\smoke_test_equipment_write_contracts.py
 - tools\smoke_test_exact_pve_battle_simulator.py
 - tools\smoke_test_exp_bonus_menu_status_17_30_1_1.py
 - tools\smoke_test_explicit_db_startup_maintenance.py
+- tools\smoke_test_external_links_config_and_navigation_18_5_1.py
 - tools\smoke_test_extractor_button_rune_master_menu.py
 - tools\smoke_test_fatigue_artifact_17_31_1_1.py
 - tools\smoke_test_final_combat_round_summary_16_1_11.py
@@ -381,6 +395,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_global_telegram_rate_limit_guard.py
 - tools\smoke_test_guild_actor_name_log.py
 - tools\smoke_test_guild_contract_target_log.py
+- tools\smoke_test_guild_icon_and_name_validation_18_7_3.py
 - tools\smoke_test_guild_leader_exit_handler_routing_recovery_17_22_1_2.py
 - tools\smoke_test_guild_leadership_transfer_and_leader_exit_17_22_1.py
 - tools\smoke_test_guild_leadership_transfer_handler_imports_17_22_1.py
@@ -388,7 +403,11 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_guild_leave_timezone_db_neutral_17_21_1_3.py
 - tools\smoke_test_guild_level_gate_db_neutral_recovery_17_23_1_1_1.py
 - tools\smoke_test_guild_member_list_explicit_actor_recovery_17_21_3_4.py
+- tools\smoke_test_guild_name_uniqueness_recovery_18_7_4.py
 - tools\smoke_test_guild_profile_line_runtime_16_1_1.py
+- tools\smoke_test_guild_resource_foundation_18_8_1.py
+- tools\smoke_test_guild_tag_three_letters_18_7_1.py
+- tools\smoke_test_inactivity_reminder_policy_18_6_1.py
 - tools\smoke_test_interaction_session_timeout_and_recovery.py
 - tools\smoke_test_inventory_canonical_ui_sorting_17_7_1.py
 - tools\smoke_test_inventory_entry_signature_16_1_4_1.py
@@ -541,6 +560,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - tools\smoke_test_simulation_persistent_survival.py
 - tools\smoke_test_special_material_drop_policy.py
 - tools\smoke_test_stage_11_final_audit.py
+- tools\smoke_test_starting_hp_130_18_12_2.py
 - tools\smoke_test_static_item_seed_contracts.py
 - tools\smoke_test_success_rune_guaranteed_refine_17_29_1.py
 - tools\smoke_test_timed_exp_bonus_17_30_1.py
@@ -604,8 +624,8 @@ reports/
 
 ============================================================
 FILE: config.py
-SIZE: 812 bytes
-LAST WRITE: 2026-09-02 23:13:57
+SIZE: 2302 bytes
+LAST WRITE: 2026-09-04 15:07:34
 ============================================================
 
 import os
@@ -632,6 +652,56 @@ ROM_ADMIN_CRYSTAL_DEBIT_MAX = _positive_int_env("ROM_ADMIN_CRYSTAL_DEBIT_MAX", "
 
 if not TOKEN:
     raise RuntimeError("BOT_TOKEN не знайдено у .env")
+
+# ROM Stage 18.5.1: validated, fail-closed external links.
+from urllib.parse import urlsplit as _urlsplit
+
+_GAME_CHAT_URL_RAW = str(os.getenv("GAME_CHAT_URL", "") or "").strip()
+_NEWS_CHANNEL_URL_RAW = str(os.getenv("NEWS_CHANNEL_URL", "") or "").strip()
+_SUPPORT_URL_RAW = str(os.getenv("SUPPORT_URL", "") or "").strip()
+
+
+def _validated_external_https_url(value, allowed_hosts):
+    value = str(value or "").strip()
+    if not value or len(value) > 2048:
+        return None
+    try:
+        parsed = _urlsplit(value)
+    except Exception:
+        return None
+    host = str(parsed.hostname or "").casefold()
+    allowed = {str(item).casefold() for item in allowed_hosts}
+    if (
+        parsed.scheme.casefold() != "https"
+        or not host
+        or host not in allowed
+        or parsed.username
+        or parsed.password
+        or parsed.fragment
+    ):
+        return None
+    return value
+
+
+GAME_CHAT_URL = _validated_external_https_url(
+    _GAME_CHAT_URL_RAW, {"t.me", "telegram.me"}
+)
+NEWS_CHANNEL_URL = _validated_external_https_url(
+    _NEWS_CHANNEL_URL_RAW, {"t.me", "telegram.me"}
+)
+SUPPORT_URL = _validated_external_https_url(
+    _SUPPORT_URL_RAW, {"send.monobank.ua"}
+)
+
+
+def get_external_links_config():
+    """Return only validated URLs; invalid or empty values stay disabled."""
+    return {
+        "game_chat": GAME_CHAT_URL,
+        "news_channel": NEWS_CHANNEL_URL,
+        "support": SUPPORT_URL,
+    }
+
 
 ============================================================
 FILE: create_rom_full_dump.ps1
@@ -1100,6 +1170,114 @@ LAST WRITE: 2026-07-09 23:38:37
 ============================================================
 
 [EMPTY FILE]
+
+============================================================
+FILE: data\about_game.py
+SIZE: 13442 bytes
+LAST WRITE: 2026-09-04 14:46:41
+============================================================
+
+# -*- coding: utf-8 -*-
+# Canonical read-only Ukrainian About Game content for ROM Stage 18.4.1.
+ABOUT_GAME_INTRO=("📖 Руни Магії RPG\n\nТекстова рольова гра про дослідження світу, розвиток персонажа, "
+"бої, спорядження, руни та взаємодію з іншими мандрівниками.\n\nОберіть розділ:")
+ABOUT_GAME_SECTION_ORDER=("world","classes","progression","combat","items","runes","guilds","crystals","tips")
+ABOUT_GAME_SECTIONS={
+"world":{"button":"🌍 Світ гри","title":"🌍 Світ Рун","text":'''Світ пронизаний давньою силою, закарбованою в рунах. Вона живить магію, змінює живих істот і дозволяє майстрам наділяти зброю та обладунки новими властивостями. Колись знання про руни належало великим цивілізаціям, але більшість їхніх таємниць була втрачена.
+
+Після давнього катаклізму потоки рунічної енергії стали нестабільними. Частина земель змінилася, звичайні створіння набули незвичних здібностей, а в покинутих місцях з’явилися осквернені істоти й послідовники темних рун.
+
+Міста та поселення залишаються острівцями безпеки. За їхніми межами мандрівників чекають дикі землі, стародавні руїни, ворожі племена, небезпечні ватажки та сліди забутих цивілізацій.
+
+Кожен герой обирає власний шлях. Одні шукають силу, інші знання, багатство або славу. Проте поступово всі стикаються з одним питанням: що порушило рівновагу рун і чому їхня сила продовжує змінювати світ?
+
+🗺️ Відомі землі
+
+🌿 Початок Шляху
+Перші стежки за межами безпечного поселення. Тут мандрівники вчаться виживати, полювати, користуватися зіллями та берегти спорядження. Навіть у цих землях уже помітний вплив рунічної сили.
+
+🌲 Темний Бір
+Старий ліс, у якому оселилися гоблінські загони, шамани, рунічні культисти та осквернені істоти. У глибині бору ховаються руїни й джерела нестабільної магії.'''},
+"classes":{"button":"🧙 Класи","title":"🧙 Класи персонажів","text":'''Клас визначає бойову роль персонажа, доступне спорядження, основні характеристики та ресурс, який використовується для навичок.
+
+🛡️ Воїн
+Боєць ближнього бою, який покладається на силу та витривалість. Може використовувати одноручний або дворучний меч, а також малий щит. У бою накопичує Лють.
+
+⚔️ Лицар
+Захисник у важких латах із високим фізичним захистом. Використовує одноручний меч і щит. У бою накопичує Лють.
+
+🏹 Скаут
+Дистанційний фізичний боєць, для якого важливі спритність і сила. Використовує луки та арбалети. Навички витрачають бойову Енергію.
+
+🗡️ Розбійник
+Швидкий боєць ближнього бою, який використовує кинджали та покладається на спритність. Навички витрачають бойову Енергію.
+
+🔮 Маг
+Магічний боєць із потужними наступальними закляттями. Основними характеристиками є інтелект і мудрість. Для навичок використовує Ману.
+
+⚕️ Жрець
+Магічний клас підтримки, здатний лікувати та захищати. Основними характеристиками є мудрість та інтелект. Для навичок використовує Ману.'''},
+"progression":{"button":"📈 Прогресія","title":"📈 Розвиток персонажа","text":'''За перемоги над ворогами персонаж отримує досвід і золото. Накопичення досвіду підвищує рівень, відкриває нові можливості та дозволяє переходити до небезпечніших земель.
+
+Сила персонажа залежить не лише від рівня. Важливу роль відіграють характеристики, екіпірування, рідкість предметів, стан спорядження, заточка та встановлені руни.
+
+Для додаткового розвитку можна виконувати щоденні завдання, контракти, брати участь у житті гільдії, торгувати з іншими гравцями та шукати краще спорядження.'''},
+"combat":{"button":"⚔️ Бій","title":"⚔️ Бойова система","text":'''Під час полювання можна зустріти звичайного ворога, елітну істоту або боса локації. Боси не викликаються окремою кнопкою та можуть з’явитися випадково під час полювання.
+
+Фізична й магічна шкода протистоять різним видам захисту. Фізичний захист зменшує фізичні атаки, а магічний захист діє проти магії.
+
+У бою можна виконувати звичайні атаки, застосовувати класові навички, використовувати зілля або намагатися втекти. Доступність навичок залежить від класу та бойового ресурсу.
+
+Поразка має наслідки для спорядження, тому перед небезпечним полюванням варто перевіряти здоров’я, запас зіль і міцність одягнених предметів.'''},
+"items":{"button":"🎒 Предмети","title":"🎒 Предмети та спорядження","text":'''Персонаж може знаходити спорядження, зілля, матеріали, руни та інші корисні предмети. Частина здобичі випадає з ворогів, а деякі речі доступні в магазинах, через ремесло або спеціальні системи.
+
+Спорядження поділяється за рідкістю. Рідкісніші предмети зазвичай мають сильніші характеристики й вищу цінність.
+
+Для екіпірування використовуються окремі слоти зброї, другої руки, броні та прикрас. Кожен клас має власні обмеження на типи зброї та броні.
+
+Спорядження має міцність. Пошкоджені речі можна відремонтувати у Коваля. Предмет із нульовою міцністю тимчасово не надає своїх бонусів.
+
+Зайві речі можна продати, передати іншому гравцю або виставити в Торговому домі, якщо правила предмета дозволяють це.'''},
+"runes":{"button":"💠 Руни","title":"💠 Руни","text":'''Руни містять концентровану магічну силу. Вони можуть посилювати основні характеристики персонажа й встановлюватися у відповідні слоти спорядження.
+
+Руни відрізняються характеристикою та рівнем. Сильніші руни створюються шляхом об’єднання слабших у Рунного Майстра.
+
+Установлену руну можна спробувати витягти за допомогою Екстрактора. Різні типи екстракторів мають різні правила використання.
+
+Руни, жетони та спеціальні матеріали мають окремі джерела отримання. Не всі з них можуть випадати зі звичайних ворогів, продаватися або передаватися іншим гравцям.'''},
+"guilds":{"button":"🏰 Гільдії","title":"🏰 Гільдії","text":'''Гільдії об’єднують гравців для спільного розвитку. Учасники можуть виконувати активності, розвивати гільдію, переглядати журнал подій і змагатися в рейтингах.
+
+Гільдія має голову, офіцерів та звичайних учасників. Різні ролі надають різні можливості керування заявками й складом гільдії.
+
+Створення власної гільдії потребує певного рівня персонажа та оплати золотом. Кількість учасників обмежена місткістю гільдії.
+
+Покидаючи гільдію, варто враховувати чинні обмеження та період очікування перед новим вступом.'''},
+"crystals":{"button":"💎 Кристали","title":"💎 Кристали","text":'''Кристали є окремою валютою акаунта. Вони зберігаються незалежно від поточного персонажа та не зникають після звичайного скидання прогресу героя.
+
+За кристали можна купувати спеціальні предмети та розширювати місткість сумки. Перед остаточною покупкою гра показує предмет, вартість і очікуваний результат.
+
+Кожна успішна операція з кристалами записується в захищену історію. Повторне натискання старої кнопки не повинно створювати повторну покупку або подвійне списання.
+
+Способи отримання кристалів можуть розширюватися разом із розвитком гри.'''},
+"tips":{"button":"💡 Корисні поради","title":"💡 Корисні поради","text":'''• Перед полюванням перевіряйте здоров’я, бойовий ресурс і запас зіль.
+
+• Регулярно ремонтуйте спорядження. Предмети з нульовою міцністю не надають бонусів.
+
+• Не поспішайте продавати рідкісне спорядження. Порівнюйте характеристики, тип броні, рівень, рідкість і сумісність із класом.
+
+• Виконуйте щоденні завдання та контракти, щоб отримувати додаткові нагороди.
+
+• Використовуйте руни для посилення важливих характеристик свого класу.
+
+• Слідкуйте за вільним місцем у сумці перед покупками та полюванням.
+
+• Перед обміном уважно перевіряйте пропозиції обох сторін.
+
+• Небезпечніші вороги можуть принести кращу нагороду, але потребують кращої підготовки.'''} }
+def get_about_game_section(key): return ABOUT_GAME_SECTIONS.get(str(key or ""))
+def build_about_game_section_text(key):
+ section=get_about_game_section(key)
+ return None if not section else f"{section['title']}\n\n{section['text']}"
 
 ============================================================
 FILE: data\balance.py
@@ -1864,6 +2042,86 @@ def exported_names():
     ]
 
 ============================================================
+FILE: data\guild_resource_policy.py
+SIZE: 2642 bytes
+LAST WRITE: 2026-09-04 23:49:20
+============================================================
+
+# -*- coding: utf-8 -*-
+"""Inactive design registry for future guild-resource uses.
+
+Stage 18.8.1 intentionally activates no spending, buffs, storage or upgrades.
+"""
+from __future__ import annotations
+
+GUILD_RESOURCE_POLICY_VERSION = "18.8.1"
+GUILD_RESOURCE_SPENDING_ENABLED = False
+GUILD_RESOURCE_INITIAL_SPEND_ROLE = "leader"
+GUILD_RESOURCE_SINK_STATUS_PLANNED = "planned"
+GUILD_RESOURCE_SINK_STATUS_DEFERRED = "deferred"
+
+GUILD_RESOURCE_SINKS = (
+    {
+        "key": "member_limit",
+        "title": "Розширення ліміту учасників",
+        "status": GUILD_RESOURCE_SINK_STATUS_PLANNED,
+        "order": 1,
+        "combat_impact": False,
+        "requires": (),
+    },
+    {
+        "key": "guild_storage_unlock",
+        "title": "Відкриття складу гільдії",
+        "status": GUILD_RESOURCE_SINK_STATUS_PLANNED,
+        "order": 2,
+        "combat_impact": False,
+        "requires": ("approved_guild_level", "storage_domain"),
+    },
+    {
+        "key": "guild_storage_capacity",
+        "title": "Розширення місткості складу",
+        "status": GUILD_RESOURCE_SINK_STATUS_PLANNED,
+        "order": 3,
+        "combat_impact": False,
+        "requires": ("guild_storage_unlock",),
+    },
+    {
+        "key": "attack_buff",
+        "title": "Тимчасовий бонус фізичної та магічної атаки",
+        "status": GUILD_RESOURCE_SINK_STATUS_DEFERRED,
+        "order": 4,
+        "combat_impact": True,
+        "requires": ("stage_18_12_to_18_21_balance_complete",),
+    },
+    {
+        "key": "defense_buff",
+        "title": "Тимчасовий бонус фізичного та магічного захисту",
+        "status": GUILD_RESOURCE_SINK_STATUS_DEFERRED,
+        "order": 5,
+        "combat_impact": True,
+        "requires": ("stage_18_12_to_18_21_balance_complete",),
+    },
+    {
+        "key": "health_buff",
+        "title": "Тимчасовий бонус максимального здоров'я",
+        "status": GUILD_RESOURCE_SINK_STATUS_DEFERRED,
+        "order": 6,
+        "combat_impact": True,
+        "requires": ("stage_18_12_to_18_21_balance_complete",),
+    },
+)
+
+GUILD_RESOURCE_FUTURE_INVARIANTS = (
+    "resource_cannot_be_negative",
+    "leader_authorization_rechecked_in_transaction",
+    "server_authoritative_price_and_eligibility",
+    "idempotency_key_charged_at_most_once",
+    "immutable_debit_audit_record",
+    "failed_activation_rolls_back_debit_and_state",
+    "restart_cannot_duplicate_activation",
+)
+
+============================================================
 FILE: data\locations.py
 SIZE: 3316 bytes
 LAST WRITE: 2026-07-09 23:38:37
@@ -2579,6 +2837,31 @@ def get_all_mobs():
     return ALL_MOBS
 
 ============================================================
+FILE: data\player_hp.py
+SIZE: 622 bytes
+LAST WRITE: 2026-09-07 21:26:46
+============================================================
+
+"""Canonical player HP policy for ROM Stage 18.12."""
+
+STARTING_HP_BASE = 60
+HP_PER_LEVEL = 20
+HP_PER_STAMINA = 5
+DEFAULT_STARTING_LEVEL = 1
+DEFAULT_STARTING_STAMINA = 10
+
+
+def calculate_base_max_hp(level, total_stamina):
+    """Return base max HP before percentage modifiers such as armor refine."""
+    safe_level = max(1, int(level or DEFAULT_STARTING_LEVEL))
+    safe_stamina = max(0, int(total_stamina or 0))
+    return max(1, STARTING_HP_BASE + safe_level * HP_PER_LEVEL + safe_stamina * HP_PER_STAMINA)
+
+
+def get_starting_max_hp():
+    return calculate_base_max_hp(DEFAULT_STARTING_LEVEL, DEFAULT_STARTING_STAMINA)
+
+============================================================
 FILE: data\player_progression.py
 SIZE: 2266 bytes
 LAST WRITE: 2026-08-04 21:52:46
@@ -2668,8 +2951,8 @@ RUNE_DROP_BALANCE_VERSION = "10.11.0"
 
 ============================================================
 FILE: data\runes.py
-SIZE: 3550 bytes
-LAST WRITE: 2026-08-31 23:16:20
+SIZE: 3549 bytes
+LAST WRITE: 2026-09-05 00:36:33
 ============================================================
 
 """Canonical Rune System data for ROM 10.x."""
@@ -2702,7 +2985,7 @@ RUNE_ITEM_ID_END = 725
 FIRIUS_TOKEN_ITEM_ID = 726
 RUNE_EXTRACTOR_ITEM_ID = 727
 PERFECT_RUNE_EXTRACTOR_ITEM_ID = 728
-FIRIUS_TOKENS_PER_DAILY_REWARD = 10
+FIRIUS_TOKENS_PER_DAILY_REWARD = 5
 RUNE_FUSION_SOURCE_QUANTITY = 3
 RUNE_FUSION_TOKEN_QUANTITY = 1
 RUNE_MAX_STACK = 999
@@ -8375,8 +8658,8 @@ def run_db_startup_maintenance():
 
 ============================================================
 FILE: db_modules\player.py
-SIZE: 7569 bytes
-LAST WRITE: 2026-08-23 01:17:26
+SIZE: 7381 bytes
+LAST WRITE: 2026-09-07 21:26:46
 ============================================================
 
 # ROM 17.18.2.2 BOW CROSSBOW DAMAGE DIFFERENTIATION
@@ -8388,6 +8671,7 @@ Player management module - wrapper for systems.player_system
 from data.player_progression import get_exp_to_next_level
 
 from .connection import conn, cursor, DEFAULT_BAG_SLOTS
+from data.player_hp import get_starting_max_hp
 
 
 # ==============================
@@ -8517,6 +8801,7 @@ def create_user(user_id):
     from systems.energy_system import init_energy_system
     
     init_energy_system()
+    starting_max_hp = get_starting_max_hp()
     
     cursor.execute("""
     INSERT OR IGNORE INTO users (
@@ -8543,8 +8828,8 @@ def create_user(user_id):
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         user_id,
-        170,
-        170,
+        starting_max_hp,
+        starting_max_hp,
         1,
         0,
         0.0,
@@ -11462,6 +11747,51 @@ LAST WRITE: 2026-07-09 23:38:37
 ============================================================
 
 [EMPTY FILE]
+
+============================================================
+FILE: handlers\about_game.py
+SIZE: 3320 bytes
+LAST WRITE: 2026-09-04 14:46:41
+============================================================
+
+# -*- coding: utf-8 -*-
+from telebot import types
+from data.about_game import ABOUT_GAME_INTRO,ABOUT_GAME_SECTION_ORDER,ABOUT_GAME_SECTIONS,build_about_game_section_text
+ABOUT_GAME_BUTTON="📖 Про гру";ABOUT_CALLBACK_PREFIX="about:"
+def _registered(uid):
+ from db import needs_character_name,needs_character_class
+ return not needs_character_name(uid) and not needs_character_class(uid)
+def _about_menu_kb():
+ k=types.InlineKeyboardMarkup();buttons=[types.InlineKeyboardButton(ABOUT_GAME_SECTIONS[key]["button"],callback_data=f"about:section:{key}") for key in ABOUT_GAME_SECTION_ORDER]
+ for i in range(0,len(buttons),2):k.row(*buttons[i:i+2])
+ k.row(types.InlineKeyboardButton("❌ Закрити",callback_data="about:close"));return k
+def _section_kb(key):
+ i=ABOUT_GAME_SECTION_ORDER.index(key);k=types.InlineKeyboardMarkup();row=[]
+ if i>0:row.append(types.InlineKeyboardButton("⬅️ Попередній",callback_data=f"about:section:{ABOUT_GAME_SECTION_ORDER[i-1]}"))
+ row.append(types.InlineKeyboardButton("📖 До розділів",callback_data="about:menu"))
+ if i+1<len(ABOUT_GAME_SECTION_ORDER):row.append(types.InlineKeyboardButton("Наступний ➡️",callback_data=f"about:section:{ABOUT_GAME_SECTION_ORDER[i+1]}"))
+ k.row(*row);k.row(types.InlineKeyboardButton("❌ Закрити",callback_data="about:close"));return k
+def _return_account_menu(bot,chat_id,uid,message_id):
+ from handlers.city import build_account_menu_text_17_30_1_4,account_menu_kb_17_30_1_4
+ try:bot.edit_message_reply_markup(chat_id,message_id,reply_markup=None)
+ except Exception:pass
+ bot.send_message(chat_id,build_account_menu_text_17_30_1_4(uid),reply_markup=account_menu_kb_17_30_1_4())
+def register_about_game_handlers(bot):
+ @bot.message_handler(func=lambda m:str(getattr(m,"text","") or "")==ABOUT_GAME_BUTTON)
+ def open_about(message):
+  if not _registered(message.from_user.id):bot.send_message(message.chat.id,"❗ Спочатку завершіть створення персонажа.");return
+  bot.send_message(message.chat.id,ABOUT_GAME_INTRO,reply_markup=_about_menu_kb())
+ @bot.callback_query_handler(func=lambda c:str(getattr(c,"data","") or "").startswith(ABOUT_CALLBACK_PREFIX))
+ def about_callback(call):
+  if not _registered(call.from_user.id):bot.answer_callback_query(call.id,"Спочатку завершіть створення персонажа.",show_alert=True);return
+  data=str(call.data or "")
+  if data=="about:menu":bot.edit_message_text(ABOUT_GAME_INTRO,call.message.chat.id,call.message.message_id,reply_markup=_about_menu_kb());bot.answer_callback_query(call.id);return
+  if data=="about:close":bot.answer_callback_query(call.id);_return_account_menu(bot,call.message.chat.id,call.from_user.id,call.message.message_id);return
+  if data.startswith("about:section:"):
+   key=data.split(":",2)[2];text=build_about_game_section_text(key)
+   if text is None or key not in ABOUT_GAME_SECTION_ORDER:bot.answer_callback_query(call.id,"Розділ не знайдено.",show_alert=True);return
+   bot.edit_message_text(text,call.message.chat.id,call.message.message_id,reply_markup=_section_kb(key));bot.answer_callback_query(call.id);return
+  bot.answer_callback_query(call.id,"Ця кнопка застаріла.",show_alert=True)
 
 ============================================================
 FILE: handlers\admin_crystal_credit.py
@@ -17704,8 +18034,8 @@ def register_blacksmith_repair_confirmation_handlers(bot):
 
 ============================================================
 FILE: handlers\city.py
-SIZE: 82484 bytes
-LAST WRITE: 2026-09-02 00:40:43
+SIZE: 82548 bytes
+LAST WRITE: 2026-09-04 15:07:34
 ============================================================
 
 # ROM 17.11.2.1 CITY CRAFT TAVERN TEXT CLEANUP
@@ -19981,8 +20311,8 @@ def build_account_menu_text_17_30_1_4(user_id):
 
 def account_menu_kb_17_30_1_4():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.add("💎 Магазин кристалів")
-    kb.add("🏆 Рейтинг")
+    kb.row("💎 Магазин кристалів", "🏆 Рейтинг")
+    kb.row("📖 Про гру", "🔗 Корисні посилання")
     kb.add("🔙 Назад")
     return kb
 
@@ -24031,8 +24361,8 @@ def register_crystal_shop_handlers(bot):
 
 ============================================================
 FILE: handlers\daily.py
-SIZE: 3132 bytes
-LAST WRITE: 2026-08-18 21:39:57
+SIZE: 3131 bytes
+LAST WRITE: 2026-09-05 00:36:33
 ============================================================
 
 from telebot import types
@@ -24070,7 +24400,7 @@ def build_daily_quest_text(user_id):
         f"{progress}/{target_count}\n\n"
         "🎁 Нагорода:\n"
         "🔴 Мале зілля здоров’я ×3\n"
-        "🪙 Жетон Фіріуса ×10\n"
+        "🪙 Жетон Фіріуса ×5\n"
         "ℹ️ Жетони накопичуються та не зникають наступного дня.\n"
     )
 
@@ -25285,6 +25615,81 @@ def register_dev_handlers(bot):
 
 
 ============================================================
+FILE: handlers\external_links.py
+SIZE: 2589 bytes
+LAST WRITE: 2026-09-04 15:07:34
+============================================================
+
+# -*- coding: utf-8 -*-
+"""Fail-closed external URL navigation for ROM Stage 18.5.1."""
+from telebot import types
+
+from config import get_external_links_config
+
+EXTERNAL_LINKS_BUTTON = "🔗 Корисні посилання"
+EXTERNAL_LINKS_CLOSE_CALLBACK = "links:close"
+
+
+def _external_links_text(has_links):
+    if has_links:
+        return "🔗 Корисні посилання\n\nОберіть потрібний ресурс:"
+    return (
+        "🔗 Корисні посилання\n\n"
+        "Наразі доступні посилання ще не налаштовані."
+    )
+
+
+def _external_links_kb(links=None):
+    links = dict(get_external_links_config() if links is None else links)
+    keyboard = types.InlineKeyboardMarkup()
+    if links.get("game_chat"):
+        keyboard.row(types.InlineKeyboardButton("💬 Чат гри", url=links["game_chat"]))
+    if links.get("news_channel"):
+        keyboard.row(types.InlineKeyboardButton("📰 Канал новин", url=links["news_channel"]))
+    if links.get("support"):
+        keyboard.row(types.InlineKeyboardButton("❤️ Підтримати проєкт", url=links["support"]))
+    keyboard.row(types.InlineKeyboardButton("❌ Закрити", callback_data=EXTERNAL_LINKS_CLOSE_CALLBACK))
+    return keyboard
+
+
+def _return_account_menu(bot, chat_id, user_id, message_id):
+    from handlers.city import build_account_menu_text_17_30_1_4, account_menu_kb_17_30_1_4
+    try:
+        bot.edit_message_reply_markup(chat_id, message_id, reply_markup=None)
+    except Exception:
+        pass
+    bot.send_message(
+        chat_id,
+        build_account_menu_text_17_30_1_4(user_id),
+        reply_markup=account_menu_kb_17_30_1_4(),
+    )
+
+
+def register_external_links_handlers(bot):
+    @bot.message_handler(
+        func=lambda message: str(getattr(message, "text", "") or "") == EXTERNAL_LINKS_BUTTON
+    )
+    def open_external_links(message):
+        links = get_external_links_config()
+        bot.send_message(
+            message.chat.id,
+            _external_links_text(any(links.values())),
+            reply_markup=_external_links_kb(links),
+        )
+
+    @bot.callback_query_handler(
+        func=lambda call: str(getattr(call, "data", "") or "") == EXTERNAL_LINKS_CLOSE_CALLBACK
+    )
+    def close_external_links(call):
+        bot.answer_callback_query(call.id)
+        _return_account_menu(
+            bot,
+            call.message.chat.id,
+            call.from_user.id,
+            call.message.message_id,
+        )
+
+============================================================
 FILE: handlers\fatigue_artifact.py
 SIZE: 2537 bytes
 LAST WRITE: 2026-08-29 00:26:22
@@ -25317,8 +25722,8 @@ def register_fatigue_artifact_handlers(bot):
 
 ============================================================
 FILE: handlers\guild.py
-SIZE: 114384 bytes
-LAST WRITE: 2026-08-27 00:27:47
+SIZE: 114122 bytes
+LAST WRITE: 2026-09-04 23:49:20
 ============================================================
 
 # ROM 17.21.3.4 GUILD MEMBER LIST EXPLICIT ACTOR RECOVERY
@@ -25327,6 +25732,7 @@ LAST WRITE: 2026-08-27 00:27:47
 # ROM 17.11.2 COMPACT TEXT LOCATION DESCRIPTION
 # ROM 17.9.1 GLOBAL PAGINATION BUTTON LABELS
 from telebot import types
+from systems.guild_system import validate_guild_tag_contract, validate_guild_name_contract, validate_guild_icon_contract
 
 from db import (
     init_guild_system,
@@ -25478,44 +25884,25 @@ def set_selected_guild(user_id, guild_id):
 
 
 def validate_guild_name_for_ui(name):
-    name = (name or "").strip()
-
-    if len(name) < 3:
-        return False, "❌ Назва гільдії має містити мінімум 3 символи."
-    if len(name) > 32:
-        return False, "❌ Назва гільдії має бути не довша за 32 символи."
+    validation = validate_guild_name_contract(name)
+    if not validation["success"]:
+        return False, validation["message"]
+    name = validation["name"]
     if get_guild_by_name_or_tag(name):
         return False, "❌ Гільдія з такою назвою або абревіатурою вже існує."
-
     return True, name
 
 
+
 def validate_guild_tag_for_ui(tag):
-    tag = normalize_guild_tag_input(tag)
-
-    if len(tag) < 2:
-        return False, "❌ Абревіатура гільдії має містити мінімум 2 символи."
-    if len(tag) > 5:
-        return False, "❌ Абревіатура гільдії має бути не довша за 5 символів."
-
-    allowed = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЬЮЯ"
-    if any(ch not in allowed for ch in tag):
-        return False, "❌ Абревіатура може містити тільки літери та цифри."
+    validation = validate_guild_tag_contract(tag)
+    if not validation["success"]:
+        return False, validation["message"]
+    tag = validation["tag"]
     if get_guild_by_name_or_tag(tag):
-        return False, "❌ Гільдія з такою назвою або абревіатурою вже існує."
-
+        return False, "❌ Гільдія з такою абревіатурою вже існує."
     return True, tag
 
-
-def validate_guild_icon_for_ui(icon):
-    icon = (icon or "").strip()
-
-    if not icon:
-        return True, "🏰"
-    if len(icon) > 4:
-        return False, "❌ Іконка має бути короткою. Найкраще — один emoji."
-
-    return True, icon
 
 
 def reset_guild_create_state(user_id):
@@ -25588,15 +25975,15 @@ def build_guild_hall_member_text(user_id):
         f"Рівень гільдії: {guild['level']}\n"
         f"Учасники: {member_count}/{guild['member_limit']}\n\n"
         f"Місячний рейтинг ({season_key}):\n"
-        f"• EXP: {guild['monthly_exp']}\n"
+        f"• Досвід: {guild['monthly_exp']}\n"
         f"• Ресурс: {guild['monthly_resource']}\n"
         f"• Вбивства: {guild['monthly_kills']}\n"
         f"• Контракти: {guild['monthly_contracts']}\n"
-        f"• Score: {guild['monthly_score']}\n\n"
+        f"• Бали: {guild['monthly_score']}\n\n"
         f"За весь час:\n"
-        f"• EXP: {guild['total_exp']}\n"
+        f"• Досвід: {guild['total_exp']}\n"
         f"• Ресурс: {guild['total_resource']}\n"
-        f"• Score: {guild['total_score']}\n\n"
+        f"• Бали: {guild['total_score']}\n\n"
         "Доступні дії:\n"
         "• ℹ️ Інформація\n"
         "• 👥 Учасники\n"
@@ -25674,7 +26061,7 @@ def build_guild_members_text(user_id):
         monthly_score = member["monthly_contribution_score"] or 0
         text += (
             f"{index}. {role_label} {character_name}\n"
-            f"   Рівень: {level} | Score: {score} | Місяць: {monthly_score}\n"
+            f"   Рівень: {level} | Бали: {score} | Місяць: {monthly_score}\n"
         )
 
     return text.strip()
@@ -25706,7 +26093,7 @@ def build_guild_ranking_text(scope="monthly"):
             resource = guild["monthly_resource"] or 0
         text += (
             f"{index}. {name}\n"
-            f"   Score: {score} | EXP: {exp} | Ресурс: {resource}\n"
+            f"   Бали: {score} | Досвід: {exp} | Ресурс: {resource}\n"
         )
 
     return text.strip()
@@ -25755,13 +26142,13 @@ def build_guild_detail_text(user_id, guild_id):
         f"Учасники: {member_count}/{guild['member_limit']}\n"
         f"Створено: {format_ua_date(guild['created_at'])}\n\n"
         f"Поточний сезон:\n"
-        f"• EXP: {guild['monthly_exp']}\n"
+        f"• Досвід: {guild['monthly_exp']}\n"
         f"• Ресурс: {guild['monthly_resource']}\n"
-        f"• Score: {guild['monthly_score']}\n\n"
+        f"• Бали: {guild['monthly_score']}\n\n"
         f"За весь час:\n"
-        f"• EXP: {guild['total_exp']}\n"
+        f"• Досвід: {guild['total_exp']}\n"
         f"• Ресурс: {guild['total_resource']}\n"
-        f"• Score: {guild['total_score']}"
+        f"• Бали: {guild['total_score']}"
         f"{pending_text}"
     )
 
@@ -25805,9 +26192,12 @@ def build_guild_create_name_prompt():
         "Введи назву гільдії.\n"
         "Вимоги:\n"
         "• від 3 до 32 символів;\n"
-        "• назва має бути унікальною.\n\n"
-        "Створення гільдії зараз безкоштовне."
+        "• українські або латинські літери без змішування;\n"
+        "• дозволені одинарні пробіли, апостроф і дефіс;\n"
+        "• цифри та emoji заборонені;\n"
+        "• назва має бути унікальною."
     )
+
 
 
 def build_guild_create_tag_prompt(name):
@@ -25815,12 +26205,14 @@ def build_guild_create_tag_prompt(name):
         "🏗️ Створення гільдії\n\n"
         "Крок 2/4 — абревіатура.\n\n"
         f"Назва: {name}\n\n"
-        "Введи короткий TAG гільдії.\n"
+        "Введи TAG гільдії.\n"
         "Вимоги:\n"
-        "• від 2 до 5 символів;\n"
-        "• тільки літери та цифри;\n"
-        "• буде показуватись у рейтингах, наприклад [ROM]."
+        "• рівно 3 літери;\n"
+        "• тільки українські або латинські літери;\n"
+        "• цифри, пробіли та інші символи заборонені;\n"
+        "• буде показуватись у квадратних дужках, наприклад [ROM]."
     )
+
 
 
 def build_guild_create_icon_prompt(name, tag):
@@ -25829,10 +26221,13 @@ def build_guild_create_icon_prompt(name, tag):
         "Крок 3/4 — іконка.\n\n"
         f"Назва: {name}\n"
         f"TAG: [{tag}]\n\n"
-        "Надішли один emoji для іконки гільдії.\n"
+        "Надішли рівно один emoji для іконки гільдії.\n"
+        "Літери, цифри, текст і кілька emoji заборонені.\n"
+        "Іконка має бути унікальною.\n"
         "Наприклад: 🏰, 🐺, 🔥, 🍒\n\n"
         "Якщо хочеш стандартну іконку — надішли 🏰."
     )
+
 
 
 def build_guild_create_confirm_text(state, user_id=None):
@@ -26108,20 +26503,15 @@ def register_guild_handlers(bot):
 
 
 def validate_guild_icon_for_ui(icon):
-    icon = (icon or "").strip() or "🏰"
-
-    # Telegram emoji may be several codepoints, so only prevent very long text.
-    if len(icon) > 4:
-        return False, "❌ Іконка має бути короткою. Найкраще — один emoji."
-
-    try:
-        from db import is_guild_icon_taken
-        if is_guild_icon_taken(icon):
-            return False, "❌ Така іконка вже використовується іншою гільдією. Обери іншу іконку."
-    except Exception:
-        pass
-
+    validation = validate_guild_icon_contract(icon)
+    if not validation["success"]:
+        return False, validation["message"]
+    icon = validation["icon"]
+    from db import is_guild_icon_taken
+    if is_guild_icon_taken(icon):
+        return False, "❌ Така іконка вже використовується іншою гільдією. Обери іншу іконку."
     return True, icon
+
 
 
 # ==============================
@@ -26567,7 +26957,7 @@ def build_guild_member_manage_text(user_id):
         monthly_score = _member_row_get(member, "monthly_contribution_score", 0) or 0
         text += (
             f"{index}. {role_label} {name}\n"
-            f"   Рівень: {level} | Score: {score} | Місяць: {monthly_score}\n"
+            f"   Рівень: {level} | Бали: {score} | Місяць: {monthly_score}\n"
         )
 
     text += "\nОбери учасника кнопкою нижче, щоб переглянути дії."
@@ -27183,21 +27573,21 @@ def build_guild_progress_text(user_id):
         f"🏛 Прогрес гільдії\n\n"
         f"{get_guild_display_name(guild)}\n\n"
         f"Рівень: {guild['level']}\n"
-        f"EXP до наступного рівня:\n"
+        f"Досвід до наступного рівня:\n"
         f"{bar} {info['progress_percent']:.1f}%\n"
-        f"{info['progress_exp']}/{info['needed_exp']} EXP\n\n"
+        f"{info['progress_exp']}/{info['needed_exp']} досвіду\n\n"
         f"Поточний сезон:\n"
-        f"• EXP: {guild['monthly_exp']}\n"
+        f"• Досвід: {guild['monthly_exp']}\n"
         f"• Ресурс: {guild['monthly_resource']}\n"
         f"• Вбивства: {guild['monthly_kills']}\n"
         f"• Контракти: {guild['monthly_contracts']}\n"
-        f"• Score: {guild['monthly_score']}\n\n"
+        f"• Бали: {guild['monthly_score']}\n\n"
         f"За весь час:\n"
-        f"• EXP: {guild['total_exp']}\n"
+        f"• Досвід: {guild['total_exp']}\n"
         f"• Ресурс: {guild['total_resource']}\n"
         f"• Вбивства: {guild['total_kills']}\n"
         f"• Контракти: {guild['total_contracts']}\n"
-        f"• Score: {guild['total_score']}"
+        f"• Бали: {guild['total_score']}"
     )
 
 
@@ -27238,7 +27628,7 @@ def build_guild_contribution_text(user_id, scope="monthly"):
 
         text += (
             f"{index}. {role_label} {name}\n"
-            f"   Score: {score} | EXP: {exp} | Ресурс: {resource}\n"
+            f"   Бали: {score} | Досвід: {exp} | Ресурс: {resource}\n"
             f"   Вбивства: {kills} | Контракти: {contracts}\n"
         )
 
@@ -28014,15 +28404,15 @@ def format_guild_debug_text(user_id):
 
     text += f"Level: {guild['level']}\n"
     if next_level:
-        text += f"Level progress: {next_level.get('progress_exp', 0)}/{next_level.get('needed_exp', 0)} EXP ({next_level.get('progress_percent', 0):.1f}%)\n"
+        text += f"Прогрес рівня: {next_level.get('progress_exp', 0)}/{next_level.get('needed_exp', 0)} EXP ({next_level.get('progress_percent', 0):.1f}%)\n"
 
     text += "\nMonthly:\n"
-    text += f"EXP: {guild['monthly_exp']} | Resource: {guild['monthly_resource']} | Kills: {guild['monthly_kills']} | Contracts: {guild['monthly_contracts']}\n"
-    text += f"Score: {guild['monthly_score']}\n"
+    text += f"Досвід: {guild['monthly_exp']} | Ресурс: {guild['monthly_resource']} | Вбивства: {guild['monthly_kills']} | Контракти: {guild['monthly_contracts']}\n"
+    text += f"Бали: {guild['monthly_score']}\n"
 
     text += "\nTotal:\n"
-    text += f"EXP: {guild['total_exp']} | Resource: {guild['total_resource']} | Kills: {guild['total_kills']} | Contracts: {guild['total_contracts']}\n"
-    text += f"Score: {guild['total_score']}"
+    text += f"Досвід: {guild['total_exp']} | Ресурс: {guild['total_resource']} | Вбивства: {guild['total_kills']} | Контракти: {guild['total_contracts']}\n"
+    text += f"Бали: {guild['total_score']}"
 
     if diagnostics.get("error"):
         text += f"\n\nError: {diagnostics.get('error')}"
@@ -28307,8 +28697,8 @@ def build_guild_member_detail_text(*args, **kwargs):
 
 ============================================================
 FILE: handlers\inventory.py
-SIZE: 55513 bytes
-LAST WRITE: 2026-09-02 21:38:02
+SIZE: 64857 bytes
+LAST WRITE: 2026-09-05 01:36:24
 ============================================================
 
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
@@ -29463,7 +29853,7 @@ def get_refine_material_description_text(item_id):
             "• одна успішна переробка витрачає 1 жетон;\n"
             "• для переробки також потрібні 3 однакові руни одного типу й рівня;\n"
             "• жетони накопичуються та не зникають наступного дня;\n"
-            "• 10 жетонів можна отримати за виконання щоденного завдання.\n"
+            "• 5 жетонів можна отримати за виконання щоденного завдання.\n"
         )
 
     return ""
@@ -29941,6 +30331,225 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
     except Exception:
         pass
     return text, kb
+
+# === ROM STAGE 18.11.1 EQUIPMENT RUNE COMPARISON START ===
+# Initial item details remain concise. The equipped item is rendered only after
+# an ownership-safe, read-only inline callback.
+_EQUIPMENT_COMPARISON_BASE_BUILD_ITEM_DETAILS_18_11_1 = build_item_details
+_EQUIPMENT_COMPARISON_BASE_REGISTER_HANDLERS_18_11_1 = register_inventory_handlers
+_EQUIPMENT_COMPARISON_BASE_TEXT_18_11_1 = build_equipped_comparison_text
+_EQUIPMENT_COMPARISON_MARKER_18_11_1 = "⚖️ Зараз вдягнено для порівняння:"
+_EQUIPMENT_RUNE_MARKER_18_11_1 = "💠 Рунні слоти:"
+
+
+def _inventory_comparison_owned_item_18_11_1(user_id, inventory_id):
+    """Return the current owned inventory tuple or None; never trusts callback text."""
+    try:
+        from db_modules.connection import cursor
+        row = cursor.execute(
+            "SELECT id FROM inventory WHERE id=? AND user_id=? AND COALESCE(quantity,0)>0",
+            (int(inventory_id), int(user_id)),
+        ).fetchone()
+        if not row:
+            return None
+        return get_item_by_inventory_id_full(int(inventory_id))
+    except Exception:
+        return None
+
+
+def _inventory_comparison_target_18_11_1(user_id, inventory_id):
+    """Reload the selected row and the currently equipped row for its exact slot."""
+    item = _inventory_comparison_owned_item_18_11_1(user_id, inventory_id)
+    if not item or len(item) <= 6:
+        return None
+    slot_key = str(item[6] or "").strip()
+    if not slot_key:
+        return None
+    try:
+        equipped_id = get_all_equipped_slots(int(user_id)).get(slot_key)
+        if not equipped_id or int(equipped_id) == int(inventory_id):
+            return None
+        equipped = _inventory_comparison_owned_item_18_11_1(user_id, equipped_id)
+        if not equipped:
+            return None
+        return {
+            "selected": item,
+            "slot_key": slot_key,
+            "equipped_inventory_id": int(equipped_id),
+            "equipped": equipped,
+        }
+    except Exception:
+        return None
+
+
+def _inventory_remove_automatic_comparison_18_11_1(text):
+    """Remove the inherited comparison and every ambiguous inherited rune block."""
+    value = str(text or "")
+    marker = value.find(_EQUIPMENT_COMPARISON_MARKER_18_11_1)
+    if marker >= 0:
+        value = value[:marker].rstrip()
+    rune = value.find(_EQUIPMENT_RUNE_MARKER_18_11_1)
+    if rune >= 0:
+        value = value[:rune].rstrip()
+    return value
+
+
+def _inventory_selected_rune_block_18_11_2(user_id, inventory_id):
+    """Build rune sockets only from the exact selected owned inventory row."""
+    if not _inventory_comparison_owned_item_18_11_1(user_id, inventory_id):
+        return ""
+    try:
+        from systems.rune_system import format_equipment_rune_slots_text
+        return str(format_equipment_rune_slots_text(
+            int(user_id), int(inventory_id)
+        ) or "")
+    except Exception:
+        return ""
+
+
+def _inventory_insert_compare_button_18_11_1(keyboard, inventory_id, category, page):
+    """Insert Compare before navigation without disturbing existing equip actions."""
+    if keyboard is None:
+        return keyboard
+    callback = f"itemcmp:{int(inventory_id)}:{str(category or 'all')}:{int(page or 0)}"
+    try:
+        rows = getattr(keyboard, "keyboard", None)
+        if rows is None:
+            return keyboard
+        for row in rows:
+            for button in row:
+                if str(getattr(button, "callback_data", "")) == callback:
+                    return keyboard
+        button = types.InlineKeyboardButton(text="⚖️ Порівняти", callback_data=callback)
+        navigation_prefixes = ("item:", "invcat:", "inv_home", "inventory", "inv_")
+        insert_at = len(rows)
+        for index, row in enumerate(rows):
+            callbacks = [str(getattr(item, "callback_data", "")) for item in row]
+            labels = [str(getattr(item, "text", "")) for item in row]
+            if any(value.startswith(navigation_prefixes) for value in callbacks) or any("Назад" in label or "До розділів" in label for label in labels):
+                insert_at = index
+                break
+        rows.insert(insert_at, [button])
+    except Exception:
+        return keyboard
+    return keyboard
+
+
+def build_equipped_comparison_text(user_id, slot_key, current_inventory_id):
+    """Existing equipped-item card plus that equipped row's own rune sockets."""
+    text = _EQUIPMENT_COMPARISON_BASE_TEXT_18_11_1(user_id, slot_key, current_inventory_id)
+    target = _inventory_comparison_target_18_11_1(user_id, current_inventory_id)
+    if not text or not target:
+        return text
+    try:
+        from systems.rune_system import format_equipment_rune_slots_text
+        rune_block = format_equipment_rune_slots_text(
+            int(user_id), target["equipped_inventory_id"]
+        )
+        if rune_block and _EQUIPMENT_RUNE_MARKER_18_11_1 not in text:
+            text = text.rstrip() + "\n" + str(rune_block)
+    except Exception:
+        pass
+    return text
+
+
+def build_item_details(user_id, inventory_id, back_category="all", page=0):
+    """Selected item only; add Compare iff another item is equipped in the slot."""
+    result = _EQUIPMENT_COMPARISON_BASE_BUILD_ITEM_DETAILS_18_11_1(
+        user_id, inventory_id, back_category, page
+    )
+    if not isinstance(result, tuple) or len(result) < 2:
+        return result
+    text, keyboard = result[0], result[1]
+    text = _inventory_remove_automatic_comparison_18_11_1(text)
+    selected_runes = _inventory_selected_rune_block_18_11_2(user_id, inventory_id)
+    if selected_runes:
+        text = text.rstrip() + "\n\n" + selected_runes.lstrip()
+    if _inventory_comparison_target_18_11_1(user_id, inventory_id):
+        keyboard = _inventory_insert_compare_button_18_11_1(
+            keyboard, inventory_id, back_category, page
+        )
+    return (text, keyboard, *result[2:])
+
+
+def _inventory_comparison_keyboard_18_11_1(keyboard, inventory_id, category, page):
+    """Replace Compare with a canonical return to the selected-item card."""
+    try:
+        rows = getattr(keyboard, "keyboard", None)
+        if rows is None:
+            return keyboard
+        compare_prefix = f"itemcmp:{int(inventory_id)}:"
+        replacement = types.InlineKeyboardButton(
+            text="⬅️ Назад до предмета",
+            callback_data=f"item:{int(inventory_id)}:{str(category or 'all')}:{int(page or 0)}",
+        )
+        replaced = False
+        for index, row in enumerate(rows):
+            if any(str(getattr(button, "callback_data", "")).startswith(compare_prefix) for button in row):
+                rows[index] = [replacement]
+                replaced = True
+                break
+        if not replaced:
+            rows.insert(0, [replacement])
+    except Exception:
+        pass
+    return keyboard
+
+
+def register_inventory_handlers(bot):
+    """Register comparison before legacy inventory callbacks to preserve priority."""
+    @bot.callback_query_handler(
+        func=lambda call: str(getattr(call, "data", "") or "").startswith("itemcmp:")
+    )
+    def equipment_comparison_callback_18_11_1(call):
+        try:
+            parts = str(call.data or "").split(":")
+            if len(parts) != 4:
+                raise ValueError("invalid callback")
+            inventory_id = int(parts[1])
+            category = str(parts[2] or "all")
+            page = int(parts[3])
+        except Exception:
+            bot.answer_callback_query(call.id, "Некоректна дія.", show_alert=True)
+            return
+
+        user_id = int(call.from_user.id)
+        target = _inventory_comparison_target_18_11_1(user_id, inventory_id)
+        if not target:
+            bot.answer_callback_query(
+                call.id,
+                "Предмет або спорядження для порівняння більше недоступні.",
+                show_alert=True,
+            )
+            return
+
+        result = build_item_details(user_id, inventory_id, category, page)
+        if not isinstance(result, tuple) or len(result) < 2:
+            bot.answer_callback_query(call.id, "Предмет більше недоступний.", show_alert=True)
+            return
+        text, keyboard = result[0], result[1]
+        comparison = build_equipped_comparison_text(
+            user_id, target["slot_key"], inventory_id
+        )
+        if not comparison:
+            bot.answer_callback_query(
+                call.id, "Спорядження для порівняння більше недоступне.", show_alert=True
+            )
+            return
+        keyboard = _inventory_comparison_keyboard_18_11_1(
+            keyboard, inventory_id, category, page
+        )
+        bot.edit_message_text(
+            str(text).rstrip() + comparison,
+            call.message.chat.id,
+            call.message.message_id,
+            reply_markup=keyboard,
+        )
+        bot.answer_callback_query(call.id)
+
+    return _EQUIPMENT_COMPARISON_BASE_REGISTER_HANDLERS_18_11_1(bot)
+
+# === ROM STAGE 18.11.1 EQUIPMENT RUNE COMPARISON END ===
 
 
 ============================================================
@@ -35313,8 +35922,8 @@ def rune_master_kb():
 
 ============================================================
 FILE: main.py
-SIZE: 11062 bytes
-LAST WRITE: 2026-09-02 23:13:57
+SIZE: 11383 bytes
+LAST WRITE: 2026-09-04 21:01:38
 ============================================================
 
 
@@ -35403,6 +36012,8 @@ from handlers.combat import register_combat_handlers
 from handlers.dev import register_dev_handlers
 from handlers.map import register_map_handlers
 from handlers.city import register_city_handlers
+from handlers.about_game import register_about_game_handlers
+from handlers.external_links import register_external_links_handlers
 from handlers.contracts import register_contract_handlers
 from handlers.daily import register_daily_handlers
 from handlers.refine import register_refine_handlers
@@ -35422,6 +36033,7 @@ from systems.crystal_shop_system import init_crystal_shop_system
 from systems.crystal_bag_expansion_system import init_crystal_bag_expansion_system
 
 from systems.notifications import start_notification_worker
+from systems.inactivity_reminder_system import init_inactivity_reminder_system
 from systems.telegram_rate_limit import install_global_telegram_rate_limit_guard
 
 
@@ -35491,6 +36103,7 @@ init_crystal_bag_expansion_system()
 init_timed_exp_bonus_system()
 init_name_rune_system()
 init_fatigue_artifact_system()
+init_inactivity_reminder_system()
 
 register_crystal_shop_handlers(bot)
 register_admin_crystal_credit_handlers(bot)
@@ -35505,6 +36118,8 @@ register_dev_handlers(bot)
 register_map_handlers(bot)
 register_blacksmith_repair_confirmation_handlers(bot)
 register_blacksmith_repair_hotfix_handlers(bot)
+register_about_game_handlers(bot)
+register_external_links_handlers(bot)
 register_city_handlers(bot)
 register_guild_handlers(bot)
 register_auction_house_handlers(bot)
@@ -43815,7 +44430,7 @@ def get_crystal_bag_expansion_purchases(user_id,db_path=None):
 ============================================================
 FILE: systems\crystal_shop_system.py
 SIZE: 8487 bytes
-LAST WRITE: 2026-08-31 23:16:20
+LAST WRITE: 2026-09-05 01:01:10
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -43825,7 +44440,7 @@ import json, sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 DB_PATH=Path(__file__).resolve().parents[1]/'game.db'
-CRYSTAL_SHOP_CATALOG={501:{'name':'🔮 Сфера нового шляху','price':150},602:{'name':'🍀 Руна Успіху','price':40},728:{'name':'💠 Досконалий Екстрактор','price':25},502:{'name':'✍️ Руна імені','price':50}}
+CRYSTAL_SHOP_CATALOG={501:{'name':'🔮 Сфера нового шляху','price':150},602:{'name':'🍀 Руна Успіху','price':35},728:{'name':'💠 Досконалий Екстрактор','price':20},502:{'name':'✍️ Руна імені','price':50}}
 def _utc():return datetime.now(timezone.utc).isoformat()
 def _connect(path=None):
  c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
@@ -47752,9 +48367,75 @@ def run_fresh_database_schema_bootstrap():
     return {"success": True, "results": results}
 
 ============================================================
+FILE: systems\guild_resource_system.py
+SIZE: 1940 bytes
+LAST WRITE: 2026-09-04 23:49:20
+============================================================
+
+# -*- coding: utf-8 -*-
+"""Read-only guild-resource design surface for Stage 18.8.1.
+
+No function in this module writes to game.db or activates a future sink.
+"""
+from __future__ import annotations
+
+from copy import deepcopy
+
+from data.guild_resource_policy import (
+    GUILD_RESOURCE_FUTURE_INVARIANTS,
+    GUILD_RESOURCE_INITIAL_SPEND_ROLE,
+    GUILD_RESOURCE_POLICY_VERSION,
+    GUILD_RESOURCE_SINKS,
+    GUILD_RESOURCE_SPENDING_ENABLED,
+)
+
+GUILD_RESOURCE_INACTIVE_MESSAGE = (
+    "Використання ресурсу гільдії ще не активовано. "
+    "Можливості перебувають на етапі проєктування."
+)
+
+
+def get_guild_resource_design_policy():
+    """Return a detached read-only snapshot of the future policy."""
+    return {
+        "version": GUILD_RESOURCE_POLICY_VERSION,
+        "spending_enabled": GUILD_RESOURCE_SPENDING_ENABLED,
+        "initial_spend_role": GUILD_RESOURCE_INITIAL_SPEND_ROLE,
+        "sinks": deepcopy(GUILD_RESOURCE_SINKS),
+        "invariants": tuple(GUILD_RESOURCE_FUTURE_INVARIANTS),
+    }
+
+
+def get_guild_resource_sink_definition(sink_key):
+    key = str(sink_key or "").strip()
+    for sink in GUILD_RESOURCE_SINKS:
+        if sink["key"] == key:
+            return deepcopy(sink)
+    return None
+
+
+def validate_guild_resource_feature_inactive():
+    return {
+        "success": False,
+        "enabled": False,
+        "code": "guild_resource_spending_inactive",
+        "message": GUILD_RESOURCE_INACTIVE_MESSAGE,
+    }
+
+
+def spend_guild_resource(*args, **kwargs):
+    """Fail closed until an approved transactional implementation exists."""
+    return validate_guild_resource_feature_inactive()
+
+
+def activate_guild_resource_sink(*args, **kwargs):
+    """Fail closed until an approved transactional implementation exists."""
+    return validate_guild_resource_feature_inactive()
+
+============================================================
 FILE: systems\guild_system.py
-SIZE: 95274 bytes
-LAST WRITE: 2026-08-31 00:31:14
+SIZE: 98221 bytes
+LAST WRITE: 2026-09-04 23:03:15
 ============================================================
 
 from datetime import datetime
@@ -47833,12 +48514,117 @@ def get_current_guild_season_key():
     return datetime.now().strftime("%Y-%m")
 
 
+GUILD_NAME_LATIN_LETTERS = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
+GUILD_NAME_UKRAINIAN_LETTERS = frozenset("АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЬЮЯабвгґдеєжзиіїйклмнопрстуфхцчшщьюя")
+GUILD_NAME_APOSTROPHES = frozenset(("'", "’", "ʼ"))
+_GUILD_EMOJI_VARIATION_SELECTORS = frozenset((0xFE0E, 0xFE0F))
+_GUILD_EMOJI_ZWJ = 0x200D
+_GUILD_EMOJI_KEYCAP = 0x20E3
+
+
 def normalize_guild_name(value):
-    return (value or "").strip().casefold()
+    import unicodedata
+    return unicodedata.normalize("NFC", str(value or "").strip())
+
+
+def normalize_guild_name_key(value):
+    return normalize_guild_name(value).casefold()
+
+
+def validate_guild_name_contract(value):
+    name = normalize_guild_name(value)
+    if len(name) < 3:
+        return {"success": False, "message": "❌ Назва гільдії має містити мінімум 3 символи."}
+    if len(name) > 32:
+        return {"success": False, "message": "❌ Назва гільдії має бути не довша за 32 символи."}
+    allowed = GUILD_NAME_LATIN_LETTERS | GUILD_NAME_UKRAINIAN_LETTERS | GUILD_NAME_APOSTROPHES | {"-", " "}
+    if any(character not in allowed for character in name):
+        return {"success": False, "message": "❌ Дозволені лише українські або латинські літери, одинарні пробіли, апостроф і дефіс. Цифри та emoji заборонені."}
+    has_latin = any(character in GUILD_NAME_LATIN_LETTERS for character in name)
+    has_ukrainian = any(character in GUILD_NAME_UKRAINIAN_LETTERS for character in name)
+    if has_latin and has_ukrainian:
+        return {"success": False, "message": "❌ Не змішуй українські та латинські літери в одній назві."}
+    if "  " in name or "--" in name or name.startswith("-") or name.endswith("-"):
+        return {"success": False, "message": "❌ Використовуй лише одинарні пробіли й дефіси між частинами назви."}
+    return {"success": True, "name": name}
+
+
+def _guild_is_regional_indicator(codepoint):
+    return 0x1F1E6 <= codepoint <= 0x1F1FF
+
+
+def _guild_is_emoji_modifier(codepoint):
+    return 0x1F3FB <= codepoint <= 0x1F3FF
+
+
+def _guild_is_emoji_base(codepoint):
+    return (
+        0x1F000 <= codepoint <= 0x1FAFF
+        or 0x2600 <= codepoint <= 0x27BF
+        or 0x2300 <= codepoint <= 0x23FF
+        or codepoint in {0x00A9, 0x00AE, 0x203C, 0x2049, 0x2122, 0x2139, 0x3030, 0x303D, 0x3297, 0x3299}
+    )
+
+
+def _guild_consume_emoji_component(codepoints, index):
+    if index >= len(codepoints) or not _guild_is_emoji_base(codepoints[index]):
+        return None
+    index += 1
+    while index < len(codepoints) and (
+        codepoints[index] in _GUILD_EMOJI_VARIATION_SELECTORS
+        or _guild_is_emoji_modifier(codepoints[index])
+    ):
+        index += 1
+    return index
+
+
+def is_single_guild_emoji(value):
+    import unicodedata
+    text = unicodedata.normalize("NFC", str(value or "").strip())
+    codepoints = [ord(character) for character in text]
+    if not codepoints:
+        return False
+    if len(codepoints) == 2 and all(_guild_is_regional_indicator(cp) for cp in codepoints):
+        return True
+    if len(codepoints) in (2, 3) and codepoints[-1] == _GUILD_EMOJI_KEYCAP and chr(codepoints[0]) in "#*0123456789":
+        return len(codepoints) == 2 or codepoints[1] in _GUILD_EMOJI_VARIATION_SELECTORS
+    index = _guild_consume_emoji_component(codepoints, 0)
+    if index is None:
+        return False
+    while index < len(codepoints):
+        if codepoints[index] != _GUILD_EMOJI_ZWJ:
+            return False
+        index = _guild_consume_emoji_component(codepoints, index + 1)
+        if index is None:
+            return False
+    return True
+
+
+def validate_guild_icon_contract(value):
+    icon = normalize_guild_icon(value)
+    if not is_single_guild_emoji(icon):
+        return {"success": False, "message": "❌ Іконка гільдії має містити рівно один emoji."}
+    return {"success": True, "icon": icon}
+
+
+
+GUILD_TAG_LATIN_LETTERS = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+GUILD_TAG_UKRAINIAN_LETTERS = frozenset("АБВГҐДЕЄЖЗИІЇЙКЛМНОПРСТУФХЦЧШЩЬЮЯ")
+GUILD_TAG_ALLOWED_LETTERS = GUILD_TAG_LATIN_LETTERS | GUILD_TAG_UKRAINIAN_LETTERS
 
 
 def normalize_guild_tag(value):
     return (value or "").strip().upper()
+
+
+def validate_guild_tag_contract(value):
+    tag = normalize_guild_tag(value)
+    if len(tag) != 3:
+        return {"success": False, "message": "❌ Абревіатура гільдії має складатися рівно з 3 літер."}
+    if any(character not in GUILD_TAG_ALLOWED_LETTERS for character in tag):
+        return {"success": False, "message": "❌ Дозволені лише українські та латинські літери."}
+    return {"success": True, "tag": tag}
+
 
 
 def calculate_guild_score(exp=0, resource=0, kills=0, contracts=0):
@@ -48148,7 +48934,7 @@ def get_guild_by_id(guild_id, ensure_season=True):
 
 
 def get_guild_by_name_or_tag(value):
-    name_norm = normalize_guild_name(value)
+    name_norm = normalize_guild_name_key(value)
     tag_norm = normalize_guild_tag(value)
 
     cursor.execute("""
@@ -48160,6 +48946,7 @@ def get_guild_by_name_or_tag(value):
     ))
 
     return cursor.fetchone()
+
 
 
 def is_user_in_guild(user_id):
@@ -48188,59 +48975,6 @@ def get_user_guild_role(user_id):
         return None
 
     return member["role"]
-
-
-def validate_guild_create_input(name, tag, icon="🏰"):
-    name = (name or "").strip()
-    tag = normalize_guild_tag(tag)
-    icon = (icon or "🏰").strip() or "🏰"
-
-    if len(name) < 3:
-        return {
-            "success": False,
-            "message": "❌ Назва гільдії має містити мінімум 3 символи."
-        }
-
-    if len(name) > 32:
-        return {
-            "success": False,
-            "message": "❌ Назва гільдії має бути не довша за 32 символи."
-        }
-
-    if len(tag) < 2:
-        return {
-            "success": False,
-            "message": "❌ Абревіатура гільдії має містити мінімум 2 символи."
-        }
-
-    if len(tag) > 5:
-        return {
-            "success": False,
-            "message": "❌ Абревіатура гільдії має бути не довша за 5 символів."
-        }
-
-    existing = get_guild_by_name_or_tag(name)
-
-    if existing:
-        return {
-            "success": False,
-            "message": "❌ Гільдія з такою назвою або абревіатурою вже існує."
-        }
-
-    existing_tag = get_guild_by_name_or_tag(tag)
-
-    if existing_tag:
-        return {
-            "success": False,
-            "message": "❌ Гільдія з такою назвою або абревіатурою вже існує."
-        }
-
-    return {
-        "success": True,
-        "name": name,
-        "tag": tag,
-        "icon": icon,
-    }
 
 
 # ROM 17.21.1 GUILD LEAVE COOLDOWN
@@ -48392,7 +49126,7 @@ def create_guild(user_id, name, tag, icon="🏰"):
             balance = float(row[0] if row else 0.0)
             raise ValueError(f"❌ Недостатньо золота. Потрібно: {GUILD_CREATE_COST_GOLD:.2f} 🪙. Твій баланс: {balance:.2f} 🪙.")
         now = now_iso(); season_key = get_current_guild_season_key()
-        cursor.execute("""INSERT INTO guilds (name,name_norm,tag,tag_norm,icon,leader_user_id,level,exp,resource,member_limit,created_at,updated_at,season_key) VALUES (?,?,?,?,?,?,1,0,0,?,?,?,?)""", (validation["name"],normalize_guild_name(validation["name"]),validation["tag"],normalize_guild_tag(validation["tag"]),validation["icon"],user_id,DEFAULT_GUILD_MEMBER_LIMIT,now,now,season_key))
+        cursor.execute("""INSERT INTO guilds (name,name_norm,tag,tag_norm,icon,leader_user_id,level,exp,resource,member_limit,created_at,updated_at,season_key) VALUES (?,?,?,?,?,?,1,0,0,?,?,?,?)""", (validation["name"],normalize_guild_name_key(validation["name"]),validation["tag"],normalize_guild_tag(validation["tag"]),validation["icon"],user_id,DEFAULT_GUILD_MEMBER_LIMIT,now,now,season_key))
         guild_id = int(cursor.lastrowid)
         cursor.execute("INSERT INTO guild_members (guild_id,user_id,role,joined_at) VALUES (?,?,?,?)", (guild_id,user_id,GUILD_ROLE_LEADER,now))
         cursor.execute("INSERT INTO guild_logs (guild_id,event_type,text,created_at) VALUES (?,?,?,?)", (guild_id,"guild_created",f"Гільдію {validation['icon']} [{validation['tag']}] {validation['name']} створено за {GUILD_CREATE_COST_GOLD:.2f} золота.",now))
@@ -49063,33 +49797,20 @@ def ensure_unique_guild_icon_index():
 
 # Override validation from 7.0.1 with icon uniqueness check.
 def validate_guild_create_input(name, tag, icon="🏰"):
-    name = (name or "").strip()
+    name_validation = validate_guild_name_contract(name)
+    if not name_validation["success"]:
+        return name_validation
+    name = name_validation["name"]
     tag = normalize_guild_tag(tag)
-    icon = normalize_guild_icon(icon)
+    icon_validation = validate_guild_icon_contract(icon)
+    if not icon_validation["success"]:
+        return icon_validation
+    icon = icon_validation["icon"]
 
-    if len(name) < 3:
-        return {
-            "success": False,
-            "message": "❌ Назва гільдії має містити мінімум 3 символи."
-        }
-
-    if len(name) > 32:
-        return {
-            "success": False,
-            "message": "❌ Назва гільдії має бути не довша за 32 символи."
-        }
-
-    if len(tag) < 2:
-        return {
-            "success": False,
-            "message": "❌ Абревіатура гільдії має містити мінімум 2 символи."
-        }
-
-    if len(tag) > 5:
-        return {
-            "success": False,
-            "message": "❌ Абревіатура гільдії має бути не довша за 5 символів."
-        }
+    tag_validation = validate_guild_tag_contract(tag)
+    if not tag_validation["success"]:
+        return tag_validation
+    tag = tag_validation["tag"]
 
     existing = get_guild_by_name_or_tag(name)
     if existing:
@@ -49117,6 +49838,8 @@ def validate_guild_create_input(name, tag, icon="🏰"):
         "tag": tag,
         "icon": icon,
     }
+
+
 
 
 # Ensure uniqueness whenever module is loaded after the patch.
@@ -50510,6 +51233,72 @@ def run_guild_sanity_cleanup():
 
 
 ============================================================
+FILE: systems\inactivity_reminder_system.py
+SIZE: 5711 bytes
+LAST WRITE: 2026-09-04 21:01:38
+============================================================
+
+# -*- coding: utf-8 -*-
+"""Persistent one-attempt-per-cycle inactivity reminder policy."""
+from __future__ import annotations
+import sqlite3
+from datetime import datetime,timezone,timedelta
+from pathlib import Path
+DB_PATH=Path(__file__).resolve().parents[1]/"game.db"
+INACTIVITY_THRESHOLD_SECONDS=7*24*60*60
+INACTIVITY_SCAN_INTERVAL_SECONDS=60*60
+INACTIVITY_REMINDER_TEXT="💠 Руни знову кличуть вас!\n\nМинуло понад 7 днів від вашої останньої пригоди.\n\nСвіт продовжує змінюватися, а небезпечні землі все ще приховують здобич, руни та випробування.\n\nНатисніть /start, щоб повернутися до гри й продовжити свій шлях!"
+def _utc(value=None):
+ value=value or datetime.now(timezone.utc)
+ if value.tzinfo is None:value=value.replace(tzinfo=timezone.utc)
+ return value.astimezone(timezone.utc)
+def _stamp(value=None):return _utc(value).isoformat()
+def _connection(db_path=None):
+ c=sqlite3.connect(str(db_path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute("PRAGMA busy_timeout=30000");return c
+def init_inactivity_reminder_system(db_path=None):
+ c=_connection(db_path)
+ try:
+  c.executescript("""CREATE TABLE IF NOT EXISTS inactivity_reminders(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,inactivity_started_at TEXT NOT NULL,eligible_at TEXT NOT NULL,attempted_at TEXT NOT NULL,delivery_status TEXT NOT NULL CHECK(delivery_status IN ('pending','sent','blocked','failed')),error_type TEXT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,UNIQUE(user_id,inactivity_started_at),FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE);CREATE INDEX IF NOT EXISTS idx_inactivity_reminders_user ON inactivity_reminders(user_id,id DESC);CREATE INDEX IF NOT EXISTS idx_inactivity_reminders_status ON inactivity_reminders(delivery_status,attempted_at);""");c.commit();return {'success':True}
+ finally:c.close()
+def get_eligible_inactivity_users(now=None,db_path=None):
+ current=_utc(now);cutoff=_stamp(current-timedelta(seconds=INACTIVITY_THRESHOLD_SECONDS));c=_connection(db_path)
+ try:
+  rows=c.execute("""SELECT u.user_id,u.last_activity_at,u.character_name,u.character_class FROM users u WHERE u.last_activity_at IS NOT NULL AND TRIM(COALESCE(u.character_name,''))<>'' AND TRIM(COALESCE(u.character_class,''))<>'' AND u.last_activity_at<=? AND NOT EXISTS(SELECT 1 FROM inactivity_reminders r WHERE r.user_id=u.user_id AND r.inactivity_started_at=u.last_activity_at) ORDER BY u.user_id""",(cutoff,)).fetchall();return [dict(r) for r in rows]
+ finally:c.close()
+def claim_inactivity_reminder(user_id,inactivity_started_at,now=None,db_path=None):
+ current=_utc(now);started=str(inactivity_started_at or '').strip()
+ if not started:return {'success':False,'claimed':False,'reason':'missing_cycle'}
+ try:eligible=_stamp(datetime.fromisoformat(started.replace('Z','+00:00'))+timedelta(seconds=INACTIVITY_THRESHOLD_SECONDS))
+ except Exception:return {'success':False,'claimed':False,'reason':'invalid_cycle'}
+ c=_connection(db_path)
+ try:
+  c.execute('BEGIN IMMEDIATE');row=c.execute("SELECT last_activity_at,character_name,character_class FROM users WHERE user_id=?",(int(user_id),)).fetchone()
+  if not row or str(row['last_activity_at'] or '')!=started or not str(row['character_name'] or '').strip() or not str(row['character_class'] or '').strip():c.rollback();return {'success':False,'claimed':False,'reason':'stale_or_ineligible'}
+  if current<datetime.fromisoformat(eligible):c.rollback();return {'success':False,'claimed':False,'reason':'not_due'}
+  stamp=_stamp(current);cur=c.execute("INSERT OR IGNORE INTO inactivity_reminders(user_id,inactivity_started_at,eligible_at,attempted_at,delivery_status,error_type,created_at,updated_at) VALUES(?,?,?,?, 'pending',NULL,?,?)",(int(user_id),started,eligible,stamp,stamp,stamp));claimed=cur.rowcount==1;c.commit();return {'success':True,'claimed':claimed,'reason':'claimed' if claimed else 'already_attempted'}
+ except Exception:c.rollback();raise
+ finally:c.close()
+def finalize_inactivity_reminder(user_id,inactivity_started_at,status,error_type=None,now=None,db_path=None):
+ if status not in {'sent','blocked','failed'}:raise ValueError('invalid delivery status')
+ c=_connection(db_path)
+ try:
+  cur=c.execute("UPDATE inactivity_reminders SET delivery_status=?,error_type=?,updated_at=? WHERE user_id=? AND inactivity_started_at=? AND delivery_status='pending'",(status,str(error_type or '')[:120] or None,_stamp(now),int(user_id),str(inactivity_started_at)));c.commit();return {'success':cur.rowcount==1,'updated':cur.rowcount}
+ finally:c.close()
+def classify_delivery_error(error):
+ text=str(error or '').casefold();name=type(error).__name__
+ return ('blocked',name) if any(x in text for x in ('blocked','bot was blocked','chat not found','user is deactivated')) else ('failed',name)
+def process_inactivity_reminders(bot,now=None,db_path=None):
+ current=_utc(now);result={'eligible':0,'claimed':0,'sent':0,'blocked':0,'failed':0}
+ for row in get_eligible_inactivity_users(current,db_path):
+  result['eligible']+=1;claim=claim_inactivity_reminder(row['user_id'],row['last_activity_at'],current,db_path)
+  if not claim.get('claimed'):continue
+  result['claimed']+=1
+  try:bot.send_message(int(row['user_id']),INACTIVITY_REMINDER_TEXT);status,error_type='sent',None
+  except Exception as error:status,error_type=classify_delivery_error(error)
+  finalize_inactivity_reminder(row['user_id'],row['last_activity_at'],status,error_type,current,db_path);result[status]+=1
+ return result
+
+============================================================
 FILE: systems\item_id_allocator_system.py
 SIZE: 5972 bytes
 LAST WRITE: 2026-09-01 23:13:09
@@ -50917,13 +51706,14 @@ def rename_with_name_rune(user_id,new_name,idempotency_key,db_path=None,inventor
 
 ============================================================
 FILE: systems\notifications.py
-SIZE: 29541 bytes
-LAST WRITE: 2026-08-25 22:03:44
+SIZE: 28925 bytes
+LAST WRITE: 2026-09-07 21:26:46
 ============================================================
 
 
 # ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
 from systems.production_logging import get_production_logger, production_log_print as PRODUCTION_LOG_PRINT
+from data.player_hp import calculate_base_max_hp, get_starting_max_hp
 PRODUCTION_LOGGER=get_production_logger('systems.notifications')
 # ROM 17.15.1.1 NOTIFICATION WORKER DYNAMIC RUNE MAX MP RECOVERY
 # ROM 17.15.1 PERSISTENT MANA REGENERATION
@@ -50931,6 +51721,9 @@ import time
 import threading
 import sqlite3
 from datetime import datetime, timedelta
+from systems.inactivity_reminder_system import process_inactivity_reminders, INACTIVITY_SCAN_INTERVAL_SECONDS
+
+_INACTIVITY_REMINDER_NEXT_SCAN_MONOTONIC = 0.0
 
 
 # ==============================
@@ -51163,31 +51956,7 @@ def get_equipped_stat_bonus(conn, user_id, stat_column):
     return total
 
 
-def get_worker_max_hp(conn, user_id):
-    """
-    Повторює логіку get_max_hp з db.py:
-    max_hp = 100 + level * 20 + total_sta * 5
-    """
 
-    row = conn.execute("""
-    SELECT level, sta
-    FROM users
-    WHERE user_id=?
-    """, (user_id,)).fetchone()
-
-    if not row:
-        return 100
-
-    level, base_sta = row
-
-    level = level or 1
-    base_sta = base_sta or 10
-
-    item_sta = get_equipped_stat_bonus(conn, user_id, "bonus_sta")
-
-    total_sta = base_sta + item_sta
-
-    return 100 + (level * 20) + (total_sta * 5)
 
 
 def apply_hp_regen(conn, user_id):
@@ -51427,6 +52196,14 @@ def notification_worker(bot_instance):
             notify_hp_restored(bot_instance, conn)
             notify_mp_restored_17_15_1(bot_instance, conn)
 
+            global _INACTIVITY_REMINDER_NEXT_SCAN_MONOTONIC
+            _now_monotonic = time.monotonic()
+            if _now_monotonic >= _INACTIVITY_REMINDER_NEXT_SCAN_MONOTONIC:
+                _result = process_inactivity_reminders(bot_instance)
+                _INACTIVITY_REMINDER_NEXT_SCAN_MONOTONIC = _now_monotonic + INACTIVITY_SCAN_INTERVAL_SECONDS
+                if any(_result.values()):
+                    PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', f"INACTIVITY REMINDER SCAN: {_result}")
+
             # Майбутні повідомлення:
             # notify_daily_contracts_reset(bot_instance, conn)
             # notify_craft_or_repair_ready(bot_instance, conn)
@@ -51588,39 +52365,34 @@ def get_worker_equipped_rune_sta_bonus_v2(conn, user_id):
 
 
 def get_worker_max_hp(conn, user_id):
-    """
-    Dynamic max HP for notification worker.
-
-    Uses the existing worker base formula, then applies refine armor HP bonus.
-    Also syncs users.max_hp so DB snapshots match profile logic.
-    """
-
-    if _notifications_base_get_worker_max_hp_before_dynamic_refine_v1:
-        try:
-            base_hp = int(_notifications_base_get_worker_max_hp_before_dynamic_refine_v1(conn, user_id) or 1)
-        except Exception:
-            base_hp = 100
-    else:
-        base_hp = 100
-
-    rune_sta = get_worker_equipped_rune_sta_bonus_v2(conn, user_id)
-    base_hp += int(rune_sta) * 5
-
+    """Calculate worker max HP from the shared canonical HP policy."""
+    row = conn.execute(
+        "SELECT level, sta FROM users WHERE user_id=?",
+        (user_id,),
+    ).fetchone()
+    if not row:
+        return get_starting_max_hp()
+    level = int(row[0] or 1)
+    base_sta = int(row[1] or 10)
+    item_sta = int(get_equipped_stat_bonus(conn, user_id, "bonus_sta") or 0)
+    rune_sta = int(get_worker_equipped_rune_sta_bonus_v2(conn, user_id) or 0)
+    total_sta = base_sta + item_sta + rune_sta
+    base_hp = calculate_base_max_hp(level, total_sta)
     bonus_percent = get_worker_armor_refine_hp_bonus_percent_v1(conn, user_id)
-    dynamic_max_hp = int(round(base_hp * (1 + bonus_percent / 100.0)))
-    dynamic_max_hp = max(1, dynamic_max_hp)
-
+    dynamic_max_hp = max(1, int(round(base_hp * (1 + bonus_percent / 100.0))))
     try:
         user_cols = _worker_table_columns_v1(conn, "users")
         if "max_hp" in user_cols:
+            current_row = conn.execute("SELECT hp FROM users WHERE user_id=?", (user_id,)).fetchone()
+            current_hp = int(current_row[0] or 0) if current_row else 0
+            clamped_hp = min(current_hp, dynamic_max_hp)
             conn.execute(
-                "UPDATE users SET max_hp=? WHERE user_id=?",
-                (dynamic_max_hp, user_id),
+                "UPDATE users SET hp=?, max_hp=? WHERE user_id=?",
+                (clamped_hp, dynamic_max_hp, user_id),
             )
             conn.commit()
     except Exception:
         pass
-
     return dynamic_max_hp
 
 
@@ -54269,8 +55041,8 @@ def get_player_ranking_position(ranking_key,user_id,db_path=None):
 
 ============================================================
 FILE: systems\player_system.py
-SIZE: 23678 bytes
-LAST WRITE: 2026-08-21 23:47:22
+SIZE: 23480 bytes
+LAST WRITE: 2026-09-07 21:26:46
 ============================================================
 
 # ROM 17.14.1 LEVEL UP REWARDS
@@ -54290,6 +55062,7 @@ This stage is conservative and intentionally does not delete old db.py code.
 from __future__ import annotations
 
 from typing import Any, Callable, Optional
+from data.player_hp import calculate_base_max_hp, get_starting_max_hp
 
 
 def _db_module():
@@ -54504,16 +55277,7 @@ def get_magic_attack(user_id: int):
     return max(1, int(int_))
 
 
-def get_max_hp(user_id: int):
-    legacy = _legacy_function("get_max_hp")
-    if legacy:
-        return legacy(user_id)
 
-    stats = get_player_stats(user_id)
-    if not stats:
-        return 170
-    str_, dex, int_, wis, sta, level = stats
-    return int(120 + level * 10 + sta * 5)
 
 
 def get_current_hp_raw(user_id: int):
@@ -54939,9 +55703,9 @@ def _armor_refine_hp_bonus_percent_9_0_12g(user_id):
 def get_max_hp(user_id: int):
     stats = get_player_stats(user_id)
     if not stats:
-        return 100
+        return get_starting_max_hp()
     _str, _dex, _int, _wis, total_sta, level = stats
-    base_hp = 100 + int(level) * 20 + int(total_sta) * 5
+    base_hp = calculate_base_max_hp(level, total_sta)
     refine_percent = _armor_refine_hp_bonus_percent_9_0_12g(user_id)
     return max(1, int(round(base_hp * (1.0 + refine_percent / 100.0))))
 
@@ -61831,8 +62595,8 @@ def roll_fatigue_artifact_drop(user_id, mob, random_func=None):
 
 ============================================================
 FILE: systems\rune_system.py
-SIZE: 58395 bytes
-LAST WRITE: 2026-08-21 00:07:57
+SIZE: 59956 bytes
+LAST WRITE: 2026-09-05 00:36:33
 ============================================================
 
 """Rune System foundation: schema, seed, reads and fusion-selection validation."""
@@ -62138,7 +62902,7 @@ def _apply_stack_plan(conn, user_id, plan):
 
 
 def claim_daily_quest_reward_with_firius_tokens(user_id):
-    """Atomically claim the old reward plus 10 cumulative Firius Tokens."""
+    """Atomically claim the base reward plus 5 cumulative Firius Tokens."""
     from data.balance import DAILY_QUEST_REWARD_ITEM_ID, DAILY_QUEST_REWARD_QUANTITY
 
     db = _db()
@@ -65225,8 +65989,8 @@ class SimulationLootEquipmentCityService:
 
 ============================================================
 FILE: systems\simulation\meta_progression.py
-SIZE: 6616 bytes
-LAST WRITE: 2026-08-31 23:16:21
+SIZE: 6615 bytes
+LAST WRITE: 2026-09-05 00:36:33
 ============================================================
 
 from __future__ import annotations
@@ -65244,7 +66008,7 @@ CONTRACT_MOBS_EQUIVALENT=20
 DAILY_TARGET_KILLS=25
 DAILY_REWARD_ITEM_ID=401
 DAILY_REWARD_QUANTITY=3
-DAILY_FIRIUS_TOKENS=10
+DAILY_FIRIUS_TOKENS=5
 REFINE_STONE_ITEM_ID=601
 GUILD_ELITE_KILL_EXP_REWARD=25
 GUILD_CONTRACT_EXP_REWARD=50
@@ -66977,8 +67741,8 @@ class SimulationSurvivalService:
 
 ============================================================
 FILE: systems\simulation\world_progression.py
-SIZE: 9433 bytes
-LAST WRITE: 2026-08-04 23:22:44
+SIZE: 9431 bytes
+LAST WRITE: 2026-09-05 00:36:33
 ============================================================
 
 from __future__ import annotations
@@ -67093,8 +67857,8 @@ class WorldProgressionSimulator:
                         exp_gained += contract_exp
                         events.append(ProgressionEvent(elapsed, day, "contract_claim", {"exp": contract_exp, "contracts": meta.state.contracts_completed_today}))
                     if meta.claim_daily():
-                        items_awarded += 13
-                        events.append(ProgressionEvent(elapsed, day, "daily_claim", {"potions": 3, "firius_tokens": 10}))
+                        items_awarded += 8
+                        events.append(ProgressionEvent(elapsed, day, "daily_claim", {"potions": 3, "firius_tokens": 5}))
                     loot = loot_city.process_victory(selected)
                     items_awarded += loot.awarded
                     items_lost += loot.lost
@@ -74035,6 +74799,309 @@ if __name__ == "__main__":
     main()
 
 ============================================================
+FILE: tools\manual_test_inactivity_reminder_18_6_1.py
+SIZE: 10485 bytes
+LAST WRITE: 2026-09-04 21:11:53
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+r"""Controlled manual-test helper for ROM Stage 18.6.1.
+
+Usage from ROM root:
+  python .\tools\manual_test_inactivity_reminder_18_6_1.py backup 8914495259
+  python .\tools\manual_test_inactivity_reminder_18_6_1.py prepare-before 8914495259
+  python .\tools\manual_test_inactivity_reminder_18_6_1.py prepare-due 8914495259
+  python .\tools\manual_test_inactivity_reminder_18_6_1.py status 8914495259
+  python .\tools\manual_test_inactivity_reminder_18_6_1.py restore 8914495259
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import shutil
+import sqlite3
+import sys
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+SESSION_PREFIX = "manual_inactivity_test_18_6_1"
+REMINDER_COLUMNS = (
+    "id",
+    "user_id",
+    "inactivity_started_at",
+    "eligible_at",
+    "attempted_at",
+    "delivery_status",
+    "error_type",
+    "created_at",
+    "updated_at",
+)
+
+
+def rom_root() -> Path:
+    here = Path(__file__).resolve()
+    for candidate in (here.parent.parent, Path.cwd(), Path.cwd().parent):
+        if (candidate / "db.py").is_file() and (candidate / "game.db").is_file():
+            return candidate.resolve()
+    raise RuntimeError("ROM root not found")
+
+
+def state_path(root: Path, user_id: int) -> Path:
+    return root / "backup" / f"{SESSION_PREFIX}_{user_id}.json"
+
+
+def db_backup_path(root: Path, user_id: int) -> Path:
+    return root / "backup" / f"{SESSION_PREFIX}_{user_id}_game.db"
+
+
+def connect(root: Path) -> sqlite3.Connection:
+    connection = sqlite3.connect(str(root / "game.db"), timeout=30)
+    connection.row_factory = sqlite3.Row
+    connection.execute("PRAGMA foreign_keys=ON")
+    connection.execute("PRAGMA busy_timeout=30000")
+    return connection
+
+
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc).replace(microsecond=0)
+
+
+def require_schema(connection: sqlite3.Connection) -> None:
+    users_columns = {
+        row[1] for row in connection.execute("PRAGMA table_info(users)").fetchall()
+    }
+    required_users = {"user_id", "character_name", "character_class", "last_activity_at"}
+    if not required_users.issubset(users_columns):
+        missing = sorted(required_users - users_columns)
+        raise RuntimeError(f"users schema is missing columns: {missing}")
+
+    reminder_columns = {
+        row[1]
+        for row in connection.execute("PRAGMA table_info(inactivity_reminders)").fetchall()
+    }
+    if not set(REMINDER_COLUMNS).issubset(reminder_columns):
+        missing = sorted(set(REMINDER_COLUMNS) - reminder_columns)
+        raise RuntimeError(f"inactivity_reminders schema is missing columns: {missing}")
+
+
+def read_user(connection: sqlite3.Connection, user_id: int) -> sqlite3.Row:
+    row = connection.execute(
+        """
+        SELECT user_id, character_name, character_class, last_activity_at
+        FROM users
+        WHERE user_id=?
+        """,
+        (user_id,),
+    ).fetchone()
+    if row is None:
+        raise RuntimeError("Test user was not found in users")
+    if not str(row["character_name"] or "").strip():
+        raise RuntimeError("Test user has no character_name")
+    if not str(row["character_class"] or "").strip():
+        raise RuntimeError("Test user has no character_class")
+    return row
+
+
+def read_reminders(connection: sqlite3.Connection, user_id: int) -> list[dict]:
+    rows = connection.execute(
+        "SELECT * FROM inactivity_reminders WHERE user_id=? ORDER BY id",
+        (user_id,),
+    ).fetchall()
+    return [{column: row[column] for column in REMINDER_COLUMNS} for row in rows]
+
+
+def write_state(root: Path, user_id: int, user: sqlite3.Row, reminders: list[dict]) -> None:
+    root.joinpath("backup").mkdir(exist_ok=True)
+    state = {
+        "stage": "18.6.1",
+        "user_id": user_id,
+        "created_at_utc": utc_now().isoformat(),
+        "original_last_activity_at": user["last_activity_at"],
+        "original_reminders": reminders,
+    }
+    state_path(root, user_id).write_text(
+        json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+
+
+def backup(root: Path, user_id: int) -> None:
+    state = state_path(root, user_id)
+    if state.exists():
+        raise RuntimeError(
+            f"Active test backup already exists: {state.name}. Run restore first."
+        )
+    connection = connect(root)
+    try:
+        require_schema(connection)
+        user = read_user(connection, user_id)
+        reminders = read_reminders(connection, user_id)
+    finally:
+        connection.close()
+    shutil.copy2(root / "game.db", db_backup_path(root, user_id))
+    write_state(root, user_id, user, reminders)
+    print("[PASS] Manual-test backup created")
+    print(f"State: backup\\{state.name}")
+    print(f"DB copy: backup\\{db_backup_path(root, user_id).name}")
+    print("Original values are stored locally and were not printed")
+
+
+def ensure_backup(root: Path, user_id: int) -> None:
+    if not state_path(root, user_id).is_file():
+        backup(root, user_id)
+
+
+def set_cycle(root: Path, user_id: int, mode: str) -> None:
+    ensure_backup(root, user_id)
+    now = utc_now()
+    if mode == "prepare-before":
+        value = now - timedelta(days=7) + timedelta(seconds=1)
+        expected = "INELIGIBLE for approximately one second"
+    elif mode == "prepare-due":
+        value = now - timedelta(days=7)
+        expected = "ELIGIBLE immediately"
+    else:
+        raise RuntimeError(f"Unknown preparation mode: {mode}")
+
+    stamp = value.isoformat()
+    connection = connect(root)
+    try:
+        require_schema(connection)
+        read_user(connection, user_id)
+        connection.execute("BEGIN IMMEDIATE")
+        connection.execute(
+            "DELETE FROM inactivity_reminders WHERE user_id=?",
+            (user_id,),
+        )
+        changed = connection.execute(
+            "UPDATE users SET last_activity_at=? WHERE user_id=?",
+            (stamp, user_id),
+        ).rowcount
+        if changed != 1:
+            raise RuntimeError("Expected exactly one users row to be updated")
+        connection.commit()
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+    print(f"[PASS] {mode} completed")
+    print(f"Expected state: {expected}")
+    print("Reminder rows for the test user were cleared for this controlled cycle")
+    print("Do not send messages from the test account before the worker check")
+
+
+def status(root: Path, user_id: int) -> None:
+    connection = connect(root)
+    try:
+        require_schema(connection)
+        user = read_user(connection, user_id)
+        reminders = read_reminders(connection, user_id)
+        quick = connection.execute("PRAGMA quick_check").fetchone()[0]
+        foreign_keys = list(connection.execute("PRAGMA foreign_key_check"))
+    finally:
+        connection.close()
+
+    print("[PASS] Current test state")
+    print(f"User ID: {user_id}")
+    print(f"Character: {user['character_name']}")
+    print(f"Class: {user['character_class']}")
+    print(f"last_activity_at: {user['last_activity_at']}")
+    print(f"Reminder records: {len(reminders)}")
+    for row in reminders:
+        print(
+            f"  id={row['id']} status={row['delivery_status']} "
+            f"cycle={row['inactivity_started_at']} error_type={row['error_type']}"
+        )
+    print(f"quick_check: {quick}")
+    print(f"foreign_key_violations: {len(foreign_keys)}")
+
+
+def restore(root: Path, user_id: int) -> None:
+    state_file = state_path(root, user_id)
+    if not state_file.is_file():
+        raise RuntimeError("Manual-test state backup was not found")
+    state = json.loads(state_file.read_text(encoding="utf-8"))
+    if int(state.get("user_id")) != user_id:
+        raise RuntimeError("Backup user ID mismatch")
+
+    connection = connect(root)
+    try:
+        require_schema(connection)
+        read_user(connection, user_id)
+        connection.execute("BEGIN IMMEDIATE")
+        connection.execute("DELETE FROM inactivity_reminders WHERE user_id=?", (user_id,))
+        for row in state.get("original_reminders", []):
+            placeholders = ",".join("?" for _ in REMINDER_COLUMNS)
+            columns = ",".join(REMINDER_COLUMNS)
+            connection.execute(
+                f"INSERT INTO inactivity_reminders({columns}) VALUES({placeholders})",
+                tuple(row.get(column) for column in REMINDER_COLUMNS),
+            )
+        changed = connection.execute(
+            "UPDATE users SET last_activity_at=? WHERE user_id=?",
+            (state.get("original_last_activity_at"), user_id),
+        ).rowcount
+        if changed != 1:
+            raise RuntimeError("Expected exactly one users row to be restored")
+        connection.commit()
+        quick = connection.execute("PRAGMA quick_check").fetchone()[0]
+        foreign_keys = list(connection.execute("PRAGMA foreign_key_check"))
+        if quick != "ok" or foreign_keys:
+            raise RuntimeError(
+                f"Post-restore database check failed: quick={quick}, FK={len(foreign_keys)}"
+            )
+    except Exception:
+        connection.rollback()
+        raise
+    finally:
+        connection.close()
+
+    state_file.unlink()
+    db_copy = db_backup_path(root, user_id)
+    if db_copy.exists():
+        db_copy.unlink()
+    print("[PASS] Original test-user state restored")
+    print("Temporary state and DB copy removed")
+    print("main.py may be started")
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="ROM Stage 18.6.1 manual-test helper")
+    parser.add_argument(
+        "action",
+        choices=("backup", "prepare-before", "prepare-due", "status", "restore"),
+    )
+    parser.add_argument("user_id", type=int)
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    root = rom_root()
+    if args.user_id <= 0:
+        raise RuntimeError("user_id must be positive")
+    if args.action == "backup":
+        backup(root, args.user_id)
+    elif args.action in {"prepare-before", "prepare-due"}:
+        set_cycle(root, args.user_id, args.action)
+    elif args.action == "status":
+        status(root, args.user_id)
+    elif args.action == "restore":
+        restore(root, args.user_id)
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except Exception as error:
+        print(f"[FAIL] {type(error).__name__}: {error}")
+        print("Do not start main.py until the failure is understood or restore succeeds")
+        raise SystemExit(1)
+
+============================================================
 FILE: tools\migration_status.py
 SIZE: 803 bytes
 LAST WRITE: 2026-07-25 00:30:43
@@ -75342,6 +76409,31 @@ def main():
     print(f"- Markdown: {md_path}")
     if result.status != "completed": raise SystemExit(2)
 if __name__=="__main__":main()
+
+============================================================
+FILE: tools\smoke_test_about_game_lore_and_navigation_18_4_1.py
+SIZE: 1437 bytes
+LAST WRITE: 2026-09-04 14:46:41
+============================================================
+
+#!/usr/bin/env python3
+from pathlib import Path
+import sys
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
+from data.about_game import ABOUT_GAME_INTRO,ABOUT_GAME_SECTION_ORDER,ABOUT_GAME_SECTIONS,build_about_game_section_text
+from handlers.about_game import _about_menu_kb,_section_kb
+assert len(ABOUT_GAME_SECTION_ORDER)==9 and tuple(ABOUT_GAME_SECTIONS)==ABOUT_GAME_SECTION_ORDER
+all_text=ABOUT_GAME_INTRO+"\n"+"\n".join(build_about_game_section_text(k) for k in ABOUT_GAME_SECTION_ORDER)
+assert "Прогрес зберігається між перезапусками гри." not in all_text
+for key in ABOUT_GAME_SECTION_ORDER:
+ text=build_about_game_section_text(key);assert 0<len(text)<=4096;assert len(f"about:section:{key}".encode())<=64
+menu=str(_about_menu_kb().to_dict());assert menu.count("about:section:")==9 and "about:close" in menu
+for key in ABOUT_GAME_SECTION_ORDER:
+ payload=str(_section_kb(key).to_dict());assert "about:menu" in payload and "about:close" in payload
+city=(ROOT/"handlers/city.py").read_text(encoding="utf-8-sig");main=(ROOT/"main.py").read_text(encoding="utf-8-sig")
+assert city.count("📖 Про гру")==1;assert main.count("from handlers.about_game import register_about_game_handlers")==1;assert main.count("register_about_game_handlers(bot)")==1
+print("PASS: nine sections, Telegram limits, navigation and registration")
 
 ============================================================
 FILE: tools\smoke_test_admin_crystal_credit_and_clamped_debit_18_3_1.py
@@ -79934,6 +81026,83 @@ assert 'register_name_rune_handlers(bot)' in s
 print('[PASS] Stage 17.28.1.2 Crystal Shop handler priority contract')
 
 ============================================================
+FILE: tools\smoke_test_crystal_shop_prices_18_10_1.py
+SIZE: 4581 bytes
+LAST WRITE: 2026-09-05 01:01:10
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from __future__ import annotations
+import ast
+import importlib.util
+import sqlite3
+import tempfile
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+SYSTEM = ROOT / "systems" / "crystal_shop_system.py"
+BAG = ROOT / "systems" / "crystal_bag_expansion_system.py"
+TIMED = ROOT / "systems" / "timed_exp_bonus_system.py"
+
+source = SYSTEM.read_text(encoding="utf-8-sig")
+ast.parse(source, filename=str(SYSTEM))
+spec = importlib.util.spec_from_file_location("crystal_shop_stage_18_10_1", SYSTEM)
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+expected = {501: 150, 602: 35, 728: 20, 502: 50}
+assert {key: value["price"] for key, value in module.CRYSTAL_SHOP_CATALOG.items()} == expected
+assert "BAG_EXPANSION_TIERS={60:{'target_capacity':80,'price':75},80:{'target_capacity':100,'price':150}}" in BAG.read_text(encoding="utf-8-sig")
+timed_before = TIMED.read_bytes()
+
+with tempfile.TemporaryDirectory() as folder:
+    database = Path(folder) / "shop.db"
+    connection = sqlite3.connect(database)
+    connection.executescript("""
+    PRAGMA foreign_keys=ON;
+    CREATE TABLE users(user_id INTEGER PRIMARY KEY,bag_slots INTEGER);
+    CREATE TABLE items(id INTEGER PRIMARY KEY,name TEXT,max_stack INTEGER);
+    CREATE TABLE inventory(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,item_id INTEGER,quantity INTEGER,durability INTEGER);
+    CREATE TABLE crystal_wallets(user_id INTEGER PRIMARY KEY,balance INTEGER,created_at TEXT,updated_at TEXT);
+    CREATE TABLE crystal_transactions(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,operation TEXT,amount INTEGER,reason_code TEXT,balance_before INTEGER,balance_after INTEGER,idempotency_key TEXT UNIQUE,external_reference TEXT,metadata_json TEXT,compensates_transaction_id INTEGER,created_at TEXT);
+    CREATE TABLE premium_item_grants(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,item_id INTEGER,quantity INTEGER,source TEXT,idempotency_key TEXT UNIQUE,external_reference TEXT,metadata_json TEXT,created_at TEXT);
+    INSERT INTO users VALUES(1,60),(2,60),(3,60),(4,60);
+    INSERT INTO crystal_wallets VALUES(1,500,'',''),(2,35,'',''),(3,19,'',''),(4,500,'','');
+    INSERT INTO items VALUES(501,'Sphere',10),(602,'Success',10),(728,'Perfect',999),(502,'Name',999);
+    """)
+    connection.commit(); connection.close()
+    module.init_crystal_shop_system(database)
+
+    preview = module.preview_crystal_shop_purchase(1,602,2,database)
+    assert preview["unit_price"] == 35 and preview["total_price"] == 70
+    success = module.purchase_crystal_shop_item(1,602,2,"success-rune",database)
+    assert success["success"] and success["unit_price"] == 35 and success["total_price"] == 70 and success["balance"] == 430
+    replay = module.purchase_crystal_shop_item(1,602,2,"success-rune",database)
+    assert replay["success"] and replay["idempotent_replay"]
+
+    exact = module.purchase_crystal_shop_item(2,602,1,"exact-balance",database)
+    assert exact["success"] and exact["balance"] == 0
+    insufficient = module.purchase_crystal_shop_item(3,728,1,"insufficient",database)
+    assert not insufficient["success"] and insufficient["balance"] == 19
+    perfect = module.purchase_crystal_shop_item(4,728,2,"perfect-two",database)
+    assert perfect["success"] and perfect["unit_price"] == 20 and perfect["total_price"] == 40 and perfect["balance"] == 460
+
+    connection = sqlite3.connect(database)
+    connection.row_factory = sqlite3.Row
+    rows = connection.execute("SELECT item_id,unit_price,total_price FROM crystal_shop_purchases ORDER BY id").fetchall()
+    assert [(r["item_id"],r["unit_price"],r["total_price"]) for r in rows] == [(602,35,70),(602,35,35),(728,20,40)]
+    assert connection.execute("SELECT COUNT(*) FROM crystal_shop_purchases WHERE idempotency_key='success-rune'").fetchone()[0] == 1
+    assert connection.execute("SELECT COUNT(*) FROM crystal_transactions").fetchone()[0] == 3
+    assert connection.execute("SELECT COUNT(*) FROM premium_item_grants").fetchone()[0] == 3
+    assert connection.execute("SELECT COUNT(*) FROM inventory WHERE user_id=3").fetchone()[0] == 0
+    assert connection.execute("PRAGMA quick_check").fetchone()[0] == "ok"
+    assert not list(connection.execute("PRAGMA foreign_key_check"))
+    connection.close()
+
+assert TIMED.read_bytes() == timed_before
+print("PASS: catalog 150/35/20/50; atomic purchase, exact balance, insufficient balance and idempotency verified; bag 75/150 and Premium unchanged")
+
+============================================================
 FILE: tools\smoke_test_crystal_shop_single_confirmation_18_2_3g.py
 SIZE: 1228 bytes
 LAST WRITE: 2026-09-02 22:04:07
@@ -80020,8 +81189,8 @@ print('[PASS] Stage 17.25.1 crystal wallet temporary-DB contracts')
 
 ============================================================
 FILE: tools\smoke_test_daily_firius_token_reward.py
-SIZE: 6852 bytes
-LAST WRITE: 2026-07-30 15:14:37
+SIZE: 6849 bytes
+LAST WRITE: 2026-09-05 00:36:33
 ============================================================
 
 #!/usr/bin/env python3
@@ -80093,13 +81262,13 @@ def main():
             fail("base reward quantity mismatch")
         if quantity(db.conn, FIXTURE_USER_ID, FIRIUS_TOKEN_ITEM_ID) - token_before != FIRIUS_TOKENS_PER_DAILY_REWARD:
             fail("Firius token reward quantity mismatch")
-        if "Жетон Фіріуса" not in first.get("message", "") or "×10" not in first.get("message", ""):
+        if "Жетон Фіріуса" not in first.get("message", "") or "×5" not in first.get("message", ""):
             fail(f"success message missing token reward: {first}")
 
         second = db.claim_daily_quest_reward(FIXTURE_USER_ID)
         if second.get("success") is not False:
             fail("repeat claim unexpectedly succeeded")
-        if quantity(db.conn, FIXTURE_USER_ID, FIRIUS_TOKEN_ITEM_ID) != token_before + 10:
+        if quantity(db.conn, FIXTURE_USER_ID, FIRIUS_TOKEN_ITEM_ID) != token_before + 5:
             fail("repeat claim changed token quantity")
 
         # Simulate the next day by creating a fresh claimable daily row.
@@ -80166,7 +81335,7 @@ def main():
 
         print("[OK] Daily Quest Firius Token reward contracts")
         print("- base reward preserved: 3 small HP potions")
-        print("- Firius Tokens per successful claim: 10")
+        print("- Firius Tokens per successful claim: 5")
         print("- repeat claim token duplication: 0")
         print("- tokens accumulate across daily resets: yes")
         print("- full-bag partial reward: 0")
@@ -80257,6 +81426,41 @@ finally:
     quests.cursor,quests.conn,quests.get_daily_today_str=orig_cursor,orig_conn,orig_today
 assert callable(quests.process_daily_quest_progress_on_kill)
 print("[PASS] daily quest reset runtime contract")
+
+============================================================
+FILE: tools\smoke_test_daily_reward_firius_tokens_five_18_9_1.py
+SIZE: 1530 bytes
+LAST WRITE: 2026-09-05 00:36:33
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from pathlib import Path
+import ast
+ROOT = Path(__file__).resolve().parents[1]
+def read(name):
+    text=(ROOT/name).read_text(encoding="utf-8-sig")
+    ast.parse(text, filename=name)
+    return text
+runes=read("data/runes.py")
+daily=read("handlers/daily.py")
+inv=read("handlers/inventory.py")
+rune_system=read("systems/rune_system.py")
+meta=read("systems/simulation/meta_progression.py")
+world=read("systems/simulation/world_progression.py")
+assert runes.count("FIRIUS_TOKENS_PER_DAILY_REWARD = 5") == 1
+assert "FIRIUS_TOKENS_PER_DAILY_REWARD = 10" not in runes
+assert "🪙 Жетон Фіріуса ×5\\n" in daily and "🪙 Жетон Фіріуса ×10\\n" not in daily
+assert "• 5 жетонів можна отримати за виконання щоденного завдання." in inv
+assert "• 10 жетонів можна отримати за виконання щоденного завдання." not in inv
+assert "plus 5 cumulative Firius Tokens" in rune_system
+assert "DAILY_FIRIUS_TOKENS=5" in meta and "DAILY_FIRIUS_TOKENS=10" not in meta
+assert "items_awarded += 8" in world
+assert '{"potions": 3, "firius_tokens": 5}' in world
+assert "DAILY_QUEST_REWARD_QUANTITY = 3" in read("data/balance.py")
+assert "FIRIUS_TOKEN_ITEM_ID = 726" in runes
+assert "FIRIUS_TOKEN_ITEM_ID)==5" in read("tools/smoke_test_simulation_meta_progression.py")
+print("PASS: daily reward = item 401 x3 + item 726 x5; production and simulation parity")
 
 ============================================================
 FILE: tools\smoke_test_daily_reward_newline_hotfix.py
@@ -81254,6 +82458,112 @@ print("- repair rows:", len(repair_rows))
 print("- repairable:", sum(1 for row in repair_rows if row.get("repair_cost", 0) > 0))
 
 ============================================================
+FILE: tools\smoke_test_equipment_rune_comparison_18_11_1.py
+SIZE: 2808 bytes
+LAST WRITE: 2026-09-05 01:23:07
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from __future__ import annotations
+import ast
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+TARGET = ROOT / "handlers" / "inventory.py"
+source = TARGET.read_text(encoding="utf-8-sig")
+tree = ast.parse(source, filename=str(TARGET))
+assert source.count("ROM STAGE 18.11.1 EQUIPMENT RUNE COMPARISON START") == 1
+assert source.count("ROM STAGE 18.11.1 EQUIPMENT RUNE COMPARISON END") == 1
+assert 'text="⚖️ Порівняти"' in source
+assert 'startswith("itemcmp:")' in source
+assert 'text="⬅️ Назад до предмета"' in source
+assert "_inventory_comparison_owned_item_18_11_1" in source
+assert "SELECT id FROM inventory WHERE id=? AND user_id=?" in source
+assert 'target["equipped_inventory_id"]' in source
+assert "format_equipment_rune_slots_text" in source
+assert "_inventory_remove_automatic_comparison_18_11_1" in source
+assert "_EQUIPMENT_COMPARISON_BASE_REGISTER_HANDLERS_18_11_1(bot)" in source
+assert source.index('startswith("itemcmp:")') < source.index("_EQUIPMENT_COMPARISON_BASE_REGISTER_HANDLERS_18_11_1(bot)")
+
+# Pure ordering contract: old auto comparison is removed, selected rune block survives.
+namespace = {}
+for node in tree.body:
+    if isinstance(node, ast.FunctionDef) and node.name == "_inventory_remove_automatic_comparison_18_11_1":
+        small = ast.Module(body=[node], type_ignores=[])
+        ast.fix_missing_locations(small)
+        namespace["_EQUIPMENT_COMPARISON_MARKER_18_11_1"] = "⚖️ Зараз вдягнено для порівняння:"
+        namespace["_EQUIPMENT_RUNE_MARKER_18_11_1"] = "💠 Рунні слоти:"
+        exec(compile(small, "pure-strip", "exec"), namespace)
+        break
+stripper = namespace["_inventory_remove_automatic_comparison_18_11_1"]
+raw = "📦 Предмет\n📊 Бонуси:\n• +1\n\n⚖️ Зараз вдягнено для порівняння:\nOLD\n\n💠 Рунні слоти:\n• Слот 1: порожній"
+clean = stripper(raw)
+assert "OLD" not in clean and "⚖️ Зараз" not in clean
+assert clean.endswith("💠 Рунні слоти:\n• Слот 1: порожній")
+
+# No mutation statements are allowed in the dedicated comparison callback.
+callbacks = [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == "equipment_comparison_callback_18_11_1"]
+assert len(callbacks) == 1
+block = ast.get_source_segment(source, callbacks[0]) or ""
+for forbidden in ("UPDATE ", "INSERT ", "DELETE ", "equip_item(", "unequip", "commit("):
+    assert forbidden not in block
+print("PASS: initial card strips automatic comparison; conditional inline compare, ownership reload, equipped rune formatter, return route and read-only callback contracts present")
+
+============================================================
+FILE: tools\smoke_test_equipment_rune_comparison_item_identity_18_11_2.py
+SIZE: 2668 bytes
+LAST WRITE: 2026-09-05 01:36:24
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from __future__ import annotations
+import ast
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+TARGET = ROOT / "handlers" / "inventory.py"
+source = TARGET.read_text(encoding="utf-8-sig")
+tree = ast.parse(source, filename=str(TARGET))
+assert source.count("def _inventory_selected_rune_block_18_11_2") == 1
+assert "format_equipment_rune_slots_text(" in source
+assert "int(user_id), int(inventory_id)" in source
+assert "selected_runes = _inventory_selected_rune_block_18_11_2(user_id, inventory_id)" in source
+assert 'target["equipped_inventory_id"]' in source
+
+# The inherited text stripper must discard both automatic comparison and any
+# inherited rune block. Selected runes are rebuilt explicitly afterward.
+functions = {n.name:n for n in tree.body if isinstance(n, ast.FunctionDef)}
+strip_node = functions["_inventory_remove_automatic_comparison_18_11_1"]
+small = ast.Module(body=[strip_node], type_ignores=[]); ast.fix_missing_locations(small)
+ns = {
+    "_EQUIPMENT_COMPARISON_MARKER_18_11_1":"⚖️ Зараз вдягнено для порівняння:",
+    "_EQUIPMENT_RUNE_MARKER_18_11_1":"💠 Рунні слоти:",
+}
+exec(compile(small,"strip-test","exec"),ns)
+stripper=ns["_inventory_remove_automatic_comparison_18_11_1"]
+legacy="📦 Кольчуга\n\n⚖️ Зараз вдягнено для порівняння:\n📦 Шкіра\n\n💠 Рунні слоти:\n• Руна Спритності II"
+assert stripper(legacy)=="📦 Кольчуга"
+legacy2="📦 Кольчуга\n\n💠 Рунні слоти:\n• чужий успадкований блок"
+assert stripper(legacy2)=="📦 Кольчуга"
+
+# Identity contract: selected formatter receives selected ID, equipped formatter
+# receives equipped ID. They must never share one pre-rendered text block.
+details = ast.get_source_segment(source, functions["build_item_details"]) or ""
+comparison = ast.get_source_segment(source, functions["build_equipped_comparison_text"]) or ""
+assert "_inventory_selected_rune_block_18_11_2(user_id, inventory_id)" in details
+assert 'target["equipped_inventory_id"]' in comparison
+assert "selected_runes" not in comparison
+
+# Comparison callback remains read-only.
+callback = functions["register_inventory_handlers"]
+block = ast.get_source_segment(source, callback) or ""
+for forbidden in ("UPDATE ", "INSERT ", "DELETE ", "commit(", "equip_item(", "unequip"):
+    assert forbidden not in block
+print("PASS: inherited ambiguous rune text discarded; selected and equipped rune blocks are rebuilt from distinct exact inventory IDs")
+
+============================================================
 FILE: tools\smoke_test_equipment_rune_slots.py
 SIZE: 5528 bytes
 LAST WRITE: 2026-07-30 22:15:42
@@ -81756,6 +83066,60 @@ if __name__ == "__main__":
     main()
 
 ============================================================
+FILE: tools\smoke_test_external_links_config_and_navigation_18_5_1.py
+SIZE: 2408 bytes
+LAST WRITE: 2026-09-04 15:07:34
+============================================================
+
+#!/usr/bin/env python3
+from pathlib import Path
+import os
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from config import _validated_external_https_url
+from handlers.external_links import _external_links_kb, _external_links_text
+
+assert _validated_external_https_url("", {"t.me"}) is None
+assert _validated_external_https_url("http://t.me/example", {"t.me"}) is None
+assert _validated_external_https_url("https://evil.example/x", {"t.me"}) is None
+assert _validated_external_https_url("https://user:pass@t.me/x", {"t.me"}) is None
+assert _validated_external_https_url("https://t.me/x#fragment", {"t.me"}) is None
+assert _validated_external_https_url("https://t.me/example", {"t.me"}) == "https://t.me/example"
+assert _validated_external_https_url("https://send.monobank.ua/jar/example", {"send.monobank.ua"})
+
+empty = str(_external_links_kb({"game_chat": None, "news_channel": None, "support": None}).to_dict())
+assert "Чат гри" not in empty and "Канал новин" not in empty and "Підтримати проєкт" not in empty
+assert "links:close" in empty
+assert "ще не налаштовані" in _external_links_text(False)
+
+support = str(_external_links_kb({
+    "game_chat": None,
+    "news_channel": None,
+    "support": "https://send.monobank.ua/jar/example",
+}).to_dict())
+assert "Підтримати проєкт" in support
+assert "Чат гри" not in support and "Канал новин" not in support
+
+all_links = str(_external_links_kb({
+    "game_chat": "https://t.me/game_chat",
+    "news_channel": "https://t.me/news_channel",
+    "support": "https://send.monobank.ua/jar/example",
+}).to_dict())
+assert "Чат гри" in all_links and "Канал новин" in all_links and "Підтримати проєкт" in all_links
+
+city = (ROOT / "handlers" / "city.py").read_text(encoding="utf-8-sig")
+main = (ROOT / "main.py").read_text(encoding="utf-8-sig")
+assert city.count("🔗 Корисні посилання") == 1
+assert 'kb.row("📖 Про гру", "🔗 Корисні посилання")' in city
+assert main.count("from handlers.external_links import register_external_links_handlers") == 1
+assert main.count("register_external_links_handlers(bot)") == 1
+print("PASS: URL validation, fail-closed buttons, account row and registration")
+
+============================================================
 FILE: tools\smoke_test_extractor_button_rune_master_menu.py
 SIZE: 3052 bytes
 LAST WRITE: 2026-09-02 21:38:02
@@ -81996,8 +83360,8 @@ if __name__ == "__main__":
 
 ============================================================
 FILE: tools\smoke_test_firius_token_inventory_description.py
-SIZE: 2843 bytes
-LAST WRITE: 2026-07-30 15:31:25
+SIZE: 2841 bytes
+LAST WRITE: 2026-09-05 00:36:33
 ============================================================
 
 #!/usr/bin/env python3
@@ -82049,7 +83413,7 @@ def main():
         "1 жетон",
         "3 однакові руни одного типу й рівня",
         "не зникають наступного дня",
-        "10 жетонів",
+        "5 жетонів",
         "щоденного завдання",
     )
     missing = [text for text in required if text not in token]
@@ -82074,7 +83438,7 @@ def main():
     print("- fusion cost 1 token: OK")
     print("- 3 identical rune requirement: OK")
     print("- cumulative/no-reset rule: OK")
-    print("- daily reward quantity 10: OK")
+    print("- daily reward quantity 5: OK")
     print("- existing refine material descriptions preserved: 2")
     print("- category label for IDs 401/402/526: Матеріали")
     print("- literal \\n sequences: 0")
@@ -82733,6 +84097,75 @@ if __name__ == "__main__":
     main()
 
 ============================================================
+FILE: tools\smoke_test_guild_icon_and_name_validation_18_7_3.py
+SIZE: 2457 bytes
+LAST WRITE: 2026-09-04 22:45:39
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from pathlib import Path
+import ast
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from systems.guild_system import (
+    validate_guild_name_contract,
+    validate_guild_icon_contract,
+    validate_guild_tag_contract,
+)
+
+VALID_NAMES = (
+    "Темний Легіон",
+    "Dark Legion",
+    "Вовча Зграя",
+    "Руни-Магії",
+    "Об'єднані Руни",
+)
+INVALID_NAMES = (
+    "Dark Легіон",
+    "Guild 2",
+    "🔥 Легіон",
+    "Ёлка",
+    "A  B",
+    "A--B",
+    "-Guild",
+    "Guild-",
+)
+VALID_ICONS = ("🏰", "🔥", "🐺", "⚔️", "🛡️", "🇺🇦", "😭")
+INVALID_ICONS = ("A", "AB", "1", "!", "🔥🔥", "A🔥", "🔥A", "[🔥]")
+
+for value in VALID_NAMES:
+    assert validate_guild_name_contract(value)["success"], value
+for value in INVALID_NAMES:
+    assert not validate_guild_name_contract(value)["success"], value
+for value in VALID_ICONS:
+    assert validate_guild_icon_contract(value)["success"], value
+for value in INVALID_ICONS:
+    assert not validate_guild_icon_contract(value)["success"], value
+
+assert validate_guild_icon_contract("")["icon"] == "🏰"
+assert validate_guild_tag_contract("DLC")["success"]
+assert not validate_guild_tag_contract("DL1")["success"]
+
+system_source = (ROOT / "systems" / "guild_system.py").read_text(encoding="utf-8-sig")
+handler_source = (ROOT / "handlers" / "guild.py").read_text(encoding="utf-8-sig")
+system_tree = ast.parse(system_source)
+handler_tree = ast.parse(handler_source)
+
+assert len([n for n in system_tree.body if isinstance(n, ast.FunctionDef) and n.name == "validate_guild_name_contract"]) == 1
+assert len([n for n in system_tree.body if isinstance(n, ast.FunctionDef) and n.name == "validate_guild_icon_contract"]) == 1
+assert len([n for n in system_tree.body if isinstance(n, ast.FunctionDef) and n.name == "validate_guild_create_input"]) == 1
+assert len([n for n in handler_tree.body if isinstance(n, ast.FunctionDef) and n.name == "validate_guild_icon_for_ui"]) == 1
+assert "рівно один emoji" in handler_source
+assert "цифри та emoji заборонені" in handler_source
+assert "validate_guild_tag_contract" in system_source
+print("PASS: name policy, one-emoji policy, uniqueness integration, tag regression and UI consolidation")
+
+============================================================
 FILE: tools\smoke_test_guild_leader_exit_handler_routing_recovery_17_22_1_2.py
 SIZE: 2076 bytes
 LAST WRITE: 2026-08-26 23:54:46
@@ -82937,6 +84370,60 @@ assert "send_guild_members_manage_for_actor_17_21_3_4(bot, call.message.chat.id,
 print("[PASS] Stage 17.21.3.4 explicit actor rendering contract")
 
 ============================================================
+FILE: tools\smoke_test_guild_name_uniqueness_recovery_18_7_4.py
+SIZE: 1903 bytes
+LAST WRITE: 2026-09-04 23:03:15
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from pathlib import Path
+import ast
+
+ROOT = Path(__file__).resolve().parents[1]
+SOURCE_PATH = ROOT / "systems" / "guild_system.py"
+source = SOURCE_PATH.read_text(encoding="utf-8-sig")
+tree = ast.parse(source, filename=str(SOURCE_PATH))
+lookup_nodes = [
+    node for node in tree.body
+    if isinstance(node, ast.FunctionDef) and node.name == "get_guild_by_name_or_tag"
+]
+assert len(lookup_nodes) == 1
+lookup_source = ast.get_source_segment(source, lookup_nodes[0]) or ""
+assert "name_norm = normalize_guild_name_key(value)" in lookup_source
+assert "name_norm = normalize_guild_name(value)" not in lookup_source
+assert "tag_norm = normalize_guild_tag(value)" in lookup_source
+
+# Execute only the two normalization functions, not the full production module.
+function_names = {"normalize_guild_name", "normalize_guild_name_key"}
+selected = [
+    node for node in tree.body
+    if isinstance(node, ast.FunctionDef) and node.name in function_names
+]
+assert {node.name for node in selected} == function_names
+module = ast.Module(body=selected, type_ignores=[])
+ast.fix_missing_locations(module)
+namespace = {}
+exec(compile(module, "guild_name_key_contract", "exec"), namespace)
+normalize_key = namespace["normalize_guild_name_key"]
+for value in ("Test", "test", "TEST", "TeSt", " Test "):
+    assert normalize_key(value) == "test", (value, normalize_key(value))
+
+for required in (
+    "normalize_guild_name_key",
+    "validate_guild_name_contract",
+    "validate_guild_icon_contract",
+    "validate_guild_tag_contract",
+    "validate_guild_create_input",
+):
+    assert len([
+        node for node in tree.body
+        if isinstance(node, ast.FunctionDef) and node.name == required
+    ]) == 1, required
+
+print("PASS: Test/test/TEST/TeSt normalize to name_norm=test; lookup, tag, icon and name contracts preserved")
+
+============================================================
 FILE: tools\smoke_test_guild_profile_line_runtime_16_1_1.py
 SIZE: 1329 bytes
 LAST WRITE: 2026-08-17 23:05:22
@@ -82969,6 +84456,108 @@ try:
 finally:
     wrappers._guild_system=original
 print("[PASS] guild profile line runtime contract")
+
+============================================================
+FILE: tools\smoke_test_guild_resource_foundation_18_8_1.py
+SIZE: 2230 bytes
+LAST WRITE: 2026-09-04 23:49:20
+============================================================
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+from pathlib import Path
+import ast
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from data.guild_resource_policy import GUILD_RESOURCE_SINKS, GUILD_RESOURCE_SPENDING_ENABLED
+from systems.guild_resource_system import (
+    activate_guild_resource_sink,
+    get_guild_resource_design_policy,
+    get_guild_resource_sink_definition,
+    spend_guild_resource,
+)
+
+assert GUILD_RESOURCE_SPENDING_ENABLED is False
+assert len(GUILD_RESOURCE_SINKS) == 6
+assert [sink["order"] for sink in GUILD_RESOURCE_SINKS] == [1, 2, 3, 4, 5, 6]
+assert GUILD_RESOURCE_SINKS[0]["key"] == "member_limit"
+assert all("price" not in sink for sink in GUILD_RESOURCE_SINKS)
+assert get_guild_resource_sink_definition("member_limit")["status"] == "planned"
+assert get_guild_resource_sink_definition("missing") is None
+assert get_guild_resource_design_policy()["spending_enabled"] is False
+assert spend_guild_resource()["success"] is False
+assert activate_guild_resource_sink()["code"] == "guild_resource_spending_inactive"
+
+system_source = (ROOT / "systems" / "guild_resource_system.py").read_text(encoding="utf-8-sig")
+system_tree = ast.parse(system_source)
+for forbidden in ("sqlite3", "cursor.execute", "UPDATE ", "INSERT ", "DELETE ", "CREATE TABLE"):
+    assert forbidden not in system_source, forbidden
+assert len([n for n in system_tree.body if isinstance(n, ast.FunctionDef) and n.name == "spend_guild_resource"]) == 1
+
+handler_source = (ROOT / "handlers" / "guild.py").read_text(encoding="utf-8-sig")
+for forbidden in ("• EXP:", "• Score:", "Score: {", " | EXP:", "Level progress:", " | Resource:", " | Kills:", " | Contracts:"):
+    assert forbidden not in handler_source, forbidden
+for required in ("• Досвід:", "• Бали:", "Бали: {", " | Досвід:", "Прогрес рівня:", " | Ресурс:", " | Вбивства:", " | Контракти:"):
+    assert required in handler_source, required
+assert "/guild_add_progress EXP RESOURCE KILLS CONTRACTS" in handler_source
+print("PASS: Ukrainian guild labels and inactive no-write guild-resource foundation")
+
+============================================================
+FILE: tools\smoke_test_guild_tag_three_letters_18_7_1.py
+SIZE: 1341 bytes
+LAST WRITE: 2026-09-04 21:50:58
+============================================================
+
+#!/usr/bin/env python3
+from pathlib import Path
+import ast,sys
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
+from systems.guild_system import normalize_guild_tag,validate_guild_tag_contract
+valid=("DLC","abc","ДЛК","ЇЖА","ЄДН","ІГР","ҐАР"," DLC ")
+invalid=("A","AB","ABCD","ДЛ","ДЛКИ","DL1","D-L","D_L","D L","⚔️D","[D]","ЁЖА","ЫВА","ЭРА","ЪЬЬ")
+for value in valid:assert validate_guild_tag_contract(value)["success"],value
+for value in invalid:assert not validate_guild_tag_contract(value)["success"],value
+assert normalize_guild_tag(" dlc ")=="DLC"
+s=(ROOT/"systems/guild_system.py").read_text(encoding="utf-8-sig");t=ast.parse(s)
+assert len([n for n in t.body if isinstance(n,ast.FunctionDef) and n.name=="validate_guild_create_input"])==1
+assert len([n for n in t.body if isinstance(n,ast.FunctionDef) and n.name=="validate_guild_tag_contract"])==1
+h=(ROOT/"handlers/guild.py").read_text(encoding="utf-8-sig")
+assert "від 2 до 5 символів" not in h and "тільки літери та цифри" not in h
+assert "рівно 3 літери" in h and "українські або латинські літери" in h
+print("PASS: exact three-letter policy, prohibited symbols, UI parity and validator consolidation")
+
+============================================================
+FILE: tools\smoke_test_inactivity_reminder_policy_18_6_1.py
+SIZE: 2046 bytes
+LAST WRITE: 2026-09-04 21:01:38
+============================================================
+
+#!/usr/bin/env python3
+from pathlib import Path
+import os,sqlite3,sys,tempfile
+from datetime import datetime,timezone,timedelta
+ROOT=Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
+from systems.inactivity_reminder_system import *
+p=Path(tempfile.mkdtemp())/'t.db';c=sqlite3.connect(p);c.execute("PRAGMA foreign_keys=ON");c.execute("CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT,character_class TEXT,last_activity_at TEXT)");now=datetime(2026,9,4,12,0,tzinfo=timezone.utc);old=(now-timedelta(days=7)).isoformat();before=(now-timedelta(days=7)+timedelta(seconds=1)).isoformat();c.executemany("INSERT INTO users VALUES(?,?,?,?)",[(1,'A','warrior',old),(2,'B','mage',before),(3,'','mage',old)]);c.commit();c.close();init_inactivity_reminder_system(p)
+assert [r['user_id'] for r in get_eligible_inactivity_users(now,p)]==[1]
+class Bot:
+ def __init__(self,fail=None):self.sent=[];self.fail=fail
+ def send_message(self,uid,text):
+  if self.fail:raise RuntimeError(self.fail)
+  self.sent.append((uid,text))
+b=Bot();r=process_inactivity_reminders(b,now,p);assert r['sent']==1 and len(b.sent)==1
+r=process_inactivity_reminders(b,now,p);assert r['sent']==0 and len(b.sent)==1
+c=sqlite3.connect(p);c.execute("UPDATE users SET last_activity_at=? WHERE user_id=1",((now-timedelta(days=8)).isoformat(),));c.commit();c.close();r=process_inactivity_reminders(b,now,p);assert r['sent']==1 and len(b.sent)==2
+c=sqlite3.connect(p);c.execute("INSERT INTO users VALUES(4,'C','scout',?)",(old,));c.commit();c.close();r=process_inactivity_reminders(Bot('bot was blocked by the user'),now,p);assert r['blocked']==1
+c=sqlite3.connect(p);rows=c.execute("SELECT user_id,delivery_status FROM inactivity_reminders ORDER BY id").fetchall();c.close();assert rows==[(1,'sent'),(1,'sent'),(4,'blocked')]
+assert len(INACTIVITY_REMINDER_TEXT)<=4096 and '/start' in INACTIVITY_REMINDER_TEXT
+print('PASS: 7-day boundary, one attempt per cycle, restart persistence, new cycle and blocked status')
 
 ============================================================
 FILE: tools\smoke_test_interaction_session_timeout_and_recovery.py
@@ -89979,8 +91568,8 @@ if __name__=="__main__": main()
 
 ============================================================
 FILE: tools\smoke_test_rune_data_model.py
-SIZE: 3777 bytes
-LAST WRITE: 2026-07-30 15:06:11
+SIZE: 3774 bytes
+LAST WRITE: 2026-09-05 00:36:33
 ============================================================
 
 #!/usr/bin/env python3
@@ -90034,8 +91623,8 @@ def main():
         fail("expected 25 canonical rune definitions")
     if sum(runes.RUNE_SLOT_LIMITS.values()) != 14:
         fail("expected 14 total equipment rune slots")
-    if runes.FIRIUS_TOKENS_PER_DAILY_REWARD != 10:
-        fail("daily Firius token reward must be 10")
+    if runes.FIRIUS_TOKENS_PER_DAILY_REWARD != 5:
+        fail("daily Firius token reward must be 5")
 
     same = db.validate_rune_fusion_selection([501, 501, 501])
     mixed_type = db.validate_rune_fusion_selection([501, 506, 501])
@@ -90065,7 +91654,7 @@ def main():
     print("- seeded item rows 501-528: 28")
     print("- normalized inventory_runes schema: OK")
     print("- equipment rune slots total: 14")
-    print("- Firius Tokens per daily reward: 10")
+    print("- Firius Tokens per daily reward: 5")
     print("- mixed rune type/level validation: OK")
     print("- user message: Потрібно вибрати 3 однакові руни одного типу й рівня.")
     print("- Rune V fusion rejection: OK")
@@ -91486,8 +93075,8 @@ if __name__=='__main__':main()
 
 ============================================================
 FILE: tools\smoke_test_simulation_meta_progression.py
-SIZE: 1708 bytes
-LAST WRITE: 2026-08-04 22:49:42
+SIZE: 1706 bytes
+LAST WRITE: 2026-09-05 00:36:33
 ============================================================
 
 from systems.simulation.meta_progression import *
@@ -91500,13 +93089,13 @@ def main():
  for _ in range(25):svc.on_victory(mobs[0],5)
  assert svc.state.daily.completed and svc.state.contract.completed
  exp=svc.claim_contract();assert exp==get_base_exp_for_level(5)*20 and svc.state.guild.contracts==1
- assert svc.claim_daily() and svc._qty(201)==3 and svc._qty(FIRIUS_TOKEN_ITEM_ID)==10
+ assert svc.claim_daily() and svc._qty(201)==3 and svc._qty(FIRIUS_TOKEN_ITEM_ID)==5
  rune_id=get_rune_item_id('STA',1);svc._add(rune_id,'r','rune',3);assert svc.fuse_available_runes()==1 and svc._qty(get_rune_item_id('STA',2))==1
  item=SimulationInventoryItem(inv.allocate_id(),900001,'chest','equipment',1,1,'chest',5,'common');inv.items.append(item);eq.slots['chest']=item.simulation_item_id;assert svc.insert_best_runes()==1 and len(item.runes)==1 and item.runes[0].stat=='STA'
  svc._add(401,'stone','material',1);assert svc.refine_best() and item.refine_level==1
  print('[OK] Contracts, daily, runes, refine and guild integration')
  print('- 5-kill contract and production EXP equivalent: PASS')
- print('- daily 25 kills, 3 HP potions and 10 Firius tokens: PASS')
+ print('- daily 25 kills, 3 HP potions and 5 Firius tokens: PASS')
  print('- 3 runes + 1 token fusion: PASS')
  print('- rune insertion into equipped sockets: PASS')
  print('- seeded refine success and guild progress: PASS')
@@ -91783,6 +93372,37 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+============================================================
+FILE: tools\smoke_test_starting_hp_130_18_12_2.py
+SIZE: 1258 bytes
+LAST WRITE: 2026-09-07 21:26:46
+============================================================
+
+from pathlib import Path
+import ast
+import sys
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from data.player_hp import (STARTING_HP_BASE, HP_PER_LEVEL, HP_PER_STAMINA, calculate_base_max_hp, get_starting_max_hp)
+assert STARTING_HP_BASE == 60
+assert HP_PER_LEVEL == 20
+assert HP_PER_STAMINA == 5
+assert get_starting_max_hp() == 130
+assert calculate_base_max_hp(1, 10) == 130
+assert calculate_base_max_hp(3, 12) == 180
+for rel, function_name in (("systems/player_system.py", "get_max_hp"), ("systems/notifications.py", "get_worker_max_hp")):
+    text = (ROOT / rel).read_text(encoding="utf-8")
+    tree = ast.parse(text)
+    defs = [n for n in tree.body if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and n.name == function_name]
+    assert len(defs) == 1, (rel, function_name, len(defs))
+    seg = ast.get_source_segment(text, defs[0]) or ""
+    assert "calculate_base_max_hp" in seg
+player_text = (ROOT / "db_modules/player.py").read_text(encoding="utf-8")
+assert "starting_max_hp = get_starting_max_hp()" in player_text
+assert "\n        170,\n        170,\n" not in player_text
+print("PASS: canonical starting HP=130; single player/worker formulas; registration uses shared policy")
 
 ============================================================
 FILE: tools\smoke_test_static_item_seed_contracts.py
