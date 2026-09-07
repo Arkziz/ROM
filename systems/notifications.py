@@ -1,6 +1,7 @@
 
 # ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
 from systems.production_logging import get_production_logger, production_log_print as PRODUCTION_LOG_PRINT
+from data.player_hp import calculate_base_max_hp, get_starting_max_hp
 PRODUCTION_LOGGER=get_production_logger('systems.notifications')
 # ROM 17.15.1.1 NOTIFICATION WORKER DYNAMIC RUNE MAX MP RECOVERY
 # ROM 17.15.1 PERSISTENT MANA REGENERATION
@@ -243,31 +244,7 @@ def get_equipped_stat_bonus(conn, user_id, stat_column):
     return total
 
 
-def get_worker_max_hp(conn, user_id):
-    """
-    Повторює логіку get_max_hp з db.py:
-    max_hp = 100 + level * 20 + total_sta * 5
-    """
 
-    row = conn.execute("""
-    SELECT level, sta
-    FROM users
-    WHERE user_id=?
-    """, (user_id,)).fetchone()
-
-    if not row:
-        return 100
-
-    level, base_sta = row
-
-    level = level or 1
-    base_sta = base_sta or 10
-
-    item_sta = get_equipped_stat_bonus(conn, user_id, "bonus_sta")
-
-    total_sta = base_sta + item_sta
-
-    return 100 + (level * 20) + (total_sta * 5)
 
 
 def apply_hp_regen(conn, user_id):
@@ -676,39 +653,34 @@ def get_worker_equipped_rune_sta_bonus_v2(conn, user_id):
 
 
 def get_worker_max_hp(conn, user_id):
-    """
-    Dynamic max HP for notification worker.
-
-    Uses the existing worker base formula, then applies refine armor HP bonus.
-    Also syncs users.max_hp so DB snapshots match profile logic.
-    """
-
-    if _notifications_base_get_worker_max_hp_before_dynamic_refine_v1:
-        try:
-            base_hp = int(_notifications_base_get_worker_max_hp_before_dynamic_refine_v1(conn, user_id) or 1)
-        except Exception:
-            base_hp = 100
-    else:
-        base_hp = 100
-
-    rune_sta = get_worker_equipped_rune_sta_bonus_v2(conn, user_id)
-    base_hp += int(rune_sta) * 5
-
+    """Calculate worker max HP from the shared canonical HP policy."""
+    row = conn.execute(
+        "SELECT level, sta FROM users WHERE user_id=?",
+        (user_id,),
+    ).fetchone()
+    if not row:
+        return get_starting_max_hp()
+    level = int(row[0] or 1)
+    base_sta = int(row[1] or 10)
+    item_sta = int(get_equipped_stat_bonus(conn, user_id, "bonus_sta") or 0)
+    rune_sta = int(get_worker_equipped_rune_sta_bonus_v2(conn, user_id) or 0)
+    total_sta = base_sta + item_sta + rune_sta
+    base_hp = calculate_base_max_hp(level, total_sta)
     bonus_percent = get_worker_armor_refine_hp_bonus_percent_v1(conn, user_id)
-    dynamic_max_hp = int(round(base_hp * (1 + bonus_percent / 100.0)))
-    dynamic_max_hp = max(1, dynamic_max_hp)
-
+    dynamic_max_hp = max(1, int(round(base_hp * (1 + bonus_percent / 100.0))))
     try:
         user_cols = _worker_table_columns_v1(conn, "users")
         if "max_hp" in user_cols:
+            current_row = conn.execute("SELECT hp FROM users WHERE user_id=?", (user_id,)).fetchone()
+            current_hp = int(current_row[0] or 0) if current_row else 0
+            clamped_hp = min(current_hp, dynamic_max_hp)
             conn.execute(
-                "UPDATE users SET max_hp=? WHERE user_id=?",
-                (dynamic_max_hp, user_id),
+                "UPDATE users SET hp=?, max_hp=? WHERE user_id=?",
+                (clamped_hp, dynamic_max_hp, user_id),
             )
             conn.commit()
     except Exception:
         pass
-
     return dynamic_max_hp
 
 

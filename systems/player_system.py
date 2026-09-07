@@ -15,6 +15,7 @@ This stage is conservative and intentionally does not delete old db.py code.
 from __future__ import annotations
 
 from typing import Any, Callable, Optional
+from data.player_hp import calculate_base_max_hp, get_starting_max_hp
 
 
 def _db_module():
@@ -229,16 +230,7 @@ def get_magic_attack(user_id: int):
     return max(1, int(int_))
 
 
-def get_max_hp(user_id: int):
-    legacy = _legacy_function("get_max_hp")
-    if legacy:
-        return legacy(user_id)
 
-    stats = get_player_stats(user_id)
-    if not stats:
-        return 170
-    str_, dex, int_, wis, sta, level = stats
-    return int(120 + level * 10 + sta * 5)
 
 
 def get_current_hp_raw(user_id: int):
@@ -664,9 +656,9 @@ def _armor_refine_hp_bonus_percent_9_0_12g(user_id):
 def get_max_hp(user_id: int):
     stats = get_player_stats(user_id)
     if not stats:
-        return 100
+        return get_starting_max_hp()
     _str, _dex, _int, _wis, total_sta, level = stats
-    base_hp = 100 + int(level) * 20 + int(total_sta) * 5
+    base_hp = calculate_base_max_hp(level, total_sta)
     refine_percent = _armor_refine_hp_bonus_percent_9_0_12g(user_id)
     return max(1, int(round(base_hp * (1.0 + refine_percent / 100.0))))
 

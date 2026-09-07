@@ -7,6 +7,7 @@ Player management module - wrapper for systems.player_system
 from data.player_progression import get_exp_to_next_level
 
 from .connection import conn, cursor, DEFAULT_BAG_SLOTS
+from data.player_hp import get_starting_max_hp
 
 
 # ==============================
@@ -136,6 +137,7 @@ def create_user(user_id):
     from systems.energy_system import init_energy_system
     
     init_energy_system()
+    starting_max_hp = get_starting_max_hp()
     
     cursor.execute("""
     INSERT OR IGNORE INTO users (
@@ -162,8 +164,8 @@ def create_user(user_id):
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         user_id,
-        170,
-        170,
+        starting_max_hp,
+        starting_max_hp,
         1,
         0,
         0.0,
