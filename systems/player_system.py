@@ -552,14 +552,31 @@ def _player_base_row_9_0_12g(user_id):
 
 
 
-def get_attack(user_id: int):
-    stats = get_player_stats(user_id)
-    return int(stats[0]) if stats else 0
+def get_attack(user_id):
+    """Return production PATK through the accepted Stage 18.15.7 stat system."""
+    from systems.character_system import get_character_class
+    from systems.stat_system import calculate_physical_attack
+
+    strength, dexterity, _intelligence, _wisdom, _stamina = get_player_stats(user_id)
+    return calculate_physical_attack(
+        get_character_class(user_id),
+        strength=strength,
+        dexterity=dexterity,
+    )
 
 
-def get_magic_attack(user_id: int):
-    stats = get_player_stats(user_id)
-    return int(stats[2]) if stats else 0
+
+def get_magic_attack(user_id):
+    """Return production MATK through the accepted Stage 18.15.7 stat system."""
+    from systems.character_system import get_character_class
+    from systems.stat_system import calculate_magical_attack
+
+    _strength, _dexterity, intelligence, _wisdom, _stamina = get_player_stats(user_id)
+    return calculate_magical_attack(
+        get_character_class(user_id),
+        intelligence=intelligence,
+    )
+
 
 
 def _armor_refine_hp_bonus_percent_9_0_12g(user_id):
@@ -597,24 +614,32 @@ def get_max_hp(user_id: int):
     return max(1, int(round(base_hp * (1.0 + refine_percent / 100.0))))
 
 
-def get_physical_defense(user_id: int):
-    """Return active item PDEF plus the approved symmetric STA layer."""
-    stats = get_player_stats(user_id)
-    if not stats:
-        return 0
-    db = _player_combat_db_9_0_12g()
-    item_pdef, _item_mdef = db.get_equipped_item_defenses(int(user_id))
-    return int(calculate_total_defense(item_pdef, stats[4]))
+def get_physical_defense(user_id):
+    """Return Stage 18.14.2 PDEF through the accepted stat-system policy."""
+    from systems.equipment_system import get_equipped_item_defenses
+    from systems.stat_system import calculate_physical_defense
+
+    _strength, _dexterity, _intelligence, _wisdom, stamina = get_player_stats(user_id)
+    equipment_pdef, _equipment_mdef = get_equipped_item_defenses(user_id)
+    return calculate_physical_defense(
+        equipment_pdef=equipment_pdef,
+        stamina=stamina,
+    )
 
 
-def get_magic_defense(user_id: int):
-    """Return active item MDEF plus the approved symmetric WIS layer."""
-    stats = get_player_stats(user_id)
-    if not stats:
-        return 0
-    db = _player_combat_db_9_0_12g()
-    _item_pdef, item_mdef = db.get_equipped_item_defenses(int(user_id))
-    return int(calculate_total_defense(item_mdef, stats[3]))
+
+def get_magic_defense(user_id):
+    """Return Stage 18.14.2 MDEF through the accepted stat-system policy."""
+    from systems.equipment_system import get_equipped_item_defenses
+    from systems.stat_system import calculate_magical_defense
+
+    _strength, _dexterity, _intelligence, wisdom, _stamina = get_player_stats(user_id)
+    _equipment_pdef, equipment_mdef = get_equipped_item_defenses(user_id)
+    return calculate_magical_defense(
+        equipment_mdef=equipment_mdef,
+        wisdom=wisdom,
+    )
+
 
 
 def get_physical_crit_chance_display(user_id: int):
