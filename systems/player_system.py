@@ -56,29 +56,33 @@ def _row_get(row, key: str, index: int = 0, default=None):
 
 
 def get_player_stats(user_id: int):
-    legacy = _legacy_function("get_player_stats")
-    if legacy:
-        return legacy(user_id)
+    """Return total STR/DEX/INT/WIS/STA and level exactly once.
 
-    row = _fetchone(
-        """
-        SELECT str, dex, int, wis, sta, level
-        FROM users
-        WHERE user_id=?
-        """,
-        (user_id,),
-    )
-
+    Total primary stats are base database values plus bonuses from active,
+    unbroken equipped items and runes installed in active, unbroken equipment.
+    """
+    row = _player_base_row_9_0_12g(user_id)
     if not row:
         return None
-
+    base_str, base_dex, base_int, base_wis, base_sta, level = row
+    db = _player_combat_db_9_0_12g()
+    bonuses = db.get_item_bonuses(int(user_id))
+    try:
+        item_str, item_dex, item_int, item_wis, item_sta = bonuses
+    except Exception:
+        item_str = item_dex = item_int = item_wis = item_sta = 0
+    try:
+        from systems.rune_system import get_equipped_rune_stat_totals
+        rune = get_equipped_rune_stat_totals(user_id)
+    except Exception:
+        rune = {}
     return (
-        int(_row_get(row, "str", 0, 10) or 10),
-        int(_row_get(row, "dex", 1, 10) or 10),
-        int(_row_get(row, "int", 2, 10) or 10),
-        int(_row_get(row, "wis", 3, 10) or 10),
-        int(_row_get(row, "sta", 4, 10) or 10),
-        int(_row_get(row, "level", 5, 1) or 1),
+        int(base_str or 0) + int(item_str or 0) + int(rune.get("str", 0) or 0),
+        int(base_dex or 0) + int(item_dex or 0) + int(rune.get("dex", 0) or 0),
+        int(base_int or 0) + int(item_int or 0) + int(rune.get("int", 0) or 0),
+        int(base_wis or 0) + int(item_wis or 0) + int(rune.get("wis", 0) or 0),
+        int(base_sta or 0) + int(item_sta or 0) + int(rune.get("sta", 0) or 0),
+        max(1, int(level or 1)),
     )
 
 
@@ -208,28 +212,8 @@ def get_user_progress(user_id: int):
     }
 
 
-def get_attack(user_id: int):
-    legacy = _legacy_function("get_attack")
-    if legacy:
-        return legacy(user_id)
-
-    stats = get_player_stats(user_id)
-    if not stats:
-        return 1
-    str_, dex, int_, wis, sta, level = stats
-    return max(1, int(str_))
 
 
-def get_magic_attack(user_id: int):
-    legacy = _legacy_function("get_magic_attack")
-    if legacy:
-        return legacy(user_id)
-
-    stats = get_player_stats(user_id)
-    if not stats:
-        return 1
-    str_, dex, int_, wis, sta, level = stats
-    return max(1, int(int_))
 
 
 
@@ -262,28 +246,8 @@ def set_current_hp(user_id: int, hp: int):
     return safe_hp
 
 
-def get_physical_defense(user_id: int):
-    legacy = _legacy_function("get_physical_defense")
-    if legacy:
-        return legacy(user_id)
-
-    stats = get_player_stats(user_id)
-    if not stats:
-        return 0
-    str_, dex, int_, wis, sta, level = stats
-    return int(sta * 0.2)
 
 
-def get_magic_defense(user_id: int):
-    legacy = _legacy_function("get_magic_defense")
-    if legacy:
-        return legacy(user_id)
-
-    stats = get_player_stats(user_id)
-    if not stats:
-        return 0
-    str_, dex, int_, wis, sta, level = stats
-    return int(wis)
 
 
 
@@ -586,26 +550,6 @@ def _player_base_row_9_0_12g(user_id):
     ).fetchone()
 
 
-def get_player_stats(user_id: int):
-    """Return (STR, DEX, INT, WIS, STA, level), including active equipment."""
-    row = _player_base_row_9_0_12g(user_id)
-    if not row:
-        return None
-    base_str, base_dex, base_int, base_wis, base_sta, level = row
-    db = _player_combat_db_9_0_12g()
-    bonuses = db.get_item_bonuses(int(user_id))
-    try:
-        item_str, item_dex, item_int, item_wis, item_sta = bonuses
-    except Exception:
-        item_str = item_dex = item_int = item_wis = item_sta = 0
-    return (
-        int(base_str or 0) + int(item_str or 0),
-        int(base_dex or 0) + int(item_dex or 0),
-        int(base_int or 0) + int(item_int or 0),
-        int(base_wis or 0) + int(item_wis or 0),
-        int(base_sta or 0) + int(item_sta or 0),
-        max(1, int(level or 1)),
-    )
 
 
 def get_attack(user_id: int):
@@ -690,28 +634,8 @@ def get_base_dodge_chance_display(user_id: int):
 # ROM 10.7.0 EQUIPPED RUNE STAT BONUSES
 # ==============================
 
-_RUNE_STATS_BASE_GET_PLAYER_STATS_10_7_0 = get_player_stats
 
 
-def get_player_stats(user_id: int):
-    """Add equipped, unbroken rune STR/DEX/INT/WIS/STA exactly once."""
-    stats = _RUNE_STATS_BASE_GET_PLAYER_STATS_10_7_0(user_id)
-    if not stats:
-        return stats
-    try:
-        from systems.rune_system import get_equipped_rune_stat_totals
-        rune = get_equipped_rune_stat_totals(user_id)
-    except Exception:
-        rune = {}
-    base_str, base_dex, base_int, base_wis, base_sta, level = stats
-    return (
-        int(base_str or 0) + int(rune.get("str", 0) or 0),
-        int(base_dex or 0) + int(rune.get("dex", 0) or 0),
-        int(base_int or 0) + int(rune.get("int", 0) or 0),
-        int(base_wis or 0) + int(rune.get("wis", 0) or 0),
-        int(base_sta or 0) + int(rune.get("sta", 0) or 0),
-        int(level or 1),
-    )
 
 # Stage 17.14.1 authoritative transactional EXP override.
 def add_exp(user_id: int, amount):
