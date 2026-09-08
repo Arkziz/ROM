@@ -557,7 +557,7 @@ def get_attack(user_id):
     from systems.character_system import get_character_class
     from systems.stat_system import calculate_physical_attack
 
-    strength, dexterity, _intelligence, _wisdom, _stamina = get_player_stats(user_id)
+    strength, dexterity, _intelligence, _wisdom, _stamina = get_player_stats(user_id)[:5]
     return calculate_physical_attack(
         get_character_class(user_id),
         strength=strength,
@@ -571,7 +571,7 @@ def get_magic_attack(user_id):
     from systems.character_system import get_character_class
     from systems.stat_system import calculate_magical_attack
 
-    _strength, _dexterity, intelligence, _wisdom, _stamina = get_player_stats(user_id)
+    _strength, _dexterity, intelligence, _wisdom, _stamina = get_player_stats(user_id)[:5]
     return calculate_magical_attack(
         get_character_class(user_id),
         intelligence=intelligence,
@@ -619,7 +619,7 @@ def get_physical_defense(user_id):
     from systems.equipment_system import get_equipped_item_defenses
     from systems.stat_system import calculate_physical_defense
 
-    _strength, _dexterity, _intelligence, _wisdom, stamina = get_player_stats(user_id)
+    _strength, _dexterity, _intelligence, _wisdom, stamina = get_player_stats(user_id)[:5]
     equipment_pdef, _equipment_mdef = get_equipped_item_defenses(user_id)
     return calculate_physical_defense(
         equipment_pdef=equipment_pdef,
@@ -633,7 +633,7 @@ def get_magic_defense(user_id):
     from systems.equipment_system import get_equipped_item_defenses
     from systems.stat_system import calculate_magical_defense
 
-    _strength, _dexterity, _intelligence, wisdom, _stamina = get_player_stats(user_id)
+    _strength, _dexterity, _intelligence, wisdom, _stamina = get_player_stats(user_id)[:5]
     _equipment_pdef, equipment_mdef = get_equipped_item_defenses(user_id)
     return calculate_magical_defense(
         equipment_mdef=equipment_mdef,
