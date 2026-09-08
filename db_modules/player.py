@@ -226,80 +226,67 @@ def get_user(user_id):
 # ==============================
 
 def get_player_attack_profile(user_id):
-    """
-    Повертає повний профіль атаки гравця для бою.
-
-    v1:
-    physical:
-        damage = random weapon damage + STR - DEF × 0.5
-
-    magical:
-        damage = random magic weapon damage + INT - DEF × 0.5
-    """
+    """Return weapon profile with stat attack from canonical production APIs."""
     from .equipment import get_equipped_slot, get_weapon_damage_by_inventory_id
 
     stats = get_player_stats(user_id)
-
     if not stats:
         return {
-                   "weapon_subtype": "",
+            "weapon_subtype": "",
             "attack_type": "physical",
             "stat_attack": 0,
             "weapon_min_damage": 0,
             "weapon_max_damage": 0,
             "display_attack": 0,
-            "weapon_text": "Без зброї"
+            "weapon_text": "Без зброї",
         }
 
-    total_str, total_dex, total_int, total_wis, total_sta, lvl = stats
-
+    physical_stat_attack = get_attack(user_id)
+    magical_stat_attack = get_magic_attack(user_id)
     main_hand_id = get_equipped_slot(user_id, "main_hand")
 
     if not main_hand_id:
         return {
-                   "weapon_subtype": "",
+            "weapon_subtype": "",
             "attack_type": "physical",
-            "stat_attack": total_str,
+            "stat_attack": physical_stat_attack,
             "weapon_min_damage": 0,
             "weapon_max_damage": 0,
-            "display_attack": total_str,
-            "weapon_text": "Без зброї"
+            "display_attack": physical_stat_attack,
+            "weapon_text": "Без зброї",
         }
 
     weapon_data = get_weapon_damage_by_inventory_id(main_hand_id)
-
     if not weapon_data.get("is_weapon"):
         return {
-                   "weapon_subtype": "",
+            "weapon_subtype": "",
             "attack_type": "physical",
-            "stat_attack": total_str,
+            "stat_attack": physical_stat_attack,
             "weapon_min_damage": 0,
             "weapon_max_damage": 0,
-            "display_attack": total_str,
-            "weapon_text": "Без зброї"
+            "display_attack": physical_stat_attack,
+            "weapon_text": "Без зброї",
         }
 
     attack_type = weapon_data["attack_type"]
-
     if attack_type == "magical":
-        stat_attack = total_int
+        stat_attack = magical_stat_attack
         weapon_min = weapon_data["magic_min"]
         weapon_max = weapon_data["magic_max"]
     else:
-        stat_attack = total_str
+        stat_attack = physical_stat_attack
         weapon_min = weapon_data["physical_min"]
         weapon_max = weapon_data["physical_max"]
 
     display_attack = stat_attack + weapon_max
-
     return {
-               "weapon_subtype": str(weapon_data.get("item_subtype") or "").strip().lower(),
+        "weapon_subtype": str(weapon_data.get("item_subtype") or "").strip().lower(),
         "attack_type": attack_type,
         "stat_attack": stat_attack,
         "weapon_min_damage": weapon_min,
         "weapon_max_damage": weapon_max,
         "display_attack": display_attack,
-        "weapon_text": weapon_data.get("text")
+        "weapon_text": weapon_data.get("text"),
     }
 
 

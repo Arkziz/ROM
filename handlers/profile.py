@@ -3,6 +3,8 @@ from telebot import types
 
 from db import (
     get_player_stats,
+    get_attack,
+    get_magic_attack,
     get_current_hp,
     get_max_hp,
     get_user_energy,
@@ -237,8 +239,8 @@ def build_stats_text(user_id):
     character_name = profile_summary.get("name") or "Без імені"
     class_name = profile_summary.get("class_name") or "Не обрано"
 
-    physical_attack = total_str
-    magical_attack = total_int
+    physical_attack = get_attack(user_id)
+    magical_attack = get_magic_attack(user_id)
 
     text = (
         f"📊 Параметри персонажа\n\n"
