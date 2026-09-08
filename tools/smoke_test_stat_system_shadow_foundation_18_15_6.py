@@ -17,8 +17,12 @@ def main():
     assert calculate_magical_attack("mage", intelligence=30) == 30
     assert calculate_magical_attack("priest", intelligence=30) == 30
     assert calculate_magical_attack("warrior", intelligence=30) == 6
-    assert calculate_physical_defense(equipment_pdef=10, stamina=25, refinement_pdef=2) == 17
-    assert calculate_magical_defense(equipment_mdef=10, wisdom=25, refinement_mdef=2) == 37
+    assert calculate_physical_defense(equipment_pdef=10, stamina=25) == 18
+    assert calculate_magical_defense(equipment_mdef=10, wisdom=25) == 18
+    assert calculate_physical_defense(equipment_pdef=0, stamina=10) == 3
+    assert calculate_magical_defense(equipment_mdef=0, wisdom=10) == 3
+    assert calculate_physical_defense(equipment_pdef=7, stamina=0) == 7
+    assert calculate_magical_defense(equipment_mdef=9, wisdom=0) == 9
     assert calculate_max_hp(base_hp=100, stamina_hp=30, equipment_hp=20, refinement_hp=5) == 155
     assert calculate_max_mp("mage", level=1, intelligence=10, wisdom=10) == 170
     assert calculate_max_mp("priest", level=10, intelligence=30, wisdom=40) == 480

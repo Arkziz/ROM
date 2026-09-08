@@ -58,16 +58,20 @@ def calculate_magical_attack(character_class, *, intelligence=0) -> int:
     return max(1, int(raw))
 
 
-def calculate_physical_defense(*, equipment_pdef=0, stamina=0, refinement_pdef=0) -> int:
-    """Preserve the approved ROM PDEF contract."""
-    raw = _number(equipment_pdef) + _number(stamina) * 0.20 + _number(refinement_pdef)
-    return _whole_non_negative(raw)
+def calculate_physical_defense(*, equipment_pdef=0, stamina=0) -> int:
+    """Stage 18.14.2: active item PDEF plus total STA at coefficient 0.35."""
+    from data.defense_policy import calculate_total_defense
+
+    return int(calculate_total_defense(equipment_pdef, stamina))
 
 
-def calculate_magical_defense(*, equipment_mdef=0, wisdom=0, refinement_mdef=0) -> int:
-    """Preserve the approved ROM MDEF contract."""
-    raw = _number(equipment_mdef) + _number(wisdom) + _number(refinement_mdef)
-    return _whole_non_negative(raw)
+
+def calculate_magical_defense(*, equipment_mdef=0, wisdom=0) -> int:
+    """Stage 18.14.2: active item MDEF plus total WIS at coefficient 0.35."""
+    from data.defense_policy import calculate_total_defense
+
+    return int(calculate_total_defense(equipment_mdef, wisdom))
+
 
 
 def calculate_max_mp(character_class, *, level=0, intelligence=0, wisdom=0) -> int:
