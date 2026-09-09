@@ -5,6 +5,14 @@ All inputs must already be effective exact-once values assembled by the caller.
 """
 from __future__ import annotations
 
+from data.stat_system_config import (
+    MAGICAL_ATTACK_SCALING,
+    MAX_MP_SCALING,
+    MANA_CLASSES,
+    PHYSICAL_ATTACK_SCALING,
+    PRIMARY_STAT_KEYS,
+)
+
 PHYSICAL_CLASSES = frozenset({"warrior", "knight", "rogue", "scout"})
 MAGICAL_CLASSES = frozenset({"mage", "priest"})
 SUPPORTED_CLASSES = PHYSICAL_CLASSES | MAGICAL_CLASSES
@@ -29,34 +37,45 @@ def calculate_max_hp(*, base_hp=0, stamina_hp=0, equipment_hp=0, refinement_hp=0
     )
 
 
-def calculate_physical_attack(character_class, *, strength=0, dexterity=0) -> int:
-    """Candidate F2. No direct level, STA or WIS contribution."""
+def _calculate_weighted_attack(character_class, matrix, *, strength=0, dexterity=0, intelligence=0, wisdom=0, stamina=0) -> int:
     class_key = str(character_class or "").strip().casefold()
-    strength = _number(strength)
-    dexterity = _number(dexterity)
-    if class_key in {"warrior", "knight"}:
-        raw = strength
-    elif class_key in {"rogue", "scout"}:
-        raw = strength * 0.55 + dexterity * 0.55
-    elif class_key in MAGICAL_CLASSES:
-        raw = strength * 0.20
-    else:
+    coefficients = matrix.get(class_key)
+    if coefficients is None:
         return 0
+    stats = {
+        "str": _number(strength),
+        "dex": _number(dexterity),
+        "int": _number(intelligence),
+        "wis": _number(wisdom),
+        "sta": _number(stamina),
+    }
+    raw = sum(stats[key] * coefficients[key] for key in PRIMARY_STAT_KEYS)
     return max(1, int(raw))
 
 
-def calculate_magical_attack(character_class, *, intelligence=0) -> int:
-    """Offensive MATK is INT-driven; WIS is intentionally not an input."""
-    class_key = str(character_class or "").strip().casefold()
-    intelligence = _number(intelligence)
-    if class_key in MAGICAL_CLASSES:
-        raw = intelligence
-    elif class_key in PHYSICAL_CLASSES:
-        raw = intelligence * 0.20
-    else:
-        return 0
-    return max(1, int(raw))
+def calculate_physical_attack(character_class, *, strength=0, dexterity=0, intelligence=0, wisdom=0, stamina=0) -> int:
+    """Return configurable class-aware physical attack."""
+    return _calculate_weighted_attack(
+        character_class,
+        PHYSICAL_ATTACK_SCALING,
+        strength=strength,
+        dexterity=dexterity,
+        intelligence=intelligence,
+        wisdom=wisdom,
+        stamina=stamina,
+    )
 
+def calculate_magical_attack(character_class, *, strength=0, dexterity=0, intelligence=0, wisdom=0, stamina=0) -> int:
+    """Return configurable class-aware magical attack."""
+    return _calculate_weighted_attack(
+        character_class,
+        MAGICAL_ATTACK_SCALING,
+        strength=strength,
+        dexterity=dexterity,
+        intelligence=intelligence,
+        wisdom=wisdom,
+        stamina=stamina,
+    )
 
 def calculate_physical_defense(*, equipment_pdef=0, stamina=0) -> int:
     """Stage 18.14.2: active item PDEF plus total STA at coefficient 0.35."""
@@ -75,13 +94,17 @@ def calculate_magical_defense(*, equipment_mdef=0, wisdom=0) -> int:
 
 
 def calculate_max_mp(character_class, *, level=0, intelligence=0, wisdom=0) -> int:
-    """WIS-focused resource formula: 100 + level*20 + INT*2 + WIS*3."""
+    """Return configurable maximum mana for mana classes."""
     class_key = str(character_class or "").strip().casefold()
-    if class_key not in MAGICAL_CLASSES:
+    if class_key not in MANA_CLASSES:
         return 0
-    raw = 100 + _number(level) * 20 + _number(intelligence) * 2 + _number(wisdom) * 3
-    return _whole_non_negative(raw)
-
+    raw = (
+        MAX_MP_SCALING["base"]
+        + _number(level) * MAX_MP_SCALING["level"]
+        + _number(intelligence) * MAX_MP_SCALING["int"]
+        + _number(wisdom) * MAX_MP_SCALING["wis"]
+    )
+    return max(0, int(raw))
 
 __all__ = [
     "calculate_max_hp",

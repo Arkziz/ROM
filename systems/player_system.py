@@ -553,31 +553,34 @@ def _player_base_row_9_0_12g(user_id):
 
 
 def get_attack(user_id):
-    """Return production PATK through the accepted Stage 18.15.7 stat system."""
+    """Return production PATK through configurable Stat System scaling."""
     from systems.character_system import get_character_class
     from systems.stat_system import calculate_physical_attack
 
-    strength, dexterity, _intelligence, _wisdom, _stamina = get_player_stats(user_id)[:5]
+    strength, dexterity, intelligence, wisdom, stamina = get_player_stats(user_id)[:5]
     return calculate_physical_attack(
         get_character_class(user_id),
         strength=strength,
         dexterity=dexterity,
+        intelligence=intelligence,
+        wisdom=wisdom,
+        stamina=stamina,
     )
 
-
-
 def get_magic_attack(user_id):
-    """Return production MATK through the accepted Stage 18.15.7 stat system."""
+    """Return production MATK through configurable Stat System scaling."""
     from systems.character_system import get_character_class
     from systems.stat_system import calculate_magical_attack
 
-    _strength, _dexterity, intelligence, _wisdom, _stamina = get_player_stats(user_id)[:5]
+    strength, dexterity, intelligence, wisdom, stamina = get_player_stats(user_id)[:5]
     return calculate_magical_attack(
         get_character_class(user_id),
+        strength=strength,
+        dexterity=dexterity,
         intelligence=intelligence,
+        wisdom=wisdom,
+        stamina=stamina,
     )
-
-
 
 def _armor_refine_hp_bonus_percent_9_0_12g(user_id):
     db = _player_combat_db_9_0_12g()
