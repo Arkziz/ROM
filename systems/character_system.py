@@ -240,56 +240,15 @@ def get_class_reset_sphere_item_id():
 # ==============================
 
 def get_user_mp(user_id):
-    """
-    Повертає MP у старому публічному форматі ROM.
-
-    Важливо:
-    handlers/profile.py та handlers/combat.py очікують словник:
-
-        {
-            "mp": current_mp,
-            "max_mp": max_mp
-        }
-
-    Після refactor 9.0.12b функція помилково повертала int,
-    через що виникало:
-
-        AttributeError: 'int' object has no attribute 'get'
-    """
-
-    import db as _db
-
+    """Return persisted current MP after canonical lazy regeneration."""
     try:
         user_id = int(user_id)
     except Exception:
         user_id = 0
-
-    max_mp = int(get_max_mp(user_id) or 0)
-
-    row = _db.conn.execute(
-        """
-        SELECT mp
-        FROM users
-        WHERE user_id=?
-        """,
-        (user_id,)
-    ).fetchone()
-
-    if not row:
-        current_mp = max_mp
-    else:
-        try:
-            current_mp = int(row[0] or 0)
-        except Exception:
-            current_mp = max_mp
-
-    current_mp = max(0, min(current_mp, max_mp))
-
-    return {
-        "mp": current_mp,
-        "max_mp": max_mp,
-        "current_mp": current_mp
-    }
+    data = apply_lazy_mp_regeneration_17_15_1(user_id)
+    current_mp = int(data.get("mp", 0) or 0)
+    max_mp = int(data.get("max_mp", 0) or 0)
+    return {"mp": current_mp, "max_mp": max_mp, "current_mp": current_mp}
 
 # ==============================
 # ROM 10.7.0 RUNE-AWARE MAX MP
@@ -447,34 +406,49 @@ def begin_mp_combat_pause_17_15_1(user_id):
 
 
 def apply_lazy_mp_regeneration_17_15_1(user_id, now=None):
+    """Regenerate MP without banking ticks across a Max MP boundary change."""
     init_persistent_mp_columns_17_15_1()
     db = _db()
     maximum = int(get_max_mp(user_id) or 0)
-    if maximum <= 0:
-        return {"success": True, "restored": 0, "mp": 0, "max_mp": 0, "ticks": 0}
+    current_time = now or datetime.now()
     row = db.cursor.execute(
-        "SELECT mp, last_mp_regen_update, COALESCE(mp_regen_paused,0) FROM users WHERE user_id=?",
+        "SELECT mp, max_mp, last_mp_regen_update, COALESCE(mp_regen_paused,0) FROM users WHERE user_id=?",
         (int(user_id),),
     ).fetchone()
     if not row:
         return {"success": False, "restored": 0, "mp": 0, "max_mp": maximum, "ticks": 0}
-    current = max(0, min(int(row[0] or 0), maximum))
-    paused = bool(int(row[2] or 0))
-    current_time = now or datetime.now()
+    stored_current = max(0, int(row[0] or 0))
+    stored_maximum = max(0, int(row[1] or 0))
+    paused = bool(int(row[3] or 0))
+    if maximum <= 0:
+        db.cursor.execute(
+            "UPDATE users SET mp=0, max_mp=0, last_mp_regen_update=?, mp_full_notified=1 WHERE user_id=?",
+            (current_time.isoformat(), int(user_id)),
+        )
+        db.conn.commit()
+        return {"success": True, "restored": 0, "mp": 0, "max_mp": 0, "ticks": 0}
+    current = min(stored_current, maximum)
+    if maximum != stored_maximum:
+        db.cursor.execute(
+            "UPDATE users SET mp=?, max_mp=?, last_mp_regen_update=?, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE 1 END WHERE user_id=?",
+            (current, maximum, current_time.isoformat(), current, maximum, int(user_id)),
+        )
+        db.conn.commit()
+        return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0, "maximum_changed": True}
     try:
-        last = datetime.fromisoformat(str(row[1] or ""))
+        last = datetime.fromisoformat(str(row[2] or ""))
     except Exception:
         last = current_time
         db.cursor.execute(
-            "UPDATE users SET last_mp_regen_update=?, max_mp=? WHERE user_id=?",
-            (last.isoformat(), maximum, int(user_id)),
+            "UPDATE users SET mp=?, max_mp=?, last_mp_regen_update=? WHERE user_id=?",
+            (current, maximum, last.isoformat(), int(user_id)),
         )
         db.conn.commit()
         return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0}
     if paused or current >= maximum:
         db.cursor.execute(
-            "UPDATE users SET mp=?, max_mp=?, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
-            (current, maximum, current, maximum, int(user_id)),
+            "UPDATE users SET mp=?, max_mp=?, last_mp_regen_update=?, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
+            (current, maximum, current_time.isoformat(), current, maximum, int(user_id)),
         )
         db.conn.commit()
         return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0}
@@ -483,8 +457,7 @@ def apply_lazy_mp_regeneration_17_15_1(user_id, now=None):
         return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0}
     per_tick = max(1, int(maximum * MP_REGEN_PERCENT_PER_MINUTE_17_15_1))
     new_mp = min(maximum, current + per_tick * ticks)
-    consumed_time = last.timestamp() + ticks * 60
-    new_stamp = datetime.fromtimestamp(consumed_time).isoformat()
+    new_stamp = datetime.fromtimestamp(last.timestamp() + ticks * 60).isoformat()
     db.cursor.execute(
         "UPDATE users SET mp=?, max_mp=?, last_mp_regen_update=?, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
         (new_mp, maximum, new_stamp, new_mp, maximum, int(user_id)),

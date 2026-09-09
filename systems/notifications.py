@@ -859,30 +859,45 @@ def get_worker_max_mp_17_15_1(conn, user_id):
 
 
 def apply_mp_regen_worker_17_15_1(conn, user_id, now=None):
+    """Worker regeneration with no banked ticks across Max MP changes."""
     init_mp_columns_worker_17_15_1(conn)
-    maximum = get_worker_max_mp_17_15_1(conn, user_id)
-    if maximum <= 0:
-        return {"mp": 0, "max_mp": 0, "became_full": False}
+    current_time = now or datetime.now()
     row = conn.execute(
-        "SELECT mp,last_mp_regen_update,COALESCE(mp_regen_paused,0) FROM users WHERE user_id=?",
+        "SELECT mp,max_mp,last_mp_regen_update,COALESCE(mp_regen_paused,0) FROM users WHERE user_id=?",
         (int(user_id),),
     ).fetchone()
     if not row:
-        return {"mp": 0, "max_mp": maximum, "became_full": False}
-    current = max(0, min(int(row[0] or 0), maximum))
-    current_time = now or datetime.now()
+        return {"mp": 0, "max_mp": 0, "became_full": False}
+    stored_current = max(0, int(row[0] or 0))
+    stored_maximum = max(0, int(row[1] or 0))
+    maximum = int(get_worker_max_mp_17_15_1(conn, user_id) or 0)
+    if maximum <= 0:
+        conn.execute("UPDATE users SET mp=0,max_mp=0,last_mp_regen_update=?,mp_full_notified=1 WHERE user_id=?", (current_time.isoformat(),int(user_id)))
+        conn.commit()
+        return {"mp":0,"max_mp":0,"became_full":False}
+    current = min(stored_current, maximum)
+    if maximum != stored_maximum:
+        conn.execute(
+            "UPDATE users SET mp=?,max_mp=?,last_mp_regen_update=?,mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE 1 END WHERE user_id=?",
+            (current,maximum,current_time.isoformat(),current,maximum,int(user_id)),
+        )
+        conn.commit()
+        return {"mp":current,"max_mp":maximum,"became_full":False,"maximum_changed":True}
     try:
-        last = datetime.fromisoformat(str(row[1] or ""))
+        last = datetime.fromisoformat(str(row[2] or ""))
     except Exception:
         last = current_time
-    if int(row[2] or 0):
-        return {"mp": current, "max_mp": maximum, "became_full": False}
-    ticks = max(0, int((current_time-last).total_seconds()//60))
-    new_mp = current
-    new_stamp = last
-    if ticks > 0 and current < maximum:
-        new_mp = min(maximum, current + max(1, int(maximum*MP_REGEN_PERCENT_PER_MINUTE_17_15_1))*ticks)
-        new_stamp = datetime.fromtimestamp(last.timestamp()+ticks*60)
+    if int(row[3] or 0) or current >= maximum:
+        conn.execute(
+            "UPDATE users SET mp=?,max_mp=?,last_mp_regen_update=?,mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
+            (current,maximum,current_time.isoformat(),current,maximum,int(user_id)),
+        )
+        conn.commit()
+        return {"mp":current,"max_mp":maximum,"became_full":False}
+    ticks=max(0,int((current_time-last).total_seconds()//60));new_mp=current;new_stamp=last
+    if ticks>0:
+        new_mp=min(maximum,current+max(1,int(maximum*MP_REGEN_PERCENT_PER_MINUTE_17_15_1))*ticks)
+        new_stamp=datetime.fromtimestamp(last.timestamp()+ticks*60)
     conn.execute(
         "UPDATE users SET mp=?,max_mp=?,last_mp_regen_update=?,mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
         (new_mp,maximum,new_stamp.isoformat(),new_mp,maximum,int(user_id)),
@@ -980,7 +995,7 @@ def get_worker_equipped_int_wis_totals_18_15_8c(conn, user_id, base_intelligence
     return intelligence, wisdom
 
 def get_worker_max_mp_17_15_1(conn, user_id):
-    """Worker Max MP parity with foreground effective-stat aggregation."""
+    """Pure worker Max MP calculation; persistence belongs to regeneration."""
     row = conn.execute(
         "SELECT level, intelligence, wis, character_class FROM users WHERE user_id=?",
         (int(user_id),),
@@ -988,20 +1003,7 @@ def get_worker_max_mp_17_15_1(conn, user_id):
     class_key = str(row[3] or "").strip().lower() if row else ""
     if not row or class_key not in ("mage", "priest"):
         return 0
-    intelligence, wisdom = get_worker_equipped_int_wis_totals_18_15_8c(
-        conn, user_id, row[1], row[2]
-    )
+    intelligence, wisdom = get_worker_equipped_int_wis_totals_18_15_8c(conn, user_id, row[1], row[2])
     from systems.stat_system import calculate_max_mp
-    dynamic_max_mp = calculate_max_mp(
-        class_key,
-        level=int(row[0] or 0),
-        intelligence=intelligence,
-        wisdom=wisdom,
-    )
-    try:
-        conn.execute("UPDATE users SET max_mp=? WHERE user_id=?", (dynamic_max_mp, int(user_id)))
-        conn.commit()
-    except Exception:
-        pass
-    return dynamic_max_mp
+    return calculate_max_mp(class_key, level=int(row[0] or 0), intelligence=intelligence, wisdom=wisdom)
 
