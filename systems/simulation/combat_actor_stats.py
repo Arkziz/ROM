@@ -6,6 +6,7 @@ from systems.refine_system import apply_weapon_refine_to_damage,get_armor_refine
 from .battle_models import BattleActor
 from .models import SimulationEquipment,SimulationInventory
 from data.defense_policy import calculate_total_defense
+from systems.stat_system import calculate_max_mp
 
 BASE_STAT=10
 ARMOR_SLOTS={"helmet","shoulders","chest","gloves","legs","boots"}
@@ -32,7 +33,7 @@ def build_combat_stat_snapshot(character_class:str,level:int,inventory:Simulatio
    raw_min=int(item.stats.get("weapon_min_damage",item.stats.get("weapon_min_magic_damage",0)) or 0);raw_max=int(item.stats.get("weapon_max_damage",item.stats.get("weapon_max_magic_damage",0)) or 0)
    weapon_min,weapon_max=apply_weapon_refine_to_damage(raw_min,raw_max,item.refine_level)
  max_hp=max(1,int(round((100+level*20+stats["sta"]*5)*(1+armor_refine/100.0))))
- mana=CLASS_CONFIGS[character_class]["resource"]=="mana";max_mp=100+level*20+stats["int"]*3+stats["wis"]*2 if mana else 0
+ mana=CLASS_CONFIGS[character_class]["resource"]=="mana";max_mp=calculate_max_mp(character_class,level=level,intelligence=stats["int"],wisdom=stats["wis"]) if mana else 0
  attack_type="magical" if mana else "physical"
  return CombatStatSnapshot(stats["str"],stats["dex"],stats["int"],stats["wis"],stats["sta"],level,max_hp,max_mp,stats["str"],stats["int"],int(calculate_total_defense(item_pdef, stats["sta"])),int(calculate_total_defense(item_mdef, stats["wis"])),weapon_min,weapon_max,attack_type,CLASS_CONFIGS[character_class]["resource"])
 

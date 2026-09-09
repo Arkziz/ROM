@@ -299,25 +299,28 @@ _RUNE_STATS_BASE_GET_MAX_MP_10_7_0 = get_max_mp
 
 
 def get_max_mp(user_id):
-    """Mana formula with equipped, unbroken INT/WIS rune bonuses."""
+    """Canonical Max MP from exact-once effective INT/WIS totals."""
     if get_character_resource_type(user_id) != "mana":
         return 0
     db = _db()
     row = db.conn.execute(
-        "SELECT level, intelligence, wis FROM users WHERE user_id=?",
+        "SELECT level FROM users WHERE user_id=?",
         (int(user_id),),
     ).fetchone()
     if not row:
         return 0
-    level, intelligence, wisdom = (int(value or 0) for value in row)
-    try:
-        from systems.rune_system import get_equipped_rune_stat_totals
-        rune = get_equipped_rune_stat_totals(user_id)
-    except Exception:
-        rune = {}
-    intelligence += int(rune.get("int", 0) or 0)
-    wisdom += int(rune.get("wis", 0) or 0)
-    return max(0, 100 + level * 20 + intelligence * 3 + wisdom * 2)
+    from systems.player_system import get_player_stats
+    from systems.stat_system import calculate_max_mp
+    stats = get_player_stats(user_id)
+    if not stats or len(stats) < 5:
+        return 0
+    _strength, _dexterity, intelligence, wisdom, _stamina = stats[:5]
+    return calculate_max_mp(
+        get_character_class(user_id),
+        level=int(row[0] or 0),
+        intelligence=intelligence,
+        wisdom=wisdom,
+    )
 
 # Stage 17.13.1 atomic confirmation services.
 def confirm_initial_character_class_17_13_1(user_id, class_key):

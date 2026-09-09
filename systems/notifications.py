@@ -951,26 +951,55 @@ def get_worker_equipped_rune_int_wis_bonus_17_15_1_1(conn, user_id):
         return {"int": 0, "wis": 0}
 
 
+def get_worker_equipped_int_wis_totals_18_15_8c(conn, user_id, base_intelligence, base_wisdom):
+    """Reconstruct active item+rune INT/WIS exactly once for the worker."""
+    intelligence = int(base_intelligence or 0)
+    wisdom = int(base_wisdom or 0)
+    try:
+        row = conn.execute(
+            """
+            SELECT
+                COALESCE(SUM(COALESCE(it.bonus_int, 0)), 0),
+                COALESCE(SUM(COALESCE(it.bonus_wis, 0)), 0)
+            FROM equipment_slots es
+            JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id
+            JOIN items it ON it.id=inv.item_id
+            WHERE es.user_id=? AND es.inventory_id IS NOT NULL
+              AND COALESCE(inv.durability, 100) > 0
+            """,
+            (int(user_id),),
+        ).fetchone()
+        if row:
+            intelligence += int(row[0] or 0)
+            wisdom += int(row[1] or 0)
+    except Exception:
+        pass
+    rune = get_worker_equipped_rune_int_wis_bonus_17_15_1_1(conn, user_id)
+    intelligence += int(rune.get("int", 0) or 0)
+    wisdom += int(rune.get("wis", 0) or 0)
+    return intelligence, wisdom
+
 def get_worker_max_mp_17_15_1(conn, user_id):
-    """Production-equivalent max MP for Mage/Priest, including active runes."""
+    """Worker Max MP parity with foreground effective-stat aggregation."""
     row = conn.execute(
         "SELECT level, intelligence, wis, character_class FROM users WHERE user_id=?",
         (int(user_id),),
     ).fetchone()
-    if not row or str(row[3] or "").strip().lower() not in ("mage", "priest"):
+    class_key = str(row[3] or "").strip().lower() if row else ""
+    if not row or class_key not in ("mage", "priest"):
         return 0
-    level = int(row[0] or 0)
-    intelligence = int(row[1] or 0)
-    wisdom = int(row[2] or 0)
-    rune = get_worker_equipped_rune_int_wis_bonus_17_15_1_1(conn, user_id)
-    intelligence += int(rune.get("int", 0) or 0)
-    wisdom += int(rune.get("wis", 0) or 0)
-    dynamic_max_mp = max(0, 100 + level * 20 + intelligence * 3 + wisdom * 2)
+    intelligence, wisdom = get_worker_equipped_int_wis_totals_18_15_8c(
+        conn, user_id, row[1], row[2]
+    )
+    from systems.stat_system import calculate_max_mp
+    dynamic_max_mp = calculate_max_mp(
+        class_key,
+        level=int(row[0] or 0),
+        intelligence=intelligence,
+        wisdom=wisdom,
+    )
     try:
-        conn.execute(
-            "UPDATE users SET max_mp=? WHERE user_id=?",
-            (dynamic_max_mp, int(user_id)),
-        )
+        conn.execute("UPDATE users SET max_mp=? WHERE user_id=?", (dynamic_max_mp, int(user_id)))
         conn.commit()
     except Exception:
         pass
