@@ -655,13 +655,13 @@ def get_worker_equipped_rune_sta_bonus_v2(conn, user_id):
 def get_worker_max_hp(conn, user_id):
     """Calculate worker max HP from the shared canonical HP policy."""
     row = conn.execute(
-        "SELECT level, sta FROM users WHERE user_id=?",
+        "SELECT level, sta, COALESCE(allocated_stamina, 0) FROM users WHERE user_id=?",
         (user_id,),
     ).fetchone()
     if not row:
         return get_starting_max_hp()
     level = int(row[0] or 1)
-    base_sta = int(row[1] or 10)
+    base_sta = int(row[1] or 10) + int(row[2] or 0)
     item_sta = int(get_equipped_stat_bonus(conn, user_id, "bonus_sta") or 0)
     rune_sta = int(get_worker_equipped_rune_sta_bonus_v2(conn, user_id) or 0)
     total_sta = base_sta + item_sta + rune_sta
@@ -997,13 +997,13 @@ def get_worker_equipped_int_wis_totals_18_15_8c(conn, user_id, base_intelligence
 def get_worker_max_mp_17_15_1(conn, user_id):
     """Pure worker Max MP calculation; persistence belongs to regeneration."""
     row = conn.execute(
-        "SELECT level, intelligence, wis, character_class FROM users WHERE user_id=?",
+        "SELECT level, intelligence, wis, COALESCE(allocated_intelligence, 0), COALESCE(allocated_wisdom, 0), character_class FROM users WHERE user_id=?",
         (int(user_id),),
     ).fetchone()
-    class_key = str(row[3] or "").strip().lower() if row else ""
+    class_key = str(row[5] or "").strip().lower() if row else ""
     if not row or class_key not in ("mage", "priest"):
         return 0
-    intelligence, wisdom = get_worker_equipped_int_wis_totals_18_15_8c(conn, user_id, row[1], row[2])
+    intelligence, wisdom = get_worker_equipped_int_wis_totals_18_15_8c(conn, user_id, int(row[1] or 0) + int(row[3] or 0), int(row[2] or 0) + int(row[4] or 0))
     from systems.stat_system import calculate_max_mp
     return calculate_max_mp(class_key, level=int(row[0] or 0), intelligence=intelligence, wisdom=wisdom)
 
