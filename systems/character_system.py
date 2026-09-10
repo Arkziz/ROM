@@ -323,45 +323,29 @@ def confirm_character_class_change_17_13_1(user_id, class_key):
     db = _db()
     key = str(class_key or "").strip().lower()
     if key not in CLASS_CONFIGS:
-        return {"success": False, "message": "❌ Невідомий клас персонажа."}
+        return {"success":False,"message":"❌ Невідомий клас персонажа."}
+    row = db.cursor.execute("""SELECT TRIM(COALESCE(character_class,'')),
+        COALESCE(class_change_available,0),pending_class_change_inventory_id
+        FROM users WHERE user_id=?""",(int(user_id),)).fetchone()
+    if not row:return {"success":False,"message":"❌ Персонажа не знайдено."}
+    if str(row[0] or "")==key:return {"success":False,"message":"ℹ️ Цей клас уже обрано."}
+    if int(row[1] or 0)<=0 or row[2] is None:return {"success":False,"message":"❌ Зміна класу недоступна."}
+    from systems.attribute_respec_system import reset_allocated_attributes,AttributeRespecError
+    from systems.player_system import get_max_hp,get_max_mp
     try:
-        db.conn.execute("BEGIN IMMEDIATE")
-        row = db.cursor.execute(
-            "SELECT TRIM(COALESCE(character_class,'')), COALESCE(class_change_available,0) FROM users WHERE user_id=?",
-            (user_id,),
-        ).fetchone()
-        if not row:
-            db.conn.rollback()
-            return {"success": False, "message": "❌ Персонажа не знайдено."}
-        old_key = str(row[0] or "")
-        if int(row[1] or 0) <= 0:
-            db.conn.rollback()
-            return {"success": False, "message": "❌ Зміна класу недоступна."}
-        if old_key == key:
-            db.conn.rollback()
-            return {"success": False, "message": "ℹ️ Цей клас уже обрано."}
-        db.cursor.execute(
-            "UPDATE users SET character_class=?, class_selected_at=?, class_change_available=class_change_available-1 "
-            "WHERE user_id=? AND COALESCE(class_change_available,0)>0 AND TRIM(COALESCE(character_class,''))<>?",
-            (key, datetime.now().isoformat(), user_id, key),
-        )
-        if db.cursor.rowcount != 1:
-            db.conn.rollback()
-            return {"success": False, "message": "❌ Не вдалося підтвердити зміну класу."}
+        result=reset_allocated_attributes(int(user_id),int(row[2]),
+            f"class_change:{int(user_id)}:{int(row[2])}:{key}",operation_type="class_change",
+            new_class=key,expected_item_id=CLASS_RESET_SPHERE_ITEM_ID,db_module=db,
+            max_hp_getter=get_max_hp,max_mp_getter=get_max_mp)
+        db.cursor.execute("""UPDATE users SET class_selected_at=?,class_change_available=0,
+            pending_class_change_inventory_id=NULL WHERE user_id=?""",(datetime.now().isoformat(),int(user_id)))
         db.conn.commit()
-    except Exception as error:
-        try:
-            db.conn.rollback()
-        except Exception:
-            pass
-        return {"success": False, "message": f"❌ Не вдалося підтвердити зміну класу: {error}"}
-    refresh_user_mp(user_id)
-    return {
-        "success": True,
-        "message": f"✅ Обрано клас: {CLASS_CONFIGS[key]['name']}",
-        "class_key": key,
-        "old_class_key": old_key,
-    }
+    except AttributeRespecError as error:
+        return {"success":False,"message":f"❌ Не вдалося підтвердити зміну класу: {error}"}
+    return {"success":True,"message":f"✅ Обрано клас: {CLASS_CONFIGS[key]['name']}",
+        "class_key":key,"old_class_key":str(row[0] or ""),
+        "returned_points":int(result["before"]["returned_points"])}
+
 
 # Stage 17.15.1 persistent MP helpers.
 MP_REGEN_PERCENT_PER_MINUTE_17_15_1 = 0.30

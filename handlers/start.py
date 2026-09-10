@@ -546,7 +546,13 @@ def build_class_preview_text_17_13_1(user_id, mode, class_key):
         cooldown = int(skill.get("cooldown", 0) or 0)
         text += f"\n  Перезарядка: {cooldown} ход."
     if mode == "change":
-        text += "\n\n⚠️ Право на зміну буде витрачено лише після підтвердження."
+        from systems.attribute_respec_system import get_attribute_respec_preview
+        preview = get_attribute_respec_preview(user_id)
+        text += (
+            f"\n\n♻️ Буде повернено очок характеристик: {preview['returned_points']}"
+            "\n⚠️ Поточний розподіл характеристик буде скинуто."
+            "\n🎒 Сфера нового шляху буде витрачена лише після підтвердження."
+        )
     return text
 
 
