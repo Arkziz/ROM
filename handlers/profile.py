@@ -30,6 +30,7 @@ from db import (
 from keyboards import profile_kb, main_kb
 from utils import hp_bar
 from systems.profile_history_system import init_profile_history, get_trade_history, get_trade_history_detail, get_pvp_history, get_pvp_history_detail
+from handlers.attribute_allocation import register_attribute_allocation_handlers
 
 # Імпортуємо навички з боєчного модуля, щоб показувати їх у профілі
 from handlers.combat import CLASS_SKILLS_V1
@@ -74,23 +75,21 @@ def profile_inline_kb(active_tab="character"):
             callback_data="profile_equipment"
         ))
 
+    if active_tab != "attributes":
+        buttons.append(types.InlineKeyboardButton(
+            text="⭐ Характеристики",
+            callback_data="profile_attributes"
+        ))
+
     if active_tab != "skills":
         buttons.append(types.InlineKeyboardButton(
             text="✨ Навички",
             callback_data="profile_skills"
         ))
 
-    # Розподіл кнопок по рядках
-    if len(buttons) == 1:
-        kb.add(buttons[0])
-    elif len(buttons) == 2:
-        kb.add(buttons[0], buttons[1])
-    elif len(buttons) == 3:
-        kb.add(buttons[0], buttons[1])
-        kb.add(buttons[2])
-    elif len(buttons) == 4:
-        kb.add(buttons[0], buttons[1])
-        kb.add(buttons[2], buttons[3])
+    # Розподіл кнопок по два елементи в рядку.
+    for index in range(0, len(buttons), 2):
+        kb.row(*buttons[index:index + 2])
 
     return kb
 
@@ -420,6 +419,7 @@ def _history_list_text(kind,data):
     return "\n".join(lines)
 
 def register_profile_handlers(bot):
+    register_attribute_allocation_handlers(bot, profile_inline_kb)
     init_profile_history()
 
     @bot.message_handler(func=lambda message: getattr(message, "text", None) == "📜 Історія")
