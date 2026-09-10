@@ -487,9 +487,7 @@ def _player_combat_db_9_0_12g():
 def _player_base_row_9_0_12g(user_id):
     db = _player_combat_db_9_0_12g()
     return db.conn.execute(
-        "SELECT COALESCE(str,0), COALESCE(dex,0), COALESCE(intelligence,0), "
-        "COALESCE(wis,0), COALESCE(sta,0), COALESCE(level,1) "
-        "FROM users WHERE user_id=?",
+        'SELECT COALESCE(str,0) + COALESCE(allocated_strength,0), COALESCE(dex,0) + COALESCE(allocated_dexterity,0), COALESCE(intelligence,0) + COALESCE(allocated_intelligence,0), COALESCE(wis,0) + COALESCE(allocated_wisdom,0), COALESCE(sta,0) + COALESCE(allocated_stamina,0), COALESCE(level,1) FROM users WHERE user_id=?',
         (int(user_id),),
     ).fetchone()
 
