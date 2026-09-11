@@ -40,6 +40,7 @@ $ExcludeDirectoryNames = @(
     "backup",
     "MD",
     "simulation_reports",
+	"tools",
     "reports"
 )
 
