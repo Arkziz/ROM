@@ -225,6 +225,7 @@ from systems.combat_system import (
 )
 
 from systems.reward_system import process_victory_reward
+from systems.pve_auto_escape_system import begin_pve_encounter, claim_pve_terminal, STALE_COMBAT_TEXT
 from systems.potion_system import use_potion_from_inventory
 
 
@@ -1824,6 +1825,10 @@ def finalize_combat_state_before_victory(user_id, mob):
     mob["_turn_start_hot_heal_applied"] = 0
 
 def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=""):
+    encounter_id = (mob or {}).get("pve_encounter_id")
+    if encounter_id and not claim_pve_terminal(user_id, 'victory', encounter_id):
+        bot.send_message(chat_id, STALE_COMBAT_TEXT, reply_markup=main_kb())
+        return
     """
     Завершення бою перемогою.
 
@@ -1975,6 +1980,10 @@ def register_combat_handlers(bot):
         init_combat_effects(mob)
 
         bot.user_data = getattr(bot, "user_data", {})
+        encounter = begin_pve_encounter(user_id, message.chat.id, mob)
+        mob["pve_encounter_id"] = encounter["encounter_id"]
+        mob["pve_started_at"] = encounter["started_at"]
+        mob["pve_deadline_at"] = encounter["deadline_at"]
         bot.user_data[user_id] = mob
 
         attack_profile = get_player_attack_profile(user_id)
@@ -3403,6 +3412,13 @@ def register_combat_handlers(bot):
     @bot.callback_query_handler(func=lambda call: call.data == "escape_yes")
     def escape_yes(call):
         user_id = call.from_user.id
+        encounter_id = None
+        if hasattr(bot, "user_data") and user_id in bot.user_data:
+            encounter_id = bot.user_data[user_id].get("pve_encounter_id")
+        if encounter_id and not claim_pve_terminal(user_id, 'manual_escape', encounter_id):
+            bot.answer_callback_query(call.id)
+            bot.send_message(call.message.chat.id, STALE_COMBAT_TEXT, reply_markup=main_kb())
+            return
 
         # Зберегти поточне здоров'я в базу перед втечею
         if hasattr(bot, "user_data") and user_id in bot.user_data:

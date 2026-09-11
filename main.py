@@ -236,6 +236,10 @@ for _trade_recovery_user_id in _PLAYER_TRADE_RESTART_RECOVERY.get('participant_u
         PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ PLAYER TRADE RESTART NOTICE FAILED: "
             f"user={_trade_recovery_user_id}, error={_trade_recovery_notify_error}")
 start_notification_worker(bot)
+from systems.pve_auto_escape_system import recover_pve_encounters_after_restart, start_pve_auto_escape_worker
+_PVE_AUTO_ESCAPE_RESTART_RECOVERY = recover_pve_encounters_after_restart(bot)
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', f"✅ PVE AUTO ESCAPE RECOVERY: {_PVE_AUTO_ESCAPE_RESTART_RECOVERY}")
+start_pve_auto_escape_worker(bot)
 
 
 # ==============================
