@@ -811,105 +811,75 @@ def get_equippable_class_items(character_class, items):
 # ==============================
 
 def generate_class_shop_equipment(character_class, player_level):
-    """Генерує список предметів для магазину класу."""
-    from systems.character_system import get_class_equipment_rules
-    from systems.dynamic_equipment_system import generate_equipment_item
-    
-    rules = get_class_equipment_rules(character_class)
-    allowed_armor = rules.get("allowed_armor_types", [])
-    allowed_weapons = rules.get("allowed_weapon_types", [])
-    
-    generated_items = []
-    
-    # Generate armor pieces
-    armor_slots = ["helmet", "shoulders", "chest", "gloves", "legs", "boots"]
-    for slot in armor_slots:
-        for armor_type in allowed_armor:
-            item = generate_equipment_item(
-                slot_key=slot,
-                item_level=player_level,
-                rarity="common",
-                armor_type=armor_type
-            )
-            if item:
-                generated_items.append(item)
-    
-    # Generate weapons
-    weapon_slots = ["main_hand"]
-    for slot in weapon_slots:
-        for weapon_type in allowed_weapons:
-            item = generate_equipment_item(
-                slot_key=slot,
-                item_level=player_level,
-                rarity="common",
-                weapon_attack_type=weapon_type
-            )
-            if item:
-                generated_items.append(item)
-    
-    return generated_items
+    """Return canonical read-only class-shop offer descriptors.
+
+    Compatibility API only. This function does not generate random stats, create
+    item rows, or create shop previews. Actual preview creation remains owned by
+    create_common_equipment_shop_preview(user_id, slot_key, item_profile).
+    """
+    from data.equipment_stat_policy import (
+        CLASS_ARMOR_TYPES,
+        CLASS_MAIN_HAND_SUBTYPES,
+        CLASS_OFF_HAND_SUBTYPES,
+        normalize_equipment_class,
+    )
+
+    class_key = normalize_equipment_class(character_class)
+    try:
+        item_level = max(1, int(player_level))
+    except (TypeError, ValueError):
+        item_level = 1
+
+    offers = []
+    armor_type = CLASS_ARMOR_TYPES[class_key]
+    for slot_key in ("helmet", "shoulders", "chest", "gloves", "legs", "boots"):
+        offers.append({
+            "slot_key": slot_key,
+            "item_profile": "",
+            "armor_type": armor_type,
+            "item_level": item_level,
+            "rarity": "common",
+            "target_class": class_key,
+            "preview_api": "create_common_equipment_shop_preview",
+        })
+
+    for item_profile in CLASS_MAIN_HAND_SUBTYPES[class_key]:
+        offers.append({
+            "slot_key": "main_hand",
+            "item_profile": item_profile,
+            "armor_type": "",
+            "item_level": item_level,
+            "rarity": "common",
+            "target_class": class_key,
+            "preview_api": "create_common_equipment_shop_preview",
+        })
+
+    for item_profile in CLASS_OFF_HAND_SUBTYPES[class_key]:
+        offers.append({
+            "slot_key": "off_hand",
+            "item_profile": item_profile,
+            "armor_type": "",
+            "item_level": item_level,
+            "rarity": "common",
+            "target_class": class_key,
+            "preview_api": "create_common_equipment_shop_preview",
+        })
+
+    return offers
 
 
 def populate_class_shop_for_user(user_id):
-    """Заповнює магазин предметами для класу гравця."""
-    from .player import get_player_level
+    """Compatibility adapter returning the canonical offer count without writes.
+
+    The historical implementation inserted a full random shop into items. That
+    parallel route is retired. Telegram shop previews must be created explicitly
+    through create_common_equipment_shop_preview.
+    """
     from .character import get_character_class
-    
-    clear_shop_preview_items()
-    
-    character_class = get_character_class(user_id)
-    player_level = get_player_level(user_id)
-    
-    items = generate_class_shop_equipment(character_class, player_level)
-    
-    # Insert items into shop
-    for item in items:
-        # Calculate price based on item level
-        base_price = 100 * item.get("item_level", 1)
-        
-        item_id = allocate_shop_preview_item_id(conn)
-        cursor.execute("""
-        INSERT INTO items (
-            id,
-            name, type, rarity, category, slot_key, max_stack,
-            bonus_str, bonus_dex, bonus_int, bonus_wis, bonus_sta,
-            pdef, mdef, item_level, armor_type,
-            weapon_min_damage, weapon_max_damage,
-            weapon_min_magic_damage, weapon_max_magic_damage,
-            weapon_attack_type, weapon_hands,
-            shop_preview_owner, shop_preview_price,
-            is_generated, item_subtype, sell_price
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            item_id,
-            item.get("name", "Item"),
-            item.get("type", "equipment"),
-            item.get("rarity", "common"),
-            item.get("category", "equipment"),
-            item.get("slot_key", ""),
-            item.get("max_stack", 1),
-            item.get("bonus_str", 0),
-            item.get("bonus_dex", 0),
-            item.get("bonus_int", 0),
-            item.get("bonus_wis", 0),
-            item.get("bonus_sta", 0),
-            item.get("pdef", 0),
-            item.get("mdef", 0),
-            item.get("item_level", 1),
-            item.get("armor_type", ""),
-            item.get("weapon_min_damage", 0),
-            item.get("weapon_max_damage", 0),
-            item.get("weapon_min_magic_damage", 0),
-            item.get("weapon_max_magic_damage", 0),
-            item.get("weapon_attack_type", ""),
-            item.get("weapon_hands", 1),
-            user_id,
-            base_price,
-            1,  # is_generated
-            "",  # item_subtype
-            base_price * 0.25  # sell_price
-        ))
-    
-    conn.commit()
-    
-    return len(items)
+    from .player import get_player_level
+
+    offers = generate_class_shop_equipment(
+        get_character_class(user_id),
+        get_player_level(user_id),
+    )
+    return len(offers)
