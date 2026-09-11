@@ -3,6 +3,8 @@
 Shop system and class-based equipment restrictions
 """
 
+import random
+
 from .connection import conn, cursor, SLOT_ORDER
 from systems.item_id_allocator_system import allocate_shop_preview_item_id, promote_shop_preview_item
 from data.equipment_profiles import (
