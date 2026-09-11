@@ -180,6 +180,37 @@ def validate_equipment_stat_policy() -> tuple[str, ...]:
     return tuple(problems)
 
 
+def redistribute_primary_stat_budget(stats, class_key, equipment_kind, *, item_subtype="", chooser):
+    """Redistribute existing positive primary-stat chunks by canonical class policy.
+
+    The total primary-stat budget and number of generated chunks are preserved.
+    `chooser` receives the immutable weighted profile and returns one stat key.
+    """
+    if not callable(chooser):
+        raise ValueError("chooser must be callable")
+    profile = get_equipment_stat_weights(class_key, equipment_kind, item_subtype=item_subtype)
+    allowed = {stat for stat, _weight in profile}
+    result = dict(stats)
+    chunks = []
+    for stat_key in PRIMARY_STATS:
+        column = "bonus_" + stat_key
+        value = int(result.get(column, 0) or 0)
+        if value > 0:
+            chunks.append(value)
+        result[column] = 0
+    if not chunks:
+        return result
+    for value in chunks:
+        selected = str(chooser(profile) or "").strip().lower()
+        if selected not in allowed:
+            raise ValueError(f"chooser returned forbidden stat {selected!r}")
+        column = "bonus_" + selected
+        result[column] = int(result.get(column, 0) or 0) + value
+    if sum(int(result.get("bonus_" + stat, 0) or 0) for stat in PRIMARY_STATS) != sum(chunks):
+        raise ValueError("primary-stat budget changed during redistribution")
+    return result
+
+
 _POLICY_PROBLEMS = validate_equipment_stat_policy()
 if _POLICY_PROBLEMS:
     raise ValueError("Invalid equipment stat policy: " + "; ".join(_POLICY_PROBLEMS))
@@ -191,5 +222,6 @@ __all__ = [
     "JEWELRY_STAT_WEIGHTS", "ARMOR_STAT_WEIGHTS", "CLASS_ARMOR_TYPES",
     "CLASS_MAIN_HAND_SUBTYPES", "CLASS_OFF_HAND_SUBTYPES",
     "normalize_equipment_class", "get_equipment_stat_weights",
-    "get_allowed_equipment_stats", "validate_equipment_stat_policy",
+    "get_allowed_equipment_stats", "redistribute_primary_stat_budget",
+    "validate_equipment_stat_policy",
 ]

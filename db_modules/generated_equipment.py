@@ -19,6 +19,25 @@ from data.equipment_profiles import (
     OFF_HAND_ALLOWED_BY_CLASS,
     OFF_HAND_PROFILES,
 )
+from data.equipment_stat_policy import redistribute_primary_stat_budget
+
+
+def _class_aware_equipment_kind(slot_key):
+    if slot_key == "main_hand":
+        return "weapon"
+    if slot_key == "off_hand":
+        return "off_hand"
+    if slot_key in ("necklace", "ring"):
+        return "jewelry"
+    return "armor"
+
+
+def _class_aware_weighted_choice(profile):
+    return random.choices(
+        [stat for stat, _weight in profile],
+        weights=[weight for _stat, weight in profile],
+        k=1,
+    )[0]
 
 SLOT_ORDER = [
     "main_hand",
@@ -400,6 +419,16 @@ def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_k
         rarity=rarity,
         weapon_hands=weapon_hands,
         item_profile=item_profile
+    )
+
+    # Stage 18.17.2: base-shop/forced-slot generation is always target-class-aware.
+    target_class = get_character_class(user_id)
+    stats = redistribute_primary_stat_budget(
+        stats,
+        target_class,
+        _class_aware_equipment_kind(slot_key),
+        item_subtype=item_profile,
+        chooser=_class_aware_weighted_choice,
     )
 
     sell_price = get_dynamic_sell_price(item_level, rarity)
@@ -1106,6 +1135,17 @@ def create_generated_equipment_item(
         stats = apply_armor_type_defense_profile_to_stats(
             stats=stats,
             armor_type=armor_type
+        )
+
+    # Stage 18.17.2: only the approved class-aware drop branch rerolls primary stats.
+    if is_class_aware:
+        target_class = get_character_class(user_id)
+        stats = redistribute_primary_stat_budget(
+            stats,
+            target_class,
+            _class_aware_equipment_kind(slot_key),
+            item_subtype=item_profile,
+            chooser=_class_aware_weighted_choice,
         )
 
     sell_price = get_dynamic_sell_price(item_level, rarity)

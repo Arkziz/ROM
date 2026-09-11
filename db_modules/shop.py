@@ -193,6 +193,9 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
     from .player import get_player_level
     from .inventory import get_bag_capacity, get_inventory_used_slots
     from .utils import format_gold
+    from .character import get_character_class
+    from data.equipment_stat_policy import redistribute_primary_stat_budget
+
     
     # Init systems
     try:
@@ -276,6 +279,28 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
             stats=stats,
             armor_type=armor_type
         )
+
+    # Stage 18.17.2: base-shop preview uses the same class policy as class-aware loot.
+    target_class = get_character_class(user_id)
+    if slot_key == "main_hand":
+        equipment_kind = "weapon"
+    elif slot_key == "off_hand":
+        equipment_kind = "off_hand"
+    elif slot_key in ("necklace", "ring"):
+        equipment_kind = "jewelry"
+    else:
+        equipment_kind = "armor"
+    stats = redistribute_primary_stat_budget(
+        stats,
+        target_class,
+        equipment_kind,
+        item_subtype=item_profile,
+        chooser=lambda profile: random.choices(
+            [stat for stat, _weight in profile],
+            weights=[weight for _stat, weight in profile],
+            k=1,
+        )[0],
+    )
 
     sell_price = dynamic_equipment_system.get_dynamic_sell_price(item_level, rarity)
 
