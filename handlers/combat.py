@@ -394,10 +394,49 @@ def init_combat_effects(mob):
 
 
 def add_enemy_effect(mob, key, effect):
+    """Add or refresh one canonical enemy effect without damage stacking."""
     init_combat_effects(mob)
 
-    effect["key"] = key
-    mob["enemy_effects"][key] = effect
+    incoming = dict(effect)
+    incoming["key"] = key
+    existing = mob["enemy_effects"].get(key)
+
+    if existing is None:
+        incoming["fresh"] = True
+        mob["enemy_effects"][key] = incoming
+        return "applied"
+
+    old_turns = max(0, int(existing.get("turns", 0) or 0))
+    new_turns = max(0, int(incoming.get("turns", 0) or 0))
+    old_power = max(
+        abs(float(existing.get("damage", 0) or 0)),
+        abs(float(existing.get("heal", 0) or 0)),
+        max((abs(float(value or 0)) for value in existing.get("modifiers", {}).values()), default=0.0),
+    )
+    new_power = max(
+        abs(float(incoming.get("damage", 0) or 0)),
+        abs(float(incoming.get("heal", 0) or 0)),
+        max((abs(float(value or 0)) for value in incoming.get("modifiers", {}).values()), default=0.0),
+    )
+
+    if new_power < old_power:
+        return "kept_stronger"
+
+    if new_power == old_power:
+        if new_turns > old_turns:
+            existing["turns"] = new_turns
+            return "refreshed"
+        return "unchanged"
+
+    preserved_turns = max(old_turns, new_turns)
+    incoming["turns"] = preserved_turns
+    if existing.get("fresh", False):
+        incoming["fresh"] = True
+    else:
+        incoming.pop("fresh", None)
+    mob["enemy_effects"][key] = incoming
+    return "replaced_stronger"
+
 
 
 def add_player_effect(mob, key, effect):
@@ -588,25 +627,25 @@ def process_player_turn_start_effects(user_id, mob):
     return text
 
 def process_enemy_turn_start_effects(mob):
+    """Resolve existing enemy effects; newly applied effects start next turn."""
     init_combat_effects(mob)
 
     if not mob["enemy_effects"]:
-        return {
-            "text": "",
-            "damage": 0
-        }
+        return {"text": "", "damage": 0}
 
     text = ""
     total_damage = 0
     effects_to_remove = []
 
     for key, effect in list(mob["enemy_effects"].items()):
+        if effect.pop("fresh", False):
+            continue
+
         effect_type = effect.get("type", "")
         turns = int(effect.get("turns", 0))
 
         if effect_type == "dot":
             damage = int(effect.get("damage", 0))
-
             if damage > 0:
                 mob["hp"] -= damage
                 total_damage += damage
@@ -614,7 +653,6 @@ def process_enemy_turn_start_effects(mob):
 
         turns -= 1
         effect["turns"] = turns
-
         if turns <= 0:
             effects_to_remove.append(key)
 
@@ -623,10 +661,8 @@ def process_enemy_turn_start_effects(mob):
         remove_enemy_effect(mob, key)
         text += f"⌛ Ефект на ворогу завершився: {name}\n"
 
-    return {
-        "text": text,
-        "damage": total_damage
-    }
+    return {"text": text, "damage": total_damage}
+
 
 
 def apply_player_shield_absorb(mob, damage):
@@ -683,17 +719,17 @@ def get_skill_cooldown(mob, skill_key):
 
 
 def set_skill_cooldown(mob, skill_key, cooldown_turns):
+    """Store cooldown so N remains blocked for exactly N subsequent actions."""
     init_skill_cooldowns(mob)
 
     cooldown_turns = int(cooldown_turns or 0)
-
     if cooldown_turns <= 0:
         mob["skill_cooldowns"].pop(skill_key, None)
         return ""
 
-    mob["skill_cooldowns"][skill_key] = cooldown_turns
-
+    mob["skill_cooldowns"][skill_key] = cooldown_turns + 1
     return f"⏳ Навичка пішла на перезарядку: {cooldown_turns} ход.\n"
+
 
 
 def tick_skill_cooldowns_at_player_turn(mob):
