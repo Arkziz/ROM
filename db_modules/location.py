@@ -15,10 +15,10 @@ def get_current_location(user_id):
     row = cursor.fetchone()
 
     if not row:
-        return "start_path"
+        return "city"
 
     if row[0] is None or row[0] == "":
-        return "start_path"
+        return "city"
 
     return row[0]
 

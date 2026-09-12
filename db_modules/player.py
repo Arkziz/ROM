@@ -171,7 +171,7 @@ def create_user(user_id):
         0.0,
         0,
         DEFAULT_BAG_SLOTS,  # ROM 17.8.1 BASE BAG CAPACITY 60
-        "start_path",
+        "city",  # ROM 18.22.1 new characters start in the City node
         10,
         10,
         10,
