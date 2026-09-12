@@ -2163,11 +2163,17 @@ def register_combat_handlers(bot):
             attack_profile["attack_type"]
         )
 
-        player_hit_result = roll_player_normal_attack_hit(
-            player_dex=dex_,
-            mob_dex=mob.get("dex", 0),
-        )
-        player_attack_hit = bool(player_hit_result["hit"])
+        normal_attack_uses_hit_roll = attack_profile["attack_type"] == "physical"
+
+        if normal_attack_uses_hit_roll:
+            player_hit_result = roll_player_normal_attack_hit(
+                player_dex=dex_,
+                mob_dex=mob.get("dex", 0),
+            )
+            player_attack_hit = bool(player_hit_result["hit"])
+        else:
+            player_hit_result = None
+            player_attack_hit = True
 
         if player_attack_hit:
             player_attack_result = calculate_player_attack(
