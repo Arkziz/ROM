@@ -227,6 +227,7 @@ from systems.combat_system import (
 from systems.reward_system import process_victory_reward
 from systems.pve_auto_escape_system import begin_pve_encounter, claim_pve_terminal, STALE_COMBAT_TEXT
 from systems.potion_system import use_potion_from_inventory
+from systems.combat_system import roll_player_normal_attack_hit
 
 
 # ==============================
@@ -2162,21 +2163,31 @@ def register_combat_handlers(bot):
             attack_profile["attack_type"]
         )
 
-        player_attack_result = calculate_player_attack(
-            player_stat_attack=attack_profile["stat_attack"],
-            mob_def=mob_def_for_player_attack,
-            dex=dex_,
-            wis=wis_,
-            level=lvl,
-            attack_type=attack_profile["attack_type"],
-            weapon_min_damage=attack_profile["weapon_min_damage"],
-            weapon_max_damage=attack_profile["weapon_max_damage"],
-            weapon_subtype=attack_profile.get("weapon_subtype", ""),
+        player_hit_result = roll_player_normal_attack_hit(
+            player_dex=dex_,
+            mob_dex=mob.get("dex", 0),
         )
+        player_attack_hit = bool(player_hit_result["hit"])
 
-        dmg = player_attack_result["damage"]
-        is_player_crit = player_attack_result["is_crit"]
-        weapon_damage = player_attack_result.get("weapon_damage", 0)
+        if player_attack_hit:
+            player_attack_result = calculate_player_attack(
+                player_stat_attack=attack_profile["stat_attack"],
+                mob_def=mob_def_for_player_attack,
+                dex=dex_,
+                wis=wis_,
+                level=lvl,
+                attack_type=attack_profile["attack_type"],
+                weapon_min_damage=attack_profile["weapon_min_damage"],
+                weapon_max_damage=attack_profile["weapon_max_damage"],
+                weapon_subtype=attack_profile.get("weapon_subtype", ""),
+            )
+            dmg = player_attack_result["damage"]
+            is_player_crit = player_attack_result["is_crit"]
+            weapon_damage = player_attack_result.get("weapon_damage", 0)
+        else:
+            dmg = 0
+            is_player_crit = False
+            weapon_damage = 0
 
         mob["hp"] -= dmg
 
@@ -2326,7 +2337,9 @@ def register_combat_handlers(bot):
         if cooldown_start_text or player_effects_text or resource_start_text or resource_attack_text or enemy_effect_text or resource_damage_text:
             text += "\n"
 
-        if is_player_crit:
+        if not player_attack_hit:
+            text += f"💨 ПРОМАХ! {character_name} не влучив у {mob['name']}"
+        elif is_player_crit:
             text += f"💥 КРИТ! {character_name} завдав {mob['name']} {dmg} шкоди"
         else:
             text += f"🗡️ {character_name} завдав {mob['name']} {dmg} шкоди"

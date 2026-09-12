@@ -24,6 +24,32 @@ ELITE_GOLD_MULTIPLIER = 3.0
 # ✅ CRIT / DODGE HELPERS
 # ==============================
 
+def calculate_player_hit_chance(player_dex, mob_dex):
+    """Return the approved PvE normal-attack hit chance in percent."""
+    try:
+        player_dex = float(player_dex or 0)
+    except (TypeError, ValueError):
+        player_dex = 0.0
+    try:
+        mob_dex = float(mob_dex or 0)
+    except (TypeError, ValueError):
+        mob_dex = 0.0
+
+    chance = 95.0 + ((player_dex - mob_dex) * 0.5)
+    return max(50.0, min(99.0, chance))
+
+
+def roll_player_normal_attack_hit(player_dex, mob_dex, rng=None):
+    """Roll PvE normal-attack hit before crit and damage calculations."""
+    chance = calculate_player_hit_chance(player_dex, mob_dex)
+    roller = rng if rng is not None else random
+    roll = int(roller.randint(1, 100))
+    return {
+        "hit": roll <= chance,
+        "chance": chance,
+        "roll": roll,
+    }
+
 def get_physical_crit_chance(dex, level=None):
     return calculate_physical_crit_chance(dex)
 
