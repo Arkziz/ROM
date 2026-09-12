@@ -1724,11 +1724,30 @@ def set_player_trade_gold_offer(trade_id, owner_user_id, gold_amount, *, now=Non
 # ROM 12.6.1 PLAYER TRADE OFFER EDITOR UX
 
 def _trade_offer_is_equipment_snapshot(snapshot):
+    """Classify equipment without allowing stack-category durability defaults to win.
+
+    Some inventory rows expose durability/max_durability defaults even for
+    runes, materials, potions and consumables. Their canonical item category
+    must take precedence over those compatibility fields.
+    """
     snapshot = snapshot or {}
     category = str(snapshot.get("category") or "").strip().lower()
+    stack_categories = {
+        "rune", "runes", "stat_rune",
+        "potion", "potions", "heal_potion", "mana_potion",
+        "material", "materials", "special_material", "refine_material",
+        "consumable", "consumables",
+    }
+    if category in stack_categories:
+        return False
     if category in ("equipment", "weapon", "armor", "jewelry"):
         return True
-    return snapshot.get("durability") is not None or snapshot.get("max_durability") is not None
+    if str(snapshot.get("slot_key") or "").strip():
+        return True
+    return (
+        snapshot.get("durability") is not None
+        or snapshot.get("max_durability") is not None
+    )
 
 
 def get_trade_offer_entry(trade_id, owner_user_id, inventory_id, *, db_path=None):
@@ -2222,17 +2241,25 @@ PLAYER_TRADE_ITEM_CATEGORIES = ("equipment", "potion", "material", "rune", "cons
 
 
 def _player_trade_item_category_12_6_4(item):
-    snapshot = (item or {}).get("snapshot") or {}
-    if item.get("is_equipment") or _trade_offer_is_equipment_snapshot(snapshot):
-        return "equipment"
+    """Return one exclusive trade UI category from canonical snapshot data."""
+    item = item or {}
+    snapshot = item.get("snapshot") or {}
     category = str(snapshot.get("category") or "").strip().lower()
     item_id = int(snapshot.get("item_id") or 0)
+
+    # Explicit stack domains must win even when inventory compatibility fields
+    # contain durability defaults.
     if 701 <= item_id <= 725 or category in ("rune", "runes", "stat_rune"):
         return "rune"
-    if item_id == 503 or category == "consumable":
-        return "consumable"
     if category in ("potion", "potions", "heal_potion", "mana_potion"):
         return "potion"
+    if item_id == 503 or category in ("consumable", "consumables"):
+        return "consumable"
+    if category in ("material", "materials", "special_material", "refine_material"):
+        return "material"
+
+    if item.get("is_equipment") or _trade_offer_is_equipment_snapshot(snapshot):
+        return "equipment"
     return "material"
 
 
