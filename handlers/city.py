@@ -1079,6 +1079,15 @@ def register_city_handlers(bot):
     @bot.message_handler(func=lambda m: m.text == "👀 Роззирнутися")
     def look_around(message):
         user_id = message.from_user.id
+        from systems.location_context_system import get_location_context_kind
+
+        if get_location_context_kind(user_id) == "city":
+            bot.send_message(
+                message.chat.id,
+                build_city_text(user_id),
+                reply_markup=city_kb(),
+            )
+            return
 
         bot.send_message(
             message.chat.id,

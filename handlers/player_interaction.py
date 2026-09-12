@@ -7,6 +7,11 @@ from __future__ import annotations
 
 from telebot import types
 
+from systems.location_context_system import (
+    get_location_context_kb,
+    get_location_context_return_text,
+)
+
 from systems.player_interaction_system import (
     create_player_interaction_request,
     respond_to_player_interaction_request,
@@ -998,7 +1003,7 @@ def _trade_register_amount_input_12_6_3(bot):
                 bot.send_message(
                     m.chat.id,
                     "ℹ️ Активного обміну вже немає.",
-                    reply_markup=main_kb(),
+                    reply_markup=get_location_context_kb(uid),
                 )
             return
         if datetime.now().timestamp()-float(state.get("created_at") or 0)>TRADE_AMOUNT_INPUT_TTL_SECONDS_12_6_3:
@@ -1641,11 +1646,20 @@ def _register_trade_navigation_and_categories_12_6_4(bot):
         globals().get("TRADE_AMOUNT_INPUT_STATE_12_6_3", {}).pop(int(call.from_user.id), None)
         own="❌ Обмін скасовано.\n\n✅ Персонаж знову доступний для інших дій."
         _safe_edit_message_text(bot, own, call.message.chat.id, call.message.message_id)
-        bot.send_message(call.message.chat.id, "Повернення до основного меню.", reply_markup=main_kb())
+        bot.send_message(
+            call.message.chat.id,
+            get_location_context_return_text(int(call.from_user.id)),
+            reply_markup=get_location_context_kb(int(call.from_user.id)),
+        )
         other=(int(result["recipient_user_id"]) if int(call.from_user.id)==int(result["initiator_user_id"]) else int(result["initiator_user_id"]))
         globals().get("TRADE_AMOUNT_INPUT_STATE_12_6_3", {}).pop(other, None)
         try:
-            bot.send_message(other, "❌ Інший гравець скасував обмін.\n\n✅ Персонаж знову доступний для інших дій.", reply_markup=main_kb())
+            bot.send_message(
+                other,
+                "❌ Інший гравець скасував обмін.\n\n"
+                "✅ Персонаж знову доступний для інших дій.",
+                reply_markup=get_location_context_kb(other),
+            )
         except Exception:
             pass
 
@@ -1923,7 +1937,7 @@ def _register_trade_confirmation_handlers_12_7_0(bot):
                 int(result.get("recipient_user_id") or call.from_user.id),
             ):
                 bot.send_message(
-                    user_id, text, parse_mode="HTML", reply_markup=main_kb(),
+                    user_id, text, parse_mode="HTML", reply_markup=get_location_context_kb(user_id),
                 )
         except Exception:
             pass

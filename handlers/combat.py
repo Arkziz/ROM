@@ -1952,7 +1952,18 @@ def register_combat_handlers(bot):
         if not _combat_message_allowed_11_3_1(message):
             return
 
+        current_location = get_current_location(user_id)
+        if current_location == "city":
+            from keyboards import city_kb
+            bot.send_message(
+                message.chat.id,
+                "🏙️ У Місті не можна полювати. Відкрий 🗺️ Мапу та вирушай у доступну локацію.",
+                reply_markup=city_kb(),
+            )
+            return
+
         stats = get_player_stats(user_id)
+
 
         if not stats:
             bot.send_message(
