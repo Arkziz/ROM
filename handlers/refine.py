@@ -316,6 +316,13 @@ def build_refine_attempt_result_text(user_id, inventory_id, before_info, after_i
             f"ℹ️ {result.get('message', 'Спроба неможлива.')}"
         )
 
+    if result.get("idempotent_replay"):
+        return (
+            "ℹ️ Цю спробу заточки вже оброблено.\n\n"
+            f"📦 {after_name}\n"
+            "Матеріали повторно не списувалися."
+        )
+
     lines = []
 
     if use_success_rune:
@@ -393,6 +400,26 @@ def open_refine_menu(bot, chat_id, user_id, message_id=None, page=0):
 # HANDLERS
 # ==============================
 
+def _safe_answer_refine_callback(bot, call, text=None, show_alert=False):
+    """Acknowledge refine callbacks while tolerating only expired Telegram queries."""
+    try:
+        bot.answer_callback_query(call.id, text or "", show_alert=show_alert)
+        return True
+    except Exception as error:
+        message = str(error).lower()
+        if "query is too old" in message or "query id is invalid" in message:
+            return False
+        raise
+
+
+def build_refine_idempotency_key(user_id, callback_id):
+    """One Telegram callback delivery maps to exactly one refine attempt."""
+    callback_id = str(callback_id or "").strip()
+    if not callback_id:
+        raise ValueError("refine callback id is required")
+    return f"telegram:refine:{int(user_id)}:{callback_id}"
+
+
 def register_refine_handlers(bot):
 
     @bot.message_handler(commands=["refine", "zatocka", "refine_test"])
@@ -413,7 +440,7 @@ def register_refine_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: call.data == "refine_menu")
     def refine_menu_callback(call):
-        bot.answer_callback_query(call.id)
+        _safe_answer_refine_callback(bot, call)
         open_refine_menu(
             bot=bot,
             chat_id=call.message.chat.id,
@@ -424,7 +451,7 @@ def register_refine_handlers(bot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith("refine_page:"))
     def refine_page_callback(call):
         page = int(call.data.split(":")[1])
-        bot.answer_callback_query(call.id)
+        _safe_answer_refine_callback(bot, call)
         open_refine_menu(
             bot=bot,
             chat_id=call.message.chat.id,
@@ -439,7 +466,7 @@ def register_refine_handlers(bot):
         inventory_id = int(parts[1])
         page = int(parts[2]) if len(parts) > 2 else 0
 
-        bot.answer_callback_query(call.id)
+        _safe_answer_refine_callback(bot, call)
         _send_or_edit(
             bot=bot,
             chat_id=call.message.chat.id,
@@ -458,37 +485,37 @@ def register_refine_handlers(bot):
         check = can_refine_item(info)
         resources = get_refine_resource_counts(call.from_user.id)
         if not info or int(info.get("user_id", 0)) != int(call.from_user.id) or not check.get("success"):
-            bot.answer_callback_query(call.id, "Предмет більше недоступний.", show_alert=True); return
+            _safe_answer_refine_callback(bot, call, "Предмет більше недоступний.", show_alert=True); return
         if resources.get("stone", 0) <= 0 or (use_success_rune and resources.get("success_rune", 0) <= 0):
-            bot.answer_callback_query(call.id, "Недостатньо матеріалів.", show_alert=True); return
+            _safe_answer_refine_callback(bot, call, "Недостатньо матеріалів.", show_alert=True); return
         chance = 100 if use_success_rune else get_refine_success_chance(check["refine_kind"], check["current_level"])
         kb = types.InlineKeyboardMarkup(row_width=1)
         kb.add(types.InlineKeyboardButton("✅ Підтвердити заточку", callback_data=f"refine_exec:{inventory_id}:{1 if use_success_rune else 0}:{page}"))
         kb.add(types.InlineKeyboardButton("❌ Скасувати", callback_data=f"refine_item:{inventory_id}:{page}"))
         rune_text = "\n💎 Руна Успіху: буде використана" if use_success_rune else ""
         _send_or_edit(bot=bot, chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"⚒️ Підтвердження заточки\n\n{info.get('name','Предмет')} [+{check['current_level']}]\n🎯 Шанс успіху: {chance}%\n🪨 Камінь Посилення: ×1{rune_text}\n\nПідтвердити операцію?", reply_markup=kb)
-        bot.answer_callback_query(call.id)
+        _safe_answer_refine_callback(bot, call)
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("refine_exec:"))
     def refine_exec_callback(call):
         parts = call.data.split(":")
         inventory_id = int(parts[1]); use_success_rune = parts[2] == "1"; page = int(parts[3]) if len(parts) > 3 else 0
         before_info = get_inventory_item_refine_info(inventory_id)
-        key = f"telegram:refine:{call.from_user.id}:{call.message.chat.id}:{call.message.message_id}:{inventory_id}:{1 if use_success_rune else 0}"
+        key = build_refine_idempotency_key(call.from_user.id, call.id)
         result = perform_refine_attempt(call.from_user.id, inventory_id, use_success_rune, idempotency_key=key)
         after_info = get_inventory_item_refine_info(inventory_id)
-        bot.answer_callback_query(call.id, "Готово" if result.get("success") else "Заточку скасовано")
+        _safe_answer_refine_callback(bot, call, "Готово" if result.get("success") else "Заточку скасовано")
         result_text = build_refine_attempt_result_text(call.from_user.id, inventory_id, before_info, after_info, result, use_success_rune)
         item_text = build_refine_item_text(call.from_user.id, inventory_id)
         _send_or_edit(bot=bot, chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{result_text}\n\n{item_text}", reply_markup=build_refine_item_kb(call.from_user.id, inventory_id, page))
 
     @bot.callback_query_handler(func=lambda call: call.data == "refine_noop")
     def refine_noop_callback(call):
-        bot.answer_callback_query(call.id, "Недостатньо матеріалів.")
+        _safe_answer_refine_callback(bot, call, "Недостатньо матеріалів.")
 
     @bot.callback_query_handler(func=lambda call: call.data == "refine_close")
     def refine_close_callback(call):
-        bot.answer_callback_query(call.id)
+        _safe_answer_refine_callback(bot, call)
         try:
             bot.delete_message(call.message.chat.id, call.message.message_id)
         except Exception:
