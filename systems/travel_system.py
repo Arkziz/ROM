@@ -127,3 +127,42 @@ def recover_due_travels(*,now=None,limit=100,db_path=None):
     results=[]
     for travel in get_due_active_travels(now=now,limit=limit,db_path=db_path): results.append(complete_travel(travel['id'],now=now,db_path=db_path))
     return {'success':True,'processed':len(results),'results':results}
+
+
+# ROM 18.22.2 arrival notification worker
+import threading
+import time
+_TRAVEL_WORKER_STARTED=False
+
+def _arrival_keyboard(node_id):
+    from keyboards import city_kb, main_kb
+    return city_kb() if str(node_id)==CITY_NODE else main_kb()
+
+def _send_arrival(bot,result):
+    try:
+        from handlers.map import build_map_inline_kb
+        text=f"✅ Подорож завершено\n\nТи прибув у:\n{WORLD_NODES[result['to_node']]['name']}"
+        bot.send_message(int(result['user_id']),text,reply_markup=_arrival_keyboard(result['to_node']))
+        bot.send_message(int(result['user_id']),"🗺️ Доступні напрямки:",reply_markup=build_map_inline_kb(int(result['user_id'])))
+        return True
+    except Exception:
+        return False
+
+def recover_travels_after_restart(bot=None,now=None):
+    recovered=recover_due_travels(now=now)
+    notified=[]
+    if bot is not None:
+        for result in recovered['results']:
+            if result.get('success') and _send_arrival(bot,result): notified.append(result['travel_id'])
+    return {'success':True,'processed':recovered['processed'],'notified_travel_ids':notified,'results':recovered['results']}
+
+def start_travel_worker(bot,interval_seconds=1.0):
+    global _TRAVEL_WORKER_STARTED
+    if _TRAVEL_WORKER_STARTED:return False
+    _TRAVEL_WORKER_STARTED=True
+    def worker():
+        while True:
+            try: recover_travels_after_restart(bot)
+            except Exception: pass
+            time.sleep(max(0.5,float(interval_seconds)))
+    threading.Thread(target=worker,name='location-travel-worker',daemon=True).start();return True

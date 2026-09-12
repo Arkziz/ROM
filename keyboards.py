@@ -13,10 +13,7 @@ def main_kb():
 
 def map_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    # ROM 12.2.1 MAP REFRESH AND KEYBOARD HOTFIX
-    kb.row(types.KeyboardButton("🌿 Початок Шляху"), types.KeyboardButton("🌲 Темний Бір"))
-    kb.row(types.KeyboardButton("👥 Гравці локації"), types.KeyboardButton("🏙️ Місто"))
-    kb.row(types.KeyboardButton("🔙 Назад"))
+    kb.row(types.KeyboardButton("🔽 Згорнути мапу"))
     return kb
 
 

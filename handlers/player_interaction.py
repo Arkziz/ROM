@@ -476,7 +476,8 @@ def _register_player_interaction_base_handlers_12_6_8(bot):
     @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")) == "pi:back:map")
     def back_to_map(call):
         _safe_answer(bot, call)
-        bot.delete_message(call.message.chat.id, call.message.message_id)
+        from handlers.map import render_map_message
+        render_map_message(bot, call.message.chat.id, int(call.from_user.id), call.message.message_id)
 
 # ROM 12.2.1 MAP REFRESH AND KEYBOARD HOTFIX
 def _safe_edit_message_text(bot, *args, **kwargs):

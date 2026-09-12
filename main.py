@@ -240,6 +240,10 @@ from systems.pve_auto_escape_system import recover_pve_encounters_after_restart,
 _PVE_AUTO_ESCAPE_RESTART_RECOVERY = recover_pve_encounters_after_restart(bot)
 PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', f"✅ PVE AUTO ESCAPE RECOVERY: {_PVE_AUTO_ESCAPE_RESTART_RECOVERY}")
 start_pve_auto_escape_worker(bot)
+from systems.travel_system import recover_travels_after_restart, start_travel_worker
+_TRAVEL_RESTART_RECOVERY = recover_travels_after_restart(bot)
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', f'✅ LOCATION TRAVEL RECOVERY: {_TRAVEL_RESTART_RECOVERY}')
+start_travel_worker(bot)
 
 
 # ==============================
