@@ -6,7 +6,7 @@ from data.location_graph import CITY_NODE, TRAVEL_SECONDS, WORLD_NODES, get_adja
 from data.mobs import get_mobs_for_location
 from db import get_current_location, get_player_stats
 from keyboards import map_kb, main_kb, city_kb
-from systems.travel_system import get_active_travel, get_travel, start_travel, cancel_travel
+from systems.travel_system import get_active_travel, get_travel, start_travel, cancel_travel, is_user_travelling
 
 MAP_COLLAPSE_BUTTON = "🔽 Згорнути мапу"
 
@@ -47,6 +47,7 @@ def build_world_map_text(user_id):
 def build_map_inline_kb(user_id):
     kb=types.InlineKeyboardMarkup(row_width=1); active=get_active_travel(user_id)
     if active:
+        kb.add(types.InlineKeyboardButton("🔄 Оновити",callback_data=f"map:refresh:{active['id']}:{active['revision']}"))
         kb.add(types.InlineKeyboardButton("❌ Скасувати подорож",callback_data=f"map:cancel:{active['id']}:{active['revision']}"));return kb
     current=get_current_location(user_id) or CITY_NODE; level=get_player_level_from_stats(user_id)
     for target in get_adjacent_nodes(current):
@@ -60,7 +61,7 @@ def build_map_inline_kb(user_id):
             else: label=f"🚶 Вирушити у {node['name'].split(' ',1)[-1]}"
             data=f"map:preview:{target}"
         kb.add(types.InlineKeyboardButton(label,callback_data=data))
-    if current!=CITY_NODE: kb.add(types.InlineKeyboardButton("👥 Гравці локації",callback_data="map:players"))
+    kb.add(types.InlineKeyboardButton("👥 Гравці локації",callback_data="map:players"))
     return kb
 
 def build_travel_preview_text(user_id,target):
@@ -82,6 +83,17 @@ def render_map_message(bot,chat_id,user_id,message_id=None):
 def _failure_message(reason):
     return {"location_locked":"🔒 Локація ще недоступна за рівнем.","not_adjacent":"⚠️ Цей напрямок більше не є сусіднім.","already_travelling":"🚶 Подорож уже триває.","unknown_destination":"⚠️ Невідомий напрямок.","invalid_current_node":"⚠️ Поточне місцезнаходження некоректне.","player_busy":"⚠️ Зараз персонаж зайнятий іншою дією."}.get(reason,"⚠️ Не вдалося розпочати подорож. Відкрий мапу повторно.")
 
+CITY_ACTION_BUTTONS = {"🛒 Торговий ряд","🏛️ Торговий дім","⚒️ Ремісничий квартал","📜 Гільдія Найманців","🏰 Зала Гільдій","🏛️ Ратуша","🍺 Таверна","⚒️ Коваль","🧪 Алхімік","💠 Рунний Майстер"}
+
+def _travel_start_busy(bot,user_id):
+    if getattr(bot,"user_data",{}).get(int(user_id)) is not None: return {"type":"pve"}
+    try:
+        from systems.player_interaction_system import get_player_activity_session
+        session=get_player_activity_session(int(user_id))
+        if session:return {"type":session.get("activity_type") or "interaction"}
+    except Exception:return {"type":"interaction_check_failed"}
+    return None
+
 def register_map_handlers(bot):
     @bot.message_handler(func=lambda m:m.text in ("🗺️ Мапа","🔙 Мапа"))
     def show_map(message):
@@ -94,11 +106,24 @@ def register_map_handlers(bot):
         text="🔽 Мапу згорнуто."
         bot.send_message(message.chat.id,text,reply_markup=kb)
 
+    @bot.message_handler(func=lambda m:str(getattr(m,'text','') or '') in CITY_ACTION_BUTTONS and is_user_travelling(int(m.from_user.id)))
+    def block_city_actions_during_travel(message):
+        bot.send_message(message.chat.id,"🚶 Міські дії недоступні під час подорожі. Відкрий мапу, щоб переглянути статус або скасувати маршрут.")
+
     @bot.callback_query_handler(func=lambda c:str(getattr(c,'data','')).startswith('map:'))
     def map_callbacks(call):
         data=str(call.data);parts=data.split(':');action=parts[1] if len(parts)>1 else ''
         uid=int(call.from_user.id);chat=call.message.chat.id;mid=call.message.message_id
         if action=='open': _safe_answer(bot,call);render_map_message(bot,chat,uid,mid);return
+        if action=='refresh':
+            try: travel_id=int(parts[2]);revision=int(parts[3])
+            except Exception: _safe_answer(bot,call,"Некоректна дія.",True);return
+            active=get_active_travel(uid)
+            if not active or travel_id != int(active["id"]) or revision != int(active["revision"]):
+                old=get_travel(travel_id)
+                _safe_answer(bot,call,"Подорож уже завершена або скасована.",True)
+                render_map_message(bot,chat,uid,mid);return
+            _safe_answer(bot,call);render_map_message(bot,chat,uid,mid);return
         if action=='players':
             _safe_answer(bot,call)
             if get_active_travel(uid): _safe_answer(bot,call,"Під час подорожі список недоступний.",True);return
@@ -114,7 +139,7 @@ def register_map_handlers(bot):
             if target not in get_adjacent_nodes(get_current_location(uid) or CITY_NODE): render_map_message(bot,chat,uid,mid);return
             bot.edit_message_text(build_travel_preview_text(uid,target),chat_id=chat,message_id=mid,reply_markup=build_travel_preview_kb(target));return
         if action=='start':
-            target=parts[2] if len(parts)>2 else '';result=start_travel(uid,target)
+            target=parts[2] if len(parts)>2 else '';result=start_travel(uid,target,busy_checker=lambda user_id:_travel_start_busy(bot,user_id))
             if not result.get('success'): _safe_answer(bot,call,_failure_message(result.get('reason')),True);render_map_message(bot,chat,uid,mid);return
             _safe_answer(bot,call,"Подорож розпочато");render_map_message(bot,chat,uid,mid);return
         if action=='cancel':

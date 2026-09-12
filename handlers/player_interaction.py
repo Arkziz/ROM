@@ -267,6 +267,9 @@ def _register_player_interaction_base_handlers_12_6_8(bot):
     # ROM 12.3.1 TRADE REQUEST SENDER FEEDBACK HOTFIX
     @bot.callback_query_handler(func=_is_trade_request_callback)
     def trade_request(call):
+        from systems.travel_system import is_user_travelling
+        if is_user_travelling(int(call.from_user.id)):
+            _safe_answer(bot,call,"Обмін недоступний під час подорожі.",True);return
         # Answer the callback once to stop Telegram's loading spinner. Final
         # success/failure feedback is sent as a normal visible chat message.
         _safe_answer(bot, call)
@@ -309,6 +312,9 @@ def _register_player_interaction_base_handlers_12_6_8(bot):
 
     @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith(("pi:req:accept:", "pi:req:decline:")))
     def trade_request_response(call):
+        from systems.travel_system import is_user_travelling
+        if is_user_travelling(int(call.from_user.id)):
+            _safe_answer(bot,call,"Обмін недоступний під час подорожі.",True);return
         parts = str(call.data).split(":")
         if len(parts) != 5:
             return

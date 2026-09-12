@@ -54,6 +54,9 @@ def register_pvp_interaction_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith("pi:duel:"))
     def pvp_duel_request(call):
+        from systems.travel_system import is_user_travelling
+        if is_user_travelling(int(call.from_user.id)):
+            _answer(bot,call,'Дуель недоступна під час подорожі.',True);return
         _answer(bot, call)
         try:
             target_id = int(str(call.data).rsplit(":", 1)[1])
@@ -85,6 +88,9 @@ def register_pvp_interaction_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith(("pvp:req:accept:", "pvp:req:decline:")))
     def pvp_duel_response(call):
+        from systems.travel_system import is_user_travelling
+        if is_user_travelling(int(call.from_user.id)):
+            _answer(bot,call,'Дуель недоступна під час подорожі.',True);return
         parts = str(call.data).split(":")
         if len(parts) != 5:
             return

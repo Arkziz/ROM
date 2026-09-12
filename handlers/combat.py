@@ -1936,6 +1936,10 @@ def register_combat_handlers(bot):
     @bot.message_handler(func=lambda m: m.text == "🔎 Полювання")
     def hunt(message):
         user_id = message.from_user.id
+        from systems.travel_system import is_user_travelling
+        if is_user_travelling(user_id):
+            bot.send_message(message.chat.id,"🚶 Полювання недоступне під час подорожі. Відкрий мапу, щоб переглянути статус або скасувати маршрут.",reply_markup=map_kb())
+            return
         if not _combat_message_allowed_11_3_1(message):
             return
 

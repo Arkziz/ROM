@@ -166,3 +166,7 @@ def start_travel_worker(bot,interval_seconds=1.0):
             except Exception: pass
             time.sleep(max(0.5,float(interval_seconds)))
     threading.Thread(target=worker,name='location-travel-worker',daemon=True).start();return True
+
+
+def is_user_travelling(user_id, *, db_path=None):
+    return get_active_travel(int(user_id),db_path=db_path) is not None
