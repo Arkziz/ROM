@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-09-12 00:15:39 +03:00
+Created: 2026-09-13 03:18:15 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9444
-Scanned files: 10690
-Included files: 196
-Excluded files: 10494
-Included source size: 2,57 MB
+Scanned files: 10989
+Included files: 200
+Excluded files: 10789
+Included source size: 2,60 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 10488
+- excluded directory: 10783
 - excluded file name or pattern: 6
 - unsupported file type: 0
 
@@ -44,6 +44,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - data\equipment_profiles.py
 - data\equipment_stat_policy.py
 - data\guild_resource_policy.py
+- data\location_graph.py
 - data\locations.py
 - data\mobs.py
 - data\player_combat_chances.py
@@ -117,6 +118,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - migrations\046_sphere_consumable_presentation.py
 - migrations\047_sphere_stack_and_category_fix.py
 - migrations\048_rebirth_sphere_stack_limit.py
+- migrations\049_persistent_location_travel.py
 - migrations\README.md
 - migrations\runner.py
 - requirements.txt
@@ -143,6 +145,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\inactivity_reminder_system.py
 - systems\item_id_allocator_system.py
 - systems\level_up_reward_system.py
+- systems\location_context_system.py
 - systems\name_rune_system.py
 - systems\notifications.py
 - systems\player_interaction_system.py
@@ -226,6 +229,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\stat_system.py
 - systems\telegram_rate_limit.py
 - systems\timed_exp_bonus_system.py
+- systems\travel_system.py
 - utils.py
 
 ==================== FILE CONTENTS ===================
@@ -2045,6 +2049,51 @@ GUILD_RESOURCE_FUTURE_INVARIANTS = (
     "failed_activation_rolls_back_debit_and_state",
     "restart_cannot_duplicate_activation",
 )
+
+============================================================
+FILE: data\location_graph.py
+SIZE: 1593 bytes
+LAST WRITE: 2026-09-13 01:05:50
+============================================================
+
+"""Canonical world-node graph for travel between locations."""
+CITY_NODE = "city"
+TRAVEL_SECONDS = 60
+
+WORLD_NODES = {
+    "city": {"id": "city", "name": "🏙️ Місто", "kind": "city", "huntable": False},
+    "start_path": {"id": "start_path", "name": "🌿 Початок Шляху", "kind": "location", "huntable": True},
+    "dark_forest": {"id": "dark_forest", "name": "🌲 Темний Бір", "kind": "location", "huntable": True},
+}
+
+LOCATION_GRAPH = {
+    "city": ("start_path",),
+    "start_path": ("city", "dark_forest"),
+    "dark_forest": ("start_path",),
+}
+
+def get_world_node(node_id):
+    return WORLD_NODES.get(str(node_id))
+
+def get_adjacent_nodes(node_id):
+    return tuple(LOCATION_GRAPH.get(str(node_id), ()))
+
+def are_adjacent(from_node, to_node):
+    return str(to_node) in get_adjacent_nodes(from_node)
+
+def validate_location_graph():
+    errors=[]
+    for node, neighbors in LOCATION_GRAPH.items():
+        if node not in WORLD_NODES: errors.append(f"unknown graph node: {node}")
+        if len(neighbors) != len(set(neighbors)): errors.append(f"duplicate edge from: {node}")
+        for neighbor in neighbors:
+            if neighbor not in WORLD_NODES: errors.append(f"unknown neighbor: {neighbor}")
+            elif node not in LOCATION_GRAPH.get(neighbor, ()): errors.append(f"asymmetric edge: {node}->{neighbor}")
+    if set(WORLD_NODES) != set(LOCATION_GRAPH): errors.append("WORLD_NODES and LOCATION_GRAPH keys differ")
+    if errors: raise ValueError("; ".join(errors))
+    return True
+
+validate_location_graph()
 
 ============================================================
 FILE: data\locations.py
@@ -4185,8 +4234,8 @@ def get_character_profile_summary(user_id):
 
 ============================================================
 FILE: db_modules\connection.py
-SIZE: 7100 bytes
-LAST WRITE: 2026-08-31 23:16:20
+SIZE: 7088 bytes
+LAST WRITE: 2026-09-13 01:05:50
 ============================================================
 
 # ROM 17.19.1 MANA POTION PRICE BALANCE
@@ -4321,7 +4370,7 @@ def init_db():
         ("users", "gold", "REAL DEFAULT 0"),
         ("users", "kills", "INTEGER DEFAULT 0"),
         ("users", "bag_slots", "INTEGER DEFAULT 60"),
-        ("users", "current_location", "TEXT DEFAULT 'start_path'"),
+        ("users", "current_location", "TEXT DEFAULT 'city'"),
 
         ("inventory", "quantity", "INTEGER DEFAULT 1"),
         ("inventory", "durability", "INTEGER DEFAULT NULL"),
@@ -4365,7 +4414,7 @@ def init_db():
 
     cursor.execute("""
     UPDATE users
-    SET current_location = 'start_path'
+    SET current_location = 'city'
     WHERE current_location IS NULL OR current_location = ''
     """)
 
@@ -4594,8 +4643,8 @@ __all__ = ['get_daily_quest_status']
 
 ============================================================
 FILE: db_modules\dev_compat.py
-SIZE: 51590 bytes
-LAST WRITE: 2026-09-01 22:46:25
+SIZE: 51624 bytes
+LAST WRITE: 2026-09-13 01:05:50
 ============================================================
 
 # ROM 17.17.1.5 WARRIOR SMALL SHIELD
@@ -5019,7 +5068,7 @@ def reset_hero_for_test(user_id):
                     "gold": 0.0,
                     "kills": 0,
                     "bag_slots": max(int(globals().get("DEFAULT_BAG_SLOTS", 60)), int(get_bag_capacity(user_id))),  # ROM 17.32.1 preserve account entitlement
-                    "current_location": "start_path",
+                    "current_location": "city",  # ROM 18.22.1 DEV reset starts in City
                     "str": 10,
                     "dex": 10,
                     "intelligence": 10,
@@ -8700,8 +8749,8 @@ __all__ = ['is_inventory_item_equipped', 'find_equipped_slot_by_inventory_id', '
 
 ============================================================
 FILE: db_modules\location.py
-SIZE: 601 bytes
-LAST WRITE: 2026-08-16 23:10:12
+SIZE: 589 bytes
+LAST WRITE: 2026-09-13 01:05:50
 ============================================================
 
 """
@@ -8721,10 +8770,10 @@ def get_current_location(user_id):
     row = cursor.fetchone()
 
     if not row:
-        return "start_path"
+        return "city"
 
     if row[0] is None or row[0] == "":
-        return "start_path"
+        return "city"
 
     return row[0]
 
@@ -8901,8 +8950,8 @@ def run_db_startup_maintenance():
 
 ============================================================
 FILE: db_modules\player.py
-SIZE: 7265 bytes
-LAST WRITE: 2026-09-09 02:56:00
+SIZE: 7604 bytes
+LAST WRITE: 2026-09-13 01:05:50
 ============================================================
 
 # ROM 17.18.2.2 BOW CROSSBOW DAMAGE DIFFERENTIATION
@@ -9078,7 +9127,7 @@ def create_user(user_id):
         0.0,
         0,
         DEFAULT_BAG_SLOTS,  # ROM 17.8.1 BASE BAG CAPACITY 60
-        "start_path",
+        "city",  # ROM 18.22.1 new characters start in the City node
         10,
         10,
         10,
@@ -18492,8 +18541,8 @@ def register_blacksmith_repair_confirmation_handlers(bot):
 
 ============================================================
 FILE: handlers\city.py
-SIZE: 82548 bytes
-LAST WRITE: 2026-09-04 15:07:34
+SIZE: 82871 bytes
+LAST WRITE: 2026-09-13 02:11:10
 ============================================================
 
 # ROM 17.11.2.1 CITY CRAFT TAVERN TEXT CLEANUP
@@ -19577,6 +19626,15 @@ def register_city_handlers(bot):
     @bot.message_handler(func=lambda m: m.text == "👀 Роззирнутися")
     def look_around(message):
         user_id = message.from_user.id
+        from systems.location_context_system import get_location_context_kind
+
+        if get_location_context_kind(user_id) == "city":
+            bot.send_message(
+                message.chat.id,
+                build_city_text(user_id),
+                reply_markup=city_kb(),
+            )
+            return
 
         bot.send_message(
             message.chat.id,
@@ -20783,8 +20841,8 @@ def build_main_menu_text(user_id, show_location_description=False):
 
 ============================================================
 FILE: handlers\combat.py
-SIZE: 123219 bytes
-LAST WRITE: 2026-09-11 23:12:34
+SIZE: 126618 bytes
+LAST WRITE: 2026-09-13 02:11:10
 ============================================================
 
 
@@ -21016,6 +21074,7 @@ from systems.combat_system import (
 from systems.reward_system import process_victory_reward
 from systems.pve_auto_escape_system import begin_pve_encounter, claim_pve_terminal, STALE_COMBAT_TEXT
 from systems.potion_system import use_potion_from_inventory
+from systems.combat_system import roll_player_normal_attack_hit
 
 
 # ==============================
@@ -21183,10 +21242,49 @@ def init_combat_effects(mob):
 
 
 def add_enemy_effect(mob, key, effect):
+    """Add or refresh one canonical enemy effect without damage stacking."""
     init_combat_effects(mob)
 
-    effect["key"] = key
-    mob["enemy_effects"][key] = effect
+    incoming = dict(effect)
+    incoming["key"] = key
+    existing = mob["enemy_effects"].get(key)
+
+    if existing is None:
+        incoming["fresh"] = True
+        mob["enemy_effects"][key] = incoming
+        return "applied"
+
+    old_turns = max(0, int(existing.get("turns", 0) or 0))
+    new_turns = max(0, int(incoming.get("turns", 0) or 0))
+    old_power = max(
+        abs(float(existing.get("damage", 0) or 0)),
+        abs(float(existing.get("heal", 0) or 0)),
+        max((abs(float(value or 0)) for value in existing.get("modifiers", {}).values()), default=0.0),
+    )
+    new_power = max(
+        abs(float(incoming.get("damage", 0) or 0)),
+        abs(float(incoming.get("heal", 0) or 0)),
+        max((abs(float(value or 0)) for value in incoming.get("modifiers", {}).values()), default=0.0),
+    )
+
+    if new_power < old_power:
+        return "kept_stronger"
+
+    if new_power == old_power:
+        if new_turns > old_turns:
+            existing["turns"] = new_turns
+            return "refreshed"
+        return "unchanged"
+
+    preserved_turns = max(old_turns, new_turns)
+    incoming["turns"] = preserved_turns
+    if existing.get("fresh", False):
+        incoming["fresh"] = True
+    else:
+        incoming.pop("fresh", None)
+    mob["enemy_effects"][key] = incoming
+    return "replaced_stronger"
+
 
 
 def add_player_effect(mob, key, effect):
@@ -21377,25 +21475,25 @@ def process_player_turn_start_effects(user_id, mob):
     return text
 
 def process_enemy_turn_start_effects(mob):
+    """Resolve existing enemy effects; newly applied effects start next turn."""
     init_combat_effects(mob)
 
     if not mob["enemy_effects"]:
-        return {
-            "text": "",
-            "damage": 0
-        }
+        return {"text": "", "damage": 0}
 
     text = ""
     total_damage = 0
     effects_to_remove = []
 
     for key, effect in list(mob["enemy_effects"].items()):
+        if effect.pop("fresh", False):
+            continue
+
         effect_type = effect.get("type", "")
         turns = int(effect.get("turns", 0))
 
         if effect_type == "dot":
             damage = int(effect.get("damage", 0))
-
             if damage > 0:
                 mob["hp"] -= damage
                 total_damage += damage
@@ -21403,7 +21501,6 @@ def process_enemy_turn_start_effects(mob):
 
         turns -= 1
         effect["turns"] = turns
-
         if turns <= 0:
             effects_to_remove.append(key)
 
@@ -21412,10 +21509,8 @@ def process_enemy_turn_start_effects(mob):
         remove_enemy_effect(mob, key)
         text += f"⌛ Ефект на ворогу завершився: {name}\n"
 
-    return {
-        "text": text,
-        "damage": total_damage
-    }
+    return {"text": text, "damage": total_damage}
+
 
 
 def apply_player_shield_absorb(mob, damage):
@@ -21472,17 +21567,17 @@ def get_skill_cooldown(mob, skill_key):
 
 
 def set_skill_cooldown(mob, skill_key, cooldown_turns):
+    """Store cooldown so N remains blocked for exactly N subsequent actions."""
     init_skill_cooldowns(mob)
 
     cooldown_turns = int(cooldown_turns or 0)
-
     if cooldown_turns <= 0:
         mob["skill_cooldowns"].pop(skill_key, None)
         return ""
 
-    mob["skill_cooldowns"][skill_key] = cooldown_turns
-
+    mob["skill_cooldowns"][skill_key] = cooldown_turns + 1
     return f"⏳ Навичка пішла на перезарядку: {cooldown_turns} ход.\n"
+
 
 
 def tick_skill_cooldowns_at_player_turn(mob):
@@ -22688,10 +22783,34 @@ def register_combat_handlers(bot):
     @bot.message_handler(func=lambda m: m.text == "🔎 Полювання")
     def hunt(message):
         user_id = message.from_user.id
+        from systems.travel_system import is_user_travelling
+        if is_user_travelling(user_id):
+            from keyboards import map_kb
+            bot.send_message(
+                message.chat.id,
+                (
+                    "🚶 Полювання недоступне під час подорожі.\n\n"
+                    "Відкрий мапу, щоб оновити час у дорозі "
+                    "або скасувати маршрут."
+                ),
+                reply_markup=map_kb(),
+            )
+            return
         if not _combat_message_allowed_11_3_1(message):
             return
 
+        current_location = get_current_location(user_id)
+        if current_location == "city":
+            from keyboards import city_kb
+            bot.send_message(
+                message.chat.id,
+                "🏙️ У Місті не можна полювати. Відкрий 🗺️ Мапу та вирушай у доступну локацію.",
+                reply_markup=city_kb(),
+            )
+            return
+
         stats = get_player_stats(user_id)
+
 
         if not stats:
             bot.send_message(
@@ -22915,21 +23034,37 @@ def register_combat_handlers(bot):
             attack_profile["attack_type"]
         )
 
-        player_attack_result = calculate_player_attack(
-            player_stat_attack=attack_profile["stat_attack"],
-            mob_def=mob_def_for_player_attack,
-            dex=dex_,
-            wis=wis_,
-            level=lvl,
-            attack_type=attack_profile["attack_type"],
-            weapon_min_damage=attack_profile["weapon_min_damage"],
-            weapon_max_damage=attack_profile["weapon_max_damage"],
-            weapon_subtype=attack_profile.get("weapon_subtype", ""),
-        )
+        normal_attack_uses_hit_roll = attack_profile["attack_type"] == "physical"
 
-        dmg = player_attack_result["damage"]
-        is_player_crit = player_attack_result["is_crit"]
-        weapon_damage = player_attack_result.get("weapon_damage", 0)
+        if normal_attack_uses_hit_roll:
+            player_hit_result = roll_player_normal_attack_hit(
+                player_dex=dex_,
+                mob_dex=mob.get("dex", 0),
+            )
+            player_attack_hit = bool(player_hit_result["hit"])
+        else:
+            player_hit_result = None
+            player_attack_hit = True
+
+        if player_attack_hit:
+            player_attack_result = calculate_player_attack(
+                player_stat_attack=attack_profile["stat_attack"],
+                mob_def=mob_def_for_player_attack,
+                dex=dex_,
+                wis=wis_,
+                level=lvl,
+                attack_type=attack_profile["attack_type"],
+                weapon_min_damage=attack_profile["weapon_min_damage"],
+                weapon_max_damage=attack_profile["weapon_max_damage"],
+                weapon_subtype=attack_profile.get("weapon_subtype", ""),
+            )
+            dmg = player_attack_result["damage"]
+            is_player_crit = player_attack_result["is_crit"]
+            weapon_damage = player_attack_result.get("weapon_damage", 0)
+        else:
+            dmg = 0
+            is_player_crit = False
+            weapon_damage = 0
 
         mob["hp"] -= dmg
 
@@ -23079,7 +23214,9 @@ def register_combat_handlers(bot):
         if cooldown_start_text or player_effects_text or resource_start_text or resource_attack_text or enemy_effect_text or resource_damage_text:
             text += "\n"
 
-        if is_player_crit:
+        if not player_attack_hit:
+            text += f"💨 ПРОМАХ! {character_name} не влучив у {mob['name']}"
+        elif is_player_crit:
             text += f"💥 КРИТ! {character_name} завдав {mob['name']} {dmg} шкоди"
         else:
             text += f"🗡️ {character_name} завдав {mob['name']} {dmg} шкоди"
@@ -31241,205 +31378,161 @@ def build_item_details(user_id, inventory_id, back_category="all", page=0):
 
 ============================================================
 FILE: handlers\map.py
-SIZE: 5671 bytes
-LAST WRITE: 2026-07-09 23:38:38
+SIZE: 11289 bytes
+LAST WRITE: 2026-09-13 01:42:51
 ============================================================
 
-from data.locations import (
-    LOCATIONS,
-    LOCATION_ORDER,
-    get_location,
-    is_location_unlocked
-)
-
+from __future__ import annotations
+from datetime import datetime, timezone
+from telebot import types
+from data.locations import LOCATIONS, get_location, is_location_unlocked
+from data.location_graph import CITY_NODE, TRAVEL_SECONDS, WORLD_NODES, get_adjacent_nodes
 from data.mobs import get_mobs_for_location
+from db import get_current_location, get_player_stats
+from keyboards import map_kb, main_kb, city_kb
+from systems.travel_system import get_active_travel, get_travel, start_travel, cancel_travel, is_user_travelling
 
-from db import (
-    get_current_location,
-    set_current_location,
-    get_player_stats
-)
-
-from keyboards import map_kb, main_kb
-
-
-# ==============================
-# HELPERS
-# ==============================
+MAP_COLLAPSE_BUTTON = "🔽 Згорнути мапу"
 
 def get_player_level_from_stats(user_id):
-    stats = get_player_stats(user_id)
+    stats=get_player_stats(user_id)
+    return int(stats[5] or 1) if stats else 1
 
-    if not stats:
-        return 1
+def _node_name(node_id):
+    return (WORLD_NODES.get(str(node_id)) or {}).get("name", str(node_id))
 
-    _, _, _, _, _, level = stats
-    return level or 1
+def _safe_answer(bot,call,text=None,alert=False):
+    try: bot.answer_callback_query(call.id,text=text,show_alert=alert)
+    except Exception: pass
 
+def _remaining_seconds(travel,now=None):
+    current=now or datetime.now(timezone.utc)
+    arrival=datetime.fromisoformat(str(travel["arrival_at"]))
+    if arrival.tzinfo is None: arrival=arrival.replace(tzinfo=timezone.utc)
+    return max(0,int((arrival-current).total_seconds()+0.999))
+
+def build_location_info_text(location_id,player_level):
+    location=get_location(location_id); mobs=get_mobs_for_location(location_id)
+    text=(f"{location['name']}\n\n🏷 Рівні зони: {location['level_min']}–{location['level_max']}\n\n📖 {location['description']}\n\n👹 Моби цієї зони:\n")
+    for mob in mobs: text+=f"• {mob['name']}\n"
+    if player_level>int(location['level_max']): text+="\n⚠️ Твій рівень перевищує рекомендований рівень цієї зони."
+    return text.rstrip()
 
 def build_world_map_text(user_id):
-    player_level = get_player_level_from_stats(user_id)
-    current_location_id = get_current_location(user_id)
-    current_location = get_location(current_location_id)
+    active=get_active_travel(user_id)
+    if active:
+        return ("🚶 Триває подорож\n\n"+f"{_node_name(active['from_node'])}\n→ {_node_name(active['to_node'])}\n\n"+f"⏱️ Залишилося: {_remaining_seconds(active)} сек.\n\n"+"Поточне місцезнаходження зміниться лише після прибуття.")
+    node=get_current_location(user_id) or CITY_NODE; level=get_player_level_from_stats(user_id)
+    if node==CITY_NODE:
+        return "🗺️ Мапа світу\n\n📍 Поточне місцезнаходження:\n🏙️ Місто\n\nДоступний напрямок:\n• 🌿 Початок Шляху"
+    location=get_location(node)
+    return ("🗺️ Мапа світу\n\n📍 Поточна локація:\n"+f"{location['name']}\n\n👤 Твій рівень: {level}\n\n📖 {location['description']}")
 
-    text = (
-        "🗺️ Мапа світу\n\n"
-        f"📍 Ти зараз знаходишся:\n"
-        f"{current_location['name']}\n\n"
-        f"👤 Твій рівень: {player_level}\n\n"
-        "Доступні локації:\n"
-    )
-
-    for location_id in LOCATION_ORDER:
-        location = LOCATIONS[location_id]
-
-        unlocked = is_location_unlocked(location_id, player_level)
-        current_marker = " ✅" if location_id == current_location_id else ""
-
-        if unlocked:
-            text += (
-                f"\n• {location['name']} — рівні "
-                f"{location['level_min']}–{location['level_max']}{current_marker}\n"
-            )
+def build_map_inline_kb(user_id):
+    kb=types.InlineKeyboardMarkup(row_width=1); active=get_active_travel(user_id)
+    if active:
+        kb.add(types.InlineKeyboardButton("🔄 Оновити",callback_data=f"map:refresh:{active['id']}:{active['revision']}"))
+        kb.add(types.InlineKeyboardButton("❌ Скасувати подорож",callback_data=f"map:cancel:{active['id']}:{active['revision']}"));return kb
+    current=get_current_location(user_id) or CITY_NODE; level=get_player_level_from_stats(user_id)
+    for target in get_adjacent_nodes(current):
+        node=WORLD_NODES[target]
+        if target!=CITY_NODE and not is_location_unlocked(target,level):
+            unlock=int(LOCATIONS[target]['unlock_level']); label=f"🔒 {node['name']} · {unlock} рівень"; data=f"map:locked:{target}"
         else:
-            text += (
-                f"\n• 🔒 {location['name']} — відкриється з "
-                f"{location['unlock_level']} рівня\n"
-            )
+            if target==CITY_NODE: label="🏙️ Повернутися у Місто"
+            elif current==CITY_NODE: label=f"🚶 Вирушити у {node['name'].split(' ',1)[-1]}"
+            elif target=='start_path': label="🌿 Повернутися у Початок Шляху"
+            else: label=f"🚶 Вирушити у {node['name'].split(' ',1)[-1]}"
+            data=f"map:preview:{target}"
+        kb.add(types.InlineKeyboardButton(label,callback_data=data))
+    kb.add(types.InlineKeyboardButton("👥 Гравці локації",callback_data="map:players"))
+    return kb
 
-    text += (
-        "\n🏙️ Місто — повернутися до торговця та сервісів\n"
-        "🔙 Назад — повернутися до табору"
-    )
+def build_travel_preview_text(user_id,target):
+    source=get_current_location(user_id) or CITY_NODE
+    return ("🚶 Подорож\n\n"+f"Звідки: {_node_name(source)}\n"+f"Куди: {_node_name(target)}\n\n"+f"⏱️ Час у дорозі: {TRAVEL_SECONDS} секунд\n\n"+"Місцезнаходження зміниться тільки після завершення подорожі.")
 
-    return text
+def build_travel_preview_kb(target):
+    kb=types.InlineKeyboardMarkup(row_width=1)
+    kb.add(types.InlineKeyboardButton("🚶 Вирушити",callback_data=f"map:start:{target}"))
+    kb.add(types.InlineKeyboardButton("◀️ Повернутися до мапи",callback_data="map:open"));return kb
 
+def render_map_message(bot,chat_id,user_id,message_id=None):
+    text=build_world_map_text(user_id); inline=build_map_inline_kb(user_id)
+    if message_id is not None:
+        try: bot.edit_message_text(text,chat_id=chat_id,message_id=message_id,reply_markup=inline);return
+        except Exception: pass
+    bot.send_message(chat_id,text,reply_markup=inline)
 
-def build_location_info_text(location_id, player_level):
-    location = get_location(location_id)
-    mobs = get_mobs_for_location(location_id)
+def _failure_message(reason):
+    return {"location_locked":"🔒 Локація ще недоступна за рівнем.","not_adjacent":"⚠️ Цей напрямок більше не є сусіднім.","already_travelling":"🚶 Подорож уже триває.","unknown_destination":"⚠️ Невідомий напрямок.","invalid_current_node":"⚠️ Поточне місцезнаходження некоректне.","player_busy":"⚠️ Зараз персонаж зайнятий іншою дією."}.get(reason,"⚠️ Не вдалося розпочати подорож. Відкрий мапу повторно.")
 
-    text = (
-        f"{location['name']}\n\n"
-        f"🏷 Рівні зони: {location['level_min']}–{location['level_max']}\n\n"
-        f"📖 {location['description']}\n\n"
-        f"👹 Моби цієї зони:\n"
-    )
+CITY_ACTION_BUTTONS = {"🛒 Торговий ряд","🏛️ Торговий дім","⚒️ Ремісничий квартал","📜 Гільдія Найманців","🏰 Зала Гільдій","🏛️ Ратуша","🍺 Таверна","⚒️ Коваль","🧪 Алхімік","💠 Рунний Майстер"}
 
-    for mob in mobs:
-        attack_icon = "⚔️" if mob.get("attack_type") == "physical" else "🔮"
-
-        text += (
-            f"• {attack_icon} {mob['name']} — "
-            f"рівень {mob['level']}\n"
-        )
-
-    text += (
-        f"\n👑 Бос зони:\n"
-        f"{location.get('boss', 'Невідомо')}\n"
-    )
-
-    if player_level < location["unlock_level"]:
-        text += (
-            f"\n🔒 Локація відкриється з "
-            f"{location['unlock_level']} рівня."
-        )
-
-    return text
-
-
-# ==============================
-# HANDLERS
-# ==============================
+def _travel_start_busy(bot,user_id):
+    if getattr(bot,"user_data",{}).get(int(user_id)) is not None: return {"type":"pve"}
+    try:
+        from systems.player_interaction_system import get_player_activity_session
+        session=get_player_activity_session(int(user_id))
+        if session:return {"type":session.get("activity_type") or "interaction"}
+    except Exception:return {"type":"interaction_check_failed"}
+    return None
 
 def register_map_handlers(bot):
-
-    @bot.message_handler(func=lambda m: m.text == "🗺️ Мапа")
+    @bot.message_handler(func=lambda m:m.text in ("🗺️ Мапа","🔙 Мапа"))
     def show_map(message):
-        user_id = message.from_user.id
+        bot.send_message(message.chat.id,"🗺️ Мапу відкрито.",reply_markup=map_kb());render_map_message(bot,message.chat.id,message.from_user.id)
 
-        text = build_world_map_text(user_id)
+    @bot.message_handler(func=lambda m:m.text==MAP_COLLAPSE_BUTTON)
+    def collapse_map(message):
+        node=get_current_location(message.from_user.id) or CITY_NODE
+        kb=city_kb() if node==CITY_NODE else main_kb()
+        text="🔽 Мапу згорнуто."
+        bot.send_message(message.chat.id,text,reply_markup=kb)
 
-        bot.send_message(
-            message.chat.id,
-            text,
-            reply_markup=map_kb()
-        )
+    @bot.message_handler(func=lambda m:str(getattr(m,'text','') or '') in CITY_ACTION_BUTTONS and is_user_travelling(int(m.from_user.id)))
+    def block_city_actions_during_travel(message):
+        bot.send_message(message.chat.id,"🚶 Міські дії недоступні під час подорожі. Відкрий мапу, щоб переглянути статус або скасувати маршрут.")
 
-    @bot.message_handler(func=lambda m: m.text == "🔙 Мапа")
-    def show_map_from_city(message):
-        user_id = message.from_user.id
-
-        text = build_world_map_text(user_id)
-
-        bot.send_message(
-            message.chat.id,
-            text,
-            reply_markup=map_kb()
-        )
-
-    @bot.message_handler(func=lambda m: m.text == "🌿 Початок Шляху")
-    def travel_start_path(message):
-        user_id = message.from_user.id
-        player_level = get_player_level_from_stats(user_id)
-        location_id = "start_path"
-
-        if not is_location_unlocked(location_id, player_level):
-            location = get_location(location_id)
-
-            bot.send_message(
-                message.chat.id,
-                (
-                    f"🔒 {location['name']} недоступна.\n"
-                    f"Потрібний рівень: {location['unlock_level']}"
-                ),
-                reply_markup=map_kb()
-            )
-            return
-
-        set_current_location(user_id, location_id)
-
-        bot.send_message(
-            message.chat.id,
-            build_location_info_text(location_id, player_level),
-            reply_markup=main_kb()
-        )
-
-    @bot.message_handler(func=lambda m: m.text == "🌲 Темний Бір")
-    def travel_dark_forest(message):
-        user_id = message.from_user.id
-        player_level = get_player_level_from_stats(user_id)
-        location_id = "dark_forest"
-
-        if not is_location_unlocked(location_id, player_level):
-            location = get_location(location_id)
-
-            bot.send_message(
-                message.chat.id,
-                (
-                    f"🔒 {location['name']} недоступна.\n\n"
-                    f"Потрібний рівень: {location['unlock_level']}\n"
-                    f"👤 Твій рівень: {player_level}"
-                ),
-                reply_markup=map_kb()
-            )
-            return
-
-        set_current_location(user_id, location_id)
-
-        bot.send_message(
-            message.chat.id,
-            build_location_info_text(location_id, player_level),
-            reply_markup=main_kb()
-        )
-
-    @bot.message_handler(func=lambda m: m.text == "🔙 Назад")
-    def back_to_main_from_map(message):
-        bot.send_message(
-            message.chat.id,
-            "🏕️ Ти повернувся до табору.",
-            reply_markup=main_kb()
-        )
+    @bot.callback_query_handler(func=lambda c:str(getattr(c,'data','')).startswith('map:'))
+    def map_callbacks(call):
+        data=str(call.data);parts=data.split(':');action=parts[1] if len(parts)>1 else ''
+        uid=int(call.from_user.id);chat=call.message.chat.id;mid=call.message.message_id
+        if action=='open': _safe_answer(bot,call);render_map_message(bot,chat,uid,mid);return
+        if action=='refresh':
+            try: travel_id=int(parts[2]);revision=int(parts[3])
+            except Exception: _safe_answer(bot,call,"Некоректна дія.",True);return
+            active=get_active_travel(uid)
+            if not active or travel_id != int(active["id"]) or revision != int(active["revision"]):
+                old=get_travel(travel_id)
+                _safe_answer(bot,call,"Подорож уже завершена або скасована.",True)
+                render_map_message(bot,chat,uid,mid);return
+            _safe_answer(bot,call);render_map_message(bot,chat,uid,mid);return
+        if action=='players':
+            _safe_answer(bot,call)
+            if get_active_travel(uid): _safe_answer(bot,call,"Під час подорожі список недоступний.",True);return
+            from systems.player_interaction_system import get_online_players_in_same_location,touch_player_activity
+            from handlers.player_interaction import build_location_players_text,build_location_players_kb
+            touch_player_activity(uid);result=get_online_players_in_same_location(uid,page=0,page_size=8)
+            bot.edit_message_text(build_location_players_text(result),chat_id=chat,message_id=mid,parse_mode='HTML',reply_markup=build_location_players_kb(result));return
+        if action=='locked':
+            target=parts[2] if len(parts)>2 else '';loc=LOCATIONS.get(target) or {};_safe_answer(bot,call,f"Потрібний рівень: {loc.get('unlock_level','?')}",True);return
+        if action=='preview':
+            _safe_answer(bot,call);target=parts[2] if len(parts)>2 else ''
+            # Authoritative validation occurs again in start_travel.
+            if target not in get_adjacent_nodes(get_current_location(uid) or CITY_NODE): render_map_message(bot,chat,uid,mid);return
+            bot.edit_message_text(build_travel_preview_text(uid,target),chat_id=chat,message_id=mid,reply_markup=build_travel_preview_kb(target));return
+        if action=='start':
+            target=parts[2] if len(parts)>2 else '';result=start_travel(uid,target,busy_checker=lambda user_id:_travel_start_busy(bot,user_id))
+            if not result.get('success'): _safe_answer(bot,call,_failure_message(result.get('reason')),True);render_map_message(bot,chat,uid,mid);return
+            _safe_answer(bot,call,"Подорож розпочато");render_map_message(bot,chat,uid,mid);return
+        if action=='cancel':
+            try: travel_id=int(parts[2]);revision=int(parts[3])
+            except Exception: _safe_answer(bot,call,"Некоректна дія.",True);return
+            result=cancel_travel(uid,travel_id,expected_revision=revision)
+            _safe_answer(bot,call,"Подорож скасовано." if result.get('success') else "Подорож уже завершена.",not result.get('success'))
+            render_map_message(bot,chat,uid,mid);return
+        _safe_answer(bot,call,"Дія неактуальна.",True)
 
 ============================================================
 FILE: handlers\name_rune.py
@@ -31484,8 +31577,8 @@ def register_name_rune_handlers(bot):
 
 ============================================================
 FILE: handlers\player_interaction.py
-SIZE: 102914 bytes
-LAST WRITE: 2026-08-29 21:55:12
+SIZE: 106203 bytes
+LAST WRITE: 2026-09-13 03:12:16
 ============================================================
 
 # ROM 17.18.2.5 BOW CROSSBOW DAMAGE UI PARITY
@@ -31496,6 +31589,11 @@ LAST WRITE: 2026-08-29 21:55:12
 from __future__ import annotations
 
 from telebot import types
+
+from systems.location_context_system import (
+    get_location_context_kb,
+    get_location_context_return_text,
+)
 
 from systems.player_interaction_system import (
     create_player_interaction_request,
@@ -31757,6 +31855,9 @@ def _register_player_interaction_base_handlers_12_6_8(bot):
     # ROM 12.3.1 TRADE REQUEST SENDER FEEDBACK HOTFIX
     @bot.callback_query_handler(func=_is_trade_request_callback)
     def trade_request(call):
+        from systems.travel_system import is_user_travelling
+        if is_user_travelling(int(call.from_user.id)):
+            _safe_answer(bot,call,"Обмін недоступний під час подорожі.",True);return
         # Answer the callback once to stop Telegram's loading spinner. Final
         # success/failure feedback is sent as a normal visible chat message.
         _safe_answer(bot, call)
@@ -31799,6 +31900,9 @@ def _register_player_interaction_base_handlers_12_6_8(bot):
 
     @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith(("pi:req:accept:", "pi:req:decline:")))
     def trade_request_response(call):
+        from systems.travel_system import is_user_travelling
+        if is_user_travelling(int(call.from_user.id)):
+            _safe_answer(bot,call,"Обмін недоступний під час подорожі.",True);return
         parts = str(call.data).split(":")
         if len(parts) != 5:
             return
@@ -31966,7 +32070,8 @@ def _register_player_interaction_base_handlers_12_6_8(bot):
     @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")) == "pi:back:map")
     def back_to_map(call):
         _safe_answer(bot, call)
-        bot.delete_message(call.message.chat.id, call.message.message_id)
+        from handlers.map import render_map_message
+        render_map_message(bot, call.message.chat.id, int(call.from_user.id), call.message.message_id)
 
 # ROM 12.2.1 MAP REFRESH AND KEYBOARD HOTFIX
 def _safe_edit_message_text(bot, *args, **kwargs):
@@ -32481,7 +32586,7 @@ def _trade_register_amount_input_12_6_3(bot):
                 bot.send_message(
                     m.chat.id,
                     "ℹ️ Активного обміну вже немає.",
-                    reply_markup=main_kb(),
+                    reply_markup=get_location_context_kb(uid),
                 )
             return
         if datetime.now().timestamp()-float(state.get("created_at") or 0)>TRADE_AMOUNT_INPUT_TTL_SECONDS_12_6_3:
@@ -33122,13 +33227,28 @@ def _register_trade_navigation_and_categories_12_6_4(bot):
             bot.send_message(call.message.chat.id, "ℹ️ Обмін уже неактивний.", reply_markup=main_kb())
             return
         globals().get("TRADE_AMOUNT_INPUT_STATE_12_6_3", {}).pop(int(call.from_user.id), None)
-        own="❌ Обмін скасовано.\n\n✅ Персонаж знову доступний для інших дій."
-        _safe_edit_message_text(bot, own, call.message.chat.id, call.message.message_id)
-        bot.send_message(call.message.chat.id, "Повернення до основного меню.", reply_markup=main_kb())
-        other=(int(result["recipient_user_id"]) if int(call.from_user.id)==int(result["initiator_user_id"]) else int(result["initiator_user_id"]))
+        actor=int(call.from_user.id)
+        own="❌ Обмін скасовано.\n\nСесію обміну завершено."
+        _remember_player_trade_panel_18_22_6(trade_id, actor, call.message.chat.id, call.message.message_id)
+        _terminalize_player_trade_panel_18_22_6(bot, trade_id, actor, own)
+        bot.send_message(
+            call.message.chat.id,
+            get_location_context_return_text(actor),
+            reply_markup=get_location_context_kb(actor),
+        )
+        other=(int(result["recipient_user_id"]) if actor==int(result["initiator_user_id"]) else int(result["initiator_user_id"]))
         globals().get("TRADE_AMOUNT_INPUT_STATE_12_6_3", {}).pop(other, None)
+        other_text="❌ Обмін скасовано іншим гравцем.\n\nСесію обміну завершено."
+        _terminalize_player_trade_panel_18_22_6(
+            bot, trade_id, other, other_text,
+            fallback="❌ Інший гравець скасував обмін.\n\n✅ Персонаж знову доступний для інших дій.",
+        )
         try:
-            bot.send_message(other, "❌ Інший гравець скасував обмін.\n\n✅ Персонаж знову доступний для інших дій.", reply_markup=main_kb())
+            bot.send_message(
+                other,
+                get_location_context_return_text(other),
+                reply_markup=get_location_context_kb(other),
+            )
         except Exception:
             pass
 
@@ -33254,6 +33374,54 @@ def _trade_own_confirmed_12_7_0(state):
     return bool(side and trade.get(f"{side}_confirmed"))
 
 
+# ROM Stage 18.22.6 PLAYER TRADE TERMINAL UI CLEANUP
+# Runtime-only references are sufficient for live cancellation. After restart,
+# stale callbacks remain fail-closed through the authoritative trade status.
+_PLAYER_TRADE_PANEL_REFS_18_22_6 = {}
+
+
+def _remember_player_trade_panel_18_22_6(trade_id, user_id, chat_id, message_id):
+    key = (int(trade_id), int(user_id))
+    _PLAYER_TRADE_PANEL_REFS_18_22_6[key] = {
+        "chat_id": int(chat_id),
+        "message_id": int(message_id),
+    }
+    return dict(_PLAYER_TRADE_PANEL_REFS_18_22_6[key])
+
+
+def _forget_player_trade_panel_18_22_6(trade_id, user_id):
+    return _PLAYER_TRADE_PANEL_REFS_18_22_6.pop((int(trade_id), int(user_id)), None)
+
+
+def _terminalize_player_trade_panel_18_22_6(bot, trade_id, user_id, text, fallback=None):
+    ref = _forget_player_trade_panel_18_22_6(trade_id, user_id)
+    if ref:
+        try:
+            bot.edit_message_text(
+                text,
+                chat_id=int(ref["chat_id"]),
+                message_id=int(ref["message_id"]),
+                reply_markup=None,
+            )
+            return {"success": True, "edited": True, "fallback_sent": False}
+        except Exception:
+            try:
+                bot.edit_message_reply_markup(
+                    chat_id=int(ref["chat_id"]),
+                    message_id=int(ref["message_id"]),
+                    reply_markup=None,
+                )
+            except Exception:
+                pass
+    if fallback:
+        try:
+            bot.send_message(int(user_id), fallback)
+            return {"success": True, "edited": False, "fallback_sent": True}
+        except Exception:
+            pass
+    return {"success": False, "edited": False, "fallback_sent": False}
+
+
 def _trade_show_current_stage_12_7_0(bot, chat_id, user_id, trade_id, message_id=None):
     state = get_player_trade_editor_state(int(trade_id), int(user_id))
     if not state.get("success"):
@@ -33274,8 +33442,12 @@ def _trade_show_current_stage_12_7_0(bot, chat_id, user_id, trade_id, message_id
             bot, text, chat_id, message_id,
             parse_mode="HTML", reply_markup=keyboard,
         )
+        _remember_player_trade_panel_18_22_6(trade_id, user_id, chat_id, message_id)
     else:
-        bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=keyboard)
+        sent = bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=keyboard)
+        sent_id = getattr(sent, "message_id", None)
+        if sent_id is not None:
+            _remember_player_trade_panel_18_22_6(trade_id, user_id, chat_id, sent_id)
     return True
 
 
@@ -33406,7 +33578,7 @@ def _register_trade_confirmation_handlers_12_7_0(bot):
                 int(result.get("recipient_user_id") or call.from_user.id),
             ):
                 bot.send_message(
-                    user_id, text, parse_mode="HTML", reply_markup=main_kb(),
+                    user_id, text, parse_mode="HTML", reply_markup=get_location_context_kb(user_id),
                 )
         except Exception:
             pass
@@ -34205,8 +34377,8 @@ def register_profile_handlers(bot):
 
 ============================================================
 FILE: handlers\pvp_interaction.py
-SIZE: 7614 bytes
-LAST WRITE: 2026-08-07 00:22:58
+SIZE: 8068 bytes
+LAST WRITE: 2026-09-13 01:42:51
 ============================================================
 
 from __future__ import annotations
@@ -34265,6 +34437,9 @@ def register_pvp_interaction_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith("pi:duel:"))
     def pvp_duel_request(call):
+        from systems.travel_system import is_user_travelling
+        if is_user_travelling(int(call.from_user.id)):
+            _answer(bot,call,'Дуель недоступна під час подорожі.',True);return
         _answer(bot, call)
         try:
             target_id = int(str(call.data).rsplit(":", 1)[1])
@@ -34296,6 +34471,9 @@ def register_pvp_interaction_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith(("pvp:req:accept:", "pvp:req:decline:")))
     def pvp_duel_response(call):
+        from systems.travel_system import is_user_travelling
+        if is_user_travelling(int(call.from_user.id)):
+            _answer(bot,call,'Дуель недоступна під час подорожі.',True);return
         parts = str(call.data).split(":")
         if len(parts) != 5:
             return
@@ -34590,8 +34768,8 @@ def register_pvp_round_ui_handlers(bot):
 
 ============================================================
 FILE: handlers\refine.py
-SIZE: 18551 bytes
-LAST WRITE: 2026-08-28 22:18:23
+SIZE: 19594 bytes
+LAST WRITE: 2026-09-12 21:44:20
 ============================================================
 
 from telebot import types
@@ -34912,6 +35090,13 @@ def build_refine_attempt_result_text(user_id, inventory_id, before_info, after_i
             f"ℹ️ {result.get('message', 'Спроба неможлива.')}"
         )
 
+    if result.get("idempotent_replay"):
+        return (
+            "ℹ️ Цю спробу заточки вже оброблено.\n\n"
+            f"📦 {after_name}\n"
+            "Матеріали повторно не списувалися."
+        )
+
     lines = []
 
     if use_success_rune:
@@ -34989,6 +35174,26 @@ def open_refine_menu(bot, chat_id, user_id, message_id=None, page=0):
 # HANDLERS
 # ==============================
 
+def _safe_answer_refine_callback(bot, call, text=None, show_alert=False):
+    """Acknowledge refine callbacks while tolerating only expired Telegram queries."""
+    try:
+        bot.answer_callback_query(call.id, text or "", show_alert=show_alert)
+        return True
+    except Exception as error:
+        message = str(error).lower()
+        if "query is too old" in message or "query id is invalid" in message:
+            return False
+        raise
+
+
+def build_refine_idempotency_key(user_id, callback_id):
+    """One Telegram callback delivery maps to exactly one refine attempt."""
+    callback_id = str(callback_id or "").strip()
+    if not callback_id:
+        raise ValueError("refine callback id is required")
+    return f"telegram:refine:{int(user_id)}:{callback_id}"
+
+
 def register_refine_handlers(bot):
 
     @bot.message_handler(commands=["refine", "zatocka", "refine_test"])
@@ -35009,7 +35214,7 @@ def register_refine_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: call.data == "refine_menu")
     def refine_menu_callback(call):
-        bot.answer_callback_query(call.id)
+        _safe_answer_refine_callback(bot, call)
         open_refine_menu(
             bot=bot,
             chat_id=call.message.chat.id,
@@ -35020,7 +35225,7 @@ def register_refine_handlers(bot):
     @bot.callback_query_handler(func=lambda call: call.data.startswith("refine_page:"))
     def refine_page_callback(call):
         page = int(call.data.split(":")[1])
-        bot.answer_callback_query(call.id)
+        _safe_answer_refine_callback(bot, call)
         open_refine_menu(
             bot=bot,
             chat_id=call.message.chat.id,
@@ -35035,7 +35240,7 @@ def register_refine_handlers(bot):
         inventory_id = int(parts[1])
         page = int(parts[2]) if len(parts) > 2 else 0
 
-        bot.answer_callback_query(call.id)
+        _safe_answer_refine_callback(bot, call)
         _send_or_edit(
             bot=bot,
             chat_id=call.message.chat.id,
@@ -35054,37 +35259,37 @@ def register_refine_handlers(bot):
         check = can_refine_item(info)
         resources = get_refine_resource_counts(call.from_user.id)
         if not info or int(info.get("user_id", 0)) != int(call.from_user.id) or not check.get("success"):
-            bot.answer_callback_query(call.id, "Предмет більше недоступний.", show_alert=True); return
+            _safe_answer_refine_callback(bot, call, "Предмет більше недоступний.", show_alert=True); return
         if resources.get("stone", 0) <= 0 or (use_success_rune and resources.get("success_rune", 0) <= 0):
-            bot.answer_callback_query(call.id, "Недостатньо матеріалів.", show_alert=True); return
+            _safe_answer_refine_callback(bot, call, "Недостатньо матеріалів.", show_alert=True); return
         chance = 100 if use_success_rune else get_refine_success_chance(check["refine_kind"], check["current_level"])
         kb = types.InlineKeyboardMarkup(row_width=1)
         kb.add(types.InlineKeyboardButton("✅ Підтвердити заточку", callback_data=f"refine_exec:{inventory_id}:{1 if use_success_rune else 0}:{page}"))
         kb.add(types.InlineKeyboardButton("❌ Скасувати", callback_data=f"refine_item:{inventory_id}:{page}"))
         rune_text = "\n💎 Руна Успіху: буде використана" if use_success_rune else ""
         _send_or_edit(bot=bot, chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"⚒️ Підтвердження заточки\n\n{info.get('name','Предмет')} [+{check['current_level']}]\n🎯 Шанс успіху: {chance}%\n🪨 Камінь Посилення: ×1{rune_text}\n\nПідтвердити операцію?", reply_markup=kb)
-        bot.answer_callback_query(call.id)
+        _safe_answer_refine_callback(bot, call)
 
     @bot.callback_query_handler(func=lambda call: call.data.startswith("refine_exec:"))
     def refine_exec_callback(call):
         parts = call.data.split(":")
         inventory_id = int(parts[1]); use_success_rune = parts[2] == "1"; page = int(parts[3]) if len(parts) > 3 else 0
         before_info = get_inventory_item_refine_info(inventory_id)
-        key = f"telegram:refine:{call.from_user.id}:{call.message.chat.id}:{call.message.message_id}:{inventory_id}:{1 if use_success_rune else 0}"
+        key = build_refine_idempotency_key(call.from_user.id, call.id)
         result = perform_refine_attempt(call.from_user.id, inventory_id, use_success_rune, idempotency_key=key)
         after_info = get_inventory_item_refine_info(inventory_id)
-        bot.answer_callback_query(call.id, "Готово" if result.get("success") else "Заточку скасовано")
+        _safe_answer_refine_callback(bot, call, "Готово" if result.get("success") else "Заточку скасовано")
         result_text = build_refine_attempt_result_text(call.from_user.id, inventory_id, before_info, after_info, result, use_success_rune)
         item_text = build_refine_item_text(call.from_user.id, inventory_id)
         _send_or_edit(bot=bot, chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"{result_text}\n\n{item_text}", reply_markup=build_refine_item_kb(call.from_user.id, inventory_id, page))
 
     @bot.callback_query_handler(func=lambda call: call.data == "refine_noop")
     def refine_noop_callback(call):
-        bot.answer_callback_query(call.id, "Недостатньо матеріалів.")
+        _safe_answer_refine_callback(bot, call, "Недостатньо матеріалів.")
 
     @bot.callback_query_handler(func=lambda call: call.data == "refine_close")
     def refine_close_callback(call):
-        bot.answer_callback_query(call.id)
+        _safe_answer_refine_callback(bot, call)
         try:
             bot.delete_message(call.message.chat.id, call.message.message_id)
         except Exception:
@@ -36450,8 +36655,8 @@ def register_timed_exp_bonus_handlers(bot):
 
 ============================================================
 FILE: keyboards.py
-SIZE: 5477 bytes
-LAST WRITE: 2026-09-02 21:38:02
+SIZE: 5210 bytes
+LAST WRITE: 2026-09-13 01:16:10
 ============================================================
 
 # ROM 17.16.1 PVE SKILL BUTTON STATES
@@ -36469,10 +36674,7 @@ def main_kb():
 
 def map_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    # ROM 12.2.1 MAP REFRESH AND KEYBOARD HOTFIX
-    kb.row(types.KeyboardButton("🌿 Початок Шляху"), types.KeyboardButton("🌲 Темний Бір"))
-    kb.row(types.KeyboardButton("👥 Гравці локації"), types.KeyboardButton("🏙️ Місто"))
-    kb.row(types.KeyboardButton("🔙 Назад"))
+    kb.row(types.KeyboardButton("🔽 Згорнути мапу"))
     return kb
 
 
@@ -36617,8 +36819,8 @@ def rune_master_kb():
 
 ============================================================
 FILE: main.py
-SIZE: 11727 bytes
-LAST WRITE: 2026-09-11 23:12:34
+SIZE: 12012 bytes
+LAST WRITE: 2026-09-13 01:16:10
 ============================================================
 
 
@@ -36863,6 +37065,10 @@ from systems.pve_auto_escape_system import recover_pve_encounters_after_restart,
 _PVE_AUTO_ESCAPE_RESTART_RECOVERY = recover_pve_encounters_after_restart(bot)
 PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', f"✅ PVE AUTO ESCAPE RECOVERY: {_PVE_AUTO_ESCAPE_RESTART_RECOVERY}")
 start_pve_auto_escape_worker(bot)
+from systems.travel_system import recover_travels_after_restart, start_travel_worker
+_TRAVEL_RESTART_RECOVERY = recover_travels_after_restart(bot)
+PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', f'✅ LOCATION TRAVEL RECOVERY: {_TRAVEL_RESTART_RECOVERY}')
+start_travel_worker(bot)
 
 
 # ==============================
@@ -37381,6 +37587,40 @@ def up(conn):
  invalid=conn.execute("SELECT COUNT(*) FROM inventory WHERE item_id=? AND (quantity<1 OR quantity>?)",(REBIRTH_SPHERE_ITEM_ID,MAX_STACK)).fetchone()[0]
  if invalid:raise RuntimeError(f"Invalid Rebirth Sphere stacks after migration: {invalid}")
  return {"item_id":REBIRTH_SPHERE_ITEM_ID,"max_stack":MAX_STACK,"normalized_users":normalized,"created_rows":created,"deleted_rows":deleted}
+
+============================================================
+FILE: migrations\049_persistent_location_travel.py
+SIZE: 1174 bytes
+LAST WRITE: 2026-09-13 01:05:50
+============================================================
+
+"""Stage 18.22.1 persistent location travel foundation."""
+def up(conn):
+    conn.executescript("""
+    CREATE TABLE IF NOT EXISTS location_travels (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        from_node TEXT NOT NULL,
+        to_node TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'active'
+            CHECK(status IN ('active','arrived','cancelled','failed')),
+        revision INTEGER NOT NULL DEFAULT 1 CHECK(revision >= 1),
+        started_at TEXT NOT NULL,
+        arrival_at TEXT NOT NULL,
+        cancelled_at TEXT,
+        completed_at TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        CHECK(from_node <> to_node),
+        FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS ux_location_travels_one_active_user
+        ON location_travels(user_id) WHERE status='active';
+    CREATE INDEX IF NOT EXISTS ix_location_travels_due
+        ON location_travels(status, arrival_at, id);
+    CREATE INDEX IF NOT EXISTS ix_location_travels_user_history
+        ON location_travels(user_id, id DESC);
+    """)
 
 ============================================================
 FILE: migrations\README.md
@@ -44685,8 +44925,8 @@ def apply_post_combat_mp_floor_17_15_1(user_id):
 
 ============================================================
 FILE: systems\combat_system.py
-SIZE: 8233 bytes
-LAST WRITE: 2026-09-07 23:33:41
+SIZE: 9385 bytes
+LAST WRITE: 2026-09-12 22:43:40
 ============================================================
 
 # ROM 17.18.2.2 BOW CROSSBOW DAMAGE DIFFERENTIATION
@@ -44714,6 +44954,32 @@ ELITE_GOLD_MULTIPLIER = 3.0
 # ==============================
 # ✅ CRIT / DODGE HELPERS
 # ==============================
+
+def calculate_player_hit_chance(player_dex, mob_dex):
+    """Return the approved PvE normal-attack hit chance in percent."""
+    try:
+        player_dex = float(player_dex or 0)
+    except (TypeError, ValueError):
+        player_dex = 0.0
+    try:
+        mob_dex = float(mob_dex or 0)
+    except (TypeError, ValueError):
+        mob_dex = 0.0
+
+    chance = 95.0 + ((player_dex - mob_dex) * 0.5)
+    return max(50.0, min(99.0, chance))
+
+
+def roll_player_normal_attack_hit(player_dex, mob_dex, rng=None):
+    """Roll PvE normal-attack hit before crit and damage calculations."""
+    chance = calculate_player_hit_chance(player_dex, mob_dex)
+    roller = rng if rng is not None else random
+    roll = int(roller.randint(1, 100))
+    return {
+        "hit": roll <= chance,
+        "chance": chance,
+        "roll": roll,
+    }
 
 def get_physical_crit_chance(dex, level=None):
     return calculate_physical_crit_chance(dex)
@@ -54376,6 +54642,59 @@ def build_level_up_reward_message(result):
     return "\n".join(lines)
 
 ============================================================
+FILE: systems\location_context_system.py
+SIZE: 1733 bytes
+LAST WRITE: 2026-09-13 02:11:10
+============================================================
+
+"""Authoritative keyboard and navigation context for a player's world node."""
+from __future__ import annotations
+
+from db import get_current_location
+from data.location_graph import CITY_NODE, WORLD_NODES
+from systems.travel_system import is_user_travelling
+
+
+def get_location_context_kind(user_id):
+    """Return travel, city, location, or invalid without changing location."""
+    uid = int(user_id)
+    if is_user_travelling(uid):
+        return "travel"
+    node = str(get_current_location(uid) or CITY_NODE)
+    if node == CITY_NODE:
+        return "city"
+    profile = WORLD_NODES.get(node)
+    if profile and profile.get("kind") == "location":
+        return "location"
+    return "invalid"
+
+
+def get_location_context_kb(user_id):
+    """Resolve the persistent ReplyKeyboard from authoritative DB state."""
+    from keyboards import city_kb, main_kb, map_kb
+
+    kind = get_location_context_kind(user_id)
+    if kind == "travel":
+        return map_kb()
+    if kind == "city":
+        return city_kb()
+    if kind == "location":
+        return main_kb()
+    # Unknown location state must not expose hunting controls.
+    return map_kb()
+
+
+def get_location_context_return_text(user_id):
+    kind = get_location_context_kind(user_id)
+    if kind == "travel":
+        return "🚶 Повернення до статусу подорожі."
+    if kind == "city":
+        return "🏙️ Повернення до Міста."
+    if kind == "location":
+        return "🏕️ Повернення до основного меню локації."
+    return "⚠️ Не вдалося визначити поточне місцезнаходження. Відкрий мапу."
+
+============================================================
 FILE: systems\name_rune_system.py
 SIZE: 6729 bytes
 LAST WRITE: 2026-09-02 21:38:02
@@ -55472,8 +55791,8 @@ def get_worker_max_mp_17_15_1(conn, user_id):
 
 ============================================================
 FILE: systems\player_interaction_system.py
-SIZE: 110869 bytes
-LAST WRITE: 2026-08-31 23:16:21
+SIZE: 111929 bytes
+LAST WRITE: 2026-09-13 02:53:32
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -57202,11 +57521,30 @@ def set_player_trade_gold_offer(trade_id, owner_user_id, gold_amount, *, now=Non
 # ROM 12.6.1 PLAYER TRADE OFFER EDITOR UX
 
 def _trade_offer_is_equipment_snapshot(snapshot):
+    """Classify equipment without allowing stack-category durability defaults to win.
+
+    Some inventory rows expose durability/max_durability defaults even for
+    runes, materials, potions and consumables. Their canonical item category
+    must take precedence over those compatibility fields.
+    """
     snapshot = snapshot or {}
     category = str(snapshot.get("category") or "").strip().lower()
+    stack_categories = {
+        "rune", "runes", "stat_rune",
+        "potion", "potions", "heal_potion", "mana_potion",
+        "material", "materials", "special_material", "refine_material",
+        "consumable", "consumables",
+    }
+    if category in stack_categories:
+        return False
     if category in ("equipment", "weapon", "armor", "jewelry"):
         return True
-    return snapshot.get("durability") is not None or snapshot.get("max_durability") is not None
+    if str(snapshot.get("slot_key") or "").strip():
+        return True
+    return (
+        snapshot.get("durability") is not None
+        or snapshot.get("max_durability") is not None
+    )
 
 
 def get_trade_offer_entry(trade_id, owner_user_id, inventory_id, *, db_path=None):
@@ -57700,17 +58038,25 @@ PLAYER_TRADE_ITEM_CATEGORIES = ("equipment", "potion", "material", "rune", "cons
 
 
 def _player_trade_item_category_12_6_4(item):
-    snapshot = (item or {}).get("snapshot") or {}
-    if item.get("is_equipment") or _trade_offer_is_equipment_snapshot(snapshot):
-        return "equipment"
+    """Return one exclusive trade UI category from canonical snapshot data."""
+    item = item or {}
+    snapshot = item.get("snapshot") or {}
     category = str(snapshot.get("category") or "").strip().lower()
     item_id = int(snapshot.get("item_id") or 0)
+
+    # Explicit stack domains must win even when inventory compatibility fields
+    # contain durability defaults.
     if 701 <= item_id <= 725 or category in ("rune", "runes", "stat_rune"):
         return "rune"
-    if item_id == 503 or category == "consumable":
-        return "consumable"
     if category in ("potion", "potions", "heal_potion", "mana_potion"):
         return "potion"
+    if item_id == 503 or category in ("consumable", "consumables"):
+        return "consumable"
+    if category in ("material", "materials", "special_material", "refine_material"):
+        return "material"
+
+    if item.get("is_equipment") or _trade_offer_is_equipment_snapshot(snapshot):
+        return "equipment"
     return "material"
 
 
@@ -71126,6 +71472,185 @@ def get_exp_bonus_account_summary(user_id, db_path=None, now=None):
     finally:
         connection.close()
 
+
+============================================================
+FILE: systems\travel_system.py
+SIZE: 10382 bytes
+LAST WRITE: 2026-09-13 01:42:51
+============================================================
+
+"""Persistent, server-authoritative travel domain for Stage 18.22.1."""
+from __future__ import annotations
+import sqlite3
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from data.location_graph import CITY_NODE, TRAVEL_SECONDS, WORLD_NODES, are_adjacent
+from data.locations import is_location_unlocked
+
+ROOT=Path(__file__).resolve().parents[1]
+DEFAULT_DB_PATH=ROOT/'game.db'
+ACTIVE='active'; TERMINAL=('arrived','cancelled','failed')
+
+def _connect(db_path=None):
+    conn=sqlite3.connect(str(db_path or DEFAULT_DB_PATH), timeout=30)
+    conn.row_factory=sqlite3.Row
+    conn.execute('PRAGMA foreign_keys=ON')
+    return conn
+
+def _utc(now=None):
+    value=now or datetime.now(timezone.utc)
+    if value.tzinfo is None: value=value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+def _iso(value): return _utc(value).isoformat(timespec='seconds')
+def _row(row): return dict(row) if row else None
+
+def init_travel_system(db_path=None):
+    conn=_connect(db_path)
+    try:
+        conn.executescript("""
+        CREATE TABLE IF NOT EXISTS location_travels (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,
+            from_node TEXT NOT NULL,to_node TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','arrived','cancelled','failed')),
+            revision INTEGER NOT NULL DEFAULT 1 CHECK(revision>=1),
+            started_at TEXT NOT NULL,arrival_at TEXT NOT NULL,cancelled_at TEXT,completed_at TEXT,
+            created_at TEXT NOT NULL,updated_at TEXT NOT NULL,CHECK(from_node<>to_node),
+            FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE);
+        CREATE UNIQUE INDEX IF NOT EXISTS ux_location_travels_one_active_user ON location_travels(user_id) WHERE status='active';
+        CREATE INDEX IF NOT EXISTS ix_location_travels_due ON location_travels(status,arrival_at,id);
+        CREATE INDEX IF NOT EXISTS ix_location_travels_user_history ON location_travels(user_id,id DESC);
+        """); conn.commit(); return {'success':True,'table':'location_travels'}
+    finally: conn.close()
+
+def get_active_travel(user_id, *, db_path=None):
+    conn=_connect(db_path)
+    try: return _row(conn.execute("SELECT * FROM location_travels WHERE user_id=? AND status='active' ORDER BY id DESC LIMIT 1",(int(user_id),)).fetchone())
+    finally: conn.close()
+
+def get_travel(travel_id, *, db_path=None):
+    conn=_connect(db_path)
+    try: return _row(conn.execute('SELECT * FROM location_travels WHERE id=?',(int(travel_id),)).fetchone())
+    finally: conn.close()
+
+def get_due_active_travels(*, now=None, limit=100, db_path=None):
+    conn=_connect(db_path)
+    try: return [dict(r) for r in conn.execute("SELECT * FROM location_travels WHERE status='active' AND arrival_at<=? ORDER BY arrival_at,id LIMIT ?",(_iso(now),max(1,int(limit)))).fetchall()]
+    finally: conn.close()
+
+def _availability(conn,user_id,to_node):
+    user=conn.execute('SELECT current_location,level FROM users WHERE user_id=?',(int(user_id),)).fetchone()
+    if not user: return {'success':False,'reason':'user_not_found'}
+    source=str(user['current_location'] or CITY_NODE)
+    target=str(to_node)
+    if source not in WORLD_NODES: return {'success':False,'reason':'invalid_current_node','current_node':source}
+    if target not in WORLD_NODES: return {'success':False,'reason':'unknown_destination'}
+    if not are_adjacent(source,target): return {'success':False,'reason':'not_adjacent','from_node':source,'to_node':target}
+    if target != CITY_NODE and not is_location_unlocked(target,int(user['level'] or 1)):
+        return {'success':False,'reason':'location_locked','from_node':source,'to_node':target}
+    return {'success':True,'from_node':source,'to_node':target,'level':int(user['level'] or 1)}
+
+def start_travel(user_id,to_node,*,now=None,busy_checker=None,db_path=None):
+    if busy_checker is not None:
+        busy=busy_checker(int(user_id))
+        if busy: return {'success':False,'reason':'player_busy','busy':busy if isinstance(busy,dict) else None}
+    current=_utc(now); stamp=_iso(current); arrival=_iso(current+timedelta(seconds=TRAVEL_SECONDS))
+    conn=_connect(db_path)
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        available=_availability(conn,user_id,to_node)
+        if not available['success']: conn.rollback(); return available
+        active=conn.execute("SELECT * FROM location_travels WHERE user_id=? AND status='active'",(int(user_id),)).fetchone()
+        if active: conn.rollback(); return {'success':False,'reason':'already_travelling','travel':dict(active)}
+        cur=conn.execute("INSERT INTO location_travels(user_id,from_node,to_node,status,revision,started_at,arrival_at,created_at,updated_at) VALUES (?,?,?,'active',1,?,?,?,?)",
+            (int(user_id),available['from_node'],available['to_node'],stamp,arrival,stamp,stamp))
+        travel_id=int(cur.lastrowid); conn.commit()
+        return {'success':True,'travel_id':travel_id,'from_node':available['from_node'],'to_node':available['to_node'],'started_at':stamp,'arrival_at':arrival,'travel_seconds':TRAVEL_SECONDS,'revision':1}
+    except sqlite3.IntegrityError:
+        conn.rollback(); return {'success':False,'reason':'already_travelling'}
+    except Exception: conn.rollback(); raise
+    finally: conn.close()
+
+def cancel_travel(user_id,travel_id,*,expected_revision=None,now=None,db_path=None):
+    stamp=_iso(now); conn=_connect(db_path)
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        params=[stamp,stamp,int(travel_id),int(user_id)]; where="id=? AND user_id=? AND status='active' AND arrival_at>?"; params.append(stamp)
+        if expected_revision is not None: where+=' AND revision=?'; params.append(int(expected_revision))
+        cur=conn.execute(f"UPDATE location_travels SET status='cancelled',revision=revision+1,cancelled_at=?,updated_at=? WHERE {where}",params)
+        if cur.rowcount==1: conn.commit(); return {'success':True,'status':'cancelled','travel_id':int(travel_id)}
+        row=conn.execute('SELECT * FROM location_travels WHERE id=? AND user_id=?',(int(travel_id),int(user_id))).fetchone(); conn.rollback()
+        return {'success':False,'reason':'not_cancellable','travel':_row(row)}
+    except Exception: conn.rollback(); raise
+    finally: conn.close()
+
+def complete_travel(travel_id,*,now=None,db_path=None):
+    stamp=_iso(now); conn=_connect(db_path)
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        row=conn.execute('SELECT * FROM location_travels WHERE id=?',(int(travel_id),)).fetchone()
+        if not row: conn.rollback(); return {'success':False,'reason':'travel_not_found'}
+        if row['status']!='active': conn.rollback(); return {'success':False,'reason':'already_terminal','travel':dict(row)}
+        if row['arrival_at']>stamp: conn.rollback(); return {'success':False,'reason':'not_due','travel':dict(row)}
+        user=conn.execute('SELECT current_location FROM users WHERE user_id=?',(int(row['user_id']),)).fetchone()
+        if not user or str(user['current_location'] or CITY_NODE)!=str(row['from_node']):
+            conn.execute("UPDATE location_travels SET status='failed',revision=revision+1,completed_at=?,updated_at=? WHERE id=? AND status='active'",(stamp,stamp,int(travel_id))); conn.commit()
+            return {'success':False,'reason':'source_changed','status':'failed'}
+        cur=conn.execute("UPDATE location_travels SET status='arrived',revision=revision+1,completed_at=?,updated_at=? WHERE id=? AND status='active'",(stamp,stamp,int(travel_id)))
+        if cur.rowcount!=1: conn.rollback(); return {'success':False,'reason':'terminal_claim_lost'}
+        updated=conn.execute('UPDATE users SET current_location=? WHERE user_id=? AND current_location=?',(str(row['to_node']),int(row['user_id']),str(row['from_node'])))
+        if updated.rowcount!=1: raise RuntimeError('atomic location update failed')
+        conn.commit(); return {'success':True,'status':'arrived','travel_id':int(travel_id),'user_id':int(row['user_id']),'from_node':row['from_node'],'to_node':row['to_node']}
+    except Exception: conn.rollback(); raise
+    finally: conn.close()
+
+def recover_due_travels(*,now=None,limit=100,db_path=None):
+    results=[]
+    for travel in get_due_active_travels(now=now,limit=limit,db_path=db_path): results.append(complete_travel(travel['id'],now=now,db_path=db_path))
+    return {'success':True,'processed':len(results),'results':results}
+
+
+# ROM 18.22.2 arrival notification worker
+import threading
+import time
+_TRAVEL_WORKER_STARTED=False
+
+def _arrival_keyboard(node_id):
+    from keyboards import city_kb, main_kb
+    return city_kb() if str(node_id)==CITY_NODE else main_kb()
+
+def _send_arrival(bot,result):
+    try:
+        from handlers.map import build_map_inline_kb
+        text=f"✅ Подорож завершено\n\nТи прибув у:\n{WORLD_NODES[result['to_node']]['name']}"
+        bot.send_message(int(result['user_id']),text,reply_markup=_arrival_keyboard(result['to_node']))
+        bot.send_message(int(result['user_id']),"🗺️ Доступні напрямки:",reply_markup=build_map_inline_kb(int(result['user_id'])))
+        return True
+    except Exception:
+        return False
+
+def recover_travels_after_restart(bot=None,now=None):
+    recovered=recover_due_travels(now=now)
+    notified=[]
+    if bot is not None:
+        for result in recovered['results']:
+            if result.get('success') and _send_arrival(bot,result): notified.append(result['travel_id'])
+    return {'success':True,'processed':recovered['processed'],'notified_travel_ids':notified,'results':recovered['results']}
+
+def start_travel_worker(bot,interval_seconds=1.0):
+    global _TRAVEL_WORKER_STARTED
+    if _TRAVEL_WORKER_STARTED:return False
+    _TRAVEL_WORKER_STARTED=True
+    def worker():
+        while True:
+            try: recover_travels_after_restart(bot)
+            except Exception: pass
+            time.sleep(max(0.5,float(interval_seconds)))
+    threading.Thread(target=worker,name='location-travel-worker',daemon=True).start();return True
+
+
+def is_user_travelling(user_id, *, db_path=None):
+    return get_active_travel(int(user_id),db_path=db_path) is not None
 
 ============================================================
 FILE: utils.py
