@@ -183,6 +183,12 @@ def _trade_item_kb(trade_id, inventory_id, quantity, page=0):
 
 
 def _send_trade_editor(bot, chat_id, user_id, trade_id, message_id=None):
+    """Render and remember every actionable trade editor panel.
+
+    Stage 18.22.6 originally remembered only the later synchronized renderer.
+    The recipient's first editor is created through this earlier canonical
+    helper, so its Telegram message_id must be captured here as well.
+    """
     state = get_player_trade_editor_state(trade_id, user_id)
     if not state.get("success"):
         bot.send_message(chat_id, "ℹ️ Обмін уже неактивний.")
@@ -198,13 +204,22 @@ def _send_trade_editor(bot, chat_id, user_id, trade_id, message_id=None):
             parse_mode="HTML",
             reply_markup=keyboard,
         )
+        _remember_player_trade_panel_18_22_6(
+            trade_id, user_id, chat_id, message_id
+        )
     else:
-        bot.send_message(
+        sent = bot.send_message(
             chat_id,
             text,
             parse_mode="HTML",
             reply_markup=keyboard,
         )
+        sent_id = getattr(sent, "message_id", None)
+        if sent_id is not None:
+            _remember_player_trade_panel_18_22_6(
+                trade_id, user_id, chat_id, sent_id
+            )
+
 
 def _register_player_interaction_base_handlers_12_6_8(bot):
     @bot.message_handler(func=lambda message: getattr(message, "text", None) == PLAYER_LIST_BUTTON)
