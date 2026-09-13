@@ -1644,20 +1644,26 @@ def _register_trade_navigation_and_categories_12_6_4(bot):
             bot.send_message(call.message.chat.id, "ℹ️ Обмін уже неактивний.", reply_markup=main_kb())
             return
         globals().get("TRADE_AMOUNT_INPUT_STATE_12_6_3", {}).pop(int(call.from_user.id), None)
-        own="❌ Обмін скасовано.\n\n✅ Персонаж знову доступний для інших дій."
-        _safe_edit_message_text(bot, own, call.message.chat.id, call.message.message_id)
+        actor=int(call.from_user.id)
+        own="❌ Обмін скасовано.\n\nСесію обміну завершено."
+        _remember_player_trade_panel_18_22_6(trade_id, actor, call.message.chat.id, call.message.message_id)
+        _terminalize_player_trade_panel_18_22_6(bot, trade_id, actor, own)
         bot.send_message(
             call.message.chat.id,
-            get_location_context_return_text(int(call.from_user.id)),
-            reply_markup=get_location_context_kb(int(call.from_user.id)),
+            get_location_context_return_text(actor),
+            reply_markup=get_location_context_kb(actor),
         )
-        other=(int(result["recipient_user_id"]) if int(call.from_user.id)==int(result["initiator_user_id"]) else int(result["initiator_user_id"]))
+        other=(int(result["recipient_user_id"]) if actor==int(result["initiator_user_id"]) else int(result["initiator_user_id"]))
         globals().get("TRADE_AMOUNT_INPUT_STATE_12_6_3", {}).pop(other, None)
+        other_text="❌ Обмін скасовано іншим гравцем.\n\nСесію обміну завершено."
+        _terminalize_player_trade_panel_18_22_6(
+            bot, trade_id, other, other_text,
+            fallback="❌ Інший гравець скасував обмін.\n\n✅ Персонаж знову доступний для інших дій.",
+        )
         try:
             bot.send_message(
                 other,
-                "❌ Інший гравець скасував обмін.\n\n"
-                "✅ Персонаж знову доступний для інших дій.",
+                get_location_context_return_text(other),
                 reply_markup=get_location_context_kb(other),
             )
         except Exception:
@@ -1785,6 +1791,54 @@ def _trade_own_confirmed_12_7_0(state):
     return bool(side and trade.get(f"{side}_confirmed"))
 
 
+# ROM Stage 18.22.6 PLAYER TRADE TERMINAL UI CLEANUP
+# Runtime-only references are sufficient for live cancellation. After restart,
+# stale callbacks remain fail-closed through the authoritative trade status.
+_PLAYER_TRADE_PANEL_REFS_18_22_6 = {}
+
+
+def _remember_player_trade_panel_18_22_6(trade_id, user_id, chat_id, message_id):
+    key = (int(trade_id), int(user_id))
+    _PLAYER_TRADE_PANEL_REFS_18_22_6[key] = {
+        "chat_id": int(chat_id),
+        "message_id": int(message_id),
+    }
+    return dict(_PLAYER_TRADE_PANEL_REFS_18_22_6[key])
+
+
+def _forget_player_trade_panel_18_22_6(trade_id, user_id):
+    return _PLAYER_TRADE_PANEL_REFS_18_22_6.pop((int(trade_id), int(user_id)), None)
+
+
+def _terminalize_player_trade_panel_18_22_6(bot, trade_id, user_id, text, fallback=None):
+    ref = _forget_player_trade_panel_18_22_6(trade_id, user_id)
+    if ref:
+        try:
+            bot.edit_message_text(
+                text,
+                chat_id=int(ref["chat_id"]),
+                message_id=int(ref["message_id"]),
+                reply_markup=None,
+            )
+            return {"success": True, "edited": True, "fallback_sent": False}
+        except Exception:
+            try:
+                bot.edit_message_reply_markup(
+                    chat_id=int(ref["chat_id"]),
+                    message_id=int(ref["message_id"]),
+                    reply_markup=None,
+                )
+            except Exception:
+                pass
+    if fallback:
+        try:
+            bot.send_message(int(user_id), fallback)
+            return {"success": True, "edited": False, "fallback_sent": True}
+        except Exception:
+            pass
+    return {"success": False, "edited": False, "fallback_sent": False}
+
+
 def _trade_show_current_stage_12_7_0(bot, chat_id, user_id, trade_id, message_id=None):
     state = get_player_trade_editor_state(int(trade_id), int(user_id))
     if not state.get("success"):
@@ -1805,8 +1859,12 @@ def _trade_show_current_stage_12_7_0(bot, chat_id, user_id, trade_id, message_id
             bot, text, chat_id, message_id,
             parse_mode="HTML", reply_markup=keyboard,
         )
+        _remember_player_trade_panel_18_22_6(trade_id, user_id, chat_id, message_id)
     else:
-        bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=keyboard)
+        sent = bot.send_message(chat_id, text, parse_mode="HTML", reply_markup=keyboard)
+        sent_id = getattr(sent, "message_id", None)
+        if sent_id is not None:
+            _remember_player_trade_panel_18_22_6(trade_id, user_id, chat_id, sent_id)
     return True
 
 
