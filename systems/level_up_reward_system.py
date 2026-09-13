@@ -19,10 +19,10 @@ def calculate_level_reward(reached_level):
     milestone = level % 5 == 0
     return {
         "reached_level": level,
-        "gold": level * 10 + (level * 20 if milestone else 0),
+        "gold": level * (12 if milestone else 8),
         "small_health_potions": 3,
         "small_mana_potions": 1,
-        "refine_stones": 5,
+        "refine_stones": 4 if milestone else 2,
         "medium_health_potions": 2 if milestone else 0,
         "medium_mana_potions": 1 if milestone else 0,
         "crystals": 0,
