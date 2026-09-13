@@ -49,7 +49,7 @@ def init_db():
         gold REAL,
         kills INTEGER,
         bag_slots INTEGER,
-        current_location TEXT,
+        current_location TEXT DEFAULT 'start_path',
 
         str INTEGER,
         dex INTEGER,
@@ -130,7 +130,7 @@ def init_db():
         ("users", "gold", "REAL DEFAULT 0"),
         ("users", "kills", "INTEGER DEFAULT 0"),
         ("users", "bag_slots", "INTEGER DEFAULT 60"),
-        ("users", "current_location", "TEXT DEFAULT 'city'"),
+        ("users", "current_location", "TEXT DEFAULT 'start_path'"),
 
         ("inventory", "quantity", "INTEGER DEFAULT 1"),
         ("inventory", "durability", "INTEGER DEFAULT NULL"),
@@ -174,7 +174,7 @@ def init_db():
 
     cursor.execute("""
     UPDATE users
-    SET current_location = 'city'
+    SET current_location = 'start_path'
     WHERE current_location IS NULL OR current_location = ''
     """)
 

@@ -2166,12 +2166,8 @@ _BASE_BUILD_TAVERN_TEXT_17_11_2_1 = build_tavern_text
 
 
 def build_city_text(user_id):
-    location_id = get_current_location(user_id)
-    location = LOCATIONS.get(location_id, LOCATIONS["start_path"])
     text = (
         f"🏙️ Місто\n\n"
-        f"📍 Регіон:\n"
-        f"{location['name']}\n\n"
         f"Перед тобою центральна площа табору мандрівників, де сходяться "
         f"дороги торговців, ремісників і шукачів пригод. З майстерень "
         f"долинає дзенькіт металу, торговці закликають оглянути товари, "

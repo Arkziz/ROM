@@ -419,7 +419,7 @@ def reset_hero_for_test(user_id):
                     "gold": 0.0,
                     "kills": 0,
                     "bag_slots": max(int(globals().get("DEFAULT_BAG_SLOTS", 60)), int(get_bag_capacity(user_id))),  # ROM 17.32.1 preserve account entitlement
-                    "current_location": "city",  # ROM 18.22.1 DEV reset starts in City
+                    "current_location": "start_path",  # ROM 18.23.3 DEV reset mirrors new-character start
                     "str": 10,
                     "dex": 10,
                     "intelligence": 10,
