@@ -2168,7 +2168,7 @@ _BASE_BUILD_TAVERN_TEXT_17_11_2_1 = build_tavern_text
 def build_city_text(user_id):
     location_id = get_current_location(user_id)
     location = LOCATIONS.get(location_id, LOCATIONS["start_path"])
-    return (
+    text = (
         f"🏙️ Місто\n\n"
         f"📍 Регіон:\n"
         f"{location['name']}\n\n"
@@ -2179,6 +2179,8 @@ def build_city_text(user_id):
         f"підготуватися до нової подорожі, поповнити припаси та дізнатися "
         f"останні новини."
     )
+    return text + "\n\n" + _online_presence_block_18_22_7(user_id, city=True)
+
 
 
 def build_craft_district_text(user_id):
@@ -2286,8 +2288,23 @@ def account_menu_kb_17_30_1_4():
     return kb
 
 # Restore the location/gameplay builder used by 👀 Роззирнутися.
+def _online_presence_block_18_22_7(user_id, *, city=False):
+    from systems.player_interaction_system import get_online_player_counts
+
+    result = get_online_player_counts(user_id)
+    if not result.get("success"):
+        return "👥 Гравці:\n🟢 Дані про онлайн тимчасово недоступні"
+    location_label = "У Місті" if city else "У цій локації"
+    return (
+        "👥 Гравці:\n"
+        f"🟢 Усього онлайн: {int(result.get('online_total') or 0)}\n"
+        f"📍 {location_label}: {int(result.get('online_here') or 0)}"
+    )
+
 def build_main_menu_text(user_id, show_location_description=False):
-    return _BUILD_MAIN_MENU_TEXT_BEFORE_EXP_BONUS_STATUS_17_30_1_1(
+    text = _BUILD_MAIN_MENU_TEXT_BEFORE_EXP_BONUS_STATUS_17_30_1_1(
         user_id, show_location_description=show_location_description
     )
+    return text.rstrip() + "\n\n" + _online_presence_block_18_22_7(user_id, city=False)
+
 

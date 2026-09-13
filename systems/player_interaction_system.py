@@ -323,6 +323,58 @@ def _pick_user_column(columns, candidates):
     return None
 
 
+def get_online_player_counts(user_id, *, now=None, db_path=None):
+    """Return total online and online in the viewer's location, including viewer.
+
+    Uses the canonical 300-second presence timeout shared by player discovery,
+    trade availability and duel availability. The query is read-only.
+    """
+    uid = int(user_id)
+    current = now or _now()
+    if current.tzinfo is None:
+        current = current.replace(tzinfo=timezone.utc)
+    cutoff = _text(current - timedelta(seconds=PLAYER_ONLINE_TIMEOUT_SECONDS))
+    conn = _connect(db_path)
+    try:
+        columns = _users_column_names(conn)
+        location_col = _pick_user_column(columns, ("current_location", "location"))
+        name_col = _pick_user_column(columns, ("character_name", "name", "username"))
+        if location_col is None or name_col is None:
+            raise RuntimeError("users location/name columns are unavailable")
+        viewer = conn.execute(
+            f'SELECT "{location_col}" AS location FROM users WHERE user_id=?',
+            (uid,),
+        ).fetchone()
+        if not viewer or not viewer["location"]:
+            return {
+                "success": False,
+                "reason": "viewer_location_missing",
+                "online_total": 0,
+                "online_here": 0,
+            }
+        base_where = (
+            'last_activity_at IS NOT NULL AND last_activity_at>=? '
+            f'AND TRIM(COALESCE("{name_col}", ""))<>""'
+        )
+        online_total = int(conn.execute(
+            f'SELECT COUNT(*) FROM users WHERE {base_where}',
+            (cutoff,),
+        ).fetchone()[0] or 0)
+        online_here = int(conn.execute(
+            f'SELECT COUNT(*) FROM users WHERE "{location_col}"=? AND {base_where}',
+            (viewer["location"], cutoff),
+        ).fetchone()[0] or 0)
+        return {
+            "success": True,
+            "location": str(viewer["location"]),
+            "online_total": online_total,
+            "online_here": online_here,
+            "timeout_seconds": PLAYER_ONLINE_TIMEOUT_SECONDS,
+            "includes_viewer": True,
+        }
+    finally:
+        conn.close()
+
 def get_online_players_in_same_location(user_id, *, page=0,
                                         page_size=PLAYER_DISCOVERY_PAGE_SIZE,
                                         now=None, db_path=None):

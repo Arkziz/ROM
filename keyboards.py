@@ -42,14 +42,13 @@ def city_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
     # Міські напрямки згруповані по 2 кнопки в ряд.
-    # 🗺️ Мапа завжди окремо і останньою кнопкою внизу.
     kb.add("🛒 Торговий ряд", "🏛️ Торговий дім")
     kb.add("⚒️ Ремісничий квартал", "📜 Гільдія Найманців")
     kb.add("🏰 Зала Гільдій", "🏛️ Ратуша")
     kb.add("🍺 Таверна")
-    kb.add("🗺️ Мапа")
-
+    kb.add("👀 Роззирнутися", "🗺️ Мапа")
     return kb
+
 
 def trader_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
