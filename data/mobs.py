@@ -10,16 +10,8 @@ START_PATH_MOBS = [
         "min_player_level": 1,
         "location_id": "start_path",
 
-        "hp_min": 45,
-        "hp_max": 55,
 
-        "attack_min": 7,
-        "attack_max": 9,
 
-        "pdef_min": 3,
-        "pdef_max": 5,
-        "mdef_min": 1,
-        "mdef_max": 2,
 
         "dex_min": 5,
         "dex_max": 7,
@@ -46,16 +38,8 @@ START_PATH_MOBS = [
         "min_player_level": 1,
         "location_id": "start_path",
 
-        "hp_min": 38,
-        "hp_max": 48,
 
-        "attack_min": 8,
-        "attack_max": 10,
 
-        "pdef_min": 1,
-        "pdef_max": 2,
-        "mdef_min": 4,
-        "mdef_max": 6,
 
         "dex_min": 4,
         "dex_max": 6,
@@ -84,16 +68,8 @@ START_PATH_MOBS = [
         "min_player_level": 1,
         "location_id": "start_path",
 
-        "hp_min": 68,
-        "hp_max": 82,
 
-        "attack_min": 10,
-        "attack_max": 13,
 
-        "pdef_min": 5,
-        "pdef_max": 7,
-        "mdef_min": 2,
-        "mdef_max": 3,
 
         "dex_min": 6,
         "dex_max": 8,
@@ -120,16 +96,8 @@ START_PATH_MOBS = [
         "min_player_level": 1,
         "location_id": "start_path",
 
-        "hp_min": 62,
-        "hp_max": 76,
 
-        "attack_min": 11,
-        "attack_max": 14,
 
-        "pdef_min": 2,
-        "pdef_max": 3,
-        "mdef_min": 6,
-        "mdef_max": 8,
 
         "dex_min": 4,
         "dex_max": 6,
@@ -158,16 +126,8 @@ START_PATH_MOBS = [
         "min_player_level": 2,
         "location_id": "start_path",
 
-        "hp_min": 75,
-        "hp_max": 92,
 
-        "attack_min": 14,
-        "attack_max": 17,
 
-        "pdef_min": 4,
-        "pdef_max": 6,
-        "mdef_min": 2,
-        "mdef_max": 4,
 
         "dex_min": 12,
         "dex_max": 15,
@@ -194,16 +154,8 @@ START_PATH_MOBS = [
         "min_player_level": 2,
         "location_id": "start_path",
 
-        "hp_min": 72,
-        "hp_max": 88,
 
-        "attack_min": 15,
-        "attack_max": 19,
 
-        "pdef_min": 2,
-        "pdef_max": 4,
-        "mdef_min": 7,
-        "mdef_max": 10,
 
         "dex_min": 10,
         "dex_max": 13,
@@ -232,16 +184,8 @@ START_PATH_MOBS = [
         "min_player_level": 3,
         "location_id": "start_path",
 
-        "hp_min": 95,
-        "hp_max": 115,
 
-        "attack_min": 17,
-        "attack_max": 21,
 
-        "pdef_min": 6,
-        "pdef_max": 8,
-        "mdef_min": 3,
-        "mdef_max": 5,
 
         "dex_min": 13,
         "dex_max": 16,
@@ -268,16 +212,8 @@ START_PATH_MOBS = [
         "min_player_level": 3,
         "location_id": "start_path",
 
-        "hp_min": 88,
-        "hp_max": 108,
 
-        "attack_min": 19,
-        "attack_max": 23,
 
-        "pdef_min": 3,
-        "pdef_max": 5,
-        "mdef_min": 9,
-        "mdef_max": 12,
 
         "dex_min": 10,
         "dex_max": 13,
@@ -306,16 +242,8 @@ START_PATH_MOBS = [
         "min_player_level": 4,
         "location_id": "start_path",
 
-        "hp_min": 130,
-        "hp_max": 155,
 
-        "attack_min": 22,
-        "attack_max": 27,
 
-        "pdef_min": 8,
-        "pdef_max": 11,
-        "mdef_min": 4,
-        "mdef_max": 6,
 
         "dex_min": 12,
         "dex_max": 15,
@@ -342,16 +270,8 @@ START_PATH_MOBS = [
         "min_player_level": 4,
         "location_id": "start_path",
 
-        "hp_min": 120,
-        "hp_max": 145,
 
-        "attack_min": 24,
-        "attack_max": 29,
 
-        "pdef_min": 4,
-        "pdef_max": 6,
-        "mdef_min": 11,
-        "mdef_max": 14,
 
         "dex_min": 11,
         "dex_max": 14,
@@ -387,16 +307,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 6,
         "location_id": "dark_forest",
 
-        "hp_min": 165,
-        "hp_max": 195,
 
-        "attack_min": 28,
-        "attack_max": 34,
 
-        "pdef_min": 10,
-        "pdef_max": 13,
-        "mdef_min": 5,
-        "mdef_max": 7,
 
         "dex_min": 11,
         "dex_max": 14,
@@ -423,16 +335,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 6,
         "location_id": "dark_forest",
 
-        "hp_min": 155,
-        "hp_max": 185,
 
-        "attack_min": 30,
-        "attack_max": 36,
 
-        "pdef_min": 5,
-        "pdef_max": 7,
-        "mdef_min": 13,
-        "mdef_max": 16,
 
         "dex_min": 9,
         "dex_max": 12,
@@ -461,16 +365,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 6,
         "location_id": "dark_forest",
 
-        "hp_min": 205,
-        "hp_max": 240,
 
-        "attack_min": 32,
-        "attack_max": 38,
 
-        "pdef_min": 12,
-        "pdef_max": 15,
-        "mdef_min": 6,
-        "mdef_max": 8,
 
         "dex_min": 15,
         "dex_max": 18,
@@ -497,16 +393,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 6,
         "location_id": "dark_forest",
 
-        "hp_min": 190,
-        "hp_max": 225,
 
-        "attack_min": 35,
-        "attack_max": 41,
 
-        "pdef_min": 6,
-        "pdef_max": 8,
-        "mdef_min": 15,
-        "mdef_max": 19,
 
         "dex_min": 10,
         "dex_max": 13,
@@ -535,16 +423,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 7,
         "location_id": "dark_forest",
 
-        "hp_min": 275,
-        "hp_max": 320,
 
-        "attack_min": 42,
-        "attack_max": 50,
 
-        "pdef_min": 10,
-        "pdef_max": 13,
-        "mdef_min": 5,
-        "mdef_max": 7,
 
         "dex_min": 12,
         "dex_max": 15,
@@ -571,16 +451,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 7,
         "location_id": "dark_forest",
 
-        "hp_min": 235,
-        "hp_max": 275,
 
-        "attack_min": 43,
-        "attack_max": 52,
 
-        "pdef_min": 6,
-        "pdef_max": 8,
-        "mdef_min": 17,
-        "mdef_max": 21,
 
         "dex_min": 9,
         "dex_max": 12,
@@ -609,16 +481,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 8,
         "location_id": "dark_forest",
 
-        "hp_min": 340,
-        "hp_max": 395,
 
-        "attack_min": 40,
-        "attack_max": 47,
 
-        "pdef_min": 18,
-        "pdef_max": 23,
-        "mdef_min": 8,
-        "mdef_max": 11,
 
         "dex_min": 10,
         "dex_max": 13,
@@ -645,16 +509,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 8,
         "location_id": "dark_forest",
 
-        "hp_min": 300,
-        "hp_max": 350,
 
-        "attack_min": 47,
-        "attack_max": 55,
 
-        "pdef_min": 7,
-        "pdef_max": 10,
-        "mdef_min": 20,
-        "mdef_max": 25,
 
         "dex_min": 10,
         "dex_max": 13,
@@ -683,16 +539,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 9,
         "location_id": "dark_forest",
 
-        "hp_min": 395,
-        "hp_max": 460,
 
-        "attack_min": 52,
-        "attack_max": 62,
 
-        "pdef_min": 20,
-        "pdef_max": 26,
-        "mdef_min": 9,
-        "mdef_max": 12,
 
         "dex_min": 9,
         "dex_max": 12,
@@ -719,16 +567,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 9,
         "location_id": "dark_forest",
 
-        "hp_min": 340,
-        "hp_max": 400,
 
-        "attack_min": 56,
-        "attack_max": 66,
 
-        "pdef_min": 8,
-        "pdef_max": 11,
-        "mdef_min": 23,
-        "mdef_max": 29,
 
         "dex_min": 9,
         "dex_max": 12,
