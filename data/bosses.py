@@ -6,9 +6,10 @@ write to SQLite, award rewards, or call Telegram APIs.
 from __future__ import annotations
 
 BOSS_SCHEMA_VERSION = "15.1.0"
-BOSS_CORE_STAT_MULTIPLIER = 2.0
-BOSS_HP_MULTIPLIER = BOSS_CORE_STAT_MULTIPLIER
-BOSS_ATTACK_MULTIPLIER = BOSS_CORE_STAT_MULTIPLIER
+BOSS_PRIMARY_STAT_MULTIPLIER = 2.2
+BOSS_HP_OUTPUT_MULTIPLIER = 1.35
+BOSS_ELITE_HP_CEILING_MULTIPLIER = 1.8
+BOSS_ELITE_ATTACK_CEILING_MULTIPLIER = 1.8
 BOSS_ENRAGE_HP_PERCENT = 0.25
 
 # Stage 15.2.0 safety gate. Encounter architecture is installed now, but live
@@ -25,13 +26,6 @@ BOSS_DEFINITIONS = {
         "level_max": 5,
         "attack_type": "physical",
         "reference_level": 5,
-        "reference_stats": {
-            "hp_min": 550, "hp_max": 650,
-            "attack_min": 60, "attack_max": 75,
-            "pdef_min": 12, "pdef_max": 16,
-            "mdef_min": 8, "mdef_max": 12,
-            "dex_min": 15, "dex_max": 18,
-        },
         "ai_before_enrage": (
             ("ferocious_bite", 0.55),
             ("fang_rend", 0.25),
@@ -77,13 +71,6 @@ BOSS_DEFINITIONS = {
         "level_max": 10,
         "attack_type": "physical",
         "reference_level": 10,
-        "reference_stats": {
-            "hp_min": 1650, "hp_max": 1930,
-            "attack_min": 145, "attack_max": 175,
-            "pdef_min": 30, "pdef_max": 36,
-            "mdef_min": 16, "mdef_max": 22,
-            "dex_min": 16, "dex_max": 20,
-        },
         "ai_before_enrage": (
             ("chieftain_axe", 0.50),
             ("skull_splitter", 0.25),

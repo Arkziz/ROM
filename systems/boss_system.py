@@ -11,24 +11,18 @@ import random
 from typing import Any, Mapping
 
 from data.bosses import (
-    BOSS_ATTACK_MULTIPLIER,
-    BOSS_CORE_STAT_MULTIPLIER,
     BOSS_DEFINITIONS,
-    BOSS_HP_MULTIPLIER,
     BOSS_SCHEMA_VERSION,
     BOSS_ENCOUNTERS_ENABLED,
     BOSS_ENCOUNTER_CHANCE_PERCENT,
     get_location_boss_definition,
+    BOSS_PRIMARY_STAT_MULTIPLIER,
+    BOSS_HP_OUTPUT_MULTIPLIER,
+    BOSS_ELITE_HP_CEILING_MULTIPLIER,
+    BOSS_ELITE_ATTACK_CEILING_MULTIPLIER,
 )
 from data.mobs import get_mobs_for_location
 
-STAT_RANGE_KEYS = (
-    "hp_min", "hp_max", "attack_min", "attack_max",
-    "pdef_min", "pdef_max", "mdef_min", "mdef_max",
-    "dex_min", "dex_max",
-    "str_min", "str_max", "int_min", "int_max",
-    "wis_min", "wis_max", "sta_min", "sta_max",
-)
 
 
 def _int(value: Any, default: int = 0) -> int:
@@ -57,33 +51,6 @@ def _average_range(templates, minimum_key, maximum_key, fallback=1):
     return max(1, round(sum(mins) / len(mins))), max(1, round(sum(maxs) / len(maxs)))
 
 
-def derive_lower_anchor(definition: Mapping[str, Any]) -> dict[str, int]:
-    """Build the location-min-level anchor from production mob data."""
-    location_id = str(definition["location_id"])
-    level_min = _int(definition["level_min"], 1)
-    templates = _templates_for_level(location_id, level_min)
-    hp_min, hp_max = _average_range(templates, "hp_min", "hp_max")
-    atk_min, atk_max = _average_range(templates, "attack_min", "attack_max")
-    pdef_min, pdef_max = _average_range(templates, "pdef_min", "pdef_max")
-    mdef_min, mdef_max = _average_range(templates, "mdef_min", "mdef_max")
-    dex_min, dex_max = _average_range(templates, "dex_min", "dex_max")
-    str_min, str_max = _average_range(templates, "str_min", "str_max")
-    int_min, int_max = _average_range(templates, "int_min", "int_max")
-    wis_min, wis_max = _average_range(templates, "wis_min", "wis_max")
-    sta_min, sta_max = _average_range(templates, "sta_min", "sta_max")
-    return {
-        "hp_min": max(1, round(hp_min * BOSS_HP_MULTIPLIER)),
-        "hp_max": max(1, round(hp_max * BOSS_HP_MULTIPLIER)),
-        "attack_min": max(1, round(atk_min * BOSS_ATTACK_MULTIPLIER)),
-        "attack_max": max(1, round(atk_max * BOSS_ATTACK_MULTIPLIER)),
-        "pdef_min": pdef_min, "pdef_max": pdef_max,
-        "mdef_min": mdef_min, "mdef_max": mdef_max,
-        "dex_min": dex_min, "dex_max": dex_max,
-        "str_min": str_min, "str_max": str_max,
-        "int_min": int_min, "int_max": int_max,
-        "wis_min": wis_min, "wis_max": wis_max,
-        "sta_min": sta_min, "sta_max": sta_max,
-    }
 
 
 def scale_boss_stat_ranges(definition: Mapping[str, Any], player_level: int) -> dict[str, int]:
@@ -97,10 +64,10 @@ def scale_boss_stat_ranges(definition: Mapping[str, Any], player_level: int) -> 
     if not templates:
         raise ValueError(f"No normal mob templates for boss reference: {definition['location_id']} level {level}")
 
-    boss_primary_multiplier = 2.2
-    boss_hp_multiplier = 1.35
-    elite_hp_multiplier = 1.8
-    elite_attack_multiplier = 1.8
+    boss_primary_multiplier = BOSS_PRIMARY_STAT_MULTIPLIER
+    boss_hp_multiplier = BOSS_HP_OUTPUT_MULTIPLIER
+    elite_hp_multiplier = BOSS_ELITE_HP_CEILING_MULTIPLIER
+    elite_attack_multiplier = BOSS_ELITE_ATTACK_CEILING_MULTIPLIER
     scaled = {}
     for prefix in ("dex", "str", "int", "wis", "sta"):
         lo, hi = _average_range(templates, f"{prefix}_min", f"{prefix}_max")
@@ -186,7 +153,7 @@ def build_location_boss(location_id: str, player_level: int, rng=None) -> dict[s
         "elite_exp_multiplier": 5.0, "elite_gold_multiplier": 5.0,
         "boss_exp_multiplier": 5.0, "boss_gold_multiplier": 5.0,
         "enemy_effects": {}, "boss_state": create_boss_state(),
-        "boss_definition": copy.deepcopy(definition), "boss_scaled_ranges": ranges,
+        "boss_definition": copy.deepcopy(definition),
     }
 
 

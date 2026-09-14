@@ -1,23 +1,53 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Maintained Rule A smoke test for dynamic boss scaling."""
+"""Maintained dynamic Rule A boss smoke after legacy configuration cleanup."""
 from pathlib import Path
-import random,sys
-ROOT=Path(__file__).resolve().parent.parent
-if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
-from data.bosses import BOSS_DEFINITIONS
-from systems.boss_system import build_location_boss,scale_boss_stat_ranges
-for key,d in BOSS_DEFINITIONS.items():
-    assert "no_weaker_floor_by_level" not in d
-    for level in range(int(d["level_min"]),int(d["level_max"])+1):
-        ranges=scale_boss_stat_ranges(d,level)
-        seen=set()
+import random
+import sys
+
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from data.bosses import (
+    BOSS_DEFINITIONS,
+    BOSS_PRIMARY_STAT_MULTIPLIER,
+    BOSS_HP_OUTPUT_MULTIPLIER,
+    BOSS_ELITE_HP_CEILING_MULTIPLIER,
+    BOSS_ELITE_ATTACK_CEILING_MULTIPLIER,
+)
+from systems.boss_system import build_location_boss, scale_boss_stat_ranges
+
+assert BOSS_PRIMARY_STAT_MULTIPLIER == 2.2
+assert BOSS_HP_OUTPUT_MULTIPLIER == 1.35
+assert BOSS_ELITE_HP_CEILING_MULTIPLIER == 1.8
+assert BOSS_ELITE_ATTACK_CEILING_MULTIPLIER == 1.8
+
+for boss_key, definition in BOSS_DEFINITIONS.items():
+    assert "reference_stats" not in definition
+    expected_levels = range(int(definition["level_min"]), int(definition["level_max"]) + 1)
+    for level in expected_levels:
+        ranges = scale_boss_stat_ranges(definition, level)
+        snapshots = set()
         for seed in range(100):
-            b=build_location_boss(d["location_id"],level,random.Random(182760000+level*1000+seed))
-            assert b["hp"]>=ranges["elite_hp_ceiling"]+1
-            assert b["attack"]>=ranges["elite_attack_ceiling"]+1
-            assert b["hp"]==b["max_hp"]
-            assert b["def"]==(b["pdef"] if b["attack_type"]=="physical" else b["mdef"])
-            seen.add((b["str"],b["dex"],b["int"],b["wis"],b["sta"],b["hp"],b["attack"],b["pdef"],b["mdef"]))
-        assert len(seen)>1
-print("DYNAMIC_BOSS_RULE_A_OK")
+            boss = build_location_boss(
+                definition["location_id"], level, random.Random(182770000 + level * 1000 + seed)
+            )
+            assert "boss_scaled_ranges" not in boss
+            assert boss["hp"] == boss["max_hp"]
+            assert boss["hp"] >= ranges["elite_hp_ceiling"] + 1
+            assert boss["attack"] >= ranges["elite_attack_ceiling"] + 1
+            assert boss["def"] == (
+                boss["pdef"] if boss["attack_type"] == "physical" else boss["mdef"]
+            )
+            assert boss["boss_definition"]["skills"] == definition["skills"]
+            assert boss["boss_definition"]["enrage"] == definition["enrage"]
+            snapshots.add(
+                (
+                    boss["str"], boss["dex"], boss["int"], boss["wis"], boss["sta"],
+                    boss["hp"], boss["attack"], boss["pdef"], boss["mdef"],
+                )
+            )
+        assert len(snapshots) > 1
+
+print("BOSS_LEGACY_CONFIGURATION_CLEANUP_OK")
