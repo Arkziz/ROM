@@ -72,76 +72,54 @@ def roll_is_elite():
 
 
 def build_mob(mob_template):
-    hp = random.randint(
-        int(mob_template["hp_min"]),
-        int(mob_template["hp_max"])
-    )
+    # Build one canonical mob snapshot from one primary-stat roll.
+    import math
 
-    attack = random.randint(
-        int(mob_template["attack_min"]),
-        int(mob_template["attack_max"])
-    )
-
-    pdef = random.randint(
-        int(mob_template.get("pdef_min", mob_template.get("def_min", 1))),
-        int(mob_template.get("pdef_max", mob_template.get("def_max", 1)))
-    )
-
-    mdef = random.randint(
-        int(mob_template.get("mdef_min", mob_template.get("def_min", 1))),
-        int(mob_template.get("mdef_max", mob_template.get("def_max", 1)))
-    )
-
-    dex = random.randint(
-        int(mob_template["dex_min"]),
-        int(mob_template["dex_max"])
-    )
+    level = int(mob_template["level"])
+    attack_type = mob_template.get("attack_type", "physical")
     primary_stats = {
         stat: random.randint(
             int(mob_template[f"{stat}_min"]),
             int(mob_template[f"{stat}_max"]),
         )
-        for stat in ("str", "int", "wis", "sta")
+        for stat in ("str", "dex", "int", "wis", "sta")
     }
 
-    mob = {
+    hp = max(1, int(math.ceil((level * 10) + (primary_stats["sta"] * 5))))
+    if attack_type == "physical":
+        attack = max(1, int(math.ceil((level * 2) + primary_stats["str"])))
+    else:
+        attack = max(1, int(math.ceil(
+            (level * 2) + primary_stats["int"] + (primary_stats["wis"] * 0.25)
+        )))
+    pdef = max(1, int(math.ceil(primary_stats["sta"] * 0.5)))
+    mdef = max(1, int(math.ceil(primary_stats["wis"] * 0.75)))
+
+    return {
         "name": mob_template["name"],
         "base_name": mob_template["name"],
-
-        "level": int(mob_template["level"]),
+        "level": level,
         "location_id": mob_template.get("location_id", "start_path"),
-
         "hp": hp,
         "max_hp": hp,
-
         "attack": attack,
-
         "pdef": pdef,
         "mdef": mdef,
-
-        # compatibility
-        "def": pdef if mob_template.get("attack_type", "physical") == "physical" else mdef,
-
-        "dex": dex,
+        "def": pdef if attack_type == "physical" else mdef,
         "str": primary_stats["str"],
+        "dex": primary_stats["dex"],
         "int": primary_stats["int"],
         "wis": primary_stats["wis"],
         "sta": primary_stats["sta"],
-
-        "attack_type": mob_template.get("attack_type", "physical"),
-
+        "attack_type": attack_type,
         "min_gold": mob_template.get("min_gold", 0),
         "max_gold": mob_template.get("max_gold", 0),
-
         "loot_chance": mob_template.get("loot_chance", 0),
         "trash_items": mob_template.get("trash_items", []),
-
         "is_elite": False,
         "elite_exp_multiplier": 1.0,
-        "elite_gold_multiplier": 1.0
+        "elite_gold_multiplier": 1.0,
     }
-
-    return mob
 
 
 def apply_elite_modifier(mob):

@@ -117,6 +117,9 @@ def create_boss_state() -> dict[str, Any]:
 
 
 def build_location_boss(location_id: str, player_level: int, rng=None) -> dict[str, Any]:
+    # Build one boss snapshot from primary stats with one no-weaker floor.
+    import math
+
     definition = get_location_boss_definition(location_id)
     if not definition:
         raise ValueError(f"No boss definition for location: {location_id}")
@@ -129,15 +132,28 @@ def build_location_boss(location_id: str, player_level: int, rng=None) -> dict[s
         )
     ranges = scale_boss_stat_ranges(definition, level)
     rng = rng or random
-    hp = rng.randint(ranges["hp_min"], ranges["hp_max"])
-    attack = rng.randint(ranges["attack_min"], ranges["attack_max"])
-    pdef = rng.randint(ranges["pdef_min"], ranges["pdef_max"])
-    mdef = rng.randint(ranges["mdef_min"], ranges["mdef_max"])
-    dex = rng.randint(ranges["dex_min"], ranges["dex_max"])
     primary_stats = {
         stat: rng.randint(ranges[f"{stat}_min"], ranges[f"{stat}_max"])
-        for stat in ("str", "int", "wis", "sta")
+        for stat in ("str", "dex", "int", "wis", "sta")
     }
+    attack_type = definition.get("attack_type", "physical")
+    candidate_hp = max(1, int(math.ceil((level * 10) + (primary_stats["sta"] * 5))))
+    if attack_type == "physical":
+        candidate_attack = max(1, int(math.ceil((level * 2) + primary_stats["str"])))
+    else:
+        candidate_attack = max(1, int(math.ceil(
+            (level * 2) + primary_stats["int"] + (primary_stats["wis"] * 0.25)
+        )))
+    candidate_pdef = max(1, int(math.ceil(primary_stats["sta"] * 0.5)))
+    candidate_mdef = max(1, int(math.ceil(primary_stats["wis"] * 0.75)))
+
+    # One compatibility layer: a boss can become stronger, never weaker than
+    # the current scaled minimum for the same level.
+    hp = max(candidate_hp, int(ranges["hp_min"]))
+    attack = max(candidate_attack, int(ranges["attack_min"]))
+    pdef = max(candidate_pdef, int(ranges["pdef_min"]))
+    mdef = max(candidate_mdef, int(ranges["mdef_min"]))
+
     return {
         "boss_schema_version": BOSS_SCHEMA_VERSION,
         "boss_key": definition["boss_key"],
@@ -149,13 +165,13 @@ def build_location_boss(location_id: str, player_level: int, rng=None) -> dict[s
         "hp": hp, "max_hp": hp,
         "attack": attack,
         "pdef": pdef, "mdef": mdef,
-        "def": pdef if definition.get("attack_type") == "physical" else mdef,
+        "def": pdef if attack_type == "physical" else mdef,
         "str": primary_stats["str"],
-        "dex": dex,
+        "dex": primary_stats["dex"],
         "int": primary_stats["int"],
         "wis": primary_stats["wis"],
         "sta": primary_stats["sta"],
-        "attack_type": definition.get("attack_type", "physical"),
+        "attack_type": attack_type,
         "is_boss": True,
         "is_elite": False,
         "enemy_type": "boss",
