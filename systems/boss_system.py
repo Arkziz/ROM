@@ -87,7 +87,7 @@ def derive_lower_anchor(definition: Mapping[str, Any]) -> dict[str, int]:
 
 
 def scale_boss_stat_ranges(definition: Mapping[str, Any], player_level: int) -> dict[str, int]:
-    """Build boss ranges from same-level location mobs with one proportional multiplier."""
+    """Build primary ranges and canonical derived compatibility floor."""
     level_min = _int(definition["level_min"], 1)
     level_max = _int(definition["level_max"], level_min)
     level = max(level_min, min(level_max, _int(player_level, level_min)))
@@ -95,10 +95,20 @@ def scale_boss_stat_ranges(definition: Mapping[str, Any], player_level: int) -> 
     if not templates:
         raise ValueError(f"No normal mob templates for boss reference: {definition['location_id']} level {level}")
     scaled = {}
-    for prefix in ("hp", "attack", "pdef", "mdef", "dex", "str", "int", "wis", "sta"):
+    for prefix in ("dex", "str", "int", "wis", "sta"):
         lo, hi = _average_range(templates, f"{prefix}_min", f"{prefix}_max")
         scaled[f"{prefix}_min"] = max(1, round(lo * BOSS_CORE_STAT_MULTIPLIER))
         scaled[f"{prefix}_max"] = max(scaled[f"{prefix}_min"], round(hi * BOSS_CORE_STAT_MULTIPLIER))
+    floors = definition.get("no_weaker_floor_by_level") or {}
+    floor = floors.get(level)
+    if not isinstance(floor, Mapping):
+        raise ValueError(f"Canonical boss floor missing: {definition['boss_key']} level {level}")
+    for stat in ("hp", "attack", "pdef", "mdef"):
+        value = _int(floor.get(stat), 0)
+        if value < 1:
+            raise ValueError(f"Invalid canonical boss floor: {definition['boss_key']} level {level} {stat}")
+        scaled[f"{stat}_min"] = value
+        scaled[f"{stat}_max"] = value
     return scaled
 
 
