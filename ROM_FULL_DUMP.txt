@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-09-13 03:18:15 +03:00
+Created: 2026-09-15 01:27:09 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9444
-Scanned files: 10989
+Scanned files: 11207
 Included files: 200
-Excluded files: 10789
-Included source size: 2,60 MB
+Excluded files: 11007
+Included source size: 2,61 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 10783
+- excluded directory: 11001
 - excluded file name or pattern: 6
 - unsupported file type: 0
 
@@ -990,7 +990,7 @@ __all__ = [
 ============================================================
 FILE: data\bosses.py
 SIZE: 5320 bytes
-LAST WRITE: 2026-08-20 00:45:16
+LAST WRITE: 2026-09-15 01:22:44
 ============================================================
 
 """Canonical location-boss definitions for ROM Stage 15.
@@ -1247,8 +1247,8 @@ def calculate_damage_after_defense(attack, defense):
 
 ============================================================
 FILE: data\drop_tables.py
-SIZE: 9888 bytes
-LAST WRITE: 2026-09-11 01:20:47
+SIZE: 9880 bytes
+LAST WRITE: 2026-09-13 22:26:03
 ============================================================
 
 """Canonical central-drop configuration model for ROM Stage 11.
@@ -1297,9 +1297,9 @@ DROP_RULES = (
         "production_enabled": True,
         "resolver": "equipment",
         "enemy": {
-            "normal": {"chance": 0.20},
-            "elite": {"chance": 0.45},
-            "boss": {"chance": 0.70},
+            "normal": {"chance": 0.1},
+            "elite": {"chance": 0.3},
+            "boss": {"chance": 0.5},
         },
         "rarity_weights": {
             "normal": (("common", 0.80), ("uncommon", 0.20)),
@@ -1344,9 +1344,9 @@ DROP_RULES = (
         "resolver": "static_item",
         "item_id": 601,
         "enemy": {
-            "normal": {"chance": 0.08},
-            "elite": {"chance": 0.20},
-            "boss": {"chance": 0.50},
+            "normal": {"chance": 0.03},
+            "elite": {"chance": 0.1},
+            "boss": {"chance": 0.25},
         },
         "quantity": {"min": 1, "max": 1},
         "max_per_kill": 1,
@@ -1362,9 +1362,9 @@ DROP_RULES = (
         "production_enabled": True,
         "resolver": "rune",
         "enemy": {
-            "normal": {"chance": 0.05},
-            "elite": {"chance": 0.12},
-            "boss": {"chance": 0.35},
+            "normal": {"chance": 0.03},
+            "elite": {"chance": 0.1},
+            "boss": {"chance": 0.25},
         },
         "level_weights": {
             "normal": ((1, 1.00),),
@@ -1390,9 +1390,9 @@ DROP_RULES = (
         "production_enabled": True,
         "resolver": "weighted_item_pool",
         "enemy": {
-            "normal": {"chance": 0.06},
-            "elite": {"chance": 0.19},
-            "boss": {"chance": 0.45},
+            "normal": {"chance": 0.03},
+            "elite": {"chance": 0.1},
+            "boss": {"chance": 0.25},
         },
         "item_weights": {
             "normal": ((401, 4 / 6), (402, 2 / 6)),
@@ -1414,9 +1414,9 @@ DROP_RULES = (
         "resolver": "static_item",
         "item_id": 504,
         "enemy": {
-            "normal": {"chance": 0.0002},
-            "elite": {"chance": 0.001},
-            "boss": {"chance": 0.01},
+            "normal": {"chance": 0.005},
+            "elite": {"chance": 0.02},
+            "boss": {"chance": 0.05},
         },
         "quantity": {"min": 1, "max": 1},
         "max_per_kill": 1,
@@ -2192,8 +2192,8 @@ def is_location_unlocked(location_id, player_level):
 
 ============================================================
 FILE: data\mobs.py
-SIZE: 11649 bytes
-LAST WRITE: 2026-07-09 23:38:37
+SIZE: 16390 bytes
+LAST WRITE: 2026-09-14 22:21:00
 ============================================================
 
 # ==============================
@@ -2221,6 +2221,14 @@ START_PATH_MOBS = [
 
         "dex_min": 5,
         "dex_max": 7,
+               "str_min": 5,
+               "str_max": 7,
+               "int_min": 3,
+               "int_max": 4,
+               "wis_min": 2,
+               "wis_max": 3,
+               "sta_min": 7,
+               "sta_max": 10,
 
         "attack_type": "physical",
 
@@ -2249,6 +2257,14 @@ START_PATH_MOBS = [
 
         "dex_min": 4,
         "dex_max": 6,
+               "str_min": 3,
+               "str_max": 3,
+               "int_min": 5,
+               "int_max": 6,
+               "wis_min": 6,
+               "wis_max": 8,
+               "sta_min": 6,
+               "sta_max": 8,
 
         "attack_type": "magical",
 
@@ -2279,6 +2295,14 @@ START_PATH_MOBS = [
 
         "dex_min": 6,
         "dex_max": 8,
+               "str_min": 6,
+               "str_max": 9,
+               "int_min": 3,
+               "int_max": 5,
+               "wis_min": 3,
+               "wis_max": 4,
+               "sta_min": 10,
+               "sta_max": 14,
 
         "attack_type": "physical",
 
@@ -2307,6 +2331,14 @@ START_PATH_MOBS = [
 
         "dex_min": 4,
         "dex_max": 6,
+               "str_min": 3,
+               "str_max": 4,
+               "int_min": 5,
+               "int_max": 8,
+               "wis_min": 8,
+               "wis_max": 11,
+               "sta_min": 9,
+               "sta_max": 12,
 
         "attack_type": "magical",
 
@@ -2337,6 +2369,14 @@ START_PATH_MOBS = [
 
         "dex_min": 12,
         "dex_max": 15,
+               "str_min": 8,
+               "str_max": 11,
+               "int_min": 4,
+               "int_max": 5,
+               "wis_min": 3,
+               "wis_max": 6,
+               "sta_min": 9,
+               "sta_max": 13,
 
         "attack_type": "physical",
 
@@ -2365,6 +2405,14 @@ START_PATH_MOBS = [
 
         "dex_min": 10,
         "dex_max": 13,
+               "str_min": 4,
+               "str_max": 5,
+               "int_min": 7,
+               "int_max": 10,
+               "wis_min": 10,
+               "wis_max": 14,
+               "sta_min": 9,
+               "sta_max": 12,
 
         "attack_type": "magical",
 
@@ -2395,6 +2443,14 @@ START_PATH_MOBS = [
 
         "dex_min": 13,
         "dex_max": 16,
+               "str_min": 9,
+               "str_max": 13,
+               "int_min": 5,
+               "int_max": 6,
+               "wis_min": 4,
+               "wis_max": 7,
+               "sta_min": 12,
+               "sta_max": 16,
 
         "attack_type": "physical",
 
@@ -2423,6 +2479,14 @@ START_PATH_MOBS = [
 
         "dex_min": 10,
         "dex_max": 13,
+               "str_min": 4,
+               "str_max": 5,
+               "int_min": 8,
+               "int_max": 11,
+               "wis_min": 12,
+               "wis_max": 16,
+               "sta_min": 10,
+               "sta_max": 14,
 
         "attack_type": "magical",
 
@@ -2453,6 +2517,14 @@ START_PATH_MOBS = [
 
         "dex_min": 12,
         "dex_max": 15,
+               "str_min": 12,
+               "str_max": 17,
+               "int_min": 6,
+               "int_max": 8,
+               "wis_min": 6,
+               "wis_max": 8,
+               "sta_min": 16,
+               "sta_max": 22,
 
         "attack_type": "physical",
 
@@ -2481,6 +2553,14 @@ START_PATH_MOBS = [
 
         "dex_min": 11,
         "dex_max": 14,
+               "str_min": 5,
+               "str_max": 7,
+               "int_min": 11,
+               "int_max": 15,
+               "wis_min": 15,
+               "wis_max": 19,
+               "sta_min": 14,
+               "sta_max": 19,
 
         "attack_type": "magical",
 
@@ -2518,6 +2598,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 11,
         "dex_max": 14,
+               "str_min": 16,
+               "str_max": 22,
+               "int_min": 8,
+               "int_max": 10,
+               "wis_min": 7,
+               "wis_max": 10,
+               "sta_min": 21,
+               "sta_max": 27,
 
         "attack_type": "physical",
 
@@ -2546,6 +2634,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 9,
         "dex_max": 12,
+               "str_min": 7,
+               "str_max": 9,
+               "int_min": 14,
+               "int_max": 19,
+               "wis_min": 18,
+               "wis_max": 22,
+               "sta_min": 19,
+               "sta_max": 25,
 
         "attack_type": "magical",
 
@@ -2576,6 +2672,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 15,
         "dex_max": 18,
+               "str_min": 18,
+               "str_max": 24,
+               "int_min": 9,
+               "int_max": 11,
+               "wis_min": 8,
+               "wis_max": 11,
+               "sta_min": 27,
+               "sta_max": 34,
 
         "attack_type": "physical",
 
@@ -2604,6 +2708,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 10,
         "dex_max": 13,
+               "str_min": 8,
+               "str_max": 10,
+               "int_min": 16,
+               "int_max": 21,
+               "wis_min": 20,
+               "wis_max": 26,
+               "sta_min": 24,
+               "sta_max": 31,
 
         "attack_type": "magical",
 
@@ -2634,6 +2746,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 12,
         "dex_max": 15,
+               "str_min": 26,
+               "str_max": 34,
+               "int_min": 12,
+               "int_max": 16,
+               "wis_min": 7,
+               "wis_max": 10,
+               "sta_min": 39,
+               "sta_max": 48,
 
         "attack_type": "physical",
 
@@ -2662,6 +2782,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 9,
         "dex_max": 12,
+               "str_min": 10,
+               "str_max": 14,
+               "int_min": 22,
+               "int_max": 29,
+               "wis_min": 23,
+               "wis_max": 28,
+               "sta_min": 31,
+               "sta_max": 39,
 
         "attack_type": "magical",
 
@@ -2692,6 +2820,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 10,
         "dex_max": 13,
+               "str_min": 22,
+               "str_max": 29,
+               "int_min": 10,
+               "int_max": 14,
+               "wis_min": 11,
+               "wis_max": 15,
+               "sta_min": 50,
+               "sta_max": 61,
 
         "attack_type": "physical",
 
@@ -2720,6 +2856,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 10,
         "dex_max": 13,
+               "str_min": 11,
+               "str_max": 14,
+               "int_min": 23,
+               "int_max": 29,
+               "wis_min": 27,
+               "wis_max": 34,
+               "sta_min": 42,
+               "sta_max": 52,
 
         "attack_type": "magical",
 
@@ -2750,6 +2894,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 9,
         "dex_max": 12,
+               "str_min": 32,
+               "str_max": 42,
+               "int_min": 15,
+               "int_max": 19,
+               "wis_min": 12,
+               "wis_max": 16,
+               "sta_min": 59,
+               "sta_max": 72,
 
         "attack_type": "physical",
 
@@ -2778,6 +2930,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 9,
         "dex_max": 12,
+               "str_min": 14,
+               "str_max": 17,
+               "int_min": 29,
+               "int_max": 37,
+               "wis_min": 31,
+               "wis_max": 39,
+               "sta_min": 48,
+               "sta_max": 60,
 
         "attack_type": "magical",
 
@@ -2906,26 +3066,47 @@ def get_starting_max_hp():
 
 ============================================================
 FILE: data\player_progression.py
-SIZE: 2266 bytes
-LAST WRITE: 2026-08-04 21:52:46
+SIZE: 3071 bytes
+LAST WRITE: 2026-09-14 01:58:51
 ============================================================
 
 """Canonical pure player EXP progression rules shared by production and simulation."""
 from __future__ import annotations
 
 BASE_EXP_BY_LEVEL = {
-    1: 10, 2: 12, 3: 15, 4: 18, 5: 25, 6: 30, 7: 35, 8: 45, 9: 60, 10: 65,
-    11: 75, 12: 85, 13: 95, 14: 110, 15: 120, 16: 135, 17: 150, 18: 170,
-    19: 190, 20: 220, 21: 240, 22: 270, 23: 300, 24: 340, 25: 380,
-    26: 420, 27: 460, 28: 520, 29: 600, 30: 600,
+    # 1-10: smoothed early progression
+    1: 10, 2: 12, 3: 14, 4: 16, 5: 19,
+    6: 22, 7: 25, 8: 29, 9: 33, 10: 38,
+    # 11-14: bridge to unchanged level 15
+    11: 48, 12: 60, 13: 76, 14: 95,
+    # 15-30: unchanged production baseline
+    15: 120, 16: 135, 17: 150, 18: 170, 19: 190,
+    20: 220, 21: 240, 22: 270, 23: 300, 24: 340,
+    25: 380, 26: 420, 27: 460, 28: 520, 29: 600,
+    30: 600,
+    # 31-50: explicit endgame curve
+    31: 650, 32: 700, 33: 760, 34: 820, 35: 890,
+    36: 960, 37: 1040, 38: 1120, 39: 1210, 40: 1300,
+    41: 1400, 42: 1500, 43: 1620, 44: 1740, 45: 1870,
+    46: 2000, 47: 2150, 48: 2300, 49: 2470, 50: 2650,
 }
 
 CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL = {
-    1: 50, 2: 150, 3: 300, 4: 500, 5: 1200, 6: 1800, 7: 2500, 8: 3500,
-    9: 4500, 10: 5000, 11: 5500, 12: 6000, 13: 6000, 14: 6000, 15: 7000,
-    16: 7000, 17: 7000, 18: 8000, 19: 8000, 20: 8500, 21: 8500, 22: 9500,
-    23: 9500, 24: 9500, 25: 10500, 26: 10500, 27: 10500, 28: 12000,
-    29: 12000, 30: 14000,
+    # 1-10: smoothed early progression
+    1: 50, 2: 100, 3: 200, 4: 406, 5: 800,
+    6: 1136, 7: 1660, 8: 2379, 9: 3485, 10: 5000,
+    # 11-14: bridge to unchanged level 15
+    11: 5312, 12: 5750, 13: 6118, 14: 6579,
+    # 15-30: unchanged production baseline
+    15: 7000, 16: 7259, 17: 7667, 18: 7941, 19: 8158,
+    20: 8182, 21: 8750, 22: 9074, 23: 9500, 24: 9853,
+    25: 10263, 26: 10833, 27: 11522, 28: 11923, 29: 12000,
+    30: 14000,
+    # 31-50: explicit endgame curve
+    31: 14308, 32: 14643, 33: 15132, 34: 15549, 35: 15730,
+    36: 16146, 37: 16587, 38: 17188, 39: 17562, 40: 18077,
+    41: 18750, 42: 19333, 43: 19907, 44: 20546, 45: 21123,
+    46: 21875, 47: 22558, 48: 23478, 49: 24190, 50: 25000,
 }
 
 MAX_CONFIGURED_LEVEL = max(BASE_EXP_BY_LEVEL)
@@ -4234,8 +4415,8 @@ def get_character_profile_summary(user_id):
 
 ============================================================
 FILE: db_modules\connection.py
-SIZE: 7088 bytes
-LAST WRITE: 2026-09-13 01:05:50
+SIZE: 7121 bytes
+LAST WRITE: 2026-09-13 23:22:38
 ============================================================
 
 # ROM 17.19.1 MANA POTION PRICE BALANCE
@@ -4289,7 +4470,7 @@ def init_db():
         gold REAL,
         kills INTEGER,
         bag_slots INTEGER,
-        current_location TEXT,
+        current_location TEXT DEFAULT 'start_path',
 
         str INTEGER,
         dex INTEGER,
@@ -4370,7 +4551,7 @@ def init_db():
         ("users", "gold", "REAL DEFAULT 0"),
         ("users", "kills", "INTEGER DEFAULT 0"),
         ("users", "bag_slots", "INTEGER DEFAULT 60"),
-        ("users", "current_location", "TEXT DEFAULT 'city'"),
+        ("users", "current_location", "TEXT DEFAULT 'start_path'"),
 
         ("inventory", "quantity", "INTEGER DEFAULT 1"),
         ("inventory", "durability", "INTEGER DEFAULT NULL"),
@@ -4414,7 +4595,7 @@ def init_db():
 
     cursor.execute("""
     UPDATE users
-    SET current_location = 'city'
+    SET current_location = 'start_path'
     WHERE current_location IS NULL OR current_location = ''
     """)
 
@@ -4643,8 +4824,8 @@ __all__ = ['get_daily_quest_status']
 
 ============================================================
 FILE: db_modules\dev_compat.py
-SIZE: 51624 bytes
-LAST WRITE: 2026-09-13 01:05:50
+SIZE: 51643 bytes
+LAST WRITE: 2026-09-13 23:22:38
 ============================================================
 
 # ROM 17.17.1.5 WARRIOR SMALL SHIELD
@@ -5068,7 +5249,7 @@ def reset_hero_for_test(user_id):
                     "gold": 0.0,
                     "kills": 0,
                     "bag_slots": max(int(globals().get("DEFAULT_BAG_SLOTS", 60)), int(get_bag_capacity(user_id))),  # ROM 17.32.1 preserve account entitlement
-                    "current_location": "city",  # ROM 18.22.1 DEV reset starts in City
+                    "current_location": "start_path",  # ROM 18.23.3 DEV reset mirrors new-character start
                     "str": 10,
                     "dex": 10,
                     "intelligence": 10,
@@ -8749,8 +8930,8 @@ __all__ = ['is_inventory_item_equipped', 'find_equipped_slot_by_inventory_id', '
 
 ============================================================
 FILE: db_modules\location.py
-SIZE: 589 bytes
-LAST WRITE: 2026-09-13 01:05:50
+SIZE: 599 bytes
+LAST WRITE: 2026-09-13 23:22:38
 ============================================================
 
 """
@@ -8770,13 +8951,12 @@ def get_current_location(user_id):
     row = cursor.fetchone()
 
     if not row:
-        return "city"
+        return "start_path"
 
     if row[0] is None or row[0] == "":
-        return "city"
+        return "start_path"
 
     return row[0]
-
 
 def set_current_location(user_id, location_id):
     cursor.execute("""
@@ -8950,8 +9130,8 @@ def run_db_startup_maintenance():
 
 ============================================================
 FILE: db_modules\player.py
-SIZE: 7604 bytes
-LAST WRITE: 2026-09-13 01:05:50
+SIZE: 7622 bytes
+LAST WRITE: 2026-09-13 23:22:38
 ============================================================
 
 # ROM 17.18.2.2 BOW CROSSBOW DAMAGE DIFFERENTIATION
@@ -9127,7 +9307,7 @@ def create_user(user_id):
         0.0,
         0,
         DEFAULT_BAG_SLOTS,  # ROM 17.8.1 BASE BAG CAPACITY 60
-        "city",  # ROM 18.22.1 new characters start in the City node
+        "start_path",  # ROM 18.23.3 new characters start at Початок Шляху
         10,
         10,
         10,
@@ -18541,8 +18721,8 @@ def register_blacksmith_repair_confirmation_handlers(bot):
 
 ============================================================
 FILE: handlers\city.py
-SIZE: 82871 bytes
-LAST WRITE: 2026-09-13 02:11:10
+SIZE: 83483 bytes
+LAST WRITE: 2026-09-13 23:22:38
 ============================================================
 
 # ROM 17.11.2.1 CITY CRAFT TAVERN TEXT CLEANUP
@@ -20713,12 +20893,8 @@ _BASE_BUILD_TAVERN_TEXT_17_11_2_1 = build_tavern_text
 
 
 def build_city_text(user_id):
-    location_id = get_current_location(user_id)
-    location = LOCATIONS.get(location_id, LOCATIONS["start_path"])
-    return (
+    text = (
         f"🏙️ Місто\n\n"
-        f"📍 Регіон:\n"
-        f"{location['name']}\n\n"
         f"Перед тобою центральна площа табору мандрівників, де сходяться "
         f"дороги торговців, ремісників і шукачів пригод. З майстерень "
         f"долинає дзенькіт металу, торговці закликають оглянути товари, "
@@ -20726,6 +20902,8 @@ def build_city_text(user_id):
         f"підготуватися до нової подорожі, поповнити припаси та дізнатися "
         f"останні новини."
     )
+    return text + "\n\n" + _online_presence_block_18_22_7(user_id, city=True)
+
 
 
 def build_craft_district_text(user_id):
@@ -20833,10 +21011,25 @@ def account_menu_kb_17_30_1_4():
     return kb
 
 # Restore the location/gameplay builder used by 👀 Роззирнутися.
+def _online_presence_block_18_22_7(user_id, *, city=False):
+    from systems.player_interaction_system import get_online_player_counts
+
+    result = get_online_player_counts(user_id)
+    if not result.get("success"):
+        return "👥 Гравці:\n🟢 Дані про онлайн тимчасово недоступні"
+    location_label = "У Місті" if city else "У цій локації"
+    return (
+        "👥 Гравці:\n"
+        f"🟢 Усього онлайн: {int(result.get('online_total') or 0)}\n"
+        f"📍 {location_label}: {int(result.get('online_here') or 0)}"
+    )
+
 def build_main_menu_text(user_id, show_location_description=False):
-    return _BUILD_MAIN_MENU_TEXT_BEFORE_EXP_BONUS_STATUS_17_30_1_1(
+    text = _BUILD_MAIN_MENU_TEXT_BEFORE_EXP_BONUS_STATUS_17_30_1_1(
         user_id, show_location_description=show_location_description
     )
+    return text.rstrip() + "\n\n" + _online_presence_block_18_22_7(user_id, city=False)
+
 
 
 ============================================================
@@ -31577,8 +31770,8 @@ def register_name_rune_handlers(bot):
 
 ============================================================
 FILE: handlers\player_interaction.py
-SIZE: 106203 bytes
-LAST WRITE: 2026-09-13 03:12:16
+SIZE: 106829 bytes
+LAST WRITE: 2026-09-13 03:24:43
 ============================================================
 
 # ROM 17.18.2.5 BOW CROSSBOW DAMAGE UI PARITY
@@ -31766,6 +31959,12 @@ def _trade_item_kb(trade_id, inventory_id, quantity, page=0):
 
 
 def _send_trade_editor(bot, chat_id, user_id, trade_id, message_id=None):
+    """Render and remember every actionable trade editor panel.
+
+    Stage 18.22.6 originally remembered only the later synchronized renderer.
+    The recipient's first editor is created through this earlier canonical
+    helper, so its Telegram message_id must be captured here as well.
+    """
     state = get_player_trade_editor_state(trade_id, user_id)
     if not state.get("success"):
         bot.send_message(chat_id, "ℹ️ Обмін уже неактивний.")
@@ -31781,13 +31980,22 @@ def _send_trade_editor(bot, chat_id, user_id, trade_id, message_id=None):
             parse_mode="HTML",
             reply_markup=keyboard,
         )
+        _remember_player_trade_panel_18_22_6(
+            trade_id, user_id, chat_id, message_id
+        )
     else:
-        bot.send_message(
+        sent = bot.send_message(
             chat_id,
             text,
             parse_mode="HTML",
             reply_markup=keyboard,
         )
+        sent_id = getattr(sent, "message_id", None)
+        if sent_id is not None:
+            _remember_player_trade_panel_18_22_6(
+                trade_id, user_id, chat_id, sent_id
+            )
+
 
 def _register_player_interaction_base_handlers_12_6_8(bot):
     @bot.message_handler(func=lambda message: getattr(message, "text", None) == PLAYER_LIST_BUTTON)
@@ -36655,8 +36863,8 @@ def register_timed_exp_bonus_handlers(bot):
 
 ============================================================
 FILE: keyboards.py
-SIZE: 5210 bytes
-LAST WRITE: 2026-09-13 01:16:10
+SIZE: 5144 bytes
+LAST WRITE: 2026-09-13 21:02:49
 ============================================================
 
 # ROM 17.16.1 PVE SKILL BUTTON STATES
@@ -36703,14 +36911,13 @@ def city_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
 
     # Міські напрямки згруповані по 2 кнопки в ряд.
-    # 🗺️ Мапа завжди окремо і останньою кнопкою внизу.
     kb.add("🛒 Торговий ряд", "🏛️ Торговий дім")
     kb.add("⚒️ Ремісничий квартал", "📜 Гільдія Найманців")
     kb.add("🏰 Зала Гільдій", "🏛️ Ратуша")
     kb.add("🍺 Таверна")
-    kb.add("🗺️ Мапа")
-
+    kb.add("👀 Роззирнутися", "🗺️ Мапа")
     return kb
+
 
 def trader_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
@@ -43824,8 +44031,8 @@ def _auction_buy_normalize_category(category):
 
 ============================================================
 FILE: systems\boss_system.py
-SIZE: 26894 bytes
-LAST WRITE: 2026-08-16 22:10:33
+SIZE: 29135 bytes
+LAST WRITE: 2026-09-15 01:22:44
 ============================================================
 
 """Pure location-boss foundation for ROM Stage 15.1.0.
@@ -43856,6 +44063,8 @@ STAT_RANGE_KEYS = (
     "hp_min", "hp_max", "attack_min", "attack_max",
     "pdef_min", "pdef_max", "mdef_min", "mdef_max",
     "dex_min", "dex_max",
+    "str_min", "str_max", "int_min", "int_max",
+    "wis_min", "wis_max", "sta_min", "sta_max",
 )
 
 
@@ -43895,6 +44104,10 @@ def derive_lower_anchor(definition: Mapping[str, Any]) -> dict[str, int]:
     pdef_min, pdef_max = _average_range(templates, "pdef_min", "pdef_max")
     mdef_min, mdef_max = _average_range(templates, "mdef_min", "mdef_max")
     dex_min, dex_max = _average_range(templates, "dex_min", "dex_max")
+    str_min, str_max = _average_range(templates, "str_min", "str_max")
+    int_min, int_max = _average_range(templates, "int_min", "int_max")
+    wis_min, wis_max = _average_range(templates, "wis_min", "wis_max")
+    sta_min, sta_max = _average_range(templates, "sta_min", "sta_max")
     return {
         "hp_min": max(1, round(hp_min * BOSS_HP_MULTIPLIER)),
         "hp_max": max(1, round(hp_max * BOSS_HP_MULTIPLIER)),
@@ -43903,22 +44116,52 @@ def derive_lower_anchor(definition: Mapping[str, Any]) -> dict[str, int]:
         "pdef_min": pdef_min, "pdef_max": pdef_max,
         "mdef_min": mdef_min, "mdef_max": mdef_max,
         "dex_min": dex_min, "dex_max": dex_max,
+        "str_min": str_min, "str_max": str_max,
+        "int_min": int_min, "int_max": int_max,
+        "wis_min": wis_min, "wis_max": wis_max,
+        "sta_min": sta_min, "sta_max": sta_max,
     }
 
 
 def scale_boss_stat_ranges(definition: Mapping[str, Any], player_level: int) -> dict[str, int]:
-    """Build boss ranges from same-level location mobs with one proportional multiplier."""
+    """Build dynamic boss primary ranges and Rule A HP/Attack ceilings."""
+    import math
+
     level_min = _int(definition["level_min"], 1)
     level_max = _int(definition["level_max"], level_min)
     level = max(level_min, min(level_max, _int(player_level, level_min)))
     templates = _templates_for_level(str(definition["location_id"]), level)
     if not templates:
         raise ValueError(f"No normal mob templates for boss reference: {definition['location_id']} level {level}")
+
+    boss_primary_multiplier = 2.2
+    boss_hp_multiplier = 1.35
+    elite_hp_multiplier = 1.8
+    elite_attack_multiplier = 1.8
     scaled = {}
-    for prefix in ("hp", "attack", "pdef", "mdef", "dex"):
+    for prefix in ("dex", "str", "int", "wis", "sta"):
         lo, hi = _average_range(templates, f"{prefix}_min", f"{prefix}_max")
-        scaled[f"{prefix}_min"] = max(1, round(lo * BOSS_CORE_STAT_MULTIPLIER))
-        scaled[f"{prefix}_max"] = max(scaled[f"{prefix}_min"], round(hi * BOSS_CORE_STAT_MULTIPLIER))
+        scaled[f"{prefix}_min"] = max(1, round(lo * boss_primary_multiplier))
+        scaled[f"{prefix}_max"] = max(scaled[f"{prefix}_min"], round(hi * boss_primary_multiplier))
+
+    elite_hp_ceiling = 0
+    elite_attack_ceiling = 0
+    for template in templates:
+        normal_hp = max(1, math.ceil(level * 10 + _int(template.get("sta_max"), 1) * 5))
+        attack_type = template.get("attack_type", "physical")
+        if attack_type == "physical":
+            normal_attack = max(1, math.ceil(level * 2 + _int(template.get("str_max"), 1)))
+        else:
+            normal_attack = max(1, math.ceil(
+                level * 2 + _int(template.get("int_max"), 1)
+                + _int(template.get("wis_max"), 1) * 0.25
+            ))
+        elite_hp_ceiling = max(elite_hp_ceiling, int(normal_hp * elite_hp_multiplier))
+        elite_attack_ceiling = max(elite_attack_ceiling, int(normal_attack * elite_attack_multiplier))
+
+    scaled["boss_hp_multiplier"] = boss_hp_multiplier
+    scaled["elite_hp_ceiling"] = elite_hp_ceiling
+    scaled["elite_attack_ceiling"] = elite_attack_ceiling
     return scaled
 
 
@@ -43937,6 +44180,9 @@ def create_boss_state() -> dict[str, Any]:
 
 
 def build_location_boss(location_id: str, player_level: int, rng=None) -> dict[str, Any]:
+    """Build a dynamic boss snapshot with Rule A HP and Attack guarantees."""
+    import math
+
     definition = get_location_boss_definition(location_id)
     if not definition:
         raise ValueError(f"No boss definition for location: {location_id}")
@@ -43944,42 +44190,40 @@ def build_location_boss(location_id: str, player_level: int, rng=None) -> dict[s
     level_max = _int(definition["level_max"], level_min)
     level = _int(player_level, level_min)
     if not level_min <= level <= level_max:
-        raise ValueError(
-            f"Player level {level} is outside boss location range {level_min}-{level_max}"
-        )
+        raise ValueError(f"Player level {level} is outside boss location range {level_min}-{level_max}")
     ranges = scale_boss_stat_ranges(definition, level)
     rng = rng or random
-    hp = rng.randint(ranges["hp_min"], ranges["hp_max"])
-    attack = rng.randint(ranges["attack_min"], ranges["attack_max"])
-    pdef = rng.randint(ranges["pdef_min"], ranges["pdef_max"])
-    mdef = rng.randint(ranges["mdef_min"], ranges["mdef_max"])
-    dex = rng.randint(ranges["dex_min"], ranges["dex_max"])
+    primary_stats = {
+        stat: rng.randint(ranges[f"{stat}_min"], ranges[f"{stat}_max"])
+        for stat in ("str", "dex", "int", "wis", "sta")
+    }
+    attack_type = definition.get("attack_type", "physical")
+    candidate_hp = max(1, math.ceil(
+        (level * 10 + primary_stats["sta"] * 5) * float(ranges["boss_hp_multiplier"])
+    ))
+    if attack_type == "physical":
+        candidate_attack = max(1, math.ceil(level * 2 + primary_stats["str"]))
+    else:
+        candidate_attack = max(1, math.ceil(
+            level * 2 + primary_stats["int"] + primary_stats["wis"] * 0.25
+        ))
+    hp = max(candidate_hp, int(ranges["elite_hp_ceiling"]) + 1)
+    attack = max(candidate_attack, int(ranges["elite_attack_ceiling"]) + 1)
+    pdef = max(1, math.ceil(primary_stats["sta"] * 0.5))
+    mdef = max(1, math.ceil(primary_stats["wis"] * 0.75))
     return {
         "boss_schema_version": BOSS_SCHEMA_VERSION,
-        "boss_key": definition["boss_key"],
-        "name": definition["name"],
-        "base_name": definition["name"],
-        "level": level,
-        "min_player_level": level,
-        "location_id": definition["location_id"],
-        "hp": hp, "max_hp": hp,
-        "attack": attack,
-        "pdef": pdef, "mdef": mdef,
-        "def": pdef if definition.get("attack_type") == "physical" else mdef,
-        "dex": dex,
-        "attack_type": definition.get("attack_type", "physical"),
-        "is_boss": True,
-        "is_elite": False,
-        "enemy_type": "boss",
-        "mob_type": "boss",
-        "elite_exp_multiplier": 5.0,
-        "elite_gold_multiplier": 5.0,
-        "boss_exp_multiplier": 5.0,
-        "boss_gold_multiplier": 5.0,
-        "enemy_effects": {},
-        "boss_state": create_boss_state(),
-        "boss_definition": copy.deepcopy(definition),
-        "boss_scaled_ranges": ranges,
+        "boss_key": definition["boss_key"], "name": definition["name"], "base_name": definition["name"],
+        "level": level, "min_player_level": level, "location_id": definition["location_id"],
+        "hp": hp, "max_hp": hp, "attack": attack, "pdef": pdef, "mdef": mdef,
+        "def": pdef if attack_type == "physical" else mdef,
+        "str": primary_stats["str"], "dex": primary_stats["dex"], "int": primary_stats["int"],
+        "wis": primary_stats["wis"], "sta": primary_stats["sta"], "attack_type": attack_type,
+        "is_boss": True, "is_elite": False, "enemy_type": "boss", "mob_type": "boss",
+        "elite_exp_multiplier": 5.0, "elite_gold_multiplier": 5.0,
+        "boss_exp_multiplier": 5.0, "boss_gold_multiplier": 5.0,
+        "enemy_effects": {}, "boss_state": create_boss_state(),
+        "boss_definition": copy.deepcopy(definition), "boss_scaled_ranges": ranges,
     }
 
 
@@ -44925,8 +45169,8 @@ def apply_post_combat_mp_floor_17_15_1(user_id):
 
 ============================================================
 FILE: systems\combat_system.py
-SIZE: 9385 bytes
-LAST WRITE: 2026-09-12 22:43:40
+SIZE: 9248 bytes
+LAST WRITE: 2026-09-14 23:06:56
 ============================================================
 
 # ROM 17.18.2.2 BOW CROSSBOW DAMAGE DIFFERENTIATION
@@ -45003,65 +45247,54 @@ def roll_is_elite():
 
 
 def build_mob(mob_template):
-    hp = random.randint(
-        int(mob_template["hp_min"]),
-        int(mob_template["hp_max"])
-    )
+    # Build one canonical mob snapshot from one primary-stat roll.
+    import math
 
-    attack = random.randint(
-        int(mob_template["attack_min"]),
-        int(mob_template["attack_max"])
-    )
-
-    pdef = random.randint(
-        int(mob_template.get("pdef_min", mob_template.get("def_min", 1))),
-        int(mob_template.get("pdef_max", mob_template.get("def_max", 1)))
-    )
-
-    mdef = random.randint(
-        int(mob_template.get("mdef_min", mob_template.get("def_min", 1))),
-        int(mob_template.get("mdef_max", mob_template.get("def_max", 1)))
-    )
-
-    dex = random.randint(
-        int(mob_template["dex_min"]),
-        int(mob_template["dex_max"])
-    )
-
-    mob = {
-        "name": mob_template["name"],
-        "base_name": mob_template["name"],
-
-        "level": int(mob_template["level"]),
-        "location_id": mob_template.get("location_id", "start_path"),
-
-        "hp": hp,
-        "max_hp": hp,
-
-        "attack": attack,
-
-        "pdef": pdef,
-        "mdef": mdef,
-
-        # compatibility
-        "def": pdef if mob_template.get("attack_type", "physical") == "physical" else mdef,
-
-        "dex": dex,
-
-        "attack_type": mob_template.get("attack_type", "physical"),
-
-        "min_gold": mob_template.get("min_gold", 0),
-        "max_gold": mob_template.get("max_gold", 0),
-
-        "loot_chance": mob_template.get("loot_chance", 0),
-        "trash_items": mob_template.get("trash_items", []),
-
-        "is_elite": False,
-        "elite_exp_multiplier": 1.0,
-        "elite_gold_multiplier": 1.0
+    level = int(mob_template["level"])
+    attack_type = mob_template.get("attack_type", "physical")
+    primary_stats = {
+        stat: random.randint(
+            int(mob_template[f"{stat}_min"]),
+            int(mob_template[f"{stat}_max"]),
+        )
+        for stat in ("str", "dex", "int", "wis", "sta")
     }
 
-    return mob
+    hp = max(1, int(math.ceil((level * 10) + (primary_stats["sta"] * 5))))
+    if attack_type == "physical":
+        attack = max(1, int(math.ceil((level * 2) + primary_stats["str"])))
+    else:
+        attack = max(1, int(math.ceil(
+            (level * 2) + primary_stats["int"] + (primary_stats["wis"] * 0.25)
+        )))
+    pdef = max(1, int(math.ceil(primary_stats["sta"] * 0.5)))
+    mdef = max(1, int(math.ceil(primary_stats["wis"] * 0.75)))
+
+    return {
+        "name": mob_template["name"],
+        "base_name": mob_template["name"],
+        "level": level,
+        "location_id": mob_template.get("location_id", "start_path"),
+        "hp": hp,
+        "max_hp": hp,
+        "attack": attack,
+        "pdef": pdef,
+        "mdef": mdef,
+        "def": pdef if attack_type == "physical" else mdef,
+        "str": primary_stats["str"],
+        "dex": primary_stats["dex"],
+        "int": primary_stats["int"],
+        "wis": primary_stats["wis"],
+        "sta": primary_stats["sta"],
+        "attack_type": attack_type,
+        "min_gold": mob_template.get("min_gold", 0),
+        "max_gold": mob_template.get("max_gold", 0),
+        "loot_chance": mob_template.get("loot_chance", 0),
+        "trash_items": mob_template.get("trash_items", []),
+        "is_elite": False,
+        "elite_exp_multiplier": 1.0,
+        "elite_gold_multiplier": 1.0,
+    }
 
 
 def apply_elite_modifier(mob):
@@ -54402,8 +54635,8 @@ def recover_stranded_preview_item(conn,source_item_id):
 
 ============================================================
 FILE: systems\level_up_reward_system.py
-SIZE: 10761 bytes
-LAST WRITE: 2026-09-10 22:33:28
+SIZE: 10768 bytes
+LAST WRITE: 2026-09-14 00:35:52
 ============================================================
 
 # ROM 17.14.1.2 LEVEL UP REWARD BALANCE EXPANSION
@@ -54427,10 +54660,10 @@ def calculate_level_reward(reached_level):
     milestone = level % 5 == 0
     return {
         "reached_level": level,
-        "gold": level * 10 + (level * 20 if milestone else 0),
+        "gold": level * (12 if milestone else 8),
         "small_health_potions": 3,
         "small_mana_potions": 1,
-        "refine_stones": 5,
+        "refine_stones": 4 if milestone else 2,
         "medium_health_potions": 2 if milestone else 0,
         "medium_mana_potions": 1 if milestone else 0,
         "crystals": 0,
@@ -55791,8 +56024,8 @@ def get_worker_max_mp_17_15_1(conn, user_id):
 
 ============================================================
 FILE: systems\player_interaction_system.py
-SIZE: 111929 bytes
-LAST WRITE: 2026-09-13 02:53:32
+SIZE: 114108 bytes
+LAST WRITE: 2026-09-13 21:02:49
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -56119,6 +56352,58 @@ def _pick_user_column(columns, candidates):
             return candidate
     return None
 
+
+def get_online_player_counts(user_id, *, now=None, db_path=None):
+    """Return total online and online in the viewer's location, including viewer.
+
+    Uses the canonical 300-second presence timeout shared by player discovery,
+    trade availability and duel availability. The query is read-only.
+    """
+    uid = int(user_id)
+    current = now or _now()
+    if current.tzinfo is None:
+        current = current.replace(tzinfo=timezone.utc)
+    cutoff = _text(current - timedelta(seconds=PLAYER_ONLINE_TIMEOUT_SECONDS))
+    conn = _connect(db_path)
+    try:
+        columns = _users_column_names(conn)
+        location_col = _pick_user_column(columns, ("current_location", "location"))
+        name_col = _pick_user_column(columns, ("character_name", "name", "username"))
+        if location_col is None or name_col is None:
+            raise RuntimeError("users location/name columns are unavailable")
+        viewer = conn.execute(
+            f'SELECT "{location_col}" AS location FROM users WHERE user_id=?',
+            (uid,),
+        ).fetchone()
+        if not viewer or not viewer["location"]:
+            return {
+                "success": False,
+                "reason": "viewer_location_missing",
+                "online_total": 0,
+                "online_here": 0,
+            }
+        base_where = (
+            'last_activity_at IS NOT NULL AND last_activity_at>=? '
+            f'AND TRIM(COALESCE("{name_col}", ""))<>""'
+        )
+        online_total = int(conn.execute(
+            f'SELECT COUNT(*) FROM users WHERE {base_where}',
+            (cutoff,),
+        ).fetchone()[0] or 0)
+        online_here = int(conn.execute(
+            f'SELECT COUNT(*) FROM users WHERE "{location_col}"=? AND {base_where}',
+            (viewer["location"], cutoff),
+        ).fetchone()[0] or 0)
+        return {
+            "success": True,
+            "location": str(viewer["location"]),
+            "online_total": online_total,
+            "online_here": online_here,
+            "timeout_seconds": PLAYER_ONLINE_TIMEOUT_SECONDS,
+            "includes_viewer": True,
+        }
+    finally:
+        conn.close()
 
 def get_online_players_in_same_location(user_id, *, page=0,
                                         page_size=PLAYER_DISCOVERY_PAGE_SIZE,
@@ -65218,8 +65503,8 @@ def get_mp_regen_status(user_id):
 
 ============================================================
 FILE: systems\reward_system.py
-SIZE: 18257 bytes
-LAST WRITE: 2026-09-11 01:20:47
+SIZE: 18255 bytes
+LAST WRITE: 2026-09-13 22:26:03
 ============================================================
 
 import random
@@ -65765,7 +66050,7 @@ def roll_fatigue_artifact_drop(user_id, mob, random_func=None):
     import random
     from systems.fatigue_artifact_system import FATIGUE_ARTIFACT_ITEM_ID, add_fatigue_artifacts
     rng = random_func or random.random
-    chance = 0.10 if mob.get("is_boss") else (0.025 if mob.get("is_elite") else 0.005)
+    chance = 0.10 if mob.get("is_boss") else (0.05 if mob.get("is_elite") else 0.01)
     if float(rng()) >= chance:
         return None
     result = add_fatigue_artifacts(user_id, 1)
