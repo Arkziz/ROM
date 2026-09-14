@@ -87,28 +87,44 @@ def derive_lower_anchor(definition: Mapping[str, Any]) -> dict[str, int]:
 
 
 def scale_boss_stat_ranges(definition: Mapping[str, Any], player_level: int) -> dict[str, int]:
-    """Build primary ranges and canonical derived compatibility floor."""
+    """Build dynamic boss primary ranges and Rule A HP/Attack ceilings."""
+    import math
+
     level_min = _int(definition["level_min"], 1)
     level_max = _int(definition["level_max"], level_min)
     level = max(level_min, min(level_max, _int(player_level, level_min)))
     templates = _templates_for_level(str(definition["location_id"]), level)
     if not templates:
         raise ValueError(f"No normal mob templates for boss reference: {definition['location_id']} level {level}")
+
+    boss_primary_multiplier = 2.2
+    boss_hp_multiplier = 1.35
+    elite_hp_multiplier = 1.8
+    elite_attack_multiplier = 1.8
     scaled = {}
     for prefix in ("dex", "str", "int", "wis", "sta"):
         lo, hi = _average_range(templates, f"{prefix}_min", f"{prefix}_max")
-        scaled[f"{prefix}_min"] = max(1, round(lo * BOSS_CORE_STAT_MULTIPLIER))
-        scaled[f"{prefix}_max"] = max(scaled[f"{prefix}_min"], round(hi * BOSS_CORE_STAT_MULTIPLIER))
-    floors = definition.get("no_weaker_floor_by_level") or {}
-    floor = floors.get(level)
-    if not isinstance(floor, Mapping):
-        raise ValueError(f"Canonical boss floor missing: {definition['boss_key']} level {level}")
-    for stat in ("hp", "attack", "pdef", "mdef"):
-        value = _int(floor.get(stat), 0)
-        if value < 1:
-            raise ValueError(f"Invalid canonical boss floor: {definition['boss_key']} level {level} {stat}")
-        scaled[f"{stat}_min"] = value
-        scaled[f"{stat}_max"] = value
+        scaled[f"{prefix}_min"] = max(1, round(lo * boss_primary_multiplier))
+        scaled[f"{prefix}_max"] = max(scaled[f"{prefix}_min"], round(hi * boss_primary_multiplier))
+
+    elite_hp_ceiling = 0
+    elite_attack_ceiling = 0
+    for template in templates:
+        normal_hp = max(1, math.ceil(level * 10 + _int(template.get("sta_max"), 1) * 5))
+        attack_type = template.get("attack_type", "physical")
+        if attack_type == "physical":
+            normal_attack = max(1, math.ceil(level * 2 + _int(template.get("str_max"), 1)))
+        else:
+            normal_attack = max(1, math.ceil(
+                level * 2 + _int(template.get("int_max"), 1)
+                + _int(template.get("wis_max"), 1) * 0.25
+            ))
+        elite_hp_ceiling = max(elite_hp_ceiling, int(normal_hp * elite_hp_multiplier))
+        elite_attack_ceiling = max(elite_attack_ceiling, int(normal_attack * elite_attack_multiplier))
+
+    scaled["boss_hp_multiplier"] = boss_hp_multiplier
+    scaled["elite_hp_ceiling"] = elite_hp_ceiling
+    scaled["elite_attack_ceiling"] = elite_attack_ceiling
     return scaled
 
 
@@ -127,7 +143,7 @@ def create_boss_state() -> dict[str, Any]:
 
 
 def build_location_boss(location_id: str, player_level: int, rng=None) -> dict[str, Any]:
-    # Build one boss snapshot from primary stats with one no-weaker floor.
+    """Build a dynamic boss snapshot with Rule A HP and Attack guarantees."""
     import math
 
     definition = get_location_boss_definition(location_id)
@@ -137,9 +153,7 @@ def build_location_boss(location_id: str, player_level: int, rng=None) -> dict[s
     level_max = _int(definition["level_max"], level_min)
     level = _int(player_level, level_min)
     if not level_min <= level <= level_max:
-        raise ValueError(
-            f"Player level {level} is outside boss location range {level_min}-{level_max}"
-        )
+        raise ValueError(f"Player level {level} is outside boss location range {level_min}-{level_max}")
     ranges = scale_boss_stat_ranges(definition, level)
     rng = rng or random
     primary_stats = {
@@ -147,53 +161,32 @@ def build_location_boss(location_id: str, player_level: int, rng=None) -> dict[s
         for stat in ("str", "dex", "int", "wis", "sta")
     }
     attack_type = definition.get("attack_type", "physical")
-    candidate_hp = max(1, int(math.ceil((level * 10) + (primary_stats["sta"] * 5))))
+    candidate_hp = max(1, math.ceil(
+        (level * 10 + primary_stats["sta"] * 5) * float(ranges["boss_hp_multiplier"])
+    ))
     if attack_type == "physical":
-        candidate_attack = max(1, int(math.ceil((level * 2) + primary_stats["str"])))
+        candidate_attack = max(1, math.ceil(level * 2 + primary_stats["str"]))
     else:
-        candidate_attack = max(1, int(math.ceil(
-            (level * 2) + primary_stats["int"] + (primary_stats["wis"] * 0.25)
-        )))
-    candidate_pdef = max(1, int(math.ceil(primary_stats["sta"] * 0.5)))
-    candidate_mdef = max(1, int(math.ceil(primary_stats["wis"] * 0.75)))
-
-    # One compatibility layer: a boss can become stronger, never weaker than
-    # the current scaled minimum for the same level.
-    hp = max(candidate_hp, int(ranges["hp_min"]))
-    attack = max(candidate_attack, int(ranges["attack_min"]))
-    pdef = max(candidate_pdef, int(ranges["pdef_min"]))
-    mdef = max(candidate_mdef, int(ranges["mdef_min"]))
-
+        candidate_attack = max(1, math.ceil(
+            level * 2 + primary_stats["int"] + primary_stats["wis"] * 0.25
+        ))
+    hp = max(candidate_hp, int(ranges["elite_hp_ceiling"]) + 1)
+    attack = max(candidate_attack, int(ranges["elite_attack_ceiling"]) + 1)
+    pdef = max(1, math.ceil(primary_stats["sta"] * 0.5))
+    mdef = max(1, math.ceil(primary_stats["wis"] * 0.75))
     return {
         "boss_schema_version": BOSS_SCHEMA_VERSION,
-        "boss_key": definition["boss_key"],
-        "name": definition["name"],
-        "base_name": definition["name"],
-        "level": level,
-        "min_player_level": level,
-        "location_id": definition["location_id"],
-        "hp": hp, "max_hp": hp,
-        "attack": attack,
-        "pdef": pdef, "mdef": mdef,
+        "boss_key": definition["boss_key"], "name": definition["name"], "base_name": definition["name"],
+        "level": level, "min_player_level": level, "location_id": definition["location_id"],
+        "hp": hp, "max_hp": hp, "attack": attack, "pdef": pdef, "mdef": mdef,
         "def": pdef if attack_type == "physical" else mdef,
-        "str": primary_stats["str"],
-        "dex": primary_stats["dex"],
-        "int": primary_stats["int"],
-        "wis": primary_stats["wis"],
-        "sta": primary_stats["sta"],
-        "attack_type": attack_type,
-        "is_boss": True,
-        "is_elite": False,
-        "enemy_type": "boss",
-        "mob_type": "boss",
-        "elite_exp_multiplier": 5.0,
-        "elite_gold_multiplier": 5.0,
-        "boss_exp_multiplier": 5.0,
-        "boss_gold_multiplier": 5.0,
-        "enemy_effects": {},
-        "boss_state": create_boss_state(),
-        "boss_definition": copy.deepcopy(definition),
-        "boss_scaled_ranges": ranges,
+        "str": primary_stats["str"], "dex": primary_stats["dex"], "int": primary_stats["int"],
+        "wis": primary_stats["wis"], "sta": primary_stats["sta"], "attack_type": attack_type,
+        "is_boss": True, "is_elite": False, "enemy_type": "boss", "mob_type": "boss",
+        "elite_exp_multiplier": 5.0, "elite_gold_multiplier": 5.0,
+        "boss_exp_multiplier": 5.0, "boss_gold_multiplier": 5.0,
+        "enemy_effects": {}, "boss_state": create_boss_state(),
+        "boss_definition": copy.deepcopy(definition), "boss_scaled_ranges": ranges,
     }
 
 

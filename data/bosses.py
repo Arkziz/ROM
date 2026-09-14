@@ -32,38 +32,6 @@ BOSS_DEFINITIONS = {
             "mdef_min": 8, "mdef_max": 12,
             "dex_min": 15, "dex_max": 18,
         },
-        "no_weaker_floor_by_level": {
-            1: {
-                "hp": 84,
-                "attack": 16,
-                "pdef": 4,
-                "mdef": 4
-            },
-            2: {
-                "hp": 130,
-                "attack": 20,
-                "pdef": 8,
-                "mdef": 8
-            },
-            3: {
-                "hp": 148,
-                "attack": 28,
-                "pdef": 6,
-                "mdef": 8
-            },
-            4: {
-                "hp": 184,
-                "attack": 36,
-                "pdef": 8,
-                "mdef": 12
-            },
-            5: {
-                "hp": 250,
-                "attack": 46,
-                "pdef": 12,
-                "mdef": 16
-            }
-        },
         "ai_before_enrage": (
             ("ferocious_bite", 0.55),
             ("fang_rend", 0.25),
@@ -115,38 +83,6 @@ BOSS_DEFINITIONS = {
             "pdef_min": 30, "pdef_max": 36,
             "mdef_min": 16, "mdef_max": 22,
             "dex_min": 16, "dex_max": 20,
-        },
-        "no_weaker_floor_by_level": {
-            6: {
-                "hp": 320,
-                "attack": 58,
-                "pdef": 16,
-                "mdef": 18
-            },
-            7: {
-                "hp": 396,
-                "attack": 68,
-                "pdef": 18,
-                "mdef": 20
-            },
-            8: {
-                "hp": 510,
-                "attack": 84,
-                "pdef": 16,
-                "mdef": 22
-            },
-            9: {
-                "hp": 640,
-                "attack": 88,
-                "pdef": 24,
-                "mdef": 28
-            },
-            10: {
-                "hp": 736,
-                "attack": 108,
-                "pdef": 28,
-                "mdef": 32
-            }
         },
         "ai_before_enrage": (
             ("chieftain_axe", 0.50),
