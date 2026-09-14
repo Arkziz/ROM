@@ -26,6 +26,8 @@ STAT_RANGE_KEYS = (
     "hp_min", "hp_max", "attack_min", "attack_max",
     "pdef_min", "pdef_max", "mdef_min", "mdef_max",
     "dex_min", "dex_max",
+    "str_min", "str_max", "int_min", "int_max",
+    "wis_min", "wis_max", "sta_min", "sta_max",
 )
 
 
@@ -65,6 +67,10 @@ def derive_lower_anchor(definition: Mapping[str, Any]) -> dict[str, int]:
     pdef_min, pdef_max = _average_range(templates, "pdef_min", "pdef_max")
     mdef_min, mdef_max = _average_range(templates, "mdef_min", "mdef_max")
     dex_min, dex_max = _average_range(templates, "dex_min", "dex_max")
+    str_min, str_max = _average_range(templates, "str_min", "str_max")
+    int_min, int_max = _average_range(templates, "int_min", "int_max")
+    wis_min, wis_max = _average_range(templates, "wis_min", "wis_max")
+    sta_min, sta_max = _average_range(templates, "sta_min", "sta_max")
     return {
         "hp_min": max(1, round(hp_min * BOSS_HP_MULTIPLIER)),
         "hp_max": max(1, round(hp_max * BOSS_HP_MULTIPLIER)),
@@ -73,6 +79,10 @@ def derive_lower_anchor(definition: Mapping[str, Any]) -> dict[str, int]:
         "pdef_min": pdef_min, "pdef_max": pdef_max,
         "mdef_min": mdef_min, "mdef_max": mdef_max,
         "dex_min": dex_min, "dex_max": dex_max,
+        "str_min": str_min, "str_max": str_max,
+        "int_min": int_min, "int_max": int_max,
+        "wis_min": wis_min, "wis_max": wis_max,
+        "sta_min": sta_min, "sta_max": sta_max,
     }
 
 
@@ -85,7 +95,7 @@ def scale_boss_stat_ranges(definition: Mapping[str, Any], player_level: int) -> 
     if not templates:
         raise ValueError(f"No normal mob templates for boss reference: {definition['location_id']} level {level}")
     scaled = {}
-    for prefix in ("hp", "attack", "pdef", "mdef", "dex"):
+    for prefix in ("hp", "attack", "pdef", "mdef", "dex", "str", "int", "wis", "sta"):
         lo, hi = _average_range(templates, f"{prefix}_min", f"{prefix}_max")
         scaled[f"{prefix}_min"] = max(1, round(lo * BOSS_CORE_STAT_MULTIPLIER))
         scaled[f"{prefix}_max"] = max(scaled[f"{prefix}_min"], round(hi * BOSS_CORE_STAT_MULTIPLIER))
@@ -124,6 +134,10 @@ def build_location_boss(location_id: str, player_level: int, rng=None) -> dict[s
     pdef = rng.randint(ranges["pdef_min"], ranges["pdef_max"])
     mdef = rng.randint(ranges["mdef_min"], ranges["mdef_max"])
     dex = rng.randint(ranges["dex_min"], ranges["dex_max"])
+    primary_stats = {
+        stat: rng.randint(ranges[f"{stat}_min"], ranges[f"{stat}_max"])
+        for stat in ("str", "int", "wis", "sta")
+    }
     return {
         "boss_schema_version": BOSS_SCHEMA_VERSION,
         "boss_key": definition["boss_key"],
@@ -136,7 +150,11 @@ def build_location_boss(location_id: str, player_level: int, rng=None) -> dict[s
         "attack": attack,
         "pdef": pdef, "mdef": mdef,
         "def": pdef if definition.get("attack_type") == "physical" else mdef,
+        "str": primary_stats["str"],
         "dex": dex,
+        "int": primary_stats["int"],
+        "wis": primary_stats["wis"],
+        "sta": primary_stats["sta"],
         "attack_type": definition.get("attack_type", "physical"),
         "is_boss": True,
         "is_elite": False,

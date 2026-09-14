@@ -23,6 +23,14 @@ START_PATH_MOBS = [
 
         "dex_min": 5,
         "dex_max": 7,
+               "str_min": 7,
+               "str_max": 11,
+               "int_min": 2,
+               "int_max": 6,
+               "wis_min": 3,
+               "wis_max": 7,
+               "sta_min": 6,
+               "sta_max": 10,
 
         "attack_type": "physical",
 
@@ -51,6 +59,14 @@ START_PATH_MOBS = [
 
         "dex_min": 4,
         "dex_max": 6,
+               "str_min": 1,
+               "str_max": 5,
+               "int_min": 6,
+               "int_max": 10,
+               "wis_min": 5,
+               "wis_max": 9,
+               "sta_min": 4,
+               "sta_max": 8,
 
         "attack_type": "magical",
 
@@ -81,6 +97,14 @@ START_PATH_MOBS = [
 
         "dex_min": 6,
         "dex_max": 8,
+               "str_min": 8,
+               "str_max": 12,
+               "int_min": 3,
+               "int_max": 7,
+               "wis_min": 4,
+               "wis_max": 8,
+               "sta_min": 7,
+               "sta_max": 11,
 
         "attack_type": "physical",
 
@@ -109,6 +133,14 @@ START_PATH_MOBS = [
 
         "dex_min": 4,
         "dex_max": 6,
+               "str_min": 1,
+               "str_max": 5,
+               "int_min": 6,
+               "int_max": 10,
+               "wis_min": 5,
+               "wis_max": 9,
+               "sta_min": 4,
+               "sta_max": 8,
 
         "attack_type": "magical",
 
@@ -139,6 +171,14 @@ START_PATH_MOBS = [
 
         "dex_min": 12,
         "dex_max": 15,
+               "str_min": 14,
+               "str_max": 19,
+               "int_min": 9,
+               "int_max": 14,
+               "wis_min": 10,
+               "wis_max": 15,
+               "sta_min": 13,
+               "sta_max": 18,
 
         "attack_type": "physical",
 
@@ -167,6 +207,14 @@ START_PATH_MOBS = [
 
         "dex_min": 10,
         "dex_max": 13,
+               "str_min": 7,
+               "str_max": 12,
+               "int_min": 12,
+               "int_max": 17,
+               "wis_min": 11,
+               "wis_max": 16,
+               "sta_min": 10,
+               "sta_max": 15,
 
         "attack_type": "magical",
 
@@ -197,6 +245,14 @@ START_PATH_MOBS = [
 
         "dex_min": 13,
         "dex_max": 16,
+               "str_min": 15,
+               "str_max": 20,
+               "int_min": 10,
+               "int_max": 15,
+               "wis_min": 11,
+               "wis_max": 16,
+               "sta_min": 14,
+               "sta_max": 19,
 
         "attack_type": "physical",
 
@@ -225,6 +281,14 @@ START_PATH_MOBS = [
 
         "dex_min": 10,
         "dex_max": 13,
+               "str_min": 7,
+               "str_max": 12,
+               "int_min": 12,
+               "int_max": 17,
+               "wis_min": 11,
+               "wis_max": 16,
+               "sta_min": 10,
+               "sta_max": 15,
 
         "attack_type": "magical",
 
@@ -255,6 +319,14 @@ START_PATH_MOBS = [
 
         "dex_min": 12,
         "dex_max": 15,
+               "str_min": 14,
+               "str_max": 19,
+               "int_min": 9,
+               "int_max": 14,
+               "wis_min": 10,
+               "wis_max": 15,
+               "sta_min": 13,
+               "sta_max": 18,
 
         "attack_type": "physical",
 
@@ -283,6 +355,14 @@ START_PATH_MOBS = [
 
         "dex_min": 11,
         "dex_max": 14,
+               "str_min": 8,
+               "str_max": 13,
+               "int_min": 13,
+               "int_max": 18,
+               "wis_min": 12,
+               "wis_max": 17,
+               "sta_min": 11,
+               "sta_max": 16,
 
         "attack_type": "magical",
 
@@ -320,6 +400,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 11,
         "dex_max": 14,
+               "str_min": 13,
+               "str_max": 18,
+               "int_min": 8,
+               "int_max": 13,
+               "wis_min": 9,
+               "wis_max": 14,
+               "sta_min": 12,
+               "sta_max": 17,
 
         "attack_type": "physical",
 
@@ -348,6 +436,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 9,
         "dex_max": 12,
+               "str_min": 6,
+               "str_max": 11,
+               "int_min": 11,
+               "int_max": 16,
+               "wis_min": 10,
+               "wis_max": 15,
+               "sta_min": 9,
+               "sta_max": 14,
 
         "attack_type": "magical",
 
@@ -378,6 +474,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 15,
         "dex_max": 18,
+               "str_min": 17,
+               "str_max": 22,
+               "int_min": 12,
+               "int_max": 17,
+               "wis_min": 13,
+               "wis_max": 18,
+               "sta_min": 16,
+               "sta_max": 21,
 
         "attack_type": "physical",
 
@@ -406,6 +510,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 10,
         "dex_max": 13,
+               "str_min": 7,
+               "str_max": 12,
+               "int_min": 12,
+               "int_max": 17,
+               "wis_min": 11,
+               "wis_max": 16,
+               "sta_min": 10,
+               "sta_max": 15,
 
         "attack_type": "magical",
 
@@ -436,6 +548,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 12,
         "dex_max": 15,
+               "str_min": 14,
+               "str_max": 19,
+               "int_min": 9,
+               "int_max": 14,
+               "wis_min": 10,
+               "wis_max": 15,
+               "sta_min": 13,
+               "sta_max": 18,
 
         "attack_type": "physical",
 
@@ -464,6 +584,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 9,
         "dex_max": 12,
+               "str_min": 6,
+               "str_max": 11,
+               "int_min": 11,
+               "int_max": 16,
+               "wis_min": 10,
+               "wis_max": 15,
+               "sta_min": 9,
+               "sta_max": 14,
 
         "attack_type": "magical",
 
@@ -494,6 +622,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 10,
         "dex_max": 13,
+               "str_min": 12,
+               "str_max": 17,
+               "int_min": 7,
+               "int_max": 12,
+               "wis_min": 8,
+               "wis_max": 13,
+               "sta_min": 11,
+               "sta_max": 16,
 
         "attack_type": "physical",
 
@@ -522,6 +658,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 10,
         "dex_max": 13,
+               "str_min": 7,
+               "str_max": 12,
+               "int_min": 12,
+               "int_max": 17,
+               "wis_min": 11,
+               "wis_max": 16,
+               "sta_min": 10,
+               "sta_max": 15,
 
         "attack_type": "magical",
 
@@ -552,6 +696,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 9,
         "dex_max": 12,
+               "str_min": 11,
+               "str_max": 16,
+               "int_min": 6,
+               "int_max": 11,
+               "wis_min": 7,
+               "wis_max": 12,
+               "sta_min": 10,
+               "sta_max": 15,
 
         "attack_type": "physical",
 
@@ -580,6 +732,14 @@ DARK_FOREST_MOBS = [
 
         "dex_min": 9,
         "dex_max": 12,
+               "str_min": 6,
+               "str_max": 11,
+               "int_min": 11,
+               "int_max": 16,
+               "wis_min": 10,
+               "wis_max": 15,
+               "sta_min": 9,
+               "sta_max": 14,
 
         "attack_type": "magical",
 

@@ -96,6 +96,13 @@ def build_mob(mob_template):
         int(mob_template["dex_min"]),
         int(mob_template["dex_max"])
     )
+    primary_stats = {
+        stat: random.randint(
+            int(mob_template[f"{stat}_min"]),
+            int(mob_template[f"{stat}_max"]),
+        )
+        for stat in ("str", "int", "wis", "sta")
+    }
 
     mob = {
         "name": mob_template["name"],
@@ -116,6 +123,10 @@ def build_mob(mob_template):
         "def": pdef if mob_template.get("attack_type", "physical") == "physical" else mdef,
 
         "dex": dex,
+        "str": primary_stats["str"],
+        "int": primary_stats["int"],
+        "wis": primary_stats["wis"],
+        "sta": primary_stats["sta"],
 
         "attack_type": mob_template.get("attack_type", "physical"),
 
