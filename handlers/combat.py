@@ -2311,6 +2311,10 @@ def register_combat_handlers(bot):
             enemy_action_text = boss_action_text
 
         if player_hp <= 0:
+            defeat_claimed = claim_pve_terminal(user_id, "defeat")
+            if not defeat_claimed:
+                return
+
             durability_damage = damage_equipped_items_on_death(
                 user_id=user_id
             )
@@ -2719,6 +2723,10 @@ def register_combat_handlers(bot):
             enemy_action_text = boss_action_text
 
         if player_hp <= 0:
+            defeat_claimed = claim_pve_terminal(user_id, "defeat")
+            if not defeat_claimed:
+                return
+
             durability_damage = damage_equipped_items_on_death(
                 user_id=user_id
             )
@@ -3243,6 +3251,10 @@ def register_combat_handlers(bot):
             enemy_action_text = boss_action_text
 
         if player_hp <= 0:
+            defeat_claimed = claim_pve_terminal(user_id, "defeat")
+            if not defeat_claimed:
+                return
+
             durability_damage = damage_equipped_items_on_death(
                 user_id=user_id
             )
