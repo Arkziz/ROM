@@ -173,6 +173,8 @@ def perform_refine_attempt(user_id, inventory_id, use_success_rune=False, idempo
             if not row: raise RuntimeError("resource disappeared during refine")
             if int(row["quantity"]) == 1: conn.execute("DELETE FROM inventory WHERE id=? AND user_id=?", (int(row["id"]),uid))
             else: conn.execute("UPDATE inventory SET quantity=quantity-1 WHERE id=? AND user_id=? AND quantity>1", (int(row["id"]),uid))
+            from db_modules.inventory import compact_user_item_stacks
+            compact_user_item_stacks(uid, item_id, commit=False, connection=conn)
         kind = check["refine_kind"]
         current = int(check["current_level"])
         roll_result = roll_refine_success(kind,current,use_rune)

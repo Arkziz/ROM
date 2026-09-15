@@ -145,7 +145,7 @@ from .generated_equipment import create_generated_equipment_item, create_generat
 from .inventory import (
     get_bag_capacity, get_inventory_used_slots,
     get_inventory, get_item,
-    add_item, consume_inventory_item,
+    add_item, consume_inventory_item, compact_user_item_stacks,
     count_user_item, consume_user_item_by_item_id,
     find_first_item_stack_by_type,
     sell_all_trash
@@ -262,7 +262,7 @@ __all__ = [
     # Inventory (10 functions)
     'get_bag_capacity', 'get_inventory_used_slots',
     'get_inventory', 'get_item',
-    'add_item', 'consume_inventory_item',
+    'add_item', 'consume_inventory_item', 'compact_user_item_stacks',
     'count_user_item', 'consume_user_item_by_item_id',
     'find_first_item_stack_by_type',
     'sell_all_trash',

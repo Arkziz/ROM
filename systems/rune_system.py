@@ -780,6 +780,9 @@ def _consume_stack_quantity(conn, user_id, item_id, quantity):
         remaining -= take
         if remaining <= 0:
             break
+    if remaining == 0:
+        from db_modules.inventory import compact_user_item_stacks
+        compact_user_item_stacks(user_id, item_id, commit=False, connection=conn)
     return remaining == 0
 
 
@@ -1069,6 +1072,8 @@ def _consume_extractor_stack(conn,user_id,item_id):
     if not row:return False
     if int(row[1])==1:conn.execute("DELETE FROM inventory WHERE id=?",(int(row[0]),))
     else:conn.execute("UPDATE inventory SET quantity=quantity-1 WHERE id=?",(int(row[0]),))
+    from db_modules.inventory import compact_user_item_stacks
+    compact_user_item_stacks(user_id, item_id, commit=False, connection=conn)
     return True
 
 

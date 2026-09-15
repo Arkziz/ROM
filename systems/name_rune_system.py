@@ -67,6 +67,8 @@ def rename_with_name_rune(user_id,new_name,idempotency_key,db_path=None,inventor
   if not rune:c.rollback();return {'success':False,'message':'Руну імені не знайдено в інвентарі.'}
   if int(rune['quantity'])==1:c.execute('DELETE FROM inventory WHERE id=? AND user_id=?',(int(rune['id']),uid))
   else:c.execute('UPDATE inventory SET quantity=quantity-1 WHERE id=? AND user_id=? AND quantity>1',(int(rune['id']),uid))
+  from db_modules.inventory import compact_user_item_stacks
+  compact_user_item_stacks(uid,NAME_RUNE_ITEM_ID,commit=False,connection=c)
   c.execute('UPDATE users SET character_name=? WHERE user_id=?',(v['name'],uid));now=datetime.now(timezone.utc).isoformat();cur=c.execute('INSERT INTO character_name_changes(user_id,old_name,new_name,normalized_new_name,inventory_id,item_id,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?)',(uid,old,v['name'],v['key'],int(rune['id']),502,key,now));cid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'change_id':cid,'old_name':old,'new_name':v['name']}
  except Exception:c.rollback();raise
  finally:c.close()

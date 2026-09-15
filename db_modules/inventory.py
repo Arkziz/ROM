@@ -222,6 +222,47 @@ def add_item(user_id, item_id, quantity=1, durability=100, commit=True):
 
 
 
+
+def compact_user_item_stacks(user_id, item_id, commit=False, connection=None):
+    """Compact safe unreserved stacks for one user/item without changing totals."""
+    database = connection or conn
+    user_id, item_id = int(user_id), int(item_id)
+    item = database.execute("SELECT COALESCE(max_stack,1) FROM items WHERE id=?", (item_id,)).fetchone()
+    max_stack = max(1, int(item[0] or 1)) if item else 1
+    if max_stack <= 1:
+        return {"success": True, "changed": False, "reason": "not_stackable"}
+    reserved = set()
+    if database.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='inventory_reservations'").fetchone():
+        reserved = {int(row[0]) for row in database.execute(
+            "SELECT DISTINCT inventory_id FROM inventory_reservations WHERE user_id=? AND COALESCE(quantity,0)>0",
+            (user_id,),
+        ).fetchall()}
+    rows = database.execute(
+        "SELECT id,COALESCE(quantity,0) FROM inventory WHERE user_id=? AND item_id=? AND quantity>0 ORDER BY id",
+        (user_id,item_id),
+    ).fetchall()
+    safe = [(int(row[0]),int(row[1] or 0)) for row in rows if int(row[0]) not in reserved]
+    if len(safe) <= 1:
+        return {"success": True, "changed": False, "reason": "nothing_to_compact"}
+    total = sum(quantity for _inventory_id, quantity in safe)
+    desired = []
+    remaining = total
+    while remaining > 0:
+        desired.append(min(max_stack, remaining)); remaining -= desired[-1]
+    before = [quantity for _inventory_id, quantity in safe]
+    if before == desired:
+        return {"success": True, "changed": False, "reason": "already_compact"}
+    for index, quantity in enumerate(desired):
+        database.execute("UPDATE inventory SET quantity=? WHERE id=? AND user_id=? AND item_id=?", (quantity,safe[index][0],user_id,item_id))
+    for inventory_id, _quantity in safe[len(desired):]:
+        database.execute("DELETE FROM inventory WHERE id=? AND user_id=? AND item_id=?", (inventory_id,user_id,item_id))
+    after_total = int(database.execute("SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?",(user_id,item_id)).fetchone()[0] or 0)
+    before_total = sum(int(row[1] or 0) for row in rows)
+    if after_total != before_total:
+        raise RuntimeError("Stack compaction changed total quantity")
+    if commit: database.commit()
+    return {"success": True, "changed": True, "rows_before": len(safe), "rows_after": len(desired), "freed_rows": len(safe)-len(desired)}
+
 # ==============================
 # CONSUME ITEMS
 # ==============================
@@ -246,7 +287,7 @@ def consume_inventory_item(user_id_or_inventory_id, inventory_id_or_amount=1, am
         return False
 
     if user_id is None:
-        cursor.execute("SELECT quantity FROM inventory WHERE id=?", (inventory_id,))
+        cursor.execute("SELECT user_id,item_id,quantity FROM inventory WHERE id=?", (inventory_id,))
     else:
         cursor.execute(
             "SELECT quantity FROM inventory WHERE id=? AND user_id=?",
@@ -257,7 +298,11 @@ def consume_inventory_item(user_id_or_inventory_id, inventory_id_or_amount=1, am
         return False
 
     try:
-        quantity = int(row[0] or 0)
+        if user_id is None:
+            user_id, item_id, raw_quantity = int(row[0]), int(row[1]), row[2]
+        else:
+            item_id, raw_quantity = int(cursor.execute("SELECT item_id FROM inventory WHERE id=?", (inventory_id,)).fetchone()[0]), row[0]
+        quantity = int(raw_quantity or 0)
     except Exception:
         quantity = 0
     if quantity < amount:
@@ -283,6 +328,7 @@ def consume_inventory_item(user_id_or_inventory_id, inventory_id_or_amount=1, am
                 "UPDATE inventory SET quantity=? WHERE id=? AND user_id=?",
                 (new_quantity, inventory_id, user_id),
             )
+    compact_user_item_stacks(user_id, item_id, commit=False)
     conn.commit()
     return True
 
@@ -351,6 +397,8 @@ def consume_user_item_by_item_id(user_id, item_id, quantity=1):
         
         remaining -= take
     
+    if remaining <= 0:
+        compact_user_item_stacks(user_id, item_id, commit=False)
     conn.commit()
     
     return remaining <= 0
