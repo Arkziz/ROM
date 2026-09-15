@@ -36,7 +36,7 @@ def calculate_player_hit_chance(player_dex, mob_dex):
         mob_dex = 0.0
 
     chance = 95.0 + ((player_dex - mob_dex) * 0.5)
-    return max(50.0, min(99.0, chance))
+    return max(50.0, min(95.0, chance))
 
 
 def roll_player_normal_attack_hit(player_dex, mob_dex, rng=None):
@@ -49,6 +49,32 @@ def roll_player_normal_attack_hit(player_dex, mob_dex, rng=None):
         "chance": chance,
         "roll": roll,
     }
+
+
+def skill_requires_pve_hit_roll(skill):
+    """Return True only for enemy-directed PvE player skills."""
+    damage_multiplier = float(skill.get("damage_multiplier", 0) or 0)
+    effect = str(skill.get("effect", "") or "")
+    return damage_multiplier > 0 or effect.startswith("enemy_")
+
+
+def roll_player_pve_skill_hit(skill, player_dex, player_int, mob, rng=None):
+    """Resolve physical DEX/DEX or magical INT/WIS for offensive PvE skills."""
+    if not skill_requires_pve_hit_roll(skill):
+        return {"required": False, "hit": True, "chance": None, "roll": None}
+    attack_type = str(skill.get("attack_type", "") or "")
+    if attack_type == "physical":
+        attacker_accuracy = player_dex
+        target_avoidance = mob["dex"]
+    elif attack_type == "magical":
+        attacker_accuracy = player_int
+        target_avoidance = mob["wis"]
+    else:
+        raise ValueError(f"Offensive PvE skill has invalid attack_type: {attack_type!r}")
+    chance = calculate_player_hit_chance(attacker_accuracy, target_avoidance)
+    roller = rng if rng is not None else random
+    roll = int(roller.randint(1, 100))
+    return {"required": True, "hit": roll <= chance, "chance": chance, "roll": roll}
 
 def get_physical_crit_chance(dex, level=None):
     return calculate_physical_crit_chance(dex)

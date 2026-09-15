@@ -227,7 +227,7 @@ from systems.combat_system import (
 from systems.reward_system import process_victory_reward
 from systems.pve_auto_escape_system import begin_pve_encounter, claim_pve_terminal, STALE_COMBAT_TEXT
 from systems.potion_system import use_potion_from_inventory
-from systems.combat_system import roll_player_normal_attack_hit
+from systems.combat_system import roll_player_normal_attack_hit, roll_player_pve_skill_hit
 
 
 # ==============================
@@ -2524,8 +2524,16 @@ def register_combat_handlers(bot):
             mob["max_hp"] = mob["hp"]
             
         skill_attack_type = skill.get("attack_type", attack_profile["attack_type"])
+        skill_hit_result = roll_player_pve_skill_hit(
+            skill=skill,
+            player_dex=dex_,
+            player_int=int_,
+            mob=mob,
+        )
+        skill_hit = bool(skill_hit_result["hit"])
+        skill_miss_text = "" if skill_hit else "💨 ПРОМАХ! {} не влучила у {}.\n".format(skill["name"], mob["name"])
         
-        if skill.get("no_damage"):
+        if skill.get("no_damage") or not skill_hit:
             base_dmg = 0
             dmg = 0
             is_player_crit = False
@@ -2575,26 +2583,31 @@ def register_combat_handlers(bot):
             mob["_last_player_crit"] = bool(is_player_crit)
             
         resource_attack_text = ""
-        if not skill.get("no_damage"):
+        if skill_hit and not skill.get("no_damage"):
             if mob.get("player_resource_type") == "rage":
                 resource_attack_text += add_rage_for_player_attack(mob)
                 
         combo_gain = int(skill.get("combo_gain", 0))
-        if combo_gain > 0:
+        if skill_hit and combo_gain > 0:
             resource_attack_text += add_rogue_combo_point(mob, combo_gain)
             
-        resource_attack_text += apply_extra_rage_from_skill(mob, skill)
+        if skill_hit:
+            
+            resource_attack_text += apply_extra_rage_from_skill(mob, skill)
         
         stun_text = ""
         if not skill.get("no_damage"):
-            stun_text = roll_skill_stun(mob, skill)
+            if skill_hit:
+                stun_text = roll_skill_stun(mob, skill)
             
-        special_effect_text = apply_skill_special_effect(
-            user_id=user_id,
-            mob=mob,
-            skill=skill,
-            damage_done=dmg
-        )
+        special_effect_text = ""
+        if skill_hit:
+            special_effect_text = apply_skill_special_effect(
+                user_id=user_id,
+                mob=mob,
+                skill=skill,
+                damage_done=dmg
+            )
         
         cooldown_set_text = set_skill_cooldown(
             mob,
@@ -2759,8 +2772,14 @@ def register_combat_handlers(bot):
             text += "\n"
             
         text += f"{skill['name']}\n"
+            
+        if skill_miss_text:
+            
+            text += skill_miss_text
         
-        if skill.get("no_damage"):
+        if not skill_hit:
+            pass
+        elif skill.get("no_damage"):
             text += "✨ Навичка застосована.\n"
         else:
             if is_player_crit:
@@ -3004,8 +3023,16 @@ def register_combat_handlers(bot):
             mob["max_hp"] = mob["hp"]
 
         skill_attack_type = skill.get("attack_type", attack_profile["attack_type"])
+        skill_hit_result = roll_player_pve_skill_hit(
+            skill=skill,
+            player_dex=dex_,
+            player_int=int_,
+            mob=mob,
+        )
+        skill_hit = bool(skill_hit_result["hit"])
+        skill_miss_text = "" if skill_hit else "💨 ПРОМАХ! {} не влучила у {}.\n".format(skill["name"], mob["name"])
 
-        if skill.get("no_damage"):
+        if skill.get("no_damage") or not skill_hit:
             base_dmg = 0
             dmg = 0
             is_player_crit = False
@@ -3071,28 +3098,33 @@ def register_combat_handlers(bot):
 
         resource_attack_text = ""
 
-        if not skill.get("no_damage"):
+        if skill_hit and not skill.get("no_damage"):
             if mob.get("player_resource_type") == "rage":
                 resource_attack_text += add_rage_for_player_attack(mob)
 
         combo_gain = int(skill.get("combo_gain", 0))
 
-        if combo_gain > 0:
+        if skill_hit and combo_gain > 0:
             resource_attack_text += add_rogue_combo_point(mob, combo_gain)
 
-        resource_attack_text += apply_extra_rage_from_skill(mob, skill)
+        if skill_hit:
+
+            resource_attack_text += apply_extra_rage_from_skill(mob, skill)
 
         stun_text = ""
 
         if not skill.get("no_damage"):
-            stun_text = roll_skill_stun(mob, skill)
+            if skill_hit:
+                stun_text = roll_skill_stun(mob, skill)
 
-        special_effect_text = apply_skill_special_effect(
-            user_id=user_id,
-            mob=mob,
-            skill=skill,
-            damage_done=dmg
-        )
+        special_effect_text = ""
+        if skill_hit:
+            special_effect_text = apply_skill_special_effect(
+                user_id=user_id,
+                mob=mob,
+                skill=skill,
+                damage_done=dmg
+            )
 
         cooldown_set_text = set_skill_cooldown(
             mob,
@@ -3275,7 +3307,13 @@ def register_combat_handlers(bot):
 
         text += f"{skill['name']}\n"
 
-        if skill.get("no_damage"):
+        if skill_miss_text:
+
+            text += skill_miss_text
+
+        if not skill_hit:
+            pass
+        elif skill.get("no_damage"):
             text += "✨ Навичка застосована.\n"
         else:
             if is_player_crit:
