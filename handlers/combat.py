@@ -1750,7 +1750,7 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
     text += f"\n\n{victory_title}\n\n"
 
     text += (
-        f"{mob['name']} повалений на землю.\n\n"
+        f"{mob['name']} повалений на землю."
         f"📈 Нагорода:\n"
     )
 
