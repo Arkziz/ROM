@@ -53,7 +53,7 @@ def _insert_item_dynamic(values_by_column):
 
 def seed_refine_items():
     common_values = {
-        "slot_key": "", "weapon_hands": 1, "max_stack": 999, "bonus_str": 0,
+        "slot_key": "", "weapon_hands": 1, "max_stack": 50, "bonus_str": 0,
         "bonus_dex": 0, "bonus_int": 0, "bonus_wis": 0, "bonus_sta": 0,
         "pdef": 0, "mdef": 0, "item_level": 1, "is_generated": 0,
         "item_subtype": "", "armor_type": "", "weapon_min_damage": 0,
