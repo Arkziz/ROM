@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-09-15 01:27:09 +03:00
+Created: 2026-09-16 01:29:38 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9444
-Scanned files: 11207
+Scanned files: 11388
 Included files: 200
-Excluded files: 11007
+Excluded files: 11188
 Included source size: 2,61 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 11001
+- excluded directory: 11182
 - excluded file name or pattern: 6
 - unsupported file type: 0
 
@@ -928,8 +928,8 @@ def build_about_game_section_text(key):
 
 ============================================================
 FILE: data\balance.py
-SIZE: 1432 bytes
-LAST WRITE: 2026-08-31 23:16:20
+SIZE: 1377 bytes
+LAST WRITE: 2026-09-16 00:41:06
 ============================================================
 
 """
@@ -960,7 +960,7 @@ ENERGY_REGEN_MINUTES = 5
 HP_REGEN_MINUTES = 1
 HP_REGEN_PERCENT = 0.1
 RARITY_REPAIR_MULTIPLIERS = {'common': 1.0, 'uncommon': 2.5, 'rare': 7.0, 'epic': 18.0}
-REFINE_MATERIAL_MAX_STACK = 999
+REFINE_MATERIAL_MAX_STACK = 50
 REFINE_STONE_ITEM_ID = 601
 
 
@@ -989,8 +989,8 @@ __all__ = [
 
 ============================================================
 FILE: data\bosses.py
-SIZE: 5320 bytes
-LAST WRITE: 2026-09-15 01:22:44
+SIZE: 4673 bytes
+LAST WRITE: 2026-09-15 01:50:28
 ============================================================
 
 """Canonical location-boss definitions for ROM Stage 15.
@@ -1001,9 +1001,10 @@ write to SQLite, award rewards, or call Telegram APIs.
 from __future__ import annotations
 
 BOSS_SCHEMA_VERSION = "15.1.0"
-BOSS_CORE_STAT_MULTIPLIER = 2.0
-BOSS_HP_MULTIPLIER = BOSS_CORE_STAT_MULTIPLIER
-BOSS_ATTACK_MULTIPLIER = BOSS_CORE_STAT_MULTIPLIER
+BOSS_PRIMARY_STAT_MULTIPLIER = 2.2
+BOSS_HP_OUTPUT_MULTIPLIER = 1.35
+BOSS_ELITE_HP_CEILING_MULTIPLIER = 1.8
+BOSS_ELITE_ATTACK_CEILING_MULTIPLIER = 1.8
 BOSS_ENRAGE_HP_PERCENT = 0.25
 
 # Stage 15.2.0 safety gate. Encounter architecture is installed now, but live
@@ -1020,13 +1021,6 @@ BOSS_DEFINITIONS = {
         "level_max": 5,
         "attack_type": "physical",
         "reference_level": 5,
-        "reference_stats": {
-            "hp_min": 550, "hp_max": 650,
-            "attack_min": 60, "attack_max": 75,
-            "pdef_min": 12, "pdef_max": 16,
-            "mdef_min": 8, "mdef_max": 12,
-            "dex_min": 15, "dex_max": 18,
-        },
         "ai_before_enrage": (
             ("ferocious_bite", 0.55),
             ("fang_rend", 0.25),
@@ -1072,13 +1066,6 @@ BOSS_DEFINITIONS = {
         "level_max": 10,
         "attack_type": "physical",
         "reference_level": 10,
-        "reference_stats": {
-            "hp_min": 1650, "hp_max": 1930,
-            "attack_min": 145, "attack_max": 175,
-            "pdef_min": 30, "pdef_max": 36,
-            "mdef_min": 16, "mdef_max": 22,
-            "dex_min": 16, "dex_max": 20,
-        },
         "ai_before_enrage": (
             ("chieftain_axe", 0.50),
             ("skull_splitter", 0.25),
@@ -2192,8 +2179,8 @@ def is_location_unlocked(location_id, player_level):
 
 ============================================================
 FILE: data\mobs.py
-SIZE: 16390 bytes
-LAST WRITE: 2026-09-14 22:21:00
+SIZE: 12578 bytes
+LAST WRITE: 2026-09-15 01:41:10
 ============================================================
 
 # ==============================
@@ -2208,16 +2195,8 @@ START_PATH_MOBS = [
         "min_player_level": 1,
         "location_id": "start_path",
 
-        "hp_min": 45,
-        "hp_max": 55,
 
-        "attack_min": 7,
-        "attack_max": 9,
 
-        "pdef_min": 3,
-        "pdef_max": 5,
-        "mdef_min": 1,
-        "mdef_max": 2,
 
         "dex_min": 5,
         "dex_max": 7,
@@ -2244,16 +2223,8 @@ START_PATH_MOBS = [
         "min_player_level": 1,
         "location_id": "start_path",
 
-        "hp_min": 38,
-        "hp_max": 48,
 
-        "attack_min": 8,
-        "attack_max": 10,
 
-        "pdef_min": 1,
-        "pdef_max": 2,
-        "mdef_min": 4,
-        "mdef_max": 6,
 
         "dex_min": 4,
         "dex_max": 6,
@@ -2282,16 +2253,8 @@ START_PATH_MOBS = [
         "min_player_level": 1,
         "location_id": "start_path",
 
-        "hp_min": 68,
-        "hp_max": 82,
 
-        "attack_min": 10,
-        "attack_max": 13,
 
-        "pdef_min": 5,
-        "pdef_max": 7,
-        "mdef_min": 2,
-        "mdef_max": 3,
 
         "dex_min": 6,
         "dex_max": 8,
@@ -2318,16 +2281,8 @@ START_PATH_MOBS = [
         "min_player_level": 1,
         "location_id": "start_path",
 
-        "hp_min": 62,
-        "hp_max": 76,
 
-        "attack_min": 11,
-        "attack_max": 14,
 
-        "pdef_min": 2,
-        "pdef_max": 3,
-        "mdef_min": 6,
-        "mdef_max": 8,
 
         "dex_min": 4,
         "dex_max": 6,
@@ -2356,16 +2311,8 @@ START_PATH_MOBS = [
         "min_player_level": 2,
         "location_id": "start_path",
 
-        "hp_min": 75,
-        "hp_max": 92,
 
-        "attack_min": 14,
-        "attack_max": 17,
 
-        "pdef_min": 4,
-        "pdef_max": 6,
-        "mdef_min": 2,
-        "mdef_max": 4,
 
         "dex_min": 12,
         "dex_max": 15,
@@ -2392,16 +2339,8 @@ START_PATH_MOBS = [
         "min_player_level": 2,
         "location_id": "start_path",
 
-        "hp_min": 72,
-        "hp_max": 88,
 
-        "attack_min": 15,
-        "attack_max": 19,
 
-        "pdef_min": 2,
-        "pdef_max": 4,
-        "mdef_min": 7,
-        "mdef_max": 10,
 
         "dex_min": 10,
         "dex_max": 13,
@@ -2430,16 +2369,8 @@ START_PATH_MOBS = [
         "min_player_level": 3,
         "location_id": "start_path",
 
-        "hp_min": 95,
-        "hp_max": 115,
 
-        "attack_min": 17,
-        "attack_max": 21,
 
-        "pdef_min": 6,
-        "pdef_max": 8,
-        "mdef_min": 3,
-        "mdef_max": 5,
 
         "dex_min": 13,
         "dex_max": 16,
@@ -2466,16 +2397,8 @@ START_PATH_MOBS = [
         "min_player_level": 3,
         "location_id": "start_path",
 
-        "hp_min": 88,
-        "hp_max": 108,
 
-        "attack_min": 19,
-        "attack_max": 23,
 
-        "pdef_min": 3,
-        "pdef_max": 5,
-        "mdef_min": 9,
-        "mdef_max": 12,
 
         "dex_min": 10,
         "dex_max": 13,
@@ -2504,16 +2427,8 @@ START_PATH_MOBS = [
         "min_player_level": 4,
         "location_id": "start_path",
 
-        "hp_min": 130,
-        "hp_max": 155,
 
-        "attack_min": 22,
-        "attack_max": 27,
 
-        "pdef_min": 8,
-        "pdef_max": 11,
-        "mdef_min": 4,
-        "mdef_max": 6,
 
         "dex_min": 12,
         "dex_max": 15,
@@ -2540,16 +2455,8 @@ START_PATH_MOBS = [
         "min_player_level": 4,
         "location_id": "start_path",
 
-        "hp_min": 120,
-        "hp_max": 145,
 
-        "attack_min": 24,
-        "attack_max": 29,
 
-        "pdef_min": 4,
-        "pdef_max": 6,
-        "mdef_min": 11,
-        "mdef_max": 14,
 
         "dex_min": 11,
         "dex_max": 14,
@@ -2585,16 +2492,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 6,
         "location_id": "dark_forest",
 
-        "hp_min": 165,
-        "hp_max": 195,
 
-        "attack_min": 28,
-        "attack_max": 34,
 
-        "pdef_min": 10,
-        "pdef_max": 13,
-        "mdef_min": 5,
-        "mdef_max": 7,
 
         "dex_min": 11,
         "dex_max": 14,
@@ -2621,16 +2520,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 6,
         "location_id": "dark_forest",
 
-        "hp_min": 155,
-        "hp_max": 185,
 
-        "attack_min": 30,
-        "attack_max": 36,
 
-        "pdef_min": 5,
-        "pdef_max": 7,
-        "mdef_min": 13,
-        "mdef_max": 16,
 
         "dex_min": 9,
         "dex_max": 12,
@@ -2659,16 +2550,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 6,
         "location_id": "dark_forest",
 
-        "hp_min": 205,
-        "hp_max": 240,
 
-        "attack_min": 32,
-        "attack_max": 38,
 
-        "pdef_min": 12,
-        "pdef_max": 15,
-        "mdef_min": 6,
-        "mdef_max": 8,
 
         "dex_min": 15,
         "dex_max": 18,
@@ -2695,16 +2578,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 6,
         "location_id": "dark_forest",
 
-        "hp_min": 190,
-        "hp_max": 225,
 
-        "attack_min": 35,
-        "attack_max": 41,
 
-        "pdef_min": 6,
-        "pdef_max": 8,
-        "mdef_min": 15,
-        "mdef_max": 19,
 
         "dex_min": 10,
         "dex_max": 13,
@@ -2733,16 +2608,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 7,
         "location_id": "dark_forest",
 
-        "hp_min": 275,
-        "hp_max": 320,
 
-        "attack_min": 42,
-        "attack_max": 50,
 
-        "pdef_min": 10,
-        "pdef_max": 13,
-        "mdef_min": 5,
-        "mdef_max": 7,
 
         "dex_min": 12,
         "dex_max": 15,
@@ -2769,16 +2636,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 7,
         "location_id": "dark_forest",
 
-        "hp_min": 235,
-        "hp_max": 275,
 
-        "attack_min": 43,
-        "attack_max": 52,
 
-        "pdef_min": 6,
-        "pdef_max": 8,
-        "mdef_min": 17,
-        "mdef_max": 21,
 
         "dex_min": 9,
         "dex_max": 12,
@@ -2807,16 +2666,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 8,
         "location_id": "dark_forest",
 
-        "hp_min": 340,
-        "hp_max": 395,
 
-        "attack_min": 40,
-        "attack_max": 47,
 
-        "pdef_min": 18,
-        "pdef_max": 23,
-        "mdef_min": 8,
-        "mdef_max": 11,
 
         "dex_min": 10,
         "dex_max": 13,
@@ -2843,16 +2694,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 8,
         "location_id": "dark_forest",
 
-        "hp_min": 300,
-        "hp_max": 350,
 
-        "attack_min": 47,
-        "attack_max": 55,
 
-        "pdef_min": 7,
-        "pdef_max": 10,
-        "mdef_min": 20,
-        "mdef_max": 25,
 
         "dex_min": 10,
         "dex_max": 13,
@@ -2881,16 +2724,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 9,
         "location_id": "dark_forest",
 
-        "hp_min": 395,
-        "hp_max": 460,
 
-        "attack_min": 52,
-        "attack_max": 62,
 
-        "pdef_min": 20,
-        "pdef_max": 26,
-        "mdef_min": 9,
-        "mdef_max": 12,
 
         "dex_min": 9,
         "dex_max": 12,
@@ -2917,16 +2752,8 @@ DARK_FOREST_MOBS = [
         "min_player_level": 9,
         "location_id": "dark_forest",
 
-        "hp_min": 340,
-        "hp_max": 400,
 
-        "attack_min": 56,
-        "attack_max": 66,
 
-        "pdef_min": 8,
-        "pdef_max": 11,
-        "mdef_min": 23,
-        "mdef_max": 29,
 
         "dex_min": 9,
         "dex_max": 12,
@@ -3209,8 +3036,8 @@ RUNE_DROP_BALANCE_VERSION = "10.11.0"
 
 ============================================================
 FILE: data\runes.py
-SIZE: 3549 bytes
-LAST WRITE: 2026-09-05 00:36:33
+SIZE: 3427 bytes
+LAST WRITE: 2026-09-16 00:41:06
 ============================================================
 
 """Canonical Rune System data for ROM 10.x."""
@@ -3246,9 +3073,9 @@ PERFECT_RUNE_EXTRACTOR_ITEM_ID = 728
 FIRIUS_TOKENS_PER_DAILY_REWARD = 5
 RUNE_FUSION_SOURCE_QUANTITY = 3
 RUNE_FUSION_TOKEN_QUANTITY = 1
-RUNE_MAX_STACK = 999
+RUNE_MAX_STACK = 50
 FIRIUS_TOKEN_MAX_STACK = 999
-EXTRACTOR_MAX_STACK = 999
+EXTRACTOR_MAX_STACK = 50
 
 RUNE_ITEM_DEFINITIONS = {}
 RUNE_ITEM_ID_BY_KEY = {}
@@ -3622,8 +3449,8 @@ from db_modules import *
 
 ============================================================
 FILE: db_modules\__init__.py
-SIZE: 22157 bytes
-LAST WRITE: 2026-08-31 00:08:57
+SIZE: 21703 bytes
+LAST WRITE: 2026-09-16 01:11:29
 ============================================================
 
 from systems.crystal_shop_system import (
@@ -3773,7 +3600,7 @@ from .generated_equipment import create_generated_equipment_item, create_generat
 from .inventory import (
     get_bag_capacity, get_inventory_used_slots,
     get_inventory, get_item,
-    add_item, consume_inventory_item,
+    add_item, consume_inventory_item, compact_user_item_stacks,
     count_user_item, consume_user_item_by_item_id,
     find_first_item_stack_by_type,
     sell_all_trash
@@ -3890,7 +3717,7 @@ __all__ = [
     # Inventory (10 functions)
     'get_bag_capacity', 'get_inventory_used_slots',
     'get_inventory', 'get_item',
-    'add_item', 'consume_inventory_item',
+    'add_item', 'consume_inventory_item', 'compact_user_item_stacks',
     'count_user_item', 'consume_user_item_by_item_id',
     'find_first_item_stack_by_type',
     'sell_all_trash',
@@ -8148,8 +7975,8 @@ __all__ = ['create_generated_equipment_item', 'create_generated_equipment_item_f
 
 ============================================================
 FILE: db_modules\inventory.py
-SIZE: 13030 bytes
-LAST WRITE: 2026-08-21 01:21:36
+SIZE: 15945 bytes
+LAST WRITE: 2026-09-16 01:11:29
 ============================================================
 
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
@@ -8376,6 +8203,47 @@ def add_item(user_id, item_id, quantity=1, durability=100, commit=True):
 
 
 
+
+def compact_user_item_stacks(user_id, item_id, commit=False, connection=None):
+    """Compact safe unreserved stacks for one user/item without changing totals."""
+    database = connection or conn
+    user_id, item_id = int(user_id), int(item_id)
+    item = database.execute("SELECT COALESCE(max_stack,1) FROM items WHERE id=?", (item_id,)).fetchone()
+    max_stack = max(1, int(item[0] or 1)) if item else 1
+    if max_stack <= 1:
+        return {"success": True, "changed": False, "reason": "not_stackable"}
+    reserved = set()
+    if database.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='inventory_reservations'").fetchone():
+        reserved = {int(row[0]) for row in database.execute(
+            "SELECT DISTINCT inventory_id FROM inventory_reservations WHERE user_id=? AND COALESCE(quantity,0)>0",
+            (user_id,),
+        ).fetchall()}
+    rows = database.execute(
+        "SELECT id,COALESCE(quantity,0) FROM inventory WHERE user_id=? AND item_id=? AND quantity>0 ORDER BY id",
+        (user_id,item_id),
+    ).fetchall()
+    safe = [(int(row[0]),int(row[1] or 0)) for row in rows if int(row[0]) not in reserved]
+    if len(safe) <= 1:
+        return {"success": True, "changed": False, "reason": "nothing_to_compact"}
+    total = sum(quantity for _inventory_id, quantity in safe)
+    desired = []
+    remaining = total
+    while remaining > 0:
+        desired.append(min(max_stack, remaining)); remaining -= desired[-1]
+    before = [quantity for _inventory_id, quantity in safe]
+    if before == desired:
+        return {"success": True, "changed": False, "reason": "already_compact"}
+    for index, quantity in enumerate(desired):
+        database.execute("UPDATE inventory SET quantity=? WHERE id=? AND user_id=? AND item_id=?", (quantity,safe[index][0],user_id,item_id))
+    for inventory_id, _quantity in safe[len(desired):]:
+        database.execute("DELETE FROM inventory WHERE id=? AND user_id=? AND item_id=?", (inventory_id,user_id,item_id))
+    after_total = int(database.execute("SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?",(user_id,item_id)).fetchone()[0] or 0)
+    before_total = sum(int(row[1] or 0) for row in rows)
+    if after_total != before_total:
+        raise RuntimeError("Stack compaction changed total quantity")
+    if commit: database.commit()
+    return {"success": True, "changed": True, "rows_before": len(safe), "rows_after": len(desired), "freed_rows": len(safe)-len(desired)}
+
 # ==============================
 # CONSUME ITEMS
 # ==============================
@@ -8400,7 +8268,7 @@ def consume_inventory_item(user_id_or_inventory_id, inventory_id_or_amount=1, am
         return False
 
     if user_id is None:
-        cursor.execute("SELECT quantity FROM inventory WHERE id=?", (inventory_id,))
+        cursor.execute("SELECT user_id,item_id,quantity FROM inventory WHERE id=?", (inventory_id,))
     else:
         cursor.execute(
             "SELECT quantity FROM inventory WHERE id=? AND user_id=?",
@@ -8411,7 +8279,11 @@ def consume_inventory_item(user_id_or_inventory_id, inventory_id_or_amount=1, am
         return False
 
     try:
-        quantity = int(row[0] or 0)
+        if user_id is None:
+            user_id, item_id, raw_quantity = int(row[0]), int(row[1]), row[2]
+        else:
+            item_id, raw_quantity = int(cursor.execute("SELECT item_id FROM inventory WHERE id=?", (inventory_id,)).fetchone()[0]), row[0]
+        quantity = int(raw_quantity or 0)
     except Exception:
         quantity = 0
     if quantity < amount:
@@ -8437,6 +8309,7 @@ def consume_inventory_item(user_id_or_inventory_id, inventory_id_or_amount=1, am
                 "UPDATE inventory SET quantity=? WHERE id=? AND user_id=?",
                 (new_quantity, inventory_id, user_id),
             )
+    compact_user_item_stacks(user_id, item_id, commit=False)
     conn.commit()
     return True
 
@@ -8505,6 +8378,8 @@ def consume_user_item_by_item_id(user_id, item_id, quantity=1):
         
         remaining -= take
     
+    if remaining <= 0:
+        compact_user_item_stacks(user_id, item_id, commit=False)
     conn.commit()
     
     return remaining <= 0
@@ -9970,8 +9845,8 @@ LAST WRITE: 2026-08-16 23:02:17
 
 ============================================================
 FILE: db_modules\refine.py
-SIZE: 8228 bytes
-LAST WRITE: 2026-08-31 23:16:20
+SIZE: 7949 bytes
+LAST WRITE: 2026-09-16 00:41:06
 ============================================================
 
 """
@@ -10029,7 +9904,7 @@ def _insert_item_dynamic(values_by_column):
 
 def seed_refine_items():
     common_values = {
-        "slot_key": "", "weapon_hands": 1, "max_stack": 999, "bonus_str": 0,
+        "slot_key": "", "weapon_hands": 1, "max_stack": 50, "bonus_str": 0,
         "bonus_dex": 0, "bonus_int": 0, "bonus_wis": 0, "bonus_sta": 0,
         "pdef": 0, "mdef": 0, "item_level": 1, "is_generated": 0,
         "item_subtype": "", "armor_type": "", "weapon_min_damage": 0,
@@ -21034,8 +20909,8 @@ def build_main_menu_text(user_id, show_location_description=False):
 
 ============================================================
 FILE: handlers\combat.py
-SIZE: 126618 bytes
-LAST WRITE: 2026-09-13 02:11:10
+SIZE: 125391 bytes
+LAST WRITE: 2026-09-16 00:11:30
 ============================================================
 
 
@@ -21267,7 +21142,7 @@ from systems.combat_system import (
 from systems.reward_system import process_victory_reward
 from systems.pve_auto_escape_system import begin_pve_encounter, claim_pve_terminal, STALE_COMBAT_TEXT
 from systems.potion_system import use_potion_from_inventory
-from systems.combat_system import roll_player_normal_attack_hit
+from systems.combat_system import roll_player_normal_attack_hit, roll_player_pve_skill_hit
 
 
 # ==============================
@@ -22706,8 +22581,11 @@ def build_lethal_combat_log(turn_context, player_hp, player_max_hp, durability_d
             parts.append(str(value).strip())
 
     skill = context.get("skill")
+    skill_hit = context.get("skill_hit")
     if isinstance(skill, dict) and skill.get("name"):
-        if skill.get("no_damage"):
+        if skill_hit is False:
+            parts.append("💨 ПРОМАХ! Навичка «{}» не влучила в ціль.".format(skill["name"]))
+        elif skill.get("no_damage"):
             parts.append(f"✨ {skill['name']}\n✨ Навичка застосована.")
         elif context.get("dmg") is not None:
             parts.append(f"✨ {skill['name']}\n✨ Ти завдав {max(0, int(context.get('dmg') or 0))} шкоди.")
@@ -22723,7 +22601,9 @@ def build_lethal_combat_log(turn_context, player_hp, player_max_hp, durability_d
         if part and part not in unique_parts:
             unique_parts.append(part)
 
-    text = "💥 ОСТАННІ ПОДІЇ БОЮ\n\n"
+    death_text = build_death_text(durability_damage)
+    death_heading, _, death_tail = death_text.partition("\n")
+    text = f"{death_heading}\n\n💥 ОСТАННІЙ ХІД\n\n"
     if unique_parts:
         text += "\n".join(unique_parts) + "\n\n"
 
@@ -22743,7 +22623,8 @@ def build_lethal_combat_log(turn_context, player_hp, player_max_hp, durability_d
         text += f"👹 Противник: {enemy_name}\n"
         text += f"❤️ Здоров’я противника: {enemy_current_hp}/{enemy_max_hp}\n\n"
 
-    text += build_death_text(durability_damage)
+    if death_tail:
+        text += death_tail.lstrip("\n")
     return text
 
 
@@ -22751,7 +22632,7 @@ def build_lethal_combat_log(turn_context, player_hp, player_max_hp, durability_d
 def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, daily_result, prefix_text=""):
     exp_result = reward["exp_result"]
 
-    victory_title = "🏆 ВИ ПЕРЕМОГЛИ!"
+    victory_title = ""
 
     if mob.get("is_boss"):
         victory_title = "🏆👑 ВИ ПЕРЕМОГЛИ БОСА!"
@@ -22779,12 +22660,12 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
         f"{hp_bar(player_hp, player_max_hp)}"
     )
 
-    text = "💥 ФІНАЛЬНИЙ ХІД\n\n"
+    text = "🏆 ВИ ПЕРЕМОГЛИ!\n\n💥 ФІНАЛЬНИЙ ХІД\n\n"
     text += "\n".join(final_round_parts)
     text += f"\n\n{victory_title}\n\n"
 
     text += (
-        f"{mob['name']} повалений на землю.\n\n"
+        f"{mob['name']} повалений на землю."
         f"📈 Нагорода:\n"
     )
 
@@ -22828,6 +22709,10 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
 
     text += f"\n🎒 Сумка: {reward['used_slots']}/{reward['capacity']} слотів"
 
+    # ROM Stage 18.xx.3b: normalize rendered victory block boundaries.
+    while "\n\n\n" in text:
+        text = text.replace("\n\n\n", "\n\n")
+    text = text.replace("повалений на землю.📈 Нагорода:", "повалений на землю.\n\n📈 Нагорода:")
     return text
 
 
@@ -23348,6 +23233,10 @@ def register_combat_handlers(bot):
             enemy_action_text = boss_action_text
 
         if player_hp <= 0:
+            defeat_claimed = claim_pve_terminal(user_id, "defeat")
+            if not defeat_claimed:
+                return
+
             durability_damage = damage_equipped_items_on_death(
                 user_id=user_id
             )
@@ -23564,8 +23453,16 @@ def register_combat_handlers(bot):
             mob["max_hp"] = mob["hp"]
             
         skill_attack_type = skill.get("attack_type", attack_profile["attack_type"])
+        skill_hit_result = roll_player_pve_skill_hit(
+            skill=skill,
+            player_dex=dex_,
+            player_int=int_,
+            mob=mob,
+        )
+        skill_hit = bool(skill_hit_result["hit"])
+        skill_miss_text = "" if skill_hit else "💨 ПРОМАХ! Навичка «{}» не влучила в ціль.\n".format(skill["name"])
         
-        if skill.get("no_damage"):
+        if skill.get("no_damage") or not skill_hit:
             base_dmg = 0
             dmg = 0
             is_player_crit = False
@@ -23615,26 +23512,31 @@ def register_combat_handlers(bot):
             mob["_last_player_crit"] = bool(is_player_crit)
             
         resource_attack_text = ""
-        if not skill.get("no_damage"):
+        if skill_hit and not skill.get("no_damage"):
             if mob.get("player_resource_type") == "rage":
                 resource_attack_text += add_rage_for_player_attack(mob)
                 
         combo_gain = int(skill.get("combo_gain", 0))
-        if combo_gain > 0:
+        if skill_hit and combo_gain > 0:
             resource_attack_text += add_rogue_combo_point(mob, combo_gain)
             
-        resource_attack_text += apply_extra_rage_from_skill(mob, skill)
+        if skill_hit:
+            
+            resource_attack_text += apply_extra_rage_from_skill(mob, skill)
         
         stun_text = ""
         if not skill.get("no_damage"):
-            stun_text = roll_skill_stun(mob, skill)
+            if skill_hit:
+                stun_text = roll_skill_stun(mob, skill)
             
-        special_effect_text = apply_skill_special_effect(
-            user_id=user_id,
-            mob=mob,
-            skill=skill,
-            damage_done=dmg
-        )
+        special_effect_text = ""
+        if skill_hit:
+            special_effect_text = apply_skill_special_effect(
+                user_id=user_id,
+                mob=mob,
+                skill=skill,
+                damage_done=dmg
+            )
         
         cooldown_set_text = set_skill_cooldown(
             mob,
@@ -23743,6 +23645,10 @@ def register_combat_handlers(bot):
             enemy_action_text = boss_action_text
 
         if player_hp <= 0:
+            defeat_claimed = claim_pve_terminal(user_id, "defeat")
+            if not defeat_claimed:
+                return
+
             durability_damage = damage_equipped_items_on_death(
                 user_id=user_id
             )
@@ -23799,8 +23705,14 @@ def register_combat_handlers(bot):
             text += "\n"
             
         text += f"{skill['name']}\n"
+            
+        if skill_miss_text:
+            
+            text += skill_miss_text
         
-        if skill.get("no_damage"):
+        if not skill_hit:
+            pass
+        elif skill.get("no_damage"):
             text += "✨ Навичка застосована.\n"
         else:
             if is_player_crit:
@@ -24044,8 +23956,16 @@ def register_combat_handlers(bot):
             mob["max_hp"] = mob["hp"]
 
         skill_attack_type = skill.get("attack_type", attack_profile["attack_type"])
+        skill_hit_result = roll_player_pve_skill_hit(
+            skill=skill,
+            player_dex=dex_,
+            player_int=int_,
+            mob=mob,
+        )
+        skill_hit = bool(skill_hit_result["hit"])
+        skill_miss_text = "" if skill_hit else "💨 ПРОМАХ! Навичка «{}» не влучила в ціль.\n".format(skill["name"])
 
-        if skill.get("no_damage"):
+        if skill.get("no_damage") or not skill_hit:
             base_dmg = 0
             dmg = 0
             is_player_crit = False
@@ -24111,28 +24031,33 @@ def register_combat_handlers(bot):
 
         resource_attack_text = ""
 
-        if not skill.get("no_damage"):
+        if skill_hit and not skill.get("no_damage"):
             if mob.get("player_resource_type") == "rage":
                 resource_attack_text += add_rage_for_player_attack(mob)
 
         combo_gain = int(skill.get("combo_gain", 0))
 
-        if combo_gain > 0:
+        if skill_hit and combo_gain > 0:
             resource_attack_text += add_rogue_combo_point(mob, combo_gain)
 
-        resource_attack_text += apply_extra_rage_from_skill(mob, skill)
+        if skill_hit:
+
+            resource_attack_text += apply_extra_rage_from_skill(mob, skill)
 
         stun_text = ""
 
         if not skill.get("no_damage"):
-            stun_text = roll_skill_stun(mob, skill)
+            if skill_hit:
+                stun_text = roll_skill_stun(mob, skill)
 
-        special_effect_text = apply_skill_special_effect(
-            user_id=user_id,
-            mob=mob,
-            skill=skill,
-            damage_done=dmg
-        )
+        special_effect_text = ""
+        if skill_hit:
+            special_effect_text = apply_skill_special_effect(
+                user_id=user_id,
+                mob=mob,
+                skill=skill,
+                damage_done=dmg
+            )
 
         cooldown_set_text = set_skill_cooldown(
             mob,
@@ -24248,6 +24173,10 @@ def register_combat_handlers(bot):
             enemy_action_text = boss_action_text
 
         if player_hp <= 0:
+            defeat_claimed = claim_pve_terminal(user_id, "defeat")
+            if not defeat_claimed:
+                return
+
             durability_damage = damage_equipped_items_on_death(
                 user_id=user_id
             )
@@ -24315,7 +24244,13 @@ def register_combat_handlers(bot):
 
         text += f"{skill['name']}\n"
 
-        if skill.get("no_damage"):
+        if skill_miss_text:
+
+            text += skill_miss_text
+
+        if not skill_hit:
+            pass
+        elif skill.get("no_damage"):
             text += "✨ Навичка застосована.\n"
         else:
             if is_player_crit:
@@ -38419,75 +38354,142 @@ def allocate_attribute_points(
 
 ============================================================
 FILE: systems\attribute_respec_system.py
-SIZE: 5358 bytes
-LAST WRITE: 2026-09-10 23:36:41
+SIZE: 5437 bytes
+LAST WRITE: 2026-09-16 01:11:29
 ============================================================
 
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""Canonical Attribute Respec domain service. UI integration is intentionally separate."""
-from __future__ import annotations
-from datetime import datetime,timezone
+#!/usr/bin/env python3
+
+# -*- coding: utf-8 -*-
+
+"""Canonical Attribute Respec domain service. UI integration is intentionally separate."""
+
+from __future__ import annotations
+
+from datetime import datetime,timezone
+
 REBIRTH_SPHERE_ITEM_ID=504
-NEW_PATH_SPHERE_ITEM_ID=501
-ALLOCATED=("allocated_strength","allocated_dexterity","allocated_intelligence","allocated_wisdom","allocated_stamina")
-class AttributeRespecError(RuntimeError):pass
-class RespecNotAvailableError(AttributeRespecError):pass
-class RespecStateChangedError(AttributeRespecError):pass
-class RespecAlreadyProcessed(AttributeRespecError):pass
-def _db(db_module=None):
- if db_module is not None:return db_module
- import db;return db
-def _row(cursor,user_id):
- return cursor.execute("""SELECT character_class,free_attribute_points,total_attribute_points_earned,
- allocated_strength,allocated_dexterity,allocated_intelligence,allocated_wisdom,allocated_stamina,
- hp,mp FROM users WHERE user_id=?""",(int(user_id),)).fetchone()
-def _value(row,index):return int((row[index] if row is not None else 0) or 0)
-def get_attribute_respec_preview(user_id,*,db_module=None):
- database=_db(db_module);row=_row(database.cursor,user_id)
- if not row:raise AttributeRespecError(f"Player not found: {user_id}")
- allocated={"strength":_value(row,3),"dexterity":_value(row,4),"intelligence":_value(row,5),"wisdom":_value(row,6),"stamina":_value(row,7)}
- returned=sum(allocated.values());earned=_value(row,2);free=_value(row,1)
- if earned!=free+returned:raise AttributeRespecError("Attribute point invariant failed")
- return {"user_id":int(user_id),"character_class":str(row[0] or ""),"allocated":allocated,"returned_points":returned,"free_before":free,"free_after":free+returned,"total_attribute_points_earned":earned}
-def reset_allocated_attributes(user_id,source_inventory_id,idempotency_key,*,operation_type="attribute_respec",new_class=None,expected_item_id=None,db_module=None,max_hp_getter=None,max_mp_getter=None,availability_guard=None):
- if operation_type not in ("attribute_respec","class_change"):raise AttributeRespecError("Unsupported operation type")
- key=str(idempotency_key or "").strip()
- if not key:raise AttributeRespecError("idempotency_key is required")
- database=_db(db_module);conn=database.conn;cursor=database.cursor
- if conn.in_transaction:raise AttributeRespecError("Respec requires transaction ownership")
- conn.execute("BEGIN IMMEDIATE")
- try:
-  existing=cursor.execute("SELECT id FROM attribute_respec_events WHERE idempotency_key=?",(key,)).fetchone()
-  if existing:raise RespecAlreadyProcessed("Respec confirmation already processed")
-  if availability_guard:
-   guard=availability_guard(int(user_id),cursor)
-   if guard is not True:raise RespecNotAvailableError(str(guard or "Character is busy"))
-  before=get_attribute_respec_preview(user_id,db_module=database)
-  if operation_type=="attribute_respec" and before["returned_points"]<=0:raise RespecNotAvailableError("No allocated attribute points")
-  inv=cursor.execute("SELECT item_id,quantity FROM inventory WHERE id=? AND user_id=?",(int(source_inventory_id),int(user_id))).fetchone()
+NEW_PATH_SPHERE_ITEM_ID=501
+
+ALLOCATED=("allocated_strength","allocated_dexterity","allocated_intelligence","allocated_wisdom","allocated_stamina")
+
+class AttributeRespecError(RuntimeError):pass
+
+class RespecNotAvailableError(AttributeRespecError):pass
+
+class RespecStateChangedError(AttributeRespecError):pass
+
+class RespecAlreadyProcessed(AttributeRespecError):pass
+
+def _db(db_module=None):
+
+ if db_module is not None:return db_module
+
+ import db;return db
+
+def _row(cursor,user_id):
+
+ return cursor.execute("""SELECT character_class,free_attribute_points,total_attribute_points_earned,
+
+ allocated_strength,allocated_dexterity,allocated_intelligence,allocated_wisdom,allocated_stamina,
+
+ hp,mp FROM users WHERE user_id=?""",(int(user_id),)).fetchone()
+
+def _value(row,index):return int((row[index] if row is not None else 0) or 0)
+
+def get_attribute_respec_preview(user_id,*,db_module=None):
+
+ database=_db(db_module);row=_row(database.cursor,user_id)
+
+ if not row:raise AttributeRespecError(f"Player not found: {user_id}")
+
+ allocated={"strength":_value(row,3),"dexterity":_value(row,4),"intelligence":_value(row,5),"wisdom":_value(row,6),"stamina":_value(row,7)}
+
+ returned=sum(allocated.values());earned=_value(row,2);free=_value(row,1)
+
+ if earned!=free+returned:raise AttributeRespecError("Attribute point invariant failed")
+
+ return {"user_id":int(user_id),"character_class":str(row[0] or ""),"allocated":allocated,"returned_points":returned,"free_before":free,"free_after":free+returned,"total_attribute_points_earned":earned}
+
+def reset_allocated_attributes(user_id,source_inventory_id,idempotency_key,*,operation_type="attribute_respec",new_class=None,expected_item_id=None,db_module=None,max_hp_getter=None,max_mp_getter=None,availability_guard=None):
+
+ if operation_type not in ("attribute_respec","class_change"):raise AttributeRespecError("Unsupported operation type")
+
+ key=str(idempotency_key or "").strip()
+
+ if not key:raise AttributeRespecError("idempotency_key is required")
+
+ database=_db(db_module);conn=database.conn;cursor=database.cursor
+
+ if conn.in_transaction:raise AttributeRespecError("Respec requires transaction ownership")
+
+ conn.execute("BEGIN IMMEDIATE")
+
+ try:
+
+  existing=cursor.execute("SELECT id FROM attribute_respec_events WHERE idempotency_key=?",(key,)).fetchone()
+
+  if existing:raise RespecAlreadyProcessed("Respec confirmation already processed")
+
+  if availability_guard:
+
+   guard=availability_guard(int(user_id),cursor)
+
+   if guard is not True:raise RespecNotAvailableError(str(guard or "Character is busy"))
+
+  before=get_attribute_respec_preview(user_id,db_module=database)
+
+  if operation_type=="attribute_respec" and before["returned_points"]<=0:raise RespecNotAvailableError("No allocated attribute points")
+
+  inv=cursor.execute("SELECT item_id,quantity FROM inventory WHERE id=? AND user_id=?",(int(source_inventory_id),int(user_id))).fetchone()
+
   expected_item_id = int(expected_item_id or (NEW_PATH_SPHERE_ITEM_ID if operation_type=="class_change" else REBIRTH_SPHERE_ITEM_ID))
-  if not inv or int(inv[0])!=expected_item_id:raise RespecNotAvailableError("Required sphere not found")
-  quantity=int(inv[1] or 0)
-  cursor.execute("""UPDATE users SET free_attribute_points=free_attribute_points+?,
-   allocated_strength=0,allocated_dexterity=0,allocated_intelligence=0,
-   allocated_wisdom=0,allocated_stamina=0 WHERE user_id=?""",(before["returned_points"],int(user_id)))
-  if operation_type=="class_change":cursor.execute("UPDATE users SET character_class=? WHERE user_id=?",(str(new_class or ""),int(user_id)))
-  if quantity<=1:cursor.execute("DELETE FROM inventory WHERE id=? AND user_id=?",(int(source_inventory_id),int(user_id)))
-  else:cursor.execute("UPDATE inventory SET quantity=quantity-1 WHERE id=? AND user_id=?",(int(source_inventory_id),int(user_id)))
-  hp_before=_value(_row(cursor,user_id),8);mp_before=_value(_row(cursor,user_id),9)
-  max_hp=int(max_hp_getter(int(user_id)) if max_hp_getter else hp_before)
-  max_mp=int(max_mp_getter(int(user_id)) if max_mp_getter else mp_before)
-  cursor.execute("UPDATE users SET hp=MIN(COALESCE(hp,0),?),max_hp=?,mp=MIN(COALESCE(mp,0),?),max_mp=? WHERE user_id=?",(max_hp,max_hp,max_mp,max_mp,int(user_id)))
-  a=before["allocated"]
-  cursor.execute("""INSERT INTO attribute_respec_events(user_id,operation_type,old_class,new_class,returned_points,
-   returned_strength,returned_dexterity,returned_intelligence,returned_wisdom,returned_stamina,
-   source_inventory_id,source_item_id,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-   (int(user_id),operation_type,before["character_class"],new_class,before["returned_points"],a["strength"],a["dexterity"],a["intelligence"],a["wisdom"],a["stamina"],int(source_inventory_id),expected_item_id,key,datetime.now(timezone.utc).isoformat()))
-  after=get_attribute_respec_preview(user_id,db_module=database);conn.commit()
-  return {"success":True,"before":before,"after":after,"max_hp":max_hp,"max_mp":max_mp}
- except Exception:
-  conn.rollback();raise
+  if not inv or int(inv[0])!=expected_item_id:raise RespecNotAvailableError("Required sphere not found")
+
+  quantity=int(inv[1] or 0)
+
+  cursor.execute("""UPDATE users SET free_attribute_points=free_attribute_points+?,
+
+   allocated_strength=0,allocated_dexterity=0,allocated_intelligence=0,
+
+   allocated_wisdom=0,allocated_stamina=0 WHERE user_id=?""",(before["returned_points"],int(user_id)))
+
+  if operation_type=="class_change":cursor.execute("UPDATE users SET character_class=? WHERE user_id=?",(str(new_class or ""),int(user_id)))
+
+  if quantity<=1:cursor.execute("DELETE FROM inventory WHERE id=? AND user_id=?",(int(source_inventory_id),int(user_id)))
+
+  else:cursor.execute("UPDATE inventory SET quantity=quantity-1 WHERE id=? AND user_id=?",(int(source_inventory_id),int(user_id)))
+
+  from db_modules.inventory import compact_user_item_stacks
+
+  compact_user_item_stacks(user_id,expected_item_id,commit=False,connection=conn)
+
+  hp_before=_value(_row(cursor,user_id),8);mp_before=_value(_row(cursor,user_id),9)
+
+  max_hp=int(max_hp_getter(int(user_id)) if max_hp_getter else hp_before)
+
+  max_mp=int(max_mp_getter(int(user_id)) if max_mp_getter else mp_before)
+
+  cursor.execute("UPDATE users SET hp=MIN(COALESCE(hp,0),?),max_hp=?,mp=MIN(COALESCE(mp,0),?),max_mp=? WHERE user_id=?",(max_hp,max_hp,max_mp,max_mp,int(user_id)))
+
+  a=before["allocated"]
+
+  cursor.execute("""INSERT INTO attribute_respec_events(user_id,operation_type,old_class,new_class,returned_points,
+
+   returned_strength,returned_dexterity,returned_intelligence,returned_wisdom,returned_stamina,
+
+   source_inventory_id,source_item_id,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+
+   (int(user_id),operation_type,before["character_class"],new_class,before["returned_points"],a["strength"],a["dexterity"],a["intelligence"],a["wisdom"],a["stamina"],int(source_inventory_id),expected_item_id,key,datetime.now(timezone.utc).isoformat()))
+
+  after=get_attribute_respec_preview(user_id,db_module=database);conn.commit()
+
+  return {"success":True,"before":before,"after":after,"max_hp":max_hp,"max_mp":max_mp}
+
+ except Exception:
+
+  conn.rollback();raise
+
 
 ============================================================
 FILE: systems\auction_house_system.py
@@ -44031,8 +44033,8 @@ def _auction_buy_normalize_category(category):
 
 ============================================================
 FILE: systems\boss_system.py
-SIZE: 29135 bytes
-LAST WRITE: 2026-09-15 01:22:44
+SIZE: 26791 bytes
+LAST WRITE: 2026-09-15 01:50:28
 ============================================================
 
 """Pure location-boss foundation for ROM Stage 15.1.0.
@@ -44048,24 +44050,18 @@ import random
 from typing import Any, Mapping
 
 from data.bosses import (
-    BOSS_ATTACK_MULTIPLIER,
-    BOSS_CORE_STAT_MULTIPLIER,
     BOSS_DEFINITIONS,
-    BOSS_HP_MULTIPLIER,
     BOSS_SCHEMA_VERSION,
     BOSS_ENCOUNTERS_ENABLED,
     BOSS_ENCOUNTER_CHANCE_PERCENT,
     get_location_boss_definition,
+    BOSS_PRIMARY_STAT_MULTIPLIER,
+    BOSS_HP_OUTPUT_MULTIPLIER,
+    BOSS_ELITE_HP_CEILING_MULTIPLIER,
+    BOSS_ELITE_ATTACK_CEILING_MULTIPLIER,
 )
 from data.mobs import get_mobs_for_location
 
-STAT_RANGE_KEYS = (
-    "hp_min", "hp_max", "attack_min", "attack_max",
-    "pdef_min", "pdef_max", "mdef_min", "mdef_max",
-    "dex_min", "dex_max",
-    "str_min", "str_max", "int_min", "int_max",
-    "wis_min", "wis_max", "sta_min", "sta_max",
-)
 
 
 def _int(value: Any, default: int = 0) -> int:
@@ -44094,33 +44090,6 @@ def _average_range(templates, minimum_key, maximum_key, fallback=1):
     return max(1, round(sum(mins) / len(mins))), max(1, round(sum(maxs) / len(maxs)))
 
 
-def derive_lower_anchor(definition: Mapping[str, Any]) -> dict[str, int]:
-    """Build the location-min-level anchor from production mob data."""
-    location_id = str(definition["location_id"])
-    level_min = _int(definition["level_min"], 1)
-    templates = _templates_for_level(location_id, level_min)
-    hp_min, hp_max = _average_range(templates, "hp_min", "hp_max")
-    atk_min, atk_max = _average_range(templates, "attack_min", "attack_max")
-    pdef_min, pdef_max = _average_range(templates, "pdef_min", "pdef_max")
-    mdef_min, mdef_max = _average_range(templates, "mdef_min", "mdef_max")
-    dex_min, dex_max = _average_range(templates, "dex_min", "dex_max")
-    str_min, str_max = _average_range(templates, "str_min", "str_max")
-    int_min, int_max = _average_range(templates, "int_min", "int_max")
-    wis_min, wis_max = _average_range(templates, "wis_min", "wis_max")
-    sta_min, sta_max = _average_range(templates, "sta_min", "sta_max")
-    return {
-        "hp_min": max(1, round(hp_min * BOSS_HP_MULTIPLIER)),
-        "hp_max": max(1, round(hp_max * BOSS_HP_MULTIPLIER)),
-        "attack_min": max(1, round(atk_min * BOSS_ATTACK_MULTIPLIER)),
-        "attack_max": max(1, round(atk_max * BOSS_ATTACK_MULTIPLIER)),
-        "pdef_min": pdef_min, "pdef_max": pdef_max,
-        "mdef_min": mdef_min, "mdef_max": mdef_max,
-        "dex_min": dex_min, "dex_max": dex_max,
-        "str_min": str_min, "str_max": str_max,
-        "int_min": int_min, "int_max": int_max,
-        "wis_min": wis_min, "wis_max": wis_max,
-        "sta_min": sta_min, "sta_max": sta_max,
-    }
 
 
 def scale_boss_stat_ranges(definition: Mapping[str, Any], player_level: int) -> dict[str, int]:
@@ -44134,10 +44103,10 @@ def scale_boss_stat_ranges(definition: Mapping[str, Any], player_level: int) -> 
     if not templates:
         raise ValueError(f"No normal mob templates for boss reference: {definition['location_id']} level {level}")
 
-    boss_primary_multiplier = 2.2
-    boss_hp_multiplier = 1.35
-    elite_hp_multiplier = 1.8
-    elite_attack_multiplier = 1.8
+    boss_primary_multiplier = BOSS_PRIMARY_STAT_MULTIPLIER
+    boss_hp_multiplier = BOSS_HP_OUTPUT_MULTIPLIER
+    elite_hp_multiplier = BOSS_ELITE_HP_CEILING_MULTIPLIER
+    elite_attack_multiplier = BOSS_ELITE_ATTACK_CEILING_MULTIPLIER
     scaled = {}
     for prefix in ("dex", "str", "int", "wis", "sta"):
         lo, hi = _average_range(templates, f"{prefix}_min", f"{prefix}_max")
@@ -44223,7 +44192,7 @@ def build_location_boss(location_id: str, player_level: int, rng=None) -> dict[s
         "elite_exp_multiplier": 5.0, "elite_gold_multiplier": 5.0,
         "boss_exp_multiplier": 5.0, "boss_gold_multiplier": 5.0,
         "enemy_effects": {}, "boss_state": create_boss_state(),
-        "boss_definition": copy.deepcopy(definition), "boss_scaled_ranges": ranges,
+        "boss_definition": copy.deepcopy(definition),
     }
 
 
@@ -45169,8 +45138,8 @@ def apply_post_combat_mp_floor_17_15_1(user_id):
 
 ============================================================
 FILE: systems\combat_system.py
-SIZE: 9248 bytes
-LAST WRITE: 2026-09-14 23:06:56
+SIZE: 10452 bytes
+LAST WRITE: 2026-09-15 22:47:41
 ============================================================
 
 # ROM 17.18.2.2 BOW CROSSBOW DAMAGE DIFFERENTIATION
@@ -45211,7 +45180,7 @@ def calculate_player_hit_chance(player_dex, mob_dex):
         mob_dex = 0.0
 
     chance = 95.0 + ((player_dex - mob_dex) * 0.5)
-    return max(50.0, min(99.0, chance))
+    return max(50.0, min(95.0, chance))
 
 
 def roll_player_normal_attack_hit(player_dex, mob_dex, rng=None):
@@ -45224,6 +45193,32 @@ def roll_player_normal_attack_hit(player_dex, mob_dex, rng=None):
         "chance": chance,
         "roll": roll,
     }
+
+
+def skill_requires_pve_hit_roll(skill):
+    """Return True only for enemy-directed PvE player skills."""
+    damage_multiplier = float(skill.get("damage_multiplier", 0) or 0)
+    effect = str(skill.get("effect", "") or "")
+    return damage_multiplier > 0 or effect.startswith("enemy_")
+
+
+def roll_player_pve_skill_hit(skill, player_dex, player_int, mob, rng=None):
+    """Resolve physical DEX/DEX or magical INT/WIS for offensive PvE skills."""
+    if not skill_requires_pve_hit_roll(skill):
+        return {"required": False, "hit": True, "chance": None, "roll": None}
+    attack_type = str(skill.get("attack_type", "") or "")
+    if attack_type == "physical":
+        attacker_accuracy = player_dex
+        target_avoidance = mob["dex"]
+    elif attack_type == "magical":
+        attacker_accuracy = player_int
+        target_avoidance = mob["wis"]
+    else:
+        raise ValueError(f"Offensive PvE skill has invalid attack_type: {attack_type!r}")
+    chance = calculate_player_hit_chance(attacker_accuracy, target_avoidance)
+    roller = rng if rng is not None else random
+    roll = int(roller.randint(1, 100))
+    return {"required": True, "hit": roll <= chance, "chance": chance, "roll": roll}
 
 def get_physical_crit_chance(dex, level=None):
     return calculate_physical_crit_chance(dex)
@@ -54929,8 +54924,8 @@ def get_location_context_return_text(user_id):
 
 ============================================================
 FILE: systems\name_rune_system.py
-SIZE: 6729 bytes
-LAST WRITE: 2026-09-02 21:38:02
+SIZE: 6792 bytes
+LAST WRITE: 2026-09-16 01:11:29
 ============================================================
 
 # -*- coding: utf-8 -*-
@@ -54957,7 +54952,7 @@ def init_name_rune_system(db_path=None):
  try:
   row=c.execute('SELECT name FROM items WHERE id=?',(NAME_RUNE_ITEM_ID,)).fetchone()
   if row and str(row[0])!='✍️ Руна імені':raise RuntimeError('Item ID 10000 is occupied by another item')
-  cols={r[1] for r in c.execute('PRAGMA table_info(items)')};values={'id':502,'name':'✍️ Руна імені','type':'material','rarity':'epic','category':'material','max_stack':999,'sell_price':0,'buy_price':0,'tradeable':0,'premium_bound':1}
+  cols={r[1] for r in c.execute('PRAGMA table_info(items)')};values={'id':502,'name':'✍️ Руна імені','type':'material','rarity':'epic','category':'material','max_stack':10,'sell_price':0,'buy_price':0,'tradeable':0,'premium_bound':1}
   names=[k for k in values if k in cols]
   if not row:c.execute('INSERT INTO items('+','.join(names)+') VALUES('+','.join('?' for _ in names)+')',[values[k] for k in names])
   c.executescript("""CREATE TABLE IF NOT EXISTS character_name_changes(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,old_name TEXT NOT NULL,new_name TEXT NOT NULL,normalized_new_name TEXT NOT NULL,inventory_id INTEGER NOT NULL,item_id INTEGER NOT NULL,idempotency_key TEXT NOT NULL UNIQUE,created_at TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE,FOREIGN KEY(item_id) REFERENCES items(id) ON DELETE RESTRICT);CREATE INDEX IF NOT EXISTS ix_character_name_changes_user ON character_name_changes(user_id,id DESC);""");c.commit();return {'success':True,'item_id':502}
@@ -55002,6 +54997,8 @@ def rename_with_name_rune(user_id,new_name,idempotency_key,db_path=None,inventor
   if not rune:c.rollback();return {'success':False,'message':'Руну імені не знайдено в інвентарі.'}
   if int(rune['quantity'])==1:c.execute('DELETE FROM inventory WHERE id=? AND user_id=?',(int(rune['id']),uid))
   else:c.execute('UPDATE inventory SET quantity=quantity-1 WHERE id=? AND user_id=? AND quantity>1',(int(rune['id']),uid))
+  from db_modules.inventory import compact_user_item_stacks
+  compact_user_item_stacks(uid,NAME_RUNE_ITEM_ID,commit=False,connection=c)
   c.execute('UPDATE users SET character_name=? WHERE user_id=?',(v['name'],uid));now=datetime.now(timezone.utc).isoformat();cur=c.execute('INSERT INTO character_name_changes(user_id,old_name,new_name,normalized_new_name,inventory_id,item_id,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?)',(uid,old,v['name'],v['key'],int(rune['id']),502,key,now));cid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'change_id':cid,'old_name':old,'new_name':v['name']}
  except Exception:c.rollback();raise
  finally:c.close()
@@ -64920,8 +64917,8 @@ def start_pvp_timer_worker(on_battle_changed=None, poll_seconds: float=1.0):
 
 ============================================================
 FILE: systems\refine_system.py
-SIZE: 10861 bytes
-LAST WRITE: 2026-08-31 23:16:21
+SIZE: 10816 bytes
+LAST WRITE: 2026-09-16 01:11:29
 ============================================================
 
 """
@@ -65099,6 +65096,8 @@ def perform_refine_attempt(user_id, inventory_id, use_success_rune=False, idempo
             if not row: raise RuntimeError("resource disappeared during refine")
             if int(row["quantity"]) == 1: conn.execute("DELETE FROM inventory WHERE id=? AND user_id=?", (int(row["id"]),uid))
             else: conn.execute("UPDATE inventory SET quantity=quantity-1 WHERE id=? AND user_id=? AND quantity>1", (int(row["id"]),uid))
+            from db_modules.inventory import compact_user_item_stacks
+            compact_user_item_stacks(uid, item_id, commit=False, connection=conn)
         kind = check["refine_kind"]
         current = int(check["current_level"])
         roll_result = roll_refine_success(kind,current,use_rune)
@@ -66061,8 +66060,8 @@ def roll_fatigue_artifact_drop(user_id, mob, random_func=None):
 
 ============================================================
 FILE: systems\rune_system.py
-SIZE: 59956 bytes
-LAST WRITE: 2026-09-05 00:36:33
+SIZE: 58706 bytes
+LAST WRITE: 2026-09-16 01:11:29
 ============================================================
 
 """Rune System foundation: schema, seed, reads and fusion-selection validation."""
@@ -66847,6 +66846,9 @@ def _consume_stack_quantity(conn, user_id, item_id, quantity):
         remaining -= take
         if remaining <= 0:
             break
+    if remaining == 0:
+        from db_modules.inventory import compact_user_item_stacks
+        compact_user_item_stacks(user_id, item_id, commit=False, connection=conn)
     return remaining == 0
 
 
@@ -67136,6 +67138,8 @@ def _consume_extractor_stack(conn,user_id,item_id):
     if not row:return False
     if int(row[1])==1:conn.execute("DELETE FROM inventory WHERE id=?",(int(row[0]),))
     else:conn.execute("UPDATE inventory SET quantity=quantity-1 WHERE id=?",(int(row[0]),))
+    from db_modules.inventory import compact_user_item_stacks
+    compact_user_item_stacks(user_id, item_id, commit=False, connection=conn)
     return True
 
 
