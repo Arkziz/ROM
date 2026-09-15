@@ -1686,7 +1686,9 @@ def build_lethal_combat_log(turn_context, player_hp, player_max_hp, durability_d
         if part and part not in unique_parts:
             unique_parts.append(part)
 
-    text = "💥 ОСТАННІ ПОДІЇ БОЮ\n\n"
+    death_text = build_death_text(durability_damage)
+    death_heading, _, death_tail = death_text.partition("\n")
+    text = f"{death_heading}\n\n💥 ОСТАННІЙ ХІД\n\n"
     if unique_parts:
         text += "\n".join(unique_parts) + "\n\n"
 
@@ -1706,7 +1708,8 @@ def build_lethal_combat_log(turn_context, player_hp, player_max_hp, durability_d
         text += f"👹 Противник: {enemy_name}\n"
         text += f"❤️ Здоров’я противника: {enemy_current_hp}/{enemy_max_hp}\n\n"
 
-    text += build_death_text(durability_damage)
+    if death_tail:
+        text += death_tail.lstrip("\n")
     return text
 
 
@@ -1714,7 +1717,7 @@ def build_lethal_combat_log(turn_context, player_hp, player_max_hp, durability_d
 def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, daily_result, prefix_text=""):
     exp_result = reward["exp_result"]
 
-    victory_title = "🏆 ВИ ПЕРЕМОГЛИ!"
+    victory_title = ""
 
     if mob.get("is_boss"):
         victory_title = "🏆👑 ВИ ПЕРЕМОГЛИ БОСА!"
@@ -1742,7 +1745,7 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
         f"{hp_bar(player_hp, player_max_hp)}"
     )
 
-    text = "💥 ФІНАЛЬНИЙ ХІД\n\n"
+    text = "🏆 ВИ ПЕРЕМОГЛИ!\n\n💥 ФІНАЛЬНИЙ ХІД\n\n"
     text += "\n".join(final_round_parts)
     text += f"\n\n{victory_title}\n\n"
 
