@@ -1666,8 +1666,11 @@ def build_lethal_combat_log(turn_context, player_hp, player_max_hp, durability_d
             parts.append(str(value).strip())
 
     skill = context.get("skill")
+    skill_hit = context.get("skill_hit")
     if isinstance(skill, dict) and skill.get("name"):
-        if skill.get("no_damage"):
+        if skill_hit is False:
+            parts.append("💨 ПРОМАХ! Навичка «{}» не влучила в ціль.".format(skill["name"]))
+        elif skill.get("no_damage"):
             parts.append(f"✨ {skill['name']}\n✨ Навичка застосована.")
         elif context.get("dmg") is not None:
             parts.append(f"✨ {skill['name']}\n✨ Ти завдав {max(0, int(context.get('dmg') or 0))} шкоди.")
@@ -2531,7 +2534,7 @@ def register_combat_handlers(bot):
             mob=mob,
         )
         skill_hit = bool(skill_hit_result["hit"])
-        skill_miss_text = "" if skill_hit else "💨 ПРОМАХ! {} не влучила у {}.\n".format(skill["name"], mob["name"])
+        skill_miss_text = "" if skill_hit else "💨 ПРОМАХ! Навичка «{}» не влучила в ціль.\n".format(skill["name"])
         
         if skill.get("no_damage") or not skill_hit:
             base_dmg = 0
@@ -3030,7 +3033,7 @@ def register_combat_handlers(bot):
             mob=mob,
         )
         skill_hit = bool(skill_hit_result["hit"])
-        skill_miss_text = "" if skill_hit else "💨 ПРОМАХ! {} не влучила у {}.\n".format(skill["name"], mob["name"])
+        skill_miss_text = "" if skill_hit else "💨 ПРОМАХ! Навичка «{}» не влучила в ціль.\n".format(skill["name"])
 
         if skill.get("no_damage") or not skill_hit:
             base_dmg = 0
