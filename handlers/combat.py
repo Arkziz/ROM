@@ -1794,6 +1794,10 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
 
     text += f"\n🎒 Сумка: {reward['used_slots']}/{reward['capacity']} слотів"
 
+    # ROM Stage 18.xx.3b: normalize rendered victory block boundaries.
+    while "\n\n\n" in text:
+        text = text.replace("\n\n\n", "\n\n")
+    text = text.replace("повалений на землю.📈 Нагорода:", "повалений на землю.\n\n📈 Нагорода:")
     return text
 
 
