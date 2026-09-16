@@ -1182,6 +1182,7 @@ def account_menu_kb_17_30_1_4():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.row('💎 Магазин кристалів', '🏆 Рейтинг')
     kb.row('📖 Про гру', '🔗 Корисні посилання')
+    kb.add('📜 Хроніки світу')
     kb.add('🔙 Назад')
     return kb
 

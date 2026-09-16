@@ -98,6 +98,7 @@ from handlers.crystal_shop import register_crystal_shop_handlers
 from handlers.admin_crystal_credit import register_admin_crystal_credit_handlers
 from handlers.player_rankings import register_player_rankings_handlers
 from handlers.timed_exp_bonus import register_timed_exp_bonus_handlers
+from handlers.world_chronicles import register_world_chronicle_handlers
 from systems.timed_exp_bonus_system import init_timed_exp_bonus_system
 from handlers.name_rune import register_name_rune_handlers
 from systems.name_rune_system import init_name_rune_system
@@ -181,6 +182,7 @@ register_crystal_shop_handlers(bot)
 register_admin_crystal_credit_handlers(bot)
 register_player_rankings_handlers(bot)
 register_timed_exp_bonus_handlers(bot)
+register_world_chronicle_handlers(bot)
 register_start_handlers(bot)
 register_profile_handlers(bot)
 register_inventory_handlers(bot)
