@@ -80,14 +80,25 @@ def world_chronicles_kb(data):
     return keyboard
 
 
+def _is_message_not_modified_error(error):
+    return "message is not modified" in str(error).lower()
+
+
 def _show_world_chronicles(bot, chat_id, page=0, message_id=None):
     data = get_world_chronicle_page(page=page, page_size=WORLD_CHRONICLE_PAGE_SIZE)
     text = build_world_chronicles_text(data)
     keyboard = world_chronicles_kb(data)
     if message_id is None:
         bot.send_message(chat_id, text, reply_markup=keyboard)
-    else:
+        return True
+
+    try:
         bot.edit_message_text(text, chat_id, message_id, reply_markup=keyboard)
+        return True
+    except Exception as error:
+        if _is_message_not_modified_error(error):
+            return False
+        raise
 
 
 def register_world_chronicle_handlers(bot):
