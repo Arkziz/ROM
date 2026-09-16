@@ -996,6 +996,40 @@ def show_guild_applications(bot, message):
     bot.send_message(message.chat.id, text, reply_markup=kb)
 
 
+def guild_applicant_profile_link_kb(user_id, application_id):
+    """Return a profile URL keyboard only for an authorized pending application."""
+    app = get_guild_application_by_id(application_id)
+    if not app or str(_app_row_get(app, "status", "")) != "pending":
+        return None
+
+    guild = get_user_guild(user_id)
+    if not guild:
+        return None
+
+    try:
+        guild_id = int(_app_row_get(guild, "id"))
+        application_guild_id = int(_app_row_get(app, "guild_id"))
+        candidate_user_id = int(_app_row_get(app, "user_id"))
+    except (TypeError, ValueError):
+        return None
+
+    if guild_id != application_guild_id:
+        return None
+    if not can_manage_guild_applications(user_id, guild_id):
+        return None
+    if candidate_user_id <= 0:
+        return None
+
+    kb = types.InlineKeyboardMarkup()
+    kb.add(
+        types.InlineKeyboardButton(
+            "👤 Відкрити профіль",
+            url=f"tg://user?id={candidate_user_id}",
+        )
+    )
+    return kb
+
+
 def show_guild_application_detail(bot, message, application_id):
     user_id = message.from_user.id
     state = GUILD_APPLICATION_REVIEW_STATE.setdefault(user_id, {"buttons": {}, "selected_application_id": None})
@@ -1006,6 +1040,14 @@ def show_guild_application_detail(bot, message, application_id):
         build_guild_application_detail_text(user_id, application_id),
         reply_markup=guild_application_detail_kb()
     )
+
+    profile_kb = guild_applicant_profile_link_kb(user_id, application_id)
+    if profile_kb is not None:
+        bot.send_message(
+            message.chat.id,
+            "👤 Профіль кандидата",
+            reply_markup=profile_kb,
+        )
 
 
 def handle_guild_application_review_message(bot, message):
