@@ -185,6 +185,24 @@ def perform_refine_attempt(user_id, inventory_id, use_success_rune=False, idempo
         if changed != 1: raise RuntimeError("refine target changed concurrently")
         now = datetime.now(timezone.utc).isoformat()
         conn.execute("INSERT INTO refine_attempts(user_id,inventory_id,item_id,refine_kind,old_level,new_level,success_chance,roll,refine_success,used_success_rune,stone_quantity,success_rune_quantity,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (uid,inv_id,int(item["item_id"]),kind,current,new_level,int(roll_result["chance"]),roll_result["roll"],1 if roll_result["success"] else 0,1 if use_rune else 0,1,1 if use_rune else 0,key,now))
+        max_level = WEAPON_MAX_REFINE_LEVEL if kind == "weapon" else ARMOR_MAX_REFINE_LEVEL
+        if bool(roll_result["success"]) and current == max_level - 1 and new_level == max_level:
+            from systems.world_chronicle_system import (
+                get_character_name_snapshot,
+                record_world_chronicle_event,
+            )
+            character_name = get_character_name_snapshot(uid, connection=conn)
+            if character_name:
+                record_world_chronicle_event(
+                    "equipment_max_refine",
+                    uid,
+                    character_name,
+                    f"equipment_max_refine:{inv_id}:{max_level}",
+                    subject_key=str(item["item_id"]),
+                    subject_name_snapshot=str(item["name"]),
+                    metadata={"level": max_level},
+                    connection=conn,
+                )
         conn.commit()
         if roll_result["success"]: message=f"✅ Заточка успішна: +{current} → +{new_level}"
         elif new_level < current: message=f"❌ Заточка не вдалася: +{current} → +{new_level}"
@@ -196,4 +214,3 @@ def perform_refine_attempt(user_id, inventory_id, use_success_rune=False, idempo
         return {"success": False, "message": f"❌ Заточку скасовано без списання ресурсів: {error}"}
     finally:
         conn.close()
-

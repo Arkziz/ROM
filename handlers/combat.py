@@ -1900,6 +1900,25 @@ def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=""):
         mob=mob
     )
 
+    if mob.get("is_boss"):
+        encounter_id = mob.get("pve_encounter_id")
+        if encounter_id:
+            from systems.world_chronicle_system import (
+                get_character_name_snapshot,
+                record_world_chronicle_event,
+            )
+            character_name = get_character_name_snapshot(user_id)
+            if character_name:
+                record_world_chronicle_event(
+                    "location_boss_defeated",
+                    user_id,
+                    character_name,
+                    f"location_boss_defeated:{encounter_id}",
+                    subject_key=str(mob.get("boss_key") or ""),
+                    subject_name_snapshot=str(mob.get("name") or mob.get("base_name") or "Бос"),
+                    location_id=str(mob.get("location_id") or ""),
+                )
+
     wear_result = apply_random_durability_wear_on_victory(
         user_id=user_id,
         chance_percent=25
