@@ -382,20 +382,6 @@ def set_character_class(user_id, class_key):
 
     refresh_user_mp(user_id)
 
-    if is_initial_class_selection:
-        from systems.world_chronicle_system import (
-            get_character_name_snapshot,
-            record_world_chronicle_event,
-        )
-        character_name = get_character_name_snapshot(user_id)
-        if character_name:
-            record_world_chronicle_event(
-                "player_joined",
-                user_id,
-                character_name,
-                f"player_joined:{int(user_id)}",
-            )
-
     return {"success": True, "message": f"✅ Обрано клас: {CLASS_CONFIGS[key]['name']}", "class_key": key}
 
 
@@ -647,6 +633,16 @@ def confirm_initial_character_class_17_13_1(user_id, class_key):
             db.conn.rollback()
 
             return {"success": False, "message": "ℹ️ Клас персонажа вже обрано."}
+
+        from systems.world_chronicle_system import record_world_chronicle_event
+
+        record_world_chronicle_event(
+            "player_joined",
+            user_id,
+            str(row[0]),
+            f"player_joined:{int(user_id)}",
+            connection=db.conn,
+        )
 
         db.conn.commit()
 
