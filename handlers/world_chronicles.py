@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from telebot import types
 
@@ -16,6 +17,26 @@ WORLD_CHRONICLES_BUTTON = "📜 Хроніки світу"
 WORLD_CHRONICLES_CALLBACK_PREFIX = "wc:"
 
 
+def _last_sunday(year, month):
+    if month == 12:
+        next_month = datetime(year + 1, 1, 1, tzinfo=timezone.utc)
+    else:
+        next_month = datetime(year, month + 1, 1, tzinfo=timezone.utc)
+    last_day = next_month - timedelta(days=1)
+    return last_day - timedelta(days=(last_day.weekday() + 1) % 7)
+
+
+def _kyiv_timezone_for_utc(value):
+    try:
+        return ZoneInfo("Europe/Kyiv")
+    except ZoneInfoNotFoundError:
+        utc_value = value.astimezone(timezone.utc)
+        summer_start = _last_sunday(utc_value.year, 3).replace(hour=1, minute=0, second=0, microsecond=0)
+        summer_end = _last_sunday(utc_value.year, 10).replace(hour=1, minute=0, second=0, microsecond=0)
+        offset_hours = 3 if summer_start <= utc_value < summer_end else 2
+        return timezone(timedelta(hours=offset_hours))
+
+
 def _format_world_chronicle_time(value):
     raw = str(value or "").strip()
     if not raw:
@@ -24,7 +45,7 @@ def _format_world_chronicle_time(value):
         parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
         if parsed.tzinfo is None:
             parsed = parsed.replace(tzinfo=timezone.utc)
-        return parsed.astimezone(timezone.utc).strftime("%d.%m.%Y %H:%M UTC")
+        return parsed.astimezone(_kyiv_timezone_for_utc(parsed)).strftime("%d.%m.%Y %H:%M")
     except Exception:
         return raw[:16].replace("T", " ")
 
