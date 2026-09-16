@@ -352,7 +352,23 @@ def set_character_class(user_id, class_key):
 
         return {"success": False, "message": "❌ Невідомий клас персонажа."}
 
-    previous_class = get_character_class(user_id)
+    db.cursor.execute(
+
+        "SELECT character_class, class_selected_at FROM users WHERE user_id=?",
+
+        (user_id,),
+
+    )
+
+    previous_row = db.cursor.fetchone()
+
+    previous_class_selected_at = (
+
+        str(previous_row[1] or "").strip() if previous_row else ""
+
+    )
+
+    is_initial_class_selection = not previous_class_selected_at
 
     db.cursor.execute(
 
@@ -366,7 +382,7 @@ def set_character_class(user_id, class_key):
 
     refresh_user_mp(user_id)
 
-    if not previous_class:
+    if is_initial_class_selection:
         from systems.world_chronicle_system import (
             get_character_name_snapshot,
             record_world_chronicle_event,
