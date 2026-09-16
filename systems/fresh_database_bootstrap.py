@@ -18,6 +18,7 @@ INITIALIZERS = (
     ("systems.premium_item_policy_system", "init_premium_item_policy_system"),
     ("systems.auction_house_system", "init_auction_house"),
     ("systems.guild_system", "init_guild_system"),
+    ("systems.world_chronicle_system", "init_world_chronicle_system"),
 )
 
 
