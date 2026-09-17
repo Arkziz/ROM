@@ -151,3 +151,8 @@ def _optional_tuple_result(module: ModuleType, provider_name: str, value) -> tup
     if not isinstance(value, tuple):
         raise EventRegistryError(f"{module.__name__}.{provider_name} must return tuple")
     return value
+
+
+def get_validated_registered_event_items() -> tuple[dict, ...]:
+    from .item_namespace import validate_event_item_definitions
+    return validate_event_item_definitions(collect_registered_event_items())
