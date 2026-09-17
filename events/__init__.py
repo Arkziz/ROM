@@ -202,3 +202,36 @@ def select_event_mob_candidate(candidates: tuple, rng=None, chance_percent=None)
         if point < cumulative:
             return row
     return validated[-1]
+
+
+def validate_event_drop_rules(rules: tuple, mob: dict) -> tuple[dict, ...]:
+    if not isinstance(rules, tuple):
+        raise EventRegistryError("event drop rules must be tuple")
+    if not isinstance(mob, dict):
+        raise EventRegistryError("event drop mob must be dict")
+    if not mob.get("is_event"):
+        return ()
+    event_key = str(mob.get("event_key") or "").strip()
+    mob_key = str(mob.get("event_mob_key") or "").strip()
+    validated=[]; seen=set()
+    for raw in rules:
+        if not isinstance(raw, dict):
+            raise EventRegistryError("event drop rule must be dict")
+        rule=dict(raw); rule_id=str(rule.get("rule_id") or "").strip()
+        if not rule_id or rule_id in seen:
+            raise EventRegistryError("event drop rule_id must be unique and non-empty")
+        if str(rule.get("event_key") or "").strip()!=event_key:
+            continue
+        target=str(rule.get("mob_key") or "*").strip()
+        if target not in ("*",mob_key):
+            continue
+        item_id=int(rule.get("item_id")); quantity=int(rule.get("quantity",1)); chance=float(rule.get("chance_percent",0.0))
+        if quantity <= 0:
+            raise EventRegistryError("event drop quantity must be positive")
+        if not 0.0 <= chance <= 100.0:
+            raise EventRegistryError("event drop chance_percent must be between 0 and 100")
+        from .item_namespace import validate_event_item_id
+        validate_event_item_id(event_key,item_id)
+        rule.update({"rule_id":rule_id,"event_key":event_key,"mob_key":target,"item_id":item_id,"quantity":quantity,"chance_percent":chance})
+        seen.add(rule_id); validated.append(rule)
+    return tuple(validated)
