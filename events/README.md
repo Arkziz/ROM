@@ -12,3 +12,17 @@
 - The active interval is `START_AT <= now < END_AT`.
 - `get_active_events(now=...)` supports deterministic tests.
 - Handler, encounter, drop, item, shop, persistence and UI integration are deferred.
+
+## Stage 18.28.3 content-provider contract
+
+Each event package may expose these public providers from its package `__init__.py`:
+
+- `get_mob_candidates(context) -> tuple`
+- `get_boss_candidates(context) -> tuple`
+- `get_drop_rules(context) -> tuple`
+- `get_items() -> tuple`
+- `handlers.register(bot)`
+
+Missing optional providers mean an empty contribution. A present provider must be callable and return a tuple. Registered item definitions are collected from all registered events so items can remain resolvable after `END_AT`. Mob, boss, and drop providers are collected only from active events. Handler registration uses enabled events and active state must be checked again inside every callback.
+
+The template contains no production content, no item IDs, no callbacks, no database writes, and no automatic registration.

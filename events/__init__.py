@@ -76,3 +76,78 @@ def get_active_events(now: datetime | None=None) -> tuple[ModuleType,...]:
 
 def reset_event_registry_for_tests() -> None:
     EVENT_REGISTRY.clear(); _LOADED_EVENT_MODULES.clear()
+
+
+def _optional_tuple(module: ModuleType, attribute: str) -> tuple:
+    value = getattr(module, attribute, ())
+    if value is None:
+        return ()
+    if not isinstance(value, tuple):
+        raise EventRegistryError(f"{module.__name__}.{attribute} must be tuple")
+    return value
+
+
+def collect_event_mob_candidates(context, now: datetime | None = None) -> tuple:
+    candidates = []
+    for event_module in get_active_events(now=now):
+        provider = getattr(event_module, "get_mob_candidates", None)
+        if provider is not None:
+            if not callable(provider):
+                raise EventRegistryError(f"{event_module.__name__}.get_mob_candidates must be callable")
+            candidates.extend(_optional_tuple_result(event_module, "get_mob_candidates", provider(context)))
+    return tuple(candidates)
+
+
+def collect_event_boss_candidates(context, now: datetime | None = None) -> tuple:
+    candidates = []
+    for event_module in get_active_events(now=now):
+        provider = getattr(event_module, "get_boss_candidates", None)
+        if provider is not None:
+            if not callable(provider):
+                raise EventRegistryError(f"{event_module.__name__}.get_boss_candidates must be callable")
+            candidates.extend(_optional_tuple_result(event_module, "get_boss_candidates", provider(context)))
+    return tuple(candidates)
+
+
+def collect_event_drop_rules(context, now: datetime | None = None) -> tuple:
+    rules = []
+    for event_module in get_active_events(now=now):
+        provider = getattr(event_module, "get_drop_rules", None)
+        if provider is not None:
+            if not callable(provider):
+                raise EventRegistryError(f"{event_module.__name__}.get_drop_rules must be callable")
+            rules.extend(_optional_tuple_result(event_module, "get_drop_rules", provider(context)))
+    return tuple(rules)
+
+
+def collect_registered_event_items() -> tuple:
+    items = []
+    for event_module in get_registered_events():
+        provider = getattr(event_module, "get_items", None)
+        if provider is not None:
+            if not callable(provider):
+                raise EventRegistryError(f"{event_module.__name__}.get_items must be callable")
+            items.extend(_optional_tuple_result(event_module, "get_items", provider()))
+    return tuple(items)
+
+
+def register_event_handlers(bot) -> tuple[str, ...]:
+    registered = []
+    for event_module in get_enabled_events():
+        handler_module = getattr(event_module, "handlers", None)
+        register = getattr(handler_module, "register", None) if handler_module is not None else None
+        if register is None:
+            continue
+        if not callable(register):
+            raise EventRegistryError(f"{event_module.__name__}.handlers.register must be callable")
+        register(bot)
+        registered.append(str(event_module.config.EVENT_KEY))
+    return tuple(registered)
+
+
+def _optional_tuple_result(module: ModuleType, provider_name: str, value) -> tuple:
+    if value is None:
+        return ()
+    if not isinstance(value, tuple):
+        raise EventRegistryError(f"{module.__name__}.{provider_name} must return tuple")
+    return value
