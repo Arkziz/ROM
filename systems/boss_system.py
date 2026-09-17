@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import copy
 import random
+
+import events as seasonal_events
 from typing import Any, Mapping
 
 from data.bosses import (
@@ -246,14 +248,43 @@ def generate_hunt_encounter(
     rng=None,
     boss_enabled=None,
     boss_chance_percent=None,
+    event_enabled=True,
+    event_chance_percent=None,
+    event_context=None,
+    event_now=None,
+    event_candidate_collector=None,
 ) -> dict[str, Any]:
-    """Resolve one exclusive hunt encounter using boss > elite > normal.
+    """Resolve one exclusive hunt encounter using event > boss > elite > normal.
 
-    Boss is checked first. If no boss is selected, the existing production
-    normal factory and elite roll are called unchanged. The boss never receives
-    an elite modifier and always has player_level.
+    An active normal event candidate is checked first. If no event is selected,
+    the existing boss, elite, and normal flow is called unchanged. Event mobs
+    are data-only templates and are built through the canonical normal factory.
     """
     rng = rng or random
+    context = {
+        "player_level": int(player_level),
+        "location_id": str(location_id),
+    }
+    if isinstance(event_context, dict):
+        context.update(event_context)
+    collector = event_candidate_collector or seasonal_events.collect_event_mob_candidates
+    candidates = collector(context, event_now) if event_enabled else ()
+    selected = seasonal_events.select_event_mob_candidate(
+        candidates,
+        rng=rng,
+        chance_percent=event_chance_percent,
+    )
+    if selected is not None:
+        mob = normal_mob_factory(dict(selected["mob_template"]))
+        mob["enemy_type"] = "event_normal"
+        mob["mob_type"] = "normal"
+        mob["is_boss"] = False
+        mob["is_elite"] = False
+        mob["is_event"] = True
+        mob["event_key"] = selected["event_key"]
+        mob["event_mob_key"] = selected["mob_key"]
+        return {"enemy_type": "event_normal", "mob": mob}
+
     if roll_boss_encounter(
         rng=rng,
         chance_percent=boss_chance_percent,

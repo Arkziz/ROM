@@ -156,3 +156,49 @@ def _optional_tuple_result(module: ModuleType, provider_name: str, value) -> tup
 def get_validated_registered_event_items() -> tuple[dict, ...]:
     from .item_namespace import validate_event_item_definitions
     return validate_event_item_definitions(collect_registered_event_items())
+
+
+def validate_event_mob_candidates(candidates: tuple) -> tuple[dict, ...]:
+    if not isinstance(candidates, tuple):
+        raise EventRegistryError("event mob candidates must be tuple")
+    validated = []
+    for raw in candidates:
+        if not isinstance(raw, dict):
+            raise EventRegistryError("event mob candidate must be dict")
+        candidate = dict(raw)
+        event_key = str(candidate.get("event_key") or "").strip()
+        mob_key = str(candidate.get("mob_key") or "").strip()
+        template = candidate.get("mob_template")
+        weight = float(candidate.get("weight", 1.0))
+        chance = float(candidate.get("chance_percent", 0.0))
+        if not event_key or not mob_key:
+            raise EventRegistryError("event mob candidate keys must be non-empty")
+        if not isinstance(template, dict):
+            raise EventRegistryError("event mob candidate mob_template must be dict")
+        if weight <= 0:
+            raise EventRegistryError("event mob candidate weight must be positive")
+        if not 0.0 <= chance <= 100.0:
+            raise EventRegistryError("event mob candidate chance_percent must be between 0 and 100")
+        candidate.update({"event_key": event_key, "mob_key": mob_key, "weight": weight, "chance_percent": chance})
+        validated.append(candidate)
+    return tuple(validated)
+
+
+def select_event_mob_candidate(candidates: tuple, rng=None, chance_percent=None):
+    import random as _random
+    validated = validate_event_mob_candidates(candidates)
+    if not validated:
+        return None
+    roller = rng or _random
+    chance = max(float(row["chance_percent"]) for row in validated) if chance_percent is None else float(chance_percent)
+    chance = max(0.0, min(100.0, chance))
+    if float(roller.random()) >= chance / 100.0:
+        return None
+    total = sum(float(row["weight"]) for row in validated)
+    point = float(roller.random()) * total
+    cumulative = 0.0
+    for row in validated:
+        cumulative += float(row["weight"])
+        if point < cumulative:
+            return row
+    return validated[-1]
