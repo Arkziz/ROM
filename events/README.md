@@ -50,3 +50,7 @@ Current guarantees:
 - Future event-boss integration must attach `is_event`, `event_key` and `event_boss_key` metadata.
 - Future event-boss drops must reuse the validated additive event-drop pipeline.
 - A real event boss requires deterministic automated tests and direct manual gameplay verification.
+
+## Stage 18.28 foundation closure
+
+The event engine foundation is closed and ready for Stage 18.29 pilot content. Registry, UTC lifecycle, content providers, static item namespace, startup handler registration, normal event encounters and additive event drops are production extension points with zero-event parity. Event-boss routing remains explicitly deferred until a real approved event requires it.
