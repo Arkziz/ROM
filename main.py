@@ -75,6 +75,8 @@ from db import (
 from db import run_db_startup_maintenance
 from db import init_rune_system
 
+import events as seasonal_events
+
 from handlers.start import register_start_handlers
 from handlers.profile import register_profile_handlers
 from handlers.inventory import register_inventory_handlers
@@ -177,6 +179,14 @@ init_timed_exp_bonus_system()
 init_name_rune_system()
 init_fatigue_artifact_system()
 init_inactivity_reminder_system()
+
+_loaded_event_modules = seasonal_events.load_event_modules()
+_registered_event_handler_keys = seasonal_events.register_event_handlers(bot)
+PRODUCTION_LOG_PRINT(
+    PRODUCTION_LOGGER,
+    'info',
+    f'✅ SEASONAL EVENTS: modules={len(_loaded_event_modules)}, handlers={len(_registered_event_handler_keys)}',
+)
 
 register_crystal_shop_handlers(bot)
 register_admin_crystal_credit_handlers(bot)
