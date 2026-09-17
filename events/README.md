@@ -36,3 +36,17 @@ The template contains no production content, no item IDs, no callbacks, no datab
 - Randomly generated equipment continues to use the generated equipment namespace.
 - `EVENT_ITEM_BLOCKS` remains empty until the first production event is approved.
 - No item rows are created until a real event defines content.
+
+## Stage 18.28.8 event boss defer decision
+
+Production event-boss routing is intentionally deferred until the first approved production event that explicitly requires an event boss.
+
+Current guarantees:
+
+- `get_boss_candidates()` and `collect_event_boss_candidates()` remain future-facing provider contracts.
+- No production event-boss selector or encounter branch exists.
+- Canonical boss schema, primary-stat construction, combat state, skills and enrage remain authoritative.
+- The ordinary boss, elite and normal fallback behavior remains unchanged.
+- Future event-boss integration must attach `is_event`, `event_key` and `event_boss_key` metadata.
+- Future event-boss drops must reuse the validated additive event-drop pipeline.
+- A real event boss requires deterministic automated tests and direct manual gameplay verification.
