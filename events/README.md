@@ -30,7 +30,7 @@ The template contains no production content, no item IDs, no callbacks, no datab
 ## Stage 18.28.4a static event item namespace
 
 - Static event item IDs are permanently reserved in `4000..9999`.
-- The namespace contains 120 aligned blocks of 50 IDs.
+- The namespace contains 120 aligned blocks of 25 IDs.
 - One approved `EVENT_KEY` owns one permanent block. Unused IDs remain reserved to that owner.
 - Blocks and item IDs are never reused by another event.
 - Randomly generated equipment continues to use the generated equipment namespace.
@@ -54,3 +54,7 @@ Current guarantees:
 ## Stage 18.28 foundation closure
 
 The event engine foundation is closed and ready for Stage 18.29 pilot content. Registry, UTC lifecycle, content providers, static item namespace, startup handler registration, normal event encounters and additive event drops are production extension points with zero-event parity. Event-boss routing remains explicitly deferred until a real approved event requires it.
+
+## Stage 18.29.1a block-extension policy
+
+One EVENT_KEY initially receives one permanent 25-ID block. If necessary, the same EVENT_KEY may receive another explicit free block in a reviewed patch. Blocks are never automatically expanded or reused.

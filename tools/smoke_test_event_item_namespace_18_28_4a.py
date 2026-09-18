@@ -14,18 +14,18 @@ def failure(action,text):
 
 assert ns.EVENT_STATIC_ITEM_MIN==4000
 assert ns.EVENT_STATIC_ITEM_MAX==9999
-assert ns.EVENT_ITEM_BLOCK_SIZE==50
-assert ns.EVENT_ITEM_BLOCK_COUNT==120
+assert ns.EVENT_ITEM_BLOCK_SIZE == 25
+assert ns.EVENT_ITEM_BLOCK_COUNT == 240
 assert ns.block_bounds(0)==(4000,4049)
-assert ns.block_bounds(119)==(9950,9999)
+assert ns.block_bounds(239)==(9950,9999)
 assert ns.validate_block_registry()=={}
 failure(lambda:ns.block_bounds(-1),"out of range")
 failure(lambda:ns.block_bounds(120),"out of range")
-failure(lambda:ns.validate_block_registry({"a":(4000,4048)}),"exactly 50")
-failure(lambda:ns.validate_block_registry({"a":(4001,4050)}),"not aligned")
+failure(lambda:ns.validate_block_registry({"a":((4000, 4048),)}),"exactly 50")
+failure(lambda:ns.validate_block_registry({"a":((4001, 4050),)}),"not aligned")
 failure(lambda:ns.validate_block_registry({"a":(3950,3999)}),"outside")
-failure(lambda:ns.validate_block_registry({"a":(4000,4049),"b":(4000,4049)}),"overlap")
-ns.EVENT_ITEM_BLOCKS.update({"pilot":(4000,4049),"second":(4050,4099)})
+failure(lambda:ns.validate_block_registry({"a":((4000, 4049),),"b":((4000, 4049),)}),"overlap")
+ns.EVENT_ITEM_BLOCKS.update({"pilot":((4000, 4049),),"second":((4050, 4099),)})
 assert ns.validate_event_item_id("pilot",4000)==4000
 assert ns.validate_event_item_id("pilot",4049)==4049
 failure(lambda:ns.validate_event_item_id("pilot",4050),"outside block")

@@ -23,7 +23,7 @@ assert events.collect_event_drop_rules({})==()
 assert events.collect_registered_event_items()==()
 assert events.register_event_handlers(object())==()
 assert ns.EVENT_STATIC_ITEM_MIN==4000 and ns.EVENT_STATIC_ITEM_MAX==9999
-assert ns.EVENT_ITEM_BLOCK_SIZE==50 and ns.EVENT_ITEM_BLOCK_COUNT==120
+assert ns.EVENT_ITEM_BLOCK_SIZE == 25 and ns.EVENT_ITEM_BLOCK_COUNT == 240
 assert ns.EVENT_ITEM_BLOCKS=={}
 assert not hasattr(events,"select_event_boss_candidate")
 print("EVENT_ENGINE_FOUNDATION_CLOSURE_18_28_9_OK")
