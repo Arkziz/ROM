@@ -197,16 +197,18 @@ def get_available_mobs(player_level, location_id="start_path"):
 
 
 def generate_mob(player_level, location_id="start_path"):
-    def _build_normal_mob():
-        available_mobs = get_available_mobs(
-            player_level=player_level,
-            location_id=location_id
-        )
+    def _build_normal_mob(selected_template=None):
+        # ROM_STAGE_18_29_4A_EVENT_NORMAL_FACTORY
+        if selected_template is None:
+            available_mobs = get_available_mobs(
+                player_level=player_level,
+                location_id=location_id
+            )
 
-        if not available_mobs:
-            selected_template = get_mobs_for_location(location_id)[0]
-        else:
-            selected_template = random.choice(available_mobs)
+            if not available_mobs:
+                selected_template = get_mobs_for_location(location_id)[0]
+            else:
+                selected_template = random.choice(available_mobs)
 
         return build_mob(selected_template)
 

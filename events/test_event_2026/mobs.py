@@ -26,4 +26,9 @@ EVENT_MOB_CANDIDATES = (
 )
 
 def get_mob_candidates(context=None):
+    context = context if isinstance(context, dict) else {}
+    player_level = int(context.get("player_level", 0) or 0)
+    location_id = str(context.get("location_id") or "").strip()
+    if not location_id or not 1 <= player_level <= 30:
+        return ()
     return EVENT_MOB_CANDIDATES
