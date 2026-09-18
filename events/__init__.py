@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from types import ModuleType
 from typing import Iterable
 
-EVENT_MODULES: tuple[str, ...] = ()
+EVENT_MODULES = ("events.test_event_2026",)
 EVENT_REGISTRY: dict[str, ModuleType] = {}
 _LOADED_EVENT_MODULES: set[str] = set()
 

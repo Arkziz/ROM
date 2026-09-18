@@ -10,7 +10,7 @@ EVENT_ITEM_BLOCK_SIZE = 25
 EVENT_ITEM_BLOCK_COUNT = 240
 
 # Permanent owner reservations. Add one entry only when a production EVENT_KEY is approved.
-EVENT_ITEM_BLOCKS: dict[str, tuple[tuple[int, int], ...]] = {}
+EVENT_ITEM_BLOCKS = {"test_event_2026": ((4000, 4024),)}
 
 # Stage 18.29.1a policy: blocks contain 25 IDs. One EVENT_KEY starts with one
 # permanent block and may later receive another explicit free block. Assigned
