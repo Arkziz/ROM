@@ -1714,6 +1714,23 @@ def build_lethal_combat_log(turn_context, player_hp, player_max_hp, durability_d
 
 
 
+# Stage 18.29.4m: render awarded event drops
+def _event_drop_victory_messages(event_drop_results):
+    messages = []
+    for result in event_drop_results or ():
+        if not isinstance(result, dict) or not result.get("awarded"):
+            continue
+        payload = result.get("payload") or {}
+        if not isinstance(payload, dict):
+            continue
+        quantity = int(payload.get("quantity", 0) or 0)
+        item_name = str(payload.get("item_name") or payload.get("name") or "").strip()
+        if quantity <= 0 or not item_name:
+            continue
+        messages.append(f"{item_name} ×{quantity}")
+    return messages
+
+
 def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, daily_result, prefix_text=""):
     exp_result = reward["exp_result"]
 
@@ -1772,11 +1789,19 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
 
     text += f"\n💰 Золото: +{reward['gold']}\n"
 
-    if reward["loot_messages"]:
-        text += "\n🎒 Знайдений лут:\n"
+    event_drop_messages = _event_drop_victory_messages(
+        reward.get("event_drop_results")
+    )
 
-        for loot in reward["loot_messages"]:
-            text += f"• {loot}\n"
+    if reward["loot_messages"] or event_drop_messages:
+        if reward["loot_messages"]:
+            text += "\n🎒 Знайдений лут:\n"
+            for loot in reward["loot_messages"]:
+                text += f"• {loot}\n"
+        if event_drop_messages:
+            text += "\n🎉 Івентна нагорода:\n"
+            for event_message in event_drop_messages:
+                text += f"• {event_message}\n"
     else:
         text += "\n🎒 Лут не знайдено.\n"
 
