@@ -1183,6 +1183,8 @@ def account_menu_kb_17_30_1_4():
     kb.row('💎 Магазин кристалів', '🏆 Рейтинг')
     kb.row('📖 Про гру', '🔗 Корисні посилання')
     kb.add('📜 Хроніки світу')
+    # ROM_STAGE_18_29_4C_EVENT_MENU
+    kb.add('🎉 Івенти')
     kb.add('🔙 Назад')
     return kb
 
