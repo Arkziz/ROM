@@ -1182,9 +1182,8 @@ def account_menu_kb_17_30_1_4():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     kb.row('💎 Магазин кристалів', '🏆 Рейтинг')
     kb.row('📖 Про гру', '🔗 Корисні посилання')
-    kb.add('📜 Хроніки світу')
-    # ROM_STAGE_18_29_4C_EVENT_MENU
-    kb.add('🎉 Івенти')
+    # ROM_STAGE_18_29_4D_EVENT_MENU_ROW
+    kb.row('📜 Хроніки світу', '🎉 Івенти')
     kb.add('🔙 Назад')
     return kb
 
