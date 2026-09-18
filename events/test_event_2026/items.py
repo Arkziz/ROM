@@ -28,7 +28,7 @@ EVENT_ITEMS = (
         "name": "🎁 Пам’ятний знак випробування",
         "type": "test_event_reward",
         "rarity": "uncommon",
-        "category": "collectible",
+        "category": "material",
         "max_stack": 10,
         "sell_price": 0.0,
         "stackable": True,
