@@ -76,14 +76,30 @@ def _edit(bot,call,text,kb):
     state["card_message_id"]=int(sent.message_id)
     _delete(bot,state.get("chat_id"),old_id)
     return True
+# Stage 18.29.4o: Ukrainian victory forms and canonical guild tag
+def _victory_count_text(value):
+    count = max(0, int(value or 0))
+    last_two = count % 100
+    last_one = count % 10
+    if 11 <= last_two <= 14:
+        noun = "перемог"
+    elif last_one == 1:
+        noun = "перемога"
+    elif last_one in (2, 3, 4):
+        noun = "перемоги"
+    else:
+        noun = "перемог"
+    return f"{count} {noun}"
+
+
 def _rank_rows(user_id,page):
     from db_modules.connection import conn
     from systems.event_statistics_system import get_event_kill_leaderboard
     board=get_event_kill_leaderboard(conn,"test_event_2026","test_slime",page=page,user_id=user_id);entries=[]
     for row in board["entries"]:
-        profile=conn.execute("""SELECT COALESCE(u.character_name,'Без імені'),g.name FROM users u LEFT JOIN guild_members gm ON gm.user_id=u.user_id LEFT JOIN guilds g ON g.id=gm.guild_id WHERE u.user_id=?""",(row["user_id"],)).fetchone()
-        name=profile[0] if profile else "Без імені";guild=f" [{profile[1]}]" if profile and profile[1] else "";entries.append(f"{row['rank']}. {name}{guild} — {row['kills']} перемог")
-    own=board.get("own");own_text="Немає зарахованих перемог." if not own else f"Ваша позиція: {own['rank']}. Перемог: {own['kills']}"
+        profile=conn.execute("""SELECT COALESCE(u.character_name,'Без імені'),g.tag FROM users u LEFT JOIN guild_members gm ON gm.user_id=u.user_id LEFT JOIN guilds g ON g.id=gm.guild_id WHERE u.user_id=?""",(row["user_id"],)).fetchone()
+        name=profile[0] if profile else "Без імені";guild=f" [{profile[1]}]" if profile and profile[1] else "";entries.append(f"{row['rank']}. {name}{guild} — {_victory_count_text(row['kills'])}")
+    own=board.get("own");own_text="Немає зарахованих перемог." if not own else f"Ваша позиція: {own['rank']}. Усього перемог: {own['kills']}"
     return entries,own_text
 def _rank_kb(page,has_next):
     kb=types.InlineKeyboardMarkup();nav=[]
