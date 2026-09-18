@@ -1714,20 +1714,23 @@ def build_lethal_combat_log(turn_context, player_hp, player_max_hp, durability_d
 
 
 
-# Stage 18.29.4m: render awarded event drops
+# Stage 18.29.4n: production-shaped event drop result contract
 def _event_drop_victory_messages(event_drop_results):
     messages = []
-    for result in event_drop_results or ():
-        if not isinstance(result, dict) or not result.get("awarded"):
+    for entry in event_drop_results or ():
+        if not isinstance(entry, dict):
             continue
-        payload = result.get("payload") or {}
-        if not isinstance(payload, dict):
+        payload = entry.get("payload") or {}
+        award_result = entry.get("result") or {}
+        if not isinstance(payload, dict) or not isinstance(award_result, dict):
             continue
-        quantity = int(payload.get("quantity", 0) or 0)
-        item_name = str(payload.get("item_name") or payload.get("name") or "").strip()
-        if quantity <= 0 or not item_name:
+        if not award_result.get("success"):
             continue
-        messages.append(f"{item_name} ×{quantity}")
+        added = int(award_result.get("added", 0) or 0)
+        item_name = str(award_result.get("name") or "").strip()
+        if added <= 0 or not item_name:
+            continue
+        messages.append(f"{item_name} ×{added}")
     return messages
 
 
