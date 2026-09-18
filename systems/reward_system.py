@@ -1027,6 +1027,9 @@ def process_victory_reward(user_id, player_level, mob):
 
     drop_result = process_enemy_drops(user_id, mob)
 
+    # ROM_STAGE_18_29_4B_EVENT_DROP_INTEGRATION
+    event_drop_results = process_event_drops(user_id, mob)
+
     return {
 
         "exp": exp,
@@ -1046,6 +1049,8 @@ def process_victory_reward(user_id, player_level, mob):
         "rune_drop": drop_result["rune_drop"],
 
         "central_drop_rules": drop_result["executed_rules"],
+
+        "event_drop_results": event_drop_results,
 
         "used_slots": get_inventory_used_slots(user_id),
 
