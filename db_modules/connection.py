@@ -237,4 +237,7 @@ def seed_items():
             mdef=excluded.mdef
         """, item)
 
+    # ROM_STAGE_18_29_3A_EVENT_ITEM_CATALOG
+    from systems.event_item_catalog_system import seed_event_item_catalog
+    seed_event_item_catalog(conn, commit=False)
     conn.commit()
