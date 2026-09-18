@@ -58,3 +58,11 @@ The event engine foundation is closed and ready for Stage 18.29 pilot content. R
 ## Stage 18.29.1a block-extension policy
 
 One EVENT_KEY initially receives one permanent 25-ID block. If necessary, the same EVENT_KEY may receive another explicit free block in a reviewed patch. Blocks are never automatically expanded or reused.
+
+## Stage 18.29.1b: тестовий івент і архів
+
+<!-- ROM_STAGE_18_29_1B_TEST_EVENT_AND_ARCHIVE_POLICY -->
+
+Погоджений пілот: `test_event_2026` (`🧪 Тестовий івент`). Дати задаються за `Europe/Kyiv` і поки мають статус `PENDING`. Майбутній content package отримає блок `4000..4024`, моба `test_slime`, валюту `4000`, нагороду `4001`, гарантований drop та atomic exchange 3:1.
+
+Розділ `🎉 Івенти` показує archive-visible production events по 5 на сторінці. Порядок статусів: active, upcoming, completed. Завершені події залишаються read-only з інформацією, правилами й фінальним рейтингом. Рейтинг пілота: top-100, по 10 позицій.
