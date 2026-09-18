@@ -1,0 +1,3 @@
+# ROM Stage 18.29.4g: Event Catalog and Archive UI
+
+The Events entry point now opens a localized catalog of all registered events instead of opening the pilot event directly. Events are ordered active, upcoming, completed and displayed by user-facing title. Selecting an event opens that event's menu. The archive now contains completed events only, with five entries per page and read-only historical access. Technical event keys and English status values are no longer shown to users. Existing message ownership, stale callback rejection, refresh fallback and the unique Events exit button are preserved.

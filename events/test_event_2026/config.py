@@ -2,6 +2,7 @@
 from datetime import datetime, timezone
 
 EVENT_KEY = "test_event_2026"
+TITLE = "Тестовий івент"
 EVENT_NAME = "🧪 Тестовий івент"
 DISPLAY_NAME = EVENT_NAME
 EVENT_ICON = "🧪"

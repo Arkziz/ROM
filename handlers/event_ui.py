@@ -13,14 +13,13 @@ def _scope_kb():
 def _main_text():
     status="🟢 Івент активний" if _active() else "⏳ Івент ще не розпочався"
     return f"🎉 Тестовий івент\n\n{status}\n\nПеремагайте 🧪 Нестабільного слизня, отримуйте жетони та обмінюйте їх на пам’ятну нагороду."
-# ROM_STAGE_18_29_4F_EVENT_ARCHIVE
+# ROM_STAGE_18_29_4G_EVENT_CATALOG
+CATALOG_PAGE_SIZE=5
 ARCHIVE_PAGE_SIZE=5
-def _archive_rows():
+STATUS_LABELS={"active":"🟢 Активний","upcoming":"⏳ Незабаром","completed":"✅ Завершено"}
+def _event_rows():
     import events
-    events.load_event_modules()
-    rows=[]
-    now=datetime.now(timezone.utc)
-    status_order={"active":0,"upcoming":1,"completed":2}
+    events.load_event_modules();rows=[];now=datetime.now(timezone.utc);status_order={"active":0,"upcoming":1,"completed":2}
     for module in events.get_registered_events():
         cfg=module.config;start=getattr(cfg,"START_AT",None);end=getattr(cfg,"END_AT",None)
         if start is None or end is None:status="upcoming"
@@ -28,21 +27,26 @@ def _archive_rows():
         elif now>=end:status="completed"
         else:status="upcoming"
         rows.append({"event_key":cfg.EVENT_KEY,"title":getattr(cfg,"TITLE",cfg.EVENT_KEY),"status":status,"start":start,"end":end,"completed_read_only":status=="completed"})
-    return sorted(rows,key=lambda x:(status_order[x["status"]],x["start"] or datetime.max.replace(tzinfo=timezone.utc),x["event_key"]))
-def _archive_kb(rows,page,total_pages):
+    return sorted(rows,key=lambda row:(status_order[row["status"]],row["start"] or datetime.max.replace(tzinfo=timezone.utc),row["event_key"]))
+def _paged(rows,page,size):
+    pages=max(1,(len(rows)+size-1)//size);page=max(1,min(pages,int(page)));return rows[(page-1)*size:page*size],page,pages
+def _list_kb(rows,page,pages,kind):
     kb=types.InlineKeyboardMarkup()
-    for row in rows:kb.add(types.InlineKeyboardButton(("✅ " if row["completed_read_only"] else "⏳ ")+row["title"],callback_data=PREFIX+"archive:view:"+row["event_key"]))
+    for row in rows:kb.add(types.InlineKeyboardButton(f"{STATUS_LABELS[row['status']]} · {row['title']}",callback_data=PREFIX+f"{kind}:view:"+row["event_key"]))
     nav=[]
-    if page>1:nav.append(types.InlineKeyboardButton("◀️",callback_data=PREFIX+f"archive:list:{page-1}"))
-    if page<total_pages:nav.append(types.InlineKeyboardButton("▶️",callback_data=PREFIX+f"archive:list:{page+1}"))
+    if page>1:nav.append(types.InlineKeyboardButton("◀️",callback_data=PREFIX+f"{kind}:list:{page-1}"))
+    if page<pages:nav.append(types.InlineKeyboardButton("▶️",callback_data=PREFIX+f"{kind}:list:{page+1}"))
     if nav:kb.row(*nav)
-    kb.add(types.InlineKeyboardButton("🔙 Назад",callback_data=PREFIX+"home"));return kb
-def _archive_text(page):
-    rows=_archive_rows();pages=max(1,(len(rows)+ARCHIVE_PAGE_SIZE-1)//ARCHIVE_PAGE_SIZE);page=max(1,min(pages,page));chunk=rows[(page-1)*ARCHIVE_PAGE_SIZE:page*ARCHIVE_PAGE_SIZE]
-    body="\n".join(f"{i}. {r['title']} — {r['status']}" for i,r in enumerate(chunk,(page-1)*ARCHIVE_PAGE_SIZE+1)) or "Архів поки порожній."
-    return f"📚 Архів івентів\nСторінка {page}/{pages}\n\n{body}",chunk,page,pages
+    kb.add(types.InlineKeyboardButton("🔄 Оновити",callback_data=PREFIX+f"{kind}:list:{page}"));kb.add(types.InlineKeyboardButton("🔙 Назад",callback_data=PREFIX+("catalog:list:1" if kind=="archive" else "close")));return kb
+def _catalog(page):
+    chunk,page,pages=_paged(_event_rows(),page,CATALOG_PAGE_SIZE);body="\n".join(f"{i}. {STATUS_LABELS[row['status']]} · {row['title']}" for i,row in enumerate(chunk,(page-1)*CATALOG_PAGE_SIZE+1)) or "Зареєстрованих івентів поки немає."
+    return f"🎉 Івенти\n\nОберіть івент:\n\n{body}\n\nСторінка {page}/{pages}",_list_kb(chunk,page,pages,"catalog")
+def _archive(page):
+    completed=[row for row in _event_rows() if row["status"]=="completed"]
+    chunk,page,pages=_paged(completed,page,ARCHIVE_PAGE_SIZE);body="\n".join(f"{i}. ✅ Завершено · {row['title']}" for i,row in enumerate(chunk,(page-1)*ARCHIVE_PAGE_SIZE+1)) or "Завершених івентів поки немає."
+    return f"📚 Архів завершених івентів\n\n{body}\n\nСторінка {page}/{pages}",_list_kb(chunk,page,pages,"archive")
 def _main_kb():
-    kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton("🏆 Рейтинг",callback_data=PREFIX+"rank:1"),types.InlineKeyboardButton("🛍 Крамниця",callback_data=PREFIX+"shop"));kb.add(types.InlineKeyboardButton("ℹ️ Про івент",callback_data=PREFIX+"about"));kb.add(types.InlineKeyboardButton("📚 Архів",callback_data=PREFIX+"archive:list:1"));kb.add(types.InlineKeyboardButton("🔙 Назад",callback_data=PREFIX+"close"));return kb
+    kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton("🏆 Рейтинг",callback_data=PREFIX+"rank:1"),types.InlineKeyboardButton("🛍 Крамниця",callback_data=PREFIX+"shop"));kb.add(types.InlineKeyboardButton("ℹ️ Про івент",callback_data=PREFIX+"about"));kb.add(types.InlineKeyboardButton("📚 Архів",callback_data=PREFIX+"archive:list:1"));kb.add(types.InlineKeyboardButton("🔙 До списку івентів",callback_data=PREFIX+"catalog:list:1"));return kb
 def _back():
     kb=types.InlineKeyboardMarkup();kb.add(types.InlineKeyboardButton("🔙 Назад",callback_data=PREFIX+"home"));return kb
 def _delete(bot,chat_id,message_id):
@@ -93,7 +97,8 @@ def register_event_ui_handlers(bot):
         uid=int(message.from_user.id);old=_ACTIVE_EVENT_UI.pop(uid,None) or {}
         _delete(bot,old.get("chat_id"),old.get("card_message_id"));_delete(bot,old.get("chat_id"),old.get("scope_message_id"))
         scope=bot.send_message(message.chat.id,"🎉 Розділ івентів",reply_markup=_scope_kb())
-        card=bot.send_message(message.chat.id,_main_text(),reply_markup=_main_kb())
+        catalog_text,catalog_kb=_catalog(1)
+        card=bot.send_message(message.chat.id,catalog_text,reply_markup=catalog_kb)
         _ACTIVE_EVENT_UI[uid]={"chat_id":int(message.chat.id),"scope_message_id":int(scope.message_id),"card_message_id":int(card.message_id)}
     @bot.message_handler(func=lambda m:m.text==EXIT_BUTTON)
     def event_reply_exit(message):
@@ -105,14 +110,22 @@ def register_event_ui_handlers(bot):
         data=str(call.data or "")[len(PREFIX):];bot.answer_callback_query(call.id)
         if data=="close":_close(bot,call.from_user.id,call.message.chat.id);return
         if data=="home":_edit(bot,call,_main_text(),_main_kb());return
+        if data.startswith("catalog:list:"):
+            try:page=int(data.rsplit(":",1)[1])
+            except Exception:page=1
+            text,kb=_catalog(page);_edit(bot,call,text,kb);return
+        if data.startswith("catalog:view:"):
+            key=data.split(":",2)[2];row=next((x for x in _event_rows() if x["event_key"]==key),None)
+            if not row:_edit(bot,call,"🎉 Івент не знайдено.",_back());return
+            _edit(bot,call,_main_text(),_main_kb());return
         if data.startswith("archive:list:"):
             try:page=int(data.rsplit(":",1)[1])
             except Exception:page=1
-            text,rows,page,pages=_archive_text(page);_edit(bot,call,text,_archive_kb(rows,page,pages));return
+            text,kb=_archive(page);_edit(bot,call,text,kb);return
         if data.startswith("archive:view:"):
-            key=data.split(":",2)[2];row=next((x for x in _archive_rows() if x["event_key"]==key),None)
-            if not row or not row["completed_read_only"]:_edit(bot,call,"📚 Архів івентів\n\nЦей івент ще не завершено.",_back());return
-            kb=types.InlineKeyboardMarkup();kb.add(types.InlineKeyboardButton("🏆 Історичний рейтинг",callback_data=PREFIX+"rank:1"));kb.add(types.InlineKeyboardButton("🔙 Назад",callback_data=PREFIX+"archive:list:1"));_edit(bot,call,f"📚 {row['title']}\n\nСтатус: завершено\nАрхів доступний лише для перегляду.",kb);return
+            key=data.split(":",2)[2];row=next((x for x in _event_rows() if x["event_key"]==key and x["completed_read_only"]),None)
+            if not row:_edit(bot,call,"📚 Архів завершених івентів\n\nЦей івент відсутній у завершеному архіві.",_back());return
+            kb=types.InlineKeyboardMarkup();kb.add(types.InlineKeyboardButton("🏆 Історичний рейтинг",callback_data=PREFIX+"rank:1"));kb.add(types.InlineKeyboardButton("ℹ️ Про івент",callback_data=PREFIX+"about"));kb.add(types.InlineKeyboardButton("🔙 До архіву",callback_data=PREFIX+"archive:list:1"));_edit(bot,call,f"📚 {row['title']}\n\nСтатус: завершено\nАрхів доступний лише для перегляду.",kb);return
         if data=="about":_edit(bot,call,"ℹ️ Про івент\n\n🧪 Нестабільний слизень має 25% шанс зустрічі під час активного івенту. За перемогу гарантовано випадає 1 жетон. 3 жетони можна обміняти на 1 пам’ятний знак.",_back());return
         if data=="shop":
             if not _active():_edit(bot,call,"🛍 Крамниця\n\n⏳ Івент готується. Дати проведення буде оголошено пізніше.",_back());return
