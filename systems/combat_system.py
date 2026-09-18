@@ -198,19 +198,34 @@ def get_available_mobs(player_level, location_id="start_path"):
 
 def generate_mob(player_level, location_id="start_path"):
     def _build_normal_mob(selected_template=None):
-        # ROM_STAGE_18_29_4A_EVENT_NORMAL_FACTORY
+        available_mobs = get_available_mobs(
+            player_level=player_level,
+            location_id=location_id
+        )
+
+        if not available_mobs:
+            base_template = get_mobs_for_location(location_id)[0]
+        else:
+            base_template = random.choice(available_mobs)
+
         if selected_template is None:
-            available_mobs = get_available_mobs(
-                player_level=player_level,
-                location_id=location_id
-            )
+            return build_mob(base_template)
 
-            if not available_mobs:
-                selected_template = get_mobs_for_location(location_id)[0]
-            else:
-                selected_template = random.choice(available_mobs)
-
-        return build_mob(selected_template)
+        # Stage 18.29.4l: canonical event-template materialization
+        # Event packages provide identity/presentation. Canonical ordinary
+        # templates remain the owner of combat ranges and reward defaults.
+        event_template = dict(selected_template)
+        runtime_template = dict(base_template)
+        runtime_template.update({
+            "name": event_template["name"],
+            "attack_type": event_template.get(
+                "attack_type",
+                runtime_template.get("attack_type", "physical"),
+            ),
+            "level": int(player_level),
+            "location_id": location_id,
+        })
+        return build_mob(runtime_template)
 
     encounter = generate_hunt_encounter(
         player_level=player_level,
