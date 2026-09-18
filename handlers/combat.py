@@ -1876,6 +1876,20 @@ def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=""):
     if encounter_id and not claim_pve_terminal(user_id, 'victory', encounter_id):
         bot.send_message(chat_id, STALE_COMBAT_TEXT, reply_markup=main_kb())
         return
+    # ROM_STAGE_18_29_3F_EVENT_VICTORY_STATISTICS
+    event_key = str((mob or {}).get("event_key") or "").strip()
+    event_mob_key = str((mob or {}).get("event_mob_key") or "").strip()
+    if encounter_id and event_key and event_mob_key:
+        from db_modules.connection import conn as event_statistics_conn
+        from systems.event_statistics_system import record_event_mob_victory
+        record_event_mob_victory(
+            event_statistics_conn,
+            event_key=event_key,
+            user_id=user_id,
+            mob_key=event_mob_key,
+            terminal_event_id=encounter_id,
+        )
+        event_statistics_conn.commit()
     """
     Завершення бою перемогою.
 
