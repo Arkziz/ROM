@@ -30,6 +30,6 @@ class SimulationInventoryEngine:
                     n=min(left,x.free_stack_space);x.quantity+=n;left-=n;merged+=n
         while left>0 and self.inventory.free_slots>0:
             n=1 if a.is_equipment else min(left,a.max_stack)
-            x=SimulationInventoryItem(self.inventory.allocate_id(),a.item_id,a.name,a.category,n,1 if a.is_equipment else a.max_stack,a.slot_key,a.item_level,a.rarity,sell_price=a.sell_price,stats=dict(a.payload.get('stats',{})))
+            x=SimulationInventoryItem(self.inventory.allocate_id(),a.item_id,a.name,a.category,n,1 if a.is_equipment else a.max_stack,a.slot_key,a.item_level,a.rarity,armor_type=str(a.payload.get('armor_type','')),item_subtype=str(a.payload.get('item_subtype','')),weapon_hands=int(a.payload.get('weapon_hands',1)),sell_price=a.sell_price,stats=dict(a.payload.get('stats',{})))
             self.inventory.items.append(x);ids.append(x.simulation_item_id);left-=n
         self.inventory.validate();return InventoryAwardResult(a.quantity-left,left,len(ids),merged,'awarded' if left==0 else 'partial_capacity',ids)

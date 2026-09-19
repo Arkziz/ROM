@@ -126,7 +126,7 @@ def _result_payload(request: ClassProgressionRequest, result: Any) -> dict[str, 
         "event_counts": _event_counts(events),
         "canonical_result": raw,
     }
-    economy_equipment = build_economy_equipment_report(events, loot_ledger, payload["gold_gained"], payload["final_gold"])
+    economy_equipment = build_economy_equipment_report(events, loot_ledger, payload["gold_gained"], payload["final_gold"], request.character_class)
     payload["economy"] = economy_equipment["gold"]
     payload["resources"] = economy_equipment["resources"]
     payload["loot_lifecycle"] = economy_equipment["loot_lifecycle"]
