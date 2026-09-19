@@ -16,7 +16,9 @@ POTIONS={401:("HP potion",38,"hp_potion"),402:("Large HP potion",77,"hp_potion")
 
 @dataclass
 class VictoryLootResult:
-    rolled:int=0;awarded:int=0;lost:int=0;full_bag_events:int=0;equipment:int=0;stacks:int=0
+    rolled:int=0;awarded:int=0;lost:int=0;full_bag_events:int=0;equipment:int=0;stacks:int=0;records:list=None
+    def __post_init__(self):
+        if self.records is None:self.records=[]
 
 @dataclass
 class CityResult:
@@ -63,6 +65,7 @@ class SimulationLootEquipmentCityService:
             if award is None:continue
             applied=self.engine.award(award,True);out.rolled+=award.quantity;out.awarded+=applied.awarded;out.lost+=applied.lost
             if applied.lost:out.full_bag_events+=1
+            out.records.append({"item_id": award.item_id, "name": award.name, "category": award.category, "rarity": award.rarity, "found": award.quantity, "awarded": applied.awarded, "lost_due_capacity": applied.lost, "destination": "inventory" if applied.awarded else "lost_due_capacity"})
             if not award.is_equipment:out.stacks+=applied.awarded
         return out
 

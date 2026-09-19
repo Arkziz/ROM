@@ -15,6 +15,14 @@ from .loot_equipment_city import SimulationLootEquipmentCityService
 from .meta_progression import SimulationMetaProgressionService
 
 
+def _encounter_type(mob: Dict) -> str:
+    if bool(mob.get("is_boss")) or str(mob.get("enemy_type", "")).lower() == "boss":
+        return "boss"
+    if bool(mob.get("is_elite")) or str(mob.get("enemy_type", "")).lower() == "elite":
+        return "elite"
+    return "normal"
+
+
 class WorldProgressionSimulator:
     def __init__(self, project_root: Path, character_class: str, target_level: int, profile: str, seed: int, inventory_capacity: int = 40, max_days: int = 365, provider: Optional[ProgressionProvider] = None):
         if profile not in PROFILES:
@@ -85,7 +93,7 @@ class WorldProgressionSimulator:
                 result = ExactPveBattleEngine(self.root, battle_seed).run(
                     f"{run_id}_b{battles + 1}", self.character_class,
                     self.provider.player_actor(self.character_class, level, survival.hp, survival.mp),
-                    self.provider.mob_actor(selected), "normal",
+                    self.provider.mob_actor(selected), _encounter_type(selected),
                 )
                 battles += 1
                 energy -= 1
@@ -116,7 +124,7 @@ class WorldProgressionSimulator:
                     items_awarded += loot.awarded
                     items_lost += loot.lost
                     full_bag_events += loot.full_bag_events
-                    events.append(ProgressionEvent(elapsed, day, "victory", {"level": level, "mob": selected["name"], "exp": gained_exp, "gold": gained_gold, "loot_awarded": loot.awarded, "loot_lost": loot.lost, "equipment": loot.equipment}))
+                    events.append(ProgressionEvent(elapsed, day, "victory", {"level": level, "mob": selected["name"], "encounter_type": _encounter_type(selected), "battle_outcome": "victory", "battle_turns": result.turns, "exp": gained_exp, "gold": gained_gold, "loot_awarded": loot.awarded, "loot_lost": loot.lost, "equipment": loot.equipment, "loot_records": loot.records}))
                     transition = self.provider.apply_exp(level, exp - gained_exp, gained_exp)
                     old_level = level
                     level = transition["level"]
@@ -127,7 +135,7 @@ class WorldProgressionSimulator:
                     deaths += 1
                     durability = survival_service.damage_on_death()
                     survival.apply_death()
-                    events.append(ProgressionEvent(elapsed, day, "death", {"level": level, "mob": selected["name"], "hp": 1, "durability_items": durability.changed, "broken": durability.broken}))
+                    events.append(ProgressionEvent(elapsed, day, "death", {"level": level, "mob": selected["name"], "encounter_type": _encounter_type(selected), "battle_outcome": "defeat", "battle_turns": result.turns, "hp": 1, "durability_items": durability.changed, "broken": durability.broken}))
                     elapsed += 10
                     healed = survival.passive_hp_regen(10)
                     if healed: events.append(ProgressionEvent(elapsed, day, "hp_regen", {"amount": healed, "hp": survival.hp}))

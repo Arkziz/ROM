@@ -55,11 +55,42 @@ def _event_counts(events: list[Any]) -> dict[str, int]:
     return dict(sorted(counts.items()))
 
 
+
+def _duration_payload(elapsed_minutes: int) -> dict[str, int | str]:
+    total = max(0, int(elapsed_minutes))
+    days, rem = divmod(total, 1440)
+    hours, minutes = divmod(rem, 60)
+    return {"total_minutes": total, "calendar_days": days + (1 if rem or total == 0 else 0), "full_days": days, "hours": hours, "minutes": minutes, "formatted": f"{days} дн {hours} год {minutes} хв"}
+
+
+def _contract_summary(events: list[Any]) -> tuple[dict[str, int], dict[str, int], list[dict[str, Any]]]:
+    encounters = {"normal": 0, "elite": 0, "boss": 0}
+    outcomes = {"victory": 0, "defeat": 0, "escape": 0}
+    ledger: dict[tuple, dict[str, Any]] = {}
+    for event in events:
+        details = dict(getattr(event, "details", {}) or {})
+        outcome = str(details.get("battle_outcome", ""))
+        if outcome in outcomes:
+            outcomes[outcome] += 1
+            kind = str(details.get("encounter_type", "normal"))
+            encounters[kind if kind in encounters else "normal"] += 1
+        for item in details.get("loot_records", []) or []:
+            key = (item.get("item_id"), item.get("name"), item.get("category"), item.get("rarity"))
+            row = ledger.setdefault(key, {"item_id": item.get("item_id"), "name": item.get("name"), "category": item.get("category"), "rarity": item.get("rarity"), "found": 0, "awarded": 0, "lost_due_capacity": 0, "destinations": {}})
+            for field in ("found", "awarded", "lost_due_capacity"): row[field] += int(item.get(field, 0))
+            destination = str(item.get("destination", "unknown")); row["destinations"][destination] = row["destinations"].get(destination, 0) + int(item.get("found", 0))
+    rows = sorted(ledger.values(), key=lambda row: (str(row["category"]), str(row["name"]), int(row["item_id"] or 0)))
+    for row in rows:
+        if row["found"] != row["awarded"] + row["lost_due_capacity"]: raise RuntimeError(f"Loot conservation failed: {row}")
+    return encounters, outcomes, rows
+
 def _result_payload(request: ClassProgressionRequest, result: Any) -> dict[str, Any]:
     raw = result.to_dict() if hasattr(result, "to_dict") else asdict(result)
     events = list(getattr(result, "events", []) or [])
     final_level = int(raw.get("final_level", 0))
     target = int(request.target_level)
+    encounters, outcomes, loot_ledger = _contract_summary(events)
+    duration = _duration_payload(int(raw.get("elapsed_minutes", 0)))
     payload = {
         "status": str(raw.get("status", "unknown")),
         "class": request.character_class,
@@ -72,6 +103,11 @@ def _result_payload(request: ClassProgressionRequest, result: Any) -> dict[str, 
         "max_days": request.max_days,
         "days": int(raw.get("days", 0)),
         "elapsed_minutes": int(raw.get("elapsed_minutes", 0)),
+        "time_to_target": duration,
+        "encounters": encounters,
+        "battle_outcomes": outcomes,
+        "loot_ledger": loot_ledger,
+        "loot_found_total": sum(row["found"] for row in loot_ledger),
         "hunts": int(raw.get("battles", 0)),
         "battles": int(raw.get("battles", 0)),
         "wins": int(raw.get("wins", 0)),
