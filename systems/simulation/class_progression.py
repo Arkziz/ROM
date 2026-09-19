@@ -9,6 +9,7 @@ from typing import Any
 from .parity_foundation import SUPPORTED_CLASSES, SimulatorScenarioPolicy
 from .progression_models import PROFILES
 from .world_progression import WorldProgressionSimulator
+from .progression_economy_reporting import build_economy_equipment_report
 
 # ROM 18.30.3 CLASS PROGRESSION SIMULATION
 
@@ -124,6 +125,11 @@ def _result_payload(request: ClassProgressionRequest, result: Any) -> dict[str, 
         "event_counts": _event_counts(events),
         "canonical_result": raw,
     }
+    economy_equipment = build_economy_equipment_report(events, loot_ledger, payload["gold_gained"], payload["final_gold"])
+    payload["economy"] = economy_equipment["gold"]
+    payload["resources"] = economy_equipment["resources"]
+    payload["loot_lifecycle"] = economy_equipment["loot_lifecycle"]
+    payload["final_loadout"] = economy_equipment["final_loadout"]
     if payload["target_reached"] and final_level != target:
         raise RuntimeError("Progression simulator advanced beyond the requested target level")
     return payload

@@ -149,7 +149,7 @@ class WorldProgressionSimulator:
                     fused = meta.fuse_available_runes()
                     inserted = meta.insert_best_runes()
                     refined = meta.refine_best()
-                    events.append(ProgressionEvent(elapsed, day, "city_visit", {"reason": maintenance.reason, "free_slots": self.inventory.free_slots, "repaired": repair.repaired, "repair_cost": repair.cost, "repair_skipped": repair.skipped_for_gold, "equipped": city.equipped, "sold_items": city.sold_items, "sold_quantity": city.sold_quantity, "sale_gold": city.gold_received, "rune_fusions": fused, "runes_inserted": inserted, "refined": bool(refined), "guild_exp": meta.state.guild.exp}))
+                    events.append(ProgressionEvent(elapsed, day, "city_visit", {"reason": maintenance.reason, "free_slots": self.inventory.free_slots, "repaired": repair.repaired, "repair_cost": repair.cost, "repair_skipped": repair.skipped_for_gold, "equipped": city.equipped, "sold_items": city.sold_items, "sold_quantity": city.sold_quantity, "sale_gold": city.gold_received, "sale_records": city.records, "rune_fusions": fused, "runes_inserted": inserted, "refined": bool(refined), "guild_exp": meta.state.guild.exp}))
                     elapsed += 5
                     healed = survival.passive_hp_regen(5)
                     if healed: events.append(ProgressionEvent(elapsed, day, "hp_regen", {"amount": healed, "hp": survival.hp}))
@@ -160,6 +160,9 @@ class WorldProgressionSimulator:
         else:
             days = self.max_days
 
+        equipped_ids = {value for value in self.equipment.slots.values() if value}
+        final_items = [{"simulation_item_id": item.simulation_item_id, "item_id": item.item_id, "name": item.name, "category": item.category, "rarity": item.rarity, "quantity": item.quantity, "slot_key": item.slot_key, "item_level": item.item_level, "armor_type": item.armor_type, "refine_level": item.refine_level, "durability": item.durability, "stats": dict(item.stats), "runes": [asdict(rune) for rune in item.runes], "destination": "equipped" if item.simulation_item_id in equipped_ids else "remaining"} for item in self.inventory.items]
+        events.append(ProgressionEvent(elapsed, days, "simulation_final_state", {"gold": round(gold,2), "equipment_slots": dict(self.equipment.slots), "inventory": final_items, "guild_exp": meta.state.guild.exp, "refine_attempts": meta.state.refine_attempts, "refine_successes": meta.state.refine_successes}))
         status = "completed" if level >= self.target_level else "max_days_reached"
         return ProgressionResult(
             run_id, self.character_class, self.target_level, level, self.profile.key, self.seed,

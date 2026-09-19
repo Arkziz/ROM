@@ -22,7 +22,9 @@ class VictoryLootResult:
 
 @dataclass
 class CityResult:
-    sold_items:int=0;sold_quantity:int=0;gold_received:float=0.0;equipped:int=0;rejected:int=0
+    sold_items:int=0;sold_quantity:int=0;gold_received:float=0.0;equipped:int=0;rejected:int=0;records:list=None
+    def __post_init__(self):
+        if self.records is None:self.records=[]
 
 class SimulationLootEquipmentCityService:
     def __init__(self, character_class:str, inventory:SimulationInventory, equipment:SimulationEquipment, rng:SimulationRng):
@@ -87,4 +89,5 @@ class SimulationLootEquipmentCityService:
                 received+=float(item.sell_price)*item.quantity;quantity+=item.quantity;sold.append(item)
         for item in sold:self.inventory.items.remove(item)
         self.inventory.validate()
-        return round(gold+received,2),CityResult(len(sold),quantity,round(received,2),equipped,rejected)
+        records=[{"simulation_item_id": item.simulation_item_id, "item_id": item.item_id, "name": item.name, "category": item.category, "rarity": item.rarity, "quantity": item.quantity, "destination": "sold", "gold": round(float(item.sell_price)*item.quantity,2)} for item in sold]
+        return round(gold+received,2),CityResult(len(sold),quantity,round(received,2),equipped,rejected,records)
