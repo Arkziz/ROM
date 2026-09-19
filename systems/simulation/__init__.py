@@ -1,5 +1,8 @@
 """Deterministic, database-free ROM simulation foundation (Stage 13.1)."""
 
+# ROM 18.30.3 CLASS PROGRESSION SIMULATION
+from .class_progression import ClassProgressionRequest, run_class_progression
+
 # ROM 18.30.2 SIMULATOR PARITY FOUNDATION
 from .parity_foundation import (
     CanonicalOwnerResolver,
