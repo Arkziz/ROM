@@ -64,6 +64,31 @@ def _duration_payload(elapsed_minutes: int) -> dict[str, int | str]:
     return {"total_minutes": total, "calendar_days": days + (1 if rem or total == 0 else 0), "full_days": days, "hours": hours, "minutes": minutes, "formatted": f"{days} дн {hours} год {minutes} хв"}
 
 
+def _mob_encounter_summary(events: list[Any]) -> dict[str, Any]:
+    by_mob: dict[tuple[str, int, str], int] = {}
+    by_level: dict[int, int] = {}
+    by_delta = {-1: 0, 0: 0, 1: 0}
+    by_attack: dict[str, int] = {}
+    by_location: dict[str, int] = {}
+    candidate_sizes: dict[int, int] = {}
+    for event in events:
+        details = dict(getattr(event, "details", {}) or {})
+        if str(details.get("battle_outcome", "")) not in {"victory", "defeat", "escape"}:
+            continue
+        name = str(details.get("mob", "")); level = int(details.get("mob_level", details.get("level", 1))); kind = str(details.get("encounter_type", "normal"))
+        by_mob[(name, level, kind)] = by_mob.get((name, level, kind), 0) + 1
+        by_level[level] = by_level.get(level, 0) + 1
+        delta = int(details.get("level_delta", level - int(details.get("player_level", details.get("level", level)))))
+        if delta not in {-1, 0, 1}: raise RuntimeError(f"Mob level delta outside canonical range: {delta}")
+        by_delta[delta] += 1
+        attack = str(details.get("attack_type", "unknown")); by_attack[attack] = by_attack.get(attack, 0) + 1
+        location = str(details.get("location_id", "unknown")); by_location[location] = by_location.get(location, 0) + 1
+        size = int(details.get("candidate_count", 0)); candidate_sizes[size] = candidate_sizes.get(size, 0) + 1
+    rows = [{"name": key[0], "level": key[1], "encounter_type": key[2], "count": count} for key, count in sorted(by_mob.items(), key=lambda row: (row[0][1], row[0][0], row[0][2]))]
+    total = sum(row["count"] for row in rows)
+    return {"total": total, "unique_mobs": len(rows), "by_mob": rows, "by_level": {str(k): v for k, v in sorted(by_level.items())}, "by_level_delta": {str(k): v for k, v in sorted(by_delta.items())}, "by_attack_type": dict(sorted(by_attack.items())), "by_location": dict(sorted(by_location.items())), "candidate_pool_sizes": {str(k): v for k, v in sorted(candidate_sizes.items())}}
+
+
 def _contract_summary(events: list[Any]) -> tuple[dict[str, int], dict[str, int], list[dict[str, Any]]]:
     encounters = {"normal": 0, "elite": 0, "boss": 0}
     outcomes = {"victory": 0, "defeat": 0, "escape": 0}
@@ -92,6 +117,7 @@ def _result_payload(request: ClassProgressionRequest, result: Any) -> dict[str, 
     final_level = int(raw.get("final_level", 0))
     target = int(request.target_level)
     encounters, outcomes, loot_ledger = _contract_summary(events)
+    mob_encounters = _mob_encounter_summary(events)
     duration = _duration_payload(int(raw.get("elapsed_minutes", 0)))
     payload = {
         "status": str(raw.get("status", "unknown")),
@@ -107,6 +133,7 @@ def _result_payload(request: ClassProgressionRequest, result: Any) -> dict[str, 
         "elapsed_minutes": int(raw.get("elapsed_minutes", 0)),
         "time_to_target": duration,
         "encounters": encounters,
+        "mob_encounters": mob_encounters,
         "battle_outcomes": outcomes,
         "loot_ledger": loot_ledger,
         "loot_found_total": sum(row["found"] for row in loot_ledger),

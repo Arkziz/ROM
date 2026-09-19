@@ -85,7 +85,12 @@ class WorldProgressionSimulator:
 
                 available = self.provider.mobs(level)
                 contract = meta.ensure_contract(level, available)
-                selected = self.policy.select_mob(level, available, contract.target_name if contract else None)
+                allowed = [mob for mob in available if abs(int(mob.get("level", 1)) - int(level)) <= 1 and int(mob.get("min_player_level", 1)) <= int(level)]
+                contract_target = contract.target_name if contract else ""
+                selected = next((mob for mob in allowed if contract_target and str(mob.get("name", "")) == contract_target), None)
+                selection_reason = "contract_target" if selected is not None else "seeded_random"
+                if selected is None and allowed:
+                    selected = self.rng.choice(allowed)
                 if selected is None:
                     raise RuntimeError(f"production content gap: no mob for player level {level}; current max mob level={self.provider.content_max_mob_level()}")
 
@@ -125,7 +130,7 @@ class WorldProgressionSimulator:
                     items_lost += loot.lost
                     full_bag_events += loot.full_bag_events
                     gold, equipment_resolution = loot_city.resolve_equipment_after_victory(gold)
-                    events.append(ProgressionEvent(elapsed, day, "victory", {"level": level, "mob": selected["name"], "encounter_type": _encounter_type(selected), "battle_outcome": "victory", "battle_turns": result.turns, "exp": gained_exp, "gold": gained_gold, "loot_awarded": loot.awarded, "loot_lost": loot.lost, "equipment": loot.equipment, "loot_records": loot.records}))
+                    events.append(ProgressionEvent(elapsed, day, "victory", {"level": level, "player_level": level, "mob": selected["name"], "mob_level": int(selected.get("level", level)), "level_delta": int(selected.get("level", level)) - int(level), "location_id": str(selected.get("location_id", self.provider.location_for_level(level))), "attack_type": str(selected.get("attack_type", "physical")), "trash_items": list(selected.get("trash_items", []) or []), "selection_reason": selection_reason, "candidate_count": len(allowed), "encounter_type": _encounter_type(selected), "battle_outcome": "victory", "battle_turns": result.turns, "exp": gained_exp, "gold": gained_gold, "loot_awarded": loot.awarded, "loot_lost": loot.lost, "equipment": loot.equipment, "loot_records": loot.records}))
                     if equipment_resolution["equipped"] or equipment_resolution["sale_records"]:
                         events.append(ProgressionEvent(elapsed, day, "equipment_resolution", equipment_resolution))
                     transition = self.provider.apply_exp(level, exp - gained_exp, gained_exp)
@@ -138,7 +143,7 @@ class WorldProgressionSimulator:
                     deaths += 1
                     durability = survival_service.damage_on_death()
                     survival.apply_death()
-                    events.append(ProgressionEvent(elapsed, day, "death", {"level": level, "mob": selected["name"], "encounter_type": _encounter_type(selected), "battle_outcome": "defeat", "battle_turns": result.turns, "hp": 1, "durability_items": durability.changed, "broken": durability.broken}))
+                    events.append(ProgressionEvent(elapsed, day, "death", {"level": level, "player_level": level, "mob": selected["name"], "mob_level": int(selected.get("level", level)), "level_delta": int(selected.get("level", level)) - int(level), "location_id": str(selected.get("location_id", self.provider.location_for_level(level))), "attack_type": str(selected.get("attack_type", "physical")), "trash_items": list(selected.get("trash_items", []) or []), "selection_reason": selection_reason, "candidate_count": len(allowed), "encounter_type": _encounter_type(selected), "battle_outcome": "defeat", "battle_turns": result.turns, "hp": 1, "durability_items": durability.changed, "broken": durability.broken}))
                     elapsed += 10
                     healed = survival.passive_hp_regen(10)
                     if healed: events.append(ProgressionEvent(elapsed, day, "hp_regen", {"amount": healed, "hp": survival.hp}))
