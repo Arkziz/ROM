@@ -1,4 +1,14 @@
 """Deterministic, database-free ROM simulation foundation (Stage 13.1)."""
+
+# ROM 18.30.2 SIMULATOR PARITY FOUNDATION
+from .parity_foundation import (
+    CanonicalOwnerResolver,
+    IsolatedSimulatorState,
+    SimulatorMetrics,
+    SimulatorScenarioPolicy,
+    build_isolated_state,
+    validate_parity_foundation,
+)
 from .clock import SimulationClock
 from .config import SimulationConfig, SimulationProfile
 from .metrics import SimulationEvent, SimulationMetrics
