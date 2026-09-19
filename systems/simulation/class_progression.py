@@ -111,7 +111,7 @@ def _contract_summary(events: list[Any]) -> tuple[dict[str, int], dict[str, int]
         if row["found"] != row["awarded"] + row["lost_due_capacity"]: raise RuntimeError(f"Loot conservation failed: {row}")
     return encounters, outcomes, rows
 
-def _result_payload(request: ClassProgressionRequest, result: Any) -> dict[str, Any]:
+def _result_payload(request: ClassProgressionRequest, result: Any, project_root: Path) -> dict[str, Any]:
     raw = result.to_dict() if hasattr(result, "to_dict") else asdict(result)
     events = list(getattr(result, "events", []) or [])
     final_level = int(raw.get("final_level", 0))
@@ -153,7 +153,7 @@ def _result_payload(request: ClassProgressionRequest, result: Any) -> dict[str, 
         "event_counts": _event_counts(events),
         "canonical_result": raw,
     }
-    economy_equipment = build_economy_equipment_report(events, loot_ledger, payload["gold_gained"], payload["final_gold"], request.character_class)
+    economy_equipment = build_economy_equipment_report(events, loot_ledger, payload["gold_gained"], payload["final_gold"], request.character_class, project_root)
     payload["economy"] = economy_equipment["gold"]
     payload["resources"] = economy_equipment["resources"]
     payload["loot_lifecycle"] = economy_equipment["loot_lifecycle"]
@@ -178,4 +178,4 @@ def run_class_progression(project_root: Path, request: ClassProgressionRequest) 
         inventory_capacity=normalized.inventory_capacity,
         max_days=normalized.max_days,
     )
-    return _result_payload(normalized, simulator.run())
+    return _result_payload(normalized, simulator.run(), Path(project_root))
