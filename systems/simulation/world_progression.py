@@ -124,7 +124,10 @@ class WorldProgressionSimulator:
                     items_awarded += loot.awarded
                     items_lost += loot.lost
                     full_bag_events += loot.full_bag_events
+                    gold, equipment_resolution = loot_city.resolve_equipment_after_victory(gold)
                     events.append(ProgressionEvent(elapsed, day, "victory", {"level": level, "mob": selected["name"], "encounter_type": _encounter_type(selected), "battle_outcome": "victory", "battle_turns": result.turns, "exp": gained_exp, "gold": gained_gold, "loot_awarded": loot.awarded, "loot_lost": loot.lost, "equipment": loot.equipment, "loot_records": loot.records}))
+                    if equipment_resolution["equipped"] or equipment_resolution["sale_records"]:
+                        events.append(ProgressionEvent(elapsed, day, "equipment_resolution", equipment_resolution))
                     transition = self.provider.apply_exp(level, exp - gained_exp, gained_exp)
                     old_level = level
                     level = transition["level"]

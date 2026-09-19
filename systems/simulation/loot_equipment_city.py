@@ -67,7 +67,7 @@ class SimulationLootEquipmentCityService:
             if award is None:continue
             applied=self.engine.award(award,True);out.rolled+=award.quantity;out.awarded+=applied.awarded;out.lost+=applied.lost
             if applied.lost:out.full_bag_events+=1
-            out.records.append({"item_id": award.item_id, "name": award.name, "category": award.category, "rarity": award.rarity, "found": award.quantity, "awarded": applied.awarded, "lost_due_capacity": applied.lost, "destination": "inventory" if applied.awarded else "lost_due_capacity"})
+            out.records.append({"item_id": award.item_id, "name": award.name, "category": award.category, "rarity": award.rarity, "found": award.quantity, "awarded": applied.awarded, "lost_due_capacity": applied.lost, "destination": "inventory" if applied.awarded else "lost_due_capacity", "created_ids": list(applied.created_ids), "slot_key": award.slot_key, "item_level": award.item_level, "armor_type": str(award.payload.get("armor_type", "")), "weapon_hands": int(award.payload.get("weapon_hands", 1)), "stats": dict(award.payload.get("stats", {})), "sell_price": float(award.sell_price)})
             if not award.is_equipment:out.stacks+=applied.awarded
         return out
 
@@ -79,6 +79,51 @@ class SimulationLootEquipmentCityService:
             if decision.action=="equip":self.equipment_service.apply(decision);equipped+=1
             else:rejected+=1
         return equipped,rejected
+
+    def resolve_equipment_after_victory(self, gold: float):
+        decisions = []
+        sale_records = []
+        before_ids = {item.simulation_item_id for item in self.inventory.items if item.is_equipment}
+        equipped, rejected = self.equip_upgrades()
+        protected = {value for value in self.equipment.slots.values() if value}
+        sold_gold = 0.0
+        for item in list(self.inventory.items):
+            if not item.is_equipment or item.simulation_item_id in protected:
+                continue
+            sold_gold += float(item.sell_price) * item.quantity
+            sale_records.append({
+                "simulation_item_id": item.simulation_item_id,
+                "item_id": item.item_id,
+                "name": item.name,
+                "category": item.category,
+                "rarity": item.rarity,
+                "quantity": item.quantity,
+                "slot_key": item.slot_key,
+                "item_level": item.item_level,
+                "armor_type": item.armor_type,
+                "stats": dict(item.stats),
+                "destination": "sold_as_worse_equipment",
+                "gold": round(float(item.sell_price) * item.quantity, 2),
+            })
+            self.inventory.items.remove(item)
+        for slot_key, simulation_item_id in self.equipment.slots.items():
+            if simulation_item_id and simulation_item_id in before_ids:
+                item = next((row for row in self.inventory.items if row.simulation_item_id == simulation_item_id), None)
+                if item is not None:
+                    decisions.append({
+                        "simulation_item_id": item.simulation_item_id,
+                        "item_id": item.item_id,
+                        "slot_key": slot_key,
+                        "action": "equipped",
+                    })
+        self.inventory.validate()
+        return round(gold + sold_gold, 2), {
+            "equipped": equipped,
+            "rejected": rejected,
+            "decisions": decisions,
+            "sale_records": sale_records,
+            "sale_gold": round(sold_gold, 2),
+        }
 
     def city_maintenance(self,gold:float):
         equipped,rejected=self.equip_upgrades();protected={value for value in self.equipment.slots.values() if value}

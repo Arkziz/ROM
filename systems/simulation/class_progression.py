@@ -77,7 +77,8 @@ def _contract_summary(events: list[Any]) -> tuple[dict[str, int], dict[str, int]
             encounters[kind if kind in encounters else "normal"] += 1
         for item in details.get("loot_records", []) or []:
             key = (item.get("item_id"), item.get("name"), item.get("category"), item.get("rarity"))
-            row = ledger.setdefault(key, {"item_id": item.get("item_id"), "name": item.get("name"), "category": item.get("category"), "rarity": item.get("rarity"), "found": 0, "awarded": 0, "lost_due_capacity": 0, "destinations": {}})
+            row = ledger.setdefault(key, {"item_id": item.get("item_id"), "name": item.get("name"), "category": item.get("category"), "rarity": item.get("rarity"), "slot_key": item.get("slot_key", ""), "item_level": int(item.get("item_level", 1)), "armor_type": item.get("armor_type", ""), "weapon_hands": int(item.get("weapon_hands", 1)), "stats": dict(item.get("stats", {})), "sell_price": float(item.get("sell_price", 0.0)), "created_ids": [], "found": 0, "awarded": 0, "lost_due_capacity": 0, "destinations": {}})
+            row["created_ids"].extend(int(value) for value in item.get("created_ids", []) or [])
             for field in ("found", "awarded", "lost_due_capacity"): row[field] += int(item.get(field, 0))
             destination = str(item.get("destination", "unknown")); row["destinations"][destination] = row["destinations"].get(destination, 0) + int(item.get("found", 0))
     rows = sorted(ledger.values(), key=lambda row: (str(row["category"]), str(row["name"]), int(row["item_id"] or 0)))
