@@ -93,6 +93,12 @@ class WorldProgressionSimulator:
                     selected = self.rng.choice(allowed)
                 if selected is None:
                     raise RuntimeError(f"production content gap: no mob for player level {level}; current max mob level={self.provider.content_max_mob_level()}")
+                selected_template = selected
+                selected = self.provider.resolve_encounter(level, selected_template, self.rng)
+                if bool(selected.get("is_boss")):
+                    selection_reason = "canonical_boss_roll"
+                elif bool(selected.get("is_elite")):
+                    selection_reason = "canonical_elite_roll"
 
                 battle_seed = self.rng.randint(1, 2_147_483_647)
                 result = ExactPveBattleEngine(self.root, battle_seed).run(

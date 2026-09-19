@@ -5,7 +5,8 @@ from typing import Dict, List
 from data.locations import LOCATIONS, LOCATION_ORDER
 from data.mobs import get_mobs_for_location
 from data.player_progression import apply_exp_award, get_exp_to_next_level
-from systems.combat_system import get_available_mobs
+from systems.combat_system import ELITE_CHANCE_PERCENT, apply_elite_modifier, build_mob, get_available_mobs
+from systems.boss_system import generate_hunt_encounter
 from .battle_models import BattleActor
 from .combat_actor_stats import build_battle_actor
 from .models import SimulationEquipment, SimulationInventory
@@ -37,6 +38,27 @@ class ProgressionProvider:
     def mobs(self, player_level: int) -> List[Dict]:
         location_id = self.location_for_level(player_level)
         return [dict(mob) for mob in get_available_mobs(player_level, location_id)]
+
+    def resolve_encounter(self, player_level: int, selected_template: Dict, rng: SimulationRng, *, boss_enabled: bool = True, boss_chance_percent: float | None = None) -> Dict:
+        location_id = self.location_for_level(player_level)
+        template = dict(selected_template)
+        def normal_factory(selected_template_override=None):
+            return build_mob(dict(selected_template_override or template))
+        encounter = generate_hunt_encounter(
+            player_level=player_level,
+            location_id=location_id,
+            normal_mob_factory=normal_factory,
+            elite_modifier=apply_elite_modifier,
+            elite_roll=lambda: rng.randint(1, 100) <= int(ELITE_CHANCE_PERCENT),
+            rng=rng,
+            boss_enabled=boss_enabled,
+            boss_chance_percent=boss_chance_percent,
+            event_enabled=False,
+        )
+        mob = dict(encounter["mob"])
+        mob["enemy_type"] = str(encounter["enemy_type"])
+        mob.setdefault("mob_type", mob["enemy_type"])
+        return mob
 
     def reward(self, player_level: int, mob: Dict, rng: SimulationRng) -> tuple[int, float]:
         exp = int(call_rule("exp_reward", player_level, mob, rng=rng))
