@@ -118,7 +118,13 @@ def _result_payload(request: ClassProgressionRequest, result: Any, project_root:
     target = int(request.target_level)
     encounters, outcomes, loot_ledger = _contract_summary(events)
     mob_encounters = _mob_encounter_summary(events)
-    duration = _duration_payload(int(raw.get("elapsed_minutes", 0)))
+    absolute_elapsed = int(raw.get("elapsed_minutes", 0))
+    active_minutes = 0
+    for day in range(1, int(raw.get("days", 0)) + 1):
+        start = (day - 1) * 1440 + 9 * 60
+        end = (day - 1) * 1440 + 23 * 60
+        active_minutes += max(0, min(absolute_elapsed, end) - start)
+    duration = _duration_payload(active_minutes)
     payload = {
         "status": str(raw.get("status", "unknown")),
         "class": request.character_class,

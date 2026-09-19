@@ -11,7 +11,7 @@ from .progression_provider import ProgressionProvider
 from .pve_battle import ExactPveBattleEngine
 from .rng import SimulationRng
 from .survival_state import PersistentCombatState, SimulationSurvivalService
-from .loot_equipment_city import SimulationLootEquipmentCityService
+from .loot_equipment_city import POTIONS, SimulationLootEquipmentCityService
 from .meta_progression import SimulationMetaProgressionService
 
 
@@ -83,6 +83,19 @@ class WorldProgressionSimulator:
                         if healed: events.append(ProgressionEvent(elapsed, day, "hp_regen", {"amount": healed, "hp": survival.hp}))
                     continue
 
+                hp_potions = [{"item_id": item.item_id, "restore": POTIONS[item.item_id][1], "simulation_item_id": item.simulation_item_id} for item in self.inventory.items if item.item_id in (401, 402) and item.quantity > 0]
+                potion = self.policy.choose_potion(survival.hp, survival.max_hp, survival.mp, survival.max_mp, self.character_class in {"mage", "priest"}, hp_potions, [])
+                if potion and potion.action == "use_hp_potion":
+                    item_id = int(potion.payload["item_id"]); restored = min(survival.max_hp - survival.hp, int(potion.payload["restore"]))
+                    if restored > 0 and meta._consume(item_id, 1):
+                        survival.hp += restored
+                        events.append(ProgressionEvent(elapsed, day, "potion_used", {"item_id": item_id, "restore": restored, "hp": survival.hp, "threshold_percent": 40}))
+                if survival.max_hp > 0 and survival.hp / survival.max_hp <= 0.25:
+                    elapsed += 5
+                    healed = survival.passive_hp_regen(5)
+                    events.append(ProgressionEvent(elapsed, day, "pre_hunt_hp_wait", {"threshold_percent": 25, "healed": healed, "hp": survival.hp, "max_hp": survival.max_hp}))
+                    continue
+
                 available = self.provider.mobs(level)
                 contract = meta.ensure_contract(level, available)
                 allowed = [mob for mob in available if abs(int(mob.get("level", 1)) - int(level)) <= 1 and int(mob.get("min_player_level", 1)) <= int(level)]
@@ -139,6 +152,10 @@ class WorldProgressionSimulator:
                     events.append(ProgressionEvent(elapsed, day, "victory", {"level": level, "player_level": level, "mob": selected["name"], "mob_level": int(selected.get("level", level)), "level_delta": int(selected.get("level", level)) - int(level), "location_id": str(selected.get("location_id", self.provider.location_for_level(level))), "attack_type": str(selected.get("attack_type", "physical")), "trash_items": list(selected.get("trash_items", []) or []), "selection_reason": selection_reason, "candidate_count": len(allowed), "encounter_type": _encounter_type(selected), "battle_outcome": "victory", "battle_turns": result.turns, "exp": gained_exp, "gold": gained_gold, "loot_awarded": loot.awarded, "loot_lost": loot.lost, "equipment": loot.equipment, "loot_records": loot.records}))
                     if equipment_resolution["equipped"] or equipment_resolution["sale_records"]:
                         events.append(ProgressionEvent(elapsed, day, "equipment_resolution", equipment_resolution))
+                    inserted = meta.insert_best_runes()
+                    refined = meta.refine_best()
+                    if inserted or refined or meta.state.refine_attempts:
+                        events.append(ProgressionEvent(elapsed, day, "resource_maintenance", {"runes_inserted": inserted, "refined": bool(refined), "refine_attempts_total": meta.state.refine_attempts, "refine_successes_total": meta.state.refine_successes}))
                     transition = self.provider.apply_exp(level, exp - gained_exp, gained_exp)
                     old_level = level
                     level = transition["level"]
