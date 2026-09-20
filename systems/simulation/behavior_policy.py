@@ -31,7 +31,7 @@ class BehaviorPolicy:
     def maintenance(self, durability_values: Iterable[int], free_slots: int) -> Optional[BehaviorDecision]:
         values = list(durability_values)
         if values and min(values) <= self.repair_threshold:
-            return BehaviorDecision("visit_city", "equipped_durability_below_10", {"min_durability": min(values)})
+            return BehaviorDecision("visit_city", "equipped_durability_at_or_below_15", {"min_durability": min(values)})
         if free_slots <= self.reserve_slots:
             return BehaviorDecision("visit_city", "inventory_reserve_reached", {"free_slots": free_slots})
         return None

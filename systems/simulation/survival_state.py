@@ -59,8 +59,8 @@ class SimulationSurvivalService:
             if old>0 and item.durability==0:broken+=1
         return DurabilityResult(len(changed),broken,changed)
 
-    def urgent_repair(self, gold: float, threshold: int=10) -> tuple[float,RepairResult]:
-        candidates=[item for item in self.equipped_items() if item.durability<int(threshold)]
+    def urgent_repair(self, gold: float, threshold: int=15) -> tuple[float,RepairResult]:
+        candidates=[item for item in self.equipped_items() if item.durability<=int(threshold)]
         repaired=[];cost=0.0;skipped=0
         for item in sorted(candidates,key=lambda x:x.simulation_item_id):
             item_cost=float(call_rule("repair_cost",item.durability,item.rarity))
