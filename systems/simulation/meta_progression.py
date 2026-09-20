@@ -5,6 +5,7 @@ from .models import SimulationRuneSocket
 
 from data.player_progression import get_base_exp_for_level
 from data.runes import FIRIUS_TOKEN_ITEM_ID,RUNE_FUSION_SOURCE_QUANTITY,RUNE_FUSION_TOKEN_QUANTITY,get_rune_definition,get_rune_item_id,get_rune_slot_limit
+from systems.refine_system import get_item_refine_kind,get_refine_failure_level,get_refine_max_level,get_refine_success_chance
 
 CONTRACT_UNLOCK_LEVEL=5
 CONTRACT_TARGET_KILLS=5
@@ -99,10 +100,23 @@ class SimulationMetaProgressionService:
     if rune.quantity<=0:runes.pop(0)
   self.state.runes_inserted+=inserted;return inserted
  def refine_best(self):
-  if self._qty(REFINE_STONE_ITEM_ID)<=0:return False
-  equipped=[i for i in self.inventory.items if i.simulation_item_id in self.equipment.slots.values()]
-  if not equipped:return False
-  item=max(equipped,key=lambda x:(x.item_level,x.rarity,x.simulation_item_id));level=int(item.refine_level or 0);weapon=item.slot_key=='main_hand';table=WEAPON_REFINE_SUCCESS_CHANCES if weapon else ARMOR_REFINE_SUCCESS_CHANCES
-  chance=int(table.get(level,0));self._consume(REFINE_STONE_ITEM_ID,1);self.state.refine_attempts+=1
-  if self.rng.randint(1,100)<=chance:item.refine_level=level+1;self.state.refine_successes+=1;return True
-  item.refine_level=max(0,level-1);return False
+  rarity_rank={"common":0,"uncommon":1,"rare":2,"epic":3}
+  attempted=False;any_success=False
+  while self._qty(REFINE_STONE_ITEM_ID)>0:
+   equipped=[i for i in self.inventory.items if i.simulation_item_id in self.equipment.slots.values() and int(i.durability or 0)>0]
+   eligible=[]
+   for item in equipped:
+    info={"category":item.category,"slot_key":item.slot_key,"type":item.item_subtype,"refine_level":item.refine_level}
+    kind=get_item_refine_kind(info);level=int(item.refine_level or 0)
+    if not kind or level>=get_refine_max_level(kind):continue
+    chance=int(get_refine_success_chance(kind,level))
+    if chance<50:continue
+    eligible.append((item,kind,level,chance))
+   if not eligible:break
+   item,kind,level,chance=max(eligible,key=lambda row:(int(row[0].item_level or 0),rarity_rank.get(str(row[0].rarity).lower(),-1),int(row[0].simulation_item_id)))
+   if not self._consume(REFINE_STONE_ITEM_ID,1):break
+   attempted=True;self.state.refine_attempts+=1
+   if self.rng.randint(1,100)<=chance:
+    item.refine_level=level+1;self.state.refine_successes+=1;any_success=True
+   else:item.refine_level=get_refine_failure_level(kind,level)
+  return any_success if attempted else False
