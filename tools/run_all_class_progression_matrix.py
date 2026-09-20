@@ -10,6 +10,8 @@ ROOT=Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:sys.path.insert(0,str(ROOT))
 from systems.simulation.class_progression import ClassProgressionRequest,run_class_progression
 CLASSES=('warrior','knight','scout','rogue','mage','priest')
+def format_duration(total_minutes):
+ total=max(0,int(total_minutes));days,rem=divmod(total,1440);hours,minutes=divmod(rem,60);return f'{days} d {hours} h {minutes} min'
 def require(v,msg,checks):
  checks.append({'name':msg,'status':'PASS' if v else 'FAIL'})
  if not v:raise AssertionError(msg)
@@ -31,7 +33,7 @@ def summary_rows(data):
  rows=[]
  for cls,x in data['results'].items():
   o=x['battle_outcomes'];e=x['encounters'];eco=x['economy'];res=x['resources'];final_event=next(z for z in reversed(x['canonical_result']['events']) if z['event_type']=='simulation_final_state');fd=final_event['details']
-  rows.append([cls,x['final_level'],x['time_to_target']['total_minutes'],x['battles'],o['victory'],o['defeat'],o['escape'],e['normal'],e['elite'],e['boss'],x['exp_gained'],eco['from_mobs'],eco['from_item_sales'],eco['repair_cost'],eco['final'],res['hp_potions']['found'],res['hp_potions']['remaining'],res['refine_stones']['found'],res['refine_stones']['remaining'],res['runes']['found'],res['runes']['remaining'],fd.get('refine_attempts',0),fd.get('refine_successes',0),len(x['final_loadout'])])
+  rows.append([cls,x['final_level'],format_duration(x['time_to_target']['total_minutes']),x['time_to_target']['total_minutes'],x['battles'],o['victory'],o['defeat'],o['escape'],e['normal'],e['elite'],e['boss'],x['exp_gained'],eco['from_mobs'],eco['from_item_sales'],eco['repair_cost'],eco['final'],res['hp_potions']['found'],res['hp_potions']['remaining'],res['refine_stones']['found'],res['refine_stones']['remaining'],res['runes']['found'],res['runes']['remaining'],fd.get('refine_attempts',0),fd.get('refine_successes',0),len(x['final_loadout'])])
  return rows
 def style(ws,name):
  ws.freeze_panes='A2';ws.sheet_view.showGridLines=False
@@ -40,7 +42,7 @@ def style(ws,name):
  for c in ws[1]:c.fill=PatternFill('solid',fgColor='1F4E78');c.font=Font(color='FFFFFF',bold=True);c.alignment=Alignment(wrap_text=True)
  for col in range(1,ws.max_column+1):ws.column_dimensions[get_column_letter(col)].width=min(32,max(11,max(len(str(ws.cell(r,col).value or '')) for r in range(1,ws.max_row+1))+2))
 def write_xlsx(data,path):
- wb=Workbook();ws=wb.active;ws.title='Matrix Summary';headers=['class','final_level','minutes','battles','wins','defeats','escapes','normal','elite','boss','exp','mob_gold','sales_gold','repair_cost','final_gold','potions_found','potions_remaining','stones_found','stones_remaining','runes_found','runes_remaining','refine_attempts','refine_successes','equipped_items'];ws.append(headers)
+ wb=Workbook();ws=wb.active;ws.title='Matrix Summary';headers=['class','final_level','time_to_level','total_minutes','battles','wins','defeats','escapes','normal','elite','boss','exp','mob_gold','sales_gold','repair_cost','final_gold','potions_found','potions_remaining','stones_found','stones_remaining','runes_found','runes_remaining','refine_attempts','refine_successes','equipped_items'];ws.append(headers)
  for row in summary_rows(data):ws.append(row)
  style(ws,'MatrixSummaryTable')
  eq=wb.create_sheet('Final Equipment');eq.append(['class','simulation_item_id','slot','name','rarity','item_level','refine_level','durability','runes'])
@@ -57,8 +59,10 @@ def write_xlsx(data,path):
 def run_matrix(target_level=2,seed=3,max_days=365):
  results={}
  for cls in CLASSES:
-  print(f'[RUN] {cls} 1->{target_level} seed {seed}');results[cls]=run_class_progression(ROOT,ClassProgressionRequest(cls,target_level,seed,'hardcore',1,max_days,40));print(f"[PASS] {cls} 1->{target_level}")
- data={'status':'completed','target_level':target_level,'seed':seed,'classes':list(CLASSES),'results':results};data['checks']=validate(data);data['check_count']=len(data['checks']);data['status']='PASS';return data
+  print(f'[RUN] {cls} 1->{target_level} seed {seed}');results[cls]=run_class_progression(ROOT,ClassProgressionRequest(cls,target_level,seed,'hardcore',1,max_days,40));minutes=results[cls]['time_to_target']['total_minutes'];out=results[cls]['battle_outcomes'];print(f"[PASS] {cls} 1->{target_level} | time: {format_duration(minutes)} | battles: {results[cls]['battles']} | wins: {out['victory']} | defeats: {out['defeat']}")
+ data={'status':'completed','target_level':target_level,'seed':seed,'classes':list(CLASSES),'results':results};data['checks']=validate(data);data['check_count']=len(data['checks']);data['status']='PASS';print('[TIME RANKING]');
+ for rank,(cls,result) in enumerate(sorted(results.items(),key=lambda item:item[1]['time_to_target']['total_minutes']),1):print(f"{rank}. {cls}: {format_duration(result['time_to_target']['total_minutes'])}")
+ return data
 def main():
  p=argparse.ArgumentParser();p.add_argument('--target-level',type=int,default=2);p.add_argument('--seed',type=int,default=3);p.add_argument('--max-days',type=int,default=365);a=p.parse_args()
  if a.target_level!=2:raise SystemExit('Stage 18.30.7 runner is fixed to target level 2')
