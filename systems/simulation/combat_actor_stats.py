@@ -5,8 +5,8 @@ from data.classes import CLASS_CONFIGS
 from systems.refine_system import apply_weapon_refine_to_damage,get_armor_refine_hp_bonus_percent
 from .battle_models import BattleActor
 from .models import SimulationEquipment,SimulationInventory
-from data.defense_policy import calculate_total_defense
-from systems.stat_system import calculate_max_mp
+from data.player_hp import calculate_base_max_hp
+from systems.stat_system import calculate_magical_attack,calculate_max_mp,calculate_physical_attack,calculate_physical_defense,calculate_magical_defense
 
 BASE_STAT=10
 ARMOR_SLOTS={"helmet","shoulders","chest","gloves","legs","boots"}
@@ -32,10 +32,13 @@ def build_combat_stat_snapshot(character_class:str,level:int,inventory:Simulatio
   if item.slot_key=="main_hand":
    raw_min=int(item.stats.get("weapon_min_damage",item.stats.get("weapon_min_magic_damage",0)) or 0);raw_max=int(item.stats.get("weapon_max_damage",item.stats.get("weapon_max_magic_damage",0)) or 0)
    weapon_min,weapon_max=apply_weapon_refine_to_damage(raw_min,raw_max,item.refine_level)
- max_hp=max(1,int(round((100+level*20+stats["sta"]*5)*(1+armor_refine/100.0))))
+ base_max_hp=calculate_base_max_hp(level,stats["sta"]);max_hp=max(1,int(round(base_max_hp*(1+armor_refine/100.0))))
  mana=CLASS_CONFIGS[character_class]["resource"]=="mana";max_mp=calculate_max_mp(character_class,level=level,intelligence=stats["int"],wisdom=stats["wis"]) if mana else 0
  attack_type="magical" if mana else "physical"
- return CombatStatSnapshot(stats["str"],stats["dex"],stats["int"],stats["wis"],stats["sta"],level,max_hp,max_mp,stats["str"],stats["int"],int(calculate_total_defense(item_pdef, stats["sta"])),int(calculate_total_defense(item_mdef, stats["wis"])),weapon_min,weapon_max,attack_type,CLASS_CONFIGS[character_class]["resource"])
+ physical_attack=calculate_physical_attack(character_class,strength=stats["str"],dexterity=stats["dex"],intelligence=stats["int"],wisdom=stats["wis"],stamina=stats["sta"])
+ magical_attack=calculate_magical_attack(character_class,strength=stats["str"],dexterity=stats["dex"],intelligence=stats["int"],wisdom=stats["wis"],stamina=stats["sta"])
+ pdef=calculate_physical_defense(equipment_pdef=item_pdef,stamina=stats["sta"]);mdef=calculate_magical_defense(equipment_mdef=item_mdef,wisdom=stats["wis"])
+ return CombatStatSnapshot(stats["str"],stats["dex"],stats["int"],stats["wis"],stats["sta"],level,max_hp,max_mp,physical_attack,magical_attack,pdef,mdef,weapon_min,weapon_max,attack_type,CLASS_CONFIGS[character_class]["resource"])
 
 def build_battle_actor(character_class,level,inventory,equipment,current_hp=None,current_mp=None):
  s=build_combat_stat_snapshot(character_class,level,inventory,equipment);mana=s.resource_type=="mana";max_resource=s.max_mp if mana else 100;resource=max_resource if current_mp is None else max(0,min(int(current_mp),max_resource));hp=s.max_hp if current_hp is None else max(1,min(int(current_hp),s.max_hp))
