@@ -89,11 +89,20 @@ class SimulationMetaProgressionService:
     target=get_rune_item_id(definition['stat'],int(definition['level'])+1)
     self._consume(item.item_id,RUNE_FUSION_SOURCE_QUANTITY);self._consume(FIRIUS_TOKEN_ITEM_ID,RUNE_FUSION_TOKEN_QUANTITY);self._add(target,get_rune_definition(target)['name'],'rune',1,999);count+=1
   self.state.rune_fusions+=count;return count
- def insert_best_runes(self):
-  inserted=0
+ def insert_best_runes(self,character_class):
+  inserted=0;class_key=str(character_class).strip().lower()
+  class_priority={
+   "warrior":("STR","STA","DEX","WIS","INT"),
+   "knight":("STA","STR","WIS","DEX","INT"),
+   "scout":("DEX","STR","STA","WIS","INT"),
+   "rogue":("DEX","STR","STA","WIS","INT"),
+   "mage":("INT","WIS","STA","DEX","STR"),
+   "priest":("WIS","INT","STA","DEX","STR"),
+  }
+  priority=class_priority.get(class_key,());rank={stat:len(priority)-index for index,stat in enumerate(priority)}
   equipped_ids={x for x in self.equipment.slots.values() if x}
-  runes=sorted([i for i in self.inventory.items if get_rune_definition(i.item_id)],key=lambda i:get_rune_definition(i.item_id)['level'],reverse=True)
-  for equipment in [i for i in self.inventory.items if i.simulation_item_id in equipped_ids]:
+  runes=sorted([i for i in self.inventory.items if get_rune_definition(i.item_id)],key=lambda i:(rank.get(get_rune_definition(i.item_id)["stat"],0),int(get_rune_definition(i.item_id)["level"]),-int(i.item_id)),reverse=True)
+  for equipment in [i for i in self.inventory.items if i.simulation_item_id in equipped_ids and int(i.durability or 0)>0]:
    capacity=max(0,int(get_rune_slot_limit(equipment.slot_key)));current=len(equipment.runes)
    while runes and current<capacity:
     rune=runes[0];definition=get_rune_definition(rune.item_id);equipment.runes.append(SimulationRuneSocket(current,rune.item_id,definition['stat'],int(definition['level'])));self._consume(rune.item_id,1);inserted+=1;current+=1

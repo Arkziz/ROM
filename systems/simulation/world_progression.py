@@ -152,7 +152,7 @@ class WorldProgressionSimulator:
                     events.append(ProgressionEvent(elapsed, day, "victory", {"level": level, "player_level": level, "mob": selected["name"], "mob_level": int(selected.get("level", level)), "level_delta": int(selected.get("level", level)) - int(level), "location_id": str(selected.get("location_id", self.provider.location_for_level(level))), "attack_type": str(selected.get("attack_type", "physical")), "trash_items": list(selected.get("trash_items", []) or []), "selection_reason": selection_reason, "candidate_count": len(allowed), "encounter_type": _encounter_type(selected), "battle_outcome": "victory", "battle_turns": result.turns, "exp": gained_exp, "gold": gained_gold, "loot_awarded": loot.awarded, "loot_lost": loot.lost, "equipment": loot.equipment, "loot_records": loot.records}))
                     if equipment_resolution["equipped"] or equipment_resolution["sale_records"]:
                         events.append(ProgressionEvent(elapsed, day, "equipment_resolution", equipment_resolution))
-                    inserted = meta.insert_best_runes()
+                    inserted = meta.insert_best_runes(self.character_class)
                     refined = meta.refine_best()
                     if inserted or refined or meta.state.refine_attempts:
                         events.append(ProgressionEvent(elapsed, day, "resource_maintenance", {"runes_inserted": inserted, "refined": bool(refined), "refine_attempts_total": meta.state.refine_attempts, "refine_successes_total": meta.state.refine_successes}))
@@ -178,7 +178,7 @@ class WorldProgressionSimulator:
                     gold, repair = survival_service.urgent_repair(gold, self.policy.repair_threshold)
                     gold, city = loot_city.city_maintenance(gold)
                     fused = meta.fuse_available_runes()
-                    inserted = meta.insert_best_runes()
+                    inserted = meta.insert_best_runes(self.character_class)
                     refined = meta.refine_best()
                     events.append(ProgressionEvent(elapsed, day, "city_visit", {"reason": maintenance.reason, "free_slots": self.inventory.free_slots, "repaired": repair.repaired, "repair_cost": repair.cost, "repair_skipped": repair.skipped_for_gold, "equipped": city.equipped, "sold_items": city.sold_items, "sold_quantity": city.sold_quantity, "sale_gold": city.gold_received, "sale_records": city.records, "rune_fusions": fused, "runes_inserted": inserted, "refined": bool(refined), "guild_exp": meta.state.guild.exp}))
                     elapsed += 5
