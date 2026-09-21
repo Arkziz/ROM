@@ -1,0 +1,22 @@
+{
+  "stage": "18.31.2a",
+  "status": "PASS",
+  "generated_at": "2026-09-21T22:17:20.688926+00:00",
+  "root_cause": "A decorated handler replaced with pass still consumed the Map button update before the canonical rendering handler.",
+  "details": {
+    "removed_handler": "show_map",
+    "removed_handler_key": [
+      "show_map",
+      1,
+      false,
+      false
+    ],
+    "remaining_map_handlers": [
+      "collapse_map",
+      "map_callbacks"
+    ]
+  },
+  "map_texts_preserved": true,
+  "database_changed": false,
+  "manual_check_required": true
+}
