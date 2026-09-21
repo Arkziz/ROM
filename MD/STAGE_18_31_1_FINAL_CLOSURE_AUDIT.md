@@ -1,0 +1,3 @@
+# Stage 18.31.1: Final Stage 18 closure audit
+
+Read-only closure gate for Stage 18. It validates the clean Git checkpoint, parses and compiles production Python, opens `game.db` in read-only URI mode for `quick_check` and `foreign_key_check`, inventories the canonical migration chain and compact regressions, verifies namespace evidence, and confirms production hashes remain unchanged. The duplicate auto-escape notification defect is already fixed and is not an accepted risk. Stage 18.30.14c is not applied. A full manual acceptance matrix remains mandatory before final documentation and merge approval.
