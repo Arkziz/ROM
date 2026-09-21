@@ -131,13 +131,14 @@ def create_user(user_id):
     """
     Створює нового користувача з початковими параметрами.
     """
-    from datetime import datetime
+    from datetime import datetime, timezone
     
     # Import systems that need initialization
     from systems.energy_system import init_energy_system
     
     init_energy_system()
     starting_max_hp = get_starting_max_hp()
+    registered_at = datetime.now(timezone.utc).isoformat()
     
     cursor.execute("""
     INSERT OR IGNORE INTO users (
@@ -159,9 +160,10 @@ def create_user(user_id):
         equipped_armor,
         energy,
         last_energy_update,
-        energy_full_notified
+        energy_full_notified,
+        registered_at
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         user_id,
         starting_max_hp,
@@ -181,7 +183,8 @@ def create_user(user_id):
         None,
         0,
         datetime.now().isoformat(),
-        1
+        1,
+        registered_at
     ))
     
     conn.commit()

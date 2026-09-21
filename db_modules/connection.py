@@ -58,7 +58,8 @@ def init_db():
         sta INTEGER,
 
         equipped_weapon INTEGER,
-        equipped_armor INTEGER
+        equipped_armor INTEGER,
+        registered_at TEXT DEFAULT ''
     )
     """)
 
@@ -146,6 +147,7 @@ def init_db():
         ("items", "item_level", "INTEGER DEFAULT 1"),
         ("items", "is_generated", "INTEGER DEFAULT 0"),
 
+        ("users", "registered_at", "TEXT DEFAULT ''"),
         ("users", "daily_contracts_completed", "INTEGER DEFAULT 0"),
         ("users", "daily_contract_date", "TEXT DEFAULT ''"),
 
