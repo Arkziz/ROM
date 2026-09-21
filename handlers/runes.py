@@ -168,10 +168,13 @@ def register_rune_handlers(bot):
         bot.send_message(
             message.chat.id,
             (
-                "💠 Рунний Майстер\n\n"
-                "Оберіть потрібну дію:\n"
-                "• вставити руну у спорядження;\n"
-                "• переробити 3 однакові руни за 1 Жетон Фіріуса."
+                '💠 Рунний Майстер\n\n'
+                'Рунний Майстер працює з рунами та матеріалами для їхнього вилучення зі спорядження.\n\n'
+                'Доступні дії:\n'
+                '• 💠 Вставити руну у спорядження;\n'
+                '• 🔄 Переробити 3 однакові руни за 1 Жетон Фіріуса;\n'
+                '• 🧰 Вилучити руни зі спорядження;\n'
+                '• 🛒 Відкрити крамницю Екстракторів.'
             ),
             reply_markup=rune_master_kb(),
         )
@@ -506,27 +509,28 @@ def build_rune_master_shop(user_id):
     from db import get_rune_master_shop_state
     state = get_rune_master_shop_state(user_id)
     text = (
-        "🛒 Крамниця Рунного Майстра\n\n"
-        f"💰 Золото: {state['gold']:g}\n\n"
-        "🧰 Простий Екстрактор рун\n"
-        f"Ціна за 1: {state['simple_price']:g} золота\n"
-        f"У сумці: {state['simple_owned']}\n\n"
-        "Простий Екстрактор повертає одну випадкову вставлену руну, "
-        "але знищує спорядження та решту вставлених рун.\n\n"
-        "✨ Досконалий Екстрактор рун\n"
-        f"У сумці: {state['perfect_owned']}\n"
-        "Придбання за кристали буде додано в майбутньому."
+        '🛒 Крамниця Рунного Майстра\n\n'
+        'У крамниці можна придбати матеріали для безпечної роботи з установленими рунами.\n\n'
+        '🧰 Простий Екстрактор рун\n'
+        f'• ціна: {state["simple_price"]:g} золота за 1;\n'
+        f'• у сумці: {state["simple_owned"]};\n'
+        '• повертає 1 випадкову руну, знищує спорядження та решту вставлених рун.\n\n'
+        '✨ Досконалий Екстрактор рун\n'
+        '• ціна: 20 кристалів за 1;\n'
+        f'• у сумці: {state["perfect_owned"]};\n'
+        '• повертає всі вставлені руни та знищує спорядження.\n\n'
+        f'💰 Золото: {state["gold"]:g}'
     )
     keyboard = types.InlineKeyboardMarkup(row_width=1)
     keyboard.add(types.InlineKeyboardButton(
-        text=f"🧰 Купити 1 за {state['simple_price']:g} золота",
-        callback_data="rs:buy:1",
+        text=f'🧰 Купити 1 за {state["simple_price"]:g} золота',
+        callback_data='rs:buy:1',
     ))
     keyboard.add(types.InlineKeyboardButton(
-        text="🔢 Вказати кількість", callback_data="rs:quantity",
+        text='🔢 Вказати кількість', callback_data='rs:quantity',
     ))
     keyboard.add(types.InlineKeyboardButton(
-        text="🔄 Оновити", callback_data="rs:home",
+        text='🔄 Оновити', callback_data='rs:home',
     ))
     return text, keyboard
 

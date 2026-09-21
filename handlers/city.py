@@ -119,7 +119,16 @@ def build_alchemist_root_17_19_3(user_id):
     kb = types.InlineKeyboardMarkup(row_width=1)
     kb.add(types.InlineKeyboardButton('🛒 Купити зілля', callback_data='alchemist:buy'))
     kb.add(types.InlineKeyboardButton('💰 Продати зілля', callback_data='alchemist:sell'))
-    return (f'🧪 Алхімік\n\n💰 Твоє золото: {format_gold(gold)}\n\nОберіть дію:', kb)
+    return (
+        f'🧪 Алхімік\n\n'
+        f'Алхімік готує та продає зілля для відновлення сил у бою. '
+        f'Непотрібні зілля можна продати назад.\n\n'
+        f'Доступні дії:\n'
+        f'• 🛒 Купити зілля;\n'
+        f'• 💰 Продати зілля.\n\n'
+        f'💰 Золото: {float(gold):.2f}',
+        kb,
+    )
 
 def build_alchemist_buy_list_17_19_3(user_id):
     gold = get_wallet(user_id)
@@ -758,8 +767,14 @@ def register_blacksmith_repair_button_v2(bot):
 
 def build_blacksmith_text(user_id):
     gold = get_wallet(user_id)
-    text = f'⚒️ Коваль\n\nБіля розпеченого горна працює досвідчений коваль. Він може полагодити твоє спорядження або посилити його за допомогою каменів заточки.\n\nДоступні дії:\n• 🛠️ Ремонт спорядження\n• ✨ Заточка спорядження\n\n💰 Твоє золото: {gold:.2f} 💰'
-    return (text, blacksmith_kb())
+    return (
+        f'⚒️ Коваль\n\n'
+        f'Коваль ремонтує пошкоджене спорядження та посилює його за допомогою Каменів Посилення.\n\n'
+        f'Доступні дії:\n'
+        f'• 🛠️ Ремонт спорядження;\n'
+        f'• ✨ Заточка спорядження.\n\n'
+        f'💰 Золото: {float(gold):.2f}'
+    )
 
 def _normalize_text_kb_result(result, fallback_kb=None):
     """
@@ -1078,7 +1093,7 @@ def build_townhall_text(*args, **kwargs):
     return _remove_static_actions_block_17_11_2(_BASE_BUILD_TOWNHALL_TEXT_17_11_2(*args, **kwargs))
 
 def build_blacksmith_text(*args, **kwargs):
-    return _remove_static_actions_block_17_11_2(_BASE_BUILD_BLACKSMITH_TEXT_17_11_2(*args, **kwargs), stop_marker='💰 Твоє золото:')
+    return _BASE_BUILD_BLACKSMITH_TEXT_17_11_2(*args, **kwargs)
 
 def location_description_kb_17_11_2(expanded=False):
     kb = types.InlineKeyboardMarkup(row_width=1)
@@ -1113,11 +1128,17 @@ def build_city_text(user_id):
     return text + '\n\n' + _online_presence_block_18_22_7(user_id, city=True)
 
 def build_craft_district_text(user_id):
-    text = _BASE_BUILD_CRAFT_DISTRICT_TEXT_17_11_2_1(user_id)
-    marker = '\n\nДоступні місця:\n'
-    if marker in text:
-        text = text.split(marker, 1)[0]
-    return text.rstrip()
+    gold = get_wallet(user_id)
+    return (
+        f'⚒️ Ремісничий квартал\n\n'
+        f'Тут пахне вугіллям, розпеченим металом і настоями трав. '
+        f'У кварталі працюють майстри, які допомагають підготуватися до наступного полювання.\n\n'
+        f'Доступні місця:\n'
+        f'• ⚒️ Коваль — ремонт і заточка спорядження;\n'
+        f'• 🧪 Алхімік — купівля та продаж зіль;\n'
+        f'• 💠 Рунний Майстер — руни та Екстрактори.\n\n'
+        f'💰 Золото: {float(gold):.2f}'
+    )
 
 def build_tavern_text():
     text = _BASE_BUILD_TAVERN_TEXT_17_11_2_1()
