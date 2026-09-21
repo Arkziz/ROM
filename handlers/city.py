@@ -15,11 +15,11 @@ def build_city_text(user_id):
 
 def build_trade_district_text(user_id):
     gold = get_wallet(user_id)
-    return f'🛒 Торговий ряд\n\n💰 Твоє золото: {format_gold(gold)}\n\nВузька вулиця заставлена возами, ящиками та прилавками. Торговці скуповують сірий лут, непотрібне спорядження і продають прості речі для мандрівників.'
+    return f'🛒 Торговий ряд\n\n💰 Золото: {float(gold):.2f}\n\nВузька вулиця заставлена возами, ящиками та прилавками. Торговці скуповують сірий лут, непотрібне спорядження і продають прості речі для мандрівників.'
 
 def build_craft_district_text(user_id):
     gold = get_wallet(user_id)
-    return f'⚒️ Ремісничий квартал\n\n💰 Твоє золото: {format_gold(gold)}\n\nТут пахне вугіллям, розпеченим металом і настоями трав. Коваль лагодить спорядження, а алхімік продає зілля для тих, хто збирається повернутися на полювання.\n\nДоступні місця:\n• ⚒️ Коваль — ремонт спорядження\n• 🧪 Алхімік — купівля зілля'
+    return f'⚒️ Ремісничий квартал\n\n💰 Золото: {float(gold):.2f}\n\nТут пахне вугіллям, розпеченим металом і настоями трав. Коваль лагодить спорядження, а алхімік продає зілля для тих, хто збирається повернутися на полювання.\n\nДоступні місця:\n• ⚒️ Коваль — ремонт спорядження\n• 🧪 Алхімік — купівля зілля'
 
 def build_guild_district_text(user_id):
     status = get_contract_status(user_id)
@@ -45,7 +45,7 @@ def build_townhall_text():
     return f'🏛️ Ратуша\n\nУсередині тихо. На стінах висять старі карти околиць, а за великим столом лежать списки податків, звіти варти та прохання мешканців.\n\nТут можна отримати щоденне завдання від місцевих жителів.\n\nДоступні дії:\n• 📆 Щоденне завдання'
 
 def build_tavern_text():
-    return f'🍺 Таверна\n\nУсередині тепло, пахне юшкою, свіжим хлібом і димом від каміна. Мандрівники обмінюються чутками про небезпечних істот, елітних ворогів і старі руїни за межами табору.\n\nПоки що таверна працює як атмосферне місце для майбутніх функцій.\n\nℹ️ Пізніше тут можна буде додати:\n• 🛏️ Відпочинок для прискорення відновлення HP\n• 🍲 Їжу з тимчасовими бонусами\n• 🗣️ Чутки про елітних мобів або босів'
+    return f'🍺 Таверна\n\nУсередині тепло, пахне юшкою, свіжим хлібом і димом від каміна. Мандрівники обмінюються чутками про небезпечних істот, елітних ворогів і старі руїни за межами табору.\n\nПоки що тут можна відпочити від подорожей і послухати розмови мандрівників.\n\nℹ️ Пізніше тут можна буде додати:\n• 🛏️ Відпочинок для прискорення відновлення HP\n• 🍲 Їжу з тимчасовими бонусами\n• 🗣️ Чутки про елітних мобів або босів'
 
 def get_nearby_mobs_for_level(player_level, location_id):
     mobs = get_mobs_for_location(location_id)
@@ -133,11 +133,11 @@ def build_alchemist_root_17_19_3(user_id):
 def build_alchemist_buy_list_17_19_3(user_id):
     gold = get_wallet(user_id)
     kb = types.InlineKeyboardMarkup(row_width=1)
-    text = f'🛒 Купівля зіль\n\n💰 Твоє золото: {format_gold(gold)}\n\nОберіть зілля для перегляду покупки:\n\n'
+    text = f'🛒 Купівля зіль\n\n💰 Золото: {float(gold):.2f}\n\nОберіть зілля для перегляду покупки:\n\n'
     for item_id in ALCHEMIST_SHOP:
         potion = POTIONS[item_id]
         effect = f"+{potion['restore']} {('HP' if potion['type'] == 'hp' else 'MP')}"
-        text += f"{potion['name']}\nЕфект: {effect}\nЦіна: {format_gold(potion['buy_price'])}\nСтак: {potion['max_stack']}\n\n"
+        text += f"{potion['name']}\nЕфект: {effect}\nЦіна: {format_gold(potion['buy_price'])}\nМаксимум у стаку: {potion['max_stack']}\n\n"
         kb.add(types.InlineKeyboardButton(text=f"{potion['name']} — {format_gold(potion['buy_price'])}", callback_data=f'alchemist:buyitem:{item_id}'))
     return (text, kb)
 
@@ -149,7 +149,7 @@ def build_alchemist_buy_preview_17_19_3(user_id, item_id, quantity=1):
     total = round(float(potion['buy_price']) * quantity, 2)
     gold = get_wallet(user_id)
     effect = f"+{potion['restore']} {('HP' if potion['type'] == 'hp' else 'MP')}"
-    text = f"🛒 Купівля зілля\n\n{potion['name']}\nЕфект: {effect}\nЦіна за одне: {format_gold(potion['buy_price'])}\n📦 Кількість: {quantity}\n💳 Загальна вартість: {format_gold(total)}\n💰 Твоє золото: {format_gold(gold)}"
+    text = f"🛒 Купівля зілля\n\n{float(potion['name']):.2f}\nЕфект: {float(effect):.2f}\nЦіна за одне: {float(potion['buy_price']):.2f}\n📦 Кількість: {float(quantity):.2f}\n💳 Загальна вартість: {float(total):.2f}\n💰 Золото: {float(gold):.2f}"
     kb = types.InlineKeyboardMarkup(row_width=3)
     kb.row(types.InlineKeyboardButton('➖', callback_data=f'alchemist:buyset:{item_id}:{max(1, quantity - 1)}'), types.InlineKeyboardButton(f'×{quantity}', callback_data=f'alchemist:buyqty:{item_id}'), types.InlineKeyboardButton('➕', callback_data=f'alchemist:buyset:{item_id}:{min(999, quantity + 1)}'))
     kb.add(types.InlineKeyboardButton('✏️ Вказати кількість', callback_data=f'alchemist:buyqty:{item_id}'))
@@ -160,7 +160,7 @@ def build_alchemist_buy_preview_17_19_3(user_id, item_id, quantity=1):
 def build_alchemist_sell_list_17_19_3(user_id):
     rows = get_alchemist_potion_stock_17_19_3(user_id)
     kb = types.InlineKeyboardMarkup(row_width=1)
-    text = f'💰 Продаж зіль\n\n💰 Твоє золото: {format_gold(get_wallet(user_id))}\n\n'
+    text = f'💰 Продаж зіль\n\n💰 Золото: {float(get_wallet(user_id)):.2f}\n\n'
     available = [r for r in rows if r['available'] > 0]
     if not available:
         text += 'У тебе немає доступних зіль для продажу.'
@@ -199,27 +199,27 @@ def build_alchemist_sell_confirm_17_19_3(user_id, item_id, quantity):
 def build_alchemist_catalog(user_id):
     gold = get_wallet(user_id)
     kb = types.InlineKeyboardMarkup()
-    text = f'🧪 Алхімік\n\n💰 Твоє золото: {format_gold(gold)}\n\nАлхімік продає зілля для виживання в бою.\n\nАсортимент:\n\n'
+    text = f'🧪 Алхімік\n\n💰 Золото: {float(gold):.2f}\n\nАлхімік продає зілля для виживання в бою.\n\nАсортимент:\n\n'
     for item_id in ALCHEMIST_SHOP:
         potion = POTIONS[item_id]
         if potion['type'] == 'hp':
             effect = f"+{potion['restore']} HP"
         else:
             effect = f"+{potion['restore']} MP"
-        text += f"{potion['name']}\nЕфект: {effect}\nЦіна: {format_gold(potion['buy_price'])}\nСтак: {potion['max_stack']}\n\n"
+        text += f"{potion['name']}\nЕфект: {effect}\nЦіна: {format_gold(potion['buy_price'])}\nМаксимум у стаку: {potion['max_stack']}\n\n"
         kb.add(types.InlineKeyboardButton(text=f"Купити: {potion['name']} — {format_gold(potion['buy_price'])}", callback_data=f'buy_potion_{item_id}'))
     text += f'⚠️ Мана ще не реалізована, тому сині зілля можна купити на майбутнє, але використати поки не можна.'
     return (text, kb)
 
 def build_blacksmith_text(user_id):
     gold = get_wallet(user_id)
-    return f'⚒️ Коваль\n\nБіля розпеченого горна працює досвідчений коваль. Він може полагодити твоє спорядження або посилити його за допомогою каменів заточки.\n\nДоступні дії:\n• 🛠️ Ремонт спорядження\n• ✨ Заточка спорядження\n\n💰 Твоє золото: {gold:.2f} 💰'
+    return f'⚒️ Коваль\n\nБіля розпеченого горна працює досвідчений коваль. Він може полагодити твоє спорядження або посилити його за допомогою каменів заточки.\n\nДоступні дії:\n• 🛠️ Ремонт спорядження\n• ✨ Заточка спорядження\n\n💰 Золото: {float(gold):.2f}'
 
 def build_blacksmith_repair_text(user_id):
     equipped_items = get_equipped_items_for_repair(user_id)
     total_cost = get_total_repair_cost(user_id)
     gold = get_wallet(user_id)
-    text = f'⚒️ КОВАЛЬ: РЕМОНТ ТА КУЗНЯ\n\n💰 Твоє золото: {format_gold(gold)}\n\n📦 Стан твого спорядження:\n\n'
+    text = f'🛠️ Ремонт спорядження\n\n💰 Золото: {float(gold):.2f}\n\n📦 Стан спорядження:\n\n'
     kb = types.InlineKeyboardMarkup()
     damaged_count = 0
     for item in equipped_items:
@@ -237,7 +237,7 @@ def build_blacksmith_repair_text(user_id):
         if repair_cost > 0:
             damaged_count += 1
             kb.add(types.InlineKeyboardButton(text=f'🛠️ Ремонт: {name} — {format_gold(repair_cost)}', callback_data=f'repair_prompt_one_v3_{inventory_id}'))
-    text += f'💳 Разом за повний ремонт: {format_gold(total_cost)}\n💰 Твоє золото: {format_gold(gold)}\n\n'
+    text += f'💳 Вартість повного ремонту: {float(total_cost):.2f}\n💰 Золото: {float(gold):.2f}\n\n'
     if damaged_count <= 0:
         text += '✅ Усе спорядження вже в ідеальному стані.'
     elif gold < total_cost:
@@ -251,7 +251,7 @@ def build_blacksmith_repair_text(user_id):
 def build_common_equipment_shop_text(user_id):
     offers = get_common_equipment_shop_offer(user_id)
     gold = get_wallet(user_id)
-    text = f'⚪ Базове спорядження\n\n💰 Твоє золото: {format_gold(gold)}\n\nТорговець продає прості білі речі поточного рівня персонажа.\nПеред купівлею ти побачиш точні характеристики предмета.\n\nОдяг поки має універсальний тип, але для зброї та другої руки можна вибрати конкретний вид предмета.\n\nОберіть слот:'
+    text = f'⚪ Базове спорядження\n\n💰 Золото: {float(gold):.2f}\n\nТорговець продає прості білі речі поточного рівня персонажа.\nПеред купівлею ти побачиш точні характеристики предмета.\n\nОдяг поки має універсальний тип, але для зброї та другої руки можна вибрати конкретний вид предмета.\n\nОберіть слот:'
     kb = types.InlineKeyboardMarkup(row_width=1)
     for offer in offers:
         slot_key = offer['slot_key']
@@ -274,7 +274,7 @@ def build_common_equipment_slot_choice_text(user_id, slot_key):
     else:
         title = '⚪ Базове спорядження'
         description = 'Оберіть предмет.'
-    text = f'{title}\n\n💰 Твоє золото: {format_gold(gold)}\n\n{description}\n\nДоступні варіанти:'
+    text = f'{float(title):.2f}\n\n💰 Золото: {float(gold):.2f}\n\n{float(description):.2f}\n\nДоступні варіанти:'
     kb = types.InlineKeyboardMarkup(row_width=1)
     for offer in offers:
         hands_text = ''
@@ -383,7 +383,7 @@ def build_common_shop_preview_text(user_id, item_id):
             text += f'• {bonus}\n'
     else:
         text += '\n📊 Бонуси: немає\n'
-    text += f'\n💳 Ціна: {format_gold(price)}\n💰 Твоє золото: {format_gold(gold)}\n\nКупити цей предмет?'
+    text += f'\n💳 Ціна: {float(price):.2f}\n💰 Золото: {float(gold):.2f}\n\nКупити цей предмет?'
     kb = types.InlineKeyboardMarkup()
     kb.add(types.InlineKeyboardButton(text=f'✅ Купити за {format_gold(price)}', callback_data=f'common_shop_confirm:{item_id}'))
     kb.add(types.InlineKeyboardButton(text='❌ Скасувати', callback_data=f'common_shop_cancel:{item_id}'))
@@ -393,7 +393,7 @@ def build_sell_equipment_list_text(user_id, page=0):
     items = get_sellable_equipment_items(user_id)
     gold = get_wallet(user_id)
     if not items:
-        text = f'🧰 Продаж спорядження\n\n💰 Твоє золото: {format_gold(gold)}\n\nУ тебе немає невдягненого спорядження для продажу.\n\nℹ️ Вдягнені речі не показуються у цьому списку.'
+        text = f'🧰 Продаж спорядження\n\n💰 Золото: {float(gold):.2f}\n\nУ тебе немає невдягненого спорядження для продажу.\n\nℹ️ Вдягнені речі не показуються у цьому списку.'
         kb = types.InlineKeyboardMarkup()
         return (text, kb)
     total_items = len(items)
@@ -405,7 +405,7 @@ def build_sell_equipment_list_text(user_id, page=0):
     start = page * SELL_EQUIPMENT_ITEMS_PER_PAGE
     end = start + SELL_EQUIPMENT_ITEMS_PER_PAGE
     page_items = items[start:end]
-    text = f'🧰 Продаж спорядження\n\n💰 Твоє золото: {format_gold(gold)}\n\nТорговець готовий купити невдягнені речі з твого інвентаря.\nВдягнене спорядження продавати не можна.\n\n📄 Сторінка: {page + 1}/{total_pages}\n\nОберіть предмет:'
+    text = f'🧰 Продаж спорядження\n\n💰 Золото: {float(gold):.2f}\n\nТорговець готовий купити невдягнені речі з твого інвентаря.\nВдягнене спорядження продавати не можна.\n\n📄 Сторінка: {float(page + 1):.2f}/{float(total_pages):.2f}\n\nОберіть предмет:'
     kb = types.InlineKeyboardMarkup()
     for item in page_items:
         inv_id, item_id, name, type_, rarity, category, slot_key, weapon_hands, quantity, max_stack, durability, b_str, b_dex, b_int, b_wis, b_sta, pdef, mdef, sell_price = item
