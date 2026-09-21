@@ -4,6 +4,27 @@ from data.mobs import get_mobs_for_location
 from db import EQUIPMENT_SLOTS, get_current_location, get_player_stats, get_current_hp, get_max_hp, get_user_energy, get_inventory_used_slots, get_bag_capacity, get_contract_status, sell_all_trash, buy_item_for_gold, get_equipped_items_for_repair, get_total_repair_cost, repair_all_equipped, repair_equipped_item, get_wallet, format_gold, get_common_equipment_shop_offer, get_common_equipment_shop_suboffers, create_common_equipment_shop_preview, get_shop_preview_item, get_shop_preview_weapon_damage_text, confirm_common_equipment_shop_preview, cancel_common_equipment_shop_preview, get_sellable_equipment_items, sell_inventory_item_to_trader, get_item_by_inventory_id_full, get_armor_type_label, get_item_subtype_label, is_armor_slot, process_passive_regeneration
 from keyboards import city_kb, trader_kb, craft_kb, guild_kb, townhall_kb, tavern_kb, alchemist_kb, blacksmith_kb, main_kb
 from systems.potion_system import POTIONS, ALCHEMIST_SHOP, get_alchemist_potion_stock_17_19_3, buy_alchemist_potion_17_19_3, sell_alchemist_potion_17_19_3
+
+
+def _format_registration_date_kyiv_18_31_4a(value):
+    """Render canonical UTC registration time in Europe/Kyiv."""
+    from datetime import datetime, timezone
+    from zoneinfo import ZoneInfo
+    raw = str(value or "").strip()
+    if not raw or raw == "не зафіксована":
+        return "не зафіксована"
+    moment = None
+    try:
+        moment = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except Exception:
+        try:
+            moment = datetime.strptime(raw.removesuffix(" UTC"), "%d.%m.%Y %H:%M")
+            moment = moment.replace(tzinfo=timezone.utc)
+        except Exception:
+            return "не зафіксована"
+    if moment.tzinfo is None:
+        moment = moment.replace(tzinfo=timezone.utc)
+    return moment.astimezone(ZoneInfo("Europe/Kyiv")).strftime("%d.%m.%Y %H:%M за Києвом")
 SELL_EQUIPMENT_ITEMS_PER_PAGE = 10
 TRADE_DISTRICT_BACK_BUTTON_17_11_1 = '🔙 Торговий ряд'
 TRADE_DISTRICT_CITY_BUTTON_17_11_1 = '⬅️ Місто'
@@ -1167,7 +1188,7 @@ def build_main_menu_text(user_id, show_location_description=False):
     text = _BUILD_MAIN_MENU_TEXT_BEFORE_EXP_BONUS_STATUS_17_30_1_1(user_id, show_location_description=show_location_description)
     from systems.timed_exp_bonus_system import get_exp_bonus_account_summary
     summary = get_exp_bonus_account_summary(user_id)
-    lines = [f'🆔 ID: {int(user_id)}', f"📅 Дата реєстрації: {_format_account_utc_17_30_1_1(summary.get('registered_at'))}"]
+    lines = [f'🆔 ID: {int(user_id)}', f"📅 Дата реєстрації: {_format_registration_date_kyiv_18_31_4a(_format_account_utc_17_30_1_1(summary.get('registered_at')))}"]
     if summary.get('active'):
         lines.extend(['💎 Premium: активний', '📈 Бонус за вбивство мобів: +25% EXP', f"⏳ Діє до: {_format_account_utc_17_30_1_1(summary.get('expires_at'))}"])
     else:
@@ -1194,7 +1215,7 @@ def register_city_handlers(bot):
 def build_account_menu_text_17_30_1_4(user_id):
     from systems.timed_exp_bonus_system import get_exp_bonus_account_summary
     summary = get_exp_bonus_account_summary(user_id)
-    lines = ['📋 Меню', '', f'🆔 ID: {int(user_id)}', f"📅 Дата реєстрації: {_format_account_utc_17_30_1_1(summary.get('registered_at'))}"]
+    lines = ['📋 Меню', '', f'🆔 ID: {int(user_id)}', f"📅 Дата реєстрації: {_format_registration_date_kyiv_18_31_4a(_format_account_utc_17_30_1_1(summary.get('registered_at')))}"]
     if summary.get('active'):
         lines.extend(['💎 Premium: активний', '📈 Бонус за вбивство мобів: +25% EXP', f"⏳ Діє до: {_format_account_utc_17_30_1_1(summary.get('expires_at'))}"])
     else:
