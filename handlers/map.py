@@ -95,6 +95,9 @@ def _travel_start_busy(bot,user_id):
     return None
 
 def register_map_handlers(bot):
+    @bot.message_handler(func=lambda m:m.text in ("🗺️ Мапа","🔙 Мапа"))
+    def show_map(message):
+        bot.send_message(message.chat.id,"🗺️ Мапу відкрито.",reply_markup=map_kb());render_map_message(bot,message.chat.id,message.from_user.id)
 
     @bot.message_handler(func=lambda m:m.text==MAP_COLLAPSE_BUTTON)
     def collapse_map(message):

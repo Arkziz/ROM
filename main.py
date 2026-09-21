@@ -189,7 +189,6 @@ PRODUCTION_LOG_PRINT(
     f'✅ SEASONAL EVENTS: modules={len(_loaded_event_modules)}, handlers={len(_registered_event_handler_keys)}',
 )
 
-register_map_handlers(bot)
 register_crystal_shop_handlers(bot)
 register_admin_crystal_credit_handlers(bot)
 register_player_rankings_handlers(bot)
@@ -201,6 +200,7 @@ register_inventory_handlers(bot)
 register_fatigue_artifact_handlers(bot)
 register_combat_handlers(bot)
 register_dev_handlers(bot)
+register_map_handlers(bot)
 register_blacksmith_repair_confirmation_handlers(bot)
 register_blacksmith_repair_hotfix_handlers(bot)
 register_about_game_handlers(bot)

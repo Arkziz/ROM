@@ -143,7 +143,7 @@ def _send_arrival(bot,result):
         from handlers.map import build_map_inline_kb
         text=f"✅ Подорож завершено\n\nТи прибув у локацію:\n{WORLD_NODES[result['to_node']]['name']}"
         bot.send_message(int(result['user_id']),text,reply_markup=_arrival_keyboard(result['to_node']))
-        bot.send_message(int(result['user_id']),"🗺️ Мапа світу\n\nДоступні напрямки:",reply_markup=build_map_inline_kb(int(result['user_id'])))
+        bot.send_message(int(result['user_id']),"🗺️ Доступні напрямки:",reply_markup=build_map_inline_kb(int(result['user_id'])))
         return True
     except Exception:
         return False
