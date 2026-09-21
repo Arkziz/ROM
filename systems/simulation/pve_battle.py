@@ -62,9 +62,16 @@ class ExactPveBattleEngine:
         if class_key=="knight" and player.hp/player.max_hp<0.60:
             x=next((s for s in available if s.get("effect")=="player_shield" and "knight_shield" not in player.effects),None)
             if x:return x
-        if class_key in {"warrior","scout"}:
-            x=next((s for s in available if s.get("effect") in {"enemy_pdef_down","enemy_pdef_trap"} and not any("pdef" in k for k in mob.effects)),None)
-            if x:return x
+        if class_key=="warrior":
+            finisher=next((s for s in available if s.get("scales_with_spent_rage")),None)
+            if finisher:return finisher
+            suppression=next((s for s in available if s.get("effect")=="enemy_pdef_down" and "warrior_pdef" not in mob.effects),None)
+            if suppression:return suppression
+        if class_key=="scout":
+            trap=next((s for s in available if s.get("effect")=="enemy_pdef_trap" and "scout_pdef" not in mob.effects),None)
+            if trap:return trap
+            poison=next((s for s in available if s.get("effect")=="enemy_poison" and "enemy_poison" not in mob.effects and mob.hp>max(1,int(round(mob.max_hp*.35)))),None)
+            if poison:return poison
         if class_key=="rogue" and player.combo>=3:
             x=next((s for s in available if s.get("scales_with_combo")),None)
             if x:return x
