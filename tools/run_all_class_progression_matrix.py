@@ -65,7 +65,7 @@ def run_matrix(target_level=2,seed=3,max_days=365):
  return data
 def main():
  p=argparse.ArgumentParser();p.add_argument('--target-level',type=int,default=2);p.add_argument('--seed',type=int,default=3);p.add_argument('--max-days',type=int,default=365);a=p.parse_args()
- if a.target_level not in (2,10):raise SystemExit('Matrix runner supports target levels 2 and 10 only')
+ if a.target_level not in (2,5,10):raise SystemExit('Matrix runner supports target levels 2, 5, and 10 only')
  data=run_matrix(a.target_level,a.seed,a.max_days);out=ROOT/'reports'/'simulation';out.mkdir(parents=True,exist_ok=True);stem=f'stage_18_30_all_class_level_1_to_{a.target_level}_seed_{a.seed}';jp=out/(stem+'.json');xp=out/(stem+'.xlsx');jp.write_text(json.dumps(data,ensure_ascii=False,indent=2,sort_keys=True)+'\n',encoding='utf-8');write_xlsx(data,xp)
  print(f"[PASS] all-class matrix checks: {data['check_count']}");print('[REPORT] '+str(jp.relative_to(ROOT)));print('[REPORT] '+str(xp.relative_to(ROOT)));return 0
 if __name__=='__main__':raise SystemExit(main())
