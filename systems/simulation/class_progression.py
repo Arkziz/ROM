@@ -163,6 +163,8 @@ def _result_payload(request: ClassProgressionRequest, result: Any, project_root:
     payload["economy"] = economy_equipment["gold"]
     payload["resources"] = economy_equipment["resources"]
     payload["loot_lifecycle"] = economy_equipment["loot_lifecycle"]
+    payload["equipment_details"] = economy_equipment["equipment_details"]
+    payload["equipment_summary"] = economy_equipment["equipment_summary"]
     payload["final_loadout"] = economy_equipment["final_loadout"]
     if payload["target_reached"] and final_level != target:
         raise RuntimeError("Progression simulator advanced beyond the requested target level")

@@ -49,10 +49,18 @@ def write_xlsx(data,path):
  for cls,x in data['results'].items():
   for i in x['final_loadout']:eq.append([cls,i['simulation_item_id'],i.get('slot_uk') or i['slot_key'],i.get('name_uk') or i['name'],i.get('rarity_uk') or i['rarity'],i['item_level'],i['refine_level'],i['durability'],'; '.join(f"{r['stat']} {r['level']} [slot {r['slot_index']}]" for r in i.get('runes',[]))])
  style(eq,'MatrixEquipmentTable')
- loot=wb.create_sheet('Resources');loot.append(['class','item_id','name','found','equipped','sold','used_or_transformed','remaining','sale_gold'])
+ loot=wb.create_sheet('Loot Details');loot.append(['class','item_id','name','category','slot','item_level','rarity','armor_type','stats','found','equipped','sold','used_or_transformed','remaining','sale_gold'])
  for cls,x in data['results'].items():
-  for i in x['loot_lifecycle']:loot.append([cls,i['item_id'],i.get('name_uk') or i.get('name_raw'),i['found'],i['equipped'],i['sold'],i['used_or_transformed'],i['remaining'],i.get('sale_gold',0.0)])
- style(loot,'MatrixResourcesTable')
+  for i in x['loot_lifecycle']:loot.append([cls,i['item_id'],i.get('name_uk') or i.get('name_raw'),i.get('category'),i.get('slot_uk') or i.get('slot_key'),i.get('item_level'),i.get('rarity_uk') or i.get('rarity'),i.get('armor_type_uk') or i.get('armor_type'),json.dumps(i.get('stats',{}),ensure_ascii=False,sort_keys=True),i['found'],i['equipped'],i['sold'],i['used_or_transformed'],i['remaining'],i.get('sale_gold',0.0)])
+ style(loot,'MatrixLootDetailsTable')
+ eqs=wb.create_sheet('Equipment Summary');eqs.append(['class','slot','rarity','item_level','armor_type','found','equipped','sold','used_or_transformed','remaining','sale_gold'])
+ for cls,x in data['results'].items():
+  for i in x.get('equipment_summary',[]):eqs.append([cls,i.get('slot_uk') or i.get('slot_key'),i.get('rarity_uk') or i.get('rarity'),i.get('item_level'),i.get('armor_type_uk') or i.get('armor_type'),i.get('found',0),i.get('equipped',0),i.get('sold',0),i.get('used_or_transformed',0),i.get('remaining',0),i.get('sale_gold',0.0)])
+ style(eqs,'MatrixEquipmentSummaryTable')
+ eqd=wb.create_sheet('Equipment Details');eqd.append(['class','item_id','name','slot','rarity','item_level','armor_type','stats','found','equipped','sold','remaining','sale_gold'])
+ for cls,x in data['results'].items():
+  for i in x.get('equipment_details',[]):eqd.append([cls,i.get('item_id'),i.get('name_uk') or i.get('name_raw'),i.get('slot_uk') or i.get('slot_key'),i.get('rarity_uk') or i.get('rarity'),i.get('item_level'),i.get('armor_type_uk') or i.get('armor_type'),json.dumps(i.get('stats',{}),ensure_ascii=False,sort_keys=True),i.get('found',0),i.get('equipped',0),i.get('sold',0),i.get('remaining',0),i.get('sale_gold',0.0)])
+ style(eqd,'MatrixEquipmentDetailsTable')
  val=wb.create_sheet('Validation');val.append(['check','status'])
  for c in data['checks']:val.append([c['name'],c['status']])
  style(val,'MatrixValidationTable');wb.save(path)

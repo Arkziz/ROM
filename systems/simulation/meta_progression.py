@@ -74,7 +74,10 @@ class SimulationMetaProgressionService:
   if not d.completed or d.claimed:return False
   a=self._add(DAILY_REWARD_ITEM_ID,'Small HP potion','potion',DAILY_REWARD_QUANTITY,99)
   b=self._add(FIRIUS_TOKEN_ITEM_ID,'Firius Token','material',DAILY_FIRIUS_TOKENS,999)
-  if a.lost or b.lost:return False
+  if a.lost or b.lost:
+   if a.awarded and not self._consume(DAILY_REWARD_ITEM_ID,a.awarded):raise RuntimeError('daily potion rollback failed')
+   if b.awarded and not self._consume(FIRIUS_TOKEN_ITEM_ID,b.awarded):raise RuntimeError('daily token rollback failed')
+   return False
   d.claimed=True;return True
  def claim_contract(self):
   c=self.state.contract
