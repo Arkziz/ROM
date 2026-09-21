@@ -1,0 +1,10 @@
+{
+  "stage": "18.31.1e",
+  "status": "PASS",
+  "generated_at": "2026-09-21T21:14:05.728887+00:00",
+  "root_cause": "The final compatibility wrapper returned a string while show_blacksmith unpacks text and keyboard.",
+  "solution": "Normalize the canonical owner result with _normalize_text_kb_result and blacksmith_kb.",
+  "changed_file": "handlers/city.py",
+  "database_changed": false,
+  "manual_check_required": true
+}

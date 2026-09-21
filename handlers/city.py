@@ -1093,7 +1093,10 @@ def build_townhall_text(*args, **kwargs):
     return _remove_static_actions_block_17_11_2(_BASE_BUILD_TOWNHALL_TEXT_17_11_2(*args, **kwargs))
 
 def build_blacksmith_text(*args, **kwargs):
-    return _BASE_BUILD_BLACKSMITH_TEXT_17_11_2(*args, **kwargs)
+    return _normalize_text_kb_result(
+        _BASE_BUILD_BLACKSMITH_TEXT_17_11_2(*args, **kwargs),
+        blacksmith_kb(),
+    )
 
 def location_description_kb_17_11_2(expanded=False):
     kb = types.InlineKeyboardMarkup(row_width=1)
