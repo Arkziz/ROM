@@ -1,0 +1,18 @@
+{
+  "stage": "18.31.1a",
+  "status": "PASS",
+  "generated_at": "2026-09-21T19:58:11.190943+00:00",
+  "root_cause": "Migration 046 required item 501 before main startup seeded it; migration runner stopped before 049, leaving location_travels absent.",
+  "solution": "Ordered migration 045a seeds item 501 after namespace migration 030 and before 046; 044 remains owner of item 504; 049 remains owner of location_travels. The isolated regression mirrors main.py and does not call seed_items before migrations.",
+  "production_files_changed": [
+    "migrations/045a_seed_new_path_sphere_dependency.py"
+  ],
+  "production_database_touched": false,
+  "manual_check_required": true,
+  "manual_check": [
+    "Start main.py on the current partially bootstrapped fresh database.",
+    "Confirm migrations 045a through 051 apply and LOCATION TRAVEL RECOVERY reports success.",
+    "Stop and start main.py a second time; confirm no migration error or traceback.",
+    "Continue full Stage 18 manual acceptance on the clean database."
+  ]
+}
