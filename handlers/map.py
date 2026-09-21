@@ -37,10 +37,10 @@ def build_location_info_text(location_id,player_level):
 def build_world_map_text(user_id):
     active=get_active_travel(user_id)
     if active:
-        return ("🚶 Триває подорож\n\n"+f"{_node_name(active['from_node'])}\n→ {_node_name(active['to_node'])}\n\n"+f"⏱️ Залишилося: {_remaining_seconds(active)} сек.\n\n"+"Поточне місцезнаходження зміниться лише після прибуття.")
+        return ("🚶 Триває подорож\n\n"+f"{_node_name(active['from_node'])}\n→ {_node_name(active['to_node'])}\n\n"+f"⏱️ Залишилося: {_remaining_seconds(active)} секунд\n\n"+"Пункт призначення стане поточною локацією після прибуття.")
     node=get_current_location(user_id) or CITY_NODE; level=get_player_level_from_stats(user_id)
     if node==CITY_NODE:
-        return "🗺️ Мапа світу\n\n📍 Поточне місцезнаходження:\n🏙️ Місто\n\nДоступний напрямок:\n• 🌿 Початок Шляху"
+        return "🗺️ Мапа світу\n\n📍 Поточна локація:\n🏙️ Місто\n\nДоступні напрямки:\n• 🌿 Початок Шляху"
     location=get_location(node)
     return ("🗺️ Мапа світу\n\n📍 Поточна локація:\n"+f"{location['name']}\n\n👤 Твій рівень: {level}\n\n📖 {location['description']}")
 
@@ -66,7 +66,7 @@ def build_map_inline_kb(user_id):
 
 def build_travel_preview_text(user_id,target):
     source=get_current_location(user_id) or CITY_NODE
-    return ("🚶 Подорож\n\n"+f"Звідки: {_node_name(source)}\n"+f"Куди: {_node_name(target)}\n\n"+f"⏱️ Час у дорозі: {TRAVEL_SECONDS} секунд\n\n"+"Місцезнаходження зміниться тільки після завершення подорожі.")
+    return ("🚶 Подорож\n\n"+f"Звідки: {_node_name(source)}\n"+f"Куди: {_node_name(target)}\n\n"+f"⏱️ Час у дорозі: {TRAVEL_SECONDS} секунд\n\n"+"Поточна локація зміниться лише після завершення подорожі.")
 
 def build_travel_preview_kb(target):
     kb=types.InlineKeyboardMarkup(row_width=1)
@@ -97,7 +97,7 @@ def _travel_start_busy(bot,user_id):
 def register_map_handlers(bot):
     @bot.message_handler(func=lambda m:m.text in ("🗺️ Мапа","🔙 Мапа"))
     def show_map(message):
-        bot.send_message(message.chat.id,"🗺️ Мапу відкрито.",reply_markup=map_kb());render_map_message(bot,message.chat.id,message.from_user.id)
+        pass
 
     @bot.message_handler(func=lambda m:m.text==MAP_COLLAPSE_BUTTON)
     def collapse_map(message):
