@@ -50,7 +50,7 @@ _NPC_DEFINITIONS = (
         city_section_id="townhall",
         city_section_label="🏛️ Ратуша",
         route_labels=("🏙️ Місто", "🏛️ Ратуша", "🗣️ Староста"),
-        production_route_exists=False,
+        production_route_exists=True,
     ),
     StoryQuestNpcDefinition(
         npc_id="mercenary_head",
@@ -62,7 +62,7 @@ _NPC_DEFINITIONS = (
         route_labels=(
             "🏙️ Місто", "📜 Гільдія Найманців", "⚔️ Голова Найманців"
         ),
-        production_route_exists=False,
+        production_route_exists=True,
     ),
     StoryQuestNpcDefinition(
         npc_id="blacksmith",
@@ -114,7 +114,7 @@ _NPC_DEFINITIONS = (
         city_section_id="tavern",
         city_section_label="🍺 Таверна",
         route_labels=("🏙️ Місто", "🍺 Таверна", "🍺 Бармен"),
-        production_route_exists=False,
+        production_route_exists=True,
     ),
 )
 

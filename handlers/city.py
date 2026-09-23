@@ -1200,7 +1200,85 @@ def build_main_menu_text(user_id, show_location_description=False):
     return title + '\n\n' + block + '\n\n' + text
 _REGISTER_CITY_HANDLERS_BEFORE_MAIN_MENU_RECOVERY_17_30_1_3 = register_city_handlers
 
+from keyboards import elder_kb, mercenary_head_kb, bartender_kb
+from data.story_quest_npcs import get_story_quest_npc
+
+
+def _build_story_npc_placeholder_text(npc_id, description):
+    """Build an informational NPC screen before production quest content exists."""
+    npc = get_story_quest_npc(npc_id)
+    return (
+        f"{npc.button_label}\n\n{description}\n\n"
+        "📜 Сюжетні доручення цього персонажа з'являться після додавання "
+        "першого production-пакета квестів."
+    )
+
+
+def build_story_elder_text():
+    """Render the Elder in Town Hall without duplicating quest lifecycle logic."""
+    return _build_story_npc_placeholder_text(
+        "elder",
+        "Староста переглядає звіти варти, прохання мешканців і карти околиць.",
+    )
+
+
+def build_story_mercenary_head_text():
+    """Render the Mercenary Head in the Guild without enabling boss calls yet."""
+    return _build_story_npc_placeholder_text(
+        "mercenary_head",
+        "Голова Найманців стежить за контрактами та небезпеками навколо міста.",
+    )
+
+
+def build_story_bartender_text():
+    """Render the Bartender in the Tavern without enabling quest acceptance yet."""
+    return _build_story_npc_placeholder_text(
+        "bartender",
+        "Бармен слухає розмови мандрівників і збирає чутки з навколишніх земель.",
+    )
+
+
 def register_city_handlers(bot):
+    @bot.message_handler(func=lambda m: getattr(m, "text", None) == "🗣️ Староста")
+    def show_story_elder(message):
+        bot.send_message(
+            message.chat.id,
+            build_story_elder_text(),
+            reply_markup=elder_kb(),
+        )
+
+    @bot.message_handler(func=lambda m: getattr(m, "text", None) == "⚔️ Голова Найманців")
+    def show_story_mercenary_head(message):
+        bot.send_message(
+            message.chat.id,
+            build_story_mercenary_head_text(),
+            reply_markup=mercenary_head_kb(),
+        )
+
+    @bot.message_handler(func=lambda m: getattr(m, "text", None) == "🍺 Бармен")
+    def show_story_bartender(message):
+        bot.send_message(
+            message.chat.id,
+            build_story_bartender_text(),
+            reply_markup=bartender_kb(),
+        )
+
+    @bot.message_handler(func=lambda m: getattr(m, "text", None) == "🔙 Ратуша")
+    def back_to_story_townhall(message):
+        bot.send_message(message.chat.id, build_townhall_text(), reply_markup=townhall_kb())
+
+    @bot.message_handler(func=lambda m: getattr(m, "text", None) == "🔙 Гільдія Найманців")
+    def back_to_story_mercenary_guild(message):
+        bot.send_message(
+            message.chat.id,
+            build_guild_district_text(message.from_user.id),
+            reply_markup=guild_kb(),
+        )
+
+    @bot.message_handler(func=lambda m: getattr(m, "text", None) == "🔙 Таверна")
+    def back_to_story_tavern(message):
+        bot.send_message(message.chat.id, build_tavern_text(), reply_markup=tavern_kb())
+
     _REGISTER_CITY_HANDLERS_BEFORE_MAIN_MENU_RECOVERY_17_30_1_3(bot)
 
     @bot.message_handler(func=lambda message: str(getattr(message, 'text', '') or '') == '📋 Меню')

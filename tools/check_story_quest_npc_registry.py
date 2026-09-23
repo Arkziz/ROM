@@ -40,15 +40,13 @@ def main():
     elder = get_story_quest_npc("elder")
     assert elder.display_name == "Староста"
     assert elder.city_section_id == "townhall"
-    assert not elder.production_route_exists
+    assert elder.production_route_exists
     bartender = resolve_story_quest_navigation("bartender")
     assert bartender["route_text"] == "🏙️ Місто → 🍺 Таверна → 🍺 Бармен"
     assert bartender["route_labels"][-1] == bartender["button_label"]
 
     missing = get_missing_story_quest_npc_routes()
-    assert {npc.npc_id for npc in missing} == {
-        "elder", "mercenary_head", "bartender"
-    }
+    assert missing == ()
     assert all(STORY_QUEST_NPCS[key].production_route_exists for key in {
         "blacksmith", "alchemist", "rune_master", "trader"
     })

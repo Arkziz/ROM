@@ -83,6 +83,7 @@ def alchemist_kb():
 
 def guild_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("⚔️ Голова Найманців")
     kb.add("📜 Контракти")
     kb.add("🔙 Місто")
     return kb
@@ -96,6 +97,7 @@ def contracts_kb():
 
 def townhall_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("🗣️ Староста")
     kb.add("📆 Щоденне завдання")
     kb.add("🔙 Місто")
     return kb
@@ -103,7 +105,30 @@ def townhall_kb():
 
 def tavern_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("🍺 Бармен")
     kb.add("🔙 Місто")
+    return kb
+
+
+
+def elder_kb():
+    """Return from the Elder screen to the canonical Town Hall screen."""
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("🔙 Ратуша")
+    return kb
+
+
+def mercenary_head_kb():
+    """Return from the Mercenary Head to the canonical Mercenary Guild screen."""
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("🔙 Гільдія Найманців")
+    return kb
+
+
+def bartender_kb():
+    """Return from the Bartender screen to the canonical Tavern screen."""
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("🔙 Таверна")
     return kb
 
 
