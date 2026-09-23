@@ -90,9 +90,9 @@ def build_story_quest_detail_keyboard(
     if not quest_key:
         raise StoryQuestUiError("quest_id is required")
     rows = []
-    if status == "AVAILABLE":
-        rows.append([_button("✅ Прийняти", build_story_quest_callback("accept", quest_key))])
-    if status == "ACTIVE":
+    # The journal is a guide, not a remote quest giver. Both AVAILABLE and
+    # ACTIVE quests expose navigation, while acceptance remains owned by NPC UI.
+    if status in {"AVAILABLE", "ACTIVE"}:
         rows.append([_button("🧭 Куди йти", build_story_quest_callback("navigate", quest_key))])
     rows.append([_button("🔙 До журналу", build_story_quest_callback("page", str(max(0, int(page)))))])
     return rows
@@ -168,3 +168,77 @@ def render_story_quest_detail(item: Mapping, *, page: int = 0) -> dict:
             quest_id=quest_id, status=status, page=page,
         ),
     }
+
+
+
+def _inline_markup(rows):
+    """Convert pure descriptors to telebot markup only at the delivery boundary."""
+    from telebot import types
+
+    markup = types.InlineKeyboardMarkup()
+    for row in rows:
+        markup.row(*[
+            types.InlineKeyboardButton(
+                text=button["text"], callback_data=button["callback_data"]
+            )
+            for button in row
+        ])
+    return markup
+
+
+def _send_empty_story_journal(bot, chat_id):
+    """Show the safe empty journal until reviewed production content exists."""
+    snapshot = render_story_quest_journal([])
+    bot.send_message(
+        chat_id,
+        snapshot["text"],
+        reply_markup=_inline_markup(snapshot["keyboard"]),
+    )
+
+
+def register_story_quest_handlers(bot):
+    """Register the Profile journal route before broad downstream handlers.
+
+    Stage 19.10 intentionally supports only open, refresh, and Profile return.
+    Acceptance, navigation resolution, NPC interaction, and DB mutations remain
+    unavailable until canonical production content and NPC registry exist.
+    """
+    from handlers.profile import send_profile_root
+
+    @bot.message_handler(
+        func=lambda message: getattr(message, "text", None) == STORY_QUEST_BUTTON_TEXT
+    )
+    def story_quest_profile_reply(message):
+        _send_empty_story_journal(bot, message.chat.id)
+
+    @bot.callback_query_handler(
+        func=lambda call: str(getattr(call, "data", "") or "").startswith(
+            STORY_QUEST_CALLBACK_PREFIX
+        )
+    )
+    def story_quest_callback(call):
+        try:
+            parsed = parse_story_quest_callback(call.data)
+            if parsed.action in {"refresh", "page"}:
+                bot.answer_callback_query(call.id)
+                snapshot = render_story_quest_journal([])
+                bot.edit_message_text(
+                    snapshot["text"],
+                    call.message.chat.id,
+                    call.message.message_id,
+                    reply_markup=_inline_markup(snapshot["keyboard"]),
+                )
+                return
+            if parsed.action == "profile":
+                bot.answer_callback_query(call.id)
+                send_profile_root(bot, call.message.chat.id, call.from_user.id)
+                return
+            bot.answer_callback_query(
+                call.id,
+                "Ця дія стане доступною після додавання сюжетних квестів.",
+                show_alert=True,
+            )
+        except StoryQuestUiError:
+            bot.answer_callback_query(
+                call.id, "Некоректна дія журналу квестів.", show_alert=True
+            )

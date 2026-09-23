@@ -63,7 +63,7 @@ def main():
     completed = build_story_quest_detail_keyboard(
         quest_id="q4", status="COMPLETED", page=0,
     )
-    assert available[0][0]["callback_data"] == "story_quest:accept:q2"
+    assert available[0][0]["callback_data"] == "story_quest:navigate:q2"
     assert active[0][0]["callback_data"] == "story_quest:navigate:q3"
     assert len(completed) == 1
     detail = render_story_quest_detail(items[2])
