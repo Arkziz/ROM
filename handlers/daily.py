@@ -6,7 +6,7 @@ from db import (
     reset_daily_quest_if_needed
 )
 
-from keyboards import townhall_kb
+from keyboards import daily_quest_kb
 
 
 # ==============================
@@ -77,10 +77,12 @@ def register_daily_handlers(bot):
             reply_markup=kb
         )
 
+        # Replace the section keyboard with a focused return action, matching
+        # the dedicated NPC screens introduced in Stage 19.12.
         bot.send_message(
             message.chat.id,
             "🏛️ Ви знаходитесь у Ратуші.",
-            reply_markup=townhall_kb()
+            reply_markup=daily_quest_kb()
         )
 
     @bot.callback_query_handler(func=lambda call: call.data == "daily_claim_reward")
@@ -94,7 +96,7 @@ def register_daily_handlers(bot):
         bot.send_message(
             call.message.chat.id,
             result["message"],
-            reply_markup=townhall_kb()
+            reply_markup=daily_quest_kb()
         )
 
         text, kb = build_daily_quest_text(user_id)

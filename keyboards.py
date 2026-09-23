@@ -111,6 +111,14 @@ def tavern_kb():
 
 
 
+
+def daily_quest_kb():
+    """Keep Daily Quest inside Town Hall with one explicit return action."""
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("🔙 Ратуша")
+    return kb
+
+
 def elder_kb():
     """Return from the Elder screen to the canonical Town Hall screen."""
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
