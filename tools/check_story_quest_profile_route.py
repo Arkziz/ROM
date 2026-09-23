@@ -46,6 +46,8 @@ def main():
     assert "accept_story_quest" not in registration_text
     assert "complete_active_story_quest" not in registration_text
     assert "send_profile_root" in registration_text
+    assert "_edit_story_journal_safely" in registration_text
+    assert "message is not modified" in story_source
 
     assert "from handlers.story_quests import register_story_quest_handlers" in main_source
     profile_position = main_source.index("register_profile_handlers(bot)")

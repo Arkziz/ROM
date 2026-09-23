@@ -196,6 +196,31 @@ def _send_empty_story_journal(bot, chat_id):
     )
 
 
+
+def _edit_story_journal_safely(bot, *, chat_id, message_id, text, reply_markup):
+    """Edit the journal while treating Telegram's identical-content 400 as success.
+
+    Refresh may legitimately reproduce the same text and keyboard. Telegram
+    rejects that no-op edit with HTTP 400, but the journal is already current.
+    Only that exact condition is suppressed; every unrelated API error remains
+    visible to the polling/recovery layer.
+    """
+    from telebot.apihelper import ApiTelegramException
+
+    try:
+        bot.edit_message_text(
+            text,
+            chat_id,
+            message_id,
+            reply_markup=reply_markup,
+        )
+        return True
+    except ApiTelegramException as error:
+        description = str(error).casefold()
+        if "message is not modified" in description:
+            return False
+        raise
+
 def register_story_quest_handlers(bot):
     """Register the Profile journal route before broad downstream handlers.
 
@@ -220,13 +245,17 @@ def register_story_quest_handlers(bot):
         try:
             parsed = parse_story_quest_callback(call.data)
             if parsed.action in {"refresh", "page"}:
-                bot.answer_callback_query(call.id)
                 snapshot = render_story_quest_journal([])
-                bot.edit_message_text(
-                    snapshot["text"],
-                    call.message.chat.id,
-                    call.message.message_id,
+                changed = _edit_story_journal_safely(
+                    bot,
+                    chat_id=call.message.chat.id,
+                    message_id=call.message.message_id,
+                    text=snapshot["text"],
                     reply_markup=_inline_markup(snapshot["keyboard"]),
+                )
+                bot.answer_callback_query(
+                    call.id,
+                    "Журнал оновлено." if changed else "Журнал уже актуальний.",
                 )
                 return
             if parsed.action == "profile":
