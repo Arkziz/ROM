@@ -1,0 +1,170 @@
+"""Pure UI foundation for the ROM story-quest journal.
+
+This module intentionally registers no Telegram handlers. Stage 19.10 will wire
+its canonical builders into Profile after a focused production-route mutation.
+Keeping rendering pure makes empty, active and history states testable without
+starting the bot or touching production game.db.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Iterable, Mapping, Optional, Sequence
+
+STORY_QUEST_BUTTON_TEXT = "📜 Квести"
+STORY_QUEST_CALLBACK_PREFIX = "story_quest:"
+STORY_QUEST_PAGE_SIZE = 10
+STATUS_LABELS = {
+    "LOCKED": "🔒 Недоступний",
+    "AVAILABLE": "✨ Доступний",
+    "ACTIVE": "📖 Активний",
+    "COMPLETED": "✅ Виконаний",
+    "SKIPPED": "⏭️ Пропущений",
+}
+
+
+class StoryQuestUiError(ValueError):
+    """A callback or UI snapshot violates the story-journal contract."""
+
+
+@dataclass(frozen=True)
+class StoryQuestCallback:
+    """Validated callback payload decoded from the story-quest namespace."""
+
+    action: str
+    value: str = ""
+
+
+def build_story_quest_callback(action: str, value: str = "") -> str:
+    """Build a compact namespaced callback accepted by the future handler."""
+    action_key = str(action or "").strip().lower()
+    value_key = str(value or "").strip()
+    if not action_key or ":" in action_key or ":" in value_key:
+        raise StoryQuestUiError("invalid story quest callback component")
+    payload = f"{STORY_QUEST_CALLBACK_PREFIX}{action_key}"
+    if value_key:
+        payload += f":{value_key}"
+    if len(payload.encode("utf-8")) > 64:
+        raise StoryQuestUiError("story quest callback exceeds Telegram limit")
+    return payload
+
+
+def parse_story_quest_callback(payload: str) -> StoryQuestCallback:
+    """Fail closed for callbacks outside the canonical namespace."""
+    raw = str(payload or "")
+    if not raw.startswith(STORY_QUEST_CALLBACK_PREFIX):
+        raise StoryQuestUiError("foreign callback namespace")
+    parts = raw[len(STORY_QUEST_CALLBACK_PREFIX):].split(":")
+    if not parts or not parts[0] or len(parts) > 2:
+        raise StoryQuestUiError("invalid story quest callback")
+    return StoryQuestCallback(parts[0], parts[1] if len(parts) == 2 else "")
+
+
+def _button(text: str, callback_data: str) -> dict:
+    """Return a Telegram-library-neutral inline button descriptor."""
+    return {"text": str(text), "callback_data": str(callback_data)}
+
+
+def build_story_quest_journal_keyboard(
+    *, page: int, has_previous: bool, has_next: bool,
+) -> list[list[dict]]:
+    """Build deterministic journal navigation with canonical Profile return."""
+    current = max(0, int(page))
+    rows = []
+    navigation = []
+    if has_previous:
+        navigation.append(_button("◀️", build_story_quest_callback("page", str(current - 1))))
+    if has_next:
+        navigation.append(_button("▶️", build_story_quest_callback("page", str(current + 1))))
+    if navigation:
+        rows.append(navigation)
+    rows.append([_button("🔄 Оновити", build_story_quest_callback("refresh", str(current)))])
+    rows.append([_button("🔙 До профілю", build_story_quest_callback("profile"))])
+    return rows
+
+
+def build_story_quest_detail_keyboard(
+    *, quest_id: str, status: str, page: int = 0,
+) -> list[list[dict]]:
+    """Expose only actions valid for the supplied materialized/derived status."""
+    quest_key = str(quest_id or "").strip()
+    if not quest_key:
+        raise StoryQuestUiError("quest_id is required")
+    rows = []
+    if status == "AVAILABLE":
+        rows.append([_button("✅ Прийняти", build_story_quest_callback("accept", quest_key))])
+    if status == "ACTIVE":
+        rows.append([_button("🧭 Куди йти", build_story_quest_callback("navigate", quest_key))])
+    rows.append([_button("🔙 До журналу", build_story_quest_callback("page", str(max(0, int(page)))))])
+    return rows
+
+
+def _status_label(status: str) -> str:
+    try:
+        return STATUS_LABELS[str(status)]
+    except KeyError as error:
+        raise StoryQuestUiError(f"unknown story quest status: {status}") from error
+
+
+def render_story_quest_journal(
+    items: Sequence[Mapping], *, page: int = 0, page_size: int = STORY_QUEST_PAGE_SIZE,
+) -> dict:
+    """Render a paginated, UI-neutral journal snapshot.
+
+    Items are expected to come from the lifecycle view layer. The formatter does
+    not query SQLite, infer NPC routes, or duplicate lifecycle decisions.
+    """
+    size = max(1, min(STORY_QUEST_PAGE_SIZE, int(page_size)))
+    ordered = sorted(items, key=lambda item: (int(item.get("number", 0)), str(item.get("quest_id", ""))))
+    max_page = max(0, (len(ordered) - 1) // size) if ordered else 0
+    current = min(max(0, int(page)), max_page)
+    visible = ordered[current * size:(current + 1) * size]
+    if not visible:
+        text = "📜 Сюжетні квести\n\nЖурнал поки порожній."
+    else:
+        lines = ["📜 Сюжетні квести", ""]
+        for item in visible:
+            number = int(item.get("number", 0))
+            title = str(item.get("title") or "Без назви")
+            status = str(item.get("status") or "LOCKED")
+            lines.append(f"{number}. {title}")
+            lines.append(f"   {_status_label(status)}")
+            if status == "ACTIVE":
+                progress = int(item.get("quest_item_quantity", 0) or item.get("progress", 0))
+                target = int(item.get("target_quantity", 1))
+                lines.append(f"   Прогрес: {min(progress, target)}/{target}")
+        lines += ["", f"Сторінка {current + 1}/{max_page + 1}"]
+        text = "\n".join(lines)
+    return {
+        "text": text,
+        "page": current,
+        "page_size": size,
+        "total": len(ordered),
+        "has_previous": current > 0,
+        "has_next": current < max_page,
+        "keyboard": build_story_quest_journal_keyboard(
+            page=current, has_previous=current > 0, has_next=current < max_page,
+        ),
+        "visible_quest_ids": [str(item.get("quest_id", "")) for item in visible],
+    }
+
+
+def render_story_quest_detail(item: Mapping, *, page: int = 0) -> dict:
+    """Render one quest using only canonical lifecycle snapshot fields."""
+    quest_id = str(item.get("quest_id") or "").strip()
+    if not quest_id:
+        raise StoryQuestUiError("quest_id is required")
+    status = str(item.get("status") or "LOCKED")
+    progress = int(item.get("quest_item_quantity", 0) or item.get("progress", 0))
+    target = int(item.get("target_quantity", 1))
+    lines = [
+        f"📜 {int(item.get('number', 0))}. {str(item.get('title') or 'Без назви')}",
+        "",
+        _status_label(status),
+        f"Прогрес: {min(progress, target)}/{target}",
+    ]
+    return {
+        "text": "\n".join(lines),
+        "keyboard": build_story_quest_detail_keyboard(
+            quest_id=quest_id, status=status, page=page,
+        ),
+    }
