@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
-"""Static and isolated-SQLite checks for migration 053.
-
-The checker extracts SQL from the migration AST and applies it only to an
-in-memory SQLite database. Production game.db is never opened.
-"""
+"""Maintained isolated check for migration 053 and its runner contract."""
 from __future__ import annotations
 
 import ast
+import importlib.util
 import sqlite3
 from pathlib import Path
 
@@ -20,35 +17,33 @@ EXPECTED_INDEXES = {
 }
 
 
-def extract_sql_statements(source: str) -> list[str]:
-    """Return literal cursor.execute SQL in source order without importing it."""
-    tree = ast.parse(source, filename=str(MIGRATION))
-    statements = []
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
-            continue
-        if node.func.attr != "execute" or not node.args:
-            continue
-        try:
-            value = ast.literal_eval(node.args[0])
-        except Exception:
-            continue
-        if isinstance(value, str):
-            statements.append(value)
-    return statements
+def load_migration():
+    """Load migration 053 without importing production DB connection owners."""
+    spec = importlib.util.spec_from_file_location("migration_053_check", MIGRATION)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("cannot load migration 053")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
-def main() -> None:
+def main():
     source = MIGRATION.read_text(encoding="utf-8-sig")
+    tree = ast.parse(source, filename=str(MIGRATION))
     compile(source, str(MIGRATION), "exec")
-    statements = extract_sql_statements(source)
-    assert len(statements) == 5, statements
+    top_level_functions = {
+        node.name: node for node in tree.body if isinstance(node, ast.FunctionDef)
+    }
+    assert "up" in top_level_functions
+    assert [arg.arg for arg in top_level_functions["up"].args.args] == ["conn"]
+    assert "db_modules.connection" not in source
+    assert ".commit(" not in source and ".rollback(" not in source
 
+    module = load_migration()
     database = sqlite3.connect(":memory:")
     database.execute("PRAGMA foreign_keys=ON")
     database.execute("CREATE TABLE users (user_id INTEGER PRIMARY KEY)")
-    for statement in statements:
-        database.execute(statement)
+    module.up(database)
 
     tables = {row[0] for row in database.execute(
         "SELECT name FROM sqlite_master WHERE type='table'"
@@ -59,7 +54,6 @@ def main() -> None:
     assert EXPECTED_TABLES <= tables
     assert EXPECTED_INDEXES <= indexes
 
-    # Verify the composite FK has a valid parent key and cascades on reset.
     database.execute("INSERT INTO users(user_id) VALUES (1)")
     database.execute(
         """INSERT INTO user_story_quests
@@ -72,7 +66,6 @@ def main() -> None:
         (user_id,quest_id,item_key,quantity,updated_at)
         VALUES (1,'fixture_quest','fixture_item',1,'t')"""
     )
-
     try:
         database.execute(
             """INSERT INTO user_story_quests
@@ -90,7 +83,7 @@ def main() -> None:
     assert database.execute("SELECT COUNT(*) FROM user_story_quest_items").fetchone()[0] == 0
     assert database.execute("PRAGMA foreign_key_check").fetchall() == []
     database.close()
-    print("[PASS] story quest persistence schema")
+    print("[PASS] story quest migration runner contract and schema")
 
 
 if __name__ == "__main__":
