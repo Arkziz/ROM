@@ -41,7 +41,8 @@ $ExcludeDirectoryNames = @(
     "MD",
     "simulation_reports",
 	"tools",
-    "reports"
+    "reports",
+	"Квести"
 )
 
 # Exact file names that must never be included.
