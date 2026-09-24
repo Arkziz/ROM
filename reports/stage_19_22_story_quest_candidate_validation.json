@@ -1,0 +1,424 @@
+{
+  "stage": "19.22",
+  "status": "PASS",
+  "decision": "PASS_READY_FOR_IMPORT_PLANNING",
+  "head_before": "e7a5f9e848158117f72d1f55ab01d8c1895058a6",
+  "candidate_path": "Квести/ROM_квести_Початок_Шляху_candidate.json",
+  "candidate_sha256": "95b6ba349846821636d3e9024116cb71acd6b4d88ea0839170daaa78db9be260",
+  "candidate_quest_count": 50,
+  "checks": [
+    {
+      "code": "document_type",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": "story_quest_candidate_registry"
+    },
+    {
+      "code": "candidate_not_production_authoritative",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": false
+    },
+    {
+      "code": "schema_version",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": 5
+    },
+    {
+      "code": "quest_count",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": 50
+    },
+    {
+      "code": "numbers_1_50",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50
+      ]
+    },
+    {
+      "code": "unique_quest_ids",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": []
+    },
+    {
+      "code": "approved_batches",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": [
+        [
+          1,
+          10
+        ],
+        [
+          11,
+          20
+        ],
+        [
+          21,
+          30
+        ],
+        [
+          31,
+          40
+        ],
+        [
+          41,
+          50
+        ]
+      ]
+    },
+    {
+      "code": "level_and_chain_gating",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": {
+        "requires_previous_quest_completion": true,
+        "requires_unlock_level": true,
+        "package_unlock_levels": {
+          "1-10": 1,
+          "11-20": 2,
+          "21-30": 3,
+          "31-40": 4,
+          "41-50": 5
+        },
+        "overlevel_skip_policy": "retain Stage 19.18 policy until separately revised"
+      }
+    },
+    {
+      "code": "overlevel_skip_retained",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": "retain Stage 19.18 policy until separately revised"
+    },
+    {
+      "code": "strict_previous_quest_chain",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": []
+    },
+    {
+      "code": "package_unlock_levels",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": []
+    },
+    {
+      "code": "allowed_quest_types",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": []
+    },
+    {
+      "code": "normalized_turn_in_types",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": {
+        "38": "TURN_IN",
+        "8": "TURN_IN",
+        "44": "TURN_IN",
+        "14": "TURN_IN",
+        "47": "TURN_IN"
+      }
+    },
+    {
+      "code": "required_candidate_fields",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": {}
+    },
+    {
+      "code": "optional_narrative_text_coverage",
+      "passed": true,
+      "severity": "INFO",
+      "detail": {
+        "gaps": {
+          "4": [
+            "acceptance_text",
+            "completion_text"
+          ],
+          "7": [
+            "acceptance_text",
+            "completion_text"
+          ],
+          "13": [
+            "acceptance_text",
+            "completion_text"
+          ],
+          "15": [
+            "completion_text"
+          ],
+          "19": [
+            "acceptance_text",
+            "completion_text"
+          ]
+        },
+        "policy": "non-blocking; QUEST_ITEM may complete on drop"
+      }
+    },
+    {
+      "code": "location_start_path",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": [
+        "start_path"
+      ]
+    },
+    {
+      "code": "kill_region_quantities",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": []
+    },
+    {
+      "code": "quest_item_contracts",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": []
+    },
+    {
+      "code": "unique_item_keys",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": []
+    },
+    {
+      "code": "reward_values_and_formulas",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": []
+    },
+    {
+      "code": "campaign_story_reward_totals",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": {
+        "exp": 2168,
+        "gold": 36.16
+      }
+    },
+    {
+      "code": "quest_24_non_consuming_ring",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": [
+        {
+          "item_key": "start_path_guards_ring",
+          "quantity": 1,
+          "consume": false
+        }
+      ]
+    },
+    {
+      "code": "quest_30_atomic_three_item_turn_in",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": {
+        "items": [
+          {
+            "item_key": "start_path_guards_ring",
+            "quantity": 1,
+            "consume": true
+          },
+          {
+            "item_key": "start_path_damaged_guard_shield",
+            "quantity": 1,
+            "consume": true
+          },
+          {
+            "item_key": "start_path_torn_guard_cloak",
+            "quantity": 1,
+            "consume": true
+          }
+        ],
+        "mode": "atomic_exact_once_all_or_nothing"
+      }
+    },
+    {
+      "code": "quest_49_boss_contract",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": {
+        "quest_type": "BOSS",
+        "boss_key": "pack_leader",
+        "encounter_paths": [
+          "rng_hunt",
+          "guaranteed_story_call"
+        ],
+        "guaranteed_call_after_success": "blocked",
+        "retry_after_defeat_or_escape": "allowed",
+        "boss_combat_reward_is_separate": true
+      }
+    },
+    {
+      "code": "quest_50_dark_forest_hint_only",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": {
+        "location_id": "dark_forest",
+        "canonical_unlock_level": 6,
+        "story_completion_does_not_unlock_location": true
+      }
+    },
+    {
+      "code": "candidate_npc_set",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": {
+        "used": [
+          "alchemist",
+          "bartender",
+          "blacksmith",
+          "elder",
+          "mercenary_head",
+          "rune_master",
+          "trader"
+        ],
+        "expected": [
+          "alchemist",
+          "bartender",
+          "blacksmith",
+          "elder",
+          "mercenary_head",
+          "rune_master",
+          "trader"
+        ]
+      }
+    },
+    {
+      "code": "production_python_syntax",
+      "passed": true,
+      "severity": "ERROR",
+      "detail": []
+    },
+    {
+      "code": "production_quest_type_tokens",
+      "passed": true,
+      "severity": "BLOCKER",
+      "detail": {
+        "BOSS": true,
+        "KILL_REGION": true,
+        "QUEST_ITEM": true,
+        "TALK": true,
+        "TURN_IN": true
+      }
+    },
+    {
+      "code": "production_npc_tokens",
+      "passed": true,
+      "severity": "BLOCKER",
+      "detail": {
+        "alchemist": true,
+        "bartender": true,
+        "blacksmith": true,
+        "elder": true,
+        "mercenary_head": true,
+        "rune_master": true,
+        "trader": true
+      }
+    },
+    {
+      "code": "production_capability_tokens",
+      "passed": true,
+      "severity": "BLOCKER",
+      "detail": {
+        "previous_quest": true,
+        "unlock_level": true,
+        "reward_claimed": true,
+        "quest_item": true,
+        "boss_key": true,
+        "SKIPPED": true,
+        "guaranteed_boss_call": true
+      }
+    }
+  ],
+  "production_support_scan": {
+    "python_files_scanned": 180,
+    "syntax_errors": [],
+    "quest_type_tokens": {
+      "BOSS": true,
+      "KILL_REGION": true,
+      "QUEST_ITEM": true,
+      "TALK": true,
+      "TURN_IN": true
+    },
+    "npc_tokens": {
+      "alchemist": true,
+      "bartender": true,
+      "blacksmith": true,
+      "elder": true,
+      "mercenary_head": true,
+      "rune_master": true,
+      "trader": true
+    },
+    "capability_tokens": {
+      "previous_quest": true,
+      "unlock_level": true,
+      "reward_claimed": true,
+      "quest_item": true,
+      "boss_key": true,
+      "SKIPPED": true,
+      "guaranteed_boss_call": true
+    }
+  },
+  "production_source_mutation": false,
+  "production_database_mutation": false,
+  "candidate_mutation": false,
+  "manual_game_check_required": false,
+  "wal_shm_manipulated": false,
+  "next_step": "prepare a dependency-aware production import plan, then activate quests in batches of 10",
+  "generated_at_utc": "2026-09-24T22:08:12.075169+00:00"
+}
