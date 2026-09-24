@@ -225,6 +225,7 @@ from systems.combat_system import (
 )
 
 from systems.reward_system import process_victory_reward
+from systems.story_quest_combat_progress_system import process_region_kill_story_progress
 from systems.pve_auto_escape_system import begin_pve_encounter, claim_pve_terminal, STALE_COMBAT_TEXT
 from systems.potion_system import use_potion_from_inventory
 from systems.combat_system import roll_player_normal_attack_hit, roll_player_pve_skill_hit
@@ -1974,6 +1975,13 @@ def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=""):
     daily_result = process_daily_quest_progress_on_kill(
         user_id=user_id,
         mob=mob
+    )
+
+    # Terminal victory was already claimed above, so this hook runs once per
+    # encounter and cannot double-count repeated Telegram terminal updates.
+    story_region_result = process_region_kill_story_progress(
+        user_id=user_id,
+        location_id=get_current_location(user_id),
     )
 
     text = build_victory_text(
