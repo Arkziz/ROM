@@ -56,6 +56,7 @@ def complete_active_story_quest(
     user_id: int,
     quest_id: str,
     reward_adapter: Callable,
+    objective_preparer: Optional[Callable] = None,
     expected_turn_in_npc_id: Optional[str] = None,
     idempotency_key: Optional[str] = None,
     timestamp: Optional[str] = None,
@@ -93,6 +94,14 @@ def complete_active_story_quest(
             expected = str(quest.turn_in_npc_id or quest.giver_npc_id)
             if expected != str(expected_turn_in_npc_id):
                 raise StoryQuestCompletionError("turn-in NPC does not match definition")
+        if objective_preparer is not None:
+            objective_preparer(
+                connection=connection,
+                user_id=int(user_id),
+                quest=quest,
+                row=row,
+            )
+            row = get_story_quest(connection, user_id, quest.quest_id)
         if not _objective_ready(connection, user_id, quest, row):
             raise StoryQuestCompletionError("quest objective is incomplete")
 

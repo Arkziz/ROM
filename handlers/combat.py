@@ -228,6 +228,7 @@ from systems.reward_system import process_victory_reward
 from systems.story_quest_combat_progress_system import process_region_kill_story_progress
 from systems.story_quest_item_drop_system import process_story_quest_item_drop
 from systems.story_quest_overlevel_system import process_overlevel_story_quest_skip
+from systems.story_quest_boss_completion_system import process_rng_boss_story_completion
 from systems.pve_auto_escape_system import begin_pve_encounter, claim_pve_terminal, STALE_COMBAT_TEXT
 from systems.potion_system import use_potion_from_inventory
 from systems.combat_system import roll_player_normal_attack_hit, roll_player_pve_skill_hit
@@ -1963,6 +1964,15 @@ def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=""):
                     subject_name_snapshot=str(mob.get("name") or mob.get("base_name") or "Бос"),
                     location_id=str(mob.get("location_id") or ""),
                 )
+
+    # The RNG encounter has already passed the canonical terminal claim. A
+    # matching ACTIVE BOSS quest now completes and rewards exactly once.
+    story_boss_result = process_rng_boss_story_completion(
+        user_id=user_id,
+        mob=mob,
+        location_id=get_current_location(user_id),
+        encounter_id=encounter_id,
+    )
 
     wear_result = apply_random_durability_wear_on_victory(
         user_id=user_id,
