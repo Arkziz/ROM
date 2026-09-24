@@ -227,6 +227,7 @@ from systems.combat_system import (
 from systems.reward_system import process_victory_reward
 from systems.story_quest_combat_progress_system import process_region_kill_story_progress
 from systems.story_quest_item_drop_system import process_story_quest_item_drop
+from systems.story_quest_overlevel_system import process_overlevel_story_quest_skip
 from systems.pve_auto_escape_system import begin_pve_encounter, claim_pve_terminal, STALE_COMBAT_TEXT
 from systems.potion_system import use_potion_from_inventory
 from systems.combat_system import roll_player_normal_attack_hit, roll_player_pve_skill_hit
@@ -1990,6 +1991,15 @@ def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=""):
     story_item_result = process_story_quest_item_drop(
         user_id=user_id,
         location_id=get_current_location(user_id),
+    )
+
+    # Combat EXP was awarded before story progress. Evaluate the resulting level
+    # only after this terminal victory's progress/drop hooks have run.
+    exp_result = reward.get("exp_result") or {}
+    resulting_level = int(exp_result.get("level") or get_player_level(user_id))
+    story_skip_result = process_overlevel_story_quest_skip(
+        user_id=user_id,
+        current_level=resulting_level,
     )
 
     text = build_victory_text(
