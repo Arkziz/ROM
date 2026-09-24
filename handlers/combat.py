@@ -229,7 +229,9 @@ from systems.story_quest_combat_progress_system import process_region_kill_story
 from systems.story_quest_item_drop_system import process_story_quest_item_drop
 from systems.story_quest_overlevel_system import process_overlevel_story_quest_skip
 from systems.story_quest_boss_completion_system import process_rng_boss_story_completion
-from systems.pve_auto_escape_system import begin_pve_encounter, claim_pve_terminal, STALE_COMBAT_TEXT
+from systems.pve_auto_escape_system import begin_pve_encounter, get_active_pve_encounter, claim_pve_terminal, STALE_COMBAT_TEXT
+from systems.boss_system import build_location_boss
+from systems.story_quest_boss_call_system import BOSS_CALL_BUTTON, get_active_story_boss_call
 from systems.potion_system import use_potion_from_inventory
 from systems.combat_system import roll_player_normal_attack_hit, roll_player_pve_skill_hit
 
@@ -2039,6 +2041,40 @@ def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=""):
 # ==============================
 
 def register_combat_handlers(bot):
+
+    @bot.message_handler(func=lambda m: getattr(m, "text", None) == BOSS_CALL_BUTTON)
+    def call_active_story_boss(message):
+        """Start the canonical location boss only while its story quest is ACTIVE.
+
+        Eligibility is revalidated on every press. After a successful kill,
+        Stage 19.19 immediately marks the quest COMPLETED, so stale buttons and
+        deliberate delayed turn-in cannot be used to farm guaranteed summons.
+        Defeat or escape leaves the quest ACTIVE and permits another attempt.
+        """
+        user_id = int(message.from_user.id)
+        location_id = get_current_location(user_id)
+        call = get_active_story_boss_call(user_id=user_id, current_location_id=location_id)
+        if not call.get("allowed"):
+            bot.send_message(message.chat.id, "⚠️ Виклик сюжетного боса зараз недоступний.", reply_markup=main_kb())
+            return
+        if get_active_pve_encounter(user_id) is not None:
+            bot.send_message(message.chat.id, "⚔️ Спочатку заверши поточний бій.", reply_markup=combat_placeholder_kb())
+            return
+        stats=get_player_stats(user_id)
+        if not stats:
+            bot.send_message(message.chat.id,"❗ Спочатку натисни /start",reply_markup=main_kb());return
+        lvl=int(stats[-1]);current_hp=get_current_hp_raw(user_id);max_hp=get_max_hp(user_id)
+        if max_hp<=0 or (current_hp/max_hp)*100<=25:
+            bot.send_message(message.chat.id,"😴 Здоров’я занадто низьке для виклику боса.",reply_markup=main_kb());return
+        mob=build_location_boss(location_id,lvl)
+        if str(mob.get("boss_key")) != str(call.get("boss_key")):
+            bot.send_message(message.chat.id,"⚠️ Ціль сюжетного квесту не відповідає босу цієї локації.",reply_markup=main_kb());return
+        mob.update({"potion_cooldown":0,"stunned_turns":0,"skill_cooldowns":{},"enemy_effects":{},"player_effects":{},"last_skill_spent_rage":0,"last_skill_spent_combo":0,"player_hp":current_hp,"player_max_hp":max_hp,"story_boss_call":True})
+        init_class_combat_resource(user_id,mob);init_combat_effects(mob)
+        encounter=begin_pve_encounter(user_id,message.chat.id,mob)
+        mob["pve_encounter_id"]=encounter["encounter_id"];mob["pve_started_at"]=encounter["started_at"];mob["pve_deadline_at"]=encounter["deadline_at"]
+        bot.user_data=getattr(bot,"user_data",{});bot.user_data[user_id]=mob
+        bot.send_message(message.chat.id,f"👑 Голова Найманців викликає {mob['name']}!\n\nПісля перемоги сюжетний квест завершиться одразу, а повторний гарантований виклик стане недоступним.",reply_markup=build_combat_inline_kb(user_id,mob))
 
     @bot.message_handler(func=lambda m: m.text == "🔎 Полювання")
     def hunt(message):

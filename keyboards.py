@@ -126,9 +126,17 @@ def elder_kb():
     return kb
 
 
-def mercenary_head_kb():
-    """Return from the Mercenary Head to the canonical Mercenary Guild screen."""
+def mercenary_head_kb(user_id=None):
+    """Show the guaranteed boss call only for a matching ACTIVE BOSS quest."""
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    if user_id is not None:
+        from db import get_current_location
+        from systems.story_quest_boss_call_system import BOSS_CALL_BUTTON, get_active_story_boss_call
+        state = get_active_story_boss_call(
+            user_id=int(user_id), current_location_id=get_current_location(int(user_id))
+        )
+        if state.get("allowed"):
+            kb.add(BOSS_CALL_BUTTON)
     kb.add("🔙 Гільдія Найманців")
     return kb
 

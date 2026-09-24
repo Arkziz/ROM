@@ -1252,7 +1252,7 @@ def register_city_handlers(bot):
         bot.send_message(
             message.chat.id,
             build_story_mercenary_head_text(),
-            reply_markup=mercenary_head_kb(),
+            reply_markup=mercenary_head_kb(message.from_user.id),
         )
 
     @bot.message_handler(func=lambda m: getattr(m, "text", None) == "🍺 Бармен")
