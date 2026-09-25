@@ -89,19 +89,55 @@ def _map_reward(record: Mapping[str, Any]) -> RewardDefinition:
         raise CandidateImportError(f"{record.get('quest_id')}: invalid gold reward")
     return RewardDefinition(exp=exp, gold=round(float(gold), 2))
 
-def _map_item(record: Mapping[str, Any]) -> QuestItemDefinition | None:
+def build_item_consumers(quests: Sequence[Mapping[str, Any]]) -> dict[str, tuple[dict[str, Any], ...]]:
+    """Index every later item prerequisite before mapping source quests.
+
+    Candidate authors may omit ``retain_until_quest_id`` for a direct
+    QUEST_ITEM -> TURN_IN pair. Runtime retention is therefore derived from the
+    authoritative dependency graph, while an explicit marker must agree with
+    the actual consuming quest.
+    """
+    consumers: dict[str, list[dict[str, Any]]] = {}
+    for quest in quests:
+        for required in quest.get("required_quest_items") or ():
+            key = str(required.get("item_key") or "").strip()
+            if not key:
+                raise CandidateImportError(f"{quest.get('quest_id')}: required item key is empty")
+            consumers.setdefault(key, []).append({
+                "quest_id": str(quest.get("quest_id") or ""),
+                "number": int(quest.get("number") or 0),
+                "consume": bool(required.get("consume", True)),
+            })
+    return {key: tuple(values) for key, values in consumers.items()}
+
+
+def _retention_contract(record: Mapping[str, Any], consumers: Mapping[str, Sequence[Mapping[str, Any]]]) -> tuple[bool, str | None]:
+    item = record.get("quest_item") or {}
+    key = str(item.get("item_key") or "").strip()
+    source_number = int(record.get("number") or 0)
+    later = [value for value in consumers.get(key, ()) if int(value["number"]) > source_number]
+    consuming = [value for value in later if value["consume"]]
+    explicit = record.get("retain_until_quest_id")
+    if explicit and str(explicit) not in {value["quest_id"] for value in consuming}:
+        raise CandidateImportError(f"{record.get('quest_id')}: retain_until_quest_id is not a later consuming quest")
+    target = str(explicit) if explicit else (str(consuming[0]["quest_id"]) if consuming else None)
+    return bool(later), target
+
+
+def _map_item(record: Mapping[str, Any], consumers: Mapping[str, Sequence[Mapping[str, Any]]]) -> tuple[QuestItemDefinition | None, str | None]:
     item = record.get("quest_item")
     if item is None:
-        return None
+        return None, None
     if not isinstance(item, Mapping):
         raise CandidateImportError(f"{record.get('quest_id')}: quest_item must be an object")
+    retained, target = _retention_contract(record, consumers)
     return QuestItemDefinition(
         item_key=str(item.get("item_key") or "").strip(),
         display_name=str(item.get("display_name") or "").strip(),
         required_quantity=int(item.get("required_quantity") or 0),
         drop_chance=float(item.get("drop_chance") or 0.0),
-        consume_on_completion=not bool(record.get("retain_until_quest_id")),
-    )
+        consume_on_completion=not retained,
+    ), target
 
 
 def _map_required_items(record: Mapping[str, Any]) -> tuple[RequiredQuestItemDefinition, ...]:
@@ -118,7 +154,7 @@ def _map_required_items(record: Mapping[str, Any]) -> tuple[RequiredQuestItemDef
         for item in values
     )
 
-def map_candidate_record(record: Mapping[str, Any]) -> tuple[StoryQuestDefinition, dict[str, Any]]:
+def map_candidate_record(record: Mapping[str, Any], consumers: Mapping[str, Sequence[Mapping[str, Any]]]) -> tuple[StoryQuestDefinition, dict[str, Any]]:
     """Map one record to canonical schema plus separately classified metadata."""
     unknown = sorted(set(record) - ALLOWED_CANDIDATE_FIELDS)
     if unknown:
@@ -130,6 +166,7 @@ def map_candidate_record(record: Mapping[str, Any]) -> tuple[StoryQuestDefinitio
     validate_story_quest_npc_references(giver_npc_id=giver, turn_in_npc_id=turn_in)
     route = resolve_story_quest_navigation(turn_in or giver)
     objective = str(record.get("objective_text") or "").strip()
+    mapped_item, retention_target = _map_item(record, consumers)
     definition = StoryQuestDefinition(
         quest_id=quest_id,
         number=int(record.get("number") or 0),
@@ -144,7 +181,7 @@ def map_candidate_record(record: Mapping[str, Any]) -> tuple[StoryQuestDefinitio
         objective_text=objective,
         target_quantity=int(record.get("target_quantity") or 0),
         boss_key=record.get("boss_key"),
-        quest_item=_map_item(record),
+        quest_item=mapped_item,
         required_quest_items=_map_required_items(record),
         quest_item_consumption=str(record.get("quest_item_consumption") or "default"),
         reward=_map_reward(record),
@@ -163,6 +200,7 @@ def map_candidate_record(record: Mapping[str, Any]) -> tuple[StoryQuestDefinitio
         "progress_text": str(record.get("progress_text") or "").strip(),
         "deferred_runtime": {key: record[key] for key in sorted(DEFERRED_RUNTIME_FIELDS & set(record))},
         "planning_only": {key: record[key] for key in sorted(PLANNING_ONLY_FIELDS & set(record))},
+        "retention_target_quest_id": retention_target,
     }
     return definition, metadata
 
@@ -172,11 +210,13 @@ def build_import_manifest(payload: Mapping[str, Any], source_path: Path) -> dict
     content = {}
     deferred = {}
     previous_id = None
+    consumers = build_item_consumers(payload["quests"])
+    retention_contracts = {}
     seen_ids = set()
     seen_numbers = set()
     seen_items = set()
     for expected_number, record in enumerate(payload["quests"], start=1):
-        definition, metadata = map_candidate_record(record)
+        definition, metadata = map_candidate_record(record, consumers)
         if definition.number != expected_number:
             raise CandidateImportError("quest numbers must be exactly 1..50")
         if definition.previous_quest_id != previous_id:
@@ -195,6 +235,12 @@ def build_import_manifest(payload: Mapping[str, Any], source_path: Path) -> dict
         }
         if metadata["deferred_runtime"]:
             deferred[definition.quest_id] = metadata["deferred_runtime"]
+        if definition.quest_item is not None:
+            retention_contracts[definition.quest_id] = {
+                "item_key": definition.quest_item.item_key,
+                "consume_on_completion": definition.quest_item.consume_on_completion,
+                "target_quest_id": metadata["retention_target_quest_id"],
+            }
         previous_id = definition.quest_id
         seen_ids.add(definition.quest_id)
         seen_numbers.add(definition.number)
@@ -205,6 +251,7 @@ def build_import_manifest(payload: Mapping[str, Any], source_path: Path) -> dict
         "source_sha256": _sha256(source_path),
         "quest_count": len(definitions),
         "quest_item_count": len(seen_items),
+        "retention_contracts": retention_contracts,
         "definition_ids": [item["quest_id"] for item in definitions],
         "mapped_definition_count": len(definitions),
         "mapped_content_count": len(content),

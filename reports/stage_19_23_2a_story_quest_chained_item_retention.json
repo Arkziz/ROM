@@ -1,0 +1,64 @@
+{
+  "stage": "19.23.2a",
+  "status": "PASS",
+  "decision": "PASS_READY_FOR_BATCH_1_10_ACTIVATION",
+  "head_before": "f4681816f41990636fcdbd3680b7958ebe1b959c",
+  "candidate_sha256": "95b6ba349846821636d3e9024116cb71acd6b4d88ea0839170daaa78db9be260",
+  "expected_links": [
+    [
+      4,
+      5
+    ],
+    [
+      7,
+      8
+    ],
+    [
+      13,
+      14
+    ],
+    [
+      15,
+      16
+    ],
+    [
+      19,
+      20
+    ],
+    [
+      23,
+      30
+    ],
+    [
+      26,
+      30
+    ],
+    [
+      29,
+      30
+    ],
+    [
+      34,
+      35
+    ],
+    [
+      37,
+      38
+    ],
+    [
+      43,
+      44
+    ],
+    [
+      46,
+      47
+    ]
+  ],
+  "regression_stdout": "CHAINED QUEST ITEM RETENTION: PASS\n[[4, 5], [7, 8], [13, 14], [15, 16], [19, 20], [23, 30], [26, 30], [29, 30], [34, 35], [37, 38], [43, 44], [46, 47]]\n",
+  "production_content_activation": false,
+  "production_database_mutation": false,
+  "manual_game_check_required": true,
+  "manual_command": "python .\\tools\\\\check_story_quest_chained_item_retention.py --candidate .\\Квести\\ROM_квести_Початок_Шляху_candidate.json",
+  "wal_shm_manipulated": false,
+  "generated_at_utc": "2026-09-25T19:47:04.347244+00:00"
+}
