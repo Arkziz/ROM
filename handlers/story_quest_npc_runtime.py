@@ -21,7 +21,7 @@ def _markup(p):
 def _text(p):
  q=p.get('quest')
  if not q:return f'{p["npc_name"]}\n\nСюжетних доручень зараз немає.'
- texts=STORY_QUEST_TEXT[q['quest_id']];body=texts['acceptance_text'] if p['state']=='AVAILABLE' else q['objective_text'];return f'{p["npc_name"]}\n\n📜 {q["number"]}. {q["title"]}\n\n{body}\n\nСтатус: {p["state"]}'
+ texts=STORY_QUEST_TEXT[q['quest_id']];definition=STORY_QUEST_REGISTRY[q['quest_id']];body=texts['acceptance_text'] if p['state']=='AVAILABLE' else definition.objective_text;return f'{p["npc_name"]}\n\n📜 {q["number"]}. {q["title"]}\n\n{body}\n\nСтатус: {p["state"]}'
 def _presentation(user_id,npc):return build_npc_story_quest_presentation(db.conn,registry=STORY_QUEST_REGISTRY,user_id=user_id,npc_id=npc,player_level=_level(user_id))
 def send_story_npc_if_present(bot,message,npc_id):
  p=_presentation(message.from_user.id,npc_id)

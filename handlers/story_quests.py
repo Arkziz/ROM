@@ -134,6 +134,13 @@ def render_story_quest_journal(
                 lines.append(f"   Прогрес: {min(progress, target)}/{target}")
         lines += ["", f"Сторінка {current + 1}/{max_page + 1}"]
         text = "\n".join(lines)
+    quest_rows = [
+        [_button(
+            f"{STATUS_LABELS.get(str(item.get('status') or 'LOCKED'),'❓')} {int(item.get('number',0))}. {str(item.get('title') or 'Без назви')}",
+            build_story_quest_callback("detail", str(item.get("quest_id") or "")),
+        )]
+        for item in visible
+    ]
     return {
         "text": text,
         "page": current,
@@ -141,7 +148,7 @@ def render_story_quest_journal(
         "total": len(ordered),
         "has_previous": current > 0,
         "has_next": current < max_page,
-        "keyboard": build_story_quest_journal_keyboard(
+        "keyboard": quest_rows + build_story_quest_journal_keyboard(
             page=current, has_previous=current > 0, has_next=current < max_page,
         ),
         "visible_quest_ids": [str(item.get("quest_id", "")) for item in visible],
@@ -221,6 +228,37 @@ def _edit_story_journal_safely(bot, *, chat_id, message_id, text, reply_markup):
             return False
         raise
 
+def build_production_story_quest_detail(connection, *, user_id: int, quest_id: str, player_level: int, page: int = 0) -> dict:
+    """Render one canonical definition plus current lifecycle state.
+
+    Acceptance remains NPC-owned. The journal only explains the objective,
+    route, progress, reward, and unlock prerequisites.
+    """
+    import db
+    from data.story_quest_content import STORY_QUEST_REGISTRY
+    from data.story_quest_npcs import resolve_story_quest_navigation
+    from systems.story_quest_system import get_story_quest_view
+    try:
+        quest = STORY_QUEST_REGISTRY[str(quest_id)]
+    except KeyError as error:
+        raise StoryQuestUiError(f"unknown production story quest: {quest_id}") from error
+    view = get_story_quest_view(connection, user_id=int(user_id), quest=quest, player_level=int(player_level))
+    navigation = quest.navigation
+    status = str(view["status"])
+    progress = max(int(view.get("progress",0)), int(view.get("quest_item_quantity",0)))
+    lines = [f"📜 {quest.number}. {quest.title}", "", f"Статус: {_status_label(status)}", "", "📖 Опис:", quest.description, "", "🎯 Завдання:", quest.objective_text]
+    if status == "ACTIVE" and quest.target_quantity > 1:
+        lines += ["", "📈 Прогрес:", f"{min(progress,quest.target_quantity)}/{quest.target_quantity}"]
+    if status == "LOCKED":
+        lines += ["", "🔒 Для відкриття:"]
+        if quest.previous_quest_id:
+            previous = STORY_QUEST_REGISTRY.get(quest.previous_quest_id)
+            lines.append(f"• завершити квест {previous.number if previous else '?'} «{previous.title if previous else quest.previous_quest_id}»")
+        lines.append(f"• досягти {quest.unlock_level} рівня")
+    lines += ["", "🧭 Куди йти:", str(navigation.next_step_hint or navigation.objective_hint or quest.objective_text), "", "🎁 Нагорода:", f"{quest.reward.exp} EXP", f"{float(quest.reward.gold):.2f} золота"]
+    return {"text":"\n".join(lines),"keyboard":build_story_quest_detail_keyboard(quest_id=quest.quest_id,status=status,page=page)}
+
+
 def register_story_quest_handlers(bot):
     """Register the Profile journal route before broad downstream handlers.
 
@@ -269,15 +307,24 @@ def register_story_quest_handlers(bot):
                     "Журнал оновлено." if changed else "Журнал уже актуальний.",
                 )
                 return
+            if parsed.action == "detail":
+                stats=get_player_stats(call.from_user.id) or {}
+                level=int(stats.get("level",1) if isinstance(stats,dict) else 1)
+                snapshot=build_production_story_quest_detail(db.conn,user_id=call.from_user.id,quest_id=parsed.value,player_level=level)
+                _edit_story_journal_safely(bot,chat_id=call.message.chat.id,message_id=call.message.message_id,text=snapshot["text"],reply_markup=_inline_markup(snapshot["keyboard"]))
+                bot.answer_callback_query(call.id)
+                return
+            if parsed.action == "navigate":
+                stats=get_player_stats(call.from_user.id) or {}
+                level=int(stats.get("level",1) if isinstance(stats,dict) else 1)
+                snapshot=build_production_story_quest_detail(db.conn,user_id=call.from_user.id,quest_id=parsed.value,player_level=level)
+                bot.answer_callback_query(call.id,"Маршрут показано в деталях квесту.")
+                return
             if parsed.action == "profile":
                 bot.answer_callback_query(call.id)
                 send_profile_root(bot, call.message.chat.id, call.from_user.id)
                 return
-            bot.answer_callback_query(
-                call.id,
-                "Ця дія стане доступною після додавання сюжетних квестів.",
-                show_alert=True,
-            )
+            bot.answer_callback_query(call.id,"Некоректна дія журналу.",show_alert=True)
         except StoryQuestUiError:
             bot.answer_callback_query(
                 call.id, "Некоректна дія журналу квестів.", show_alert=True
