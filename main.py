@@ -80,6 +80,7 @@ import events as seasonal_events
 from handlers.start import register_start_handlers
 from handlers.profile import register_profile_handlers
 from handlers.story_quests import register_story_quest_handlers
+from handlers.story_quest_npc_runtime import register_story_quest_npc_runtime_handlers
 from handlers.inventory import register_inventory_handlers
 from handlers.fatigue_artifact import register_fatigue_artifact_handlers
 from systems.fatigue_artifact_system import init_fatigue_artifact_system
@@ -198,6 +199,7 @@ register_world_chronicle_handlers(bot)
 register_start_handlers(bot)
 register_profile_handlers(bot)
 register_story_quest_handlers(bot)
+register_story_quest_npc_runtime_handlers(bot)
 register_inventory_handlers(bot)
 register_fatigue_artifact_handlers(bot)
 register_combat_handlers(bot)

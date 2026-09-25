@@ -1,0 +1,29 @@
+{
+  "stage": "19.23.3",
+  "status": "PASS",
+  "decision": "PASS_PENDING_MANUAL_GAME_CHECK",
+  "head_before": "ba8076f1308a1064ee28a1b817da026b32fc8298",
+  "candidate_sha256": "95b6ba349846821636d3e9024116cb71acd6b4d88ea0839170daaa78db9be260",
+  "activated_range": [
+    1,
+    10
+  ],
+  "production_registry_count": 10,
+  "quest_11_active": false,
+  "database_mutation": false,
+  "manual_game_check_required": true,
+  "manual_scenarios": [
+    "Новий/чистий персонаж рівня 1: Староста показує квест 1 і кнопка прийняття працює.",
+    "TALK 1 завершується exact-once і відкриває квест 2 у Голови Найманців.",
+    "KILL_REGION 2 рахує рівно 3 terminal victories.",
+    "QUEST_ITEM 4 випадає з шансом 15%, завершується, але клапоть зберігається до квесту 5.",
+    "TURN_IN 5 споживає клапоть exact-once.",
+    "QUEST_ITEM 7 зберігає ліхтар до TURN_IN 8 у Коваля.",
+    "Квести 6 і 9 рахують 5 і 6 перемог.",
+    "Усі квести дають 30 EXP і 0.27 gold; повторна дія не дублює нагороду.",
+    "Після квесту 10 квест 11 відсутній, бо пакет 11-20 ще не активовано.",
+    "Журнал показує 10 квестів і актуальні statuses/progress; після рестарту стан збережено."
+  ],
+  "wal_shm_manipulated": false,
+  "generated_at_utc": "2026-09-25T19:53:54.101026+00:00"
+}

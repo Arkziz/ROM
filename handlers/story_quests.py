@@ -229,12 +229,20 @@ def register_story_quest_handlers(bot):
     unavailable until canonical production content and NPC registry exist.
     """
     from handlers.profile import send_profile_root
+    import db
+    from data.story_quest_content import STORY_QUEST_REGISTRY
+    from db import get_player_stats
+    from systems.story_quest_system import get_story_quest_view
 
     @bot.message_handler(
         func=lambda message: getattr(message, "text", None) == STORY_QUEST_BUTTON_TEXT
     )
     def story_quest_profile_reply(message):
-        _send_empty_story_journal(bot, message.chat.id)
+        stats=get_player_stats(message.from_user.id) or {}
+        level=int(stats.get("level",1) if isinstance(stats,dict) else 1)
+        items=[get_story_quest_view(db.conn,user_id=message.from_user.id,quest=q,player_level=level) for q in STORY_QUEST_REGISTRY.values()]
+        snapshot=render_story_quest_journal(items)
+        bot.send_message(message.chat.id,snapshot["text"],reply_markup=_inline_markup(snapshot["keyboard"]))
 
     @bot.callback_query_handler(
         func=lambda call: str(getattr(call, "data", "") or "").startswith(
@@ -245,7 +253,10 @@ def register_story_quest_handlers(bot):
         try:
             parsed = parse_story_quest_callback(call.data)
             if parsed.action in {"refresh", "page"}:
-                snapshot = render_story_quest_journal([])
+                stats=get_player_stats(call.from_user.id) or {}
+                level=int(stats.get("level",1) if isinstance(stats,dict) else 1)
+                items=[get_story_quest_view(db.conn,user_id=call.from_user.id,quest=q,player_level=level) for q in STORY_QUEST_REGISTRY.values()]
+                snapshot = render_story_quest_journal(items,page=int(parsed.value or 0) if parsed.action=="page" else 0)
                 changed = _edit_story_journal_safely(
                     bot,
                     chat_id=call.message.chat.id,
