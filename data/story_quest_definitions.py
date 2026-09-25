@@ -30,11 +30,23 @@ class RewardDefinition:
 
 @dataclass(frozen=True)
 class QuestItemDefinition:
-    """Non-economic item stored outside ordinary inventory slots."""
+    """Non-economic item stored outside ordinary inventory slots.
+
+    ``consume_on_completion`` is false only when a collected clue must survive
+    its QUEST_ITEM quest for a later approved turn-in.
+    """
     item_key: str
     display_name: str
     required_quantity: int
     drop_chance: float
+    consume_on_completion: bool = True
+
+@dataclass(frozen=True)
+class RequiredQuestItemDefinition:
+    """Prerequisite item checked at interaction and optionally consumed."""
+    item_key: str
+    quantity: int
+    consume: bool = True
 
 @dataclass(frozen=True)
 class NavigationDefinition:
@@ -62,6 +74,8 @@ class StoryQuestDefinition:
     target_quantity: int=1
     boss_key: Optional[str]=None
     quest_item: Optional[QuestItemDefinition]=None
+    required_quest_items: Tuple[RequiredQuestItemDefinition, ...]=()
+    quest_item_consumption: str = "default"
     reward: RewardDefinition=field(default_factory=RewardDefinition)
     navigation: Optional[NavigationDefinition]=None
 
@@ -90,6 +104,7 @@ def validate_story_quest_definition(quest: StoryQuestDefinition) -> None:
         _require(_text(item.item_key) and _text(item.display_name),f'{quest.quest_id}: quest item identity is required')
         _require(item.required_quantity>0,f'{quest.quest_id}: required_quantity must be positive')
         _require(0<=item.drop_chance<=1,f'{quest.quest_id}: drop_chance must be within 0..1')
+        _require(isinstance(item.consume_on_completion,bool),f'{quest.quest_id}: consume_on_completion must be bool')
         _require(quest.target_quantity==item.required_quantity,f'{quest.quest_id}: quantities must match')
     else:
         _require(quest.quest_item is None,f'{quest.quest_id}: quest_item only allowed for QUEST_ITEM')
@@ -99,6 +114,20 @@ def validate_story_quest_definition(quest: StoryQuestDefinition) -> None:
         _require(quest.boss_key is None,f'{quest.quest_id}: boss_key only allowed for BOSS')
     if quest.quest_type is QuestType.TURN_IN:
         _require(_text(quest.turn_in_npc_id),f'{quest.quest_id}: TURN_IN requires turn_in_npc_id')
+    allowed_consumption = {"default", "none", "atomic_exact_once", "atomic_exact_once_all_or_nothing"}
+    _require(quest.quest_item_consumption in allowed_consumption,f'{quest.quest_id}: invalid quest_item_consumption')
+    required_keys=set()
+    for required in quest.required_quest_items:
+        _require(isinstance(required,RequiredQuestItemDefinition),f'{quest.quest_id}: invalid required quest item')
+        _require(_text(required.item_key),f'{quest.quest_id}: required item key is required')
+        _require(required.quantity>0,f'{quest.quest_id}: required item quantity must be positive')
+        _require(isinstance(required.consume,bool),f'{quest.quest_id}: required item consume must be bool')
+        _require(required.item_key not in required_keys,f'{quest.quest_id}: duplicate required item key')
+        required_keys.add(required.item_key)
+    if quest.quest_item_consumption == "none":
+        _require(all(not item.consume for item in quest.required_quest_items),f'{quest.quest_id}: none policy cannot consume items')
+    if quest.quest_item_consumption == "atomic_exact_once_all_or_nothing":
+        _require(len(quest.required_quest_items)>1,f'{quest.quest_id}: all-or-nothing requires multiple items')
     if quest.navigation:
         _require(quest.navigation.location_id==quest.location_id,f'{quest.quest_id}: navigation location mismatch')
         _require(quest.navigation.giver_npc_id==quest.giver_npc_id,f'{quest.quest_id}: navigation giver mismatch')

@@ -12,7 +12,9 @@ from data.story_quest_definitions import QuestType, StoryQuestDefinition
 from db_modules.story_quests import (
     get_active_story_quest,
     get_story_quest,
+    consume_story_quest_item_quantity,
     get_story_quest_item_quantity,
+    get_total_story_quest_item_quantity,
     utc_now_iso,
 )
 from systems.story_quest_system import StoryQuestLifecycleError, immediate_transaction
@@ -34,7 +36,13 @@ def _definition(registry, quest_id: str) -> StoryQuestDefinition:
 
 
 def _objective_ready(connection, user_id: int, quest, row) -> bool:
-    """Evaluate completion readiness from persisted state only."""
+    """Evaluate objective and cross-quest prerequisite readiness."""
+    for required in quest.required_quest_items:
+        quantity = get_total_story_quest_item_quantity(
+            connection, user_id, required.item_key
+        )
+        if quantity < required.quantity:
+            return False
     if quest.quest_type is QuestType.QUEST_ITEM:
         if quest.quest_item is None:
             raise StoryQuestCompletionError("QUEST_ITEM definition has no item contract")
@@ -105,18 +113,24 @@ def complete_active_story_quest(
         if not _objective_ready(connection, user_id, quest, row):
             raise StoryQuestCompletionError("quest objective is incomplete")
 
-        if quest.quest_type is QuestType.QUEST_ITEM:
-            deleted = connection.execute(
-                """DELETE FROM user_story_quest_items
-                WHERE user_id=? AND quest_id=? AND item_key=?
-                  AND quantity>=?""",
-                (
-                    int(user_id), quest.quest_id, quest.quest_item.item_key,
-                    int(quest.quest_item.required_quantity),
-                ),
+        # Consumption occurs inside the same BEGIN IMMEDIATE transaction as
+        # reward and COMPLETED. Retained clues remain until a later definition
+        # explicitly lists the item as a consuming prerequisite.
+        if quest.quest_type is QuestType.QUEST_ITEM and quest.quest_item.consume_on_completion:
+            consume_story_quest_item_quantity(
+                connection,
+                user_id=int(user_id),
+                item_key=quest.quest_item.item_key,
+                quantity=int(quest.quest_item.required_quantity),
             )
-            if deleted.rowcount != 1:
-                raise StoryQuestCompletionError("required quest items changed concurrently")
+        for required in quest.required_quest_items:
+            if required.consume:
+                consume_story_quest_item_quantity(
+                    connection,
+                    user_id=int(user_id),
+                    item_key=required.item_key,
+                    quantity=int(required.quantity),
+                )
 
         try:
             reward_result = reward_adapter(

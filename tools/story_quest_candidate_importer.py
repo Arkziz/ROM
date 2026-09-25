@@ -26,6 +26,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from data.story_quest_definitions import (
     NavigationDefinition,
     QuestItemDefinition,
+    RequiredQuestItemDefinition,
     QuestType,
     RewardDefinition,
     StoryQuestDefinition,
@@ -49,7 +50,6 @@ ALLOWED_CANDIDATE_FIELDS = frozenset({
     "boss_combat_reward_is_separate", "next_campaign_hint",
 })
 DEFERRED_RUNTIME_FIELDS = frozenset({
-    "required_quest_items", "quest_item_consumption", "retain_until_quest_id",
     "encounter_paths", "guaranteed_call_after_success",
     "retry_after_defeat_or_escape", "boss_combat_reward_is_separate",
 })
@@ -100,6 +100,22 @@ def _map_item(record: Mapping[str, Any]) -> QuestItemDefinition | None:
         display_name=str(item.get("display_name") or "").strip(),
         required_quantity=int(item.get("required_quantity") or 0),
         drop_chance=float(item.get("drop_chance") or 0.0),
+        consume_on_completion=not bool(record.get("retain_until_quest_id")),
+    )
+
+
+def _map_required_items(record: Mapping[str, Any]) -> tuple[RequiredQuestItemDefinition, ...]:
+    """Map TALK/TURN_IN prerequisites without inventing inventory semantics."""
+    values = record.get("required_quest_items") or ()
+    if not isinstance(values, (list, tuple)):
+        raise CandidateImportError(f"{record.get('quest_id')}: required_quest_items must be a list")
+    return tuple(
+        RequiredQuestItemDefinition(
+            item_key=str(item.get("item_key") or "").strip(),
+            quantity=int(item.get("quantity") or 0),
+            consume=bool(item.get("consume", True)),
+        )
+        for item in values
     )
 
 def map_candidate_record(record: Mapping[str, Any]) -> tuple[StoryQuestDefinition, dict[str, Any]]:
@@ -129,6 +145,8 @@ def map_candidate_record(record: Mapping[str, Any]) -> tuple[StoryQuestDefinitio
         target_quantity=int(record.get("target_quantity") or 0),
         boss_key=record.get("boss_key"),
         quest_item=_map_item(record),
+        required_quest_items=_map_required_items(record),
+        quest_item_consumption=str(record.get("quest_item_consumption") or "default"),
         reward=_map_reward(record),
         navigation=NavigationDefinition(
             location_id=str(record.get("location_id") or "").strip(),

@@ -148,6 +148,62 @@ def get_story_quest_item_quantity(
     return int(row[0]) if row else 0
 
 
+def get_total_story_quest_item_quantity(connection, user_id: int, item_key: str) -> int:
+    """Return one clue quantity across source quests for later retained turn-ins."""
+    row = connection.execute(
+        """SELECT COALESCE(SUM(quantity),0) FROM user_story_quest_items
+        WHERE user_id=? AND item_key=?""",
+        (int(user_id), str(item_key)),
+    ).fetchone()
+    return max(0, int(row[0] or 0)) if row else 0
+
+
+def consume_story_quest_item_quantity(
+    connection, *, user_id: int, item_key: str, quantity: int
+) -> int:
+    """Consume an exact quantity across retained source rows, oldest first.
+
+    The caller owns the surrounding transaction. Any insufficient or concurrent
+    state raises before completion, allowing the outer transaction to roll back
+    every row and the reward/status mutation together.
+    """
+    required = int(quantity)
+    if required <= 0:
+        raise StoryQuestPersistenceError("consume quantity must be positive")
+    rows = connection.execute(
+        """SELECT quest_id, quantity FROM user_story_quest_items
+        WHERE user_id=? AND item_key=? AND quantity>0
+        ORDER BY updated_at, quest_id""",
+        (int(user_id), str(item_key)),
+    ).fetchall()
+    if sum(int(row[1] or 0) for row in rows) < required:
+        raise StoryQuestConflictError("required quest item quantity is incomplete")
+    remaining = required
+    for quest_id, current_raw in rows:
+        current = int(current_raw or 0)
+        take = min(current, remaining)
+        if take <= 0:
+            continue
+        if take == current:
+            changed = connection.execute(
+                """DELETE FROM user_story_quest_items
+                WHERE user_id=? AND quest_id=? AND item_key=? AND quantity=?""",
+                (int(user_id), str(quest_id), str(item_key), current),
+            )
+        else:
+            changed = connection.execute(
+                """UPDATE user_story_quest_items SET quantity=quantity-?, updated_at=?
+                WHERE user_id=? AND quest_id=? AND item_key=? AND quantity=?""",
+                (take, utc_now_iso(), int(user_id), str(quest_id), str(item_key), current),
+            )
+        if changed.rowcount != 1:
+            raise StoryQuestConflictError("quest item quantity changed concurrently")
+        remaining -= take
+        if remaining == 0:
+            break
+    return required
+
+
 def add_story_quest_item(
     connection,
     *,
