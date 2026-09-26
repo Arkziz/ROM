@@ -1,0 +1,74 @@
+{
+  "stage": "19.23.3f",
+  "status": "PASS",
+  "decision": "PASS_PENDING_MANUAL_GAME_CHECK",
+  "head_before": "58d8e4ef07e3338c22b37f1ee21b56ed5943d646",
+  "backup_path": "backup/stage_19_23_3f_story_quest_unaccepted_objective_hidden",
+  "exact_files": [
+    "handlers/story_quest_npc_runtime.py",
+    "tools/check_story_quest_unaccepted_objective_hidden.py"
+  ],
+  "policy": {
+    "completion_receipt_shows": [
+      "completed quest",
+      "actual reward",
+      "next quest title",
+      "next NPC route or same-NPC hint"
+    ],
+    "completion_receipt_hides": [
+      "unaccepted next quest objective"
+    ],
+    "available_npc_card": "unchanged and still shows quest details before acceptance"
+  },
+  "regression_stdout": "STORY QUEST UNACCEPTED OBJECTIVE HIDDEN: PASS\n",
+  "maintained_regressions": [
+    {
+      "tool": "tools/check_story_quest_batch_1_10_activation.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST BATCH 1-10 ACTIVATION: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_active_view_and_journal_details.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST ACTIVE VIEW AND JOURNAL DETAILS: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_npc_progress_and_actions.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST NPC PROGRESS AND ACTIONS: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_rewards_and_transitions.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST REWARDS AND TRANSITIONS: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_callback_tokens_and_npc_fallback.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST CALLBACK TOKENS AND NPC FALLBACK: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_talk_conversation_flow.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST TALK CONVERSATION FLOW: PASS\n",
+      "stderr": ""
+    }
+  ],
+  "production_registry_count": 10,
+  "quest_11_active": false,
+  "production_database_mutation": false,
+  "manual_game_check_required": true,
+  "manual_scenarios": [
+    "Complete quest 1: receipt shows quest 2 title and Mercenary Guild route but not quest 2 objective.",
+    "Complete a quest whose successor uses the same NPC: receipt shows the title and same-NPC acceptance hint but not the successor objective.",
+    "Open the successor NPC: its AVAILABLE card still shows the quest details and reward.",
+    "Quest 10 continues to show only the inactive next chapter message."
+  ],
+  "wal_shm_manipulated": false,
+  "generated_at_utc": "2026-09-26T20:38:24.819474+00:00"
+}

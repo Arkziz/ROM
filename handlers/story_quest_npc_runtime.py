@@ -72,7 +72,7 @@ def _next_step_lines(connection,user_id,current,npc_id):
  if next_quest is None:
   return ['', '📖 Наступна глава:', '«Рунічна аномалія»', '', 'ℹ️ Наступна глава поки не активована.'] if current.number==10 else []
  status=get_story_quest_status(connection,user_id=int(user_id),quest=next_quest,player_level=_level(user_id)).value
- lines=['', '✨ Відкрито наступний квест:', f'📜 {next_quest.number}. {next_quest.title}', f'Статус: {STATUS_LABELS.get(status,status)}', '', '🎯 Наступна мета:', next_quest.objective_text]
+ lines=['', '✨ Доступний наступний квест:', f'📜 {next_quest.number}. {next_quest.title}', f'Статус: {STATUS_LABELS.get(status,status)}']
  if status=='AVAILABLE':
   if next_quest.giver_npc_id==npc_id:lines += ['', '🧭 Наступний крок:', 'Новий квест можна прийняти у цього персонажа нижче.']
   else:
