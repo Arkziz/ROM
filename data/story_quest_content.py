@@ -120,8 +120,8 @@ _DATA=json.loads(r'''[
       "previous_quest_id": "start_path_003_last_report",
       "giver_npc_id": "mercenary_head",
       "turn_in_npc_id": "elder",
-      "description": "Під час пошуків герой знаходить фрагмент форми зниклого вартового.",
-      "objective_text": "Знайти під час полювання клапоть форми зниклого вартового.",
+      "description": "Голова Найманців просить обшукати стежку за старим мостом і пошукати будь-які сліди зниклого патруля.",
+      "objective_text": "Шукати під час полювання докази, пов’язані зі зниклим патрулем.",
       "target_quantity": 1,
       "boss_key": null,
       "quest_item": {
@@ -142,12 +142,12 @@ _DATA=json.loads(r'''[
         "location_id": "start_path",
         "giver_npc_id": "mercenary_head",
         "turn_in_npc_id": "elder",
-        "objective_hint": "Знайти під час полювання клапоть форми зниклого вартового.",
+        "objective_hint": "Шукати під час полювання докази, пов’язані зі зниклим патрулем.",
         "next_step_hint": "🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста"
       }
     },
-    "acceptance_text": "Під час пошуків герой знаходить фрагмент форми зниклого вартового.",
-    "completion_text": "Знайти під час полювання клапоть форми зниклого вартового.",
+    "acceptance_text": "Патруль бачили біля старого мосту, але далі його слід губиться. Обшукай стежку та прилеглі хащі. Шукай будь-які речі, сліди боротьби або інші докази, які допоможуть встановити, що сталося з вартовими.",
+    "completion_text": "Серед слідів вдалося знайти клапоть форми зниклого вартового. Цей доказ потрібно передати Старості.",
     "progress_text": ""
   },
   {
@@ -161,7 +161,7 @@ _DATA=json.loads(r'''[
       "previous_quest_id": "start_path_004_guard_uniform_scrap",
       "giver_npc_id": "elder",
       "turn_in_npc_id": "elder",
-      "description": "Староста підтверджує, що знайдений клапоть належить міській варті, та оголошує продовження пошуків.",
+      "description": "Показати Старості знайдений клапоть і з’ясувати, чи належав він міській варті.",
       "objective_text": "Передати Старості клапоть форми вартового.",
       "target_quantity": 1,
       "boss_key": null,
@@ -202,7 +202,7 @@ _DATA=json.loads(r'''[
       "previous_quest_id": "start_path_005_evidence_from_the_trail",
       "giver_npc_id": "mercenary_head",
       "turn_in_npc_id": "mercenary_head",
-      "description": "Герой розчищає територію біля старого мосту, де патруль бачили востаннє.",
+      "description": "Голова Найманців просить розчистити територію біля старого мосту, де патруль бачили востаннє.",
       "objective_text": "Перемогти 5 будь-яких істот у локації Початок Шляху.",
       "target_quantity": 5,
       "boss_key": null,
@@ -237,8 +237,8 @@ _DATA=json.loads(r'''[
       "previous_quest_id": "start_path_006_old_bridge",
       "giver_npc_id": "mercenary_head",
       "turn_in_npc_id": "blacksmith",
-      "description": "Герой знаходить зламаний ліхтар зниклого патруля та має показати його Ковалю.",
-      "objective_text": "Знайти зламаний ліхтар патруля під час полювання.",
+      "description": "Слабкий металевий відблиск біля старого мосту може виявитися новим доказом. Потрібно ретельно обшукати місцевість.",
+      "objective_text": "Шукати під час полювання предмети або сліди, які могли належати зниклому патрулю.",
       "target_quantity": 1,
       "boss_key": null,
       "quest_item": {
@@ -259,12 +259,12 @@ _DATA=json.loads(r'''[
         "location_id": "start_path",
         "giver_npc_id": "mercenary_head",
         "turn_in_npc_id": "blacksmith",
-        "objective_hint": "Знайти зламаний ліхтар патруля під час полювання.",
+        "objective_hint": "Шукати під час полювання предмети або сліди, які могли належати зниклому патрулю.",
         "next_step_hint": "🏙️ Місто → ⚒️ Ремісничий квартал → ⚒️ Коваль"
       }
     },
-    "acceptance_text": "Герой знаходить зламаний ліхтар зниклого патруля та має показати його Ковалю.",
-    "completion_text": "Знайти зламаний ліхтар патруля під час полювання.",
+    "acceptance_text": "Під час зачистки біля мосту серед слідів помітили металевий відблиск. Повернися туди та уважно обшукай землю, каміння й зарості. Якщо знайдеш річ патруля, не намагайся визначати її походження самостійно.",
+    "completion_text": "Серед слідів вдалося знайти зламаний ліхтар міської варти. Його потрібно показати Ковалю.",
     "progress_text": ""
   },
   {
@@ -278,7 +278,7 @@ _DATA=json.loads(r'''[
       "previous_quest_id": "start_path_007_broken_guard_lantern",
       "giver_npc_id": "blacksmith",
       "turn_in_npc_id": "blacksmith",
-      "description": "Коваль оглядає ліхтар і визначає, що його пошкодили біля кам’янистої дороги до печер.",
+      "description": "Показати Ковалю зламаний ліхтар і з’ясувати, де та як його пошкодили.",
       "objective_text": "Передати Ковалю зламаний ліхтар вартового.",
       "target_quantity": 1,
       "boss_key": null,
@@ -319,7 +319,7 @@ _DATA=json.loads(r'''[
       "previous_quest_id": "start_path_008_marks_on_metal",
       "giver_npc_id": "mercenary_head",
       "turn_in_npc_id": "mercenary_head",
-      "description": "Герой розчищає вузьку стежку до печер і знаходить сліди патруля, які ведуть углиб.",
+      "description": "Голова Найманців просить розчистити вузьку стежку до печер і перевірити, чи міг зниклий патруль пройти цим шляхом.",
       "objective_text": "Перемогти 6 будь-яких істот у локації Початок Шляху.",
       "target_quantity": 6,
       "boss_key": null,
@@ -354,7 +354,7 @@ _DATA=json.loads(r'''[
       "previous_quest_id": "start_path_009_path_to_the_caves",
       "giver_npc_id": "elder",
       "turn_in_npc_id": "elder",
-      "description": "Герой доповідає Старості про сліди до печер. Розслідування стає офіційним і відкриває главу про рунічну аномалію.",
+      "description": "Доповісти Старості про сліди, що ведуть до печер, і передати результати пошуків патруля.",
       "objective_text": "Доповісти Старості про дорогу до печер.",
       "target_quantity": 1,
       "boss_key": null,

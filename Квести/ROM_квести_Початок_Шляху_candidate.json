@@ -1,0 +1,1965 @@
+{
+  "schema_version": 5,
+  "document_type": "story_quest_candidate_registry",
+  "production_authoritative": false,
+  "source_reference": {
+    "folder": "Квести",
+    "file": "ROM_квести_Початок_Шляху_50.docx",
+    "role": "authorial_source_document",
+    "must_not_be_modified_by_candidate_updates": true
+  },
+  "campaign": {
+    "campaign_id": "start_path_campaign",
+    "title": "Початок Шляху",
+    "location_id": "start_path",
+    "planned_quest_range": [
+      1,
+      50
+    ],
+    "approved_batches": [
+      [
+        1,
+        10
+      ],
+      [
+        11,
+        20
+      ],
+      [
+        21,
+        30
+      ],
+      [
+        31,
+        40
+      ],
+      [
+        41,
+        50
+      ]
+    ],
+    "batch_size": 10,
+    "strict_sequential_chain": true,
+    "access_policy": {
+      "requires_previous_quest_completion": true,
+      "requires_unlock_level": true,
+      "package_unlock_levels": {
+        "1-10": 1,
+        "11-20": 2,
+        "21-30": 3,
+        "31-40": 4,
+        "41-50": 5
+      },
+      "overlevel_skip_policy": "retain Stage 19.18 policy until separately revised"
+    }
+  },
+  "approved_policy": {
+    "batch_1_10_reward": "3x canonical expected reward of a normal level-1 mob for every quest type",
+    "quest_item_drop_chance": {
+      "quest_4": 0.15,
+      "quest_7": 0.15,
+      "quest_13": 0.15,
+      "quest_15": 0.15,
+      "quest_19": 0.15,
+      "quest_23": 0.15,
+      "quest_26": 0.15,
+      "quest_29": 0.15,
+      "quest_34": 0.15,
+      "quest_37": 0.15,
+      "quest_43": 0.15,
+      "quest_46": 0.15
+    },
+    "quest_8_type_change": {
+      "from": "TALK",
+      "to": "TURN_IN"
+    },
+    "batch_11_20_reward": "3x canonical expected reward of a normal level-2 mob for every quest type",
+    "quest_14_type_change": {
+      "from": "TALK",
+      "to": "TURN_IN"
+    },
+    "level_gating": "enabled by package unlock level and previous quest completion",
+    "batch_21_30_reward": "3x canonical expected reward of a normal level-3 mob for every quest type",
+    "batch_21_30_multi_item_turn_in": {
+      "accumulate_quest_items_from": [
+        23,
+        26,
+        29
+      ],
+      "consume_all_in_quest": 30,
+      "mode": "atomic_exact_once_all_or_nothing"
+    },
+    "quest_24_item_handling": "TALK inspects guards ring without consuming it",
+    "batch_31_40_reward": "3x canonical expected reward of a normal level-4 mob for every quest type",
+    "quest_38_type_change": {
+      "from": "TALK",
+      "to": "TURN_IN"
+    },
+    "quest_37_item_normalization": {
+      "from": "Слід до лігва вовків",
+      "to": "Рунічно позначений уламок із лігва",
+      "item_key": "start_path_runemarked_den_token"
+    },
+    "batch_41_50_regular_reward": "3x canonical expected reward of a normal level-5 mob for quests 41-48 and 50",
+    "quest_49_boss_story_reward": "5x canonical expected reward of a normal level-5 mob; canonical boss combat reward remains separate",
+    "quest_44_type_change": {
+      "from": "TALK",
+      "to": "TURN_IN"
+    },
+    "quest_47_type_change": {
+      "from": "TALK",
+      "to": "TURN_IN"
+    },
+    "quest_50_dark_forest_policy": "story hint only; does not bypass canonical dark_forest unlock level 6"
+  },
+  "quests": [
+    {
+      "quest_id": "start_path_001_missing_patrol",
+      "number": 1,
+      "title": "Патруль не повернувся",
+      "quest_type": "TALK",
+      "location_id": "start_path",
+      "unlock_level": 1,
+      "previous_quest_id": null,
+      "giver_npc_id": "elder",
+      "turn_in_npc_id": "elder",
+      "target_quantity": 1,
+      "description": "Черговий патруль не повернувся з обходу околиць. Староста просить героя почати розслідування та звернутися до Голови Найманців.",
+      "objective_text": "Поговорити зі Старостою про зникнення патруля.",
+      "acceptance_text": "Кілька годин тому черговий патруль мав повернутися з обходу околиць. Вартові перевіряли стежку біля старого мосту, але від них досі немає звістки. У таборі бракує людей, а посилати ще один непідготовлений загін надто ризиковано. Поговори з Головою Найманців. Можливо, у гільдії вже щось чули про зниклих вартових.",
+      "completion_text": "Староста передає короткий опис маршруту патруля та просить звернутися до Голови Найманців.",
+      "next_route": [
+        "🏙️ Місто",
+        "📜 Гільдія Найманців",
+        "⚔️ Голова Найманців"
+      ],
+      "reward": {
+        "exp": 30,
+        "gold": 0.27,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 1,
+          "multiplier": 3,
+          "canonical_expected_exp": 10,
+          "canonical_expected_gold": 0.09,
+          "randomness_applied_to_quest_reward": false
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_002_clear_the_path",
+      "number": 2,
+      "title": "Перевірка стежки",
+      "quest_type": "KILL_REGION",
+      "location_id": "start_path",
+      "unlock_level": 1,
+      "previous_quest_id": "start_path_001_missing_patrol",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 3,
+      "description": "Голова Найманців просить розчистити околиці, щоб пошуковий загін міг безпечно пройти стежкою.",
+      "objective_text": "Перемогти 3 будь-яких істот у локації Початок Шляху.",
+      "acceptance_text": "Про зниклий патруль мені вже доповіли. Останніми днями звірі підходять до табору ближче, ніж зазвичай, тому пошуковий загін не зможе безпечно пройти стежкою. Розчисти околиці. Трьох перемог буде достатньо, щоб показати, що ти здатен подбати про себе за межами міста.",
+      "completion_text": "Шлях до околиць став безпечнішим. Голова Найманців погоджується розповісти, що відомо гільдії.",
+      "progress_text": "Перевірка стежки: {progress}/3",
+      "reward": {
+        "exp": 30,
+        "gold": 0.27,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 1,
+          "multiplier": 3,
+          "canonical_expected_exp": 10,
+          "canonical_expected_gold": 0.09,
+          "randomness_applied_to_quest_reward": false
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_003_last_report",
+      "number": 3,
+      "title": "Останній слід",
+      "quest_type": "TALK",
+      "location_id": "start_path",
+      "unlock_level": 1,
+      "previous_quest_id": "start_path_002_clear_the_path",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 1,
+      "description": "Голова Найманців повідомляє останній відомий маршрут патруля та направляє героя до старого мосту.",
+      "objective_text": "Отримати від Голови Найманців відомості про останній маршрут патруля.",
+      "acceptance_text": "Один із мисливців бачив патруль біля старого мосту. Вартові рухалися в бік лісової стежки, хоча мали повернутися до табору іншим шляхом. На землі залишилися сліди боротьби, але мисливець не наважився йти далі сам. Перевір місцевість під час полювання. Шукай будь-який предмет, який міг належати зниклому вартовому.",
+      "completion_text": "Тепер відомо, де починати пошуки: на стежці за старим мостом.",
+      "reward": {
+        "exp": 30,
+        "gold": 0.27,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 1,
+          "multiplier": 3,
+          "canonical_expected_exp": 10,
+          "canonical_expected_gold": 0.09,
+          "randomness_applied_to_quest_reward": false
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_004_guard_uniform_scrap",
+      "number": 4,
+      "title": "Клапоть форми",
+      "quest_type": "QUEST_ITEM",
+      "location_id": "start_path",
+      "unlock_level": 1,
+      "previous_quest_id": "start_path_003_last_report",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "elder",
+      "target_quantity": 1,
+      "description": "Голова Найманців просить обшукати стежку за старим мостом і пошукати будь-які сліди зниклого патруля.",
+      "objective_text": "Шукати під час полювання докази, пов’язані зі зниклим патрулем.",
+      "quest_item": {
+        "item_key": "start_path_guard_uniform_scrap",
+        "display_name": "Клапоть форми вартового",
+        "required_quantity": 1,
+        "drop_chance": 0.15,
+        "drop_message": "🧩 Сюжетна знахідка: Клапоть форми вартового\n\nНа тканині видно сліди бруду та розірвані краї. Клапоть варто показати Старості."
+      },
+      "reward": {
+        "exp": 30,
+        "gold": 0.27,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 1,
+          "multiplier": 3,
+          "canonical_expected_exp": 10,
+          "canonical_expected_gold": 0.09,
+          "randomness_applied_to_quest_reward": false
+        }
+      },
+      "acceptance_text": "Патруль бачили біля старого мосту, але далі його слід губиться. Обшукай стежку та прилеглі хащі. Шукай будь-які речі, сліди боротьби або інші докази, які допоможуть встановити, що сталося з вартовими.",
+      "completion_text": "Серед слідів вдалося знайти клапоть форми зниклого вартового. Цей доказ потрібно передати Старості."
+    },
+    {
+      "quest_id": "start_path_005_evidence_from_the_trail",
+      "number": 5,
+      "title": "Доказ із хащі",
+      "quest_type": "TURN_IN",
+      "location_id": "start_path",
+      "unlock_level": 1,
+      "previous_quest_id": "start_path_004_guard_uniform_scrap",
+      "giver_npc_id": "elder",
+      "turn_in_npc_id": "elder",
+      "target_quantity": 1,
+      "description": "Показати Старості знайдений клапоть і з’ясувати, чи належав він міській варті.",
+      "objective_text": "Передати Старості клапоть форми вартового.",
+      "required_quest_items": [
+        {
+          "item_key": "start_path_guard_uniform_scrap",
+          "quantity": 1
+        }
+      ],
+      "acceptance_text": "Це частина форми нашої варти. На внутрішньому шві залишилася позначка міського складу. Отже, патруль справді дістався старого мосту. Але тканина не просто зачепилася за гілку. Її розірвано силою. Потрібно перевірити місцевість навколо мосту. Повернися до Голови Найманців і передай, що пошуки мають продовжуватися.",
+      "completion_text": "Староста підтверджує, що клапоть належав міському вартовому. Зникнення патруля офіційно визнають надзвичайною подією.",
+      "reward": {
+        "exp": 30,
+        "gold": 0.27,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 1,
+          "multiplier": 3,
+          "canonical_expected_exp": 10,
+          "canonical_expected_gold": 0.09,
+          "randomness_applied_to_quest_reward": false
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_006_old_bridge",
+      "number": 6,
+      "title": "Старий міст",
+      "quest_type": "KILL_REGION",
+      "location_id": "start_path",
+      "unlock_level": 1,
+      "previous_quest_id": "start_path_005_evidence_from_the_trail",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 5,
+      "description": "Голова Найманців просить розчистити територію біля старого мосту, де патруль бачили востаннє.",
+      "objective_text": "Перемогти 5 будь-яких істот у локації Початок Шляху.",
+      "acceptance_text": "Староста передав твою знахідку. Якщо патруль атакували біля мосту, навколо можуть залишатися небезпечні істоти або нові сліди. Розчисти місцевість і не поспішай повертатися. Оглядай землю, каміння та покинуті речі.",
+      "completion_text": "Територію біля старого мосту очищено. Серед слідів на землі помітний слабкий відблиск металу.",
+      "progress_text": "Старий міст: {progress}/5",
+      "reward": {
+        "exp": 30,
+        "gold": 0.27,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 1,
+          "multiplier": 3,
+          "canonical_expected_exp": 10,
+          "canonical_expected_gold": 0.09,
+          "randomness_applied_to_quest_reward": false
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_007_broken_guard_lantern",
+      "number": 7,
+      "title": "Згаслий ліхтар",
+      "quest_type": "QUEST_ITEM",
+      "location_id": "start_path",
+      "unlock_level": 1,
+      "previous_quest_id": "start_path_006_old_bridge",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "blacksmith",
+      "target_quantity": 1,
+      "description": "Слабкий металевий відблиск біля старого мосту може виявитися новим доказом. Потрібно ретельно обшукати місцевість.",
+      "objective_text": "Шукати під час полювання предмети або сліди, які могли належати зниклому патрулю.",
+      "quest_item": {
+        "item_key": "start_path_broken_guard_lantern",
+        "display_name": "Зламаний ліхтар вартового",
+        "required_quantity": 1,
+        "drop_chance": 0.15,
+        "drop_message": "🏮 Сюжетна знахідка: Зламаний ліхтар вартового\n\nМеталевий корпус пом’ятий, а на кріпленні залишилися глибокі подряпини. Коваль зможе визначити, як саме його пошкодили."
+      },
+      "reward": {
+        "exp": 30,
+        "gold": 0.27,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 1,
+          "multiplier": 3,
+          "canonical_expected_exp": 10,
+          "canonical_expected_gold": 0.09,
+          "randomness_applied_to_quest_reward": false
+        }
+      },
+      "acceptance_text": "Під час зачистки біля мосту серед слідів помітили металевий відблиск. Повернися туди та уважно обшукай землю, каміння й зарості. Якщо знайдеш річ патруля, не намагайся визначати її походження самостійно.",
+      "completion_text": "Серед слідів вдалося знайти зламаний ліхтар міської варти. Його потрібно показати Ковалю."
+    },
+    {
+      "quest_id": "start_path_008_marks_on_metal",
+      "number": 8,
+      "title": "Сліди на металі",
+      "quest_type": "TURN_IN",
+      "location_id": "start_path",
+      "unlock_level": 1,
+      "previous_quest_id": "start_path_007_broken_guard_lantern",
+      "giver_npc_id": "blacksmith",
+      "turn_in_npc_id": "blacksmith",
+      "target_quantity": 1,
+      "description": "Показати Ковалю зламаний ліхтар і з’ясувати, де та як його пошкодили.",
+      "objective_text": "Передати Ковалю зламаний ліхтар вартового.",
+      "required_quest_items": [
+        {
+          "item_key": "start_path_broken_guard_lantern",
+          "quantity": 1
+        }
+      ],
+      "acceptance_text": "Цей ліхтар належав міській варті. Я сам лагодив його минулого місяця. Подивись на корпус: метал зім’ятий, але не від падіння. Щось ударило збоку, а потім протягнуло ліхтар по камінню. На кріпленні залишився дрібний світлий пил. Такий камінь трапляється біля печер. Якщо патруль ішов далі, шукай дорогу саме туди.",
+      "completion_text": "Коваль визначає, що ліхтар пошкодили неподалік кам’янистої стежки до печер.",
+      "reward": {
+        "exp": 30,
+        "gold": 0.27,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 1,
+          "multiplier": 3,
+          "canonical_expected_exp": 10,
+          "canonical_expected_gold": 0.09,
+          "randomness_applied_to_quest_reward": false
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_009_path_to_the_caves",
+      "number": 9,
+      "title": "Шлях до печер",
+      "quest_type": "KILL_REGION",
+      "location_id": "start_path",
+      "unlock_level": 1,
+      "previous_quest_id": "start_path_008_marks_on_metal",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 6,
+      "description": "Голова Найманців просить розчистити вузьку стежку до печер і перевірити, чи міг зниклий патруль пройти цим шляхом.",
+      "objective_text": "Перемогти 6 будь-яких істот у локації Початок Шляху.",
+      "acceptance_text": "Світлий пил на ліхтарі справді схожий на камінь із дороги до печер. Але пройти туди зараз непросто. Істоти заполонили вузьку стежку, а в заростях майже нічого не видно. Розчисти шлях. Якщо знайдеш нові сліди, не заходь до печер сам. Спочатку доповіси Старості.",
+      "completion_text": "Стежку до печер розчищено. На вологій землі видно сліди важких чобіт, що ведуть углиб, але не повертаються назад.",
+      "progress_text": "Шлях до печер: {progress}/6",
+      "reward": {
+        "exp": 30,
+        "gold": 0.27,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 1,
+          "multiplier": 3,
+          "canonical_expected_exp": 10,
+          "canonical_expected_gold": 0.09,
+          "randomness_applied_to_quest_reward": false
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_010_investigation_begins",
+      "number": 10,
+      "title": "Розслідування починається",
+      "quest_type": "TURN_IN",
+      "location_id": "start_path",
+      "unlock_level": 1,
+      "previous_quest_id": "start_path_009_path_to_the_caves",
+      "giver_npc_id": "elder",
+      "turn_in_npc_id": "elder",
+      "target_quantity": 1,
+      "description": "Доповісти Старості про сліди, що ведуть до печер, і передати результати пошуків патруля.",
+      "objective_text": "Доповісти Старості про дорогу до печер.",
+      "acceptance_text": "Сліди ведуть до печер, а патруль звідти не повернувся. Тепер зрозуміло, що випадковою затримкою це не пояснити. Я оголошую офіційне розслідування. Голова Найманців підготує пошуковий загін, а Рунний Майстер перевірить дивне світіння, яке останнім часом бачать на лісових стежках. Відпочинь і підготуй спорядження. Попереду буде складніше.",
+      "completion_text": "✅ Главу «Тривога на околиці» завершено.\n\nСліди зниклого патруля ведуть до печер, а на стежках помічено дивне рунічне світіння.",
+      "next_chapter": {
+        "title": "Рунічна аномалія",
+        "quest_range": [
+          11,
+          20
+        ],
+        "unlock_level": 2,
+        "first_npc_id": "rune_master"
+      },
+      "reward": {
+        "exp": 30,
+        "gold": 0.27,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 1,
+          "multiplier": 3,
+          "canonical_expected_exp": 10,
+          "canonical_expected_gold": 0.09,
+          "randomness_applied_to_quest_reward": false
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_011_unstable_glow",
+      "number": 11,
+      "title": "Неспокійне світіння",
+      "quest_type": "TALK",
+      "location_id": "start_path",
+      "unlock_level": 2,
+      "previous_quest_id": "start_path_010_investigation_begins",
+      "giver_npc_id": "rune_master",
+      "turn_in_npc_id": "rune_master",
+      "target_quantity": 1,
+      "description": "Рунний Майстер пов’язує маршрут зниклого патруля з рунічним світінням на старих стежках.",
+      "objective_text": "Поговорити з Рунним Майстром про аномальне світіння.",
+      "acceptance_text": "Староста розповів про сліди патруля біля печер. Це збігається з іншими повідомленнями. На старих стежках з’явилося слабке рунічне світіння. Спочатку воно було помітне лише на рослинах, але тепер світяться каміння, слиз і навіть сліди деяких істот. Потрібно визначити, наскільки далеко поширилася аномалія. Почни з місцевості навколо рунічних плям.",
+      "completion_text": "Рунний Майстер позначає на карті кілька місць, де рунічне світіння проявляється найсильніше.",
+      "reward": {
+        "exp": 36,
+        "gold": 0.43,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 2,
+          "multiplier": 3,
+          "canonical_expected_exp": 12,
+          "canonical_expected_gold_unrounded": 0.1425,
+          "canonical_expected_gold": 0.14,
+          "quest_gold_unrounded": 0.4275,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_012_anomaly_sites",
+      "number": 12,
+      "title": "Осередки аномалії",
+      "quest_type": "KILL_REGION",
+      "location_id": "start_path",
+      "unlock_level": 2,
+      "previous_quest_id": "start_path_011_unstable_glow",
+      "giver_npc_id": "rune_master",
+      "turn_in_npc_id": "rune_master",
+      "target_quantity": 6,
+      "description": "Герой стримує істот біля рунічних плям і знаходить слід нестабільної енергії.",
+      "objective_text": "Перемогти 6 будь-яких істот у локації Початок Шляху.",
+      "acceptance_text": "Рунічне світіння накопичується там, де часто проходять істоти. Я не знаю, чи вони розносять аномалію, чи лише реагують на неї. Перевір позначені ділянки та стримай істот навколо них. Після кількох сутичок стане зрозуміло, чи залишаються на місці придатні для дослідження сліди.",
+      "completion_text": "Після боїв світіння на землі слабшає, але серед каміння залишається гострий уламок, що пульсує блідим світлом.",
+      "progress_text": "Осередки аномалії: {progress}/6",
+      "reward": {
+        "exp": 36,
+        "gold": 0.43,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 2,
+          "multiplier": 3,
+          "canonical_expected_exp": 12,
+          "canonical_expected_gold_unrounded": 0.1425,
+          "canonical_expected_gold": 0.14,
+          "quest_gold_unrounded": 0.4275,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_013_runic_crystal_fragment",
+      "number": 13,
+      "title": "Уламок аномалії",
+      "quest_type": "QUEST_ITEM",
+      "location_id": "start_path",
+      "unlock_level": 2,
+      "previous_quest_id": "start_path_012_anomaly_sites",
+      "giver_npc_id": "rune_master",
+      "turn_in_npc_id": "alchemist",
+      "target_quantity": 1,
+      "description": "Герой знаходить нестабільний уламок рунічного кристала для дослідження Алхіміком.",
+      "objective_text": "Знайти уламок рунічного кристала під час полювання.",
+      "quest_item": {
+        "item_key": "start_path_runic_crystal_fragment",
+        "display_name": "Уламок рунічного кристала",
+        "required_quantity": 1,
+        "drop_chance": 0.15,
+        "drop_message": "💠 Сюжетна знахідка: Уламок рунічного кристала\n\nКристал випромінює слабке пульсуюче світло. Його поверхня вкрита дрібними тріщинами, ніби енергія намагається вирватися назовні. Алхімік зможе дослідити його склад."
+      },
+      "reward": {
+        "exp": 36,
+        "gold": 0.43,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 2,
+          "multiplier": 3,
+          "canonical_expected_exp": 12,
+          "canonical_expected_gold_unrounded": 0.1425,
+          "canonical_expected_gold": 0.14,
+          "quest_gold_unrounded": 0.4275,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_014_crystal_under_glass",
+      "number": 14,
+      "title": "Кристал під склом",
+      "quest_type": "TURN_IN",
+      "location_id": "start_path",
+      "unlock_level": 2,
+      "previous_quest_id": "start_path_013_runic_crystal_fragment",
+      "giver_npc_id": "alchemist",
+      "turn_in_npc_id": "alchemist",
+      "target_quantity": 1,
+      "description": "Алхімік приймає уламок, ізолює його та просить знайти другий зразок аномалії.",
+      "objective_text": "Передати Алхіміку уламок рунічного кристала.",
+      "required_quest_items": [
+        {
+          "item_key": "start_path_runic_crystal_fragment",
+          "quantity": 1
+        }
+      ],
+      "acceptance_text": "Обережніше. Поклади уламок у цей контейнер. Кристал не схожий на природне рунічне утворення. У ньому є домішки крові, рослинного соку та дрібного кам’яного пилу. Енергія ніби проходила крізь живу істоту, а потім затверділа. Одного зразка недостатньо. Мені потрібен рунічний пил із тієї самої місцевості. Він покаже, чи аномалія виникла природно, чи її хтось поширює.",
+      "completion_text": "Алхімік ізолює уламок у захисному контейнері та просить знайти пробу рунічного пилу.",
+      "reward": {
+        "exp": 36,
+        "gold": 0.43,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 2,
+          "multiplier": 3,
+          "canonical_expected_exp": 12,
+          "canonical_expected_gold_unrounded": 0.1425,
+          "canonical_expected_gold": 0.14,
+          "quest_gold_unrounded": 0.4275,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_015_runic_dust_sample",
+      "number": 15,
+      "title": "Рунічний пил",
+      "quest_type": "QUEST_ITEM",
+      "location_id": "start_path",
+      "unlock_level": 2,
+      "previous_quest_id": "start_path_014_crystal_under_glass",
+      "giver_npc_id": "alchemist",
+      "turn_in_npc_id": "alchemist",
+      "target_quantity": 1,
+      "description": "Герой збирає пробу рунічного пилу для порівняння з уламком кристала.",
+      "objective_text": "Знайти пробу рунічного пилу під час полювання.",
+      "acceptance_text": "Шукай місця, де світіння осідає на камінні або шерсті істот. Пил може бути майже непомітним, але в темряві він відбиває синювате світло. Не торкайся його голими руками. Збери пробу в цю посудину.",
+      "quest_item": {
+        "item_key": "start_path_runic_dust_sample",
+        "display_name": "Проба рунічного пилу",
+        "required_quantity": 1,
+        "drop_chance": 0.15,
+        "drop_message": "✨ Сюжетна знахідка: Проба рунічного пилу\n\nНа дні посудини мерехтить дрібний синюватий пил. Світіння стає яскравішим біля залишків рунічної енергії. Пробу потрібно віднести Алхіміку."
+      },
+      "reward": {
+        "exp": 36,
+        "gold": 0.43,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 2,
+          "multiplier": 3,
+          "canonical_expected_exp": 12,
+          "canonical_expected_gold_unrounded": 0.1425,
+          "canonical_expected_gold": 0.14,
+          "quest_gold_unrounded": 0.4275,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_016_unnatural_trace",
+      "number": 16,
+      "title": "Неприродний слід",
+      "quest_type": "TURN_IN",
+      "location_id": "start_path",
+      "unlock_level": 2,
+      "previous_quest_id": "start_path_015_runic_dust_sample",
+      "giver_npc_id": "alchemist",
+      "turn_in_npc_id": "alchemist",
+      "target_quantity": 1,
+      "description": "Алхімік порівнює пробу пилу з раніше переданим уламком і підтверджує їх спільне неприродне походження.",
+      "objective_text": "Передати Алхіміку пробу рунічного пилу та отримати результати дослідження.",
+      "required_quest_items": [
+        {
+          "item_key": "start_path_runic_dust_sample",
+          "quantity": 1
+        }
+      ],
+      "acceptance_text": "Пил реагує на уламок. Світіння обох зразків збігається в одному ритмі. Це не випадкове накопичення енергії. Хтось або щось розносить один і той самий рунічний вплив різними ділянками околиць. Найсильніше забруднення видно на органічних рештках. Істоти не просто проходять крізь аномалію. Вона змінює їх і робить агресивнішими. Передай висновок Рунному Майстру.",
+      "completion_text": "Алхімік підтверджує, що кристал і пил мають спільне неприродне походження.",
+      "next_route": [
+        "🏙️ Місто",
+        "Руни",
+        "Рунний Майстер"
+      ],
+      "reward": {
+        "exp": 36,
+        "gold": 0.43,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 2,
+          "multiplier": 3,
+          "canonical_expected_exp": 12,
+          "canonical_expected_gold_unrounded": 0.1425,
+          "canonical_expected_gold": 0.14,
+          "quest_gold_unrounded": 0.4275,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_017_tainted_paths",
+      "number": 17,
+      "title": "Заражені стежки",
+      "quest_type": "KILL_REGION",
+      "location_id": "start_path",
+      "unlock_level": 2,
+      "previous_quest_id": "start_path_016_unnatural_trace",
+      "giver_npc_id": "rune_master",
+      "turn_in_npc_id": "rune_master",
+      "target_quantity": 8,
+      "description": "Герой стримує заражених істот і сповільнює поширення рунічного впливу.",
+      "objective_text": "Перемогти 8 будь-яких істот у локації Початок Шляху.",
+      "acceptance_text": "Висновок Алхіміка підтверджує мої побоювання. Рунічний вплив переходить від одного носія до іншого, а заражені істоти розносять його далі. Повністю знищити аномалію ми поки не можемо, але здатні стримати її поширення. Очисти стежки навколо найяскравіших плям.",
+      "completion_text": "Кількість заражених істот зменшилася, але із заходом сонця рунічне світіння починає посилюватися.",
+      "progress_text": "Заражені стежки: {progress}/8",
+      "reward": {
+        "exp": 36,
+        "gold": 0.43,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 2,
+          "multiplier": 3,
+          "canonical_expected_exp": 12,
+          "canonical_expected_gold_unrounded": 0.1425,
+          "canonical_expected_gold": 0.14,
+          "quest_gold_unrounded": 0.4275,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_018_glow_after_sunset",
+      "number": 18,
+      "title": "Світло після заходу",
+      "quest_type": "TALK",
+      "location_id": "start_path",
+      "unlock_level": 2,
+      "previous_quest_id": "start_path_017_tainted_paths",
+      "giver_npc_id": "rune_master",
+      "turn_in_npc_id": "rune_master",
+      "target_quantity": 1,
+      "description": "Рунний Майстер співставляє карту аномалії з маршрутом зниклого патруля.",
+      "objective_text": "Отримати від Рунного Майстра результати спостережень за аномалією.",
+      "acceptance_text": "Ти стримав поширення, але аномалія не зникла. Уночі рунічні плями світяться сильніше, наче отримують енергію з іншого джерела. Я порівняв карту світіння з маршрутом зниклого патруля. Вартові проходили просто через одну з найактивніших ділянок. Пошукай там сліди їхньої присутності.",
+      "completion_text": "На карті позначено ділянку, де маршрут патруля перетинається з найсильнішим осередком рунічної енергії.",
+      "reward": {
+        "exp": 36,
+        "gold": 0.43,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 2,
+          "multiplier": 3,
+          "canonical_expected_exp": 12,
+          "canonical_expected_gold_unrounded": 0.1425,
+          "canonical_expected_gold": 0.14,
+          "quest_gold_unrounded": 0.4275,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_019_guards_note",
+      "number": 19,
+      "title": "Записка при світлі рун",
+      "quest_type": "QUEST_ITEM",
+      "location_id": "start_path",
+      "unlock_level": 2,
+      "previous_quest_id": "start_path_018_glow_after_sunset",
+      "giver_npc_id": "rune_master",
+      "turn_in_npc_id": "elder",
+      "target_quantity": 1,
+      "description": "Герой знаходить записку вартового біля найсильнішого рунічного осередку.",
+      "objective_text": "Знайти записку зниклого вартового біля рунічного осередку.",
+      "quest_item": {
+        "item_key": "start_path_guard_note",
+        "display_name": "Записка вартового",
+        "required_quantity": 1,
+        "drop_chance": 0.15,
+        "drop_message": "📜 Сюжетна знахідка: Записка вартового\n\nЧастина тексту розмита, але окремі рядки ще можна прочитати: «Світіння веде до мосту… істоти поводяться неприродно… ми продовжимо пошук до печер…» Записку потрібно негайно передати Старості."
+      },
+      "reward": {
+        "exp": 36,
+        "gold": 0.43,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 2,
+          "multiplier": 3,
+          "canonical_expected_exp": 12,
+          "canonical_expected_gold_unrounded": 0.1425,
+          "canonical_expected_gold": 0.14,
+          "quest_gold_unrounded": 0.4275,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_020_patrol_knew",
+      "number": 20,
+      "title": "Патруль знав",
+      "quest_type": "TURN_IN",
+      "location_id": "start_path",
+      "unlock_level": 2,
+      "previous_quest_id": "start_path_019_guards_note",
+      "giver_npc_id": "elder",
+      "turn_in_npc_id": "elder",
+      "target_quantity": 1,
+      "description": "Староста дізнається, що патруль самостійно розслідував аномалію та свідомо вирушив до печер.",
+      "objective_text": "Передати Старості записку зниклого вартового.",
+      "required_quest_items": [
+        {
+          "item_key": "start_path_guard_note",
+          "quantity": 1
+        }
+      ],
+      "acceptance_text": "Це почерк одного зі зниклих вартових. Патруль помітив рунічне світіння ще до того, як про нього почали говорити в таборі. У записці сказано, що істоти ставали агресивнішими ближче до старого мосту. Вартові вирішили простежити за ними до печер, але не встигли повернутися. Тепер ми знаємо, що патруль не заблукав. Вони проводили власне розслідування і натрапили на щось небезпечне.",
+      "completion_text": "✅ Главу «Рунічна аномалія» завершено.\n\nПатруль розслідував неприродну агресію істот і вирушив до печер. Наступний етап пошуку очолить Голова Найманців.",
+      "next_chapter": {
+        "title": "Слід зниклого патруля",
+        "quest_range": [
+          21,
+          30
+        ],
+        "unlock_level": 3,
+        "first_npc_id": "mercenary_head"
+      },
+      "reward": {
+        "exp": 36,
+        "gold": 0.43,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 2,
+          "multiplier": 3,
+          "canonical_expected_exp": 12,
+          "canonical_expected_gold_unrounded": 0.1425,
+          "canonical_expected_gold": 0.14,
+          "quest_gold_unrounded": 0.4275,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_021_search_party",
+      "number": 21,
+      "title": "Пошуковий загін",
+      "quest_type": "TALK",
+      "location_id": "start_path",
+      "unlock_level": 3,
+      "previous_quest_id": "start_path_020_patrol_knew",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 1,
+      "description": "Голова Найманців формує пошуковий маршрут до печер, старого мосту та зарослої стежки.",
+      "objective_text": "Поговорити з Головою Найманців і отримати маршрут пошуку.",
+      "acceptance_text": "Староста передав мені записку патруля. Тепер ми знаємо, що вартові добровільно вирушили до печер, переслідуючи джерело рунічної аномалії. Я розділив пошукову територію на кілька ділянок. Мої люди перевірять дорогу до табору, а ти оглянеш печери та старий міст. Шукай особисті речі, уламки спорядження або будь-які знаки, за якими можна відновити їхній шлях.",
+      "completion_text": "Голова Найманців позначає на карті печери, старий міст і зарослу стежку, якою міг рухатися патруль.",
+      "reward": {
+        "exp": 42,
+        "gold": 0.65,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 3,
+          "multiplier": 3,
+          "canonical_expected_exp": 14,
+          "canonical_expected_gold_unrounded": 0.215,
+          "quest_gold_unrounded": 0.645,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_022_cave_entrance",
+      "number": 22,
+      "title": "Вхід до печер",
+      "quest_type": "KILL_REGION",
+      "location_id": "start_path",
+      "unlock_level": 3,
+      "previous_quest_id": "start_path_021_search_party",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 8,
+      "description": "Герой розчищає підступи до печер і знаходить перший особистий слід патруля.",
+      "objective_text": "Перемогти 8 будь-яких істот у локації Початок Шляху.",
+      "acceptance_text": "Біля входу до печер стало надто небезпечно. Істоти збираються там частіше, ніж раніше, а рунічне світіння видно навіть удень. Розчисти підступи. Не заходь надто глибоко, доки ми не зрозуміємо, що трапилося з патрулем.",
+      "completion_text": "Підступи до печер очищено. Між камінням видно невеликий металевий предмет із міським гербом.",
+      "reward": {
+        "exp": 42,
+        "gold": 0.65,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 3,
+          "multiplier": 3,
+          "canonical_expected_exp": 14,
+          "canonical_expected_gold_unrounded": 0.215,
+          "quest_gold_unrounded": 0.645,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "progress_text": "Вхід до печер: {progress}/8"
+    },
+    {
+      "quest_id": "start_path_023_guards_ring",
+      "number": 23,
+      "title": "Перстень вартового",
+      "quest_type": "QUEST_ITEM",
+      "location_id": "start_path",
+      "unlock_level": 3,
+      "previous_quest_id": "start_path_022_cave_entrance",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "trader",
+      "target_quantity": 1,
+      "description": "Герой знаходить особистий перстень одного зі зниклих вартових.",
+      "objective_text": "Знайти особистий перстень одного зі зниклих вартових.",
+      "acceptance_text": "Оглядай каміння й землю біля печер. Особиста річ допоможе встановити, хто саме дістався сюди.",
+      "completion_text": "Перстень знайдено. Торговець може впізнати власника за міським клеймом.",
+      "reward": {
+        "exp": 42,
+        "gold": 0.65,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 3,
+          "multiplier": 3,
+          "canonical_expected_exp": 14,
+          "canonical_expected_gold_unrounded": 0.215,
+          "quest_gold_unrounded": 0.645,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "quest_item": {
+        "item_key": "start_path_guards_ring",
+        "display_name": "Перстень вартового",
+        "required_quantity": 1,
+        "drop_chance": 0.15,
+        "drop_message": "💍 Сюжетна знахідка: Перстень вартового\n\nНа внутрішньому боці персня вигравіювано знак міської варти. Торговець може знати, кому належав цей перстень."
+      },
+      "retain_until_quest_id": "start_path_030_scene_of_the_attack"
+    },
+    {
+      "quest_id": "start_path_024_last_purchase",
+      "number": 24,
+      "title": "Остання покупка",
+      "quest_type": "TALK",
+      "location_id": "start_path",
+      "unlock_level": 3,
+      "previous_quest_id": "start_path_023_guards_ring",
+      "giver_npc_id": "trader",
+      "turn_in_npc_id": "trader",
+      "target_quantity": 1,
+      "description": "Торговець упізнає перстень і згадує підготовку патрульного до небезпечного походу.",
+      "objective_text": "Показати Торговцю перстень вартового та дізнатися про останню покупку патрульного.",
+      "acceptance_text": "Я впізнаю цей перстень. Його власник заходив до мене перед останнім обходом. Вартовий купив мотузку, запас олії для ліхтаря і кілька смужок тканини для перев’язки. Сказав, що біля старого мосту бачили дивні сліди, схожі на вовчі, але значно більші. Перстень залиш собі. Голові Найманців знадобляться всі докази разом.",
+      "completion_text": "Торговець підтверджує, що патруль готувався до небезпечного походу й шукав великі вовчі сліди.",
+      "reward": {
+        "exp": 42,
+        "gold": 0.65,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 3,
+          "multiplier": 3,
+          "canonical_expected_exp": 14,
+          "canonical_expected_gold_unrounded": 0.215,
+          "quest_gold_unrounded": 0.645,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "required_quest_items": [
+        {
+          "item_key": "start_path_guards_ring",
+          "quantity": 1,
+          "consume": false
+        }
+      ],
+      "quest_item_consumption": "none"
+    },
+    {
+      "quest_id": "start_path_025_tracks_near_the_bridge",
+      "number": 25,
+      "title": "Сліди біля мосту",
+      "quest_type": "KILL_REGION",
+      "location_id": "start_path",
+      "unlock_level": 3,
+      "previous_quest_id": "start_path_024_last_purchase",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 10,
+      "description": "Герой повторно перевіряє старий міст у пошуках уламків спорядження патруля.",
+      "objective_text": "Перемогти 10 будь-яких істот у локації Початок Шляху.",
+      "acceptance_text": "Якщо патруль ішов за великими вовчими слідами, сутичка могла статися біля мосту. Перевір місцевість ще раз. Шукай уламки щита або зброї.",
+      "completion_text": "Біля кам’яної опори мосту видно глибокі борозни. Під уламками деревини лежить частина пошкодженого щита.",
+      "reward": {
+        "exp": 42,
+        "gold": 0.65,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 3,
+          "multiplier": 3,
+          "canonical_expected_exp": 14,
+          "canonical_expected_gold_unrounded": 0.215,
+          "quest_gold_unrounded": 0.645,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "progress_text": "Сліди біля мосту: {progress}/10"
+    },
+    {
+      "quest_id": "start_path_026_damaged_guard_shield",
+      "number": 26,
+      "title": "Розбитий захист",
+      "quest_type": "QUEST_ITEM",
+      "location_id": "start_path",
+      "unlock_level": 3,
+      "previous_quest_id": "start_path_025_tracks_near_the_bridge",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 1,
+      "description": "Герой знаходить пошкоджений щит із глибокими слідами великих кігтів.",
+      "objective_text": "Знайти пошкоджений щит зниклого вартового.",
+      "acceptance_text": "Оглянь уламки біля мосту. Нам потрібен доказ, за яким можна визначити нападника.",
+      "completion_text": "Пошкоджений щит знайдено та збережено для фінального зіставлення доказів.",
+      "reward": {
+        "exp": 42,
+        "gold": 0.65,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 3,
+          "multiplier": 3,
+          "canonical_expected_exp": 14,
+          "canonical_expected_gold_unrounded": 0.215,
+          "quest_gold_unrounded": 0.645,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "quest_item": {
+        "item_key": "start_path_damaged_guard_shield",
+        "display_name": "Пошкоджений щит вартового",
+        "required_quantity": 1,
+        "drop_chance": 0.15,
+        "drop_message": "🛡️ Сюжетна знахідка: Пошкоджений щит вартового\n\nДерев’яна основа тріснула, а на металевому ободі видно глибокі паралельні подряпини. Схоже, щит пошкодили великі кігті."
+      },
+      "retain_until_quest_id": "start_path_030_scene_of_the_attack"
+    },
+    {
+      "quest_id": "start_path_027_howling_beyond_the_walls",
+      "number": 27,
+      "title": "Виття за стінами",
+      "quest_type": "TALK",
+      "location_id": "start_path",
+      "unlock_level": 3,
+      "previous_quest_id": "start_path_026_damaged_guard_shield",
+      "giver_npc_id": "bartender",
+      "turn_in_npc_id": "bartender",
+      "target_quantity": 1,
+      "description": "Бармен передає чутки мисливців про організовану вовчу зграю та великого звіра зі світлими відмітками.",
+      "objective_text": "Розпитати Бармена про чутки щодо вовків.",
+      "acceptance_text": "Мисливці останніми ночами повертаються раніше. Кажуть, біля старого мосту чути вовче виття, але воно лунає одразу з кількох боків. Один мандрівник бачив у темряві великого вовка зі світлими відмітками на шерсті. Звір ніби спостерігав і чекав, поки інші істоти кинуться вперед.",
+      "completion_text": "Бармен підтверджує, що біля мосту діє організована вовча зграя, якою може керувати особливо великий звір.",
+      "reward": {
+        "exp": 42,
+        "gold": 0.65,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 3,
+          "multiplier": 3,
+          "canonical_expected_exp": 14,
+          "canonical_expected_gold_unrounded": 0.215,
+          "quest_gold_unrounded": 0.645,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_028_pursuit_trail",
+      "number": 28,
+      "title": "Стежка переслідування",
+      "quest_type": "KILL_REGION",
+      "location_id": "start_path",
+      "unlock_level": 3,
+      "previous_quest_id": "start_path_027_howling_beyond_the_walls",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 10,
+      "description": "Герой перевіряє стежку між мостом і печерами та знаходить сліди переслідування.",
+      "objective_text": "Перемогти 10 будь-яких істот у локації Початок Шляху.",
+      "acceptance_text": "Якщо слова Бармена правдиві, патруль міг не переслідувати вовків. Можливо, зграя сама гнала вартових до печер. Перевір зарослу стежку між мостом і кам’янистим схилом.",
+      "completion_text": "На колючих кущах залишилися нитки темної тканини. Поруч видно вовчу шерсть і старі сліди крові.",
+      "reward": {
+        "exp": 42,
+        "gold": 0.65,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 3,
+          "multiplier": 3,
+          "canonical_expected_exp": 14,
+          "canonical_expected_gold_unrounded": 0.215,
+          "quest_gold_unrounded": 0.645,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "progress_text": "Стежка переслідування: {progress}/10"
+    },
+    {
+      "quest_id": "start_path_029_torn_guard_cloak",
+      "number": 29,
+      "title": "Подертий плащ",
+      "quest_type": "QUEST_ITEM",
+      "location_id": "start_path",
+      "unlock_level": 3,
+      "previous_quest_id": "start_path_028_pursuit_trail",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 1,
+      "description": "Герой знаходить клапоть плаща зі слідами кігтів і вовчою шерстю.",
+      "objective_text": "Знайти подертий клапоть плаща зниклого вартового.",
+      "acceptance_text": "Оглядай колючі кущі та каміння вздовж стежки. Тканина або шерсть допоможуть відновити картину нападу.",
+      "completion_text": "Клапоть плаща знайдено. Тепер доказів достатньо для остаточного висновку.",
+      "reward": {
+        "exp": 42,
+        "gold": 0.65,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 3,
+          "multiplier": 3,
+          "canonical_expected_exp": 14,
+          "canonical_expected_gold_unrounded": 0.215,
+          "quest_gold_unrounded": 0.645,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "quest_item": {
+        "item_key": "start_path_torn_guard_cloak",
+        "display_name": "Подертий клапоть плаща",
+        "required_quantity": 1,
+        "drop_chance": 0.15,
+        "drop_message": "🧥 Сюжетна знахідка: Подертий клапоть плаща\n\nТемна тканина просякнута брудом. У волокнах застрягли жорсткі сірі шерстинки, а краї розірвані гострими кігтями."
+      },
+      "retain_until_quest_id": "start_path_030_scene_of_the_attack"
+    },
+    {
+      "quest_id": "start_path_030_scene_of_the_attack",
+      "number": 30,
+      "title": "Картина нападу",
+      "quest_type": "TURN_IN",
+      "location_id": "start_path",
+      "unlock_level": 3,
+      "previous_quest_id": "start_path_029_torn_guard_cloak",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 1,
+      "description": "Голова Найманців зіставляє три докази й встановлює, що патруль переслідувала організована вовча зграя.",
+      "objective_text": "Передати Голові Найманців перстень, пошкоджений щит і клапоть плаща.",
+      "acceptance_text": "Перстень підтверджує, що патруль дістався печер. Подряпини на щиті залишили великі кігті, а в плащі застрягла вовча шерсть. Це не схоже на випадковий напад. Зграя переслідувала вартових від мосту до печер, перекриваючи їм шлях назад. Потрібно підготувати мисливців, зміцнити спорядження та знайти лігво.",
+      "completion_text": "✅ Главу «Слід зниклого патруля» завершено.\n\nЗібрані докази підтверджують: патруль атакувала організована вовча зграя. Її поведінку міг змінити рунічний вплив.",
+      "reward": {
+        "exp": 42,
+        "gold": 0.65,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 3,
+          "multiplier": 3,
+          "canonical_expected_exp": 14,
+          "canonical_expected_gold_unrounded": 0.215,
+          "quest_gold_unrounded": 0.645,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "required_quest_items": [
+        {
+          "item_key": "start_path_guards_ring",
+          "quantity": 1,
+          "consume": true
+        },
+        {
+          "item_key": "start_path_damaged_guard_shield",
+          "quantity": 1,
+          "consume": true
+        },
+        {
+          "item_key": "start_path_torn_guard_cloak",
+          "quantity": 1,
+          "consume": true
+        }
+      ],
+      "quest_item_consumption": "atomic_exact_once_all_or_nothing",
+      "next_chapter": {
+        "title": "Вовча загроза",
+        "quest_range": [
+          31,
+          40
+        ],
+        "unlock_level": 4,
+        "first_npc_id": "mercenary_head"
+      }
+    },
+    {
+      "quest_id": "start_path_031_pack_at_the_outskirts",
+      "number": 31,
+      "title": "Зграя на підступах",
+      "quest_type": "TALK",
+      "location_id": "start_path",
+      "unlock_level": 4,
+      "previous_quest_id": "start_path_030_scene_of_the_attack",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 1,
+      "description": "Голова Найманців підтверджує загрозу організованої вовчої зграї та готує першу лінію оборони.",
+      "objective_text": "Поговорити з Головою Найманців про вовчу загрозу.",
+      "acceptance_text": "Ми перевірили зібрані докази. Сумнівів більше немає: патруль переслідувала велика вовча зграя. Звичайні вовки не діють так злагоджено. Вони не перекривають шлях до відступу й не заганяють озброєних вартових у вузьку ущелину без причини. Мої розвідники помітили нові сліди зовсім близько до міських стежок. Перш ніж шукати лігво, потрібно відтіснити зграю від околиць.",
+      "completion_text": "Голова Найманців визначає першу лінію оборони та доручає стримати істот на підступах до міста.",
+      "reward": {
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_032_first_line_of_defense",
+      "number": 32,
+      "title": "Перша лінія оборони",
+      "quest_type": "KILL_REGION",
+      "location_id": "start_path",
+      "unlock_level": 4,
+      "previous_quest_id": "start_path_031_pack_at_the_outskirts",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 10,
+      "description": "Герой стримує істот на підступах і дає мисливцям час укріпити табір.",
+      "objective_text": "Перемогти 10 будь-яких істот у локації Початок Шляху.",
+      "acceptance_text": "Зграя рухається вздовж стежок, але разом із вовками активізувалися й інші істоти. Рунічний вплив міг охопити всю місцевість. Стримай загрозу на підступах. Десяти перемог вистачить, щоб розірвати їхню лінію та дати мисливцям час укріпити табір.",
+      "completion_text": "Напади на стежках слабшають. Під час огляду місцевості мисливці знаходять шматки незвично щільної вовчої шерсті.",
+      "reward": {
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "progress_text": "Перша лінія оборони: {progress}/10"
+    },
+    {
+      "quest_id": "start_path_033_protection_for_hunters",
+      "number": 33,
+      "title": "Захист для мисливців",
+      "quest_type": "TALK",
+      "location_id": "start_path",
+      "unlock_level": 4,
+      "previous_quest_id": "start_path_032_first_line_of_defense",
+      "giver_npc_id": "blacksmith",
+      "turn_in_npc_id": "blacksmith",
+      "target_quantity": 1,
+      "description": "Коваль просить знайти міцне вовче хутро для захисного спорядження мисливців.",
+      "objective_text": "Отримати від Коваля завдання на пошук міцного вовчого хутра.",
+      "acceptance_text": "Подряпини на щиті вартового були надто глибокими. Якщо мисливці підуть до лігва зі звичайними ременями та підкладкою, спорядження довго не витримає. Мені потрібне міцне вовче хутро, щільний шматок із густим підшерстям. Я зроблю з нього захисні накладки для рук і шиї. Проти великих кігтів це може врятувати життя.",
+      "completion_text": "Коваль передає вимоги до матеріалу та просить принести придатний зразок.",
+      "reward": {
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_034_runemarked_wolf_pelt",
+      "number": 34,
+      "title": "Хутро зі слідами рун",
+      "quest_type": "QUEST_ITEM",
+      "location_id": "start_path",
+      "unlock_level": 4,
+      "previous_quest_id": "start_path_033_protection_for_hunters",
+      "giver_npc_id": "blacksmith",
+      "turn_in_npc_id": "blacksmith",
+      "target_quantity": 1,
+      "description": "Герой знаходить щільне вовче хутро, змінене рунічною енергією.",
+      "objective_text": "Знайти під час полювання вовче хутро підвищеної якості.",
+      "acceptance_text": "Шукай щільне хутро з густим підшерстям. Воно має витримати удари кігтів і бути придатним для захисних накладок.",
+      "completion_text": "Вовче хутро підвищеної якості знайдено. Матеріал потрібно передати Ковалю.",
+      "reward": {
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "quest_item": {
+        "item_key": "start_path_runemarked_wolf_pelt",
+        "display_name": "Вовче хутро підвищеної якості",
+        "required_quantity": 1,
+        "drop_chance": 0.15,
+        "drop_message": "🐺 Сюжетна знахідка: Вовче хутро підвищеної якості\n\nХутро надзвичайно щільне, а біля коренів шерсті помітне слабке синювате світіння. Коваль зможе використати його для спорядження мисливців."
+      }
+    },
+    {
+      "quest_id": "start_path_035_reinforce_the_hunting_party",
+      "number": 35,
+      "title": "Посилення загону",
+      "quest_type": "TURN_IN",
+      "location_id": "start_path",
+      "unlock_level": 4,
+      "previous_quest_id": "start_path_034_runemarked_wolf_pelt",
+      "giver_npc_id": "blacksmith",
+      "turn_in_npc_id": "blacksmith",
+      "target_quantity": 1,
+      "description": "Коваль приймає рунічно змінене хутро та виготовляє захисні накладки для загону.",
+      "objective_text": "Передати Ковалю вовче хутро підвищеної якості.",
+      "acceptance_text": "Саме те, що потрібно. Поглянь на ці сині прожилки між шерстинками. Рунічна енергія змінила не лише поведінку звірів, а й саме їхнє тіло. Я очищу матеріал і зроблю накладки для загону. Вони не зупинять прямий удар великого звіра, але захистять мисливців від дрібніших вовків. Поки я працюю, повернися до Голови Найманців.",
+      "completion_text": "Коваль починає виготовляти захисні накладки для мисливського загону.",
+      "reward": {
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "required_quest_items": [
+        {
+          "item_key": "start_path_runemarked_wolf_pelt",
+          "quantity": 1,
+          "consume": true
+        }
+      ],
+      "quest_item_consumption": "atomic_exact_once"
+    },
+    {
+      "quest_id": "start_path_036_beyond_safe_paths",
+      "number": 36,
+      "title": "За межею безпечних стежок",
+      "quest_type": "KILL_REGION",
+      "location_id": "start_path",
+      "unlock_level": 4,
+      "previous_quest_id": "start_path_035_reinforce_the_hunting_party",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 12,
+      "description": "Герой проводить розвідку за кам’янистим схилом і знаходить прохід у територію зграї.",
+      "objective_text": "Перемогти 12 будь-яких істот у локації Початок Шляху.",
+      "acceptance_text": "Коваль майже завершив спорядження. Тепер потрібно з’ясувати, звідки приходить зграя. За кам’янистим схилом є стара мисливська стежка. Мої люди не можуть пройти нею непомітно, тому ти підеш попереду. Очисти територію та звертай увагу на подряпини на деревах, витоптану траву й залишки здобичі.",
+      "completion_text": "За кам’янистим схилом знайдено вузький прохід. На деревах залишилися свіжі подряпини, а земля вкрита слідами великої зграї.",
+      "reward": {
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "progress_text": "За межею безпечних стежок: {progress}/12"
+    },
+    {
+      "quest_id": "start_path_037_trail_to_the_den",
+      "number": 37,
+      "title": "Слід до лігва",
+      "quest_type": "QUEST_ITEM",
+      "location_id": "start_path",
+      "unlock_level": 4,
+      "previous_quest_id": "start_path_036_beyond_safe_paths",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "rune_master",
+      "target_quantity": 1,
+      "description": "Герой знаходить фізичний доказ із району лігва, насичений рунічною енергією.",
+      "objective_text": "Знайти доказ, який указує на шлях до вовчого лігва.",
+      "acceptance_text": "Оглядай вузький прохід, каміння й місця, де зграя залишала здобич. Нам потрібен доказ, який можна показати Рунному Майстру.",
+      "completion_text": "Рунічно позначений уламок знайдено. Його потрібно передати Рунному Майстру.",
+      "reward": {
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "quest_item": {
+        "item_key": "start_path_runemarked_den_token",
+        "display_name": "Рунічно позначений уламок із лігва",
+        "required_quantity": 1,
+        "drop_chance": 0.15,
+        "drop_message": "🪨 Сюжетна знахідка: Рунічно позначений уламок із лігва\n\nТемний камінь укритий вовчою шерстю та глибокими слідами кігтів. Усередині тріщин пульсує знайоме синювате світіння."
+      }
+    },
+    {
+      "quest_id": "start_path_038_heart_of_the_influence",
+      "number": 38,
+      "title": "Серце впливу",
+      "quest_type": "TURN_IN",
+      "location_id": "start_path",
+      "unlock_level": 4,
+      "previous_quest_id": "start_path_037_trail_to_the_den",
+      "giver_npc_id": "rune_master",
+      "turn_in_npc_id": "rune_master",
+      "target_quantity": 1,
+      "description": "Рунний Майстер досліджує уламок і підтверджує, що лігво є центром рунічного впливу.",
+      "objective_text": "Передати Рунному Майстру рунічно позначений уламок.",
+      "acceptance_text": "Цей камінь не з поверхні. Такі породи трапляються лише в глибоких печерах під старим схилом. Рунічний відбиток значно сильніший, ніж на попередніх зразках. Енергія проходила крізь нього багато разів. Сліди кігтів також незвичайні. Великий звір постійно торкався цього уламка або лежав поруч із ним. Лігво і є центром впливу, а ватажок зграї, найімовірніше, став головним носієм аномалії.",
+      "completion_text": "Рунний Майстер підтверджує, що джерело найсильнішого рунічного впливу розташоване у вовчому лігві.",
+      "reward": {
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "required_quest_items": [
+        {
+          "item_key": "start_path_runemarked_den_token",
+          "quantity": 1,
+          "consume": true
+        }
+      ],
+      "quest_item_consumption": "atomic_exact_once"
+    },
+    {
+      "quest_id": "start_path_039_road_to_the_den",
+      "number": 39,
+      "title": "Дорога до лігва",
+      "quest_type": "KILL_REGION",
+      "location_id": "start_path",
+      "unlock_level": 4,
+      "previous_quest_id": "start_path_038_heart_of_the_influence",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 12,
+      "description": "Герой розчищає вузький прохід до лігва, щоб мисливці могли зайняти позиції.",
+      "objective_text": "Перемогти 12 будь-яких істот у локації Початок Шляху.",
+      "acceptance_text": "Рунний Майстер підтвердив місце. Лігво розташоване за вузьким проходом під кам’янистим схилом. Зграя стягнула туди майже всіх сильних звірів. Якщо ми поведемо загін зараз, нас затиснуть у проході. Розчисти дорогу до лігва.",
+      "completion_text": "Прохід до лігва очищено. Мисливці закріплюються біля входу та чекають рішення Старости.",
+      "reward": {
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "progress_text": "Дорога до лігва: {progress}/12"
+    },
+    {
+      "quest_id": "start_path_040_before_the_final_hunt",
+      "number": 40,
+      "title": "Перед вирішальним походом",
+      "quest_type": "TURN_IN",
+      "location_id": "start_path",
+      "unlock_level": 4,
+      "previous_quest_id": "start_path_039_road_to_the_den",
+      "giver_npc_id": "elder",
+      "turn_in_npc_id": "elder",
+      "target_quantity": 1,
+      "description": "Герой доповідає Старості про відкритий шлях до лігва й завершує підготовчу главу.",
+      "objective_text": "Доповісти Старості, що шлях до вовчого лігва відкрито.",
+      "acceptance_text": "Отже, лігво знайдено, шлях очищено, а мисливці готові. Ми втратили патруль, бо не знали, з чим маємо справу. Цього разу загін виступить підготовленим. Але нападати негайно не можна. Голова Найманців має розставити людей, Коваль завершити спорядження, а Рунний Майстер підготувати захист від рунічного впливу. Я скличу раду. Після неї почнеться останній етап походу.",
+      "completion_text": "✅ Главу «Вовча загроза» завершено.\n\nЛігво знайдено, мисливський загін підготовлено, а джерело рунічного впливу пов’язано з Ватажком зграї.",
+      "reward": {
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "next_chapter": {
+        "title": "Ватажок зграї",
+        "quest_range": [
+          41,
+          50
+        ],
+        "unlock_level": 5,
+        "first_npc_id": "elder"
+      }
+    },
+    {
+      "quest_id": "start_path_041_council_before_the_hunt",
+      "number": 41,
+      "title": "Рада перед походом",
+      "quest_type": "TALK",
+      "location_id": "start_path",
+      "unlock_level": 5,
+      "previous_quest_id": "start_path_040_before_the_final_hunt",
+      "giver_npc_id": "elder",
+      "turn_in_npc_id": "elder",
+      "target_quantity": 1,
+      "description": "Староста затверджує фінальний похід проти Ватажка зграї.",
+      "objective_text": "Взяти участь у раді Старости перед фінальним походом.",
+      "acceptance_text": "Староста затверджує фінальний похід проти Ватажка зграї.",
+      "completion_text": "Староста затверджує похід до лігва та доручає очистити підступи.",
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      }
+    },
+    {
+      "quest_id": "start_path_042_den_approaches",
+      "number": 42,
+      "title": "Підступи до лігва",
+      "quest_type": "KILL_REGION",
+      "location_id": "start_path",
+      "unlock_level": 5,
+      "previous_quest_id": "start_path_041_council_before_the_hunt",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 15,
+      "description": "Герой послаблює зовнішню оборону лігва.",
+      "objective_text": "Перемогти 15 будь-яких істот у локації Початок Шляху.",
+      "acceptance_text": "Герой послаблює зовнішню оборону лігва.",
+      "completion_text": "Мисливці займають зовнішній периметр, де знаходять рунічний знак.",
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "progress_text": "Підступи до лігва: {progress}/15"
+    },
+    {
+      "quest_id": "start_path_043_pack_leader_seal",
+      "number": 43,
+      "title": "Печатка зграї",
+      "quest_type": "QUEST_ITEM",
+      "location_id": "start_path",
+      "unlock_level": 5,
+      "previous_quest_id": "start_path_042_den_approaches",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 1,
+      "description": "Герой знаходить печатку, що позначає територію Ватажка.",
+      "objective_text": "Знайти рунічну печатку Ватажка біля лігва.",
+      "acceptance_text": "Герой знаходить печатку, що позначає територію Ватажка.",
+      "completion_text": "Печатку Ватажка знайдено.",
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "quest_item": {
+        "item_key": "start_path_pack_leader_seal",
+        "display_name": "Печатка Ватажка зграї",
+        "required_quantity": 1,
+        "drop_chance": 0.15,
+        "drop_message": "Печатку Ватажка знайдено."
+      }
+    },
+    {
+      "quest_id": "start_path_044_mark_of_the_pack_leader",
+      "number": 44,
+      "title": "Знак Ватажка",
+      "quest_type": "TURN_IN",
+      "location_id": "start_path",
+      "unlock_level": 5,
+      "previous_quest_id": "start_path_043_pack_leader_seal",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 1,
+      "description": "Голова Найманців приймає печатку та послаблює рунічний зв’язок лігва.",
+      "objective_text": "Передати Голові Найманців печатку Ватажка зграї.",
+      "acceptance_text": "Голова Найманців приймає печатку та послаблює рунічний зв’язок лігва.",
+      "completion_text": "Печатку знищено, зовнішній рунічний зв’язок слабшає.",
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "required_quest_items": [
+        {
+          "item_key": "start_path_pack_leader_seal",
+          "quantity": 1,
+          "consume": true
+        }
+      ],
+      "quest_item_consumption": "atomic_exact_once"
+    },
+    {
+      "quest_id": "start_path_045_guardians_of_the_den",
+      "number": 45,
+      "title": "Охорона лігва",
+      "quest_type": "KILL_REGION",
+      "location_id": "start_path",
+      "unlock_level": 5,
+      "previous_quest_id": "start_path_044_mark_of_the_pack_leader",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 15,
+      "description": "Герой відтискає захисників головного входу.",
+      "objective_text": "Перемогти 15 будь-яких істот у локації Початок Шляху.",
+      "acceptance_text": "Герой відтискає захисників головного входу.",
+      "completion_text": "Захисників лігва відтиснуто.",
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "progress_text": "Охорона лігва: {progress}/15"
+    },
+    {
+      "quest_id": "start_path_046_pack_leader_fur",
+      "number": 46,
+      "title": "Шерсть Ватажка",
+      "quest_type": "QUEST_ITEM",
+      "location_id": "start_path",
+      "unlock_level": 5,
+      "previous_quest_id": "start_path_045_guardians_of_the_den",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "blacksmith",
+      "target_quantity": 1,
+      "description": "Герой знаходить шерсть Ватажка для перевірки спорядження.",
+      "objective_text": "Знайти клоччя шерсті Ватажка біля входу до лігва.",
+      "acceptance_text": "Герой знаходить шерсть Ватажка для перевірки спорядження.",
+      "completion_text": "Клоччя шерсті Ватажка знайдено.",
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "quest_item": {
+        "item_key": "start_path_pack_leader_fur",
+        "display_name": "Клоччя шерсті Ватажка",
+        "required_quantity": 1,
+        "drop_chance": 0.15,
+        "drop_message": "Клоччя шерсті Ватажка знайдено."
+      }
+    },
+    {
+      "quest_id": "start_path_047_final_equipment_check",
+      "number": 47,
+      "title": "Остання перевірка",
+      "quest_type": "TURN_IN",
+      "location_id": "start_path",
+      "unlock_level": 5,
+      "previous_quest_id": "start_path_046_pack_leader_fur",
+      "giver_npc_id": "blacksmith",
+      "turn_in_npc_id": "blacksmith",
+      "target_quantity": 1,
+      "description": "Коваль досліджує шерсть і завершує перевірку спорядження.",
+      "objective_text": "Передати Ковалю клоччя шерсті Ватажка та перевірити спорядження.",
+      "acceptance_text": "Коваль досліджує шерсть і завершує перевірку спорядження.",
+      "completion_text": "Коваль завершує перевірку та попереджає про бойове шаленство Ватажка.",
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "required_quest_items": [
+        {
+          "item_key": "start_path_pack_leader_fur",
+          "quantity": 1,
+          "consume": true
+        }
+      ],
+      "quest_item_consumption": "atomic_exact_once"
+    },
+    {
+      "quest_id": "start_path_048_final_perimeter",
+      "number": 48,
+      "title": "Останній периметр",
+      "quest_type": "KILL_REGION",
+      "location_id": "start_path",
+      "unlock_level": 5,
+      "previous_quest_id": "start_path_047_final_equipment_check",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 10,
+      "description": "Герой очищає останній периметр і відрізає Ватажка від зграї.",
+      "objective_text": "Перемогти 10 будь-яких істот у локації Початок Шляху.",
+      "acceptance_text": "Герой очищає останній периметр і відрізає Ватажка від зграї.",
+      "completion_text": "Оборону біля входу зламано.",
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "progress_text": "Останній периметр: {progress}/10"
+    },
+    {
+      "quest_id": "start_path_049_pack_leader",
+      "number": 49,
+      "title": "Ватажок зграї",
+      "quest_type": "BOSS",
+      "location_id": "start_path",
+      "unlock_level": 5,
+      "previous_quest_id": "start_path_048_final_perimeter",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": null,
+      "target_quantity": 1,
+      "description": "Герой перемагає Ватажка через RNG encounter або гарантований виклик.",
+      "objective_text": "Перемогти Ватажка зграї.",
+      "acceptance_text": "Герой перемагає Ватажка через RNG encounter або гарантований виклик.",
+      "completion_text": "Ватажка зграї переможено. Рунічне світіння згасає.",
+      "reward": {
+        "exp": 95,
+        "gold": 2.15,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 5,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 2.15,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals",
+          "boss_combat_reward_is_separate": true
+        }
+      },
+      "boss_key": "pack_leader",
+      "encounter_paths": [
+        "rng_hunt",
+        "guaranteed_story_call"
+      ],
+      "guaranteed_call_after_success": "blocked",
+      "retry_after_defeat_or_escape": "allowed",
+      "boss_combat_reward_is_separate": true
+    },
+    {
+      "quest_id": "start_path_050_road_ahead",
+      "number": 50,
+      "title": "Дорога далі",
+      "quest_type": "TURN_IN",
+      "location_id": "start_path",
+      "unlock_level": 5,
+      "previous_quest_id": "start_path_049_pack_leader",
+      "giver_npc_id": "elder",
+      "turn_in_npc_id": "elder",
+      "target_quantity": 1,
+      "description": "Герой завершує кампанію та отримує напрямок до Темного Бору.",
+      "objective_text": "Доповісти Старості про перемогу над Ватажком зграї.",
+      "acceptance_text": "Герой завершує кампанію та отримує напрямок до Темного Бору.",
+      "completion_text": "Кампанію «Початок Шляху» завершено. Рунічний слід веде до Темного Бору.",
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "next_campaign_hint": {
+        "location_id": "dark_forest",
+        "canonical_unlock_level": 6,
+        "story_completion_does_not_unlock_location": true
+      }
+    }
+  ],
+  "batches": [
+    {
+      "range": [
+        1,
+        10
+      ],
+      "chapter_number": 1,
+      "chapter_title": "Тривога на околиці",
+      "unlock_level": 1,
+      "status": "story_and_rules_approved_reward_values_calculated",
+      "expected_required_kill_region_victories": 14,
+      "expected_quest_item_victories": 13.33,
+      "expected_total_victories": 27.33,
+      "story_reward_totals": {
+        "exp": 300,
+        "gold": 2.7
+      },
+      "reward_reference_level": 1
+    },
+    {
+      "range": [
+        11,
+        20
+      ],
+      "chapter_number": 2,
+      "chapter_title": "Рунічна аномалія",
+      "unlock_level": 2,
+      "reward_reference_level": 2,
+      "status": "story_and_rules_approved_reward_values_calculated",
+      "expected_required_kill_region_victories": 14,
+      "expected_quest_item_victories": 20.0,
+      "expected_total_victories": 34.0,
+      "story_reward_totals": {
+        "exp": 360,
+        "gold": 4.3
+      }
+    },
+    {
+      "range": [
+        21,
+        30
+      ],
+      "chapter_number": 3,
+      "chapter_title": "Слід зниклого патруля",
+      "unlock_level": 3,
+      "reward_reference_level": 3,
+      "status": "story_and_rules_approved_reward_values_calculated",
+      "expected_required_kill_region_victories": 28,
+      "expected_quest_item_victories": 20.0,
+      "expected_total_victories": 48.0,
+      "story_reward_totals": {
+        "exp": 420,
+        "gold": 6.5
+      }
+    },
+    {
+      "range": [
+        31,
+        40
+      ],
+      "chapter_number": 4,
+      "chapter_title": "Вовча загроза",
+      "unlock_level": 4,
+      "reward_reference_level": 4,
+      "status": "story_and_rules_approved_reward_values_calculated",
+      "expected_required_kill_region_victories": 34,
+      "expected_quest_item_victories": 13.33,
+      "expected_total_victories": 47.33,
+      "story_reward_totals": {
+        "exp": 480,
+        "gold": 8.9
+      }
+    },
+    {
+      "range": [
+        41,
+        50
+      ],
+      "chapter_number": 5,
+      "chapter_title": "Ватажок зграї",
+      "unlock_level": 5,
+      "reward_reference_level": 5,
+      "status": "story_and_rules_approved_reward_values_calculated",
+      "expected_required_kill_region_victories": 40,
+      "expected_quest_item_victories": 13.33,
+      "expected_boss_victories": 1,
+      "expected_total_victories": 54.33,
+      "story_reward_totals": {
+        "exp": 608,
+        "gold": 13.76
+      },
+      "regular_quest_reward": {
+        "quest_numbers": [
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          50
+        ],
+        "exp": 57,
+        "gold": 1.29
+      },
+      "boss_quest_reward": {
+        "quest_number": 49,
+        "exp": 95,
+        "gold": 2.15,
+        "boss_combat_reward_is_separate": true
+      }
+    }
+  ]
+}
