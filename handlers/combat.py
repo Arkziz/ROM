@@ -2031,6 +2031,13 @@ def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=""):
         reply_markup=main_kb()
     )
 
+    # Quest-item persistence is owned by the drop system. Telegram output is a
+    # separate consumer and is emitted exactly once only for an actual grant.
+    if int(story_item_result.get("granted", 0) or 0) > 0:
+        story_drop_message = str(story_item_result.get("drop_message") or "").strip()
+        if story_drop_message:
+            bot.send_message(chat_id, story_drop_message)
+
     reward_message = str(reward.get("exp_result", {}).get("level_up_reward_message") or "")
     if reward_message:
         bot.send_message(chat_id, reward_message)

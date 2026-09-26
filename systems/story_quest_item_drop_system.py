@@ -73,5 +73,8 @@ def process_story_quest_item_drop(
         **result,
         "item_key": quest.quest_item.item_key,
         "display_name": quest.quest_item.display_name,
+        # Presentation metadata is returned only after the canonical bounded
+        # grant. Consumers must display it only when granted > 0.
+        "drop_message": (f"🧩 Сюжетна знахідка: {quest.quest_item.display_name}" if result.get("granted") else None),
         "reason": "granted" if result.get("granted") else "target_reached",
     }
