@@ -8,6 +8,7 @@ starting the bot or touching production game.db.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from data.story_quest_definitions import QuestType
 from typing import Iterable, Mapping, Optional, Sequence
 
 STORY_QUEST_BUTTON_TEXT = "📜 Квести"
@@ -245,15 +246,25 @@ def build_production_story_quest_detail(connection, *, user_id: int, quest_id: s
     status = str(view["status"])
     progress = max(int(view.get("progress",0)), int(view.get("quest_item_quantity",0)))
     lines = [f"📜 {quest.number}. {quest.title}", "", f"Статус: {_status_label(status)}", "", "📖 Опис:", quest.description, "", "🎯 Завдання:", quest.objective_text]
-    if status == "ACTIVE" and quest.target_quantity > 1:
+    if status == "ACTIVE" and (quest.target_quantity > 1 or quest.quest_type is QuestType.QUEST_ITEM):
         lines += ["", "📈 Прогрес:", f"{min(progress,quest.target_quantity)}/{quest.target_quantity}"]
+    if status == "ACTIVE" and quest.quest_type is QuestType.QUEST_ITEM and quest.quest_item is not None:
+        if progress >= int(quest.quest_item.required_quantity):
+            lines += ["", "✅ Знахідку отримано:", quest.quest_item.display_name]
+        else:
+            lines += ["", "🔎 Стан пошуку:", "Доказ ще не знайдено."]
     if status == "LOCKED":
         lines += ["", "🔒 Для відкриття:"]
         if quest.previous_quest_id:
             previous = STORY_QUEST_REGISTRY.get(quest.previous_quest_id)
             lines.append(f"• завершити квест {previous.number if previous else '?'} «{previous.title if previous else quest.previous_quest_id}»")
         lines.append(f"• досягти {quest.unlock_level} рівня")
-    lines += ["", "🧭 Куди йти:", str(navigation.next_step_hint or navigation.objective_hint or quest.objective_text), "", "🎁 Нагорода:", f"{quest.reward.exp} EXP", f"{float(quest.reward.gold):.2f} золота"]
+    if status == "ACTIVE" and quest.quest_type is QuestType.QUEST_ITEM and quest.quest_item is not None and progress < int(quest.quest_item.required_quantity):
+        lines += ["", "🧭 Де шукати:", f"Полювати в локації {quest.location_id.replace('_',' ').title()}."]
+    else:
+        route_label = "🧭 Наступний крок:" if status == "ACTIVE" and quest.quest_type is QuestType.QUEST_ITEM else "🧭 Куди йти:"
+        lines += ["", route_label, str(navigation.next_step_hint or navigation.objective_hint or quest.objective_text)]
+    lines += ["", "🎁 Нагорода:", f"{quest.reward.exp} EXP", f"{float(quest.reward.gold):.2f} золота"]
     return {"text":"\n".join(lines),"keyboard":build_story_quest_detail_keyboard(quest_id=quest.quest_id,status=status,page=page)}
 
 
