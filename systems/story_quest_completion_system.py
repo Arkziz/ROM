@@ -57,6 +57,28 @@ def _objective_ready(connection, user_id: int, quest, row) -> bool:
     return quest.quest_type in {QuestType.TALK, QuestType.TURN_IN}
 
 
+def is_story_quest_objective_ready(
+    connection,
+    *,
+    registry: Mapping[str, StoryQuestDefinition],
+    user_id: int,
+    quest_id: str,
+) -> bool:
+    """Return current completion readiness without mutating quest state.
+
+    This is the canonical UI readiness boundary. It uses the same persisted
+    objective check as completion, including retained and multi-item contracts.
+    """
+    quest = _definition(registry, quest_id)
+    row = get_story_quest(connection, int(user_id), quest.quest_id)
+    if row is None or row["status"] != "ACTIVE" or int(row["reward_claimed"]) != 0:
+        return False
+    active = get_active_story_quest(connection, int(user_id))
+    if active is None or active["quest_id"] != quest.quest_id:
+        return False
+    return bool(_objective_ready(connection, int(user_id), quest, row))
+
+
 def complete_active_story_quest(
     connection,
     *,

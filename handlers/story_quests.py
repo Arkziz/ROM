@@ -90,10 +90,8 @@ def build_story_quest_detail_keyboard(
     if not quest_key:
         raise StoryQuestUiError("quest_id is required")
     rows = []
-    # The journal is a guide, not a remote quest giver. Both AVAILABLE and
-    # ACTIVE quests expose navigation, while acceptance remains owned by NPC UI.
-    if status in {"AVAILABLE", "ACTIVE"}:
-        rows.append([_button("🧭 Куди йти", build_story_quest_callback("navigate", quest_key))])
+    # The route is already visible in the detail text. Keep the journal compact
+    # and navigation-only without a redundant callback button.
     rows.append([_button("🔙 До журналу", build_story_quest_callback("page", str(max(0, int(page)))))])
     return rows
 
