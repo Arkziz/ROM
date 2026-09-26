@@ -753,6 +753,9 @@ def register_city_handlers(bot):
     def show_blacksmith(message):
         user_id = message.from_user.id
         if send_story_npc_if_present(bot, message, 'blacksmith'):
+            # Story interaction must not hide the Blacksmith's canonical services.
+            text, kb = build_blacksmith_text(user_id)
+            bot.send_message(message.chat.id, text, reply_markup=kb)
             return
         bot.send_message(message.chat.id, '⚒️ Ти підійшов до Коваля.', reply_markup=blacksmith_kb())
         text, kb = build_blacksmith_text(user_id)
@@ -1255,6 +1258,12 @@ def register_city_handlers(bot):
     @bot.message_handler(func=lambda m: getattr(m, "text", None) == "⚔️ Голова Найманців")
     def show_story_mercenary_head(message):
         if send_story_npc_if_present(bot, message, 'mercenary_head'):
+            # Keep contracts and the City return route visible beside story UI.
+            bot.send_message(
+                message.chat.id,
+                '⚔️ Інші справи Гільдії Найманців:',
+                reply_markup=mercenary_head_kb(message.from_user.id),
+            )
             return
         bot.send_message(
             message.chat.id,

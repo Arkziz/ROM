@@ -10,7 +10,18 @@ from db import get_player_stats
 from systems.story_quest_completion_system import StoryQuestCompletionError,complete_active_story_quest,is_story_quest_objective_ready
 from systems.story_quest_npc_acceptance_system import accept_story_quest_from_npc,build_npc_story_quest_presentation
 from systems.story_quest_reward_system import build_story_quest_reward_adapter
-CALLBACK_PREFIX='story_npc:'
+CALLBACK_PREFIX='sq:'
+CALLBACK_ACTIONS={'accept':'a','complete':'c'}
+CALLBACK_ACTIONS_REVERSE={value:key for key,value in CALLBACK_ACTIONS.items()}
+def _quest_by_number(number):
+ matches=[quest for quest in STORY_QUEST_REGISTRY.values() if quest.number==int(number)]
+ if len(matches)!=1:raise ValueError('Невідомий або неоднозначний номер квесту.')
+ return matches[0]
+def _callback_data(action,npc_id,quest):
+ token=CALLBACK_ACTIONS[action]
+ data=f'{CALLBACK_PREFIX}{token}:{npc_id}:{quest.number}'
+ if len(data.encode('utf-8'))>64:raise ValueError('Story callback перевищує ліміт Telegram.')
+ return data
 NPC_BUTTONS={'🗣️ Староста':'elder','⚔️ Голова Найманців':'mercenary_head','⚒️ Коваль':'blacksmith'}
 def _level(user_id):
  stats=get_player_stats(user_id) or {};return int(stats.get('level',1) if isinstance(stats,dict) else 1)
@@ -25,11 +36,11 @@ def _completion_button_text(quest_type):
 def _markup(p,user_id=None,connection=None):
  kb=types.InlineKeyboardMarkup();q=p.get('quest')
  if q and p['state']=='AVAILABLE':
-  kb.add(types.InlineKeyboardButton('✅ Прийняти квест',callback_data=f'{CALLBACK_PREFIX}accept:{p["npc_id"]}:{q["quest_id"]}'))
+  kb.add(types.InlineKeyboardButton('✅ Прийняти квест',callback_data=_callback_data('accept',p['npc_id'],STORY_QUEST_REGISTRY[q['quest_id']])))
  if q and p['state']=='ACTIVE' and user_id is not None and connection is not None:
   ready=is_story_quest_objective_ready(connection,registry=STORY_QUEST_REGISTRY,user_id=int(user_id),quest_id=q['quest_id'])
   if ready:
-   kb.add(types.InlineKeyboardButton(_completion_button_text(q['quest_type']),callback_data=f'{CALLBACK_PREFIX}complete:{p["npc_id"]}:{q["quest_id"]}'))
+   kb.add(types.InlineKeyboardButton(_completion_button_text(q['quest_type']),callback_data=_callback_data('complete',p['npc_id'],STORY_QUEST_REGISTRY[q['quest_id']])))
  return kb
 def _text(p):
  q=p.get('quest')
@@ -82,11 +93,13 @@ def register_story_quest_npc_runtime_handlers(bot):
  @bot.callback_query_handler(func=lambda c:str(getattr(c,'data','') or '').startswith(CALLBACK_PREFIX))
  def callback(call):
   try:
-   _,action,npc,qid=call.data.split(':',3);uid=call.from_user.id
+   payload=call.data[len(CALLBACK_PREFIX):];token,npc,number_text=payload.split(':',2);action=CALLBACK_ACTIONS_REVERSE[token];q=_quest_by_number(number_text);qid=q.quest_id;uid=call.from_user.id
+   expected_npc=q.giver_npc_id if action=='accept' else (q.turn_in_npc_id or q.giver_npc_id)
+   if npc!=expected_npc:raise ValueError('NPC не відповідає цьому квесту.')
    if action=='accept':
     accept_story_quest_from_npc(db.conn,registry=STORY_QUEST_REGISTRY,user_id=uid,npc_id=npc,quest_id=qid,player_level=_level(uid));message='Квест прийнято.'
    elif action=='complete':
-    q=STORY_QUEST_REGISTRY[qid];adapter=build_story_quest_reward_adapter(exp=q.reward.exp,gold=q.reward.gold);result=complete_active_story_quest(db.conn,registry=STORY_QUEST_REGISTRY,user_id=uid,quest_id=qid,reward_adapter=adapter,expected_turn_in_npc_id=npc);message=_completion_receipt(db.conn,uid,q,npc,result)
+    adapter=build_story_quest_reward_adapter(exp=q.reward.exp,gold=q.reward.gold);result=complete_active_story_quest(db.conn,registry=STORY_QUEST_REGISTRY,user_id=uid,quest_id=qid,reward_adapter=adapter,expected_turn_in_npc_id=npc);message=_completion_receipt(db.conn,uid,q,npc,result)
    else:raise ValueError('unknown story action')
    bot.answer_callback_query(call.id);bot.send_message(call.message.chat.id,message);p=_presentation(uid,npc);bot.send_message(call.message.chat.id,_text(p),reply_markup=_markup(p,user_id=uid,connection=db.conn))
   except StoryQuestCompletionError as error:
