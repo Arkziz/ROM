@@ -30,13 +30,15 @@ STATUS_LABELS={
  'COMPLETED':'✅ Виконаний','SKIPPED':'⏭️ Пропущений',
 }
 def _completion_button_text(quest_type):
- if quest_type=='TALK':return '✅ Продовжити'
+ if quest_type=='TALK':return '✅ Зрозуміло'
  if quest_type=='TURN_IN':return '✅ Здати предмети'
  return '✅ Завершити квест'
 def _markup(p,user_id=None,connection=None):
  kb=types.InlineKeyboardMarkup();q=p.get('quest')
  if q and p['state']=='AVAILABLE':
-  kb.add(types.InlineKeyboardButton('✅ Прийняти квест',callback_data=_callback_data('accept',p['npc_id'],STORY_QUEST_REGISTRY[q['quest_id']])))
+  definition=STORY_QUEST_REGISTRY[q['quest_id']]
+  label='💬 Поговорити' if definition.quest_type is QuestType.TALK else '✅ Прийняти квест'
+  kb.add(types.InlineKeyboardButton(label,callback_data=_callback_data('accept',p['npc_id'],definition)))
  if q and p['state']=='ACTIVE' and user_id is not None and connection is not None:
   ready=is_story_quest_objective_ready(connection,registry=STORY_QUEST_REGISTRY,user_id=int(user_id),quest_id=q['quest_id'])
   if ready:
@@ -46,8 +48,13 @@ def _text(p):
  q=p.get('quest')
  if not q:return f'{p["npc_name"]}\n\nСюжетних доручень зараз немає.'
  texts=STORY_QUEST_TEXT[q['quest_id']];definition=STORY_QUEST_REGISTRY[q['quest_id']]
- body=texts['acceptance_text'] if p['state']=='AVAILABLE' else definition.objective_text
- lines=[p['npc_name'],'',f'📜 {q["number"]}. {q["title"]}','',f'Статус: {STATUS_LABELS.get(p["state"],p["state"])}','',f'🎯 Завдання:\n{body}']
+ if definition.quest_type is QuestType.TALK:
+  if p['state']=='AVAILABLE':section='📖 Коротко:';body=definition.description
+  elif p['state']=='ACTIVE':section='💬 Розмова:';body=texts['acceptance_text']
+  else:section='🎯 Завдання:';body=definition.objective_text
+ else:
+  section='🎯 Завдання:';body=texts['acceptance_text'] if p['state']=='AVAILABLE' else definition.objective_text
+ lines=[p['npc_name'],'',f'📜 {q["number"]}. {q["title"]}','',f'Статус: {STATUS_LABELS.get(p["state"],p["state"])}','',f'{section}\n{body}']
  if p['state']=='ACTIVE' and (definition.target_quantity>1 or definition.quest_type is QuestType.QUEST_ITEM):
   progress=max(int(q.get('progress',0)),int(q.get('quest_item_quantity',0)))
   lines += ['',f'📈 Прогрес:\n{min(progress,definition.target_quantity)}/{definition.target_quantity}']
@@ -97,7 +104,7 @@ def register_story_quest_npc_runtime_handlers(bot):
    expected_npc=q.giver_npc_id if action=='accept' else (q.turn_in_npc_id or q.giver_npc_id)
    if npc!=expected_npc:raise ValueError('NPC не відповідає цьому квесту.')
    if action=='accept':
-    accept_story_quest_from_npc(db.conn,registry=STORY_QUEST_REGISTRY,user_id=uid,npc_id=npc,quest_id=qid,player_level=_level(uid));message='Квест прийнято.'
+    accept_story_quest_from_npc(db.conn,registry=STORY_QUEST_REGISTRY,user_id=uid,npc_id=npc,quest_id=qid,player_level=_level(uid));message='Розмову розпочато.' if q.quest_type is QuestType.TALK else 'Квест прийнято.'
    elif action=='complete':
     adapter=build_story_quest_reward_adapter(exp=q.reward.exp,gold=q.reward.gold);result=complete_active_story_quest(db.conn,registry=STORY_QUEST_REGISTRY,user_id=uid,quest_id=qid,reward_adapter=adapter,expected_turn_in_npc_id=npc);message=_completion_receipt(db.conn,uid,q,npc,result)
    else:raise ValueError('unknown story action')
