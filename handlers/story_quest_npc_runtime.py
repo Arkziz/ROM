@@ -101,6 +101,18 @@ def _completion_receipt(connection,user_id,current,npc_id,result):
  lines += _next_step_lines(connection,user_id,current,npc_id)
  return '\n'.join(lines)
 def _presentation(user_id,npc):return build_npc_story_quest_presentation(db.conn,registry=STORY_QUEST_REGISTRY,user_id=user_id,npc_id=npc,player_level=_level(user_id))
+def has_story_npc_if_present(message, npc_id):
+    """Read-only probe used to order canonical NPC menus before story cards."""
+    presentation = build_npc_story_quest_presentation(
+        db.conn,
+        user_id=message.from_user.id,
+        player_level=_player_level(message.from_user.id),
+        npc_id=npc_id,
+        registry=STORY_QUEST_REGISTRY,
+    )
+    return presentation is not None
+
+
 def send_story_npc_if_present(bot,message,npc_id):
  p=_presentation(message.from_user.id,npc_id)
  if p.get('quest') is None:return False

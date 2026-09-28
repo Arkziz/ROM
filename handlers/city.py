@@ -752,10 +752,11 @@ def register_city_handlers(bot):
     @bot.message_handler(func=lambda m: m.text == '⚒️ Коваль')
     def show_blacksmith(message):
         user_id = message.from_user.id
-        if send_story_npc_if_present(bot, message, 'blacksmith'):
+        if has_story_npc_if_present(message, 'blacksmith'):
             # Story interaction must not hide the Blacksmith's canonical services.
             text, kb = build_blacksmith_text(user_id)
             bot.send_message(message.chat.id, text, reply_markup=kb)
+            send_story_npc_if_present(bot, message, 'blacksmith')
             return
         bot.send_message(message.chat.id, '⚒️ Ти підійшов до Коваля.', reply_markup=blacksmith_kb())
         text, kb = build_blacksmith_text(user_id)
@@ -1207,7 +1208,7 @@ _REGISTER_CITY_HANDLERS_BEFORE_MAIN_MENU_RECOVERY_17_30_1_3 = register_city_hand
 
 from keyboards import elder_kb, mercenary_head_kb, bartender_kb
 from data.story_quest_npcs import get_story_quest_npc
-from handlers.story_quest_npc_runtime import send_story_npc_if_present
+from handlers.story_quest_npc_runtime import send_story_npc_if_present, has_story_npc_if_present
 
 
 def _build_story_npc_placeholder_text(npc_id, description):
@@ -1257,13 +1258,14 @@ def register_city_handlers(bot):
 
     @bot.message_handler(func=lambda m: getattr(m, "text", None) == "⚔️ Голова Найманців")
     def show_story_mercenary_head(message):
-        if send_story_npc_if_present(bot, message, 'mercenary_head'):
+        if has_story_npc_if_present(message, 'mercenary_head'):
             # Keep contracts and the City return route visible beside story UI.
             bot.send_message(
                 message.chat.id,
                 '⚔️ Інші справи Гільдії Найманців:',
                 reply_markup=mercenary_head_kb(message.from_user.id),
             )
+            send_story_npc_if_present(bot, message, 'mercenary_head')
             return
         bot.send_message(
             message.chat.id,

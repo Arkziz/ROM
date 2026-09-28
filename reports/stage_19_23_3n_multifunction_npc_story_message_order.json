@@ -1,0 +1,48 @@
+{
+  "stage": "19.23.3n",
+  "status": "PASS",
+  "decision": "PASS_PENDING_MANUAL_GAME_CHECK",
+  "head_before": "8daea5e64b13c883332fe6e5d41f2772138197bd",
+  "changed_multifunction_npcs": [
+    "blacksmith",
+    "mercenary_head"
+  ],
+  "policy": {
+    "canonical_service_menu_order": 1,
+    "story_card_order": 2,
+    "no_story_interaction": "CANONICAL_MENU_ONLY",
+    "future_alchemist_rune_master_policy": true,
+    "quest_11_active": false
+  },
+  "regression_stdout": "MULTIFUNCTION NPC STORY MESSAGE ORDER: PASS\n",
+  "maintained_regressions": [
+    {
+      "tool": "tools/check_story_quest_callback_tokens_and_npc_fallback.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST CALLBACK TOKENS AND NPC FALLBACK: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_turn_in_npc_actions.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST TURN-IN NPC ACTIONS: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_evidence_handoff_flow.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST EVIDENCE HANDOFF FLOW: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_location_names.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST LOCATION NAMES: PASS\n",
+      "stderr": ""
+    }
+  ],
+  "production_database_mutation": false,
+  "manual_game_check_required": true,
+  "wal_shm_manipulated": false,
+  "generated_at_utc": "2026-09-28T20:53:47.724941+00:00"
+}
