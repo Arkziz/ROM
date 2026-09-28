@@ -6,6 +6,7 @@ Keeping rendering pure makes empty, active and history states testable without
 starting the bot or touching production game.db.
 """
 from __future__ import annotations
+from systems.story_quest_location_presentation import resolve_story_quest_location_name
 
 from dataclasses import dataclass
 from data.story_quest_definitions import QuestType
@@ -260,7 +261,7 @@ def build_production_story_quest_detail(connection, *, user_id: int, quest_id: s
             lines.append(f"• завершити квест {previous.number if previous else '?'} «{previous.title if previous else quest.previous_quest_id}»")
         lines.append(f"• досягти {quest.unlock_level} рівня")
     if status == "ACTIVE" and quest.quest_type is QuestType.QUEST_ITEM and quest.quest_item is not None and progress < int(quest.quest_item.required_quantity):
-        lines += ["", "🧭 Де шукати:", f"Полювати в локації {quest.location_id.replace('_',' ').title()}."]
+        lines += ["", "🧭 Де шукати:", f"Полювати в локації {resolve_story_quest_location_name(quest.location_id)}."]
     else:
         route_label = "🧭 Наступний крок:" if status == "ACTIVE" and quest.quest_type is QuestType.QUEST_ITEM else "🧭 Куди йти:"
         lines += ["", route_label, str(navigation.next_step_hint or navigation.objective_hint or quest.objective_text)]

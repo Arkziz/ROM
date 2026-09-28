@@ -1,0 +1,55 @@
+{
+  "stage": "19.23.3m",
+  "status": "PASS",
+  "decision": "PASS_PENDING_MANUAL_GAME_CHECK",
+  "head_before": "f7e7e7f57a63964aaeba08baba3046d4674dae16",
+  "exact_files": [
+    "systems/story_quest_location_presentation.py",
+    "handlers/story_quests.py",
+    "tools/check_story_quest_location_names.py"
+  ],
+  "policy": {
+    "technical_location_ids_visible_to_players": false,
+    "canonical_resolver": "resolve_story_quest_location_name",
+    "known_start_path_name": "Початок Шляху",
+    "unknown_location_id": "FAIL_CLOSED",
+    "applies_to_current_and_future_story_quests": true
+  },
+  "regression_stdout": "STORY QUEST LOCATION NAMES: PASS\n",
+  "maintained_regressions": [
+    {
+      "tool": "tools/check_story_quest_batch_1_10_activation.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST BATCH 1-10 ACTIVATION: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_active_view_and_journal_details.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST ACTIVE VIEW AND JOURNAL DETAILS: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_item_journal_progress.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST ITEM JOURNAL PROGRESS: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_evidence_handoff_flow.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST EVIDENCE HANDOFF FLOW: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_turn_in_npc_actions.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST TURN-IN NPC ACTIONS: PASS\n",
+      "stderr": ""
+    }
+  ],
+  "production_database_mutation": false,
+  "manual_game_check_required": true,
+  "wal_shm_manipulated": false,
+  "generated_at_utc": "2026-09-28T20:39:21.633244+00:00"
+}
