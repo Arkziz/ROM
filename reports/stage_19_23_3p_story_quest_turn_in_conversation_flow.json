@@ -1,0 +1,44 @@
+{
+  "stage": "19.23.3p",
+  "status": "PASS",
+  "decision": "PASS_PENDING_MANUAL_GAME_CHECK",
+  "head_before": "a0bbaff6e7213cefbe05928da4c818c59a1ee6a8",
+  "policy": {
+    "available": "SHOW_ITEM",
+    "active": "ANALYZE_THEN_HAND_OVER",
+    "quest_8_show": "🔍 Показати ліхтар",
+    "quest_8_complete": "✅ Передати ліхтар",
+    "quest_9_owner": "mercenary_head"
+  },
+  "regression_stdout": "STORY QUEST TURN_IN CONVERSATION FLOW: PASS\n",
+  "maintained_regressions": [
+    {
+      "tool": "tools/check_multifunction_npc_story_message_order.py",
+      "returncode": 0,
+      "stdout": "MULTIFUNCTION NPC STORY MESSAGE ORDER: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_evidence_handoff_flow.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST EVIDENCE HANDOFF FLOW: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_turn_in_npc_actions.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST TURN-IN NPC ACTIONS: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_callback_tokens_and_npc_fallback.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST CALLBACK TOKENS AND NPC FALLBACK: PASS\n",
+      "stderr": ""
+    }
+  ],
+  "production_database_mutation": false,
+  "manual_game_check_required": true,
+  "wal_shm_manipulated": false,
+  "generated_at_utc": "2026-09-28T21:20:19.293487+00:00"
+}
