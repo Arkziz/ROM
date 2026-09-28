@@ -4,7 +4,7 @@
 from __future__ import annotations
 import json, threading, time, uuid
 from datetime import datetime, timedelta, timezone
-from db_modules.connection import conn, cursor
+from db_modules.connection import conn
 PVE_AUTO_ESCAPE_TIMEOUT_SECONDS = 300
 PVE_AUTO_ESCAPE_SWEEP_SECONDS = 2
 AUTO_ESCAPE_TEXT = "🏃 Бій завершено автоматично\n\nМинуло 5 хвилин із початку бою, тому персонаж утік.\n\nНагороди за цей бій не нараховано."
@@ -14,7 +14,7 @@ _LOCK=threading.RLock(); _WORKER_STARTED=False
 def _utcnow(): return datetime.now(timezone.utc)
 def _iso(value): return value.astimezone(timezone.utc).isoformat()
 def _create_schema():
-    cursor.execute("""CREATE TABLE IF NOT EXISTS pve_encounters (
+    conn.execute("""CREATE TABLE IF NOT EXISTS pve_encounters (
         encounter_id TEXT PRIMARY KEY, user_id INTEGER NOT NULL,
         chat_id INTEGER NOT NULL, started_at TEXT NOT NULL, deadline_at TEXT NOT NULL,
         status TEXT NOT NULL DEFAULT 'active', terminal_reason TEXT DEFAULT '',
@@ -22,15 +22,15 @@ def _create_schema():
         created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
         CHECK(status IN ('active','victory','defeat','manual_escape','auto_escape','replaced'))
     )""")
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_pve_encounters_status_deadline ON pve_encounters(status, deadline_at)")
-    cursor.execute("CREATE INDEX IF NOT EXISTS idx_pve_encounters_user_history ON pve_encounters(user_id, created_at)")
-    cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS ux_pve_encounters_one_active_user ON pve_encounters(user_id) WHERE status='active'")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_pve_encounters_status_deadline ON pve_encounters(status, deadline_at)")
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_pve_encounters_user_history ON pve_encounters(user_id, created_at)")
+    conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS ux_pve_encounters_one_active_user ON pve_encounters(user_id) WHERE status='active'")
 
 def _has_legacy_user_unique():
-    for row in cursor.execute("PRAGMA index_list('pve_encounters')").fetchall():
+    for row in conn.execute("PRAGMA index_list('pve_encounters')").fetchall():
         name, unique, partial = str(row[1]), int(row[2] or 0), int(row[4] or 0)
         if not unique or partial: continue
-        cols=[str(x[2]) for x in cursor.execute(f'PRAGMA index_info("{name}")').fetchall()]
+        cols=[str(x[2]) for x in conn.execute(f'PRAGMA index_info("{name}")').fetchall()]
         if cols==['user_id']: return True
     return False
 
@@ -39,20 +39,20 @@ def _migrate_legacy_schema():
     columns="encounter_id,user_id,chat_id,started_at,deadline_at,status,terminal_reason,terminal_at,mob_snapshot_json,created_at,updated_at"
     conn.execute('BEGIN IMMEDIATE')
     try:
-        cursor.execute('ALTER TABLE pve_encounters RENAME TO pve_encounters_18_18_1_legacy')
+        conn.execute('ALTER TABLE pve_encounters RENAME TO pve_encounters_18_18_1_legacy')
         _create_schema()
-        cursor.execute(f'INSERT INTO pve_encounters({columns}) SELECT {columns} FROM pve_encounters_18_18_1_legacy')
-        old_count=cursor.execute('SELECT COUNT(*) FROM pve_encounters_18_18_1_legacy').fetchone()[0]
-        new_count=cursor.execute('SELECT COUNT(*) FROM pve_encounters').fetchone()[0]
+        conn.execute(f'INSERT INTO pve_encounters({columns}) SELECT {columns} FROM pve_encounters_18_18_1_legacy')
+        old_count=conn.execute('SELECT COUNT(*) FROM pve_encounters_18_18_1_legacy').fetchone()[0]
+        new_count=conn.execute('SELECT COUNT(*) FROM pve_encounters').fetchone()[0]
         if old_count!=new_count: raise RuntimeError('PvE encounter migration row-count mismatch')
-        cursor.execute('DROP TABLE pve_encounters_18_18_1_legacy')
+        conn.execute('DROP TABLE pve_encounters_18_18_1_legacy')
         conn.commit(); return True
     except Exception:
         conn.rollback(); raise
 
 def init_pve_auto_escape_system():
     with _LOCK:
-        exists=cursor.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='pve_encounters'").fetchone()
+        exists=conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='pve_encounters'").fetchone()
         migrated=_migrate_legacy_schema() if exists else False
         if not migrated:
             _create_schema(); conn.commit()
@@ -65,14 +65,14 @@ def begin_pve_encounter(user_id, chat_id, mob, now=None, timeout_seconds=PVE_AUT
         try: conn.rollback()
         except Exception: pass
         conn.execute('BEGIN IMMEDIATE')
-        cursor.execute("UPDATE pve_encounters SET status='replaced',terminal_reason='new_encounter',terminal_at=?,updated_at=? WHERE user_id=? AND status='active'",(_iso(now),_iso(now),int(user_id)))
-        cursor.execute("""INSERT INTO pve_encounters(encounter_id,user_id,chat_id,started_at,deadline_at,status,mob_snapshot_json,created_at,updated_at)
+        conn.execute("UPDATE pve_encounters SET status='replaced',terminal_reason='new_encounter',terminal_at=?,updated_at=? WHERE user_id=? AND status='active'",(_iso(now),_iso(now),int(user_id)))
+        conn.execute("""INSERT INTO pve_encounters(encounter_id,user_id,chat_id,started_at,deadline_at,status,mob_snapshot_json,created_at,updated_at)
         VALUES(?,?,?,?,?,'active',?,?,?)""",(eid,int(user_id),int(chat_id),_iso(now),_iso(deadline),payload,_iso(now),_iso(now)))
         conn.commit()
     return {'encounter_id':eid,'started_at':_iso(now),'deadline_at':_iso(deadline)}
 
 def get_active_pve_encounter(user_id):
-    init_pve_auto_escape_system(); row=cursor.execute("SELECT encounter_id,user_id,chat_id,started_at,deadline_at,mob_snapshot_json FROM pve_encounters WHERE user_id=? AND status='active'",(int(user_id),)).fetchone()
+    init_pve_auto_escape_system(); row=conn.execute("SELECT encounter_id,user_id,chat_id,started_at,deadline_at,mob_snapshot_json FROM pve_encounters WHERE user_id=? AND status='active'",(int(user_id),)).fetchone()
     if not row:return None
     return {'encounter_id':row[0],'user_id':row[1],'chat_id':row[2],'started_at':row[3],'deadline_at':row[4],'mob':json.loads(row[5] or '{}')}
 
@@ -86,12 +86,12 @@ def claim_pve_terminal(user_id, reason, encounter_id=None, now=None, require_exp
         sql="UPDATE pve_encounters SET status=?,terminal_reason=?,terminal_at=?,updated_at=? WHERE user_id=? AND status='active'"; args=[reason,reason,_iso(now),_iso(now),int(user_id)]
         if encounter_id: sql+=' AND encounter_id=?'; args.append(str(encounter_id))
         if require_expired: sql+=' AND deadline_at<=?'; args.append(_iso(now))
-        changed=cursor.execute(sql,tuple(args)).rowcount==1
+        changed=conn.execute(sql,tuple(args)).rowcount==1
         conn.commit()
     return changed
 
 def get_expired_active_pve_encounters(now=None, limit=100):
-    init_pve_auto_escape_system(); now=now or _utcnow(); rows=cursor.execute("SELECT encounter_id,user_id,chat_id,deadline_at FROM pve_encounters WHERE status='active' AND deadline_at<=? ORDER BY deadline_at LIMIT ?",(_iso(now),int(limit))).fetchall()
+    init_pve_auto_escape_system(); now=now or _utcnow(); rows=conn.execute("SELECT encounter_id,user_id,chat_id,deadline_at FROM pve_encounters WHERE status='active' AND deadline_at<=? ORDER BY deadline_at LIMIT ?",(_iso(now),int(limit))).fetchall()
     return [{'encounter_id':r[0],'user_id':r[1],'chat_id':r[2],'deadline_at':r[3]} for r in rows]
 
 def expire_pve_encounters_once(bot, now=None):
@@ -107,7 +107,7 @@ def expire_pve_encounters_once(bot, now=None):
 def recover_pve_encounters_after_restart(bot, now=None):
     """Expire overdue encounters and restore pending runtime state with the original deadline."""
     init_pve_auto_escape_system(); now=now or _utcnow(); expired=expire_pve_encounters_once(bot,now); expired_ids={x['encounter_id'] for x in expired}; restored=[]
-    rows=cursor.execute("SELECT encounter_id,user_id,chat_id,started_at,deadline_at,mob_snapshot_json FROM pve_encounters WHERE status='active' AND deadline_at>?",(_iso(now),)).fetchall()
+    rows=conn.execute("SELECT encounter_id,user_id,chat_id,started_at,deadline_at,mob_snapshot_json FROM pve_encounters WHERE status='active' AND deadline_at>?",(_iso(now),)).fetchall()
     if not hasattr(bot,'user_data'): bot.user_data={}
     for eid,uid,cid,started,deadline,payload in rows:
         mob=json.loads(payload or '{}'); mob['pve_encounter_id']=eid; mob['pve_started_at']=started; mob['pve_deadline_at']=deadline

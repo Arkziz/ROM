@@ -1,0 +1,23 @@
+{
+  "stage": "19.23.3l",
+  "status": "PASS",
+  "decision": "PASS_PENDING_MANUAL_GAME_CHECK",
+  "head_before": "1dd227f4bd723734eabf0e1f85b1252d9e64cc10",
+  "exact_files": [
+    "systems/pve_auto_escape_system.py",
+    "systems/telegram_rate_limit.py",
+    "tools/check_pve_cursor_and_stale_callback_containment.py"
+  ],
+  "fixes": [
+    "PVE auto-escape no longer reuses the process-global cursor",
+    "PVE operations use connection-owned short-lived cursors under the existing module lock",
+    "expired answer_callback_query HTTP 400 is contained without replay",
+    "other Telegram 400 errors and existing 429 policy remain fail-visible"
+  ],
+  "regression_stdout": "PVE CURSOR AND STALE CALLBACK CONTAINMENT: PASS\n",
+  "maintained_regressions": [],
+  "production_database_mutation": false,
+  "manual_game_check_required": true,
+  "wal_shm_manipulated": false,
+  "generated_at_utc": "2026-09-28T20:15:46.550047+00:00"
+}
