@@ -29,9 +29,10 @@ STATUS_LABELS={
  'LOCKED':'🔒 Недоступний','AVAILABLE':'✨ Доступний','ACTIVE':'📖 Активний',
  'COMPLETED':'✅ Виконаний','SKIPPED':'⏭️ Пропущений',
 }
-def _completion_button_text(quest_type):
- if quest_type=='TALK':return '✅ Зрозуміло'
- if quest_type=='TURN_IN':return '✅ Здати предмети'
+def _completion_button_text(definition):
+ if definition.quest_type is QuestType.TALK:return '✅ Зрозуміло'
+ if definition.quest_type is QuestType.TURN_IN:return '✅ Здати предмети'
+ if definition.quest_type is QuestType.QUEST_ITEM:return '✅ Передати доказ'
  return '✅ Завершити квест'
 def _markup(p,user_id=None,connection=None):
  kb=types.InlineKeyboardMarkup();q=p.get('quest')
@@ -40,9 +41,11 @@ def _markup(p,user_id=None,connection=None):
   label='💬 Поговорити' if definition.quest_type is QuestType.TALK else '✅ Прийняти квест'
   kb.add(types.InlineKeyboardButton(label,callback_data=_callback_data('accept',p['npc_id'],definition)))
  if q and p['state']=='ACTIVE' and user_id is not None and connection is not None:
+  definition=STORY_QUEST_REGISTRY[q['quest_id']]
+  completion_npc_id=definition.turn_in_npc_id or definition.giver_npc_id
   ready=is_story_quest_objective_ready(connection,registry=STORY_QUEST_REGISTRY,user_id=int(user_id),quest_id=q['quest_id'])
-  if ready:
-   kb.add(types.InlineKeyboardButton(_completion_button_text(q['quest_type']),callback_data=_callback_data('complete',p['npc_id'],STORY_QUEST_REGISTRY[q['quest_id']])))
+  if ready and p['npc_id']==completion_npc_id:
+   kb.add(types.InlineKeyboardButton(_completion_button_text(definition),callback_data=_callback_data('complete',p['npc_id'],definition)))
  return kb
 def _text(p):
  q=p.get('quest')
@@ -58,6 +61,12 @@ def _text(p):
  if p['state']=='ACTIVE' and (definition.target_quantity>1 or definition.quest_type is QuestType.QUEST_ITEM):
   progress=max(int(q.get('progress',0)),int(q.get('quest_item_quantity',0)))
   lines += ['',f'📈 Прогрес:\n{min(progress,definition.target_quantity)}/{definition.target_quantity}']
+  if definition.quest_type is QuestType.QUEST_ITEM and definition.quest_item is not None and progress>=definition.quest_item.required_quantity:
+   lines += ['', '✅ Знахідку отримано:', definition.quest_item.display_name]
+   completion_npc_id=definition.turn_in_npc_id or definition.giver_npc_id
+   if p['npc_id']!=completion_npc_id:
+    route=resolve_story_quest_navigation(completion_npc_id)
+    lines += ['', '🧭 Кому передати:', route['route_text']]
  lines += ['', '🎁 Нагорода:', f'• {definition.reward.exp} EXP', f'• {float(definition.reward.gold):.2f} золота']
  return '\n'.join(lines)
 

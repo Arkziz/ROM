@@ -48,18 +48,22 @@ def find_npc_story_quest(
     active_match = None
     available_match = None
     for quest in _ordered_definitions(registry):
-        if quest.giver_npc_id != npc.npc_id:
-            continue
+        completion_npc_id = quest.turn_in_npc_id or quest.giver_npc_id
+        participates_in_active = npc.npc_id in {quest.giver_npc_id, completion_npc_id}
         status = get_story_quest_status(
             connection,
             user_id=user_id,
             quest=quest,
             player_level=player_level,
         )
-        if status.value == "ACTIVE":
+        if status.value == "ACTIVE" and participates_in_active:
             active_match = quest
             break
-        if status is DerivedQuestStatus.AVAILABLE and available_match is None:
+        if (
+            status is DerivedQuestStatus.AVAILABLE
+            and quest.giver_npc_id == npc.npc_id
+            and available_match is None
+        ):
             available_match = quest
     return active_match or available_match
 
@@ -96,10 +100,14 @@ def build_npc_story_quest_presentation(
         quest=quest,
         player_level=player_level,
     )
+    completion_npc_id = quest.turn_in_npc_id or quest.giver_npc_id
+    npc_role = "TURN_IN" if npc.npc_id == completion_npc_id else "GIVER"
     actions = ("ACCEPT",) if view["status"] == "AVAILABLE" else ()
     return {
         "npc_id": npc.npc_id,
         "npc_name": npc.display_name,
+        "npc_role": npc_role,
+        "completion_npc_id": completion_npc_id,
         "state": view["status"],
         "quest": view,
         "actions": actions,

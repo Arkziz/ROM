@@ -1215,8 +1215,8 @@ def _build_story_npc_placeholder_text(npc_id, description):
     npc = get_story_quest_npc(npc_id)
     return (
         f"{npc.button_label}\n\n{description}\n\n"
-        "📜 Сюжетні доручення цього персонажа з'являться після додавання "
-        "першого production-пакета квестів."
+        "📜 Нових сюжетних доручень зараз немає. "
+        "Перевір журнал квестів або повернися пізніше."
     )
 
 

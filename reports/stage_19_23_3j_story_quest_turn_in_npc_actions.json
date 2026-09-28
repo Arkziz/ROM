@@ -1,0 +1,106 @@
+{
+  "stage": "19.23.3j",
+  "status": "PASS",
+  "decision": "PASS_PENDING_MANUAL_GAME_CHECK",
+  "head_before": "f2811c7b8d876d7b8444923127c0532993d24272",
+  "backup_path": "backup/stage_19_23_3j_story_quest_turn_in_npc_actions",
+  "exact_files": [
+    "systems/story_quest_npc_acceptance_system.py",
+    "handlers/story_quest_npc_runtime.py",
+    "handlers/city.py",
+    "tools/check_story_quest_turn_in_npc_actions.py"
+  ],
+  "encoding_policy": {
+    "python_markdown_json_text": "UTF-8",
+    "read_existing_python": "utf-8-sig",
+    "write_new_or_changed_text": "utf-8 without BOM",
+    "json_ensure_ascii": false,
+    "newlines": "LF",
+    "unicode_round_trip_verified": true
+  },
+  "fixes": [
+    "ACTIVE quest resolves at giver and canonical turn-in NPC",
+    "giver cannot show completion when receiver differs",
+    "receiver shows type-aware completion action",
+    "cross-NPC QUEST_ITEM shows found item and handoff route",
+    "obsolete first-production-pack fallback removed"
+  ],
+  "regression_stdout": "STORY QUEST TURN-IN NPC ACTIONS: PASS\n",
+  "maintained_regressions": [
+    {
+      "tool": "tools/check_story_quest_batch_1_10_activation.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST BATCH 1-10 ACTIVATION: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_active_view_and_journal_details.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST ACTIVE VIEW AND JOURNAL DETAILS: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_npc_progress_and_actions.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST NPC PROGRESS AND ACTIONS: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_rewards_and_transitions.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST REWARDS AND TRANSITIONS: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_callback_tokens_and_npc_fallback.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST CALLBACK TOKENS AND NPC FALLBACK: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_talk_conversation_flow.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST TALK CONVERSATION FLOW: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_unaccepted_objective_hidden.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST UNACCEPTED OBJECTIVE HIDDEN: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_1_10_content_consistency.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST 1-10 CONTENT CONSISTENCY: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_item_drop_notification.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST ITEM DROP NOTIFICATION: PASS\n",
+      "stderr": ""
+    },
+    {
+      "tool": "tools/check_story_quest_item_journal_progress.py",
+      "returncode": 0,
+      "stdout": "STORY QUEST ITEM JOURNAL PROGRESS: PASS\n",
+      "stderr": ""
+    }
+  ],
+  "retention_unchanged": {
+    "quest_4_consume_on_completion": false,
+    "quest_7_consume_on_completion": false
+  },
+  "production_database_mutation": false,
+  "manual_game_check_required": true,
+  "manual_scenarios": [
+    "Quest 4 at Mercenary Head: no completion button; handoff route points to Elder.",
+    "Quest 4 at Elder: active quest appears with Передати доказ button.",
+    "Complete quest 4 at Elder: reward once, scrap retained, quest 5 becomes available.",
+    "Quest 5 consumes the retained scrap exact-once.",
+    "Repeat the cross-NPC ownership check for quest 7 to Blacksmith."
+  ],
+  "wal_shm_manipulated": false,
+  "generated_at_utc": "2026-09-28T19:33:44.432020+00:00"
+}
