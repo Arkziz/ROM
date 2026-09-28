@@ -101,6 +101,21 @@ def _completion_receipt(connection,user_id,current,npc_id,result):
  lines += _next_step_lines(connection,user_id,current,npc_id)
  return '\n'.join(lines)
 def _presentation(user_id,npc):return build_npc_story_quest_presentation(db.conn,registry=STORY_QUEST_REGISTRY,user_id=user_id,npc_id=npc,player_level=_level(user_id))
+def _player_level(user_id):
+    """Read the current player level for read-only story presentation probes."""
+    row = db.conn.execute(
+        "SELECT level FROM users WHERE user_id = ?",
+        (int(user_id),),
+    ).fetchone()
+    if row is None:
+        return 1
+    try:
+        value = row["level"]
+    except (KeyError, IndexError, TypeError):
+        value = row[0]
+    return max(1, int(value or 1))
+
+
 def has_story_npc_if_present(message, npc_id):
     """Read-only probe used to order canonical NPC menus before story cards."""
     presentation = build_npc_story_quest_presentation(
