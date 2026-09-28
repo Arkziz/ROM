@@ -32,7 +32,7 @@ STATUS_LABELS={
 def _completion_button_text(definition):
  if definition.quest_type is QuestType.TALK:return '✅ Зрозуміло'
  if definition.quest_type is QuestType.TURN_IN:return '✅ Здати предмети'
- if definition.quest_type is QuestType.QUEST_ITEM:return '✅ Передати доказ'
+ if definition.quest_type is QuestType.QUEST_ITEM:return '✅ Доповісти про знахідку' if (definition.turn_in_npc_id or definition.giver_npc_id)==definition.giver_npc_id else '✅ Передати доказ'
  return '✅ Завершити квест'
 def _markup(p,user_id=None,connection=None):
  kb=types.InlineKeyboardMarkup();q=p.get('quest')
