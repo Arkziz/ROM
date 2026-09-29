@@ -1,0 +1,57 @@
+{
+  "stage": "19.25.3",
+  "status": "PASS",
+  "decision": "PASS_PENDING_MANUAL_GAME_CHECK",
+  "head_before": "752d1e231acf1d8dfb87a96a3ae9b4c12c4df36d",
+  "module": "data/story_quests/start_path_21_30.py",
+  "production_numbers_after": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30
+  ],
+  "quest_31_active": false,
+  "database": {
+    "exists": true,
+    "sha256": "ab37a3f043e737be5aa588d5dc7bbc077ea6ed3c5109421fe5668273a084e47c",
+    "quick_check": [
+      "ok"
+    ],
+    "foreign_key_violations": []
+  },
+  "production_database_mutation": false,
+  "candidate_mutation": false,
+  "wal_shm_manipulated": false,
+  "manual_game_check": "REQUIRED",
+  "focused_checker": "STORY QUESTS 21-30 ACTIVATION: PASS",
+  "superseded_pre_activation_checks_not_run": {
+    "tools/check_story_quest_batch_21_30_audit.py": "pre-activation checker requires production registry 1-20",
+    "tools/check_story_quest_batch_21_30_content.py": "pre-activation checker requires production registry 1-20"
+  }
+}
