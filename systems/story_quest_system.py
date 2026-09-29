@@ -125,7 +125,7 @@ def get_story_quest_status(
     if quest.previous_quest_id is not None:
         predecessor = get_story_quest(connection, user_id, quest.previous_quest_id)
         predecessor_completed = bool(
-            predecessor and predecessor["status"] == PersistentQuestStatus.COMPLETED.value
+            predecessor and predecessor["status"] in (PersistentQuestStatus.COMPLETED.value, PersistentQuestStatus.SKIPPED.value)
         )
     another_active = get_active_story_quest(connection, user_id) is not None
     if (

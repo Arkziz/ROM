@@ -22,7 +22,7 @@ def _callback_data(action,npc_id,quest):
  data=f'{CALLBACK_PREFIX}{token}:{npc_id}:{quest.number}'
  if len(data.encode('utf-8'))>64:raise ValueError('Story callback перевищує ліміт Telegram.')
  return data
-NPC_BUTTONS={'🗣️ Староста':'elder','⚔️ Голова Найманців':'mercenary_head','⚒️ Коваль':'blacksmith'}
+NPC_BUTTONS={'🗣️ Староста':'elder','⚔️ Голова Найманців':'mercenary_head','⚒️ Коваль':'blacksmith', '💠 Рунний Майстер': 'rune_master'}
 def _level(user_id):
  stats=get_player_stats(user_id) or {};return int(stats.get('level',1) if isinstance(stats,dict) else 1)
 STATUS_LABELS={

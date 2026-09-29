@@ -74,9 +74,9 @@ def build_story_quest_journal_keyboard(
     rows = []
     navigation = []
     if has_previous:
-        navigation.append(_button("◀️", build_story_quest_callback("page", str(current - 1))))
+        navigation.append(_button("⬅️ Назад", build_story_quest_callback("page", str(current - 1))))
     if has_next:
-        navigation.append(_button("▶️", build_story_quest_callback("page", str(current + 1))))
+        navigation.append(_button("➡️ Далі", build_story_quest_callback("page", str(current + 1))))
     if navigation:
         rows.append(navigation)
     rows.append([_button("🔄 Оновити", build_story_quest_callback("refresh", str(current)))])

@@ -9,6 +9,7 @@ from db import (
     insert_rune_into_equipment,
 )
 from keyboards import craft_kb, rune_master_kb
+from handlers.story_quest_npc_runtime import send_story_npc_if_present
 
 ITEMS_PER_PAGE = 8
 
@@ -178,6 +179,8 @@ def register_rune_handlers(bot):
             ),
             reply_markup=rune_master_kb(),
         )
+        # Keep canonical rune services visible, then append an eligible story card.
+        send_story_npc_if_present(bot, message, 'rune_master')
 
     @bot.message_handler(func=lambda message: message.text == "💠 Вставити руну")
     def show_rune_insertion(message):
