@@ -1,0 +1,116 @@
+{
+  "stage": "19.24.1",
+  "scope": "read-only audit of quests 11-20; no production content or DB mutation",
+  "candidate_quest_count": 10,
+  "candidate_numbers": [
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "quest_types": {
+    "11": "TALK",
+    "12": "KILL_REGION",
+    "13": "QUEST_ITEM",
+    "14": "TURN_IN",
+    "15": "QUEST_ITEM",
+    "16": "TURN_IN",
+    "17": "KILL_REGION",
+    "18": "TALK",
+    "19": "QUEST_ITEM",
+    "20": "TURN_IN"
+  },
+  "reward_contract": {
+    "exp": 36,
+    "gold": 0.43,
+    "source": "3x canonical normal level-2 mob"
+  },
+  "quest_item_contracts": {
+    "13": {
+      "item_key": "start_path_runic_crystal_fragment",
+      "drop_chance": 0.15,
+      "retain_until_turn_in": true
+    },
+    "15": {
+      "item_key": "start_path_runic_dust_sample",
+      "drop_chance": 0.15,
+      "retain_until_turn_in": true
+    },
+    "19": {
+      "item_key": "start_path_guard_note",
+      "drop_chance": 0.15,
+      "retain_until_turn_in": true
+    }
+  },
+  "turn_in_contracts": {
+    "14": [
+      [
+        "start_path_runic_crystal_fragment",
+        1
+      ]
+    ],
+    "16": [
+      [
+        "start_path_runic_dust_sample",
+        1
+      ]
+    ],
+    "20": [
+      [
+        "start_path_guard_note",
+        1
+      ]
+    ]
+  },
+  "production_activation_before": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "errors": [],
+  "content_optimization_findings": [
+    "quest 13: missing acceptance_text",
+    "quest 13: missing completion_text",
+    "quest 15: missing completion_text",
+    "quest 19: missing acceptance_text",
+    "quest 19: missing completion_text",
+    "quest 13: add explicit consume_on_completion=false before activation",
+    "quest 15: add explicit consume_on_completion=false before activation",
+    "quest 19: add explicit consume_on_completion=false before activation",
+    "quest 13: AVAILABLE description prematurely states the future discovery",
+    "quest 15: AVAILABLE description prematurely states the future discovery",
+    "quest 19: AVAILABLE description prematurely states the future discovery"
+  ],
+  "warnings": [
+    "runtime contract needs activation regression: systems/story_quest_npc_acceptance_system.py missing literal 'required_quest_items'",
+    "runtime contract needs activation regression: handlers/story_quest_npc_runtime.py missing literal 'rune_master'",
+    "runtime contract needs activation regression: handlers/story_quest_npc_runtime.py missing literal 'alchemist'"
+  ],
+  "decisions": [
+    "derive navigation from canonical NPC registry during activation",
+    "activation patch may extend authoritative production content from 1-10 to 1-20",
+    "authorial DOCX has legacy rewards; candidate approved policy 36 EXP / 0.43 gold supersedes them",
+    "authorial DOCX lists quest 14 as TALK; approved candidate changes it to TURN_IN",
+    "authorial DOCX wording for quest 16 says both samples, while approved lifecycle consumes fragment in quest 14 and dust in quest 16"
+  ],
+  "ready_for_19_24_2_optimization": true,
+  "status": "PASS",
+  "decision": "READY_FOR_STAGE_19_24_2_CONTENT_OPTIMIZATION",
+  "head_before": "953ca4a2a5a0ce5aaec165dfa874d5c0f16a430e",
+  "production_database_mutation": false,
+  "wal_shm_manipulated": false,
+  "generated_at_utc": "2026-09-29T17:18:34.958346+00:00"
+}
