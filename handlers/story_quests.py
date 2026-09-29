@@ -11,6 +11,7 @@ from systems.story_quest_location_presentation import resolve_story_quest_locati
 from dataclasses import dataclass
 from data.story_quest_definitions import QuestType
 from typing import Iterable, Mapping, Optional, Sequence
+from systems.story_quest_player_level import resolve_story_quest_player_level
 
 STORY_QUEST_BUTTON_TEXT = "📜 Квести"
 STORY_QUEST_CALLBACK_PREFIX = "story_quest:"
@@ -287,7 +288,7 @@ def register_story_quest_handlers(bot):
     )
     def story_quest_profile_reply(message):
         stats=get_player_stats(message.from_user.id) or {}
-        level=int(stats.get("level",1) if isinstance(stats,dict) else 1)
+        level=resolve_story_quest_player_level(stats)
         items=[get_story_quest_view(db.conn,user_id=message.from_user.id,quest=q,player_level=level) for q in STORY_QUEST_REGISTRY.values()]
         snapshot=render_story_quest_journal(items)
         bot.send_message(message.chat.id,snapshot["text"],reply_markup=_inline_markup(snapshot["keyboard"]))
@@ -302,7 +303,7 @@ def register_story_quest_handlers(bot):
             parsed = parse_story_quest_callback(call.data)
             if parsed.action in {"refresh", "page"}:
                 stats=get_player_stats(call.from_user.id) or {}
-                level=int(stats.get("level",1) if isinstance(stats,dict) else 1)
+                level=resolve_story_quest_player_level(stats)
                 items=[get_story_quest_view(db.conn,user_id=call.from_user.id,quest=q,player_level=level) for q in STORY_QUEST_REGISTRY.values()]
                 snapshot = render_story_quest_journal(items,page=int(parsed.value or 0) if parsed.action=="page" else 0)
                 changed = _edit_story_journal_safely(
@@ -319,14 +320,14 @@ def register_story_quest_handlers(bot):
                 return
             if parsed.action == "detail":
                 stats=get_player_stats(call.from_user.id) or {}
-                level=int(stats.get("level",1) if isinstance(stats,dict) else 1)
+                level=resolve_story_quest_player_level(stats)
                 snapshot=build_production_story_quest_detail(db.conn,user_id=call.from_user.id,quest_id=parsed.value,player_level=level)
                 _edit_story_journal_safely(bot,chat_id=call.message.chat.id,message_id=call.message.message_id,text=snapshot["text"],reply_markup=_inline_markup(snapshot["keyboard"]))
                 bot.answer_callback_query(call.id)
                 return
             if parsed.action == "navigate":
                 stats=get_player_stats(call.from_user.id) or {}
-                level=int(stats.get("level",1) if isinstance(stats,dict) else 1)
+                level=resolve_story_quest_player_level(stats)
                 snapshot=build_production_story_quest_detail(db.conn,user_id=call.from_user.id,quest_id=parsed.value,player_level=level)
                 bot.answer_callback_query(call.id,"Маршрут показано в деталях квесту.")
                 return

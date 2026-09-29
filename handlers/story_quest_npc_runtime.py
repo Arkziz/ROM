@@ -10,6 +10,7 @@ from db import get_player_stats
 from systems.story_quest_completion_system import StoryQuestCompletionError,complete_active_story_quest,is_story_quest_objective_ready
 from systems.story_quest_npc_acceptance_system import accept_story_quest_from_npc,build_npc_story_quest_presentation
 from systems.story_quest_reward_system import build_story_quest_reward_adapter
+from systems.story_quest_player_level import resolve_story_quest_player_level
 CALLBACK_PREFIX='sq:'
 CALLBACK_ACTIONS={'accept':'a','complete':'c'}
 CALLBACK_ACTIONS_REVERSE={value:key for key,value in CALLBACK_ACTIONS.items()}
@@ -24,7 +25,9 @@ def _callback_data(action,npc_id,quest):
  return data
 NPC_BUTTONS={'🗣️ Староста':'elder','⚔️ Голова Найманців':'mercenary_head','⚒️ Коваль':'blacksmith', '💠 Рунний Майстер': 'rune_master'}
 def _level(user_id):
- stats=get_player_stats(user_id) or {};return int(stats.get('level',1) if isinstance(stats,dict) else 1)
+    """Resolve the player level through the canonical row-compatible adapter."""
+    stats=get_player_stats(user_id)
+    return resolve_story_quest_player_level(stats)
 STATUS_LABELS={
  'LOCKED':'🔒 Недоступний','AVAILABLE':'✨ Доступний','ACTIVE':'📖 Активний',
  'COMPLETED':'✅ Виконаний','SKIPPED':'⏭️ Пропущений',
@@ -102,18 +105,9 @@ def _completion_receipt(connection,user_id,current,npc_id,result):
  return '\n'.join(lines)
 def _presentation(user_id,npc):return build_npc_story_quest_presentation(db.conn,registry=STORY_QUEST_REGISTRY,user_id=user_id,npc_id=npc,player_level=_level(user_id))
 def _player_level(user_id):
-    """Read the current player level for read-only story presentation probes."""
-    row = db.conn.execute(
-        "SELECT level FROM users WHERE user_id = ?",
-        (int(user_id),),
-    ).fetchone()
-    if row is None:
-        return 1
-    try:
-        value = row["level"]
-    except (KeyError, IndexError, TypeError):
-        value = row[0]
-    return max(1, int(value or 1))
+    """Resolve the player level through the canonical row-compatible adapter."""
+    stats=get_player_stats(user_id)
+    return resolve_story_quest_player_level(stats)
 
 
 def has_story_npc_if_present(message, npc_id):
