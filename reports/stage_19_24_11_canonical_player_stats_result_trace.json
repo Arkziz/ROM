@@ -1,0 +1,84 @@
+{
+  "stage": "19.24.11",
+  "status": "PASS",
+  "decision": "READY_FOR_STAGE_19_24_12_TUPLE_ADAPTER_FIX",
+  "head_before": "a17d9520db5a6f5bf1690cb2b1665a08e81dff44",
+  "trace": {
+    "target": {
+      "user_id": 243129101,
+      "character_name": "Arkziz",
+      "database_level": 2
+    },
+    "canonical_provider": {
+      "source": {
+        "module": "db_modules.player",
+        "qualname": "get_player_stats",
+        "signature": "(user_id)",
+        "source_file": "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\db_modules\\player.py",
+        "source": "def get_player_stats(user_id):\n    return _player_system().get_player_stats(user_id)\n"
+      },
+      "result_shape": {
+        "type_module": "builtins",
+        "type_name": "tuple",
+        "repr": "(11, 16, 10, 10, 11, 2)",
+        "is_dict": false,
+        "is_mapping": false,
+        "is_tuple": true,
+        "is_list": false,
+        "has_keys": false,
+        "has_level_attr": false,
+        "len": {
+          "ok": true,
+          "value": 6
+        },
+        "keys": {
+          "ok": false,
+          "error_type": "AttributeError",
+          "error": "'tuple' object has no attribute 'keys'"
+        },
+        "getitem_level": {
+          "ok": false,
+          "error_type": "TypeError",
+          "error": "tuple indices must be integers or slices, not str"
+        },
+        "attr_level": {
+          "ok": false,
+          "error_type": "AttributeError",
+          "error": "'tuple' object has no attribute 'level'"
+        },
+        "index_5": {
+          "ok": true,
+          "value": 2
+        },
+        "sequence_values": [
+          11,
+          16,
+          10,
+          10,
+          11,
+          2
+        ]
+      }
+    },
+    "level_resolution": {
+      "current_adapter_level": 1,
+      "legacy_positional_level": {
+        "ok": true,
+        "value": 2
+      },
+      "database_level": 2
+    },
+    "quest_11": {
+      "unlock_level": 2,
+      "view_with_current_adapter": "LOCKED",
+      "view_with_database_level": "AVAILABLE",
+      "view_with_positional_level": "AVAILABLE"
+    },
+    "classification": "TUPLE_POSITIONAL_LEVEL_NOT_SUPPORTED_BY_ADAPTER",
+    "decision": "READY_FOR_STAGE_19_24_12_TUPLE_ADAPTER_FIX"
+  },
+  "production_content_mutation": false,
+  "production_database_mutation": false,
+  "wal_shm_manipulated": false,
+  "generated_at_utc": "2026-09-29T19:49:26.391859+00:00"
+}
