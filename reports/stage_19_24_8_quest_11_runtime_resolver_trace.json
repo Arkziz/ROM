@@ -1,0 +1,245 @@
+{
+  "stage": "19.24.8",
+  "status": "PASS",
+  "decision": "READY_FOR_STAGE_19_24_9_PRESENTATION_FIX",
+  "head_before": "095d4e72616b92559375f5926bff02930bbb9df5",
+  "target_character": "Arkziz",
+  "target_quest_number": 11,
+  "trace": {
+    "target": {
+      "user_id": 243129101,
+      "character_name": "Arkziz",
+      "player_level": 2
+    },
+    "quest": {
+      "quest_id": "start_path_011_unstable_glow",
+      "number": 11,
+      "unlock_level": 2,
+      "previous_quest_id": "start_path_010_investigation_begins",
+      "giver_npc_id": "rune_master"
+    },
+    "predecessor_definition": {
+      "quest_id": "start_path_010_investigation_begins",
+      "number": 10
+    },
+    "runtime_inputs": {
+      "persistent_quest_11": null,
+      "predecessor_row": {
+        "id": 16,
+        "user_id": 243129101,
+        "quest_id": "start_path_010_investigation_begins",
+        "quest_number": 10,
+        "status": "COMPLETED",
+        "progress": 0,
+        "target_quantity": 1,
+        "reward_claimed": 1,
+        "started_at": "2026-09-28T21:29:31.346380+00:00",
+        "completed_at": "2026-09-28T21:30:22.214605+00:00",
+        "skipped_at": null,
+        "updated_at": "2026-09-28T21:30:22.214605+00:00"
+      },
+      "predecessor_raw_status": "COMPLETED",
+      "predecessor_completed": true,
+      "active_story_quest": null,
+      "another_active_quest": false
+    },
+    "pure_derived_status": "AVAILABLE",
+    "production_view": {
+      "quest_id": "start_path_011_unstable_glow",
+      "number": 11,
+      "title": "Неспокійне світіння",
+      "quest_type": "TALK",
+      "status": "AVAILABLE",
+      "location_id": "start_path",
+      "giver_npc_id": "rune_master",
+      "turn_in_npc_id": "rune_master",
+      "progress": 0,
+      "target_quantity": 1,
+      "quest_item_quantity": 0,
+      "objective_complete": false
+    },
+    "production_view_status": "AVAILABLE",
+    "source_trace": {
+      "system": {
+        "get_active_story_quest": {
+          "name": "get_active_story_quest",
+          "signature": "(connection, user_id: 'int') -> 'Optional[dict[str, Any]]'",
+          "source": "def get_active_story_quest(connection, user_id: int) -> Optional[dict[str, Any]]:\n    \"\"\"Return the single ACTIVE quest guaranteed by the partial unique index.\"\"\"\n    row = connection.execute(\n        \"SELECT * FROM user_story_quests WHERE user_id=? AND status='ACTIVE'\",\n        (int(user_id),),\n    ).fetchone()\n    return _row_dict(row)\n"
+        },
+        "get_story_quest": {
+          "name": "get_story_quest",
+          "signature": "(connection, user_id: 'int', quest_id: 'str') -> 'Optional[dict[str, Any]]'",
+          "source": "def get_story_quest(connection, user_id: int, quest_id: str) -> Optional[dict[str, Any]]:\n    \"\"\"Return one persisted quest row without deriving LOCKED or AVAILABLE.\"\"\"\n    row = connection.execute(\n        \"SELECT * FROM user_story_quests WHERE user_id=? AND quest_id=?\",\n        (int(user_id), str(quest_id)),\n    ).fetchone()\n    return _row_dict(row)\n"
+        },
+        "get_story_quest_view": {
+          "name": "get_story_quest_view",
+          "signature": "(connection, *, user_id: 'int', quest: 'StoryQuestDefinition', player_level: 'int') -> 'dict'",
+          "source": "def get_story_quest_view(\n    connection,\n    *,\n    user_id: int,\n    quest: StoryQuestDefinition,\n    player_level: int,\n) -> dict:\n    \"\"\"Build a read-only UI-neutral snapshot for journals and NPC screens.\"\"\"\n    status = get_story_quest_status(\n        connection, user_id=user_id, quest=quest, player_level=player_level\n    )\n    row = get_story_quest(connection, user_id, quest.quest_id)\n    progress = int(row[\"progress\"]) if row else 0\n    item_quantity = 0\n    if quest.quest_item is not None:\n        item_quantity = get_story_quest_item_quantity(\n            connection, user_id, quest.quest_id, quest.quest_item.item_key\n        )\n    return {\n        \"quest_id\": quest.quest_id,\n        \"number\": quest.number,\n        \"title\": quest.title,\n        \"quest_type\": quest.quest_type.value,\n        \"status\": status.value,\n        \"location_id\": quest.location_id,\n        \"giver_npc_id\": quest.giver_npc_id,\n        \"turn_in_npc_id\": quest.turn_in_npc_id,\n        \"progress\": progress,\n        \"target_quantity\": quest.target_quantity,\n        \"quest_item_quantity\": item_quantity,\n        \"objective_complete\": max(progress, item_quantity) >= quest.target_quantity,\n    }\n"
+        }
+      },
+      "journal": {
+        "resolve_story_quest_location_name": {
+          "name": "resolve_story_quest_location_name",
+          "signature": "(location_id: 'str') -> 'str'",
+          "source": "def resolve_story_quest_location_name(location_id: str) -> str:\n    \"\"\"Return the canonical player-facing location name or fail closed.\n\n    Story presentation must never derive user-facing text from technical IDs.\n    Unknown IDs are content defects and therefore raise instead of leaking a\n    value such as ``start_path`` or an artificial title-cased variant.\n    \"\"\"\n    normalized = str(location_id or \"\").strip()\n    if not normalized:\n        raise ValueError(\"story quest location_id is empty\")\n    location = LOCATIONS.get(normalized)\n    if location is None:\n        raise KeyError(f\"unknown story quest location_id: {normalized}\")\n    raw_name = location.get(\"name\") if isinstance(location, dict) else getattr(location, \"name\", None)\n    display_name = re.sub(r\"^[^\\w]+\", \"\", str(raw_name or \"\").strip(), flags=re.UNICODE).strip()\n    if not display_name:\n        raise ValueError(f\"location has no player-facing name: {normalized}\")\n    return display_name\n"
+        },
+        "QuestType": {
+          "name": "QuestType",
+          "signature": "(*values)",
+          "source": "class QuestType(str, Enum):\n    TALK='TALK'; KILL_REGION='KILL_REGION'; QUEST_ITEM='QUEST_ITEM'; TURN_IN='TURN_IN'; BOSS='BOSS'\n"
+        },
+        "StoryQuestUiError": {
+          "name": "StoryQuestUiError",
+          "error": "no signature found for builtin type <class 'handlers.story_quests.StoryQuestUiError'>"
+        },
+        "StoryQuestCallback": {
+          "name": "StoryQuestCallback",
+          "signature": "(action: 'str', value: 'str' = '') -> None",
+          "source": "@dataclass(frozen=True)\nclass StoryQuestCallback:\n    \"\"\"Validated callback payload decoded from the story-quest namespace.\"\"\"\n\n    action: str\n    value: str = \"\"\n"
+        },
+        "build_story_quest_callback": {
+          "name": "build_story_quest_callback",
+          "signature": "(action: 'str', value: 'str' = '') -> 'str'",
+          "source": "def build_story_quest_callback(action: str, value: str = \"\") -> str:\n    \"\"\"Build a compact namespaced callback accepted by the future handler.\"\"\"\n    action_key = str(action or \"\").strip().lower()\n    value_key = str(value or \"\").strip()\n    if not action_key or \":\" in action_key or \":\" in value_key:\n        raise StoryQuestUiError(\"invalid story quest callback component\")\n    payload = f\"{STORY_QUEST_CALLBACK_PREFIX}{action_key}\"\n    if value_key:\n        payload += f\":{value_key}\"\n    if len(payload.encode(\"utf-8\")) > 64:\n        raise StoryQuestUiError(\"story quest callback exceeds Telegram limit\")\n    return payload\n"
+        },
+        "parse_story_quest_callback": {
+          "name": "parse_story_quest_callback",
+          "signature": "(payload: 'str') -> 'StoryQuestCallback'",
+          "source": "def parse_story_quest_callback(payload: str) -> StoryQuestCallback:\n    \"\"\"Fail closed for callbacks outside the canonical namespace.\"\"\"\n    raw = str(payload or \"\")\n    if not raw.startswith(STORY_QUEST_CALLBACK_PREFIX):\n        raise StoryQuestUiError(\"foreign callback namespace\")\n    parts = raw[len(STORY_QUEST_CALLBACK_PREFIX):].split(\":\")\n    if not parts or not parts[0] or len(parts) > 2:\n        raise StoryQuestUiError(\"invalid story quest callback\")\n    return StoryQuestCallback(parts[0], parts[1] if len(parts) == 2 else \"\")\n"
+        },
+        "build_story_quest_journal_keyboard": {
+          "name": "build_story_quest_journal_keyboard",
+          "signature": "(*, page: 'int', has_previous: 'bool', has_next: 'bool') -> 'list[list[dict]]'",
+          "source": "def build_story_quest_journal_keyboard(\n    *, page: int, has_previous: bool, has_next: bool,\n) -> list[list[dict]]:\n    \"\"\"Build deterministic journal navigation with canonical Profile return.\"\"\"\n    current = max(0, int(page))\n    rows = []\n    navigation = []\n    if has_previous:\n        navigation.append(_button(\"⬅️ Назад\", build_story_quest_callback(\"page\", str(current - 1))))\n    if has_next:\n        navigation.append(_button(\"➡️ Далі\", build_story_quest_callback(\"page\", str(current + 1))))\n    if navigation:\n        rows.append(navigation)\n    rows.append([_button(\"🔄 Оновити\", build_story_quest_callback(\"refresh\", str(current)))])\n    rows.append([_button(\"🔙 До профілю\", build_story_quest_callback(\"profile\"))])\n    return rows\n"
+        },
+        "build_story_quest_detail_keyboard": {
+          "name": "build_story_quest_detail_keyboard",
+          "signature": "(*, quest_id: 'str', status: 'str', page: 'int' = 0) -> 'list[list[dict]]'",
+          "source": "def build_story_quest_detail_keyboard(\n    *, quest_id: str, status: str, page: int = 0,\n) -> list[list[dict]]:\n    \"\"\"Expose only actions valid for the supplied materialized/derived status.\"\"\"\n    quest_key = str(quest_id or \"\").strip()\n    if not quest_key:\n        raise StoryQuestUiError(\"quest_id is required\")\n    rows = []\n    # The route is already visible in the detail text. Keep the journal compact\n    # and navigation-only without a redundant callback button.\n    rows.append([_button(\"🔙 До журналу\", build_story_quest_callback(\"page\", str(max(0, int(page)))))])\n    return rows\n"
+        },
+        "render_story_quest_journal": {
+          "name": "render_story_quest_journal",
+          "signature": "(items: 'Sequence[Mapping]', *, page: 'int' = 0, page_size: 'int' = 10) -> 'dict'",
+          "source": "def render_story_quest_journal(\n    items: Sequence[Mapping], *, page: int = 0, page_size: int = STORY_QUEST_PAGE_SIZE,\n) -> dict:\n    \"\"\"Render a paginated, UI-neutral journal snapshot.\n\n    Items are expected to come from the lifecycle view layer. The formatter does\n    not query SQLite, infer NPC routes, or duplicate lifecycle decisions.\n    \"\"\"\n    size = max(1, min(STORY_QUEST_PAGE_SIZE, int(page_size)))\n    ordered = sorted(items, key=lambda item: (int(item.get(\"number\", 0)), str(item.get(\"quest_id\", \"\"))))\n    max_page = max(0, (len(ordered) - 1) // size) if ordered else 0\n    current = min(max(0, int(page)), max_page)\n    visible = ordered[current * size:(current + 1) * size]\n    if not visible:\n        text = \"📜 Сюжетні квести\\n\\nЖурнал поки порожній.\"\n    else:\n        lines = [\"📜 Сюжетні квести\", \"\"]\n        for item in visible:\n            number = int(item.get(\"number\", 0))\n            title = str(item.get(\"title\") or \"Без назви\")\n            status = str(item.get(\"status\") or \"LOCKED\")\n            lines.append(f\"{number}. {title}\")\n            lines.append(f\"   {_status_label(status)}\")\n            if status == \"ACTIVE\":\n                progress = int(item.get(\"quest_item_quantity\", 0) or item.get(\"progress\", 0))\n                target = int(item.get(\"target_quantity\", 1))\n                lines.append(f\"   Прогрес: {min(progress, target)}/{target}\")\n        lines += [\"\", f\"Сторінка {current + 1}/{max_page + 1}\"]\n        text = \"\\n\".join(lines)\n    quest_rows = [\n        [_button(\n            f\"{STATUS_LABELS.get(str(item.get('status') or 'LOCKED'),'❓')} {int(item.get('number',0))}. {str(item.get('title') or 'Без назви')}\",\n            build_story_quest_callback(\"detail\", str(item.get(\"quest_id\") or \"\")),\n        )]\n        for item in visible\n    ]\n    return {\n        \"text\": text,\n        \"page\": current,\n        \"page_size\": size,\n        \"total\": len(ordered),\n        \"has_previous\": current > 0,\n        \"has_next\": current < max_page,\n        \"keyboard\": quest_rows + build_story_quest_journal_keyboard(\n            page=current, has_previous=current > 0, has_next=current < max_page,\n        ),\n        \"visible_quest_ids\": [str(item.get(\"quest_id\", \"\")) for item in visible],\n    }\n"
+        },
+        "render_story_quest_detail": {
+          "name": "render_story_quest_detail",
+          "signature": "(item: 'Mapping', *, page: 'int' = 0) -> 'dict'",
+          "source": "def render_story_quest_detail(item: Mapping, *, page: int = 0) -> dict:\n    \"\"\"Render one quest using only canonical lifecycle snapshot fields.\"\"\"\n    quest_id = str(item.get(\"quest_id\") or \"\").strip()\n    if not quest_id:\n        raise StoryQuestUiError(\"quest_id is required\")\n    status = str(item.get(\"status\") or \"LOCKED\")\n    progress = int(item.get(\"quest_item_quantity\", 0) or item.get(\"progress\", 0))\n    target = int(item.get(\"target_quantity\", 1))\n    lines = [\n        f\"📜 {int(item.get('number', 0))}. {str(item.get('title') or 'Без назви')}\",\n        \"\",\n        _status_label(status),\n        f\"Прогрес: {min(progress, target)}/{target}\",\n    ]\n    return {\n        \"text\": \"\\n\".join(lines),\n        \"keyboard\": build_story_quest_detail_keyboard(\n            quest_id=quest_id, status=status, page=page,\n        ),\n    }\n"
+        },
+        "_send_empty_story_journal": {
+          "name": "_send_empty_story_journal",
+          "signature": "(bot, chat_id)",
+          "source": "def _send_empty_story_journal(bot, chat_id):\n    \"\"\"Show the safe empty journal until reviewed production content exists.\"\"\"\n    snapshot = render_story_quest_journal([])\n    bot.send_message(\n        chat_id,\n        snapshot[\"text\"],\n        reply_markup=_inline_markup(snapshot[\"keyboard\"]),\n    )\n"
+        },
+        "_edit_story_journal_safely": {
+          "name": "_edit_story_journal_safely",
+          "signature": "(bot, *, chat_id, message_id, text, reply_markup)",
+          "source": "def _edit_story_journal_safely(bot, *, chat_id, message_id, text, reply_markup):\n    \"\"\"Edit the journal while treating Telegram's identical-content 400 as success.\n\n    Refresh may legitimately reproduce the same text and keyboard. Telegram\n    rejects that no-op edit with HTTP 400, but the journal is already current.\n    Only that exact condition is suppressed; every unrelated API error remains\n    visible to the polling/recovery layer.\n    \"\"\"\n    from telebot.apihelper import ApiTelegramException\n\n    try:\n        bot.edit_message_text(\n            text,\n            chat_id,\n            message_id,\n            reply_markup=reply_markup,\n        )\n        return True\n    except ApiTelegramException as error:\n        description = str(error).casefold()\n        if \"message is not modified\" in description:\n            return False\n        raise\n"
+        },
+        "build_production_story_quest_detail": {
+          "name": "build_production_story_quest_detail",
+          "signature": "(connection, *, user_id: 'int', quest_id: 'str', player_level: 'int', page: 'int' = 0) -> 'dict'",
+          "source": "def build_production_story_quest_detail(connection, *, user_id: int, quest_id: str, player_level: int, page: int = 0) -> dict:\n    \"\"\"Render one canonical definition plus current lifecycle state.\n\n    Acceptance remains NPC-owned. The journal only explains the objective,\n    route, progress, reward, and unlock prerequisites.\n    \"\"\"\n    import db\n    from data.story_quest_content import STORY_QUEST_REGISTRY\n    from data.story_quest_npcs import resolve_story_quest_navigation\n    from systems.story_quest_system import get_story_quest_view\n    try:\n        quest = STORY_QUEST_REGISTRY[str(quest_id)]\n    except KeyError as error:\n        raise StoryQuestUiError(f\"unknown production story quest: {quest_id}\") from error\n    view = get_story_quest_view(connection, user_id=int(user_id), quest=quest, player_level=int(player_level))\n    navigation = quest.navigation\n    status = str(view[\"status\"])\n    progress = max(int(view.get(\"progress\",0)), int(view.get(\"quest_item_quantity\",0)))\n    lines = [f\"📜 {quest.number}. {quest.title}\", \"\", f\"Статус: {_status_label(status)}\", \"\", \"📖 Опис:\", quest.description, \"\", \"🎯 Завдання:\", quest.objective_text]\n    if status == \"ACTIVE\" and (quest.target_quantity > 1 or quest.quest_type is QuestType.QUEST_ITEM):\n        lines += [\"\", \"📈 Прогрес:\", f\"{min(progress,quest.target_quantity)}/{quest.target_quantity}\"]\n    if status == \"ACTIVE\" and quest.quest_type is QuestType.QUEST_ITEM and quest.quest_item is not None:\n        if progress >= int(quest.quest_item.required_quantity):\n            lines += [\"\", \"✅ Знахідку отримано:\", quest.quest_item.display_name]\n        else:\n            lines += [\"\", \"🔎 Стан пошуку:\", \"Доказ ще не знайдено.\"]\n    if status == \"LOCKED\":\n        lines += [\"\", \"🔒 Для відкриття:\"]\n        if quest.previous_quest_id:\n            previous = STORY_QUEST_REGISTRY.get(quest.previous_quest_id)\n            lines.append(f\"• завершити квест {previous.number if previous else '?'} «{previous.title if previous else quest.previous_quest_id}»\")\n        lines.append(f\"• досягти {quest.unlock_level} рівня\")\n    if status == \"ACTIVE\" and quest.quest_type is QuestType.QUEST_ITEM and quest.quest_item is not None and progress < int(quest.quest_item.required_quantity):\n        lines += [\"\", \"🧭 Де шукати:\", f\"Полювати в локації {resolve_story_quest_location_name(quest.location_id)}.\"]\n    else:\n        route_label = \"🧭 Наступний крок:\" if status == \"ACTIVE\" and quest.quest_type is QuestType.QUEST_ITEM else \"🧭 Куди йти:\"\n        lines += [\"\", route_label, str(navigation.next_step_hint or navigation.objective_hint or quest.objective_text)]\n    lines += [\"\", \"🎁 Нагорода:\", f\"{quest.reward.exp} EXP\", f\"{float(quest.reward.gold):.2f} золота\"]\n    return {\"text\":\"\\n\".join(lines),\"keyboard\":build_story_quest_detail_keyboard(quest_id=quest.quest_id,status=status,page=page)}\n"
+        },
+        "register_story_quest_handlers": {
+          "name": "register_story_quest_handlers",
+          "signature": "(bot)",
+          "source": "def register_story_quest_handlers(bot):\n    \"\"\"Register the Profile journal route before broad downstream handlers.\n\n    Stage 19.10 intentionally supports only open, refresh, and Profile return.\n    Acceptance, navigation resolution, NPC interaction, and DB mutations remain\n    unavailable until canonical production content and NPC registry exist.\n    \"\"\"\n    from handlers.profile import send_profile_root\n    import db\n    from data.story_quest_content import STORY_QUEST_REGISTRY\n    from db import get_player_stats\n    from systems.story_quest_system import get_story_quest_view\n\n    @bot.message_handler(\n        func=lambda message: getattr(message, \"text\", None) == STORY_QUEST_BUTTON_TEXT\n    )\n    def story_quest_profile_reply(message):\n        stats=get_player_stats(message.from_user.id) or {}\n        level=int(stats.get(\"level\",1) if isinstance(stats,dict) else 1)\n        items=[get_story_quest_view(db.conn,user_id=message.from_user.id,quest=q,player_level=level) for q in STORY_QUEST_REGISTRY.values()]\n        snapshot=render_story_quest_journal(items)\n        bot.send_message(message.chat.id,snapshot[\"text\"],reply_markup=_inline_markup(snapshot[\"keyboard\"]))\n\n    @bot.callback_query_handler(\n        func=lambda call: str(getattr(call, \"data\", \"\") or \"\").startswith(\n            STORY_QUEST_CALLBACK_PREFIX\n        )\n    )\n    def story_quest_callback(call):\n        try:\n            parsed = parse_story_quest_callback(call.data)\n            if parsed.action in {\"refresh\", \"page\"}:\n                stats=get_player_stats(call.from_user.id) or {}\n                level=int(stats.get(\"level\",1) if isinstance(stats,dict) else 1)\n                items=[get_story_quest_view(db.conn,user_id=call.from_user.id,quest=q,player_level=level) for q in STORY_QUEST_REGISTRY.values()]\n                snapshot = render_story_quest_journal(items,page=int(parsed.value or 0) if parsed.action==\"page\" else 0)\n                changed = _edit_story_journal_safely(\n                    bot,\n                    chat_id=call.message.chat.id,\n                    message_id=call.message.message_id,\n                    text=snapshot[\"text\"],\n                    reply_markup=_inline_markup(snapshot[\"keyboard\"]),\n                )\n                bot.answer_callback_query(\n                    call.id,\n                    \"Журнал оновлено.\" if changed else \"Журнал уже актуальний.\",\n                )\n                return\n            if parsed.action == \"detail\":\n                stats=get_player_stats(call.from_user.id) or {}\n                level=int(stats.get(\"level\",1) if isinstance(stats,dict) else 1)\n                snapshot=build_production_story_quest_detail(db.conn,user_id=call.from_user.id,quest_id=parsed.value,player_level=level)\n                _edit_story_journal_safely(bot,chat_id=call.message.chat.id,message_id=call.message.message_id,text=snapshot[\"text\"],reply_markup=_inline_markup(snapshot[\"keyboard\"]))\n                bot.answer_callback_query(call.id)\n                return\n            if parsed.action == \"navigate\":\n                stats=get_player_stats(call.from_user.id) or {}\n                level=int(stats.get(\"level\",1) if isinstance(stats,dict) else 1)\n                snapshot=build_production_story_quest_detail(db.conn,user_id=call.from_user.id,quest_id=parsed.value,player_level=level)\n                bot.answer_callback_query(call.id,\"Маршрут показано в деталях квесту.\")\n                return\n            if parsed.action == \"profile\":\n                bot.answer_callback_query(call.id)\n                send_profile_root(bot, call.message.chat.id, call.from_user.id)\n                return\n            bot.answer_callback_query(call.id,\"Некоректна дія журналу.\",show_alert=True)\n        except StoryQuestUiError:\n            bot.answer_callback_query(\n                call.id, \"Некоректна дія журналу квестів.\", show_alert=True\n            )\n"
+        }
+      },
+      "npc_runtime": {
+        "QuestType": {
+          "name": "QuestType",
+          "signature": "(*values)",
+          "source": "class QuestType(str, Enum):\n    TALK='TALK'; KILL_REGION='KILL_REGION'; QUEST_ITEM='QUEST_ITEM'; TURN_IN='TURN_IN'; BOSS='BOSS'\n"
+        },
+        "resolve_story_quest_navigation": {
+          "name": "resolve_story_quest_navigation",
+          "signature": "(npc_id: 'str') -> 'dict'",
+          "source": "def resolve_story_quest_navigation(npc_id: str) -> dict:\n    \"\"\"Build a UI-neutral navigation snapshot for journal and NPC screens.\"\"\"\n    npc = get_story_quest_npc(npc_id)\n    return {\n        \"npc_id\": npc.npc_id,\n        \"display_name\": npc.display_name,\n        \"button_label\": npc.button_label,\n        \"world_location_id\": npc.world_location_id,\n        \"city_section_id\": npc.city_section_id,\n        \"city_section_label\": npc.city_section_label,\n        \"route_labels\": npc.route_labels,\n        \"route_text\": npc.route_text,\n        \"production_route_exists\": npc.production_route_exists,\n    }\n"
+        },
+        "get_story_quest_status": {
+          "name": "get_story_quest_status",
+          "signature": "(connection, *, user_id: 'int', quest: 'StoryQuestDefinition', player_level: 'int') -> 'PersistentQuestStatus | DerivedQuestStatus'",
+          "source": "def get_story_quest_status(\n    connection,\n    *,\n    user_id: int,\n    quest: StoryQuestDefinition,\n    player_level: int,\n) -> PersistentQuestStatus | DerivedQuestStatus:\n    \"\"\"Resolve persistent status first, otherwise derive LOCKED or AVAILABLE.\"\"\"\n    row = get_story_quest(connection, user_id, quest.quest_id)\n    if row is not None:\n        return PersistentQuestStatus(str(row[\"status\"]))\n\n    predecessor_completed = quest.previous_quest_id is None\n    if quest.previous_quest_id is not None:\n        predecessor = get_story_quest(connection, user_id, quest.previous_quest_id)\n        predecessor_completed = bool(\n            predecessor and predecessor[\"status\"] in (PersistentQuestStatus.COMPLETED.value, PersistentQuestStatus.SKIPPED.value)\n        )\n    another_active = get_active_story_quest(connection, user_id) is not None\n    if (\n        int(player_level) < int(quest.unlock_level)\n        or not predecessor_completed\n        or another_active\n    ):\n        return DerivedQuestStatus.LOCKED\n    return DerivedQuestStatus.AVAILABLE\n"
+        },
+        "StoryQuestCompletionError": {
+          "name": "StoryQuestCompletionError",
+          "error": "no signature found for builtin type <class 'systems.story_quest_completion_system.StoryQuestCompletionError'>"
+        },
+        "complete_active_story_quest": {
+          "name": "complete_active_story_quest",
+          "signature": "(connection, *, registry: 'Mapping[str, StoryQuestDefinition]', user_id: 'int', quest_id: 'str', reward_adapter: 'Callable', objective_preparer: 'Optional[Callable]' = None, expected_turn_in_npc_id: 'Optional[str]' = None, idempotency_key: 'Optional[str]' = None, timestamp: 'Optional[str]' = None) -> 'dict'",
+          "source": "def complete_active_story_quest(\n    connection,\n    *,\n    registry: Mapping[str, StoryQuestDefinition],\n    user_id: int,\n    quest_id: str,\n    reward_adapter: Callable,\n    objective_preparer: Optional[Callable] = None,\n    expected_turn_in_npc_id: Optional[str] = None,\n    idempotency_key: Optional[str] = None,\n    timestamp: Optional[str] = None,\n) -> dict:\n    \"\"\"Complete and reward one quest exactly once in a single transaction.\n\n    The reward adapter receives ``connection``, ``user_id``, ``quest`` and\n    ``idempotency_key``. It must use only the supplied connection and must not\n    commit or roll back. Any exception rolls back item consumption, reward\n    writes and quest status together.\n    \"\"\"\n    quest = _definition(registry, quest_id)\n    key = str(idempotency_key or f\"story_quest:{user_id}:{quest.quest_id}\")\n    with immediate_transaction(connection):\n        row = get_story_quest(connection, user_id, quest.quest_id)\n        if row is None:\n            raise StoryQuestCompletionError(\"quest has no persistent state\")\n\n        # A repeated callback after a successful commit is a safe read-only\n        # replay and never invokes the reward adapter again.\n        if row[\"status\"] == \"COMPLETED\" and int(row[\"reward_claimed\"]) == 1:\n            return {\n                \"completed\": True,\n                \"already_processed\": True,\n                \"quest\": row,\n                \"reward\": None,\n            }\n        if row[\"status\"] != \"ACTIVE\" or int(row[\"reward_claimed\"]) != 0:\n            raise StoryQuestCompletionError(\"quest is not an unclaimed ACTIVE quest\")\n        active = get_active_story_quest(connection, user_id)\n        if active is None or active[\"quest_id\"] != quest.quest_id:\n            raise StoryQuestCompletionError(\"active quest changed\")\n\n        if expected_turn_in_npc_id is not None:\n            expected = str(quest.turn_in_npc_id or quest.giver_npc_id)\n            if expected != str(expected_turn_in_npc_id):\n                raise StoryQuestCompletionError(\"turn-in NPC does not match definition\")\n        if objective_preparer is not None:\n            objective_preparer(\n                connection=connection,\n                user_id=int(user_id),\n                quest=quest,\n                row=row,\n            )\n            row = get_story_quest(connection, user_id, quest.quest_id)\n        if not _objective_ready(connection, user_id, quest, row):\n            raise StoryQuestCompletionError(\"quest objective is incomplete\")\n\n        # Consumption occurs inside the same BEGIN IMMEDIATE transaction as\n        # reward and COMPLETED. Retained clues remain until a later definition\n        # explicitly lists the item as a consuming prerequisite.\n        if quest.quest_type is QuestType.QUEST_ITEM and quest.quest_item.consume_on_completion:\n            consume_story_quest_item_quantity(\n                connection,\n                user_id=int(user_id),\n                item_key=quest.quest_item.item_key,\n                quantity=int(quest.quest_item.required_quantity),\n            )\n        for required in quest.required_quest_items:\n            if required.consume:\n                consume_story_quest_item_quantity(\n                    connection,\n                    user_id=int(user_id),\n                    item_key=required.item_key,\n                    quantity=int(required.quantity),\n                )\n\n        try:\n            reward_result = reward_adapter(\n                connection=connection,\n                user_id=int(user_id),\n                quest=quest,\n                idempotency_key=key,\n            )\n        except Exception as error:\n            raise StoryQuestRewardError(\"story quest reward failed\") from error\n        if reward_result is False:\n            raise StoryQuestRewardError(\"story quest reward adapter rejected reward\")\n\n        now = str(timestamp or utc_now_iso())\n        updated = connection.execute(\n            \"\"\"UPDATE user_story_quests\n            SET status='COMPLETED', reward_claimed=1,\n                completed_at=?, updated_at=?\n            WHERE user_id=? AND quest_id=?\n              AND status='ACTIVE' AND reward_claimed=0\"\"\",\n            (now, now, int(user_id), quest.quest_id),\n        )\n        if updated.rowcount != 1:\n            raise StoryQuestCompletionError(\"quest changed concurrently during completion\")\n        completed = get_story_quest(connection, user_id, quest.quest_id)\n        return {\n            \"completed\": True,\n            \"already_processed\": False,\n            \"quest\": completed,\n            \"reward\": reward_result,\n        }\n"
+        },
+        "is_story_quest_objective_ready": {
+          "name": "is_story_quest_objective_ready",
+          "signature": "(connection, *, registry: 'Mapping[str, StoryQuestDefinition]', user_id: 'int', quest_id: 'str') -> 'bool'",
+          "source": "def is_story_quest_objective_ready(\n    connection,\n    *,\n    registry: Mapping[str, StoryQuestDefinition],\n    user_id: int,\n    quest_id: str,\n) -> bool:\n    \"\"\"Return current completion readiness without mutating quest state.\n\n    This is the canonical UI readiness boundary. It uses the same persisted\n    objective check as completion, including retained and multi-item contracts.\n    \"\"\"\n    quest = _definition(registry, quest_id)\n    row = get_story_quest(connection, int(user_id), quest.quest_id)\n    if row is None or row[\"status\"] != \"ACTIVE\" or int(row[\"reward_claimed\"]) != 0:\n        return False\n    active = get_active_story_quest(connection, int(user_id))\n    if active is None or active[\"quest_id\"] != quest.quest_id:\n        return False\n    return bool(_objective_ready(connection, int(user_id), quest, row))\n"
+        },
+        "accept_story_quest_from_npc": {
+          "name": "accept_story_quest_from_npc",
+          "signature": "(connection, *, registry: 'Mapping[str, StoryQuestDefinition]', user_id: 'int', npc_id: 'str', quest_id: 'str', player_level: 'int', timestamp: 'Optional[str]' = None) -> 'dict'",
+          "source": "def accept_story_quest_from_npc(\n    connection,\n    *,\n    registry: Mapping[str, StoryQuestDefinition],\n    user_id: int,\n    npc_id: str,\n    quest_id: str,\n    player_level: int,\n    timestamp: Optional[str] = None,\n) -> dict:\n    \"\"\"Accept one quest only from its canonical giver NPC.\n\n    The lifecycle engine performs the transactional availability recheck and\n    idempotent retry behavior. This boundary only proves NPC ownership and blocks\n    stale or forged callbacks that reference a different giver.\n    \"\"\"\n    npc = get_story_quest_npc(npc_id)\n    try:\n        quest = registry[str(quest_id)]\n    except KeyError as error:\n        raise StoryQuestNpcAcceptanceError(\n            f\"unknown story quest: {quest_id}\"\n        ) from error\n    if quest.giver_npc_id != npc.npc_id:\n        raise StoryQuestNpcAcceptanceError(\n            f\"quest {quest.quest_id} does not belong to NPC {npc.npc_id}\"\n        )\n    presentation = build_npc_story_quest_presentation(\n        connection,\n        registry=registry,\n        user_id=user_id,\n        npc_id=npc.npc_id,\n        player_level=player_level,\n    )\n    if (\n        presentation[\"quest\"] is None\n        or presentation[\"quest\"][\"quest_id\"] != quest.quest_id\n        or presentation[\"state\"] not in {\"AVAILABLE\", \"ACTIVE\"}\n    ):\n        raise StoryQuestUnavailableError(\n            f\"quest {quest.quest_id} is not presentable by NPC {npc.npc_id}\"\n        )\n    accepted = accept_story_quest(\n        connection,\n        registry=registry,\n        user_id=user_id,\n        quest_id=quest.quest_id,\n        player_level=player_level,\n        timestamp=timestamp,\n    )\n    return {\n        \"accepted\": True,\n        \"already_active\": presentation[\"state\"] == \"ACTIVE\",\n        \"npc_id\": npc.npc_id,\n        \"quest\": accepted,\n    }\n"
+        },
+        "build_npc_story_quest_presentation": {
+          "name": "build_npc_story_quest_presentation",
+          "signature": "(connection, *, registry: 'Mapping[str, StoryQuestDefinition]', user_id: 'int', npc_id: 'str', player_level: 'int') -> 'dict'",
+          "source": "def build_npc_story_quest_presentation(\n    connection,\n    *,\n    registry: Mapping[str, StoryQuestDefinition],\n    user_id: int,\n    npc_id: str,\n    player_level: int,\n) -> dict:\n    \"\"\"Build a handler-neutral NPC screen with only policy-valid actions.\"\"\"\n    npc = get_story_quest_npc(npc_id)\n    quest = find_npc_story_quest(\n        connection,\n        registry=registry,\n        user_id=user_id,\n        npc_id=npc.npc_id,\n        player_level=player_level,\n    )\n    if quest is None:\n        return {\n            \"npc_id\": npc.npc_id,\n            \"npc_name\": npc.display_name,\n            \"state\": \"NO_QUEST\",\n            \"quest\": None,\n            \"actions\": (),\n            \"navigation\": resolve_story_quest_navigation(npc.npc_id),\n        }\n    view = get_story_quest_view(\n        connection,\n        user_id=user_id,\n        quest=quest,\n        player_level=player_level,\n    )\n    completion_npc_id = quest.turn_in_npc_id or quest.giver_npc_id\n    npc_role = \"TURN_IN\" if npc.npc_id == completion_npc_id else \"GIVER\"\n    actions = (\"ACCEPT\",) if view[\"status\"] == \"AVAILABLE\" else ()\n    return {\n        \"npc_id\": npc.npc_id,\n        \"npc_name\": npc.display_name,\n        \"npc_role\": npc_role,\n        \"completion_npc_id\": completion_npc_id,\n        \"state\": view[\"status\"],\n        \"quest\": view,\n        \"actions\": actions,\n        \"navigation\": resolve_story_quest_navigation(npc.npc_id),\n    }\n"
+        },
+        "build_story_quest_reward_adapter": {
+          "name": "build_story_quest_reward_adapter",
+          "signature": "(*, exp: 'int', gold)",
+          "source": "def build_story_quest_reward_adapter(*, exp: int, gold):\n    \"\"\"Return an adapter compatible with complete_active_story_quest.\n\n    All mutations use the supplied canonical connection. The adapter never\n    starts, commits or rolls back a transaction and never sends Telegram output.\n    \"\"\"\n    exp_amount = int(exp)\n    gold_amount = float(gold)\n    if exp_amount < 0 or gold_amount < 0:\n        raise ValueError(\"story quest rewards cannot be negative\")\n\n    def reward_adapter(*, connection, user_id, quest, idempotency_key):\n        exp_result = apply_exp_in_transaction(connection, user_id, exp_amount)\n        if exp_result is None:\n            raise ValueError(f\"unknown user_id: {user_id}\")\n        gold_balance = apply_gold_in_transaction(connection, user_id, gold_amount)\n        return {\n            \"quest_id\": quest.quest_id,\n            \"idempotency_key\": str(idempotency_key),\n            \"exp_awarded\": exp_amount,\n            \"gold_awarded\": gold_amount,\n            \"gold_balance\": gold_balance,\n            \"exp_result\": exp_result,\n        }\n    return reward_adapter\n"
+        },
+        "_quest_by_number": {
+          "name": "_quest_by_number",
+          "signature": "(number)",
+          "source": "def _quest_by_number(number):\n matches=[quest for quest in STORY_QUEST_REGISTRY.values() if quest.number==int(number)]\n if len(matches)!=1:raise ValueError('Невідомий або неоднозначний номер квесту.')\n return matches[0]\n"
+        },
+        "_ordered_quests": {
+          "name": "_ordered_quests",
+          "signature": "()",
+          "source": "def _ordered_quests():\n return tuple(sorted(STORY_QUEST_REGISTRY.values(),key=lambda quest:(quest.number,quest.quest_id)))\n"
+        },
+        "_next_quest": {
+          "name": "_next_quest",
+          "signature": "(current)",
+          "source": "def _next_quest(current):\n for quest in _ordered_quests():\n  if quest.number==current.number+1 and quest.previous_quest_id==current.quest_id:return quest\n return None\n"
+        },
+        "has_story_npc_if_present": {
+          "name": "has_story_npc_if_present",
+          "signature": "(message, npc_id)",
+          "source": "def has_story_npc_if_present(message, npc_id):\n    \"\"\"Read-only probe used to order canonical NPC menus before story cards.\"\"\"\n    presentation = build_npc_story_quest_presentation(\n        db.conn,\n        user_id=message.from_user.id,\n        player_level=_player_level(message.from_user.id),\n        npc_id=npc_id,\n        registry=STORY_QUEST_REGISTRY,\n    )\n    return presentation is not None\n"
+        },
+        "send_story_npc_if_present": {
+          "name": "send_story_npc_if_present",
+          "signature": "(bot, message, npc_id)",
+          "source": "def send_story_npc_if_present(bot,message,npc_id):\n p=_presentation(message.from_user.id,npc_id)\n if p.get('quest') is None:return False\n bot.send_message(message.chat.id,_text(p),reply_markup=_markup(p,user_id=message.from_user.id,connection=db.conn));return True\n"
+        },
+        "_story_text_before_turn_in_policy": {
+          "name": "_text",
+          "signature": "(p)",
+          "source": "def _text(p):\n q=p.get('quest')\n if not q:return f'{p[\"npc_name\"]}\\n\\nСюжетних доручень зараз немає.'\n texts=STORY_QUEST_TEXT[q['quest_id']];definition=STORY_QUEST_REGISTRY[q['quest_id']]\n if definition.quest_type is QuestType.TALK:\n  if p['state']=='AVAILABLE':section='📖 Коротко:';body=definition.description\n  elif p['state']=='ACTIVE':section='💬 Розмова:';body=texts['acceptance_text']\n  else:section='🎯 Завдання:';body=definition.objective_text\n else:\n  section='🎯 Завдання:';body=texts['acceptance_text'] if p['state']=='AVAILABLE' else definition.objective_text\n lines=[p['npc_name'],'',f'📜 {q[\"number\"]}. {q[\"title\"]}','',f'Статус: {STATUS_LABELS.get(p[\"state\"],p[\"state\"])}','',f'{section}\\n{body}']\n if p['state']=='ACTIVE' and (definition.target_quantity>1 or definition.quest_type is QuestType.QUEST_ITEM):\n  progress=max(int(q.get('progress',0)),int(q.get('quest_item_quantity',0)))\n  lines += ['',f'📈 Прогрес:\\n{min(progress,definition.target_quantity)}/{definition.target_quantity}']\n  if definition.quest_type is QuestType.QUEST_ITEM and definition.quest_item is not None and progress>=definition.quest_item.required_quantity:\n   lines += ['', '✅ Знахідку отримано:', definition.quest_item.display_name]\n   completion_npc_id=definition.turn_in_npc_id or definition.giver_npc_id\n   if p['npc_id']!=completion_npc_id:\n    route=resolve_story_quest_navigation(completion_npc_id)\n    lines += ['', '🧭 Кому передати:', route['route_text']]\n lines += ['', '🎁 Нагорода:', f'• {definition.reward.exp} EXP', f'• {float(definition.reward.gold):.2f} золота']\n return '\\n'.join(lines)\n"
+        },
+        "_story_markup_before_turn_in_policy": {
+          "name": "_markup",
+          "signature": "(p, user_id=None, connection=None)",
+          "source": "def _markup(p,user_id=None,connection=None):\n kb=types.InlineKeyboardMarkup();q=p.get('quest')\n if q and p['state']=='AVAILABLE':\n  definition=STORY_QUEST_REGISTRY[q['quest_id']]\n  label='💬 Поговорити' if definition.quest_type is QuestType.TALK else '✅ Прийняти квест'\n  kb.add(types.InlineKeyboardButton(label,callback_data=_callback_data('accept',p['npc_id'],definition)))\n if q and p['state']=='ACTIVE' and user_id is not None and connection is not None:\n  definition=STORY_QUEST_REGISTRY[q['quest_id']]\n  completion_npc_id=definition.turn_in_npc_id or definition.giver_npc_id\n  ready=is_story_quest_objective_ready(connection,registry=STORY_QUEST_REGISTRY,user_id=int(user_id),quest_id=q['quest_id'])\n  if ready and p['npc_id']==completion_npc_id:\n   kb.add(types.InlineKeyboardButton(_completion_button_text(definition),callback_data=_callback_data('complete',p['npc_id'],definition)))\n return kb\n"
+        },
+        "register_story_quest_npc_runtime_handlers": {
+          "name": "register_story_quest_npc_runtime_handlers",
+          "signature": "(bot)",
+          "source": "def register_story_quest_npc_runtime_handlers(bot):\n @bot.callback_query_handler(func=lambda c:str(getattr(c,'data','') or '').startswith(CALLBACK_PREFIX))\n def callback(call):\n  try:\n   payload=call.data[len(CALLBACK_PREFIX):];token,npc,number_text=payload.split(':',2);action=CALLBACK_ACTIONS_REVERSE[token];q=_quest_by_number(number_text);qid=q.quest_id;uid=call.from_user.id\n   expected_npc=q.giver_npc_id if action=='accept' else (q.turn_in_npc_id or q.giver_npc_id)\n   if npc!=expected_npc:raise ValueError('NPC не відповідає цьому квесту.')\n   if action=='accept':\n    accept_story_quest_from_npc(db.conn,registry=STORY_QUEST_REGISTRY,user_id=uid,npc_id=npc,quest_id=qid,player_level=_level(uid));message='Розмову розпочато.' if q.quest_type is QuestType.TALK else 'Квест прийнято.'\n   elif action=='complete':\n    adapter=build_story_quest_reward_adapter(exp=q.reward.exp,gold=q.reward.gold);result=complete_active_story_quest(db.conn,registry=STORY_QUEST_REGISTRY,user_id=uid,quest_id=qid,reward_adapter=adapter,expected_turn_in_npc_id=npc);message=_completion_receipt(db.conn,uid,q,npc,result)\n   else:raise ValueError('unknown story action')\n   bot.answer_callback_query(call.id);bot.send_message(call.message.chat.id,message);p=_presentation(uid,npc);bot.send_message(call.message.chat.id,_text(p),reply_markup=_markup(p,user_id=uid,connection=db.conn))\n  except StoryQuestCompletionError as error:\n   text='❌ Завдання ще не виконано.' if 'objective is incomplete' in str(error) else '❌ Дію завершення відхилено.'\n   bot.answer_callback_query(call.id,text,show_alert=True)\n  except (ValueError,KeyError):\n   bot.answer_callback_query(call.id,'❌ Дія недоступна.',show_alert=True)\n"
+        }
+      }
+    },
+    "classification": "RESOLVER_RETURNS_AVAILABLE_PRESENTATION_PATH_SUSPECT",
+    "expected_status": "AVAILABLE"
+  },
+  "production_content_mutation": false,
+  "production_database_mutation": false,
+  "wal_shm_manipulated": false,
+  "generated_at_utc": "2026-09-29T19:27:22.853248+00:00"
+}
