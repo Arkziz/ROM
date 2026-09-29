@@ -663,6 +663,8 @@ def register_city_handlers(bot):
         _ALCHEMIST_INPUT_17_19_3.pop(user_id, None)
         text, _ = build_alchemist_root_17_19_3(user_id)
         bot.send_message(message.chat.id, text, reply_markup=alchemist_reply_kb_17_19_3_1())
+        # Keep Alchemist services visible, then append an eligible story card.
+        send_story_npc_if_present(bot, message, "alchemist")
 
     @bot.callback_query_handler(func=lambda call: str(call.data).startswith('alchemist:'))
     def alchemist_trade_17_19_3(call):

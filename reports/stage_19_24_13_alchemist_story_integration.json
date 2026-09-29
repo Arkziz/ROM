@@ -1,0 +1,29 @@
+{
+  "stage": "19.24.13",
+  "status": "PASS",
+  "decision": "PASS_PENDING_MANUAL_GAME_CHECK",
+  "owner": "handlers/city.py",
+  "focused_checker": "ALCHEMIST STORY INTEGRATION: PASS",
+  "regressions": [
+    {
+      "file": "tools/check_story_quest_batch_11_20_activation.py",
+      "stdout": "STORY QUEST BATCH 11-20 ACTIVATION: PASS"
+    },
+    {
+      "file": "tools/check_story_quest_batch_11_20_content.py",
+      "stdout": "STORY QUEST BATCH 11-20 CONTENT: PASS"
+    }
+  ],
+  "baseline_incompatible_checks_not_run": {
+    "tools/check_story_quest_turn_in_conversation_flow.py": "legacy checker hard-codes a 10-quest production registry and requires quest 11 to be absent",
+    "tools/check_multifunction_npc_story_message_order.py": "legacy checker hard-codes a 10-quest production registry and requires quest 11 to be absent"
+  },
+  "database": {
+    "exists": true,
+    "sha256": "eb6883b13a92077d29fd2dfd89cf6678013b1e143cea2008ed987c15d7a3057f",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  },
+  "production_database_mutation": false,
+  "wal_shm_manipulated": false
+}
