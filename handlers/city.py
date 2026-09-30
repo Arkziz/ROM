@@ -36,6 +36,8 @@ def build_city_text(user_id):
 
 def build_trade_district_text(user_id):
     gold = get_wallet(user_id)
+    # Keep Trade Row services visible, then append an eligible Merchant story card.
+    send_story_npc_if_present(bot, message, 'trader')
     return f'🛒 Торговий ряд\n\n💰 Золото: {float(gold):.2f}\n\nВузька вулиця заставлена возами, ящиками та прилавками. Торговці скуповують сірий лут, непотрібне спорядження і продають прості речі для мандрівників.'
 
 def build_craft_district_text(user_id):

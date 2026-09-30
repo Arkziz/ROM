@@ -1,0 +1,54 @@
+{
+  "stage": "19.25.5",
+  "expected_head": "c71b981989f897b885edbd950bdd75abfd73e241",
+  "commit_subject": "Stage 19.25.5: integrate Merchant story quests",
+  "owner": "handlers/city.py",
+  "npc_contract": {
+    "npc_id": "trader",
+    "npc_name": "Торговець",
+    "quest_23_id": "start_path_023_guards_ring",
+    "quest_23_type": "QUEST_ITEM",
+    "quest_23_giver": "mercenary_head",
+    "quest_23_turn_in": "trader",
+    "quest_23_item": "start_path_guards_ring",
+    "quest_23_consume": false,
+    "quest_24_id": "start_path_024_last_purchase",
+    "quest_24_type": "TALK",
+    "quest_24_required": [
+      {
+        "item_key": "start_path_guards_ring",
+        "quantity": 1,
+        "consume": false
+      }
+    ]
+  },
+  "service_menu_first": true,
+  "story_card_second": true,
+  "quest_23_item_retained": true,
+  "quest_24_non_consuming_talk": true,
+  "production_database_mutation": false,
+  "wal_shm_manipulated": false,
+  "database_before": {
+    "exists": true,
+    "sha256": "017dcf961725e69c019b350de968db53a6039fb34d26d1949d248429a18b2386",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  },
+  "focused_checker": "MERCHANT STORY INTEGRATION: PASS",
+  "regressions": [
+    {
+      "file": "tools/check_story_quest_batch_21_30_activation.py",
+      "stdout": "STORY QUESTS 21-30 ACTIVATION: PASS"
+    }
+  ],
+  "baseline_incompatible_checks_not_run": {
+    "tools/check_story_quest_batch_11_20_activation.py": "legacy checker hard-codes production registry 1-20",
+    "tools/check_story_quest_batch_11_20_content.py": "legacy checker is tied to the pre-21-30 production boundary"
+  },
+  "database_after": {
+    "exists": true,
+    "sha256": "017dcf961725e69c019b350de968db53a6039fb34d26d1949d248429a18b2386",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  }
+}
