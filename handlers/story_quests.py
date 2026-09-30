@@ -6,6 +6,7 @@ Keeping rendering pure makes empty, active and history states testable without
 starting the bot or touching production game.db.
 """
 from __future__ import annotations
+from telebot import types
 from systems.story_quest_location_presentation import resolve_story_quest_location_name
 
 from dataclasses import dataclass

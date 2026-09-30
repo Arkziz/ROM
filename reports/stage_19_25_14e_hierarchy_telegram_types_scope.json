@@ -1,0 +1,28 @@
+{
+  "stage": "19.25.14e",
+  "parent_head": "286eea46082fc6d7247f3a2e28a74a5580b72731",
+  "commit_subject": "Stage 19.25.14e: fix hierarchy Telegram types scope",
+  "root_cause": "story_quest_hierarchy_callback constructs the section-return button with types.InlineKeyboardButton, but telebot.types is not bound in the callback or module scope",
+  "fix": {
+    "scope": "module",
+    "import": "from telebot import types",
+    "consumer": "story_quest_hierarchy_callback / types.InlineKeyboardButton",
+    "import_count": 1,
+    "mutation_method": "insert after __future__ imports"
+  },
+  "production_database_mutation": false,
+  "wal_shm_manipulated": false,
+  "database_before": {
+    "exists": true,
+    "sha256": "8ac74991f1a460cf6e3a1e9f234f03a009157db6e08466a112cfd4d61c17dd4a",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  },
+  "checker_output": "STORY QUEST HIERARCHY TELEGRAM TYPES SCOPE: PASS",
+  "database_after": {
+    "exists": true,
+    "sha256": "8ac74991f1a460cf6e3a1e9f234f03a009157db6e08466a112cfd4d61c17dd4a",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  }
+}
