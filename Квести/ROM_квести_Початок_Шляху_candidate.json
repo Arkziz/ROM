@@ -110,7 +110,51 @@
       "from": "TALK",
       "to": "TURN_IN"
     },
-    "quest_50_dark_forest_policy": "story hint only; does not bypass canonical dark_forest unlock level 6"
+    "quest_50_dark_forest_policy": "story hint only; does not bypass canonical dark_forest unlock level 6",
+    "batch_31_40_content_policy": {
+      "section_display_title": "Розділ 4. Вовча загроза",
+      "unlock_level": 4,
+      "quest_types": {
+        "31": "TALK",
+        "32": "KILL_REGION",
+        "33": "TALK",
+        "34": "QUEST_ITEM",
+        "35": "TURN_IN",
+        "36": "KILL_REGION",
+        "37": "QUEST_ITEM",
+        "38": "TURN_IN",
+        "39": "KILL_REGION",
+        "40": "TURN_IN"
+      },
+      "kill_region_targets": {
+        "32": 10,
+        "36": 12,
+        "39": 12
+      },
+      "quest_item_pairs": [
+        {
+          "source_quest": 34,
+          "turn_in_quest": 35,
+          "item_key": "start_path_runemarked_wolf_pelt",
+          "drop_chance": 0.15,
+          "consumption": "atomic_exact_once"
+        },
+        {
+          "source_quest": 37,
+          "turn_in_quest": 38,
+          "item_key": "start_path_runemarked_den_token",
+          "drop_chance": 0.15,
+          "consumption": "atomic_exact_once"
+        }
+      ],
+      "item_reveal": "hide exact item name until first successful drop; show full drop message once",
+      "quest_40": "TURN_IN; consumes no quest item; completes section",
+      "reward_per_quest": {
+        "exp": 48,
+        "gold": 0.89,
+        "formula": "3x canonical expected reward of normal level-4 mob"
+      }
+    }
   },
   "quests": [
     {
@@ -1272,7 +1316,7 @@
       "turn_in_npc_id": "blacksmith",
       "target_quantity": 1,
       "description": "Герой знаходить щільне вовче хутро, змінене рунічною енергією.",
-      "objective_text": "Знайти під час полювання вовче хутро підвищеної якості.",
+      "objective_text": "Знайти під час полювання придатний матеріал для захисного спорядження мисливців.",
       "acceptance_text": "Шукай щільне хутро з густим підшерстям. Воно має витримати удари кігтів і бути придатним для захисних накладок.",
       "completion_text": "Вовче хутро підвищеної якості знайдено. Матеріал потрібно передати Ковалю.",
       "reward": {
@@ -1295,6 +1339,12 @@
         "required_quantity": 1,
         "drop_chance": 0.15,
         "drop_message": "🐺 Сюжетна знахідка: Вовче хутро підвищеної якості\n\nХутро надзвичайно щільне, а біля коренів шерсті помітне слабке синювате світіння. Коваль зможе використати його для спорядження мисливців."
+      },
+      "item_reveal_policy": {
+        "mode": "hide_exact_name_until_first_drop",
+        "pre_drop_label": "Невідомий матеріал для спорядження",
+        "reveal_on": "first_successful_drop",
+        "drop_message_once": true
       }
     },
     {
@@ -1378,7 +1428,7 @@
       "turn_in_npc_id": "rune_master",
       "target_quantity": 1,
       "description": "Герой знаходить фізичний доказ із району лігва, насичений рунічною енергією.",
-      "objective_text": "Знайти доказ, який указує на шлях до вовчого лігва.",
+      "objective_text": "Знайти під час полювання доказ, який указує на шлях до вовчого лігва.",
       "acceptance_text": "Оглядай вузький прохід, каміння й місця, де зграя залишала здобич. Нам потрібен доказ, який можна показати Рунному Майстру.",
       "completion_text": "Рунічно позначений уламок знайдено. Його потрібно передати Рунному Майстру.",
       "reward": {
@@ -1401,6 +1451,12 @@
         "required_quantity": 1,
         "drop_chance": 0.15,
         "drop_message": "🪨 Сюжетна знахідка: Рунічно позначений уламок із лігва\n\nТемний камінь укритий вовчою шерстю та глибокими слідами кігтів. Усередині тріщин пульсує знайоме синювате світіння."
+      },
+      "item_reveal_policy": {
+        "mode": "hide_exact_name_until_first_drop",
+        "pre_drop_label": "Невідомий доказ зі стежки",
+        "reveal_on": "first_successful_drop",
+        "drop_message_once": true
       }
     },
     {
@@ -1923,14 +1979,17 @@
       "chapter_title": "Вовча загроза",
       "unlock_level": 4,
       "reward_reference_level": 4,
-      "status": "story_and_rules_approved_reward_values_calculated",
+      "status": "content_policy_approved_pending_production_activation",
       "expected_required_kill_region_victories": 34,
       "expected_quest_item_victories": 13.33,
       "expected_total_victories": 47.33,
       "story_reward_totals": {
         "exp": 480,
         "gold": 8.9
-      }
+      },
+      "section_number": 4,
+      "section_title": "Вовча загроза",
+      "display_title": "Розділ 4. Вовча загроза"
     },
     {
       "range": [
