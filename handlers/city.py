@@ -1285,6 +1285,8 @@ def register_city_handlers(bot):
             build_story_bartender_text(),
             reply_markup=bartender_kb(),
         )
+        # Keep the Bartender introduction visible, then append an eligible story card.
+        send_story_npc_if_present(bot, message, 'bartender')
 
     @bot.message_handler(func=lambda m: getattr(m, "text", None) == "🔙 Ратуша")
     def back_to_story_townhall(message):

@@ -1,0 +1,72 @@
+{
+  "stage": "19.25.9",
+  "expected_head": "b7a1d47d4039d0d0e577b37e18cbb6b7d5bb5a94",
+  "commit_subject": "Stage 19.25.9: integrate Bartender story quests",
+  "owner": "handlers/city.py",
+  "handler": "show_story_bartender",
+  "npc_contract": {
+    "npc_id": "bartender",
+    "npc_name": "Бармен",
+    "quest_27_id": "start_path_027_howling_beyond_the_walls",
+    "quest_27_type": "TALK",
+    "quest_27_giver": "bartender",
+    "quest_27_turn_in": "bartender",
+    "quest_28_id": "start_path_028_pursuit_trail",
+    "quest_28_type": "KILL_REGION",
+    "registry_numbers": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30
+    ]
+  },
+  "change_info": {
+    "stale_fallback_removed": false,
+    "handler_name": "show_story_bartender"
+  },
+  "service_intro_first": true,
+  "story_card_second": true,
+  "quest_content_mutation": false,
+  "production_database_mutation": false,
+  "wal_shm_manipulated": false,
+  "database_before": {
+    "exists": true,
+    "sha256": "c87b1ac1ee6e2513f11b700657cf8aab7dca4acf000d3ec83b06045c5b78aa1e",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  },
+  "focused_checker": "BARTENDER STORY INTEGRATION: PASS",
+  "activation_regression": "STORY QUESTS 21-30 ACTIVATION: PASS",
+  "database_after": {
+    "exists": true,
+    "sha256": "c87b1ac1ee6e2513f11b700657cf8aab7dca4acf000d3ec83b06045c5b78aa1e",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  }
+}
