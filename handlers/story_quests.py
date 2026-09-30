@@ -282,15 +282,16 @@ def register_story_quest_handlers(bot):
 
     # Stage 19.25.14: hierarchical story navigation. Legacy callbacks remain registered below.
     def _hierarchy_status_reader(user_id, quest):
-        """Adapt the existing production status resolver for hierarchy presentation."""
-        try:
-            detail = build_production_story_quest_detail(user_id, quest.quest_id)
-        except TypeError:
-            detail = build_production_story_quest_detail(user_id, quest)
-        if isinstance(detail, dict):
-            raw = str(detail.get("status") or detail.get("status_key") or "").casefold()
-        else:
-            raw = str(getattr(detail, "status", detail)).casefold()
+        """Read the canonical lifecycle status through the production detail builder."""
+        stats = get_player_stats(user_id) or {}
+        level = resolve_story_quest_player_level(stats)
+        detail = build_production_story_quest_detail(
+            db.conn,
+            user_id=user_id,
+            quest_id=quest.quest_id,
+            player_level=level,
+        )
+        raw = str(detail.get("status") or detail.get("status_key") or "").casefold()
         if any(token in raw for token in ("completed", "complete", "заверш")):
             return "completed"
         if any(token in raw for token in ("active", "актив")):

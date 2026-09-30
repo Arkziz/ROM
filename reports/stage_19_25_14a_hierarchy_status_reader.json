@@ -1,0 +1,34 @@
+{
+  "stage": "19.25.14a",
+  "expected_head": "4eb95f7a000fa6cb31c7b0ad7609b6c0e8e070de",
+  "commit_subject": "Stage 19.25.14a: fix hierarchy status reader",
+  "root_cause": "hierarchy status reader omitted db connection and canonical player-level inputs required by the production detail builder",
+  "fix": "call build_production_story_quest_detail with db.conn, user_id, quest_id and resolved player_level",
+  "contract": {
+    "build_production_story_quest_detail_args": [
+      "connection",
+      "user_id",
+      "quest_id",
+      "player_level",
+      "page"
+    ],
+    "connection_source": "db.conn",
+    "player_level_source": "resolve_story_quest_player_level(get_player_stats(user_id) or {})",
+    "status_source": "build_production_story_quest_detail.status"
+  },
+  "production_database_mutation": false,
+  "wal_shm_manipulated": false,
+  "database_before": {
+    "exists": true,
+    "sha256": "8ac74991f1a460cf6e3a1e9f234f03a009157db6e08466a112cfd4d61c17dd4a",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  },
+  "checker_output": "STORY QUEST HIERARCHY STATUS READER: PASS",
+  "database_after": {
+    "exists": true,
+    "sha256": "8ac74991f1a460cf6e3a1e9f234f03a009157db6e08466a112cfd4d61c17dd4a",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  }
+}
