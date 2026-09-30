@@ -334,7 +334,12 @@ def register_story_quest_handlers(bot):
                     player_level=level,
                 )
                 text = detail_snapshot["text"]
-                keyboard = _inline_markup(detail_snapshot["keyboard"])
+                hierarchy_rows = [
+                    [button for button in row if button.get("text") != "🔙 До журналу"]
+                    for row in detail_snapshot["keyboard"]
+                ]
+                hierarchy_rows = [row for row in hierarchy_rows if row]
+                keyboard = _inline_markup(hierarchy_rows)
                 # Preserve existing quest actions and add an explicit hierarchy return route.
                 keyboard.add(types.InlineKeyboardButton("🔙 Квести розділу", callback_data=section_callback_for_quest(quest_number)))
             else:
