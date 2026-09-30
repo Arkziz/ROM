@@ -295,7 +295,7 @@ def build_common_equipment_slot_choice_text(user_id, slot_key):
     else:
         title = '⚪ Базове спорядження'
         description = 'Оберіть предмет.'
-    text = f'{float(title):.2f}\n\n💰 Золото: {float(gold):.2f}\n\n{float(description):.2f}\n\nДоступні варіанти:'
+    text = f'{title}\n\n💰 Золото: {float(gold):.2f}\n\n{description}\n\nДоступні варіанти:'
     kb = types.InlineKeyboardMarkup(row_width=1)
     for offer in offers:
         hands_text = ''
