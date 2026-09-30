@@ -24,7 +24,7 @@ assert result["story_ids"] == ("start_path",)
 assert result["section_ids"] == ("start_path_01", "start_path_02", "start_path_03")
 assert result["quest_numbers"] == tuple(range(1, 31))
 assert result["localized_start_path"] == "Початок Шляху"
-assert result["start_path_button_label"] == "🌄 Початок Шляху"
+assert result["start_path_button_label"] == "🌿 Початок Шляху"
 assert result["section_titles"] == (
     "Розділ 1. Тривога на околиці",
     "Розділ 2. Рунічна аномалія",

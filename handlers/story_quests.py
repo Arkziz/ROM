@@ -12,6 +12,14 @@ from dataclasses import dataclass
 from data.story_quest_definitions import QuestType
 from typing import Iterable, Mapping, Optional, Sequence
 from systems.story_quest_player_level import resolve_story_quest_player_level
+from handlers.story_quest_hierarchy_ui import (
+    ROOT_CALLBACK as STORY_HIERARCHY_ROOT_CALLBACK,
+    build_section_index,
+    build_section_quests,
+    build_story_index,
+    parse_hierarchy_callback,
+    section_callback_for_quest,
+)
 
 STORY_QUEST_BUTTON_TEXT = "📜 Квести"
 STORY_QUEST_CALLBACK_PREFIX = "story_quest:"
@@ -271,6 +279,61 @@ def build_production_story_quest_detail(connection, *, user_id: int, quest_id: s
 
 
 def register_story_quest_handlers(bot):
+
+    # Stage 19.25.14: hierarchical story navigation. Legacy callbacks remain registered below.
+    def _hierarchy_status_reader(user_id, quest):
+        """Adapt the existing production status resolver for hierarchy presentation."""
+        try:
+            detail = build_production_story_quest_detail(user_id, quest.quest_id)
+        except TypeError:
+            detail = build_production_story_quest_detail(user_id, quest)
+        if isinstance(detail, dict):
+            raw = str(detail.get("status") or detail.get("status_key") or "").casefold()
+        else:
+            raw = str(getattr(detail, "status", detail)).casefold()
+        if any(token in raw for token in ("completed", "complete", "заверш")):
+            return "completed"
+        if any(token in raw for token in ("active", "актив")):
+            return "active"
+        if any(token in raw for token in ("available", "доступ")):
+            return "available"
+        return "locked"
+
+    def _send_hierarchy(message, text, keyboard):
+        return bot.send_message(message.chat.id, text, reply_markup=keyboard)
+
+    @bot.callback_query_handler(func=lambda call: bool(parse_hierarchy_callback(call.data or "")))
+    def story_quest_hierarchy_callback(call):
+        action = parse_hierarchy_callback(call.data or "")
+        if action is None:
+            return
+        user_id = call.from_user.id
+        if action.kind == "index":
+            text, keyboard = build_story_index(user_id, _hierarchy_status_reader)
+        elif action.kind == "location":
+            text, keyboard = build_section_index(str(action.value), user_id, _hierarchy_status_reader)
+        elif action.kind == "section":
+            text, keyboard = build_section_quests(str(action.value), user_id, _hierarchy_status_reader)
+        elif action.kind == "quest":
+            quest_number = int(action.value)
+            quest = next((q for q in STORY_QUEST_REGISTRY.values() if q.number == quest_number), None)
+            if quest is None:
+                bot.answer_callback_query(call.id, "Квест поки не активований.")
+                return
+            try:
+                text, keyboard = render_story_quest_detail(user_id, quest.quest_id)
+            except TypeError:
+                text, keyboard = render_story_quest_detail(user_id, quest)
+            # Preserve existing quest actions and add an explicit hierarchy return route.
+            keyboard.add(types.InlineKeyboardButton("🔙 Квести розділу", callback_data=section_callback_for_quest(quest_number)))
+        else:
+            bot.answer_callback_query(call.id, "Ця навігація вже неактуальна.")
+            return
+        try:
+            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, reply_markup=keyboard)
+        except Exception:
+            _send_hierarchy(call.message, text, keyboard)
+        bot.answer_callback_query(call.id)
     """Register the Profile journal route before broad downstream handlers.
 
     Stage 19.10 intentionally supports only open, refresh, and Profile return.
@@ -287,6 +350,8 @@ def register_story_quest_handlers(bot):
         func=lambda message: getattr(message, "text", None) == STORY_QUEST_BUTTON_TEXT
     )
     def story_quest_profile_reply(message):
+        text, keyboard = build_story_index(message.from_user.id, _hierarchy_status_reader)
+        return _send_hierarchy(message, text, keyboard)
         stats=get_player_stats(message.from_user.id) or {}
         level=resolve_story_quest_player_level(stats)
         items=[get_story_quest_view(db.conn,user_id=message.from_user.id,quest=q,player_level=level) for q in STORY_QUEST_REGISTRY.values()]

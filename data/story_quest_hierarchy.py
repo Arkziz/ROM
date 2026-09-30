@@ -87,7 +87,7 @@ STORY_LOCATIONS: dict[str, StoryLocationMetadata] = {
     "start_path": StoryLocationMetadata(
         story_id="start_path",
         location_id="start_path",
-        icon="🌄",
+        icon="🌿",
         sort_order=10,
         section_ids=("start_path_01", "start_path_02", "start_path_03"),
     ),
