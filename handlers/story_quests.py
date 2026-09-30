@@ -308,36 +308,43 @@ def register_story_quest_handlers(bot):
 
     @bot.callback_query_handler(func=lambda call: bool(parse_hierarchy_callback(call.data or "")))
     def story_quest_hierarchy_callback(call):
-        action = parse_hierarchy_callback(call.data or "")
-        if action is None:
-            return
-        user_id = call.from_user.id
-        if action.kind == "index":
-            text, keyboard = build_story_index(user_id, _hierarchy_status_reader)
-        elif action.kind == "location":
-            text, keyboard = build_section_index(str(action.value), user_id, _hierarchy_status_reader)
-        elif action.kind == "section":
-            text, keyboard = build_section_quests(str(action.value), user_id, _hierarchy_status_reader)
-        elif action.kind == "quest":
-            quest_number = int(action.value)
-            quest = next((q for q in STORY_QUEST_REGISTRY.values() if q.number == quest_number), None)
-            if quest is None:
-                bot.answer_callback_query(call.id, "Квест поки не активований.")
+            action = parse_hierarchy_callback(call.data or "")
+            if action is None:
+                return
+            user_id = call.from_user.id
+            if action.kind == "index":
+                text, keyboard = build_story_index(user_id, _hierarchy_status_reader)
+            elif action.kind == "location":
+                text, keyboard = build_section_index(str(action.value), user_id, _hierarchy_status_reader)
+            elif action.kind == "section":
+                text, keyboard = build_section_quests(str(action.value), user_id, _hierarchy_status_reader)
+            elif action.kind == "quest":
+                quest_number = int(action.value)
+                quest = next((q for q in STORY_QUEST_REGISTRY.values() if q.number == quest_number), None)
+                if quest is None:
+                    bot.answer_callback_query(call.id, "Квест поки не активований.")
+                    return
+                stats = get_player_stats(user_id) or {}
+                level = resolve_story_quest_player_level(stats)
+                detail_item = build_production_story_quest_detail(
+                    db.conn,
+                    user_id=user_id,
+                    quest_id=quest.quest_id,
+                    player_level=level,
+                )
+                detail_snapshot = render_story_quest_detail(detail_item)
+                text = detail_snapshot["text"]
+                keyboard = _inline_markup(detail_snapshot["keyboard"])
+                # Preserve existing quest actions and add an explicit hierarchy return route.
+                keyboard.add(types.InlineKeyboardButton("🔙 Квести розділу", callback_data=section_callback_for_quest(quest_number)))
+            else:
+                bot.answer_callback_query(call.id, "Ця навігація вже неактуальна.")
                 return
             try:
-                text, keyboard = render_story_quest_detail(user_id, quest.quest_id)
-            except TypeError:
-                text, keyboard = render_story_quest_detail(user_id, quest)
-            # Preserve existing quest actions and add an explicit hierarchy return route.
-            keyboard.add(types.InlineKeyboardButton("🔙 Квести розділу", callback_data=section_callback_for_quest(quest_number)))
-        else:
-            bot.answer_callback_query(call.id, "Ця навігація вже неактуальна.")
-            return
-        try:
-            bot.edit_message_text(text, call.message.chat.id, call.message.message_id, reply_markup=keyboard)
-        except Exception:
-            _send_hierarchy(call.message, text, keyboard)
-        bot.answer_callback_query(call.id)
+                bot.edit_message_text(text, call.message.chat.id, call.message.message_id, reply_markup=keyboard)
+            except Exception:
+                _send_hierarchy(call.message, text, keyboard)
+            bot.answer_callback_query(call.id)
     """Register the Profile journal route before broad downstream handlers.
 
     Stage 19.10 intentionally supports only open, refresh, and Profile return.
