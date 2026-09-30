@@ -35,7 +35,7 @@ STATUS_LABELS={
 def _completion_button_text(definition):
  if definition.quest_type is QuestType.TALK:return '✅ Зрозуміло'
  if definition.quest_type is QuestType.TURN_IN:return '✅ Здати предмети'
- if definition.quest_type is QuestType.QUEST_ITEM:return '✅ Доповісти про знахідку' if (definition.turn_in_npc_id or definition.giver_npc_id)==definition.giver_npc_id else '✅ Передати доказ'
+ if definition.quest_type is QuestType.QUEST_ITEM:return '✅ Доповісти про знахідку' if (definition.turn_in_npc_id or definition.giver_npc_id)==definition.giver_npc_id else '🔍 Показати доказ'
  return '✅ Завершити квест'
 def _markup(p,user_id=None,connection=None):
  kb=types.InlineKeyboardMarkup();q=p.get('quest')
@@ -143,7 +143,7 @@ def _required_item_display_names(definition):
 def _turn_in_item_action_label(definition, *, active):
     """Return item-aware labels while lifecycle callbacks stay canonical."""
     if len(definition.required_quest_items)!=1:
-        return '✅ Передати докази' if active else '🔍 Показати докази'
+        return '🔍 Показати докази' if active else '🔍 Показати докази'
     key=definition.required_quest_items[0].item_key
     short={'start_path_guard_uniform_scrap':'клапоть','start_path_broken_guard_lantern':'ліхтар'}.get(key)
     if short is None:return '✅ Передати предмет' if active else '🔍 Показати предмет'
