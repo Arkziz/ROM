@@ -1,0 +1,403 @@
+{
+  "stage": "19.26.1",
+  "expected_head": "06499e40ff4285d3015db14e3cd8e8cb0cd43642",
+  "commit_subject": "Stage 19.26.1: audit story quest batch 31-40",
+  "decision": "READY_FOR_STAGE_19_26_2_BATCH_31_40_CONTENT_REVIEW",
+  "read_only_audit": true,
+  "candidate_path": "Квести/ROM_квести_Початок_Шляху_candidate.json",
+  "candidate_schema_version": 5,
+  "proposed_section": {
+    "number": 4,
+    "display_title": "Розділ 4. Вовча загроза",
+    "quest_numbers": [
+      31,
+      40
+    ],
+    "unlock_level": 4
+  },
+  "quests": [
+    {
+      "number": 31,
+      "quest_id": "start_path_031_pack_at_the_outskirts",
+      "title": "Зграя на підступах",
+      "quest_type": "TALK",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 1
+    },
+    {
+      "number": 32,
+      "quest_id": "start_path_032_first_line_of_defense",
+      "title": "Перша лінія оборони",
+      "quest_type": "KILL_REGION",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 10
+    },
+    {
+      "number": 33,
+      "quest_id": "start_path_033_protection_for_hunters",
+      "title": "Захист для мисливців",
+      "quest_type": "TALK",
+      "giver_npc_id": "blacksmith",
+      "turn_in_npc_id": "blacksmith",
+      "target_quantity": 1
+    },
+    {
+      "number": 34,
+      "quest_id": "start_path_034_runemarked_wolf_pelt",
+      "title": "Хутро зі слідами рун",
+      "quest_type": "QUEST_ITEM",
+      "giver_npc_id": "blacksmith",
+      "turn_in_npc_id": "blacksmith",
+      "target_quantity": 1
+    },
+    {
+      "number": 35,
+      "quest_id": "start_path_035_reinforce_the_hunting_party",
+      "title": "Посилення загону",
+      "quest_type": "TURN_IN",
+      "giver_npc_id": "blacksmith",
+      "turn_in_npc_id": "blacksmith",
+      "target_quantity": 1
+    },
+    {
+      "number": 36,
+      "quest_id": "start_path_036_beyond_safe_paths",
+      "title": "За межею безпечних стежок",
+      "quest_type": "KILL_REGION",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 12
+    },
+    {
+      "number": 37,
+      "quest_id": "start_path_037_trail_to_the_den",
+      "title": "Слід до лігва",
+      "quest_type": "QUEST_ITEM",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "rune_master",
+      "target_quantity": 1
+    },
+    {
+      "number": 38,
+      "quest_id": "start_path_038_heart_of_the_influence",
+      "title": "Серце впливу",
+      "quest_type": "TURN_IN",
+      "giver_npc_id": "rune_master",
+      "turn_in_npc_id": "rune_master",
+      "target_quantity": 1
+    },
+    {
+      "number": 39,
+      "quest_id": "start_path_039_road_to_the_den",
+      "title": "Дорога до лігва",
+      "quest_type": "KILL_REGION",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 12
+    },
+    {
+      "number": 40,
+      "quest_id": "start_path_040_before_the_final_hunt",
+      "title": "Перед вирішальним походом",
+      "quest_type": "TURN_IN",
+      "giver_npc_id": "elder",
+      "turn_in_npc_id": "elder",
+      "target_quantity": 1
+    }
+  ],
+  "audit": {
+    "chain": [
+      {
+        "number": 31,
+        "quest_id": "start_path_031_pack_at_the_outskirts",
+        "previous_quest_id": "start_path_030_scene_of_the_attack",
+        "expected_previous": "start_path_030_scene_of_the_attack",
+        "pass": true
+      },
+      {
+        "number": 32,
+        "quest_id": "start_path_032_first_line_of_defense",
+        "previous_quest_id": "start_path_031_pack_at_the_outskirts",
+        "expected_previous": "start_path_031_pack_at_the_outskirts",
+        "pass": true
+      },
+      {
+        "number": 33,
+        "quest_id": "start_path_033_protection_for_hunters",
+        "previous_quest_id": "start_path_032_first_line_of_defense",
+        "expected_previous": "start_path_032_first_line_of_defense",
+        "pass": true
+      },
+      {
+        "number": 34,
+        "quest_id": "start_path_034_runemarked_wolf_pelt",
+        "previous_quest_id": "start_path_033_protection_for_hunters",
+        "expected_previous": "start_path_033_protection_for_hunters",
+        "pass": true
+      },
+      {
+        "number": 35,
+        "quest_id": "start_path_035_reinforce_the_hunting_party",
+        "previous_quest_id": "start_path_034_runemarked_wolf_pelt",
+        "expected_previous": "start_path_034_runemarked_wolf_pelt",
+        "pass": true
+      },
+      {
+        "number": 36,
+        "quest_id": "start_path_036_beyond_safe_paths",
+        "previous_quest_id": "start_path_035_reinforce_the_hunting_party",
+        "expected_previous": "start_path_035_reinforce_the_hunting_party",
+        "pass": true
+      },
+      {
+        "number": 37,
+        "quest_id": "start_path_037_trail_to_the_den",
+        "previous_quest_id": "start_path_036_beyond_safe_paths",
+        "expected_previous": "start_path_036_beyond_safe_paths",
+        "pass": true
+      },
+      {
+        "number": 38,
+        "quest_id": "start_path_038_heart_of_the_influence",
+        "previous_quest_id": "start_path_037_trail_to_the_den",
+        "expected_previous": "start_path_037_trail_to_the_den",
+        "pass": true
+      },
+      {
+        "number": 39,
+        "quest_id": "start_path_039_road_to_the_den",
+        "previous_quest_id": "start_path_038_heart_of_the_influence",
+        "expected_previous": "start_path_038_heart_of_the_influence",
+        "pass": true
+      },
+      {
+        "number": 40,
+        "quest_id": "start_path_040_before_the_final_hunt",
+        "previous_quest_id": "start_path_039_road_to_the_den",
+        "expected_previous": "start_path_039_road_to_the_den",
+        "pass": true
+      }
+    ],
+    "rewards": [
+      {
+        "number": 31,
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        },
+        "pass": true
+      },
+      {
+        "number": 32,
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        },
+        "pass": true
+      },
+      {
+        "number": 33,
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        },
+        "pass": true
+      },
+      {
+        "number": 34,
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        },
+        "pass": true
+      },
+      {
+        "number": 35,
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        },
+        "pass": true
+      },
+      {
+        "number": 36,
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        },
+        "pass": true
+      },
+      {
+        "number": 37,
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        },
+        "pass": true
+      },
+      {
+        "number": 38,
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        },
+        "pass": true
+      },
+      {
+        "number": 39,
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        },
+        "pass": true
+      },
+      {
+        "number": 40,
+        "exp": 48,
+        "gold": 0.89,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 4,
+          "multiplier": 3,
+          "canonical_expected_exp": 16,
+          "canonical_expected_gold_unrounded": 0.295,
+          "quest_gold_unrounded": 0.885,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        },
+        "pass": true
+      }
+    ],
+    "quest_items": [
+      {
+        "number": 34,
+        "item_key": "start_path_runemarked_wolf_pelt",
+        "display_name": "Вовче хутро підвищеної якості",
+        "required_quantity": 1,
+        "drop_chance": 0.15,
+        "chance_15_percent": true
+      },
+      {
+        "number": 37,
+        "item_key": "start_path_runemarked_den_token",
+        "display_name": "Рунічно позначений уламок із лігва",
+        "required_quantity": 1,
+        "drop_chance": 0.15,
+        "chance_15_percent": true
+      }
+    ],
+    "npc_ids": [
+      "blacksmith",
+      "elder",
+      "mercenary_head",
+      "rune_master"
+    ],
+    "quest_type_counts": {
+      "TALK": 2,
+      "KILL_REGION": 3,
+      "QUEST_ITEM": 2,
+      "TURN_IN": 3
+    },
+    "kill_region_targets": {
+      "32": 10,
+      "36": 12,
+      "39": 12
+    },
+    "forbidden_chapter_terms": []
+  },
+  "findings": [],
+  "checker_output": "STORY QUEST BATCH 31-40 AUDIT: PASS",
+  "production_registry_expected_numbers": [
+    1,
+    30
+  ],
+  "production_content_mutation": false,
+  "production_database_mutation": false,
+  "wal_shm_manipulated": false,
+  "database_before": {
+    "exists": true,
+    "sha256": "8ac74991f1a460cf6e3a1e9f234f03a009157db6e08466a112cfd4d61c17dd4a",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  },
+  "database_after": {
+    "exists": true,
+    "sha256": "8ac74991f1a460cf6e3a1e9f234f03a009157db6e08466a112cfd4d61c17dd4a",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  }
+}
