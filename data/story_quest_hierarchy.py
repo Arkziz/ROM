@@ -80,6 +80,15 @@ STORY_SECTIONS: dict[str, StorySectionMetadata] = {
         quest_numbers=tuple(range(21, 31)),
         sort_order=30,
     ),
+    "start_path_04": StorySectionMetadata(
+        section_id="start_path_04",
+        location_id="start_path",
+        number=4,
+        title="Вовча загроза",
+        required_level=4,
+        quest_numbers=tuple(range(31, 41)),
+        sort_order=40,
+    ),
 }
 
 
@@ -89,7 +98,7 @@ STORY_LOCATIONS: dict[str, StoryLocationMetadata] = {
         location_id="start_path",
         icon="🌿",
         sort_order=10,
-        section_ids=("start_path_01", "start_path_02", "start_path_03"),
+        section_ids=("start_path_01", "start_path_02", "start_path_03", "start_path_04"),
     ),
 }
 
