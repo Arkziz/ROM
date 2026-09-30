@@ -1,0 +1,4136 @@
+{
+  "decision": "READY_FOR_STAGE_19_25_13_HIERARCHY_METADATA",
+  "production_snapshot": {
+    "by_location": {
+      "start_path": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ]
+    },
+    "location_ids": [
+      "start_path"
+    ],
+    "previous_chain": {
+      "1": null,
+      "10": "start_path_009_path_to_the_caves",
+      "11": "start_path_010_investigation_begins",
+      "12": "start_path_011_unstable_glow",
+      "13": "start_path_012_anomaly_sites",
+      "14": "start_path_013_runic_crystal_fragment",
+      "15": "start_path_014_crystal_under_glass",
+      "16": "start_path_015_runic_dust_sample",
+      "17": "start_path_016_unnatural_trace",
+      "18": "start_path_017_tainted_paths",
+      "19": "start_path_018_glow_after_sunset",
+      "2": "start_path_001_missing_patrol",
+      "20": "start_path_019_guards_note",
+      "21": "start_path_020_patrol_knew",
+      "22": "start_path_021_search_party",
+      "23": "start_path_022_cave_entrance",
+      "24": "start_path_023_guards_ring",
+      "25": "start_path_024_last_purchase",
+      "26": "start_path_025_tracks_near_the_bridge",
+      "27": "start_path_026_damaged_guard_shield",
+      "28": "start_path_027_howling_beyond_the_walls",
+      "29": "start_path_028_pursuit_trail",
+      "3": "start_path_002_clear_the_path",
+      "30": "start_path_029_torn_guard_cloak",
+      "4": "start_path_003_last_report",
+      "5": "start_path_004_guard_uniform_scrap",
+      "6": "start_path_005_evidence_from_the_trail",
+      "7": "start_path_006_old_bridge",
+      "8": "start_path_007_broken_guard_lantern",
+      "9": "start_path_008_marks_on_metal"
+    },
+    "quest_numbers": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30
+    ],
+    "unlock_levels": {
+      "1": 1,
+      "10": 1,
+      "11": 2,
+      "12": 2,
+      "13": 2,
+      "14": 2,
+      "15": 2,
+      "16": 2,
+      "17": 2,
+      "18": 2,
+      "19": 2,
+      "2": 1,
+      "20": 2,
+      "21": 3,
+      "22": 3,
+      "23": 3,
+      "24": 3,
+      "25": 3,
+      "26": 3,
+      "27": 3,
+      "28": 3,
+      "29": 3,
+      "3": 1,
+      "30": 3,
+      "4": 1,
+      "5": 1,
+      "6": 1,
+      "7": 1,
+      "8": 1,
+      "9": 1
+    }
+  },
+  "production_sections": [
+    {
+      "section_number": 1,
+      "quest_numbers": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "required_level": 1,
+      "visible": true
+    },
+    {
+      "section_number": 2,
+      "quest_numbers": [
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "required_level": 2,
+      "visible": true
+    },
+    {
+      "section_number": 3,
+      "quest_numbers": [
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "required_level": 3,
+      "visible": true
+    }
+  ],
+  "decisions": {
+    "root_screen_title": "📜 Сюжетні історії",
+    "hierarchy": [
+      "історії",
+      "розділи",
+      "квести",
+      "деталі квесту"
+    ],
+    "ukrainian_term": "розділ",
+    "forbidden_user_term": "глава",
+    "location_display_name": "Початок Шляху",
+    "location_id_hidden_from_user": true,
+    "production_sections_only": true,
+    "quest_buttons_one_per_row": true,
+    "completed_quests_readable": true,
+    "legacy_callbacks_must_remain_safe": true,
+    "database_migration_required": false
+  },
+  "owner_candidates": [
+    {
+      "file": "handlers/city.py",
+      "functions": [
+        {
+          "function": "build_trade_district_text",
+          "line": 37,
+          "end_line": 40,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_alchemist_root_17_19_3",
+          "line": 139,
+          "end_line": 153,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_alchemist_buy_list_17_19_3",
+          "line": 155,
+          "end_line": 164,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_alchemist_buy_preview_17_19_3",
+          "line": 166,
+          "end_line": 180,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_alchemist_sell_list_17_19_3",
+          "line": 182,
+          "end_line": 193,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_alchemist_sell_preview_17_19_3",
+          "line": 195,
+          "end_line": 210,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_alchemist_sell_confirm_17_19_3",
+          "line": 212,
+          "end_line": 219,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_alchemist_catalog",
+          "line": 221,
+          "end_line": 234,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_blacksmith_repair_text",
+          "line": 240,
+          "end_line": 271,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_common_equipment_shop_text",
+          "line": 273,
+          "end_line": 285,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_common_equipment_slot_choice_text",
+          "line": 287,
+          "end_line": 310,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_common_shop_preview_text",
+          "line": 375,
+          "end_line": 412,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_sell_equipment_list_text",
+          "line": 414,
+          "end_line": 448,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_sell_equipment_confirm_text",
+          "line": 450,
+          "end_line": 468,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "register_city_handlers",
+          "line": 481,
+          "end_line": 792,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "location_description_kb_17_11_2",
+          "line": 1133,
+          "end_line": 1139,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "register_city_handlers",
+          "line": 1141,
+          "end_line": 1156,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_build_story_npc_placeholder_text",
+          "line": 1219,
+          "end_line": 1226,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_story_elder_text",
+          "line": 1229,
+          "end_line": 1234,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_story_mercenary_head_text",
+          "line": 1237,
+          "end_line": 1242,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_story_bartender_text",
+          "line": 1245,
+          "end_line": 1250,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "register_city_handlers",
+          "line": 1253,
+          "end_line": 1316,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "show_trade_district",
+          "line": 503,
+          "end_line": 507,
+          "score": 1,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        },
+        {
+          "function": "show_sell_equipment",
+          "line": 557,
+          "end_line": 561,
+          "score": 1,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        },
+        {
+          "function": "sell_equipment_page",
+          "line": 564,
+          "end_line": 569,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "sell_equipment_confirm",
+          "line": 572,
+          "end_line": 579,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "sell_equipment_do",
+          "line": 582,
+          "end_line": 591,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "common_equipment_back_to_slots",
+          "line": 601,
+          "end_line": 605,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "common_equipment_slot_choice",
+          "line": 608,
+          "end_line": 613,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "preview_common_equipment",
+          "line": 616,
+          "end_line": 627,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "confirm_common_shop_purchase",
+          "line": 630,
+          "end_line": 638,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "cancel_common_shop_purchase",
+          "line": 641,
+          "end_line": 649,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "back_to_trade_district",
+          "line": 652,
+          "end_line": 655,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "back_to_trader_callback",
+          "line": 658,
+          "end_line": 661,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "show_alchemist",
+          "line": 664,
+          "end_line": 670,
+          "score": 1,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        },
+        {
+          "function": "alchemist_trade_17_19_3",
+          "line": 673,
+          "end_line": 718,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "show_blacksmith",
+          "line": 758,
+          "end_line": 768,
+          "score": 1,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        },
+        {
+          "function": "repair_all",
+          "line": 771,
+          "end_line": 777,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "repair_one",
+          "line": 780,
+          "end_line": 787,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "location_description_toggle_17_11_2",
+          "line": 1145,
+          "end_line": 1156,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "show_story_elder",
+          "line": 1255,
+          "end_line": 1262,
+          "score": 1,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        },
+        {
+          "function": "show_story_mercenary_head",
+          "line": 1265,
+          "end_line": 1279,
+          "score": 1,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        },
+        {
+          "function": "show_story_bartender",
+          "line": 1282,
+          "end_line": 1289,
+          "score": 1,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        },
+        {
+          "function": "back_to_story_townhall",
+          "line": 1292,
+          "end_line": 1293,
+          "score": 1,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        },
+        {
+          "function": "back_to_story_mercenary_guild",
+          "line": 1296,
+          "end_line": 1301,
+          "score": 1,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        },
+        {
+          "function": "back_to_story_tavern",
+          "line": 1304,
+          "end_line": 1305,
+          "score": 1,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        }
+      ]
+    },
+    {
+      "file": "handlers/combat.py",
+      "functions": [
+        {
+          "function": "_calculate_enemy_turn_15_5_0",
+          "line": 26,
+          "end_line": 54,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_combat_extract_retry_after_11_3_1",
+          "line": 91,
+          "end_line": 99,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_combat_callback_allowed_11_3_1",
+          "line": 133,
+          "end_line": 174,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "build_skill_menu_text",
+          "line": 1088,
+          "end_line": 1111,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_combat_potion_kb",
+          "line": 1563,
+          "end_line": 1632,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "process_victory",
+          "line": 1908,
+          "end_line": 2043,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "register_combat_handlers",
+          "line": 2050,
+          "end_line": 3747,
+          "score": 4,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "patch_combat_bot_rate_limit_safe_send",
+          "line": 3759,
+          "end_line": 3812,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "call_active_story_boss",
+          "line": 2053,
+          "end_line": 2084,
+          "score": 3,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        },
+        {
+          "function": "skill_locked",
+          "line": 2977,
+          "end_line": 3002,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "combat_attack_callback",
+          "line": 3009,
+          "end_line": 3030,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "combat_potion_callback",
+          "line": 3033,
+          "end_line": 3053,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "combat_flee_callback",
+          "line": 3056,
+          "end_line": 3076,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "combat_skill_locked_callback",
+          "line": 3079,
+          "end_line": 3091,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "combat_use_skill_callback",
+          "line": 3094,
+          "end_line": 3514,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "combat_back",
+          "line": 3549,
+          "end_line": 3570,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "use_selected_potion_in_combat",
+          "line": 3573,
+          "end_line": 3658,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "escape",
+          "line": 3662,
+          "end_line": 3689,
+          "score": 1,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        },
+        {
+          "function": "escape_yes",
+          "line": 3692,
+          "end_line": 3723,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "escape_no",
+          "line": 3726,
+          "end_line": 3747,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "safe_send_message",
+          "line": 3766,
+          "end_line": 3809,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        }
+      ]
+    },
+    {
+      "file": "handlers/runes.py",
+      "functions": [
+        {
+          "function": "build_rune_master_home",
+          "line": 22,
+          "end_line": 60,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_slot_selection",
+          "line": 63,
+          "end_line": 96,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_rune_selection",
+          "line": 99,
+          "end_line": 128,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_insertion_confirmation",
+          "line": 131,
+          "end_line": 163,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "register_rune_handlers",
+          "line": 166,
+          "end_line": 248,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_rune_master_home",
+          "line": 257,
+          "end_line": 259,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_rune_fusion_home",
+          "line": 262,
+          "end_line": 302,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_rune_fusion_confirmation",
+          "line": 305,
+          "end_line": 331,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "register_rune_fusion_handlers",
+          "line": 334,
+          "end_line": 370,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_extractor_home",
+          "line": 375,
+          "end_line": 389,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_extractor_type_selection",
+          "line": 392,
+          "end_line": 404,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_simple_extractor_confirmation",
+          "line": 407,
+          "end_line": 417,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "register_simple_rune_extractor_handlers",
+          "line": 420,
+          "end_line": 441,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_perfect_extractor_confirmation",
+          "line": 448,
+          "end_line": 494,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_rune_master_shop",
+          "line": 511,
+          "end_line": 538,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_rune_master_shop_confirmation",
+          "line": 555,
+          "end_line": 577,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "register_rune_master_shop_handlers",
+          "line": 580,
+          "end_line": 654,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "show_rune_master",
+          "line": 168,
+          "end_line": 183,
+          "score": 1,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        },
+        {
+          "function": "rune_master_callback",
+          "line": 196,
+          "end_line": 248,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "rune_fusion_callback",
+          "line": 336,
+          "end_line": 370,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "extractor_callback",
+          "line": 425,
+          "end_line": 441,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        },
+        {
+          "function": "rune_master_shop_callback",
+          "line": 588,
+          "end_line": 621,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        }
+      ]
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "functions": [
+        {
+          "function": "_quest_by_number",
+          "line": 17,
+          "end_line": 20,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_callback_data",
+          "line": 21,
+          "end_line": 25,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_level",
+          "line": 27,
+          "end_line": 30,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_completion_button_text",
+          "line": 35,
+          "end_line": 39,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_markup",
+          "line": 40,
+          "end_line": 52,
+          "score": 4,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_text",
+          "line": 53,
+          "end_line": 74,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_ordered_quests",
+          "line": 76,
+          "end_line": 77,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_next_quest",
+          "line": 78,
+          "end_line": 81,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_next_step_lines",
+          "line": 82,
+          "end_line": 95,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_completion_receipt",
+          "line": 96,
+          "end_line": 105,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_presentation",
+          "line": 106,
+          "end_line": 106,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_player_level",
+          "line": 107,
+          "end_line": 110,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "has_story_npc_if_present",
+          "line": 113,
+          "end_line": 122,
+          "score": 2,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        },
+        {
+          "function": "send_story_npc_if_present",
+          "line": 125,
+          "end_line": 128,
+          "score": 2,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_required_item_display_names",
+          "line": 129,
+          "end_line": 140,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_turn_in_item_action_label",
+          "line": 143,
+          "end_line": 150,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_turn_in_text",
+          "line": 153,
+          "end_line": 165,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_text",
+          "line": 172,
+          "end_line": 175,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_markup",
+          "line": 178,
+          "end_line": 188,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "register_story_quest_npc_runtime_handlers",
+          "line": 191,
+          "end_line": 208,
+          "score": 4,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "callback",
+          "line": 193,
+          "end_line": 208,
+          "score": 4,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        }
+      ]
+    },
+    {
+      "file": "handlers/story_quests.py",
+      "functions": [
+        {
+          "function": "build_story_quest_callback",
+          "line": 40,
+          "end_line": 51,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "parse_story_quest_callback",
+          "line": 54,
+          "end_line": 62,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_button",
+          "line": 65,
+          "end_line": 67,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_story_quest_journal_keyboard",
+          "line": 70,
+          "end_line": 85,
+          "score": 5,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_story_quest_detail_keyboard",
+          "line": 88,
+          "end_line": 99,
+          "score": 5,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_status_label",
+          "line": 102,
+          "end_line": 106,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "render_story_quest_journal",
+          "line": 109,
+          "end_line": 156,
+          "score": 6,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "render_story_quest_detail",
+          "line": 159,
+          "end_line": 178,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_inline_markup",
+          "line": 182,
+          "end_line": 194,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_send_empty_story_journal",
+          "line": 197,
+          "end_line": 204,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_edit_story_journal_safely",
+          "line": 208,
+          "end_line": 230,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_production_story_quest_detail",
+          "line": 232,
+          "end_line": 270,
+          "score": 5,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "register_story_quest_handlers",
+          "line": 273,
+          "end_line": 342,
+          "score": 6,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "story_quest_profile_reply",
+          "line": 289,
+          "end_line": 294,
+          "score": 3,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        },
+        {
+          "function": "story_quest_callback",
+          "line": 301,
+          "end_line": 342,
+          "score": 6,
+          "has_message_parameter": false,
+          "has_call_parameter": true
+        }
+      ]
+    },
+    {
+      "file": "systems/story_quest_boss_call_system.py",
+      "functions": [
+        {
+          "function": "get_active_story_boss_call",
+          "line": 11,
+          "end_line": 41,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        }
+      ]
+    },
+    {
+      "file": "systems/story_quest_boss_completion_system.py",
+      "functions": [
+        {
+          "function": "process_rng_boss_story_completion",
+          "line": 14,
+          "end_line": 90,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "prepare_objective",
+          "line": 67,
+          "end_line": 74,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        }
+      ]
+    },
+    {
+      "file": "systems/story_quest_combat_progress_system.py",
+      "functions": [
+        {
+          "function": "process_region_kill_story_progress",
+          "line": 10,
+          "end_line": 35,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        }
+      ]
+    },
+    {
+      "file": "systems/story_quest_completion_system.py",
+      "functions": [
+        {
+          "function": "_definition",
+          "line": 31,
+          "end_line": 35,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_objective_ready",
+          "line": 38,
+          "end_line": 57,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "is_story_quest_objective_ready",
+          "line": 60,
+          "end_line": 79,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "complete_active_story_quest",
+          "line": 82,
+          "end_line": 186,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        }
+      ]
+    },
+    {
+      "file": "systems/story_quest_item_drop_system.py",
+      "functions": [
+        {
+          "function": "process_story_quest_item_drop",
+          "line": 12,
+          "end_line": 80,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        }
+      ]
+    },
+    {
+      "file": "systems/story_quest_location_presentation.py",
+      "functions": [
+        {
+          "function": "resolve_story_quest_location_name",
+          "line": 10,
+          "end_line": 27,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        }
+      ]
+    },
+    {
+      "file": "systems/story_quest_npc_acceptance_system.py",
+      "functions": [
+        {
+          "function": "_ordered_definitions",
+          "line": 26,
+          "end_line": 30,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "find_npc_story_quest",
+          "line": 33,
+          "end_line": 68,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_npc_story_quest_presentation",
+          "line": 71,
+          "end_line": 115,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "accept_story_quest_from_npc",
+          "line": 118,
+          "end_line": 173,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        }
+      ]
+    },
+    {
+      "file": "systems/story_quest_overlevel_system.py",
+      "functions": [
+        {
+          "function": "build_story_location_max_levels",
+          "line": 11,
+          "end_line": 17,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "process_overlevel_story_quest_skip",
+          "line": 20,
+          "end_line": 50,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        }
+      ]
+    },
+    {
+      "file": "systems/story_quest_player_level.py",
+      "functions": [
+        {
+          "function": "resolve_story_quest_player_level",
+          "line": 6,
+          "end_line": 35,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        }
+      ]
+    },
+    {
+      "file": "systems/story_quest_reward_system.py",
+      "functions": [
+        {
+          "function": "build_story_quest_reward_adapter",
+          "line": 6,
+          "end_line": 30,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "reward_adapter",
+          "line": 17,
+          "end_line": 29,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        }
+      ]
+    },
+    {
+      "file": "systems/story_quest_system.py",
+      "functions": [
+        {
+          "function": "immediate_transaction",
+          "line": 47,
+          "end_line": 61,
+          "score": 1,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "build_story_quest_registry",
+          "line": 64,
+          "end_line": 102,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_definition",
+          "line": 105,
+          "end_line": 109,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "get_story_quest_status",
+          "line": 112,
+          "end_line": 137,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "get_story_quest_view",
+          "line": 140,
+          "end_line": 171,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "accept_story_quest",
+          "line": 174,
+          "end_line": 207,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "advance_region_kill_progress",
+          "line": 210,
+          "end_line": 249,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "collect_active_quest_item",
+          "line": 252,
+          "end_line": 286,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "skip_overlevel_active_quest",
+          "line": 289,
+          "end_line": 319,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "get_materialized_story_journal",
+          "line": 322,
+          "end_line": 324,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        }
+      ]
+    },
+    {
+      "file": "data/story_quest_content.py",
+      "functions": [
+        {
+          "function": "_definition",
+          "line": 9,
+          "end_line": 11,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        }
+      ]
+    },
+    {
+      "file": "data/story_quest_definitions.py",
+      "functions": [
+        {
+          "function": "_require",
+          "line": 82,
+          "end_line": 83,
+          "score": 1,
+          "has_message_parameter": true,
+          "has_call_parameter": false
+        },
+        {
+          "function": "validate_story_quest_definition",
+          "line": 88,
+          "end_line": 134,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "validate_story_quest_pack",
+          "line": 136,
+          "end_line": 152,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "derive_story_quest_status",
+          "line": 154,
+          "end_line": 158,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "_q",
+          "line": 161,
+          "end_line": 163,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        }
+      ]
+    },
+    {
+      "file": "data/story_quest_npcs.py",
+      "functions": [
+        {
+          "function": "validate_story_quest_npc_registry",
+          "line": 122,
+          "end_line": 153,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "get_story_quest_npc",
+          "line": 159,
+          "end_line": 165,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "resolve_story_quest_navigation",
+          "line": 168,
+          "end_line": 181,
+          "score": 3,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "validate_story_quest_npc_references",
+          "line": 184,
+          "end_line": 198,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "get_missing_story_quest_npc_routes",
+          "line": 201,
+          "end_line": 205,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        },
+        {
+          "function": "route_text",
+          "line": 36,
+          "end_line": 38,
+          "score": 2,
+          "has_message_parameter": false,
+          "has_call_parameter": false
+        }
+      ]
+    },
+    {
+      "file": "data/story_quests/__init__.py",
+      "functions": []
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "functions": []
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "functions": []
+    }
+  ],
+  "callback_literals": [
+    {
+      "file": "handlers/admin_crystal_credit.py",
+      "line": 25,
+      "value": "requested_amount",
+      "utf8_bytes": 16,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/admin_crystal_credit.py",
+      "line": 78,
+      "value": "ac:history_close",
+      "utf8_bytes": 16,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/admin_crystal_credit.py",
+      "line": 79,
+      "value": "ac:history_detail:",
+      "utf8_bytes": 18,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/admin_crystal_credit.py",
+      "line": 83,
+      "value": "ac:history:",
+      "utf8_bytes": 11,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/admin_crystal_credit.py",
+      "line": 43,
+      "value": "requested_amount",
+      "utf8_bytes": 16,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/admin_crystal_credit.py",
+      "line": 46,
+      "value": "ac:history_close",
+      "utf8_bytes": 16,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/admin_crystal_credit.py",
+      "line": 55,
+      "value": "ac:history_close",
+      "utf8_bytes": 16,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/admin_crystal_credit.py",
+      "line": 42,
+      "value": "requested_amount",
+      "utf8_bytes": 16,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/admin_crystal_credit.py",
+      "line": 46,
+      "value": "ac:history:",
+      "utf8_bytes": 11,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/admin_crystal_credit.py",
+      "line": 51,
+      "value": "ac:history_detail:",
+      "utf8_bytes": 18,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/admin_crystal_credit.py",
+      "line": 52,
+      "value": "ac:history:",
+      "utf8_bytes": 11,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/admin_crystal_credit.py",
+      "line": 54,
+      "value": "ac:history:",
+      "utf8_bytes": 11,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/admin_crystal_credit.py",
+      "line": 110,
+      "value": "requested_amount",
+      "utf8_bytes": 16,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/admin_crystal_credit.py",
+      "line": 92,
+      "value": "requested_amount",
+      "utf8_bytes": 16,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 3097,
+      "value": "AUCTION_HISTORY_STATE",
+      "utf8_bytes": 21,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 3200,
+      "value": "AUCTION_HISTORY_STATE",
+      "utf8_bytes": 21,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 4552,
+      "value": "history_date",
+      "utf8_bytes": 12,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/combat.py",
+      "line": 2079,
+      "value": "story_boss_call",
+      "utf8_bytes": 15,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/player_interaction.py",
+      "line": 527,
+      "value": "request_expired",
+      "utf8_bytes": 15,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/player_interaction.py",
+      "line": 530,
+      "value": "request_not_pending",
+      "utf8_bytes": 19,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/player_interaction.py",
+      "line": 314,
+      "value": "request_id",
+      "utf8_bytes": 10,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/player_interaction.py",
+      "line": 315,
+      "value": "request_id",
+      "utf8_bytes": 10,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 803,
+      "value": "profile_history_trade_detail",
+      "utf8_bytes": 28,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 803,
+      "value": "profile_history_pvp_detail",
+      "utf8_bytes": 26,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 1103,
+      "value": "profile_history",
+      "utf8_bytes": 15,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 1109,
+      "value": "profile_history_trade_detail:",
+      "utf8_bytes": 29,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 1117,
+      "value": "profile_history_pvp_detail:",
+      "utf8_bytes": 27,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 789,
+      "value": "profile_history_trade:0",
+      "utf8_bytes": 23,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 791,
+      "value": "profile_history_pvp:0",
+      "utf8_bytes": 21,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 819,
+      "value": "profile_history",
+      "utf8_bytes": 15,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 1125,
+      "value": "profile_history_trade:",
+      "utf8_bytes": 22,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 1093,
+      "value": "profile_history",
+      "utf8_bytes": 15,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 813,
+      "value": "profile_history_",
+      "utf8_bytes": 16,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 815,
+      "value": "profile_history_",
+      "utf8_bytes": 16,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 1115,
+      "value": "profile_history_trade:",
+      "utf8_bytes": 22,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 1123,
+      "value": "profile_history_pvp:",
+      "utf8_bytes": 20,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/pvp_interaction.py",
+      "line": 41,
+      "value": "request_expired",
+      "utf8_bytes": 15,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/pvp_interaction.py",
+      "line": 44,
+      "value": "request_not_pending",
+      "utf8_bytes": 19,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/pvp_interaction.py",
+      "line": 105,
+      "value": "request_type",
+      "utf8_bytes": 12,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/pvp_interaction.py",
+      "line": 106,
+      "value": "request_not_found",
+      "utf8_bytes": 17,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/pvp_interaction.py",
+      "line": 71,
+      "value": "request_id",
+      "utf8_bytes": 10,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/pvp_interaction.py",
+      "line": 72,
+      "value": "request_id",
+      "utf8_bytes": 10,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 41,
+      "value": "quest",
+      "utf8_bytes": 5,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 54,
+      "value": "quest",
+      "utf8_bytes": 5,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 155,
+      "value": "quest",
+      "utf8_bytes": 5,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 56,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 56,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 127,
+      "value": "quest",
+      "utf8_bytes": 5,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 155,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 173,
+      "value": "quest",
+      "utf8_bytes": 5,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 173,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 180,
+      "value": "quest",
+      "utf8_bytes": 5,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 180,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 43,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 47,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 49,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 65,
+      "value": "quest_item_quantity",
+      "utf8_bytes": 19,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quests.py",
+      "line": 17,
+      "value": "story_quest:",
+      "utf8_bytes": 12,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quests.py",
+      "line": 155,
+      "value": "visible_quest_ids",
+      "utf8_bytes": 17,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quests.py",
+      "line": 165,
+      "value": "quest_item_quantity",
+      "utf8_bytes": 19,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quests.py",
+      "line": 249,
+      "value": "quest_item_quantity",
+      "utf8_bytes": 19,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quests.py",
+      "line": 155,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quests.py",
+      "line": 161,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quests.py",
+      "line": 118,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quests.py",
+      "line": 133,
+      "value": "quest_item_quantity",
+      "utf8_bytes": 19,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "handlers/story_quests.py",
+      "line": 141,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 17,
+      "value": "trade_request",
+      "utf8_bytes": 13,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 17,
+      "value": "duel_request",
+      "utf8_bytes": 12,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 524,
+      "value": "expired_requests",
+      "utf8_bytes": 16,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 524,
+      "value": "player_interaction_requests",
+      "utf8_bytes": 27,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 764,
+      "value": "orphan_request_sessions",
+      "utf8_bytes": 23,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 765,
+      "value": "terminal_request_sessions",
+      "utf8_bytes": 25,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 846,
+      "value": "player_interaction_requests",
+      "utf8_bytes": 27,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 851,
+      "value": "expired_requests",
+      "utf8_bytes": 16,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 1192,
+      "value": "quest",
+      "utf8_bytes": 5,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 574,
+      "value": "invalid_request_type",
+      "utf8_bytes": 20,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 619,
+      "value": "_request",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 629,
+      "value": "request_id",
+      "utf8_bytes": 10,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 629,
+      "value": "request_type",
+      "utf8_bytes": 12,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 771,
+      "value": "player_interaction_requests",
+      "utf8_bytes": 27,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 965,
+      "value": "player_trade_history",
+      "utf8_bytes": 20,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 658,
+      "value": "request_not_found",
+      "utf8_bytes": 17,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 663,
+      "value": "request_not_pending",
+      "utf8_bytes": 19,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 670,
+      "value": "request_expired",
+      "utf8_bytes": 15,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 693,
+      "value": "request_type",
+      "utf8_bytes": 12,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 712,
+      "value": "request_not_found",
+      "utf8_bytes": 17,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 717,
+      "value": "request_not_pending",
+      "utf8_bytes": 19,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 796,
+      "value": "orphan_request_sessions",
+      "utf8_bytes": 23,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 807,
+      "value": "terminal_request_sessions",
+      "utf8_bytes": 25,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 1001,
+      "value": "request_not_found",
+      "utf8_bytes": 17,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 1004,
+      "value": "request_not_accepted",
+      "utf8_bytes": 20,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 1434,
+      "value": "quest",
+      "utf8_bytes": 5,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 690,
+      "value": "_request",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 719,
+      "value": "_request",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 1003,
+      "value": "request_type",
+      "utf8_bytes": 12,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 669,
+      "value": "_request",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 673,
+      "value": "_request",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 733,
+      "value": "_request",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 690,
+      "value": "request_type",
+      "utf8_bytes": 12,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 719,
+      "value": "request_type",
+      "utf8_bytes": 12,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 669,
+      "value": "request_type",
+      "utf8_bytes": 12,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 673,
+      "value": "request_type",
+      "utf8_bytes": 12,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/player_interaction_system.py",
+      "line": 733,
+      "value": "request_type",
+      "utf8_bytes": 12,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_completion_system.py",
+      "line": 184,
+      "value": "quest",
+      "utf8_bytes": 5,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_completion_system.py",
+      "line": 77,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_completion_system.py",
+      "line": 102,
+      "value": "story_quest:",
+      "utf8_bytes": 12,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_completion_system.py",
+      "line": 114,
+      "value": "quest",
+      "utf8_bytes": 5,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_completion_system.py",
+      "line": 120,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_npc_acceptance_system.py",
+      "line": 112,
+      "value": "quest",
+      "utf8_bytes": 5,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_npc_acceptance_system.py",
+      "line": 172,
+      "value": "quest",
+      "utf8_bytes": 5,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_npc_acceptance_system.py",
+      "line": 93,
+      "value": "quest",
+      "utf8_bytes": 5,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_npc_acceptance_system.py",
+      "line": 92,
+      "value": "NO_QUEST",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_npc_acceptance_system.py",
+      "line": 153,
+      "value": "quest",
+      "utf8_bytes": 5,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_npc_acceptance_system.py",
+      "line": 154,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_npc_acceptance_system.py",
+      "line": 154,
+      "value": "quest",
+      "utf8_bytes": 5,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_system.py",
+      "line": 159,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_system.py",
+      "line": 162,
+      "value": "quest_type",
+      "utf8_bytes": 10,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_system.py",
+      "line": 169,
+      "value": "quest_item_quantity",
+      "utf8_bytes": 19,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_system.py",
+      "line": 230,
+      "value": "no_active_quest",
+      "utf8_bytes": 15,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_system.py",
+      "line": 231,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_system.py",
+      "line": 266,
+      "value": "no_active_quest",
+      "utf8_bytes": 15,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_system.py",
+      "line": 267,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    },
+    {
+      "file": "systems/story_quest_system.py",
+      "line": 307,
+      "value": "quest_id",
+      "utf8_bytes": 8,
+      "within_telegram_limit": true
+    }
+  ],
+  "proposed_callback_namespace": {
+    "story_index": {
+      "value": "sqh:v1:index",
+      "utf8_bytes": 12,
+      "within_limit": true
+    },
+    "story_location": {
+      "value": "sqh:v1:loc:start_path",
+      "utf8_bytes": 21,
+      "within_limit": true
+    },
+    "story_section": {
+      "value": "sqh:v1:sec:start_path:03",
+      "utf8_bytes": 24,
+      "within_limit": true
+    },
+    "story_quest": {
+      "value": "sqh:v1:q:30",
+      "utf8_bytes": 11,
+      "within_limit": true
+    },
+    "back_to_sections": {
+      "value": "sqh:v1:back:sec:start_path",
+      "utf8_bytes": 26,
+      "within_limit": true
+    },
+    "back_to_stories": {
+      "value": "sqh:v1:back:index",
+      "utf8_bytes": 17,
+      "within_limit": true
+    }
+  },
+  "legacy_pagination_evidence": [
+    {
+      "file": "handlers/auction_house.py",
+      "line": 1652,
+      "value": "ah_sell_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 1781,
+      "value": "ah_buy_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 1802,
+      "value": "ah_buy_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 1925,
+      "value": "ah_sell_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2261,
+      "value": "ah_my_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2281,
+      "value": "ah_my_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2457,
+      "value": "ah_uncl_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2477,
+      "value": "ah_uncl_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2652,
+      "value": "ah_sale_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2672,
+      "value": "ah_sale_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2905,
+      "value": "ah_buy2_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2948,
+      "value": "ah_buy2_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 3307,
+      "value": "ah_buy2_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 4143,
+      "value": "ah_search_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 4248,
+      "value": "ah_search_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 1474,
+      "value": "ah_sell_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 1476,
+      "value": "ah_sell_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 1753,
+      "value": "ah_buy_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 1755,
+      "value": "ah_buy_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2233,
+      "value": "ah_my_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2235,
+      "value": "ah_my_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2429,
+      "value": "ah_uncl_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2431,
+      "value": "ah_uncl_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2624,
+      "value": "ah_sale_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2626,
+      "value": "ah_sale_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2826,
+      "value": "ah_buy2_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2866,
+      "value": "ah_buy2_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 2868,
+      "value": "ah_buy2_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 3288,
+      "value": "ah_buy2_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 3290,
+      "value": "ah_buy2_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 4080,
+      "value": "ah_search_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 4118,
+      "value": "ah_search_page:"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 4120,
+      "value": "ah_search_page:"
+    },
+    {
+      "file": "handlers/city.py",
+      "line": 467,
+      "value": "sell_eq_page:"
+    },
+    {
+      "file": "handlers/city.py",
+      "line": 563,
+      "value": "sell_eq_page:"
+    },
+    {
+      "file": "handlers/city.py",
+      "line": 443,
+      "value": "sell_eq_page:"
+    },
+    {
+      "file": "handlers/city.py",
+      "line": 445,
+      "value": "sell_eq_page:"
+    },
+    {
+      "file": "handlers/city.py",
+      "line": 455,
+      "value": "sell_eq_page:"
+    },
+    {
+      "file": "handlers/refine.py",
+      "line": 283,
+      "value": "refine_page:"
+    },
+    {
+      "file": "handlers/refine.py",
+      "line": 451,
+      "value": "refine_page:"
+    },
+    {
+      "file": "handlers/refine.py",
+      "line": 138,
+      "value": "refine_page:"
+    },
+    {
+      "file": "handlers/refine.py",
+      "line": 144,
+      "value": "refine_page:"
+    },
+    {
+      "file": "handlers/world_chronicles.py",
+      "line": 148,
+      "value": "wc:page:"
+    },
+    {
+      "file": "handlers/world_chronicles.py",
+      "line": 94,
+      "value": "wc:page:"
+    },
+    {
+      "file": "handlers/world_chronicles.py",
+      "line": 96,
+      "value": "wc:page:"
+    }
+  ],
+  "location_resolver_candidates": [
+    {
+      "file": "handlers/blacksmith.py",
+      "line": 104,
+      "value": "get_inventory_refined_display_name"
+    },
+    {
+      "file": "handlers/blacksmith.py",
+      "line": 348,
+      "value": "get_inventory_refined_display_name"
+    },
+    {
+      "file": "handlers/city.py",
+      "line": 967,
+      "value": "display_name"
+    },
+    {
+      "file": "handlers/city.py",
+      "line": 1019,
+      "value": "display_name"
+    },
+    {
+      "file": "handlers/city.py",
+      "line": 1081,
+      "value": "display_name"
+    },
+    {
+      "file": "handlers/map.py",
+      "line": 43,
+      "value": "🗺️ Мапа світу\n\n📍 Поточна локація:\n🏙️ Місто\n\nДоступні напрямки:\n• 🌿 Початок Шляху"
+    },
+    {
+      "file": "handlers/map.py",
+      "line": 60,
+      "value": "🌿 Повернутися у Початок Шляху"
+    },
+    {
+      "file": "handlers/player_interaction.py",
+      "line": 43,
+      "value": "Початок Шляху"
+    },
+    {
+      "file": "handlers/player_interaction.py",
+      "line": 2055,
+      "value": "_trade_add_list_display_name_12_6_3a"
+    },
+    {
+      "file": "systems/equipment_system.py",
+      "line": 178,
+      "value": "get_inventory_refined_display_name"
+    },
+    {
+      "file": "systems/equipment_system.py",
+      "line": 1032,
+      "value": "get_inventory_refined_display_name"
+    },
+    {
+      "file": "systems/equipment_system.py",
+      "line": 2677,
+      "value": "get_inventory_refined_display_name"
+    },
+    {
+      "file": "systems/story_quest_item_drop_system.py",
+      "line": 75,
+      "value": "display_name"
+    },
+    {
+      "file": "data/about_game.py",
+      "line": 7,
+      "value": "Світ пронизаний давньою силою, закарбованою в рунах. Вона живить магію, змінює живих істот і дозволяє майстрам наділяти зброю та обладунки новими властивостями. Колись знання про руни належало великим цивілізаціям, але більшість їхніх таємниць була втрачена.\n\nПісля давнього катаклізму потоки рунічної енергії стали нестабільними. Частина земель змінилася, звичайні створіння набули незвичних здібностей, а в покинутих місцях з’явилися осквернені істоти й послідовники темних рун.\n\nМіста та поселення залишаються острівцями безпеки. За їхніми межами мандрівників чекають дикі землі, стародавні руїни, ворожі племена, небезпечні ватажки та сліди забутих цивілізацій.\n\nКожен герой обирає власний шлях. Одні шукають силу, інші знання, багатство або славу. Проте поступово всі стикаються з одним питанням: що порушило рівновагу рун і чому їхня сила продовжує змінювати світ?\n\n🗺️ Відомі землі\n\n🌿 Початок Шляху\nПерші стежки за межами безпечного поселення. Тут мандрівники вчаться виживати, полювати, користуватися зіллями та берегти спорядження. Навіть у цих землях уже помітний вплив рунічної сили.\n\n🌲 Темний Бір\nСтарий ліс, у якому оселилися гоблінські загони, шамани, рунічні культисти та осквернені істоти. У глибині бору ховаються руїни й джерела нестабільної магії."
+    },
+    {
+      "file": "data/location_graph.py",
+      "line": 7,
+      "value": "🌿 Початок Шляху"
+    },
+    {
+      "file": "data/locations.py",
+      "line": 4,
+      "value": "🌿 Початок Шляху"
+    },
+    {
+      "file": "data/story_quest_npcs.py",
+      "line": 173,
+      "value": "display_name"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 52,
+      "value": "Перемогти 3 будь-яких істот у локації Початок Шляху."
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 187,
+      "value": "Перемогти 5 будь-яких істот у локації Початок Шляху."
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 286,
+      "value": "Перемогти 6 будь-яких істот у локації Початок Шляху."
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 62,
+      "value": "Перемогти 3 будь-яких істот у локації Початок Шляху."
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 122,
+      "value": "display_name"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 197,
+      "value": "Перемогти 5 будь-яких істот у локації Початок Шляху."
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 223,
+      "value": "display_name"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 296,
+      "value": "Перемогти 6 будь-яких істот у локації Початок Шляху."
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 55,
+      "value": "Перемогти 6 будь-яких істот у локації Початок Шляху."
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 240,
+      "value": "Перемогти 8 будь-яких істот у локації Початок Шляху."
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 65,
+      "value": "Перемогти 6 будь-яких істот у локації Початок Шляху."
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 93,
+      "value": "display_name"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 169,
+      "value": "display_name"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 250,
+      "value": "Перемогти 8 будь-яких істот у локації Початок Шляху."
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 313,
+      "value": "display_name"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 3,
+      "value": "Production story content for Початок Шляху quests 21-30."
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 48,
+      "value": "Перемогти 8 будь-яких істот у локації Початок Шляху."
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 148,
+      "value": "Перемогти 10 будь-яких істот у локації Початок Шляху."
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 243,
+      "value": "Перемогти 10 будь-яких істот у локації Початок Шляху."
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 53,
+      "value": "Перемогти 8 будь-яких істот у локації Початок Шляху."
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 81,
+      "value": "display_name"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 153,
+      "value": "Перемогти 10 будь-яких істот у локації Початок Шляху."
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 182,
+      "value": "display_name"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 248,
+      "value": "Перемогти 10 будь-яких істот у локації Початок Шляху."
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 277,
+      "value": "display_name"
+    }
+  ],
+  "technical_location_strings": [
+    {
+      "file": "handlers/city.py",
+      "line": 34,
+      "value": "start_path"
+    },
+    {
+      "file": "handlers/city.py",
+      "line": 106,
+      "value": "start_path"
+    },
+    {
+      "file": "handlers/city.py",
+      "line": 1114,
+      "value": "start_path"
+    },
+    {
+      "file": "handlers/combat.py",
+      "line": 2150,
+      "value": "start_path"
+    },
+    {
+      "file": "handlers/contracts.py",
+      "line": 51,
+      "value": "start_path"
+    },
+    {
+      "file": "handlers/contracts.py",
+      "line": 66,
+      "value": "start_path"
+    },
+    {
+      "file": "handlers/map.py",
+      "line": 60,
+      "value": "start_path"
+    },
+    {
+      "file": "handlers/player_interaction.py",
+      "line": 43,
+      "value": "start_path"
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 148,
+      "value": "start_path_guard_uniform_scrap"
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 148,
+      "value": "start_path_broken_guard_lantern"
+    },
+    {
+      "file": "systems/combat_system.py",
+      "line": 174,
+      "value": "start_path"
+    },
+    {
+      "file": "systems/combat_system.py",
+      "line": 199,
+      "value": "start_path"
+    },
+    {
+      "file": "systems/combat_system.py",
+      "line": 128,
+      "value": "start_path"
+    },
+    {
+      "file": "systems/simulation/models.py",
+      "line": 160,
+      "value": "start_path"
+    },
+    {
+      "file": "systems/simulation/progression_provider.py",
+      "line": 34,
+      "value": "start_path"
+    },
+    {
+      "file": "systems/story_quest_location_presentation.py",
+      "line": 11,
+      "value": "Return the canonical player-facing location name or fail closed.\n\n    Story presentation must never derive user-facing text from technical IDs.\n    Unknown IDs are content defects and therefore raise instead of leaking a\n    value such as ``start_path`` or an artificial title-cased variant.\n    "
+    },
+    {
+      "file": "data/bosses.py",
+      "line": 24,
+      "value": "start_path"
+    },
+    {
+      "file": "data/location_graph.py",
+      "line": 7,
+      "value": "start_path"
+    },
+    {
+      "file": "data/location_graph.py",
+      "line": 13,
+      "value": "start_path"
+    },
+    {
+      "file": "data/location_graph.py",
+      "line": 7,
+      "value": "start_path"
+    },
+    {
+      "file": "data/location_graph.py",
+      "line": 12,
+      "value": "start_path"
+    },
+    {
+      "file": "data/location_graph.py",
+      "line": 14,
+      "value": "start_path"
+    },
+    {
+      "file": "data/locations.py",
+      "line": 2,
+      "value": "start_path"
+    },
+    {
+      "file": "data/locations.py",
+      "line": 61,
+      "value": "start_path"
+    },
+    {
+      "file": "data/locations.py",
+      "line": 3,
+      "value": "start_path"
+    },
+    {
+      "file": "data/locations.py",
+      "line": 67,
+      "value": "start_path"
+    },
+    {
+      "file": "data/mobs.py",
+      "line": 596,
+      "value": "start_path"
+    },
+    {
+      "file": "data/mobs.py",
+      "line": 11,
+      "value": "start_path"
+    },
+    {
+      "file": "data/mobs.py",
+      "line": 39,
+      "value": "start_path"
+    },
+    {
+      "file": "data/mobs.py",
+      "line": 69,
+      "value": "start_path"
+    },
+    {
+      "file": "data/mobs.py",
+      "line": 97,
+      "value": "start_path"
+    },
+    {
+      "file": "data/mobs.py",
+      "line": 127,
+      "value": "start_path"
+    },
+    {
+      "file": "data/mobs.py",
+      "line": 155,
+      "value": "start_path"
+    },
+    {
+      "file": "data/mobs.py",
+      "line": 185,
+      "value": "start_path"
+    },
+    {
+      "file": "data/mobs.py",
+      "line": 213,
+      "value": "start_path"
+    },
+    {
+      "file": "data/mobs.py",
+      "line": 243,
+      "value": "start_path"
+    },
+    {
+      "file": "data/mobs.py",
+      "line": 271,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quest_content.py",
+      "line": 1,
+      "value": "Authoritative production story content: Start Path quests 1-30."
+    },
+    {
+      "file": "data/story_quest_npcs.py",
+      "line": 49,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quest_npcs.py",
+      "line": 59,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quest_npcs.py",
+      "line": 71,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quest_npcs.py",
+      "line": 81,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quest_npcs.py",
+      "line": 91,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quest_npcs.py",
+      "line": 103,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quest_npcs.py",
+      "line": 113,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 1,
+      "value": "Production story content for Start Path quests 1-10.\n\nThis module owns data only. Runtime consumers import the stable aggregator\nfrom data.story_quest_content instead of importing this package directly.\n"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 10,
+      "value": "start_path_001_missing_patrol"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 14,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 41,
+      "value": "start_path_002_clear_the_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 45,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 47,
+      "value": "start_path_001_missing_patrol"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 73,
+      "value": "start_path_003_last_report"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 77,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 79,
+      "value": "start_path_002_clear_the_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 106,
+      "value": "start_path_004_guard_uniform_scrap"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 110,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 112,
+      "value": "start_path_003_last_report"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 143,
+      "value": "start_path_005_evidence_from_the_trail"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 147,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 149,
+      "value": "start_path_004_guard_uniform_scrap"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 176,
+      "value": "start_path_006_old_bridge"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 180,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 182,
+      "value": "start_path_005_evidence_from_the_trail"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 207,
+      "value": "start_path_007_broken_guard_lantern"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 211,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 213,
+      "value": "start_path_006_old_bridge"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 243,
+      "value": "start_path_008_marks_on_metal"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 247,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 249,
+      "value": "start_path_007_broken_guard_lantern"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 275,
+      "value": "start_path_009_path_to_the_caves"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 279,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 281,
+      "value": "start_path_008_marks_on_metal"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 307,
+      "value": "start_path_010_investigation_begins"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 311,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 313,
+      "value": "start_path_009_path_to_the_caves"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 28,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 59,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 92,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 121,
+      "value": "start_path_guard_uniform_scrap"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 129,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 163,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 194,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 222,
+      "value": "start_path_broken_guard_lantern"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 230,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 263,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 293,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 325,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 158,
+      "value": "start_path_guard_uniform_scrap"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 258,
+      "value": "start_path_broken_guard_lantern"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 1,
+      "value": "Production story content for Start Path quests 11-20.\n\nThis module owns data only. Runtime consumers import the stable aggregator\nfrom data.story_quest_content instead of importing this package directly.\n"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 10,
+      "value": "start_path_011_unstable_glow"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 14,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 16,
+      "value": "start_path_010_investigation_begins"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 44,
+      "value": "start_path_012_anomaly_sites"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 48,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 50,
+      "value": "start_path_011_unstable_glow"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 77,
+      "value": "start_path_013_runic_crystal_fragment"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 81,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 83,
+      "value": "start_path_012_anomaly_sites"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 118,
+      "value": "start_path_014_crystal_under_glass"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 122,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 124,
+      "value": "start_path_013_runic_crystal_fragment"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 153,
+      "value": "start_path_015_runic_dust_sample"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 157,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 159,
+      "value": "start_path_014_crystal_under_glass"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 192,
+      "value": "start_path_016_unnatural_trace"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 196,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 198,
+      "value": "start_path_015_runic_dust_sample"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 229,
+      "value": "start_path_017_tainted_paths"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 233,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 235,
+      "value": "start_path_016_unnatural_trace"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 262,
+      "value": "start_path_018_glow_after_sunset"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 266,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 268,
+      "value": "start_path_017_tainted_paths"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 297,
+      "value": "start_path_019_guards_note"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 301,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 303,
+      "value": "start_path_018_glow_after_sunset"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 338,
+      "value": "start_path_020_patrol_knew"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 342,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 344,
+      "value": "start_path_019_guards_note"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 28,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 62,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 92,
+      "value": "start_path_runic_crystal_fragment"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 100,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 138,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 168,
+      "value": "start_path_runic_dust_sample"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 176,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 213,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 247,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 282,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 312,
+      "value": "start_path_guard_note"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 320,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 358,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 133,
+      "value": "start_path_runic_crystal_fragment"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 208,
+      "value": "start_path_runic_dust_sample"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 353,
+      "value": "start_path_guard_note"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 5,
+      "value": "start_path_021_search_party"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 9,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 11,
+      "value": "start_path_020_patrol_knew"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 36,
+      "value": "start_path_022_cave_entrance"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 40,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 42,
+      "value": "start_path_021_search_party"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 65,
+      "value": "start_path_023_guards_ring"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 69,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 71,
+      "value": "start_path_022_cave_entrance"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 85,
+      "value": "start_path_030_scene_of_the_attack"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 102,
+      "value": "start_path_024_last_purchase"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 106,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 108,
+      "value": "start_path_023_guards_ring"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 136,
+      "value": "start_path_025_tracks_near_the_bridge"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 140,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 142,
+      "value": "start_path_024_last_purchase"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 165,
+      "value": "start_path_026_damaged_guard_shield"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 169,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 171,
+      "value": "start_path_025_tracks_near_the_bridge"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 186,
+      "value": "start_path_030_scene_of_the_attack"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 203,
+      "value": "start_path_027_howling_beyond_the_walls"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 207,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 209,
+      "value": "start_path_026_damaged_guard_shield"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 231,
+      "value": "start_path_028_pursuit_trail"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 235,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 237,
+      "value": "start_path_027_howling_beyond_the_walls"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 260,
+      "value": "start_path_029_torn_guard_cloak"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 264,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 266,
+      "value": "start_path_028_pursuit_trail"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 281,
+      "value": "start_path_030_scene_of_the_attack"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 298,
+      "value": "start_path_030_scene_of_the_attack"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 302,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 304,
+      "value": "start_path_029_torn_guard_cloak"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 19,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 50,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 80,
+      "value": "start_path_guards_ring"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 86,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 121,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 150,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 181,
+      "value": "start_path_damaged_guard_shield"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 187,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 217,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 245,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 276,
+      "value": "start_path_torn_guard_cloak"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 282,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 326,
+      "value": "start_path"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 117,
+      "value": "start_path_guards_ring"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 312,
+      "value": "start_path_guards_ring"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 315,
+      "value": "start_path_damaged_guard_shield"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 318,
+      "value": "start_path_torn_guard_cloak"
+    }
+  ],
+  "terminology_evidence": [
+    {
+      "file": "handlers/about_game.py",
+      "line": 15,
+      "value": "📖 До розділів",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/about_game.py",
+      "line": 36,
+      "value": "Розділ не знайдено.",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 3803,
+      "value": "Нижня клавіатура для внутрішніх розділів Торгового Дому.",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 227,
+      "value": "\n\nЦей розділ буде реалізовано в наступних етапах Торгового Дому 8.0.\n\nПоточний етап 8.0.2 додав головне меню та підключив ядро БД.",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 3985,
+      "value": "📜 Історія\n\nТут буде історія покупок, продажів і перегляд ринкових цін.\n\nЦей розділ буде реалізовано на наступному етапі Торгового Дому.",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 4458,
+      "value": "📜 Історія Торгового Дому\n\nРозділ: ",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 3951,
+      "value": "📦 Розділ «Мої лоти» відкрито.",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 3964,
+      "value": "📬 Розділ «Незабрані предмети» відкрито.",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 3977,
+      "value": "💰 Розділ «Завершені продажі» відкрито.",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 4619,
+      "value": "📜 Розділ «Історія» відкрито.",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/auction_house.py",
+      "line": 4743,
+      "value": "📜 Розділ «Історія» відкрито.",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/city.py",
+      "line": 1326,
+      "value": "Оберіть розділ:",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/event_ui.py",
+      "line": 115,
+      "value": "🎉 Розділ івентів",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/guild.py",
+      "line": 454,
+      "value": "\n\nЦей розділ буде реалізовано на етапі ",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/inventory.py",
+      "line": 1705,
+      "value": "\n\nОберіть потрібний розділ вашого інвентаря:",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/inventory.py",
+      "line": 1913,
+      "value": "\n\nУ цьому розділі немає предметів.\n\n🎒 Сумка: ",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/inventory.py",
+      "line": 3317,
+      "value": "👤 Розділ персонажа відкрито",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/inventory.py",
+      "line": 2245,
+      "value": "⬅️ До розділів інвентаря",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/inventory.py",
+      "line": 3113,
+      "value": "⬅️ Назад до розділу",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/inventory.py",
+      "line": 3133,
+      "value": "🏠 До розділів інвентаря",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/inventory.py",
+      "line": 1945,
+      "value": "⬅️ До розділів інвентаря",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/inventory.py",
+      "line": 6855,
+      "value": "До розділів",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 849,
+      "value": "👤 Розділ персонажа відкрито",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 875,
+      "value": "📜 Історія\n\nОберіть розділ:",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/profile.py",
+      "line": 1105,
+      "value": "📜 Історія\n\nОберіть розділ:",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 85,
+      "value": "📖 Наступна глава:",
+      "kind": "forbidden_chapter_term"
+    },
+    {
+      "file": "handlers/story_quest_npc_runtime.py",
+      "line": 85,
+      "value": "ℹ️ Наступна глава поки не активована.",
+      "kind": "forbidden_chapter_term"
+    },
+    {
+      "file": "data/about_game.py",
+      "line": 3,
+      "value": "📖 Руни Магії RPG\n\nТекстова рольова гра про дослідження світу, розвиток персонажа, бої, спорядження, руни та взаємодію з іншими мандрівниками.\n\nОберіть розділ:",
+      "kind": "preferred_section_term"
+    },
+    {
+      "file": "data/story_quests/start_path_01_10.py",
+      "line": 335,
+      "value": "✅ Главу «Тривога на околиці» завершено.\n\nСліди зниклого патруля ведуть до печер, а на стежках помічено дивне рунічне світіння.",
+      "kind": "forbidden_chapter_term"
+    },
+    {
+      "file": "data/story_quests/start_path_11_20.py",
+      "line": 369,
+      "value": "✅ Главу «Рунічна аномалія» завершено.\n\nПатруль розслідував неприродну агресію істот і вирушив до печер. Наступний етап пошуку очолить Голова Найманців.",
+      "kind": "forbidden_chapter_term"
+    },
+    {
+      "file": "data/story_quests/start_path_21_30.py",
+      "line": 27,
+      "value": "Староста передав мені записку патруля. Тепер ми знаємо, що вартові добровільно вирушили до печер, переслідуючи джерело рунічної аномалії. Я розділив пошукову територію на кілька ділянок. Мої люди перевірять дорогу до табору, а ти оглянеш печери та старий міст. Шукай особисті речі, уламки спорядження або будь-які знаки, за якими можна відновити їхній шлях.",
+      "kind": "preferred_section_term"
+    }
+  ],
+  "risks": [
+    "Existing page-based callbacks/messages require compatibility routing after the hierarchy UI is introduced.",
+    "Technical location identifiers exist in source strings; implementation must distinguish internal metadata from user-facing text."
+  ],
+  "required_next_stage": {
+    "stage": "19.25.13",
+    "name": "canonical story hierarchy metadata",
+    "production_mutation": "metadata only; UI unchanged",
+    "must_preserve": [
+      "production registry 1-30",
+      "quest status and availability semantics",
+      "legacy callback safety",
+      "localized location name Початок Шляху",
+      "Ukrainian term розділ, never глава",
+      "game.db immutability"
+    ]
+  },
+  "stage": "19.25.12",
+  "expected_head": "6a7c09ee6736b119bbbbc5b0d948d02af99215e8",
+  "commit_subject": "Stage 19.25.12: audit story quest hierarchy UI",
+  "production_content_mutation": false,
+  "production_database_mutation": false,
+  "wal_shm_manipulated": false,
+  "database_before": {
+    "exists": true,
+    "sha256": "8ac74991f1a460cf6e3a1e9f234f03a009157db6e08466a112cfd4d61c17dd4a",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  },
+  "checker_output": "STORY QUEST HIERARCHY UI AUDIT: PASS",
+  "database_after": {
+    "exists": true,
+    "sha256": "8ac74991f1a460cf6e3a1e9f234f03a009157db6e08466a112cfd4d61c17dd4a",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  }
+}
