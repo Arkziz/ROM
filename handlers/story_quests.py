@@ -326,13 +326,12 @@ def register_story_quest_handlers(bot):
                     return
                 stats = get_player_stats(user_id) or {}
                 level = resolve_story_quest_player_level(stats)
-                detail_item = build_production_story_quest_detail(
+                detail_snapshot = build_production_story_quest_detail(
                     db.conn,
                     user_id=user_id,
                     quest_id=quest.quest_id,
                     player_level=level,
                 )
-                detail_snapshot = render_story_quest_detail(detail_item)
                 text = detail_snapshot["text"]
                 keyboard = _inline_markup(detail_snapshot["keyboard"])
                 # Preserve existing quest actions and add an explicit hierarchy return route.
