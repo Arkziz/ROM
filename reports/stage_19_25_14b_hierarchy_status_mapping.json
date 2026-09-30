@@ -1,0 +1,36 @@
+{
+  "stage": "19.25.14b",
+  "parent_head": "c7b14822b0b743b75c92e6dd28b27538035167b5",
+  "expected_parent_subject": "Stage 19.25.14a: fix hierarchy status reader",
+  "commit_subject": "Stage 19.25.14b: fix hierarchy status mapping",
+  "root_cause": "build_production_story_quest_detail returns text and keyboard only; status/status_key parsing always produced an empty value and locked fallback",
+  "fix": {
+    "status_source": "systems.story_quest_system.get_story_quest_view()['status']",
+    "mapping": {
+      "completed": "completed",
+      "skipped": "completed",
+      "active": "active",
+      "available": "available",
+      "locked": "locked"
+    },
+    "unknown_status_policy": "fail_closed_with_ValueError"
+  },
+  "production_database_mutation": false,
+  "wal_shm_manipulated": false,
+  "database_before": {
+    "exists": true,
+    "sha256": "8ac74991f1a460cf6e3a1e9f234f03a009157db6e08466a112cfd4d61c17dd4a",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  },
+  "superseded_checks_not_run": {
+    "tools/check_story_quest_hierarchy_status_reader.py": "Stage 19.25.14a checker requires the delegated build_production_story_quest_detail call. Stage 19.25.14b intentionally replaces that presentation-layer adapter with canonical get_story_quest_view status mapping."
+  },
+  "checker_output": "STORY QUEST HIERARCHY STATUS MAPPING: PASS",
+  "database_after": {
+    "exists": true,
+    "sha256": "8ac74991f1a460cf6e3a1e9f234f03a009157db6e08466a112cfd4d61c17dd4a",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  }
+}

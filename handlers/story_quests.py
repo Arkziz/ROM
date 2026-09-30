@@ -282,23 +282,26 @@ def register_story_quest_handlers(bot):
 
     # Stage 19.25.14: hierarchical story navigation. Legacy callbacks remain registered below.
     def _hierarchy_status_reader(user_id, quest):
-        """Read the canonical lifecycle status through the production detail builder."""
+        """Return the canonical lifecycle value from the UI-neutral quest view."""
+        from systems.story_quest_system import get_story_quest_view
         stats = get_player_stats(user_id) or {}
         level = resolve_story_quest_player_level(stats)
-        detail = build_production_story_quest_detail(
+        view = get_story_quest_view(
             db.conn,
             user_id=user_id,
-            quest_id=quest.quest_id,
+            quest=quest,
             player_level=level,
         )
-        raw = str(detail.get("status") or detail.get("status_key") or "").casefold()
-        if any(token in raw for token in ("completed", "complete", "заверш")):
+        status = str(view["status"]).casefold()
+        if status in ("completed", "skipped"):
             return "completed"
-        if any(token in raw for token in ("active", "актив")):
+        if status == "active":
             return "active"
-        if any(token in raw for token in ("available", "доступ")):
+        if status == "available":
             return "available"
-        return "locked"
+        if status == "locked":
+            return "locked"
+        raise ValueError(f"Unknown story quest status: {status}")
 
     def _send_hierarchy(message, text, keyboard):
         return bot.send_message(message.chat.id, text, reply_markup=keyboard)
