@@ -1,0 +1,177 @@
+{
+  "stage": "19.25.13",
+  "expected_head": "ea4f61c68288a0f6bd22b79c5ba82ef3b6e49187",
+  "commit_subject": "Stage 19.25.13: add story hierarchy metadata",
+  "decision": "READY_FOR_STAGE_19_25_14_HIERARCHY_UI",
+  "metadata_file": "data/story_quest_hierarchy.py",
+  "checker_output": "STORY QUEST HIERARCHY METADATA: PASS",
+  "snapshot": {
+    "sections": [
+      {
+        "display_title": "Розділ 1. Тривога на околиці",
+        "number": 1,
+        "quest_numbers": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "required_level": 1,
+        "section_id": "start_path_01",
+        "title": "Тривога на околиці"
+      },
+      {
+        "display_title": "Розділ 2. Рунічна аномалія",
+        "number": 2,
+        "quest_numbers": [
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ],
+        "required_level": 2,
+        "section_id": "start_path_02",
+        "title": "Рунічна аномалія"
+      },
+      {
+        "display_title": "Розділ 3. Зниклий патруль",
+        "number": 3,
+        "quest_numbers": [
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30
+        ],
+        "required_level": 3,
+        "section_id": "start_path_03",
+        "title": "Зниклий патруль"
+      }
+    ],
+    "validation": {
+      "localized_start_path": "Початок Шляху",
+      "metadata_quest_count": 30,
+      "production_quest_count": 30,
+      "quest_numbers": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "section_ids": [
+        "start_path_01",
+        "start_path_02",
+        "start_path_03"
+      ],
+      "section_titles": [
+        "Розділ 1. Тривога на околиці",
+        "Розділ 2. Рунічна аномалія",
+        "Розділ 3. Зниклий патруль"
+      ],
+      "start_path_button_label": "🌄 Початок Шляху",
+      "story_ids": [
+        "start_path"
+      ]
+    }
+  },
+  "live_ui_files_unchanged": {
+    "handlers/story_quests.py": "667c17c2852c6776b45c51b014a5b267e7fe85d9063a1c63ab140150910bf94d",
+    "handlers/story_quest_npc_runtime.py": "8eb4787a20155d87707edcf9a222d370a9d8460ae3ebad44cbb395560f749954",
+    "systems/story_quest_system.py": "c2726ae2c91d38a5165c214eb0105ee1966e1e0e5549281e08dde2506b0c5ee1",
+    "data/story_quest_content.py": "03f3f880d839a16a8b472fa37b21c1aa18b853ba39c4becc17623f2793016945"
+  },
+  "canonical_ukrainian_term": "розділ",
+  "forbidden_new_user_term": "глава",
+  "localized_location_name": "Початок Шляху",
+  "production_quest_numbers": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30
+  ],
+  "inactive_quest_numbers_exposed": [],
+  "production_ui_mutation": false,
+  "production_database_mutation": false,
+  "wal_shm_manipulated": false,
+  "database_before": {
+    "exists": true,
+    "sha256": "8ac74991f1a460cf6e3a1e9f234f03a009157db6e08466a112cfd4d61c17dd4a",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  },
+  "database_after": {
+    "exists": true,
+    "sha256": "8ac74991f1a460cf6e3a1e9f234f03a009157db6e08466a112cfd4d61c17dd4a",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  }
+}
