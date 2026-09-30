@@ -1,0 +1,24 @@
+{
+  "stage": "19.25.5a",
+  "expected_head": "b30ffee4cb6d16280abf093024ff47989a037d25",
+  "commit_subject": "Stage 19.25.5a: fix Merchant story hook scope",
+  "owner": "handlers/city.py",
+  "root_cause": "Merchant story hook was inserted into build_trade_district_text where bot/message are unavailable",
+  "fix": "move the single trader hook into show_trade_district immediately after the service send_message",
+  "production_database_mutation": false,
+  "wal_shm_manipulated": false,
+  "database_before": {
+    "exists": true,
+    "sha256": "017dcf961725e69c019b350de968db53a6039fb34d26d1949d248429a18b2386",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  },
+  "focused_checker": "MERCHANT STORY HOOK SCOPE: PASS",
+  "activation_regression": "STORY QUESTS 21-30 ACTIVATION: PASS",
+  "database_after": {
+    "exists": true,
+    "sha256": "017dcf961725e69c019b350de968db53a6039fb34d26d1949d248429a18b2386",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  }
+}
