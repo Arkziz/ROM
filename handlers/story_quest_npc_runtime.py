@@ -143,7 +143,7 @@ def _required_item_display_names(definition):
 def _turn_in_item_action_label(definition, *, active):
     """Return item-aware labels while lifecycle callbacks stay canonical."""
     if len(definition.required_quest_items)!=1:
-        return '🔍 Показати докази' if active else '🔍 Показати докази'
+        return '📦 Передати докази' if active else '📦 Передати докази'
     key=definition.required_quest_items[0].item_key
     short={'start_path_guard_uniform_scrap':'клапоть','start_path_broken_guard_lantern':'ліхтар'}.get(key)
     if short is None:return '✅ Передати предмет' if active else '🔍 Показати предмет'
