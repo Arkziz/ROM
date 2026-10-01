@@ -174,6 +174,71 @@
         "required_items": 0,
         "conclusion": "completion_only"
       }
+    },
+    "batch_41_50_content_and_boss_policy": {
+      "section_id": "start_path_05",
+      "section_display_title": "Розділ 5. Вирішальний похід",
+      "unlock_level": 5,
+      "quest_numbers": [
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50
+      ],
+      "quest_types": {
+        "41": "TALK",
+        "42": "KILL_REGION",
+        "43": "QUEST_ITEM",
+        "44": "TURN_IN",
+        "45": "KILL_REGION",
+        "46": "QUEST_ITEM",
+        "47": "TURN_IN",
+        "48": "KILL_REGION",
+        "49": "BOSS",
+        "50": "TURN_IN"
+      },
+      "kill_region_targets": {
+        "42": 15,
+        "45": 15,
+        "48": 10
+      },
+      "quest_item_pairs": [
+        {
+          "source_quest": 43,
+          "turn_in_quest": 44,
+          "item_key": "start_path_pack_leader_seal",
+          "drop_chance": 0.15,
+          "retain_on_source_completion": true,
+          "consumption": "atomic_exact_once"
+        },
+        {
+          "source_quest": 46,
+          "turn_in_quest": 47,
+          "item_key": "start_path_pack_leader_fur",
+          "drop_chance": 0.15,
+          "retain_on_source_completion": true,
+          "consumption": "atomic_exact_once"
+        }
+      ],
+      "boss_quest": 49,
+      "boss_completion": "victory sets 1/1; Mercenary Head turn-in completes quest 49 and grants story reward",
+      "next_quest": "quest 50 begins with Elder after quest 49 completion",
+      "regular_reward": {
+        "exp": 57,
+        "gold": 1.29
+      },
+      "boss_story_reward": {
+        "exp": 95,
+        "gold": 2.15,
+        "combat_reward_separate": true
+      },
+      "production_activation": "pending boss adapter implementation and production-shaped regressions"
     }
   },
   "quests": [
@@ -1663,7 +1728,7 @@
       "turn_in_npc_id": "mercenary_head",
       "target_quantity": 1,
       "description": "Герой знаходить печатку, що позначає територію Ватажка.",
-      "objective_text": "Знайти рунічну печатку Ватажка біля лігва.",
+      "objective_text": "Знайти під час полювання рунічний знак, пов’язаний із територією зграї.",
       "acceptance_text": "Герой знаходить печатку, що позначає територію Ватажка.",
       "completion_text": "Печатку Ватажка знайдено.",
       "reward": {
@@ -1685,7 +1750,15 @@
         "display_name": "Печатка Ватажка зграї",
         "required_quantity": 1,
         "drop_chance": 0.15,
-        "drop_message": "Печатку Ватажка знайдено."
+        "drop_message": "Печатку Ватажка знайдено.",
+        "consume_on_completion": false
+      },
+      "progress_text": "Знайти під час полювання рунічний знак, пов’язаний із територією зграї.",
+      "item_reveal_policy": {
+        "mode": "hide_exact_name_until_first_drop",
+        "pre_drop_label": "Невідомий рунічний знак зграї",
+        "reveal_on": "first_successful_drop",
+        "drop_message_once": true
       }
     },
     {
@@ -1769,7 +1842,7 @@
       "turn_in_npc_id": "blacksmith",
       "target_quantity": 1,
       "description": "Герой знаходить шерсть Ватажка для перевірки спорядження.",
-      "objective_text": "Знайти клоччя шерсті Ватажка біля входу до лігва.",
+      "objective_text": "Знайти біля входу до лігва біологічний слід, який допоможе Ковалю перевірити спорядження.",
       "acceptance_text": "Герой знаходить шерсть Ватажка для перевірки спорядження.",
       "completion_text": "Клоччя шерсті Ватажка знайдено.",
       "reward": {
@@ -1791,7 +1864,15 @@
         "display_name": "Клоччя шерсті Ватажка",
         "required_quantity": 1,
         "drop_chance": 0.15,
-        "drop_message": "Клоччя шерсті Ватажка знайдено."
+        "drop_message": "Клоччя шерсті Ватажка знайдено.",
+        "consume_on_completion": false
+      },
+      "progress_text": "Знайти біля входу до лігва біологічний слід для перевірки спорядження.",
+      "item_reveal_policy": {
+        "mode": "hide_exact_name_until_first_drop",
+        "pre_drop_label": "Невідомий біологічний слід Ватажка",
+        "reveal_on": "first_successful_drop",
+        "drop_message_once": true
       }
     },
     {
@@ -1875,9 +1956,9 @@
       "turn_in_npc_id": null,
       "target_quantity": 1,
       "description": "Герой перемагає Ватажка через RNG encounter або гарантований виклик.",
-      "objective_text": "Перемогти Ватажка зграї.",
-      "acceptance_text": "Герой перемагає Ватажка через RNG encounter або гарантований виклик.",
-      "completion_text": "Ватажка зграї переможено. Рунічне світіння згасає.",
+      "objective_text": "Перемогти Ватажка зграї у локації «Початок Шляху», а потім доповісти Голові Найманців.",
+      "acceptance_text": "Ватажок тримається біля лігва. Вирушай у «Початок Шляху» та натисни «👀 Роззирнутися». Там Ватажка можна викликати на бій. Також він може зустрітися випадково під час звичайного полювання. Якщо ще не готовий до бою, продовжуй полювання та повернися до виклику пізніше.",
+      "completion_text": "Голова Найманців вислуховує доповідь про перемогу над Ватажком. Зграя втратила провідника, а шлях біля лігва став безпечнішим. Підготовка загону була недаремною. Тепер Староста має почути, чим завершився вирішальний похід. Повернися до Ратуші та доповідь Старості.",
       "reward": {
         "exp": 95,
         "gold": 2.15,
@@ -1900,7 +1981,32 @@
       ],
       "guaranteed_call_after_success": "blocked",
       "retry_after_defeat_or_escape": "allowed",
-      "boss_combat_reward_is_separate": true
+      "boss_combat_reward_is_separate": true,
+      "progress_text": "Перемогти Ватажка зграї: {progress}/1. Після перемоги повернутися до Голови Найманців.",
+      "boss_story_policy": {
+        "boss_key": "canonical_start_path_pack_leader_pending_adapter_confirmation",
+        "random_hunt_encounter_allowed": true,
+        "forced_invocation_allowed": true,
+        "forced_invocation_surface": "look_around_inline",
+        "invoke_callback": "sqboss:v1:invoke:49",
+        "help_callback": "sqboss:v1:help:49",
+        "return_callback": "sqboss:v1:return:49",
+        "city_npc_help_only": true,
+        "permanent_reply_button": false,
+        "canonical_factory": "systems.boss_system.build_location_boss",
+        "boss_level_source": "current_player_level",
+        "victory_progress": "set 1/1 only for correct boss_key and location",
+        "completion_mode": "deferred_turn_in_to_mercenary_head",
+        "story_reward_owner": "quest_49_turn_in_completion",
+        "combat_reward_owner": "canonical_boss_victory",
+        "defeat_retry": true,
+        "manual_escape_retry": true,
+        "auto_escape_retry": true,
+        "forced_invocation_after_victory": false,
+        "stale_callback_after_victory": "reject_and_point_to_mercenary_head",
+        "double_callback_guard": "canonical_active_encounter_guard",
+        "anti_farm": "progress 1/1 immediately disables forced invocation before quest turn-in"
+      }
     },
     {
       "quest_id": "start_path_050_road_ahead",
@@ -1913,10 +2019,10 @@
       "giver_npc_id": "elder",
       "turn_in_npc_id": "elder",
       "target_quantity": 1,
-      "description": "Герой завершує кампанію та отримує напрямок до Темного Бору.",
-      "objective_text": "Доповісти Старості про перемогу над Ватажком зграї.",
-      "acceptance_text": "Герой завершує кампанію та отримує напрямок до Темного Бору.",
-      "completion_text": "Кампанію «Початок Шляху» завершено. Рунічний слід веде до Темного Бору.",
+      "description": "Герой повертається до Старости з підсумком перемоги над Ватажком і завершує історію «Початок Шляху».",
+      "objective_text": "Доповісти Старості про перемогу над Ватажком і завершення вирішального походу.",
+      "acceptance_text": "Староста чекає остаточної доповіді про Ватажка, стан зграї та безпеку шляху біля лігва.",
+      "completion_text": "Староста вислуховує доповідь про перемогу над Ватажком. Без провідника зграя відступає від табору, а дорога через «Початок Шляху» знову відкрита для мандрівників. Рада дякує за підготовку загону та вирішальний бій.\n\n✅ Розділ «Вирішальний похід» завершено.\n✅ Історію «Початок Шляху» завершено.",
       "reward": {
         "exp": 57,
         "gold": 1.29,
@@ -1935,6 +2041,12 @@
         "location_id": "dark_forest",
         "canonical_unlock_level": 6,
         "story_completion_does_not_unlock_location": true
+      },
+      "progress_text": "Доповісти Старості про перемогу над Ватажком і завершення вирішального походу.",
+      "itemless_turn_in_policy": {
+        "available_action": "📖 Почати розмову",
+        "active_action": "🗣️ Доповісти Старості",
+        "conclusion": "completion_only"
       }
     }
   ],
@@ -2023,7 +2135,7 @@
       "chapter_title": "Ватажок зграї",
       "unlock_level": 5,
       "reward_reference_level": 5,
-      "status": "story_and_rules_approved_reward_values_calculated",
+      "status": "content_and_boss_policy_approved_pending_adapter_and_production_activation",
       "expected_required_kill_region_victories": 40,
       "expected_quest_item_victories": 13.33,
       "expected_boss_victories": 1,
@@ -2052,7 +2164,10 @@
         "exp": 95,
         "gold": 2.15,
         "boss_combat_reward_is_separate": true
-      }
+      },
+      "section_number": 5,
+      "section_title": "Вирішальний похід",
+      "display_title": "Розділ 5. Вирішальний похід"
     }
   ]
 }
