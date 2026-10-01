@@ -143,7 +143,7 @@ def _required_item_display_names(definition):
 def _turn_in_item_action_label(definition, *, active):
     """Return item-aware labels while lifecycle callbacks stay canonical."""
     if len(definition.required_quest_items)!=1:
-        return '📦 Передати докази' if active else '📦 Передати докази'
+        return ("📦 Передати докази" if quest.required_quest_items else "📖 Почати розмову") if active else ("📦 Передати докази" if quest.required_quest_items else "🗣️ Доповісти Старості")
     key=definition.required_quest_items[0].item_key
     short={'start_path_guard_uniform_scrap':'клапоть','start_path_broken_guard_lantern':'ліхтар'}.get(key)
     if short is None:return '✅ Передати предмет' if active else '🔍 Показати предмет'
@@ -157,7 +157,7 @@ def _turn_in_text(presentation):
     lines=[presentation['npc_name'],'',f'📜 {definition.number}. {definition.title}','',f"Статус: {labels.get(state,state)}",'']
     if state=='AVAILABLE':lines += ['📖 Коротко:',definition.description]
     elif state=='ACTIVE':
-        lines += ['🔍 Висновок:',texts.get('acceptance_text') or definition.objective_text]
+        lines += [("🔍 Висновок:" if quest.required_quest_items else "🎯 Завдання:"),texts.get('acceptance_text') or definition.objective_text]
         names=_required_item_display_names(definition)
         if names:lines += ['','📦 Потрібно передати:',*[f'• {name}' for name in names]]
     else:lines += ['🎯 Завдання:',definition.objective_text]
