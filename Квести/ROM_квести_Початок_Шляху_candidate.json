@@ -153,6 +153,19 @@
         "exp": 48,
         "gold": 0.89,
         "formula": "3x canonical expected reward of normal level-4 mob"
+      },
+      "quest_item_handoff": {
+        "source_quests": [
+          34,
+          37
+        ],
+        "retain_on_source_completion": true,
+        "turn_in_quests": [
+          35,
+          38
+        ],
+        "turn_in_consumption": "atomic_exact_once",
+        "recovery": "restore exactly one missing item only for COMPLETED source plus ACTIVE paired turn-in"
       }
     }
   },
@@ -1338,7 +1351,8 @@
         "display_name": "Вовче хутро підвищеної якості",
         "required_quantity": 1,
         "drop_chance": 0.15,
-        "drop_message": "🐺 Сюжетна знахідка: Вовче хутро підвищеної якості\n\nХутро надзвичайно щільне, а біля коренів шерсті помітне слабке синювате світіння. Коваль зможе використати його для спорядження мисливців."
+        "drop_message": "🐺 Сюжетна знахідка: Вовче хутро підвищеної якості\n\nХутро надзвичайно щільне, а біля коренів шерсті помітне слабке синювате світіння. Коваль зможе використати його для спорядження мисливців.",
+        "consume_on_completion": false
       },
       "item_reveal_policy": {
         "mode": "hide_exact_name_until_first_drop",
@@ -1450,7 +1464,8 @@
         "display_name": "Рунічно позначений уламок із лігва",
         "required_quantity": 1,
         "drop_chance": 0.15,
-        "drop_message": "🪨 Сюжетна знахідка: Рунічно позначений уламок із лігва\n\nТемний камінь укритий вовчою шерстю та глибокими слідами кігтів. Усередині тріщин пульсує знайоме синювате світіння."
+        "drop_message": "🪨 Сюжетна знахідка: Рунічно позначений уламок із лігва\n\nТемний камінь укритий вовчою шерстю та глибокими слідами кігтів. Усередині тріщин пульсує знайоме синювате світіння.",
+        "consume_on_completion": false
       },
       "item_reveal_policy": {
         "mode": "hide_exact_name_until_first_drop",
