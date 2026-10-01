@@ -157,7 +157,7 @@ def _turn_in_text(presentation):
     lines=[presentation['npc_name'],'',f'📜 {definition.number}. {definition.title}','',f"Статус: {labels.get(state,state)}",'']
     if state=='AVAILABLE':lines += ['📖 Коротко:',definition.description]
     elif state=='ACTIVE':
-        lines += [("🔍 Висновок:" if quest.required_quest_items else "🎯 Завдання:"),texts.get('acceptance_text') or definition.objective_text]
+        lines += [("🔍 Висновок:" if definition.required_quest_items else "🎯 Завдання:"),texts.get('acceptance_text') or definition.objective_text]
         names=_required_item_display_names(definition)
         if names:lines += ['','📦 Потрібно передати:',*[f'• {name}' for name in names]]
     else:lines += ['🎯 Завдання:',definition.objective_text]

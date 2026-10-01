@@ -1,0 +1,24 @@
+{
+  "stage": "19.26.6",
+  "decision": "PASS_PENDING_MANUAL_GAME_CHECK",
+  "parent_head": "97c2565ea2579de21c9cc8fdc4cdc0494ca7ed87",
+  "contract": {
+    "replaced_out_of_scope_references": 1,
+    "definition_required_items_references": 1
+  },
+  "runtime_fix": "quest.required_quest_items -> definition.required_quest_items inside _turn_in_text",
+  "quest_status_mutation": false,
+  "database_mutation": false,
+  "database_before": {
+    "sha256": "4087e0e4305de6eabc7226772882ba3a4ed8c7f5e4ff462526f221329b2b5472",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  },
+  "manual_game_check": "REQUIRED",
+  "wal_shm_manipulated": false,
+  "database_after": {
+    "sha256": "4087e0e4305de6eabc7226772882ba3a4ed8c7f5e4ff462526f221329b2b5472",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  }
+}
