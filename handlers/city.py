@@ -480,6 +480,7 @@ def send_trade_district_submenu_17_11_1(bot, chat_id):
 
 def register_city_handlers(bot):
 
+    register_story_boss_invocation_callbacks(bot)
     @bot.message_handler(func=lambda m: m.text == '🏙️ Місто')
     def show_city(message):
         user_id = message.from_user.id
@@ -493,6 +494,7 @@ def register_city_handlers(bot):
             bot.send_message(message.chat.id, build_city_text(user_id), reply_markup=city_kb())
             return
         bot.send_message(message.chat.id, build_main_menu_text(user_id), reply_markup=main_kb())
+        send_story_boss_look_around_if_present(bot, message)
 
     @bot.message_handler(func=lambda m: m.text in ('🔙 Місто', '⬅️ Місто'))
     def back_to_city(message):
@@ -1214,6 +1216,10 @@ _REGISTER_CITY_HANDLERS_BEFORE_MAIN_MENU_RECOVERY_17_30_1_3 = register_city_hand
 from keyboards import elder_kb, mercenary_head_kb, bartender_kb
 from data.story_quest_npcs import get_story_quest_npc
 from handlers.story_quest_npc_runtime import send_story_npc_if_present, has_story_npc_if_present
+from handlers.story_boss_invocation_wiring import (
+    register_story_boss_invocation_callbacks,
+    send_story_boss_look_around_if_present,
+)
 
 
 def _build_story_npc_placeholder_text(npc_id, description):
