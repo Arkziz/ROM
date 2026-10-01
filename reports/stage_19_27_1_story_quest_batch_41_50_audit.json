@@ -1,0 +1,586 @@
+{
+  "candidate_sha256": "6d7115478f2f1119376490b449b60034532a8b89be07633f4692337f8bf0c154",
+  "candidate_quests": [
+    {
+      "number": 41,
+      "quest_id": "start_path_041_council_before_the_hunt",
+      "title": "Рада перед походом",
+      "quest_type": "TALK",
+      "previous_quest_id": "start_path_040_before_the_final_hunt",
+      "giver_npc_id": "elder",
+      "turn_in_npc_id": "elder",
+      "unlock_level": 5,
+      "location_id": "start_path",
+      "target_quantity": 1,
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "required_quest_items": [],
+      "quest_item_consumption": null
+    },
+    {
+      "number": 42,
+      "quest_id": "start_path_042_den_approaches",
+      "title": "Підступи до лігва",
+      "quest_type": "KILL_REGION",
+      "previous_quest_id": "start_path_041_council_before_the_hunt",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "unlock_level": 5,
+      "location_id": "start_path",
+      "target_quantity": 15,
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "required_quest_items": [],
+      "quest_item_consumption": null
+    },
+    {
+      "number": 43,
+      "quest_id": "start_path_043_pack_leader_seal",
+      "title": "Печатка зграї",
+      "quest_type": "QUEST_ITEM",
+      "previous_quest_id": "start_path_042_den_approaches",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "unlock_level": 5,
+      "location_id": "start_path",
+      "target_quantity": 1,
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "required_quest_items": [],
+      "quest_item_consumption": null
+    },
+    {
+      "number": 44,
+      "quest_id": "start_path_044_mark_of_the_pack_leader",
+      "title": "Знак Ватажка",
+      "quest_type": "TURN_IN",
+      "previous_quest_id": "start_path_043_pack_leader_seal",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "unlock_level": 5,
+      "location_id": "start_path",
+      "target_quantity": 1,
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "required_quest_items": [
+        {
+          "item_key": "start_path_pack_leader_seal",
+          "quantity": 1,
+          "consume": true
+        }
+      ],
+      "quest_item_consumption": "atomic_exact_once"
+    },
+    {
+      "number": 45,
+      "quest_id": "start_path_045_guardians_of_the_den",
+      "title": "Охорона лігва",
+      "quest_type": "KILL_REGION",
+      "previous_quest_id": "start_path_044_mark_of_the_pack_leader",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "unlock_level": 5,
+      "location_id": "start_path",
+      "target_quantity": 15,
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "required_quest_items": [],
+      "quest_item_consumption": null
+    },
+    {
+      "number": 46,
+      "quest_id": "start_path_046_pack_leader_fur",
+      "title": "Шерсть Ватажка",
+      "quest_type": "QUEST_ITEM",
+      "previous_quest_id": "start_path_045_guardians_of_the_den",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "blacksmith",
+      "unlock_level": 5,
+      "location_id": "start_path",
+      "target_quantity": 1,
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "required_quest_items": [],
+      "quest_item_consumption": null
+    },
+    {
+      "number": 47,
+      "quest_id": "start_path_047_final_equipment_check",
+      "title": "Остання перевірка",
+      "quest_type": "TURN_IN",
+      "previous_quest_id": "start_path_046_pack_leader_fur",
+      "giver_npc_id": "blacksmith",
+      "turn_in_npc_id": "blacksmith",
+      "unlock_level": 5,
+      "location_id": "start_path",
+      "target_quantity": 1,
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "required_quest_items": [
+        {
+          "item_key": "start_path_pack_leader_fur",
+          "quantity": 1,
+          "consume": true
+        }
+      ],
+      "quest_item_consumption": "atomic_exact_once"
+    },
+    {
+      "number": 48,
+      "quest_id": "start_path_048_final_perimeter",
+      "title": "Останній периметр",
+      "quest_type": "KILL_REGION",
+      "previous_quest_id": "start_path_047_final_equipment_check",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "unlock_level": 5,
+      "location_id": "start_path",
+      "target_quantity": 10,
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "required_quest_items": [],
+      "quest_item_consumption": null
+    },
+    {
+      "number": 49,
+      "quest_id": "start_path_049_pack_leader",
+      "title": "Ватажок зграї",
+      "quest_type": "BOSS",
+      "previous_quest_id": "start_path_048_final_perimeter",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "unlock_level": 5,
+      "location_id": "start_path",
+      "target_quantity": 1,
+      "reward": {
+        "exp": 95,
+        "gold": 2.15,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 5,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 2.15,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals",
+          "boss_combat_reward_is_separate": true
+        }
+      },
+      "required_quest_items": [],
+      "quest_item_consumption": null
+    },
+    {
+      "number": 50,
+      "quest_id": "start_path_050_road_ahead",
+      "title": "Дорога далі",
+      "quest_type": "TURN_IN",
+      "previous_quest_id": "start_path_049_pack_leader",
+      "giver_npc_id": "elder",
+      "turn_in_npc_id": "elder",
+      "unlock_level": 5,
+      "location_id": "start_path",
+      "target_quantity": 1,
+      "reward": {
+        "exp": 57,
+        "gold": 1.29,
+        "formula": {
+          "reference_enemy_type": "normal",
+          "reference_enemy_level": 5,
+          "multiplier": 3,
+          "canonical_expected_exp": 19,
+          "canonical_expected_gold_unrounded": 0.43,
+          "quest_gold_unrounded": 1.29,
+          "randomness_applied_to_quest_reward": false,
+          "rounding": "round final quest gold to 2 decimals"
+        }
+      },
+      "required_quest_items": [],
+      "quest_item_consumption": null
+    }
+  ],
+  "errors": [],
+  "findings": [
+    {
+      "severity": "REVIEW",
+      "code": "ITEM_REVEAL_BEFORE_DROP",
+      "quest": 46,
+      "display_name": "Клоччя шерсті Ватажка",
+      "fields": [
+        "q46.objective_text"
+      ]
+    }
+  ],
+  "quest_items": [
+    {
+      "number": 43,
+      "quest_id": "start_path_043_pack_leader_seal",
+      "item_key": "start_path_pack_leader_seal",
+      "display_name": "Печатка Ватажка зграї",
+      "required_quantity": 1,
+      "drop_chance": 0.15,
+      "consume_on_completion": true
+    },
+    {
+      "number": 46,
+      "quest_id": "start_path_046_pack_leader_fur",
+      "item_key": "start_path_pack_leader_fur",
+      "display_name": "Клоччя шерсті Ватажка",
+      "required_quantity": 1,
+      "drop_chance": 0.15,
+      "consume_on_completion": true
+    }
+  ],
+  "kill_region_targets": [
+    {
+      "number": 42,
+      "target_quantity": 15
+    },
+    {
+      "number": 45,
+      "target_quantity": 15
+    },
+    {
+      "number": 48,
+      "target_quantity": 10
+    }
+  ],
+  "npc_routes": {
+    "blacksmith": {
+      "ok": true,
+      "route_text": "🏙️ Місто → ⚒️ Ремісничий квартал → ⚒️ Коваль"
+    },
+    "elder": {
+      "ok": true,
+      "route_text": "🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста"
+    },
+    "mercenary_head": {
+      "ok": true,
+      "route_text": "🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова Найманців"
+    }
+  },
+  "boss_audit": {
+    "canonical_policy_expected": "boss is encountered through the normal Hunt pipeline; no permanent separate boss button",
+    "canonical_files": {
+      "data/bosses.py": {
+        "exists": true,
+        "sha256": "08013d3a763ce8193762e181329abb4643b3544a2d52090574975b1df7478102",
+        "line_count": 131
+      },
+      "systems/boss_system.py": {
+        "exists": true,
+        "sha256": "3dab65e3229c1653b4be5bb5e47c39a479d7f602f3cdb38d807aa30416bedd2a",
+        "line_count": 651
+      }
+    },
+    "candidate_boss_mentions": [
+      {
+        "number": 41,
+        "quest_id": "start_path_041_council_before_the_hunt",
+        "quest_type": "TALK",
+        "matching_texts": {
+          "description": "Староста затверджує фінальний похід проти Ватажка зграї.",
+          "acceptance_text": "Староста затверджує фінальний похід проти Ватажка зграї."
+        }
+      },
+      {
+        "number": 43,
+        "quest_id": "start_path_043_pack_leader_seal",
+        "quest_type": "QUEST_ITEM",
+        "matching_texts": {
+          "description": "Герой знаходить печатку, що позначає територію Ватажка.",
+          "objective_text": "Знайти рунічну печатку Ватажка біля лігва.",
+          "acceptance_text": "Герой знаходить печатку, що позначає територію Ватажка.",
+          "completion_text": "Печатку Ватажка знайдено."
+        }
+      },
+      {
+        "number": 44,
+        "quest_id": "start_path_044_mark_of_the_pack_leader",
+        "quest_type": "TURN_IN",
+        "matching_texts": {
+          "title": "Знак Ватажка",
+          "objective_text": "Передати Голові Найманців печатку Ватажка зграї."
+        }
+      },
+      {
+        "number": 46,
+        "quest_id": "start_path_046_pack_leader_fur",
+        "quest_type": "QUEST_ITEM",
+        "matching_texts": {
+          "title": "Шерсть Ватажка",
+          "description": "Герой знаходить шерсть Ватажка для перевірки спорядження.",
+          "objective_text": "Знайти клоччя шерсті Ватажка біля входу до лігва.",
+          "acceptance_text": "Герой знаходить шерсть Ватажка для перевірки спорядження.",
+          "completion_text": "Клоччя шерсті Ватажка знайдено."
+        }
+      },
+      {
+        "number": 47,
+        "quest_id": "start_path_047_final_equipment_check",
+        "quest_type": "TURN_IN",
+        "matching_texts": {
+          "objective_text": "Передати Ковалю клоччя шерсті Ватажка та перевірити спорядження.",
+          "completion_text": "Коваль завершує перевірку та попереджає про бойове шаленство Ватажка."
+        }
+      },
+      {
+        "number": 48,
+        "quest_id": "start_path_048_final_perimeter",
+        "quest_type": "KILL_REGION",
+        "matching_texts": {
+          "description": "Герой очищає останній периметр і відрізає Ватажка від зграї.",
+          "acceptance_text": "Герой очищає останній периметр і відрізає Ватажка від зграї."
+        }
+      },
+      {
+        "number": 49,
+        "quest_id": "start_path_049_pack_leader",
+        "quest_type": "BOSS",
+        "matching_texts": {
+          "title": "Ватажок зграї",
+          "description": "Герой перемагає Ватажка через RNG encounter або гарантований виклик.",
+          "objective_text": "Перемогти Ватажка зграї.",
+          "acceptance_text": "Герой перемагає Ватажка через RNG encounter або гарантований виклик.",
+          "completion_text": "Ватажка зграї переможено. Рунічне світіння згасає."
+        }
+      },
+      {
+        "number": 50,
+        "quest_id": "start_path_050_road_ahead",
+        "quest_type": "TURN_IN",
+        "matching_texts": {
+          "objective_text": "Доповісти Старості про перемогу над Ватажком зграї."
+        }
+      }
+    ],
+    "candidate_explicit_boss_types": [
+      {
+        "number": 49,
+        "quest_id": "start_path_049_pack_leader",
+        "title": "Ватажок зграї",
+        "quest_type": "BOSS",
+        "previous_quest_id": "start_path_048_final_perimeter",
+        "giver_npc_id": "mercenary_head",
+        "turn_in_npc_id": "mercenary_head",
+        "unlock_level": 5,
+        "location_id": "start_path",
+        "target_quantity": 1,
+        "reward": {
+          "exp": 95,
+          "gold": 2.15,
+          "formula": {
+            "reference_enemy_type": "normal",
+            "reference_enemy_level": 5,
+            "multiplier": 5,
+            "canonical_expected_exp": 19,
+            "canonical_expected_gold_unrounded": 0.43,
+            "quest_gold_unrounded": 2.15,
+            "randomness_applied_to_quest_reward": false,
+            "rounding": "round final quest gold to 2 decimals",
+            "boss_combat_reward_is_separate": true
+          }
+        },
+        "required_quest_items": [],
+        "quest_item_consumption": null
+      }
+    ],
+    "hunt_pipeline_terms": [
+      "Encounter",
+      "chance",
+      "chance_percent",
+      "encounter",
+      "encounters",
+      "hunt",
+      "roll",
+      "roll_boss_encounter",
+      "rolling"
+    ],
+    "separate_button_evidence": [],
+    "decision": "NEEDS_CANONICAL_HUNT_ADAPTER_REVIEW",
+    "activation_rule": "Do not activate a boss finale until a production-shaped test proves the story encounter uses the canonical hunt/combat pipeline, player-level boss generation, and no permanent separate button."
+  },
+  "proposed_metadata": {
+    "section_id": "start_path_05",
+    "display_title": "Розділ 5. NEEDS_CONTENT_REVIEW",
+    "quest_numbers": [
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50
+    ],
+    "required_level": 5
+  },
+  "production_registry_numbers": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40
+  ],
+  "production_mutation": false,
+  "database_mutation": false,
+  "stage": "19.27.1",
+  "decision": "READY_FOR_STAGE_19_27_2_BATCH_41_50_CONTENT_AND_BOSS_REVIEW",
+  "database_before": {
+    "sha256": "4087e0e4305de6eabc7226772882ba3a4ed8c7f5e4ff462526f221329b2b5472",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  },
+  "production_hashes_before": {
+    "data/story_quest_content.py": "1fc2147764ddb2d88229bb659f2e3f4c4833327235e9b1ed2fe29acaabd43637",
+    "data/story_quest_hierarchy.py": "177636afebcc5d7aa4fddad0a0cb321fab6a696e36996d86e5c1333a77a9b9f5",
+    "data/bosses.py": "08013d3a763ce8193762e181329abb4643b3544a2d52090574975b1df7478102",
+    "systems/boss_system.py": "3dab65e3229c1653b4be5bb5e47c39a479d7f602f3cdb38d807aa30416bedd2a"
+  },
+  "manual_game_check": "NOT REQUIRED",
+  "wal_shm_manipulated": false,
+  "database_after": {
+    "sha256": "4087e0e4305de6eabc7226772882ba3a4ed8c7f5e4ff462526f221329b2b5472",
+    "quick_check": "ok",
+    "foreign_key_violations": []
+  },
+  "production_hashes_after": {
+    "data/story_quest_content.py": "1fc2147764ddb2d88229bb659f2e3f4c4833327235e9b1ed2fe29acaabd43637",
+    "data/story_quest_hierarchy.py": "177636afebcc5d7aa4fddad0a0cb321fab6a696e36996d86e5c1333a77a9b9f5",
+    "data/bosses.py": "08013d3a763ce8193762e181329abb4643b3544a2d52090574975b1df7478102",
+    "systems/boss_system.py": "3dab65e3229c1653b4be5bb5e47c39a479d7f602f3cdb38d807aa30416bedd2a"
+  }
+}
