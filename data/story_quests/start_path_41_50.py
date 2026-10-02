@@ -1,12 +1,12 @@
-"""Production story quests 41-50 for Start Path.
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Authoritative Start Path story quest rows 41-50.
 
-Generated from the reviewed canonical candidate by Stage 19.27.8.
-The multiline structure is intentionally kept readable for review.
+Navigation hints are canonical localized NPC routes. Gameplay and presentation
+consumers share this data instead of formatting technical IDs or objective text.
 """
 
-from __future__ import annotations
-
-QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_041_council_before_the_hunt',
+QUEST_ROWS = [{'definition': {'quest_id': 'start_path_041_council_before_the_hunt',
                  'number': 41,
                  'title': 'Рада перед походом',
                  'quest_type': 'TALK',
@@ -26,8 +26,8 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_041_coun
                  'navigation': {'location_id': 'start_path',
                                 'giver_npc_id': 'elder',
                                 'turn_in_npc_id': 'elder',
-                                'objective_hint': '',
-                                'next_step_hint': ''}},
+                                'objective_hint': '🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста',
+                                'next_step_hint': '🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста'}},
   'acceptance_text': 'Староста затверджує фінальний похід проти Ватажка зграї.',
   'completion_text': 'Староста затверджує похід до лігва та доручає очистити підступи.',
   'progress_text': 'Взяти участь у раді Старости перед фінальним походом.',
@@ -53,8 +53,10 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_041_coun
                  'navigation': {'location_id': 'start_path',
                                 'giver_npc_id': 'mercenary_head',
                                 'turn_in_npc_id': 'mercenary_head',
-                                'objective_hint': '',
-                                'next_step_hint': ''}},
+                                'objective_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
+                                                  'Найманців',
+                                'next_step_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
+                                                  'Найманців'}},
   'acceptance_text': 'Герой послаблює зовнішню оборону лігва.',
   'completion_text': 'Мисливці займають зовнішній периметр, де знаходять рунічний знак.',
   'progress_text': 'Підступи до лігва: {progress}/15',
@@ -86,8 +88,10 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_041_coun
                  'navigation': {'location_id': 'start_path',
                                 'giver_npc_id': 'mercenary_head',
                                 'turn_in_npc_id': 'mercenary_head',
-                                'objective_hint': '',
-                                'next_step_hint': ''}},
+                                'objective_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
+                                                  'Найманців',
+                                'next_step_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
+                                                  'Найманців'}},
   'acceptance_text': 'Герой знаходить печатку, що позначає територію Ватажка.',
   'completion_text': 'Печатку Ватажка знайдено.',
   'progress_text': 'Знайти під час полювання рунічний знак, пов’язаний із територією зграї.',
@@ -116,8 +120,10 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_041_coun
                  'navigation': {'location_id': 'start_path',
                                 'giver_npc_id': 'mercenary_head',
                                 'turn_in_npc_id': 'mercenary_head',
-                                'objective_hint': '',
-                                'next_step_hint': ''}},
+                                'objective_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
+                                                  'Найманців',
+                                'next_step_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
+                                                  'Найманців'}},
   'acceptance_text': 'Голова Найманців приймає печатку та послаблює рунічний зв’язок лігва.',
   'completion_text': 'Печатку знищено, зовнішній рунічний зв’язок слабшає.',
   'progress_text': 'Передати Голові Найманців печатку Ватажка зграї.',
@@ -142,8 +148,10 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_041_coun
                  'navigation': {'location_id': 'start_path',
                                 'giver_npc_id': 'mercenary_head',
                                 'turn_in_npc_id': 'mercenary_head',
-                                'objective_hint': '',
-                                'next_step_hint': ''}},
+                                'objective_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
+                                                  'Найманців',
+                                'next_step_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
+                                                  'Найманців'}},
   'acceptance_text': 'Герой відтискає захисників головного входу.',
   'completion_text': 'Захисників лігва відтиснуто.',
   'progress_text': 'Охорона лігва: {progress}/15',
@@ -175,8 +183,9 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_041_coun
                  'navigation': {'location_id': 'start_path',
                                 'giver_npc_id': 'mercenary_head',
                                 'turn_in_npc_id': 'blacksmith',
-                                'objective_hint': '',
-                                'next_step_hint': ''}},
+                                'objective_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
+                                                  'Найманців',
+                                'next_step_hint': '🏙️ Місто → ⚒️ Ремісничий квартал → ⚒️ Коваль'}},
   'acceptance_text': 'Герой знаходить шерсть Ватажка для перевірки спорядження.',
   'completion_text': 'Клоччя шерсті Ватажка знайдено.',
   'progress_text': 'Знайти біля входу до лігва біологічний слід для перевірки спорядження.',
@@ -205,8 +214,8 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_041_coun
                  'navigation': {'location_id': 'start_path',
                                 'giver_npc_id': 'blacksmith',
                                 'turn_in_npc_id': 'blacksmith',
-                                'objective_hint': '',
-                                'next_step_hint': ''}},
+                                'objective_hint': '🏙️ Місто → ⚒️ Ремісничий квартал → ⚒️ Коваль',
+                                'next_step_hint': '🏙️ Місто → ⚒️ Ремісничий квартал → ⚒️ Коваль'}},
   'acceptance_text': 'Коваль досліджує шерсть і завершує перевірку спорядження.',
   'completion_text': 'Коваль завершує перевірку та попереджає про бойове шаленство Ватажка.',
   'progress_text': 'Передати Ковалю клоччя шерсті Ватажка та перевірити спорядження.',
@@ -231,8 +240,10 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_041_coun
                  'navigation': {'location_id': 'start_path',
                                 'giver_npc_id': 'mercenary_head',
                                 'turn_in_npc_id': 'mercenary_head',
-                                'objective_hint': '',
-                                'next_step_hint': ''}},
+                                'objective_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
+                                                  'Найманців',
+                                'next_step_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
+                                                  'Найманців'}},
   'acceptance_text': 'Герой очищає останній периметр і відрізає Ватажка від зграї.',
   'completion_text': 'Оборону біля входу зламано.',
   'progress_text': 'Останній периметр: {progress}/10',
@@ -273,8 +284,10 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_041_coun
                  'navigation': {'location_id': 'start_path',
                                 'giver_npc_id': 'mercenary_head',
                                 'turn_in_npc_id': None,
-                                'objective_hint': '',
-                                'next_step_hint': ''}},
+                                'objective_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
+                                                  'Найманців',
+                                'next_step_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
+                                                  'Найманців'}},
   'acceptance_text': 'Ватажок тримається біля лігва. Вирушай у «Початок Шляху» та натисни «👀 '
                      'Роззирнутися». Там Ватажка можна викликати на бій. Також він може зустрітися '
                      'випадково під час звичайного полювання. Якщо ще не готовий до бою, продовжуй '
@@ -322,8 +335,8 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_041_coun
                  'navigation': {'location_id': 'start_path',
                                 'giver_npc_id': 'elder',
                                 'turn_in_npc_id': 'elder',
-                                'objective_hint': '',
-                                'next_step_hint': ''}},
+                                'objective_hint': '🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста',
+                                'next_step_hint': '🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста'}},
   'acceptance_text': 'Староста чекає остаточної доповіді про Ватажка, стан зграї та безпеку шляху '
                      'біля лігва.',
   'completion_text': 'Староста вислуховує доповідь про перемогу над Ватажком. Без провідника зграя '
@@ -333,4 +346,6 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_041_coun
                      '✅ Розділ «Вирішальний похід» завершено.\n'
                      '✅ Історію «Початок Шляху» завершено.',
   'progress_text': 'Доповісти Старості про перемогу над Ватажком і завершення вирішального походу.',
-  'drop_message': ''})
+  'drop_message': ''}]
+
+START_PATH_41_50 = tuple(QUEST_ROWS)
