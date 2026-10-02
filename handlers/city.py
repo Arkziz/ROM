@@ -489,9 +489,26 @@ def register_city_handlers(bot):
     @bot.message_handler(func=lambda m: m.text == '👀 Роззирнутися')
     def look_around(message):
         user_id = message.from_user.id
-        from systems.location_context_system import get_location_context_kind
-        if get_location_context_kind(user_id) == 'city':
+        from systems.location_context_system import get_location_context_kind, get_location_context_kb
+        context_kind = get_location_context_kind(user_id)
+        if context_kind == 'city':
             bot.send_message(message.chat.id, build_city_text(user_id), reply_markup=city_kb())
+            return
+        if context_kind == 'travel':
+            # Collapsing the map does not finish travel. Keep the authoritative
+            # travel/map keyboard and never expose hunting controls early.
+            bot.send_message(
+                message.chat.id,
+                '🚶 Подорож триває. Відкрий мапу, щоб переглянути статус переходу.',
+                reply_markup=get_location_context_kb(user_id),
+            )
+            return
+        if context_kind != 'location':
+            bot.send_message(
+                message.chat.id,
+                '⚠️ Не вдалося визначити поточне місцезнаходження. Відкрий мапу.',
+                reply_markup=get_location_context_kb(user_id),
+            )
             return
         bot.send_message(message.chat.id, build_main_menu_text(user_id), reply_markup=main_kb())
         send_story_boss_look_around_if_present(bot, message)

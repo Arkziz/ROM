@@ -72,7 +72,7 @@ def _invoke_supported(function, values: dict):
 
 
 def _active_call(user_id: int, location_id: str):
-    values = {"connection": db.conn, "conn": db.conn, "user_id": user_id, "location_id": location_id}
+    values = {"connection": db.conn, "conn": db.conn, "user_id": user_id, "location_id": location_id, "current_location_id": location_id}
     return _invoke_supported(get_active_story_boss_call, values)
 
 
