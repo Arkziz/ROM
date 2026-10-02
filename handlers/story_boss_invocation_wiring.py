@@ -22,13 +22,37 @@ from systems.story_quest_boss_call_system import get_active_story_boss_call
 _REGISTERED_BOTS: set[int] = set()
 
 
-def _player_stats(user_id: int) -> dict:
+def _player_stats(user_id: int):
+    """Return canonical primary stats without assuming a mapping representation.
+
+    `db.get_player_stats` currently returns the six-value tuple
+    `(STR, DEX, INT, WIS, STA, level)`. Older tests and integrations may supply
+    mappings or row-like objects, so the adapter preserves the value unchanged.
+    Story-boss presentation does not derive location from this value.
+    """
     getter = getattr(db, "get_player_stats", None)
-    return dict(getter(user_id) or {}) if callable(getter) else {}
+    return getter(user_id) if callable(getter) else None
 
 
-def _location_id(stats: dict) -> str:
-    return str(stats.get("location_id") or stats.get("current_location") or stats.get("location") or "")
+def _location_id(user_id: int, stats=None) -> str:
+    """Resolve location through the canonical location API with safe fallbacks.
+
+    Location is account/runtime state and is not part of the primary-stat tuple.
+    The mapping/attribute fallbacks keep compatibility with isolated tests only;
+    production uses `db.get_current_location` as the authoritative source.
+    """
+    getter = getattr(db, "get_current_location", None)
+    if callable(getter):
+        location = getter(user_id)
+        if location:
+            return str(location)
+    for name in ("location_id", "current_location", "location"):
+        if isinstance(stats, dict) and stats.get(name):
+            return str(stats[name])
+        value = getattr(stats, name, None)
+        if value:
+            return str(value)
+    return ""
 
 
 def _invoke_supported(function, values: dict):
@@ -70,7 +94,7 @@ def _inline_markup(rows):
 
 def _presentation_for_user(user_id: int):
     stats = _player_stats(user_id)
-    location_id = _location_id(stats)
+    location_id = _location_id(user_id, stats)
     call = _active_call(user_id, location_id)
     if not call:
         return None
