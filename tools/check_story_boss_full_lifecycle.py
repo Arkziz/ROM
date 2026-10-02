@@ -23,8 +23,12 @@ def function_segment(source: str, name: str) -> str:
 
 # Production boundary must remain unchanged during this validation stage.
 from data.story_quest_content import STORY_QUEST_REGISTRY
-assert tuple(q.number for q in STORY_QUEST_REGISTRY.values()) == tuple(range(1, 41))
-assert all(q.number != 49 for q in STORY_QUEST_REGISTRY.values())
+assert tuple(q.number for q in STORY_QUEST_REGISTRY.values()) == tuple(range(1, 51))
+quest_49 = next(q for q in STORY_QUEST_REGISTRY.values() if q.number == 49)
+assert quest_49.quest_type.value == "BOSS"
+assert quest_49.boss_key == "pack_leader"
+assert quest_49.giver_npc_id == "mercenary_head"
+assert (quest_49.turn_in_npc_id or quest_49.giver_npc_id) == "mercenary_head"
 
 adapter = importlib.import_module("systems.story_boss_invocation_adapter")
 wiring = importlib.import_module("handlers.story_boss_invocation_wiring")

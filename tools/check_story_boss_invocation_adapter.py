@@ -18,5 +18,5 @@ p=build_story_boss_look_around_presentation(state);assert p and p.rows[0][0][1]=
 data=dict(base);data["progress_current"]=1;p=build_story_boss_look_around_presentation(StoryBossInvocationState(**data));assert p and p.rows==((("🧭 Куди повернутися",RETURN_CALLBACK),),)
 assert "Початок Шляху" in story_boss_help_text()
 from data.story_quest_content import STORY_QUEST_REGISTRY
-assert tuple(q.number for q in STORY_QUEST_REGISTRY.values())==tuple(range(1,41))
+assert tuple(q.number for q in STORY_QUEST_REGISTRY.values())==tuple(range(1,51))
 print("STORY BOSS INVOCATION ADAPTER: PASS")

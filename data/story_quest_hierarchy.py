@@ -89,6 +89,16 @@ STORY_SECTIONS: dict[str, StorySectionMetadata] = {
         quest_numbers=tuple(range(31, 41)),
         sort_order=40,
     ),
+
+    "start_path_05": StorySectionMetadata(
+        section_id="start_path_05",
+        location_id="start_path",
+        number=5,
+        title="Вирішальний похід",
+        required_level=5,
+        quest_numbers=tuple(range(41, 51)),
+        sort_order=50,
+    ),
 }
 
 
@@ -98,7 +108,13 @@ STORY_LOCATIONS: dict[str, StoryLocationMetadata] = {
         location_id="start_path",
         icon="🌿",
         sort_order=10,
-        section_ids=("start_path_01", "start_path_02", "start_path_03", "start_path_04"),
+        section_ids=(
+            "start_path_01",
+            "start_path_02",
+            "start_path_03",
+            "start_path_04",
+            "start_path_05",
+        ),
     ),
 }
 

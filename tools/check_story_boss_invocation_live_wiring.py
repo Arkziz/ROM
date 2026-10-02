@@ -14,5 +14,5 @@ assert "get_active_story_boss_call" in wiring
 ast.parse(city);ast.parse(wiring)
 import handlers.story_boss_invocation_wiring
 from data.story_quest_content import STORY_QUEST_REGISTRY
-assert tuple(q.number for q in STORY_QUEST_REGISTRY.values())==tuple(range(1,41))
+assert tuple(q.number for q in STORY_QUEST_REGISTRY.values())==tuple(range(1,51))
 print("STORY BOSS LIVE OWNER WIRING: PASS")
