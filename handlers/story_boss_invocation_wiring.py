@@ -135,10 +135,25 @@ def _canonical_call_handler(bot):
 
 
 def _delegate_invoke(bot, call):
+    """Delegate through the canonical message handler with callback-user identity.
+
+    Telegram callback messages were authored by the bot, so
+    `call.message.from_user` is not the player who pressed the inline button.
+    The canonical combat handler reads `message.from_user.id`; provide an
+    adapter carrying `call.from_user` while preserving the source chat.
+    """
     handler = _canonical_call_handler(bot)
-    message = call.message
+    source_message = call.message
+    player_message = SimpleNamespace(
+        from_user=call.from_user,
+        chat=source_message.chat,
+        text=getattr(source_message, "text", None),
+        message_id=getattr(source_message, "message_id", None),
+        date=getattr(source_message, "date", None),
+        content_type=getattr(source_message, "content_type", "text"),
+    )
     # The canonical owner revalidates quest, location, encounter and retry eligibility.
-    handler(message)
+    handler(player_message)
 
 
 def register_story_boss_invocation_callbacks(bot) -> None:
