@@ -250,6 +250,52 @@ def _should_show_story_quest_progress(status: str, quest) -> bool:
     )
 
 
+def resolve_story_quest_journal_navigation(quest, status: str, progress: int):
+    """Resolve a journal route from canonical lifecycle state and ownership.
+
+    Static objective/next-step hints describe content, not a reliable live
+    route. Completion ownership comes from `turn_in_npc_id or giver_npc_id`,
+    which also corrects cross-NPC handoffs such as quest 23 without rewriting
+    quest definitions. Terminal states intentionally expose no active route.
+    """
+    from data.story_quest_npcs import resolve_story_quest_navigation
+
+    state = str(status or "LOCKED").upper()
+    if state in {"LOCKED", "COMPLETED", "SKIPPED"}:
+        return None
+
+    def npc_route(npc_id):
+        navigation = resolve_story_quest_navigation(str(npc_id))
+        return str(navigation["route_text"])
+
+    if state == "AVAILABLE":
+        return "🧭 Де прийняти:", npc_route(quest.giver_npc_id)
+    if state != "ACTIVE":
+        return None
+
+    target = max(1, int(quest.target_quantity))
+    current = max(0, int(progress))
+    completion_npc_id = quest.turn_in_npc_id or quest.giver_npc_id
+    quest_type = quest.quest_type
+
+    if quest_type is QuestType.TALK:
+        return "🧭 З ким поговорити:", npc_route(completion_npc_id)
+    if quest_type is QuestType.TURN_IN:
+        return "🧭 Кому передати:", npc_route(completion_npc_id)
+    if current >= target:
+        label = "🧭 Кому передати:" if quest_type is QuestType.QUEST_ITEM else "🧭 Кому доповісти:"
+        return label, npc_route(completion_npc_id)
+
+    location_name = resolve_story_quest_location_name(quest.location_id)
+    if quest_type is QuestType.QUEST_ITEM:
+        return "🧭 Де шукати:", f"🌿 {location_name} → 🔎 Полювання"
+    if quest_type is QuestType.BOSS:
+        return "🧭 Як викликати:", f"🌿 {location_name} → 👀 Роззирнутися"
+    if quest_type is QuestType.KILL_REGION:
+        return "🧭 Де виконувати:", f"🌿 {location_name} → 🔎 Полювання"
+    return "🧭 Де виконувати:", f"🌿 {location_name}"
+
+
 def build_production_story_quest_detail(connection, *, user_id: int, quest_id: str, player_level: int, page: int = 0) -> dict:
     """Render one canonical definition plus current lifecycle state.
 
@@ -265,7 +311,6 @@ def build_production_story_quest_detail(connection, *, user_id: int, quest_id: s
     except KeyError as error:
         raise StoryQuestUiError(f"unknown production story quest: {quest_id}") from error
     view = get_story_quest_view(connection, user_id=int(user_id), quest=quest, player_level=int(player_level))
-    navigation = quest.navigation
     status = str(view["status"])
     progress = max(int(view.get("progress",0)), int(view.get("quest_item_quantity",0)))
     lines = [f"📜 {quest.number}. {quest.title}", "", f"Статус: {_status_label(status)}", "", "📖 Опис:", quest.description, "", "🎯 Завдання:", quest.objective_text]
@@ -288,11 +333,10 @@ def build_production_story_quest_detail(connection, *, user_id: int, quest_id: s
             previous = STORY_QUEST_REGISTRY.get(quest.previous_quest_id)
             lines.append(f"• завершити квест {previous.number if previous else '?'} «{previous.title if previous else quest.previous_quest_id}»")
         lines.append(f"• досягти {quest.unlock_level} рівня")
-    if status == "ACTIVE" and quest.quest_type is QuestType.QUEST_ITEM and quest.quest_item is not None and progress < int(quest.quest_item.required_quantity):
-        lines += ["", "🧭 Де шукати:", f"Полювати в локації {resolve_story_quest_location_name(quest.location_id)}."]
-    else:
-        route_label = "🧭 Наступний крок:" if status == "ACTIVE" and quest.quest_type is QuestType.QUEST_ITEM else "🧭 Куди йти:"
-        lines += ["", route_label, str(navigation.next_step_hint or navigation.objective_hint or quest.objective_text)]
+    journal_navigation = resolve_story_quest_journal_navigation(quest, status, progress)
+    if journal_navigation is not None:
+        route_label, route_text = journal_navigation
+        lines += ["", route_label, route_text]
     lines += ["", "🎁 Нагорода:", f"{quest.reward.exp} EXP", f"{float(quest.reward.gold):.2f} золота"]
     return {"text":"\n".join(lines),"keyboard":build_story_quest_detail_keyboard(quest_id=quest.quest_id,status=status,page=page)}
 
