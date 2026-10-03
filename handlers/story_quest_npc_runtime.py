@@ -56,6 +56,10 @@ def _markup(p,user_id=None,connection=None):
   if definition.number==49 and p['npc_id']=='mercenary_head':
    kb.add(types.InlineKeyboardButton('🧭 Як знайти Ватажка',callback_data=HELP_CALLBACK))
  return kb
+def _presentation_title(definition, view, state):
+ from data.story_quest_title_presentation import resolve_story_quest_presentation_title
+ quantity=int((view or {}).get('quest_item_quantity',0))
+ return resolve_story_quest_presentation_title(definition,state,quantity)
 def _text(p):
  q=p.get('quest')
  if not q:return f'{p["npc_name"]}\n\nСюжетних доручень зараз немає.'
@@ -66,7 +70,8 @@ def _text(p):
   else:section='🎯 Завдання:';body=definition.objective_text
  else:
   section='🎯 Завдання:';body=texts['acceptance_text'] if p['state']=='AVAILABLE' else definition.objective_text
- lines=[p['npc_name'],'',f'📜 {q["number"]}. {q["title"]}','',f'Статус: {STATUS_LABELS.get(p["state"],p["state"])}','',f'{section}\n{body}']
+ title=_presentation_title(definition,q,p['state'])
+ lines=[p['npc_name'],'',f'📜 {q["number"]}. {title}','',f'Статус: {STATUS_LABELS.get(p["state"],p["state"])}','',f'{section}\n{body}']
  if p['state']=='ACTIVE' and (definition.target_quantity>1 or definition.quest_type is QuestType.QUEST_ITEM):
   progress=max(int(q.get('progress',0)),int(q.get('quest_item_quantity',0)))
   lines += ['',f'📈 Прогрес:\n{min(progress,definition.target_quantity)}/{definition.target_quantity}']
@@ -90,7 +95,9 @@ def _next_step_lines(connection,user_id,current,npc_id):
  if next_quest is None:
   return ['', '📖 Наступний розділ:', '«Рунічна аномалія»', '', 'ℹ️ Наступний розділ поки не активовано.'] if current.number==10 else []
  status=get_story_quest_status(connection,user_id=int(user_id),quest=next_quest,player_level=_level(user_id)).value
- lines=['', '✨ Доступний наступний квест:', f'📜 {next_quest.number}. {next_quest.title}', f'Статус: {STATUS_LABELS.get(status,status)}']
+ from data.story_quest_title_presentation import resolve_story_quest_presentation_title
+ title=resolve_story_quest_presentation_title(next_quest,status,0)
+ lines=['', '✨ Доступний наступний квест:', f'📜 {next_quest.number}. {title}', f'Статус: {STATUS_LABELS.get(status,status)}']
  if status=='AVAILABLE':
   if next_quest.giver_npc_id==npc_id:lines += ['', '🧭 Наступний крок:', 'Новий квест можна прийняти у цього персонажа нижче.']
   else:
@@ -160,7 +167,8 @@ def _turn_in_text(presentation):
     """Show a short offer before acceptance and the NPC analysis afterwards."""
     view=presentation['quest'];definition=STORY_QUEST_REGISTRY[view['quest_id']];state=presentation['state'];texts=STORY_QUEST_TEXT[definition.quest_id]
     labels={'LOCKED':'🔒 Недоступний','AVAILABLE':'✨ Доступний','ACTIVE':'📖 Активний','COMPLETED':'✅ Виконаний','SKIPPED':'⏭️ Пропущений'}
-    lines=[presentation['npc_name'],'',f'📜 {definition.number}. {definition.title}','',f"Статус: {labels.get(state,state)}",'']
+    title=_presentation_title(definition,view,state)
+    lines=[presentation['npc_name'],'',f'📜 {definition.number}. {title}','',f"Статус: {labels.get(state,state)}",'']
     if state=='AVAILABLE':lines += ['📖 Коротко:',definition.description]
     elif state=='ACTIVE':
         lines += [("🔍 Висновок:" if definition.required_quest_items else "🎯 Завдання:"),texts.get('acceptance_text') or definition.objective_text]

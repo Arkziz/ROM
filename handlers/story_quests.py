@@ -313,7 +313,9 @@ def build_production_story_quest_detail(connection, *, user_id: int, quest_id: s
     view = get_story_quest_view(connection, user_id=int(user_id), quest=quest, player_level=int(player_level))
     status = str(view["status"])
     progress = max(int(view.get("progress",0)), int(view.get("quest_item_quantity",0)))
-    lines = [f"📜 {quest.number}. {quest.title}", "", f"Статус: {_status_label(status)}", "", "📖 Опис:", quest.description, "", "🎯 Завдання:", quest.objective_text]
+    from data.story_quest_title_presentation import resolve_story_quest_presentation_title
+    presentation_title = resolve_story_quest_presentation_title(quest, status, int(view.get("quest_item_quantity", 0)))
+    lines = [f"📜 {quest.number}. {presentation_title}", "", f"Статус: {_status_label(status)}", "", "📖 Опис:", quest.description, "", "🎯 Завдання:", quest.objective_text]
     if _should_show_story_quest_progress(status, quest):
         lines += ["", "📈 Прогрес:", f"{min(progress,quest.target_quantity)}/{quest.target_quantity}"]
     if status == "ACTIVE" and quest.quest_type is QuestType.BOSS and progress >= int(quest.target_quantity):
@@ -366,6 +368,15 @@ def register_story_quest_handlers(bot):
             return "locked"
         raise ValueError(f"Unknown story quest status: {status}")
 
+    def _hierarchy_title_reader(user_id, quest):
+        """Resolve the spoiler-safe title from the same canonical quest view."""
+        from data.story_quest_title_presentation import resolve_story_quest_presentation_title
+        from systems.story_quest_system import get_story_quest_view
+        stats = get_player_stats(user_id) or {}
+        level = resolve_story_quest_player_level(stats)
+        view = get_story_quest_view(db.conn, user_id=user_id, quest=quest, player_level=level)
+        return resolve_story_quest_presentation_title(quest, view["status"], view["quest_item_quantity"])
+
     def _send_hierarchy(message, text, keyboard):
         return bot.send_message(message.chat.id, text, reply_markup=keyboard)
 
@@ -380,7 +391,7 @@ def register_story_quest_handlers(bot):
             elif action.kind == "location":
                 text, keyboard = build_section_index(str(action.value), user_id, _hierarchy_status_reader)
             elif action.kind == "section":
-                text, keyboard = build_section_quests(str(action.value), user_id, _hierarchy_status_reader)
+                text, keyboard = build_section_quests(str(action.value), user_id, _hierarchy_status_reader, _hierarchy_title_reader)
             elif action.kind == "quest":
                 quest_number = int(action.value)
                 quest = next((q for q in STORY_QUEST_REGISTRY.values() if q.number == quest_number), None)

@@ -126,7 +126,7 @@ def build_section_index(location_id: str, user_id: int, status_reader: Callable[
     return text, keyboard
 
 
-def build_section_quests(section_id: str, user_id: int, status_reader: Callable[[int, object], str]) -> tuple[str, types.InlineKeyboardMarkup]:
+def build_section_quests(section_id: str, user_id: int, status_reader: Callable[[int, object], str], title_reader: Callable[[int, object], str]) -> tuple[str, types.InlineKeyboardMarkup]:
     section = get_story_section(section_id)
     story = get_story_location(section.location_id)
     rows = _registry_by_number()
@@ -144,7 +144,7 @@ def build_section_quests(section_id: str, user_id: int, status_reader: Callable[
         quest = rows[number]
         status = status_reader(user_id, quest)
         keyboard.add(types.InlineKeyboardButton(
-            text=f"{_status_icon(status)} {quest.number}. {quest.title}",
+            text=f"{_status_icon(status)} {quest.number}. {title_reader(user_id, quest)}",
             callback_data=_callback("q", quest.number),
         ))
     keyboard.add(types.InlineKeyboardButton("🔙 Розділи", callback_data=_callback("loc", section.location_id)))
