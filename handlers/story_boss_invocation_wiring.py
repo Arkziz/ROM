@@ -96,7 +96,9 @@ def _presentation_for_user(user_id: int):
     stats = _player_stats(user_id)
     location_id = _location_id(user_id, stats)
     call = _active_call(user_id, location_id)
-    if not call:
+    # Eligibility denials are non-empty dictionaries. Render only the explicit
+    # canonical allow contract; all missing/false/non-boolean values fail closed.
+    if not call or _value(call, "allowed", default=False) is not True:
         return None
     from systems.story_boss_invocation_adapter import StoryBossInvocationState
     current = int(_value(call, "progress_current", "current", "progress", default=0) or 0)
