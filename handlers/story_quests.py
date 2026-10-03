@@ -238,6 +238,18 @@ def _edit_story_journal_safely(bot, *, chat_id, message_id, text, reply_markup):
             return False
         raise
 
+def _should_show_story_quest_progress(status: str, quest) -> bool:
+    """Return whether the production journal must render objective progress.
+
+    Single-target BOSS objectives still have meaningful 0/1 and 1/1 states:
+    1/1 remains ACTIVE until the player reports victory to the completion NPC.
+    """
+    return str(status) == "ACTIVE" and (
+        int(quest.target_quantity) > 1
+        or quest.quest_type in (QuestType.QUEST_ITEM, QuestType.BOSS)
+    )
+
+
 def build_production_story_quest_detail(connection, *, user_id: int, quest_id: str, player_level: int, page: int = 0) -> dict:
     """Render one canonical definition plus current lifecycle state.
 
@@ -257,8 +269,14 @@ def build_production_story_quest_detail(connection, *, user_id: int, quest_id: s
     status = str(view["status"])
     progress = max(int(view.get("progress",0)), int(view.get("quest_item_quantity",0)))
     lines = [f"📜 {quest.number}. {quest.title}", "", f"Статус: {_status_label(status)}", "", "📖 Опис:", quest.description, "", "🎯 Завдання:", quest.objective_text]
-    if status == "ACTIVE" and (quest.target_quantity > 1 or quest.quest_type is QuestType.QUEST_ITEM):
+    if _should_show_story_quest_progress(status, quest):
         lines += ["", "📈 Прогрес:", f"{min(progress,quest.target_quantity)}/{quest.target_quantity}"]
+    if status == "ACTIVE" and quest.quest_type is QuestType.BOSS and progress >= int(quest.target_quantity):
+        lines += [
+            "",
+            "✅ Ватажка переможено.",
+            "Повернися до Голови Найманців із доповіддю.",
+        ]
     if status == "ACTIVE" and quest.quest_type is QuestType.QUEST_ITEM and quest.quest_item is not None:
         if progress >= int(quest.quest_item.required_quantity):
             lines += ["", "✅ Знахідку отримано:", quest.quest_item.display_name]
