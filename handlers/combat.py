@@ -2081,7 +2081,22 @@ def register_combat_handlers(bot):
         encounter=begin_pve_encounter(user_id,message.chat.id,mob)
         mob["pve_encounter_id"]=encounter["encounter_id"];mob["pve_started_at"]=encounter["started_at"];mob["pve_deadline_at"]=encounter["deadline_at"]
         bot.user_data=getattr(bot,"user_data",{});bot.user_data[user_id]=mob
-        bot.send_message(message.chat.id,f"👑 Голова Найманців викликає {mob['name']}!\n\nПісля перемоги сюжетний квест завершиться одразу, а повторний гарантований виклик стане недоступним.",reply_markup=build_combat_inline_kb(user_id,mob))
+        # Match the canonical hunt startup: replace the persistent location
+        # keyboard with the combat placeholder before showing inline actions.
+        # This prevents Hunt, Map, Profile and Look Around from remaining usable
+        # while the guaranteed story-boss encounter is active.
+        bot.send_message(
+            message.chat.id,
+            "⚔️ Бій розпочався!",
+            reply_markup=combat_placeholder_kb(),
+        )
+        bot.send_message(
+            message.chat.id,
+            f"👑 Голова Найманців викликає {mob['name']}!\n\n"
+            "Після перемоги потрібно повернутися до Голови Найманців із доповіддю, "
+            "а повторний гарантований виклик стане недоступним.",
+            reply_markup=build_combat_inline_kb(user_id,mob),
+        )
 
     @bot.message_handler(func=lambda m: m.text == "🔎 Полювання")
     def hunt(message):
