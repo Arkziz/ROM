@@ -156,6 +156,26 @@ def _delegate_invoke(bot, call):
     handler(player_message)
 
 
+def _active_story_boss_callback_call(user_id: int):
+    """Return quest 49 only while its authoritative lifecycle is ACTIVE.
+
+    Old Telegram callback buttons outlive the message that created them. Re-read
+    current quest state before any HELP/RETURN/INVOKE branch instead of trusting
+    the stale payload or current button visibility. ACTIVE 1/1 remains valid for
+    report help, while COMPLETED, SKIPPED and AVAILABLE fail closed.
+    """
+    stats = _player_stats(user_id)
+    location_id = _location_id(user_id, stats)
+    call = _active_call(user_id, location_id)
+    if not call:
+        return None
+    quest_number = int(_value(call, "quest_number", "number", default=0) or 0)
+    quest_status = str(_value(call, "quest_status", "status", default="") or "").upper()
+    if quest_number != 49 or quest_status != "ACTIVE":
+        return None
+    return call
+
+
 def register_story_boss_invocation_callbacks(bot) -> None:
     marker = id(bot)
     if marker in _REGISTERED_BOTS:
@@ -172,9 +192,18 @@ def register_story_boss_invocation_callbacks(bot) -> None:
         if quest_number != 49:
             bot.answer_callback_query(call.id, "Ця дія більше недоступна.", show_alert=True)
             return
+        active_call = _active_story_boss_callback_call(call.from_user.id)
+        if active_call is None:
+            bot.answer_callback_query(call.id, "Ця сюжетна дія більше неактуальна.", show_alert=True)
+            return
         if action is StoryBossAction.HELP:
+            current = int(_value(active_call, "progress_current", "current", "progress", default=0) or 0)
+            target = int(_value(active_call, "progress_target", "target", "target_quantity", default=1) or 1)
             bot.answer_callback_query(call.id)
-            bot.send_message(call.message.chat.id, story_boss_help_text())
+            if current >= target:
+                bot.send_message(call.message.chat.id, "✅ Ватажка вже переможено. Повернися до Міста → 📜 Гільдія Найманців → ⚔️ Голова Найманців і доповідь про перемогу.")
+            else:
+                bot.send_message(call.message.chat.id, story_boss_help_text())
             return
         if action is StoryBossAction.RETURN:
             bot.answer_callback_query(call.id)
