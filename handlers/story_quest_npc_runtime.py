@@ -210,11 +210,21 @@ def register_story_quest_npc_runtime_handlers(bot):
    expected_npc=q.giver_npc_id if action=='accept' else (q.turn_in_npc_id or q.giver_npc_id)
    if npc!=expected_npc:raise ValueError('NPC не відповідає цьому квесту.')
    if action=='accept':
-    accept_story_quest_from_npc(db.conn,registry=STORY_QUEST_REGISTRY,user_id=uid,npc_id=npc,quest_id=qid,player_level=_level(uid));message='Розмову розпочато.' if q.quest_type is QuestType.TALK else 'Квест прийнято.'
+    accept_story_quest_from_npc(db.conn,registry=STORY_QUEST_REGISTRY,user_id=uid,npc_id=npc,quest_id=qid,player_level=_level(uid))
+    bot.answer_callback_query(call.id)
+    p=_presentation(uid,npc)
+    marker='✅ Розмову розпочато' if q.quest_type is QuestType.TALK else '✅ Квест прийнято'
+    bot.send_message(call.message.chat.id,f"{marker}\n\n{_text(p)}",reply_markup=_markup(p,user_id=uid,connection=db.conn))
    elif action=='complete':
-    adapter=build_story_quest_reward_adapter(exp=q.reward.exp,gold=q.reward.gold);result=complete_active_story_quest(db.conn,registry=STORY_QUEST_REGISTRY,user_id=uid,quest_id=qid,reward_adapter=adapter,expected_turn_in_npc_id=npc);message=_completion_receipt(db.conn,uid,q,npc,result)
+    adapter=build_story_quest_reward_adapter(exp=q.reward.exp,gold=q.reward.gold)
+    result=complete_active_story_quest(db.conn,registry=STORY_QUEST_REGISTRY,user_id=uid,quest_id=qid,reward_adapter=adapter,expected_turn_in_npc_id=npc)
+    message=_completion_receipt(db.conn,uid,q,npc,result)
+    bot.answer_callback_query(call.id)
+    bot.send_message(call.message.chat.id,message)
+    p=_presentation(uid,npc)
+    if p.get('quest'):
+     bot.send_message(call.message.chat.id,_text(p),reply_markup=_markup(p,user_id=uid,connection=db.conn))
    else:raise ValueError('unknown story action')
-   bot.answer_callback_query(call.id);bot.send_message(call.message.chat.id,message);p=_presentation(uid,npc);bot.send_message(call.message.chat.id,_text(p),reply_markup=_markup(p,user_id=uid,connection=db.conn))
   except StoryQuestCompletionError as error:
    text='❌ Завдання ще не виконано.' if 'objective is incomplete' in str(error) else '❌ Дію завершення відхилено.'
    bot.answer_callback_query(call.id,text,show_alert=True)
