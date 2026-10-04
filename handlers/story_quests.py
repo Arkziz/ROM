@@ -22,7 +22,7 @@ from handlers.story_quest_hierarchy_ui import (
     section_callback_for_quest,
 )
 
-STORY_QUEST_BUTTON_TEXT = "📜 Квести"
+STORY_QUEST_BUTTON_TEXT = "📖 Квести"
 STORY_QUEST_CALLBACK_PREFIX = "story_quest:"
 STORY_QUEST_PAGE_SIZE = 10
 STATUS_LABELS = {

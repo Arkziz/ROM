@@ -20,7 +20,7 @@ def map_kb():
 def profile_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
     # The journal is navigation-only; quests are accepted from their NPCs.
-    kb.row("🎒 Інвентар", "📜 Квести")
+    kb.row("🎒 Інвентар", "📖 Квести")
     kb.row("📜 Історія")
     kb.add("🔙 Назад")
     return kb
