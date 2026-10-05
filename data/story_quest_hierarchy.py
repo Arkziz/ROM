@@ -99,6 +99,11 @@ STORY_SECTIONS: dict[str, StorySectionMetadata] = {
         quest_numbers=tuple(range(41, 51)),
         sort_order=50,
     ),
+    "dark_forest_01": StorySectionMetadata(
+        section_id="dark_forest_01", location_id="dark_forest", number=1,
+        title="Тінь за Темним Бором", required_level=6,
+        quest_numbers=tuple(range(51, 61)), sort_order=60,
+    ),
 }
 
 
@@ -115,6 +120,10 @@ STORY_LOCATIONS: dict[str, StoryLocationMetadata] = {
             "start_path_04",
             "start_path_05",
         ),
+    ),
+    "dark_forest": StoryLocationMetadata(
+        story_id="dark_forest", location_id="dark_forest", icon="🌲",
+        sort_order=20, section_ids=("dark_forest_01",),
     ),
 }
 
