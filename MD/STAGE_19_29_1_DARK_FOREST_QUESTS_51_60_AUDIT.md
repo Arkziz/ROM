@@ -1,0 +1,192 @@
+# Stage 19.29.1: Dark Forest quests 51-60 read-only audit
+
+- Status: **PASS**
+- Generated UTC: `2026-10-05T20:57:14+00:00`
+- ROM root: `C:\Users\Oleh\OneDrive\Документи\ROM`
+- Candidate: `C:\Users\Oleh\OneDrive\Документи\ROM\Квести\ROM_квести_Темний_Бір_candidate.json`
+- Candidate SHA-256: `cce3dd9ed24377e870391e502519793319e6802334966174de6bf8506a487401`
+- Production HEAD: `unavailable`
+
+## Findings
+
+- ✅ **scope.patch_name**: Patch filename matches the approved Stage 19.29.1 name.
+  - Details: `{"actual": "patch_19_29_1_audit_dark_forest_quests_51_60.py"}`
+- ℹ️ **scope.mode**: Read-only audit: only files under ROM/reports may be written.
+- ✅ **git.repository**: ROM root is a Git working tree.
+- ℹ️ **git.head**: Captured production HEAD.
+  - Details: `{"head": "d1d1d26ded9435d8851c8a32c34e967206e2ae56"}`
+- ✅ **git.cleanliness**: Git worktree has no disallowed changes.
+  - Details: `{"allowed": ["MD/STAGE_19_29_1_DARK_FOREST_QUESTS_51_60_AUDIT.md", "ROM_FULL_DUMP.txt"], "dirty": [" M ROM_FULL_DUMP.txt"], "disallowed": []}`
+- ✅ **candidate.exists**: Candidate JSON exists.
+  - Details: `{"path": "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\Квести\\ROM_квести_Темний_Бір_candidate.json"}`
+- ✅ **candidate.json**: Candidate JSON parses successfully.
+  - Details: `{"sha256": "cce3dd9ed24377e870391e502519793319e6802334966174de6bf8506a487401", "size": 120373}`
+- ✅ **candidate.quests_list**: All candidate quest entries are objects.
+  - Details: `{"count": 50}`
+- ✅ **candidate.non_authoritative**: Candidate remains non-authoritative.
+  - Details: `{"value": false}`
+- ✅ **candidate.location**: Campaign uses canonical Dark Forest ID and localized name.
+  - Details: `{"campaign": {"candidate_range": [51, 100], "display_name": "Темний Бір", "location_id": "dark_forest", "quest_range": [51, 100]}}`
+- ✅ **candidate.coverage_51_100**: Candidate contains the complete 51-100 range.
+  - Details: `{"count": 50, "max": 100, "min": 51}`
+- ✅ **batch.exact_numbers**: Audit scope contains exactly quests 51-60.
+  - Details: `{"actual": [51, 52, 53, 54, 55, 56, 57, 58, 59, 60]}`
+- ✅ **batch.unique_ids**: Quest IDs are present and unique within 51-60.
+  - Details: `{"quest_ids": ["dark_forest_051_shadow_beyond_the_border", "dark_forest_052_dark_forest_border", "dark_forest_053_not_a_random_patrol", "dark_forest_054_sign_on_the_old_road", "dark_forest_055_border_that_never_existed", "dark_forest_056_camp_by_the_road", "dark_forest_057_runic_trace", "dark_forest_058_familiar_rune", "dark_forest_059_road_deeper", "dark_forest_060_threat_from_the_depths"]}`
+- ✅ **q51.location_level**: Quest 51 uses dark_forest and unlock level 6.
+  - Details: `{"location_id": "dark_forest", "unlock_level": 6}`
+- ✅ **q52.location_level**: Quest 52 uses dark_forest and unlock level 6.
+  - Details: `{"location_id": "dark_forest", "unlock_level": 6}`
+- ✅ **q53.location_level**: Quest 53 uses dark_forest and unlock level 6.
+  - Details: `{"location_id": "dark_forest", "unlock_level": 6}`
+- ✅ **q54.location_level**: Quest 54 uses dark_forest and unlock level 6.
+  - Details: `{"location_id": "dark_forest", "unlock_level": 6}`
+- ✅ **q55.location_level**: Quest 55 uses dark_forest and unlock level 6.
+  - Details: `{"location_id": "dark_forest", "unlock_level": 6}`
+- ✅ **q56.location_level**: Quest 56 uses dark_forest and unlock level 6.
+  - Details: `{"location_id": "dark_forest", "unlock_level": 6}`
+- ✅ **q57.location_level**: Quest 57 uses dark_forest and unlock level 6.
+  - Details: `{"location_id": "dark_forest", "unlock_level": 6}`
+- ✅ **q58.location_level**: Quest 58 uses dark_forest and unlock level 6.
+  - Details: `{"location_id": "dark_forest", "unlock_level": 6}`
+- ✅ **q59.location_level**: Quest 59 uses dark_forest and unlock level 6.
+  - Details: `{"location_id": "dark_forest", "unlock_level": 6}`
+- ✅ **q60.location_level**: Quest 60 uses dark_forest and unlock level 6.
+  - Details: `{"location_id": "dark_forest", "unlock_level": 6}`
+- ✅ **chain.50_to_51**: Quest 51 chains from canonical quest 50.
+  - Details: `{"previous": "start_path_050_road_ahead"}`
+- ✅ **chain.51_to_52**: Quest 52 chains from quest 51.
+  - Details: `{"actual": "dark_forest_051_shadow_beyond_the_border", "expected": "dark_forest_051_shadow_beyond_the_border"}`
+- ✅ **chain.52_to_53**: Quest 53 chains from quest 52.
+  - Details: `{"actual": "dark_forest_052_dark_forest_border", "expected": "dark_forest_052_dark_forest_border"}`
+- ✅ **chain.53_to_54**: Quest 54 chains from quest 53.
+  - Details: `{"actual": "dark_forest_053_not_a_random_patrol", "expected": "dark_forest_053_not_a_random_patrol"}`
+- ✅ **chain.54_to_55**: Quest 55 chains from quest 54.
+  - Details: `{"actual": "dark_forest_054_sign_on_the_old_road", "expected": "dark_forest_054_sign_on_the_old_road"}`
+- ✅ **chain.55_to_56**: Quest 56 chains from quest 55.
+  - Details: `{"actual": "dark_forest_055_border_that_never_existed", "expected": "dark_forest_055_border_that_never_existed"}`
+- ✅ **chain.56_to_57**: Quest 57 chains from quest 56.
+  - Details: `{"actual": "dark_forest_056_camp_by_the_road", "expected": "dark_forest_056_camp_by_the_road"}`
+- ✅ **chain.57_to_58**: Quest 58 chains from quest 57.
+  - Details: `{"actual": "dark_forest_057_runic_trace", "expected": "dark_forest_057_runic_trace"}`
+- ✅ **chain.58_to_59**: Quest 59 chains from quest 58.
+  - Details: `{"actual": "dark_forest_058_familiar_rune", "expected": "dark_forest_058_familiar_rune"}`
+- ✅ **chain.59_to_60**: Quest 60 chains from quest 59.
+  - Details: `{"actual": "dark_forest_059_road_deeper", "expected": "dark_forest_059_road_deeper"}`
+- ✅ **chain.strict_policy**: Candidate keeps strict previous-quest chaining.
+- ✅ **access.level_based**: Candidate states that story progress does not bypass level-based location access.
+  - Details: `{"value": "canonical level-based unlock; story progress does not bypass level 6"}`
+- ✅ **q51.type**: Quest 51 type matches approved specification.
+  - Details: `{"actual": "TALK", "expected": "TALK"}`
+- ✅ **q51.reward**: Quest 51 has canonical level-6 x3 story reward.
+  - Details: `{"actual": {"exp": 66, "gold": 1.84, "item_keys": []}, "expected": {"exp": 66, "gold": 1.84}}`
+- ✅ **q52.type**: Quest 52 type matches approved specification.
+  - Details: `{"actual": "KILL_REGION", "expected": "KILL_REGION"}`
+- ✅ **q52.target**: Quest 52 KILL_REGION target is approved.
+  - Details: `{"actual": 8, "expected": 8}`
+- ✅ **q52.reward**: Quest 52 has canonical level-6 x3 story reward.
+  - Details: `{"actual": {"exp": 66, "gold": 1.84, "item_keys": []}, "expected": {"exp": 66, "gold": 1.84}}`
+- ✅ **q53.type**: Quest 53 type matches approved specification.
+  - Details: `{"actual": "TALK", "expected": "TALK"}`
+- ✅ **q53.reward**: Quest 53 has canonical level-6 x3 story reward.
+  - Details: `{"actual": {"exp": 66, "gold": 1.84, "item_keys": []}, "expected": {"exp": 66, "gold": 1.84}}`
+- ✅ **q54.type**: Quest 54 type matches approved specification.
+  - Details: `{"actual": "QUEST_ITEM", "expected": "QUEST_ITEM"}`
+- ✅ **q54.reward**: Quest 54 has canonical level-6 x3 story reward.
+  - Details: `{"actual": {"exp": 66, "gold": 1.84, "item_keys": []}, "expected": {"exp": 66, "gold": 1.84}}`
+- ✅ **q55.type**: Quest 55 type matches approved specification.
+  - Details: `{"actual": "TURN_IN", "expected": "TURN_IN"}`
+- ✅ **q55.reward**: Quest 55 has canonical level-6 x3 story reward.
+  - Details: `{"actual": {"exp": 66, "gold": 1.84, "item_keys": []}, "expected": {"exp": 66, "gold": 1.84}}`
+- ✅ **q56.type**: Quest 56 type matches approved specification.
+  - Details: `{"actual": "KILL_REGION", "expected": "KILL_REGION"}`
+- ✅ **q56.target**: Quest 56 KILL_REGION target is approved.
+  - Details: `{"actual": 10, "expected": 10}`
+- ✅ **q56.reward**: Quest 56 has canonical level-6 x3 story reward.
+  - Details: `{"actual": {"exp": 66, "gold": 1.84, "item_keys": []}, "expected": {"exp": 66, "gold": 1.84}}`
+- ✅ **q57.type**: Quest 57 type matches approved specification.
+  - Details: `{"actual": "QUEST_ITEM", "expected": "QUEST_ITEM"}`
+- ✅ **q57.reward**: Quest 57 has canonical level-6 x3 story reward.
+  - Details: `{"actual": {"exp": 66, "gold": 1.84, "item_keys": []}, "expected": {"exp": 66, "gold": 1.84}}`
+- ✅ **q58.type**: Quest 58 type matches approved specification.
+  - Details: `{"actual": "TURN_IN", "expected": "TURN_IN"}`
+- ✅ **q58.reward**: Quest 58 has canonical level-6 x3 story reward.
+  - Details: `{"actual": {"exp": 66, "gold": 1.84, "item_keys": []}, "expected": {"exp": 66, "gold": 1.84}}`
+- ✅ **q59.type**: Quest 59 type matches approved specification.
+  - Details: `{"actual": "KILL_REGION", "expected": "KILL_REGION"}`
+- ✅ **q59.target**: Quest 59 KILL_REGION target is approved.
+  - Details: `{"actual": 10, "expected": 10}`
+- ✅ **q59.reward**: Quest 59 has canonical level-6 x3 story reward.
+  - Details: `{"actual": {"exp": 66, "gold": 1.84, "item_keys": []}, "expected": {"exp": 66, "gold": 1.84}}`
+- ✅ **q60.type**: Quest 60 type matches approved specification.
+  - Details: `{"actual": "TURN_IN", "expected": "TURN_IN"}`
+- ✅ **q60.reward**: Quest 60 has canonical level-6 x3 story reward.
+  - Details: `{"actual": {"exp": 66, "gold": 1.84, "item_keys": []}, "expected": {"exp": 66, "gold": 1.84}}`
+- ✅ **q54.quest_item**: Quest 54 item/drop contract matches approval.
+  - Details: `{"actual": {"display_name": "Прикордонний знак гоблінського дозору", "drop_chance": 0.15, "drop_location_id": "dark_forest", "drop_message": "🧩 Сюжетна знахідка: Прикордонний знак гоблінського дозору", "item_key": "dark_forest_goblin_patrol_border_sign", "quantity": 1}, "expected": {"drop_chance": 0.15, "drop_location_id": "dark_forest", "item_key": "dark_forest_goblin_patrol_border_sign", "quantity": 1}}`
+- ✅ **q57.quest_item**: Quest 57 item/drop contract matches approval.
+  - Details: `{"actual": {"display_name": "Уламок рунічного амулета", "drop_chance": 0.15, "drop_location_id": "dark_forest", "drop_message": "🧩 Сюжетна знахідка: Уламок рунічного амулета", "item_key": "dark_forest_runic_amulet_fragment", "quantity": 1}, "expected": {"drop_chance": 0.15, "drop_location_id": "dark_forest", "item_key": "dark_forest_runic_amulet_fragment", "quantity": 1}}`
+- ✅ **q55.exact_once_input**: Quest 55 consumes exactly one matching story item.
+  - Details: `{"actual": [{"consume": true, "item_key": "dark_forest_goblin_patrol_border_sign", "quantity": 1}]}`
+- ✅ **q58.exact_once_input**: Quest 58 consumes exactly one matching story item.
+  - Details: `{"actual": [{"consume": true, "item_key": "dark_forest_runic_amulet_fragment", "quantity": 1}]}`
+- ✅ **items.drop_policy**: Approved quest-item drop chance is 15%.
+- ✅ **q51.npc_ids**: Quest 51 uses approved canonical NPC IDs.
+  - Details: `{"giver": "elder", "turn_in": "elder"}`
+- ✅ **q52.npc_ids**: Quest 52 uses approved canonical NPC IDs.
+  - Details: `{"giver": "mercenary_head", "turn_in": "mercenary_head"}`
+- ✅ **q53.npc_ids**: Quest 53 uses approved canonical NPC IDs.
+  - Details: `{"giver": "mercenary_head", "turn_in": "mercenary_head"}`
+- ✅ **q54.npc_ids**: Quest 54 uses approved canonical NPC IDs.
+  - Details: `{"giver": "mercenary_head", "turn_in": "mercenary_head"}`
+- ✅ **q55.npc_ids**: Quest 55 uses approved canonical NPC IDs.
+  - Details: `{"giver": "elder", "turn_in": "elder"}`
+- ✅ **q56.npc_ids**: Quest 56 uses approved canonical NPC IDs.
+  - Details: `{"giver": "mercenary_head", "turn_in": "mercenary_head"}`
+- ✅ **q57.npc_ids**: Quest 57 uses approved canonical NPC IDs.
+  - Details: `{"giver": "mercenary_head", "turn_in": "mercenary_head"}`
+- ✅ **q58.npc_ids**: Quest 58 uses approved canonical NPC IDs.
+  - Details: `{"giver": "rune_master", "turn_in": "rune_master"}`
+- ✅ **q59.npc_ids**: Quest 59 uses approved canonical NPC IDs.
+  - Details: `{"giver": "mercenary_head", "turn_in": "mercenary_head"}`
+- ✅ **q60.npc_ids**: Quest 60 uses approved canonical NPC IDs.
+  - Details: `{"giver": "elder", "turn_in": "elder"}`
+- ✅ **routes.no_forbidden_variants**: No known incorrect route labels are present.
+  - Details: `{"forbidden": []}`
+- ✅ **routes.canonical_text**: Explicit candidate routes match canonical production labels.
+  - Details: `{"mismatches": []}`
+- ✅ **q60.itemless_turn_in**: Quest 60 is an approved itemless final-report TURN_IN.
+  - Details: `{"policy": {"button_text": "🗣️ Доповісти Старості", "enabled": true, "purpose": "final_report"}, "required_quest_items": []}`
+- ✅ **content.spoiler_guard**: No configured next-step spoiler phrases were detected in 51-60.
+  - Details: `{"violations": []}`
+- ✅ **production.owners**: Canonical story quest owner modules are present.
+  - Details: `{"missing": [], "required": ["data/story_quest_content.py", "data/story_quest_definitions.py", "data/story_quest_hierarchy.py", "data/story_quest_npcs.py"]}`
+- ✅ **production.start_path_50**: Authoritative content imports the 41-50 production pack.
+- ℹ️ **production.dark_forest_hierarchy**: dark_forest hierarchy not yet referenced; activation patch must add it.
+  - Details: `{"present": false}`
+- ✅ **production.npc_registry**: Required NPCs exist in the canonical registry.
+  - Details: `{"missing": []}`
+- ✅ **production.rune_master_route**: Canonical Rune Master route labels exist in production registry.
+- ✅ **production.no_51_60_conflict**: No production story pack currently defines quests 51-60.
+  - Details: `{"conflicts": []}`
+- ✅ **runtime.imports**: Production story registry imports and currently ends at quest 50.
+  - Details: `{"payload": {"count": 50, "max": 50, "min": 1, "q50": true, "routes": {"elder": "🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста", "mercenary_head": "🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова Найманців", "rune_master": "🏙️ Місто → ⚒️ Ремісничий квартал → 💠 Рунний Майстер"}}}`
+- ✅ **runtime.routes**: Runtime NPC route resolver returns canonical routes.
+  - Details: `{"actual": {"elder": "🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста", "mercenary_head": "🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова Найманців", "rune_master": "🏙️ Місто → ⚒️ Ремісничий квартал → 💠 Рунний Майстер"}, "expected": {"elder": "🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста", "mercenary_head": "🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова Найманців", "rune_master": "🏙️ Місто → ⚒️ Ремісничий квартал → 💠 Рунний Майстер"}}`
+- ℹ️ **database.safety**: No database, WAL, or SHM operation is performed.
+  - Details: `{"game_db_exists": true, "shm_exists": true, "wal_exists": true}`
+- ℹ️ **activation.scope**: Recorded exact recommended scope for Stage 19.29.2.
+  - Details: `{"candidate_sync_if_corrections_are_approved": "Квести/ROM_квести_Темний_Бір_candidate.json", "expected_new_pack": "data/story_quests/dark_forest_51_60.py", "likely_modified_owners": ["data/story_quest_content.py", "data/story_quest_hierarchy.py"], "must_not_activate": "quests 61-100", "must_not_modify": ["quests 1-50", "game.db", "game.db-wal", "game.db-shm"], "required_activation_checks": ["py_compile", "import smoke", "registry coverage 1-60", "hierarchy coverage 1-60", "chain 50-60", "rewards", "quest item active-gate/drop/consume", "NPC navigation", "overlevel SKIP regression", "quests 1-50 regression"]}`
+
+## Output locations
+
+- JSON: `C:\Users\Oleh\OneDrive\Документи\ROM/reports/stage_19_29_1_dark_forest_quests_51_60_audit.json`
+- Markdown: `C:\Users\Oleh\OneDrive\Документи\ROM/MD/STAGE_19_29_1_DARK_FOREST_QUESTS_51_60_AUDIT.md`
+
+## Mutation statement
+
+This patch is read-only. It did not modify production code, candidate JSON, database files, game.db-wal, or game.db-shm.
+
+## Manual game verification
+
+Not required after Stage 19.29.1 because no gameplay content was activated.
