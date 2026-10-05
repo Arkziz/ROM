@@ -1,6 +1,6 @@
 """Canonical world-node graph for travel between locations."""
 CITY_NODE = "city"
-TRAVEL_SECONDS = 60
+TRAVEL_SECONDS = 20
 
 WORLD_NODES = {
     "city": {"id": "city", "name": "🏙️ Місто", "kind": "city", "huntable": False},
