@@ -109,6 +109,11 @@ STORY_SECTIONS: dict[str, StorySectionMetadata] = {
         title="Гоблінські дозори", required_level=7,
         quest_numbers=tuple(range(61, 71)), sort_order=70,
     ),
+    "dark_forest_03": StorySectionMetadata(
+        section_id="dark_forest_03", location_id="dark_forest", number=3,
+        title="Слід рунічного культу", required_level=8,
+        quest_numbers=tuple(range(71, 81)), sort_order=80,
+    ),
 }
 
 
@@ -128,7 +133,7 @@ STORY_LOCATIONS: dict[str, StoryLocationMetadata] = {
     ),
     "dark_forest": StoryLocationMetadata(
         story_id="dark_forest", location_id="dark_forest", icon="🌲",
-        sort_order=20, section_ids=("dark_forest_01", "dark_forest_02"),
+        sort_order=20, section_ids=("dark_forest_01", "dark_forest_02", "dark_forest_03"),
     ),
 }
 
