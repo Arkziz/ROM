@@ -119,6 +119,11 @@ STORY_SECTIONS: dict[str, StorySectionMetadata] = {
         title="Осквернені землі", required_level=9,
         quest_numbers=tuple(range(81, 91)), sort_order=90,
     ),
+    "dark_forest_05": StorySectionMetadata(
+        section_id="dark_forest_05", location_id="dark_forest", number=5,
+        title="Король Гоблінів", required_level=10,
+        quest_numbers=tuple(range(91, 101)), sort_order=100,
+    ),
 }
 
 
@@ -138,7 +143,7 @@ STORY_LOCATIONS: dict[str, StoryLocationMetadata] = {
     ),
     "dark_forest": StoryLocationMetadata(
         story_id="dark_forest", location_id="dark_forest", icon="🌲",
-        sort_order=20, section_ids=("dark_forest_01", "dark_forest_02", "dark_forest_03", "dark_forest_04"),
+        sort_order=20, section_ids=("dark_forest_01", "dark_forest_02", "dark_forest_03", "dark_forest_04", "dark_forest_05"),
     ),
 }
 
