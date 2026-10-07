@@ -12,6 +12,11 @@ CALLBACK_PREFIX = "sqboss:v1"
 INVOKE_CALLBACK = "sqboss:v1:invoke:49"
 HELP_CALLBACK = "sqboss:v1:help:49"
 RETURN_CALLBACK = "sqboss:v1:return:49"
+SUPPORTED_STORY_BOSS_QUESTS = frozenset({49, 99})
+
+def story_boss_callback_data(action: str, quest_number: int) -> str:
+    """Build a versioned callback bound to one production BOSS quest."""
+    return f"{CALLBACK_PREFIX}:{str(action)}:{int(quest_number)}"
 
 class StoryBossAction(str, Enum):
     INVOKE = "invoke"
@@ -59,7 +64,7 @@ def parse_story_boss_callback(data: str) -> tuple[StoryBossAction, int] | None:
 
 
 def evaluate_story_boss_invocation(state: StoryBossInvocationState) -> StoryBossInvocationDecision:
-    if state.quest_number != 49:
+    if state.quest_number not in SUPPORTED_STORY_BOSS_QUESTS:
         return StoryBossInvocationDecision.WRONG_QUEST
     if str(state.quest_status).upper() != "ACTIVE":
         return StoryBossInvocationDecision.QUEST_NOT_ACTIVE
@@ -77,26 +82,39 @@ def evaluate_story_boss_invocation(state: StoryBossInvocationState) -> StoryBoss
 
 
 def build_story_boss_look_around_presentation(state: StoryBossInvocationState) -> StoryBossInlinePresentation | None:
-    if state.quest_number != 49 or str(state.quest_status).upper() != "ACTIVE":
+    if state.quest_number not in SUPPORTED_STORY_BOSS_QUESTS or str(state.quest_status).upper() != "ACTIVE":
         return None
     if state.current_location_id != state.expected_location_id:
         return None
     if state.progress_current >= state.progress_target:
         return StoryBossInlinePresentation(
             text_suffix="✅ Ватажка переможено. Повернися до Голови Найманців і доповідь про перемогу.",
-            rows=((('🧭 Куди повернутися', RETURN_CALLBACK),),),
+            rows=((('🧭 Куди повернутися', story_boss_callback_data("return", state.quest_number)),),),
+        )
+    if state.quest_number == 99:
+        return StoryBossInlinePresentation(
+            text_suffix=("👑 Сліди Короля Гоблінів\n\nПоблизу старих руїн помітні сліди королівської варти. "
+                         "Ти можеш викликати Короля Гоблінів на бій або продовжити звичайне полювання."),
+            rows=(
+                (("👑 Викликати Короля Гоблінів", story_boss_callback_data("invoke", state.quest_number)),),
+                (("🧭 Як знайти Короля Гоблінів", story_boss_callback_data("help", state.quest_number)),),
+            ),
         )
     return StoryBossInlinePresentation(
         text_suffix=("🐺 Сліди Ватажка\n\nПоблизу помітні свіжі сліди Ватажка зграї. "
                      "Ти можеш викликати його на бій або продовжити звичайне полювання."),
         rows=(
-            (("🐺 Викликати Ватажка", INVOKE_CALLBACK),),
-            (("🧭 Як знайти Ватажка", HELP_CALLBACK),),
+            (("🐺 Викликати Ватажка", story_boss_callback_data("invoke", state.quest_number)),),
+            (("🧭 Як знайти Ватажка", story_boss_callback_data("help", state.quest_number)),),
         ),
     )
 
 
-def story_boss_help_text() -> str:
+def story_boss_help_text(quest_number: int = 49) -> str:
+    if int(quest_number) == 99:
+        return ("👑 Як знайти Короля Гоблінів\n\nВирушай у локацію «Темний Бір» та натисни "
+                "«👀 Роззирнутися». Для активного квесту 99 там з’явиться гарантований "
+                "виклик Короля Гоблінів. Після перемоги повернися до Голови Найманців.")
     return ("🐺 Як знайти Ватажка\n\nВирушай у локацію «Початок Шляху» та натисни "
             "«👀 Роззирнутися». Там Ватажка можна викликати на бій. "
             "Також Ватажок може зустрітися випадково під час звичайного полювання. "

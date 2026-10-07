@@ -50,11 +50,11 @@ def _markup(p,user_id=None,connection=None):
   ready=is_story_quest_objective_ready(connection,registry=STORY_QUEST_REGISTRY,user_id=int(user_id),quest_id=q['quest_id'])
   if ready and p['npc_id']==completion_npc_id:
    kb.add(types.InlineKeyboardButton(_completion_button_text(definition),callback_data=_callback_data('complete',p['npc_id'],definition)))
-  # Quest 49 is started by the Mercenary Head, but invocation happens only in
-  # Start Path. Reuse the single canonical help callback owned by story-boss
-  # wiring; do not duplicate its handler or player-facing help text here.
-  if definition.number==49 and p['npc_id']=='mercenary_head':
-   kb.add(types.InlineKeyboardButton('🧭 Як знайти Ватажка',callback_data=HELP_CALLBACK))
+  # Boss invocation happens in the quest location. The NPC card provides only
+  # a quest-bound help callback; combat remains owned by the canonical boss flow.
+  if definition.quest_type is QuestType.BOSS and definition.number in (49,99) and p['npc_id']=='mercenary_head':
+   label='🧭 Як знайти Ватажка' if definition.number==49 else '🧭 Як знайти Короля Гоблінів'
+   kb.add(types.InlineKeyboardButton(label,callback_data=f'sqboss:v1:help:{definition.number}'))
  return kb
 def _presentation_title(definition, view, state):
  from data.story_quest_title_presentation import resolve_story_quest_presentation_title

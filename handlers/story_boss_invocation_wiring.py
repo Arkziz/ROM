@@ -156,8 +156,8 @@ def _delegate_invoke(bot, call):
     handler(player_message)
 
 
-def _active_story_boss_callback_call(user_id: int):
-    """Return quest 49 only while its authoritative lifecycle is ACTIVE.
+def _active_story_boss_callback_call(user_id: int, expected_quest_number: int):
+    """Return the expected production BOSS quest only while its lifecycle is ACTIVE.
 
     Old Telegram callback buttons outlive the message that created them. Re-read
     current quest state before any HELP/RETURN/INVOKE branch instead of trusting
@@ -171,7 +171,7 @@ def _active_story_boss_callback_call(user_id: int):
         return None
     quest_number = int(_value(call, "quest_number", "number", default=0) or 0)
     quest_status = str(_value(call, "quest_status", "status", default="") or "").upper()
-    if quest_number != 49 or quest_status != "ACTIVE":
+    if quest_number != int(expected_quest_number) or quest_status != "ACTIVE":
         return None
     return call
 
@@ -189,10 +189,10 @@ def register_story_boss_invocation_callbacks(bot) -> None:
             bot.answer_callback_query(call.id, "Ця дія більше недоступна.", show_alert=True)
             return
         action, quest_number = parsed
-        if quest_number != 49:
+        if quest_number not in (49, 99):
             bot.answer_callback_query(call.id, "Ця дія більше недоступна.", show_alert=True)
             return
-        active_call = _active_story_boss_callback_call(call.from_user.id)
+        active_call = _active_story_boss_callback_call(call.from_user.id, quest_number)
         if active_call is None:
             bot.answer_callback_query(call.id, "Ця сюжетна дія більше неактуальна.", show_alert=True)
             return
@@ -201,17 +201,19 @@ def register_story_boss_invocation_callbacks(bot) -> None:
             target = int(_value(active_call, "progress_target", "target", "target_quantity", default=1) or 1)
             bot.answer_callback_query(call.id)
             if current >= target:
-                bot.send_message(call.message.chat.id, "✅ Ватажка вже переможено. Повернися до Міста → 📜 Гільдія Найманців → ⚔️ Голова Найманців і доповідь про перемогу.")
+                boss_name = "Ватажка" if quest_number == 49 else "Короля Гоблінів"
+                bot.send_message(call.message.chat.id, f"✅ {boss_name} вже переможено. Повернися до Міста → 📜 Гільдія Найманців → ⚔️ Голова Найманців і доповідь про перемогу.")
             else:
-                bot.send_message(call.message.chat.id, story_boss_help_text())
+                bot.send_message(call.message.chat.id, story_boss_help_text(quest_number))
             return
         if action is StoryBossAction.RETURN:
             bot.answer_callback_query(call.id)
             bot.send_message(call.message.chat.id, "🧭 Повернися до Міста → 📜 Гільдія Найманців → ⚔️ Голова Найманців.")
             return
         presentation = _presentation_for_user(call.from_user.id)
-        if presentation is None or not any(data == INVOKE_CALLBACK for row in presentation.rows for _, data in row):
-            bot.answer_callback_query(call.id, "Виклик Ватажка зараз недоступний.", show_alert=True)
+        expected_invoke = f"sqboss:v1:invoke:{quest_number}"
+        if presentation is None or not any(data == expected_invoke for row in presentation.rows for _, data in row):
+            bot.answer_callback_query(call.id, "Виклик сюжетного боса зараз недоступний.", show_alert=True)
             return
         bot.answer_callback_query(call.id)
         _delegate_invoke(bot, call)
