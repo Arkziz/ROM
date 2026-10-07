@@ -157,23 +157,36 @@ def _delegate_invoke(bot, call):
 
 
 def _active_story_boss_callback_call(user_id: int, expected_quest_number: int):
-    """Return the expected production BOSS quest only while its lifecycle is ACTIVE.
+    """Return an ACTIVE production BOSS quest without applying an invoke location gate.
 
-    Old Telegram callback buttons outlive the message that created them. Re-read
-    current quest state before any HELP/RETURN/INVOKE branch instead of trusting
-    the stale payload or current button visibility. ACTIVE 1/1 remains valid for
-    report help, while COMPLETED, SKIPPED and AVAILABLE fail closed.
+    HELP is intentionally available from the city NPC, while the actual INVOKE
+    branch still calls `_presentation_for_user`, which revalidates the current
+    quest location, progress, travel and encounter state before combat starts.
     """
-    stats = _player_stats(user_id)
-    location_id = _location_id(user_id, stats)
-    call = _active_call(user_id, location_id)
-    if not call:
+    from data.story_quest_content import STORY_QUEST_REGISTRY
+    from data.story_quest_definitions import QuestType
+    from db_modules.story_quests import get_active_story_quest
+
+    active = get_active_story_quest(db.conn, int(user_id))
+    if active is None:
         return None
-    quest_number = int(_value(call, "quest_number", "number", default=0) or 0)
-    quest_status = str(_value(call, "quest_status", "status", default="") or "").upper()
-    if quest_number != int(expected_quest_number) or quest_status != "ACTIVE":
+    quest = STORY_QUEST_REGISTRY.get(str(active["quest_id"]))
+    if quest is None or quest.quest_type is not QuestType.BOSS:
         return None
-    return call
+    if int(quest.number) != int(expected_quest_number):
+        return None
+    if str(active["status"]).upper() != "ACTIVE":
+        return None
+    return {
+        "allowed": True,
+        "quest_id": quest.quest_id,
+        "quest_number": quest.number,
+        "quest_status": str(active["status"]),
+        "progress_current": int(active["progress"]),
+        "progress_target": int(active["target_quantity"]),
+        "boss_key": quest.boss_key,
+        "location_id": quest.location_id,
+    }
 
 
 def register_story_boss_invocation_callbacks(bot) -> None:
