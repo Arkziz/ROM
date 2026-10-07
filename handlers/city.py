@@ -1265,6 +1265,20 @@ def build_story_mercenary_head_text():
     )
 
 
+
+
+def build_story_mercenary_head_neutral_text():
+    """Return neutral dialogue that is valid with or without a story quest card."""
+    npc = get_story_quest_npc("mercenary_head")
+    return (
+        f"{npc.button_label}\n\n"
+        "Голова Найманців переглядає звіти розвідників, позначає небезпечні "
+        "маршрути на карті й стежить за виконанням наказів гільдії.\n\n"
+        "Зараз окремих вказівок немає. Можеш перевірити активний контракт, "
+        "повернутися до справ гільдії або зайти пізніше."
+    )
+
+
 def build_story_bartender_text():
     """Render the Bartender in the Tavern without enabling quest acceptance yet."""
     return _build_story_npc_placeholder_text(
@@ -1286,20 +1300,17 @@ def register_city_handlers(bot):
 
     @bot.message_handler(func=lambda m: getattr(m, "text", None) == "⚔️ Голова Найманців")
     def show_story_mercenary_head(message):
-        if has_story_npc_if_present(message, 'mercenary_head'):
-            # Keep contracts and the City return route visible beside story UI.
-            bot.send_message(
-                message.chat.id,
-                '⚔️ Інші справи Гільдії Найманців:',
-                reply_markup=mercenary_head_kb(message.from_user.id),
-            )
-            send_story_npc_if_present(bot, message, 'mercenary_head')
-            return
+        """Show a useful neutral NPC screen, then append eligible story content.
+
+        The neutral screen must remain meaningful when the story runtime has no
+        active or available card for the player's current progression state.
+        """
         bot.send_message(
             message.chat.id,
-            build_story_mercenary_head_text(),
+            build_story_mercenary_head_neutral_text(),
             reply_markup=mercenary_head_kb(message.from_user.id),
         )
+        send_story_npc_if_present(bot, message, 'mercenary_head')
 
     @bot.message_handler(func=lambda m: getattr(m, "text", None) == "🍺 Бармен")
     def show_story_bartender(message):
