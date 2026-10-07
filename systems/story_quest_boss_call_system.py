@@ -37,5 +37,16 @@ def get_active_story_boss_call(
         return {"allowed":False,"reason":"location_mismatch"}
     if int(active["progress"]) >= int(active["target_quantity"]):
         return {"allowed":False,"reason":"objective_already_complete"}
-    return {"allowed":True,"reason":"active_boss_quest","quest_id":quest.quest_id,
-            "boss_key":quest.boss_key,"location_id":quest.location_id}
+    # Presentation and callback layers must receive the authoritative active
+    # quest identity. Without these fields they fall back to legacy quest 49.
+    return {
+        "allowed": True,
+        "reason": "active_boss_quest",
+        "quest_id": quest.quest_id,
+        "quest_number": int(quest.number),
+        "quest_status": str(active["status"]),
+        "progress_current": int(active["progress"]),
+        "progress_target": int(active["target_quantity"]),
+        "boss_key": quest.boss_key,
+        "location_id": quest.location_id,
+    }
