@@ -114,6 +114,11 @@ STORY_SECTIONS: dict[str, StorySectionMetadata] = {
         title="Слід рунічного культу", required_level=8,
         quest_numbers=tuple(range(71, 81)), sort_order=80,
     ),
+    "dark_forest_04": StorySectionMetadata(
+        section_id="dark_forest_04", location_id="dark_forest", number=4,
+        title="Осквернені землі", required_level=9,
+        quest_numbers=tuple(range(81, 91)), sort_order=90,
+    ),
 }
 
 
@@ -133,7 +138,7 @@ STORY_LOCATIONS: dict[str, StoryLocationMetadata] = {
     ),
     "dark_forest": StoryLocationMetadata(
         story_id="dark_forest", location_id="dark_forest", icon="🌲",
-        sort_order=20, section_ids=("dark_forest_01", "dark_forest_02", "dark_forest_03"),
+        sort_order=20, section_ids=("dark_forest_01", "dark_forest_02", "dark_forest_03", "dark_forest_04"),
     ),
 }
 
