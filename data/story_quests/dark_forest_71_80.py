@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Stage 19.31.3 candidate SHA-256: 545c9d88b23d08bbf7e094208208ca8b7760d8f50474e03681fa1a0918e4e4d5
+# Stage 19.34.5 normalized production pack.
 QUEST_ROWS = [{'definition': {'quest_id': 'dark_forest_071_path_to_the_seventh_camp',
                  'number': 71,
                  'title': 'Шлях до сьомої стоянки',
@@ -477,7 +477,8 @@ QUEST_ROWS = [{'definition': {'quest_id': 'dark_forest_071_path_to_the_seventh_c
                                 'giver_npc_id': 'elder',
                                 'turn_in_npc_id': 'elder',
                                 'objective_hint': '🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста',
-                                'next_step_hint': ''}},
+                                'next_step_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
+                                                  'Найманців'}},
   'acceptance_text': 'Тепер усі знахідки складаються в одну картину.\n'
                      '\n'
                      'Сьома стоянка була місцем обрядів. Там готували амулети, підсилювали '

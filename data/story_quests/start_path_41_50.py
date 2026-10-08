@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Authoritative Start Path story quest rows 41-50.
-
-Quest 46 reports the retained discovery to the Mercenary Head. Quest 47 owns
-the Blacksmith inspection and exact-once item handoff.
-"""
-
+# Stage 19.34.5 normalized production pack.
 QUEST_ROWS = [{'definition': {'quest_id': 'start_path_041_council_before_the_hunt',
                  'number': 41,
                  'title': 'Рада перед походом',
@@ -47,10 +42,10 @@ QUEST_ROWS = [{'definition': {'quest_id': 'start_path_041_council_before_the_hun
                  'previous_quest_id': 'start_path_041_council_before_the_hunt',
                  'giver_npc_id': 'mercenary_head',
                  'turn_in_npc_id': 'mercenary_head',
-                 'target_quantity': 15,
+                 'target_quantity': 8,
                  'description': 'Передовий загін має очистити підступи до лігва, перш ніж основні '
                                 'сили залишать безпечні стежки.',
-                 'objective_text': 'Перемогти 15 будь-яких істот у локації Початок Шляху.',
+                 'objective_text': 'Перемогти 8 будь-яких істот у локації Початок Шляху.',
                  'acceptance_text': 'Герой послаблює зовнішню оборону лігва.',
                  'completion_text': 'Мисливці займають зовнішній периметр, де знаходять рунічний '
                                     'знак.',
@@ -107,7 +102,9 @@ QUEST_ROWS = [{'definition': {'quest_id': 'start_path_041_council_before_the_hun
   'acceptance_text': 'На каменях є подряпини, складені майже в правильне коло. Це не випадковий '
                      'слід і не робота самотнього звіра. Оглядай здобич та місця сутичок, але не '
                      'називай знахідку вголос, доки ми не переконаємося, що вона означає.',
-  'completion_text': 'Голова Найманців оглядає доказ і впізнає на ньому той самий знак, що й на каменях біля проходу. Мітка належить наближеним Ватажка та допоможе визначити, як зграя охороняє лігво.',
+  'completion_text': 'Голова Найманців оглядає доказ і впізнає на ньому той самий знак, що й на '
+                     'каменях біля проходу. Мітка належить наближеним Ватажка та допоможе '
+                     'визначити, як зграя охороняє лігво.',
   'progress_text': 'Шукай уважно біля стежок до лігва. Потрібний доказ може здаватися звичайним, '
                    'доки не потрапить до досвідчених рук.',
   'drop_message': 'Печатку Ватажка знайдено.'},
@@ -156,10 +153,10 @@ QUEST_ROWS = [{'definition': {'quest_id': 'start_path_041_council_before_the_hun
                  'previous_quest_id': 'start_path_044_mark_of_the_pack_leader',
                  'giver_npc_id': 'mercenary_head',
                  'turn_in_npc_id': 'mercenary_head',
-                 'target_quantity': 15,
+                 'target_quantity': 10,
                  'description': 'Вірні Ватажкові звірі стягуються до лігва й можуть зімкнути '
                                 'оборону раніше, ніж підійде загін.',
-                 'objective_text': 'Перемогти 15 будь-яких істот у локації Початок Шляху.',
+                 'objective_text': 'Перемогти 10 будь-яких істот у локації Початок Шляху.',
                  'acceptance_text': 'Герой відтискає захисників головного входу.',
                  'completion_text': 'Захисників лігва відтиснуто.',
                  'reward': {'exp': 57, 'gold': 1.29},
@@ -387,5 +384,3 @@ QUEST_ROWS = [{'definition': {'quest_id': 'start_path_041_council_before_the_hun
                      'чекатиме на тебе.',
   'progress_text': 'Староста чекає на повну доповідь про бій, стан лігва та долю розсіяної зграї.',
   'drop_message': ''}]
-
-START_PATH_41_50 = tuple(QUEST_ROWS)

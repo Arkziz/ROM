@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Stage 19.32.2 candidate SHA-256: 14a31852d13cbd42f303ff31e3f7e3da0bcf7afc0ed29f2745656f65ce656bbf
+# Stage 19.34.5 normalized production pack.
 QUEST_ROWS = [{'definition': {'quest_id': 'dark_forest_081_trace_beyond_the_stone_ravine',
                  'number': 81,
                  'title': 'Слід за кам’яним яром',
@@ -452,7 +452,8 @@ QUEST_ROWS = [{'definition': {'quest_id': 'dark_forest_081_trace_beyond_the_ston
                                 'giver_npc_id': 'elder',
                                 'turn_in_npc_id': 'elder',
                                 'objective_hint': '🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста',
-                                'next_step_hint': ''}},
+                                'next_step_hint': '🏙️ Місто → ⚒️ Ремісничий квартал → 💠 Рунний '
+                                                  'Майстер'}},
   'acceptance_text': 'Прихована стежка веде через землю, у яку проникла рунічна речовина.\n'
                      '\n'
                      'Це вже не короткий слід окремого обряду. Вплив змінив ґрунт, коріння й '

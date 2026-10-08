@@ -1,10 +1,7 @@
-"""Authoritative production story content for Start Path quests 31-40.
-
-Generated from the reviewed canonical candidate by Stage 19.26.3. Keep this module readable and preserve presentation/runtime schema separation.
-"""
-from __future__ import annotations
-
-QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_031_pack_at_the_outskirts',
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# Stage 19.34.5 normalized production pack.
+QUEST_ROWS = ({'definition': {'quest_id': 'start_path_031_pack_at_the_outskirts',
                  'number': 31,
                  'title': 'Зграя на підступах',
                  'quest_type': 'TALK',
@@ -45,10 +42,10 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_031_pack
                  'previous_quest_id': 'start_path_031_pack_at_the_outskirts',
                  'giver_npc_id': 'mercenary_head',
                  'turn_in_npc_id': 'mercenary_head',
-                 'target_quantity': 10,
+                 'target_quantity': 8,
                  'description': 'Герой стримує істот на підступах і дає мисливцям час укріпити '
                                 'табір.',
-                 'objective_text': 'Перемогти 10 будь-яких істот у локації Початок Шляху.',
+                 'objective_text': 'Перемогти 8 будь-яких істот у локації Початок Шляху.',
                  'reward': {'exp': 48, 'gold': 0.89},
                  'required_quest_items': [],
                  'navigation': {'location_id': 'start_path',
@@ -57,14 +54,16 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_031_pack
                                 'objective_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
                                                   'Найманців',
                                 'next_step_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
-                                                  'Найманців'}},
+                                                  'Найманців'},
+                 'acceptance_text': None,
+                 'completion_text': None},
   'acceptance_text': 'Зграя рухається вздовж стежок, але разом із вовками активізувалися й інші '
                      'істоти. Рунічний вплив міг охопити всю місцевість. Стримай загрозу на '
                      'підступах. Десяти перемог вистачить, щоб розірвати їхню лінію та дати '
                      'мисливцям час укріпити табір.',
   'completion_text': 'Напади на стежках слабшають. Під час огляду місцевості мисливці знаходять '
                      'шматки незвично щільної вовчої шерсті.',
-  'progress_text': 'Перша лінія оборони: {progress}/10',
+  'progress_text': 'Перша лінія оборони: {progress}/8',
   'drop_message': ''},
  {'definition': {'quest_id': 'start_path_033_protection_for_hunters',
                  'number': 33,
@@ -121,7 +120,9 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_031_pack
                                 'next_step_hint': '🏙️ Місто → ⚒️ Ремісничий квартал → ⚒️ Коваль'}},
   'acceptance_text': 'Шукай щільне хутро з густим підшерстям. Воно має витримати удари кігтів і '
                      'бути придатним для захисних накладок.',
-  'completion_text': 'Коваль перевіряє знайдене хутро й підтверджує, що матеріал достатньо міцний для захисних накладок. Рунічні сліди потребують обережної обробки, але зразок придатний для роботи.',
+  'completion_text': 'Коваль перевіряє знайдене хутро й підтверджує, що матеріал достатньо міцний '
+                     'для захисних накладок. Рунічні сліди потребують обережної обробки, але '
+                     'зразок придатний для роботи.',
   'progress_text': 'Знайти під час полювання придатний матеріал для захисного спорядження '
                    'мисливців.',
   'drop_message': '🐺 Сюжетна знахідка: Вовче хутро підвищеної якості\n'
@@ -168,10 +169,10 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_031_pack
                  'previous_quest_id': 'start_path_035_reinforce_the_hunting_party',
                  'giver_npc_id': 'mercenary_head',
                  'turn_in_npc_id': 'mercenary_head',
-                 'target_quantity': 12,
+                 'target_quantity': 10,
                  'description': 'Герой проводить розвідку за кам’янистим схилом і знаходить прохід '
                                 'у територію зграї.',
-                 'objective_text': 'Перемогти 12 будь-яких істот у локації Початок Шляху.',
+                 'objective_text': 'Перемогти 10 будь-яких істот у локації Початок Шляху.',
                  'reward': {'exp': 48, 'gold': 0.89},
                  'required_quest_items': [],
                  'navigation': {'location_id': 'start_path',
@@ -180,14 +181,16 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_031_pack
                                 'objective_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
                                                   'Найманців',
                                 'next_step_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
-                                                  'Найманців'}},
+                                                  'Найманців'},
+                 'acceptance_text': None,
+                 'completion_text': None},
   'acceptance_text': 'Коваль майже завершив спорядження. Тепер потрібно з’ясувати, звідки '
                      'приходить зграя. За кам’янистим схилом є стара мисливська стежка. Мої люди '
                      'не можуть пройти нею непомітно, тому ти підеш попереду. Очисти територію та '
                      'звертай увагу на подряпини на деревах, витоптану траву й залишки здобичі.',
   'completion_text': 'За кам’янистим схилом знайдено вузький прохід. На деревах залишилися свіжі '
                      'подряпини, а земля вкрита слідами великої зграї.',
-  'progress_text': 'За межею безпечних стежок: {progress}/12',
+  'progress_text': 'За межею безпечних стежок: {progress}/10',
   'drop_message': ''},
  {'definition': {'quest_id': 'start_path_037_trail_to_the_den',
                  'number': 37,
@@ -219,7 +222,9 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_031_pack
                                                   'Майстер'}},
   'acceptance_text': 'Оглядай вузький прохід, каміння й місця, де зграя залишала здобич. Нам '
                      'потрібен доказ, який можна показати Рунному Майстру.',
-  'completion_text': 'Рунний Майстер оглядає уламок і підтверджує, що позначка веде до джерела найсильнішого рунічного впливу. Слід указує на вовче лігво за кам’янистим схилом.',
+  'completion_text': 'Рунний Майстер оглядає уламок і підтверджує, що позначка веде до джерела '
+                     'найсильнішого рунічного впливу. Слід указує на вовче лігво за кам’янистим '
+                     'схилом.',
   'progress_text': 'Знайти під час полювання доказ, який указує на шлях до вовчого лігва.',
   'drop_message': '🪨 Сюжетна знахідка: Рунічно позначений уламок із лігва\n'
                   '\n'
@@ -269,10 +274,10 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_031_pack
                  'previous_quest_id': 'start_path_038_heart_of_the_influence',
                  'giver_npc_id': 'mercenary_head',
                  'turn_in_npc_id': 'mercenary_head',
-                 'target_quantity': 12,
+                 'target_quantity': 10,
                  'description': 'Герой розчищає вузький прохід до лігва, щоб мисливці могли '
                                 'зайняти позиції.',
-                 'objective_text': 'Перемогти 12 будь-яких істот у локації Початок Шляху.',
+                 'objective_text': 'Перемогти 10 будь-яких істот у локації Початок Шляху.',
                  'reward': {'exp': 48, 'gold': 0.89},
                  'required_quest_items': [],
                  'navigation': {'location_id': 'start_path',
@@ -281,13 +286,15 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_031_pack
                                 'objective_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
                                                   'Найманців',
                                 'next_step_hint': '🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова '
-                                                  'Найманців'}},
+                                                  'Найманців'},
+                 'acceptance_text': None,
+                 'completion_text': None},
   'acceptance_text': 'Рунний Майстер підтвердив місце. Лігво розташоване за вузьким проходом під '
                      'кам’янистим схилом. Зграя стягнула туди майже всіх сильних звірів. Якщо ми '
                      'поведемо загін зараз, нас затиснуть у проході. Розчисти дорогу до лігва.',
   'completion_text': 'Прохід до лігва очищено. Мисливці закріплюються біля входу та чекають '
                      'рішення Старости.',
-  'progress_text': 'Дорога до лігва: {progress}/12',
+  'progress_text': 'Дорога до лігва: {progress}/10',
   'drop_message': ''},
  {'definition': {'quest_id': 'start_path_040_before_the_final_hunt',
                  'number': 40,

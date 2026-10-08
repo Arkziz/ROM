@@ -1,13 +1,7 @@
-"""Production story content for Start Path quests 11-20.
-
-This module owns data only. Runtime consumers import the stable aggregator
-from data.story_quest_content instead of importing this package directly.
-"""
-from __future__ import annotations
-
-# A tuple prevents accidental package-level append/remove operations. The
-# authoritative aggregator validates ordering and materializes definitions.
-QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_011_unstable_glow',
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+# Stage 19.34.5 normalized production pack.
+QUEST_ROWS = ({'definition': {'quest_id': 'start_path_011_unstable_glow',
                  'number': 11,
                  'title': 'Неспокійне світіння',
                  'quest_type': 'TALK',
@@ -52,8 +46,8 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_011_unst
                  'turn_in_npc_id': 'rune_master',
                  'description': 'Рунний Майстер просить перевірити позначені осередки аномалії та '
                                 'стримати істот, які збираються біля рунічних плям.',
-                 'objective_text': 'Перемогти 6 будь-яких істот у локації Початок Шляху.',
-                 'target_quantity': 6,
+                 'objective_text': 'Перемогти 8 будь-яких істот у локації Початок Шляху.',
+                 'target_quantity': 8,
                  'boss_key': None,
                  'quest_item': None,
                  'required_quest_items': [],
@@ -62,17 +56,19 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_011_unst
                  'navigation': {'location_id': 'start_path',
                                 'giver_npc_id': 'rune_master',
                                 'turn_in_npc_id': 'rune_master',
-                                'objective_hint': 'Перемогти 6 будь-яких істот у локації Початок '
+                                'objective_hint': 'Перемогти 8 будь-яких істот у локації Початок '
                                                   'Шляху.',
                                 'next_step_hint': '🏙️ Місто → ⚒️ Ремісничий квартал → 💠 Рунний '
-                                                  'Майстер'}},
+                                                  'Майстер'},
+                 'acceptance_text': None,
+                 'completion_text': None},
   'acceptance_text': 'Рунічне світіння накопичується там, де часто проходять істоти. Я не знаю, чи '
                      'вони розносять аномалію, чи лише реагують на неї. Перевір позначені ділянки '
                      'та стримай істот навколо них. Після кількох сутичок стане зрозуміло, чи '
                      'залишаються на місці придатні для дослідження сліди.',
   'completion_text': 'Після боїв світіння на землі слабшає, але серед каміння залишається гострий '
                      'уламок, що пульсує блідим світлом.',
-  'progress_text': 'Осередки аномалії: {progress}/6',
+  'progress_text': 'Осередки аномалії: {progress}/8',
   'drop_message': ''},
  {'definition': {'quest_id': 'start_path_013_runic_crystal_fragment',
                  'number': 13,
@@ -237,8 +233,8 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_011_unst
                  'turn_in_npc_id': 'rune_master',
                  'description': 'Рунний Майстер просить очистити стежки біля найяскравіших '
                                 'рунічних плям і стримати поширення впливу через заражених істот.',
-                 'objective_text': 'Перемогти 8 будь-яких істот у локації Початок Шляху.',
-                 'target_quantity': 8,
+                 'objective_text': 'Перемогти 10 будь-яких істот у локації Початок Шляху.',
+                 'target_quantity': 10,
                  'boss_key': None,
                  'quest_item': None,
                  'required_quest_items': [],
@@ -247,17 +243,19 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_011_unst
                  'navigation': {'location_id': 'start_path',
                                 'giver_npc_id': 'rune_master',
                                 'turn_in_npc_id': 'rune_master',
-                                'objective_hint': 'Перемогти 8 будь-яких істот у локації Початок '
+                                'objective_hint': 'Перемогти 10 будь-яких істот у локації Початок '
                                                   'Шляху.',
                                 'next_step_hint': '🏙️ Місто → ⚒️ Ремісничий квартал → 💠 Рунний '
-                                                  'Майстер'}},
+                                                  'Майстер'},
+                 'acceptance_text': None,
+                 'completion_text': None},
   'acceptance_text': 'Висновок Алхіміка підтверджує мої побоювання. Рунічний вплив переходить від '
                      'одного носія до іншого, а заражені істоти розносять його далі. Повністю '
                      'знищити аномалію ми поки не можемо, але здатні стримати її поширення. Очисти '
                      'стежки навколо найяскравіших плям.',
   'completion_text': 'Кількість заражених істот зменшилася, але із заходом сонця рунічне світіння '
                      'починає посилюватися.',
-  'progress_text': 'Заражені стежки: {progress}/8',
+  'progress_text': 'Заражені стежки: {progress}/10',
   'drop_message': ''},
  {'definition': {'quest_id': 'start_path_018_glow_after_sunset',
                  'number': 18,
@@ -372,5 +370,3 @@ QUEST_ROWS: tuple[dict, ...] = ({'definition': {'quest_id': 'start_path_011_unst
                      'етап пошуку очолить Голова Найманців.',
   'progress_text': '',
   'drop_message': ''})
-
-assert tuple(row['definition']['number'] for row in QUEST_ROWS) == tuple(range(11, 21))
