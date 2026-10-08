@@ -22,6 +22,9 @@ from data.story_quest_hierarchy import (
 
 CALLBACK_PREFIX = "sqh:v1"
 ROOT_CALLBACK = f"{CALLBACK_PREFIX}:index"
+# Route through the existing canonical story-journal handler, which delegates
+# to handlers.profile.send_profile_root instead of duplicating Profile UI.
+PROFILE_CALLBACK = "story_quest:profile"
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,6 +77,7 @@ def _status_icon(status: str) -> str:
         "active": "📖",
         "available": "✨",
         "locked": "🔒",
+        "skipped": "⏭️",
     }.get(status, "▫️")
 
 
@@ -88,6 +92,7 @@ def build_story_index(user_id: int, status_reader: Callable[[int, object], str])
             text=f"{story.button_label} · {len(completed.intersection(story_numbers))}/{len(story_numbers)}",
             callback_data=_callback("loc", story.location_id),
         ))
+    keyboard.add(types.InlineKeyboardButton("🔙 До профілю", callback_data=PROFILE_CALLBACK))
     return text, keyboard
 
 
@@ -100,6 +105,10 @@ def _section_status(user_id: int, section, status_reader: Callable[[int, object]
         return "active"
     if "available" in statuses:
         return "available"
+    # A fully finalized section containing SKIPPED quests is not locked. Keep
+    # progress honest by counting only COMPLETED, while ⏭️ explains closure.
+    if "skipped" in statuses and all(status in {"completed", "skipped"} for status in statuses):
+        return "skipped"
     return "locked"
 
 
