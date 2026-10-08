@@ -28,6 +28,7 @@ from db_modules.story_quests import (
     list_story_quest_journal,
     set_story_quest_progress,
     skip_active_story_quest,
+    reconcile_story_location_as_skipped,
 )
 
 
@@ -284,6 +285,38 @@ def collect_active_quest_item(
             **result,
             "objective_complete": result["quantity"] >= result["required_quantity"],
         }
+
+
+def reconcile_overlevel_story_locations(
+    connection,
+    *,
+    registry: Mapping[str, StoryQuestDefinition],
+    user_id: int,
+    current_level: int,
+    location_max_levels: Mapping[str, int],
+    timestamp: Optional[str] = None,
+) -> dict:
+    """Atomically SKIP all unfinished quests of every exceeded story location."""
+    locations = {}
+    for quest in registry.values():
+        locations.setdefault(str(quest.location_id), []).append(quest)
+    exceeded = []
+    for location_id, quests in locations.items():
+        if location_id not in location_max_levels:
+            raise StoryQuestLifecycleError(f"missing max level for location {location_id}")
+        if int(current_level) > int(location_max_levels[location_id]):
+            exceeded.append((min(q.number for q in quests), location_id, quests))
+    summaries = []
+    with immediate_transaction(connection):
+        for _, location_id, quests in sorted(exceeded):
+            summary = reconcile_story_location_as_skipped(
+                connection, user_id=int(user_id), quests=quests, timestamp=timestamp,
+            )
+            summary.update({"location_id": location_id,
+                            "level_ceiling": int(location_max_levels[location_id])})
+            summaries.append(summary)
+    return {"changed": sum(x["skipped_now"] for x in summaries),
+            "locations": summaries, "current_level": int(current_level)}
 
 
 def skip_overlevel_active_quest(

@@ -244,6 +244,64 @@ def add_story_quest_item(
     return {"granted": granted, "quantity": resulting, "required_quantity": limit}
 
 
+def reconcile_story_location_as_skipped(
+    connection,
+    *,
+    user_id: int,
+    quests,
+    timestamp: Optional[str] = None,
+) -> dict[str, Any]:
+    """Persist every unfinished quest in one exceeded location as SKIPPED.
+
+    Existing COMPLETED rows remain authoritative. Existing SKIPPED rows are
+    idempotent. ACTIVE rows and not-yet-materialized AVAILABLE/LOCKED quests are
+    finalized without rewards; isolated quest-item rows for the location are
+    removed by the caller-owned transaction.
+    """
+    ordered = sorted(tuple(quests), key=lambda quest: int(quest.number))
+    now = str(timestamp or utc_now_iso())
+    completed = skipped_now = already_skipped = 0
+    quest_ids = []
+    for quest in ordered:
+        quest_id = str(quest.quest_id); quest_ids.append(quest_id)
+        row = get_story_quest(connection, int(user_id), quest_id)
+        if row is not None and str(row["status"]) == "COMPLETED":
+            completed += 1
+            continue
+        if row is not None and str(row["status"]) == "SKIPPED":
+            already_skipped += 1
+            continue
+        if row is not None:
+            updated = connection.execute(
+                """UPDATE user_story_quests
+                SET status='SKIPPED', reward_claimed=0, skipped_at=?,
+                    completed_at=NULL, updated_at=?
+                WHERE user_id=? AND quest_id=? AND status='ACTIVE'""",
+                (now, now, int(user_id), quest_id),
+            )
+            if updated.rowcount != 1:
+                raise StoryQuestConflictError("story quest changed concurrently")
+        else:
+            connection.execute(
+                """INSERT INTO user_story_quests
+                (user_id, quest_id, quest_number, status, progress,
+                 target_quantity, reward_claimed, started_at, completed_at,
+                 skipped_at, updated_at)
+                VALUES (?, ?, ?, 'SKIPPED', 0, ?, 0, ?, NULL, ?, ?)""",
+                (int(user_id), quest_id, int(quest.number),
+                 int(quest.target_quantity), now, now, now),
+            )
+        skipped_now += 1
+    if quest_ids:
+        placeholders = ",".join("?" for _ in quest_ids)
+        connection.execute(
+            f"DELETE FROM user_story_quest_items WHERE user_id=? AND quest_id IN ({placeholders})",
+            (int(user_id), *quest_ids),
+        )
+    return {"completed": completed, "skipped_now": skipped_now,
+            "already_skipped": already_skipped, "quest_count": len(ordered)}
+
+
 def skip_active_story_quest(
     connection,
     *,

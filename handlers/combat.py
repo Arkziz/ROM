@@ -2042,6 +2042,12 @@ def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=""):
     if reward_message:
         bot.send_message(chat_id, reward_message)
 
+    # Emit one campaign-level summary after the level-up reward. The lifecycle
+    # mutation is already committed and is idempotent on repeated hooks.
+    story_skip_message = str((story_skip_result or {}).get("message") or "").strip()
+    if story_skip_message:
+        bot.send_message(chat_id, story_skip_message)
+
 
 # ==============================
 # REGISTER HANDLERS
