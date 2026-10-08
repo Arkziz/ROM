@@ -2038,12 +2038,25 @@ def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=""):
         if story_drop_message:
             bot.send_message(chat_id, story_drop_message)
 
-    reward_message = str(reward.get("exp_result", {}).get("level_up_reward_message") or "")
+    exp_result = reward.get("exp_result") or {}
+    reward_message = str(exp_result.get("level_up_reward_message") or "").strip()
+    level_ups = int(exp_result.get("level_ups", 0) or 0)
+    if level_ups > 0 and not reward_message:
+        # Some levels have no special milestone item message. Always announce
+        # the canonical level transition and permanent attribute-point reward.
+        old_level = int(exp_result.get("old_level", resulting_level - level_ups) or 0)
+        new_level = int(exp_result.get("level", resulting_level) or resulting_level)
+        points = int(exp_result.get("attribute_points_awarded", level_ups * 5) or 0)
+        reward_message = (
+            "🎉 Рівень підвищено!\n\n"
+            f"🏆 Рівень: {old_level} → {new_level}\n"
+            f"🌟 Вільні очки характеристик: +{points}"
+        )
     if reward_message:
         bot.send_message(chat_id, reward_message)
 
-    # Emit one campaign-level summary after the level-up reward. The lifecycle
-    # mutation is already committed and is idempotent on repeated hooks.
+    # Emit one campaign-level summary only after the level-up notification.
+    # The lifecycle mutation is already committed and idempotent.
     story_skip_message = str((story_skip_result or {}).get("message") or "").strip()
     if story_skip_message:
         bot.send_message(chat_id, story_skip_message)
