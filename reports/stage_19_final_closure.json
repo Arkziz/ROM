@@ -1,0 +1,286 @@
+{
+  "stage": "19.38.1",
+  "status": "PASS",
+  "closure_decision": "CLOSED_ACCEPTED",
+  "commit_name": "Stage 19: close story quest system",
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "branch",
+        "--show-current"
+      ],
+      "exit_code": 0,
+      "stdout": "develop\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all"
+      ],
+      "exit_code": 0,
+      "stdout": " M ROM_FULL_DUMP.txt\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "cat-file",
+        "-e",
+        "9dc1f863772c3b3a855a92238b10383643b0eb21^{commit}"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "9dc1f863772c3b3a855a92238b10383643b0eb21",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "cat-file",
+        "-e",
+        "ffa2d1fba0484e54ef0afe9422f419c2036e9360^{commit}"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "ffa2d1fba0484e54ef0afe9422f419c2036e9360",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "cat-file",
+        "-e",
+        "3fba09a1bcd1b2cb0afd6694d743832ee29f31f3^{commit}"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "3fba09a1bcd1b2cb0afd6694d743832ee29f31f3",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "cat-file",
+        "-e",
+        "ef4cc48b1ab4d8071eab45acf23cf04b7bee323e^{commit}"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "ef4cc48b1ab4d8071eab45acf23cf04b7bee323e",
+        "HEAD"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+        "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\tools\\verify_stage_19_33_6_boss_call_quest_identity.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: Stage 19.33.6\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+        "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\tools\\verify_stage_19_34_2_atomic_location_story_skip.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: Stage 19.34.2\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+        "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\tools\\verify_stage_19_34_2a_level_up_notification.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: Stage 19.34.2a\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+        "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\tools\\verify_stage_19_34_3_story_quest_item_identity.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: Stage 19.34.3\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+        "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\tools\\verify_stage_19_34_5_routes_and_kill_targets.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: Stage 19.34.5\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+        "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\tools\\verify_stage_19_36_2_story_quest_journal.py"
+      ],
+      "exit_code": 0,
+      "stdout": "PASS: Stage 19.36.2\n",
+      "stderr": ""
+    }
+  ],
+  "wal_shm": "NOT_MANIPULATED",
+  "commit_status": "PENDING_FINAL_COMMIT",
+  "commit_hash": "RESOLVE_FROM_GIT_HEAD",
+  "generated_at_utc": "2026-10-08T21:49:16.591066+00:00",
+  "regression_commit": "ef4cc48b1ab4d8071eab45acf23cf04b7bee323e",
+  "registry": {
+    "quests": 100,
+    "stories": 2,
+    "sections": 10,
+    "locations": {
+      "start_path": 50,
+      "dark_forest": 50
+    },
+    "objective_types": {
+      "TALK": 26,
+      "KILL_REGION": 25,
+      "QUEST_ITEM": 21,
+      "TURN_IN": 26,
+      "BOSS": 2
+    }
+  },
+  "quest_items": {
+    "count": 21,
+    "chance": 0.15,
+    "unique_keys": true
+  },
+  "bosses": [
+    {
+      "quest": 49,
+      "boss_key": "pack_leader"
+    },
+    {
+      "quest": 99,
+      "boss_key": "goblin_king"
+    }
+  ],
+  "migrations": [
+    "053",
+    "054"
+  ],
+  "live_db": {
+    "integrity": "ok",
+    "foreign_key_errors": 0,
+    "status_counts": {
+      "ACTIVE": 1,
+      "COMPLETED": 106,
+      "SKIPPED": 50
+    }
+  },
+  "verifiers": [
+    {
+      "path": "tools/verify_stage_19_33_6_boss_call_quest_identity.py",
+      "status": "PASS"
+    },
+    {
+      "path": "tools/verify_stage_19_34_2_atomic_location_story_skip.py",
+      "status": "PASS"
+    },
+    {
+      "path": "tools/verify_stage_19_34_2a_level_up_notification.py",
+      "status": "PASS"
+    },
+    {
+      "path": "tools/verify_stage_19_34_3_story_quest_item_identity.py",
+      "status": "PASS"
+    },
+    {
+      "path": "tools/verify_stage_19_34_5_routes_and_kill_targets.py",
+      "status": "PASS"
+    },
+    {
+      "path": "tools/verify_stage_19_36_2_story_quest_journal.py",
+      "status": "PASS"
+    }
+  ],
+  "commit_evidence": [
+    {
+      "stage": "19.34.7",
+      "hash": "9dc1f863772c3b3a855a92238b10383643b0eb21",
+      "exists": true,
+      "ancestor": true,
+      "status": "PASS"
+    },
+    {
+      "stage": "19.35.2",
+      "hash": "ffa2d1fba0484e54ef0afe9422f419c2036e9360",
+      "exists": true,
+      "ancestor": true,
+      "status": "PASS"
+    },
+    {
+      "stage": "19.36.3",
+      "hash": "3fba09a1bcd1b2cb0afd6694d743832ee29f31f3",
+      "exists": true,
+      "ancestor": true,
+      "status": "PASS"
+    },
+    {
+      "stage": "19.37.1",
+      "hash": "ef4cc48b1ab4d8071eab45acf23cf04b7bee323e",
+      "exists": true,
+      "ancestor": true,
+      "status": "PASS"
+    }
+  ],
+  "documents": [
+    "MD/STAGE_19_FULL_DOCUMENTATION.md",
+    "MD/STAGE_19_ACCEPTANCE_SUMMARY.md",
+    "MD/STAGE_19_THIRD_LOCATION_CONTINUATION_GUIDE.md"
+  ],
+  "closure_gaps": []
+}
