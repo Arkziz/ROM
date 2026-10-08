@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from types import MappingProxyType
 from typing import Optional, Sequence, Tuple
+from data.story_quest_item_identity import validate_story_quest_item_key
 
 class QuestDefinitionError(ValueError):
     """Static story-quest content violates the canonical schema."""
@@ -102,6 +103,7 @@ def validate_story_quest_definition(quest: StoryQuestDefinition) -> None:
         _require(quest.quest_item is not None,f'{quest.quest_id}: QUEST_ITEM requires quest_item')
         item=quest.quest_item
         _require(_text(item.item_key) and _text(item.display_name),f'{quest.quest_id}: quest item identity is required')
+        validate_story_quest_item_key(item.item_key)
         _require(item.required_quantity>0,f'{quest.quest_id}: required_quantity must be positive')
         _require(0<=item.drop_chance<=1,f'{quest.quest_id}: drop_chance must be within 0..1')
         _require(isinstance(item.consume_on_completion,bool),f'{quest.quest_id}: consume_on_completion must be bool')
@@ -120,6 +122,7 @@ def validate_story_quest_definition(quest: StoryQuestDefinition) -> None:
     for required in quest.required_quest_items:
         _require(isinstance(required,RequiredQuestItemDefinition),f'{quest.quest_id}: invalid required quest item')
         _require(_text(required.item_key),f'{quest.quest_id}: required item key is required')
+        validate_story_quest_item_key(required.item_key)
         _require(required.quantity>0,f'{quest.quest_id}: required item quantity must be positive')
         _require(isinstance(required.consume,bool),f'{quest.quest_id}: required item consume must be bool')
         _require(required.item_key not in required_keys,f'{quest.quest_id}: duplicate required item key')
