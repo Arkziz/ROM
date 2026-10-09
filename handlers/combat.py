@@ -4,7 +4,9 @@ from systems.production_logging import get_production_logger, production_log_pri
 from data.priest_healing_policy import (
     PRIEST_HEALING_DURATION_TURNS,
     PRIEST_HEALING_EFFECT_KEY,
+    PRIEST_HEALING_TOTAL_HEALS,
     build_priest_healing_effect,
+    calculate_priest_heal_amount,
 )
 PRODUCTION_LOGGER=get_production_logger('handlers.combat')
 # ROM 17.18.2.2 BOW CROSSBOW DAMAGE DIFFERENTIATION
@@ -1033,7 +1035,7 @@ CLASS_SKILLS_V1 = {
         {
             "key": "priest_healing_blessing",
             "name": "🌿 Благословення зцілення",
-            "description": "Витрачає 30 MP та відновлює здоров’я протягом 2 ходів.",
+            "description": "Витрачає 30 MP. Одразу відновлює 10% максимального здоров’я, а потім лікує ще 2 рази на початку наступних ходів. Разом: 3 лікування. Перезарядка: 4 ходи.",
             "cost_type": "mana",
             "cost": 30,
             "cooldown": 4,
@@ -1389,10 +1391,13 @@ def apply_skill_special_effect(user_id, mob, skill, damage_done):
     elif effect_key == "player_hot":
         max_hp = get_max_hp(user_id)
 
-        heal_per_turn = max(
-            5,
-            int(round(max_hp * 0.10))
-        )
+        heal_per_turn = calculate_priest_heal_amount(max_hp)
+
+        # Activation is the first of three heals; the effect owns two later ticks.
+        current_hp = int(mob.get("player_hp", 0))
+        new_hp = min(max_hp, current_hp + heal_per_turn)
+        immediate_heal = max(0, new_hp - current_hp)
+        mob["player_hp"] = new_hp
 
         add_player_effect(
             mob,
@@ -1400,7 +1405,12 @@ def apply_skill_special_effect(user_id, mob, skill, damage_done):
             build_priest_healing_effect(heal_per_turn)
         )
 
-        text += f"🌿 Благословення зцілення: +{heal_per_turn} HP протягом {PRIEST_HEALING_DURATION_TURNS} ходів.\n"
+        text += (
+            f"🌿 Благословення зцілення: +{immediate_heal} HP одразу, "
+            f"потім ще {PRIEST_HEALING_DURATION_TURNS} лікування "
+            f"по +{heal_per_turn} HP. "
+            f"Разом: {PRIEST_HEALING_TOTAL_HEALS} лікування.\n"
+        )
 
     elif effect_key == "restore_mana_percent":
         mp_data = get_user_mp(user_id)
