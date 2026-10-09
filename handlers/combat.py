@@ -1,6 +1,11 @@
 
 # ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
 from systems.production_logging import get_production_logger, production_log_print as PRODUCTION_LOG_PRINT
+from data.priest_healing_policy import (
+    PRIEST_HEALING_DURATION_TURNS,
+    PRIEST_HEALING_EFFECT_KEY,
+    build_priest_healing_effect,
+)
 PRODUCTION_LOGGER=get_production_logger('handlers.combat')
 # ROM 17.18.2.2 BOW CROSSBOW DAMAGE DIFFERENTIATION
 # ROM 17.16.1 PVE SKILL BUTTON STATES
@@ -1028,10 +1033,10 @@ CLASS_SKILLS_V1 = {
         {
             "key": "priest_healing_blessing",
             "name": "🌿 Благословення зцілення",
-            "description": "Витрачає 30 MP та відновлює здоров’я протягом 4 ходів.",
+            "description": "Витрачає 30 MP та відновлює здоров’я протягом 2 ходів.",
             "cost_type": "mana",
             "cost": 30,
-            "cooldown": 3,
+            "cooldown": 4,
             "damage_multiplier": 0,
             "attack_type": "magical",
             "extra_rage": 0,
@@ -1391,17 +1396,11 @@ def apply_skill_special_effect(user_id, mob, skill, damage_done):
 
         add_player_effect(
             mob,
-            "priest_healing_blessing_hot",
-            {
-                "name": "🌿 Благословення зцілення",
-                "type": "hot",
-                "turns": 4,
-                "heal": heal_per_turn,
-                "modifiers": {}
-            }
+            PRIEST_HEALING_EFFECT_KEY,
+            build_priest_healing_effect(heal_per_turn)
         )
 
-        text += f"🌿 Благословення зцілення: +{heal_per_turn} HP протягом 4 ходів.\n"
+        text += f"🌿 Благословення зцілення: +{heal_per_turn} HP протягом {PRIEST_HEALING_DURATION_TURNS} ходів.\n"
 
     elif effect_key == "restore_mana_percent":
         mp_data = get_user_mp(user_id)

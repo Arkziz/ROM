@@ -1,4 +1,5 @@
 from __future__ import annotations
+from data.priest_healing_policy import PRIEST_HEALING_DURATION_TURNS
 from systems.stat_system import resolve_basic_attack_type
 
 import random
@@ -176,7 +177,7 @@ def _special(actor: PvpActorState, target: PvpActorState, skill: Mapping[str, An
         actor.effects["shield"]["remaining"] = amount
     elif effect == "player_hot":
         amount = max(5, round(actor.max_hp * 0.10 * float(PVP_CLASS_HOT_POWER_MULTIPLIER.get(actor.class_key, 1.0))))
-        applied.append(_replace_effect(actor, "hot", "hot", amount, duration or 4, actor.user_id))
+        applied.append(_replace_effect(actor, "hot", "hot", amount, duration or PRIEST_HEALING_DURATION_TURNS, actor.user_id))
     elif effect == "restore_mana_percent":
         amount = max(1, round(actor.max_mp * 0.25))
         actor.mp = min(actor.max_mp, actor.mp + amount)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from systems.stat_system import resolve_basic_attack_type
+from data.priest_healing_policy import PRIEST_HEALING_DURATION_TURNS
 from copy import deepcopy
 from dataclasses import asdict
 from pathlib import Path
@@ -91,7 +92,7 @@ class ExactPveBattleEngine:
         elif effect=="enemy_pdef_trap": mob.effects["scout_pdef"]={"turns":2,"pdef_percent":-50}
         elif effect in {"enemy_bleed","enemy_poison"}: mob.effects[effect]={"type":"dot","turns":3,"damage":max(2,int(round(max(1,damage)*.30)))}
         elif effect=="player_shield": player.effects["knight_shield"]={"type":"shield","turns":3,"absorb_left":max(15,int(player.pdef*2+player.level*3))}
-        elif effect=="player_hot": player.effects["priest_hot"]={"type":"hot","turns":4,"heal":max(5,int(round(player.max_hp*.10)))}
+        elif effect=="player_hot": player.effects["priest_hot"]={"type":"hot","turns":PRIEST_HEALING_DURATION_TURNS,"heal":max(5,int(round(player.max_hp*.10)))}
         elif effect=="restore_mana_percent": player.resource=min(player.max_resource,player.resource+max(1,int(round(player.max_resource*.25))))
         elif effect=="player_cleanse_mdef_buff":
             player.effects={k:v for k,v in player.effects.items() if not v.get("negative")}; player.effects["priest_mdef"]={"turns":3,"mdef_percent":30}
