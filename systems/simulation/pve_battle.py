@@ -1,4 +1,5 @@
 from __future__ import annotations
+from systems.stat_system import resolve_basic_attack_type
 from copy import deepcopy
 from dataclasses import asdict
 from pathlib import Path
@@ -9,7 +10,6 @@ from .rng import SimulationRng
 from .skill_catalog import load_production_skill_catalog
 
 RESOURCE_BY_CLASS={"warrior":"rage","knight":"rage","scout":"combat_energy","rogue":"combat_energy_combo","mage":"mana","priest":"mana"}
-MAGIC_CLASSES={"mage","priest"}
 
 class ExactPveBattleEngine:
     def __init__(self, project_root: Path, seed: int, max_turns: int=100):
@@ -114,7 +114,7 @@ class ExactPveBattleEngine:
             if int(skill.get("extra_rage",0)): p.resource=min(p.max_resource,p.resource+int(skill["extra_rage"]))
             p.cooldowns[skill["key"]]=int(skill.get("cooldown",0)); self._apply_effect(p,m,skill,damage)
             actions.append(BattleAction(turn,"player",skill["key"],damage=damage,critical=crit,details={"resource":p.resource,"combo":p.combo})); return
-        kind="magical" if class_key in MAGIC_CLASSES else "physical"; attack=p.magic_attack if kind=="magical" else p.attack
+        kind=resolve_basic_attack_type(class_key); attack=p.magic_attack if kind=="magical" else p.attack
         raw=call_rule("player_attack",attack,self._effective_def(m,kind),p.dex,p.wis,p.level,kind,p.weapon_min_damage,p.weapon_max_damage,rng=self.rng)
         damage=int(raw["damage"]); m.hp=max(0,m.hp-damage)
         if p.resource_type=="rage": p.resource=min(p.max_resource,p.resource+15)

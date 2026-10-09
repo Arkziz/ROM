@@ -1,4 +1,5 @@
 from __future__ import annotations
+from systems.stat_system import resolve_basic_attack_type
 
 import random
 from typing import Any, Mapping
@@ -275,7 +276,7 @@ def resolve_pvp_round(round_number: int, revision: int, actor_a: PvpActorState, 
         actor, target, skill = item["actor"], item["target"], item["skill"]
         if skill and (skill.get("no_damage") or float(skill.get("damage_multiplier") or 0) == 0):
             continue
-        attack_type = str((skill or {}).get("attack_type") or ("magical" if actor.class_key in {"mage", "priest"} else "physical"))
+        attack_type = str((skill or {}).get("attack_type") or resolve_basic_attack_type(actor.class_key))
         damage, critical, dodged = _base_damage(actor, target, attack_type, rng)
         multiplier = float((skill or {}).get("damage_multiplier") or 1.0)
         if skill:
