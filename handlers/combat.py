@@ -741,7 +741,7 @@ def set_skill_cooldown(mob, skill_key, cooldown_turns):
         mob["skill_cooldowns"].pop(skill_key, None)
         return ""
 
-    mob["skill_cooldowns"][skill_key] = cooldown_turns + 1
+    mob["skill_cooldowns"][skill_key] = cooldown_turns
     return f"⏳ Навичка пішла на перезарядку: {cooldown_turns} ход.\n"
 
 
@@ -1035,7 +1035,7 @@ CLASS_SKILLS_V1 = {
         {
             "key": "priest_healing_blessing",
             "name": "🌿 Благословення зцілення",
-            "description": "Витрачає 30 MP. Одразу відновлює 10% максимального здоров’я, а потім лікує ще 2 рази на початку наступних ходів. Разом: 3 лікування. Перезарядка: 4 ходи.",
+            "description": "Витрачає 30 MP. Одразу відновлює 10% максимального здоров’я, а потім лікує ще 2 рази на початку наступних ходів.",
             "cost_type": "mana",
             "cost": 30,
             "cooldown": 4,
