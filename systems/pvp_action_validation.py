@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+from data.mana_policy import calculate_mana_skill_cost
+
 from systems.pvp_config import PVP_COMBAT_ENERGY_MAX
 from systems.pvp_skill_adapter import get_production_pvp_skill, load_production_pvp_skill_catalog
 
@@ -10,6 +12,13 @@ def projected_round_cooldown(participant: Mapping[str, Any], skill_key: str) -> 
     """Cooldown visible to the action validator after the engine start-of-round tick."""
     stored = int(dict(participant.get("cooldowns") or {}).get(str(skill_key), 0) or 0)
     return max(0, stored - 1)
+
+
+def get_pvp_effective_skill_cost(skill: Mapping[str, Any], max_mp: Any) -> int:
+    """Return canonical Mana cost or unchanged physical-resource cost."""
+    if str(skill.get("cost_type") or "") == "mana":
+        return calculate_mana_skill_cost(skill, max(0, int(max_mp or 0)))
+    return max(0, int(skill.get("cost") or 0))
 
 
 def projected_round_resource(participant: Mapping[str, Any]) -> int:
@@ -54,7 +63,8 @@ def validate_pvp_action_choice(
         }
 
     cost_type = str(skill.get("cost_type") or "")
-    cost = max(0, int(skill.get("cost") or 0))
+    maximum_mp = max(0, int(participant.get("max_mp") or 0))
+    cost = get_pvp_effective_skill_cost(skill, maximum_mp)
     resource = projected_round_resource(participant)
     mp = int(participant.get("mp") or 0)
     combo = int(participant.get("combo") or 0)

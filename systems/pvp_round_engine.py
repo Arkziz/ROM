@@ -1,4 +1,5 @@
 from __future__ import annotations
+from data.mana_policy import calculate_mana_restore_amount, calculate_mana_skill_cost
 from data.priest_healing_policy import PRIEST_HEALING_DURATION_TURNS
 from systems.stat_system import resolve_basic_attack_type
 
@@ -126,7 +127,11 @@ def _base_damage(attacker: PvpActorState, defender: PvpActorState, attack_type: 
 
 def _pay(actor: PvpActorState, skill: Mapping[str, Any]) -> tuple[bool, str, int, int]:
     cost_type = str(skill.get("cost_type") or "")
-    cost = max(0, int(skill.get("cost") or 0))
+    cost = (
+        calculate_mana_skill_cost(skill, actor.max_mp)
+        if cost_type == "mana"
+        else max(0, int(skill.get("cost") or 0))
+    )
     combo_spent = 0
     if cost_type == "mana":
         if actor.mp < cost: return False, "not_enough_mana", 0, 0
@@ -179,7 +184,9 @@ def _special(actor: PvpActorState, target: PvpActorState, skill: Mapping[str, An
         amount = max(5, round(actor.max_hp * 0.10 * float(PVP_CLASS_HOT_POWER_MULTIPLIER.get(actor.class_key, 1.0))))
         applied.append(_replace_effect(actor, "hot", "hot", amount, duration or PRIEST_HEALING_DURATION_TURNS, actor.user_id))
     elif effect == "restore_mana_percent":
-        amount = max(1, round(actor.max_mp * 0.25))
+        amount = calculate_mana_restore_amount(
+            actor.max_mp, skill.get("restore_max_mp_percent", 25)
+        )
         actor.mp = min(actor.max_mp, actor.mp + amount)
         applied.append({"target_id": actor.user_id, "effect_key": "mana_restore", "power": amount})
     elif effect == "player_cleanse_mdef_buff":
@@ -188,7 +195,9 @@ def _special(actor: PvpActorState, target: PvpActorState, skill: Mapping[str, An
                 del actor.effects[key]
         applied.append(_replace_effect(actor, "mdef_buff", "mdef_buff", 30, duration or 3, actor.user_id))
         actor.effects["mdef_buff"]["percent"] = 30
-        amount = max(1, round(actor.max_mp * 0.15))
+        amount = calculate_mana_restore_amount(
+            actor.max_mp, skill.get("restore_max_mp_percent", 15)
+        )
         actor.mp = min(actor.max_mp, actor.mp + amount)
     stun_chance = float(skill.get("stun_chance") or 0)
     if stun_chance and rng.random() * 100 < stun_chance:
