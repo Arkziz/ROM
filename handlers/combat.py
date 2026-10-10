@@ -1,6 +1,7 @@
 
 # ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
 from systems.production_logging import get_production_logger, production_log_print as PRODUCTION_LOG_PRINT
+from data.mana_policy import calculate_mana_skill_cost
 from data.priest_healing_policy import (
     PRIEST_HEALING_DURATION_TURNS,
     PRIEST_HEALING_EFFECT_KEY,
@@ -1107,7 +1108,10 @@ def get_player_skill_by_key(user_id, skill_key):
 
 
 def build_skill_menu_text(user_id, mob):
-    from systems.pve_skill_action_state import get_pve_skill_action_state
+    from systems.pve_skill_action_state import (
+        format_pve_skill_description,
+        get_pve_skill_action_state,
+    )
 
     skills = get_player_class_skills(user_id)
     class_resource_text = get_class_resource_line(mob)
@@ -1118,7 +1122,8 @@ def build_skill_menu_text(user_id, mob):
     kb = types.InlineKeyboardMarkup()
     for skill in skills:
         state = get_pve_skill_action_state(user_id, mob, skill)
-        text += f"{skill['name']}\n{skill['description']}\n"
+        description = format_pve_skill_description(mob, skill)
+        text += f"{skill['name']}\n{description}\n"
         text += "✅ Навичка доступна.\n\n" if state["available"] else f"{state['message']}\n\n"
         kb.add(types.InlineKeyboardButton(
             text=state["label"], callback_data=state["callback_data"]
@@ -1133,8 +1138,14 @@ def build_skill_menu_text(user_id, mob):
 
 
 def validate_and_pay_skill_cost(user_id, mob, skill):
+    """Revalidate and pay a skill cost; Mana uses fresh persisted Max MP."""
     cost_type = skill["cost_type"]
     cost = int(skill.get("cost", 0))
+    mana_snapshot = None
+    if cost_type == "mana":
+        mana_snapshot = get_user_mp(user_id)
+        maximum = max(0, int(mana_snapshot.get("max_mp", 0) or 0))
+        cost = calculate_mana_skill_cost(skill, maximum)
 
     mob["last_skill_spent_rage"] = 0
     mob["last_skill_spent_combo"] = 0
@@ -1235,9 +1246,20 @@ def validate_and_pay_skill_cost(user_id, mob, skill):
         }
 
     if cost_type == "mana":
+        current = max(0, int((mana_snapshot or {}).get("mp", 0) or 0))
+        maximum = max(0, int((mana_snapshot or {}).get("max_mp", 0) or 0))
+        if skill.get("key") == "mage_arcane_flow" and maximum > 0 and current >= maximum:
+            return {
+                "success": False,
+                "message": "🔵 Мана вже повна.",
+                "mp": current,
+                "max_mp": maximum,
+                "cost": cost,
+            }
         spend_result = spend_user_mp(user_id, cost)
 
         if not spend_result["success"]:
+            spend_result["cost"] = cost
             return spend_result
 
         mob["player_mp"] = spend_result["mp"]
@@ -1245,7 +1267,10 @@ def validate_and_pay_skill_cost(user_id, mob, skill):
 
         return {
             "success": True,
-            "message": ""
+            "message": "",
+            "cost": cost,
+            "mp": spend_result["mp"],
+            "max_mp": spend_result["max_mp"],
         }
 
     return {
