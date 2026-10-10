@@ -25,7 +25,9 @@ def main():
    mob={"player_mp":current,"player_max_mp":maximum,"skill_cooldowns":{},"player_effects":{}}
    assert get_pve_effective_skill_cost(mob,skill)==expected
    description=format_pve_skill_description(mob,skill)
-   assert f"Витрачає {expected} MP" in description and "999 MP" not in description
+   expected_cost_text = "Вартість: безкоштовно" if expected == 0 else f"Вартість: {expected} Мани"
+   assert expected_cost_text in description and "999 MP" not in description, (key, maximum, repr(description))
+   assert f"Формула: {flat} + {percent}% максимальної мани" in description, (key, maximum, repr(description))
    state=get_pve_skill_action_state(1,mob,skill)
    assert state["available"] and state["effective_cost"]==expected
    if expected:

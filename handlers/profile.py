@@ -714,6 +714,15 @@ def build_skills_text(user_id):
 
     skills = CLASS_SKILLS_V1.get(class_key, [])
 
+    from db import get_player_stats
+    from systems.stat_system import calculate_max_mp
+    stats = get_player_stats(user_id)
+    if stats and len(stats) >= 6:
+        _str, _dex, intelligence, wisdom, _sta, level = stats[:6]
+        skill_max_mp = calculate_max_mp(class_key, level=level, intelligence=intelligence, wisdom=wisdom)
+    else:
+        skill_max_mp = 0
+
     profile_summary = get_character_profile_summary(user_id)
 
     class_name = profile_summary.get("class_name", "Не обрано")
@@ -740,9 +749,16 @@ def build_skills_text(user_id):
 
             text += f"{i+1}. {skill['name']}\n"
 
-            text += f"{skill['description']}\n"
+            description = str(skill.get("description") or "")
+            if skill.get("cost_type") == "mana":
+                from data.mana_skill_presentation import strip_legacy_mana_cost_from_description
+                description = strip_legacy_mana_cost_from_description(skill)
+            text += f"{description}\n"
 
-            if skill.get("cost"):
+            if skill.get("cost_type") == "mana":
+                from data.mana_skill_presentation import format_mana_cost_lines
+                text += f"🔷 {format_mana_cost_lines(skill, skill_max_mp)}\n"
+            elif skill.get("cost"):
 
                 if skill["cost_type"] == "rage":
 
@@ -752,9 +768,6 @@ def build_skills_text(user_id):
 
                     text += f"💥 Вартість: {skill['cost']} Енергії\n"
 
-                elif skill["cost_type"] == "mana":
-
-                    text += f"💧 Вартість: {skill['cost']} Мани\n"
 
             if skill.get("cooldown", 0) > 0:
 

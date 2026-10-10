@@ -2,9 +2,8 @@
 """Pure, mutation-free PvE skill availability and button-state resolver."""
 from __future__ import annotations
 
-import re
-
 from data.mana_policy import calculate_mana_skill_cost
+from data.mana_skill_presentation import format_mana_skill_presentation
 
 
 def get_pve_effective_skill_cost(mob, skill):
@@ -16,12 +15,11 @@ def get_pve_effective_skill_cost(mob, skill):
 
 
 def format_pve_skill_description(mob, skill):
-    """Render the literal skill description with the current effective MP cost."""
-    description = str(skill.get("description") or "")
+    """Render clean description, effective cost and transparent formula."""
     if str(skill.get("cost_type") or "") != "mana":
-        return description
-    cost = get_pve_effective_skill_cost(mob, skill)
-    return re.sub(r"Витрачає\s+\d+\s+MP", f"Витрачає {cost} MP", description, count=1)
+        return str(skill.get("description") or "")
+    maximum = max(0, int(mob.get("player_max_mp", 0) or 0))
+    return format_mana_skill_presentation(skill, maximum)
 
 
 def _turns_uk(value):
