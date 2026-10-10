@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional
 from .battle_models import BattleAction, BattleActor, BattleResult
 from .canonical_rules import call_rule
 from .rng import SimulationRng
+from data.mana_policy import calculate_mana_restore_amount, calculate_mana_skill_cost
 from .skill_catalog import load_production_skill_catalog
 
 RESOURCE_BY_CLASS={"warrior":"rage","knight":"rage","scout":"combat_energy","rogue":"combat_energy_combo","mage":"mana","priest":"mana"}
@@ -44,9 +45,15 @@ class ExactPveBattleEngine:
                 if e["absorb_left"]<=0: del player.effects[key]
         return damage
 
+    def _effective_skill_cost(self, actor: BattleActor, skill: Dict[str,Any]) -> int:
+        """Return canonical Mana cost or the unchanged physical-resource cost."""
+        if str(skill.get("cost_type") or "") == "mana":
+            return calculate_mana_skill_cost(skill, actor.max_resource)
+        return max(0, int(skill.get("cost", 0) or 0))
+
     def _can_use(self, actor: BattleActor, skill: Dict[str,Any]) -> bool:
         if actor.cooldowns.get(skill["key"],0)>0: return False
-        typ=skill["cost_type"]; cost=int(skill.get("cost",0))
+        typ=skill["cost_type"]; cost=self._effective_skill_cost(actor, skill)
         if typ=="rage_all_min": return actor.resource>=int(skill.get("min_cost",30))
         if typ=="combat_energy_combo": return actor.resource>=cost and actor.combo>=int(skill.get("min_combo",1))
         return actor.resource>=cost
@@ -80,7 +87,7 @@ class ExactPveBattleEngine:
         return max(damaging,key=lambda s:float(s.get("damage_multiplier",0))) if damaging else available[0]
 
     def _pay(self, actor: BattleActor, skill: Dict[str,Any]) -> Dict[str,int]:
-        typ=skill["cost_type"]; cost=int(skill.get("cost",0)); spent={"rage":0,"combo":0}
+        typ=skill["cost_type"]; cost=self._effective_skill_cost(actor, skill); spent={"rage":0,"combo":0}
         if typ=="rage_all_min": spent["rage"]=actor.resource; actor.resource=0
         else: actor.resource=max(0,actor.resource-cost)
         if typ=="combat_energy_combo": spent["combo"]=actor.combo; actor.combo=0
@@ -93,10 +100,10 @@ class ExactPveBattleEngine:
         elif effect in {"enemy_bleed","enemy_poison"}: mob.effects[effect]={"type":"dot","turns":3,"damage":max(2,int(round(max(1,damage)*.30)))}
         elif effect=="player_shield": player.effects["knight_shield"]={"type":"shield","turns":3,"absorb_left":max(15,int(player.pdef*2+player.level*3))}
         elif effect=="player_hot": player.effects["priest_hot"]={"type":"hot","turns":PRIEST_HEALING_DURATION_TURNS,"heal":max(5,int(round(player.max_hp*.10)))}
-        elif effect=="restore_mana_percent": player.resource=min(player.max_resource,player.resource+max(1,int(round(player.max_resource*.25))))
+        elif effect=="restore_mana_percent": player.resource=min(player.max_resource,player.resource+calculate_mana_restore_amount(player.max_resource,skill.get("restore_max_mp_percent",25)))
         elif effect=="player_cleanse_mdef_buff":
             player.effects={k:v for k,v in player.effects.items() if not v.get("negative")}; player.effects["priest_mdef"]={"turns":3,"mdef_percent":30}
-            player.resource=min(player.max_resource,player.resource+max(1,int(round(player.max_resource*.15))))
+            player.resource=min(player.max_resource,player.resource+calculate_mana_restore_amount(player.max_resource,skill.get("restore_max_mp_percent",15)))
 
     def _player_action(self, turn, class_key, p, m, actions):
         skill=self._choose(class_key,p,m)

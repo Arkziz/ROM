@@ -1,5 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
+
+from data.mana_policy import apply_post_combat_mp_floor_value
 from typing import Dict, Iterable, List
 
 from .canonical_rules import call_rule
@@ -24,7 +26,10 @@ class PersistentCombatState:
         return self.hp-before
 
     def restore_mp_after_combat(self) -> int:
-        before=self.mp;self.mp=self.max_mp;return self.mp-before
+        """Apply the canonical 50% floor without adding or reducing current MP."""
+        before = self.mp
+        self.mp = apply_post_combat_mp_floor_value(self.mp, self.max_mp)
+        return self.mp - before
 
     def apply_death(self) -> None:
         self.hp=1
