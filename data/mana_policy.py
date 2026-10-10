@@ -11,7 +11,7 @@ from math import isfinite
 from typing import Any, Mapping
 
 MANA_REGEN_PERCENT_PER_FULL_MINUTE = Decimal("30")
-MANA_POST_COMBAT_FLOOR_CURRENT_PERCENT = Decimal("30")
+MANA_POST_COMBAT_FLOOR_CURRENT_PERCENT = Decimal("50")
 MANA_POST_COMBAT_FLOOR_TARGET_PERCENT = Decimal("50")
 MANA_COST_ROUNDING_POLICY = "ROUND_HALF_UP"
 
@@ -112,7 +112,7 @@ def calculate_post_combat_mp_floor(
     max_mp: Any,
     percent: Any = MANA_POST_COMBAT_FLOOR_CURRENT_PERCENT,
 ) -> int:
-    """Return a post-combat floor; Stage 20.3.5 will select the 50% target."""
+    """Return the active canonical 50% post-combat Mana floor."""
     return calculate_mana_restore_amount(max_mp, percent)
 
 

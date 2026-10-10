@@ -46,7 +46,7 @@ def expect_error(callable_object, *args):
 def main() -> int:
     assert MANA_COST_ROUNDING_POLICY == "ROUND_HALF_UP"
     assert MANA_REGEN_PERCENT_PER_FULL_MINUTE == 30
-    assert MANA_POST_COMBAT_FLOOR_CURRENT_PERCENT == 30
+    assert MANA_POST_COMBAT_FLOOR_CURRENT_PERCENT == 50
     assert MANA_POST_COMBAT_FLOOR_TARGET_PERCENT == 50
     assert [round_mana_value(value) for value in ("12.4", "12.5", "12.6")] == [12, 13, 13]
 
@@ -67,7 +67,7 @@ def main() -> int:
     assert calculate_mana_restore_amount(170, 25) == 43
     assert calculate_mana_restore_amount(170, 15) == 26
     assert calculate_passive_mp_regen_per_full_minute(170) == 51
-    assert calculate_post_combat_mp_floor(170) == 51
+    assert calculate_post_combat_mp_floor(170) == 85
     assert calculate_post_combat_mp_floor(170, 50) == 85
     assert apply_post_combat_mp_floor_value(0, 170, 50) == 85
     assert apply_post_combat_mp_floor_value(84, 170, 50) == 85

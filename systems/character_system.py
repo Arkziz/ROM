@@ -727,9 +727,9 @@ def confirm_character_class_change_17_13_1(user_id, class_key):
 
 # Stage 17.15.1 persistent MP helpers.
 
-MP_REGEN_PERCENT_PER_MINUTE_17_15_1 = 0.30
+from data.mana_policy import apply_post_combat_mp_floor_value
 
-MP_POST_COMBAT_FLOOR_PERCENT_17_15_1 = 0.30
+MP_REGEN_PERCENT_PER_MINUTE_17_15_1 = 0.30
 
 
 
@@ -949,9 +949,7 @@ def apply_post_combat_mp_floor_17_15_1(user_id):
 
     current = max(0, min(int((row[0] if row else 0) or 0), maximum))
 
-    floor_value = max(1, int(maximum * MP_POST_COMBAT_FLOOR_PERCENT_17_15_1))
-
-    new_mp = max(current, floor_value)
+    new_mp = apply_post_combat_mp_floor_value(current, maximum)
 
     db.cursor.execute(
 
