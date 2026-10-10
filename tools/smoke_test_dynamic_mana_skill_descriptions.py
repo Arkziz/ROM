@@ -12,6 +12,10 @@ def main():
     assert format_mana_cost_lines(fire,300)=="Вартість: 29 Мани\nФормула: 8 + 7% максимальної мани"
     heal={"cost_type":"mana","description":"Витрачає 30 MP. Одразу лікує.","mana_cost_flat":12,"mana_cost_max_mp_percent":10}
     assert strip_legacy_mana_cost_from_description(heal)=="Одразу лікує."
+    thunder={"cost_type":"mana","description":"Витрачає 45 MP, завдає 160% магічної шкоди.","mana_cost_flat":15,"mana_cost_max_mp_percent":18}
+    assert strip_legacy_mana_cost_from_description(thunder)=="Завдає 160% магічної шкоди."
+    purify={"cost_type":"mana","description":"Витрачає 20 MP, очищає негативні ефекти.","mana_cost_flat":10,"mana_cost_max_mp_percent":8}
+    assert strip_legacy_mana_cost_from_description(purify)=="Очищає негативні ефекти."
     flow={"cost_type":"mana","description":"Не завдає шкоди.","mana_cost_flat":0,"mana_cost_max_mp_percent":0}
     assert format_mana_cost_lines(flow,170)=="Вартість: безкоштовно\nФормула: 0 + 0% максимальної мани"
     print("[OK] Dynamic Mana presentation contract")

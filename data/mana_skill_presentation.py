@@ -20,7 +20,7 @@ def strip_legacy_mana_cost_from_description(skill: Mapping[str, Any]) -> str:
     tail = description[marker + 3:].lstrip()
     if tail.casefold().startswith("та "):
         tail = tail[3:].lstrip()
-    elif tail.startswith("."):
+    elif tail.startswith((".", ",")):
         tail = tail[1:].lstrip()
     else:
         return description

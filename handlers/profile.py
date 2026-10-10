@@ -708,6 +708,20 @@ def build_equipment_text(user_id):
 
 
 
+def _skill_cooldown_turns_uk_20_3_4b(value):
+    """Return a cooldown value with correct Ukrainian plural form."""
+    value = max(0, int(value or 0))
+    mod_10 = value % 10
+    mod_100 = value % 100
+    if mod_10 == 1 and mod_100 != 11:
+        word = "хід"
+    elif mod_10 in (2, 3, 4) and mod_100 not in (12, 13, 14):
+        word = "ходи"
+    else:
+        word = "ходів"
+    return f"{value} {word}"
+
+
 def build_skills_text(user_id):
 
     class_key = get_character_class(user_id)
@@ -771,7 +785,8 @@ def build_skills_text(user_id):
 
             if skill.get("cooldown", 0) > 0:
 
-                text += f"⏳ Перезарядка: {skill['cooldown']} ходів\n"
+                cooldown_text = _skill_cooldown_turns_uk_20_3_4b(skill["cooldown"])
+                text += f"⏳ Перезарядка: {cooldown_text}\n"
 
             text += "\n"
 
