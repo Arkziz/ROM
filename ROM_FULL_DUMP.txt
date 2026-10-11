@@ -2,17 +2,17 @@
 ROM PROJECT SAFE FULL DUMP
 ============================================================
 
-Created: 2026-10-10 21:45:34 +03:00
+Created: 2026-10-12 00:37:51 +03:00
 Project root: C:\Users\Oleh\OneDrive\Документи\ROM
 PowerShell: 5.1.26100.9444
-Scanned files: 14232
-Included files: 280
-Excluded files: 13952
+Scanned files: 14633
+Included files: 283
+Excluded files: 14350
 Included source size: 3,51 MB
 Per-file size limit: none
 
 EXCLUSION STATISTICS:
-- excluded directory: 13944
+- excluded directory: 14342
 - excluded file name or pattern: 8
 - unsupported file type: 0
 
@@ -46,6 +46,8 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - data\guild_resource_policy.py
 - data\location_graph.py
 - data\locations.py
+- data\mana_policy.py
+- data\mana_skill_presentation.py
 - data\mobs.py
 - data\player_combat_chances.py
 - data\player_hp.py
@@ -277,6 +279,7 @@ C:\Users\Oleh\OneDrive\Документи\ROM
 - systems\simulation\patch_regression.py
 - systems\simulation\population_cache.py
 - systems\simulation\population_reporting.py
+- systems\simulation\potion_affordability.py
 - systems\simulation\production_parity.py
 - systems\simulation\progression_economy_reporting.py
 - systems\simulation\progression_models.py
@@ -2259,6 +2262,195 @@ def is_location_unlocked(location_id, player_level):
     return player_level >= location["unlock_level"]
 
 ============================================================
+FILE: data\mana_policy.py
+SIZE: 5195 bytes
+LAST WRITE: 2026-10-11 00:12:00
+============================================================
+
+"""Pure canonical policy for ROM Mana calculations.
+
+This module owns numeric Mana policy only. It must stay free of SQLite, Telegram,
+combat-handler, character-system, and simulator dependencies. Runtime integration
+is intentionally deferred to later Stage 20.3 sub-stages.
+"""
+from __future__ import annotations
+
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from math import isfinite
+from typing import Any, Mapping
+
+MANA_REGEN_PERCENT_PER_FULL_MINUTE = Decimal("30")
+MANA_POST_COMBAT_FLOOR_CURRENT_PERCENT = Decimal("50")
+MANA_POST_COMBAT_FLOOR_TARGET_PERCENT = Decimal("50")
+MANA_COST_ROUNDING_POLICY = "ROUND_HALF_UP"
+
+MANA_COST_FLAT_FIELD = "mana_cost_flat"
+MANA_COST_MAX_MP_PERCENT_FIELD = "mana_cost_max_mp_percent"
+MANA_RESTORE_MAX_MP_PERCENT_FIELD = "restore_max_mp_percent"
+
+
+class ManaPolicyError(ValueError):
+    """Raised when Mana policy input or a Mana skill definition is invalid."""
+
+
+def _decimal(value: Any, field_name: str) -> Decimal:
+    """Return a finite Decimal while rejecting bool and malformed input."""
+    if isinstance(value, bool) or value is None:
+        raise ManaPolicyError(f"{field_name} must be a finite number, not {value!r}")
+    if isinstance(value, float) and not isfinite(value):
+        raise ManaPolicyError(f"{field_name} must be finite")
+    try:
+        result = Decimal(str(value))
+    except (InvalidOperation, ValueError, TypeError) as error:
+        raise ManaPolicyError(f"{field_name} must be a finite number") from error
+    if not result.is_finite():
+        raise ManaPolicyError(f"{field_name} must be finite")
+    return result
+
+
+def _non_negative_decimal(value: Any, field_name: str) -> Decimal:
+    result = _decimal(value, field_name)
+    if result < 0:
+        raise ManaPolicyError(f"{field_name} must not be negative")
+    return result
+
+
+def _non_negative_int(value: Any, field_name: str) -> int:
+    number = _non_negative_decimal(value, field_name)
+    if number != number.to_integral_value():
+        raise ManaPolicyError(f"{field_name} must be an integer")
+    return int(number)
+
+
+def round_mana_value(value: Any) -> int:
+    """Round a non-negative Mana value with explicit half-up semantics."""
+    number = _non_negative_decimal(value, "value")
+    return int(number.quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+
+
+def validate_mana_skill_definition(skill: Mapping[str, Any]) -> dict[str, Decimal]:
+    """Validate and normalize the future hybrid-cost contract of one Mana skill."""
+    if not isinstance(skill, Mapping):
+        raise ManaPolicyError("skill must be a mapping")
+    if str(skill.get("cost_type") or "") != "mana":
+        raise ManaPolicyError("skill cost_type must be 'mana'")
+    missing = [
+        field for field in (MANA_COST_FLAT_FIELD, MANA_COST_MAX_MP_PERCENT_FIELD)
+        if field not in skill
+    ]
+    if missing:
+        raise ManaPolicyError("missing Mana cost fields: " + ", ".join(missing))
+    normalized = {
+        MANA_COST_FLAT_FIELD: _non_negative_decimal(
+            skill[MANA_COST_FLAT_FIELD], MANA_COST_FLAT_FIELD
+        ),
+        MANA_COST_MAX_MP_PERCENT_FIELD: _non_negative_decimal(
+            skill[MANA_COST_MAX_MP_PERCENT_FIELD], MANA_COST_MAX_MP_PERCENT_FIELD
+        ),
+    }
+    if MANA_RESTORE_MAX_MP_PERCENT_FIELD in skill:
+        normalized[MANA_RESTORE_MAX_MP_PERCENT_FIELD] = _non_negative_decimal(
+            skill[MANA_RESTORE_MAX_MP_PERCENT_FIELD],
+            MANA_RESTORE_MAX_MP_PERCENT_FIELD,
+        )
+    return normalized
+
+
+def calculate_mana_skill_cost(skill: Mapping[str, Any], max_mp: Any) -> int:
+    """Return round-half-up(flat + Max MP * percent / 100)."""
+    maximum = _non_negative_int(max_mp, "max_mp")
+    policy = validate_mana_skill_definition(skill)
+    raw_cost = (
+        policy[MANA_COST_FLAT_FIELD]
+        + Decimal(maximum)
+        * policy[MANA_COST_MAX_MP_PERCENT_FIELD]
+        / Decimal("100")
+    )
+    return round_mana_value(raw_cost)
+
+
+def calculate_mana_restore_amount(max_mp: Any, percent: Any) -> int:
+    """Return a clamped nominal percentage restoration amount."""
+    maximum = _non_negative_int(max_mp, "max_mp")
+    restore_percent = _non_negative_decimal(percent, "percent")
+    amount = round_mana_value(Decimal(maximum) * restore_percent / Decimal("100"))
+    return min(maximum, amount)
+
+
+def calculate_post_combat_mp_floor(
+    max_mp: Any,
+    percent: Any = MANA_POST_COMBAT_FLOOR_CURRENT_PERCENT,
+) -> int:
+    """Return the active canonical 50% post-combat Mana floor."""
+    return calculate_mana_restore_amount(max_mp, percent)
+
+
+def apply_post_combat_mp_floor_value(
+    current_mp: Any,
+    max_mp: Any,
+    percent: Any = MANA_POST_COMBAT_FLOOR_CURRENT_PERCENT,
+) -> int:
+    """Apply a floor without adding it and without exceeding Max MP."""
+    maximum = _non_negative_int(max_mp, "max_mp")
+    current = min(_non_negative_int(current_mp, "current_mp"), maximum)
+    return max(current, calculate_post_combat_mp_floor(maximum, percent))
+
+
+def calculate_passive_mp_regen_per_full_minute(max_mp: Any) -> int:
+    """Return the unchanged 30% per-full-minute passive regeneration tick."""
+    return calculate_mana_restore_amount(max_mp, MANA_REGEN_PERCENT_PER_FULL_MINUTE)
+
+============================================================
+FILE: data\mana_skill_presentation.py
+SIZE: 1961 bytes
+LAST WRITE: 2026-10-11 00:04:27
+============================================================
+
+"""Pure presentation helpers for canonical hybrid Mana skill costs."""
+from __future__ import annotations
+from typing import Any, Mapping
+from data.mana_policy import calculate_mana_skill_cost
+
+def strip_legacy_mana_cost_from_description(skill: Mapping[str, Any]) -> str:
+    """Remove only the obsolete leading literal MP-cost sentence."""
+    description = str(skill.get("description") or "").strip()
+    if str(skill.get("cost_type") or "") != "mana":
+        return description
+    prefix = "Витрачає "
+    if not description.casefold().startswith(prefix.casefold()):
+        return description
+    marker = description.upper().find(" MP")
+    if marker < len(prefix):
+        return description
+    amount = description[len(prefix):marker].strip()
+    if not amount.isdigit():
+        return description
+    tail = description[marker + 3:].lstrip()
+    if tail.casefold().startswith("та "):
+        tail = tail[3:].lstrip()
+    elif tail.startswith((".", ",")):
+        tail = tail[1:].lstrip()
+    else:
+        return description
+    return tail[:1].upper() + tail[1:] if tail else tail
+
+
+def format_mana_cost_lines(skill: Mapping[str, Any], max_mp: Any) -> str:
+    """Return effective cost and transparent hybrid formula."""
+    cost = calculate_mana_skill_cost(skill, max_mp)
+    flat = int(skill.get("mana_cost_flat", 0) or 0)
+    percent = int(skill.get("mana_cost_max_mp_percent", 0) or 0)
+    cost_text = "Вартість: безкоштовно" if cost == 0 else f"Вартість: {cost} Мани"
+    return f"{cost_text}\nФормула: {flat} + {percent}% максимальної мани"
+
+
+def format_mana_skill_presentation(skill: Mapping[str, Any], max_mp: Any) -> str:
+    """Return clean description followed by effective cost and formula."""
+    description = strip_legacy_mana_cost_from_description(skill)
+    lines = format_mana_cost_lines(skill, max_mp)
+    return f"{description}\n{lines}" if description else lines
+
+============================================================
 FILE: data\mobs.py
 SIZE: 13190 bytes
 LAST WRITE: 2026-09-22 02:32:08
@@ -3151,8 +3343,8 @@ RUNE_DROP_BALANCE_VERSION = "10.11.0"
 
 ============================================================
 FILE: data\runes.py
-SIZE: 3547 bytes
-LAST WRITE: 2026-09-22 02:32:08
+SIZE: 3427 bytes
+LAST WRITE: 2026-10-11 21:06:21
 ============================================================
 
 """Canonical Rune System data for ROM 10.x."""
@@ -3185,7 +3377,7 @@ RUNE_ITEM_ID_END = 725
 FIRIUS_TOKEN_ITEM_ID = 726
 RUNE_EXTRACTOR_ITEM_ID = 727
 PERFECT_RUNE_EXTRACTOR_ITEM_ID = 728
-FIRIUS_TOKENS_PER_DAILY_REWARD = 5
+FIRIUS_TOKENS_PER_DAILY_REWARD = 3
 RUNE_FUSION_SOURCE_QUANTITY = 3
 RUNE_FUSION_TOKEN_QUANTITY = 1
 RUNE_MAX_STACK = 50
@@ -26620,13 +26812,14 @@ def build_main_menu_text(user_id, show_location_description=False):
 
 ============================================================
 FILE: handlers\combat.py
-SIZE: 135401 bytes
-LAST WRITE: 2026-10-10 00:42:45
+SIZE: 137024 bytes
+LAST WRITE: 2026-10-10 23:19:10
 ============================================================
 
 
 # ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
 from systems.production_logging import get_production_logger, production_log_print as PRODUCTION_LOG_PRINT
+from data.mana_policy import calculate_mana_skill_cost
 from data.priest_healing_policy import (
     PRIEST_HEALING_DURATION_TURNS,
     PRIEST_HEALING_EFFECT_KEY,
@@ -27608,6 +27801,8 @@ CLASS_SKILLS_V1 = {
             "description": "Витрачає 20 MP та завдає 135% магічної шкоди.",
             "cost_type": "mana",
             "cost": 20,
+            "mana_cost_flat": 8,
+            "mana_cost_max_mp_percent": 7,
             "cooldown": 0,
             "damage_multiplier": 1.35,
             "attack_type": "magical",
@@ -27621,6 +27816,8 @@ CLASS_SKILLS_V1 = {
             "description": "Витрачає 45 MP, завдає 160% магічної шкоди та має 25% шанс оглушити ворога.",
             "cost_type": "mana",
             "cost": 45,
+            "mana_cost_flat": 15,
+            "mana_cost_max_mp_percent": 18,
             "cooldown": 4,
             "damage_multiplier": 1.60,
             "attack_type": "magical",
@@ -27634,6 +27831,9 @@ CLASS_SKILLS_V1 = {
             "description": "Не завдає шкоди. Відновлює 25% максимальної Мани в бою.",
             "cost_type": "mana",
             "cost": 0,
+            "mana_cost_flat": 0,
+            "mana_cost_max_mp_percent": 0,
+            "restore_max_mp_percent": 25,
             "cooldown": 5,
             "damage_multiplier": 0,
             "attack_type": "magical",
@@ -27651,6 +27851,8 @@ CLASS_SKILLS_V1 = {
             "description": "Витрачає 12 MP та завдає 115% магічної шкоди.",
             "cost_type": "mana",
             "cost": 12,
+            "mana_cost_flat": 6,
+            "mana_cost_max_mp_percent": 4,
             "cooldown": 0,
             "damage_multiplier": 1.15,
             "attack_type": "magical",
@@ -27664,6 +27866,8 @@ CLASS_SKILLS_V1 = {
             "description": "Витрачає 30 MP. Одразу відновлює 10% максимального здоров’я, а потім лікує ще 2 рази на початку наступних ходів.",
             "cost_type": "mana",
             "cost": 30,
+            "mana_cost_flat": 12,
+            "mana_cost_max_mp_percent": 10,
             "cooldown": 4,
             "damage_multiplier": 0,
             "attack_type": "magical",
@@ -27678,6 +27882,9 @@ CLASS_SKILLS_V1 = {
             "description": "Витрачає 20 MP, очищає негативні ефекти, підвищує магічний захист на 3 ходи та відновлює 15% Мани.",
             "cost_type": "mana",
             "cost": 20,
+            "mana_cost_flat": 10,
+            "mana_cost_max_mp_percent": 8,
+            "restore_max_mp_percent": 15,
             "cooldown": 4,
             "damage_multiplier": 0,
             "attack_type": "magical",
@@ -27719,7 +27926,10 @@ def get_player_skill_by_key(user_id, skill_key):
 
 
 def build_skill_menu_text(user_id, mob):
-    from systems.pve_skill_action_state import get_pve_skill_action_state
+    from systems.pve_skill_action_state import (
+        format_pve_skill_description,
+        get_pve_skill_action_state,
+    )
 
     skills = get_player_class_skills(user_id)
     class_resource_text = get_class_resource_line(mob)
@@ -27730,7 +27940,8 @@ def build_skill_menu_text(user_id, mob):
     kb = types.InlineKeyboardMarkup()
     for skill in skills:
         state = get_pve_skill_action_state(user_id, mob, skill)
-        text += f"{skill['name']}\n{skill['description']}\n"
+        description = format_pve_skill_description(mob, skill)
+        text += f"{skill['name']}\n{description}\n"
         text += "✅ Навичка доступна.\n\n" if state["available"] else f"{state['message']}\n\n"
         kb.add(types.InlineKeyboardButton(
             text=state["label"], callback_data=state["callback_data"]
@@ -27745,8 +27956,14 @@ def build_skill_menu_text(user_id, mob):
 
 
 def validate_and_pay_skill_cost(user_id, mob, skill):
+    """Revalidate and pay a skill cost; Mana uses fresh persisted Max MP."""
     cost_type = skill["cost_type"]
     cost = int(skill.get("cost", 0))
+    mana_snapshot = None
+    if cost_type == "mana":
+        mana_snapshot = get_user_mp(user_id)
+        maximum = max(0, int(mana_snapshot.get("max_mp", 0) or 0))
+        cost = calculate_mana_skill_cost(skill, maximum)
 
     mob["last_skill_spent_rage"] = 0
     mob["last_skill_spent_combo"] = 0
@@ -27847,9 +28064,20 @@ def validate_and_pay_skill_cost(user_id, mob, skill):
         }
 
     if cost_type == "mana":
+        current = max(0, int((mana_snapshot or {}).get("mp", 0) or 0))
+        maximum = max(0, int((mana_snapshot or {}).get("max_mp", 0) or 0))
+        if skill.get("key") == "mage_arcane_flow" and maximum > 0 and current >= maximum:
+            return {
+                "success": False,
+                "message": "🔵 Мана вже повна.",
+                "mp": current,
+                "max_mp": maximum,
+                "cost": cost,
+            }
         spend_result = spend_user_mp(user_id, cost)
 
         if not spend_result["success"]:
+            spend_result["cost"] = cost
             return spend_result
 
         mob["player_mp"] = spend_result["mp"]
@@ -27857,7 +28085,10 @@ def validate_and_pay_skill_cost(user_id, mob, skill):
 
         return {
             "success": True,
-            "message": ""
+            "message": "",
+            "cost": cost,
+            "mp": spend_result["mp"],
+            "max_mp": spend_result["max_mp"],
         }
 
     return {
@@ -30994,8 +31225,8 @@ def register_crystal_shop_handlers(bot):
 
 ============================================================
 FILE: handlers\daily.py
-SIZE: 3285 bytes
-LAST WRITE: 2026-09-24 00:26:44
+SIZE: 3264 bytes
+LAST WRITE: 2026-10-11 21:06:21
 ============================================================
 
 from telebot import types
@@ -31005,6 +31236,8 @@ from db import (
     claim_daily_quest_reward,
     reset_daily_quest_if_needed
 )
+
+from data.runes import FIRIUS_TOKENS_PER_DAILY_REWARD
 
 from keyboards import daily_quest_kb
 
@@ -31033,7 +31266,7 @@ def build_daily_quest_text(user_id):
         f"{progress}/{target_count}\n\n"
         "🎁 Нагорода:\n"
         "🔴 Мале зілля здоров’я ×3\n"
-        "🪙 Жетон Фіріуса ×5\n"
+        f"🪙 Жетон Фіріуса ×{FIRIUS_TOKENS_PER_DAILY_REWARD}\n"
         "ℹ️ Жетони накопичуються та не зникають наступного дня.\n"
     )
 
@@ -32528,8 +32761,8 @@ def register_fatigue_artifact_handlers(bot):
 
 ============================================================
 FILE: handlers\guild.py
-SIZE: 115452 bytes
-LAST WRITE: 2026-09-22 02:32:08
+SIZE: 112441 bytes
+LAST WRITE: 2026-10-12 00:19:56
 ============================================================
 
 # ROM 17.21.3.4 GUILD MEMBER LIST EXPLICIT ACTOR RECOVERY
@@ -33038,7 +33271,7 @@ def build_guild_create_icon_prompt(name, tag):
 
 def build_guild_create_confirm_text(state, user_id=None):
     name = state.get("name", ""); tag = state.get("tag", ""); icon = state.get("icon", "🏰")
-    terms = get_guild_creation_terms(user_id) if user_id is not None else {"cost_gold": 100.0, "gold_balance": 0.0, "member_limit": 10}
+    terms = get_guild_creation_terms(user_id) if user_id is not None else {"cost_gold": 50.0, "gold_balance": 0.0, "member_limit": 10}
     return ("🏗️ Створення гільдії\n\nКрок 4/4 — підтвердження.\n\n" f"Майбутня гільдія:\n{icon} [{tag}] {name}\n\n" f"Вартість: {terms['cost_gold']:.2f} 🪙\n" f"Твій баланс: {terms['gold_balance']:.2f} 🪙\n" f"Початковий ліміт: {terms['member_limit']} учасників.\n\n" "Підтвердити створення?")
 
 
@@ -35545,13 +35778,15 @@ def build_guild_member_detail_text(*args, **kwargs):
 
 ============================================================
 FILE: handlers\inventory.py
-SIZE: 89588 bytes
-LAST WRITE: 2026-09-22 02:32:08
+SIZE: 81817 bytes
+LAST WRITE: 2026-10-11 21:22:30
 ============================================================
 
 # ROM 17.10.1 ITEM QUANTITY DISPLAY FORMAT
 
 
+
+from data.runes import FIRIUS_TOKENS_PER_DAILY_REWARD
 
 from telebot import types
 
@@ -40157,7 +40392,7 @@ def get_refine_material_description_text(item_id):
 
 
 
-            "• 5 жетонів можна отримати за виконання щоденного завдання.\n"
+            f"• {FIRIUS_TOKENS_PER_DAILY_REWARD} жетони можна отримати за виконання щоденного завдання.\n"
 
 
 
@@ -45848,8 +46083,8 @@ def register_player_rankings_handlers(bot):
 
 ============================================================
 FILE: handlers\profile.py
-SIZE: 21954 bytes
-LAST WRITE: 2026-09-23 23:34:45
+SIZE: 22039 bytes
+LAST WRITE: 2026-10-11 00:04:27
 ============================================================
 
 from db import get_user_guild_profile_line
@@ -46562,11 +46797,34 @@ def build_equipment_text(user_id):
 
 
 
+def _skill_cooldown_turns_uk_20_3_4b(value):
+    """Return a cooldown value with correct Ukrainian plural form."""
+    value = max(0, int(value or 0))
+    mod_10 = value % 10
+    mod_100 = value % 100
+    if mod_10 == 1 and mod_100 != 11:
+        word = "хід"
+    elif mod_10 in (2, 3, 4) and mod_100 not in (12, 13, 14):
+        word = "ходи"
+    else:
+        word = "ходів"
+    return f"{value} {word}"
+
+
 def build_skills_text(user_id):
 
     class_key = get_character_class(user_id)
 
     skills = CLASS_SKILLS_V1.get(class_key, [])
+
+    from db import get_player_stats
+    from systems.stat_system import calculate_max_mp
+    stats = get_player_stats(user_id)
+    if stats and len(stats) >= 6:
+        _str, _dex, intelligence, wisdom, _sta, level = stats[:6]
+        skill_max_mp = calculate_max_mp(class_key, level=level, intelligence=intelligence, wisdom=wisdom)
+    else:
+        skill_max_mp = 0
 
     profile_summary = get_character_profile_summary(user_id)
 
@@ -46594,9 +46852,16 @@ def build_skills_text(user_id):
 
             text += f"{i+1}. {skill['name']}\n"
 
-            text += f"{skill['description']}\n"
+            description = str(skill.get("description") or "")
+            if skill.get("cost_type") == "mana":
+                from data.mana_skill_presentation import strip_legacy_mana_cost_from_description
+                description = strip_legacy_mana_cost_from_description(skill)
+            text += f"{description}\n"
 
-            if skill.get("cost"):
+            if skill.get("cost_type") == "mana":
+                from data.mana_skill_presentation import format_mana_cost_lines
+                text += f"🔷 {format_mana_cost_lines(skill, skill_max_mp)}\n"
+            elif skill.get("cost"):
 
                 if skill["cost_type"] == "rage":
 
@@ -46606,13 +46871,11 @@ def build_skills_text(user_id):
 
                     text += f"💥 Вартість: {skill['cost']} Енергії\n"
 
-                elif skill["cost_type"] == "mana":
-
-                    text += f"💧 Вартість: {skill['cost']} Мани\n"
 
             if skill.get("cooldown", 0) > 0:
 
-                text += f"⏳ Перезарядка: {skill['cooldown']} ходів\n"
+                cooldown_text = _skill_cooldown_turns_uk_20_3_4b(skill["cooldown"])
+                text += f"⏳ Перезарядка: {cooldown_text}\n"
 
             text += "\n"
 
@@ -48564,8 +48827,8 @@ def register_rune_master_shop_handlers(bot):
 
 ============================================================
 FILE: handlers\start.py
-SIZE: 23004 bytes
-LAST WRITE: 2026-09-22 02:32:08
+SIZE: 23348 bytes
+LAST WRITE: 2026-10-10 23:54:34
 ============================================================
 
 # ROM 17.13.1.2 CLASS SKILL PREVIEW SPACING
@@ -49083,8 +49346,22 @@ def build_class_selection_text(user_id, mode="register"):
     )
 
 
-def _skill_cost_text_17_13_1(skill):
+def _projected_max_mp_for_class_20_3_4a(user_id, class_key):
+    """Calculate candidate-class Max MP from current effective primary stats."""
+    from db import get_player_stats
+    from systems.stat_system import calculate_max_mp
+    stats = get_player_stats(user_id)
+    if not stats or len(stats) < 6:
+        return 0
+    _str, _dex, intelligence, wisdom, _sta, level = stats[:6]
+    return calculate_max_mp(class_key, level=level, intelligence=intelligence, wisdom=wisdom)
+
+
+def _skill_cost_text_17_13_1(skill, max_mp=0):
     cost_type = skill.get("cost_type", "")
+    if cost_type == "mana":
+        from data.mana_skill_presentation import format_mana_cost_lines
+        return format_mana_cost_lines(skill, max_mp)
     cost = int(skill.get("cost", 0) or 0)
     if cost_type == "rage_all_min":
         return f"Вартість: уся Лють, мінімум {int(skill.get('min_cost', 0) or 0)}"
@@ -49108,11 +49385,17 @@ def build_class_preview_text_17_13_1(user_id, mode, class_key):
         return None
     from handlers.combat import CLASS_SKILLS_V1
     skills = CLASS_SKILLS_V1.get(class_key, [])
+    max_mp = _projected_max_mp_for_class_20_3_4a(user_id, class_key)
     text = f"{config['name']}\n\n{config['description']}\n\n✨ Навички першого рівня:\n"
     for index, skill in enumerate(skills):
         if index:
             text += "\n"
-        text += f"\n• {skill['name']}\n  {skill['description']}\n  {_skill_cost_text_17_13_1(skill)}"
+        description = str(skill.get("description") or "")
+        if skill.get("cost_type") == "mana":
+            from data.mana_skill_presentation import strip_legacy_mana_cost_from_description
+            description = strip_legacy_mana_cost_from_description(skill)
+        cost_text = _skill_cost_text_17_13_1(skill, max_mp)
+        text += f"\n• {skill['name']}\n  {description}\n  {cost_text}"
         cooldown = int(skill.get("cooldown", 0) or 0)
         text += f"\n  Перезарядка: {cooldown} ход."
     if mode == "change":
@@ -58796,8 +59079,8 @@ def render_boss_action_text(boss: Mapping[str, Any], turn: Mapping[str, Any], ac
 
 ============================================================
 FILE: systems\character_system.py
-SIZE: 20509 bytes
-LAST WRITE: 2026-09-22 02:32:08
+SIZE: 19509 bytes
+LAST WRITE: 2026-10-11 00:59:27
 ============================================================
 
 # ROM 17.15.1 PERSISTENT MANA REGENERATION
@@ -59529,13 +59812,10 @@ def confirm_character_class_change_17_13_1(user_id, class_key):
 
 # Stage 17.15.1 persistent MP helpers.
 
-MP_REGEN_PERCENT_PER_MINUTE_17_15_1 = 0.30
-
-MP_POST_COMBAT_FLOOR_PERCENT_17_15_1 = 0.30
-
-
-
-
+from data.mana_policy import (
+    apply_post_combat_mp_floor_value,
+    calculate_passive_mp_regen_per_full_minute,
+)
 
 def init_persistent_mp_columns_17_15_1():
 
@@ -59711,7 +59991,7 @@ def apply_lazy_mp_regeneration_17_15_1(user_id, now=None):
 
         return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0}
 
-    per_tick = max(1, int(maximum * MP_REGEN_PERCENT_PER_MINUTE_17_15_1))
+    per_tick = calculate_passive_mp_regen_per_full_minute(maximum)
 
     new_mp = min(maximum, current + per_tick * ticks)
 
@@ -59751,9 +60031,7 @@ def apply_post_combat_mp_floor_17_15_1(user_id):
 
     current = max(0, min(int((row[0] if row else 0) or 0), maximum))
 
-    floor_value = max(1, int(maximum * MP_POST_COMBAT_FLOOR_PERCENT_17_15_1))
-
-    new_mp = max(current, floor_value)
+    new_mp = apply_post_combat_mp_floor_value(current, maximum)
 
     db.cursor.execute(
 
@@ -67239,8 +67517,8 @@ def activate_guild_resource_sink(*args, **kwargs):
 
 ============================================================
 FILE: systems\guild_system.py
-SIZE: 98221 bytes
-LAST WRITE: 2026-09-22 02:32:08
+SIZE: 95427 bytes
+LAST WRITE: 2026-10-12 00:19:56
 ============================================================
 
 from datetime import datetime
@@ -67273,7 +67551,7 @@ except Exception:
 
 
 
-GUILD_CREATE_COST_GOLD = 100.0
+GUILD_CREATE_COST_GOLD = 50.0
 DEFAULT_GUILD_MEMBER_LIMIT = 10
 MIN_GUILD_ACCESS_LEVEL = 3
 
@@ -70201,233 +70479,480 @@ def recover_stranded_preview_item(conn,source_item_id):
 
 ============================================================
 FILE: systems\level_up_reward_system.py
-SIZE: 10768 bytes
-LAST WRITE: 2026-09-22 02:32:08
+SIZE: 11261 bytes
+LAST WRITE: 2026-10-11 22:50:06
 ============================================================
 
-# ROM 17.14.1.2 LEVEL UP REWARD BALANCE EXPANSION
-# ROM 17.14.1 LEVEL UP REWARDS
-"""Persistent and recoverable rewards for newly reached character levels."""
-from __future__ import annotations
-
-from datetime import datetime
-
-from data.balance import REFINE_STONE_ITEM_ID
-
-SMALL_HEALTH_POTION_ITEM_ID = 401
-SMALL_MANA_POTION_ITEM_ID = 402
-MEDIUM_HEALTH_POTION_ITEM_ID = 403
-MEDIUM_MANA_POTION_ITEM_ID = 404
-CRYSTAL_REWARD_ENABLED = False
-
-
-def calculate_level_reward(reached_level):
-    level = max(1, int(reached_level))
-    milestone = level % 5 == 0
-    return {
-        "reached_level": level,
-        "gold": level * (12 if milestone else 8),
-        "small_health_potions": 3,
-        "small_mana_potions": 1,
-        "refine_stones": 4 if milestone else 2,
-        "medium_health_potions": 2 if milestone else 0,
-        "medium_mana_potions": 1 if milestone else 0,
-        "crystals": 0,
-        "milestone": milestone,
-    }
-
-
-def calculate_level_rewards(old_level, new_level):
-    old_level = int(old_level)
-    new_level = int(new_level)
-    levels = list(range(old_level + 1, new_level + 1)) if new_level > old_level else []
-    rows = [calculate_level_reward(level) for level in levels]
-    return {
-        "old_level": old_level,
-        "new_level": new_level,
-        "reached_levels": levels,
-        "milestone_levels": [row["reached_level"] for row in rows if row["milestone"]],
-        "gold": sum(row["gold"] for row in rows),
-        "small_health_potions": sum(row["small_health_potions"] for row in rows),
-        "small_mana_potions": sum(row["small_mana_potions"] for row in rows),
-        "refine_stones": sum(row["refine_stones"] for row in rows),
-        "medium_health_potions": sum(row["medium_health_potions"] for row in rows),
-        "medium_mana_potions": sum(row["medium_mana_potions"] for row in rows),
-        "crystals": 0,
-        "rows": rows,
-    }
-
-
-def _table_columns(db, table_name):
-    return {str(row[1]) for row in db.cursor.execute(f"PRAGMA table_info({table_name})").fetchall()}
-
-
-def init_level_up_reward_system(db):
-    db.cursor.execute("""
-        CREATE TABLE IF NOT EXISTS level_up_rewards (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            reached_level INTEGER NOT NULL,
-            gold_amount REAL NOT NULL DEFAULT 0,
-            health_potion_quantity INTEGER NOT NULL DEFAULT 0,
-            simple_extractor_quantity INTEGER NOT NULL DEFAULT 0,
-            crystal_quantity INTEGER NOT NULL DEFAULT 0,
-            gold_claimed INTEGER NOT NULL DEFAULT 0,
-            items_claimed INTEGER NOT NULL DEFAULT 0,
-            created_at TEXT NOT NULL,
-            items_claimed_at TEXT,
-            small_mana_potion_quantity INTEGER NOT NULL DEFAULT 0,
-            refine_stone_quantity INTEGER NOT NULL DEFAULT 0,
-            medium_health_potion_quantity INTEGER NOT NULL DEFAULT 0,
-            medium_mana_potion_quantity INTEGER NOT NULL DEFAULT 0,
-            UNIQUE(user_id, reached_level)
-        )
-    """)
-    columns = _table_columns(db, "level_up_rewards")
-    additions = {
-        "small_mana_potion_quantity": "INTEGER NOT NULL DEFAULT 0",
-        "refine_stone_quantity": "INTEGER NOT NULL DEFAULT 0",
-        "medium_health_potion_quantity": "INTEGER NOT NULL DEFAULT 0",
-        "medium_mana_potion_quantity": "INTEGER NOT NULL DEFAULT 0",
-    }
-    for name, declaration in additions.items():
-        if name not in columns:
-            db.cursor.execute(f"ALTER TABLE level_up_rewards ADD COLUMN {name} {declaration}")
-
-    # Pending historical rows adopt the new item balance. Claimed rows stay untouched.
-    db.cursor.execute("""
-        UPDATE level_up_rewards
-           SET health_potion_quantity=3,
-               simple_extractor_quantity=0,
-               small_mana_potion_quantity=1,
-               refine_stone_quantity=5,
-               medium_health_potion_quantity=CASE WHEN reached_level % 5=0 THEN 2 ELSE 0 END,
-               medium_mana_potion_quantity=CASE WHEN reached_level % 5=0 THEN 1 ELSE 0 END
-         WHERE items_claimed=0
-    """)
-    db.conn.commit()
-
-
-def _insert_new_reward_rows(db, user_id, reward_plan):
-    inserted_gold = 0.0
-    inserted_levels = []
-    now = datetime.now().isoformat()
-    for row in reward_plan["rows"]:
-        db.cursor.execute(
-            """INSERT OR IGNORE INTO level_up_rewards (
-                   user_id, reached_level, gold_amount,
-                   health_potion_quantity, simple_extractor_quantity,
-                   crystal_quantity, gold_claimed, items_claimed, created_at,
-                   small_mana_potion_quantity, refine_stone_quantity,
-                   medium_health_potion_quantity, medium_mana_potion_quantity
-               ) VALUES (?, ?, ?, ?, 0, 0, 0, 0, ?, ?, ?, ?, ?)""",
-            (
-                int(user_id), row["reached_level"], row["gold"],
-                row["small_health_potions"], now,
-                row["small_mana_potions"], row["refine_stones"],
-                row["medium_health_potions"], row["medium_mana_potions"],
-            ),
-        )
-        if db.cursor.rowcount == 1:
-            inserted_gold += float(row["gold"])
-            inserted_levels.append(int(row["reached_level"]))
-    if inserted_gold:
-        db.cursor.execute(
-            "UPDATE users SET gold=COALESCE(gold, 0)+? WHERE user_id=?",
-            (inserted_gold, int(user_id)),
-        )
-        placeholders = ",".join("?" for _ in inserted_levels)
-        db.cursor.execute(
-            f"UPDATE level_up_rewards SET gold_claimed=1 WHERE user_id=? AND reached_level IN ({placeholders})",
-            (int(user_id), *inserted_levels),
-        )
-    return inserted_gold, inserted_levels
-
-
-def _pending_item_totals(db, user_id):
-    row = db.cursor.execute(
-        """SELECT COALESCE(SUM(health_potion_quantity),0),
-                  COALESCE(SUM(small_mana_potion_quantity),0),
-                  COALESCE(SUM(refine_stone_quantity),0),
-                  COALESCE(SUM(medium_health_potion_quantity),0),
-                  COALESCE(SUM(medium_mana_potion_quantity),0)
-             FROM level_up_rewards
-            WHERE user_id=? AND items_claimed=0""",
-        (int(user_id),),
-    ).fetchone()
-    values = list(row or (0, 0, 0, 0, 0))
-    return tuple(int(value or 0) for value in values)
-
-
-def try_claim_pending_items(db, user_id):
-    from db_modules.inventory import add_item
-
-    small_hp, small_mp, stones, medium_hp, medium_mp = _pending_item_totals(db, user_id)
-    quantities = (
-        (SMALL_HEALTH_POTION_ITEM_ID, small_hp),
-        (SMALL_MANA_POTION_ITEM_ID, small_mp),
-        (REFINE_STONE_ITEM_ID, stones),
-        (MEDIUM_HEALTH_POTION_ITEM_ID, medium_hp),
-        (MEDIUM_MANA_POTION_ITEM_ID, medium_mp),
-    )
-    if not any(quantity > 0 for _item_id, quantity in quantities):
-        return {"success": True, "pending": False}
-
-    savepoint = "rom_level_up_reward_items_17_14_1_2"
-    db.cursor.execute(f"SAVEPOINT {savepoint}")
-    try:
-        for item_id, quantity in quantities:
-            if quantity <= 0:
-                continue
-            result = add_item(user_id, item_id, quantity, commit=False)
-            if not result.get("success"):
-                raise RuntimeError(result.get("message") or f"item {item_id} delivery failed")
-        db.cursor.execute(
-            """UPDATE level_up_rewards
-                  SET items_claimed=1, items_claimed_at=?
-                WHERE user_id=? AND items_claimed=0""",
-            (datetime.now().isoformat(), int(user_id)),
-        )
-        db.cursor.execute(f"RELEASE {savepoint}")
-        return {
-            "success": True, "pending": False,
-            "small_health_potions": small_hp, "small_mana_potions": small_mp,
-            "refine_stones": stones, "medium_health_potions": medium_hp,
-            "medium_mana_potions": medium_mp,
-        }
-    except Exception as error:
-        db.cursor.execute(f"ROLLBACK TO {savepoint}")
-        db.cursor.execute(f"RELEASE {savepoint}")
-        return {"success": False, "pending": True, "message": str(error)}
-
-
-def apply_level_up_rewards_in_transaction(db, user_id, old_level, new_level):
-    plan = calculate_level_rewards(old_level, new_level)
-    gold, inserted_levels = _insert_new_reward_rows(db, user_id, plan)
-    item_result = try_claim_pending_items(db, user_id)
-    return {**plan, "gold_awarded_now": gold, "new_ledger_levels": inserted_levels, "item_result": item_result}
-
-
-def build_level_up_reward_message(result):
-    levels = result.get("new_ledger_levels") or []
-    if not levels:
-        return ""
-    title = f"🎉 Новий рівень: {levels[0]}" if len(levels) == 1 else f"🎉 Отримано рівні: {levels[0]}–{levels[-1]}"
-    rows = [row for row in result.get("rows", []) if row.get("reached_level") in levels]
-    total = lambda key: sum(int(row.get(key, 0)) for row in rows)
-    lines = [
-        title, "", "🎁 Нагорода:",
-        f"• Золото: {int(result.get('gold_awarded_now', 0) or 0)}",
-        f"• Мале зілля здоров’я ×{total('small_health_potions')}",
-        f"• Мале зілля мани ×{total('small_mana_potions')}",
-        f"• Камінь посилення ×{total('refine_stones')}",
-    ]
-    if total("medium_health_potions"):
-        lines.append(f"• Середнє зілля здоров’я ×{total('medium_health_potions')}")
-    if total("medium_mana_potions"):
-        lines.append(f"• Середнє зілля мани ×{total('medium_mana_potions')}")
-    if result.get("item_result", {}).get("pending"):
-        lines.extend(["", "🎒 Предметна нагорода очікує вільного місця в сумці."])
+# ROM 17.14.1.2 LEVEL UP REWARD BALANCE EXPANSION
+
+# ROM 17.14.1 LEVEL UP REWARDS
+
+"""Persistent and recoverable rewards for newly reached character levels."""
+
+from __future__ import annotations
+
+
+
+from datetime import datetime
+
+
+
+from data.balance import REFINE_STONE_ITEM_ID
+
+
+
+SMALL_HEALTH_POTION_ITEM_ID = 401
+
+SMALL_MANA_POTION_ITEM_ID = 402
+
+MEDIUM_HEALTH_POTION_ITEM_ID = 403
+
+MEDIUM_MANA_POTION_ITEM_ID = 404
+
+CRYSTAL_REWARD_ENABLED = False
+
+# Stage 20.4.2b: approved deterministic level-up gold matrix. Each reached
+# level uses 10% of expected same-level normal-mob combat income from the
+# preceding source level, rounded to two decimals during the audit. Keeping
+# this table frozen prevents reward drift when unrelated mob data changes.
+LEVEL_UP_GOLD_BY_REACHED_LEVEL = {
+    2: 0.45,
+    3: 1.43,
+    4: 4.30,
+    5: 11.98,
+    6: 34.40,
+    7: 69.58,
+    8: 130.73,
+    9: 255.74,
+    10: 479.19,
+    11: 881.25,
+}
+
+
+
+
+
+
+def calculate_level_reward(reached_level):
+
+    level = int(reached_level)
+
+    if level not in LEVEL_UP_GOLD_BY_REACHED_LEVEL:
+        raise ValueError(
+            f"Level-up gold is not configured for reached level {level}. "
+            "Add an audited combat-income matrix before enabling this level."
+        )
+
+    milestone = level % 5 == 0
+
+    return {
+
+        "reached_level": level,
+
+        "gold": LEVEL_UP_GOLD_BY_REACHED_LEVEL[level],
+
+        "small_health_potions": 3,
+
+        "small_mana_potions": 1,
+
+        "refine_stones": 4 if milestone else 2,
+
+        "medium_health_potions": 2 if milestone else 0,
+
+        "medium_mana_potions": 1 if milestone else 0,
+
+        "crystals": 0,
+
+        "milestone": milestone,
+
+    }
+
+
+
+
+
+def calculate_level_rewards(old_level, new_level):
+
+    old_level = int(old_level)
+
+    new_level = int(new_level)
+
+    levels = list(range(old_level + 1, new_level + 1)) if new_level > old_level else []
+
+    rows = [calculate_level_reward(level) for level in levels]
+
+    return {
+
+        "old_level": old_level,
+
+        "new_level": new_level,
+
+        "reached_levels": levels,
+
+        "milestone_levels": [row["reached_level"] for row in rows if row["milestone"]],
+
+        "gold": sum(row["gold"] for row in rows),
+
+        "small_health_potions": sum(row["small_health_potions"] for row in rows),
+
+        "small_mana_potions": sum(row["small_mana_potions"] for row in rows),
+
+        "refine_stones": sum(row["refine_stones"] for row in rows),
+
+        "medium_health_potions": sum(row["medium_health_potions"] for row in rows),
+
+        "medium_mana_potions": sum(row["medium_mana_potions"] for row in rows),
+
+        "crystals": 0,
+
+        "rows": rows,
+
+    }
+
+
+
+
+
+def _table_columns(db, table_name):
+
+    return {str(row[1]) for row in db.cursor.execute(f"PRAGMA table_info({table_name})").fetchall()}
+
+
+
+
+
+def init_level_up_reward_system(db):
+
+    db.cursor.execute("""
+
+        CREATE TABLE IF NOT EXISTS level_up_rewards (
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            user_id INTEGER NOT NULL,
+
+            reached_level INTEGER NOT NULL,
+
+            gold_amount REAL NOT NULL DEFAULT 0,
+
+            health_potion_quantity INTEGER NOT NULL DEFAULT 0,
+
+            simple_extractor_quantity INTEGER NOT NULL DEFAULT 0,
+
+            crystal_quantity INTEGER NOT NULL DEFAULT 0,
+
+            gold_claimed INTEGER NOT NULL DEFAULT 0,
+
+            items_claimed INTEGER NOT NULL DEFAULT 0,
+
+            created_at TEXT NOT NULL,
+
+            items_claimed_at TEXT,
+
+            small_mana_potion_quantity INTEGER NOT NULL DEFAULT 0,
+
+            refine_stone_quantity INTEGER NOT NULL DEFAULT 0,
+
+            medium_health_potion_quantity INTEGER NOT NULL DEFAULT 0,
+
+            medium_mana_potion_quantity INTEGER NOT NULL DEFAULT 0,
+
+            UNIQUE(user_id, reached_level)
+
+        )
+
+    """)
+
+    columns = _table_columns(db, "level_up_rewards")
+
+    additions = {
+
+        "small_mana_potion_quantity": "INTEGER NOT NULL DEFAULT 0",
+
+        "refine_stone_quantity": "INTEGER NOT NULL DEFAULT 0",
+
+        "medium_health_potion_quantity": "INTEGER NOT NULL DEFAULT 0",
+
+        "medium_mana_potion_quantity": "INTEGER NOT NULL DEFAULT 0",
+
+    }
+
+    for name, declaration in additions.items():
+
+        if name not in columns:
+
+            db.cursor.execute(f"ALTER TABLE level_up_rewards ADD COLUMN {name} {declaration}")
+
+
+
+    # Pending historical rows adopt the new item balance. Claimed rows stay untouched.
+
+    db.cursor.execute("""
+
+        UPDATE level_up_rewards
+
+           SET health_potion_quantity=3,
+
+               simple_extractor_quantity=0,
+
+               small_mana_potion_quantity=1,
+
+               refine_stone_quantity=5,
+
+               medium_health_potion_quantity=CASE WHEN reached_level % 5=0 THEN 2 ELSE 0 END,
+
+               medium_mana_potion_quantity=CASE WHEN reached_level % 5=0 THEN 1 ELSE 0 END
+
+         WHERE items_claimed=0
+
+    """)
+
+    db.conn.commit()
+
+
+
+
+
+def _insert_new_reward_rows(db, user_id, reward_plan):
+
+    inserted_gold = 0.0
+
+    inserted_levels = []
+
+    now = datetime.now().isoformat()
+
+    for row in reward_plan["rows"]:
+
+        db.cursor.execute(
+
+            """INSERT OR IGNORE INTO level_up_rewards (
+
+                   user_id, reached_level, gold_amount,
+
+                   health_potion_quantity, simple_extractor_quantity,
+
+                   crystal_quantity, gold_claimed, items_claimed, created_at,
+
+                   small_mana_potion_quantity, refine_stone_quantity,
+
+                   medium_health_potion_quantity, medium_mana_potion_quantity
+
+               ) VALUES (?, ?, ?, ?, 0, 0, 0, 0, ?, ?, ?, ?, ?)""",
+
+            (
+
+                int(user_id), row["reached_level"], row["gold"],
+
+                row["small_health_potions"], now,
+
+                row["small_mana_potions"], row["refine_stones"],
+
+                row["medium_health_potions"], row["medium_mana_potions"],
+
+            ),
+
+        )
+
+        if db.cursor.rowcount == 1:
+
+            inserted_gold += float(row["gold"])
+
+            inserted_levels.append(int(row["reached_level"]))
+
+    if inserted_gold:
+
+        db.cursor.execute(
+
+            "UPDATE users SET gold=COALESCE(gold, 0)+? WHERE user_id=?",
+
+            (inserted_gold, int(user_id)),
+
+        )
+
+        placeholders = ",".join("?" for _ in inserted_levels)
+
+        db.cursor.execute(
+
+            f"UPDATE level_up_rewards SET gold_claimed=1 WHERE user_id=? AND reached_level IN ({placeholders})",
+
+            (int(user_id), *inserted_levels),
+
+        )
+
+    return inserted_gold, inserted_levels
+
+
+
+
+
+def _pending_item_totals(db, user_id):
+
+    row = db.cursor.execute(
+
+        """SELECT COALESCE(SUM(health_potion_quantity),0),
+
+                  COALESCE(SUM(small_mana_potion_quantity),0),
+
+                  COALESCE(SUM(refine_stone_quantity),0),
+
+                  COALESCE(SUM(medium_health_potion_quantity),0),
+
+                  COALESCE(SUM(medium_mana_potion_quantity),0)
+
+             FROM level_up_rewards
+
+            WHERE user_id=? AND items_claimed=0""",
+
+        (int(user_id),),
+
+    ).fetchone()
+
+    values = list(row or (0, 0, 0, 0, 0))
+
+    return tuple(int(value or 0) for value in values)
+
+
+
+
+
+def try_claim_pending_items(db, user_id):
+
+    from db_modules.inventory import add_item
+
+
+
+    small_hp, small_mp, stones, medium_hp, medium_mp = _pending_item_totals(db, user_id)
+
+    quantities = (
+
+        (SMALL_HEALTH_POTION_ITEM_ID, small_hp),
+
+        (SMALL_MANA_POTION_ITEM_ID, small_mp),
+
+        (REFINE_STONE_ITEM_ID, stones),
+
+        (MEDIUM_HEALTH_POTION_ITEM_ID, medium_hp),
+
+        (MEDIUM_MANA_POTION_ITEM_ID, medium_mp),
+
+    )
+
+    if not any(quantity > 0 for _item_id, quantity in quantities):
+
+        return {"success": True, "pending": False}
+
+
+
+    savepoint = "rom_level_up_reward_items_17_14_1_2"
+
+    db.cursor.execute(f"SAVEPOINT {savepoint}")
+
+    try:
+
+        for item_id, quantity in quantities:
+
+            if quantity <= 0:
+
+                continue
+
+            result = add_item(user_id, item_id, quantity, commit=False)
+
+            if not result.get("success"):
+
+                raise RuntimeError(result.get("message") or f"item {item_id} delivery failed")
+
+        db.cursor.execute(
+
+            """UPDATE level_up_rewards
+
+                  SET items_claimed=1, items_claimed_at=?
+
+                WHERE user_id=? AND items_claimed=0""",
+
+            (datetime.now().isoformat(), int(user_id)),
+
+        )
+
+        db.cursor.execute(f"RELEASE {savepoint}")
+
+        return {
+
+            "success": True, "pending": False,
+
+            "small_health_potions": small_hp, "small_mana_potions": small_mp,
+
+            "refine_stones": stones, "medium_health_potions": medium_hp,
+
+            "medium_mana_potions": medium_mp,
+
+        }
+
+    except Exception as error:
+
+        db.cursor.execute(f"ROLLBACK TO {savepoint}")
+
+        db.cursor.execute(f"RELEASE {savepoint}")
+
+        return {"success": False, "pending": True, "message": str(error)}
+
+
+
+
+
+def apply_level_up_rewards_in_transaction(db, user_id, old_level, new_level):
+
+    plan = calculate_level_rewards(old_level, new_level)
+
+    gold, inserted_levels = _insert_new_reward_rows(db, user_id, plan)
+
+    item_result = try_claim_pending_items(db, user_id)
+
+    return {**plan, "gold_awarded_now": gold, "new_ledger_levels": inserted_levels, "item_result": item_result}
+
+
+
+
+
+def build_level_up_reward_message(result):
+
+    levels = result.get("new_ledger_levels") or []
+
+    if not levels:
+
+        return ""
+
+    title = f"🎉 Новий рівень: {levels[0]}" if len(levels) == 1 else f"🎉 Отримано рівні: {levels[0]}–{levels[-1]}"
+
+    rows = [row for row in result.get("rows", []) if row.get("reached_level") in levels]
+
+    total = lambda key: sum(int(row.get(key, 0)) for row in rows)
+
+    lines = [
+
+        title, "", "🎁 Нагорода:",
+
+        f"• Золото: {float(result.get('gold_awarded_now', 0) or 0):.2f}",
+
+        f"• Мале зілля здоров’я ×{total('small_health_potions')}",
+
+        f"• Мале зілля мани ×{total('small_mana_potions')}",
+
+        f"• Камінь посилення ×{total('refine_stones')}",
+
+    ]
+
+    if total("medium_health_potions"):
+
+        lines.append(f"• Середнє зілля здоров’я ×{total('medium_health_potions')}")
+
+    if total("medium_mana_potions"):
+
+        lines.append(f"• Середнє зілля мани ×{total('medium_mana_potions')}")
+
+    if result.get("item_result", {}).get("pending"):
+
+        lines.extend(["", "🎒 Предметна нагорода очікує вільного місця в сумці."])
+
     attribute_points_awarded = int(result.get("attribute_points_awarded", 0) or 0)
     if attribute_points_awarded > 0:
         free_attribute_points = int(result.get("free_attribute_points", 0) or 0)
@@ -70438,7 +70963,8 @@ def build_level_up_reward_message(result):
             "",
             "Розподілити очки можна у профілі: «Характеристики».",
         ])
-    return "\n".join(lines)
+    return "\n".join(lines)
+
 
 ============================================================
 FILE: systems\location_context_system.py
@@ -77300,13 +77826,32 @@ def start_pve_auto_escape_worker(bot):
 
 ============================================================
 FILE: systems\pve_skill_action_state.py
-SIZE: 5231 bytes
-LAST WRITE: 2026-08-22 23:22:13
+SIZE: 6522 bytes
+LAST WRITE: 2026-10-10 23:54:34
 ============================================================
 
 # ROM 17.16.1 PVE SKILL BUTTON STATES
 """Pure, mutation-free PvE skill availability and button-state resolver."""
 from __future__ import annotations
+
+from data.mana_policy import calculate_mana_skill_cost
+from data.mana_skill_presentation import format_mana_skill_presentation
+
+
+def get_pve_effective_skill_cost(mob, skill):
+    """Return canonical Mana cost from the battle Max MP snapshot."""
+    if str(skill.get("cost_type") or "") != "mana":
+        return max(0, int(skill.get("cost", 0) or 0))
+    maximum = max(0, int(mob.get("player_max_mp", 0) or 0))
+    return calculate_mana_skill_cost(skill, maximum)
+
+
+def format_pve_skill_description(mob, skill):
+    """Render clean description, effective cost and transparent formula."""
+    if str(skill.get("cost_type") or "") != "mana":
+        return str(skill.get("description") or "")
+    maximum = max(0, int(mob.get("player_max_mp", 0) or 0))
+    return format_mana_skill_presentation(skill, maximum)
 
 
 def _turns_uk(value):
@@ -77373,7 +77918,7 @@ def get_pve_skill_action_state(user_id, mob, skill):
         )
 
     cost_type = str(skill.get("cost_type") or "")
-    cost = max(0, int(skill.get("cost", 0) or 0))
+    cost = get_pve_effective_skill_cost(mob, skill)
 
     if cost_type == "rage":
         current = max(0, int(mob.get("player_rage", 0) or 0))
@@ -77412,23 +77957,31 @@ def get_pve_skill_action_state(user_id, mob, skill):
 
     elif cost_type == "mana":
         current = max(0, int(mob.get("player_mp", 0) or 0))
+        maximum = max(0, int(mob.get("player_max_mp", 0) or 0))
+        if skill.get("key") == "mage_arcane_flow" and maximum > 0 and current >= maximum:
+            return _state(skill, False, "mana_already_full",
+                          f"🔒 {name} · Мана вже повна",
+                          "🔵 Мана вже повна.",
+                          required=cost, available_amount=current, effective_cost=cost)
         if current < cost:
             return _state(skill, False, "not_enough_mana",
                           f"🔒 {name} · потрібно {cost} Мани",
                           f"🔵 Недостатньо Мани для {name}. Потрібно: {cost}, доступно: {current}.",
-                          required=cost, available_amount=current)
+                          required=cost, available_amount=current, effective_cost=cost)
 
-    return _state(skill, True, "ok", f"✨ {name}", "")
+    return _state(skill, True, "ok", f"✨ {name}", "", effective_cost=cost)
 
 ============================================================
 FILE: systems\pvp_action_validation.py
-SIZE: 5616 bytes
-LAST WRITE: 2026-08-09 23:06:35
+SIZE: 5980 bytes
+LAST WRITE: 2026-10-11 00:27:20
 ============================================================
 
 from __future__ import annotations
 
 from typing import Any, Mapping
+
+from data.mana_policy import calculate_mana_skill_cost
 
 from systems.pvp_config import PVP_COMBAT_ENERGY_MAX
 from systems.pvp_skill_adapter import get_production_pvp_skill, load_production_pvp_skill_catalog
@@ -77438,6 +77991,13 @@ def projected_round_cooldown(participant: Mapping[str, Any], skill_key: str) -> 
     """Cooldown visible to the action validator after the engine start-of-round tick."""
     stored = int(dict(participant.get("cooldowns") or {}).get(str(skill_key), 0) or 0)
     return max(0, stored - 1)
+
+
+def get_pvp_effective_skill_cost(skill: Mapping[str, Any], max_mp: Any) -> int:
+    """Return canonical Mana cost or unchanged physical-resource cost."""
+    if str(skill.get("cost_type") or "") == "mana":
+        return calculate_mana_skill_cost(skill, max(0, int(max_mp or 0)))
+    return max(0, int(skill.get("cost") or 0))
 
 
 def projected_round_resource(participant: Mapping[str, Any]) -> int:
@@ -77482,7 +78042,8 @@ def validate_pvp_action_choice(
         }
 
     cost_type = str(skill.get("cost_type") or "")
-    cost = max(0, int(skill.get("cost") or 0))
+    maximum_mp = max(0, int(participant.get("max_mp") or 0))
+    cost = get_pvp_effective_skill_cost(skill, maximum_mp)
     resource = projected_round_resource(participant)
     mp = int(participant.get("mp") or 0)
     combo = int(participant.get("combo") or 0)
@@ -80641,11 +81202,12 @@ def format_summary(data):
 
 ============================================================
 FILE: systems\pvp_round_engine.py
-SIZE: 20803 bytes
-LAST WRITE: 2026-10-09 23:58:30
+SIZE: 21140 bytes
+LAST WRITE: 2026-10-11 00:27:20
 ============================================================
 
 from __future__ import annotations
+from data.mana_policy import calculate_mana_restore_amount, calculate_mana_skill_cost
 from data.priest_healing_policy import PRIEST_HEALING_DURATION_TURNS
 from systems.stat_system import resolve_basic_attack_type
 
@@ -80773,7 +81335,11 @@ def _base_damage(attacker: PvpActorState, defender: PvpActorState, attack_type: 
 
 def _pay(actor: PvpActorState, skill: Mapping[str, Any]) -> tuple[bool, str, int, int]:
     cost_type = str(skill.get("cost_type") or "")
-    cost = max(0, int(skill.get("cost") or 0))
+    cost = (
+        calculate_mana_skill_cost(skill, actor.max_mp)
+        if cost_type == "mana"
+        else max(0, int(skill.get("cost") or 0))
+    )
     combo_spent = 0
     if cost_type == "mana":
         if actor.mp < cost: return False, "not_enough_mana", 0, 0
@@ -80826,7 +81392,9 @@ def _special(actor: PvpActorState, target: PvpActorState, skill: Mapping[str, An
         amount = max(5, round(actor.max_hp * 0.10 * float(PVP_CLASS_HOT_POWER_MULTIPLIER.get(actor.class_key, 1.0))))
         applied.append(_replace_effect(actor, "hot", "hot", amount, duration or PRIEST_HEALING_DURATION_TURNS, actor.user_id))
     elif effect == "restore_mana_percent":
-        amount = max(1, round(actor.max_mp * 0.25))
+        amount = calculate_mana_restore_amount(
+            actor.max_mp, skill.get("restore_max_mp_percent", 25)
+        )
         actor.mp = min(actor.max_mp, actor.mp + amount)
         applied.append({"target_id": actor.user_id, "effect_key": "mana_restore", "power": amount})
     elif effect == "player_cleanse_mdef_buff":
@@ -80835,7 +81403,9 @@ def _special(actor: PvpActorState, target: PvpActorState, skill: Mapping[str, An
                 del actor.effects[key]
         applied.append(_replace_effect(actor, "mdef_buff", "mdef_buff", 30, duration or 3, actor.user_id))
         actor.effects["mdef_buff"]["percent"] = 30
-        amount = max(1, round(actor.max_mp * 0.15))
+        amount = calculate_mana_restore_amount(
+            actor.max_mp, skill.get("restore_max_mp_percent", 15)
+        )
         actor.mp = min(actor.max_mp, actor.mp + amount)
     stun_chance = float(skill.get("stun_chance") or 0)
     if stun_chance and rng.random() * 100 < stun_chance:
@@ -88417,6 +88987,34 @@ def guild_markdown(payload: Mapping[str, Any]) -> str:
     return "\n".join(lines)
 
 ============================================================
+FILE: systems\simulation\potion_affordability.py
+SIZE: 2107 bytes
+LAST WRITE: 2026-10-11 23:15:48
+============================================================
+
+"""Canonical simulator-only potion purchase and affordability instrumentation."""
+from __future__ import annotations
+from dataclasses import dataclass,field
+from typing import Dict,Iterable
+POTION_CATALOG={401:{"kind":"hp","restore":50,"buy_price":5.0},403:{"kind":"hp","restore":120,"buy_price":15.0},402:{"kind":"mp","restore":40,"buy_price":4.0},404:{"kind":"mp","restore":100,"buy_price":12.5}}
+HP_IDS=(401,403);MP_IDS=(402,404)
+@dataclass
+class PotionAffordabilityLedger:
+ bought:Dict[int,int]=field(default_factory=dict);used_free:Dict[int,int]=field(default_factory=dict);used_bought:Dict[int,int]=field(default_factory=dict);spend_hp:float=0.0;spend_mp:float=0.0
+ def record_free_use(self,item_id:int):self.used_free[item_id]=self.used_free.get(item_id,0)+1
+ def buy_and_use(self,item_id:int):
+  row=POTION_CATALOG[item_id];self.bought[item_id]=self.bought.get(item_id,0)+1;self.used_bought[item_id]=self.used_bought.get(item_id,0)+1
+  if row["kind"]=="hp":self.spend_hp=round(self.spend_hp+row["buy_price"],2)
+  else:self.spend_mp=round(self.spend_mp+row["buy_price"],2)
+ def to_dict(self,gold_from_mobs:float,repair_spend:float=0.0):
+  total=round(self.spend_hp+self.spend_mp,2);income=float(gold_from_mobs);after=max(0.0,income-float(repair_spend))
+  ratio=lambda cost,base:None if base<=0 else round(cost/base,6)
+  return {"bought":dict(self.bought),"used_free_or_dropped":dict(self.used_free),"used_bought":dict(self.used_bought),"hp_spend":self.spend_hp,"mp_spend":self.spend_mp,"total_potion_spend":total,"repair_spend":round(float(repair_spend),2),"potion_to_mob_gold_ratio":ratio(total,income),"potion_to_income_after_repairs_ratio":ratio(total,after),"mandatory_spend":round(total+float(repair_spend),2)}
+def inventory_potions(items:Iterable,ids):return [{"item_id":i.item_id,"restore":POTION_CATALOG[i.item_id]["restore"],"simulation_item_id":i.simulation_item_id} for i in items if i.item_id in ids and i.quantity>0]
+def affordable_small(kind:str,gold:float):
+ item_id=401 if kind=="hp" else 402;row=POTION_CATALOG[item_id];return item_id if float(gold)+1e-9>=row["buy_price"] else None
+
+============================================================
 FILE: systems\simulation\production_parity.py
 SIZE: 5237 bytes
 LAST WRITE: 2026-08-04 15:21:49
@@ -88960,8 +89558,8 @@ class ProgressionWallAnalyzer:
 
 ============================================================
 FILE: systems\simulation\pve_battle.py
-SIZE: 10703 bytes
-LAST WRITE: 2026-10-09 23:58:30
+SIZE: 11266 bytes
+LAST WRITE: 2026-10-11 00:53:22
 ============================================================
 
 from __future__ import annotations
@@ -88974,6 +89572,7 @@ from typing import Any, Dict, List, Optional
 from .battle_models import BattleAction, BattleActor, BattleResult
 from .canonical_rules import call_rule
 from .rng import SimulationRng
+from data.mana_policy import calculate_mana_restore_amount, calculate_mana_skill_cost
 from .skill_catalog import load_production_skill_catalog
 
 RESOURCE_BY_CLASS={"warrior":"rage","knight":"rage","scout":"combat_energy","rogue":"combat_energy_combo","mage":"mana","priest":"mana"}
@@ -89010,9 +89609,15 @@ class ExactPveBattleEngine:
                 if e["absorb_left"]<=0: del player.effects[key]
         return damage
 
+    def _effective_skill_cost(self, actor: BattleActor, skill: Dict[str,Any]) -> int:
+        """Return canonical Mana cost or the unchanged physical-resource cost."""
+        if str(skill.get("cost_type") or "") == "mana":
+            return calculate_mana_skill_cost(skill, actor.max_resource)
+        return max(0, int(skill.get("cost", 0) or 0))
+
     def _can_use(self, actor: BattleActor, skill: Dict[str,Any]) -> bool:
         if actor.cooldowns.get(skill["key"],0)>0: return False
-        typ=skill["cost_type"]; cost=int(skill.get("cost",0))
+        typ=skill["cost_type"]; cost=self._effective_skill_cost(actor, skill)
         if typ=="rage_all_min": return actor.resource>=int(skill.get("min_cost",30))
         if typ=="combat_energy_combo": return actor.resource>=cost and actor.combo>=int(skill.get("min_combo",1))
         return actor.resource>=cost
@@ -89046,7 +89651,7 @@ class ExactPveBattleEngine:
         return max(damaging,key=lambda s:float(s.get("damage_multiplier",0))) if damaging else available[0]
 
     def _pay(self, actor: BattleActor, skill: Dict[str,Any]) -> Dict[str,int]:
-        typ=skill["cost_type"]; cost=int(skill.get("cost",0)); spent={"rage":0,"combo":0}
+        typ=skill["cost_type"]; cost=self._effective_skill_cost(actor, skill); spent={"rage":0,"combo":0}
         if typ=="rage_all_min": spent["rage"]=actor.resource; actor.resource=0
         else: actor.resource=max(0,actor.resource-cost)
         if typ=="combat_energy_combo": spent["combo"]=actor.combo; actor.combo=0
@@ -89059,10 +89664,10 @@ class ExactPveBattleEngine:
         elif effect in {"enemy_bleed","enemy_poison"}: mob.effects[effect]={"type":"dot","turns":3,"damage":max(2,int(round(max(1,damage)*.30)))}
         elif effect=="player_shield": player.effects["knight_shield"]={"type":"shield","turns":3,"absorb_left":max(15,int(player.pdef*2+player.level*3))}
         elif effect=="player_hot": player.effects["priest_hot"]={"type":"hot","turns":PRIEST_HEALING_DURATION_TURNS,"heal":max(5,int(round(player.max_hp*.10)))}
-        elif effect=="restore_mana_percent": player.resource=min(player.max_resource,player.resource+max(1,int(round(player.max_resource*.25))))
+        elif effect=="restore_mana_percent": player.resource=min(player.max_resource,player.resource+calculate_mana_restore_amount(player.max_resource,skill.get("restore_max_mp_percent",25)))
         elif effect=="player_cleanse_mdef_buff":
             player.effects={k:v for k,v in player.effects.items() if not v.get("negative")}; player.effects["priest_mdef"]={"turns":3,"mdef_percent":30}
-            player.resource=min(player.max_resource,player.resource+max(1,int(round(player.max_resource*.15))))
+            player.resource=min(player.max_resource,player.resource+calculate_mana_restore_amount(player.max_resource,skill.get("restore_max_mp_percent",15)))
 
     def _player_action(self, turn, class_key, p, m, actions):
         skill=self._choose(class_key,p,m)
@@ -89445,12 +90050,14 @@ def load_production_skill_catalog(project_root: Path) -> Dict[str, List[Dict[str
 
 ============================================================
 FILE: systems\simulation\survival_state.py
-SIZE: 2597 bytes
-LAST WRITE: 2026-09-22 02:32:08
+SIZE: 2738 bytes
+LAST WRITE: 2026-10-11 00:53:22
 ============================================================
 
 from __future__ import annotations
 from dataclasses import dataclass
+
+from data.mana_policy import apply_post_combat_mp_floor_value
 from typing import Dict, Iterable, List
 
 from .canonical_rules import call_rule
@@ -89475,7 +90082,10 @@ class PersistentCombatState:
         return self.hp-before
 
     def restore_mp_after_combat(self) -> int:
-        before=self.mp;self.mp=self.max_mp;return self.mp-before
+        """Apply the canonical 50% floor without adding or reducing current MP."""
+        before = self.mp
+        self.mp = apply_post_combat_mp_floor_value(self.mp, self.max_mp)
+        return self.mp - before
 
     def apply_death(self) -> None:
         self.hp=1
@@ -89522,8 +90132,8 @@ class SimulationSurvivalService:
 
 ============================================================
 FILE: systems\simulation\world_progression.py
-SIZE: 14688 bytes
-LAST WRITE: 2026-09-22 02:32:08
+SIZE: 16118 bytes
+LAST WRITE: 2026-10-11 23:15:48
 ============================================================
 
 from __future__ import annotations
@@ -89541,6 +90151,7 @@ from .rng import SimulationRng
 from .survival_state import PersistentCombatState, SimulationSurvivalService
 from .loot_equipment_city import POTIONS, SimulationLootEquipmentCityService
 from .meta_progression import SimulationMetaProgressionService
+from .potion_affordability import HP_IDS, MP_IDS, POTION_CATALOG, PotionAffordabilityLedger, affordable_small, inventory_potions
 
 
 def _encounter_type(mob: Dict) -> str:
@@ -89581,6 +90192,7 @@ class WorldProgressionSimulator:
         energy_spent = energy_regenerated = 0
         exp_gained = 0
         gold_gained = 0.0
+        potion_ledger = PotionAffordabilityLedger()
         city_visits = full_bag_events = items_awarded = items_lost = 0
         elapsed = 0
         events = []
@@ -89611,13 +90223,33 @@ class WorldProgressionSimulator:
                         if healed: events.append(ProgressionEvent(elapsed, day, "hp_regen", {"amount": healed, "hp": survival.hp}))
                     continue
 
-                hp_potions = [{"item_id": item.item_id, "restore": POTIONS[item.item_id][1], "simulation_item_id": item.simulation_item_id} for item in self.inventory.items if item.item_id in (401, 402) and item.quantity > 0]
-                potion = self.policy.choose_potion(survival.hp, survival.max_hp, survival.mp, survival.max_mp, self.character_class in {"mage", "priest"}, hp_potions, [])
-                if potion and potion.action == "use_hp_potion":
-                    item_id = int(potion.payload["item_id"]); restored = min(survival.max_hp - survival.hp, int(potion.payload["restore"]))
+                hp_potions = inventory_potions(self.inventory.items, HP_IDS)
+                mp_potions = inventory_potions(self.inventory.items, MP_IDS)
+                mana_class = self.character_class in {"mage", "priest"}
+                potion = self.policy.choose_potion(survival.hp, survival.max_hp, survival.mp, survival.max_mp, mana_class, hp_potions, mp_potions)
+                if potion:
+                    kind = "hp" if potion.action == "use_hp_potion" else "mp"
+                    item_id = int(potion.payload["item_id"])
+                    maximum = survival.max_hp if kind == "hp" else survival.max_mp
+                    current = survival.hp if kind == "hp" else survival.mp
+                    restored = min(maximum - current, int(potion.payload["restore"]))
                     if restored > 0 and meta._consume(item_id, 1):
-                        survival.hp += restored
-                        events.append(ProgressionEvent(elapsed, day, "potion_used", {"item_id": item_id, "restore": restored, "hp": survival.hp, "threshold_percent": 40}))
+                        if kind == "hp": survival.hp += restored
+                        else: survival.mp += restored
+                        potion_ledger.record_free_use(item_id)
+                        events.append(ProgressionEvent(elapsed, day, "potion_used", {"source":"owned_or_dropped","kind":kind,"item_id":item_id,"restore":restored}))
+                else:
+                    need_hp = survival.max_hp > 0 and survival.hp / survival.max_hp < self.policy.hp_potion_threshold
+                    need_mp = mana_class and survival.max_mp > 0 and survival.mp / survival.max_mp < self.policy.mp_potion_threshold
+                    kind = "hp" if need_hp else "mp" if need_mp else None
+                    item_id = affordable_small(kind, gold) if kind else None
+                    if item_id is not None:
+                        row = POTION_CATALOG[item_id]; cost = float(row["buy_price"]); gold = round(gold - cost, 2)
+                        restored = min((survival.max_hp-survival.hp) if kind=="hp" else (survival.max_mp-survival.mp), int(row["restore"]))
+                        if kind == "hp": survival.hp += restored
+                        else: survival.mp += restored
+                        potion_ledger.buy_and_use(item_id)
+                        events.append(ProgressionEvent(elapsed, day, "potion_purchased_and_used", {"kind":kind,"item_id":item_id,"cost":cost,"restore":restored,"gold_after":gold}))
                 if survival.max_hp > 0 and survival.hp / survival.max_hp <= 0.25:
                     elapsed += 5
                     healed = survival.passive_hp_regen(5)
@@ -89721,7 +90353,7 @@ class WorldProgressionSimulator:
 
         equipped_ids = {value for value in self.equipment.slots.values() if value}
         final_items = [{"simulation_item_id": item.simulation_item_id, "item_id": item.item_id, "name": item.name, "category": item.category, "rarity": item.rarity, "quantity": item.quantity, "slot_key": item.slot_key, "item_level": item.item_level, "armor_type": item.armor_type, "refine_level": item.refine_level, "durability": item.durability, "stats": dict(item.stats), "runes": [asdict(rune) for rune in item.runes], "destination": "equipped" if item.simulation_item_id in equipped_ids else "remaining"} for item in self.inventory.items]
-        events.append(ProgressionEvent(elapsed, days, "simulation_final_state", {"gold": round(gold,2), "equipment_slots": dict(self.equipment.slots), "inventory": final_items, "guild_exp": meta.state.guild.exp, "refine_attempts": meta.state.refine_attempts, "refine_successes": meta.state.refine_successes}))
+        events.append(ProgressionEvent(elapsed, days, "simulation_final_state", {"gold": round(gold,2), "equipment_slots": dict(self.equipment.slots), "inventory": final_items, "guild_exp": meta.state.guild.exp, "refine_attempts": meta.state.refine_attempts, "refine_successes": meta.state.refine_successes, "potion_affordability": potion_ledger.to_dict(gold_gained)}))
         status = "completed" if level >= self.target_level else "max_days_reached"
         return ProgressionResult(
             run_id, self.character_class, self.target_level, level, self.profile.key, self.seed,
