@@ -6,6 +6,8 @@ from db import (
     reset_daily_quest_if_needed
 )
 
+from data.runes import FIRIUS_TOKENS_PER_DAILY_REWARD
+
 from keyboards import daily_quest_kb
 
 
@@ -33,7 +35,7 @@ def build_daily_quest_text(user_id):
         f"{progress}/{target_count}\n\n"
         "🎁 Нагорода:\n"
         "🔴 Мале зілля здоров’я ×3\n"
-        "🪙 Жетон Фіріуса ×5\n"
+        f"🪙 Жетон Фіріуса ×{FIRIUS_TOKENS_PER_DAILY_REWARD}\n"
         "ℹ️ Жетони накопичуються та не зникають наступного дня.\n"
     )
 
