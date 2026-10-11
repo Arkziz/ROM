@@ -504,7 +504,7 @@ def build_guild_create_icon_prompt(name, tag):
 
 def build_guild_create_confirm_text(state, user_id=None):
     name = state.get("name", ""); tag = state.get("tag", ""); icon = state.get("icon", "🏰")
-    terms = get_guild_creation_terms(user_id) if user_id is not None else {"cost_gold": 100.0, "gold_balance": 0.0, "member_limit": 10}
+    terms = get_guild_creation_terms(user_id) if user_id is not None else {"cost_gold": 50.0, "gold_balance": 0.0, "member_limit": 10}
     return ("🏗️ Створення гільдії\n\nКрок 4/4 — підтвердження.\n\n" f"Майбутня гільдія:\n{icon} [{tag}] {name}\n\n" f"Вартість: {terms['cost_gold']:.2f} 🪙\n" f"Твій баланс: {terms['gold_balance']:.2f} 🪙\n" f"Початковий ліміт: {terms['member_limit']} учасників.\n\n" "Підтвердити створення?")
 
 
