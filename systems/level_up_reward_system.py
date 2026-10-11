@@ -446,7 +446,7 @@ def build_level_up_reward_message(result):
 
         title, "", "🎁 Нагорода:",
 
-        f"• Золото: {int(result.get('gold_awarded_now', 0) or 0)}",
+        f"• Золото: {float(result.get('gold_awarded_now', 0) or 0):.2f}",
 
         f"• Мале зілля здоров’я ×{total('small_health_potions')}",
 
