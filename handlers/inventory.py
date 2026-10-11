@@ -2,6 +2,8 @@
 
 
 
+from data.runes import FIRIUS_TOKENS_PER_DAILY_REWARD
+
 from telebot import types
 
 
@@ -4606,7 +4608,7 @@ def get_refine_material_description_text(item_id):
 
 
 
-            "• 5 жетонів можна отримати за виконання щоденного завдання.\n"
+            f"• {FIRIUS_TOKENS_PER_DAILY_REWARD} жетони можна отримати за виконання щоденного завдання.\n"
 
 
 
