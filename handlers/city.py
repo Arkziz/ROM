@@ -6,6 +6,15 @@ from keyboards import city_kb, trader_kb, craft_kb, guild_kb, townhall_kb, taver
 from systems.potion_system import POTIONS, ALCHEMIST_SHOP, get_alchemist_potion_stock_17_19_3, buy_alchemist_potion_17_19_3, sell_alchemist_potion_17_19_3
 
 
+def _format_premium_expiration_kyiv(value):
+ """Display canonical UTC Premium expiration in the approved Kyiv format."""
+ try:
+  from zoneinfo import ZoneInfo
+  parsed=datetime.fromisoformat(str(value or '').replace('Z','+00:00'))
+  if parsed.tzinfo is None:parsed=parsed.replace(tzinfo=timezone.utc)
+  return parsed.astimezone(ZoneInfo('Europe/Kyiv')).strftime('%d.%m.%Y %H:%M за Києвом')
+ except Exception:return 'час завершення невідомий'
+
 def _format_registration_date_kyiv_18_31_4a(value):
     """Render canonical UTC registration time in Europe/Kyiv."""
     from datetime import datetime, timezone
@@ -1220,7 +1229,7 @@ def build_main_menu_text(user_id, show_location_description=False):
     summary = get_exp_bonus_account_summary(user_id)
     lines = [f'🆔 ID: {int(user_id)}', f"📅 Дата реєстрації: {_format_registration_date_kyiv_18_31_4a(_format_account_utc_17_30_1_1(summary.get('registered_at')))}"]
     if summary.get('active'):
-        lines.extend(['💎 Premium: активний', '💎 Premium: +25% досвіду та золота за перемогу над мобами', f"⏳ Діє до: {_format_account_utc_17_30_1_1(summary.get('expires_at'))}"])
+        lines.extend(['💎 Premium: активний', '💎 Premium: +25% досвіду та золота за перемогу над мобами', f"⏳ Діє до: {_format_premium_expiration_kyiv(summary.get('expires_at'))}"])
     else:
         lines.append('💎 Premium: неактивний')
     block = '\n'.join(lines)
@@ -1354,7 +1363,7 @@ def build_account_menu_text_17_30_1_4(user_id):
     summary = get_exp_bonus_account_summary(user_id)
     lines = ['📋 Меню', '', f'🆔 ID: {int(user_id)}', f"📅 Дата реєстрації: {_format_registration_date_kyiv_18_31_4a(_format_account_utc_17_30_1_1(summary.get('registered_at')))}"]
     if summary.get('active'):
-        lines.extend(['💎 Premium: активний', '💎 Premium: +25% досвіду та золота за перемогу над мобами', f"⏳ Діє до: {_format_account_utc_17_30_1_1(summary.get('expires_at'))}"])
+        lines.extend(['💎 Premium: активний', '💎 Premium: +25% досвіду та золота за перемогу над мобами', f"⏳ Діє до: {_format_premium_expiration_kyiv(summary.get('expires_at'))}"])
     else:
         lines.append('💎 Premium: неактивний')
     lines.extend(['', 'Оберіть розділ:'])
