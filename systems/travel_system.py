@@ -4,6 +4,7 @@ import sqlite3
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from data.location_graph import CITY_NODE, TRAVEL_SECONDS, WORLD_NODES, are_adjacent
+from data.travel_presentation import format_arrival_destination, get_route_presentation
 from data.locations import is_location_unlocked
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -141,7 +142,8 @@ def _arrival_keyboard(node_id):
 def _send_arrival(bot,result):
     try:
         from handlers.map import build_map_inline_kb
-        text=f"✅ Подорож завершено\n\nТи прибув у локацію:\n{WORLD_NODES[result['to_node']]['name']}"
+        route=get_route_presentation(result["from_node"],result["to_node"])
+        text=("✅ Подорож завершено\n\n"+f"{format_arrival_destination(result['to_node'],WORLD_NODES)}\n\n"+f"{route['arrival']}")
         bot.send_message(int(result['user_id']),text,reply_markup=_arrival_keyboard(result['to_node']))
         bot.send_message(int(result['user_id']),"🗺️ Доступні напрямки:",reply_markup=build_map_inline_kb(int(result['user_id'])))
         return True

@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from telebot import types
 from data.locations import LOCATIONS, get_location, is_location_unlocked
 from data.location_graph import CITY_NODE, TRAVEL_SECONDS, WORLD_NODES, get_adjacent_nodes
+from data.travel_presentation import CITY_MAP_INTRO, CITY_DESTINATION_SUMMARY, get_node_name, get_route_presentation
 from data.mobs import get_mobs_for_location
 from db import get_current_location, get_player_stats
 from keyboards import map_kb, main_kb, city_kb
@@ -15,7 +16,7 @@ def get_player_level_from_stats(user_id):
     return int(stats[5] or 1) if stats else 1
 
 def _node_name(node_id):
-    return (WORLD_NODES.get(str(node_id)) or {}).get("name", str(node_id))
+    return get_node_name(node_id, WORLD_NODES)
 
 def _safe_answer(bot,call,text=None,alert=False):
     try: bot.answer_callback_query(call.id,text=text,show_alert=alert)
@@ -37,10 +38,11 @@ def build_location_info_text(location_id,player_level):
 def build_world_map_text(user_id):
     active=get_active_travel(user_id)
     if active:
-        return ("🚶 Триває подорож\n\n"+f"{_node_name(active['from_node'])}\n→ {_node_name(active['to_node'])}\n\n"+f"⏱️ Залишилося: {_remaining_seconds(active)} секунд\n\n"+"Пункт призначення стане поточною локацією після прибуття.")
+        route=get_route_presentation(active["from_node"],active["to_node"])
+        return ("🚶 Триває подорож\n\n"+f"{_node_name(active['from_node'])}\n→ {_node_name(active['to_node'])}\n\n"+f"{route['active']}\n\n"+f"⏱️ Залишилося: {_remaining_seconds(active)} секунд\n\n"+"Після прибуття пункт призначення стане твоєю поточною локацією.")
     node=get_current_location(user_id) or CITY_NODE; level=get_player_level_from_stats(user_id)
     if node==CITY_NODE:
-        return "🗺️ Мапа світу\n\n📍 Поточна локація:\n🏙️ Місто\n\nДоступні напрямки:\n• 🌿 Початок Шляху"
+        return ("🗺️ Мапа світу\n\n📍 Поточна локація:\n🏙️ Місто\n\n"+f"{CITY_MAP_INTRO}\n\n"+"🧭 Доступні напрямки:\n\n🌿 Початок Шляху\n"+f"{CITY_DESTINATION_SUMMARY}\n\n"+f"⏱️ Час у дорозі: {TRAVEL_SECONDS} секунд.\n\n"+"Обери напрямок, щоб переглянути маршрут перед подорожжю.")
     location=get_location(node)
     return ("🗺️ Мапа світу\n\n📍 Поточна локація:\n"+f"{location['name']}\n\n👤 Твій рівень: {level}\n\n📖 {location['description']}")
 
@@ -66,7 +68,8 @@ def build_map_inline_kb(user_id):
 
 def build_travel_preview_text(user_id,target):
     source=get_current_location(user_id) or CITY_NODE
-    return ("🚶 Подорож\n\n"+f"Звідки: {_node_name(source)}\n"+f"Куди: {_node_name(target)}\n\n"+f"⏱️ Час у дорозі: {TRAVEL_SECONDS} секунд\n\n"+"Поточна локація зміниться лише після завершення подорожі.")
+    route=get_route_presentation(source,target)
+    return ("🚶 Подорож\n\n"+f"{_node_name(source)}\n→ {_node_name(target)}\n\n"+f"{route['preview']}\n\n"+f"⏱️ Час у дорозі: {TRAVEL_SECONDS} секунд.\n\n"+"Поточна локація зміниться лише після завершення подорожі.")
 
 def build_travel_preview_kb(target):
     kb=types.InlineKeyboardMarkup(row_width=1)
