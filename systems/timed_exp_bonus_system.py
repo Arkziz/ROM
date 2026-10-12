@@ -23,6 +23,11 @@ def get_exp_bonus_status(user_id,db_path=None,now=None):
  finally:c.close()
 def calculate_mob_kill_exp(user_id,base_exp,db_path=None,now=None):
  base=max(0,int(base_exp));st=get_exp_bonus_status(user_id,db_path,now);bonus=(base*25)//100 if st['active'] else 0;return {'active':st['active'],'base_exp':base,'bonus_exp':bonus,'final_exp':base+bonus,'expires_at':st['expires_at']}
+def calculate_premium_combat_gold(base_gold, active):
+ """Apply the Premium modifier once to combat gold only."""
+ base=round(max(0.0,float(base_gold)),2);is_active=bool(active);final=round(base*1.25,2) if is_active else base;bonus=round(final-base,2);return {'active':is_active,'base_gold':base,'bonus_gold':bonus,'final_gold':final,'bonus_percent':25 if is_active else 0}
+def calculate_mob_kill_gold(user_id,base_gold,db_path=None,now=None):
+ st=get_exp_bonus_status(user_id,db_path,now);result=calculate_premium_combat_gold(base_gold,st['active']);result['expires_at']=st['expires_at'];return result
 def preview_exp_bonus_purchase(user_id,duration_days,db_path=None,now=None):
  days=int(duration_days);price=PLANS.get(days)
  if not price:return {'success':False,'message':'❌ Невідомий тариф.'}

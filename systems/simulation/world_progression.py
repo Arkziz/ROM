@@ -25,7 +25,7 @@ def _encounter_type(mob: Dict) -> str:
 
 
 class WorldProgressionSimulator:
-    def __init__(self, project_root: Path, character_class: str, target_level: int, profile: str, seed: int, inventory_capacity: int = 40, max_days: int = 365, provider: Optional[ProgressionProvider] = None):
+    def __init__(self, project_root: Path, character_class: str, target_level: int, profile: str, seed: int, inventory_capacity: int = 40, max_days: int = 365, provider: Optional[ProgressionProvider] = None, premium_active: bool = False):
         if profile not in PROFILES:
             raise ValueError(f"unsupported profile: {profile}")
         if character_class not in {"warrior", "knight", "scout", "rogue", "mage", "priest"}:
@@ -38,6 +38,7 @@ class WorldProgressionSimulator:
         self.profile = PROFILES[profile]
         self.seed = int(seed)
         self.max_days = int(max_days)
+        self.premium_active = bool(premium_active)
         self.provider = provider or ProgressionProvider()
         self.rng = SimulationRng(seed)
         self.policy = BehaviorPolicy()
@@ -54,6 +55,7 @@ class WorldProgressionSimulator:
         energy_spent = energy_regenerated = 0
         exp_gained = 0
         gold_gained = 0.0
+        premium_gold_gained = 0.0
         potion_ledger = PotionAffordabilityLedger()
         city_visits = full_bag_events = items_awarded = items_lost = 0
         elapsed = 0
@@ -152,11 +154,16 @@ class WorldProgressionSimulator:
 
                 if result.winner == "player":
                     wins += 1
-                    gained_exp, gained_gold = self.provider.reward(level, selected, self.rng)
+                    gained_exp, base_gold = self.provider.reward(level, selected, self.rng)
+                    from systems.timed_exp_bonus_system import calculate_premium_combat_gold
+                    gold_breakdown = calculate_premium_combat_gold(base_gold, self.premium_active)
+                    gained_gold = float(gold_breakdown["final_gold"])
+                    premium_gold_bonus = float(gold_breakdown["bonus_gold"])
                     exp += gained_exp
                     exp_gained += gained_exp
                     gold += gained_gold
                     gold_gained += gained_gold
+                    premium_gold_gained += premium_gold_bonus
                     meta.on_victory(selected, level)
                     contract_exp = meta.claim_contract()
                     if contract_exp:
@@ -171,7 +178,7 @@ class WorldProgressionSimulator:
                     items_lost += loot.lost
                     full_bag_events += loot.full_bag_events
                     gold, equipment_resolution = loot_city.resolve_equipment_after_victory(gold)
-                    events.append(ProgressionEvent(elapsed, day, "victory", {"level": level, "player_level": level, "mob": selected["name"], "mob_level": int(selected.get("level", level)), "level_delta": int(selected.get("level", level)) - int(level), "location_id": str(selected.get("location_id", self.provider.location_for_level(level))), "attack_type": str(selected.get("attack_type", "physical")), "trash_items": list(selected.get("trash_items", []) or []), "selection_reason": selection_reason, "candidate_count": len(allowed), "encounter_type": _encounter_type(selected), "battle_outcome": "victory", "battle_turns": result.turns, "exp": gained_exp, "gold": gained_gold, "loot_awarded": loot.awarded, "loot_lost": loot.lost, "equipment": loot.equipment, "loot_records": loot.records}))
+                    events.append(ProgressionEvent(elapsed, day, "victory", {"level": level, "player_level": level, "mob": selected["name"], "mob_level": int(selected.get("level", level)), "level_delta": int(selected.get("level", level)) - int(level), "location_id": str(selected.get("location_id", self.provider.location_for_level(level))), "attack_type": str(selected.get("attack_type", "physical")), "trash_items": list(selected.get("trash_items", []) or []), "selection_reason": selection_reason, "candidate_count": len(allowed), "encounter_type": _encounter_type(selected), "battle_outcome": "victory", "battle_turns": result.turns, "exp": gained_exp, "gold": gained_gold, "base_gold": float(gold_breakdown["base_gold"]), "premium_gold_bonus": premium_gold_bonus, "premium_gold_active": self.premium_active, "loot_awarded": loot.awarded, "loot_lost": loot.lost, "equipment": loot.equipment, "loot_records": loot.records}))
                     if equipment_resolution["equipped"] or equipment_resolution["sale_records"]:
                         events.append(ProgressionEvent(elapsed, day, "equipment_resolution", equipment_resolution))
                     inserted = meta.insert_best_runes(self.character_class)
@@ -215,7 +222,7 @@ class WorldProgressionSimulator:
 
         equipped_ids = {value for value in self.equipment.slots.values() if value}
         final_items = [{"simulation_item_id": item.simulation_item_id, "item_id": item.item_id, "name": item.name, "category": item.category, "rarity": item.rarity, "quantity": item.quantity, "slot_key": item.slot_key, "item_level": item.item_level, "armor_type": item.armor_type, "refine_level": item.refine_level, "durability": item.durability, "stats": dict(item.stats), "runes": [asdict(rune) for rune in item.runes], "destination": "equipped" if item.simulation_item_id in equipped_ids else "remaining"} for item in self.inventory.items]
-        events.append(ProgressionEvent(elapsed, days, "simulation_final_state", {"gold": round(gold,2), "equipment_slots": dict(self.equipment.slots), "inventory": final_items, "guild_exp": meta.state.guild.exp, "refine_attempts": meta.state.refine_attempts, "refine_successes": meta.state.refine_successes, "potion_affordability": potion_ledger.to_dict(gold_gained)}))
+        events.append(ProgressionEvent(elapsed, days, "simulation_final_state", {"gold": round(gold,2), "equipment_slots": dict(self.equipment.slots), "inventory": final_items, "guild_exp": meta.state.guild.exp, "refine_attempts": meta.state.refine_attempts, "refine_successes": meta.state.refine_successes, "premium_active": self.premium_active, "premium_gold_gained": round(premium_gold_gained,2), "potion_affordability": potion_ledger.to_dict(gold_gained)}))
         status = "completed" if level >= self.target_level else "max_days_reached"
         return ProgressionResult(
             run_id, self.character_class, self.target_level, level, self.profile.key, self.seed,

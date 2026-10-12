@@ -9,7 +9,7 @@ def _fmt(value):
 def register_timed_exp_bonus_handlers(bot):
  @bot.message_handler(func=lambda m:m.text==BUTTON)
  def open_bonus(message):
-  st=get_exp_bonus_status(message.from_user.id);kb=types.InlineKeyboardMarkup(row_width=1);kb.add(types.InlineKeyboardButton('15 днів — 70 💎',callback_data='expb:preview:15'));kb.add(types.InlineKeyboardButton('30 днів — 120 💎',callback_data='expb:preview:30'));text='📈 Бонус досвіду +25%\n\nДіє лише за вбивство звичайних, елітних мобів і босів.\nКонтракти та Гільдія Найманців бонус не отримують.\n\nСтатус: '+('активний до '+_fmt(st['expires_at']) if st['active'] else 'неактивний');bot.send_message(message.chat.id,text,reply_markup=kb)
+  st=get_exp_bonus_status(message.from_user.id);kb=types.InlineKeyboardMarkup(row_width=1);kb.add(types.InlineKeyboardButton('15 днів — 70 💎',callback_data='expb:preview:15'));kb.add(types.InlineKeyboardButton('30 днів — 120 💎',callback_data='expb:preview:30'));text='📈 Бонус досвіду +25%\n\nДіє лише за вбивство звичайних, елітних мобів і босів.\nДодатково +25% золота за ці перемоги.\nКонтракти та Гільдія Найманців бонус не отримують.\n\nСтатус: '+('активний до '+_fmt(st['expires_at']) if st['active'] else 'неактивний');bot.send_message(message.chat.id,text,reply_markup=kb)
  @bot.callback_query_handler(func=lambda c:str(c.data or '').startswith('expb:'))
  def callbacks(call):
   parts=call.data.split(':');action=parts[1];days=int(parts[2]);uid=call.from_user.id

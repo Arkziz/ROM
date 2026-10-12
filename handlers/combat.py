@@ -1844,7 +1844,15 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
 
         # Stage 17.14.1.1 sends level-up information separately.
 
-    text += f"\n💰 Золото: +{reward['gold']}\n"
+    premium_gold = float(reward.get("premium_gold_bonus", 0.0) or 0.0)
+    if bool(reward.get("premium_gold_active")) and premium_gold > 0:
+        text += (
+            f"\n💰 Золото: +{float(reward['gold']):.2f}\n"
+            f"   ├ Базове: {float(reward.get('base_gold', reward['gold'])):.2f}\n"
+            f"   └ Premium +25%: +{premium_gold:.2f}\n"
+        )
+    else:
+        text += f"\n💰 Золото: +{float(reward['gold']):.2f}\n"
 
     event_drop_messages = _event_drop_victory_messages(
         reward.get("event_drop_results")
