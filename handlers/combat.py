@@ -1831,14 +1831,14 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
     premium_bonus = int(reward.get("premium_exp_bonus", 0) or 0)
     if bool(reward.get("exp_bonus_active")) and premium_bonus > 0:
         text += (
-            f"✨ Досвід: +{reward['exp']} EXP\n"
-            f"   ├ Базовий: {int(reward.get('base_exp', reward['exp']))} EXP\n"
-            f"   ├ Premium +25%: +{premium_bonus} EXP"
+            f"✨ Досвід: +{reward['exp']}\n"
+            f"   ├ Базовий досвід: {int(reward.get('base_exp', reward['exp']))}\n"
+            f"   ├ Premium +25% досвіду: +{premium_bonus}"
         )
         if exp_result:
             text += f"\n   └ Прогрес: {exp_result['exp']}/{exp_result['exp_to_next']}"
     else:
-        text += f"✨ Досвід: +{reward['exp']} EXP"
+        text += f"✨ Досвід: +{reward['exp']}"
         if exp_result:
             text += f" ({exp_result['exp']}/{exp_result['exp_to_next']})"
 
