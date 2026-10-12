@@ -101,6 +101,7 @@ from handlers.auction_house import register_auction_house_handlers
 from handlers.blacksmith_repair_confirm import register_blacksmith_repair_confirmation_handlers
 from handlers.crystal_shop import register_crystal_shop_handlers
 from handlers.admin_crystal_credit import register_admin_crystal_credit_handlers
+from systems.admin_crystal_credit_system import init_admin_crystal_credit_system
 from handlers.player_rankings import register_player_rankings_handlers
 from handlers.timed_exp_bonus import register_timed_exp_bonus_handlers
 from handlers.world_chronicles import register_world_chronicle_handlers
@@ -178,6 +179,7 @@ init_class_reset_sphere()
 
 init_crystal_shop_system()
 init_crystal_bag_expansion_system()
+init_admin_crystal_credit_system()
 init_timed_exp_bonus_system()
 init_name_rune_system()
 init_fatigue_artifact_system()
