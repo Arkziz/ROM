@@ -4,7 +4,7 @@ import json,sqlite3
 from datetime import datetime,timedelta,timezone
 from pathlib import Path
 DB_PATH=Path(__file__).resolve().parents[1]/'game.db';BONUS_PERCENT=25
-PLANS={15:70,30:120}
+PLANS={15:100,30:180}
 def _utc():return datetime.now(timezone.utc)
 def _parse(v):
  try:return datetime.fromisoformat(str(v).replace('Z','+00:00')).astimezone(timezone.utc)
