@@ -7,13 +7,19 @@ from systems.potion_system import POTIONS, ALCHEMIST_SHOP, get_alchemist_potion_
 
 
 def _format_premium_expiration_kyiv(value):
- """Display canonical UTC Premium expiration in the approved Kyiv format."""
+ """Render a UTC string or datetime in the approved Kyiv presentation format."""
  try:
+  from datetime import datetime as _datetime, timezone as _timezone
   from zoneinfo import ZoneInfo
-  parsed=datetime.fromisoformat(str(value or '').replace('Z','+00:00'))
-  if parsed.tzinfo is None:parsed=parsed.replace(tzinfo=timezone.utc)
+  if isinstance(value, _datetime):
+   parsed=value
+  else:
+   parsed=_datetime.fromisoformat(str(value or '').replace('Z','+00:00'))
+  if parsed.tzinfo is None:
+   parsed=parsed.replace(tzinfo=_timezone.utc)
   return parsed.astimezone(ZoneInfo('Europe/Kyiv')).strftime('%d.%m.%Y %H:%M за Києвом')
- except Exception:return 'час завершення невідомий'
+ except Exception:
+  return 'час завершення невідомий'
 
 def _format_registration_date_kyiv_18_31_4a(value):
     """Render canonical UTC registration time in Europe/Kyiv."""

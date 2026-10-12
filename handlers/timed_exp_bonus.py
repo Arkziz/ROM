@@ -4,13 +4,19 @@ from telebot import types
 from systems.timed_exp_bonus_system import get_exp_bonus_status,preview_exp_bonus_purchase,purchase_exp_bonus
 BUTTON='💎 Premium: +25% досвіду та золота'
 def _format_premium_expiration_kyiv(value):
- """Display canonical UTC Premium expiration in the approved Kyiv format."""
+ """Render a UTC string or datetime in the approved Kyiv presentation format."""
  try:
+  from datetime import datetime as _datetime, timezone as _timezone
   from zoneinfo import ZoneInfo
-  parsed=datetime.fromisoformat(str(value or '').replace('Z','+00:00'))
-  if parsed.tzinfo is None:parsed=parsed.replace(tzinfo=timezone.utc)
+  if isinstance(value, _datetime):
+   parsed=value
+  else:
+   parsed=_datetime.fromisoformat(str(value or '').replace('Z','+00:00'))
+  if parsed.tzinfo is None:
+   parsed=parsed.replace(tzinfo=_timezone.utc)
   return parsed.astimezone(ZoneInfo('Europe/Kyiv')).strftime('%d.%m.%Y %H:%M за Києвом')
- except Exception:return 'час завершення невідомий'
+ except Exception:
+  return 'час завершення невідомий'
 def register_timed_exp_bonus_handlers(bot):
  @bot.message_handler(func=lambda m:m.text==BUTTON)
  def open_bonus(message):
