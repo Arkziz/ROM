@@ -338,7 +338,7 @@ def generate_dynamic_equipment_stats(slot_key, item_level, rarity, weapon_hands=
     # EXTRA BONUSES BY RARITY
     # ==============================
 
-    if rarity in ["uncommon", "rare", "epic"]:
+    if slot_key != "shoulders" and rarity in ["uncommon", "rare", "epic"]:
         bonus_count = 1
         min_bonus = 2
 
@@ -390,6 +390,13 @@ def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_k
 
     weapon_hands = 1
     weapon_attack_type = ""
+    # Stage 20.6.5b: forced-slot generation must always provide an explicit
+    # armor identity. Non-armor slots intentionally keep an empty armor type.
+    armor_type = (
+        get_allowed_armor_type_for_class(get_character_class(user_id))
+        if is_armor_slot(slot_key)
+        else ""
+    )
 
     if slot_key == "main_hand":
         profile = MAIN_HAND_PROFILES[item_profile]
