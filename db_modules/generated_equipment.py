@@ -281,11 +281,13 @@ def generate_dynamic_equipment_stats(slot_key, item_level, rarity, weapon_hands=
         extra_pool = ARMOR_EXTRA_STATS_BY_SLOT.get(slot_key, ["sta"])
 
     elif slot_key == "shoulders":
-        # Shoulders are a defense-only slot by design. Return from the
-        # authoritative slot branch before the shared rarity bonus layer.
+        # Shoulders use the same primary-stat pipeline as the other armor slots.
+        # Source-specific shop/loot resolvers redistribute this raw budget later.
         stats["pdef"] = get_dynamic_stat_value(item_level, rarity, 1.00)
         stats["mdef"] = get_dynamic_stat_value(item_level, rarity, 0.25)
-        return stats
+        stats["bonus_sta"] = get_dynamic_stat_value(item_level, rarity, 0.40)
+
+        extra_pool = ARMOR_EXTRA_STATS_BY_SLOT.get(slot_key, ["sta", "str"])
 
     elif slot_key == "chest":
         stats["pdef"] = get_dynamic_stat_value(item_level, rarity, 1.60)
