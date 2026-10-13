@@ -1,0 +1,83 @@
+{
+  "patch_id": "20.7.3",
+  "status": "PASS",
+  "decision": "STAGE_20_CLOSED",
+  "stage_20_status": "CLOSED",
+  "generated_at_utc": "2026-10-13T23:16:12.178848+00:00",
+  "head_before_closure": "1e8314d3d32ed5bb6861361c156e51d3acc1a8fb",
+  "manual_acceptance": "ACCEPTED",
+  "regression_readiness": "GO",
+  "critical_gaps": 0,
+  "high_gaps": 0,
+  "production_code_changed": false,
+  "production_db_opened": false,
+  "production_db_changed": false,
+  "wal_shm_manipulated": false,
+  "commit_registry_count": 59,
+  "report_registry_count": 59,
+  "evidence": {
+    "reports/stage_20_2_6_class_combat_acceptance.json": {
+      "patch_id": "20.2.6",
+      "status": "PASS",
+      "decision": null,
+      "acceptance_decision": null,
+      "closure_readiness": null,
+      "commit_hash": null
+    },
+    "reports/stage_20_3_9_hybrid_mana_economy_acceptance.json": {
+      "patch_id": "20.3.9",
+      "status": "PASS",
+      "decision": "ACCEPTED",
+      "acceptance_decision": null,
+      "closure_readiness": null,
+      "commit_hash": "aeb94486f23ec281c153fff94fb6447e69350b52"
+    },
+    "reports/stage_20_4_7_general_economy_acceptance.json": {
+      "patch_id": "20.4.7",
+      "status": "PASS",
+      "decision": "ACCEPTED",
+      "acceptance_decision": null,
+      "closure_readiness": null,
+      "commit_hash": null
+    },
+    "reports/stage_20_5_7_premium_admin_crystals_acceptance.json": {
+      "patch_id": null,
+      "status": "PASS",
+      "decision": "STAGE_20_5_ACCEPTED",
+      "acceptance_decision": null,
+      "closure_readiness": null,
+      "commit_hash": null
+    },
+    "reports/stage_20_6_6_travel_equipment_acceptance.json": {
+      "patch_id": null,
+      "status": "PASS",
+      "decision": "STAGE_20_6_ACCEPTED",
+      "acceptance_decision": null,
+      "closure_readiness": null,
+      "commit_hash": null
+    },
+    "reports/stage_20_7_1_full_regression.json": {
+      "patch_id": null,
+      "status": "PASS",
+      "decision": "CLOSURE_READINESS_GO",
+      "acceptance_decision": null,
+      "closure_readiness": null,
+      "commit_hash": null
+    }
+  },
+  "artifacts": [
+    "MD/STAGE_20_7_2_MANUAL_ACCEPTANCE.md",
+    "MD/STAGE_20_7_3_STAGE_20_CLOSURE.md",
+    "MD/STAGE_20_FULL_DOCUMENTATION.md",
+    "reports/stage_20_7_2_manual_acceptance.json",
+    "reports/stage_20_7_3_stage_20_closure.json",
+    "tools/finalize_stage_20_7_3.py"
+  ],
+  "canonical_document": "MD/STAGE_20_FULL_DOCUMENTATION.md",
+  "known_nuances": [
+    "Premium loot remains undecided and not implemented.",
+    "Future level-up gold above reached level 11 requires audited extension.",
+    "Later defects are separate stages and do not silently reopen Stage 20."
+  ],
+  "next_stage": null
+}
