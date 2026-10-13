@@ -281,10 +281,11 @@ def generate_dynamic_equipment_stats(slot_key, item_level, rarity, weapon_hands=
         extra_pool = ARMOR_EXTRA_STATS_BY_SLOT.get(slot_key, ["sta"])
 
     elif slot_key == "shoulders":
+        # Shoulders are a defense-only slot by design. Return from the
+        # authoritative slot branch before the shared rarity bonus layer.
         stats["pdef"] = get_dynamic_stat_value(item_level, rarity, 1.00)
         stats["mdef"] = get_dynamic_stat_value(item_level, rarity, 0.25)
-
-        extra_pool = ARMOR_EXTRA_STATS_BY_SLOT.get(slot_key, ["sta"])
+        return stats
 
     elif slot_key == "chest":
         stats["pdef"] = get_dynamic_stat_value(item_level, rarity, 1.60)
@@ -338,7 +339,7 @@ def generate_dynamic_equipment_stats(slot_key, item_level, rarity, weapon_hands=
     # EXTRA BONUSES BY RARITY
     # ==============================
 
-    if slot_key != "shoulders" and rarity in ["uncommon", "rare", "epic"]:
+    if rarity in ["uncommon", "rare", "epic"]:
         bonus_count = 1
         min_bonus = 2
 
