@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "stage": "21.1.3a",
+  "generated_at_utc": "2026-10-14T20:52:44Z",
+  "summary": {
+    "conclusion": "GO",
+    "records_before": 749,
+    "records_after": 377,
+    "records_removed": 372,
+    "collision_groups_before": 340,
+    "collision_groups_after": 27
+  },
+  "root_cause": "Nested handler decorators were counted through outer ast.walk() and again as decorators.",
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {
+        "expected": "rewrite/rom-v2"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.1.3 parent verified.",
+      "details": {
+        "expected": "130acfdbb48404b64ce2c420c77e6b65ca6a8745",
+        "actual": "130acfdbb48404b64ce2c420c77e6b65ca6a8745"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "AST_COVERAGE",
+      "status": "PASS",
+      "summary": "All registration modules parsed.",
+      "details": {
+        "errors": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "PHYSICAL_SITE_UNIQUENESS",
+      "status": "PASS",
+      "summary": "Every registration record has a unique physical site key.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "DOUBLE_COUNT_REMOVED",
+      "status": "PASS",
+      "summary": "Records reduced from 749 to 377.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "MAIN_ORDER_STABLE",
+      "status": "PASS",
+      "summary": "Main registration calls: 32.",
+      "details": {
+        "expected": 32
+      },
+      "blocking": false
+    }
+  ],
+  "canonical_artifacts_updated": [
+    "reports/stage_21_1_3_runtime_handler_callback_map.json",
+    "MD/STAGE_21_1_3_RUNTIME_HANDLER_CALLBACK_MAP.md"
+  ],
+  "database_evidence_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "next_stage": "21.1.4"
+}
