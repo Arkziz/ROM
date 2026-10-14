@@ -1,0 +1,295 @@
+{
+  "schema_version": 2,
+  "stage": "21.0.1",
+  "generated_at_utc": "2026-10-14T20:11:29Z",
+  "summary": {
+    "conclusion": "GO",
+    "counts": {
+      "PASS": 16,
+      "WARN": 0,
+      "FAIL": 0
+    },
+    "blocking_failures": []
+  },
+  "git": {
+    "branch": "develop",
+    "HEAD": "ff9f4920519ca5154ff1238ddaae67cb9ee2ce29",
+    "master": "ff9f4920519ca5154ff1238ddaae67cb9ee2ce29",
+    "develop": "ff9f4920519ca5154ff1238ddaae67cb9ee2ce29",
+    "origin/master": "ff9f4920519ca5154ff1238ddaae67cb9ee2ce29",
+    "origin/develop": "ff9f4920519ca5154ff1238ddaae67cb9ee2ce29"
+  },
+  "worktree": [],
+  "database": {
+    "production_connection_opened": false,
+    "before": {
+      "game.db": {
+        "exists": true,
+        "size": 1925120,
+        "mtime_ns": 1791928577995768700,
+        "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+      },
+      "game.db-wal": {
+        "exists": true,
+        "size": 4132392,
+        "mtime_ns": 1791931855310943600,
+        "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+      },
+      "game.db-shm": {
+        "exists": true,
+        "size": 32768,
+        "mtime_ns": 1791931554269010100,
+        "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+      }
+    },
+    "wal_shm": "NOT MANIPULATED",
+    "after": {
+      "game.db": {
+        "exists": true,
+        "size": 1925120,
+        "mtime_ns": 1791928577995768700,
+        "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+      },
+      "game.db-wal": {
+        "exists": true,
+        "size": 4132392,
+        "mtime_ns": 1791931855310943600,
+        "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+      },
+      "game.db-shm": {
+        "exists": true,
+        "size": 32768,
+        "mtime_ns": 1791931554269010100,
+        "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+      }
+    },
+    "quick_check": [
+      "ok"
+    ],
+    "foreign_key_violation_count": 0,
+    "user_version": 0,
+    "table_count": 52,
+    "query_target": "isolated_snapshot",
+    "production_bytes_unchanged": true
+  },
+  "checks": [
+    {
+      "check_id": "GIT_REPOSITORY",
+      "status": "PASS",
+      "severity": "INFO",
+      "summary": "ROM is a valid Git working tree.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "CURRENT_BRANCH",
+      "status": "PASS",
+      "severity": "INFO",
+      "summary": "Current branch is develop.",
+      "details": {
+        "branch": "develop"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "BRANCH_SYNC",
+      "status": "PASS",
+      "severity": "INFO",
+      "summary": "master, develop and cached origin refs are synchronized.",
+      "details": {
+        "HEAD": "ff9f4920519ca5154ff1238ddaae67cb9ee2ce29",
+        "master": "ff9f4920519ca5154ff1238ddaae67cb9ee2ce29",
+        "develop": "ff9f4920519ca5154ff1238ddaae67cb9ee2ce29",
+        "origin/master": "ff9f4920519ca5154ff1238ddaae67cb9ee2ce29",
+        "origin/develop": "ff9f4920519ca5154ff1238ddaae67cb9ee2ce29"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "EXPECTED_HEAD",
+      "status": "PASS",
+      "severity": "INFO",
+      "summary": "HEAD matches the approved clean Stage 21 starting point.",
+      "details": {
+        "expected": "ff9f4920519ca5154ff1238ddaae67cb9ee2ce29",
+        "actual": "ff9f4920519ca5154ff1238ddaae67cb9ee2ce29"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "REWRITE_BRANCH_ABSENCE",
+      "status": "PASS",
+      "severity": "INFO",
+      "summary": "rewrite/rom-v2 is available.",
+      "details": {
+        "local": false,
+        "cached_origin": false
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "severity": "INFO",
+      "summary": "Working tree has no unexpected changes.",
+      "details": {
+        "unexpected": [],
+        "allowed": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "STAGE20_BASELINE",
+      "status": "PASS",
+      "severity": "INFO",
+      "summary": "Stage 20 closure is an ancestor of HEAD.",
+      "details": {
+        "baseline": "bd6880020d3918d2ca3c071950975826dc69320c"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "GIT_REMOTE",
+      "status": "PASS",
+      "severity": "INFO",
+      "summary": "origin remote is configured.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "GITIGNORE",
+      "status": "PASS",
+      "severity": "INFO",
+      "summary": ".gitignore contains required safeguards.",
+      "details": {
+        "missing": [],
+        "runtime_rule_added": true
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "SENSITIVE_TRACKED_NAMES",
+      "status": "PASS",
+      "severity": "INFO",
+      "summary": "No tracked credential containers were found.",
+      "details": {
+        "paths": [],
+        "token_terms_ignored": true
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "SECRET_CONTENT_SCAN",
+      "status": "PASS",
+      "severity": "INFO",
+      "summary": "No high-confidence secret values were found.",
+      "details": {
+        "findings": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "ENTRYPOINT",
+      "status": "PASS",
+      "severity": "INFO",
+      "summary": "Root main.py is available.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "REPOSITORY_LAYOUT",
+      "status": "PASS",
+      "severity": "INFO",
+      "summary": "Operational directories exist and V2 paths are free.",
+      "details": {
+        "missing": [],
+        "conflicts": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "TEST_LAYOUT",
+      "status": "PASS",
+      "severity": "INFO",
+      "summary": "Existing tests/verifiers are available.",
+      "details": {
+        "count": 533
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "ROM_V2_NAME_CONFLICT",
+      "status": "PASS",
+      "severity": "INFO",
+      "summary": "rom_v2 is available.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "DATABASE_BASELINE",
+      "status": "PASS",
+      "severity": "INFO",
+      "summary": "Isolated DB snapshot passed; production DB/WAL/SHM evidence is unchanged.",
+      "details": {
+        "production_connection_opened": false,
+        "before": {
+          "game.db": {
+            "exists": true,
+            "size": 1925120,
+            "mtime_ns": 1791928577995768700,
+            "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+          },
+          "game.db-wal": {
+            "exists": true,
+            "size": 4132392,
+            "mtime_ns": 1791931855310943600,
+            "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+          },
+          "game.db-shm": {
+            "exists": true,
+            "size": 32768,
+            "mtime_ns": 1791931554269010100,
+            "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+          }
+        },
+        "wal_shm": "NOT MANIPULATED",
+        "after": {
+          "game.db": {
+            "exists": true,
+            "size": 1925120,
+            "mtime_ns": 1791928577995768700,
+            "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+          },
+          "game.db-wal": {
+            "exists": true,
+            "size": 4132392,
+            "mtime_ns": 1791931855310943600,
+            "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+          },
+          "game.db-shm": {
+            "exists": true,
+            "size": 32768,
+            "mtime_ns": 1791931554269010100,
+            "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+          }
+        },
+        "quick_check": [
+          "ok"
+        ],
+        "foreign_key_violation_count": 0,
+        "user_version": 0,
+        "table_count": 52,
+        "query_target": "isolated_snapshot",
+        "production_bytes_unchanged": true
+      },
+      "blocking": false
+    }
+  ],
+  "artifact_policy": {
+    "patch": "patch/patch_21_0_1_audit_rewrite_readiness.py",
+    "json": "reports/stage_21_0_1_rewrite_readiness_audit.json",
+    "markdown": "MD/STAGE_21_0_1_REWRITE_READINESS_AUDIT.md",
+    "historical_stage_19_20_files_restored": false
+  },
+  "next_stage": "21.0.2"
+}
