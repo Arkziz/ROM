@@ -1,4 +1,4 @@
-# ROM Stage 21.1.7 - configuration і external integrations
+# ROM Stage 21.1.7 canonical revision 21.1.7a - configuration і external integrations
 
 - **Статус:** `GO`
 - **Проаналізовано модулів:** `244`
@@ -13,7 +13,7 @@
 - Required variables without defaults: **3**
 - URL/host variables: **3**
 - Network integrations: **1**
-- Literal secret-like constants: **6**
+- Literal secret-like constants: **0**
 
 ## V2 configuration contract
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "stage": "21.1.7",
-  "generated_at_utc": "2026-10-14T21:07:00Z",
+  "stage": "21.1.7a",
+  "generated_at_utc": "2026-10-14T21:10:16Z",
   "summary": {
     "conclusion": "GO",
     "blocking_failures": [],
@@ -13,7 +13,7 @@
   },
   "git": {
     "branch": "rewrite/rom-v2",
-    "head_before_commit": "b5d8ad624707b95884c9dd907721b11dbbf0df23",
+    "head_before_commit": "86f4f48dff70519255a8e204d3fc5511d0245a5a",
     "upstream": "origin/rewrite/rom-v2"
   },
   "checks": [
@@ -27,10 +27,10 @@
     {
       "check_id": "PARENT",
       "status": "PASS",
-      "summary": "Expected Stage 21.1.6 parent verified.",
+      "summary": "Expected Stage 21.1.7 parent verified.",
       "details": {
-        "expected": "b5d8ad624707b95884c9dd907721b11dbbf0df23",
-        "actual": "b5d8ad624707b95884c9dd907721b11dbbf0df23"
+        "expected": "86f4f48dff70519255a8e204d3fc5511d0245a5a",
+        "actual": "86f4f48dff70519255a8e204d3fc5511d0245a5a"
       },
       "blocking": false
     },
@@ -338,7 +338,7 @@
           "name": "TOKEN",
           "line": 6,
           "value_type": "dynamic",
-          "secret_like": true,
+          "secret_like": false,
           "url_like": false,
           "has_literal_value": false
         },
@@ -1924,7 +1924,7 @@
           "name": "FIRIUS_TOKEN_ITEM_ID",
           "line": 28,
           "value_type": "int",
-          "secret_like": true,
+          "secret_like": false,
           "url_like": false,
           "has_literal_value": true
         },
@@ -1948,7 +1948,7 @@
           "name": "FIRIUS_TOKENS_PER_DAILY_REWARD",
           "line": 31,
           "value_type": "int",
-          "secret_like": true,
+          "secret_like": false,
           "url_like": false,
           "has_literal_value": true
         },
@@ -1964,7 +1964,7 @@
           "name": "RUNE_FUSION_TOKEN_QUANTITY",
           "line": 33,
           "value_type": "int",
-          "secret_like": true,
+          "secret_like": false,
           "url_like": false,
           "has_literal_value": true
         },
@@ -1980,7 +1980,7 @@
           "name": "FIRIUS_TOKEN_MAX_STACK",
           "line": 35,
           "value_type": "int",
-          "secret_like": true,
+          "secret_like": false,
           "url_like": false,
           "has_literal_value": true
         },
@@ -3670,7 +3670,7 @@
           "name": "TEST_TOKEN_ITEM_ID",
           "line": 4,
           "value_type": "int",
-          "secret_like": true,
+          "secret_like": false,
           "url_like": false,
           "has_literal_value": true
         },
@@ -10947,7 +10947,7 @@
           "name": "DAILY_FIRIUS_TOKENS",
           "line": 17,
           "value_type": "int",
-          "secret_like": true,
+          "secret_like": false,
           "url_like": false,
           "has_literal_value": true
         },
@@ -12487,62 +12487,7 @@
         "module": "main.py"
       }
     ],
-    "literal_secret_like_constants": [
-      {
-        "name": "FIRIUS_TOKEN_ITEM_ID",
-        "line": 28,
-        "value_type": "int",
-        "secret_like": true,
-        "url_like": false,
-        "has_literal_value": true,
-        "module": "data/runes.py"
-      },
-      {
-        "name": "FIRIUS_TOKENS_PER_DAILY_REWARD",
-        "line": 31,
-        "value_type": "int",
-        "secret_like": true,
-        "url_like": false,
-        "has_literal_value": true,
-        "module": "data/runes.py"
-      },
-      {
-        "name": "RUNE_FUSION_TOKEN_QUANTITY",
-        "line": 33,
-        "value_type": "int",
-        "secret_like": true,
-        "url_like": false,
-        "has_literal_value": true,
-        "module": "data/runes.py"
-      },
-      {
-        "name": "FIRIUS_TOKEN_MAX_STACK",
-        "line": 35,
-        "value_type": "int",
-        "secret_like": true,
-        "url_like": false,
-        "has_literal_value": true,
-        "module": "data/runes.py"
-      },
-      {
-        "name": "TEST_TOKEN_ITEM_ID",
-        "line": 4,
-        "value_type": "int",
-        "secret_like": true,
-        "url_like": false,
-        "has_literal_value": true,
-        "module": "events/test_event_2026/items.py"
-      },
-      {
-        "name": "DAILY_FIRIUS_TOKENS",
-        "line": 17,
-        "value_type": "int",
-        "secret_like": true,
-        "url_like": false,
-        "has_literal_value": true,
-        "module": "systems/simulation/meta_progression.py"
-      }
-    ],
+    "literal_secret_like_constants": [],
     "file_io": [
       {
         "line": 389,
@@ -12750,9 +12695,11 @@
     }
   },
   "artifacts": {
-    "patch": "patch/patch_21_1_7_inventory_configuration_and_external_integrations.py",
+    "patch": "patch/patch_21_1_7a_fix_secret_constant_classification.py",
     "json": "reports/stage_21_1_7_configuration_external_integrations.json",
-    "markdown": "MD/STAGE_21_1_7_CONFIGURATION_EXTERNAL_INTEGRATIONS.md"
+    "markdown": "MD/STAGE_21_1_7_CONFIGURATION_EXTERNAL_INTEGRATIONS.md",
+    "remediation_json": "reports/stage_21_1_7a_secret_constant_classification_fix.json",
+    "remediation_markdown": "MD/STAGE_21_1_7A_SECRET_CONSTANT_CLASSIFICATION_FIX.md"
   },
   "next_stage": "21.1.8"
 }
