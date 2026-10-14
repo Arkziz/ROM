@@ -1,0 +1,5508 @@
+{
+  "schema_version": 1,
+  "stage": "21.1.6",
+  "generated_at_utc": "2026-10-14T21:02:38Z",
+  "summary": {
+    "conclusion": "GO",
+    "blocking_failures": [],
+    "node_count": 244,
+    "edge_count": 639,
+    "cycle_count": 5,
+    "violation_count": 32,
+    "orphan_count": 19
+  },
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head_before_commit": "1d8515a03f011146b9b8ecc0dab1bb6039204a3b",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.1.5 parent verified.",
+      "details": {
+        "expected": "1d8515a03f011146b9b8ecc0dab1bb6039204a3b",
+        "actual": "1d8515a03f011146b9b8ecc0dab1bb6039204a3b"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "AST_COVERAGE",
+      "status": "PASS",
+      "summary": "All modules parsed.",
+      "details": {
+        "errors": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "NODE_COVERAGE",
+      "status": "PASS",
+      "summary": "Graph nodes: 244.",
+      "details": {
+        "expected": 244
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "GRAPH_NONEMPTY",
+      "status": "PASS",
+      "summary": "Internal dependency graph is non-empty.",
+      "details": {},
+      "blocking": false
+    }
+  ],
+  "nodes": [
+    {
+      "path": "config.py",
+      "classification": "REWRITE",
+      "layer": "root",
+      "fan_in": 3,
+      "fan_out": 0
+    },
+    {
+      "path": "data/about_game.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "data/balance.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 7,
+      "fan_out": 0
+    },
+    {
+      "path": "data/bosses.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 2,
+      "fan_out": 0
+    },
+    {
+      "path": "data/classes.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 7,
+      "fan_out": 0
+    },
+    {
+      "path": "data/defense_policy.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 3,
+      "fan_out": 0
+    },
+    {
+      "path": "data/drop_tables.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "data/equipment_identity_stat_policy.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 2,
+      "fan_out": 0
+    },
+    {
+      "path": "data/equipment_profiles.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 8,
+      "fan_out": 0
+    },
+    {
+      "path": "data/equipment_stat_policy.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "data/guild_resource_policy.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "data/location_graph.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 3,
+      "fan_out": 0
+    },
+    {
+      "path": "data/locations.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 8,
+      "fan_out": 0
+    },
+    {
+      "path": "data/mana_policy.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 8,
+      "fan_out": 0
+    },
+    {
+      "path": "data/mana_skill_presentation.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 3,
+      "fan_out": 1
+    },
+    {
+      "path": "data/mobs.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 6,
+      "fan_out": 0
+    },
+    {
+      "path": "data/player_combat_chances.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 4,
+      "fan_out": 0
+    },
+    {
+      "path": "data/player_hp.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 5,
+      "fan_out": 0
+    },
+    {
+      "path": "data/player_progression.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 7,
+      "fan_out": 0
+    },
+    {
+      "path": "data/priest_healing_policy.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 3,
+      "fan_out": 0
+    },
+    {
+      "path": "data/rebirth_sphere_policy.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "data/rune_drop_balance.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "data/runes.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 8,
+      "fan_out": 0
+    },
+    {
+      "path": "data/stat_scaling.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 0,
+      "fan_out": 2
+    },
+    {
+      "path": "data/stat_system_config.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 2,
+      "fan_out": 0
+    },
+    {
+      "path": "data/story_quest_content.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 10,
+      "fan_out": 11
+    },
+    {
+      "path": "data/story_quest_definitions.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 13,
+      "fan_out": 1
+    },
+    {
+      "path": "data/story_quest_hierarchy.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 2
+    },
+    {
+      "path": "data/story_quest_item_identity.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "data/story_quest_npcs.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 4,
+      "fan_out": 0
+    },
+    {
+      "path": "data/story_quest_title_presentation.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 2,
+      "fan_out": 1
+    },
+    {
+      "path": "data/story_quests/dark_forest_51_60.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "data/story_quests/dark_forest_61_70.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "data/story_quests/dark_forest_71_80.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "data/story_quests/dark_forest_81_90.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "data/story_quests/dark_forest_91_100.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "data/story_quests/start_path_01_10.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "data/story_quests/start_path_11_20.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "data/story_quests/start_path_21_30.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "data/story_quests/start_path_31_40.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "data/story_quests/start_path_41_50.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "data/travel_presentation.py",
+      "classification": "CONTENT_EXTRACT",
+      "layer": "content",
+      "fan_in": 2,
+      "fan_out": 0
+    },
+    {
+      "path": "db.py",
+      "classification": "REWRITE",
+      "layer": "persistence",
+      "fan_in": 43,
+      "fan_out": 0
+    },
+    {
+      "path": "db_modules/character.py",
+      "classification": "REWRITE",
+      "layer": "persistence",
+      "fan_in": 1,
+      "fan_out": 3
+    },
+    {
+      "path": "db_modules/connection.py",
+      "classification": "REWRITE",
+      "layer": "persistence",
+      "fan_in": 20,
+      "fan_out": 1
+    },
+    {
+      "path": "db_modules/daily_compat.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "persistence",
+      "fan_in": 1,
+      "fan_out": 2
+    },
+    {
+      "path": "db_modules/dev_compat.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "persistence",
+      "fan_in": 1,
+      "fan_out": 9
+    },
+    {
+      "path": "db_modules/equipment.py",
+      "classification": "REWRITE",
+      "layer": "persistence",
+      "fan_in": 4,
+      "fan_out": 3
+    },
+    {
+      "path": "db_modules/generated_equipment.py",
+      "classification": "REWRITE",
+      "layer": "persistence",
+      "fan_in": 1,
+      "fan_out": 6
+    },
+    {
+      "path": "db_modules/inventory.py",
+      "classification": "REWRITE",
+      "layer": "persistence",
+      "fan_in": 10,
+      "fan_out": 1
+    },
+    {
+      "path": "db_modules/inventory_compat.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "persistence",
+      "fan_in": 0,
+      "fan_out": 5
+    },
+    {
+      "path": "db_modules/location.py",
+      "classification": "REWRITE",
+      "layer": "persistence",
+      "fan_in": 0,
+      "fan_out": 1
+    },
+    {
+      "path": "db_modules/migrations.py",
+      "classification": "REWRITE",
+      "layer": "persistence",
+      "fan_in": 0,
+      "fan_out": 2
+    },
+    {
+      "path": "db_modules/player.py",
+      "classification": "REWRITE",
+      "layer": "persistence",
+      "fan_in": 2,
+      "fan_out": 9
+    },
+    {
+      "path": "db_modules/quests.py",
+      "classification": "REWRITE",
+      "layer": "persistence",
+      "fan_in": 0,
+      "fan_out": 5
+    },
+    {
+      "path": "db_modules/refine.py",
+      "classification": "REWRITE",
+      "layer": "persistence",
+      "fan_in": 0,
+      "fan_out": 6
+    },
+    {
+      "path": "db_modules/shop.py",
+      "classification": "REWRITE",
+      "layer": "persistence",
+      "fan_in": 0,
+      "fan_out": 13
+    },
+    {
+      "path": "db_modules/story_quests.py",
+      "classification": "REWRITE",
+      "layer": "persistence",
+      "fan_in": 6,
+      "fan_out": 0
+    },
+    {
+      "path": "db_modules/systems_wrappers.py",
+      "classification": "REWRITE",
+      "layer": "persistence",
+      "fan_in": 0,
+      "fan_out": 7
+    },
+    {
+      "path": "db_modules/utils.py",
+      "classification": "REWRITE",
+      "layer": "persistence",
+      "fan_in": 2,
+      "fan_out": 1
+    },
+    {
+      "path": "events/_template/bosses.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "events/_template/config.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "events/_template/drops.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "events/_template/handlers.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "events/_template/items.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "events/_template/mobs.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "events/_template/quests.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "events/_template/rewards.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "events/_template/shop.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "events/_template/statistics.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "events/item_namespace.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "events/test_event_2026/bosses.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "events/test_event_2026/config.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 6,
+      "fan_out": 0
+    },
+    {
+      "path": "events/test_event_2026/drops.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 3
+    },
+    {
+      "path": "events/test_event_2026/handlers.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "events/test_event_2026/items.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 2,
+      "fan_out": 1
+    },
+    {
+      "path": "events/test_event_2026/mobs.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 2,
+      "fan_out": 1
+    },
+    {
+      "path": "events/test_event_2026/quests.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "events/test_event_2026/rewards.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "events/test_event_2026/shop.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 2
+    },
+    {
+      "path": "events/test_event_2026/statistics.py",
+      "classification": "REWRITE",
+      "layer": "event",
+      "fan_in": 0,
+      "fan_out": 2
+    },
+    {
+      "path": "handlers/about_game.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 3
+    },
+    {
+      "path": "handlers/admin_crystal_credit.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 2
+    },
+    {
+      "path": "handlers/attribute_allocation.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "handlers/auction_house.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 3
+    },
+    {
+      "path": "handlers/blacksmith.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 2
+    },
+    {
+      "path": "handlers/blacksmith_repair_confirm.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 3
+    },
+    {
+      "path": "handlers/city.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "telegram_handler",
+      "fan_in": 12,
+      "fan_out": 12
+    },
+    {
+      "path": "handlers/combat.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 5,
+      "fan_out": 23
+    },
+    {
+      "path": "handlers/contracts.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 2,
+      "fan_out": 4
+    },
+    {
+      "path": "handlers/crystal_shop.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 2,
+      "fan_out": 5
+    },
+    {
+      "path": "handlers/daily.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 3
+    },
+    {
+      "path": "handlers/dev.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 13
+    },
+    {
+      "path": "handlers/event_ui.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 5
+    },
+    {
+      "path": "handlers/external_links.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 2
+    },
+    {
+      "path": "handlers/fatigue_artifact.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "handlers/guild.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 5
+    },
+    {
+      "path": "handlers/inventory.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 13
+    },
+    {
+      "path": "handlers/map.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 3,
+      "fan_out": 9
+    },
+    {
+      "path": "handlers/name_rune.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "handlers/player_interaction.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 3,
+      "fan_out": 12
+    },
+    {
+      "path": "handlers/player_rankings.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 2
+    },
+    {
+      "path": "handlers/profile.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 3,
+      "fan_out": 8
+    },
+    {
+      "path": "handlers/pvp_interaction.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 6
+    },
+    {
+      "path": "handlers/pvp_round_ui.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 8
+    },
+    {
+      "path": "handlers/refine.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 2
+    },
+    {
+      "path": "handlers/runes.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 4
+    },
+    {
+      "path": "handlers/start.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "telegram_handler",
+      "fan_in": 3,
+      "fan_out": 8
+    },
+    {
+      "path": "handlers/story_boss_invocation_wiring.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 6
+    },
+    {
+      "path": "handlers/story_quest_hierarchy_ui.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 2
+    },
+    {
+      "path": "handlers/story_quest_npc_runtime.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "telegram_handler",
+      "fan_in": 3,
+      "fan_out": 11
+    },
+    {
+      "path": "handlers/story_quests.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 10
+    },
+    {
+      "path": "handlers/timed_exp_bonus.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "handlers/world_chronicles.py",
+      "classification": "REWRITE",
+      "layer": "telegram_handler",
+      "fan_in": 1,
+      "fan_out": 2
+    },
+    {
+      "path": "keyboards.py",
+      "classification": "REWRITE",
+      "layer": "root",
+      "fan_in": 20,
+      "fan_out": 4
+    },
+    {
+      "path": "main.py",
+      "classification": "REWRITE",
+      "layer": "composition_root",
+      "fan_in": 0,
+      "fan_out": 45
+    },
+    {
+      "path": "systems/admin_crystal_credit_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/attribute_allocation_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/attribute_respec_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 3,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/auction_house_system.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 3
+    },
+    {
+      "path": "systems/boss_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 3,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/character_system.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "system",
+      "fan_in": 9,
+      "fan_out": 7
+    },
+    {
+      "path": "systems/combat_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 4
+    },
+    {
+      "path": "systems/contract_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 3
+    },
+    {
+      "path": "systems/crystal_bag_expansion_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/crystal_shop_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/crystal_wallet_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/drop_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 5,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/dynamic_equipment_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/energy_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 3,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/equipment_system.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "system",
+      "fan_in": 9,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/event_item_catalog_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/event_shop_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/event_statistics_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/fatigue_artifact_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 3,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/fresh_database_bootstrap.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/guild_resource_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/guild_system.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/inactivity_reminder_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/item_id_allocator_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 3,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/level_up_reward_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/location_context_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 4
+    },
+    {
+      "path": "systems/name_rune_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 3,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/notifications.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 4
+    },
+    {
+      "path": "systems/player_interaction_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 12,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/player_rankings_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/player_system.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "system",
+      "fan_in": 5,
+      "fan_out": 11
+    },
+    {
+      "path": "systems/potion_system.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "system",
+      "fan_in": 3,
+      "fan_out": 4
+    },
+    {
+      "path": "systems/premium_item_policy_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/production_logging.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 4,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/profile_history_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/pve_auto_escape_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/pve_skill_action_state.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/pvp_action_validation.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 3
+    },
+    {
+      "path": "systems/pvp_adaptive_balance_optimizer.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 6
+    },
+    {
+      "path": "systems/pvp_anti_stall_survivability_candidate_sandbox.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 6
+    },
+    {
+      "path": "systems/pvp_balance_simulator.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 3
+    },
+    {
+      "path": "systems/pvp_battle_factory.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 6
+    },
+    {
+      "path": "systems/pvp_combat_log.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/pvp_completion_service.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/pvp_config.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/pvp_knight_judgement_terminal_audit.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 6
+    },
+    {
+      "path": "systems/pvp_models.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 13,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/pvp_policy_balance_candidate_sandbox.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 6
+    },
+    {
+      "path": "systems/pvp_policy_metrics_audit.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 10,
+      "fan_out": 4
+    },
+    {
+      "path": "systems/pvp_primary_stat_scaling_combat_pacing_sandbox.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 6
+    },
+    {
+      "path": "systems/pvp_production_calibration.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 12,
+      "fan_out": 6
+    },
+    {
+      "path": "systems/pvp_production_fixture_audit.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/pvp_real_actor_root_cause_audit.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 6
+    },
+    {
+      "path": "systems/pvp_real_actor_state_replay.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 7,
+      "fan_out": 6
+    },
+    {
+      "path": "systems/pvp_real_equipment_fixture_audit.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/pvp_request_service.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/pvp_root_cause_metric_semantics.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 3
+    },
+    {
+      "path": "systems/pvp_round_engine.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 12,
+      "fan_out": 7
+    },
+    {
+      "path": "systems/pvp_round_ui.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 3
+    },
+    {
+      "path": "systems/pvp_skill_adapter.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 17,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/pvp_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 5,
+      "fan_out": 4
+    },
+    {
+      "path": "systems/pvp_targeted_mechanics_candidate_sandbox.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 6
+    },
+    {
+      "path": "systems/pvp_timer_service.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/refine_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 6,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/regen_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/reward_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 7
+    },
+    {
+      "path": "systems/rune_system.py",
+      "classification": "NEEDS_MANUAL_REVIEW",
+      "layer": "system",
+      "fan_in": 6,
+      "fan_out": 6
+    },
+    {
+      "path": "systems/simulation/asset_valuation.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/simulation/balance_analyzer.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/simulation/battle_models.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 3,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/simulation/behavior_policy.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/simulation/canonical_rules.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 4,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/simulation/capacity_analysis.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 3
+    },
+    {
+      "path": "systems/simulation/class_progression.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 4
+    },
+    {
+      "path": "systems/simulation/clock.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/simulation/combat_actor_stats.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 6
+    },
+    {
+      "path": "systems/simulation/config.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/simulation/drop_inventory.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/simulation/economic_ledger.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 3,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/simulation/economic_progression.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/simulation/economy_analyzer.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/simulation/economy_guild_acceptance.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 3
+    },
+    {
+      "path": "systems/simulation/equipment_policy.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/simulation/equipment_service.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/simulation/excel_reporting.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/simulation/guild_population.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/simulation/inventory_engine.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 3,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/simulation/loot_equipment_city.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 5
+    },
+    {
+      "path": "systems/simulation/meta_progression.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 5
+    },
+    {
+      "path": "systems/simulation/metrics.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/simulation/models.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 11,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/simulation/parity_foundation.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/simulation/patch_regression.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 3
+    },
+    {
+      "path": "systems/simulation/population_cache.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/simulation/population_reporting.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/simulation/potion_affordability.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/simulation/production_parity.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/simulation/progression_economy_reporting.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/simulation/progression_models.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 3,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/simulation/progression_provider.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 10
+    },
+    {
+      "path": "systems/simulation/progression_reporting.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/simulation/progression_wall_analyzer.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/simulation/pve_battle.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 7
+    },
+    {
+      "path": "systems/simulation/reporting.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 0,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/simulation/rng.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 8,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/simulation/rng_adapter.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/simulation/rng_percentiles.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/simulation/skill_catalog.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/simulation/survival_state.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 3
+    },
+    {
+      "path": "systems/simulation/world_progression.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 3,
+      "fan_out": 11
+    },
+    {
+      "path": "systems/stat_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 10,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/story_boss_invocation_adapter.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/story_quest_boss_call_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 3,
+      "fan_out": 4
+    },
+    {
+      "path": "systems/story_quest_boss_completion_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 4
+    },
+    {
+      "path": "systems/story_quest_combat_progress_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 4
+    },
+    {
+      "path": "systems/story_quest_completion_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 3
+    },
+    {
+      "path": "systems/story_quest_item_drop_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 5
+    },
+    {
+      "path": "systems/story_quest_location_presentation.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/story_quest_npc_acceptance_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 3
+    },
+    {
+      "path": "systems/story_quest_overlevel_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 5
+    },
+    {
+      "path": "systems/story_quest_player_level.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 2,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/story_quest_reward_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/story_quest_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 7,
+      "fan_out": 2
+    },
+    {
+      "path": "systems/telegram_rate_limit.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 1,
+      "fan_out": 1
+    },
+    {
+      "path": "systems/timed_exp_bonus_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 5,
+      "fan_out": 0
+    },
+    {
+      "path": "systems/travel_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 6,
+      "fan_out": 5
+    },
+    {
+      "path": "systems/world_chronicle_system.py",
+      "classification": "REWRITE",
+      "layer": "system",
+      "fan_in": 5,
+      "fan_out": 0
+    },
+    {
+      "path": "utils.py",
+      "classification": "REWRITE",
+      "layer": "root",
+      "fan_in": 2,
+      "fan_out": 0
+    }
+  ],
+  "edges": [
+    {
+      "source": "data/equipment_stat_policy.py",
+      "target": "data/stat_system_config.py"
+    },
+    {
+      "source": "data/mana_skill_presentation.py",
+      "target": "data/mana_policy.py"
+    },
+    {
+      "source": "data/stat_scaling.py",
+      "target": "data/defense_policy.py"
+    },
+    {
+      "source": "data/stat_scaling.py",
+      "target": "data/player_hp.py"
+    },
+    {
+      "source": "data/story_quest_content.py",
+      "target": "data/story_quest_definitions.py"
+    },
+    {
+      "source": "data/story_quest_content.py",
+      "target": "data/story_quests/dark_forest_51_60.py"
+    },
+    {
+      "source": "data/story_quest_content.py",
+      "target": "data/story_quests/dark_forest_61_70.py"
+    },
+    {
+      "source": "data/story_quest_content.py",
+      "target": "data/story_quests/dark_forest_71_80.py"
+    },
+    {
+      "source": "data/story_quest_content.py",
+      "target": "data/story_quests/dark_forest_81_90.py"
+    },
+    {
+      "source": "data/story_quest_content.py",
+      "target": "data/story_quests/dark_forest_91_100.py"
+    },
+    {
+      "source": "data/story_quest_content.py",
+      "target": "data/story_quests/start_path_01_10.py"
+    },
+    {
+      "source": "data/story_quest_content.py",
+      "target": "data/story_quests/start_path_11_20.py"
+    },
+    {
+      "source": "data/story_quest_content.py",
+      "target": "data/story_quests/start_path_21_30.py"
+    },
+    {
+      "source": "data/story_quest_content.py",
+      "target": "data/story_quests/start_path_31_40.py"
+    },
+    {
+      "source": "data/story_quest_content.py",
+      "target": "data/story_quests/start_path_41_50.py"
+    },
+    {
+      "source": "data/story_quest_definitions.py",
+      "target": "data/story_quest_item_identity.py"
+    },
+    {
+      "source": "data/story_quest_hierarchy.py",
+      "target": "data/story_quest_content.py"
+    },
+    {
+      "source": "data/story_quest_hierarchy.py",
+      "target": "systems/story_quest_location_presentation.py"
+    },
+    {
+      "source": "data/story_quest_title_presentation.py",
+      "target": "data/story_quest_definitions.py"
+    },
+    {
+      "source": "db_modules/character.py",
+      "target": "data/classes.py"
+    },
+    {
+      "source": "db_modules/character.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "db_modules/character.py",
+      "target": "systems/character_system.py"
+    },
+    {
+      "source": "db_modules/connection.py",
+      "target": "systems/event_item_catalog_system.py"
+    },
+    {
+      "source": "db_modules/daily_compat.py",
+      "target": "data/balance.py"
+    },
+    {
+      "source": "db_modules/daily_compat.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "db_modules/dev_compat.py",
+      "target": "data/classes.py"
+    },
+    {
+      "source": "db_modules/dev_compat.py",
+      "target": "data/equipment_profiles.py"
+    },
+    {
+      "source": "db_modules/dev_compat.py",
+      "target": "data/player_progression.py"
+    },
+    {
+      "source": "db_modules/dev_compat.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "db_modules/dev_compat.py",
+      "target": "db_modules/equipment.py"
+    },
+    {
+      "source": "db_modules/dev_compat.py",
+      "target": "db_modules/generated_equipment.py"
+    },
+    {
+      "source": "db_modules/dev_compat.py",
+      "target": "systems/equipment_system.py"
+    },
+    {
+      "source": "db_modules/dev_compat.py",
+      "target": "systems/item_id_allocator_system.py"
+    },
+    {
+      "source": "db_modules/dev_compat.py",
+      "target": "systems/player_system.py"
+    },
+    {
+      "source": "db_modules/equipment.py",
+      "target": "data/equipment_profiles.py"
+    },
+    {
+      "source": "db_modules/equipment.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "db_modules/equipment.py",
+      "target": "systems/equipment_system.py"
+    },
+    {
+      "source": "db_modules/generated_equipment.py",
+      "target": "data/equipment_identity_stat_policy.py"
+    },
+    {
+      "source": "db_modules/generated_equipment.py",
+      "target": "data/equipment_profiles.py"
+    },
+    {
+      "source": "db_modules/generated_equipment.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "db_modules/generated_equipment.py",
+      "target": "systems/character_system.py"
+    },
+    {
+      "source": "db_modules/generated_equipment.py",
+      "target": "systems/equipment_system.py"
+    },
+    {
+      "source": "db_modules/generated_equipment.py",
+      "target": "systems/item_id_allocator_system.py"
+    },
+    {
+      "source": "db_modules/inventory.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "db_modules/inventory_compat.py",
+      "target": "data/classes.py"
+    },
+    {
+      "source": "db_modules/inventory_compat.py",
+      "target": "data/equipment_profiles.py"
+    },
+    {
+      "source": "db_modules/inventory_compat.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "db_modules/inventory_compat.py",
+      "target": "db_modules/equipment.py"
+    },
+    {
+      "source": "db_modules/inventory_compat.py",
+      "target": "systems/equipment_system.py"
+    },
+    {
+      "source": "db_modules/location.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "db_modules/migrations.py",
+      "target": "data/balance.py"
+    },
+    {
+      "source": "db_modules/migrations.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "db_modules/player.py",
+      "target": "data/player_hp.py"
+    },
+    {
+      "source": "db_modules/player.py",
+      "target": "data/player_progression.py"
+    },
+    {
+      "source": "db_modules/player.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "db_modules/player.py",
+      "target": "db_modules/equipment.py"
+    },
+    {
+      "source": "db_modules/player.py",
+      "target": "systems/character_system.py"
+    },
+    {
+      "source": "db_modules/player.py",
+      "target": "systems/energy_system.py"
+    },
+    {
+      "source": "db_modules/player.py",
+      "target": "systems/equipment_system.py"
+    },
+    {
+      "source": "db_modules/player.py",
+      "target": "systems/player_system.py"
+    },
+    {
+      "source": "db_modules/player.py",
+      "target": "systems/stat_system.py"
+    },
+    {
+      "source": "db_modules/quests.py",
+      "target": "data/balance.py"
+    },
+    {
+      "source": "db_modules/quests.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "db_modules/quests.py",
+      "target": "db_modules/daily_compat.py"
+    },
+    {
+      "source": "db_modules/quests.py",
+      "target": "db_modules/inventory.py"
+    },
+    {
+      "source": "db_modules/quests.py",
+      "target": "db_modules/utils.py"
+    },
+    {
+      "source": "db_modules/refine.py",
+      "target": "data/balance.py"
+    },
+    {
+      "source": "db_modules/refine.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "db_modules/refine.py",
+      "target": "db_modules/inventory.py"
+    },
+    {
+      "source": "db_modules/refine.py",
+      "target": "db_modules/player.py"
+    },
+    {
+      "source": "db_modules/refine.py",
+      "target": "systems/equipment_system.py"
+    },
+    {
+      "source": "db_modules/refine.py",
+      "target": "systems/refine_system.py"
+    },
+    {
+      "source": "db_modules/shop.py",
+      "target": "data/equipment_identity_stat_policy.py"
+    },
+    {
+      "source": "db_modules/shop.py",
+      "target": "data/equipment_profiles.py"
+    },
+    {
+      "source": "db_modules/shop.py",
+      "target": "data/equipment_stat_policy.py"
+    },
+    {
+      "source": "db_modules/shop.py",
+      "target": "db_modules/character.py"
+    },
+    {
+      "source": "db_modules/shop.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "db_modules/shop.py",
+      "target": "db_modules/equipment.py"
+    },
+    {
+      "source": "db_modules/shop.py",
+      "target": "db_modules/inventory.py"
+    },
+    {
+      "source": "db_modules/shop.py",
+      "target": "db_modules/player.py"
+    },
+    {
+      "source": "db_modules/shop.py",
+      "target": "db_modules/utils.py"
+    },
+    {
+      "source": "db_modules/shop.py",
+      "target": "systems/character_system.py"
+    },
+    {
+      "source": "db_modules/shop.py",
+      "target": "systems/dynamic_equipment_system.py"
+    },
+    {
+      "source": "db_modules/shop.py",
+      "target": "systems/equipment_system.py"
+    },
+    {
+      "source": "db_modules/shop.py",
+      "target": "systems/item_id_allocator_system.py"
+    },
+    {
+      "source": "db_modules/systems_wrappers.py",
+      "target": "systems/auction_house_system.py"
+    },
+    {
+      "source": "db_modules/systems_wrappers.py",
+      "target": "systems/contract_system.py"
+    },
+    {
+      "source": "db_modules/systems_wrappers.py",
+      "target": "systems/energy_system.py"
+    },
+    {
+      "source": "db_modules/systems_wrappers.py",
+      "target": "systems/guild_system.py"
+    },
+    {
+      "source": "db_modules/systems_wrappers.py",
+      "target": "systems/player_interaction_system.py"
+    },
+    {
+      "source": "db_modules/systems_wrappers.py",
+      "target": "systems/regen_system.py"
+    },
+    {
+      "source": "db_modules/systems_wrappers.py",
+      "target": "systems/rune_system.py"
+    },
+    {
+      "source": "db_modules/utils.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "events/test_event_2026/drops.py",
+      "target": "events/test_event_2026/config.py"
+    },
+    {
+      "source": "events/test_event_2026/drops.py",
+      "target": "events/test_event_2026/items.py"
+    },
+    {
+      "source": "events/test_event_2026/drops.py",
+      "target": "events/test_event_2026/mobs.py"
+    },
+    {
+      "source": "events/test_event_2026/items.py",
+      "target": "events/test_event_2026/config.py"
+    },
+    {
+      "source": "events/test_event_2026/mobs.py",
+      "target": "events/test_event_2026/config.py"
+    },
+    {
+      "source": "events/test_event_2026/shop.py",
+      "target": "events/test_event_2026/config.py"
+    },
+    {
+      "source": "events/test_event_2026/shop.py",
+      "target": "events/test_event_2026/items.py"
+    },
+    {
+      "source": "events/test_event_2026/statistics.py",
+      "target": "events/test_event_2026/config.py"
+    },
+    {
+      "source": "events/test_event_2026/statistics.py",
+      "target": "events/test_event_2026/mobs.py"
+    },
+    {
+      "source": "handlers/about_game.py",
+      "target": "data/about_game.py"
+    },
+    {
+      "source": "handlers/about_game.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/about_game.py",
+      "target": "handlers/city.py"
+    },
+    {
+      "source": "handlers/admin_crystal_credit.py",
+      "target": "handlers/city.py"
+    },
+    {
+      "source": "handlers/admin_crystal_credit.py",
+      "target": "systems/admin_crystal_credit_system.py"
+    },
+    {
+      "source": "handlers/attribute_allocation.py",
+      "target": "systems/attribute_allocation_system.py"
+    },
+    {
+      "source": "handlers/auction_house.py",
+      "target": "data/equipment_profiles.py"
+    },
+    {
+      "source": "handlers/auction_house.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/auction_house.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/blacksmith.py",
+      "target": "handlers/city.py"
+    },
+    {
+      "source": "handlers/blacksmith.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/blacksmith_repair_confirm.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/blacksmith_repair_confirm.py",
+      "target": "handlers/city.py"
+    },
+    {
+      "source": "handlers/blacksmith_repair_confirm.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/city.py",
+      "target": "data/locations.py"
+    },
+    {
+      "source": "handlers/city.py",
+      "target": "data/mobs.py"
+    },
+    {
+      "source": "handlers/city.py",
+      "target": "data/story_quest_npcs.py"
+    },
+    {
+      "source": "handlers/city.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/city.py",
+      "target": "handlers/crystal_shop.py"
+    },
+    {
+      "source": "handlers/city.py",
+      "target": "handlers/story_boss_invocation_wiring.py"
+    },
+    {
+      "source": "handlers/city.py",
+      "target": "handlers/story_quest_npc_runtime.py"
+    },
+    {
+      "source": "handlers/city.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/city.py",
+      "target": "systems/location_context_system.py"
+    },
+    {
+      "source": "handlers/city.py",
+      "target": "systems/player_interaction_system.py"
+    },
+    {
+      "source": "handlers/city.py",
+      "target": "systems/potion_system.py"
+    },
+    {
+      "source": "handlers/city.py",
+      "target": "systems/timed_exp_bonus_system.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "data/locations.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "data/mana_policy.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "data/priest_healing_policy.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "systems/boss_system.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "systems/character_system.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "systems/combat_system.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "systems/event_statistics_system.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "systems/potion_system.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "systems/production_logging.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "systems/pve_auto_escape_system.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "systems/pve_skill_action_state.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "systems/reward_system.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "systems/story_quest_boss_call_system.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "systems/story_quest_boss_completion_system.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "systems/story_quest_combat_progress_system.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "systems/story_quest_item_drop_system.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "systems/story_quest_overlevel_system.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "systems/travel_system.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "systems/world_chronicle_system.py"
+    },
+    {
+      "source": "handlers/combat.py",
+      "target": "utils.py"
+    },
+    {
+      "source": "handlers/contracts.py",
+      "target": "data/locations.py"
+    },
+    {
+      "source": "handlers/contracts.py",
+      "target": "data/mobs.py"
+    },
+    {
+      "source": "handlers/contracts.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/contracts.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/crystal_shop.py",
+      "target": "handlers/city.py"
+    },
+    {
+      "source": "handlers/crystal_shop.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/crystal_shop.py",
+      "target": "systems/crystal_bag_expansion_system.py"
+    },
+    {
+      "source": "handlers/crystal_shop.py",
+      "target": "systems/crystal_shop_system.py"
+    },
+    {
+      "source": "handlers/crystal_shop.py",
+      "target": "systems/crystal_wallet_system.py"
+    },
+    {
+      "source": "handlers/daily.py",
+      "target": "data/runes.py"
+    },
+    {
+      "source": "handlers/daily.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/daily.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/dev.py",
+      "target": "data/runes.py"
+    },
+    {
+      "source": "handlers/dev.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/dev.py",
+      "target": "db_modules/dev_compat.py"
+    },
+    {
+      "source": "handlers/dev.py",
+      "target": "handlers/start.py"
+    },
+    {
+      "source": "handlers/dev.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/dev.py",
+      "target": "systems/crystal_wallet_system.py"
+    },
+    {
+      "source": "handlers/dev.py",
+      "target": "systems/drop_system.py"
+    },
+    {
+      "source": "handlers/dev.py",
+      "target": "systems/premium_item_policy_system.py"
+    },
+    {
+      "source": "handlers/dev.py",
+      "target": "systems/pvp_balance_simulator.py"
+    },
+    {
+      "source": "handlers/dev.py",
+      "target": "systems/pvp_policy_metrics_audit.py"
+    },
+    {
+      "source": "handlers/dev.py",
+      "target": "systems/pvp_production_calibration.py"
+    },
+    {
+      "source": "handlers/dev.py",
+      "target": "systems/pvp_production_fixture_audit.py"
+    },
+    {
+      "source": "handlers/dev.py",
+      "target": "systems/rune_system.py"
+    },
+    {
+      "source": "handlers/event_ui.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "handlers/event_ui.py",
+      "target": "events/test_event_2026/config.py"
+    },
+    {
+      "source": "handlers/event_ui.py",
+      "target": "handlers/city.py"
+    },
+    {
+      "source": "handlers/event_ui.py",
+      "target": "systems/event_shop_system.py"
+    },
+    {
+      "source": "handlers/event_ui.py",
+      "target": "systems/event_statistics_system.py"
+    },
+    {
+      "source": "handlers/external_links.py",
+      "target": "config.py"
+    },
+    {
+      "source": "handlers/external_links.py",
+      "target": "handlers/city.py"
+    },
+    {
+      "source": "handlers/fatigue_artifact.py",
+      "target": "systems/fatigue_artifact_system.py"
+    },
+    {
+      "source": "handlers/guild.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/guild.py",
+      "target": "handlers/city.py"
+    },
+    {
+      "source": "handlers/guild.py",
+      "target": "handlers/contracts.py"
+    },
+    {
+      "source": "handlers/guild.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/guild.py",
+      "target": "systems/guild_system.py"
+    },
+    {
+      "source": "handlers/inventory.py",
+      "target": "data/runes.py"
+    },
+    {
+      "source": "handlers/inventory.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/inventory.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "handlers/inventory.py",
+      "target": "handlers/profile.py"
+    },
+    {
+      "source": "handlers/inventory.py",
+      "target": "handlers/start.py"
+    },
+    {
+      "source": "handlers/inventory.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/inventory.py",
+      "target": "systems/attribute_respec_system.py"
+    },
+    {
+      "source": "handlers/inventory.py",
+      "target": "systems/character_system.py"
+    },
+    {
+      "source": "handlers/inventory.py",
+      "target": "systems/energy_system.py"
+    },
+    {
+      "source": "handlers/inventory.py",
+      "target": "systems/name_rune_system.py"
+    },
+    {
+      "source": "handlers/inventory.py",
+      "target": "systems/player_system.py"
+    },
+    {
+      "source": "handlers/inventory.py",
+      "target": "systems/potion_system.py"
+    },
+    {
+      "source": "handlers/inventory.py",
+      "target": "systems/rune_system.py"
+    },
+    {
+      "source": "handlers/map.py",
+      "target": "data/location_graph.py"
+    },
+    {
+      "source": "handlers/map.py",
+      "target": "data/locations.py"
+    },
+    {
+      "source": "handlers/map.py",
+      "target": "data/mobs.py"
+    },
+    {
+      "source": "handlers/map.py",
+      "target": "data/travel_presentation.py"
+    },
+    {
+      "source": "handlers/map.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/map.py",
+      "target": "handlers/player_interaction.py"
+    },
+    {
+      "source": "handlers/map.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/map.py",
+      "target": "systems/player_interaction_system.py"
+    },
+    {
+      "source": "handlers/map.py",
+      "target": "systems/travel_system.py"
+    },
+    {
+      "source": "handlers/name_rune.py",
+      "target": "systems/name_rune_system.py"
+    },
+    {
+      "source": "handlers/player_interaction.py",
+      "target": "data/classes.py"
+    },
+    {
+      "source": "handlers/player_interaction.py",
+      "target": "data/equipment_profiles.py"
+    },
+    {
+      "source": "handlers/player_interaction.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/player_interaction.py",
+      "target": "handlers/combat.py"
+    },
+    {
+      "source": "handlers/player_interaction.py",
+      "target": "handlers/map.py"
+    },
+    {
+      "source": "handlers/player_interaction.py",
+      "target": "handlers/pvp_interaction.py"
+    },
+    {
+      "source": "handlers/player_interaction.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/player_interaction.py",
+      "target": "systems/equipment_system.py"
+    },
+    {
+      "source": "handlers/player_interaction.py",
+      "target": "systems/location_context_system.py"
+    },
+    {
+      "source": "handlers/player_interaction.py",
+      "target": "systems/player_interaction_system.py"
+    },
+    {
+      "source": "handlers/player_interaction.py",
+      "target": "systems/rune_system.py"
+    },
+    {
+      "source": "handlers/player_interaction.py",
+      "target": "systems/travel_system.py"
+    },
+    {
+      "source": "handlers/player_rankings.py",
+      "target": "handlers/city.py"
+    },
+    {
+      "source": "handlers/player_rankings.py",
+      "target": "systems/player_rankings_system.py"
+    },
+    {
+      "source": "handlers/profile.py",
+      "target": "data/mana_skill_presentation.py"
+    },
+    {
+      "source": "handlers/profile.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/profile.py",
+      "target": "handlers/attribute_allocation.py"
+    },
+    {
+      "source": "handlers/profile.py",
+      "target": "handlers/combat.py"
+    },
+    {
+      "source": "handlers/profile.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/profile.py",
+      "target": "systems/profile_history_system.py"
+    },
+    {
+      "source": "handlers/profile.py",
+      "target": "systems/stat_system.py"
+    },
+    {
+      "source": "handlers/profile.py",
+      "target": "utils.py"
+    },
+    {
+      "source": "handlers/pvp_interaction.py",
+      "target": "handlers/player_interaction.py"
+    },
+    {
+      "source": "handlers/pvp_interaction.py",
+      "target": "handlers/pvp_round_ui.py"
+    },
+    {
+      "source": "handlers/pvp_interaction.py",
+      "target": "systems/player_interaction_system.py"
+    },
+    {
+      "source": "handlers/pvp_interaction.py",
+      "target": "systems/pvp_battle_factory.py"
+    },
+    {
+      "source": "handlers/pvp_interaction.py",
+      "target": "systems/pvp_request_service.py"
+    },
+    {
+      "source": "handlers/pvp_interaction.py",
+      "target": "systems/travel_system.py"
+    },
+    {
+      "source": "handlers/pvp_round_ui.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/pvp_round_ui.py",
+      "target": "systems/player_interaction_system.py"
+    },
+    {
+      "source": "handlers/pvp_round_ui.py",
+      "target": "systems/pvp_action_validation.py"
+    },
+    {
+      "source": "handlers/pvp_round_ui.py",
+      "target": "systems/pvp_combat_log.py"
+    },
+    {
+      "source": "handlers/pvp_round_ui.py",
+      "target": "systems/pvp_completion_service.py"
+    },
+    {
+      "source": "handlers/pvp_round_ui.py",
+      "target": "systems/pvp_round_ui.py"
+    },
+    {
+      "source": "handlers/pvp_round_ui.py",
+      "target": "systems/pvp_system.py"
+    },
+    {
+      "source": "handlers/pvp_round_ui.py",
+      "target": "systems/pvp_timer_service.py"
+    },
+    {
+      "source": "handlers/refine.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/refine.py",
+      "target": "systems/refine_system.py"
+    },
+    {
+      "source": "handlers/runes.py",
+      "target": "data/runes.py"
+    },
+    {
+      "source": "handlers/runes.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/runes.py",
+      "target": "handlers/story_quest_npc_runtime.py"
+    },
+    {
+      "source": "handlers/runes.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/start.py",
+      "target": "data/mana_skill_presentation.py"
+    },
+    {
+      "source": "handlers/start.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/start.py",
+      "target": "handlers/city.py"
+    },
+    {
+      "source": "handlers/start.py",
+      "target": "handlers/combat.py"
+    },
+    {
+      "source": "handlers/start.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "handlers/start.py",
+      "target": "systems/attribute_respec_system.py"
+    },
+    {
+      "source": "handlers/start.py",
+      "target": "systems/character_system.py"
+    },
+    {
+      "source": "handlers/start.py",
+      "target": "systems/stat_system.py"
+    },
+    {
+      "source": "handlers/story_boss_invocation_wiring.py",
+      "target": "data/story_quest_content.py"
+    },
+    {
+      "source": "handlers/story_boss_invocation_wiring.py",
+      "target": "data/story_quest_definitions.py"
+    },
+    {
+      "source": "handlers/story_boss_invocation_wiring.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/story_boss_invocation_wiring.py",
+      "target": "db_modules/story_quests.py"
+    },
+    {
+      "source": "handlers/story_boss_invocation_wiring.py",
+      "target": "systems/story_boss_invocation_adapter.py"
+    },
+    {
+      "source": "handlers/story_boss_invocation_wiring.py",
+      "target": "systems/story_quest_boss_call_system.py"
+    },
+    {
+      "source": "handlers/story_quest_hierarchy_ui.py",
+      "target": "data/story_quest_content.py"
+    },
+    {
+      "source": "handlers/story_quest_hierarchy_ui.py",
+      "target": "data/story_quest_hierarchy.py"
+    },
+    {
+      "source": "handlers/story_quest_npc_runtime.py",
+      "target": "data/story_quest_content.py"
+    },
+    {
+      "source": "handlers/story_quest_npc_runtime.py",
+      "target": "data/story_quest_definitions.py"
+    },
+    {
+      "source": "handlers/story_quest_npc_runtime.py",
+      "target": "data/story_quest_npcs.py"
+    },
+    {
+      "source": "handlers/story_quest_npc_runtime.py",
+      "target": "data/story_quest_title_presentation.py"
+    },
+    {
+      "source": "handlers/story_quest_npc_runtime.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/story_quest_npc_runtime.py",
+      "target": "systems/story_boss_invocation_adapter.py"
+    },
+    {
+      "source": "handlers/story_quest_npc_runtime.py",
+      "target": "systems/story_quest_completion_system.py"
+    },
+    {
+      "source": "handlers/story_quest_npc_runtime.py",
+      "target": "systems/story_quest_npc_acceptance_system.py"
+    },
+    {
+      "source": "handlers/story_quest_npc_runtime.py",
+      "target": "systems/story_quest_player_level.py"
+    },
+    {
+      "source": "handlers/story_quest_npc_runtime.py",
+      "target": "systems/story_quest_reward_system.py"
+    },
+    {
+      "source": "handlers/story_quest_npc_runtime.py",
+      "target": "systems/story_quest_system.py"
+    },
+    {
+      "source": "handlers/story_quests.py",
+      "target": "data/story_quest_content.py"
+    },
+    {
+      "source": "handlers/story_quests.py",
+      "target": "data/story_quest_definitions.py"
+    },
+    {
+      "source": "handlers/story_quests.py",
+      "target": "data/story_quest_npcs.py"
+    },
+    {
+      "source": "handlers/story_quests.py",
+      "target": "data/story_quest_title_presentation.py"
+    },
+    {
+      "source": "handlers/story_quests.py",
+      "target": "db.py"
+    },
+    {
+      "source": "handlers/story_quests.py",
+      "target": "handlers/profile.py"
+    },
+    {
+      "source": "handlers/story_quests.py",
+      "target": "handlers/story_quest_hierarchy_ui.py"
+    },
+    {
+      "source": "handlers/story_quests.py",
+      "target": "systems/story_quest_location_presentation.py"
+    },
+    {
+      "source": "handlers/story_quests.py",
+      "target": "systems/story_quest_player_level.py"
+    },
+    {
+      "source": "handlers/story_quests.py",
+      "target": "systems/story_quest_system.py"
+    },
+    {
+      "source": "handlers/timed_exp_bonus.py",
+      "target": "systems/timed_exp_bonus_system.py"
+    },
+    {
+      "source": "handlers/world_chronicles.py",
+      "target": "handlers/city.py"
+    },
+    {
+      "source": "handlers/world_chronicles.py",
+      "target": "systems/world_chronicle_system.py"
+    },
+    {
+      "source": "keyboards.py",
+      "target": "db.py"
+    },
+    {
+      "source": "keyboards.py",
+      "target": "handlers/combat.py"
+    },
+    {
+      "source": "keyboards.py",
+      "target": "systems/pve_skill_action_state.py"
+    },
+    {
+      "source": "keyboards.py",
+      "target": "systems/story_quest_boss_call_system.py"
+    },
+    {
+      "source": "main.py",
+      "target": "config.py"
+    },
+    {
+      "source": "main.py",
+      "target": "db.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/about_game.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/admin_crystal_credit.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/auction_house.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/blacksmith.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/blacksmith_repair_confirm.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/city.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/combat.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/contracts.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/crystal_shop.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/daily.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/dev.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/event_ui.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/external_links.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/fatigue_artifact.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/guild.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/inventory.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/map.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/name_rune.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/player_interaction.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/player_rankings.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/profile.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/refine.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/runes.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/start.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/story_quest_npc_runtime.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/story_quests.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/timed_exp_bonus.py"
+    },
+    {
+      "source": "main.py",
+      "target": "handlers/world_chronicles.py"
+    },
+    {
+      "source": "main.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "main.py",
+      "target": "systems/admin_crystal_credit_system.py"
+    },
+    {
+      "source": "main.py",
+      "target": "systems/crystal_bag_expansion_system.py"
+    },
+    {
+      "source": "main.py",
+      "target": "systems/crystal_shop_system.py"
+    },
+    {
+      "source": "main.py",
+      "target": "systems/fatigue_artifact_system.py"
+    },
+    {
+      "source": "main.py",
+      "target": "systems/fresh_database_bootstrap.py"
+    },
+    {
+      "source": "main.py",
+      "target": "systems/inactivity_reminder_system.py"
+    },
+    {
+      "source": "main.py",
+      "target": "systems/name_rune_system.py"
+    },
+    {
+      "source": "main.py",
+      "target": "systems/notifications.py"
+    },
+    {
+      "source": "main.py",
+      "target": "systems/player_interaction_system.py"
+    },
+    {
+      "source": "main.py",
+      "target": "systems/production_logging.py"
+    },
+    {
+      "source": "main.py",
+      "target": "systems/pve_auto_escape_system.py"
+    },
+    {
+      "source": "main.py",
+      "target": "systems/telegram_rate_limit.py"
+    },
+    {
+      "source": "main.py",
+      "target": "systems/timed_exp_bonus_system.py"
+    },
+    {
+      "source": "main.py",
+      "target": "systems/travel_system.py"
+    },
+    {
+      "source": "systems/admin_crystal_credit_system.py",
+      "target": "config.py"
+    },
+    {
+      "source": "systems/attribute_allocation_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/attribute_respec_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/attribute_respec_system.py",
+      "target": "db_modules/inventory.py"
+    },
+    {
+      "source": "systems/auction_house_system.py",
+      "target": "data/equipment_profiles.py"
+    },
+    {
+      "source": "systems/auction_house_system.py",
+      "target": "data/runes.py"
+    },
+    {
+      "source": "systems/auction_house_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/boss_system.py",
+      "target": "data/bosses.py"
+    },
+    {
+      "source": "systems/boss_system.py",
+      "target": "data/mobs.py"
+    },
+    {
+      "source": "systems/character_system.py",
+      "target": "data/classes.py"
+    },
+    {
+      "source": "systems/character_system.py",
+      "target": "data/mana_policy.py"
+    },
+    {
+      "source": "systems/character_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/character_system.py",
+      "target": "systems/attribute_respec_system.py"
+    },
+    {
+      "source": "systems/character_system.py",
+      "target": "systems/player_system.py"
+    },
+    {
+      "source": "systems/character_system.py",
+      "target": "systems/stat_system.py"
+    },
+    {
+      "source": "systems/character_system.py",
+      "target": "systems/world_chronicle_system.py"
+    },
+    {
+      "source": "systems/combat_system.py",
+      "target": "data/bosses.py"
+    },
+    {
+      "source": "systems/combat_system.py",
+      "target": "data/mobs.py"
+    },
+    {
+      "source": "systems/combat_system.py",
+      "target": "data/player_combat_chances.py"
+    },
+    {
+      "source": "systems/combat_system.py",
+      "target": "systems/boss_system.py"
+    },
+    {
+      "source": "systems/contract_system.py",
+      "target": "data/balance.py"
+    },
+    {
+      "source": "systems/contract_system.py",
+      "target": "data/player_progression.py"
+    },
+    {
+      "source": "systems/contract_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/drop_system.py",
+      "target": "data/drop_tables.py"
+    },
+    {
+      "source": "systems/equipment_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/equipment_system.py",
+      "target": "systems/refine_system.py"
+    },
+    {
+      "source": "systems/event_item_catalog_system.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "systems/event_item_catalog_system.py",
+      "target": "events/item_namespace.py"
+    },
+    {
+      "source": "systems/guild_resource_system.py",
+      "target": "data/guild_resource_policy.py"
+    },
+    {
+      "source": "systems/guild_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/guild_system.py",
+      "target": "systems/character_system.py"
+    },
+    {
+      "source": "systems/level_up_reward_system.py",
+      "target": "data/balance.py"
+    },
+    {
+      "source": "systems/level_up_reward_system.py",
+      "target": "db_modules/inventory.py"
+    },
+    {
+      "source": "systems/location_context_system.py",
+      "target": "data/location_graph.py"
+    },
+    {
+      "source": "systems/location_context_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/location_context_system.py",
+      "target": "keyboards.py"
+    },
+    {
+      "source": "systems/location_context_system.py",
+      "target": "systems/travel_system.py"
+    },
+    {
+      "source": "systems/name_rune_system.py",
+      "target": "db_modules/inventory.py"
+    },
+    {
+      "source": "systems/notifications.py",
+      "target": "data/player_hp.py"
+    },
+    {
+      "source": "systems/notifications.py",
+      "target": "systems/inactivity_reminder_system.py"
+    },
+    {
+      "source": "systems/notifications.py",
+      "target": "systems/production_logging.py"
+    },
+    {
+      "source": "systems/notifications.py",
+      "target": "systems/stat_system.py"
+    },
+    {
+      "source": "systems/player_interaction_system.py",
+      "target": "systems/pvp_system.py"
+    },
+    {
+      "source": "systems/player_rankings_system.py",
+      "target": "data/player_progression.py"
+    },
+    {
+      "source": "systems/player_system.py",
+      "target": "data/defense_policy.py"
+    },
+    {
+      "source": "systems/player_system.py",
+      "target": "data/player_combat_chances.py"
+    },
+    {
+      "source": "systems/player_system.py",
+      "target": "data/player_hp.py"
+    },
+    {
+      "source": "systems/player_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/player_system.py",
+      "target": "systems/character_system.py"
+    },
+    {
+      "source": "systems/player_system.py",
+      "target": "systems/equipment_system.py"
+    },
+    {
+      "source": "systems/player_system.py",
+      "target": "systems/level_up_reward_system.py"
+    },
+    {
+      "source": "systems/player_system.py",
+      "target": "systems/refine_system.py"
+    },
+    {
+      "source": "systems/player_system.py",
+      "target": "systems/rune_system.py"
+    },
+    {
+      "source": "systems/player_system.py",
+      "target": "systems/stat_system.py"
+    },
+    {
+      "source": "systems/player_system.py",
+      "target": "systems/world_chronicle_system.py"
+    },
+    {
+      "source": "systems/potion_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/potion_system.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "systems/potion_system.py",
+      "target": "db_modules/inventory.py"
+    },
+    {
+      "source": "systems/potion_system.py",
+      "target": "systems/player_interaction_system.py"
+    },
+    {
+      "source": "systems/pve_auto_escape_system.py",
+      "target": "db_modules/connection.py"
+    },
+    {
+      "source": "systems/pve_skill_action_state.py",
+      "target": "data/mana_policy.py"
+    },
+    {
+      "source": "systems/pve_skill_action_state.py",
+      "target": "data/mana_skill_presentation.py"
+    },
+    {
+      "source": "systems/pvp_action_validation.py",
+      "target": "data/mana_policy.py"
+    },
+    {
+      "source": "systems/pvp_action_validation.py",
+      "target": "systems/pvp_config.py"
+    },
+    {
+      "source": "systems/pvp_action_validation.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_adaptive_balance_optimizer.py",
+      "target": "systems/pvp_models.py"
+    },
+    {
+      "source": "systems/pvp_adaptive_balance_optimizer.py",
+      "target": "systems/pvp_policy_metrics_audit.py"
+    },
+    {
+      "source": "systems/pvp_adaptive_balance_optimizer.py",
+      "target": "systems/pvp_production_calibration.py"
+    },
+    {
+      "source": "systems/pvp_adaptive_balance_optimizer.py",
+      "target": "systems/pvp_real_actor_state_replay.py"
+    },
+    {
+      "source": "systems/pvp_adaptive_balance_optimizer.py",
+      "target": "systems/pvp_round_engine.py"
+    },
+    {
+      "source": "systems/pvp_adaptive_balance_optimizer.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_anti_stall_survivability_candidate_sandbox.py",
+      "target": "systems/pvp_models.py"
+    },
+    {
+      "source": "systems/pvp_anti_stall_survivability_candidate_sandbox.py",
+      "target": "systems/pvp_policy_metrics_audit.py"
+    },
+    {
+      "source": "systems/pvp_anti_stall_survivability_candidate_sandbox.py",
+      "target": "systems/pvp_production_calibration.py"
+    },
+    {
+      "source": "systems/pvp_anti_stall_survivability_candidate_sandbox.py",
+      "target": "systems/pvp_real_actor_state_replay.py"
+    },
+    {
+      "source": "systems/pvp_anti_stall_survivability_candidate_sandbox.py",
+      "target": "systems/pvp_round_engine.py"
+    },
+    {
+      "source": "systems/pvp_anti_stall_survivability_candidate_sandbox.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_balance_simulator.py",
+      "target": "systems/pvp_models.py"
+    },
+    {
+      "source": "systems/pvp_balance_simulator.py",
+      "target": "systems/pvp_round_engine.py"
+    },
+    {
+      "source": "systems/pvp_balance_simulator.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_battle_factory.py",
+      "target": "data/classes.py"
+    },
+    {
+      "source": "systems/pvp_battle_factory.py",
+      "target": "data/player_combat_chances.py"
+    },
+    {
+      "source": "systems/pvp_battle_factory.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/pvp_battle_factory.py",
+      "target": "systems/player_interaction_system.py"
+    },
+    {
+      "source": "systems/pvp_battle_factory.py",
+      "target": "systems/pvp_system.py"
+    },
+    {
+      "source": "systems/pvp_battle_factory.py",
+      "target": "systems/stat_system.py"
+    },
+    {
+      "source": "systems/pvp_combat_log.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/pvp_combat_log.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_completion_service.py",
+      "target": "systems/player_interaction_system.py"
+    },
+    {
+      "source": "systems/pvp_completion_service.py",
+      "target": "systems/pvp_system.py"
+    },
+    {
+      "source": "systems/pvp_knight_judgement_terminal_audit.py",
+      "target": "systems/pvp_models.py"
+    },
+    {
+      "source": "systems/pvp_knight_judgement_terminal_audit.py",
+      "target": "systems/pvp_policy_metrics_audit.py"
+    },
+    {
+      "source": "systems/pvp_knight_judgement_terminal_audit.py",
+      "target": "systems/pvp_production_calibration.py"
+    },
+    {
+      "source": "systems/pvp_knight_judgement_terminal_audit.py",
+      "target": "systems/pvp_real_actor_state_replay.py"
+    },
+    {
+      "source": "systems/pvp_knight_judgement_terminal_audit.py",
+      "target": "systems/pvp_round_engine.py"
+    },
+    {
+      "source": "systems/pvp_knight_judgement_terminal_audit.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_policy_balance_candidate_sandbox.py",
+      "target": "systems/pvp_models.py"
+    },
+    {
+      "source": "systems/pvp_policy_balance_candidate_sandbox.py",
+      "target": "systems/pvp_policy_metrics_audit.py"
+    },
+    {
+      "source": "systems/pvp_policy_balance_candidate_sandbox.py",
+      "target": "systems/pvp_production_calibration.py"
+    },
+    {
+      "source": "systems/pvp_policy_balance_candidate_sandbox.py",
+      "target": "systems/pvp_real_actor_state_replay.py"
+    },
+    {
+      "source": "systems/pvp_policy_balance_candidate_sandbox.py",
+      "target": "systems/pvp_round_engine.py"
+    },
+    {
+      "source": "systems/pvp_policy_balance_candidate_sandbox.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_policy_metrics_audit.py",
+      "target": "systems/pvp_balance_simulator.py"
+    },
+    {
+      "source": "systems/pvp_policy_metrics_audit.py",
+      "target": "systems/pvp_models.py"
+    },
+    {
+      "source": "systems/pvp_policy_metrics_audit.py",
+      "target": "systems/pvp_round_engine.py"
+    },
+    {
+      "source": "systems/pvp_policy_metrics_audit.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_primary_stat_scaling_combat_pacing_sandbox.py",
+      "target": "systems/pvp_models.py"
+    },
+    {
+      "source": "systems/pvp_primary_stat_scaling_combat_pacing_sandbox.py",
+      "target": "systems/pvp_policy_metrics_audit.py"
+    },
+    {
+      "source": "systems/pvp_primary_stat_scaling_combat_pacing_sandbox.py",
+      "target": "systems/pvp_production_calibration.py"
+    },
+    {
+      "source": "systems/pvp_primary_stat_scaling_combat_pacing_sandbox.py",
+      "target": "systems/pvp_real_actor_state_replay.py"
+    },
+    {
+      "source": "systems/pvp_primary_stat_scaling_combat_pacing_sandbox.py",
+      "target": "systems/pvp_round_engine.py"
+    },
+    {
+      "source": "systems/pvp_primary_stat_scaling_combat_pacing_sandbox.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_production_calibration.py",
+      "target": "systems/pvp_models.py"
+    },
+    {
+      "source": "systems/pvp_production_calibration.py",
+      "target": "systems/pvp_policy_metrics_audit.py"
+    },
+    {
+      "source": "systems/pvp_production_calibration.py",
+      "target": "systems/pvp_round_engine.py"
+    },
+    {
+      "source": "systems/pvp_production_calibration.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_production_calibration.py",
+      "target": "systems/simulation/combat_actor_stats.py"
+    },
+    {
+      "source": "systems/pvp_production_calibration.py",
+      "target": "systems/simulation/models.py"
+    },
+    {
+      "source": "systems/pvp_production_fixture_audit.py",
+      "target": "systems/pvp_production_calibration.py"
+    },
+    {
+      "source": "systems/pvp_production_fixture_audit.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_real_actor_root_cause_audit.py",
+      "target": "systems/pvp_models.py"
+    },
+    {
+      "source": "systems/pvp_real_actor_root_cause_audit.py",
+      "target": "systems/pvp_policy_metrics_audit.py"
+    },
+    {
+      "source": "systems/pvp_real_actor_root_cause_audit.py",
+      "target": "systems/pvp_production_calibration.py"
+    },
+    {
+      "source": "systems/pvp_real_actor_root_cause_audit.py",
+      "target": "systems/pvp_real_actor_state_replay.py"
+    },
+    {
+      "source": "systems/pvp_real_actor_root_cause_audit.py",
+      "target": "systems/pvp_round_engine.py"
+    },
+    {
+      "source": "systems/pvp_real_actor_root_cause_audit.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_real_actor_state_replay.py",
+      "target": "systems/pvp_models.py"
+    },
+    {
+      "source": "systems/pvp_real_actor_state_replay.py",
+      "target": "systems/pvp_policy_metrics_audit.py"
+    },
+    {
+      "source": "systems/pvp_real_actor_state_replay.py",
+      "target": "systems/pvp_production_calibration.py"
+    },
+    {
+      "source": "systems/pvp_real_actor_state_replay.py",
+      "target": "systems/pvp_real_equipment_fixture_audit.py"
+    },
+    {
+      "source": "systems/pvp_real_actor_state_replay.py",
+      "target": "systems/pvp_round_engine.py"
+    },
+    {
+      "source": "systems/pvp_real_actor_state_replay.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_real_equipment_fixture_audit.py",
+      "target": "systems/pvp_production_calibration.py"
+    },
+    {
+      "source": "systems/pvp_request_service.py",
+      "target": "systems/player_interaction_system.py"
+    },
+    {
+      "source": "systems/pvp_root_cause_metric_semantics.py",
+      "target": "systems/pvp_production_calibration.py"
+    },
+    {
+      "source": "systems/pvp_root_cause_metric_semantics.py",
+      "target": "systems/pvp_real_actor_root_cause_audit.py"
+    },
+    {
+      "source": "systems/pvp_root_cause_metric_semantics.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_round_engine.py",
+      "target": "data/mana_policy.py"
+    },
+    {
+      "source": "systems/pvp_round_engine.py",
+      "target": "data/player_combat_chances.py"
+    },
+    {
+      "source": "systems/pvp_round_engine.py",
+      "target": "data/priest_healing_policy.py"
+    },
+    {
+      "source": "systems/pvp_round_engine.py",
+      "target": "systems/pvp_config.py"
+    },
+    {
+      "source": "systems/pvp_round_engine.py",
+      "target": "systems/pvp_models.py"
+    },
+    {
+      "source": "systems/pvp_round_engine.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_round_engine.py",
+      "target": "systems/stat_system.py"
+    },
+    {
+      "source": "systems/pvp_round_ui.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/pvp_round_ui.py",
+      "target": "systems/pvp_action_validation.py"
+    },
+    {
+      "source": "systems/pvp_round_ui.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/pvp_system.py",
+      "target": "systems/player_interaction_system.py"
+    },
+    {
+      "source": "systems/pvp_system.py",
+      "target": "systems/pvp_models.py"
+    },
+    {
+      "source": "systems/pvp_system.py",
+      "target": "systems/pvp_round_engine.py"
+    },
+    {
+      "source": "systems/pvp_targeted_mechanics_candidate_sandbox.py",
+      "target": "systems/pvp_models.py"
+    },
+    {
+      "source": "systems/pvp_targeted_mechanics_candidate_sandbox.py",
+      "target": "systems/pvp_policy_metrics_audit.py"
+    },
+    {
+      "source": "systems/pvp_targeted_mechanics_candidate_sandbox.py",
+      "target": "systems/pvp_production_calibration.py"
+    },
+    {
+      "source": "systems/pvp_targeted_mechanics_candidate_sandbox.py",
+      "target": "systems/pvp_real_actor_state_replay.py"
+    },
+    {
+      "source": "systems/pvp_targeted_mechanics_candidate_sandbox.py",
+      "target": "systems/pvp_round_engine.py"
+    },
+    {
+      "source": "systems/pvp_targeted_mechanics_candidate_sandbox.py",
+      "target": "systems/pvp_skill_adapter.py"
+    },
+    {
+      "source": "systems/pvp_timer_service.py",
+      "target": "systems/pvp_system.py"
+    },
+    {
+      "source": "systems/refine_system.py",
+      "target": "db_modules/inventory.py"
+    },
+    {
+      "source": "systems/refine_system.py",
+      "target": "systems/world_chronicle_system.py"
+    },
+    {
+      "source": "systems/regen_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/reward_system.py",
+      "target": "data/player_progression.py"
+    },
+    {
+      "source": "systems/reward_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/reward_system.py",
+      "target": "db_modules/inventory.py"
+    },
+    {
+      "source": "systems/reward_system.py",
+      "target": "systems/drop_system.py"
+    },
+    {
+      "source": "systems/reward_system.py",
+      "target": "systems/fatigue_artifact_system.py"
+    },
+    {
+      "source": "systems/reward_system.py",
+      "target": "systems/rune_system.py"
+    },
+    {
+      "source": "systems/reward_system.py",
+      "target": "systems/timed_exp_bonus_system.py"
+    },
+    {
+      "source": "systems/rune_system.py",
+      "target": "data/balance.py"
+    },
+    {
+      "source": "systems/rune_system.py",
+      "target": "data/rune_drop_balance.py"
+    },
+    {
+      "source": "systems/rune_system.py",
+      "target": "data/runes.py"
+    },
+    {
+      "source": "systems/rune_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/rune_system.py",
+      "target": "db_modules/inventory.py"
+    },
+    {
+      "source": "systems/rune_system.py",
+      "target": "systems/drop_system.py"
+    },
+    {
+      "source": "systems/simulation/balance_analyzer.py",
+      "target": "systems/simulation/asset_valuation.py"
+    },
+    {
+      "source": "systems/simulation/balance_analyzer.py",
+      "target": "systems/simulation/world_progression.py"
+    },
+    {
+      "source": "systems/simulation/canonical_rules.py",
+      "target": "systems/simulation/rng.py"
+    },
+    {
+      "source": "systems/simulation/canonical_rules.py",
+      "target": "systems/simulation/rng_adapter.py"
+    },
+    {
+      "source": "systems/simulation/capacity_analysis.py",
+      "target": "systems/simulation/drop_inventory.py"
+    },
+    {
+      "source": "systems/simulation/capacity_analysis.py",
+      "target": "systems/simulation/models.py"
+    },
+    {
+      "source": "systems/simulation/capacity_analysis.py",
+      "target": "systems/simulation/rng.py"
+    },
+    {
+      "source": "systems/simulation/class_progression.py",
+      "target": "systems/simulation/parity_foundation.py"
+    },
+    {
+      "source": "systems/simulation/class_progression.py",
+      "target": "systems/simulation/progression_economy_reporting.py"
+    },
+    {
+      "source": "systems/simulation/class_progression.py",
+      "target": "systems/simulation/progression_models.py"
+    },
+    {
+      "source": "systems/simulation/class_progression.py",
+      "target": "systems/simulation/world_progression.py"
+    },
+    {
+      "source": "systems/simulation/clock.py",
+      "target": "systems/simulation/config.py"
+    },
+    {
+      "source": "systems/simulation/combat_actor_stats.py",
+      "target": "data/classes.py"
+    },
+    {
+      "source": "systems/simulation/combat_actor_stats.py",
+      "target": "data/player_hp.py"
+    },
+    {
+      "source": "systems/simulation/combat_actor_stats.py",
+      "target": "systems/refine_system.py"
+    },
+    {
+      "source": "systems/simulation/combat_actor_stats.py",
+      "target": "systems/simulation/battle_models.py"
+    },
+    {
+      "source": "systems/simulation/combat_actor_stats.py",
+      "target": "systems/simulation/models.py"
+    },
+    {
+      "source": "systems/simulation/combat_actor_stats.py",
+      "target": "systems/stat_system.py"
+    },
+    {
+      "source": "systems/simulation/drop_inventory.py",
+      "target": "systems/drop_system.py"
+    },
+    {
+      "source": "systems/simulation/drop_inventory.py",
+      "target": "systems/simulation/inventory_engine.py"
+    },
+    {
+      "source": "systems/simulation/economic_progression.py",
+      "target": "systems/simulation/economic_ledger.py"
+    },
+    {
+      "source": "systems/simulation/economic_progression.py",
+      "target": "systems/simulation/world_progression.py"
+    },
+    {
+      "source": "systems/simulation/economy_analyzer.py",
+      "target": "systems/simulation/asset_valuation.py"
+    },
+    {
+      "source": "systems/simulation/economy_guild_acceptance.py",
+      "target": "systems/simulation/economic_ledger.py"
+    },
+    {
+      "source": "systems/simulation/economy_guild_acceptance.py",
+      "target": "systems/simulation/economic_progression.py"
+    },
+    {
+      "source": "systems/simulation/economy_guild_acceptance.py",
+      "target": "systems/simulation/guild_population.py"
+    },
+    {
+      "source": "systems/simulation/equipment_policy.py",
+      "target": "systems/simulation/models.py"
+    },
+    {
+      "source": "systems/simulation/equipment_service.py",
+      "target": "systems/simulation/equipment_policy.py"
+    },
+    {
+      "source": "systems/simulation/equipment_service.py",
+      "target": "systems/simulation/models.py"
+    },
+    {
+      "source": "systems/simulation/inventory_engine.py",
+      "target": "systems/simulation/models.py"
+    },
+    {
+      "source": "systems/simulation/loot_equipment_city.py",
+      "target": "systems/drop_system.py"
+    },
+    {
+      "source": "systems/simulation/loot_equipment_city.py",
+      "target": "systems/simulation/equipment_service.py"
+    },
+    {
+      "source": "systems/simulation/loot_equipment_city.py",
+      "target": "systems/simulation/inventory_engine.py"
+    },
+    {
+      "source": "systems/simulation/loot_equipment_city.py",
+      "target": "systems/simulation/models.py"
+    },
+    {
+      "source": "systems/simulation/loot_equipment_city.py",
+      "target": "systems/simulation/rng.py"
+    },
+    {
+      "source": "systems/simulation/meta_progression.py",
+      "target": "data/player_progression.py"
+    },
+    {
+      "source": "systems/simulation/meta_progression.py",
+      "target": "data/runes.py"
+    },
+    {
+      "source": "systems/simulation/meta_progression.py",
+      "target": "systems/refine_system.py"
+    },
+    {
+      "source": "systems/simulation/meta_progression.py",
+      "target": "systems/simulation/inventory_engine.py"
+    },
+    {
+      "source": "systems/simulation/meta_progression.py",
+      "target": "systems/simulation/models.py"
+    },
+    {
+      "source": "systems/simulation/parity_foundation.py",
+      "target": "systems/simulation/clock.py"
+    },
+    {
+      "source": "systems/simulation/patch_regression.py",
+      "target": "systems/simulation/economic_ledger.py"
+    },
+    {
+      "source": "systems/simulation/patch_regression.py",
+      "target": "systems/simulation/economic_progression.py"
+    },
+    {
+      "source": "systems/simulation/patch_regression.py",
+      "target": "systems/simulation/rng_percentiles.py"
+    },
+    {
+      "source": "systems/simulation/population_cache.py",
+      "target": "systems/simulation/balance_analyzer.py"
+    },
+    {
+      "source": "systems/simulation/production_parity.py",
+      "target": "systems/simulation/canonical_rules.py"
+    },
+    {
+      "source": "systems/simulation/production_parity.py",
+      "target": "systems/simulation/rng.py"
+    },
+    {
+      "source": "systems/simulation/progression_economy_reporting.py",
+      "target": "data/runes.py"
+    },
+    {
+      "source": "systems/simulation/progression_provider.py",
+      "target": "data/locations.py"
+    },
+    {
+      "source": "systems/simulation/progression_provider.py",
+      "target": "data/mobs.py"
+    },
+    {
+      "source": "systems/simulation/progression_provider.py",
+      "target": "data/player_progression.py"
+    },
+    {
+      "source": "systems/simulation/progression_provider.py",
+      "target": "systems/boss_system.py"
+    },
+    {
+      "source": "systems/simulation/progression_provider.py",
+      "target": "systems/combat_system.py"
+    },
+    {
+      "source": "systems/simulation/progression_provider.py",
+      "target": "systems/simulation/battle_models.py"
+    },
+    {
+      "source": "systems/simulation/progression_provider.py",
+      "target": "systems/simulation/canonical_rules.py"
+    },
+    {
+      "source": "systems/simulation/progression_provider.py",
+      "target": "systems/simulation/combat_actor_stats.py"
+    },
+    {
+      "source": "systems/simulation/progression_provider.py",
+      "target": "systems/simulation/models.py"
+    },
+    {
+      "source": "systems/simulation/progression_provider.py",
+      "target": "systems/simulation/rng.py"
+    },
+    {
+      "source": "systems/simulation/progression_reporting.py",
+      "target": "systems/simulation/progression_models.py"
+    },
+    {
+      "source": "systems/simulation/progression_wall_analyzer.py",
+      "target": "systems/simulation/balance_analyzer.py"
+    },
+    {
+      "source": "systems/simulation/pve_battle.py",
+      "target": "data/mana_policy.py"
+    },
+    {
+      "source": "systems/simulation/pve_battle.py",
+      "target": "data/priest_healing_policy.py"
+    },
+    {
+      "source": "systems/simulation/pve_battle.py",
+      "target": "systems/simulation/battle_models.py"
+    },
+    {
+      "source": "systems/simulation/pve_battle.py",
+      "target": "systems/simulation/canonical_rules.py"
+    },
+    {
+      "source": "systems/simulation/pve_battle.py",
+      "target": "systems/simulation/rng.py"
+    },
+    {
+      "source": "systems/simulation/pve_battle.py",
+      "target": "systems/simulation/skill_catalog.py"
+    },
+    {
+      "source": "systems/simulation/pve_battle.py",
+      "target": "systems/stat_system.py"
+    },
+    {
+      "source": "systems/simulation/rng_adapter.py",
+      "target": "systems/simulation/rng.py"
+    },
+    {
+      "source": "systems/simulation/survival_state.py",
+      "target": "data/mana_policy.py"
+    },
+    {
+      "source": "systems/simulation/survival_state.py",
+      "target": "systems/simulation/canonical_rules.py"
+    },
+    {
+      "source": "systems/simulation/survival_state.py",
+      "target": "systems/simulation/models.py"
+    },
+    {
+      "source": "systems/simulation/world_progression.py",
+      "target": "systems/simulation/behavior_policy.py"
+    },
+    {
+      "source": "systems/simulation/world_progression.py",
+      "target": "systems/simulation/loot_equipment_city.py"
+    },
+    {
+      "source": "systems/simulation/world_progression.py",
+      "target": "systems/simulation/meta_progression.py"
+    },
+    {
+      "source": "systems/simulation/world_progression.py",
+      "target": "systems/simulation/models.py"
+    },
+    {
+      "source": "systems/simulation/world_progression.py",
+      "target": "systems/simulation/potion_affordability.py"
+    },
+    {
+      "source": "systems/simulation/world_progression.py",
+      "target": "systems/simulation/progression_models.py"
+    },
+    {
+      "source": "systems/simulation/world_progression.py",
+      "target": "systems/simulation/progression_provider.py"
+    },
+    {
+      "source": "systems/simulation/world_progression.py",
+      "target": "systems/simulation/pve_battle.py"
+    },
+    {
+      "source": "systems/simulation/world_progression.py",
+      "target": "systems/simulation/rng.py"
+    },
+    {
+      "source": "systems/simulation/world_progression.py",
+      "target": "systems/simulation/survival_state.py"
+    },
+    {
+      "source": "systems/simulation/world_progression.py",
+      "target": "systems/timed_exp_bonus_system.py"
+    },
+    {
+      "source": "systems/stat_system.py",
+      "target": "data/defense_policy.py"
+    },
+    {
+      "source": "systems/stat_system.py",
+      "target": "data/stat_system_config.py"
+    },
+    {
+      "source": "systems/story_quest_boss_call_system.py",
+      "target": "data/story_quest_content.py"
+    },
+    {
+      "source": "systems/story_quest_boss_call_system.py",
+      "target": "data/story_quest_definitions.py"
+    },
+    {
+      "source": "systems/story_quest_boss_call_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/story_quest_boss_call_system.py",
+      "target": "db_modules/story_quests.py"
+    },
+    {
+      "source": "systems/story_quest_boss_completion_system.py",
+      "target": "data/story_quest_content.py"
+    },
+    {
+      "source": "systems/story_quest_boss_completion_system.py",
+      "target": "data/story_quest_definitions.py"
+    },
+    {
+      "source": "systems/story_quest_boss_completion_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/story_quest_boss_completion_system.py",
+      "target": "db_modules/story_quests.py"
+    },
+    {
+      "source": "systems/story_quest_combat_progress_system.py",
+      "target": "data/story_quest_content.py"
+    },
+    {
+      "source": "systems/story_quest_combat_progress_system.py",
+      "target": "data/story_quest_definitions.py"
+    },
+    {
+      "source": "systems/story_quest_combat_progress_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/story_quest_combat_progress_system.py",
+      "target": "systems/story_quest_system.py"
+    },
+    {
+      "source": "systems/story_quest_completion_system.py",
+      "target": "data/story_quest_definitions.py"
+    },
+    {
+      "source": "systems/story_quest_completion_system.py",
+      "target": "db_modules/story_quests.py"
+    },
+    {
+      "source": "systems/story_quest_completion_system.py",
+      "target": "systems/story_quest_system.py"
+    },
+    {
+      "source": "systems/story_quest_item_drop_system.py",
+      "target": "data/story_quest_content.py"
+    },
+    {
+      "source": "systems/story_quest_item_drop_system.py",
+      "target": "data/story_quest_definitions.py"
+    },
+    {
+      "source": "systems/story_quest_item_drop_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/story_quest_item_drop_system.py",
+      "target": "db_modules/story_quests.py"
+    },
+    {
+      "source": "systems/story_quest_item_drop_system.py",
+      "target": "systems/story_quest_system.py"
+    },
+    {
+      "source": "systems/story_quest_location_presentation.py",
+      "target": "data/locations.py"
+    },
+    {
+      "source": "systems/story_quest_npc_acceptance_system.py",
+      "target": "data/story_quest_definitions.py"
+    },
+    {
+      "source": "systems/story_quest_npc_acceptance_system.py",
+      "target": "data/story_quest_npcs.py"
+    },
+    {
+      "source": "systems/story_quest_npc_acceptance_system.py",
+      "target": "systems/story_quest_system.py"
+    },
+    {
+      "source": "systems/story_quest_overlevel_system.py",
+      "target": "data/locations.py"
+    },
+    {
+      "source": "systems/story_quest_overlevel_system.py",
+      "target": "data/story_quest_content.py"
+    },
+    {
+      "source": "systems/story_quest_overlevel_system.py",
+      "target": "data/story_quest_definitions.py"
+    },
+    {
+      "source": "systems/story_quest_overlevel_system.py",
+      "target": "db.py"
+    },
+    {
+      "source": "systems/story_quest_overlevel_system.py",
+      "target": "systems/story_quest_system.py"
+    },
+    {
+      "source": "systems/story_quest_reward_system.py",
+      "target": "systems/player_system.py"
+    },
+    {
+      "source": "systems/story_quest_system.py",
+      "target": "data/story_quest_definitions.py"
+    },
+    {
+      "source": "systems/story_quest_system.py",
+      "target": "db_modules/story_quests.py"
+    },
+    {
+      "source": "systems/telegram_rate_limit.py",
+      "target": "systems/production_logging.py"
+    },
+    {
+      "source": "systems/travel_system.py",
+      "target": "data/location_graph.py"
+    },
+    {
+      "source": "systems/travel_system.py",
+      "target": "data/locations.py"
+    },
+    {
+      "source": "systems/travel_system.py",
+      "target": "data/travel_presentation.py"
+    },
+    {
+      "source": "systems/travel_system.py",
+      "target": "handlers/map.py"
+    },
+    {
+      "source": "systems/travel_system.py",
+      "target": "keyboards.py"
+    }
+  ],
+  "strongly_connected_components": [
+    [
+      "config.py"
+    ],
+    [
+      "data/about_game.py"
+    ],
+    [
+      "data/balance.py"
+    ],
+    [
+      "data/bosses.py"
+    ],
+    [
+      "data/classes.py"
+    ],
+    [
+      "data/defense_policy.py"
+    ],
+    [
+      "data/drop_tables.py"
+    ],
+    [
+      "data/equipment_identity_stat_policy.py"
+    ],
+    [
+      "data/equipment_profiles.py"
+    ],
+    [
+      "data/stat_system_config.py"
+    ],
+    [
+      "data/equipment_stat_policy.py"
+    ],
+    [
+      "data/guild_resource_policy.py"
+    ],
+    [
+      "data/location_graph.py"
+    ],
+    [
+      "data/locations.py"
+    ],
+    [
+      "data/mana_policy.py"
+    ],
+    [
+      "data/mana_skill_presentation.py"
+    ],
+    [
+      "data/mobs.py"
+    ],
+    [
+      "data/player_combat_chances.py"
+    ],
+    [
+      "data/player_hp.py"
+    ],
+    [
+      "data/player_progression.py"
+    ],
+    [
+      "data/priest_healing_policy.py"
+    ],
+    [
+      "data/rebirth_sphere_policy.py"
+    ],
+    [
+      "data/rune_drop_balance.py"
+    ],
+    [
+      "data/runes.py"
+    ],
+    [
+      "data/stat_scaling.py"
+    ],
+    [
+      "data/story_quests/dark_forest_61_70.py"
+    ],
+    [
+      "data/story_quest_item_identity.py"
+    ],
+    [
+      "data/story_quest_definitions.py"
+    ],
+    [
+      "data/story_quests/dark_forest_71_80.py"
+    ],
+    [
+      "data/story_quests/start_path_11_20.py"
+    ],
+    [
+      "data/story_quests/dark_forest_91_100.py"
+    ],
+    [
+      "data/story_quests/dark_forest_81_90.py"
+    ],
+    [
+      "data/story_quests/start_path_21_30.py"
+    ],
+    [
+      "data/story_quests/start_path_01_10.py"
+    ],
+    [
+      "data/story_quests/start_path_31_40.py"
+    ],
+    [
+      "data/story_quests/dark_forest_51_60.py"
+    ],
+    [
+      "data/story_quests/start_path_41_50.py"
+    ],
+    [
+      "data/story_quest_content.py"
+    ],
+    [
+      "systems/story_quest_location_presentation.py"
+    ],
+    [
+      "data/story_quest_hierarchy.py"
+    ],
+    [
+      "data/story_quest_npcs.py"
+    ],
+    [
+      "data/story_quest_title_presentation.py"
+    ],
+    [
+      "data/travel_presentation.py"
+    ],
+    [
+      "db.py"
+    ],
+    [
+      "events/item_namespace.py"
+    ],
+    [
+      "db_modules/connection.py",
+      "systems/event_item_catalog_system.py"
+    ],
+    [
+      "systems/world_chronicle_system.py"
+    ],
+    [
+      "db_modules/inventory.py"
+    ],
+    [
+      "systems/attribute_respec_system.py"
+    ],
+    [
+      "systems/drop_system.py"
+    ],
+    [
+      "systems/rune_system.py"
+    ],
+    [
+      "systems/stat_system.py"
+    ],
+    [
+      "systems/refine_system.py"
+    ],
+    [
+      "systems/equipment_system.py"
+    ],
+    [
+      "systems/level_up_reward_system.py"
+    ],
+    [
+      "systems/character_system.py",
+      "systems/player_system.py"
+    ],
+    [
+      "db_modules/character.py"
+    ],
+    [
+      "db_modules/daily_compat.py"
+    ],
+    [
+      "db_modules/equipment.py"
+    ],
+    [
+      "systems/item_id_allocator_system.py"
+    ],
+    [
+      "db_modules/generated_equipment.py"
+    ],
+    [
+      "db_modules/dev_compat.py"
+    ],
+    [
+      "db_modules/inventory_compat.py"
+    ],
+    [
+      "db_modules/location.py"
+    ],
+    [
+      "db_modules/migrations.py"
+    ],
+    [
+      "systems/energy_system.py"
+    ],
+    [
+      "db_modules/player.py"
+    ],
+    [
+      "db_modules/utils.py"
+    ],
+    [
+      "db_modules/quests.py"
+    ],
+    [
+      "db_modules/refine.py"
+    ],
+    [
+      "systems/dynamic_equipment_system.py"
+    ],
+    [
+      "db_modules/shop.py"
+    ],
+    [
+      "db_modules/story_quests.py"
+    ],
+    [
+      "systems/guild_system.py"
+    ],
+    [
+      "systems/regen_system.py"
+    ],
+    [
+      "systems/contract_system.py"
+    ],
+    [
+      "systems/auction_house_system.py"
+    ],
+    [
+      "systems/pvp_models.py"
+    ],
+    [
+      "systems/pvp_config.py"
+    ],
+    [
+      "systems/pvp_skill_adapter.py"
+    ],
+    [
+      "systems/pvp_round_engine.py"
+    ],
+    [
+      "systems/player_interaction_system.py",
+      "systems/pvp_system.py"
+    ],
+    [
+      "db_modules/systems_wrappers.py"
+    ],
+    [
+      "events/_template/bosses.py"
+    ],
+    [
+      "events/_template/config.py"
+    ],
+    [
+      "events/_template/drops.py"
+    ],
+    [
+      "events/_template/handlers.py"
+    ],
+    [
+      "events/_template/items.py"
+    ],
+    [
+      "events/_template/mobs.py"
+    ],
+    [
+      "events/_template/quests.py"
+    ],
+    [
+      "events/_template/rewards.py"
+    ],
+    [
+      "events/_template/shop.py"
+    ],
+    [
+      "events/_template/statistics.py"
+    ],
+    [
+      "events/test_event_2026/bosses.py"
+    ],
+    [
+      "events/test_event_2026/config.py"
+    ],
+    [
+      "events/test_event_2026/items.py"
+    ],
+    [
+      "events/test_event_2026/mobs.py"
+    ],
+    [
+      "events/test_event_2026/drops.py"
+    ],
+    [
+      "events/test_event_2026/handlers.py"
+    ],
+    [
+      "events/test_event_2026/quests.py"
+    ],
+    [
+      "events/test_event_2026/rewards.py"
+    ],
+    [
+      "events/test_event_2026/shop.py"
+    ],
+    [
+      "events/test_event_2026/statistics.py"
+    ],
+    [
+      "systems/story_quest_system.py"
+    ],
+    [
+      "systems/story_quest_item_drop_system.py"
+    ],
+    [
+      "systems/boss_system.py"
+    ],
+    [
+      "systems/potion_system.py"
+    ],
+    [
+      "systems/story_quest_boss_completion_system.py"
+    ],
+    [
+      "systems/production_logging.py"
+    ],
+    [
+      "systems/story_quest_overlevel_system.py"
+    ],
+    [
+      "systems/pvp_request_service.py"
+    ],
+    [
+      "systems/pvp_battle_factory.py"
+    ],
+    [
+      "systems/pvp_action_validation.py"
+    ],
+    [
+      "systems/pvp_completion_service.py"
+    ],
+    [
+      "systems/pvp_combat_log.py"
+    ],
+    [
+      "systems/pvp_round_ui.py"
+    ],
+    [
+      "systems/pvp_timer_service.py"
+    ],
+    [
+      "systems/fatigue_artifact_system.py"
+    ],
+    [
+      "systems/timed_exp_bonus_system.py"
+    ],
+    [
+      "systems/reward_system.py"
+    ],
+    [
+      "systems/event_statistics_system.py"
+    ],
+    [
+      "systems/story_quest_boss_call_system.py"
+    ],
+    [
+      "systems/story_quest_combat_progress_system.py"
+    ],
+    [
+      "systems/pve_auto_escape_system.py"
+    ],
+    [
+      "systems/pve_skill_action_state.py"
+    ],
+    [
+      "systems/combat_system.py"
+    ],
+    [
+      "utils.py"
+    ],
+    [
+      "handlers/combat.py",
+      "handlers/map.py",
+      "handlers/player_interaction.py",
+      "handlers/pvp_interaction.py",
+      "handlers/pvp_round_ui.py",
+      "keyboards.py",
+      "systems/location_context_system.py",
+      "systems/travel_system.py"
+    ],
+    [
+      "systems/crystal_shop_system.py"
+    ],
+    [
+      "systems/crystal_bag_expansion_system.py"
+    ],
+    [
+      "systems/crystal_wallet_system.py"
+    ],
+    [
+      "systems/story_quest_player_level.py"
+    ],
+    [
+      "systems/story_quest_completion_system.py"
+    ],
+    [
+      "systems/story_boss_invocation_adapter.py"
+    ],
+    [
+      "systems/story_quest_npc_acceptance_system.py"
+    ],
+    [
+      "systems/story_quest_reward_system.py"
+    ],
+    [
+      "handlers/story_quest_npc_runtime.py"
+    ],
+    [
+      "handlers/story_boss_invocation_wiring.py"
+    ],
+    [
+      "handlers/city.py",
+      "handlers/crystal_shop.py"
+    ],
+    [
+      "handlers/about_game.py"
+    ],
+    [
+      "systems/admin_crystal_credit_system.py"
+    ],
+    [
+      "handlers/admin_crystal_credit.py"
+    ],
+    [
+      "systems/attribute_allocation_system.py"
+    ],
+    [
+      "handlers/attribute_allocation.py"
+    ],
+    [
+      "handlers/auction_house.py"
+    ],
+    [
+      "handlers/blacksmith.py"
+    ],
+    [
+      "handlers/blacksmith_repair_confirm.py"
+    ],
+    [
+      "handlers/contracts.py"
+    ],
+    [
+      "handlers/daily.py"
+    ],
+    [
+      "systems/premium_item_policy_system.py"
+    ],
+    [
+      "systems/pvp_balance_simulator.py"
+    ],
+    [
+      "systems/pvp_policy_metrics_audit.py"
+    ],
+    [
+      "handlers/start.py"
+    ],
+    [
+      "systems/simulation/battle_models.py"
+    ],
+    [
+      "systems/simulation/models.py"
+    ],
+    [
+      "systems/simulation/combat_actor_stats.py"
+    ],
+    [
+      "systems/pvp_production_calibration.py"
+    ],
+    [
+      "systems/pvp_production_fixture_audit.py"
+    ],
+    [
+      "handlers/dev.py"
+    ],
+    [
+      "systems/event_shop_system.py"
+    ],
+    [
+      "handlers/event_ui.py"
+    ],
+    [
+      "handlers/external_links.py"
+    ],
+    [
+      "handlers/fatigue_artifact.py"
+    ],
+    [
+      "handlers/guild.py"
+    ],
+    [
+      "systems/profile_history_system.py"
+    ],
+    [
+      "handlers/profile.py"
+    ],
+    [
+      "systems/name_rune_system.py"
+    ],
+    [
+      "handlers/inventory.py"
+    ],
+    [
+      "handlers/name_rune.py"
+    ],
+    [
+      "systems/player_rankings_system.py"
+    ],
+    [
+      "handlers/player_rankings.py"
+    ],
+    [
+      "handlers/refine.py"
+    ],
+    [
+      "handlers/runes.py"
+    ],
+    [
+      "handlers/story_quest_hierarchy_ui.py"
+    ],
+    [
+      "handlers/story_quests.py"
+    ],
+    [
+      "handlers/timed_exp_bonus.py"
+    ],
+    [
+      "handlers/world_chronicles.py"
+    ],
+    [
+      "systems/telegram_rate_limit.py"
+    ],
+    [
+      "systems/fresh_database_bootstrap.py"
+    ],
+    [
+      "systems/inactivity_reminder_system.py"
+    ],
+    [
+      "systems/notifications.py"
+    ],
+    [
+      "main.py"
+    ],
+    [
+      "systems/guild_resource_system.py"
+    ],
+    [
+      "systems/pvp_real_equipment_fixture_audit.py"
+    ],
+    [
+      "systems/pvp_real_actor_state_replay.py"
+    ],
+    [
+      "systems/pvp_adaptive_balance_optimizer.py"
+    ],
+    [
+      "systems/pvp_anti_stall_survivability_candidate_sandbox.py"
+    ],
+    [
+      "systems/pvp_knight_judgement_terminal_audit.py"
+    ],
+    [
+      "systems/pvp_policy_balance_candidate_sandbox.py"
+    ],
+    [
+      "systems/pvp_primary_stat_scaling_combat_pacing_sandbox.py"
+    ],
+    [
+      "systems/pvp_real_actor_root_cause_audit.py"
+    ],
+    [
+      "systems/pvp_root_cause_metric_semantics.py"
+    ],
+    [
+      "systems/pvp_targeted_mechanics_candidate_sandbox.py"
+    ],
+    [
+      "systems/simulation/asset_valuation.py"
+    ],
+    [
+      "systems/simulation/progression_models.py"
+    ],
+    [
+      "systems/simulation/behavior_policy.py"
+    ],
+    [
+      "systems/simulation/inventory_engine.py"
+    ],
+    [
+      "systems/simulation/equipment_policy.py"
+    ],
+    [
+      "systems/simulation/equipment_service.py"
+    ],
+    [
+      "systems/simulation/rng.py"
+    ],
+    [
+      "systems/simulation/loot_equipment_city.py"
+    ],
+    [
+      "systems/simulation/rng_adapter.py"
+    ],
+    [
+      "systems/simulation/canonical_rules.py"
+    ],
+    [
+      "systems/simulation/skill_catalog.py"
+    ],
+    [
+      "systems/simulation/pve_battle.py"
+    ],
+    [
+      "systems/simulation/potion_affordability.py"
+    ],
+    [
+      "systems/simulation/survival_state.py"
+    ],
+    [
+      "systems/simulation/progression_provider.py"
+    ],
+    [
+      "systems/simulation/meta_progression.py"
+    ],
+    [
+      "systems/simulation/world_progression.py"
+    ],
+    [
+      "systems/simulation/balance_analyzer.py"
+    ],
+    [
+      "systems/simulation/drop_inventory.py"
+    ],
+    [
+      "systems/simulation/capacity_analysis.py"
+    ],
+    [
+      "systems/simulation/progression_economy_reporting.py"
+    ],
+    [
+      "systems/simulation/config.py"
+    ],
+    [
+      "systems/simulation/clock.py"
+    ],
+    [
+      "systems/simulation/parity_foundation.py"
+    ],
+    [
+      "systems/simulation/class_progression.py"
+    ],
+    [
+      "systems/simulation/economic_ledger.py"
+    ],
+    [
+      "systems/simulation/economic_progression.py"
+    ],
+    [
+      "systems/simulation/economy_analyzer.py"
+    ],
+    [
+      "systems/simulation/guild_population.py"
+    ],
+    [
+      "systems/simulation/economy_guild_acceptance.py"
+    ],
+    [
+      "systems/simulation/excel_reporting.py"
+    ],
+    [
+      "systems/simulation/metrics.py"
+    ],
+    [
+      "systems/simulation/rng_percentiles.py"
+    ],
+    [
+      "systems/simulation/patch_regression.py"
+    ],
+    [
+      "systems/simulation/population_cache.py"
+    ],
+    [
+      "systems/simulation/population_reporting.py"
+    ],
+    [
+      "systems/simulation/production_parity.py"
+    ],
+    [
+      "systems/simulation/progression_reporting.py"
+    ],
+    [
+      "systems/simulation/progression_wall_analyzer.py"
+    ],
+    [
+      "systems/simulation/reporting.py"
+    ]
+  ],
+  "queues": {
+    "cycles": [
+      [
+        "db_modules/connection.py",
+        "systems/event_item_catalog_system.py"
+      ],
+      [
+        "systems/character_system.py",
+        "systems/player_system.py"
+      ],
+      [
+        "systems/player_interaction_system.py",
+        "systems/pvp_system.py"
+      ],
+      [
+        "handlers/combat.py",
+        "handlers/map.py",
+        "handlers/player_interaction.py",
+        "handlers/pvp_interaction.py",
+        "handlers/pvp_round_ui.py",
+        "keyboards.py",
+        "systems/location_context_system.py",
+        "systems/travel_system.py"
+      ],
+      [
+        "handlers/city.py",
+        "handlers/crystal_shop.py"
+      ]
+    ],
+    "forbidden_directions": [
+      {
+        "source": "data/story_quest_hierarchy.py",
+        "target": "systems/story_quest_location_presentation.py",
+        "source_layer": "content",
+        "target_layer": "system",
+        "reason": "content_depends_on_runtime"
+      },
+      {
+        "source": "handlers/about_game.py",
+        "target": "handlers/city.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/admin_crystal_credit.py",
+        "target": "handlers/city.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/blacksmith.py",
+        "target": "handlers/city.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/blacksmith_repair_confirm.py",
+        "target": "handlers/city.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/city.py",
+        "target": "handlers/crystal_shop.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/city.py",
+        "target": "handlers/story_boss_invocation_wiring.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/city.py",
+        "target": "handlers/story_quest_npc_runtime.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/crystal_shop.py",
+        "target": "handlers/city.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/dev.py",
+        "target": "handlers/start.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/event_ui.py",
+        "target": "handlers/city.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/external_links.py",
+        "target": "handlers/city.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/guild.py",
+        "target": "handlers/city.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/guild.py",
+        "target": "handlers/contracts.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/inventory.py",
+        "target": "handlers/profile.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/inventory.py",
+        "target": "handlers/start.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/map.py",
+        "target": "handlers/player_interaction.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/player_interaction.py",
+        "target": "handlers/combat.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/player_interaction.py",
+        "target": "handlers/map.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/player_interaction.py",
+        "target": "handlers/pvp_interaction.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/player_rankings.py",
+        "target": "handlers/city.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/profile.py",
+        "target": "handlers/attribute_allocation.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/profile.py",
+        "target": "handlers/combat.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/pvp_interaction.py",
+        "target": "handlers/player_interaction.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/pvp_interaction.py",
+        "target": "handlers/pvp_round_ui.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/runes.py",
+        "target": "handlers/story_quest_npc_runtime.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/start.py",
+        "target": "handlers/city.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/start.py",
+        "target": "handlers/combat.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/story_quests.py",
+        "target": "handlers/profile.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/story_quests.py",
+        "target": "handlers/story_quest_hierarchy_ui.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "handlers/world_chronicles.py",
+        "target": "handlers/city.py",
+        "source_layer": "telegram_handler",
+        "target_layer": "telegram_handler",
+        "reason": "handler_to_handler_coupling"
+      },
+      {
+        "source": "systems/travel_system.py",
+        "target": "handlers/map.py",
+        "source_layer": "system",
+        "target_layer": "telegram_handler",
+        "reason": "system_depends_on_telegram"
+      }
+    ],
+    "high_fan_in": [
+      {
+        "module": "db.py",
+        "count": 43
+      },
+      {
+        "module": "db_modules/connection.py",
+        "count": 20
+      },
+      {
+        "module": "keyboards.py",
+        "count": 20
+      },
+      {
+        "module": "systems/pvp_skill_adapter.py",
+        "count": 17
+      },
+      {
+        "module": "data/story_quest_definitions.py",
+        "count": 13
+      },
+      {
+        "module": "systems/pvp_models.py",
+        "count": 13
+      },
+      {
+        "module": "handlers/city.py",
+        "count": 12
+      },
+      {
+        "module": "systems/player_interaction_system.py",
+        "count": 12
+      },
+      {
+        "module": "systems/pvp_production_calibration.py",
+        "count": 12
+      },
+      {
+        "module": "systems/pvp_round_engine.py",
+        "count": 12
+      },
+      {
+        "module": "systems/simulation/models.py",
+        "count": 11
+      },
+      {
+        "module": "data/story_quest_content.py",
+        "count": 10
+      },
+      {
+        "module": "db_modules/inventory.py",
+        "count": 10
+      },
+      {
+        "module": "systems/pvp_policy_metrics_audit.py",
+        "count": 10
+      },
+      {
+        "module": "systems/stat_system.py",
+        "count": 10
+      }
+    ],
+    "high_fan_out": [
+      {
+        "module": "main.py",
+        "count": 45
+      },
+      {
+        "module": "handlers/combat.py",
+        "count": 23
+      },
+      {
+        "module": "db_modules/shop.py",
+        "count": 13
+      },
+      {
+        "module": "handlers/dev.py",
+        "count": 13
+      },
+      {
+        "module": "handlers/inventory.py",
+        "count": 13
+      },
+      {
+        "module": "handlers/city.py",
+        "count": 12
+      },
+      {
+        "module": "handlers/player_interaction.py",
+        "count": 12
+      },
+      {
+        "module": "data/story_quest_content.py",
+        "count": 11
+      },
+      {
+        "module": "handlers/story_quest_npc_runtime.py",
+        "count": 11
+      },
+      {
+        "module": "systems/player_system.py",
+        "count": 11
+      },
+      {
+        "module": "systems/simulation/world_progression.py",
+        "count": 11
+      },
+      {
+        "module": "handlers/story_quests.py",
+        "count": 10
+      },
+      {
+        "module": "systems/simulation/progression_provider.py",
+        "count": 10
+      }
+    ],
+    "orphans": [
+      "data/rebirth_sphere_policy.py",
+      "events/_template/bosses.py",
+      "events/_template/config.py",
+      "events/_template/drops.py",
+      "events/_template/handlers.py",
+      "events/_template/items.py",
+      "events/_template/mobs.py",
+      "events/_template/quests.py",
+      "events/_template/rewards.py",
+      "events/_template/shop.py",
+      "events/_template/statistics.py",
+      "events/test_event_2026/bosses.py",
+      "events/test_event_2026/handlers.py",
+      "events/test_event_2026/quests.py",
+      "events/test_event_2026/rewards.py",
+      "systems/simulation/excel_reporting.py",
+      "systems/simulation/metrics.py",
+      "systems/simulation/population_reporting.py",
+      "systems/simulation/reporting.py"
+    ],
+    "unresolved_relative_imports": []
+  },
+  "v2_dependency_contract": {
+    "domain_may_depend_on": [],
+    "application_may_depend_on": [
+      "domain",
+      "application.ports"
+    ],
+    "infrastructure_may_depend_on": [
+      "domain",
+      "application.ports"
+    ],
+    "content_may_depend_on": [
+      "content.schemas"
+    ],
+    "composition_root_may_depend_on": [
+      "application",
+      "infrastructure",
+      "content"
+    ],
+    "telegram_dependency_allowed_only_in": [
+      "infrastructure.telegram",
+      "app"
+    ],
+    "persistence_dependency_allowed_only_in": [
+      "infrastructure.database",
+      "app"
+    ],
+    "cycles": "FORBIDDEN",
+    "v1_runtime_import": "FORBIDDEN"
+  },
+  "database_evidence_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "artifacts": {
+    "patch": "patch/patch_21_1_6_audit_dependency_graph_and_cycles.py",
+    "json": "reports/stage_21_1_6_dependency_graph_cycles.json",
+    "markdown": "MD/STAGE_21_1_6_DEPENDENCY_GRAPH_CYCLES.md"
+  },
+  "next_stage": "21.1.7"
+}
