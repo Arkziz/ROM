@@ -4,7 +4,7 @@ from keyboards import main_kb
 from systems.crystal_shop_system import CRYSTAL_SHOP_CATALOG,get_crystal_shop_catalog,preview_crystal_shop_purchase,purchase_crystal_shop_item
 from systems.crystal_wallet_system import get_crystal_balance
 from systems.crystal_bag_expansion_system import preview_crystal_bag_expansion,purchase_crystal_bag_expansion
-MENU_BUTTON='📋 Меню';SHOP_BUTTON='💎 Магазин кристалів';BACK='🔙 Закрити магазин';EXP_BONUS_BUTTON='📈 Бонус досвіду +25%';BAG_EXPANSION_BUTTON='🎒 Розширення сумки';states={}
+MENU_BUTTON='📋 Меню';SHOP_BUTTON='💎 Магазин кристалів';BACK='🔙 Закрити магазин';EXP_BONUS_BUTTON='💎 Premium: +25% досвіду та золота';BAG_EXPANSION_BUTTON='🎒 Розширення сумки';states={}
 def _menu_kb():
  k=types.ReplyKeyboardMarkup(resize_keyboard=True);k.add(SHOP_BUTTON);k.add(BACK);return k
 def _shop_kb():

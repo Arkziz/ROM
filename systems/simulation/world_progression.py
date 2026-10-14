@@ -13,6 +13,7 @@ from .rng import SimulationRng
 from .survival_state import PersistentCombatState, SimulationSurvivalService
 from .loot_equipment_city import POTIONS, SimulationLootEquipmentCityService
 from .meta_progression import SimulationMetaProgressionService
+from .potion_affordability import HP_IDS, MP_IDS, POTION_CATALOG, PotionAffordabilityLedger, affordable_small, inventory_potions
 
 
 def _encounter_type(mob: Dict) -> str:
@@ -24,7 +25,7 @@ def _encounter_type(mob: Dict) -> str:
 
 
 class WorldProgressionSimulator:
-    def __init__(self, project_root: Path, character_class: str, target_level: int, profile: str, seed: int, inventory_capacity: int = 40, max_days: int = 365, provider: Optional[ProgressionProvider] = None):
+    def __init__(self, project_root: Path, character_class: str, target_level: int, profile: str, seed: int, inventory_capacity: int = 40, max_days: int = 365, provider: Optional[ProgressionProvider] = None, premium_active: bool = False):
         if profile not in PROFILES:
             raise ValueError(f"unsupported profile: {profile}")
         if character_class not in {"warrior", "knight", "scout", "rogue", "mage", "priest"}:
@@ -37,6 +38,7 @@ class WorldProgressionSimulator:
         self.profile = PROFILES[profile]
         self.seed = int(seed)
         self.max_days = int(max_days)
+        self.premium_active = bool(premium_active)
         self.provider = provider or ProgressionProvider()
         self.rng = SimulationRng(seed)
         self.policy = BehaviorPolicy()
@@ -53,6 +55,8 @@ class WorldProgressionSimulator:
         energy_spent = energy_regenerated = 0
         exp_gained = 0
         gold_gained = 0.0
+        premium_gold_gained = 0.0
+        potion_ledger = PotionAffordabilityLedger()
         city_visits = full_bag_events = items_awarded = items_lost = 0
         elapsed = 0
         events = []
@@ -83,13 +87,33 @@ class WorldProgressionSimulator:
                         if healed: events.append(ProgressionEvent(elapsed, day, "hp_regen", {"amount": healed, "hp": survival.hp}))
                     continue
 
-                hp_potions = [{"item_id": item.item_id, "restore": POTIONS[item.item_id][1], "simulation_item_id": item.simulation_item_id} for item in self.inventory.items if item.item_id in (401, 402) and item.quantity > 0]
-                potion = self.policy.choose_potion(survival.hp, survival.max_hp, survival.mp, survival.max_mp, self.character_class in {"mage", "priest"}, hp_potions, [])
-                if potion and potion.action == "use_hp_potion":
-                    item_id = int(potion.payload["item_id"]); restored = min(survival.max_hp - survival.hp, int(potion.payload["restore"]))
+                hp_potions = inventory_potions(self.inventory.items, HP_IDS)
+                mp_potions = inventory_potions(self.inventory.items, MP_IDS)
+                mana_class = self.character_class in {"mage", "priest"}
+                potion = self.policy.choose_potion(survival.hp, survival.max_hp, survival.mp, survival.max_mp, mana_class, hp_potions, mp_potions)
+                if potion:
+                    kind = "hp" if potion.action == "use_hp_potion" else "mp"
+                    item_id = int(potion.payload["item_id"])
+                    maximum = survival.max_hp if kind == "hp" else survival.max_mp
+                    current = survival.hp if kind == "hp" else survival.mp
+                    restored = min(maximum - current, int(potion.payload["restore"]))
                     if restored > 0 and meta._consume(item_id, 1):
-                        survival.hp += restored
-                        events.append(ProgressionEvent(elapsed, day, "potion_used", {"item_id": item_id, "restore": restored, "hp": survival.hp, "threshold_percent": 40}))
+                        if kind == "hp": survival.hp += restored
+                        else: survival.mp += restored
+                        potion_ledger.record_free_use(item_id)
+                        events.append(ProgressionEvent(elapsed, day, "potion_used", {"source":"owned_or_dropped","kind":kind,"item_id":item_id,"restore":restored}))
+                else:
+                    need_hp = survival.max_hp > 0 and survival.hp / survival.max_hp < self.policy.hp_potion_threshold
+                    need_mp = mana_class and survival.max_mp > 0 and survival.mp / survival.max_mp < self.policy.mp_potion_threshold
+                    kind = "hp" if need_hp else "mp" if need_mp else None
+                    item_id = affordable_small(kind, gold) if kind else None
+                    if item_id is not None:
+                        row = POTION_CATALOG[item_id]; cost = float(row["buy_price"]); gold = round(gold - cost, 2)
+                        restored = min((survival.max_hp-survival.hp) if kind=="hp" else (survival.max_mp-survival.mp), int(row["restore"]))
+                        if kind == "hp": survival.hp += restored
+                        else: survival.mp += restored
+                        potion_ledger.buy_and_use(item_id)
+                        events.append(ProgressionEvent(elapsed, day, "potion_purchased_and_used", {"kind":kind,"item_id":item_id,"cost":cost,"restore":restored,"gold_after":gold}))
                 if survival.max_hp > 0 and survival.hp / survival.max_hp <= 0.25:
                     elapsed += 5
                     healed = survival.passive_hp_regen(5)
@@ -130,11 +154,16 @@ class WorldProgressionSimulator:
 
                 if result.winner == "player":
                     wins += 1
-                    gained_exp, gained_gold = self.provider.reward(level, selected, self.rng)
+                    gained_exp, base_gold = self.provider.reward(level, selected, self.rng)
+                    from systems.timed_exp_bonus_system import calculate_premium_combat_gold
+                    gold_breakdown = calculate_premium_combat_gold(base_gold, self.premium_active)
+                    gained_gold = float(gold_breakdown["final_gold"])
+                    premium_gold_bonus = float(gold_breakdown["bonus_gold"])
                     exp += gained_exp
                     exp_gained += gained_exp
                     gold += gained_gold
                     gold_gained += gained_gold
+                    premium_gold_gained += premium_gold_bonus
                     meta.on_victory(selected, level)
                     contract_exp = meta.claim_contract()
                     if contract_exp:
@@ -149,7 +178,7 @@ class WorldProgressionSimulator:
                     items_lost += loot.lost
                     full_bag_events += loot.full_bag_events
                     gold, equipment_resolution = loot_city.resolve_equipment_after_victory(gold)
-                    events.append(ProgressionEvent(elapsed, day, "victory", {"level": level, "player_level": level, "mob": selected["name"], "mob_level": int(selected.get("level", level)), "level_delta": int(selected.get("level", level)) - int(level), "location_id": str(selected.get("location_id", self.provider.location_for_level(level))), "attack_type": str(selected.get("attack_type", "physical")), "trash_items": list(selected.get("trash_items", []) or []), "selection_reason": selection_reason, "candidate_count": len(allowed), "encounter_type": _encounter_type(selected), "battle_outcome": "victory", "battle_turns": result.turns, "exp": gained_exp, "gold": gained_gold, "loot_awarded": loot.awarded, "loot_lost": loot.lost, "equipment": loot.equipment, "loot_records": loot.records}))
+                    events.append(ProgressionEvent(elapsed, day, "victory", {"level": level, "player_level": level, "mob": selected["name"], "mob_level": int(selected.get("level", level)), "level_delta": int(selected.get("level", level)) - int(level), "location_id": str(selected.get("location_id", self.provider.location_for_level(level))), "attack_type": str(selected.get("attack_type", "physical")), "trash_items": list(selected.get("trash_items", []) or []), "selection_reason": selection_reason, "candidate_count": len(allowed), "encounter_type": _encounter_type(selected), "battle_outcome": "victory", "battle_turns": result.turns, "exp": gained_exp, "gold": gained_gold, "base_gold": float(gold_breakdown["base_gold"]), "premium_gold_bonus": premium_gold_bonus, "premium_gold_active": self.premium_active, "loot_awarded": loot.awarded, "loot_lost": loot.lost, "equipment": loot.equipment, "loot_records": loot.records}))
                     if equipment_resolution["equipped"] or equipment_resolution["sale_records"]:
                         events.append(ProgressionEvent(elapsed, day, "equipment_resolution", equipment_resolution))
                     inserted = meta.insert_best_runes(self.character_class)
@@ -193,7 +222,7 @@ class WorldProgressionSimulator:
 
         equipped_ids = {value for value in self.equipment.slots.values() if value}
         final_items = [{"simulation_item_id": item.simulation_item_id, "item_id": item.item_id, "name": item.name, "category": item.category, "rarity": item.rarity, "quantity": item.quantity, "slot_key": item.slot_key, "item_level": item.item_level, "armor_type": item.armor_type, "refine_level": item.refine_level, "durability": item.durability, "stats": dict(item.stats), "runes": [asdict(rune) for rune in item.runes], "destination": "equipped" if item.simulation_item_id in equipped_ids else "remaining"} for item in self.inventory.items]
-        events.append(ProgressionEvent(elapsed, days, "simulation_final_state", {"gold": round(gold,2), "equipment_slots": dict(self.equipment.slots), "inventory": final_items, "guild_exp": meta.state.guild.exp, "refine_attempts": meta.state.refine_attempts, "refine_successes": meta.state.refine_successes}))
+        events.append(ProgressionEvent(elapsed, days, "simulation_final_state", {"gold": round(gold,2), "equipment_slots": dict(self.equipment.slots), "inventory": final_items, "guild_exp": meta.state.guild.exp, "refine_attempts": meta.state.refine_attempts, "refine_successes": meta.state.refine_successes, "premium_active": self.premium_active, "premium_gold_gained": round(premium_gold_gained,2), "potion_affordability": potion_ledger.to_dict(gold_gained)}))
         status = "completed" if level >= self.target_level else "max_days_reached"
         return ProgressionResult(
             run_id, self.character_class, self.target_level, level, self.profile.key, self.seed,

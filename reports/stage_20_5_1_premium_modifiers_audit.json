@@ -1,0 +1,100 @@
+{
+  "patch_id": "20.5.1",
+  "status": "PASS",
+  "decision": "GO_EXACT_SCOPE_RECORDED_COMBAT_GOLD_GAP",
+  "current_contract": {
+    "exp_bonus_percent": 25,
+    "plans_crystals": {
+      "15_days": 70,
+      "30_days": 120
+    },
+    "enemy_scope": [
+      "normal",
+      "elite",
+      "boss"
+    ],
+    "gold_modifier": "ABSENT",
+    "loot_modifier": "ABSENT_CURRENTLY",
+    "loot_future_decision": "UNDECIDED",
+    "expiration": "UTC expires_at; active only when expires_at > now",
+    "stacking": "duration extension from later of active expiration or now",
+    "ui_active_inactive": true
+  },
+  "forbidden_gold_sources": {
+    "quest_gold": "NO_PREMIUM_PATH",
+    "sales": "NO_PREMIUM_PATH",
+    "auction": "NO_PREMIUM_PATH",
+    "admin": "NO_PREMIUM_PATH",
+    "refunds": "NO_PREMIUM_PATH",
+    "guild": "NO_PREMIUM_PATH"
+  },
+  "runtime_probe": {
+    "inactive": {
+      "active": false,
+      "base_exp": 101,
+      "bonus_exp": 0,
+      "final_exp": 101,
+      "expires_at": null
+    },
+    "active": {
+      "active": true,
+      "base_exp": 101,
+      "bonus_exp": 25,
+      "final_exp": 126,
+      "expires_at": "2026-10-22T12:00:00+00:00"
+    },
+    "expired": {
+      "active": false,
+      "base_exp": 101,
+      "bonus_exp": 0,
+      "final_exp": 101,
+      "expires_at": "2026-10-22T12:00:00+00:00"
+    },
+    "extension_preview": {
+      "success": true,
+      "duration_days": 15,
+      "price": 70,
+      "balance": 500,
+      "balance_after": 430,
+      "expires_at_before": "2026-10-22T12:00:00+00:00",
+      "expires_at_after": "2026-11-06T12:00:00+00:00",
+      "message": "OK"
+    }
+  },
+  "findings": [
+    {
+      "id": "PREMIUM_001",
+      "status": "CONFIRMED",
+      "summary": "Current Premium modifier is +25% EXP only for normal, elite and boss kills."
+    },
+    {
+      "id": "PREMIUM_002",
+      "status": "GAP",
+      "summary": "Premium combat-gold modifier is absent; Stage 20.5.2 is required if approved."
+    },
+    {
+      "id": "PREMIUM_003",
+      "status": "UNDECIDED",
+      "summary": "No Premium loot modifier exists currently; future loot bonus is not approved and must not be implemented yet."
+    },
+    {
+      "id": "PREMIUM_004",
+      "status": "CONFIRMED",
+      "summary": "15-day plan costs 70 crystals; 30-day plan costs 120 crystals."
+    },
+    {
+      "id": "PREMIUM_005",
+      "status": "CONFIRMED",
+      "summary": "Purchases extend an active future expiration and are idempotent."
+    }
+  ],
+  "stage_20_5_2_required": true,
+  "stage_20_5_2_owner_direction": "Combat-gold bonus planned; percentage still requires approval.",
+  "premium_loot_direction": "UNDECIDED_DO_NOT_IMPLEMENT",
+  "stage_20_5_2_gate": "Approve combat-gold percent; apply once only to normal/elite/boss combat gold; exclude quest/sale/auction/admin/refund/guild.",
+  "production_files_changed": false,
+  "database_changed": false,
+  "manual_check_required": false,
+  "next_stage": "20.5.2 Premium combat-gold bonus",
+  "finished_at": "2026-10-12T20:52:03+03:00"
+}

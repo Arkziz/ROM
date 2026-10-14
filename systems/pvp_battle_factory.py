@@ -1,4 +1,5 @@
 from __future__ import annotations
+from systems.stat_system import resolve_basic_attack_type
 
 import logging
 from typing import Any, Callable, Mapping
@@ -51,7 +52,7 @@ def build_production_pvp_snapshot(user_id: int) -> dict[str, Any]:
     attack_profile = _call(db, "get_player_attack_profile", uid, {}) or {}
     player_stats = _call(db, "get_player_stats", uid, None)
     total_dex = float(player_stats[1]) if player_stats and len(player_stats) > 1 else 10.0
-    attack_type = str(attack_profile.get("attack_type") or "physical")
+    attack_type = resolve_basic_attack_type(class_key)
     weapon_min = float(attack_profile.get("weapon_min_damage") or 0)
     weapon_max = float(attack_profile.get("weapon_max_damage") or 0)
     return {

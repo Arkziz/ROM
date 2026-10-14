@@ -1,0 +1,153 @@
+{
+  "status": "PASS",
+  "decision": "CANONICAL_TEXT_METADATA_DESIGN_READY",
+  "nodes": {
+    "city": {
+      "id": "city",
+      "name": "🏙️ Місто",
+      "kind": "city",
+      "huntable": false
+    },
+    "start_path": {
+      "id": "start_path",
+      "name": "🌿 Початок Шляху",
+      "kind": "location",
+      "huntable": true
+    },
+    "dark_forest": {
+      "id": "dark_forest",
+      "name": "🌲 Темний Бір",
+      "kind": "location",
+      "huntable": true
+    }
+  },
+  "routes": [
+    {
+      "from": "city",
+      "to": "start_path",
+      "from_name": "🏙️ Місто",
+      "to_name": "🌿 Початок Шляху"
+    },
+    {
+      "from": "start_path",
+      "to": "city",
+      "from_name": "🌿 Початок Шляху",
+      "to_name": "🏙️ Місто"
+    },
+    {
+      "from": "start_path",
+      "to": "dark_forest",
+      "from_name": "🌿 Початок Шляху",
+      "to_name": "🌲 Темний Бір"
+    },
+    {
+      "from": "dark_forest",
+      "to": "start_path",
+      "from_name": "🌲 Темний Бір",
+      "to_name": "🌿 Початок Шляху"
+    }
+  ],
+  "travel_seconds": 20,
+  "presentation_states": {
+    "route_selection": true,
+    "route_preview": true,
+    "confirmation": false,
+    "travel_started": true,
+    "active_travel": true,
+    "arrival": true,
+    "restart_recovery": true,
+    "cancel_or_unavailable": true
+  },
+  "current_owners": [
+    "data/location_graph.py",
+    "data/locations.py",
+    "systems/travel_system.py",
+    "systems/location_context_system.py",
+    "handlers/map.py",
+    "handlers/city.py",
+    "db_modules/location.py",
+    "migrations/049_persistent_location_travel.py"
+  ],
+  "findings": [
+    {
+      "id": "TRAVEL_TEXT_001",
+      "severity": "MEDIUM",
+      "summary": "No canonical per-route/per-state presentation metadata; texts live in handler/system literals."
+    },
+    {
+      "id": "TRAVEL_TEXT_002",
+      "severity": "MEDIUM",
+      "summary": "_node_name falls back to raw node_id, allowing technical IDs in exceptional UI paths."
+    },
+    {
+      "id": "TRAVEL_TEXT_003",
+      "severity": "MEDIUM",
+      "summary": "Not all eight travel presentation states have an explicit independently detectable text contract.",
+      "missing_states": [
+        "confirmation"
+      ]
+    }
+  ],
+  "technical_id_candidates": [],
+  "spoiler_candidates": [],
+  "canonical_design": {
+    "owner": "data/location_graph.py or dedicated data/travel_presentation.py",
+    "structure": "per route key plus state keys",
+    "required_state_keys": [
+      "selection_label",
+      "preview_text",
+      "confirmation_text",
+      "started_text",
+      "active_text",
+      "arrival_text",
+      "unavailable_text"
+    ],
+    "resolver_policy": "fail closed to localized generic name; never display raw location_id",
+    "spoiler_policy": "descriptive atmosphere only; no quest outcomes, identities or future events",
+    "route_keys": [
+      "city->start_path",
+      "start_path->city",
+      "start_path->dark_forest",
+      "dark_forest->start_path"
+    ]
+  },
+  "production_db_snapshot": {
+    "location_travels_present": true,
+    "columns": [
+      "id",
+      "user_id",
+      "from_node",
+      "to_node",
+      "status",
+      "revision",
+      "started_at",
+      "arrival_at",
+      "cancelled_at",
+      "completed_at",
+      "created_at",
+      "updated_at"
+    ],
+    "active_travel_count": 0,
+    "quick_check": "ok",
+    "foreign_key_violations": 0,
+    "production_connection_opened": false
+  },
+  "production_code_changed": false,
+  "production_database_opened": false,
+  "production_database_changed": false,
+  "wal_shm_manipulated": false,
+  "manual_check_required": false,
+  "audited_head": "712d71dff2db87e428a2a37bded904be10dcccb1",
+  "owner_sha256": {
+    "data/location_graph.py": "d95412184790e9238a9377985854de79468fdf2d03667b4582365be7b7ac92ae",
+    "data/locations.py": "f831aab545d91399e86e9ff738a026b9c51904a6b0dfc9ee40ce7fdc8e249043",
+    "systems/travel_system.py": "fdadea01b579b86d596cdeff8ac40f08ca924f05f674d034e73611d91bcdf560",
+    "systems/location_context_system.py": "17ac3d3dc82e7632280a495bd3d527600be75fa4f2c506d2247c5885d72d2761",
+    "handlers/map.py": "967dfabb3aaab35f3263959197b85144ddefc4509fec6105140e7df9811416f1",
+    "handlers/city.py": "c6cdb3ad01ff1234baf03c93ed4d8bec7e691f00417805895f9ab49001eb51e0",
+    "db_modules/location.py": "a9c92d30a6378649444be87922661169fbbfae16e92879868c67122d34f19bcc",
+    "migrations/049_persistent_location_travel.py": "fe2ef03b216bade9d2ac4168c496e46904ab25865822605e69b9639155a445e9"
+  },
+  "next_stage": "20.6.2",
+  "finished_at": "2026-10-13T00:19:01+03:00"
+}

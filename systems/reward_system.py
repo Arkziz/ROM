@@ -1007,15 +1007,19 @@ def roll_loot(user_id, mob):
 
 def process_victory_reward(user_id, player_level, mob):
 
-    """Victory reward with +25% timed EXP only for normal, elite and boss mob kills."""
+    """Apply Premium EXP and combat gold exactly once for a mob victory."""
 
     base_exp = calculate_exp_reward(player_level=player_level, mob=mob)
 
     gold = calculate_gold_reward(player_level=player_level, mob=mob)
 
-    from systems.timed_exp_bonus_system import calculate_mob_kill_exp
+    from systems.timed_exp_bonus_system import calculate_mob_kill_exp, calculate_mob_kill_gold
 
     exp_breakdown = calculate_mob_kill_exp(user_id, base_exp)
+
+    gold_breakdown = calculate_mob_kill_gold(user_id, gold)
+
+    gold = float(gold_breakdown["final_gold"])
 
     exp = int(exp_breakdown["final_exp"])
 
@@ -1041,6 +1045,12 @@ def process_victory_reward(user_id, player_level, mob):
         "exp_bonus_active": bool(exp_breakdown["active"]),
 
         "gold": gold,
+
+        "base_gold": float(gold_breakdown["base_gold"]),
+
+        "premium_gold_bonus": float(gold_breakdown["bonus_gold"]),
+
+        "premium_gold_active": bool(gold_breakdown["active"]),
 
         "exp_result": exp_result,
 

@@ -6,6 +6,21 @@ from keyboards import city_kb, trader_kb, craft_kb, guild_kb, townhall_kb, taver
 from systems.potion_system import POTIONS, ALCHEMIST_SHOP, get_alchemist_potion_stock_17_19_3, buy_alchemist_potion_17_19_3, sell_alchemist_potion_17_19_3
 
 
+def _format_premium_expiration_kyiv(value):
+ """Render a UTC string or datetime in the approved Kyiv presentation format."""
+ try:
+  from datetime import datetime as _datetime, timezone as _timezone
+  from zoneinfo import ZoneInfo
+  if isinstance(value, _datetime):
+   parsed=value
+  else:
+   parsed=_datetime.fromisoformat(str(value or '').replace('Z','+00:00'))
+  if parsed.tzinfo is None:
+   parsed=parsed.replace(tzinfo=_timezone.utc)
+  return parsed.astimezone(ZoneInfo('Europe/Kyiv')).strftime('%d.%m.%Y %H:%M за Києвом')
+ except Exception:
+  return 'час завершення невідомий'
+
 def _format_registration_date_kyiv_18_31_4a(value):
     """Render canonical UTC registration time in Europe/Kyiv."""
     from datetime import datetime, timezone
@@ -36,6 +51,7 @@ def build_city_text(user_id):
 
 def build_trade_district_text(user_id):
     gold = get_wallet(user_id)
+    # Keep Trade Row services visible, then append an eligible Merchant story card.
     return f'🛒 Торговий ряд\n\n💰 Золото: {float(gold):.2f}\n\nВузька вулиця заставлена возами, ящиками та прилавками. Торговці скуповують сірий лут, непотрібне спорядження і продають прості речі для мандрівників.'
 
 def build_craft_district_text(user_id):
@@ -295,7 +311,7 @@ def build_common_equipment_slot_choice_text(user_id, slot_key):
     else:
         title = '⚪ Базове спорядження'
         description = 'Оберіть предмет.'
-    text = f'{float(title):.2f}\n\n💰 Золото: {float(gold):.2f}\n\n{float(description):.2f}\n\nДоступні варіанти:'
+    text = f'{title}\n\n💰 Золото: {float(gold):.2f}\n\n{description}\n\nДоступні варіанти:'
     kb = types.InlineKeyboardMarkup(row_width=1)
     for offer in offers:
         hands_text = ''
@@ -479,6 +495,7 @@ def send_trade_district_submenu_17_11_1(bot, chat_id):
 
 def register_city_handlers(bot):
 
+    register_story_boss_invocation_callbacks(bot)
     @bot.message_handler(func=lambda m: m.text == '🏙️ Місто')
     def show_city(message):
         user_id = message.from_user.id
@@ -487,11 +504,29 @@ def register_city_handlers(bot):
     @bot.message_handler(func=lambda m: m.text == '👀 Роззирнутися')
     def look_around(message):
         user_id = message.from_user.id
-        from systems.location_context_system import get_location_context_kind
-        if get_location_context_kind(user_id) == 'city':
+        from systems.location_context_system import get_location_context_kind, get_location_context_kb
+        context_kind = get_location_context_kind(user_id)
+        if context_kind == 'city':
             bot.send_message(message.chat.id, build_city_text(user_id), reply_markup=city_kb())
             return
+        if context_kind == 'travel':
+            # Collapsing the map does not finish travel. Keep the authoritative
+            # travel/map keyboard and never expose hunting controls early.
+            bot.send_message(
+                message.chat.id,
+                '🚶 Подорож триває. Відкрий мапу, щоб переглянути статус переходу.',
+                reply_markup=get_location_context_kb(user_id),
+            )
+            return
+        if context_kind != 'location':
+            bot.send_message(
+                message.chat.id,
+                '⚠️ Не вдалося визначити поточне місцезнаходження. Відкрий мапу.',
+                reply_markup=get_location_context_kb(user_id),
+            )
+            return
         bot.send_message(message.chat.id, build_main_menu_text(user_id), reply_markup=main_kb())
+        send_story_boss_look_around_if_present(bot, message)
 
     @bot.message_handler(func=lambda m: m.text in ('🔙 Місто', '⬅️ Місто'))
     def back_to_city(message):
@@ -502,6 +537,8 @@ def register_city_handlers(bot):
     def show_trade_district(message):
         user_id = message.from_user.id
         bot.send_message(message.chat.id, build_trade_district_text(user_id), reply_markup=trader_kb())
+        # Keep Trade Row services visible, then append an eligible Merchant story card.
+        send_story_npc_if_present(bot, message, 'trader')
 
     @bot.message_handler(func=lambda m: m.text == '⚒️ Ремісничий квартал')
     def show_craft_district(message):
@@ -663,6 +700,8 @@ def register_city_handlers(bot):
         _ALCHEMIST_INPUT_17_19_3.pop(user_id, None)
         text, _ = build_alchemist_root_17_19_3(user_id)
         bot.send_message(message.chat.id, text, reply_markup=alchemist_reply_kb_17_19_3_1())
+        # Keep Alchemist services visible, then append an eligible story card.
+        send_story_npc_if_present(bot, message, "alchemist")
 
     @bot.callback_query_handler(func=lambda call: str(call.data).startswith('alchemist:'))
     def alchemist_trade_17_19_3(call):
@@ -752,6 +791,12 @@ def register_city_handlers(bot):
     @bot.message_handler(func=lambda m: m.text == '⚒️ Коваль')
     def show_blacksmith(message):
         user_id = message.from_user.id
+        if has_story_npc_if_present(message, 'blacksmith'):
+            # Story interaction must not hide the Blacksmith's canonical services.
+            text, kb = build_blacksmith_text(user_id)
+            bot.send_message(message.chat.id, text, reply_markup=kb)
+            send_story_npc_if_present(bot, message, 'blacksmith')
+            return
         bot.send_message(message.chat.id, '⚒️ Ти підійшов до Коваля.', reply_markup=blacksmith_kb())
         text, kb = build_blacksmith_text(user_id)
         bot.send_message(message.chat.id, text, reply_markup=kb)
@@ -1190,7 +1235,7 @@ def build_main_menu_text(user_id, show_location_description=False):
     summary = get_exp_bonus_account_summary(user_id)
     lines = [f'🆔 ID: {int(user_id)}', f"📅 Дата реєстрації: {_format_registration_date_kyiv_18_31_4a(_format_account_utc_17_30_1_1(summary.get('registered_at')))}"]
     if summary.get('active'):
-        lines.extend(['💎 Premium: активний', '📈 Бонус за вбивство мобів: +25% EXP', f"⏳ Діє до: {_format_account_utc_17_30_1_1(summary.get('expires_at'))}"])
+        lines.extend(['💎 Premium: активний', '💎 Premium: +25% досвіду та золота за перемогу над мобами', f"⏳ Діє до: {_format_premium_expiration_kyiv(summary.get('expires_at'))}"])
     else:
         lines.append('💎 Premium: неактивний')
     block = '\n'.join(lines)
@@ -1200,7 +1245,114 @@ def build_main_menu_text(user_id, show_location_description=False):
     return title + '\n\n' + block + '\n\n' + text
 _REGISTER_CITY_HANDLERS_BEFORE_MAIN_MENU_RECOVERY_17_30_1_3 = register_city_handlers
 
+from keyboards import elder_kb, mercenary_head_kb, bartender_kb
+from data.story_quest_npcs import get_story_quest_npc
+from handlers.story_quest_npc_runtime import send_story_npc_if_present, has_story_npc_if_present
+from handlers.story_boss_invocation_wiring import (
+    register_story_boss_invocation_callbacks,
+    send_story_boss_look_around_if_present,
+)
+
+
+def _build_story_npc_placeholder_text(npc_id, description):
+    """Build an informational NPC screen before production quest content exists."""
+    npc = get_story_quest_npc(npc_id)
+    return (
+        f"{npc.button_label}\n\n{description}\n\n"
+        "📜 Нових сюжетних доручень зараз немає. "
+        "Перевір журнал квестів або повернися пізніше."
+    )
+
+
+def build_story_elder_text():
+    """Render the Elder in Town Hall without duplicating quest lifecycle logic."""
+    return _build_story_npc_placeholder_text(
+        "elder",
+        "Староста переглядає звіти варти, прохання мешканців і карти околиць.",
+    )
+
+
+def build_story_mercenary_head_text():
+    """Render the Mercenary Head in the Guild without enabling boss calls yet."""
+    return _build_story_npc_placeholder_text(
+        "mercenary_head",
+        "Голова Найманців стежить за контрактами та небезпеками навколо міста.",
+    )
+
+
+
+
+def build_story_mercenary_head_neutral_text():
+    """Return neutral dialogue that is valid with or without a story quest card."""
+    npc = get_story_quest_npc("mercenary_head")
+    return (
+        f"{npc.button_label}\n\n"
+        "Голова Найманців переглядає звіти розвідників, позначає небезпечні "
+        "маршрути на карті й стежить за виконанням наказів гільдії.\n\n"
+        "Зараз окремих вказівок немає. Можеш перевірити активний контракт, "
+        "повернутися до справ гільдії або зайти пізніше."
+    )
+
+
+def build_story_bartender_text():
+    """Render the Bartender in the Tavern without enabling quest acceptance yet."""
+    return _build_story_npc_placeholder_text(
+        "bartender",
+        "Бармен слухає розмови мандрівників і збирає чутки з навколишніх земель.",
+    )
+
+
 def register_city_handlers(bot):
+    @bot.message_handler(func=lambda m: getattr(m, "text", None) == "🗣️ Староста")
+    def show_story_elder(message):
+        if send_story_npc_if_present(bot, message, 'elder'):
+            return
+        bot.send_message(
+            message.chat.id,
+            build_story_elder_text(),
+            reply_markup=elder_kb(),
+        )
+
+    @bot.message_handler(func=lambda m: getattr(m, "text", None) == "⚔️ Голова Найманців")
+    def show_story_mercenary_head(message):
+        """Show a useful neutral NPC screen, then append eligible story content.
+
+        The neutral screen must remain meaningful when the story runtime has no
+        active or available card for the player's current progression state.
+        """
+        bot.send_message(
+            message.chat.id,
+            build_story_mercenary_head_neutral_text(),
+            reply_markup=mercenary_head_kb(message.from_user.id),
+        )
+        send_story_npc_if_present(bot, message, 'mercenary_head')
+
+    @bot.message_handler(func=lambda m: getattr(m, "text", None) == "🍺 Бармен")
+    def show_story_bartender(message):
+        bot.send_message(
+            message.chat.id,
+            build_story_bartender_text(),
+            reply_markup=bartender_kb(),
+        )
+        # Keep the Bartender introduction visible, then append an eligible story card.
+        send_story_npc_if_present(bot, message, 'bartender')
+
+    @bot.message_handler(func=lambda m: getattr(m, "text", None) == "🔙 Ратуша")
+    def back_to_story_townhall(message):
+        bot.send_message(message.chat.id, build_townhall_text(), reply_markup=townhall_kb())
+
+    @bot.message_handler(func=lambda m: getattr(m, "text", None) == "🔙 Гільдія Найманців")
+    def back_to_story_mercenary_guild(message):
+        bot.send_message(
+            message.chat.id,
+            build_guild_district_text(message.from_user.id),
+            reply_markup=guild_kb(),
+        )
+
+    @bot.message_handler(func=lambda m: getattr(m, "text", None) == "🔙 Таверна")
+    def back_to_story_tavern(message):
+        bot.send_message(message.chat.id, build_tavern_text(), reply_markup=tavern_kb())
+
     _REGISTER_CITY_HANDLERS_BEFORE_MAIN_MENU_RECOVERY_17_30_1_3(bot)
 
     @bot.message_handler(func=lambda message: str(getattr(message, 'text', '') or '') == '📋 Меню')
@@ -1217,7 +1369,7 @@ def build_account_menu_text_17_30_1_4(user_id):
     summary = get_exp_bonus_account_summary(user_id)
     lines = ['📋 Меню', '', f'🆔 ID: {int(user_id)}', f"📅 Дата реєстрації: {_format_registration_date_kyiv_18_31_4a(_format_account_utc_17_30_1_1(summary.get('registered_at')))}"]
     if summary.get('active'):
-        lines.extend(['💎 Premium: активний', '📈 Бонус за вбивство мобів: +25% EXP', f"⏳ Діє до: {_format_account_utc_17_30_1_1(summary.get('expires_at'))}"])
+        lines.extend(['💎 Premium: активний', '💎 Premium: +25% досвіду та золота за перемогу над мобами', f"⏳ Діє до: {_format_premium_expiration_kyiv(summary.get('expires_at'))}"])
     else:
         lines.append('💎 Premium: неактивний')
     lines.extend(['', 'Оберіть розділ:'])

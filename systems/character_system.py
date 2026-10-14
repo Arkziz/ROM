@@ -727,13 +727,10 @@ def confirm_character_class_change_17_13_1(user_id, class_key):
 
 # Stage 17.15.1 persistent MP helpers.
 
-MP_REGEN_PERCENT_PER_MINUTE_17_15_1 = 0.30
-
-MP_POST_COMBAT_FLOOR_PERCENT_17_15_1 = 0.30
-
-
-
-
+from data.mana_policy import (
+    apply_post_combat_mp_floor_value,
+    calculate_passive_mp_regen_per_full_minute,
+)
 
 def init_persistent_mp_columns_17_15_1():
 
@@ -909,7 +906,7 @@ def apply_lazy_mp_regeneration_17_15_1(user_id, now=None):
 
         return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0}
 
-    per_tick = max(1, int(maximum * MP_REGEN_PERCENT_PER_MINUTE_17_15_1))
+    per_tick = calculate_passive_mp_regen_per_full_minute(maximum)
 
     new_mp = min(maximum, current + per_tick * ticks)
 
@@ -949,9 +946,7 @@ def apply_post_combat_mp_floor_17_15_1(user_id):
 
     current = max(0, min(int((row[0] if row else 0) or 0), maximum))
 
-    floor_value = max(1, int(maximum * MP_POST_COMBAT_FLOOR_PERCENT_17_15_1))
-
-    new_mp = max(current, floor_value)
+    new_mp = apply_post_combat_mp_floor_value(current, maximum)
 
     db.cursor.execute(
 

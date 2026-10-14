@@ -19,7 +19,7 @@ from data.equipment_profiles import (
     OFF_HAND_ALLOWED_BY_CLASS,
     OFF_HAND_PROFILES,
 )
-from data.equipment_stat_policy import redistribute_primary_stat_budget
+from data.equipment_identity_stat_policy import redistribute_identity_primary_stats
 
 
 def _class_aware_equipment_kind(slot_key):
@@ -281,10 +281,13 @@ def generate_dynamic_equipment_stats(slot_key, item_level, rarity, weapon_hands=
         extra_pool = ARMOR_EXTRA_STATS_BY_SLOT.get(slot_key, ["sta"])
 
     elif slot_key == "shoulders":
+        # Shoulders use the same primary-stat pipeline as the other armor slots.
+        # Source-specific shop/loot resolvers redistribute this raw budget later.
         stats["pdef"] = get_dynamic_stat_value(item_level, rarity, 1.00)
         stats["mdef"] = get_dynamic_stat_value(item_level, rarity, 0.25)
+        stats["bonus_sta"] = get_dynamic_stat_value(item_level, rarity, 0.40)
 
-        extra_pool = ARMOR_EXTRA_STATS_BY_SLOT.get(slot_key, ["sta"])
+        extra_pool = ARMOR_EXTRA_STATS_BY_SLOT.get(slot_key, ["sta", "str"])
 
     elif slot_key == "chest":
         stats["pdef"] = get_dynamic_stat_value(item_level, rarity, 1.60)
@@ -390,6 +393,13 @@ def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_k
 
     weapon_hands = 1
     weapon_attack_type = ""
+    # Stage 20.6.5b: forced-slot generation must always provide an explicit
+    # armor identity. Non-armor slots intentionally keep an empty armor type.
+    armor_type = (
+        get_allowed_armor_type_for_class(get_character_class(user_id))
+        if is_armor_slot(slot_key)
+        else ""
+    )
 
     if slot_key == "main_hand":
         profile = MAIN_HAND_PROFILES[item_profile]
@@ -421,13 +431,12 @@ def create_generated_equipment_item_for_slot(user_id, item_level, rarity, slot_k
         item_profile=item_profile
     )
 
-    # Stage 18.17.2: base-shop/forced-slot generation is always target-class-aware.
-    target_class = get_character_class(user_id)
-    stats = redistribute_primary_stat_budget(
+    # Stage 20.6.5: primary stats follow item identity, never recipient class.
+    stats = redistribute_identity_primary_stats(
         stats,
-        target_class,
-        _class_aware_equipment_kind(slot_key),
+        slot_key,
         item_subtype=item_profile,
+        armor_type=armor_type,
         chooser=_class_aware_weighted_choice,
     )
 
@@ -1137,16 +1146,15 @@ def create_generated_equipment_item(
             armor_type=armor_type
         )
 
-    # Stage 18.17.2: only the approved class-aware drop branch rerolls primary stats.
-    if is_class_aware:
-        target_class = get_character_class(user_id)
-        stats = redistribute_primary_stat_budget(
-            stats,
-            target_class,
-            _class_aware_equipment_kind(slot_key),
-            item_subtype=item_profile,
-            chooser=_class_aware_weighted_choice,
-        )
+    # Stage 20.6.5: class-aware chance controls identity suitability only.
+    # Stats always follow the selected subtype/armor type/universal jewelry pool.
+    stats = redistribute_identity_primary_stats(
+        stats,
+        slot_key,
+        item_subtype=item_profile,
+        armor_type=armor_type,
+        chooser=_class_aware_weighted_choice,
+    )
 
     sell_price = get_dynamic_sell_price(item_level, rarity)
 

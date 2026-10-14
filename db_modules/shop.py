@@ -7,6 +7,8 @@ import random
 
 from .connection import conn, cursor, SLOT_ORDER
 from systems.item_id_allocator_system import allocate_shop_preview_item_id, promote_shop_preview_item
+from data.equipment_identity_stat_policy import redistribute_identity_primary_stats
+from data.equipment_stat_policy import redistribute_primary_stat_budget
 from data.equipment_profiles import (
     EQUIPMENT_SLOTS,
     MAIN_HAND_PROFILES,
@@ -282,7 +284,8 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
             armor_type=armor_type
         )
 
-    # Stage 18.17.2: base-shop preview uses the same class policy as class-aware loot.
+    # Stage 20.6.5b: the base shop is strict class-aware, including jewelry.
+    # Mob loot remains identity-aware and keeps universal random jewelry stats.
     target_class = get_character_class(user_id)
     if slot_key == "main_hand":
         equipment_kind = "weapon"

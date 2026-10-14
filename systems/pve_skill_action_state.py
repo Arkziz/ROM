@@ -2,6 +2,25 @@
 """Pure, mutation-free PvE skill availability and button-state resolver."""
 from __future__ import annotations
 
+from data.mana_policy import calculate_mana_skill_cost
+from data.mana_skill_presentation import format_mana_skill_presentation
+
+
+def get_pve_effective_skill_cost(mob, skill):
+    """Return canonical Mana cost from the battle Max MP snapshot."""
+    if str(skill.get("cost_type") or "") != "mana":
+        return max(0, int(skill.get("cost", 0) or 0))
+    maximum = max(0, int(mob.get("player_max_mp", 0) or 0))
+    return calculate_mana_skill_cost(skill, maximum)
+
+
+def format_pve_skill_description(mob, skill):
+    """Render clean description, effective cost and transparent formula."""
+    if str(skill.get("cost_type") or "") != "mana":
+        return str(skill.get("description") or "")
+    maximum = max(0, int(mob.get("player_max_mp", 0) or 0))
+    return format_mana_skill_presentation(skill, maximum)
+
 
 def _turns_uk(value):
     value = max(0, int(value or 0))
@@ -67,7 +86,7 @@ def get_pve_skill_action_state(user_id, mob, skill):
         )
 
     cost_type = str(skill.get("cost_type") or "")
-    cost = max(0, int(skill.get("cost", 0) or 0))
+    cost = get_pve_effective_skill_cost(mob, skill)
 
     if cost_type == "rage":
         current = max(0, int(mob.get("player_rage", 0) or 0))
@@ -106,10 +125,16 @@ def get_pve_skill_action_state(user_id, mob, skill):
 
     elif cost_type == "mana":
         current = max(0, int(mob.get("player_mp", 0) or 0))
+        maximum = max(0, int(mob.get("player_max_mp", 0) or 0))
+        if skill.get("key") == "mage_arcane_flow" and maximum > 0 and current >= maximum:
+            return _state(skill, False, "mana_already_full",
+                          f"🔒 {name} · Мана вже повна",
+                          "🔵 Мана вже повна.",
+                          required=cost, available_amount=current, effective_cost=cost)
         if current < cost:
             return _state(skill, False, "not_enough_mana",
                           f"🔒 {name} · потрібно {cost} Мани",
                           f"🔵 Недостатньо Мани для {name}. Потрібно: {cost}, доступно: {current}.",
-                          required=cost, available_amount=current)
+                          required=cost, available_amount=current, effective_cost=cost)
 
-    return _state(skill, True, "ok", f"✨ {name}", "")
+    return _state(skill, True, "ok", f"✨ {name}", "", effective_cost=cost)

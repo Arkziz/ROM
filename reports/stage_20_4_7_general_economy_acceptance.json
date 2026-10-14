@@ -1,0 +1,66 @@
+{
+  "patch_id": "20.4.7",
+  "status": "PASS",
+  "decision": "ACCEPTED",
+  "stage": "20.4",
+  "accepted_contracts": {
+    "daily_firius_tokens": 3,
+    "level_up_gold_matrix": {
+      "2": 0.45,
+      "3": 1.43,
+      "4": 4.3,
+      "5": 11.98,
+      "6": 34.4,
+      "7": 69.58,
+      "8": 130.73,
+      "9": 255.74,
+      "10": 479.19,
+      "11": 881.25
+    },
+    "level_up_gold_decimals": 2,
+    "potion_prices": "UNCHANGED",
+    "stage_20_4_4": "NOT_REQUIRED",
+    "guild_creation_cost": 50.0,
+    "guild_min_level": 3,
+    "guild_member_limit": 10,
+    "guild_cost_first_prompt": true,
+    "retroactive_mutation": false
+  },
+  "required_reports": [
+    "reports/stage_20_4_1a_daily_firius_token_reward.json",
+    "reports/stage_20_4_1b_firius_token_item_description.json",
+    "reports/stage_20_4_2b_combat_income_based_level_up_gold.json",
+    "reports/stage_20_4_2c_level_up_gold_decimal_presentation.json",
+    "reports/stage_20_4_3_potion_affordability_audit.json",
+    "reports/stage_20_4_3a_simulator_potion_affordability_instrumentation.json",
+    "reports/stage_20_4_3b_potion_affordability_level_5_audit.json",
+    "reports/stage_20_4_5_level_3_guild_creation_affordability.json",
+    "reports/stage_20_4_6_guild_creation_cost_50.json",
+    "reports/stage_20_4_6a_guild_creation_cost_at_start.json"
+  ],
+  "focused_tests": [
+    "tools/smoke_test_stage_20_4_2c_level_up_gold_decimal_presentation.py",
+    "tools/smoke_test_stage_20_4_3a_simulator_potion_affordability.py",
+    "tools/smoke_test_stage_20_4_6_guild_creation_cost_50.py",
+    "tools/smoke_test_stage_20_4_6a_guild_creation_cost_at_start.py"
+  ],
+  "focused_test_outputs": [
+    "[OK] Level-up gold presentation - exactly two decimals for single and multi-level rewards",
+    "[OK] Simulator potion affordability - correct HP/MP routing, canonical purchases and spend ratios",
+    "[OK] Guild creation cost - canonical 50.00, atomic debit, terms/UI, level 3 and member limit 10",
+    "[OK] Guild creation start prompt shows canonical cost and member limit"
+  ],
+  "manual_evidence": {
+    "guild_first_prompt": "PASS",
+    "observed_at": "2026-10-12 00:43 Europe/Kyiv",
+    "cost": 50.0,
+    "member_limit": 10,
+    "cancel_flow": "PASS"
+  },
+  "production_files_changed": false,
+  "database_changed": false,
+  "wal_shm_manipulated": false,
+  "manual_check_required": false,
+  "next_stage": "20.5.1 audit Premium modifiers",
+  "finished_at": "2026-10-12T00:52:23+03:00"
+}

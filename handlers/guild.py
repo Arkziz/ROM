@@ -457,9 +457,16 @@ def build_guild_placeholder_text(title, next_stage):
     )
 
 
-def build_guild_create_name_prompt():
+def build_guild_create_name_prompt(user_id=None):
+    """Показує canonical ціну до введення назви, TAG та іконки."""
+    terms = get_guild_creation_terms(user_id) if user_id is not None else {
+        "cost_gold": 50.0,
+        "member_limit": 10,
+    }
     return (
         "🏗️ Створення гільдії\n\n"
+        f"Вартість створення: {terms['cost_gold']:.2f} 🪙\n"
+        f"Початковий ліміт: {terms['member_limit']} учасників.\n\n"
         "Крок 1/4 — назва гільдії.\n\n"
         "Введи назву гільдії.\n"
         "Вимоги:\n"
@@ -504,7 +511,7 @@ def build_guild_create_icon_prompt(name, tag):
 
 def build_guild_create_confirm_text(state, user_id=None):
     name = state.get("name", ""); tag = state.get("tag", ""); icon = state.get("icon", "🏰")
-    terms = get_guild_creation_terms(user_id) if user_id is not None else {"cost_gold": 100.0, "gold_balance": 0.0, "member_limit": 10}
+    terms = get_guild_creation_terms(user_id) if user_id is not None else {"cost_gold": 50.0, "gold_balance": 0.0, "member_limit": 10}
     return ("🏗️ Створення гільдії\n\nКрок 4/4 — підтвердження.\n\n" f"Майбутня гільдія:\n{icon} [{tag}] {name}\n\n" f"Вартість: {terms['cost_gold']:.2f} 🪙\n" f"Твій баланс: {terms['gold_balance']:.2f} 🪙\n" f"Початковий ліміт: {terms['member_limit']} учасників.\n\n" "Підтвердити створення?")
 
 
@@ -566,7 +573,7 @@ def start_guild_creation(bot, message):
         return
 
     start_guild_create_state(user_id)
-    send_guild_create_prompt(bot, message, build_guild_create_name_prompt())
+    send_guild_create_prompt(bot, message, build_guild_create_name_prompt(user_id))
 
 
 def handle_guild_creation_message(bot, message):
@@ -587,7 +594,7 @@ def handle_guild_creation_message(bot, message):
 
     if text == "✏️ Почати заново":
         start_guild_create_state(user_id)
-        send_guild_create_prompt(bot, message, build_guild_create_name_prompt())
+        send_guild_create_prompt(bot, message, build_guild_create_name_prompt(user_id))
         return True
 
     step = state.get("step")

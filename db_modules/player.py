@@ -8,6 +8,8 @@ from data.player_progression import get_exp_to_next_level
 
 from .connection import conn, cursor, DEFAULT_BAG_SLOTS
 from data.player_hp import get_starting_max_hp
+from systems.character_system import get_character_class
+from systems.stat_system import resolve_basic_attack_type
 
 
 # ==============================
@@ -229,6 +231,7 @@ def get_user(user_id):
 # ==============================
 
 def get_player_attack_profile(user_id):
+    character_class = get_character_class(user_id)
     """Return weapon profile with stat attack from canonical production APIs."""
     from .equipment import get_equipped_slot, get_weapon_damage_by_inventory_id
 
@@ -236,7 +239,7 @@ def get_player_attack_profile(user_id):
     if not stats:
         return {
             "weapon_subtype": "",
-            "attack_type": "physical",
+            "attack_type": resolve_basic_attack_type(character_class),
             "stat_attack": 0,
             "weapon_min_damage": 0,
             "weapon_max_damage": 0,
@@ -246,16 +249,18 @@ def get_player_attack_profile(user_id):
 
     physical_stat_attack = get_attack(user_id)
     magical_stat_attack = get_magic_attack(user_id)
+    attack_type = resolve_basic_attack_type(character_class)
+    stat_attack = magical_stat_attack if attack_type == "magical" else physical_stat_attack
     main_hand_id = get_equipped_slot(user_id, "main_hand")
 
     if not main_hand_id:
         return {
             "weapon_subtype": "",
-            "attack_type": "physical",
-            "stat_attack": physical_stat_attack,
+            "attack_type": resolve_basic_attack_type(character_class),
+            "stat_attack": stat_attack,
             "weapon_min_damage": 0,
             "weapon_max_damage": 0,
-            "display_attack": physical_stat_attack,
+            "display_attack": stat_attack,
             "weapon_text": "Без зброї",
         }
 
@@ -263,21 +268,19 @@ def get_player_attack_profile(user_id):
     if not weapon_data.get("is_weapon"):
         return {
             "weapon_subtype": "",
-            "attack_type": "physical",
-            "stat_attack": physical_stat_attack,
+            "attack_type": resolve_basic_attack_type(character_class),
+            "stat_attack": stat_attack,
             "weapon_min_damage": 0,
             "weapon_max_damage": 0,
-            "display_attack": physical_stat_attack,
+            "display_attack": stat_attack,
             "weapon_text": "Без зброї",
         }
 
-    attack_type = weapon_data["attack_type"]
+    
     if attack_type == "magical":
-        stat_attack = magical_stat_attack
         weapon_min = weapon_data["magic_min"]
         weapon_max = weapon_data["magic_max"]
     else:
-        stat_attack = physical_stat_attack
         weapon_min = weapon_data["physical_min"]
         weapon_max = weapon_data["physical_max"]
 

@@ -35,6 +35,20 @@ _GUARDED_METHODS = (
 )
 
 
+def is_expired_callback_query_error(method_name, error):
+    """Return true only for Telegram's harmless expired callback acknowledgement."""
+    if str(method_name) != "answer_callback_query":
+        return False
+    text = str(error or "").lower()
+    if "error code: 400" not in text:
+        return False
+    return (
+        "query is too old" in text
+        or "response timeout expired" in text
+        or "query id is invalid" in text
+    )
+
+
 def extract_retry_after(error):
     """Return Telegram retry_after seconds for a 429 exception, else None."""
     text = str(error or "")
@@ -125,6 +139,14 @@ def _guard_method(bot, method_name):
         try:
             return original(*args, **kwargs)
         except Exception as error:
+            if is_expired_callback_query_error(method_name, error):
+                PRODUCTION_LOG_PRINT(
+                    PRODUCTION_LOGGER,
+                    'warning',
+                    f"⚠️ Expired Telegram callback acknowledgement contained: method={method_name}, chat={chat_id}. "
+                    "Gameplay mutation was not replayed and polling may continue.",
+                )
+                return None
             retry_after = extract_retry_after(error)
             if retry_after is None:
                 raise

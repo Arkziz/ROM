@@ -513,8 +513,22 @@ def build_class_selection_text(user_id, mode="register"):
     )
 
 
-def _skill_cost_text_17_13_1(skill):
+def _projected_max_mp_for_class_20_3_4a(user_id, class_key):
+    """Calculate candidate-class Max MP from current effective primary stats."""
+    from db import get_player_stats
+    from systems.stat_system import calculate_max_mp
+    stats = get_player_stats(user_id)
+    if not stats or len(stats) < 6:
+        return 0
+    _str, _dex, intelligence, wisdom, _sta, level = stats[:6]
+    return calculate_max_mp(class_key, level=level, intelligence=intelligence, wisdom=wisdom)
+
+
+def _skill_cost_text_17_13_1(skill, max_mp=0):
     cost_type = skill.get("cost_type", "")
+    if cost_type == "mana":
+        from data.mana_skill_presentation import format_mana_cost_lines
+        return format_mana_cost_lines(skill, max_mp)
     cost = int(skill.get("cost", 0) or 0)
     if cost_type == "rage_all_min":
         return f"Вартість: уся Лють, мінімум {int(skill.get('min_cost', 0) or 0)}"
@@ -538,11 +552,17 @@ def build_class_preview_text_17_13_1(user_id, mode, class_key):
         return None
     from handlers.combat import CLASS_SKILLS_V1
     skills = CLASS_SKILLS_V1.get(class_key, [])
+    max_mp = _projected_max_mp_for_class_20_3_4a(user_id, class_key)
     text = f"{config['name']}\n\n{config['description']}\n\n✨ Навички першого рівня:\n"
     for index, skill in enumerate(skills):
         if index:
             text += "\n"
-        text += f"\n• {skill['name']}\n  {skill['description']}\n  {_skill_cost_text_17_13_1(skill)}"
+        description = str(skill.get("description") or "")
+        if skill.get("cost_type") == "mana":
+            from data.mana_skill_presentation import strip_legacy_mana_cost_from_description
+            description = strip_legacy_mana_cost_from_description(skill)
+        cost_text = _skill_cost_text_17_13_1(skill, max_mp)
+        text += f"\n• {skill['name']}\n  {description}\n  {cost_text}"
         cooldown = int(skill.get("cooldown", 0) or 0)
         text += f"\n  Перезарядка: {cooldown} ход."
     if mode == "change":

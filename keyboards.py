@@ -19,7 +19,9 @@ def map_kb():
 
 def profile_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    kb.row("🎒 Інвентар", "📜 Історія")
+    # The journal is navigation-only; quests are accepted from their NPCs.
+    kb.row("🎒 Інвентар", "📖 Квести")
+    kb.row("📜 Історія")
     kb.add("🔙 Назад")
     return kb
 
@@ -81,6 +83,7 @@ def alchemist_kb():
 
 def guild_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("⚔️ Голова Найманців")
     kb.add("📜 Контракти")
     kb.add("🔙 Місто")
     return kb
@@ -94,6 +97,7 @@ def contracts_kb():
 
 def townhall_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("🗣️ Староста")
     kb.add("📆 Щоденне завдання")
     kb.add("🔙 Місто")
     return kb
@@ -101,7 +105,46 @@ def townhall_kb():
 
 def tavern_kb():
     kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("🍺 Бармен")
     kb.add("🔙 Місто")
+    return kb
+
+
+
+
+def daily_quest_kb():
+    """Keep Daily Quest inside Town Hall with one explicit return action."""
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("🔙 Ратуша")
+    return kb
+
+
+def elder_kb():
+    """Return from the Elder screen to the canonical Town Hall screen."""
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("🔙 Ратуша")
+    return kb
+
+
+def mercenary_head_kb(user_id=None):
+    """Show the guaranteed boss call only for a matching ACTIVE BOSS quest."""
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    if user_id is not None:
+        from db import get_current_location
+        from systems.story_quest_boss_call_system import BOSS_CALL_BUTTON, get_active_story_boss_call
+        state = get_active_story_boss_call(
+            user_id=int(user_id), current_location_id=get_current_location(int(user_id))
+        )
+        if state.get("allowed"):
+            kb.add(BOSS_CALL_BUTTON)
+    kb.add("🔙 Гільдія Найманців")
+    return kb
+
+
+def bartender_kb():
+    """Return from the Bartender screen to the canonical Tavern screen."""
+    kb = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    kb.add("🔙 Таверна")
     return kb
 
 
@@ -153,4 +196,3 @@ def rune_master_kb():
     kb.add("🧰 Екстрактор", "🛒 Крамниця")
     kb.add("🔙 Ремісничий квартал")
     return kb
-

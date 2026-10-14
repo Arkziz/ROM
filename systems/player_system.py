@@ -1825,6 +1825,99 @@ def get_base_dodge_chance_display(user_id: int):
 
 
 
+
+# Stage 19.15 canonical same-connection reward primitives.
+def apply_exp_in_transaction(connection, user_id: int, amount: int):
+    """Apply canonical EXP semantics on the caller-owned production connection.
+
+    The function deliberately performs no BEGIN, commit or rollback. It requires
+    the canonical db connection because existing stat, equipment and level-reward
+    owners share that connection. This preserves all current level-up side effects
+    while allowing story completion to own one outer transaction.
+    """
+    db = _db_module()
+    if connection is not db.conn:
+        raise ValueError("EXP transaction requires the canonical db connection")
+    from systems.level_up_reward_system import (
+        apply_level_up_rewards_in_transaction,
+        build_level_up_reward_message,
+        init_level_up_reward_system,
+    )
+    init_level_up_reward_system(db)
+    row = connection.execute(
+        "SELECT level, exp FROM users WHERE user_id=?", (int(user_id),)
+    ).fetchone()
+    if not row:
+        return None
+    old_level = int(_row_get(row, "level", 0, 1) or 1)
+    level = old_level
+    exp = int(_row_get(row, "exp", 1, 0) or 0) + int(amount)
+    reached_levels = []
+    while exp >= db.get_exp_to_next_level(level):
+        exp -= db.get_exp_to_next_level(level)
+        level += 1
+        reached_levels.append(level)
+    level_ups = len(reached_levels)
+    attribute_points_awarded = level_ups * 5
+    if attribute_points_awarded:
+        connection.execute(
+            """UPDATE users SET
+                   free_attribute_points=COALESCE(free_attribute_points,0)+?,
+                   total_attribute_points_earned=COALESCE(total_attribute_points_earned,0)+?
+                 WHERE user_id=?""",
+            (attribute_points_awarded, attribute_points_awarded, int(user_id)),
+        )
+    connection.execute(
+        "UPDATE users SET level=?, exp=? WHERE user_id=?",
+        (level, exp, int(user_id)),
+    )
+    # The canonical stat owner reads through the same global connection, which
+    # is exactly the connection required above, so uncommitted level is visible.
+    max_hp = get_max_hp(user_id)
+    connection.execute(
+        "UPDATE users SET max_hp=? WHERE user_id=?", (max_hp, int(user_id))
+    )
+    reward_result = apply_level_up_rewards_in_transaction(
+        db, int(user_id), old_level, level
+    )
+    free_row = connection.execute(
+        "SELECT COALESCE(free_attribute_points,0) FROM users WHERE user_id=?",
+        (int(user_id),),
+    ).fetchone()
+    reward_result["attribute_points_awarded"] = attribute_points_awarded
+    reward_result["free_attribute_points"] = int(
+        _row_get(free_row, "free_attribute_points", 0, 0) or 0
+    )
+    return {
+        "old_level": old_level,
+        "level": level,
+        "exp": exp,
+        "exp_to_next": db.get_exp_to_next_level(level),
+        "level_ups": level_ups,
+        "attribute_points_awarded": attribute_points_awarded,
+        "reached_levels": reached_levels,
+        "level_up_rewards": reward_result,
+        "level_up_reward_message": build_level_up_reward_message(reward_result),
+    }
+
+
+def apply_gold_in_transaction(connection, user_id: int, amount):
+    """Credit canonical users.gold without owning the surrounding transaction."""
+    db = _db_module()
+    if connection is not db.conn:
+        raise ValueError("gold transaction requires the canonical db connection")
+    value = float(amount)
+    connection.execute(
+        "UPDATE users SET gold=COALESCE(gold,0)+? WHERE user_id=?",
+        (value, int(user_id)),
+    )
+    row = connection.execute(
+        "SELECT gold FROM users WHERE user_id=?", (int(user_id),)
+    ).fetchone()
+    if not row:
+        raise ValueError(f"unknown user_id: {user_id}")
+    return float(_row_get(row, "gold", 0, 0.0) or 0.0)
+
 # Stage 17.14.1 authoritative transactional EXP override.
 
 

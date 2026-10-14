@@ -1,6 +1,14 @@
 
 # ROM 17.20.1.1 CRITICAL PRODUCTION LOGGING PRINT CONTRACT RECOVERY
 from systems.production_logging import get_production_logger, production_log_print as PRODUCTION_LOG_PRINT
+from data.mana_policy import calculate_mana_skill_cost
+from data.priest_healing_policy import (
+    PRIEST_HEALING_DURATION_TURNS,
+    PRIEST_HEALING_EFFECT_KEY,
+    PRIEST_HEALING_TOTAL_HEALS,
+    build_priest_healing_effect,
+    calculate_priest_heal_amount,
+)
 PRODUCTION_LOGGER=get_production_logger('handlers.combat')
 # ROM 17.18.2.2 BOW CROSSBOW DAMAGE DIFFERENTIATION
 # ROM 17.16.1 PVE SKILL BUTTON STATES
@@ -225,7 +233,13 @@ from systems.combat_system import (
 )
 
 from systems.reward_system import process_victory_reward
-from systems.pve_auto_escape_system import begin_pve_encounter, claim_pve_terminal, STALE_COMBAT_TEXT
+from systems.story_quest_combat_progress_system import process_region_kill_story_progress
+from systems.story_quest_item_drop_system import process_story_quest_item_drop
+from systems.story_quest_overlevel_system import process_overlevel_story_quest_skip
+from systems.story_quest_boss_completion_system import process_rng_boss_story_completion
+from systems.pve_auto_escape_system import begin_pve_encounter, get_active_pve_encounter, claim_pve_terminal, STALE_COMBAT_TEXT
+from systems.boss_system import build_location_boss
+from systems.story_quest_boss_call_system import BOSS_CALL_BUTTON, get_active_story_boss_call
 from systems.potion_system import use_potion_from_inventory
 from systems.combat_system import roll_player_normal_attack_hit, roll_player_pve_skill_hit
 
@@ -728,7 +742,7 @@ def set_skill_cooldown(mob, skill_key, cooldown_turns):
         mob["skill_cooldowns"].pop(skill_key, None)
         return ""
 
-    mob["skill_cooldowns"][skill_key] = cooldown_turns + 1
+    mob["skill_cooldowns"][skill_key] = cooldown_turns
     return f"⏳ Навичка пішла на перезарядку: {cooldown_turns} ход.\n"
 
 
@@ -969,6 +983,8 @@ CLASS_SKILLS_V1 = {
             "description": "Витрачає 20 MP та завдає 135% магічної шкоди.",
             "cost_type": "mana",
             "cost": 20,
+            "mana_cost_flat": 8,
+            "mana_cost_max_mp_percent": 7,
             "cooldown": 0,
             "damage_multiplier": 1.35,
             "attack_type": "magical",
@@ -982,6 +998,8 @@ CLASS_SKILLS_V1 = {
             "description": "Витрачає 45 MP, завдає 160% магічної шкоди та має 25% шанс оглушити ворога.",
             "cost_type": "mana",
             "cost": 45,
+            "mana_cost_flat": 15,
+            "mana_cost_max_mp_percent": 18,
             "cooldown": 4,
             "damage_multiplier": 1.60,
             "attack_type": "magical",
@@ -995,6 +1013,9 @@ CLASS_SKILLS_V1 = {
             "description": "Не завдає шкоди. Відновлює 25% максимальної Мани в бою.",
             "cost_type": "mana",
             "cost": 0,
+            "mana_cost_flat": 0,
+            "mana_cost_max_mp_percent": 0,
+            "restore_max_mp_percent": 25,
             "cooldown": 5,
             "damage_multiplier": 0,
             "attack_type": "magical",
@@ -1012,6 +1033,8 @@ CLASS_SKILLS_V1 = {
             "description": "Витрачає 12 MP та завдає 115% магічної шкоди.",
             "cost_type": "mana",
             "cost": 12,
+            "mana_cost_flat": 6,
+            "mana_cost_max_mp_percent": 4,
             "cooldown": 0,
             "damage_multiplier": 1.15,
             "attack_type": "magical",
@@ -1022,10 +1045,12 @@ CLASS_SKILLS_V1 = {
         {
             "key": "priest_healing_blessing",
             "name": "🌿 Благословення зцілення",
-            "description": "Витрачає 30 MP та відновлює здоров’я протягом 4 ходів.",
+            "description": "Витрачає 30 MP. Одразу відновлює 10% максимального здоров’я, а потім лікує ще 2 рази на початку наступних ходів.",
             "cost_type": "mana",
             "cost": 30,
-            "cooldown": 3,
+            "mana_cost_flat": 12,
+            "mana_cost_max_mp_percent": 10,
+            "cooldown": 4,
             "damage_multiplier": 0,
             "attack_type": "magical",
             "extra_rage": 0,
@@ -1039,6 +1064,9 @@ CLASS_SKILLS_V1 = {
             "description": "Витрачає 20 MP, очищає негативні ефекти, підвищує магічний захист на 3 ходи та відновлює 15% Мани.",
             "cost_type": "mana",
             "cost": 20,
+            "mana_cost_flat": 10,
+            "mana_cost_max_mp_percent": 8,
+            "restore_max_mp_percent": 15,
             "cooldown": 4,
             "damage_multiplier": 0,
             "attack_type": "magical",
@@ -1080,7 +1108,10 @@ def get_player_skill_by_key(user_id, skill_key):
 
 
 def build_skill_menu_text(user_id, mob):
-    from systems.pve_skill_action_state import get_pve_skill_action_state
+    from systems.pve_skill_action_state import (
+        format_pve_skill_description,
+        get_pve_skill_action_state,
+    )
 
     skills = get_player_class_skills(user_id)
     class_resource_text = get_class_resource_line(mob)
@@ -1091,7 +1122,8 @@ def build_skill_menu_text(user_id, mob):
     kb = types.InlineKeyboardMarkup()
     for skill in skills:
         state = get_pve_skill_action_state(user_id, mob, skill)
-        text += f"{skill['name']}\n{skill['description']}\n"
+        description = format_pve_skill_description(mob, skill)
+        text += f"{skill['name']}\n{description}\n"
         text += "✅ Навичка доступна.\n\n" if state["available"] else f"{state['message']}\n\n"
         kb.add(types.InlineKeyboardButton(
             text=state["label"], callback_data=state["callback_data"]
@@ -1106,8 +1138,14 @@ def build_skill_menu_text(user_id, mob):
 
 
 def validate_and_pay_skill_cost(user_id, mob, skill):
+    """Revalidate and pay a skill cost; Mana uses fresh persisted Max MP."""
     cost_type = skill["cost_type"]
     cost = int(skill.get("cost", 0))
+    mana_snapshot = None
+    if cost_type == "mana":
+        mana_snapshot = get_user_mp(user_id)
+        maximum = max(0, int(mana_snapshot.get("max_mp", 0) or 0))
+        cost = calculate_mana_skill_cost(skill, maximum)
 
     mob["last_skill_spent_rage"] = 0
     mob["last_skill_spent_combo"] = 0
@@ -1208,9 +1246,20 @@ def validate_and_pay_skill_cost(user_id, mob, skill):
         }
 
     if cost_type == "mana":
+        current = max(0, int((mana_snapshot or {}).get("mp", 0) or 0))
+        maximum = max(0, int((mana_snapshot or {}).get("max_mp", 0) or 0))
+        if skill.get("key") == "mage_arcane_flow" and maximum > 0 and current >= maximum:
+            return {
+                "success": False,
+                "message": "🔵 Мана вже повна.",
+                "mp": current,
+                "max_mp": maximum,
+                "cost": cost,
+            }
         spend_result = spend_user_mp(user_id, cost)
 
         if not spend_result["success"]:
+            spend_result["cost"] = cost
             return spend_result
 
         mob["player_mp"] = spend_result["mp"]
@@ -1218,7 +1267,10 @@ def validate_and_pay_skill_cost(user_id, mob, skill):
 
         return {
             "success": True,
-            "message": ""
+            "message": "",
+            "cost": cost,
+            "mp": spend_result["mp"],
+            "max_mp": spend_result["max_mp"],
         }
 
     return {
@@ -1378,24 +1430,26 @@ def apply_skill_special_effect(user_id, mob, skill, damage_done):
     elif effect_key == "player_hot":
         max_hp = get_max_hp(user_id)
 
-        heal_per_turn = max(
-            5,
-            int(round(max_hp * 0.10))
-        )
+        heal_per_turn = calculate_priest_heal_amount(max_hp)
+
+        # Activation is the first of three heals; the effect owns two later ticks.
+        current_hp = int(mob.get("player_hp", 0))
+        new_hp = min(max_hp, current_hp + heal_per_turn)
+        immediate_heal = max(0, new_hp - current_hp)
+        mob["player_hp"] = new_hp
 
         add_player_effect(
             mob,
-            "priest_healing_blessing_hot",
-            {
-                "name": "🌿 Благословення зцілення",
-                "type": "hot",
-                "turns": 4,
-                "heal": heal_per_turn,
-                "modifiers": {}
-            }
+            PRIEST_HEALING_EFFECT_KEY,
+            build_priest_healing_effect(heal_per_turn)
         )
 
-        text += f"🌿 Благословення зцілення: +{heal_per_turn} HP протягом 4 ходів.\n"
+        text += (
+            f"🌿 Благословення зцілення: +{immediate_heal} HP одразу, "
+            f"потім ще {PRIEST_HEALING_DURATION_TURNS} лікування "
+            f"по +{heal_per_turn} HP. "
+            f"Разом: {PRIEST_HEALING_TOTAL_HEALS} лікування.\n"
+        )
 
     elif effect_key == "restore_mana_percent":
         mp_data = get_user_mp(user_id)
@@ -1777,20 +1831,28 @@ def build_victory_text(user_id, lvl, mob, reward, wear_result, contract_result, 
     premium_bonus = int(reward.get("premium_exp_bonus", 0) or 0)
     if bool(reward.get("exp_bonus_active")) and premium_bonus > 0:
         text += (
-            f"✨ Досвід: +{reward['exp']} EXP\n"
-            f"   ├ Базовий: {int(reward.get('base_exp', reward['exp']))} EXP\n"
-            f"   ├ Premium +25%: +{premium_bonus} EXP"
+            f"✨ Досвід: +{reward['exp']}\n"
+            f"   ├ Базовий досвід: {int(reward.get('base_exp', reward['exp']))}\n"
+            f"   ├ Premium +25% досвіду: +{premium_bonus}"
         )
         if exp_result:
             text += f"\n   └ Прогрес: {exp_result['exp']}/{exp_result['exp_to_next']}"
     else:
-        text += f"✨ Досвід: +{reward['exp']} EXP"
+        text += f"✨ Досвід: +{reward['exp']}"
         if exp_result:
             text += f" ({exp_result['exp']}/{exp_result['exp_to_next']})"
 
         # Stage 17.14.1.1 sends level-up information separately.
 
-    text += f"\n💰 Золото: +{reward['gold']}\n"
+    premium_gold = float(reward.get("premium_gold_bonus", 0.0) or 0.0)
+    if bool(reward.get("premium_gold_active")) and premium_gold > 0:
+        text += (
+            f"\n💰 Золото: +{float(reward['gold']):.2f}\n"
+            f"   ├ Базове: {float(reward.get('base_gold', reward['gold'])):.2f}\n"
+            f"   └ Premium +25%: +{premium_gold:.2f}\n"
+        )
+    else:
+        text += f"\n💰 Золото: +{float(reward['gold']):.2f}\n"
 
     event_drop_messages = _event_drop_victory_messages(
         reward.get("event_drop_results")
@@ -1961,6 +2023,15 @@ def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=""):
                     location_id=str(mob.get("location_id") or ""),
                 )
 
+    # The RNG encounter has already passed the canonical terminal claim. A
+    # matching ACTIVE BOSS quest now completes and rewards exactly once.
+    story_boss_result = process_rng_boss_story_completion(
+        user_id=user_id,
+        mob=mob,
+        location_id=get_current_location(user_id),
+        encounter_id=encounter_id,
+    )
+
     wear_result = apply_random_durability_wear_on_victory(
         user_id=user_id,
         chance_percent=25
@@ -1974,6 +2045,29 @@ def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=""):
     daily_result = process_daily_quest_progress_on_kill(
         user_id=user_id,
         mob=mob
+    )
+
+    # Terminal victory was already claimed above, so this hook runs once per
+    # encounter and cannot double-count repeated Telegram terminal updates.
+    story_region_result = process_region_kill_story_progress(
+        user_id=user_id,
+        location_id=get_current_location(user_id),
+    )
+
+    # Dedicated quest items are rolled after the same terminal claim and never
+    # enter ordinary inventory or consume bag capacity.
+    story_item_result = process_story_quest_item_drop(
+        user_id=user_id,
+        location_id=get_current_location(user_id),
+    )
+
+    # Combat EXP was awarded before story progress. Evaluate the resulting level
+    # only after this terminal victory's progress/drop hooks have run.
+    exp_result = reward.get("exp_result") or {}
+    resulting_level = int(exp_result.get("level") or get_player_level(user_id))
+    story_skip_result = process_overlevel_story_quest_skip(
+        user_id=user_id,
+        current_level=resulting_level,
     )
 
     text = build_victory_text(
@@ -1993,9 +2087,35 @@ def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=""):
         reply_markup=main_kb()
     )
 
-    reward_message = str(reward.get("exp_result", {}).get("level_up_reward_message") or "")
+    # Quest-item persistence is owned by the drop system. Telegram output is a
+    # separate consumer and is emitted exactly once only for an actual grant.
+    if int(story_item_result.get("granted", 0) or 0) > 0:
+        story_drop_message = str(story_item_result.get("drop_message") or "").strip()
+        if story_drop_message:
+            bot.send_message(chat_id, story_drop_message)
+
+    exp_result = reward.get("exp_result") or {}
+    reward_message = str(exp_result.get("level_up_reward_message") or "").strip()
+    level_ups = int(exp_result.get("level_ups", 0) or 0)
+    if level_ups > 0 and not reward_message:
+        # Some levels have no special milestone item message. Always announce
+        # the canonical level transition and permanent attribute-point reward.
+        old_level = int(exp_result.get("old_level", resulting_level - level_ups) or 0)
+        new_level = int(exp_result.get("level", resulting_level) or resulting_level)
+        points = int(exp_result.get("attribute_points_awarded", level_ups * 5) or 0)
+        reward_message = (
+            "🎉 Рівень підвищено!\n\n"
+            f"🏆 Рівень: {old_level} → {new_level}\n"
+            f"🌟 Вільні очки характеристик: +{points}"
+        )
     if reward_message:
         bot.send_message(chat_id, reward_message)
+
+    # Emit one campaign-level summary only after the level-up notification.
+    # The lifecycle mutation is already committed and idempotent.
+    story_skip_message = str((story_skip_result or {}).get("message") or "").strip()
+    if story_skip_message:
+        bot.send_message(chat_id, story_skip_message)
 
 
 # ==============================
@@ -2003,6 +2123,55 @@ def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=""):
 # ==============================
 
 def register_combat_handlers(bot):
+
+    @bot.message_handler(func=lambda m: getattr(m, "text", None) == BOSS_CALL_BUTTON)
+    def call_active_story_boss(message):
+        """Start the canonical location boss only while its story quest is ACTIVE.
+
+        Eligibility is revalidated on every press. After a successful kill,
+        Stage 19.19 immediately marks the quest COMPLETED, so stale buttons and
+        deliberate delayed turn-in cannot be used to farm guaranteed summons.
+        Defeat or escape leaves the quest ACTIVE and permits another attempt.
+        """
+        user_id = int(message.from_user.id)
+        location_id = get_current_location(user_id)
+        call = get_active_story_boss_call(user_id=user_id, current_location_id=location_id)
+        if not call.get("allowed"):
+            bot.send_message(message.chat.id, "⚠️ Виклик сюжетного боса зараз недоступний.", reply_markup=main_kb())
+            return
+        if get_active_pve_encounter(user_id) is not None:
+            bot.send_message(message.chat.id, "⚔️ Спочатку заверши поточний бій.", reply_markup=combat_placeholder_kb())
+            return
+        stats=get_player_stats(user_id)
+        if not stats:
+            bot.send_message(message.chat.id,"❗ Спочатку натисни /start",reply_markup=main_kb());return
+        lvl=int(stats[-1]);current_hp=get_current_hp_raw(user_id);max_hp=get_max_hp(user_id)
+        if max_hp<=0 or (current_hp/max_hp)*100<=25:
+            bot.send_message(message.chat.id,"😴 Здоров’я занадто низьке для виклику боса.",reply_markup=main_kb());return
+        mob=build_location_boss(location_id,lvl)
+        if str(mob.get("boss_key")) != str(call.get("boss_key")):
+            bot.send_message(message.chat.id,"⚠️ Ціль сюжетного квесту не відповідає босу цієї локації.",reply_markup=main_kb());return
+        mob.update({"potion_cooldown":0,"stunned_turns":0,"skill_cooldowns":{},"enemy_effects":{},"player_effects":{},"last_skill_spent_rage":0,"last_skill_spent_combo":0,"player_hp":current_hp,"player_max_hp":max_hp,"story_boss_call":True})
+        init_class_combat_resource(user_id,mob);init_combat_effects(mob)
+        encounter=begin_pve_encounter(user_id,message.chat.id,mob)
+        mob["pve_encounter_id"]=encounter["encounter_id"];mob["pve_started_at"]=encounter["started_at"];mob["pve_deadline_at"]=encounter["deadline_at"]
+        bot.user_data=getattr(bot,"user_data",{});bot.user_data[user_id]=mob
+        # Match the canonical hunt startup: replace the persistent location
+        # keyboard with the combat placeholder before showing inline actions.
+        # This prevents Hunt, Map, Profile and Look Around from remaining usable
+        # while the guaranteed story-boss encounter is active.
+        bot.send_message(
+            message.chat.id,
+            "⚔️ Бій розпочався!",
+            reply_markup=combat_placeholder_kb(),
+        )
+        bot.send_message(
+            message.chat.id,
+            f"👑 Голова Найманців викликає {mob['name']}!\n\n"
+            "Після перемоги потрібно повернутися до Голови Найманців із доповіддю, "
+            "а повторний гарантований виклик стане недоступним.",
+            reply_markup=build_combat_inline_kb(user_id,mob),
+        )
 
     @bot.message_handler(func=lambda m: m.text == "🔎 Полювання")
     def hunt(message):

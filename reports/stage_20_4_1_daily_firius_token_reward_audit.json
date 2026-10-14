@@ -1,0 +1,75 @@
+{
+  "patch_id": "20.4.1",
+  "audit_mode": "READ_ONLY_PRODUCTION",
+  "status": "PASS",
+  "decision": "GO",
+  "owner_hashes": {
+    "data/runes.py": "2225e0d1a241d900a16852146f2164dfc2b7fa647653d8ff8088fa890c2e2237",
+    "data/balance.py": "500f4a78e1d41d64f7c7c8714913f800f0da19b0ea0aac55db7dadcdc202174f",
+    "systems/rune_system.py": "56e988aee115054422cf6277065c498777e0329a087f1088d7808e4fe7836a04",
+    "handlers/daily.py": "287185bf539138544e0b1afa7b0e3e6ea931e416c8888ec075da5bc6ed3ae2c9",
+    "db_modules/systems_wrappers.py": "2100be668336ab18f896ba1082cf136fd9a943a3def60402e07228b842e5eda7",
+    "db_modules/quests.py": "40219bf84d6cad04ee592f112583429458708cc97878cf83a9aa1462551a5f30"
+  },
+  "findings": [
+    {
+      "id": "FIRIUS-DAILY-001",
+      "severity": "HIGH",
+      "status": "OPEN",
+      "title": "Canonical daily token quantity is 5 instead of approved 3",
+      "owner": "data/runes.py",
+      "evidence": ",\n    \"ring\": 1,\n}\nRUNE_ITEM_ID_START = 701\nRUNE_ITEM_ID_END = 725\nFIRIUS_TOKEN_ITEM_ID = 726\nRUNE_EXTRACTOR_ITEM_ID = 727\nPERFECT_RUNE_EXTRACTOR_ITEM_ID = 728\nFIRIUS_TOKENS_PER_DAILY_REWARD = 5\nRUNE_FUSION_SOURCE_QUANTITY = 3\nRUNE_FUSION_TOKEN_QUANTITY = 1\nRUNE_MAX_STACK = 50\nFIRIUS_TOKEN_MAX_STACK = 999\nEXTRACTOR_MAX_STACK = 50\n\nRUNE_ITEM_DEFINITIONS"
+    },
+    {
+      "id": "FIRIUS-DAILY-002",
+      "severity": "HIGH",
+      "status": "OPEN",
+      "title": "Daily reward preview hardcodes ×5 instead of using canonical quantity",
+      "owner": "handlers/daily.py",
+      "evidence": "et_count} монстрів\\n\\n\"\n        \"📈 Прогрес:\\n\"\n        f\"{progress}/{target_count}\\n\\n\"\n        \"🎁 Нагорода:\\n\"\n        \"🔴 Мале зілля здоров’я ×3\\n\"\n        \"🪙 Жетон Фіріуса ×5\\n\"\n        \"ℹ️ Жетони накопичуються та не зникають наступного дня.\\n\"\n    )\n\n    kb = types.InlineKeyboardMarkup()\n\n    if reward_claimed:\n        text += \"\\n✅"
+    },
+    {
+      "id": "FIRIUS-DAILY-003",
+      "severity": "INFO",
+      "status": "CLOSED",
+      "title": "Actual grant and response share canonical quantity",
+      "owner": "systems/rune_system.py",
+      "evidence": "usion-selection validation.\"\"\"\nfrom __future__ import annotations\n\nfrom data.runes import (\n    ALL_RUNE_SYSTEM_ITEM_DEFINITIONS,\n    FIRIUS_TOKEN_ITEM_ID,\n    FIRIUS_TOKENS_PER_DAILY_REWARD,\n    PERFECT_RUNE_EXTRACTOR_ITEM_ID,\n    RUNE_EXTRACTOR_ITEM_ID,\n    RUNE_FUSION_SOURCE_QUANTITY,\n    RUNE_FUSION_TOKEN_QUANTITY,\n    RUNE_ITEM_DEFINITIONS,"
+    },
+    {
+      "id": "FIRIUS-DAILY-004",
+      "severity": "INFO",
+      "status": "CLOSED",
+      "title": "Potion reward remains item 401 ×3",
+      "owner": "data/balance.py",
+      "evidence": "RACT_MOBS_EQUIVALENT = 20\nCONTRACT_TARGET_KILLS = 5\nDAILY_CONTRACT_LIMIT = 5\nDAILY_QUEST_ID_KILL_MONSTERS = 'kill_25_monsters'\nDAILY_QUEST_REWARD_ITEM_ID = 401\nDAILY_QUEST_REWARD_QUANTITY = 3\nDAILY_QUEST_TARGET_KILLS = 25\nENERGY_MAX = 40\nENERGY_REGEN_MINUTES = 5\nHP_REGEN_MINUTES = 1\nHP_REGEN_PERCENT = 0.1\nRARITY_REPAIR_MULTIPLIERS = {'common': 1.0,"
+    }
+  ],
+  "derived_scope": {
+    "mutation_stage": "20.4.1a",
+    "mutation_targets": [
+      "data/runes.py",
+      "handlers/daily.py"
+    ],
+    "requirements": [
+      "change canonical daily token quantity 5 to 3",
+      "render preview from canonical constant",
+      "actual grant exactly 3",
+      "claim response exactly 3",
+      "potion reward remains item 401 x3",
+      "exact-once and bag-full atomicity preserved",
+      "no retroactive debit",
+      "other token sources unchanged"
+    ],
+    "manual_check": [
+      "preview shows 3 potions and 3 Firius Tokens",
+      "completed daily claim grants exactly 3 tokens",
+      "second claim is rejected",
+      "existing token balance is not reduced"
+    ]
+  },
+  "production_files_changed": false,
+  "database_opened": false,
+  "wal_shm_manipulated": false,
+  "finished_at": "2026-10-11T20:49:02+03:00"
+}

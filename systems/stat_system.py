@@ -15,6 +15,31 @@ from data.stat_system_config import (
 
 PHYSICAL_CLASSES = frozenset({"warrior", "knight", "rogue", "scout"})
 MAGICAL_CLASSES = frozenset({"mage", "priest"})
+
+
+BASIC_ATTACK_TYPE_BY_CLASS = {
+    "warrior": "physical",
+    "knight": "physical",
+    "scout": "physical",
+    "rogue": "physical",
+    "mage": "magical",
+    "priest": "magical",
+}
+
+
+def resolve_basic_attack_type(character_class):
+    """Return the zero-resource basic-attack damage type for a player class.
+
+    The resolver is intentionally class-owned rather than weapon-owned: weapon
+    ranges remain part of damage calculation, while the class selects PATK/PDEF
+    or MATK/MDEF routing. Unknown classes fail closed instead of silently using
+    the historical physical fallback.
+    """
+    class_key = str(character_class or "").strip().lower()
+    try:
+        return BASIC_ATTACK_TYPE_BY_CLASS[class_key]
+    except KeyError as error:
+        raise ValueError(f"Unsupported character class for basic attack: {character_class!r}") from error
 SUPPORTED_CLASSES = PHYSICAL_CLASSES | MAGICAL_CLASSES
 
 

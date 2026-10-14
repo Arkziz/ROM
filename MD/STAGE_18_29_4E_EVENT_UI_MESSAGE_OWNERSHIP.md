@@ -1,3 +1,0 @@
-# ROM Stage 18.29.4e: Event UI Message Ownership
-
-The Events reply keyboard now uses the unique `🔙 Вийти з івентів` action, avoiding collision with global Back handlers. Each session owns both the scope message and the active inline card. Closing removes both, clears the session and restores the canonical account Menu. If editing fails and a replacement card is sent, the new `card_message_id` is stored before the old card is deleted, so Refresh and subsequent callbacks remain valid. Reopening Events invalidates both prior messages. Stale callbacks remain rejected by user, chat and current card identity.
