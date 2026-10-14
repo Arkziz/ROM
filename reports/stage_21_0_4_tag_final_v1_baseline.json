@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "stage": "21.0.4",
+  "generated_at_utc": "2026-10-14T20:26:37Z",
+  "summary": {
+    "conclusion": "GO",
+    "blocking_failures": []
+  },
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head_before_commit": "1b88a4c17aa8e923871504f6e7aeb0a528cbb3c1",
+    "upstream": "origin/rewrite/rom-v2",
+    "upstream_head_before_commit": "2ba3cbb3aa25f196cb740df093dcfd0c397d25c2"
+  },
+  "tag": {
+    "name": "rom-v1-baseline-stage-20",
+    "target_commit": "ff9f4920519ca5154ff1238ddaae67cb9ee2ce29",
+    "annotation": "ROM V1 baseline after accepted Stage 20 closure and repository documentation cleanup. This tag is the immutable reference point for Stage 21 rewrite contracts.",
+    "local_exists_before": false,
+    "remote_exists_before": false,
+    "reserved_future_tag": "rom-v1-final"
+  },
+  "checks": [
+    {
+      "check_id": "TARGET_BRANCH",
+      "status": "PASS",
+      "summary": "Active branch is rewrite/rom-v2.",
+      "details": {
+        "actual": "rewrite/rom-v2"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "EXPECTED_PARENT",
+      "status": "PASS",
+      "summary": "HEAD matches accepted Stage 21.0.3 commit.",
+      "details": {
+        "expected": "1b88a4c17aa8e923871504f6e7aeb0a528cbb3c1",
+        "actual": "1b88a4c17aa8e923871504f6e7aeb0a528cbb3c1"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Rewrite branch upstream is configured.",
+      "details": {
+        "upstream": "origin/rewrite/rom-v2",
+        "remote_head": "2ba3cbb3aa25f196cb740df093dcfd0c397d25c2",
+        "local_head": "1b88a4c17aa8e923871504f6e7aeb0a528cbb3c1"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "BASELINE_COMMIT",
+      "status": "PASS",
+      "summary": "V1 baseline commit exists.",
+      "details": {
+        "commit": "ff9f4920519ca5154ff1238ddaae67cb9ee2ce29"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "STAGE20_ANCESTRY",
+      "status": "PASS",
+      "summary": "Accepted Stage 20 closure is an ancestor of the V1 baseline.",
+      "details": {
+        "closure": "bd6880020d3918d2ca3c071950975826dc69320c",
+        "baseline": "ff9f4920519ca5154ff1238ddaae67cb9ee2ce29"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "BASELINE_ANCESTRY",
+      "status": "PASS",
+      "summary": "V1 baseline is an ancestor of the rewrite branch.",
+      "details": {
+        "baseline": "ff9f4920519ca5154ff1238ddaae67cb9ee2ce29",
+        "head": "1b88a4c17aa8e923871504f6e7aeb0a528cbb3c1"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "LOCAL_TAG_ABSENT",
+      "status": "PASS",
+      "summary": "Local tag namespace is free.",
+      "details": {
+        "tag": "rom-v1-baseline-stage-20"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "REMOTE_TAG_ABSENT",
+      "status": "PASS",
+      "summary": "Remote tag namespace is free.",
+      "details": {
+        "tag": "rom-v1-baseline-stage-20",
+        "remote_object": null
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "Working tree has no unexpected or pre-staged changes.",
+      "details": {
+        "unexpected": [],
+        "allowed": []
+      },
+      "blocking": false
+    }
+  ],
+  "database_evidence_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "artifacts": {
+    "patch": "patch/patch_21_0_4_tag_final_v1_baseline.py",
+    "json": "reports/stage_21_0_4_tag_final_v1_baseline.json",
+    "markdown": "MD/STAGE_21_0_4_TAG_FINAL_V1_BASELINE.md"
+  },
+  "next_stage": "21.1.1"
+}
