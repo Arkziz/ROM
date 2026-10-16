@@ -1,0 +1,217 @@
+{
+  "schema_version": 1,
+  "stage": "21.2.1",
+  "generated_at_utc": "2026-10-16T18:57:06Z",
+  "summary": {
+    "conclusion": "GO",
+    "blocking_failures": [],
+    "status": "PASS",
+    "module_count": 0,
+    "edge_count": 0,
+    "violation_count": 0,
+    "parse_error_count": 0,
+    "layer_counts": {},
+    "empty_v2_tree": true
+  },
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head_before_commit": "b69e7397931d68ccdd35d7ad18fcb48280e8a3ec",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.1.X3a parent verified.",
+      "details": {
+        "expected": "b69e7397931d68ccdd35d7ad18fcb48280e8a3ec",
+        "actual": "b69e7397931d68ccdd35d7ad18fcb48280e8a3ec"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "VERIFIER_PY_COMPILE",
+      "status": "PASS",
+      "summary": "Standalone verifier compiles.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "VERIFIER_EXECUTION",
+      "status": "PASS",
+      "summary": "V2 dependency verifier: PASS\nModules: 0\nEdges: 0\nViolations: 0\nParse errors: 0\nV2 tree is not created yet; contract validation itself passed.",
+      "details": {
+        "stderr": ""
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "DEPENDENCY_RULES",
+      "status": "PASS",
+      "summary": "Violations: 0; parse errors: 0.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "DOMAIN_TELEGRAM_SQLITE_FORBIDDEN",
+      "status": "PASS",
+      "summary": "Domain forbidden dependency roots are encoded in verifier contract.",
+      "details": {
+        "forbidden": [
+          "aiogram",
+          "aiohttp",
+          "aiosqlite",
+          "dotenv",
+          "httpx",
+          "os",
+          "requests",
+          "sqlalchemy",
+          "sqlite3",
+          "subprocess",
+          "telebot",
+          "telegram"
+        ]
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "LAYER_DIRECTION_CONTRACT",
+      "status": "PASS",
+      "summary": "domain <- application <- infrastructure <- app contract encoded.",
+      "details": {
+        "allowed": {
+          "application": [
+            "domain"
+          ],
+          "infrastructure": [
+            "application",
+            "domain"
+          ],
+          "app": [
+            "application",
+            "domain",
+            "infrastructure"
+          ],
+          "domain": []
+        }
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "DATABASE_EVIDENCE_READY",
+      "status": "PASS",
+      "summary": "DB/WAL/SHM evidence captured without opening SQLite.",
+      "details": {
+        "production_connection_opened": false
+      },
+      "blocking": false
+    }
+  ],
+  "dependency_contract": {
+    "layers_inner_to_outer": [
+      "domain",
+      "application",
+      "infrastructure",
+      "app"
+    ],
+    "allowed_cross_layer_dependencies": {
+      "application": [
+        "domain"
+      ],
+      "infrastructure": [
+        "application",
+        "domain"
+      ],
+      "app": [
+        "application",
+        "domain",
+        "infrastructure"
+      ],
+      "domain": []
+    },
+    "domain_forbidden_roots": [
+      "aiogram",
+      "aiohttp",
+      "aiosqlite",
+      "dotenv",
+      "httpx",
+      "os",
+      "requests",
+      "sqlalchemy",
+      "sqlite3",
+      "subprocess",
+      "telebot",
+      "telegram"
+    ],
+    "application_forbidden_roots": [
+      "aiogram",
+      "aiosqlite",
+      "sqlalchemy",
+      "sqlite3",
+      "telebot",
+      "telegram"
+    ]
+  },
+  "modules": [],
+  "edges": [],
+  "violations": [],
+  "parse_errors": [],
+  "acceptance": {
+    "adr_created": true,
+    "standalone_verifier_created": true,
+    "verifier_ast_only": true,
+    "runtime_imported": false,
+    "empty_v2_tree_allowed_before_scaffold": true,
+    "future_v2_python_files_covered": true
+  },
+  "database_evidence_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "artifacts": {
+    "patch": "patch/patch_21_2_1_define_dependency_rules.py",
+    "verifier": "tools/verify_v2_dependency_rules.py",
+    "json": "reports/stage_21_2_1_dependency_rules.json",
+    "adr": "MD/ADR_21_2_1_V2_DEPENDENCY_RULES.md"
+  },
+  "next_stage": "21.2.2"
+}
