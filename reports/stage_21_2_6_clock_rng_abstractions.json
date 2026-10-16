@@ -1,0 +1,219 @@
+{
+  "schema_version": 1,
+  "stage": "21.2.6",
+  "generated_at_utc": "2026-10-16T19:32:04Z",
+  "summary": {
+    "conclusion": "GO",
+    "blocking_failures": [],
+    "status": "PASS",
+    "physical_v2_exists": false,
+    "clock_owner_count": 0,
+    "rng_owner_count": 0,
+    "direct_time_call_count": 0,
+    "direct_rng_call_count": 0,
+    "violation_count": 0
+  },
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head_before_commit": "daae596404c111a37ce3869ec0096021998b4ca2",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.2.5 parent verified.",
+      "details": {
+        "expected": "daae596404c111a37ce3869ec0096021998b4ca2",
+        "actual": "daae596404c111a37ce3869ec0096021998b4ca2"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UOW_EVENT_PREREQUISITES",
+      "status": "PASS",
+      "summary": "Repository/UoW and event contracts are canonical GO.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "VERIFIER_EXECUTION",
+      "status": "PASS",
+      "summary": "V2 Clock/RNG verifier: PASS\nClock owners: 0\nRNG owners: 0\nDirect time calls: 0\nDirect RNG calls: 0\nViolations: 0",
+      "details": {
+        "stderr": ""
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "ONE_CLOCK_AND_RNG_ADAPTER",
+      "status": "PASS",
+      "summary": "Violations: 0",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "NO_DIRECT_TIME_CALLS",
+      "status": "PASS",
+      "summary": "No direct time calls in domain/application.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "NO_DIRECT_RNG_CALLS",
+      "status": "PASS",
+      "summary": "No direct RNG calls in domain/application.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "DATABASE_EVIDENCE_READY",
+      "status": "PASS",
+      "summary": "DB/WAL/SHM captured without SQLite connection.",
+      "details": {
+        "production_connection_opened": false
+      },
+      "blocking": false
+    }
+  ],
+  "clock_rng_contract": {
+    "schema_version": 1,
+    "canonical_owners": {
+      "clock_port": "rom_v2.application.ports.clock",
+      "rng_port": "rom_v2.application.ports.random_source",
+      "system_clock_adapter": "rom_v2.infrastructure.time.system_clock",
+      "system_rng_adapter": "rom_v2.infrastructure.random.system_random_source",
+      "fake_clock": "tests_v2.fakes.clock",
+      "seeded_rng": "tests_v2.fakes.random_source"
+    },
+    "clock": {
+      "port_name": "Clock",
+      "operations": {
+        "now_utc": "timezone-aware UTC datetime",
+        "monotonic_seconds": "non-decreasing float for elapsed-time measurement"
+      },
+      "wall_clock_utc_only": true,
+      "naive_datetime_forbidden": true,
+      "local_timezone_in_domain_forbidden": true,
+      "datetime_now_direct_use_forbidden": true,
+      "utcnow_direct_use_forbidden": true,
+      "time_time_for_elapsed_forbidden": true,
+      "elapsed_time_uses_monotonic": true,
+      "event_occurred_at_uses_clock": true,
+      "scheduling_deadlines_use_clock": true,
+      "persistence_normalizes_utc": true
+    },
+    "rng": {
+      "port_name": "RandomSource",
+      "operations": {
+        "random": "float in [0.0, 1.0)",
+        "randint": "inclusive integer range",
+        "choice": "one element from non-empty sequence",
+        "shuffle": "explicitly mutates supplied mutable sequence"
+      },
+      "single_injected_source_per_operation": true,
+      "module_random_direct_use_forbidden": true,
+      "secrets_for_gameplay_forbidden": true,
+      "seed_owned_by_composition_or_test": true,
+      "seed_not_generated_inside_domain": true,
+      "empty_choice_is_validation_error": true,
+      "invalid_range_is_validation_error": true,
+      "draw_order_is_explicit_contract": true
+    },
+    "determinism": {
+      "same_initial_state_same_seed_same_clock_same_commands_same_result": true,
+      "tests_use_fake_clock": true,
+      "tests_use_seeded_rng": true,
+      "fixtures_record_seed_and_clock": true,
+      "retry_reuses_business_operation_semantics": true,
+      "idempotent_repeat_performs_no_new_rng_draw": true,
+      "failed_operation_does_not_persist_rng_dependent_events": true,
+      "restart_test_reconstructs_clock_and_rng_inputs": true
+    },
+    "layering": {
+      "domain_imports_clock_port_only": true,
+      "domain_imports_rng_port_only": true,
+      "application_injects_ports": true,
+      "infrastructure_implements_adapters": true,
+      "app_composition_wires_exactly_one_clock_and_rng": true,
+      "global_singletons_forbidden": true
+    },
+    "forbidden_alternatives": [
+      "datetime.now/utcnow in domain or application",
+      "time.time for elapsed-time logic",
+      "random module calls in domain or application",
+      "hidden reseeding",
+      "seed from current time inside domain",
+      "multiple production Clock implementations wired simultaneously",
+      "multiple production RNG implementations wired simultaneously"
+    ]
+  },
+  "verifier_result": {
+    "schema_version": 1,
+    "summary": {
+      "status": "PASS",
+      "physical_v2_exists": false,
+      "clock_owner_count": 0,
+      "rng_owner_count": 0,
+      "direct_time_call_count": 0,
+      "direct_rng_call_count": 0,
+      "violation_count": 0
+    },
+    "clock_owners": [],
+    "rng_owners": [],
+    "direct_time_calls": [],
+    "direct_rng_calls": [],
+    "violations": []
+  },
+  "database_evidence_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "artifacts": {
+    "patch": "patch/patch_21_2_6_define_clock_rng_abstractions.py",
+    "verifier": "tools/verify_v2_clock_rng_abstractions.py",
+    "json": "reports/stage_21_2_6_clock_rng_abstractions.json",
+    "adr": "MD/ADR_21_2_6_V2_CLOCK_RNG_ABSTRACTIONS.md"
+  },
+  "next_stage": "21.2.7",
+  "suggested_next_patch": "patch_21_2_7_define_configuration_secrets_boundary.py"
+}
