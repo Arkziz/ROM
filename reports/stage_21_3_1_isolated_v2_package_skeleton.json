@@ -1,0 +1,609 @@
+{
+  "schema_version": 1,
+  "stage": "21.3.1",
+  "generated_at_utc": "2026-10-16T19:48:37Z",
+  "summary": {
+    "conclusion": "GO",
+    "blocking_failures": [],
+    "created_file_count": 19,
+    "verifier_count": 7,
+    "smoke_status": "PASS",
+    "bytecode_artifacts_removed": 0,
+    "gameplay_started": false,
+    "telegram_started": false,
+    "database_opened": false
+  },
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head_before_commit": "16d55eac701564341f43aef06ca82ff2259e9152",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.2.7 parent verified.",
+      "details": {
+        "expected": "16d55eac701564341f43aef06ca82ff2259e9152",
+        "actual": "16d55eac701564341f43aef06ca82ff2259e9152"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "STRUCTURE_VERIFIER_CACHE_POLICY",
+      "status": "PASS",
+      "summary": "Interpreter cache directories are excluded from package discovery.",
+      "details": {
+        "verifier": "tools/verify_v2_package_structure.py"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "ISOLATED_SMOKE",
+      "status": "PASS",
+      "summary": "{\"application\": \"rom_v2\", \"background_jobs_started\": false, \"database_opened\": false, \"gameplay_enabled\": false, \"mode\": \"bootstrap\", \"status\": \"ready\", \"telegram_started\": false}",
+      "details": {
+        "stderr": ""
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UNIT_SMOKE",
+      "status": "PASS",
+      "summary": ".\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nOK",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "BYTECODE_ARTIFACTS_CLEANED",
+      "status": "PASS",
+      "summary": "Transient bytecode artifacts removed: 0.",
+      "details": {
+        "removed": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "VERIFIER_DEPENDENCY",
+      "status": "PASS",
+      "summary": "V2 dependency verifier: PASS\nModules: 9\nEdges: 0\nViolations: 0\nParse errors: 0",
+      "details": {
+        "stderr": "",
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "VERIFIER_STRUCTURE",
+      "status": "PASS",
+      "summary": "V2 package structure verifier: PASS\nDeclared runtime packages: 5\nDeclared support roots: 5\nPhysical V2 tree exists: True\nViolations: 0",
+      "details": {
+        "stderr": "",
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "VERIFIER_RESULT",
+      "status": "PASS",
+      "summary": "V2 result/error verifier: PASS\nStatuses: 7\nPhysical Result owners: 0\nImplicit operation results: 0\nViolations: 0",
+      "details": {
+        "stderr": "",
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "VERIFIER_EVENTS",
+      "status": "PASS",
+      "summary": "V2 domain-event verifier: PASS\nFields: 11\nPhysical event owners: 0\nForbidden domain imports: 0\nViolations: 0",
+      "details": {
+        "stderr": "",
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "VERIFIER_UOW",
+      "status": "PASS",
+      "summary": "V2 Repository/UoW verifier: PASS\nRepository owners: 1\nUoW owners: 1\nApplication DB imports: 0\nRepository transaction methods: 0\nViolations: 0",
+      "details": {
+        "stderr": "",
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "VERIFIER_CLOCK_RNG",
+      "status": "PASS",
+      "summary": "V2 Clock/RNG verifier: PASS\nClock owners: 1\nRNG owners: 1\nDirect time calls: 0\nDirect RNG calls: 0\nViolations: 0",
+      "details": {
+        "stderr": "",
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "VERIFIER_CODE_COMMENTS",
+      "status": "PASS",
+      "summary": "V2 code/comment verifier: PASS\nFiles: 18\nPublic APIs: 26\nTyped public APIs: 18\nDocumented public APIs: 26\nViolations: 0",
+      "details": {
+        "stderr": "",
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "DATABASE_UNCHANGED",
+      "status": "PASS",
+      "summary": "DB/WAL/SHM unchanged and SQLite was not opened.",
+      "details": {
+        "production_connection_opened": false
+      },
+      "blocking": false
+    }
+  ],
+  "created_files": [
+    "rom_v2/__init__.py",
+    "rom_v2/app/__init__.py",
+    "rom_v2/application/__init__.py",
+    "rom_v2/application/ports/__init__.py",
+    "rom_v2/application/ports/clock.py",
+    "rom_v2/application/ports/random_source.py",
+    "rom_v2/application/ports/repositories.py",
+    "rom_v2/application/ports/unit_of_work.py",
+    "rom_v2/bootstrap.py",
+    "rom_v2/config.py",
+    "rom_v2/container.py",
+    "rom_v2/content/__init__.py",
+    "rom_v2/domain/__init__.py",
+    "rom_v2/infrastructure/__init__.py",
+    "rom_v2/lifecycle.py",
+    "rom_v2/main.py",
+    "tests_v2/__init__.py",
+    "tests_v2/test_v2_bootstrap_smoke.py",
+    "tools/verify_v2_result_error_model.py"
+  ],
+  "smoke_payload": {
+    "application": "rom_v2",
+    "background_jobs_started": false,
+    "database_opened": false,
+    "gameplay_enabled": false,
+    "mode": "bootstrap",
+    "status": "ready",
+    "telegram_started": false
+  },
+  "verifiers": [
+    {
+      "name": "dependency",
+      "returncode": 0,
+      "stdout": "V2 dependency verifier: PASS\nModules: 9\nEdges: 0\nViolations: 0\nParse errors: 0",
+      "stderr": "",
+      "result": {
+        "schema_version": 1,
+        "root": "rom_v2",
+        "contract": {
+          "layers_inner_to_outer": [
+            "domain",
+            "application",
+            "infrastructure",
+            "app"
+          ],
+          "allowed_cross_layer_dependencies": {
+            "application": [
+              "domain"
+            ],
+            "infrastructure": [
+              "application",
+              "domain"
+            ],
+            "app": [
+              "application",
+              "domain",
+              "infrastructure"
+            ],
+            "domain": []
+          },
+          "domain_forbidden_roots": [
+            "aiogram",
+            "aiohttp",
+            "aiosqlite",
+            "dotenv",
+            "httpx",
+            "os",
+            "requests",
+            "sqlalchemy",
+            "sqlite3",
+            "subprocess",
+            "telebot",
+            "telegram"
+          ],
+          "application_forbidden_roots": [
+            "aiogram",
+            "aiosqlite",
+            "sqlalchemy",
+            "sqlite3",
+            "telebot",
+            "telegram"
+          ]
+        },
+        "summary": {
+          "status": "PASS",
+          "module_count": 9,
+          "edge_count": 0,
+          "violation_count": 0,
+          "parse_error_count": 0,
+          "layer_counts": {
+            "app": 1,
+            "application": 6,
+            "domain": 1,
+            "infrastructure": 1
+          },
+          "empty_v2_tree": false
+        },
+        "modules": [
+          {
+            "file": "rom_v2/app/__init__.py",
+            "module": "rom_v2.app",
+            "layer": "app",
+            "imports": []
+          },
+          {
+            "file": "rom_v2/application/__init__.py",
+            "module": "rom_v2.application",
+            "layer": "application",
+            "imports": []
+          },
+          {
+            "file": "rom_v2/application/ports/__init__.py",
+            "module": "rom_v2.application.ports",
+            "layer": "application",
+            "imports": []
+          },
+          {
+            "file": "rom_v2/application/ports/clock.py",
+            "module": "rom_v2.application.ports.clock",
+            "layer": "application",
+            "imports": [
+              {
+                "module": "__future__",
+                "line": 2,
+                "kind": "from"
+              },
+              {
+                "module": "datetime",
+                "line": 4,
+                "kind": "from"
+              },
+              {
+                "module": "typing",
+                "line": 5,
+                "kind": "from"
+              }
+            ]
+          },
+          {
+            "file": "rom_v2/application/ports/random_source.py",
+            "module": "rom_v2.application.ports.random_source",
+            "layer": "application",
+            "imports": [
+              {
+                "module": "__future__",
+                "line": 2,
+                "kind": "from"
+              },
+              {
+                "module": "typing",
+                "line": 4,
+                "kind": "from"
+              }
+            ]
+          },
+          {
+            "file": "rom_v2/application/ports/repositories.py",
+            "module": "rom_v2.application.ports.repositories",
+            "layer": "application",
+            "imports": [
+              {
+                "module": "__future__",
+                "line": 2,
+                "kind": "from"
+              },
+              {
+                "module": "typing",
+                "line": 4,
+                "kind": "from"
+              }
+            ]
+          },
+          {
+            "file": "rom_v2/application/ports/unit_of_work.py",
+            "module": "rom_v2.application.ports.unit_of_work",
+            "layer": "application",
+            "imports": [
+              {
+                "module": "__future__",
+                "line": 2,
+                "kind": "from"
+              },
+              {
+                "module": "typing",
+                "line": 4,
+                "kind": "from"
+              }
+            ]
+          },
+          {
+            "file": "rom_v2/domain/__init__.py",
+            "module": "rom_v2.domain",
+            "layer": "domain",
+            "imports": []
+          },
+          {
+            "file": "rom_v2/infrastructure/__init__.py",
+            "module": "rom_v2.infrastructure",
+            "layer": "infrastructure",
+            "imports": []
+          }
+        ],
+        "edges": [],
+        "violations": [],
+        "parse_errors": []
+      }
+    },
+    {
+      "name": "structure",
+      "returncode": 0,
+      "stdout": "V2 package structure verifier: PASS\nDeclared runtime packages: 5\nDeclared support roots: 5\nPhysical V2 tree exists: True\nViolations: 0",
+      "stderr": "",
+      "result": {
+        "schema_version": 1,
+        "summary": {
+          "status": "PASS",
+          "physical_runtime_exists": true,
+          "physical_python_file_count": 16,
+          "declared_runtime_package_count": 5,
+          "declared_support_root_count": 5,
+          "violation_count": 0
+        },
+        "declared_runtime_packages": [
+          "app",
+          "application",
+          "content",
+          "domain",
+          "infrastructure"
+        ],
+        "declared_support_roots": [
+          ".runtime/v2",
+          "MD",
+          "reports",
+          "tests_v2",
+          "tools"
+        ],
+        "observations": [],
+        "violations": []
+      }
+    },
+    {
+      "name": "result",
+      "returncode": 0,
+      "stdout": "V2 result/error verifier: PASS\nStatuses: 7\nPhysical Result owners: 0\nImplicit operation results: 0\nViolations: 0",
+      "stderr": "",
+      "result": {
+        "schema_version": 2,
+        "summary": {
+          "status": "PASS",
+          "status_count": 7,
+          "result_owner_count": 0,
+          "implicit_public_result_count": 0,
+          "violation_count": 0,
+          "physical_result_model_exists": false
+        },
+        "result_owners": [],
+        "implicit_public_results": [],
+        "violations": []
+      }
+    },
+    {
+      "name": "events",
+      "returncode": 0,
+      "stdout": "V2 domain-event verifier: PASS\nFields: 11\nPhysical event owners: 0\nForbidden domain imports: 0\nViolations: 0",
+      "stderr": "",
+      "result": {
+        "schema_version": 1,
+        "summary": {
+          "status": "PASS",
+          "required_field_count": 11,
+          "physical_event_owner_count": 0,
+          "forbidden_domain_import_count": 0,
+          "violation_count": 0,
+          "physical_event_model_exists": false
+        },
+        "event_owners": [],
+        "forbidden_domain_imports": [],
+        "violations": []
+      }
+    },
+    {
+      "name": "uow",
+      "returncode": 0,
+      "stdout": "V2 Repository/UoW verifier: PASS\nRepository owners: 1\nUoW owners: 1\nApplication DB imports: 0\nRepository transaction methods: 0\nViolations: 0",
+      "stderr": "",
+      "result": {
+        "schema_version": 1,
+        "summary": {
+          "status": "PASS",
+          "physical_v2_exists": true,
+          "repository_owner_count": 1,
+          "unit_of_work_owner_count": 1,
+          "application_db_import_count": 0,
+          "repository_transaction_method_count": 0,
+          "violation_count": 0
+        },
+        "repository_owners": [
+          {
+            "file": "rom_v2/application/ports/repositories.py",
+            "class": "AggregateRepository",
+            "line": 10
+          }
+        ],
+        "unit_of_work_owners": [
+          {
+            "file": "rom_v2/application/ports/unit_of_work.py",
+            "class": "UnitOfWork",
+            "line": 7
+          }
+        ],
+        "application_db_imports": [],
+        "repository_transaction_methods": [],
+        "violations": []
+      }
+    },
+    {
+      "name": "clock_rng",
+      "returncode": 0,
+      "stdout": "V2 Clock/RNG verifier: PASS\nClock owners: 1\nRNG owners: 1\nDirect time calls: 0\nDirect RNG calls: 0\nViolations: 0",
+      "stderr": "",
+      "result": {
+        "schema_version": 1,
+        "summary": {
+          "status": "PASS",
+          "physical_v2_exists": true,
+          "clock_owner_count": 1,
+          "rng_owner_count": 1,
+          "direct_time_call_count": 0,
+          "direct_rng_call_count": 0,
+          "violation_count": 0
+        },
+        "clock_owners": [
+          {
+            "file": "rom_v2/application/ports/clock.py",
+            "class": "Clock",
+            "line": 8
+          }
+        ],
+        "rng_owners": [
+          {
+            "file": "rom_v2/application/ports/random_source.py",
+            "class": "RandomSource",
+            "line": 9
+          }
+        ],
+        "direct_time_calls": [],
+        "direct_rng_calls": [],
+        "violations": []
+      }
+    },
+    {
+      "name": "code_comments",
+      "returncode": 0,
+      "stdout": "V2 code/comment verifier: PASS\nFiles: 18\nPublic APIs: 26\nTyped public APIs: 18\nDocumented public APIs: 26\nViolations: 0",
+      "stderr": "",
+      "result": {
+        "schema_version": 1,
+        "summary": {
+          "status": "PASS",
+          "file_count": 18,
+          "public_api_count": 26,
+          "typed_public_api_count": 18,
+          "documented_public_api_count": 26,
+          "comment_count": 0,
+          "violation_count": 0,
+          "physical_v2_exists": true
+        },
+        "files": [
+          "rom_v2/__init__.py",
+          "rom_v2/app/__init__.py",
+          "rom_v2/application/__init__.py",
+          "rom_v2/application/ports/__init__.py",
+          "rom_v2/application/ports/clock.py",
+          "rom_v2/application/ports/random_source.py",
+          "rom_v2/application/ports/repositories.py",
+          "rom_v2/application/ports/unit_of_work.py",
+          "rom_v2/bootstrap.py",
+          "rom_v2/config.py",
+          "rom_v2/container.py",
+          "rom_v2/content/__init__.py",
+          "rom_v2/domain/__init__.py",
+          "rom_v2/infrastructure/__init__.py",
+          "rom_v2/lifecycle.py",
+          "rom_v2/main.py",
+          "tests_v2/__init__.py",
+          "tests_v2/test_v2_bootstrap_smoke.py"
+        ],
+        "violations": []
+      }
+    }
+  ],
+  "database_evidence_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "database_evidence_after": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "artifacts": {
+    "patch": "patch/patch_21_3_1_create_isolated_v2_package_skeleton.py",
+    "json": "reports/stage_21_3_1_isolated_v2_package_skeleton.json",
+    "markdown": "MD/STAGE_21_3_1_ISOLATED_V2_PACKAGE_SKELETON.md",
+    "structure_verifier": "tools/verify_v2_package_structure.py"
+  },
+  "next_stage": "21.3.2",
+  "suggested_next_patch": "patch_21_3_2_create_v2_runtime_directories.py"
+}

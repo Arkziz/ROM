@@ -57,7 +57,7 @@ def verify(project_root: Path, contract: dict[str, Any]) -> dict[str, Any]:
                 ast.parse(path.read_text(encoding="utf-8", errors="replace"), filename=relative)
             except SyntaxError as exc:
                 violations.append({"rule": "PYTHON_PARSE_ERROR", "file": relative, "error": str(exc)})
-        physical_packages = {path.name for path in runtime_root.iterdir() if path.is_dir()}
+        physical_packages = {path.name for path in runtime_root.iterdir() if path.is_dir() and path.name != "__pycache__"}
         unknown = sorted(physical_packages - EXPECTED_RUNTIME_PACKAGES)
         missing = sorted(EXPECTED_RUNTIME_PACKAGES - physical_packages)
         if unknown:
