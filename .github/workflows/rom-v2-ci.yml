@@ -1,0 +1,35 @@
+name: ROM V2 CI
+
+on:
+  push:
+    branches: ["rewrite/rom-v2"]
+  pull_request:
+    branches: ["rewrite/rom-v2", "master"]
+
+permissions:
+  contents: read
+
+jobs:
+  v2-baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Run canonical V2 CI baseline
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+          PYTHONHASHSEED: "0"
+        run: python tools/run_v2_ci.py --project-root . --json-out reports/v2_ci_result.json
+      - name: Upload CI evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rom-v2-ci-evidence
+          path: reports/v2_ci_result.json
+          if-no-files-found: error
