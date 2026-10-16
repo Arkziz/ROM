@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "stage": "21.1.X1b",
+  "generated_at_utc": "2026-10-16T17:55:49Z",
+  "summary": {
+    "conclusion": "GO",
+    "typed_reference_count": 749,
+    "definition_owner_candidate_count": 5860,
+    "reference_status_counts": {
+      "RESOLVED_EXACT": 749
+    },
+    "duplicates_before": 6,
+    "duplicate_owner_groups_after": 137,
+    "conflicts_preserved_for_review": 2
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.1.X1a parent verified.",
+      "details": {
+        "expected": "fe99b84607a73bea453244e523c00f3073b70e02",
+        "actual": "fe99b84607a73bea453244e523c00f3073b70e02"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "AST_COVERAGE",
+      "status": "PASS",
+      "summary": "All selected modules parsed.",
+      "details": {
+        "errors": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "REFERENCE_COUNT_STABLE",
+      "status": "PASS",
+      "summary": "Typed reference count remains 749.",
+      "details": {
+        "expected": 749
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "RESOLUTION_COVERAGE",
+      "status": "PASS",
+      "summary": "Every typed reference has exactly one resolution status.",
+      "details": {
+        "RESOLVED_EXACT": 749
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "OWNER_DISCOVERY_EXPANDED",
+      "status": "PASS",
+      "summary": "Owner candidates expanded to 5860.",
+      "details": {
+        "x1a_definitions": 141
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "NO_UNPROVEN_DEFECT_ESCALATION",
+      "status": "PASS",
+      "summary": "No reference was marked confirmed unresolved without authoritative proof.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "DATABASE_EVIDENCE_READY",
+      "status": "PASS",
+      "summary": "DB/WAL/SHM evidence captured without opening SQLite.",
+      "details": {
+        "production_connection_opened": false
+      },
+      "blocking": false
+    }
+  ],
+  "resolution_policy": {
+    "static_absence_is_not_defect_proof": true,
+    "confirmed_unresolved_requires_complete_authoritative_catalog": true,
+    "safe_namespace_aliases": {
+      "boss": [
+        "boss",
+        "mob"
+      ],
+      "mob": [
+        "mob",
+        "boss"
+      ],
+      "region": [
+        "region",
+        "location"
+      ],
+      "location": [
+        "location",
+        "region"
+      ]
+    }
+  },
+  "database_evidence_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "canonical_artifacts_updated": [
+    "reports/stage_21_1_X1_canonical_content_inventory.json",
+    "MD/STAGE_21_1_X1_CANONICAL_CONTENT_INVENTORY.md"
+  ],
+  "next_stage": "21.1.X2"
+}
