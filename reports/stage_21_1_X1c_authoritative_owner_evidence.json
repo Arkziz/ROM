@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "stage": "21.1.X1c",
+  "generated_at_utc": "2026-10-16T18:05:43Z",
+  "summary": {
+    "conclusion": "GO",
+    "owner_candidates_before": 5860,
+    "accepted_authoritative_owners": 714,
+    "rejected_owner_candidates": 5146,
+    "typed_reference_count": 749,
+    "reference_status_counts": {
+      "DYNAMIC_DEFINITION": 400,
+      "RESOLVED_EXACT": 349
+    },
+    "duplicate_owner_groups_before": 137,
+    "duplicate_owner_groups_after": 52
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.1.X1b parent verified.",
+      "details": {
+        "expected": "294319dc4a9dc175fca456837feb272b4a93ffed",
+        "actual": "294319dc4a9dc175fca456837feb272b4a93ffed"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "REFERENCE_COUNT_STABLE",
+      "status": "PASS",
+      "summary": "Typed reference count remains 749.",
+      "details": {
+        "expected": 749
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "REFERENCE_CANNOT_OWN_ITSELF",
+      "status": "PASS",
+      "summary": "No reference resolves to its own record.",
+      "details": {
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "OWNER_MUST_BE_DEFINITION_CONTEXT",
+      "status": "PASS",
+      "summary": "All accepted owners are outside reference contexts.",
+      "details": {
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "NO_REFERENCE_DERIVED_OWNER",
+      "status": "PASS",
+      "summary": "No accepted owner is derived from a usage-reference record.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "DUPLICATE_OWNER_QUEUE_NOT_REGRESSED",
+      "status": "PASS",
+      "summary": "Duplicate authoritative owner groups reduced from 137 to 52.",
+      "details": {
+        "comparison_baseline": "Stage 21.1.X1b owner model",
+        "before": 137,
+        "after": 52,
+        "note": "The X1a value of 6 used a narrower semantic-definition registry and is not a valid hard limit for the expanded authoritative-owner registry."
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "OWNER_EVIDENCE_RECORDED",
+      "status": "PASS",
+      "summary": "Every accepted owner records positive authoritative evidence.",
+      "details": {
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "RESOLUTION_COVERAGE",
+      "status": "PASS",
+      "summary": "Every reference has exactly one resolution status.",
+      "details": {
+        "RESOLVED_EXACT": 349,
+        "DYNAMIC_DEFINITION": 400
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "NO_UNPROVEN_DEFECT_ESCALATION",
+      "status": "PASS",
+      "summary": "No reference is confirmed unresolved without authoritative proof.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "DATABASE_EVIDENCE_READY",
+      "status": "PASS",
+      "summary": "DB/WAL/SHM evidence captured without opening SQLite.",
+      "details": {
+        "production_connection_opened": false
+      },
+      "blocking": false
+    }
+  ],
+  "evidence_policy": {
+    "accepted": [
+      "X1A_SEMANTIC_DEFINITION",
+      "TOP_LEVEL_CATALOG_KEY",
+      "PRIMARY_IDENTITY_FIELD",
+      "DEFINITION_REGISTRY_SYMBOL",
+      "AUTHORITATIVE_SOURCE_NAMESPACE"
+    ],
+    "rejected": [
+      "REFERENCE_CANNOT_OWN_ITSELF",
+      "REFERENCE_CONTEXT_FORBIDDEN",
+      "HISTORICAL_OWNER_REQUIRES_REVIEW",
+      "OWNER_MUST_HAVE_POSITIVE_DEFINITION_EVIDENCE"
+    ]
+  },
+  "canonical_artifacts_updated": [
+    "reports/stage_21_1_X1_canonical_content_inventory.json",
+    "MD/STAGE_21_1_X1_CANONICAL_CONTENT_INVENTORY.md"
+  ],
+  "database_evidence_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "next_stage": "21.1.X2"
+}
