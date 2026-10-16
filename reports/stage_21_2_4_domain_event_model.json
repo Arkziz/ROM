@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "stage": "21.2.4",
+  "generated_at_utc": "2026-10-16T19:21:32Z",
+  "summary": {
+    "conclusion": "GO",
+    "blocking_failures": [],
+    "status": "PASS",
+    "required_field_count": 11,
+    "physical_event_owner_count": 0,
+    "forbidden_domain_import_count": 0,
+    "violation_count": 0,
+    "physical_event_model_exists": false
+  },
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head_before_commit": "33e799344221bda43a249463920ff101e3572a44",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.2.3 parent verified.",
+      "details": {
+        "expected": "33e799344221bda43a249463920ff101e3572a44",
+        "actual": "33e799344221bda43a249463920ff101e3572a44"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "STAGE_21_2_3_PREREQUISITE",
+      "status": "PASS",
+      "summary": "Result/error contract is canonical GO.",
+      "details": {
+        "report": "reports/stage_21_2_3_result_error_model.json"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "VERIFIER_EXECUTION",
+      "status": "PASS",
+      "summary": "V2 domain-event verifier: PASS\nFields: 11\nPhysical event owners: 0\nForbidden domain imports: 0\nViolations: 0",
+      "details": {
+        "stderr": ""
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "SINGLE_TYPED_EVENT_CONTRACT",
+      "status": "PASS",
+      "summary": "Violations: 0",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "EVENT_FIELD_SET",
+      "status": "PASS",
+      "summary": "Eleven mandatory envelope fields defined.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "NO_TELEGRAM_PRESENTATION",
+      "status": "PASS",
+      "summary": "No Telegram/DB import in domain event scope.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "NO_PHYSICAL_DUPLICATE_OWNER",
+      "status": "PASS",
+      "summary": "No competing event owner exists.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "DATABASE_EVIDENCE_READY",
+      "status": "PASS",
+      "summary": "DB/WAL/SHM captured without SQLite connection.",
+      "details": {
+        "production_connection_opened": false
+      },
+      "blocking": false
+    }
+  ],
+  "domain_event_contract": {
+    "schema_version": 1,
+    "canonical_owner": "rom_v2.domain.events",
+    "physical_owner_stage": "21.3.1_or_later",
+    "event_type": {
+      "name": "DomainEvent",
+      "immutable": true,
+      "fields": {
+        "event_id": "EventId",
+        "event_key": "DomainEventKey",
+        "aggregate_type": "AggregateTypeKey",
+        "aggregate_id": "AggregateId",
+        "aggregate_version": "positive int",
+        "sequence": "positive int",
+        "occurred_at_utc": "timezone-aware UTC datetime",
+        "payload": "typed immutable payload",
+        "correlation_id": "CorrelationId | None",
+        "causation_id": "EventId | None",
+        "schema_version": "positive int"
+      }
+    },
+    "naming": {
+      "event_key_format": "lowercase_dot_separated_past_tense",
+      "examples_are_non_authoritative": true,
+      "stable_machine_key_required": true,
+      "localized_text_forbidden": true,
+      "renaming_policy": "never rename published key; introduce a new versioned event key"
+    },
+    "payload": {
+      "typed": true,
+      "immutable": true,
+      "json_serializable_at_persistence_boundary": true,
+      "stable_field_names": true,
+      "optional_fields_explicit": true,
+      "forbidden": [
+        "Telegram objects",
+        "buttons or markup",
+        "localized presentation text",
+        "database connections",
+        "repository objects",
+        "mutable aggregate references",
+        "raw exceptions",
+        "secrets or access tokens"
+      ]
+    },
+    "ordering": {
+      "scope": "per aggregate stream",
+      "primary_order": [
+        "aggregate_version",
+        "sequence"
+      ],
+      "event_id_unique": true,
+      "aggregate_version_monotonic": true,
+      "sequence_monotonic_within_transaction": true,
+      "occurred_at_utc_not_an_ordering_authority": true,
+      "consumer_deduplication_key": "event_id"
+    },
+    "persistence": {
+      "append_only": true,
+      "inside_same_unit_of_work_as_state_change": true,
+      "publish_after_commit": true,
+      "rollback_discards_uncommitted_events": true,
+      "outbox_required_for_external_delivery": true,
+      "at_least_once_delivery": true,
+      "consumer_idempotency_required": true,
+      "restart_reloads_unpublished_outbox": true,
+      "retention": "indefinite unless a later ADR defines archive policy"
+    },
+    "presentation": {
+      "owner": "application projection or app delivery adapter",
+      "domain_event_contains_presentation": false,
+      "telegram_types_forbidden": true,
+      "localization_resolves_from_event_key_and_payload": true,
+      "presentation_failure_does_not_rollback_committed_domain_state": true
+    },
+    "emission": {
+      "domain_records_event": true,
+      "application_collects_and_persists": true,
+      "infrastructure_outbox_publishes": true,
+      "app_formats_and_delivers": true,
+      "direct_telegram_send_from_domain": false,
+      "direct_sql_from_domain": false
+    },
+    "error_integration": {
+      "result_contract_stage": "21.2.3",
+      "failed_operation_persists_events": false,
+      "idempotent_repeat_emits_duplicate_event": false,
+      "retryable_delivery_error_keeps_outbox_pending": true,
+      "consistency_error_blocks_commit": true
+    },
+    "forbidden_alternatives": [
+      "dict-only event without typed contract",
+      "localized text as event key",
+      "timestamp-only ordering",
+      "publish before commit",
+      "best-effort event loss",
+      "second production event abstraction",
+      "Telegram presentation in domain payload"
+    ]
+  },
+  "verifier_result": {
+    "schema_version": 1,
+    "summary": {
+      "status": "PASS",
+      "required_field_count": 11,
+      "physical_event_owner_count": 0,
+      "forbidden_domain_import_count": 0,
+      "violation_count": 0,
+      "physical_event_model_exists": false
+    },
+    "event_owners": [],
+    "forbidden_domain_imports": [],
+    "violations": []
+  },
+  "database_evidence_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "artifacts": {
+    "patch": "patch/patch_21_2_4_define_domain_event_model.py",
+    "verifier": "tools/verify_v2_domain_event_model.py",
+    "json": "reports/stage_21_2_4_domain_event_model.json",
+    "adr": "MD/ADR_21_2_4_V2_DOMAIN_EVENT_MODEL.md"
+  },
+  "next_stage": "21.2.5",
+  "suggested_next_patch": "patch_21_2_5_define_repository_unit_of_work.py"
+}
