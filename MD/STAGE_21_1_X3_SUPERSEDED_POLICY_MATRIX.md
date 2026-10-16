@@ -1,38 +1,38 @@
 # ROM Stage 21.1.X3 - current and superseded policy matrix
 
+- **Canonical revision:** `Stage 21.1.X3a`
 - **Статус:** `GO`
-- **Policy candidates:** `699`
-- **Policy groups:** `619`
-- **Git policy evidence records:** `187`
-- **Active canonical:** `433`
+- **Candidates before scope filtering:** `699`
+- **Policy-only candidates:** `267`
+- **Excluded non-policy records:** `432`
+- **Active canonical:** `202`
 - **Superseded explicit:** `0`
 - **Historical only:** `0`
-- **Shadow candidates:** `115`
-- **Owner review required:** `151`
+- **Shadow candidates:** `2`
+- **Active/shadow conflicts:** `0`
+- **Owner review required:** `63`
 
-## Classification rules
+## Marker scope
 
-- `ACTIVE_CANONICAL` requires positive runtime-owner evidence.
-- `SUPERSEDED_EXPLICIT` requires an explicit superseded/deprecated/obsolete/do-not-migrate marker.
-- `HISTORICAL_ONLY` is non-runtime evidence retained for reference.
-- `SHADOW_CANDIDATE` is never migrated without an owner decision.
-- Mere duplication or a differing value never proves which policy is current.
-- Ambiguous groups remain `OWNER_REVIEW_REQUIRED`.
+Policy markers are read only from the symbol name, assignment line, immediately preceding comment block, and module docstring. Neighboring assignments cannot contribute markers.
 
-## V2 migration contract
+## Migration rules
 
-- Only `ACTIVE_CANONICAL` policies may migrate automatically.
-- Superseded, historical and shadow values are excluded from V2 runtime.
-- Owner-review groups block automatic policy migration, not this read-only audit.
-- Behavioral authority from Stage 21.1.X2a may support a decision but cannot override explicit canonical ownership by itself.
-- Production code and DB/WAL/SHM were not opened or modified.
+- Only `ACTIVE_CANONICAL` may migrate automatically.
+- `ACTIVE_SHADOW_CONFLICT` is never auto-migrated.
+- Supersession requires explicit replacement/deprecation evidence.
+- Non-policy runtime state is excluded from the migration allowlist.
+- Every matrix row preserves source, lines, hashes, scoped evidence, classification reasons and value fingerprint.
 
 ## Review queues
 
-- Multiple active candidates: **4**.
-- Groups without active canonical owner: **195**.
-- Explicit superseded without replacement evidence: **0**.
-- Ambiguous owner groups: **114**.
+- Multiple active groups: **1**.
+- Groups without active owner: **43**.
+- Active/shadow conflicts: **0**.
+- Owner-review groups: **45**.
+- Superseded without replacement evidence: **0**.
+
+Production code and DB/WAL/SHM were not opened or modified.
 
 ## Наступний етап
 

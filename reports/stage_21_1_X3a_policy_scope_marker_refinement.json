@@ -1,0 +1,147 @@
+{
+  "schema_version": 1,
+  "stage": "21.1.X3a",
+  "generated_at_utc": "2026-10-16T18:46:03Z",
+  "summary": {
+    "conclusion": "GO",
+    "candidate_count_before_scope_filter": 699,
+    "policy_candidate_count": 267,
+    "excluded_non_policy_count": 432,
+    "classification_counts": {
+      "ACTIVE_CANONICAL": 202,
+      "OWNER_REVIEW_REQUIRED": 63,
+      "SHADOW_CANDIDATE": 2
+    },
+    "migration_allowlist_count": 202
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.1.X3 parent verified.",
+      "details": {
+        "expected": "3e6be5ee692972d0a33c4f8eca6526fcb0b47d62",
+        "actual": "3e6be5ee692972d0a33c4f8eca6526fcb0b47d62"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "SOURCE_COVERAGE",
+      "status": "PASS",
+      "summary": "Processed 699 of 699 records.",
+      "details": {
+        "errors": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "NON_POLICY_RUNTIME_STATE_EXCLUDED",
+      "status": "PASS",
+      "summary": "Excluded non-policy records: 432.",
+      "details": {
+        "allowlist_violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "MARKER_SCOPED_TO_SYMBOL",
+      "status": "PASS",
+      "summary": "Every policy row has scoped marker evidence.",
+      "details": {
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "ACTIVE_SHADOW_CONFLICT_NOT_AUTO_MIGRATED",
+      "status": "PASS",
+      "summary": "Active/shadow conflicts: 0.",
+      "details": {
+        "allowlist_violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "SUPERSESSION_REQUIRES_REPLACEMENT_EVIDENCE",
+      "status": "PASS",
+      "summary": "Superseded records without replacement evidence remain review items: 0.",
+      "details": {
+        "review_count": 0
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "MIGRATION_ALLOWLIST_CONTAINS_POLICY_ONLY",
+      "status": "PASS",
+      "summary": "Migration allowlist entries: 202.",
+      "details": {
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "FULL_EVIDENCE_PERSISTED_IN_JSON",
+      "status": "PASS",
+      "summary": "Source, value, scoped markers and classification reasons are persisted per row.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "DATABASE_EVIDENCE_READY",
+      "status": "PASS",
+      "summary": "DB/WAL/SHM evidence captured without opening SQLite.",
+      "details": {
+        "production_connection_opened": false
+      },
+      "blocking": false
+    }
+  ],
+  "canonical_artifacts_updated": [
+    "reports/stage_21_1_X3_superseded_policy_matrix.json",
+    "MD/STAGE_21_1_X3_SUPERSEDED_POLICY_MATRIX.md"
+  ],
+  "database_evidence_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "next_stage": "21.1.9"
+}
