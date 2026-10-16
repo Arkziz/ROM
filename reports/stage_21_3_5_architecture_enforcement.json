@@ -1,0 +1,391 @@
+{
+  "schema_version": 1,
+  "stage": "21.3.5",
+  "generated_at_utc": "2026-10-16T20:10:33Z",
+  "summary": {
+    "conclusion": "GO",
+    "blocking_failures": [],
+    "status": "PASS",
+    "physical_file_count": 19,
+    "parsed_file_count": 19,
+    "import_edge_count": 39,
+    "violation_count": 0,
+    "gameplay_started": false,
+    "database_opened": false
+  },
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head_before_commit": "4faabf546773eb4af2ff57689d9a9fe2a062dada",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.3.4 parent verified.",
+      "details": {
+        "expected": "4faabf546773eb4af2ff57689d9a9fe2a062dada",
+        "actual": "4faabf546773eb4af2ff57689d9a9fe2a062dada"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "ARCHITECTURE_VERIFIER",
+      "status": "PASS",
+      "summary": "V2 architecture enforcement: PASS\nPhysical files: 19\nImport edges: 39\nViolations: 0",
+      "details": {
+        "stderr": "",
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UNIT_TEST",
+      "status": "PASS",
+      "summary": "...\n----------------------------------------------------------------------\nRan 3 tests in 0.312s\n\nOK",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "DEPENDENCY_REGRESSION",
+      "status": "PASS",
+      "summary": "V2 dependency verifier: PASS\nModules: 9\nEdges: 0\nViolations: 0\nParse errors: 0",
+      "details": {
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "CODE_STANDARD_REGRESSION",
+      "status": "PASS",
+      "summary": "V2 code/comment verifier: PASS\nFiles: 25\nPublic APIs: 60\nTyped public APIs: 41\nDocumented public APIs: 60\nViolations: 0",
+      "details": {
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "BOOTSTRAP_REGRESSION",
+      "status": "PASS",
+      "summary": "{\"application\": \"rom_v2\", \"background_jobs_started\": false, \"database_opened\": false, \"gameplay_enabled\": false, \"mode\": \"bootstrap\", \"status\": \"ready\", \"telegram_started\": false}",
+      "details": {
+        "stderr": ""
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "DATABASE_UNCHANGED",
+      "status": "PASS",
+      "summary": "DB/WAL/SHM unchanged and SQLite was not opened.",
+      "details": {
+        "production_connection_opened": false
+      },
+      "blocking": false
+    }
+  ],
+  "architecture_result": {
+    "schema_version": 1,
+    "summary": {
+      "status": "PASS",
+      "physical_file_count": 19,
+      "parsed_file_count": 19,
+      "import_edge_count": 39,
+      "violation_count": 0
+    },
+    "owners": {
+      "result": [],
+      "events": [],
+      "unit_of_work": [
+        {
+          "file": "rom_v2/application/ports/unit_of_work.py",
+          "class": "UnitOfWork",
+          "line": 7
+        }
+      ],
+      "clock": [
+        {
+          "file": "rom_v2/application/ports/clock.py",
+          "class": "Clock",
+          "line": 8
+        }
+      ],
+      "random_source": [
+        {
+          "file": "rom_v2/application/ports/random_source.py",
+          "class": "RandomSource",
+          "line": 9
+        }
+      ]
+    },
+    "import_edges": [
+      {
+        "file": "rom_v2/application/ports/clock.py",
+        "line": 2,
+        "import": "__future__"
+      },
+      {
+        "file": "rom_v2/application/ports/clock.py",
+        "line": 4,
+        "import": "datetime"
+      },
+      {
+        "file": "rom_v2/application/ports/clock.py",
+        "line": 5,
+        "import": "typing"
+      },
+      {
+        "file": "rom_v2/application/ports/random_source.py",
+        "line": 2,
+        "import": "__future__"
+      },
+      {
+        "file": "rom_v2/application/ports/random_source.py",
+        "line": 4,
+        "import": "typing"
+      },
+      {
+        "file": "rom_v2/application/ports/repositories.py",
+        "line": 2,
+        "import": "__future__"
+      },
+      {
+        "file": "rom_v2/application/ports/repositories.py",
+        "line": 4,
+        "import": "typing"
+      },
+      {
+        "file": "rom_v2/application/ports/unit_of_work.py",
+        "line": 2,
+        "import": "__future__"
+      },
+      {
+        "file": "rom_v2/application/ports/unit_of_work.py",
+        "line": 4,
+        "import": "typing"
+      },
+      {
+        "file": "rom_v2/bootstrap.py",
+        "line": 2,
+        "import": "__future__"
+      },
+      {
+        "file": "rom_v2/bootstrap.py",
+        "line": 4,
+        "import": "rom_v2.config"
+      },
+      {
+        "file": "rom_v2/bootstrap.py",
+        "line": 5,
+        "import": "rom_v2.container"
+      },
+      {
+        "file": "rom_v2/bootstrap.py",
+        "line": 6,
+        "import": "rom_v2.lifecycle"
+      },
+      {
+        "file": "rom_v2/config.py",
+        "line": 2,
+        "import": "__future__"
+      },
+      {
+        "file": "rom_v2/config.py",
+        "line": 4,
+        "import": "dataclasses"
+      },
+      {
+        "file": "rom_v2/container.py",
+        "line": 2,
+        "import": "__future__"
+      },
+      {
+        "file": "rom_v2/container.py",
+        "line": 4,
+        "import": "dataclasses"
+      },
+      {
+        "file": "rom_v2/container.py",
+        "line": 6,
+        "import": "rom_v2.config"
+      },
+      {
+        "file": "rom_v2/lifecycle.py",
+        "line": 2,
+        "import": "__future__"
+      },
+      {
+        "file": "rom_v2/lifecycle.py",
+        "line": 4,
+        "import": "dataclasses"
+      },
+      {
+        "file": "rom_v2/lifecycle.py",
+        "line": 6,
+        "import": "rom_v2.container"
+      },
+      {
+        "file": "rom_v2/main.py",
+        "line": 2,
+        "import": "__future__"
+      },
+      {
+        "file": "rom_v2/main.py",
+        "line": 4,
+        "import": "json"
+      },
+      {
+        "file": "rom_v2/main.py",
+        "line": 6,
+        "import": "rom_v2.bootstrap"
+      },
+      {
+        "file": "rom_v2/runtime_paths.py",
+        "line": 2,
+        "import": "__future__"
+      },
+      {
+        "file": "rom_v2/runtime_paths.py",
+        "line": 4,
+        "import": "dataclasses"
+      },
+      {
+        "file": "rom_v2/runtime_paths.py",
+        "line": 5,
+        "import": "pathlib"
+      },
+      {
+        "file": "rom_v2/settings.py",
+        "line": 2,
+        "import": "__future__"
+      },
+      {
+        "file": "rom_v2/settings.py",
+        "line": 4,
+        "import": "os"
+      },
+      {
+        "file": "rom_v2/settings.py",
+        "line": 5,
+        "import": "dataclasses"
+      },
+      {
+        "file": "rom_v2/settings.py",
+        "line": 6,
+        "import": "pathlib"
+      },
+      {
+        "file": "rom_v2/settings.py",
+        "line": 7,
+        "import": "typing"
+      },
+      {
+        "file": "rom_v2/settings.py",
+        "line": 9,
+        "import": "rom_v2.runtime_paths"
+      },
+      {
+        "file": "rom_v2/structured_logging.py",
+        "line": 2,
+        "import": "__future__"
+      },
+      {
+        "file": "rom_v2/structured_logging.py",
+        "line": 4,
+        "import": "json"
+      },
+      {
+        "file": "rom_v2/structured_logging.py",
+        "line": 5,
+        "import": "logging"
+      },
+      {
+        "file": "rom_v2/structured_logging.py",
+        "line": 6,
+        "import": "dataclasses"
+      },
+      {
+        "file": "rom_v2/structured_logging.py",
+        "line": 7,
+        "import": "datetime"
+      },
+      {
+        "file": "rom_v2/structured_logging.py",
+        "line": 8,
+        "import": "typing"
+      }
+    ],
+    "violations": []
+  },
+  "database_evidence_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "database_evidence_after": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "changed_files": [
+    "patch/patch_21_3_5_enforce_v2_architecture.py",
+    "tools/verify_v2_architecture.py",
+    "tests_v2/test_architecture_enforcement.py",
+    "reports/stage_21_3_5_architecture_enforcement.json",
+    "MD/STAGE_21_3_5_V2_ARCHITECTURE_ENFORCEMENT.md"
+  ],
+  "next_stage": "21.3.6",
+  "suggested_next_patch": "patch_21_3_6_create_v2_ci_foundation.py"
+}
