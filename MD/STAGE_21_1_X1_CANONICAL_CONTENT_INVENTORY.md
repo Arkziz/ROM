@@ -1,130 +1,42 @@
 # ROM Stage 21.1.X1 - canonical content inventory
 
+- **Canonical revision:** `Stage 21.1.X1a`
 - **Статус:** `GO`
-- **Проаналізовано content sources:** `65`
-- **Python content sources:** `65`
-- **Non-Python content sources:** `0`
-- **Extracted identity/name/reference records:** `1205`
-- **Content groups:** `12`
+- **Content sources:** `65`
+- **Extracted records:** `1205`
+- **Definition identities:** `141`
+- **Usage references:** `749`
+- **Operational labels:** `3`
+- **Presentation names:** `2`
+- **Policy flags:** `1`
 
-## Content groups
+## Виправлення Stage 21.1.X1a
 
-### `classes`
-
-- Sources: **12**
-- Records: **23**
-- Identifiers/keys: **0**
-- Names/text: **23**
-- References: **0**
-
-### `events`
-
-- Sources: **1**
-- Records: **0**
-- Identifiers/keys: **0**
-- Names/text: **0**
-- References: **0**
-
-### `items`
-
-- Sources: **23**
-- Records: **31**
-- Identifiers/keys: **4**
-- Names/text: **27**
-- References: **0**
-
-### `localization`
-
-- Sources: **21**
-- Records: **49**
-- Identifiers/keys: **4**
-- Names/text: **45**
-- References: **0**
-
-### `locations`
-
-- Sources: **7**
-- Records: **74**
-- Identifiers/keys: **34**
-- Names/text: **38**
-- References: **2**
-
-### `mobs`
-
-- Sources: **8**
-- Records: **66**
-- Identifiers/keys: **29**
-- Names/text: **34**
-- References: **3**
-
-### `npcs`
-
-- Sources: **2**
-- Records: **0**
-- Identifiers/keys: **0**
-- Names/text: **0**
-- References: **0**
-
-### `progression`
-
-- Sources: **18**
-- Records: **23**
-- Identifiers/keys: **0**
-- Names/text: **23**
-- References: **0**
-
-### `quests`
-
-- Sources: **28**
-- Records: **1073**
-- Identifiers/keys: **849**
-- Names/text: **223**
-- References: **1**
-
-### `shops_economy`
-
-- Sources: **9**
-- Records: **8**
-- Identifiers/keys: **4**
-- Names/text: **4**
-- References: **0**
-
-### `skills`
-
-- Sources: **5**
-- Records: **0**
-- Identifiers/keys: **0**
-- Names/text: **0**
-- References: **0**
-
-### `uncategorized_content`
-
-- Sources: **5**
-- Records: **0**
-- Identifiers/keys: **0**
-- Names/text: **0**
-- References: **0**
+- Definition identities відокремлено від usage references.
+- Повторне використання reference більше не рахується duplicate identity.
+- Operational source labels винесено в окрему категорію.
+- Human-readable boss/NPC/location values класифікуються як presentation names.
+- Boolean policy values не аналізуються як references.
+- Name conflict визначається лише для одного canonical identity та одного name field.
 
 ## Review queues
 
-- Duplicate identities: **137**.
-- Conflicting names for one identity: **127**.
-- Reference candidates without known identity: **6**.
+- Duplicate canonical definitions: **6**.
+- Conflicting names for one canonical identity: **2**.
+- Unresolved typed usage references: **627**.
+- Ambiguous identities requiring owner review: **0**.
 - Historical/superseded candidates: **9**.
-- Technical IDs without localized name evidence: **0**.
-- Dynamic content symbols requiring manual extraction: **130**.
+- Dynamic symbols requiring extraction: **130**.
 
 ## Canonical V2 content contract
 
-- Stable IDs і keys не перевикористовуються для іншої сутності.
-- Кожна reference повинна resolve до canonical identity відповідного namespace.
-- Користувацькі тексти використовують локалізовані людські назви, а не technical IDs.
-- Content проходить schema validation до startup; invalid reference блокує bootstrap.
-- Historical, candidate, shadow і superseded values не мігруються без окремого owner рішення.
-- Runtime mutation logic не зберігається в content catalogs.
-- Quest terminology: історія -> розділи -> квести; термін `глава` не є canonical.
-- Canonical location presentation використовує `Початок Шляху`, а не `start_path`/`Start Path`.
-- Production DB/WAL/SHM не відкривалися та не змінювалися.
+- Stable identity належить одному authoritative definition owner.
+- Usage references можуть повторюватися необмежено, але повинні resolve до definition identity.
+- Operational labels і presentation names не є canonical IDs.
+- Invalid typed reference блокує V2 content bootstrap.
+- Historical/candidate/shadow values потребують окремого owner-рішення.
+- Technical IDs не показуються користувачу замість локалізованих назв.
+- Production DB/WAL/SHM не відкривалися й не змінювалися.
 
 ## Наступний етап
 
