@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "stage": "21.1.X2a",
+  "generated_at_utc": "2026-10-16T18:32:24Z",
+  "summary": {
+    "conclusion": "GO",
+    "source_candidate_count": 173,
+    "authority_counts": {
+      "BEHAVIORAL_EXECUTABLE_CANDIDATE": 137,
+      "BEHAVIORAL_STATIC_CONTRACT": 12,
+      "HELPER_ONLY": 12,
+      "REVIEW_REQUIRED": 6,
+      "STRUCTURAL_SOURCE_CONTRACT": 4,
+      "TOOL_WRAPPER": 2
+    },
+    "behavioral_authority_count": 149,
+    "supporting_authority_count": 18
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.1.X2 parent verified.",
+      "details": {
+        "expected": "3d927ebe1e92683ebf7d9133c8c05a000376e36d",
+        "actual": "3d927ebe1e92683ebf7d9133c8c05a000376e36d"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "SOURCE_COVERAGE",
+      "status": "PASS",
+      "summary": "Classified 173 of 173 candidates.",
+      "details": {
+        "errors": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "AUTHORITY_EXCLUSIVITY",
+      "status": "PASS",
+      "summary": "Every candidate has exactly one authority class.",
+      "details": {
+        "HELPER_ONLY": 12,
+        "TOOL_WRAPPER": 2,
+        "BEHAVIORAL_EXECUTABLE_CANDIDATE": 137,
+        "STRUCTURAL_SOURCE_CONTRACT": 4,
+        "REVIEW_REQUIRED": 6,
+        "BEHAVIORAL_STATIC_CONTRACT": 12
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "HELPER_IS_NOT_BEHAVIORAL_BY_ASSERT_ALONE",
+      "status": "PASS",
+      "summary": "No nested/helper record was promoted solely by assertions.",
+      "details": {
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "STRUCTURAL_CHECK_NOT_RUNTIME_BEHAVIOR",
+      "status": "PASS",
+      "summary": "Structural-only checks are not executable behavioral fixtures.",
+      "details": {
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "EXECUTABLE_FIXTURE_REQUIRES_OBSERVABLE_ORACLE",
+      "status": "PASS",
+      "summary": "Every executable candidate has an observable assertion oracle.",
+      "details": {
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "RNG_DEPENDENCY_REQUIRES_REAL_SEED_EVIDENCE",
+      "status": "PASS",
+      "summary": "RNG review candidates: 16.",
+      "details": {
+        "review_count": 16
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "TIME_DEPENDENCY_REQUIRES_REAL_CLOCK_USAGE",
+      "status": "PASS",
+      "summary": "Clock review candidates: 13.",
+      "details": {
+        "review_count": 13
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "SOURCE_AUTHORITY_RECORDED",
+      "status": "PASS",
+      "summary": "Every record has source authority and evidence.",
+      "details": {
+        "violations": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "DATABASE_EVIDENCE_READY",
+      "status": "PASS",
+      "summary": "DB/WAL/SHM evidence captured without opening SQLite.",
+      "details": {
+        "production_connection_opened": false
+      },
+      "blocking": false
+    }
+  ],
+  "canonical_artifacts_updated": [
+    "reports/stage_21_1_X2_v1_behavioral_fixtures.json",
+    "MD/STAGE_21_1_X2_V1_BEHAVIORAL_FIXTURES.md"
+  ],
+  "database_evidence_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "next_stage": "21.1.X3"
+}

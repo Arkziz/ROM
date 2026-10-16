@@ -1,50 +1,36 @@
 # ROM Stage 21.1.X2 - Behavioral fixtures ROM V1
 
+- **Canonical revision:** `Stage 21.1.X2a`
 - **Статус:** `GO`
-- **Test-reference modules parsed:** `724`
-- **Behavioral fixtures:** `173`
-- **Assertion contracts:** `1263`
-- **Fixture helpers:** `16`
-- **Fixtures with seed evidence:** `32`
-- **Fixtures with DB evidence:** `81`
-- **Fixtures with restart evidence:** `7`
-- **Fixtures with idempotency evidence:** `31`
+- **Source candidates classified:** `173`
+- **Behavioral executable candidates:** `137`
+- **Behavioral static contracts:** `12`
+- **Structural source contracts:** `4`
+- **Documentation acceptance:** `0`
+- **Tool wrappers:** `2`
+- **Helpers only:** `12`
+- **Review required:** `6`
 
-## Domain coverage
+## Canonical authority rules
 
-- `account`: **12** fixtures
-- `character`: **16** fixtures
-- `combat`: **31** fixtures
-- `cross_cutting`: **1** fixtures
-- `economy`: **6** fixtures
-- `events_auxiliary`: **3** fixtures
-- `inventory_equipment`: **28** fixtures
-- `quests_progression`: **74** fixtures
-- `social`: **9** fixtures
-- `stats`: **22** fixtures
-- `world_travel`: **6** fixtures
+- Assertion alone does not make a helper behavioral.
+- AST/source/document checks are structural contracts, not runtime parity fixtures.
+- Executable behavioral candidates require runtime behavior evidence and an observable oracle.
+- RNG dependency requires real seed evidence in source.
+- Time dependency requires real Clock/frozen-time control evidence.
+- Every record preserves source path, function, lines and SHA-256 authority.
 
-## Fixture contract
+## Review queues
 
-Кожний fixture містить:
+- RNG without real seed evidence: **16**.
+- Time without real Clock control: **13**.
+- Review-required records: **6**.
 
-- stable `fixture_id`;
-- source file, function, lines і SHA-256;
-- domain classification;
-- initial-state contract;
-- ordered call/event evidence;
-- assertion fingerprints і readable previews;
-- DB/restart/time/RNG/idempotency evidence;
-- final-state acceptance contract.
+## Usage in V2
 
-Fixtures не запускають V1 runtime і не копіюють production state. Вони є immutable parity references для майбутніх executable V2 contract tests.
+Only behavioral executable candidates and explicitly approved behavioral static contracts may seed parity tests. Structural, documentation, wrapper and helper records remain supporting evidence and must not be counted as gameplay behavior.
 
-## Determinism policy
-
-- RNG-dependent fixture без seed evidence позначається review candidate, а не deterministic PASS.
-- Time-dependent fixture без Clock evidence позначається review candidate.
-- DB fixture використовує тільки isolated test DB під час майбутнього executable replay.
-- Production game.db/WAL/SHM не відкривалися і не змінювалися.
+Production code and DB/WAL/SHM were not opened or modified.
 
 ## Наступний етап
 
