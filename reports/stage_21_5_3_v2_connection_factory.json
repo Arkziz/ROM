@@ -1,0 +1,238 @@
+{
+  "schema_version": 1,
+  "stage": "21.5.3",
+  "status": "PASS",
+  "conclusion": "GO",
+  "generated_at_utc": "2026-10-18T19:31:08Z",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head_before_commit": "02d4b2e8ea2c64f31792a3470d37819dd38f2c70",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "canonical_owner": "rom_v2.infrastructure.persistence.V2ConnectionFactory",
+  "connection_policy": {
+    "runtime_root": ".runtime/v2/db",
+    "database_filename": "rom_v2.db",
+    "foreign_keys": true,
+    "busy_timeout_ms": 5000,
+    "journal_mode": "wal",
+    "synchronous": "normal",
+    "row_factory": "sqlite3.Row",
+    "implicit_transactions": false,
+    "read_only_uri_mode": true,
+    "read_only_query_only": true
+  },
+  "effective_profiles": {
+    "read_write": {
+      "database_path": "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.runtime\\v2\\db\\rom_v2.db",
+      "mode": "read_write",
+      "foreign_keys": true,
+      "busy_timeout_ms": 5000,
+      "journal_mode": "wal",
+      "synchronous": 1,
+      "query_only": false
+    },
+    "read_only": {
+      "database_path": "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.runtime\\v2\\db\\rom_v2.db",
+      "mode": "read_only",
+      "foreign_keys": true,
+      "busy_timeout_ms": 5000,
+      "journal_mode": "wal",
+      "synchronous": 2,
+      "query_only": true
+    }
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.5.2 parent verified.",
+      "details": {
+        "expected": "02d4b2e8ea2c64f31792a3470d37819dd38f2c70",
+        "actual": "02d4b2e8ea2c64f31792a3470d37819dd38f2c70"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "STAGING_EMPTY",
+      "status": "PASS",
+      "summary": "Staging area is empty.",
+      "details": {
+        "staged": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "FOCUSED_TEST",
+      "status": "PASS",
+      "summary": "....\n----------------------------------------------------------------------\nRan 4 tests in 0.605s\n\nOK",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "FACTORY_SMOKE",
+      "status": "PASS",
+      "summary": "Read/write and read-only profiles validated.",
+      "details": {
+        "stderr": ""
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "CI_BASELINE",
+      "status": "PASS",
+      "summary": "ROM V2 CI baseline: PASS\n[PASS] compile\n[PASS] imports\n[PASS] unit\n[PASS] architecture\n[PASS] duplicate_scan\n[PASS] content_validation",
+      "details": {
+        "failed_checks": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "PROTECTED_CONFIG",
+      "status": "PASS",
+      "summary": "V1 and V2 environment hashes preserved: True.",
+      "details": {
+        "hashes_recorded": false
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "V1_DATABASE_UNCHANGED",
+      "status": "PASS",
+      "summary": "V1 DB/WAL/SHM unchanged and never opened.",
+      "details": {
+        "v1_sqlite_opened": false
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "RUNTIME_DB_POLICY",
+      "status": "PASS",
+      "summary": "V2 runtime DB remains ignored and untracked.",
+      "details": {
+        "ignored": true,
+        "tracked": false
+      },
+      "blocking": false
+    }
+  ],
+  "mutation_started": true,
+  "database_mutation_started": true,
+  "backup_manifest": {
+    "files": {
+      "rom_v2/infrastructure/persistence/__init__.py": {
+        "existed": true,
+        "backup": "backup/stage_21_5_3__rom_v2__infrastructure__persistence____init__.py",
+        "sha256": "d11bcfc419f480df7f5949788c82193a8c0cc3f678cf5c45fb2786bd0319a13e"
+      },
+      "rom_v2/infrastructure/persistence/connection_factory.py": {
+        "existed": false,
+        "backup": null
+      },
+      "tests_v2/test_v2_connection_factory.py": {
+        "existed": false,
+        "backup": null
+      },
+      "reports/stage_21_5_3_v2_connection_factory.json": {
+        "existed": false,
+        "backup": null
+      },
+      "MD/STAGE_21_5_3_V2_CONNECTION_FACTORY.md": {
+        "existed": false,
+        "backup": null
+      }
+    },
+    "runtime_db": {
+      "existed": true,
+      "backup": "backup/stage_21_5_3__runtime_v2_db__rom_v2.db",
+      "sha256": "bf17b7bd3ddad421e6b8ab4196e44fcc679c159b6f6a9c7705f7f7fcb964df07"
+    }
+  },
+  "v1_database_evidence_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "v1_database_evidence_after": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "changed_files": [
+    "rom_v2/infrastructure/persistence/__init__.py",
+    "rom_v2/infrastructure/persistence/connection_factory.py",
+    "tests_v2/test_v2_connection_factory.py",
+    "reports/stage_21_5_3_v2_connection_factory.json",
+    "MD/STAGE_21_5_3_V2_CONNECTION_FACTORY.md"
+  ],
+  "commit_scope": [
+    "rom_v2/infrastructure/persistence/__init__.py",
+    "rom_v2/infrastructure/persistence/connection_factory.py",
+    "tests_v2/test_v2_connection_factory.py",
+    "reports/stage_21_5_3_v2_connection_factory.json",
+    "MD/STAGE_21_5_3_V2_CONNECTION_FACTORY.md"
+  ],
+  "excluded_from_commit": [
+    "patch/patch_21_5_3_define_v2_connection_factory.py",
+    ".runtime/v2/db/rom_v2.db",
+    ".env",
+    "rom_v2/.env",
+    "ROM_FULL_DUMP.txt"
+  ],
+  "manual_check": "NOT_REQUIRED",
+  "next_stage": "21.5.4",
+  "suggested_next_patch": "patch_21_5_4_implement_v2_unit_of_work.py"
+}
