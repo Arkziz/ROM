@@ -1,0 +1,862 @@
+{
+  "schema_version": 1,
+  "stage": "21.6.3",
+  "audit_type": "READ_ONLY_V1_PARITY",
+  "status": "PASS",
+  "conclusion": "GO",
+  "generated_at_utc": "2026-10-18T20:29:52Z",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head_before_commit": "4104c61afad85e5966ef5040ace789317265d7bb",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "sources_executed_or_imported": false,
+  "database_opened": false,
+  "production_code_changed": false,
+  "findings": {
+    "source_evidence": {
+      "data/classes.py": {
+        "exists": true,
+        "size": 2787,
+        "mtime_ns": 1790033528267851300,
+        "sha256": "1fbc50595c2b690c7ca4e988a0a476105de0cabce478872644614fc23361cb5f"
+      },
+      "data/equipment_profiles.py": {
+        "exists": true,
+        "size": 4955,
+        "mtime_ns": 1787433627173378800,
+        "sha256": "f936cef3c3eae91b347a991c01ceb032dd6f7601ba82e3cd26b53f5abc4ea988"
+      },
+      "data/equipment_stat_policy.py": {
+        "exists": true,
+        "size": 9661,
+        "mtime_ns": 1790033528275281700,
+        "sha256": "2d7f0e0ce17ae316dc8eaa4c01a3451607c8f1de2bf7b6644ea9ded7ccc24b2f"
+      },
+      "data/equipment_identity_stat_policy.py": {
+        "exists": true,
+        "size": 3936,
+        "mtime_ns": 1792001059580393900,
+        "sha256": "50256d38297c990cf994f1d165236395303db7ab4bb7ae75cbc67e834be88bf1"
+      }
+    },
+    "literal_constants": {
+      "CLASS_CONFIGS": {
+        "warrior": {
+          "name": "🛡️ Воїн",
+          "resource": "rage",
+          "description": "Фізичний боєць ближнього бою.\nОсновні характеристики: Сила, Витривалість.\nРесурс у бою: 🔴 Лютість."
+        },
+        "knight": {
+          "name": "⚔️ Лицар",
+          "resource": "rage",
+          "description": "Захисник із високим фізичним захистом і щитом.\nОсновні характеристики: Витривалість, Фіз. захист.\nРесурс у бою: 🔴 Лютість."
+        },
+        "scout": {
+          "name": "🏹 Скаут",
+          "resource": "combat_energy",
+          "description": "Дистанційний фізичний боєць із пастками та точними пострілами.\nОсновні характеристики: Спритність, Сила.\nРесурс у бою: 🟡 Енергія."
+        },
+        "rogue": {
+          "name": "🗡️ Розбійник",
+          "resource": "combat_energy_combo",
+          "description": "Швидкий боєць ближнього бою з майбутньою механікою комбо.\nОсновні характеристики: Спритність, Сила.\nРесурс у бою: 🟡 Енергія + комбо-очки."
+        },
+        "mage": {
+          "name": "🔮 Маг",
+          "resource": "mana",
+          "description": "Магічний боєць із високим вибуховою шкодою.\nОсновні характеристики: Інтелект, Мудрість.\nРесурс у бою: 🔵 Мана."
+        },
+        "priest": {
+          "name": "⚕️ Жрець",
+          "resource": "mana",
+          "description": "Магічний клас підтримки з лікуванням і захистом.\nОсновні характеристики: Мудрість, Інтелект.\nРесурс у бою: 🔵 Мана."
+        }
+      },
+      "MAIN_HAND_PROFILES": {
+        "sword_1h": {
+          "name": "Одноручний меч",
+          "hands": 1,
+          "attack_type": "physical",
+          "main_stats": [
+            "str"
+          ],
+          "extra_stats": [
+            "str",
+            "sta"
+          ]
+        },
+        "dagger_1h": {
+          "name": "Кинджал",
+          "hands": 1,
+          "attack_type": "physical",
+          "main_stats": [
+            "dex"
+          ],
+          "extra_stats": [
+            "dex",
+            "str"
+          ]
+        },
+        "wand_1h": {
+          "name": "Жезл",
+          "hands": 1,
+          "attack_type": "magical",
+          "main_stats": [
+            "int"
+          ],
+          "extra_stats": [
+            "int",
+            "wis"
+          ]
+        },
+        "sword_2h": {
+          "name": "Дворучний меч",
+          "hands": 2,
+          "attack_type": "physical",
+          "main_stats": [
+            "str"
+          ],
+          "extra_stats": [
+            "str",
+            "sta"
+          ]
+        },
+        "staff_2h": {
+          "name": "Дворучний посох",
+          "hands": 2,
+          "attack_type": "magical",
+          "main_stats": [
+            "int"
+          ],
+          "extra_stats": [
+            "int",
+            "wis"
+          ]
+        },
+        "bow_2h": {
+          "name": "Лук",
+          "hands": 2,
+          "attack_type": "physical",
+          "main_stats": [
+            "dex"
+          ],
+          "extra_stats": [
+            "dex",
+            "str"
+          ]
+        },
+        "crossbow_2h": {
+          "name": "Арбалет",
+          "hands": 2,
+          "attack_type": "physical",
+          "main_stats": [
+            "dex"
+          ],
+          "extra_stats": [
+            "dex",
+            "str"
+          ]
+        }
+      },
+      "OFF_HAND_PROFILES": {
+        "warrior_shield": {
+          "name": "Малий щит",
+          "attack_type": "defense",
+          "main_stats": [
+            "str"
+          ],
+          "extra_stats": [
+            "str",
+            "sta"
+          ]
+        },
+        "shield": {
+          "name": "Щит",
+          "attack_type": "defense",
+          "main_stats": [
+            "sta"
+          ],
+          "extra_stats": [
+            "sta",
+            "wis"
+          ]
+        },
+        "talisman": {
+          "name": "Магічний талісман",
+          "attack_type": "magical",
+          "main_stats": [
+            "wis"
+          ],
+          "extra_stats": [
+            "wis",
+            "int"
+          ]
+        },
+        "dagger": {
+          "name": "Кинджал для другої руки",
+          "attack_type": "physical",
+          "main_stats": [
+            "dex"
+          ],
+          "extra_stats": [
+            "dex",
+            "str"
+          ]
+        }
+      },
+      "ARMOR_ALLOWED_BY_CLASS": {
+        "mage": "cloth",
+        "priest": "cloth",
+        "scout": "leather",
+        "rogue": "leather",
+        "warrior": "chain",
+        "knight": "plate"
+      },
+      "MAIN_HAND_ALLOWED_BY_CLASS": {
+        "mage": [
+          "wand_1h",
+          "staff_2h"
+        ],
+        "priest": [
+          "wand_1h",
+          "staff_2h"
+        ],
+        "scout": [
+          "bow_2h",
+          "crossbow_2h"
+        ],
+        "rogue": [
+          "dagger_1h"
+        ],
+        "warrior": [
+          "sword_1h",
+          "sword_2h"
+        ],
+        "knight": [
+          "sword_1h"
+        ]
+      },
+      "OFF_HAND_ALLOWED_BY_CLASS": {
+        "mage": [
+          "talisman"
+        ],
+        "priest": [
+          "talisman"
+        ],
+        "scout": [],
+        "rogue": [
+          "dagger"
+        ],
+        "warrior": [
+          "warrior_shield"
+        ],
+        "knight": [
+          "shield"
+        ]
+      },
+      "ITEM_SUBTYPE_LABELS": {
+        "warrior_shield": "Малий щит",
+        "sword_1h": "Одноручний меч",
+        "sword_2h": "Дворучний меч",
+        "dagger_1h": "Кинджал",
+        "wand_1h": "Жезл",
+        "staff_2h": "Дворучний посох",
+        "bow_2h": "Лук",
+        "crossbow_2h": "Арбалет",
+        "shield": "Щит",
+        "talisman": "Магічний талісман",
+        "dagger": "Кинджал для другої руки",
+        "": "Універсальний"
+      },
+      "ARMOR_TYPE_LABELS": {
+        "cloth": "Тканина",
+        "leather": "Шкіра",
+        "chain": "Кольчуга",
+        "plate": "Лати",
+        "": "Універсальний"
+      }
+    },
+    "non_literal_constants": {
+      "data/equipment_stat_policy.py": [
+        "CLASS_ARMOR_TYPES"
+      ]
+    },
+    "class_keys": [
+      "warrior",
+      "knight",
+      "scout",
+      "rogue",
+      "mage",
+      "priest"
+    ],
+    "class_matrix": {
+      "warrior": {
+        "resource": "rage",
+        "explicit_attack_type": null,
+        "armor_types": "chain",
+        "main_hand_subtypes": [
+          "sword_1h",
+          "sword_2h"
+        ],
+        "off_hand_subtypes": [
+          "warrior_shield"
+        ],
+        "raw_class_config": {
+          "name": "🛡️ Воїн",
+          "resource": "rage",
+          "description": "Фізичний боєць ближнього бою.\nОсновні характеристики: Сила, Витривалість.\nРесурс у бою: 🔴 Лютість."
+        }
+      },
+      "knight": {
+        "resource": "rage",
+        "explicit_attack_type": null,
+        "armor_types": "plate",
+        "main_hand_subtypes": [
+          "sword_1h"
+        ],
+        "off_hand_subtypes": [
+          "shield"
+        ],
+        "raw_class_config": {
+          "name": "⚔️ Лицар",
+          "resource": "rage",
+          "description": "Захисник із високим фізичним захистом і щитом.\nОсновні характеристики: Витривалість, Фіз. захист.\nРесурс у бою: 🔴 Лютість."
+        }
+      },
+      "scout": {
+        "resource": "combat_energy",
+        "explicit_attack_type": null,
+        "armor_types": "leather",
+        "main_hand_subtypes": [
+          "bow_2h",
+          "crossbow_2h"
+        ],
+        "off_hand_subtypes": [],
+        "raw_class_config": {
+          "name": "🏹 Скаут",
+          "resource": "combat_energy",
+          "description": "Дистанційний фізичний боєць із пастками та точними пострілами.\nОсновні характеристики: Спритність, Сила.\nРесурс у бою: 🟡 Енергія."
+        }
+      },
+      "rogue": {
+        "resource": "combat_energy_combo",
+        "explicit_attack_type": null,
+        "armor_types": "leather",
+        "main_hand_subtypes": [
+          "dagger_1h"
+        ],
+        "off_hand_subtypes": [
+          "dagger"
+        ],
+        "raw_class_config": {
+          "name": "🗡️ Розбійник",
+          "resource": "combat_energy_combo",
+          "description": "Швидкий боєць ближнього бою з майбутньою механікою комбо.\nОсновні характеристики: Спритність, Сила.\nРесурс у бою: 🟡 Енергія + комбо-очки."
+        }
+      },
+      "mage": {
+        "resource": "mana",
+        "explicit_attack_type": null,
+        "armor_types": "cloth",
+        "main_hand_subtypes": [
+          "wand_1h",
+          "staff_2h"
+        ],
+        "off_hand_subtypes": [
+          "talisman"
+        ],
+        "raw_class_config": {
+          "name": "🔮 Маг",
+          "resource": "mana",
+          "description": "Магічний боєць із високим вибуховою шкодою.\nОсновні характеристики: Інтелект, Мудрість.\nРесурс у бою: 🔵 Мана."
+        }
+      },
+      "priest": {
+        "resource": "mana",
+        "explicit_attack_type": null,
+        "armor_types": "cloth",
+        "main_hand_subtypes": [
+          "wand_1h",
+          "staff_2h"
+        ],
+        "off_hand_subtypes": [
+          "talisman"
+        ],
+        "raw_class_config": {
+          "name": "⚕️ Жрець",
+          "resource": "mana",
+          "description": "Магічний клас підтримки з лікуванням і захистом.\nОсновні характеристики: Мудрість, Інтелект.\nРесурс у бою: 🔵 Мана."
+        }
+      }
+    },
+    "owner_references": {
+      "CLASS_CONFIGS": [
+        "data/classes.py:9:CLASS_CONFIGS = {",
+        "data/classes.py:71:        \"CLASS_CONFIGS\",",
+        "db_modules/__init__.py:103:    CLASS_CONFIGS,",
+        "db_modules/__init__.py:227:    'CLASS_CONFIGS',",
+        "db_modules/character.py:15:from data.classes import CLASS_CONFIGS",
+        "db_modules/character.py:190:    from data.classes import CLASS_CONFIGS",
+        "db_modules/character.py:195:    resource_type = CLASS_CONFIGS.get(class_key, {}).get(\"resource\", \"\")",
+        "db_modules/dev_compat.py:15:from data.classes import CLASS_CONFIGS, CLASS_RESET_SPHERE_ITEM_ID",
+        "db_modules/inventory_compat.py:7:from data.classes import CLASS_CONFIGS, CLASS_RESET_SPHERE_ITEM_ID",
+        "handlers/inventory.py:111:    CLASS_CONFIGS,",
+        "handlers/inventory.py:747:        config = CLASS_CONFIGS.get(class_key, {})",
+        "handlers/player_interaction.py:1178:    from data.classes import CLASS_CONFIGS",
+        "handlers/player_interaction.py:1205:    names = [str(CLASS_CONFIGS.get(key, {}).get(\"name\", key)) for key in allowed]",
+        "handlers/start.py:18:    CLASS_CONFIGS,",
+        "handlers/start.py:47:    for class_key, config in CLASS_CONFIGS.items():",
+        "handlers/start.py:95:    for class_key, config in CLASS_CONFIGS.items():",
+        "handlers/start.py:491:    for class_key, config in CLASS_CONFIGS.items():",
+        "handlers/start.py:550:    config = CLASS_CONFIGS.get(class_key)",
+        "handlers/start.py:620:        if class_key not in CLASS_CONFIGS:",
+        "handlers/start.py:653:        if class_key not in CLASS_CONFIGS:",
+        "systems/character_system.py:23:from data.classes import CLASS_CONFIGS, CLASS_RESET_SPHERE_ITEM_ID",
+        "systems/character_system.py:217:    return CLASS_CONFIGS.get(key, {}).get(\"name\", \"Не обрано\")",
+        "systems/character_system.py:227:    return CLASS_CONFIGS.get(key, {}).get(\"resource\", \"\")",
+        "systems/character_system.py:351:    if key not in CLASS_CONFIGS:",
+        "systems/character_system.py:385:    return {\"success\": True, \"message\": f\"✅ Обрано клас: {CLASS_CONFIGS[key]['name']}\", \"class_key\": key}",
+        "systems/character_system.py:595:    if key not in CLASS_CONFIGS:",
+        "systems/character_system.py:663:    return {\"success\": True, \"message\": f\"✅ Обрано клас: {CLASS_CONFIGS[key]['name']}\", \"class_key\": key}",
+        "systems/character_system.py:677:    if key not in CLASS_CONFIGS:",
+        "systems/character_system.py:718:    return {\"success\":True,\"message\":f\"✅ Обрано клас: {CLASS_CONFIGS[key]['name']}\",",
+        "systems/pvp_battle_factory.py:7:from data.classes import CLASS_CONFIGS",
+        "systems/pvp_battle_factory.py:47:    if class_key not in CLASS_CONFIGS:",
+        "systems/pvp_battle_factory.py:49:    resource_type = str(CLASS_CONFIGS[class_key].get(\"resource\") or _call(db, \"get_character_resource_type\", uid, \"rage\"))",
+        "systems/simulation/combat_actor_stats.py:4:from data.classes import CLASS_CONFIGS",
+        "systems/simulation/combat_actor_stats.py:36: mana=CLASS_CONFIGS[character_class][\"resource\"]==\"mana\";max_mp=calculate_max_mp(character_class,level=level,intelligence=stats[\"int\"],wisdom=stats[\"wis\"]) if mana else 0",
+        "systems/simulation/combat_actor_stats.py:41: return CombatStatSnapshot(stats[\"str\"],stats[\"dex\"],stats[\"int\"],stats[\"wis\"],stats[\"sta\"],level,max_hp,max_mp,physical_attack,magical_attack,pdef,mdef,weapon_min,weapon_max,attack_type,CLASS_CONFIGS[character_class][\"resource\"])",
+        "tools/audit_9_0_13_final_closure.py:41:        \"CLASS_CONFIGS\", \"CLASS_RESET_SPHERE_ITEM_ID\",",
+        "tools/smoke_test_character_mutation_contracts.py:13:from data.classes import CLASS_CONFIGS",
+        "tools/smoke_test_character_mutation_contracts.py:83:        mana_classes=[key for key,cfg in CLASS_CONFIGS.items() if cfg.get(\"resource\")==\"mana\"]",
+        "tools/smoke_test_character_mutation_contracts.py:84:        non_mana_classes=[key for key,cfg in CLASS_CONFIGS.items() if cfg.get(\"resource\")!=\"mana\"]",
+        "tools/smoke_test_character_mutation_contracts.py:91:        if db.get_character_class_display(TEST_USER_ID)!=CLASS_CONFIGS[mana_key][\"name\"]: fail(\"class display contract failed\")",
+        "tools/smoke_test_class_skill_preview_spacing_17_13_1_2.py:33:class_key = next(iter(start.CLASS_CONFIGS))",
+        "tools/smoke_test_constants_canonicalization.py:20:        \"CLASS_CONFIGS\", \"CLASS_RESET_SPHERE_ITEM_ID\","
+      ],
+      "CLASS_ARMOR_TYPES": [
+        "data/equipment_stat_policy.py:65:CLASS_ARMOR_TYPES = MappingProxyType({",
+        "data/equipment_stat_policy.py:160:        (\"CLASS_ARMOR_TYPES\", CLASS_ARMOR_TYPES),",
+        "data/equipment_stat_policy.py:222:    \"JEWELRY_STAT_WEIGHTS\", \"ARMOR_STAT_WEIGHTS\", \"CLASS_ARMOR_TYPES\",",
+        "db_modules/shop.py:824:        CLASS_ARMOR_TYPES,",
+        "db_modules/shop.py:837:    armor_type = CLASS_ARMOR_TYPES[class_key]",
+        "tools/close_equipment_stat_policy_stage_18_17.py:89:        CLASS_ARMOR_TYPES,",
+        "tools/close_equipment_stat_policy_stage_18_17.py:103:    assert set(CLASS_ARMOR_TYPES) == classes",
+        "tools/close_equipment_stat_policy_stage_18_17.py:104:    assert CLASS_ARMOR_TYPES == {",
+        "tools/close_equipment_stat_policy_stage_18_17.py:148:        \"armor_types\": dict(CLASS_ARMOR_TYPES),",
+        "tools/smoke_test_class_aware_equipment_stat_policy_18_17_1.py:10:    CLASS_ARMOR_TYPES, CLASS_MAIN_HAND_SUBTYPES, CLASS_OFF_HAND_SUBTYPES,",
+        "tools/smoke_test_class_aware_equipment_stat_policy_18_17_1.py:16:assert set(CLASS_ARMOR_TYPES)==set(CLASSES)",
+        "tools/smoke_test_class_aware_equipment_stat_policy_18_17_1.py:17:assert CLASS_ARMOR_TYPES=={\"mage\":\"cloth\",\"priest\":\"cloth\",\"scout\":\"leather\",\"rogue\":\"leather\",\"warrior\":\"chain\",\"knight\":\"plate\"}",
+        "tools/smoke_test_legacy_class_shop_canonical_adapter_18_17_6.py:12:from data.equipment_stat_policy import CLASS_ARMOR_TYPES, CLASS_MAIN_HAND_SUBTYPES, CLASS_OFF_HAND_SUBTYPES",
+        "tools/smoke_test_legacy_class_shop_canonical_adapter_18_17_6.py:29:            assert row[\"armor_type\"] == CLASS_ARMOR_TYPES[class_key]",
+        "tools/verify_equipment_drop_shop_parity_18_17_3.py:12:from data.equipment_stat_policy import CLASS_ARMOR_TYPES,CLASS_MAIN_HAND_SUBTYPES,CLASS_OFF_HAND_SUBTYPES,PRIMARY_STATS,get_allowed_equipment_stats,get_equipment_stat_weights,redistribute_primary_stat_budget,validate_equipment_stat_policy",
+        "tools/verify_equipment_drop_shop_parity_18_17_3.py:71: report={\"stage\":\"18.17.3\",\"status\":\"PASS\",\"generated_at_utc\":datetime.now(timezone.utc).isoformat(),\"read_only\":True,\"production_mutation\":False,\"routes\":{\"class_aware_drop_policy_calls\":1,\"forced_slot_policy_calls\":1,\"base_shop_preview_policy_calls\":1,\"purchase_policy_calls\":0,\"purchase_promotions\":1,\"purchase_reroll\":False},\"class_armor_types\":dict(CLASS_ARMOR_TYPES),\"matrix\":matrix,\"matrix_rows\":len(matrix),\"samples_per_row\":200,\"database\":db,\"compatibility\":{\"item_creation_owner\":\"db_modules/generated_equipment.py\",\"dynamic_module_creates_items\":False,\"calculation_duplicates_present\":True,\"consolidation\":\"deferred to a separate source-faithful patch after import-surface audit\"},\"accepted_manual_checks\":[\"Stage 18.17.2: class-aware mob drop flow completed without traceback\",\"Stage 18.17.2a: base shop previews verified with multiple classes\",\"Shop preview and purchased item flow works after random import recovery\"],\"next_stage\":\"18.17.4 dynamic equipment compatibility consolidation read-only/import-surface audit\"}"
+      ],
+      "ARMOR_ALLOWED_BY_CLASS": [
+        "data/equipment_profiles.py:100:ARMOR_ALLOWED_BY_CLASS = {",
+        "data/equipment_profiles.py:177:        \"ARMOR_ALLOWED_BY_CLASS\",",
+        "db_modules/__init__.py:79:    ARMOR_ALLOWED_BY_CLASS,",
+        "db_modules/__init__.py:475:    'ARMOR_ALLOWED_BY_CLASS',",
+        "db_modules/dev_compat.py:22:    ARMOR_ALLOWED_BY_CLASS,",
+        "db_modules/equipment.py:9:from data.equipment_profiles import ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS",
+        "db_modules/equipment.py:347:    allowed = str(ARMOR_ALLOWED_BY_CLASS.get(class_key) or \"\")",
+        "db_modules/generated_equipment.py:12:    ARMOR_ALLOWED_BY_CLASS,",
+        "db_modules/generated_equipment.py:588:    return ARMOR_ALLOWED_BY_CLASS.get(class_key, \"\")",
+        "db_modules/inventory_compat.py:14:    ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/inventory_compat.py:326:__all__ = ['is_inventory_item_equipped', 'find_equipped_slot_by_inventory_id', 'get_item_required_level_by_inventory_id', 'get_item_classification_by_inventory_id', 'is_class_reset_sphere_inventory_item', 'use_class_reset_sphere_from_inventory', 'ARMOR_ALLOWED_BY_CLASS', 'MAIN_HAND_ALLOWED_BY_CLASS', 'OFF_HAND_ALLOWED_BY_CLASS']",
+        "db_modules/shop.py:183:    from data.equipment_profiles import ARMOR_ALLOWED_BY_CLASS",
+        "db_modules/shop.py:187:    return str(ARMOR_ALLOWED_BY_CLASS.get(class_key) or \"cloth\")",
+        "handlers/inventory.py:99:    ARMOR_ALLOWED_BY_CLASS,",
+        "handlers/inventory.py:627:        for class_key, allowed_armor_type in ARMOR_ALLOWED_BY_CLASS.items():",
+        "handlers/player_interaction.py:1180:        ARMOR_ALLOWED_BY_CLASS,",
+        "handlers/player_interaction.py:1192:        allowed = [key for key, value in ARMOR_ALLOWED_BY_CLASS.items() if value == armor_type]",
+        "tools/audit_9_0_13_final_closure.py:44:        \"ARMOR_ALLOWED_BY_CLASS\", \"ARMOR_EXTRA_STATS_BY_SLOT\",",
+        "tools/audit_equipment_stat_policy_18_17_0.py:46: main=literal(P,\"MAIN_HAND_PROFILES\");off=literal(P,\"OFF_HAND_PROFILES\");slot=literal(P,\"ARMOR_EXTRA_STATS_BY_SLOT\");armor_allowed=literal(P,\"ARMOR_ALLOWED_BY_CLASS\");main_allowed=literal(P,\"MAIN_HAND_ALLOWED_BY_CLASS\");off_allowed=literal(P,\"OFF_HAND_ALLOWED_BY_CLASS\");armor=literal(G,\"ARMOR_PRIMARY_STAT_PROFILES\");defense=literal(G,\"ARMOR_DEFENSE_DISTRIBUTION_PROFILES\")",
+        "tools/smoke_test_constants_canonicalization.py:23:        \"ARMOR_ALLOWED_BY_CLASS\", \"ARMOR_EXTRA_STATS_BY_SLOT\",",
+        "tools/smoke_test_inventory_handler_db_api_16_0_3_1.py:10:    ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS,",
+        "tools/smoke_test_inventory_handler_db_api_16_0_3_1.py:14:assert ARMOR_ALLOWED_BY_CLASS[\"mage\"]==\"cloth\"",
+        "tools/smoke_test_shop_armor_profile_runtime_16_1_16_1.py:7:from data.equipment_profiles import ARMOR_ALLOWED_BY_CLASS",
+        "tools/smoke_test_shop_armor_profile_runtime_16_1_16_1.py:11:    value=ARMOR_ALLOWED_BY_CLASS.get(cls)",
+        "tools/smoke_test_shop_armor_profile_runtime_16_1_16_1.py:19:assert \"ARMOR_ALLOWED_BY_CLASS\" in fn_source"
+      ],
+      "MAIN_HAND_ALLOWED_BY_CLASS": [
+        "data/equipment_profiles.py:111:MAIN_HAND_ALLOWED_BY_CLASS = {",
+        "data/equipment_profiles.py:178:        \"MAIN_HAND_ALLOWED_BY_CLASS\",",
+        "db_modules/__init__.py:80:    MAIN_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/__init__.py:476:    'MAIN_HAND_ALLOWED_BY_CLASS',",
+        "db_modules/dev_compat.py:27:    MAIN_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/equipment.py:9:from data.equipment_profiles import ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS",
+        "db_modules/equipment.py:357:    if subtype in set(MAIN_HAND_ALLOWED_BY_CLASS.get(class_key) or []):",
+        "db_modules/generated_equipment.py:17:    MAIN_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/generated_equipment.py:591:    return MAIN_HAND_ALLOWED_BY_CLASS.get(class_key, [])",
+        "db_modules/inventory_compat.py:14:    ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/inventory_compat.py:326:__all__ = ['is_inventory_item_equipped', 'find_equipped_slot_by_inventory_id', 'get_item_required_level_by_inventory_id', 'get_item_classification_by_inventory_id', 'is_class_reset_sphere_inventory_item', 'use_class_reset_sphere_from_inventory', 'ARMOR_ALLOWED_BY_CLASS', 'MAIN_HAND_ALLOWED_BY_CLASS', 'OFF_HAND_ALLOWED_BY_CLASS']",
+        "db_modules/shop.py:16:    MAIN_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/shop.py:47:    return MAIN_HAND_ALLOWED_BY_CLASS.get(class_key, [])",
+        "handlers/inventory.py:103:    MAIN_HAND_ALLOWED_BY_CLASS,",
+        "handlers/inventory.py:659:        for class_key, allowed_subtypes in MAIN_HAND_ALLOWED_BY_CLASS.items():",
+        "handlers/player_interaction.py:1181:        MAIN_HAND_ALLOWED_BY_CLASS,",
+        "handlers/player_interaction.py:1196:        allowed = [key for key, values in MAIN_HAND_ALLOWED_BY_CLASS.items() if subtype in values]",
+        "tools/audit_9_0_13_final_closure.py:46:        \"MAIN_HAND_ALLOWED_BY_CLASS\", \"MAIN_HAND_PROFILES\",",
+        "tools/audit_equipment_stat_policy_18_17_0.py:46: main=literal(P,\"MAIN_HAND_PROFILES\");off=literal(P,\"OFF_HAND_PROFILES\");slot=literal(P,\"ARMOR_EXTRA_STATS_BY_SLOT\");armor_allowed=literal(P,\"ARMOR_ALLOWED_BY_CLASS\");main_allowed=literal(P,\"MAIN_HAND_ALLOWED_BY_CLASS\");off_allowed=literal(P,\"OFF_HAND_ALLOWED_BY_CLASS\");armor=literal(G,\"ARMOR_PRIMARY_STAT_PROFILES\");defense=literal(G,\"ARMOR_DEFENSE_DISTRIBUTION_PROFILES\")",
+        "tools/smoke_test_constants_canonicalization.py:25:        \"MAIN_HAND_ALLOWED_BY_CLASS\", \"MAIN_HAND_PROFILES\",",
+        "tools/smoke_test_inventory_handler_db_api_16_0_3_1.py:10:    ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS,",
+        "tools/smoke_test_inventory_handler_db_api_16_0_3_1.py:15:assert \"staff_2h\" in MAIN_HAND_ALLOWED_BY_CLASS[\"mage\"]"
+      ],
+      "OFF_HAND_ALLOWED_BY_CLASS": [
+        "data/equipment_profiles.py:122:OFF_HAND_ALLOWED_BY_CLASS = {",
+        "data/equipment_profiles.py:179:        \"OFF_HAND_ALLOWED_BY_CLASS\",",
+        "db_modules/__init__.py:81:    OFF_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/__init__.py:477:    'OFF_HAND_ALLOWED_BY_CLASS',",
+        "db_modules/dev_compat.py:29:    OFF_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/equipment.py:9:from data.equipment_profiles import ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS",
+        "db_modules/equipment.py:366:    if subtype in set(OFF_HAND_ALLOWED_BY_CLASS.get(class_key) or []):",
+        "db_modules/generated_equipment.py:19:    OFF_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/generated_equipment.py:594:    return OFF_HAND_ALLOWED_BY_CLASS.get(class_key, [])",
+        "db_modules/inventory_compat.py:14:    ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/inventory_compat.py:326:__all__ = ['is_inventory_item_equipped', 'find_equipped_slot_by_inventory_id', 'get_item_required_level_by_inventory_id', 'get_item_classification_by_inventory_id', 'is_class_reset_sphere_inventory_item', 'use_class_reset_sphere_from_inventory', 'ARMOR_ALLOWED_BY_CLASS', 'MAIN_HAND_ALLOWED_BY_CLASS', 'OFF_HAND_ALLOWED_BY_CLASS']",
+        "db_modules/shop.py:17:    OFF_HAND_ALLOWED_BY_CLASS",
+        "db_modules/shop.py:52:    return OFF_HAND_ALLOWED_BY_CLASS.get(class_key, [])",
+        "handlers/inventory.py:107:    OFF_HAND_ALLOWED_BY_CLASS,",
+        "handlers/inventory.py:691:        for class_key, allowed_subtypes in OFF_HAND_ALLOWED_BY_CLASS.items():",
+        "handlers/player_interaction.py:1182:        OFF_HAND_ALLOWED_BY_CLASS,",
+        "handlers/player_interaction.py:1200:        allowed = [key for key, values in OFF_HAND_ALLOWED_BY_CLASS.items() if subtype in values]",
+        "tools/audit_9_0_13_final_closure.py:47:        \"OFF_HAND_ALLOWED_BY_CLASS\", \"OFF_HAND_PROFILES\",",
+        "tools/audit_equipment_stat_policy_18_17_0.py:46: main=literal(P,\"MAIN_HAND_PROFILES\");off=literal(P,\"OFF_HAND_PROFILES\");slot=literal(P,\"ARMOR_EXTRA_STATS_BY_SLOT\");armor_allowed=literal(P,\"ARMOR_ALLOWED_BY_CLASS\");main_allowed=literal(P,\"MAIN_HAND_ALLOWED_BY_CLASS\");off_allowed=literal(P,\"OFF_HAND_ALLOWED_BY_CLASS\");armor=literal(G,\"ARMOR_PRIMARY_STAT_PROFILES\");defense=literal(G,\"ARMOR_DEFENSE_DISTRIBUTION_PROFILES\")",
+        "tools/smoke_test_constants_canonicalization.py:26:        \"OFF_HAND_ALLOWED_BY_CLASS\", \"OFF_HAND_PROFILES\",",
+        "tools/smoke_test_inventory_handler_db_api_16_0_3_1.py:10:    ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS,",
+        "tools/smoke_test_inventory_handler_db_api_16_0_3_1.py:16:assert \"shield\" in OFF_HAND_ALLOWED_BY_CLASS[\"knight\"]",
+        "tools/smoke_test_warrior_small_shield_17_17_1_5.py:16:from data.equipment_profiles import OFF_HAND_PROFILES,OFF_HAND_ALLOWED_BY_CLASS,ITEM_SUBTYPE_LABELS",
+        "tools/smoke_test_warrior_small_shield_17_17_1_5.py:18:assert OFF_HAND_ALLOWED_BY_CLASS[\"warrior\"]==[\"warrior_shield\"]",
+        "tools/smoke_test_warrior_small_shield_17_17_1_5.py:19:assert OFF_HAND_ALLOWED_BY_CLASS[\"knight\"]==[\"shield\"]"
+      ]
+    },
+    "duplicate_owner_references": {
+      "CLASS_CONFIGS": [
+        "data/classes.py:9:CLASS_CONFIGS = {",
+        "data/classes.py:71:        \"CLASS_CONFIGS\",",
+        "db_modules/__init__.py:103:    CLASS_CONFIGS,",
+        "db_modules/__init__.py:227:    'CLASS_CONFIGS',",
+        "db_modules/character.py:15:from data.classes import CLASS_CONFIGS",
+        "db_modules/character.py:190:    from data.classes import CLASS_CONFIGS",
+        "db_modules/character.py:195:    resource_type = CLASS_CONFIGS.get(class_key, {}).get(\"resource\", \"\")",
+        "db_modules/dev_compat.py:15:from data.classes import CLASS_CONFIGS, CLASS_RESET_SPHERE_ITEM_ID",
+        "db_modules/inventory_compat.py:7:from data.classes import CLASS_CONFIGS, CLASS_RESET_SPHERE_ITEM_ID",
+        "handlers/inventory.py:111:    CLASS_CONFIGS,",
+        "handlers/inventory.py:747:        config = CLASS_CONFIGS.get(class_key, {})",
+        "handlers/player_interaction.py:1178:    from data.classes import CLASS_CONFIGS",
+        "handlers/player_interaction.py:1205:    names = [str(CLASS_CONFIGS.get(key, {}).get(\"name\", key)) for key in allowed]",
+        "handlers/start.py:18:    CLASS_CONFIGS,",
+        "handlers/start.py:47:    for class_key, config in CLASS_CONFIGS.items():",
+        "handlers/start.py:95:    for class_key, config in CLASS_CONFIGS.items():",
+        "handlers/start.py:491:    for class_key, config in CLASS_CONFIGS.items():",
+        "handlers/start.py:550:    config = CLASS_CONFIGS.get(class_key)",
+        "handlers/start.py:620:        if class_key not in CLASS_CONFIGS:",
+        "handlers/start.py:653:        if class_key not in CLASS_CONFIGS:",
+        "systems/character_system.py:23:from data.classes import CLASS_CONFIGS, CLASS_RESET_SPHERE_ITEM_ID",
+        "systems/character_system.py:217:    return CLASS_CONFIGS.get(key, {}).get(\"name\", \"Не обрано\")",
+        "systems/character_system.py:227:    return CLASS_CONFIGS.get(key, {}).get(\"resource\", \"\")",
+        "systems/character_system.py:351:    if key not in CLASS_CONFIGS:",
+        "systems/character_system.py:385:    return {\"success\": True, \"message\": f\"✅ Обрано клас: {CLASS_CONFIGS[key]['name']}\", \"class_key\": key}",
+        "systems/character_system.py:595:    if key not in CLASS_CONFIGS:",
+        "systems/character_system.py:663:    return {\"success\": True, \"message\": f\"✅ Обрано клас: {CLASS_CONFIGS[key]['name']}\", \"class_key\": key}",
+        "systems/character_system.py:677:    if key not in CLASS_CONFIGS:",
+        "systems/character_system.py:718:    return {\"success\":True,\"message\":f\"✅ Обрано клас: {CLASS_CONFIGS[key]['name']}\",",
+        "systems/pvp_battle_factory.py:7:from data.classes import CLASS_CONFIGS",
+        "systems/pvp_battle_factory.py:47:    if class_key not in CLASS_CONFIGS:",
+        "systems/pvp_battle_factory.py:49:    resource_type = str(CLASS_CONFIGS[class_key].get(\"resource\") or _call(db, \"get_character_resource_type\", uid, \"rage\"))",
+        "systems/simulation/combat_actor_stats.py:4:from data.classes import CLASS_CONFIGS",
+        "systems/simulation/combat_actor_stats.py:36: mana=CLASS_CONFIGS[character_class][\"resource\"]==\"mana\";max_mp=calculate_max_mp(character_class,level=level,intelligence=stats[\"int\"],wisdom=stats[\"wis\"]) if mana else 0",
+        "systems/simulation/combat_actor_stats.py:41: return CombatStatSnapshot(stats[\"str\"],stats[\"dex\"],stats[\"int\"],stats[\"wis\"],stats[\"sta\"],level,max_hp,max_mp,physical_attack,magical_attack,pdef,mdef,weapon_min,weapon_max,attack_type,CLASS_CONFIGS[character_class][\"resource\"])",
+        "tools/audit_9_0_13_final_closure.py:41:        \"CLASS_CONFIGS\", \"CLASS_RESET_SPHERE_ITEM_ID\",",
+        "tools/smoke_test_character_mutation_contracts.py:13:from data.classes import CLASS_CONFIGS",
+        "tools/smoke_test_character_mutation_contracts.py:83:        mana_classes=[key for key,cfg in CLASS_CONFIGS.items() if cfg.get(\"resource\")==\"mana\"]",
+        "tools/smoke_test_character_mutation_contracts.py:84:        non_mana_classes=[key for key,cfg in CLASS_CONFIGS.items() if cfg.get(\"resource\")!=\"mana\"]",
+        "tools/smoke_test_character_mutation_contracts.py:91:        if db.get_character_class_display(TEST_USER_ID)!=CLASS_CONFIGS[mana_key][\"name\"]: fail(\"class display contract failed\")",
+        "tools/smoke_test_class_skill_preview_spacing_17_13_1_2.py:33:class_key = next(iter(start.CLASS_CONFIGS))",
+        "tools/smoke_test_constants_canonicalization.py:20:        \"CLASS_CONFIGS\", \"CLASS_RESET_SPHERE_ITEM_ID\","
+      ],
+      "CLASS_ARMOR_TYPES": [
+        "data/equipment_stat_policy.py:65:CLASS_ARMOR_TYPES = MappingProxyType({",
+        "data/equipment_stat_policy.py:160:        (\"CLASS_ARMOR_TYPES\", CLASS_ARMOR_TYPES),",
+        "data/equipment_stat_policy.py:222:    \"JEWELRY_STAT_WEIGHTS\", \"ARMOR_STAT_WEIGHTS\", \"CLASS_ARMOR_TYPES\",",
+        "db_modules/shop.py:824:        CLASS_ARMOR_TYPES,",
+        "db_modules/shop.py:837:    armor_type = CLASS_ARMOR_TYPES[class_key]",
+        "tools/close_equipment_stat_policy_stage_18_17.py:89:        CLASS_ARMOR_TYPES,",
+        "tools/close_equipment_stat_policy_stage_18_17.py:103:    assert set(CLASS_ARMOR_TYPES) == classes",
+        "tools/close_equipment_stat_policy_stage_18_17.py:104:    assert CLASS_ARMOR_TYPES == {",
+        "tools/close_equipment_stat_policy_stage_18_17.py:148:        \"armor_types\": dict(CLASS_ARMOR_TYPES),",
+        "tools/smoke_test_class_aware_equipment_stat_policy_18_17_1.py:10:    CLASS_ARMOR_TYPES, CLASS_MAIN_HAND_SUBTYPES, CLASS_OFF_HAND_SUBTYPES,",
+        "tools/smoke_test_class_aware_equipment_stat_policy_18_17_1.py:16:assert set(CLASS_ARMOR_TYPES)==set(CLASSES)",
+        "tools/smoke_test_class_aware_equipment_stat_policy_18_17_1.py:17:assert CLASS_ARMOR_TYPES=={\"mage\":\"cloth\",\"priest\":\"cloth\",\"scout\":\"leather\",\"rogue\":\"leather\",\"warrior\":\"chain\",\"knight\":\"plate\"}",
+        "tools/smoke_test_legacy_class_shop_canonical_adapter_18_17_6.py:12:from data.equipment_stat_policy import CLASS_ARMOR_TYPES, CLASS_MAIN_HAND_SUBTYPES, CLASS_OFF_HAND_SUBTYPES",
+        "tools/smoke_test_legacy_class_shop_canonical_adapter_18_17_6.py:29:            assert row[\"armor_type\"] == CLASS_ARMOR_TYPES[class_key]",
+        "tools/verify_equipment_drop_shop_parity_18_17_3.py:12:from data.equipment_stat_policy import CLASS_ARMOR_TYPES,CLASS_MAIN_HAND_SUBTYPES,CLASS_OFF_HAND_SUBTYPES,PRIMARY_STATS,get_allowed_equipment_stats,get_equipment_stat_weights,redistribute_primary_stat_budget,validate_equipment_stat_policy",
+        "tools/verify_equipment_drop_shop_parity_18_17_3.py:71: report={\"stage\":\"18.17.3\",\"status\":\"PASS\",\"generated_at_utc\":datetime.now(timezone.utc).isoformat(),\"read_only\":True,\"production_mutation\":False,\"routes\":{\"class_aware_drop_policy_calls\":1,\"forced_slot_policy_calls\":1,\"base_shop_preview_policy_calls\":1,\"purchase_policy_calls\":0,\"purchase_promotions\":1,\"purchase_reroll\":False},\"class_armor_types\":dict(CLASS_ARMOR_TYPES),\"matrix\":matrix,\"matrix_rows\":len(matrix),\"samples_per_row\":200,\"database\":db,\"compatibility\":{\"item_creation_owner\":\"db_modules/generated_equipment.py\",\"dynamic_module_creates_items\":False,\"calculation_duplicates_present\":True,\"consolidation\":\"deferred to a separate source-faithful patch after import-surface audit\"},\"accepted_manual_checks\":[\"Stage 18.17.2: class-aware mob drop flow completed without traceback\",\"Stage 18.17.2a: base shop previews verified with multiple classes\",\"Shop preview and purchased item flow works after random import recovery\"],\"next_stage\":\"18.17.4 dynamic equipment compatibility consolidation read-only/import-surface audit\"}"
+      ],
+      "ARMOR_ALLOWED_BY_CLASS": [
+        "data/equipment_profiles.py:100:ARMOR_ALLOWED_BY_CLASS = {",
+        "data/equipment_profiles.py:177:        \"ARMOR_ALLOWED_BY_CLASS\",",
+        "db_modules/__init__.py:79:    ARMOR_ALLOWED_BY_CLASS,",
+        "db_modules/__init__.py:475:    'ARMOR_ALLOWED_BY_CLASS',",
+        "db_modules/dev_compat.py:22:    ARMOR_ALLOWED_BY_CLASS,",
+        "db_modules/equipment.py:9:from data.equipment_profiles import ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS",
+        "db_modules/equipment.py:347:    allowed = str(ARMOR_ALLOWED_BY_CLASS.get(class_key) or \"\")",
+        "db_modules/generated_equipment.py:12:    ARMOR_ALLOWED_BY_CLASS,",
+        "db_modules/generated_equipment.py:588:    return ARMOR_ALLOWED_BY_CLASS.get(class_key, \"\")",
+        "db_modules/inventory_compat.py:14:    ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/inventory_compat.py:326:__all__ = ['is_inventory_item_equipped', 'find_equipped_slot_by_inventory_id', 'get_item_required_level_by_inventory_id', 'get_item_classification_by_inventory_id', 'is_class_reset_sphere_inventory_item', 'use_class_reset_sphere_from_inventory', 'ARMOR_ALLOWED_BY_CLASS', 'MAIN_HAND_ALLOWED_BY_CLASS', 'OFF_HAND_ALLOWED_BY_CLASS']",
+        "db_modules/shop.py:183:    from data.equipment_profiles import ARMOR_ALLOWED_BY_CLASS",
+        "db_modules/shop.py:187:    return str(ARMOR_ALLOWED_BY_CLASS.get(class_key) or \"cloth\")",
+        "handlers/inventory.py:99:    ARMOR_ALLOWED_BY_CLASS,",
+        "handlers/inventory.py:627:        for class_key, allowed_armor_type in ARMOR_ALLOWED_BY_CLASS.items():",
+        "handlers/player_interaction.py:1180:        ARMOR_ALLOWED_BY_CLASS,",
+        "handlers/player_interaction.py:1192:        allowed = [key for key, value in ARMOR_ALLOWED_BY_CLASS.items() if value == armor_type]",
+        "tools/audit_9_0_13_final_closure.py:44:        \"ARMOR_ALLOWED_BY_CLASS\", \"ARMOR_EXTRA_STATS_BY_SLOT\",",
+        "tools/audit_equipment_stat_policy_18_17_0.py:46: main=literal(P,\"MAIN_HAND_PROFILES\");off=literal(P,\"OFF_HAND_PROFILES\");slot=literal(P,\"ARMOR_EXTRA_STATS_BY_SLOT\");armor_allowed=literal(P,\"ARMOR_ALLOWED_BY_CLASS\");main_allowed=literal(P,\"MAIN_HAND_ALLOWED_BY_CLASS\");off_allowed=literal(P,\"OFF_HAND_ALLOWED_BY_CLASS\");armor=literal(G,\"ARMOR_PRIMARY_STAT_PROFILES\");defense=literal(G,\"ARMOR_DEFENSE_DISTRIBUTION_PROFILES\")",
+        "tools/smoke_test_constants_canonicalization.py:23:        \"ARMOR_ALLOWED_BY_CLASS\", \"ARMOR_EXTRA_STATS_BY_SLOT\",",
+        "tools/smoke_test_inventory_handler_db_api_16_0_3_1.py:10:    ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS,",
+        "tools/smoke_test_inventory_handler_db_api_16_0_3_1.py:14:assert ARMOR_ALLOWED_BY_CLASS[\"mage\"]==\"cloth\"",
+        "tools/smoke_test_shop_armor_profile_runtime_16_1_16_1.py:7:from data.equipment_profiles import ARMOR_ALLOWED_BY_CLASS",
+        "tools/smoke_test_shop_armor_profile_runtime_16_1_16_1.py:11:    value=ARMOR_ALLOWED_BY_CLASS.get(cls)",
+        "tools/smoke_test_shop_armor_profile_runtime_16_1_16_1.py:19:assert \"ARMOR_ALLOWED_BY_CLASS\" in fn_source"
+      ],
+      "MAIN_HAND_ALLOWED_BY_CLASS": [
+        "data/equipment_profiles.py:111:MAIN_HAND_ALLOWED_BY_CLASS = {",
+        "data/equipment_profiles.py:178:        \"MAIN_HAND_ALLOWED_BY_CLASS\",",
+        "db_modules/__init__.py:80:    MAIN_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/__init__.py:476:    'MAIN_HAND_ALLOWED_BY_CLASS',",
+        "db_modules/dev_compat.py:27:    MAIN_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/equipment.py:9:from data.equipment_profiles import ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS",
+        "db_modules/equipment.py:357:    if subtype in set(MAIN_HAND_ALLOWED_BY_CLASS.get(class_key) or []):",
+        "db_modules/generated_equipment.py:17:    MAIN_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/generated_equipment.py:591:    return MAIN_HAND_ALLOWED_BY_CLASS.get(class_key, [])",
+        "db_modules/inventory_compat.py:14:    ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/inventory_compat.py:326:__all__ = ['is_inventory_item_equipped', 'find_equipped_slot_by_inventory_id', 'get_item_required_level_by_inventory_id', 'get_item_classification_by_inventory_id', 'is_class_reset_sphere_inventory_item', 'use_class_reset_sphere_from_inventory', 'ARMOR_ALLOWED_BY_CLASS', 'MAIN_HAND_ALLOWED_BY_CLASS', 'OFF_HAND_ALLOWED_BY_CLASS']",
+        "db_modules/shop.py:16:    MAIN_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/shop.py:47:    return MAIN_HAND_ALLOWED_BY_CLASS.get(class_key, [])",
+        "handlers/inventory.py:103:    MAIN_HAND_ALLOWED_BY_CLASS,",
+        "handlers/inventory.py:659:        for class_key, allowed_subtypes in MAIN_HAND_ALLOWED_BY_CLASS.items():",
+        "handlers/player_interaction.py:1181:        MAIN_HAND_ALLOWED_BY_CLASS,",
+        "handlers/player_interaction.py:1196:        allowed = [key for key, values in MAIN_HAND_ALLOWED_BY_CLASS.items() if subtype in values]",
+        "tools/audit_9_0_13_final_closure.py:46:        \"MAIN_HAND_ALLOWED_BY_CLASS\", \"MAIN_HAND_PROFILES\",",
+        "tools/audit_equipment_stat_policy_18_17_0.py:46: main=literal(P,\"MAIN_HAND_PROFILES\");off=literal(P,\"OFF_HAND_PROFILES\");slot=literal(P,\"ARMOR_EXTRA_STATS_BY_SLOT\");armor_allowed=literal(P,\"ARMOR_ALLOWED_BY_CLASS\");main_allowed=literal(P,\"MAIN_HAND_ALLOWED_BY_CLASS\");off_allowed=literal(P,\"OFF_HAND_ALLOWED_BY_CLASS\");armor=literal(G,\"ARMOR_PRIMARY_STAT_PROFILES\");defense=literal(G,\"ARMOR_DEFENSE_DISTRIBUTION_PROFILES\")",
+        "tools/smoke_test_constants_canonicalization.py:25:        \"MAIN_HAND_ALLOWED_BY_CLASS\", \"MAIN_HAND_PROFILES\",",
+        "tools/smoke_test_inventory_handler_db_api_16_0_3_1.py:10:    ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS,",
+        "tools/smoke_test_inventory_handler_db_api_16_0_3_1.py:15:assert \"staff_2h\" in MAIN_HAND_ALLOWED_BY_CLASS[\"mage\"]"
+      ],
+      "OFF_HAND_ALLOWED_BY_CLASS": [
+        "data/equipment_profiles.py:122:OFF_HAND_ALLOWED_BY_CLASS = {",
+        "data/equipment_profiles.py:179:        \"OFF_HAND_ALLOWED_BY_CLASS\",",
+        "db_modules/__init__.py:81:    OFF_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/__init__.py:477:    'OFF_HAND_ALLOWED_BY_CLASS',",
+        "db_modules/dev_compat.py:29:    OFF_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/equipment.py:9:from data.equipment_profiles import ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS",
+        "db_modules/equipment.py:366:    if subtype in set(OFF_HAND_ALLOWED_BY_CLASS.get(class_key) or []):",
+        "db_modules/generated_equipment.py:19:    OFF_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/generated_equipment.py:594:    return OFF_HAND_ALLOWED_BY_CLASS.get(class_key, [])",
+        "db_modules/inventory_compat.py:14:    ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS,",
+        "db_modules/inventory_compat.py:326:__all__ = ['is_inventory_item_equipped', 'find_equipped_slot_by_inventory_id', 'get_item_required_level_by_inventory_id', 'get_item_classification_by_inventory_id', 'is_class_reset_sphere_inventory_item', 'use_class_reset_sphere_from_inventory', 'ARMOR_ALLOWED_BY_CLASS', 'MAIN_HAND_ALLOWED_BY_CLASS', 'OFF_HAND_ALLOWED_BY_CLASS']",
+        "db_modules/shop.py:17:    OFF_HAND_ALLOWED_BY_CLASS",
+        "db_modules/shop.py:52:    return OFF_HAND_ALLOWED_BY_CLASS.get(class_key, [])",
+        "handlers/inventory.py:107:    OFF_HAND_ALLOWED_BY_CLASS,",
+        "handlers/inventory.py:691:        for class_key, allowed_subtypes in OFF_HAND_ALLOWED_BY_CLASS.items():",
+        "handlers/player_interaction.py:1182:        OFF_HAND_ALLOWED_BY_CLASS,",
+        "handlers/player_interaction.py:1200:        allowed = [key for key, values in OFF_HAND_ALLOWED_BY_CLASS.items() if subtype in values]",
+        "tools/audit_9_0_13_final_closure.py:47:        \"OFF_HAND_ALLOWED_BY_CLASS\", \"OFF_HAND_PROFILES\",",
+        "tools/audit_equipment_stat_policy_18_17_0.py:46: main=literal(P,\"MAIN_HAND_PROFILES\");off=literal(P,\"OFF_HAND_PROFILES\");slot=literal(P,\"ARMOR_EXTRA_STATS_BY_SLOT\");armor_allowed=literal(P,\"ARMOR_ALLOWED_BY_CLASS\");main_allowed=literal(P,\"MAIN_HAND_ALLOWED_BY_CLASS\");off_allowed=literal(P,\"OFF_HAND_ALLOWED_BY_CLASS\");armor=literal(G,\"ARMOR_PRIMARY_STAT_PROFILES\");defense=literal(G,\"ARMOR_DEFENSE_DISTRIBUTION_PROFILES\")",
+        "tools/smoke_test_constants_canonicalization.py:26:        \"OFF_HAND_ALLOWED_BY_CLASS\", \"OFF_HAND_PROFILES\",",
+        "tools/smoke_test_inventory_handler_db_api_16_0_3_1.py:10:    ARMOR_ALLOWED_BY_CLASS, MAIN_HAND_ALLOWED_BY_CLASS, OFF_HAND_ALLOWED_BY_CLASS,",
+        "tools/smoke_test_inventory_handler_db_api_16_0_3_1.py:16:assert \"shield\" in OFF_HAND_ALLOWED_BY_CLASS[\"knight\"]",
+        "tools/smoke_test_warrior_small_shield_17_17_1_5.py:16:from data.equipment_profiles import OFF_HAND_PROFILES,OFF_HAND_ALLOWED_BY_CLASS,ITEM_SUBTYPE_LABELS",
+        "tools/smoke_test_warrior_small_shield_17_17_1_5.py:18:assert OFF_HAND_ALLOWED_BY_CLASS[\"warrior\"]==[\"warrior_shield\"]",
+        "tools/smoke_test_warrior_small_shield_17_17_1_5.py:19:assert OFF_HAND_ALLOWED_BY_CLASS[\"knight\"]==[\"shield\"]"
+      ]
+    }
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.6.2 parent verified.",
+      "details": {
+        "actual": "4104c61afad85e5966ef5040ace789317265d7bb"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "STAGING_EMPTY",
+      "status": "PASS",
+      "summary": "Staging area is empty.",
+      "details": {
+        "staged": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "CLASS_KEYS",
+      "status": "PASS",
+      "summary": "V1 class keys: ('warrior', 'knight', 'scout', 'rogue', 'mage', 'priest')",
+      "details": {
+        "expected": [
+          "warrior",
+          "knight",
+          "scout",
+          "rogue",
+          "mage",
+          "priest"
+        ]
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "PARITY_MATRIX",
+      "status": "PASS",
+      "summary": "Resource and equipment mappings are complete for all six classes.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "DUPLICATE_KEYS",
+      "status": "PASS",
+      "summary": "No duplicate class keys.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "CI_BASELINE",
+      "status": "PASS",
+      "summary": "ROM V2 CI baseline: PASS\n[PASS] compile\n[PASS] imports\n[PASS] unit\n[PASS] architecture\n[PASS] duplicate_scan\n[PASS] content_validation",
+      "details": {
+        "failed_checks": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "READ_ONLY_ISOLATION",
+      "status": "PASS",
+      "summary": "V1 sources, databases, config and V2 runtime remained byte-for-byte unchanged.",
+      "details": {},
+      "blocking": false
+    }
+  ],
+  "blockers": [],
+  "protected_before": {
+    "v1": {
+      "game.db": {
+        "exists": true,
+        "size": 1925120,
+        "mtime_ns": 1791928577995768700,
+        "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+      },
+      "game.db-wal": {
+        "exists": true,
+        "size": 4132392,
+        "mtime_ns": 1791931855310943600,
+        "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+      },
+      "game.db-shm": {
+        "exists": true,
+        "size": 32768,
+        "mtime_ns": 1791931554269010100,
+        "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+      }
+    },
+    "config": {
+      ".env": {
+        "exists": true,
+        "size": 339,
+        "mtime_ns": 1788524396934698500,
+        "sha256": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42"
+      },
+      "rom_v2/.env": {
+        "exists": true,
+        "size": 190,
+        "mtime_ns": 1792345023007170000,
+        "sha256": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc"
+      }
+    },
+    "v2_runtime": {
+      "exists": true,
+      "size": 200704,
+      "mtime_ns": 1792352375873781800,
+      "sha256": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  },
+  "protected_after": {
+    "v1": {
+      "game.db": {
+        "exists": true,
+        "size": 1925120,
+        "mtime_ns": 1791928577995768700,
+        "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+      },
+      "game.db-wal": {
+        "exists": true,
+        "size": 4132392,
+        "mtime_ns": 1791931855310943600,
+        "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+      },
+      "game.db-shm": {
+        "exists": true,
+        "size": 32768,
+        "mtime_ns": 1791931554269010100,
+        "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+      }
+    },
+    "config": {
+      ".env": {
+        "exists": true,
+        "size": 339,
+        "mtime_ns": 1788524396934698500,
+        "sha256": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42"
+      },
+      "rom_v2/.env": {
+        "exists": true,
+        "size": 190,
+        "mtime_ns": 1792345023007170000,
+        "sha256": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc"
+      }
+    },
+    "v2_runtime": {
+      "exists": true,
+      "size": 200704,
+      "mtime_ns": 1792352375873781800,
+      "sha256": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  },
+  "changed_files": [
+    "reports/stage_21_6_3_existing_class_catalog_audit.json",
+    "MD/STAGE_21_6_3_EXISTING_CLASS_CATALOG_AUDIT.md"
+  ],
+  "commit_scope": [
+    "reports/stage_21_6_3_existing_class_catalog_audit.json",
+    "MD/STAGE_21_6_3_EXISTING_CLASS_CATALOG_AUDIT.md"
+  ],
+  "manual_check": "NOT_REQUIRED",
+  "next_patch_if_go": "patch_21_6_3a_implement_class_catalog.py"
+}
