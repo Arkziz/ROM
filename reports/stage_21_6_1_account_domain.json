@@ -1,0 +1,239 @@
+{
+  "schema_version": 1,
+  "stage": "21.6.1",
+  "status": "PASS",
+  "conclusion": "GO",
+  "generated_at_utc": "2026-10-18T20:05:47Z",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head_before_commit": "35a57ea1e9e65f9819adc16e5739f841328407e8",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "canonical_owners": {
+    "aggregate": "rom_v2.domain.account.Account",
+    "service": "rom_v2.application.account_service.AccountService",
+    "repository": "rom_v2.infrastructure.persistence.account_repository.SQLiteAccountRepository",
+    "unit_of_work_adapter": "rom_v2.infrastructure.persistence.account_unit_of_work.SQLiteAccountUnitOfWork"
+  },
+  "contract": {
+    "telegram_identity": "positive_unique",
+    "registered_at": "utc_iso8601",
+    "statuses": [
+      "active",
+      "blocked",
+      "closed"
+    ],
+    "closed_terminal": true,
+    "bag_capacity_account_level": true,
+    "crystal_wallet_account_level": true,
+    "registration_idempotency": "telegram_user_id",
+    "optimistic_version": true,
+    "presentation_text_in_domain": false
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.5.6 parent verified.",
+      "details": {
+        "actual": "35a57ea1e9e65f9819adc16e5739f841328407e8"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "STAGING_EMPTY",
+      "status": "PASS",
+      "summary": "Staging empty.",
+      "details": {
+        "staged": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "FOCUSED_TEST",
+      "status": "PASS",
+      "summary": "......\n----------------------------------------------------------------------\nRan 6 tests in 0.849s\n\nOK",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "CI_BASELINE",
+      "status": "PASS",
+      "summary": "ROM V2 CI baseline: PASS\n[PASS] compile\n[PASS] imports\n[PASS] unit\n[PASS] architecture\n[PASS] duplicate_scan\n[PASS] content_validation",
+      "details": {
+        "failed": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "PROTECTED_RUNTIME_UNCHANGED",
+      "status": "PASS",
+      "summary": "Config, V1 DB and development V2 runtime DB unchanged.",
+      "details": {},
+      "blocking": false
+    }
+  ],
+  "backup_manifest": {
+    "files": {
+      "rom_v2/domain/__init__.py": {
+        "existed": true,
+        "backup": "backup/stage_21_6_1__rom_v2__domain____init__.py"
+      },
+      "rom_v2/domain/account.py": {
+        "existed": false,
+        "backup": null
+      },
+      "rom_v2/application/__init__.py": {
+        "existed": true,
+        "backup": "backup/stage_21_6_1__rom_v2__application____init__.py"
+      },
+      "rom_v2/application/account_ports.py": {
+        "existed": false,
+        "backup": null
+      },
+      "rom_v2/application/account_service.py": {
+        "existed": false,
+        "backup": null
+      },
+      "rom_v2/infrastructure/persistence/__init__.py": {
+        "existed": true,
+        "backup": "backup/stage_21_6_1__rom_v2__infrastructure__persistence____init__.py"
+      },
+      "rom_v2/infrastructure/persistence/account_repository.py": {
+        "existed": false,
+        "backup": null
+      },
+      "rom_v2/infrastructure/persistence/account_unit_of_work.py": {
+        "existed": false,
+        "backup": null
+      },
+      "tests_v2/test_account_domain.py": {
+        "existed": false,
+        "backup": null
+      },
+      "reports/stage_21_6_1_account_domain.json": {
+        "existed": false,
+        "backup": null
+      },
+      "MD/STAGE_21_6_1_ACCOUNT_DOMAIN.md": {
+        "existed": false,
+        "backup": null
+      }
+    },
+    "runtime": {
+      "existed": true,
+      "backup": "backup/stage_21_6_1__runtime_v2_db__rom_v2.db"
+    }
+  },
+  "v1_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "v1_after": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "runtime_before": {
+    "exists": true,
+    "size": 200704,
+    "mtime_ns": 1792352375873781800,
+    "sha256": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+  },
+  "runtime_after": {
+    "exists": true,
+    "size": 200704,
+    "mtime_ns": 1792352375873781800,
+    "sha256": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+  },
+  "changed_files": [
+    "rom_v2/domain/__init__.py",
+    "rom_v2/domain/account.py",
+    "rom_v2/application/__init__.py",
+    "rom_v2/application/account_ports.py",
+    "rom_v2/application/account_service.py",
+    "rom_v2/infrastructure/persistence/__init__.py",
+    "rom_v2/infrastructure/persistence/account_repository.py",
+    "rom_v2/infrastructure/persistence/account_unit_of_work.py",
+    "tests_v2/test_account_domain.py",
+    "reports/stage_21_6_1_account_domain.json",
+    "MD/STAGE_21_6_1_ACCOUNT_DOMAIN.md"
+  ],
+  "commit_scope": [
+    "rom_v2/domain/__init__.py",
+    "rom_v2/domain/account.py",
+    "rom_v2/application/__init__.py",
+    "rom_v2/application/account_ports.py",
+    "rom_v2/application/account_service.py",
+    "rom_v2/infrastructure/persistence/__init__.py",
+    "rom_v2/infrastructure/persistence/account_repository.py",
+    "rom_v2/infrastructure/persistence/account_unit_of_work.py",
+    "tests_v2/test_account_domain.py",
+    "reports/stage_21_6_1_account_domain.json",
+    "MD/STAGE_21_6_1_ACCOUNT_DOMAIN.md"
+  ],
+  "excluded_from_commit": [
+    "patch/patch_21_6_1_implement_account_domain.py",
+    ".runtime/v2/db/rom_v2.db",
+    ".env",
+    "rom_v2/.env",
+    "ROM_FULL_DUMP.txt"
+  ],
+  "manual_check": "NOT_REQUIRED",
+  "next_canonical_stage": "21.6.2",
+  "suggested_next_patch": "patch_21_6_2_implement_character_lifecycle.py"
+}

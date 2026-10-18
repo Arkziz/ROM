@@ -1,3 +1,5 @@
-"""Pure ROM V2 domain package."""
+"""Canonical ROM V2 domain models and value objects."""
 
-__all__: tuple[str, ...] = ()
+from rom_v2.domain.account import Account, AccountStatus
+
+__all__ = ["Account", "AccountStatus"]
