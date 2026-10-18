@@ -1,0 +1,214 @@
+{
+  "schema_version": 1,
+  "stage": "21.4.3",
+  "revision": 1,
+  "generated_at_utc": "2026-10-18T18:23:22Z",
+  "summary": {
+    "conclusion": "GO",
+    "status": "IMPLEMENTED",
+    "blocking_failures": [],
+    "polling_supported": false,
+    "telegram_contacted": false,
+    "token_read": false,
+    "gameplay_started": false,
+    "database_opened": false
+  },
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head_before_commit": "62e88911411f1dda6f2dbe59be94d6443a03d949",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.4.2 parent verified.",
+      "details": {
+        "expected": "62e88911411f1dda6f2dbe59be94d6443a03d949",
+        "actual": "62e88911411f1dda6f2dbe59be94d6443a03d949"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "STAGING_EMPTY",
+      "status": "PASS",
+      "summary": "Staging area is empty.",
+      "details": {
+        "staged": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "FOCUSED_TEST",
+      "status": "PASS",
+      "summary": "....\n----------------------------------------------------------------------\nRan 4 tests in 0.011s\n\nOK",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "IMPORT_CHECK",
+      "status": "PASS",
+      "summary": "Telegram adapter imports without polling.",
+      "details": {
+        "stderr": ""
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "CI_BASELINE",
+      "status": "PASS",
+      "summary": "ROM V2 CI baseline: PASS\n[PASS] compile\n[PASS] imports\n[PASS] unit\n[PASS] architecture\n[PASS] duplicate_scan\n[PASS] content_validation",
+      "details": {
+        "failed_checks": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "PROTECTED_CONFIG",
+      "status": "PASS",
+      "summary": "V1 and V2 environment hashes preserved: True.",
+      "details": {
+        "preserved_dirty_paths": [
+          ".env",
+          "rom_v2/.env"
+        ]
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "DATABASE_UNCHANGED",
+      "status": "PASS",
+      "summary": "DB/WAL/SHM unchanged and SQLite was not opened.",
+      "details": {
+        "production_connection_opened": false
+      },
+      "blocking": false
+    }
+  ],
+  "mutation_started": true,
+  "database_mutation_started": false,
+  "rollback_required": false,
+  "backup_manifest": {
+    "files": {
+      "rom_v2/infrastructure/telegram/__init__.py": {
+        "existed": false,
+        "backup": null,
+        "sha256": null
+      },
+      "rom_v2/infrastructure/telegram/adapter.py": {
+        "existed": false,
+        "backup": null,
+        "sha256": null
+      },
+      "tests_v2/test_telegram_adapter_skeleton.py": {
+        "existed": false,
+        "backup": null,
+        "sha256": null
+      },
+      "reports/stage_21_4_3_telegram_adapter_skeleton.json": {
+        "existed": false,
+        "backup": null,
+        "sha256": null
+      },
+      "MD/STAGE_21_4_3_TELEGRAM_ADAPTER_SKELETON.md": {
+        "existed": false,
+        "backup": null,
+        "sha256": null
+      }
+    }
+  },
+  "protected_config": {
+    "preserved_dirty_paths": [
+      ".env",
+      "rom_v2/.env"
+    ],
+    "hash_preservation_pass": true,
+    "hashes_recorded_in_report": false
+  },
+  "database_evidence_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "database_evidence_after": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "changed_files": [
+    "rom_v2/infrastructure/telegram/__init__.py",
+    "rom_v2/infrastructure/telegram/adapter.py",
+    "tests_v2/test_telegram_adapter_skeleton.py",
+    "reports/stage_21_4_3_telegram_adapter_skeleton.json",
+    "MD/STAGE_21_4_3_TELEGRAM_ADAPTER_SKELETON.md"
+  ],
+  "commit_scope": [
+    "rom_v2/infrastructure/telegram/__init__.py",
+    "rom_v2/infrastructure/telegram/adapter.py",
+    "tests_v2/test_telegram_adapter_skeleton.py",
+    "reports/stage_21_4_3_telegram_adapter_skeleton.json",
+    "MD/STAGE_21_4_3_TELEGRAM_ADAPTER_SKELETON.md"
+  ],
+  "excluded_from_commit": [
+    "patch/patch_21_4_3_create_telegram_adapter_skeleton.py",
+    ".env",
+    "rom_v2/.env",
+    "ROM_FULL_DUMP.txt"
+  ],
+  "manual_check": "NOT_REQUIRED",
+  "next_stage": "21.4.4",
+  "suggested_next_patch": "patch_21_4_4_create_callback_codec_registry.py"
+}
