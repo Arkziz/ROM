@@ -1,0 +1,3 @@
+# Stage 21.6.2 — Character lifecycle
+
+Canonical owners: `Character`, `CharacterService`, `SQLiteCharacterRepository`, and `SQLiteCharacterUnitOfWork`. Creation validates stable identity, exact stored name, technical class key, location, and current resources. One character is allowed per account. Reset preserves character ID, account, name, and class while resetting progression, location, current HP/MP, and optimistic version. Class catalog semantics and stat formulas remain deferred to canonical Stages 21.6.3–21.6.5. No presentation name examples are embedded. Manual game verification is not required.

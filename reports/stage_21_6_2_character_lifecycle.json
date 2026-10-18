@@ -1,0 +1,238 @@
+{
+  "schema_version": 1,
+  "stage": "21.6.2",
+  "status": "PASS",
+  "conclusion": "GO",
+  "generated_at_utc": "2026-10-18T20:12:10Z",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head_before_commit": "b497e9aaab159045c1dbccd5f0c5453a81be985f",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "canonical_owners": {
+    "aggregate": "rom_v2.domain.character.Character",
+    "service": "rom_v2.application.character_service.CharacterService",
+    "repository": "rom_v2.infrastructure.persistence.character_repository.SQLiteCharacterRepository",
+    "unit_of_work_adapter": "rom_v2.infrastructure.persistence.character_unit_of_work.SQLiteCharacterUnitOfWork"
+  },
+  "contract": {
+    "one_character_per_account": true,
+    "name_examples_embedded": false,
+    "class_key": "technical_nonempty_deferred_catalog_validation",
+    "reset_preserves": [
+      "character_id",
+      "account_id",
+      "name",
+      "class_key"
+    ],
+    "reset_changes": [
+      "level",
+      "experience",
+      "location_key",
+      "current_hp",
+      "current_mp",
+      "version"
+    ],
+    "implicit_healing": false,
+    "optimistic_version": true
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.6.1 parent verified.",
+      "details": {
+        "actual": "b497e9aaab159045c1dbccd5f0c5453a81be985f"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "STAGING_EMPTY",
+      "status": "PASS",
+      "summary": "Staging empty.",
+      "details": {
+        "staged": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "FOCUSED_TEST",
+      "status": "PASS",
+      "summary": "......\n----------------------------------------------------------------------\nRan 6 tests in 1.104s\n\nOK",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "CI_BASELINE",
+      "status": "PASS",
+      "summary": "ROM V2 CI baseline: PASS\n[PASS] compile\n[PASS] imports\n[PASS] unit\n[PASS] architecture\n[PASS] duplicate_scan\n[PASS] content_validation",
+      "details": {
+        "failed": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "PROTECTED_RUNTIME_UNCHANGED",
+      "status": "PASS",
+      "summary": "Config, V1 DB and V2 runtime DB unchanged.",
+      "details": {},
+      "blocking": false
+    }
+  ],
+  "backup_manifest": {
+    "files": {
+      "rom_v2/domain/character.py": {
+        "existed": false,
+        "backup": null
+      },
+      "rom_v2/application/character_ports.py": {
+        "existed": false,
+        "backup": null
+      },
+      "rom_v2/application/character_service.py": {
+        "existed": false,
+        "backup": null
+      },
+      "rom_v2/infrastructure/persistence/character_repository.py": {
+        "existed": false,
+        "backup": null
+      },
+      "rom_v2/infrastructure/persistence/character_unit_of_work.py": {
+        "existed": false,
+        "backup": null
+      },
+      "rom_v2/domain/__init__.py": {
+        "existed": true,
+        "backup": "backup/stage_21_6_2__rom_v2__domain____init__.py"
+      },
+      "rom_v2/application/__init__.py": {
+        "existed": true,
+        "backup": "backup/stage_21_6_2__rom_v2__application____init__.py"
+      },
+      "rom_v2/infrastructure/persistence/__init__.py": {
+        "existed": true,
+        "backup": "backup/stage_21_6_2__rom_v2__infrastructure__persistence____init__.py"
+      },
+      "tests_v2/test_character_lifecycle.py": {
+        "existed": false,
+        "backup": null
+      },
+      "reports/stage_21_6_2_character_lifecycle.json": {
+        "existed": false,
+        "backup": null
+      },
+      "MD/STAGE_21_6_2_CHARACTER_LIFECYCLE.md": {
+        "existed": false,
+        "backup": null
+      }
+    },
+    "runtime": {
+      "existed": true,
+      "backup": "backup/stage_21_6_2__runtime.db"
+    }
+  },
+  "v1_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "v1_after": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "runtime_before": {
+    "exists": true,
+    "size": 200704,
+    "mtime_ns": 1792352375873781800,
+    "sha256": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+  },
+  "runtime_after": {
+    "exists": true,
+    "size": 200704,
+    "mtime_ns": 1792352375873781800,
+    "sha256": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+  },
+  "changed_files": [
+    "rom_v2/domain/character.py",
+    "rom_v2/application/character_ports.py",
+    "rom_v2/application/character_service.py",
+    "rom_v2/infrastructure/persistence/character_repository.py",
+    "rom_v2/infrastructure/persistence/character_unit_of_work.py",
+    "rom_v2/domain/__init__.py",
+    "rom_v2/application/__init__.py",
+    "rom_v2/infrastructure/persistence/__init__.py",
+    "tests_v2/test_character_lifecycle.py",
+    "reports/stage_21_6_2_character_lifecycle.json",
+    "MD/STAGE_21_6_2_CHARACTER_LIFECYCLE.md"
+  ],
+  "commit_scope": [
+    "rom_v2/domain/character.py",
+    "rom_v2/application/character_ports.py",
+    "rom_v2/application/character_service.py",
+    "rom_v2/infrastructure/persistence/character_repository.py",
+    "rom_v2/infrastructure/persistence/character_unit_of_work.py",
+    "rom_v2/domain/__init__.py",
+    "rom_v2/application/__init__.py",
+    "rom_v2/infrastructure/persistence/__init__.py",
+    "tests_v2/test_character_lifecycle.py",
+    "reports/stage_21_6_2_character_lifecycle.json",
+    "MD/STAGE_21_6_2_CHARACTER_LIFECYCLE.md"
+  ],
+  "manual_check": "NOT_REQUIRED",
+  "next_canonical_stage": "21.6.3",
+  "suggested_next_patch": "patch_21_6_3_implement_class_catalog.py"
+}
