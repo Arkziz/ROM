@@ -4,11 +4,11 @@ import unittest
 from rom_v2.infrastructure.persistence.schema_contract import SCHEMA_CONTRACT
 from tools.verify_v2_schema_contract import verify_contract
 
-class CompleteSchemaContractTest(unittest.TestCase):
+class StrengthenedSchemaContractTest(unittest.TestCase):
     """Verify DDL-ready metadata without creating the physical database."""
     def test_complete_contract_passes(self) -> None:
         """Require all owners, types, nullability, constraints, and FK actions."""
-        result=verify_contract(); self.assertEqual(result["status"], "PASS"); self.assertEqual(result["contract_revision"], "21.5.1a")
+        result=verify_contract(); self.assertEqual(result["status"], "PASS"); self.assertEqual(result["contract_revision"], "21.5.1b")
     def test_money_and_mutable_counts_use_integer_storage(self) -> None:
         """Prevent float money and unconstrained inventory quantities."""
         tables=dict(SCHEMA_CONTRACT["tables"])
@@ -33,4 +33,21 @@ class CompleteSchemaContractTest(unittest.TestCase):
         deferred=dict(SCHEMA_CONTRACT["deferred_domains"])
         self.assertIn("guild", deferred); self.assertIn("auction", deferred); self.assertIn("runes_sockets", deferred)
         self.assertTrue(all(item["decision"] == "deferred_no_placeholder_table" for item in deferred.values()))
+
+    def test_completion_timestamps_are_bidirectional(self) -> None:
+        """Reject timestamps on non-completed quest and operation states."""
+        tables = dict(SCHEMA_CONTRACT["tables"])
+        quest_check = "(state_key = 'completed' AND completed_at_utc IS NOT NULL) OR (state_key <> 'completed' AND completed_at_utc IS NULL)"
+        operation_check = "(status_key = 'completed' AND completed_at_utc IS NOT NULL) OR (status_key <> 'completed' AND completed_at_utc IS NULL)"
+        self.assertIn(quest_check, tables["quest_progress"]["checks"])
+        self.assertIn(operation_check, tables["operation_records"]["checks"])
+
+    def test_exact_once_dependents_reference_operation_records(self) -> None:
+        """Require ledger evidence and reservation ownership to reference operations."""
+        tables = dict(SCHEMA_CONTRACT["tables"])
+        ledger_fks = tables["crystal_ledger"]["foreign_keys"]
+        reservation_fks = tables["item_reservations"]["foreign_keys"]
+        self.assertIn({"column": "operation_id", "target_table": "operation_records", "target_column": "operation_id", "on_delete": "RESTRICT", "on_update": "CASCADE"}, ledger_fks)
+        self.assertIn({"column": "operation_id", "target_table": "operation_records", "target_column": "operation_id", "on_delete": "CASCADE", "on_update": "CASCADE"}, reservation_fks)
+
 if __name__ == "__main__": unittest.main()

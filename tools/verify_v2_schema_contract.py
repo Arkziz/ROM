@@ -54,6 +54,27 @@ def verify_contract() -> dict[str, Any]:
     if SCHEMA_CONTRACT.get("v1_data_strategy") != "do_not_migrate_test_data": violations.append({"rule": "V1_DATA_STRATEGY", "detail": "V1 test data must not migrate"})
     if SCHEMA_CONTRACT.get("money_policy") != "integer_minor_units": violations.append({"rule": "MONEY_POLICY", "detail": "integer minor units required"})
     if SCHEMA_CONTRACT.get("timestamp_policy") != "utc_iso8601_text": violations.append({"rule": "TIMESTAMP_POLICY", "detail": "UTC ISO-8601 required"})
+    quest_checks = set(tables["quest_progress"].get("checks", []))
+    required_quest_lifecycle = "(state_key = 'completed' AND completed_at_utc IS NOT NULL) OR (state_key <> 'completed' AND completed_at_utc IS NULL)"
+    if required_quest_lifecycle not in quest_checks:
+        violations.append({"rule": "QUEST_COMPLETION_BIDIRECTIONAL", "detail": "quest completion timestamp must exactly match completed state"})
+    operation_checks = set(tables["operation_records"].get("checks", []))
+    required_operation_lifecycle = "(status_key = 'completed' AND completed_at_utc IS NOT NULL) OR (status_key <> 'completed' AND completed_at_utc IS NULL)"
+    if required_operation_lifecycle not in operation_checks:
+        violations.append({"rule": "OPERATION_COMPLETION_BIDIRECTIONAL", "detail": "operation completion timestamp must exactly match completed status"})
+    def has_fk(table_name: str, column_name: str, target_table: str, on_delete: str) -> bool:
+        return any(
+            fk.get("column") == column_name
+            and fk.get("target_table") == target_table
+            and fk.get("target_column") == "operation_id"
+            and fk.get("on_delete") == on_delete
+            and fk.get("on_update") == "CASCADE"
+            for fk in tables[table_name].get("foreign_keys", [])
+        )
+    if not has_fk("crystal_ledger", "operation_id", "operation_records", "RESTRICT"):
+        violations.append({"rule": "LEDGER_OPERATION_FK", "detail": "crystal ledger must retain exact-once operation evidence"})
+    if not has_fk("item_reservations", "operation_id", "operation_records", "CASCADE"):
+        violations.append({"rule": "RESERVATION_OPERATION_FK", "detail": "reservation lifetime must follow operation lifetime"})
     return {"status": "PASS" if not violations else "FAIL", "contract_revision": SCHEMA_CONTRACT["contract_revision"], "table_count": len(tables), "column_count": sum(len(dict(t["columns"])) for t in tables.values()), "index_count": len(SCHEMA_CONTRACT["indexes"]), "deferred_domain_count": len(deferred), "tables": tables, "indexes": list(SCHEMA_CONTRACT["indexes"]), "deferred_domains": deferred, "violations": violations}
 
 def main() -> int:

@@ -2,30 +2,24 @@
 
 ## Status
 
-`PROPOSED_FOR_EXPERT_ACCEPTANCE — canonical revision 21.5.1a`
+`PROPOSED_FOR_EXPERT_ACCEPTANCE — canonical revision 21.5.1b`
 
-## Database strategy
+## Strategy
 
-Create a new V2 database from a clean baseline migration. Do not migrate the disposable V1 test database. The V1 database remains an immutable behavioral reference only.
+Create a new reset-first V2 SQLite database from migration `001_v2_baseline`. Do not migrate the disposable V1 test database or copy the V1 migration chain.
 
-## Storage policies
+## Strengthened lifecycle invariants
 
-- SQLite with foreign keys enabled by every connection.
-- UTC ISO-8601 TEXT timestamps.
-- Gold as integer minor units; crystals as integer units.
-- Explicit type, nullability, default, generation owner, and checks for every column.
-- Explicit `ON DELETE` and `ON UPDATE` actions for every foreign key.
-- Append-only ledger, domain events, and migration history.
-- Persistent operation records and outbox for exact-once settlement.
+- Quest `completed_at_utc` is present if and only if `state_key = completed`.
+- Operation `completed_at_utc` is present if and only if `status_key = completed`.
+- Crystal ledger entries reference persistent `operation_records` with `ON DELETE RESTRICT`.
+- Item reservations reference persistent `operation_records` with `ON DELETE CASCADE`.
+- Both exact-once links use `ON UPDATE CASCADE`.
 
-## Baseline scope
+## Existing accepted policies
 
-The 15 baseline tables cover account, character, stats, economy, inventory, equipment, story progress, exact-once operations, domain events, outbox, and migrations.
-
-## Deferred domains
-
-Travel, guild, direct trade, auction, PvP history, Premium, daily rewards, notifications, ratings/chronicles, events, and rune sockets remain explicitly deferred. No placeholder tables are created before each domain has an accepted persistence contract.
+All 91 columns retain explicit type, nullability, default, generation owner, and checks. All foreign keys retain explicit lifecycle actions. Money uses integer units and timestamps use UTC ISO-8601 text. Eleven future domains remain deferred without placeholder tables.
 
 ## Stage boundary
 
-Stage 21.5.2 converts this accepted contract into migration `001_v2_baseline` and creates only an isolated `.runtime/v2/db` database.
+Stage 21.5.2 may generate SQL only after expert acceptance of revision 21.5.1b.

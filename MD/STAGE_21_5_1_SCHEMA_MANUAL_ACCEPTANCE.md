@@ -1,13 +1,10 @@
-# Stage 21.5.1a — Expert acceptance checklist
+# Stage 21.5.1b — Expert acceptance checklist
 
-- [ ] Every column has a SQLite type, nullability, default policy, generation owner, and checks.
-- [ ] Every foreign key has explicit delete/update actions.
-- [ ] Account and character lifecycles are correct.
-- [ ] Money, quantities, durability, versions, and event sequences cannot enter invalid ranges.
-- [ ] Exact-once operations, append-only events, ledger, and outbox are sufficient.
-- [ ] Indexes cover current fundamental lookup paths.
-- [ ] Deferred domains are explicit and do not have premature placeholder tables.
-- [ ] Clean V2 database creation is preferred over V1 test-data migration.
-- [ ] The schema is acceptable as input to migration `001_v2_baseline`.
+- [ ] Completion timestamps are bidirectional with completed states.
+- [ ] Ledger rows cannot outlive or lose exact-once operation evidence.
+- [ ] Temporary reservations follow their operation lifecycle.
+- [ ] All prior type, range, nullability, FK, index, and deferred-domain contracts remain intact.
+- [ ] A new clean V2 database is preferred; V1 test data is not migrated.
+- [ ] Revision 21.5.1b is acceptable as input to `001_v2_baseline`.
 
-Acceptance phrase: `Приймаю Stage 21.5.1a schema design`.
+Acceptance phrase: `Приймаю Stage 21.5.1b schema design`.

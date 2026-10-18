@@ -42,7 +42,7 @@ def foreign_key(
 
 
 _SCHEMA: Final[dict[str, object]] = {
-    "contract_revision": "21.5.1a",
+    "contract_revision": "21.5.1b",
     "schema_version": 1,
     "database_engine": "sqlite",
     "development_strategy": "clean_reset_first",
@@ -130,7 +130,10 @@ _SCHEMA: Final[dict[str, object]] = {
                 "reason_key": column("TEXT", checks=("length(reason_key) > 0",)),
                 "created_at_utc": column("TEXT"),
             },
-            "foreign_keys": [foreign_key("account_id", "accounts", "account_id", on_delete="RESTRICT")],
+            "foreign_keys": [
+                foreign_key("account_id", "accounts", "account_id", on_delete="RESTRICT"),
+                foreign_key("operation_id", "operation_records", "operation_id", on_delete="RESTRICT"),
+            ],
             "unique": [["operation_id"]],
             "append_only": True,
         },
@@ -174,7 +177,10 @@ _SCHEMA: Final[dict[str, object]] = {
                 "quantity": column("INTEGER", checks=("quantity > 0",)),
                 "expires_at_utc": column("TEXT", nullable=True),
             },
-            "foreign_keys": [foreign_key("item_instance_id", "item_instances", "item_instance_id", on_delete="CASCADE")],
+            "foreign_keys": [
+                foreign_key("item_instance_id", "item_instances", "item_instance_id", on_delete="CASCADE"),
+                foreign_key("operation_id", "operation_records", "operation_id", on_delete="CASCADE"),
+            ],
             "unique": [["operation_id", "item_instance_id"]],
         },
         "quest_progress": {
@@ -189,7 +195,7 @@ _SCHEMA: Final[dict[str, object]] = {
                 "version": column("INTEGER", default=0, checks=("version >= 0",)),
             },
             "foreign_keys": [foreign_key("character_id", "characters", "character_id", on_delete="CASCADE")],
-            "checks": ["(state_key = 'completed' AND completed_at_utc IS NOT NULL) OR state_key <> 'completed'"],
+            "checks": ["(state_key = 'completed' AND completed_at_utc IS NOT NULL) OR (state_key <> 'completed' AND completed_at_utc IS NULL)"],
         },
         "quest_item_balances": {
             "owner": "story",
@@ -215,7 +221,7 @@ _SCHEMA: Final[dict[str, object]] = {
                 "completed_at_utc": column("TEXT", nullable=True),
             },
             "unique": [["operation_id"]],
-            "checks": ["(status_key = 'completed' AND completed_at_utc IS NOT NULL) OR status_key <> 'completed'"],
+            "checks": ["(status_key = 'completed' AND completed_at_utc IS NOT NULL) OR (status_key <> 'completed' AND completed_at_utc IS NULL)"],
         },
         "domain_events": {
             "owner": "application",

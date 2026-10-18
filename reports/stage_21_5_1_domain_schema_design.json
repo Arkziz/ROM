@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "stage": "21.5.1",
-  "revision": "21.5.1a",
-  "generated_at_utc": "2026-10-18T18:55:56Z",
+  "revision": "21.5.1b",
+  "generated_at_utc": "2026-10-18T19:19:42Z",
   "summary": {
     "conclusion": "GO_AUTOMATED_AWAITING_EXPERT_ACCEPTANCE",
     "status": "AWAITING_MANUAL_ACCEPTANCE",
@@ -15,12 +15,12 @@
   },
   "git": {
     "branch": "rewrite/rom-v2",
-    "head_before_commit": "0271d8a139f4a8ec4860064a7046edd6353a8644",
+    "head_before_commit": "924fdc6f3d95ad969614ec0b08f9e463a3e7770f",
     "upstream": "origin/rewrite/rom-v2"
   },
   "schema_contract": {
     "owner": "rom_v2.infrastructure.persistence.schema_contract.SCHEMA_CONTRACT",
-    "contract_revision": "21.5.1a",
+    "contract_revision": "21.5.1b",
     "engine": "sqlite",
     "baseline_migration_owner": "Stage 21.5.2",
     "development_strategy": "clean_reset_first",
@@ -429,6 +429,13 @@
             "target_column": "account_id",
             "on_delete": "RESTRICT",
             "on_update": "CASCADE"
+          },
+          {
+            "column": "operation_id",
+            "target_table": "operation_records",
+            "target_column": "operation_id",
+            "on_delete": "RESTRICT",
+            "on_update": "CASCADE"
           }
         ],
         "unique": [
@@ -636,6 +643,13 @@
             "target_column": "item_instance_id",
             "on_delete": "CASCADE",
             "on_update": "CASCADE"
+          },
+          {
+            "column": "operation_id",
+            "target_table": "operation_records",
+            "target_column": "operation_id",
+            "on_delete": "CASCADE",
+            "on_update": "CASCADE"
           }
         ],
         "unique": [
@@ -713,7 +727,7 @@
           }
         ],
         "checks": [
-          "(state_key = 'completed' AND completed_at_utc IS NOT NULL) OR state_key <> 'completed'"
+          "(state_key = 'completed' AND completed_at_utc IS NOT NULL) OR (state_key <> 'completed' AND completed_at_utc IS NULL)"
         ]
       },
       "quest_item_balances": {
@@ -836,7 +850,7 @@
           ]
         ],
         "checks": [
-          "(status_key = 'completed' AND completed_at_utc IS NOT NULL) OR status_key <> 'completed'"
+          "(status_key = 'completed' AND completed_at_utc IS NOT NULL) OR (status_key <> 'completed' AND completed_at_utc IS NULL)"
         ]
       },
       "domain_events": {
@@ -1196,10 +1210,10 @@
     {
       "check_id": "PARENT",
       "status": "PASS",
-      "summary": "Expected Stage 21.5.1 parent verified.",
+      "summary": "Expected Stage 21.5.1a parent verified.",
       "details": {
-        "expected": "0271d8a139f4a8ec4860064a7046edd6353a8644",
-        "actual": "0271d8a139f4a8ec4860064a7046edd6353a8644"
+        "expected": "924fdc6f3d95ad969614ec0b08f9e463a3e7770f",
+        "actual": "924fdc6f3d95ad969614ec0b08f9e463a3e7770f"
       },
       "blocking": false
     },
@@ -1231,7 +1245,7 @@
     {
       "check_id": "SCHEMA_VERIFIER",
       "status": "PASS",
-      "summary": "V2 schema contract: PASS\nRevision: 21.5.1a\nTables: 15\nColumns: 91\nIndexes: 7\nDeferred domains: 11\nViolations: 0",
+      "summary": "V2 schema contract: PASS\nRevision: 21.5.1b\nTables: 15\nColumns: 91\nIndexes: 7\nDeferred domains: 11\nViolations: 0",
       "details": {
         "returncode": 0,
         "violations": [],
@@ -1242,7 +1256,7 @@
     {
       "check_id": "FOCUSED_TEST",
       "status": "PASS",
-      "summary": ".....\n----------------------------------------------------------------------\nRan 5 tests in 0.001s\n\nOK",
+      "summary": ".......\n----------------------------------------------------------------------\nRan 7 tests in 0.001s\n\nOK",
       "details": {},
       "blocking": false
     },
