@@ -1,0 +1,136 @@
+{
+  "schema_version": 1,
+  "stage": "21.5.5b",
+  "canonical_stage": "21.5.5",
+  "canonical_title": "Optional legacy importer",
+  "status": "NOT_REQUIRED",
+  "conclusion": "GO",
+  "generated_at_utc": "2026-10-18T19:50:05Z",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head_before_commit": "4415be9533a4f1cb43c6c821a87643db89d31b86",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "decision": "DO_NOT_IMPLEMENT_V1_TO_V2_IMPORTER",
+  "decision_reasons": [
+    "ROM V2 is still pre-production.",
+    "The V1 database contains disposable development and test data.",
+    "The accepted V2 strategy creates a clean database from 001_v2_baseline.",
+    "Copying V1 data would introduce legacy compatibility and validation cost without production value.",
+    "V1 remains available as an immutable behavioral reference and is not a V2 import source."
+  ],
+  "database_strategy": {
+    "create_clean_v2_database": true,
+    "baseline_migration": "001_v2_baseline",
+    "migrate_v1_test_data": false,
+    "copy_v1_migration_chain": false,
+    "v1_role": "behavioral_reference_only"
+  },
+  "not_implemented": [
+    "legacy_importer_module",
+    "mapping_tables",
+    "compatibility_columns",
+    "import_cli",
+    "startup_import_hook",
+    "automatic_conversion"
+  ],
+  "future_exception_policy": "Open a new separately designed stage if real production V1 data ever requires migration.",
+  "production_code_changed": false,
+  "database_changed": false,
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected reconciliation parent verified.",
+      "details": {
+        "expected": "4415be9533a4f1cb43c6c821a87643db89d31b86",
+        "actual": "4415be9533a4f1cb43c6c821a87643db89d31b86"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "STAGING_EMPTY",
+      "status": "PASS",
+      "summary": "Staging area is empty.",
+      "details": {
+        "staged": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "IMPORTER_ABSENT",
+      "status": "PASS",
+      "summary": "No V1-to-V2 importer production module exists.",
+      "details": {
+        "matches": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "V1_IMPORT_PATH_NOT_ADDED",
+      "status": "PASS",
+      "summary": "No importer mutation was introduced by this policy closure.",
+      "details": {
+        "search_returncode": 0
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "CI_BASELINE",
+      "status": "PASS",
+      "summary": "ROM V2 CI baseline: PASS\n[PASS] compile\n[PASS] imports\n[PASS] unit\n[PASS] architecture\n[PASS] duplicate_scan\n[PASS] content_validation",
+      "details": {
+        "failed_checks": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "NO_RUNTIME_MUTATION",
+      "status": "PASS",
+      "summary": "Policy-only closure preserved config, V1 DB and V2 runtime DB byte-for-byte.",
+      "details": {},
+      "blocking": false
+    }
+  ],
+  "changed_files": [
+    "reports/stage_21_5_5b_legacy_importer_not_required.json",
+    "MD/STAGE_21_5_5B_LEGACY_IMPORTER_NOT_REQUIRED.md"
+  ],
+  "commit_scope": [
+    "reports/stage_21_5_5b_legacy_importer_not_required.json",
+    "MD/STAGE_21_5_5B_LEGACY_IMPORTER_NOT_REQUIRED.md"
+  ],
+  "excluded_from_commit": [
+    "patch/patch_21_5_5b_close_legacy_importer_not_required.py",
+    ".runtime/v2/db/rom_v2.db",
+    ".env",
+    "rom_v2/.env",
+    "ROM_FULL_DUMP.txt"
+  ],
+  "manual_check": "NOT_REQUIRED",
+  "next_canonical_stage": "21.5.6",
+  "suggested_next_patch": "patch_21_5_6_implement_db_integrity_suite.py"
+}
