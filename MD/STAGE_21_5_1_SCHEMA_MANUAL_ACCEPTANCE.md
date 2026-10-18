@@ -1,12 +1,13 @@
-# Stage 21.5.1 — Expert acceptance checklist
+# Stage 21.5.1a — Expert acceptance checklist
 
-- [ ] Aggregate ownership is unambiguous.
-- [ ] Account and character lifecycles are separated correctly.
-- [ ] Constraints prevent duplicate identities and duplicate settlement.
-- [ ] Indexes cover ownership, state lookup, event streams, outbox, and idempotency paths.
-- [ ] Quest items remain isolated from regular inventory.
-- [ ] Money and timestamps use safe canonical storage.
-- [ ] No V1 migration compatibility burden was introduced.
-- [ ] The schema is acceptable as the input to Stage 21.5.2 baseline migration.
+- [ ] Every column has a SQLite type, nullability, default policy, generation owner, and checks.
+- [ ] Every foreign key has explicit delete/update actions.
+- [ ] Account and character lifecycles are correct.
+- [ ] Money, quantities, durability, versions, and event sequences cannot enter invalid ranges.
+- [ ] Exact-once operations, append-only events, ledger, and outbox are sufficient.
+- [ ] Indexes cover current fundamental lookup paths.
+- [ ] Deferred domains are explicit and do not have premature placeholder tables.
+- [ ] Clean V2 database creation is preferred over V1 test-data migration.
+- [ ] The schema is acceptable as input to migration `001_v2_baseline`.
 
-Acceptance phrase: `Приймаю Stage 21.5.1 schema design`.
+Acceptance phrase: `Приймаю Stage 21.5.1a schema design`.

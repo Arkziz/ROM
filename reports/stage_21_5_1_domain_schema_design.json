@@ -1,45 +1,96 @@
 {
   "schema_version": 1,
   "stage": "21.5.1",
-  "revision": 1,
-  "generated_at_utc": "2026-10-18T18:48:20Z",
+  "revision": "21.5.1a",
+  "generated_at_utc": "2026-10-18T18:55:56Z",
   "summary": {
     "conclusion": "GO_AUTOMATED_AWAITING_EXPERT_ACCEPTANCE",
     "status": "AWAITING_MANUAL_ACCEPTANCE",
     "blocking_failures": [],
     "table_count": 15,
-    "index_count": 6,
+    "column_count": 91,
+    "index_count": 7,
+    "deferred_domain_count": 11,
     "production_sqlite_opened": false
   },
   "git": {
     "branch": "rewrite/rom-v2",
-    "head_before_commit": "3b2622c13c27a31fed3cdc16ae4d9cefa8a5747d",
+    "head_before_commit": "0271d8a139f4a8ec4860064a7046edd6353a8644",
     "upstream": "origin/rewrite/rom-v2"
   },
   "schema_contract": {
     "owner": "rom_v2.infrastructure.persistence.schema_contract.SCHEMA_CONTRACT",
+    "contract_revision": "21.5.1a",
     "engine": "sqlite",
     "baseline_migration_owner": "Stage 21.5.2",
-    "reset_first": true,
-    "v1_migrations_copied": false,
+    "development_strategy": "clean_reset_first",
+    "v1_data_strategy": "do_not_migrate_test_data",
     "tables": {
       "accounts": {
         "owner": "account",
         "primary_key": [
           "account_id"
         ],
-        "columns": [
-          "account_id",
-          "telegram_user_id",
-          "status",
-          "registered_at_utc",
-          "bag_capacity",
-          "version"
-        ],
+        "columns": {
+          "account_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application_uuid",
+            "checks": []
+          },
+          "telegram_user_id": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "telegram_user_id > 0"
+            ]
+          },
+          "status": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": "active",
+            "generated_by": "application",
+            "checks": [
+              "status IN ('active','blocked','closed')"
+            ]
+          },
+          "registered_at_utc": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "bag_capacity": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 60,
+            "generated_by": "application",
+            "checks": [
+              "bag_capacity BETWEEN 1 AND 1000"
+            ]
+          },
+          "version": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 0,
+            "generated_by": "application",
+            "checks": [
+              "version >= 0"
+            ]
+          }
+        },
         "unique": [
           [
             "telegram_user_id"
           ]
+        ],
+        "checks": [
+          "length(account_id) > 0",
+          "length(registered_at_utc) > 0"
         ]
       },
       "characters": {
@@ -47,24 +98,102 @@
         "primary_key": [
           "character_id"
         ],
-        "columns": [
-          "character_id",
-          "account_id",
-          "name",
-          "class_key",
-          "level",
-          "experience",
-          "location_key",
-          "current_hp",
-          "current_mp",
-          "version"
-        ],
+        "columns": {
+          "character_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application_uuid",
+            "checks": []
+          },
+          "account_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "name": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(trim(name)) BETWEEN 1 AND 64"
+            ]
+          },
+          "class_key": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(class_key) > 0"
+            ]
+          },
+          "level": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 1,
+            "generated_by": "application",
+            "checks": [
+              "level >= 1"
+            ]
+          },
+          "experience": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 0,
+            "generated_by": "application",
+            "checks": [
+              "experience >= 0"
+            ]
+          },
+          "location_key": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(location_key) > 0"
+            ]
+          },
+          "current_hp": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "current_hp >= 0"
+            ]
+          },
+          "current_mp": {
+            "storage_type": "INTEGER",
+            "nullable": true,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "current_mp IS NULL OR current_mp >= 0"
+            ]
+          },
+          "version": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 0,
+            "generated_by": "application",
+            "checks": [
+              "version >= 0"
+            ]
+          }
+        },
         "foreign_keys": [
-          [
-            "account_id",
-            "accounts",
-            "account_id"
-          ]
+          {
+            "column": "account_id",
+            "target_table": "accounts",
+            "target_column": "account_id",
+            "on_delete": "CASCADE",
+            "on_update": "CASCADE"
+          }
         ],
         "unique": [
           [
@@ -73,6 +202,9 @@
           [
             "name"
           ]
+        ],
+        "checks": [
+          "length(character_id) > 0"
         ]
       },
       "character_primary_stats": {
@@ -80,21 +212,77 @@
         "primary_key": [
           "character_id"
         ],
-        "columns": [
-          "character_id",
-          "strength",
-          "dexterity",
-          "intelligence",
-          "wisdom",
-          "stamina",
-          "unspent_points"
-        ],
+        "columns": {
+          "character_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "strength": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "strength >= 0"
+            ]
+          },
+          "dexterity": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "dexterity >= 0"
+            ]
+          },
+          "intelligence": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "intelligence >= 0"
+            ]
+          },
+          "wisdom": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "wisdom >= 0"
+            ]
+          },
+          "stamina": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "stamina >= 0"
+            ]
+          },
+          "unspent_points": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 0,
+            "generated_by": "application",
+            "checks": [
+              "unspent_points >= 0"
+            ]
+          }
+        },
         "foreign_keys": [
-          [
-            "character_id",
-            "characters",
-            "character_id"
-          ]
+          {
+            "column": "character_id",
+            "target_table": "characters",
+            "target_column": "character_id",
+            "on_delete": "CASCADE",
+            "on_update": "CASCADE"
+          }
         ]
       },
       "gold_wallets": {
@@ -102,17 +290,41 @@
         "primary_key": [
           "character_id"
         ],
-        "columns": [
-          "character_id",
-          "balance_minor",
-          "version"
-        ],
+        "columns": {
+          "character_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "balance_minor": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 0,
+            "generated_by": "application",
+            "checks": [
+              "balance_minor >= 0"
+            ]
+          },
+          "version": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 0,
+            "generated_by": "application",
+            "checks": [
+              "version >= 0"
+            ]
+          }
+        },
         "foreign_keys": [
-          [
-            "character_id",
-            "characters",
-            "character_id"
-          ]
+          {
+            "column": "character_id",
+            "target_table": "characters",
+            "target_column": "character_id",
+            "on_delete": "CASCADE",
+            "on_update": "CASCADE"
+          }
         ]
       },
       "crystal_wallets": {
@@ -120,17 +332,41 @@
         "primary_key": [
           "account_id"
         ],
-        "columns": [
-          "account_id",
-          "balance",
-          "version"
-        ],
+        "columns": {
+          "account_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "balance": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 0,
+            "generated_by": "application",
+            "checks": [
+              "balance >= 0"
+            ]
+          },
+          "version": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 0,
+            "generated_by": "application",
+            "checks": [
+              "version >= 0"
+            ]
+          }
+        },
         "foreign_keys": [
-          [
-            "account_id",
-            "accounts",
-            "account_id"
-          ]
+          {
+            "column": "account_id",
+            "target_table": "accounts",
+            "target_column": "account_id",
+            "on_delete": "CASCADE",
+            "on_update": "CASCADE"
+          }
         ]
       },
       "crystal_ledger": {
@@ -138,20 +374,62 @@
         "primary_key": [
           "entry_id"
         ],
-        "columns": [
-          "entry_id",
-          "account_id",
-          "operation_id",
-          "amount",
-          "reason_key",
-          "created_at_utc"
-        ],
+        "columns": {
+          "entry_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application_uuid",
+            "checks": []
+          },
+          "account_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "operation_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "amount": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "amount <> 0"
+            ]
+          },
+          "reason_key": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(reason_key) > 0"
+            ]
+          },
+          "created_at_utc": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          }
+        },
         "foreign_keys": [
-          [
-            "account_id",
-            "accounts",
-            "account_id"
-          ]
+          {
+            "column": "account_id",
+            "target_table": "accounts",
+            "target_column": "account_id",
+            "on_delete": "RESTRICT",
+            "on_update": "CASCADE"
+          }
         ],
         "unique": [
           [
@@ -165,22 +443,84 @@
         "primary_key": [
           "item_instance_id"
         ],
-        "columns": [
-          "item_instance_id",
-          "definition_key",
-          "owner_character_id",
-          "quantity",
-          "durability",
-          "enhancement_level",
-          "binding_key",
-          "version"
-        ],
+        "columns": {
+          "item_instance_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application_uuid",
+            "checks": []
+          },
+          "definition_key": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(definition_key) > 0"
+            ]
+          },
+          "owner_character_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "quantity": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 1,
+            "generated_by": "application",
+            "checks": [
+              "quantity > 0"
+            ]
+          },
+          "durability": {
+            "storage_type": "INTEGER",
+            "nullable": true,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "durability IS NULL OR durability BETWEEN 0 AND 100"
+            ]
+          },
+          "enhancement_level": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 0,
+            "generated_by": "application",
+            "checks": [
+              "enhancement_level >= 0"
+            ]
+          },
+          "binding_key": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": "unbound",
+            "generated_by": "application",
+            "checks": [
+              "length(binding_key) > 0"
+            ]
+          },
+          "version": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 0,
+            "generated_by": "application",
+            "checks": [
+              "version >= 0"
+            ]
+          }
+        },
         "foreign_keys": [
-          [
-            "owner_character_id",
-            "characters",
-            "character_id"
-          ]
+          {
+            "column": "owner_character_id",
+            "target_table": "characters",
+            "target_column": "character_id",
+            "on_delete": "CASCADE",
+            "on_update": "CASCADE"
+          }
         ]
       },
       "equipment_slots": {
@@ -189,22 +529,46 @@
           "character_id",
           "slot_key"
         ],
-        "columns": [
-          "character_id",
-          "slot_key",
-          "item_instance_id"
-        ],
+        "columns": {
+          "character_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "slot_key": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(slot_key) > 0"
+            ]
+          },
+          "item_instance_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          }
+        },
         "foreign_keys": [
-          [
-            "character_id",
-            "characters",
-            "character_id"
-          ],
-          [
-            "item_instance_id",
-            "item_instances",
-            "item_instance_id"
-          ]
+          {
+            "column": "character_id",
+            "target_table": "characters",
+            "target_column": "character_id",
+            "on_delete": "CASCADE",
+            "on_update": "CASCADE"
+          },
+          {
+            "column": "item_instance_id",
+            "target_table": "item_instances",
+            "target_column": "item_instance_id",
+            "on_delete": "RESTRICT",
+            "on_update": "CASCADE"
+          }
         ],
         "unique": [
           [
@@ -217,20 +581,62 @@
         "primary_key": [
           "reservation_id"
         ],
-        "columns": [
-          "reservation_id",
-          "item_instance_id",
-          "operation_id",
-          "purpose_key",
-          "quantity",
-          "expires_at_utc"
-        ],
+        "columns": {
+          "reservation_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application_uuid",
+            "checks": []
+          },
+          "item_instance_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "operation_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "purpose_key": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(purpose_key) > 0"
+            ]
+          },
+          "quantity": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "quantity > 0"
+            ]
+          },
+          "expires_at_utc": {
+            "storage_type": "TEXT",
+            "nullable": true,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          }
+        },
         "foreign_keys": [
-          [
-            "item_instance_id",
-            "item_instances",
-            "item_instance_id"
-          ]
+          {
+            "column": "item_instance_id",
+            "target_table": "item_instances",
+            "target_column": "item_instance_id",
+            "on_delete": "CASCADE",
+            "on_update": "CASCADE"
+          }
         ],
         "unique": [
           [
@@ -245,20 +651,69 @@
           "character_id",
           "quest_key"
         ],
-        "columns": [
-          "character_id",
-          "quest_key",
-          "state_key",
-          "progress_json",
-          "completed_at_utc",
-          "version"
-        ],
+        "columns": {
+          "character_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "quest_key": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(quest_key) > 0"
+            ]
+          },
+          "state_key": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "state_key IN ('active','completed','failed','skipped')"
+            ]
+          },
+          "progress_json": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": "{}",
+            "generated_by": "application",
+            "checks": [
+              "json_valid(progress_json)"
+            ]
+          },
+          "completed_at_utc": {
+            "storage_type": "TEXT",
+            "nullable": true,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "version": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 0,
+            "generated_by": "application",
+            "checks": [
+              "version >= 0"
+            ]
+          }
+        },
         "foreign_keys": [
-          [
-            "character_id",
-            "characters",
-            "character_id"
-          ]
+          {
+            "column": "character_id",
+            "target_table": "characters",
+            "target_column": "character_id",
+            "on_delete": "CASCADE",
+            "on_update": "CASCADE"
+          }
+        ],
+        "checks": [
+          "(state_key = 'completed' AND completed_at_utc IS NOT NULL) OR state_key <> 'completed'"
         ]
       },
       "quest_item_balances": {
@@ -267,17 +722,41 @@
           "character_id",
           "item_key"
         ],
-        "columns": [
-          "character_id",
-          "item_key",
-          "quantity"
-        ],
+        "columns": {
+          "character_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "item_key": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(item_key) > 0"
+            ]
+          },
+          "quantity": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 0,
+            "generated_by": "application",
+            "checks": [
+              "quantity >= 0"
+            ]
+          }
+        },
         "foreign_keys": [
-          [
-            "character_id",
-            "characters",
-            "character_id"
-          ]
+          {
+            "column": "character_id",
+            "target_table": "characters",
+            "target_column": "character_id",
+            "on_delete": "CASCADE",
+            "on_update": "CASCADE"
+          }
         ]
       },
       "operation_records": {
@@ -285,20 +764,79 @@
         "primary_key": [
           "operation_id"
         ],
-        "columns": [
-          "operation_id",
-          "operation_key",
-          "aggregate_type",
-          "aggregate_id",
-          "status_key",
-          "result_fingerprint",
-          "created_at_utc",
-          "completed_at_utc"
-        ],
+        "columns": {
+          "operation_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "operation_key": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(operation_key) > 0"
+            ]
+          },
+          "aggregate_type": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(aggregate_type) > 0"
+            ]
+          },
+          "aggregate_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(aggregate_id) > 0"
+            ]
+          },
+          "status_key": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "status_key IN ('in_progress','completed','failed')"
+            ]
+          },
+          "result_fingerprint": {
+            "storage_type": "TEXT",
+            "nullable": true,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "created_at_utc": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "completed_at_utc": {
+            "storage_type": "TEXT",
+            "nullable": true,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          }
+        },
         "unique": [
           [
             "operation_id"
           ]
+        ],
+        "checks": [
+          "(status_key = 'completed' AND completed_at_utc IS NOT NULL) OR status_key <> 'completed'"
         ]
       },
       "domain_events": {
@@ -306,19 +844,99 @@
         "primary_key": [
           "event_id"
         ],
-        "columns": [
-          "event_id",
-          "event_key",
-          "aggregate_type",
-          "aggregate_id",
-          "aggregate_version",
-          "sequence",
-          "occurred_at_utc",
-          "payload_json",
-          "correlation_id",
-          "causation_id",
-          "schema_version"
-        ],
+        "columns": {
+          "event_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "event_key": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(event_key) > 0"
+            ]
+          },
+          "aggregate_type": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(aggregate_type) > 0"
+            ]
+          },
+          "aggregate_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(aggregate_id) > 0"
+            ]
+          },
+          "aggregate_version": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "aggregate_version >= 0"
+            ]
+          },
+          "sequence": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "sequence >= 0"
+            ]
+          },
+          "occurred_at_utc": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "payload_json": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "json_valid(payload_json)"
+            ]
+          },
+          "correlation_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "causation_id": {
+            "storage_type": "TEXT",
+            "nullable": true,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "schema_version": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 1,
+            "generated_by": "application",
+            "checks": [
+              "schema_version >= 1"
+            ]
+          }
+        },
         "unique": [
           [
             "aggregate_type",
@@ -334,21 +952,71 @@
         "primary_key": [
           "message_id"
         ],
-        "columns": [
-          "message_id",
-          "event_id",
-          "topic_key",
-          "payload_json",
-          "created_at_utc",
-          "published_at_utc",
-          "attempt_count"
-        ],
+        "columns": {
+          "message_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "event_id": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "topic_key": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(topic_key) > 0"
+            ]
+          },
+          "payload_json": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "json_valid(payload_json)"
+            ]
+          },
+          "created_at_utc": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "published_at_utc": {
+            "storage_type": "TEXT",
+            "nullable": true,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "attempt_count": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": 0,
+            "generated_by": "application",
+            "checks": [
+              "attempt_count >= 0"
+            ]
+          }
+        },
         "foreign_keys": [
-          [
-            "event_id",
-            "domain_events",
-            "event_id"
-          ]
+          {
+            "column": "event_id",
+            "target_table": "domain_events",
+            "target_column": "event_id",
+            "on_delete": "RESTRICT",
+            "on_update": "CASCADE"
+          }
         ],
         "unique": [
           [
@@ -362,12 +1030,42 @@
         "primary_key": [
           "version"
         ],
-        "columns": [
-          "version",
-          "migration_key",
-          "applied_at_utc",
-          "checksum"
-        ],
+        "columns": {
+          "version": {
+            "storage_type": "INTEGER",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "version >= 1"
+            ]
+          },
+          "migration_key": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(migration_key) > 0"
+            ]
+          },
+          "applied_at_utc": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": []
+          },
+          "checksum": {
+            "storage_type": "TEXT",
+            "nullable": false,
+            "default": null,
+            "generated_by": "application",
+            "checks": [
+              "length(checksum) = 64"
+            ]
+          }
+        },
         "unique": [
           [
             "migration_key"
@@ -377,49 +1075,115 @@
       }
     },
     "indexes": [
-      [
-        "characters",
-        [
+      {
+        "name": "idx_characters_location",
+        "table": "characters",
+        "columns": [
           "location_key"
-        ]
-      ],
-      [
-        "item_instances",
-        [
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_items_owner_definition",
+        "table": "item_instances",
+        "columns": [
           "owner_character_id",
           "definition_key"
-        ]
-      ],
-      [
-        "quest_progress",
-        [
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_quests_character_state",
+        "table": "quest_progress",
+        "columns": [
           "character_id",
           "state_key"
-        ]
-      ],
-      [
-        "domain_events",
-        [
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_events_stream",
+        "table": "domain_events",
+        "columns": [
           "aggregate_type",
           "aggregate_id",
           "aggregate_version"
-        ]
-      ],
-      [
-        "outbox_messages",
-        [
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_outbox_pending",
+        "table": "outbox_messages",
+        "columns": [
           "published_at_utc",
           "created_at_utc"
-        ]
-      ],
-      [
-        "operation_records",
-        [
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_operations_aggregate",
+        "table": "operation_records",
+        "columns": [
           "aggregate_type",
           "aggregate_id"
-        ]
-      ]
-    ]
+        ],
+        "unique": false
+      },
+      {
+        "name": "idx_reservations_expiry",
+        "table": "item_reservations",
+        "columns": [
+          "expires_at_utc"
+        ],
+        "unique": false
+      }
+    ],
+    "deferred_domains": {
+      "travel": {
+        "decision": "deferred_no_placeholder_table",
+        "future_owner": "world_travel"
+      },
+      "guild": {
+        "decision": "deferred_no_placeholder_table",
+        "future_owner": "social"
+      },
+      "direct_trade": {
+        "decision": "deferred_no_placeholder_table",
+        "future_owner": "social"
+      },
+      "auction": {
+        "decision": "deferred_no_placeholder_table",
+        "future_owner": "social"
+      },
+      "pvp_history": {
+        "decision": "deferred_no_placeholder_table",
+        "future_owner": "social"
+      },
+      "premium": {
+        "decision": "deferred_no_placeholder_table",
+        "future_owner": "economy"
+      },
+      "daily_rewards": {
+        "decision": "deferred_no_placeholder_table",
+        "future_owner": "events_auxiliary"
+      },
+      "notifications": {
+        "decision": "deferred_no_placeholder_table",
+        "future_owner": "events_auxiliary"
+      },
+      "ratings_chronicles": {
+        "decision": "deferred_no_placeholder_table",
+        "future_owner": "events_auxiliary"
+      },
+      "events": {
+        "decision": "deferred_no_placeholder_table",
+        "future_owner": "events_auxiliary"
+      },
+      "runes_sockets": {
+        "decision": "deferred_no_placeholder_table",
+        "future_owner": "inventory_equipment"
+      }
+    }
   },
   "checks": [
     {
@@ -432,10 +1196,10 @@
     {
       "check_id": "PARENT",
       "status": "PASS",
-      "summary": "Expected Stage 21.4.4 parent verified.",
+      "summary": "Expected Stage 21.5.1 parent verified.",
       "details": {
-        "expected": "3b2622c13c27a31fed3cdc16ae4d9cefa8a5747d",
-        "actual": "3b2622c13c27a31fed3cdc16ae4d9cefa8a5747d"
+        "expected": "0271d8a139f4a8ec4860064a7046edd6353a8644",
+        "actual": "0271d8a139f4a8ec4860064a7046edd6353a8644"
       },
       "blocking": false
     },
@@ -467,19 +1231,18 @@
     {
       "check_id": "SCHEMA_VERIFIER",
       "status": "PASS",
-      "summary": "V2 schema contract: PASS\nTables: 15\nIndexes: 6\nViolations: 0",
+      "summary": "V2 schema contract: PASS\nRevision: 21.5.1a\nTables: 15\nColumns: 91\nIndexes: 7\nDeferred domains: 11\nViolations: 0",
       "details": {
-        "violations": [],
         "returncode": 0,
-        "json_evidence_created": true,
-        "stderr": ""
+        "violations": [],
+        "evidence_created": true
       },
       "blocking": false
     },
     {
       "check_id": "FOCUSED_TEST",
       "status": "PASS",
-      "summary": "....\n----------------------------------------------------------------------\nRan 4 tests in 0.001s\n\nOK",
+      "summary": ".....\n----------------------------------------------------------------------\nRan 5 tests in 0.001s\n\nOK",
       "details": {},
       "blocking": false
     },
@@ -586,25 +1349,25 @@
     }
   },
   "changed_files": [
-    "rom_v2/infrastructure/persistence/__init__.py",
     "rom_v2/infrastructure/persistence/schema_contract.py",
     "tools/verify_v2_schema_contract.py",
     "tests_v2/test_schema_contract.py",
     "reports/stage_21_5_1_domain_schema_design.json",
+    "reports/stage_21_5_1a_schema_column_constraints.json",
     "MD/ADR_21_5_1_V2_DATABASE_SCHEMA.md",
     "MD/STAGE_21_5_1_SCHEMA_MANUAL_ACCEPTANCE.md"
   ],
   "commit_scope": [
-    "rom_v2/infrastructure/persistence/__init__.py",
     "rom_v2/infrastructure/persistence/schema_contract.py",
     "tools/verify_v2_schema_contract.py",
     "tests_v2/test_schema_contract.py",
     "reports/stage_21_5_1_domain_schema_design.json",
+    "reports/stage_21_5_1a_schema_column_constraints.json",
     "MD/ADR_21_5_1_V2_DATABASE_SCHEMA.md",
     "MD/STAGE_21_5_1_SCHEMA_MANUAL_ACCEPTANCE.md"
   ],
   "excluded_from_commit": [
-    "patch/patch_21_5_1_design_v2_database_schema.py",
+    "patch/patch_21_5_1a_complete_schema_column_constraints.py",
     ".env",
     "rom_v2/.env",
     "ROM_FULL_DUMP.txt"

@@ -1,32 +1,31 @@
-# ADR 21.5.1 — Domain-oriented V2 database schema
+# ADR 21.5.1 — Complete domain-oriented V2 database schema
 
 ## Status
 
-`PROPOSED_FOR_EXPERT_ACCEPTANCE`
+`PROPOSED_FOR_EXPERT_ACCEPTANCE — canonical revision 21.5.1a`
 
-## Decision
+## Database strategy
 
-ROM V2 uses a clean, reset-first SQLite schema. Historical V1 migrations are not copied. The schema is organized by aggregate ownership, with explicit foreign keys, unique constraints, optimistic versions, exact-once operation records, append-only domain events, and an outbox. Money is stored as integer minor units; timestamps are UTC ISO-8601 text.
+Create a new V2 database from a clean baseline migration. Do not migrate the disposable V1 test database. The V1 database remains an immutable behavioral reference only.
 
-## ER inventory
+## Storage policies
 
-- Account: `accounts`, `crystal_wallets`, `crystal_ledger`.
-- Character/stats: `characters`, `character_primary_stats`, `gold_wallets`.
-- Inventory/equipment: `item_instances`, `equipment_slots`, `item_reservations`.
-- Story: `quest_progress`, `quest_item_balances`.
-- Cross-cutting atomicity: `operation_records`, `domain_events`, `outbox_messages`.
-- Infrastructure: `schema_migrations`.
+- SQLite with foreign keys enabled by every connection.
+- UTC ISO-8601 TEXT timestamps.
+- Gold as integer minor units; crystals as integer units.
+- Explicit type, nullability, default, generation owner, and checks for every column.
+- Explicit `ON DELETE` and `ON UPDATE` actions for every foreign key.
+- Append-only ledger, domain events, and migration history.
+- Persistent operation records and outbox for exact-once settlement.
 
-## Invariants
+## Baseline scope
 
-- Foreign keys are enabled for every V2 connection.
-- SQL remains inside infrastructure persistence adapters.
-- Account and character ownership are separate.
-- Ledger and event histories are append-only.
-- `operation_id` is the exact-once key.
-- No schema choice is constrained by preserving the V1 test database.
-- DDL creation belongs to Stage 21.5.2.
+The 15 baseline tables cover account, character, stats, economy, inventory, equipment, story progress, exact-once operations, domain events, outbox, and migrations.
 
-## Expert acceptance
+## Deferred domains
 
-Review normalization, table ownership, constraints, indexes, UTC/money policies, and whether the ER inventory is sufficient for future domain stages.
+Travel, guild, direct trade, auction, PvP history, Premium, daily rewards, notifications, ratings/chronicles, events, and rune sockets remain explicitly deferred. No placeholder tables are created before each domain has an accepted persistence contract.
+
+## Stage boundary
+
+Stage 21.5.2 converts this accepted contract into migration `001_v2_baseline` and creates only an isolated `.runtime/v2/db` database.
