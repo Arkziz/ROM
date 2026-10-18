@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "stage": "21.4.2",
+  "generated_at_utc": "2026-10-18T17:48:41Z",
+  "summary": {
+    "conclusion": "GO",
+    "status": "NOT_REQUIRED",
+    "blocking_failures": [],
+    "production_allowlist_created": false,
+    "accepted_risk_recorded": true,
+    "token_value_recorded": false,
+    "telegram_contacted": false,
+    "gameplay_started": false,
+    "telegram_started": false,
+    "database_opened": false
+  },
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head_before_commit": "2d251e6e68b39af35232aa6433a03b0c79aa3fd0",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.4.1a parent verified.",
+      "details": {
+        "expected": "2d251e6e68b39af35232aa6433a03b0c79aa3fd0",
+        "actual": "2d251e6e68b39af35232aa6433a03b0c79aa3fd0"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected tracked changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "POLICY_DECISION",
+      "status": "PASS",
+      "summary": "Allowlist formally classified as NOT_REQUIRED.",
+      "details": {
+        "decision": "NOT_REQUIRED",
+        "implementation_created": false,
+        "hard_coded_user_ids_created": false,
+        "environment_allowlist_created": false,
+        "database_allowlist_created": false,
+        "telegram_contacted": false,
+        "accepted_risk": "A third party who learns the development bot username could send updates while no account-level allowlist is enforced.",
+        "future_policy": "If needed later, introduce local-configuration access control in a separate stage without hard-coded IDs."
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "NO_ALLOWLIST_PATH",
+      "status": "PASS",
+      "summary": "No production allowlist path exists: True.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "ENVIRONMENTS_UNTOUCHED",
+      "status": "PASS",
+      "summary": "V1 and V2 environment metadata unchanged: True.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "CI_BASELINE",
+      "status": "PASS",
+      "summary": "ROM V2 CI baseline: PASS\n[PASS] compile\n[PASS] imports\n[PASS] unit\n[PASS] architecture\n[PASS] duplicate_scan\n[PASS] content_validation",
+      "details": {
+        "failed_checks": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "DATABASE_UNCHANGED",
+      "status": "PASS",
+      "summary": "DB/WAL/SHM unchanged and SQLite was not opened.",
+      "details": {
+        "production_connection_opened": false
+      },
+      "blocking": false
+    }
+  ],
+  "policy": {
+    "decision": "NOT_REQUIRED",
+    "implementation_created": false,
+    "hard_coded_user_ids_created": false,
+    "environment_allowlist_created": false,
+    "database_allowlist_created": false,
+    "telegram_contacted": false,
+    "accepted_risk": "A third party who learns the development bot username could send updates while no account-level allowlist is enforced.",
+    "future_policy": "If needed later, introduce local-configuration access control in a separate stage without hard-coded IDs."
+  },
+  "database_evidence_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "database_evidence_after": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "changed_tracked_files": [
+    "patch/patch_21_4_2_close_allowlist_not_required.py",
+    "reports/stage_21_4_2_allowlist_not_required.json",
+    "MD/STAGE_21_4_2_ALLOWLIST_NOT_REQUIRED.md"
+  ],
+  "explicitly_untouched_files": [
+    ".env",
+    "rom_v2/.env",
+    "game.db",
+    "game.db-wal",
+    "game.db-shm"
+  ],
+  "next_stage": "21.4.3",
+  "suggested_next_patch": "patch_21_4_3_create_telegram_adapter_skeleton.py"
+}
