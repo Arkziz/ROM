@@ -1,0 +1,220 @@
+{
+  "schema_version": 1,
+  "stage": "21.5.5a",
+  "status": "PASS",
+  "conclusion": "GO",
+  "generated_at_utc": "2026-10-18T19:46:50Z",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head_before_commit": "0270d5ea3b35be4f315fd6b5ea3396029689d460",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "decision": "RECONCILED_WITHOUT_HISTORY_REWRITE",
+  "canonical_mapping": {
+    "21.5.1": {
+      "title": "Domain-oriented schema design",
+      "status": "ACCEPTED",
+      "implementation_revisions": [
+        "21.5.1",
+        "21.5.1a",
+        "21.5.1b"
+      ]
+    },
+    "21.5.2": {
+      "title": "Baseline migration",
+      "status": "COMPLETED",
+      "implementation_commits": [
+        "02d4b2e8ea2c64f31792a3470d37819dd38f2c70"
+      ]
+    },
+    "21.5.3": {
+      "title": "Repository implementations",
+      "status": "COMPLETED",
+      "implementation_slices": [
+        {
+          "label": "connection_factory",
+          "historical_stage_label": "21.5.3",
+          "commit": "19a699f7c922af19bbcee30364b03e3dc62bb7a3"
+        },
+        {
+          "label": "unit_of_work",
+          "historical_stage_label": "21.5.4",
+          "commit": "82a0411639f7c6a27f028deb7918d1a7ef75f701"
+        },
+        {
+          "label": "repository_base",
+          "historical_stage_label": "21.5.5",
+          "commit": "0270d5ea3b35be4f315fd6b5ea3396029689d460"
+        }
+      ],
+      "interpretation": "Historical labels 21.5.4 and 21.5.5 are implementation slices of canonical roadmap Stage 21.5.3; commits and files are not renamed."
+    },
+    "21.5.4": {
+      "title": "Reset-first development policy",
+      "status": "IMPLEMENTED",
+      "evidence": [
+        "isolated .runtime/v2/db/rom_v2.db",
+        "V2Migrator.recreate clean rebuild",
+        "001_v2_baseline",
+        "runtime database ignored and untracked",
+        "clean-create and deterministic recreate tests",
+        "V1 database isolation"
+      ]
+    },
+    "21.5.5": {
+      "title": "Optional legacy importer",
+      "status": "NOT_STARTED",
+      "decision_pending": true,
+      "important": "The historical implementation label 21.5.5 does not mean the canonical optional importer was implemented."
+    },
+    "21.5.6": {
+      "title": "DB integrity suite",
+      "status": "NOT_STARTED"
+    }
+  },
+  "implementation_evidence": {
+    "21.5.2": {
+      "report": "reports/stage_21_5_2_v2_baseline_migration.json",
+      "expected_result_commit": "02d4b2e8ea2c64f31792a3470d37819dd38f2c70",
+      "reported_parent_commit": "cfa8c7cabf286ac268c3c2fd70a59b117d8491a6",
+      "status": "PASS",
+      "conclusion": "GO"
+    },
+    "21.5.3_connection_factory": {
+      "report": "reports/stage_21_5_3_v2_connection_factory.json",
+      "expected_result_commit": "19a699f7c922af19bbcee30364b03e3dc62bb7a3",
+      "reported_parent_commit": "02d4b2e8ea2c64f31792a3470d37819dd38f2c70",
+      "status": "PASS",
+      "conclusion": "GO"
+    },
+    "21.5.3_unit_of_work_slice": {
+      "report": "reports/stage_21_5_4_v2_unit_of_work.json",
+      "expected_result_commit": "82a0411639f7c6a27f028deb7918d1a7ef75f701",
+      "reported_parent_commit": "19a699f7c922af19bbcee30364b03e3dc62bb7a3",
+      "status": "PASS",
+      "conclusion": "GO"
+    },
+    "21.5.3_repository_slice": {
+      "report": "reports/stage_21_5_5_v2_repository_base.json",
+      "expected_result_commit": "0270d5ea3b35be4f315fd6b5ea3396029689d460",
+      "reported_parent_commit": "82a0411639f7c6a27f028deb7918d1a7ef75f701",
+      "status": "PASS",
+      "conclusion": "GO"
+    }
+  },
+  "reset_first_evidence": {
+    "isolated_runtime_database": true,
+    "runtime_path": ".runtime/v2/db/rom_v2.db",
+    "baseline_migration": "001_v2_baseline",
+    "runtime_ignored": true,
+    "runtime_tracked": false,
+    "recreate_owner": "rom_v2.infrastructure.persistence.V2Migrator.recreate",
+    "v1_database_opened": false
+  },
+  "production_code_changed": false,
+  "database_changed": false,
+  "historical_commits_renamed": false,
+  "canonical_stage_21_5_3": "COMPLETED",
+  "canonical_stage_21_5_4": "IMPLEMENTED",
+  "canonical_stage_21_5_5": "NOT_STARTED",
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected repository-base parent verified.",
+      "details": {
+        "expected": "0270d5ea3b35be4f315fd6b5ea3396029689d460",
+        "actual": "0270d5ea3b35be4f315fd6b5ea3396029689d460"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "STAGING_EMPTY",
+      "status": "PASS",
+      "summary": "Staging area is empty.",
+      "details": {
+        "staged": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "RESET_FIRST_POLICY",
+      "status": "PASS",
+      "summary": "Canonical Stage 21.5.4 reset-first policy is implemented.",
+      "details": {
+        "isolated_runtime_database": true,
+        "runtime_path": ".runtime/v2/db/rom_v2.db",
+        "baseline_migration": "001_v2_baseline",
+        "runtime_ignored": true,
+        "runtime_tracked": false,
+        "recreate_owner": "rom_v2.infrastructure.persistence.V2Migrator.recreate",
+        "v1_database_opened": false
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "ROADMAP_RECONCILIATION",
+      "status": "PASS",
+      "summary": "Historical implementation slices map to canonical roadmap stages without rewriting Git history.",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "CI_BASELINE",
+      "status": "PASS",
+      "summary": "ROM V2 CI baseline: PASS\n[PASS] compile\n[PASS] imports\n[PASS] unit\n[PASS] architecture\n[PASS] duplicate_scan\n[PASS] content_validation",
+      "details": {
+        "failed_checks": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "NO_RUNTIME_MUTATION",
+      "status": "PASS",
+      "summary": "Policy-only patch preserved config, V1 database and V2 runtime database byte-for-byte.",
+      "details": {},
+      "blocking": false
+    }
+  ],
+  "changed_files": [
+    "reports/stage_21_5_5a_roadmap_reconciliation.json",
+    "MD/STAGE_21_5_5A_ROADMAP_RECONCILIATION.md"
+  ],
+  "commit_scope": [
+    "reports/stage_21_5_5a_roadmap_reconciliation.json",
+    "MD/STAGE_21_5_5A_ROADMAP_RECONCILIATION.md"
+  ],
+  "excluded_from_commit": [
+    "patch/patch_21_5_5a_reconcile_stage_21_5_3_and_close_reset_policy.py",
+    ".runtime/v2/db/rom_v2.db",
+    ".env",
+    "rom_v2/.env",
+    "ROM_FULL_DUMP.txt"
+  ],
+  "manual_check": "NOT_REQUIRED",
+  "next_canonical_stage": "21.5.5",
+  "suggested_next_patch": "patch_21_5_5b_close_legacy_importer_not_required.py"
+}
