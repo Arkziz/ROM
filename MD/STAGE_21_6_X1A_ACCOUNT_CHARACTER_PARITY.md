@@ -1,0 +1,3 @@
+# Stage 21.6.X1a — Account and character V1 parity reconciliation
+
+Removed unaudited account status/version and character version contracts. Character names now use V1 normalization (strip, NFC, collapsed whitespace), exact 2–24 bounds, forbidden-letter rule, at-least-one-letter rule, and normalized casefold uniqueness. Character reset deletes the character aggregate so the preserved account returns to name/class registration, matching V1 DEV reset behavior. Account identity, UTC registration time, bag capacity, and crystal wallet remain preserved. Manual game verification is not required because V2 presentation is not connected.
