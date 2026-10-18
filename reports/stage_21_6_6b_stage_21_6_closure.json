@@ -1,0 +1,339 @@
+{
+  "schema_version": 1,
+  "stage": "21.6.6b",
+  "status": "PASS",
+  "conclusion": "GO",
+  "closure_status": "CLOSED_ACCEPTED",
+  "closed_stage": "21.6",
+  "generated_at_utc": "2026-10-18T22:18:06Z",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "5c25bdfc22810b1180dc04c5aa2dd718dabea6f0",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "prerequisites": {
+    "21.6.X1": {
+      "path": "reports/stage_21_6_X1_account_character_v1_parity_audit.json",
+      "status": "PASS",
+      "conclusion": "REVIEW_REQUIRED"
+    },
+    "21.6.X1a": {
+      "path": "reports/stage_21_6_X1a_account_character_parity.json",
+      "status": "PASS",
+      "conclusion": "GO"
+    },
+    "21.6.1": {
+      "path": "reports/stage_21_6_1_account_domain.json",
+      "status": "PASS",
+      "conclusion": "GO"
+    },
+    "21.6.2": {
+      "path": "reports/stage_21_6_2_character_lifecycle.json",
+      "status": "PASS",
+      "conclusion": "GO"
+    },
+    "21.6.3": {
+      "path": "reports/stage_21_6_3_existing_class_catalog_audit.json",
+      "status": "PASS",
+      "conclusion": "GO"
+    },
+    "21.6.3a": {
+      "path": "reports/stage_21_6_3a_class_catalog.json",
+      "status": "PASS",
+      "conclusion": "GO"
+    },
+    "21.6.4": {
+      "path": "reports/stage_21_6_4_existing_primary_stats_audit.json",
+      "status": "PASS",
+      "conclusion": "GO"
+    },
+    "21.6.4a": {
+      "path": "reports/stage_21_6_4a_primary_stats.json",
+      "status": "PASS",
+      "conclusion": "GO"
+    },
+    "21.6.5": {
+      "path": "reports/stage_21_6_5_existing_derived_stat_engine_audit.json",
+      "status": "PASS",
+      "conclusion": "GO"
+    },
+    "21.6.5a": {
+      "path": "reports/stage_21_6_5a_derived_stat_engine.json",
+      "status": "PASS",
+      "conclusion": "GO"
+    },
+    "21.6.5b": {
+      "path": "reports/stage_21_6_5b_existing_full_stat_snapshot_inputs_audit.json",
+      "status": "PASS",
+      "conclusion": "GO"
+    },
+    "21.6.5c": {
+      "path": "reports/stage_21_6_5c_canonical_full_stat_snapshot.json",
+      "status": "PASS",
+      "conclusion": "GO"
+    },
+    "21.6.6": {
+      "path": "reports/stage_21_6_6_existing_resource_lifecycle_audit.json",
+      "status": "PASS",
+      "conclusion": "GO"
+    },
+    "21.6.6a": {
+      "path": "reports/stage_21_6_6a_resource_lifecycle.json",
+      "status": "PASS",
+      "conclusion": "GO"
+    }
+  },
+  "canonical_ownership": {
+    "canonical_files": {
+      "rom_v2/domain/account.py": {
+        "exists": true,
+        "size": 981,
+        "mtime_ns": 1792356737839955900,
+        "sha256": "166288c697a3b7036e7d4441aa25993c912d5dbe079db574af6293f3de179419"
+      },
+      "rom_v2/domain/character.py": {
+        "exists": true,
+        "size": 2040,
+        "mtime_ns": 1792356737851775600,
+        "sha256": "684efcb528747a7a1f4312d1eadf54483db6dfc81d01d869ffe7200c6def3c54"
+      },
+      "rom_v2/domain/class_catalog.py": {
+        "exists": true,
+        "size": 4527,
+        "mtime_ns": 1792355866981394500,
+        "sha256": "a3185a616704b5061bc8ec49cd54d2dd4830de6429c6858952df523bc5f6ef83"
+      },
+      "rom_v2/domain/primary_stats.py": {
+        "exists": true,
+        "size": 2883,
+        "mtime_ns": 1792358238832412700,
+        "sha256": "904560126d76a237afff801c8fc274d0ad9b5a1d7849b949b2db1328904059c6"
+      },
+      "rom_v2/domain/derived_stats.py": {
+        "exists": true,
+        "size": 4591,
+        "mtime_ns": 1792359144020643500,
+        "sha256": "a6fdd9905c227549addf310c3b873b96bbc9e6d09a20b979f851a04fc8df6e1c"
+      },
+      "rom_v2/domain/resource_lifecycle.py": {
+        "exists": true,
+        "size": 2537,
+        "mtime_ns": 1792360320332374000,
+        "sha256": "f4cecce143bc637cb5b4c56d2ef95b34f492585d37aa815778e3bf2ca0b5f978"
+      },
+      "rom_v2/domain/full_stat_snapshot.py": {
+        "exists": true,
+        "size": 6077,
+        "mtime_ns": 1792361469179879600,
+        "sha256": "7efd1d0de4693f549910797c0a617271a016d34b0d75e44d7fc2677b4ca81b14"
+      },
+      "rom_v2/application/full_stat_snapshot_service.py": {
+        "exists": true,
+        "size": 1176,
+        "mtime_ns": 1792361469180878200,
+        "sha256": "011ea96e9b0a6ccc96872c3a16fd33c399d06993e6315a714026130896a56de7"
+      }
+    },
+    "snapshot_contract_tokens": [
+      "class FullStatSnapshot",
+      "class FullStatSnapshotInput",
+      "def build_full_stat_snapshot",
+      "item.contributes",
+      "source.allocated",
+      "source.runes",
+      "source.enhancement"
+    ],
+    "shared_service_tokens": [
+      "def for_profile",
+      "def for_combat",
+      "def for_simulator",
+      "build_full_stat_snapshot(source)"
+    ]
+  },
+  "focused_modules": [
+    "tests_v2.test_account_domain",
+    "tests_v2.test_character_lifecycle",
+    "tests_v2.test_class_catalog",
+    "tests_v2.test_primary_stats",
+    "tests_v2.test_derived_stats",
+    "tests_v2.test_resource_lifecycle",
+    "tests_v2.test_full_stat_snapshot"
+  ],
+  "focused_output": "................................\n----------------------------------------------------------------------\nRan 32 tests in 0.858s\n\nOK\n",
+  "ci": {
+    "schema_version": 1,
+    "status": "PASS",
+    "failed_checks": [],
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "file_count": 78,
+        "failures": []
+      },
+      {
+        "name": "imports",
+        "status": "PASS",
+        "module_count": 56,
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-c",
+            "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.derived_stats', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests_v2",
+            "-p",
+            "test_*.py"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "....................................................................................\n----------------------------------------------------------------------\nRan 84 tests in 11.134s\n\nOK"
+        }
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "tools/verify_v2_architecture.py",
+            "--project-root",
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+          ],
+          "returncode": 0,
+          "stdout": "V2 architecture enforcement: PASS\nPhysical files: 56\nImport edges: 196\nViolations: 0",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "duplicate_scan",
+        "status": "PASS",
+        "symbol_count": 112,
+        "duplicates": {}
+      },
+      {
+        "name": "content_validation",
+        "status": "PASS",
+        "file_count": 0,
+        "failures": []
+      }
+    ]
+  },
+  "protected_before": {
+    "v1_databases": {
+      "game.db": {
+        "exists": true,
+        "size": 1925120,
+        "mtime_ns": 1791928577995768700,
+        "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+      },
+      "game.db-wal": {
+        "exists": true,
+        "size": 4132392,
+        "mtime_ns": 1791931855310943600,
+        "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+      },
+      "game.db-shm": {
+        "exists": true,
+        "size": 32768,
+        "mtime_ns": 1791931554269010100,
+        "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+      }
+    },
+    "configuration": {
+      ".env": {
+        "exists": true,
+        "size": 339,
+        "mtime_ns": 1788524396934698500,
+        "sha256": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42"
+      },
+      "rom_v2/.env": {
+        "exists": true,
+        "size": 190,
+        "mtime_ns": 1792345023007170000,
+        "sha256": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc"
+      }
+    },
+    "v2_runtime_database": {
+      "exists": true,
+      "size": 200704,
+      "mtime_ns": 1792352375873781800,
+      "sha256": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  },
+  "protected_after": {
+    "v1_databases": {
+      "game.db": {
+        "exists": true,
+        "size": 1925120,
+        "mtime_ns": 1791928577995768700,
+        "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+      },
+      "game.db-wal": {
+        "exists": true,
+        "size": 4132392,
+        "mtime_ns": 1791931855310943600,
+        "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+      },
+      "game.db-shm": {
+        "exists": true,
+        "size": 32768,
+        "mtime_ns": 1791931554269010100,
+        "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+      }
+    },
+    "configuration": {
+      ".env": {
+        "exists": true,
+        "size": 339,
+        "mtime_ns": 1788524396934698500,
+        "sha256": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42"
+      },
+      "rom_v2/.env": {
+        "exists": true,
+        "size": 190,
+        "mtime_ns": 1792345023007170000,
+        "sha256": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc"
+      }
+    },
+    "v2_runtime_database": {
+      "exists": true,
+      "size": 200704,
+      "mtime_ns": 1792352375873781800,
+      "sha256": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  },
+  "production_source_unchanged": true,
+  "v1_database_opened": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_check": "NOT_REQUIRED",
+  "known_boundaries": [
+    "Concrete profile/combat/simulator feature-flow wiring is revalidated in their later roadmap stages.",
+    "Item generation, rune progression, refinement calculations, regeneration timers, skill costs, potions, rage, combat energy, and combo points are outside Stage 21.6.",
+    "Scenario numbers used only in tests are not gameplay constants."
+  ],
+  "changed_files": [
+    "reports/stage_21_6_6b_stage_21_6_closure.json",
+    "MD/STAGE_21_6_COMPLETE_DOCUMENTATION.md"
+  ],
+  "commit_scope": [
+    "reports/stage_21_6_6b_stage_21_6_closure.json",
+    "MD/STAGE_21_6_COMPLETE_DOCUMENTATION.md"
+  ],
+  "next_stage": "21.7"
+}
