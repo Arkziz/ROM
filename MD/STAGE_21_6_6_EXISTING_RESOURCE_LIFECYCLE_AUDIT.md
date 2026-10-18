@@ -1,0 +1,461 @@
+# Stage 21.6.6 — Existing V1 resource lifecycle audit
+
+## Scope
+
+Read-only audit of current HP/MP persistence, initialization, class-dependent resource ownership, max-resource changes, clamping, healing/restoration, defeat, regeneration, reset, and restart semantics.
+
+No V1 module was imported or executed. No SQLite database was opened.
+
+## Evidence summary
+
+- V1 Python files scanned: `1010`
+- candidate files: `239`
+- blockers: `[]`
+
+## Candidate owner categories
+
+### PERSISTENCE
+
+- `config.py`
+- `data/balance.py`
+- `data/bosses.py`
+- `data/classes.py`
+- `data/drop_tables.py`
+- `data/equipment_identity_stat_policy.py`
+- `data/equipment_profiles.py`
+- `data/equipment_stat_policy.py`
+- `data/guild_resource_policy.py`
+- `data/mana_policy.py`
+- `data/mana_skill_presentation.py`
+- `data/mobs.py`
+- `data/player_combat_chances.py`
+- `data/player_hp.py`
+- `data/player_progression.py`
+- `data/priest_healing_policy.py`
+- `data/rebirth_sphere_policy.py`
+- `data/runes.py`
+- `data/stat_scaling.py`
+- `data/stat_system_config.py`
+- `data/story_quest_content.py`
+- `data/story_quest_definitions.py`
+- `data/story_quest_hierarchy.py`
+- `data/story_quest_item_identity.py`
+- `data/story_quest_npcs.py`
+- `data/story_quest_title_presentation.py`
+- `data/story_quests/__init__.py`
+- `data/story_quests/dark_forest_51_60.py`
+- `db_modules/__init__.py`
+- `db_modules/character.py`
+- `db_modules/connection.py`
+- `db_modules/daily_compat.py`
+- `db_modules/dev_compat.py`
+- `db_modules/inventory_compat.py`
+- `db_modules/player.py`
+- `db_modules/refine.py`
+- `db_modules/systems_wrappers.py`
+- `handlers/city.py`
+- `handlers/combat.py`
+- `handlers/inventory.py`
+- `handlers/profile.py`
+- `handlers/start.py`
+- `systems/attribute_respec_system.py`
+- `systems/boss_system.py`
+- `systems/character_system.py`
+- `systems/combat_system.py`
+- `systems/equipment_system.py`
+- `systems/notifications.py`
+- `systems/player_system.py`
+- `systems/potion_system.py`
+- `systems/pve_skill_action_state.py`
+- `systems/pvp_action_validation.py`
+- `systems/pvp_battle_factory.py`
+- `systems/regen_system.py`
+- `systems/simulation/combat_actor_stats.py`
+- `systems/simulation/progression_provider.py`
+- `tools/audit_simulation_architecture_and_purity.py`
+- `tools/smoke_test_boss_bleed.py`
+- `tools/smoke_test_canonical_player_stat_parity_18_30_5c.py`
+- `tools/smoke_test_character_mutation_contracts.py`
+- `tools/smoke_test_combat_mana_potion_contracts.py`
+- `tools/smoke_test_player_contracts.py`
+- `tools/smoke_test_player_stat_dependency_consolidation_18_15_1g.py`
+- `tools/smoke_test_preserve_final_turn_hot_healing_16_1_21.py`
+- `tools/smoke_test_production_combat_actor_parity.py`
+- `tools/smoke_test_pvp_user_mp_snapshot_contract.py`
+- `tools/smoke_test_regen_contracts.py`
+- `utils.py`
+
+### INITIALIZATION
+
+- `data/player_hp.py`
+- `db_modules/__init__.py`
+- `db_modules/character.py`
+- `db_modules/player.py`
+- `db_modules/shop.py`
+- `handlers/profile.py`
+- `handlers/start.py`
+- `systems/character_system.py`
+- `systems/notifications.py`
+- `systems/player_system.py`
+- `systems/simulation/combat_actor_stats.py`
+- `systems/stat_system.py`
+- `tools/audit_canonical_character_creation_and_player_stats_18_30_5a.py`
+- `tools/audit_canonical_player_stat_pipeline_18_30_5b.py`
+- `tools/audit_character_duplicates.py`
+- `tools/audit_equipment_defense_refine_and_combat_chance_18_30_5b1.py`
+- `tools/smoke_test_actual_new_character_event_18_xx_13d.py`
+- `tools/smoke_test_canonical_player_stat_parity_18_30_5c.py`
+- `tools/smoke_test_character_mutation_contracts.py`
+- `tools/smoke_test_class_change_handler_contract.py`
+- `tools/smoke_test_class_selection_preview_confirmation_17_13_1.py`
+- `tools/smoke_test_configurable_attack_scaling_18_15_11.py`
+- `tools/smoke_test_max_mp_production_switch_18_15_8c.py`
+- `tools/smoke_test_new_character_chronicle_event_18_xx_13b.py`
+- `tools/smoke_test_notification_resource_integration_18_16_5d.py`
+- `tools/smoke_test_starting_hp_130_18_12_2.py`
+- `tools/smoke_test_stat_system_shadow_foundation_18_15_6.py`
+
+### CLAMPING
+
+- `data/mana_policy.py`
+- `data/player_combat_chances.py`
+- `handlers/admin_crystal_credit.py`
+- `handlers/combat.py`
+- `systems/admin_crystal_credit_system.py`
+- `systems/notifications.py`
+- `systems/player_system.py`
+- `systems/pvp_adaptive_balance_optimizer.py`
+- `systems/pvp_round_engine.py`
+- `systems/regen_system.py`
+- `systems/rune_system.py`
+- `systems/simulation/survival_state.py`
+- `tools/audit_pve_effect_timing_18_19_0.py`
+- `tools/audit_pve_player_hit_18_21_0.py`
+- `tools/audit_rune_system_architecture.py`
+- `tools/close_pve_normal_attack_hit_stage_18_21.py`
+- `tools/smoke_test_admin_crystal_credit_and_clamped_debit_18_3_1.py`
+- `tools/smoke_test_character_mutation_contracts.py`
+- `tools/smoke_test_combat_mana_potion_contracts.py`
+- `tools/smoke_test_rune_character_stat_bonuses.py`
+- `tools/smoke_test_stage_20_5_6_admin_crystal_schema.py`
+- `tools/verify_stage_19_34_5_routes_and_kill_targets.py`
+- `utils.py`
+
+### MAX_INCREASE
+
+- `db_modules/dev_compat.py`
+- `systems/player_system.py`
+
+### MAX_DECREASE
+
+- `handlers/combat.py`
+- `systems/boss_system.py`
+- `systems/notifications.py`
+- `systems/pvp_production_fixture_audit.py`
+- `systems/regen_system.py`
+- `systems/simulation/behavior_policy.py`
+
+### HEAL_RESTORE
+
+- `data/guild_resource_policy.py`
+- `data/mana_policy.py`
+- `data/priest_healing_policy.py`
+- `db_modules/player.py`
+- `handlers/combat.py`
+- `handlers/dev.py`
+- `systems/auction_house_system.py`
+- `systems/equipment_system.py`
+- `systems/level_up_reward_system.py`
+- `systems/notifications.py`
+- `systems/player_interaction_system.py`
+- `systems/player_system.py`
+- `systems/potion_system.py`
+- `systems/pvp_adaptive_balance_optimizer.py`
+- `systems/pvp_balance_simulator.py`
+- `systems/pvp_combat_log.py`
+- `systems/pvp_config.py`
+- `systems/pvp_models.py`
+- `systems/pvp_policy_metrics_audit.py`
+- `systems/pvp_production_calibration.py`
+- `systems/pvp_production_fixture_audit.py`
+- `systems/pvp_real_actor_root_cause_audit.py`
+- `systems/pvp_round_engine.py`
+- `systems/regen_system.py`
+- `systems/simulation/pve_battle.py`
+- `systems/simulation/survival_state.py`
+- `systems/simulation/world_progression.py`
+- `tools/accept_stage_20_3_hybrid_mana_economy.py`
+- `tools/audit_combat_mana_potion.py`
+- `tools/pvp_class_effect_and_isolation_regression.py`
+- `tools/smoke_test_canonical_mana_policy.py`
+- `tools/smoke_test_combat_mana_potion_contracts.py`
+- `tools/smoke_test_legacy_mana_consolidation.py`
+- `tools/smoke_test_regen_contracts.py`
+- `tools/smoke_test_simulation_persistent_survival.py`
+- `tools/smoke_test_simulator_canonical_mana_policy.py`
+
+### DEATH_DEFEAT
+
+- `data/story_quests/start_path_41_50.py`
+- `db_modules/__init__.py`
+- `db_modules/equipment.py`
+- `handlers/combat.py`
+- `handlers/world_chronicles.py`
+- `systems/equipment_system.py`
+- `systems/profile_history_system.py`
+- `systems/pve_auto_escape_system.py`
+- `systems/pvp_completion_service.py`
+- `systems/pvp_knight_judgement_terminal_audit.py`
+- `systems/pvp_round_engine.py`
+- `systems/simulation/balance_analyzer.py`
+- `systems/simulation/class_progression.py`
+- `systems/simulation/excel_reporting.py`
+- `systems/simulation/patch_regression.py`
+- `systems/simulation/progression_models.py`
+- `systems/simulation/progression_reporting.py`
+- `systems/simulation/progression_wall_analyzer.py`
+- `systems/simulation/pve_battle.py`
+- `systems/simulation/rng_percentiles.py`
+- `systems/simulation/survival_state.py`
+- `systems/simulation/world_progression.py`
+- `systems/story_boss_invocation_adapter.py`
+- `systems/story_quest_boss_completion_system.py`
+- `systems/world_chronicle_system.py`
+- `tools/audit_equipment_write_repair_trader.py`
+- `tools/audit_pve_auto_escape_18_18_0.py`
+- `tools/audit_pve_effect_timing_18_19_0.py`
+- `tools/audit_pvp_architecture_skill_parity.py`
+- `tools/audit_simulation_architecture_and_purity.py`
+- `tools/check_story_boss_full_lifecycle.py`
+- `tools/check_story_boss_invocation_adapter.py`
+- `tools/check_story_quest_boss_deferred_completion.py`
+- `tools/close_pve_auto_escape_stage_18_18.py`
+- `tools/pvp_class_effect_and_isolation_regression.py`
+- `tools/regression_test_pvp_stage_14_closure.py`
+- `tools/run_all_class_10_day_diagnostic_matrix.py`
+- `tools/run_all_class_progression_matrix.py`
+- `tools/run_boss_balance_simulation_15_7_0.py`
+- `tools/run_class_progression_simulation.py`
+- `tools/run_full_production_progression_acceptance.py`
+- `tools/run_pve_balance_analysis.py`
+- `tools/run_single_class_progression.py`
+- `tools/run_stage_20_4_3b_potion_affordability_audit.py`
+- `tools/run_world_progression_sim.py`
+- `tools/smoke_test_10_day_diagnostic_exp_field_18_30_9a.py`
+- `tools/smoke_test_all_class_10_day_diagnostic_matrix_18_30_9.py`
+- `tools/smoke_test_all_class_level_1_to_10_matrix_18_30_6.py`
+- `tools/smoke_test_all_class_level_1_to_2_matrix_18_30_7.py`
+- `tools/smoke_test_all_class_level_1_to_5_matrix_18_30_6a.py`
+- `tools/smoke_test_battle_result_before_final_turn_18_xx_3.py`
+- `tools/smoke_test_canonical_progression_mob_selection_18_30_4d.py`
+- `tools/smoke_test_consolidated_excel_report_18_30_5i.py`
+- `tools/smoke_test_consolidated_report_outputs_18_30_5j.py`
+- `tools/smoke_test_death_durability_call_signature_17_3_0_1.py`
+- `tools/smoke_test_equipment_durability_contracts.py`
+- `tools/smoke_test_final_simulator_acceptance_18_30_5k.py`
+- `tools/smoke_test_lethal_enemy_action_combat_log_15_7_5_1.py`
+- `tools/smoke_test_matrix_progression_time_18_30_8.py`
+- `tools/smoke_test_profile_history_button_and_pvp_reason_localization_17_24_1_1.py`
+- `tools/smoke_test_pve_balance_analyzers.py`
+- `tools/smoke_test_pve_defeat_enemy_hp_17_3_0.py`
+- `tools/smoke_test_pve_defeat_terminal_claim_18_xx_1.py`
+- `tools/smoke_test_pvp_active_keyboard_terminal_cleanup.py`
+- `tools/smoke_test_pvp_battle_log_localization.py`
+- `tools/smoke_test_pvp_combat_log_actor_binding.py`
+- `tools/smoke_test_pvp_completion_cleanup_recovery.py`
+- `tools/smoke_test_pvp_no_round_limit.py`
+- `tools/smoke_test_remove_redundant_player_hp_before_defeat_17_3_0_2.py`
+- `tools/smoke_test_repair_and_durability_lifecycle_18_30_5h.py`
+- `tools/smoke_test_rng_patch_regression.py`
+- `tools/smoke_test_simplified_final_combat_round_summary_16_1_12.py`
+- `tools/smoke_test_simulation_persistent_survival.py`
+- `tools/smoke_test_single_class_reports_18_30_13a.py`
+- `tools/smoke_test_victory_final_turn_spacing_18_xx_3a.py`
+- `tools/smoke_test_victory_final_turn_spacing_18_xx_3b.py`
+- `tools/smoke_test_warrior_scout_skill_selection_18_30_11.py`
+- `tools/smoke_test_world_chronicle_events_18_xx_13.py`
+- `tools/smoke_test_world_progression_simulator.py`
+- `tools/story_quest_candidate_importer.py`
+- `tools/validate_final_simulator_acceptance.py`
+- `tools/validate_integrated_player_resource_lifecycle.py`
+- `utils.py`
+
+### REGEN
+
+- `data/balance.py`
+- `data/mana_policy.py`
+- `db_modules/__init__.py`
+- `db_modules/connection.py`
+- `db_modules/daily_compat.py`
+- `db_modules/dev_compat.py`
+- `db_modules/inventory_compat.py`
+- `db_modules/systems_wrappers.py`
+- `handlers/city.py`
+- `handlers/combat.py`
+- `handlers/profile.py`
+- `handlers/start.py`
+- `systems/character_system.py`
+- `systems/energy_system.py`
+- `systems/notifications.py`
+- `systems/player_system.py`
+- `systems/potion_system.py`
+- `systems/pvp_action_validation.py`
+- `systems/pvp_combat_log.py`
+- `systems/pvp_policy_metrics_audit.py`
+- `systems/pvp_round_engine.py`
+- `systems/regen_system.py`
+- `systems/simulation/clock.py`
+- `tools/audit_residual_legacy_refs.py`
+- `tools/audit_simulation_architecture_and_purity.py`
+- `tools/final_db_cleanup_closure_audit.py`
+- `tools/smoke_test_max_mp_growth_regeneration_timestamp_fix_18_15_8d.py`
+- `tools/smoke_test_persistent_mana_regeneration_17_15_1.py`
+- `tools/smoke_test_pvp_battle_log_resource_grouping.py`
+- `tools/smoke_test_pvp_combat_energy_regeneration.py`
+- `tools/smoke_test_regen_contracts.py`
+
+### RESTART
+
+- `data/guild_resource_policy.py`
+- `db.py`
+- `db_modules/__init__.py`
+- `db_modules/character.py`
+- `db_modules/player.py`
+- `db_modules/quests.py`
+- `db_modules/systems_wrappers.py`
+- `handlers/admin_crystal_credit.py`
+- `handlers/auction_house.py`
+- `handlers/city.py`
+- `handlers/combat.py`
+- `handlers/dev.py`
+- `handlers/guild.py`
+- `handlers/inventory.py`
+- `handlers/player_interaction.py`
+- `main.py`
+- `systems/player_interaction_system.py`
+- `systems/pve_auto_escape_system.py`
+- `systems/pvp_completion_service.py`
+- `systems/pvp_system.py`
+- `systems/travel_system.py`
+- `tools/audit_inline_map_and_travel_18_22_0.py`
+- `tools/audit_inline_map_and_travel_closure_18_22_4.py`
+- `tools/audit_player_trade_precommit_architecture.py`
+- `tools/audit_pve_auto_escape_18_18_0.py`
+- `tools/audit_pvp_architecture_skill_parity.py`
+- `tools/close_equipment_stat_policy_stage_18_17.py`
+- `tools/close_pve_auto_escape_stage_18_18.py`
+- `tools/run_final_stage_18_closure_audit.py`
+- `tools/run_v2_db_integrity.py`
+- `tools/smoke_test_equipment_rune_comparison_18_11_1.py`
+- `tools/smoke_test_inactivity_reminder_policy_18_6_1.py`
+- `tools/smoke_test_inline_map_travel_ui_18_22_2.py`
+- `tools/smoke_test_player_trade_lock_consolidation_and_startup_recovery.py`
+- `tools/smoke_test_pve_auto_escape_18_18_1.py`
+- `tools/smoke_test_pve_encounter_history_recovery_18_18_1a.py`
+- `tools/smoke_test_pvp_data_model_sessions_recovery.py`
+- `tools/verify_v2_clock_rng_abstractions.py`
+- `tools/verify_v2_domain_event_model.py`
+- `tools/verify_v2_repository_unit_of_work.py`
+
+### CLASS_RESOURCE
+
+- `data/bosses.py`
+- `data/classes.py`
+- `data/guild_resource_policy.py`
+- `data/mana_policy.py`
+- `data/mana_skill_presentation.py`
+- `data/stat_system_config.py`
+- `data/story_quest_hierarchy.py`
+- `db.py`
+- `db_modules/__init__.py`
+- `db_modules/character.py`
+- `db_modules/connection.py`
+- `db_modules/equipment.py`
+- `db_modules/inventory.py`
+- `db_modules/location.py`
+- `db_modules/player.py`
+- `db_modules/story_quests.py`
+- `db_modules/systems_wrappers.py`
+- `events/_template/statistics.py`
+- `handlers/combat.py`
+- `handlers/guild.py`
+- `handlers/profile.py`
+- `handlers/start.py`
+- `migrations/053_story_quest_persistence_schema.py`
+- `systems/boss_system.py`
+- `systems/event_statistics_system.py`
+- `systems/pve_skill_action_state.py`
+- `systems/pvp_action_validation.py`
+- `systems/pvp_balance_simulator.py`
+- `systems/pvp_combat_log.py`
+- `systems/pvp_config.py`
+- `systems/pvp_policy_metrics_audit.py`
+- `systems/pvp_real_actor_root_cause_audit.py`
+- `systems/pvp_real_actor_state_replay.py`
+- `systems/pvp_root_cause_metric_semantics.py`
+- `systems/pvp_round_engine.py`
+- `systems/pvp_round_ui.py`
+- `systems/pvp_system.py`
+- `systems/simulation/pve_battle.py`
+- `systems/simulation/survival_state.py`
+- `systems/stat_system.py`
+- `tools/audit_pvp_architecture_skill_parity.py`
+- `tools/audit_warrior_scout_skill_usage.py`
+- `tools/pvp_class_effect_and_isolation_regression.py`
+- `tools/regression_test_pvp_stage_14_closure.py`
+- `tools/run_boss_production_parity_simulation_15_7_1.py`
+- `tools/run_stage_20_4_3b_potion_affordability_audit.py`
+- `tools/smoke_test_character_mutation_contracts.py`
+- `tools/smoke_test_pve_skill_button_states_17_16_1.py`
+- `tools/smoke_test_pvp_action_prevalidation_retry.py`
+- `tools/smoke_test_pvp_battle_log_resource_grouping.py`
+- `tools/smoke_test_pvp_combat_energy_regeneration.py`
+- `tools/smoke_test_pvp_round_combat_log_combo_hot.py`
+- `tools/smoke_test_warrior_scout_skill_selection_18_30_11.py`
+
+### RESET
+
+- `data/mana_policy.py`
+- `db_modules/__init__.py`
+- `db_modules/character.py`
+- `db_modules/dev_compat.py`
+- `db_modules/player.py`
+- `handlers/city.py`
+- `handlers/combat.py`
+- `handlers/profile.py`
+- `systems/boss_system.py`
+- `systems/character_system.py`
+- `systems/notifications.py`
+- `systems/player_system.py`
+- `systems/potion_system.py`
+- `systems/pvp_battle_factory.py`
+- `systems/regen_system.py`
+- `systems/simulation/combat_actor_stats.py`
+- `systems/simulation/progression_provider.py`
+- `tools/audit_inline_map_and_travel_18_22_0.py`
+- `tools/audit_inline_map_and_travel_closure_18_22_4.py`
+- `tools/audit_registration_date_pipeline_18_31_3.py`
+- `tools/audit_simulation_architecture_and_purity.py`
+- `tools/smoke_test_boss_bleed.py`
+- `tools/smoke_test_canonical_player_stat_parity_18_30_5c.py`
+- `tools/smoke_test_character_mutation_contracts.py`
+- `tools/smoke_test_combat_mana_potion_contracts.py`
+- `tools/smoke_test_dev_reset_hero_lock_initialization_17_12_1_1.py`
+- `tools/smoke_test_player_contracts.py`
+- `tools/smoke_test_player_stat_dependency_consolidation_18_15_1g.py`
+- `tools/smoke_test_preserve_final_turn_hot_healing_16_1_21.py`
+- `tools/smoke_test_production_combat_actor_parity.py`
+- `tools/smoke_test_pvp_user_mp_snapshot_contract.py`
+- `tools/smoke_test_regen_contracts.py`
+- `tools/smoke_test_registration_date_pipeline_18_31_4.py`
+- `utils.py`
+
+## Mutation boundary
+
+A future Stage 21.6.6a may implement only lifecycle behavior explicitly supported by the JSON evidence. It must not infer automatic healing, resource refill, non-mana MP semantics, death recovery, or persistence behavior from the derived-stat formulas alone.
+
+Conclusion: `GO`
+
+## Manual game check
+
+Not required. This audit is static and read-only.
