@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from rom_v2.application.character_ports import CharacterUnitOfWorkFactoryPort
 from rom_v2.domain.character import Character
+from rom_v2.domain.class_catalog import ClassCatalog, DEFAULT_CLASS_CATALOG
 
 class CharacterResultStatus(StrEnum):
     CREATED="created"; RESET="reset"; ALREADY_EXISTS="already_exists"; REJECTED="rejected"; NOT_FOUND="not_found"
@@ -22,10 +23,14 @@ class CharacterCommandResult:
 
 class CharacterService:
     """Own character lifecycle mutations through application ports and one UoW."""
-    def __init__(self, unit_of_work_factory: CharacterUnitOfWorkFactoryPort) -> None:
+    def __init__(self, unit_of_work_factory: CharacterUnitOfWorkFactoryPort, class_catalog: ClassCatalog = DEFAULT_CLASS_CATALOG) -> None:
         self._unit_of_work_factory=unit_of_work_factory
+        self._class_catalog=class_catalog
 
     def create(self, command: CreateCharacterCommand) -> CharacterCommandResult:
+        # Validate the audited V1 technical key before opening a transaction.
+        if self._class_catalog.find(command.class_key) is None:
+            return CharacterCommandResult(CharacterResultStatus.REJECTED,"class_key_unknown",None)
         try:
             candidate=Character(command.character_id,command.account_id,command.name,command.class_key,1,0,command.location_key,command.current_hp,command.current_mp)
         except ValueError as error:
