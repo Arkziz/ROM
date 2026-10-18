@@ -6,11 +6,13 @@ from rom_v2.infrastructure.persistence.connection_factory import (
 )
 from rom_v2.infrastructure.persistence.migrator import MigrationResult, V2Migrator
 from rom_v2.infrastructure.persistence.schema_contract import SCHEMA_CONTRACT
+from rom_v2.infrastructure.persistence.unit_of_work import SQLiteUnitOfWork
 
 __all__ = [
     "ConnectionProfile",
     "MigrationResult",
     "SCHEMA_CONTRACT",
+    "SQLiteUnitOfWork",
     "V2ConnectionFactory",
     "V2Migrator",
 ]
