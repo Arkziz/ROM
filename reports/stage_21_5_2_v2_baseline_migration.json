@@ -1,0 +1,254 @@
+{
+  "schema_version": 1,
+  "stage": "21.5.2",
+  "status": "PASS",
+  "conclusion": "GO",
+  "generated_at_utc": "2026-10-18T19:25:17Z",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head_before_commit": "cfa8c7cabf286ac268c3c2fd70a59b117d8491a6",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "database_strategy": {
+    "create_new_v2_database": true,
+    "migrate_v1_test_database": false,
+    "copy_v1_migration_chain": false
+  },
+  "migration": {
+    "version": 1,
+    "key": "001_v2_baseline",
+    "checksum": "92cc64b874aeb948bf88c53266df3db72b41f8a48d34a738abe6d2eb34e03dbf",
+    "table_count": 15,
+    "tables": [
+      "accounts",
+      "character_primary_stats",
+      "characters",
+      "crystal_ledger",
+      "crystal_wallets",
+      "domain_events",
+      "equipment_slots",
+      "gold_wallets",
+      "item_instances",
+      "item_reservations",
+      "operation_records",
+      "outbox_messages",
+      "quest_item_balances",
+      "quest_progress",
+      "schema_migrations"
+    ],
+    "applied_versions": [
+      1
+    ]
+  },
+  "runtime_database": {
+    "path": ".runtime/v2/db/rom_v2.db",
+    "ignored": true,
+    "tracked": false,
+    "foreign_key_violations": 0,
+    "quick_check": "ok"
+  },
+  "checks": [
+    {
+      "check_id": "BRANCH",
+      "status": "PASS",
+      "summary": "Active branch: rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "PARENT",
+      "status": "PASS",
+      "summary": "Expected Stage 21.5.1b parent verified.",
+      "details": {
+        "expected": "cfa8c7cabf286ac268c3c2fd70a59b117d8491a6",
+        "actual": "cfa8c7cabf286ac268c3c2fd70a59b117d8491a6"
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "UPSTREAM",
+      "status": "PASS",
+      "summary": "Upstream: origin/rewrite/rom-v2",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "WORKTREE",
+      "status": "PASS",
+      "summary": "No unexpected changes.",
+      "details": {
+        "unexpected": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "STAGING_EMPTY",
+      "status": "PASS",
+      "summary": "Staging area is empty.",
+      "details": {
+        "staged": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "FOCUSED_TEST",
+      "status": "PASS",
+      "summary": "....\n----------------------------------------------------------------------\nRan 4 tests in 0.907s\n\nOK",
+      "details": {},
+      "blocking": false
+    },
+    {
+      "check_id": "RUNTIME_DB_SMOKE",
+      "status": "PASS",
+      "summary": "Isolated V2 DB created from migration 001.",
+      "details": {
+        "stderr": ""
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "CI_BASELINE",
+      "status": "PASS",
+      "summary": "ROM V2 CI baseline: PASS\n[PASS] compile\n[PASS] imports\n[PASS] unit\n[PASS] architecture\n[PASS] duplicate_scan\n[PASS] content_validation",
+      "details": {
+        "failed_checks": []
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "PROTECTED_CONFIG",
+      "status": "PASS",
+      "summary": "V1 and V2 environment hashes preserved: True.",
+      "details": {
+        "hashes_recorded": false
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "V1_DATABASE_UNCHANGED",
+      "status": "PASS",
+      "summary": "V1 DB/WAL/SHM unchanged and never opened.",
+      "details": {
+        "v1_sqlite_opened": false
+      },
+      "blocking": false
+    },
+    {
+      "check_id": "RUNTIME_DB_POLICY",
+      "status": "PASS",
+      "summary": "V2 runtime DB is ignored and untracked.",
+      "details": {
+        "ignored": true,
+        "tracked": false
+      },
+      "blocking": false
+    }
+  ],
+  "mutation_started": true,
+  "database_mutation_started": true,
+  "backup_manifest": {
+    "files": {
+      "rom_v2/infrastructure/persistence/__init__.py": {
+        "existed": true,
+        "backup": "backup/stage_21_5_2__rom_v2__infrastructure__persistence____init__.py",
+        "sha256": "2fd8dc2f685cb62e76665f6c2c8d7cae361d1c1fb823176f92729d8c4db45b2e"
+      },
+      "rom_v2/infrastructure/persistence/migrations/__init__.py": {
+        "existed": false,
+        "backup": null
+      },
+      "rom_v2/infrastructure/persistence/migrations/v001_v2_baseline.py": {
+        "existed": false,
+        "backup": null
+      },
+      "rom_v2/infrastructure/persistence/migrator.py": {
+        "existed": false,
+        "backup": null
+      },
+      "tests_v2/test_v2_baseline_migration.py": {
+        "existed": false,
+        "backup": null
+      },
+      "reports/stage_21_5_2_v2_baseline_migration.json": {
+        "existed": false,
+        "backup": null
+      },
+      "MD/STAGE_21_5_2_V2_BASELINE_MIGRATION.md": {
+        "existed": false,
+        "backup": null
+      }
+    },
+    "runtime_db": {
+      "existed": false,
+      "backup": null
+    }
+  },
+  "v1_database_evidence_before": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "v1_database_evidence_after": {
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    }
+  },
+  "changed_files": [
+    "rom_v2/infrastructure/persistence/__init__.py",
+    "rom_v2/infrastructure/persistence/migrations/__init__.py",
+    "rom_v2/infrastructure/persistence/migrations/v001_v2_baseline.py",
+    "rom_v2/infrastructure/persistence/migrator.py",
+    "tests_v2/test_v2_baseline_migration.py",
+    "reports/stage_21_5_2_v2_baseline_migration.json",
+    "MD/STAGE_21_5_2_V2_BASELINE_MIGRATION.md"
+  ],
+  "commit_scope": [
+    "rom_v2/infrastructure/persistence/__init__.py",
+    "rom_v2/infrastructure/persistence/migrations/__init__.py",
+    "rom_v2/infrastructure/persistence/migrations/v001_v2_baseline.py",
+    "rom_v2/infrastructure/persistence/migrator.py",
+    "tests_v2/test_v2_baseline_migration.py",
+    "reports/stage_21_5_2_v2_baseline_migration.json",
+    "MD/STAGE_21_5_2_V2_BASELINE_MIGRATION.md"
+  ],
+  "excluded_from_commit": [
+    "patch/patch_21_5_2_create_v2_baseline_migration.py",
+    ".runtime/v2/db/rom_v2.db",
+    ".env",
+    "rom_v2/.env",
+    "ROM_FULL_DUMP.txt"
+  ],
+  "manual_check": "NOT_REQUIRED",
+  "next_stage": "21.5.3",
+  "suggested_next_patch": "patch_21_5_3_define_v2_connection_factory.py"
+}
