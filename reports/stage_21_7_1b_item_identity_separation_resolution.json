@@ -1,0 +1,615 @@
+{
+  "schema_version": 1,
+  "stage": "21.7.1b",
+  "status": "PASS",
+  "conclusion": "GO_WITH_FORWARD_MIGRATION_REQUIRED",
+  "generated_at_utc": "2026-10-19T19:19:29Z",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "fb68960f70b1cb28e875b61471c8836c096359b8",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "source_report": "reports/stage_21_7_1a_refined_item_definition_and_instance_contract.json",
+  "unresolved_before": 2,
+  "unresolved_after": 0,
+  "resolutions": {
+    "DEFINITION_VS_INSTANCE_SEPARATION": {
+      "classification": "V1_CONFIRMED",
+      "checks": {
+        "items_table": true,
+        "inventory_table": true,
+        "inventory_primary_identity": true,
+        "item_reference": true,
+        "equipment_exact_instance": true
+      },
+      "evidence": [
+        {
+          "file": "multiple explicit owners",
+          "line": 67,
+          "text": "CREATE TABLE IF NOT EXISTS inventory ("
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 79,
+          "text": "CREATE TABLE IF NOT EXISTS items ("
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 125,
+          "text": "inventory_id INTEGER,"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 357,
+          "text": "SELECT DISTINCT r.inventory_id"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 359,
+          "text": "JOIN inventory AS inv ON inv.id=r.inventory_id"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 420,
+          "text": "\"inventory_id\": None, \"used_slots\": used_slots, \"capacity\": capacity,"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 423,
+          "text": "first_inventory_id = None"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 424,
+          "text": "for inventory_id, current in partial:"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 432,
+          "text": "(current+moved, int(inventory_id), user_id, item_id),"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 436,
+          "text": "first_inventory_id = first_inventory_id or int(inventory_id)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 445,
+          "text": "first_inventory_id = first_inventory_id or int(cursor.lastrowid)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 452,
+          "text": "\"inventory_id\": first_inventory_id,"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 463,
+          "text": "\"inventory_id\": None,"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 483,
+          "text": "\"SELECT DISTINCT inventory_id FROM inventory_reservations WHERE user_id=? AND COALESCE(quantity,0)>0\","
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 493,
+          "text": "total = sum(quantity for _inventory_id, quantity in safe)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 498,
+          "text": "before = [quantity for _inventory_id, quantity in safe]"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 503,
+          "text": "for inventory_id, _quantity in safe[len(desired):]:"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 504,
+          "text": "database.execute(\"DELETE FROM inventory WHERE id=? AND user_id=? AND item_id=?\", (inventory_id,user_id,item_id))"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 516,
+          "text": "def consume_inventory_item(user_id_or_inventory_id, inventory_id_or_amount=1, amount=None):"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 520,
+          "text": "- consume_inventory_item(inventory_id, amount=1)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 521,
+          "text": "- consume_inventory_item(user_id, inventory_id, amount=1)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 525,
+          "text": "inventory_id = int(user_id_or_inventory_id)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 526,
+          "text": "amount = int(inventory_id_or_amount)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 528,
+          "text": "user_id = int(user_id_or_inventory_id)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 529,
+          "text": "inventory_id = int(inventory_id_or_amount)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 536,
+          "text": "cursor.execute(\"SELECT user_id,item_id,quantity FROM inventory WHERE id=?\", (inventory_id,))"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 540,
+          "text": "(inventory_id, user_id),"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 550,
+          "text": "item_id, raw_quantity = int(cursor.execute(\"SELECT item_id FROM inventory WHERE id=?\", (inventory_id,)).fetchone()[0]), row[0]"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 559,
+          "text": "cursor.execute(\"DELETE FROM inventory WHERE id=?\", (inventory_id,))"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 563,
+          "text": "(inventory_id, user_id),"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 570,
+          "text": "(new_quantity, inventory_id),"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 575,
+          "text": "(new_quantity, inventory_id, user_id),"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 624,
+          "text": "for inventory_id, stack_quantity in rows:"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 636,
+          "text": "\"\"\", (inventory_id,))"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 642,
+          "text": "\"\"\", (new_quantity, inventory_id))"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 821,
+          "text": "Повертає словник {slot_key: inventory_id} для всіх слотів екіпірування."
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 828,
+          "text": "SELECT slot_key, inventory_id"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 836,
+          "text": "for slot_key, inventory_id in rows:"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 837,
+          "text": "result[slot_key] = inventory_id"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 848,
+          "text": "\"\"\"Return inventory_id equipped in one validated slot, or None.\"\"\""
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 871,
+          "text": "def get_inventory_entry(user_id_or_inventory_id, inventory_id=None):"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 875,
+          "text": "- get_inventory_entry(inventory_id)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 876,
+          "text": "- get_inventory_entry(user_id, inventory_id)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 878,
+          "text": "if inventory_id is None:"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 879,
+          "text": "return _equipment_system().get_inventory_entry(user_id_or_inventory_id)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 881,
+          "text": "user_id = int(user_id_or_inventory_id)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 882,
+          "text": "inventory_id = int(inventory_id)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 888,
+          "text": "(user_id, inventory_id),"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 899,
+          "text": "def get_item_by_inventory_id(inventory_id):"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 900,
+          "text": "return _equipment_system().get_item_by_inventory_id(inventory_id)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 903,
+          "text": "def get_item_by_inventory_id_full(inventory_id):"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 904,
+          "text": "return _equipment_system().get_item_by_inventory_id_full(inventory_id)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 907,
+          "text": "def get_item_bonuses(inventory_id):"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 908,
+          "text": "return _equipment_system().get_item_bonuses(inventory_id)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 935,
+          "text": "def get_weapon_damage_by_inventory_id(inventory_id):"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 936,
+          "text": "return _equipment_system().get_weapon_damage_by_inventory_id(inventory_id)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 939,
+          "text": "def get_inventory_weapon_damage_display(inventory_id):"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 940,
+          "text": "return _equipment_system().get_inventory_weapon_damage_display(inventory_id)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 947,
+          "text": "def get_inventory_refine_level(inventory_id):"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 948,
+          "text": "return _equipment_system().get_inventory_refine_level(inventory_id)"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 951,
+          "text": "def get_inventory_refined_display_name(inventory_id, base_name=None):"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 954,
+          "text": "inventory_id,"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 975,
+          "text": "def can_equip_inventory_item_by_class(user_id, inventory_id):"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 978,
+          "text": "inventory_id=inventory_id"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 982,
+          "text": "def is_inventory_item_class_compatible(user_id, inventory_id):"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 985,
+          "text": "inventory_id=inventory_id"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 993,
+          "text": "def equip_inventory_item(user_id, inventory_id):"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 996,
+          "text": "inventory_id=inventory_id"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 1000,
+          "text": "def unequip_inventory_item(user_id, inventory_id):"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 1003,
+          "text": "inventory_id=inventory_id"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 1015,
+          "text": "def repair_equipped_item(user_id, inventory_id):"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 1018,
+          "text": "inventory_id=inventory_id"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 1052,
+          "text": "def sell_inventory_item_to_trader(user_id, inventory_id):"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 1055,
+          "text": "inventory_id=inventory_id"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 1117,
+          "text": "main_info = get_item_classification_by_inventory_id(int(main_hand)) or {}"
+        },
+        {
+          "file": "multiple explicit owners",
+          "line": 1136,
+          "text": "STORY_QUEST_ITEM_FORBIDDEN_COLUMNS = frozenset({\"item_id\", \"inventory_id\"})"
+        }
+      ]
+    },
+    "QUEST_ITEMS_SEPARATE_FROM_ORDINARY_INVENTORY": {
+      "classification": "V1_CONFIRMED",
+      "checks": {
+        "separate_table": true,
+        "identity_user_id": true,
+        "identity_quest_id": true,
+        "identity_item_key": true,
+        "unique_identity": true,
+        "ordinary_inventory_id_forbidden": true,
+        "ordinary_item_id_forbidden": true
+      },
+      "evidence": [
+        {
+          "file": "quest identity owners",
+          "line": 7,
+          "text": "STORY_QUEST_ITEM_TABLE = \"user_story_quest_items\""
+        },
+        {
+          "file": "quest identity owners",
+          "line": 8,
+          "text": "STORY_QUEST_ITEM_IDENTITY_COLUMNS = (\"user_id\", \"quest_id\", \"item_key\")"
+        },
+        {
+          "file": "quest identity owners",
+          "line": 10,
+          "text": "{\"id\", \"user_id\", \"quest_id\", \"item_key\", \"quantity\", \"updated_at\"}"
+        },
+        {
+          "file": "quest identity owners",
+          "line": 12,
+          "text": "STORY_QUEST_ITEM_FORBIDDEN_COLUMNS = frozenset({\"item_id\", \"inventory_id\"})"
+        },
+        {
+          "file": "quest identity owners",
+          "line": 13,
+          "text": "STORY_QUEST_ITEM_KEY_PATTERN = re.compile(r\"^[a-z][a-z0-9]*(?:_[a-z0-9]+)+$\")"
+        },
+        {
+          "file": "quest identity owners",
+          "line": 16,
+          "text": "def validate_story_quest_item_key(item_key: str) -> str:"
+        },
+        {
+          "file": "quest identity owners",
+          "line": 18,
+          "text": "key = str(item_key or \"\").strip()"
+        },
+        {
+          "file": "quest identity owners",
+          "line": 19,
+          "text": "if not STORY_QUEST_ITEM_KEY_PATTERN.fullmatch(key):"
+        },
+        {
+          "file": "quest identity owners",
+          "line": 21,
+          "text": "\"story quest item_key must be lowercase snake_case with a namespace prefix\""
+        },
+        {
+          "file": "quest identity owners",
+          "line": 37,
+          "text": "unique_column_sets = []"
+        },
+        {
+          "file": "quest identity owners",
+          "line": 47,
+          "text": "unique_column_sets.append(members)"
+        },
+        {
+          "file": "quest identity owners",
+          "line": 54,
+          "text": "\"forbidden_present\": sorted(STORY_QUEST_ITEM_FORBIDDEN_COLUMNS & column_set),"
+        },
+        {
+          "file": "quest identity owners",
+          "line": 55,
+          "text": "\"identity_unique\": STORY_QUEST_ITEM_IDENTITY_COLUMNS in unique_column_sets,"
+        },
+        {
+          "file": "quest identity owners",
+          "line": 68,
+          "text": "if result[\"forbidden_present\"]:"
+        },
+        {
+          "file": "quest identity owners",
+          "line": 69,
+          "text": "errors.append(f\"forbidden columns: {result['forbidden_present']}\")"
+        },
+        {
+          "file": "quest identity owners",
+          "line": 70,
+          "text": "if not result[\"identity_unique\"]:"
+        },
+        {
+          "file": "quest identity owners",
+          "line": 71,
+          "text": "errors.append(\"missing UNIQUE(user_id, quest_id, item_key)\")"
+        }
+      ]
+    }
+  },
+  "owner_files": [
+    {
+      "file": "db_modules/connection.py",
+      "sha256": "e3005d71279e96b8a8bb9cf99ec5305d6e8e327b564256b2d0376e7b3315a180",
+      "line_count": 245
+    },
+    {
+      "file": "db_modules/inventory.py",
+      "sha256": "e89cdcf2a15ad9936095b1bcd329f2060695a893b3513a58b658cd6ca00d8a3b",
+      "line_count": 490
+    },
+    {
+      "file": "db_modules/equipment.py",
+      "sha256": "4a66d67725b7aca6f01dfe93479875a4d4ace8306e608e7183a224acde2aa184",
+      "line_count": 386
+    },
+    {
+      "file": "data/story_quest_item_identity.py",
+      "sha256": "7eebfc178ab3f6e95376a86a9e45a1d644ecf032bb2166c486aa7d3b42a2408c",
+      "line_count": 77
+    }
+  ],
+  "blockers": [],
+  "implementation_decision": {
+    "migration_001_rewritten": false,
+    "forward_migration_required": true,
+    "next_patch": "patch_21_7_1c_implement_item_definition_and_instance.py"
+  },
+  "ci": {
+    "schema_version": 1,
+    "status": "PASS",
+    "failed_checks": [],
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "file_count": 81,
+        "failures": []
+      },
+      {
+        "name": "imports",
+        "status": "PASS",
+        "module_count": 58,
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-c",
+            "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.integration_evidence', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.derived_stats', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests_v2",
+            "-p",
+            "test_*.py"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "........................................................................................\n----------------------------------------------------------------------\nRan 88 tests in 13.007s\n\nOK"
+        }
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "tools/verify_v2_architecture.py",
+            "--project-root",
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+          ],
+          "returncode": 0,
+          "stdout": "V2 architecture enforcement: PASS\nPhysical files: 58\nImport edges: 198\nViolations: 0",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "duplicate_scan",
+        "status": "PASS",
+        "symbol_count": 114,
+        "duplicates": {}
+      },
+      {
+        "name": "content_validation",
+        "status": "PASS",
+        "file_count": 0,
+        "failures": []
+      }
+    ]
+  },
+  "database_opened": false,
+  "production_code_changed": false,
+  "v1_sources_executed_or_imported": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_check": "NOT_REQUIRED"
+}
