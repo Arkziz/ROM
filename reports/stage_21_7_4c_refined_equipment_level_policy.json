@@ -1,0 +1,408 @@
+{
+  "schema_version": 1,
+  "stage": "21.7.4c",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "generated_at_utc": "2026-10-19T21:44:30Z",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "4e2c5b8818b42ef5d425a1afc7a5422e6c584cdf",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "prerequisite": {
+    "report": "reports/stage_21_7_4b_equipment_level_policy_audit.json",
+    "conclusion": "GO_TO_SEMANTIC_REFINEMENT"
+  },
+  "summary": {
+    "owner_file_count": 11,
+    "semantic_rows": 9,
+    "unresolved_rows": 0,
+    "duplicate_symbol_count": 29
+  },
+  "owner_groups": {
+    "GENERATION_CORE": [
+      "db_modules/generated_equipment.py"
+    ],
+    "SHOP_CONTEXT": [
+      "db_modules/shop.py"
+    ],
+    "LOOT_CONTEXT": [
+      "systems/reward_system.py",
+      "systems/drop_system.py"
+    ],
+    "LEVEL_ACCESS": [
+      "db_modules/inventory_compat.py"
+    ],
+    "EQUIP_VALIDATION": [
+      "systems/equipment_system.py"
+    ],
+    "IDENTITY_PROMOTION": [
+      "systems/item_id_allocator_system.py"
+    ],
+    "DEV_CONTEXT": [
+      "db_modules/dev_compat.py"
+    ],
+    "SIMULATOR_CONTEXT": [
+      "systems/simulation/equipment_policy.py",
+      "systems/simulation/equipment_service.py",
+      "systems/simulation/loot_equipment_city.py"
+    ]
+  },
+  "level_policy_decision": {
+    "generation_level_name": "item_level",
+    "equip_facing_name": "required_level",
+    "required_level_role": "runtime accessor and validation terminology for the persisted generated-item level",
+    "shop_loot_shared_semantic": true,
+    "preview_promotion_preserves_level": true,
+    "dev_and_simulator_are_consumers": true
+  },
+  "semantic_matrix": [
+    {
+      "contract": "CANONICAL_GENERATION_LEVEL",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/generated_equipment.py"
+      ],
+      "symbols": {
+        "generate_dynamic_equipment_stats": true,
+        "create_generated_equipment_item": true
+      },
+      "tokens": {
+        "item_level": true
+      },
+      "blocks_implementation": false
+    },
+    {
+      "contract": "PERSISTED_LEVEL_MAPPING",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/generated_equipment.py"
+      ],
+      "symbols": {
+        "create_generated_equipment_item": true
+      },
+      "tokens": {
+        "item_level": true,
+        "level": true
+      },
+      "blocks_implementation": false
+    },
+    {
+      "contract": "SHOP_LEVEL_RULE",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/shop.py"
+      ],
+      "symbols": {
+        "generate_class_shop_equipment": true,
+        "create_common_equipment_shop_preview": true
+      },
+      "tokens": {
+        "item_level": true
+      },
+      "blocks_implementation": false
+    },
+    {
+      "contract": "LOOT_LEVEL_RULE",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "systems/reward_system.py",
+        "systems/drop_system.py"
+      ],
+      "symbols": {
+        "roll_equipment_drop": true
+      },
+      "tokens": {
+        "level": true
+      },
+      "blocks_implementation": false
+    },
+    {
+      "contract": "PREVIEW_PROMOTION_PRESERVES_LEVEL",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/shop.py",
+        "systems/item_id_allocator_system.py"
+      ],
+      "symbols": {
+        "create_common_equipment_shop_preview": true,
+        "promote_shop_preview_item": true
+      },
+      "tokens": {
+        "preview": true
+      },
+      "blocks_implementation": false
+    },
+    {
+      "contract": "EQUIP_LEVEL_ACCESSOR",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/inventory_compat.py"
+      ],
+      "symbols": {
+        "get_item_required_level_by_inventory_id": true
+      },
+      "tokens": {
+        "required_level": true
+      },
+      "blocks_implementation": false
+    },
+    {
+      "contract": "EQUIP_LEVEL_VALIDATION",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "systems/equipment_system.py"
+      ],
+      "symbols": {
+        "equip_inventory_item": true
+      },
+      "tokens": {
+        "required_level": true
+      },
+      "blocks_implementation": false
+    },
+    {
+      "contract": "DEV_LEVEL_DELEGATION",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/dev_compat.py"
+      ],
+      "symbols": {},
+      "tokens": {
+        "item_level": true,
+        "create_generated_equipment_item": true
+      },
+      "blocks_implementation": false
+    },
+    {
+      "contract": "SIMULATOR_LEVEL_DELEGATION",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "systems/simulation/equipment_policy.py",
+        "systems/simulation/equipment_service.py",
+        "systems/simulation/loot_equipment_city.py"
+      ],
+      "symbols": {},
+      "tokens": {
+        "item_level": true,
+        "level": true
+      },
+      "blocks_implementation": false
+    }
+  ],
+  "duplicate_symbols": {
+    "__init__": [
+      "systems/simulation/equipment_service.py",
+      "systems/simulation/loot_equipment_city.py"
+    ],
+    "_equipment_system_ro_v1": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py",
+      "db_modules/inventory_compat.py"
+    ],
+    "add_primary_stat_to_stats": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py"
+    ],
+    "add_stat_value": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py"
+    ],
+    "apply_armor_type_defense_profile_to_stats": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py"
+    ],
+    "apply_armor_type_primary_stat_profile_to_stats": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py"
+    ],
+    "calculate_weapon_damage_by_values": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py",
+      "systems/equipment_system.py"
+    ],
+    "clear_primary_stat_bonuses": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py"
+    ],
+    "ensure_equipment_slots": [
+      "db_modules/inventory_compat.py",
+      "systems/equipment_system.py"
+    ],
+    "generate_dynamic_equipment_stats": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py"
+    ],
+    "get_allowed_main_hand_subtypes_for_class": [
+      "db_modules/generated_equipment.py",
+      "db_modules/shop.py"
+    ],
+    "get_allowed_off_hand_subtypes_for_class": [
+      "db_modules/generated_equipment.py",
+      "db_modules/shop.py"
+    ],
+    "get_bag_capacity": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py"
+    ],
+    "get_dynamic_armor_name": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py"
+    ],
+    "get_dynamic_sell_price": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py"
+    ],
+    "get_dynamic_stat_value": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py"
+    ],
+    "get_dynamic_weapon_name": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py"
+    ],
+    "get_existing_primary_stat_budget": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py"
+    ],
+    "get_inventory_used_slots": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py"
+    ],
+    "get_profile_for_generated_item": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py",
+      "db_modules/shop.py"
+    ],
+    "get_random_main_hand_profile": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py"
+    ],
+    "get_random_off_hand_profile": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py"
+    ],
+    "init_class_equipment_restrictions_system": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py",
+      "db_modules/inventory_compat.py"
+    ],
+    "init_dynamic_equipment_system": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py",
+      "db_modules/inventory_compat.py"
+    ],
+    "init_weapon_damage_system": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py",
+      "db_modules/inventory_compat.py",
+      "systems/equipment_system.py"
+    ],
+    "is_armor_slot": [
+      "db_modules/generated_equipment.py",
+      "systems/equipment_system.py"
+    ],
+    "normalize_equipment_restriction_value": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py",
+      "db_modules/inventory_compat.py"
+    ],
+    "pick_weighted_stat": [
+      "db_modules/dev_compat.py",
+      "db_modules/generated_equipment.py"
+    ],
+    "seed_class_reset_sphere_item": [
+      "db_modules/dev_compat.py",
+      "db_modules/inventory_compat.py"
+    ]
+  },
+  "blockers": [],
+  "implementation_requirements": [
+    "one canonical EquipmentGenerationService",
+    "item_level is the generation input",
+    "required_level exposes the same persisted level without a second formula",
+    "shop and loot pass canonical level into the same generator",
+    "preview promotion preserves level",
+    "DEV and simulator delegate to canonical service"
+  ],
+  "ci": {
+    "schema_version": 1,
+    "status": "PASS",
+    "failed_checks": [],
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "file_count": 96,
+        "failures": []
+      },
+      {
+        "name": "imports",
+        "status": "PASS",
+        "module_count": 70,
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-c",
+            "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.derived_stats', 'rom_v2.domain.equipment', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests_v2",
+            "-p",
+            "test_*.py"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ".................................................................................................\n----------------------------------------------------------------------\nRan 97 tests in 13.630s\n\nOK"
+        }
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "tools/verify_v2_architecture.py",
+            "--project-root",
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+          ],
+          "returncode": 0,
+          "stdout": "V2 architecture enforcement: PASS\nPhysical files: 70\nImport edges: 237\nViolations: 0",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "duplicate_scan",
+        "status": "PASS",
+        "symbol_count": 136,
+        "duplicates": {}
+      },
+      {
+        "name": "content_validation",
+        "status": "PASS",
+        "file_count": 0,
+        "failures": []
+      }
+    ]
+  },
+  "v1_sources_executed_or_imported": false,
+  "database_opened": false,
+  "production_code_changed": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_7_4d_implement_equipment_generation_policy.py"
+}
