@@ -20,8 +20,7 @@ from rom_v2.infrastructure.persistence.provisional_contracts import (
 
 EXPECTED_PROVISIONAL_TABLES = frozenset(
     {
-            "equipment_slots",
-        "item_reservations",
+                "item_reservations",
         "quest_progress",
         "quest_item_balances",
     }

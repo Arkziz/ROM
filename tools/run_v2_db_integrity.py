@@ -69,7 +69,7 @@ def _clean_recreate(database_path: Path) -> dict[str, object]:
     second = migrator.recreate()
     if first_tables != second.table_names or first_versions != second.applied_versions:
         raise AssertionError("recreate_not_deterministic")
-    if len(second.table_names) != 17 or second.applied_versions != (1, 2, 3):
+    if len(second.table_names) != 17 or second.applied_versions != (1, 2, 3, 4):
         raise AssertionError("unexpected_baseline_shape")
     return {"table_count": len(second.table_names), "applied_versions": list(second.applied_versions)}
 

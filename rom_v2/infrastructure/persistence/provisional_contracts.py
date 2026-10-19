@@ -10,8 +10,7 @@ from __future__ import annotations
 PROVISIONAL_CONTRACT_STATUS = "PROVISIONAL_RESERVED"
 PROVISIONAL_GAMEPLAY_TABLES = frozenset(
     {
-            "equipment_slots",
-        "item_reservations",
+                "item_reservations",
         "quest_progress",
         "quest_item_balances",
     }
