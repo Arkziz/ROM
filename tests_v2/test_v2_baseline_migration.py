@@ -11,6 +11,8 @@ from rom_v2.infrastructure.persistence.migrations import MIGRATIONS
 
 
 EXPECTED_TABLES = {
+    "inventory_items",
+    "item_definitions",
     "accounts", "characters", "character_primary_stats", "gold_wallets",
     "crystal_wallets", "crystal_ledger", "item_instances", "equipment_slots",
     "item_reservations", "quest_progress", "quest_item_balances",
@@ -30,14 +32,14 @@ class V2BaselineMigrationTest(unittest.TestCase):
             second = migrator.recreate()
             self.assertEqual(set(first.table_names), EXPECTED_TABLES)
             self.assertEqual(first.table_names, second.table_names)
-            self.assertEqual(first.applied_versions, (1, 2))
-            self.assertEqual(second.applied_versions, (1, 2))
+            self.assertEqual(first.applied_versions, (1, 2, 3))
+            self.assertEqual(second.applied_versions, (1, 2, 3))
             self.assertEqual(first.foreign_key_violations, ())
             self.assertEqual(second.quick_check, "ok")
 
     def test_migration_checksum_is_stable(self) -> None:
         """Require one ordered baseline migration with a SHA-256 checksum."""
-        self.assertEqual(len(MIGRATIONS), 2)
+        self.assertEqual(len(MIGRATIONS), 3)
         self.assertEqual(MIGRATIONS[0].version, 1)
         self.assertEqual(MIGRATIONS[0].key, "001_v2_baseline")
         self.assertEqual(len(MIGRATIONS[0].checksum), 64)
