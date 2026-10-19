@@ -1,0 +1,1034 @@
+{
+  "schema_version": 1,
+  "stage": "21.7.5a",
+  "audit_type": "READ_ONLY_V1_RUNE_LIFECYCLE_SEMANTIC_REFINEMENT",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "generated_at_utc": "2026-10-19T22:14:47Z",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "46cc85d798f6eff77416fb847cd49e471bf63e97",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "prerequisite": {
+    "report": "reports/stage_21_7_5_existing_runes_audit.json",
+    "status": "PASS",
+    "conclusion": "GO_TO_SEMANTIC_REFINEMENT",
+    "discovery_unresolved": 0
+  },
+  "summary": {
+    "explicit_owner_file_count": 19,
+    "semantic_row_count": 21,
+    "unresolved_count": 0,
+    "duplicate_symbol_count": 24
+  },
+  "owner_groups": {
+    "DEFINITION_POLICY": [
+      "data/runes.py",
+      "data/rune_drop_balance.py"
+    ],
+    "RUNTIME_CORE": [
+      "systems/rune_system.py"
+    ],
+    "PERSISTENCE_FACADE": [
+      "db_modules/systems_wrappers.py"
+    ],
+    "UI_ORCHESTRATION": [
+      "handlers/runes.py",
+      "handlers/inventory.py"
+    ],
+    "INVENTORY_IDENTITY": [
+      "db_modules/inventory.py",
+      "db_modules/inventory_compat.py"
+    ],
+    "EQUIPMENT_INTEGRATION": [
+      "systems/equipment_system.py",
+      "db_modules/equipment.py"
+    ],
+    "MARKET_RESERVATION": [
+      "systems/auction_house_system.py",
+      "systems/player_interaction_system.py"
+    ],
+    "DROP_CONSUMER": [
+      "systems/drop_system.py",
+      "data/drop_tables.py"
+    ],
+    "PREMIUM_POLICY": [
+      "systems/premium_item_policy_system.py",
+      "systems/crystal_shop_system.py"
+    ],
+    "SIMULATOR_CONSUMER": [
+      "systems/simulation/equipment_policy.py",
+      "systems/simulation/models.py"
+    ],
+    "PERSISTENCE_MODEL": [
+      "migrations/010_rune_system_data_model.py"
+    ]
+  },
+  "authority_decision": {
+    "definition_owner": "data/runes.py",
+    "runtime_mutation_owner": "systems/rune_system.py",
+    "persistence_facade": "db_modules/systems_wrappers.py",
+    "handlers_are_orchestrators": true,
+    "inventory_and_equipment_are_boundary_services": true,
+    "auction_and_trade_own_reservations_only": true,
+    "drop_dev_and_simulator_are_consumers": true,
+    "parallel_rune_rule_owners_allowed": false
+  },
+  "semantic_matrix": [
+    {
+      "contract": "RUNE_DEFINITION",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "DEFINITION_POLICY"
+      ],
+      "owner_files": [
+        "data/rune_drop_balance.py",
+        "data/runes.py"
+      ],
+      "present_owner_files": [
+        "data/rune_drop_balance.py",
+        "data/runes.py"
+      ],
+      "anchors_required": [
+        "RUNES",
+        "RUNE_ITEM_ID_START",
+        "RUNE_ITEM_ID_END",
+        "get_rune_definition"
+      ],
+      "anchors_found": [
+        "RUNE_ITEM_ID_START",
+        "RUNE_ITEM_ID_END",
+        "get_rune_definition"
+      ],
+      "broad_audit_contract": "RUNE_DEFINITION",
+      "broad_evidence_count": 491,
+      "broad_owner_file_count": 53,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "RUNE_INVENTORY_INSTANCE",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "RUNTIME_CORE",
+        "INVENTORY_IDENTITY"
+      ],
+      "owner_files": [
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "inventory_id",
+        "item_id",
+        "quantity",
+        "rune"
+      ],
+      "anchors_found": [
+        "inventory_id",
+        "item_id",
+        "quantity",
+        "rune"
+      ],
+      "broad_audit_contract": "RUNE_INSTANCE",
+      "broad_evidence_count": 1553,
+      "broad_owner_file_count": 88,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "SOCKET_CAPACITY",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "DEFINITION_POLICY",
+        "RUNTIME_CORE"
+      ],
+      "owner_files": [
+        "data/rune_drop_balance.py",
+        "data/runes.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "data/rune_drop_balance.py",
+        "data/runes.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "RUNE_SLOT_LIMITS",
+        "get_rune_slot_limit",
+        "capacity",
+        "used_slots"
+      ],
+      "anchors_found": [
+        "RUNE_SLOT_LIMITS",
+        "get_rune_slot_limit",
+        "capacity",
+        "used_slots"
+      ],
+      "broad_audit_contract": "SOCKET_MODEL",
+      "broad_evidence_count": 85,
+      "broad_owner_file_count": 15,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "INSERT_LIFECYCLE",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "RUNTIME_CORE",
+        "PERSISTENCE_FACADE"
+      ],
+      "owner_files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "insert_rune_into_equipment",
+        "get_rune_insertion_preview",
+        "rune_slots"
+      ],
+      "anchors_found": [
+        "insert_rune_into_equipment",
+        "get_rune_insertion_preview"
+      ],
+      "broad_audit_contract": "INSERT_LIFECYCLE",
+      "broad_evidence_count": 66,
+      "broad_owner_file_count": 18,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "OCCUPIED_SOCKET_REJECTION",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "RUNTIME_CORE",
+        "UI_ORCHESTRATION"
+      ],
+      "owner_files": [
+        "handlers/inventory.py",
+        "handlers/runes.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "handlers/inventory.py",
+        "handlers/runes.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "occupied",
+        "slot_index",
+        "rune_slot"
+      ],
+      "anchors_found": [
+        "occupied",
+        "slot_index"
+      ],
+      "broad_audit_contract": "OCCUPIED_SOCKET_REJECTION",
+      "broad_evidence_count": 14,
+      "broad_owner_file_count": 8,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "SIMPLE_EXTRACTION",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "RUNTIME_CORE",
+        "DEFINITION_POLICY"
+      ],
+      "owner_files": [
+        "data/rune_drop_balance.py",
+        "data/runes.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "data/rune_drop_balance.py",
+        "data/runes.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "use_simple_rune_extractor",
+        "SIMPLE_RUNE_EXTRACTOR_GOLD_PRICE",
+        "RUNE_EXTRACTOR_ITEM_ID"
+      ],
+      "anchors_found": [
+        "use_simple_rune_extractor",
+        "SIMPLE_RUNE_EXTRACTOR_GOLD_PRICE",
+        "RUNE_EXTRACTOR_ITEM_ID"
+      ],
+      "broad_audit_contract": "SIMPLE_EXTRACTOR",
+      "broad_evidence_count": 36,
+      "broad_owner_file_count": 9,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "PERFECT_EXTRACTION",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "RUNTIME_CORE",
+        "DEFINITION_POLICY",
+        "PREMIUM_POLICY"
+      ],
+      "owner_files": [
+        "data/rune_drop_balance.py",
+        "data/runes.py",
+        "systems/crystal_shop_system.py",
+        "systems/premium_item_policy_system.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "data/rune_drop_balance.py",
+        "data/runes.py",
+        "systems/crystal_shop_system.py",
+        "systems/premium_item_policy_system.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "use_perfect_rune_extractor",
+        "PERFECT_RUNE_EXTRACTOR_ITEM_ID"
+      ],
+      "anchors_found": [
+        "use_perfect_rune_extractor",
+        "PERFECT_RUNE_EXTRACTOR_ITEM_ID"
+      ],
+      "broad_audit_contract": "PERFECT_EXTRACTOR",
+      "broad_evidence_count": 37,
+      "broad_owner_file_count": 14,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "EXTRACTION_RESULT",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "RUNTIME_CORE",
+        "PERSISTENCE_FACADE"
+      ],
+      "owner_files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "extract",
+        "rune",
+        "equipment",
+        "result"
+      ],
+      "anchors_found": [
+        "rune",
+        "equipment",
+        "result"
+      ],
+      "broad_audit_contract": "EXTRACT_LIFECYCLE",
+      "broad_evidence_count": 75,
+      "broad_owner_file_count": 14,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "CLASS_COMPATIBILITY",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "RUNTIME_CORE",
+        "EQUIPMENT_INTEGRATION"
+      ],
+      "owner_files": [
+        "db_modules/equipment.py",
+        "systems/equipment_system.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "db_modules/equipment.py",
+        "systems/equipment_system.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "character_class",
+        "class",
+        "compatible"
+      ],
+      "anchors_found": [
+        "class"
+      ],
+      "broad_audit_contract": "CLASS_COMPATIBILITY",
+      "broad_evidence_count": 42,
+      "broad_owner_file_count": 20,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "EQUIPMENT_COMPATIBILITY",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "RUNTIME_CORE",
+        "EQUIPMENT_INTEGRATION"
+      ],
+      "owner_files": [
+        "db_modules/equipment.py",
+        "systems/equipment_system.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "db_modules/equipment.py",
+        "systems/equipment_system.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "equipment",
+        "slot",
+        "inventory_id"
+      ],
+      "anchors_found": [
+        "equipment",
+        "slot",
+        "inventory_id"
+      ],
+      "broad_audit_contract": "EQUIPMENT_COMPATIBILITY",
+      "broad_evidence_count": 578,
+      "broad_owner_file_count": 56,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "EXACT_ITEM_IDENTITY",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "RUNTIME_CORE",
+        "INVENTORY_IDENTITY"
+      ],
+      "owner_files": [
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "inventory_id",
+        "item_id",
+        "user_id"
+      ],
+      "anchors_found": [
+        "inventory_id",
+        "item_id",
+        "user_id"
+      ],
+      "broad_audit_contract": "EXACT_ITEM_IDENTITY",
+      "broad_evidence_count": 935,
+      "broad_owner_file_count": 60,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "OWNERSHIP",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "RUNTIME_CORE",
+        "INVENTORY_IDENTITY"
+      ],
+      "owner_files": [
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "user_id",
+        "inventory_id"
+      ],
+      "anchors_found": [
+        "user_id",
+        "inventory_id"
+      ],
+      "broad_audit_contract": "OWNERSHIP",
+      "broad_evidence_count": 3692,
+      "broad_owner_file_count": 122,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "EQUIPPED_UNEQUIPPED_POLICY",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "RUNTIME_CORE",
+        "EQUIPMENT_INTEGRATION"
+      ],
+      "owner_files": [
+        "db_modules/equipment.py",
+        "systems/equipment_system.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "db_modules/equipment.py",
+        "systems/equipment_system.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "equipped",
+        "equipment_slots"
+      ],
+      "anchors_found": [
+        "equipped",
+        "equipment_slots"
+      ],
+      "broad_audit_contract": "EQUIPPED_UNEQUIPPED_POLICY",
+      "broad_evidence_count": 290,
+      "broad_owner_file_count": 38,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "RESERVATION_POLICY",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "MARKET_RESERVATION",
+        "INVENTORY_IDENTITY"
+      ],
+      "owner_files": [
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py",
+        "systems/auction_house_system.py",
+        "systems/player_interaction_system.py"
+      ],
+      "present_owner_files": [
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py",
+        "systems/auction_house_system.py",
+        "systems/player_interaction_system.py"
+      ],
+      "anchors_required": [
+        "reservation",
+        "reserved",
+        "inventory_id"
+      ],
+      "anchors_found": [
+        "reservation",
+        "reserved",
+        "inventory_id"
+      ],
+      "broad_audit_contract": "RESERVATION_POLICY",
+      "broad_evidence_count": 1808,
+      "broad_owner_file_count": 41,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "STAT_CONTRIBUTION",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "RUNTIME_CORE",
+        "DEFINITION_POLICY"
+      ],
+      "owner_files": [
+        "data/rune_drop_balance.py",
+        "data/runes.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "data/rune_drop_balance.py",
+        "data/runes.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "stat",
+        "value",
+        "rune"
+      ],
+      "anchors_found": [
+        "stat",
+        "value",
+        "rune"
+      ],
+      "broad_audit_contract": "STAT_CONTRIBUTION",
+      "broad_evidence_count": 2326,
+      "broad_owner_file_count": 177,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "DURABILITY_INTERACTION",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "RUNTIME_CORE",
+        "EQUIPMENT_INTEGRATION"
+      ],
+      "owner_files": [
+        "db_modules/equipment.py",
+        "systems/equipment_system.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "db_modules/equipment.py",
+        "systems/equipment_system.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "durability",
+        "rune"
+      ],
+      "anchors_found": [
+        "durability",
+        "rune"
+      ],
+      "broad_audit_contract": "DURABILITY_INTERACTION",
+      "broad_evidence_count": 270,
+      "broad_owner_file_count": 40,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "ATOMICITY",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "RUNTIME_CORE",
+        "PERSISTENCE_FACADE"
+      ],
+      "owner_files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "commit",
+        "rollback",
+        "transaction"
+      ],
+      "anchors_found": [
+        "commit",
+        "rollback",
+        "transaction"
+      ],
+      "broad_audit_contract": "ATOMICITY",
+      "broad_evidence_count": 364,
+      "broad_owner_file_count": 64,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "FAILURE_TAXONOMY",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "RUNTIME_CORE",
+        "UI_ORCHESTRATION"
+      ],
+      "owner_files": [
+        "handlers/inventory.py",
+        "handlers/runes.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "handlers/inventory.py",
+        "handlers/runes.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "success",
+        "message",
+        "error"
+      ],
+      "anchors_found": [
+        "success",
+        "message",
+        "error"
+      ],
+      "broad_audit_contract": "FAILURE_SEMANTICS",
+      "broad_evidence_count": 665,
+      "broad_owner_file_count": 150,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "RESTART_PERSISTENCE",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "RUNTIME_CORE",
+        "PERSISTENCE_MODEL"
+      ],
+      "owner_files": [
+        "migrations/010_rune_system_data_model.py",
+        "systems/rune_system.py"
+      ],
+      "present_owner_files": [
+        "migrations/010_rune_system_data_model.py",
+        "systems/rune_system.py"
+      ],
+      "anchors_required": [
+        "equipment_runes",
+        "rune_slots",
+        "inventory_id"
+      ],
+      "anchors_found": [
+        "inventory_id"
+      ],
+      "broad_audit_contract": "RESTART_PERSISTENCE",
+      "broad_evidence_count": 121,
+      "broad_owner_file_count": 53,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "DROP_IS_CONSUMER",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "DROP_CONSUMER",
+        "DEFINITION_POLICY"
+      ],
+      "owner_files": [
+        "data/drop_tables.py",
+        "data/rune_drop_balance.py",
+        "data/runes.py",
+        "systems/drop_system.py"
+      ],
+      "present_owner_files": [
+        "data/drop_tables.py",
+        "data/rune_drop_balance.py",
+        "data/runes.py",
+        "systems/drop_system.py"
+      ],
+      "anchors_required": [
+        "RUNE_DROP_CHANCES",
+        "rune",
+        "drop"
+      ],
+      "anchors_found": [
+        "RUNE_DROP_CHANCES",
+        "rune",
+        "drop"
+      ],
+      "broad_audit_contract": "RUNE_DEFINITION",
+      "broad_evidence_count": 491,
+      "broad_owner_file_count": 53,
+      "blocks_implementation": false
+    },
+    {
+      "contract": "SIMULATOR_IS_CONSUMER",
+      "classification": "RESOLVED_V1_SEMANTICS",
+      "owner_groups": [
+        "SIMULATOR_CONSUMER",
+        "RUNTIME_CORE"
+      ],
+      "owner_files": [
+        "systems/rune_system.py",
+        "systems/simulation/equipment_policy.py",
+        "systems/simulation/models.py"
+      ],
+      "present_owner_files": [
+        "systems/rune_system.py",
+        "systems/simulation/equipment_policy.py",
+        "systems/simulation/models.py"
+      ],
+      "anchors_required": [
+        "rune",
+        "socket",
+        "equipment"
+      ],
+      "anchors_found": [
+        "rune",
+        "socket",
+        "equipment"
+      ],
+      "broad_audit_contract": "DEV_SIMULATOR_PARITY",
+      "broad_evidence_count": 745,
+      "broad_owner_file_count": 89,
+      "blocks_implementation": false
+    }
+  ],
+  "duplicate_symbols": [
+    {
+      "symbol": "buy_simple_rune_extractor",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "format_equipment_rune_slots_text",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "fuse_runes_with_firius_token",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "get_available_rune_fusion_recipes",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "get_equipment_rune_slot_info",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "get_equipped_rune_stat_totals",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "get_extractor_equipment",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "get_extractor_material_counts",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "get_extractor_preview",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "get_inventory_rune_capacity",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "get_inventory_rune_socket_summary",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "get_inventory_runes",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "get_rune_equipment_display_name",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "get_rune_fusion_preview",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "get_rune_insertion_preview",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "get_rune_master_shop_state",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "get_user_inventory_rune_stacks",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "get_user_rune_slot_equipment",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "init_rune_system",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "insert_rune_into_equipment",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "seed_rune_system_items",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "use_perfect_rune_extractor",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "use_simple_rune_extractor",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    },
+    {
+      "symbol": "validate_rune_fusion_selection",
+      "files": [
+        "db_modules/systems_wrappers.py",
+        "systems/rune_system.py"
+      ],
+      "classification": "WRAPPER_OR_DUPLICATE_REVIEW"
+    }
+  ],
+  "blockers": [],
+  "implementation_requirements": [
+    "one canonical RuneLifecycleService backed by the V1 runtime owner",
+    "preserve rune definition IDs, stat keys, levels and socket limits",
+    "bind lifecycle operations to exact user-owned inventory_id values",
+    "preserve class, equipment, equipped-state and occupied-socket validation",
+    "preserve simple versus perfect extractor costs, consumption and outcomes",
+    "preserve reservation exclusions across auction and direct trade",
+    "commit inventory, socket and extractor or gold mutations atomically",
+    "persist inserted runes across restart and expose them to canonical stat snapshots",
+    "preserve exact V1 durability interaction and failure taxonomy",
+    "make handlers, drop, DEV and simulator delegate without parallel formulas"
+  ],
+  "governance": {
+    "migration_003_unchanged": true,
+    "runtime_rune_mutation": false,
+    "implementation_allowed": true
+  },
+  "ci": {
+    "schema_version": 1,
+    "status": "PASS",
+    "failed_checks": [],
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "file_count": 100,
+        "failures": []
+      },
+      {
+        "name": "imports",
+        "status": "PASS",
+        "module_count": 73,
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-c",
+            "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.derived_stats', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests_v2",
+            "-p",
+            "test_*.py"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "........................................................................................................\n----------------------------------------------------------------------\nRan 104 tests in 12.871s\n\nOK"
+        }
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "tools/verify_v2_architecture.py",
+            "--project-root",
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+          ],
+          "returncode": 0,
+          "stdout": "V2 architecture enforcement: PASS\nPhysical files: 73\nImport edges: 248\nViolations: 0",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "duplicate_scan",
+        "status": "PASS",
+        "symbol_count": 145,
+        "duplicates": {}
+      },
+      {
+        "name": "content_validation",
+        "status": "PASS",
+        "file_count": 0,
+        "failures": []
+      }
+    ]
+  },
+  "v1_sources_executed_or_imported": false,
+  "database_opened": false,
+  "production_code_changed": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_7_5b_implement_rune_lifecycle.py"
+}
