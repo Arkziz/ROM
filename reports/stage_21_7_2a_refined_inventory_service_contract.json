@@ -1,0 +1,937 @@
+{
+  "schema_version": 1,
+  "stage": "21.7.2a",
+  "audit_type": "READ_ONLY_V1_INVENTORY_SERVICE_SEMANTIC_REFINEMENT",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "generated_at_utc": "2026-10-19T19:55:02Z",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "27321bca187606cdc9cf27d8989eae728d864f95",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "prerequisite": {
+    "report": "reports/stage_21_7_2_existing_inventory_service_audit.json",
+    "commit": "27321bca187606cdc9cf27d8989eae728d864f95",
+    "discovery_unresolved": 0
+  },
+  "owner_groups": {
+    "BASE_INVENTORY": [
+      "db_modules/inventory.py",
+      "db_modules/inventory_compat.py",
+      "db_modules/connection.py"
+    ],
+    "EQUIPMENT_INSTANCE": [
+      "db_modules/equipment.py",
+      "systems/equipment_system.py"
+    ],
+    "TRADE_RESERVATION": [
+      "systems/player_interaction_system.py"
+    ],
+    "AUCTION_RESERVATION": [
+      "systems/auction_house_system.py"
+    ],
+    "STACK_CONSUMERS": [
+      "systems/potion_system.py",
+      "systems/rune_system.py",
+      "systems/refine_system.py",
+      "db_modules/shop.py"
+    ]
+  },
+  "semantic_matrix": [
+    {
+      "contract": "ADD_ITEM",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/connection.py",
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py"
+      ],
+      "symbols": [
+        {
+          "symbol": "add_item",
+          "locations": [
+            {
+              "file": "db_modules/inventory.py",
+              "line": 129,
+              "duplicate_count": 1
+            }
+          ]
+        }
+      ],
+      "token_evidence": [
+        {
+          "token": "INSERT INTO inventory",
+          "matches": [
+            {
+              "file": "db_modules/inventory.py",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "token": "max_stack",
+          "matches": [
+            {
+              "file": "db_modules/connection.py",
+              "count": 5
+            },
+            {
+              "file": "db_modules/inventory.py",
+              "count": 15
+            },
+            {
+              "file": "db_modules/inventory_compat.py",
+              "count": 3
+            }
+          ]
+        }
+      ],
+      "blocks_mutation": false
+    },
+    {
+      "contract": "REMOVE_EXACT_INSTANCE",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/connection.py",
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py"
+      ],
+      "symbols": [
+        {
+          "symbol": "consume_inventory_item",
+          "locations": [
+            {
+              "file": "db_modules/inventory.py",
+              "line": 270,
+              "duplicate_count": 1
+            }
+          ]
+        }
+      ],
+      "token_evidence": [
+        {
+          "token": "inventory_id",
+          "matches": [
+            {
+              "file": "db_modules/connection.py",
+              "count": 1
+            },
+            {
+              "file": "db_modules/inventory.py",
+              "count": 39
+            },
+            {
+              "file": "db_modules/inventory_compat.py",
+              "count": 28
+            }
+          ]
+        }
+      ],
+      "blocks_mutation": false
+    },
+    {
+      "contract": "REMOVE_BY_DEFINITION",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/connection.py",
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py"
+      ],
+      "symbols": [
+        {
+          "symbol": "consume_user_item_by_item_id",
+          "locations": [
+            {
+              "file": "db_modules/inventory.py",
+              "line": 352,
+              "duplicate_count": 1
+            }
+          ]
+        },
+        {
+          "symbol": "count_user_item",
+          "locations": [
+            {
+              "file": "db_modules/inventory.py",
+              "line": 336,
+              "duplicate_count": 1
+            }
+          ]
+        }
+      ],
+      "token_evidence": [
+        {
+          "token": "item_id",
+          "matches": [
+            {
+              "file": "db_modules/connection.py",
+              "count": 2
+            },
+            {
+              "file": "db_modules/inventory.py",
+              "count": 47
+            },
+            {
+              "file": "db_modules/inventory_compat.py",
+              "count": 16
+            }
+          ]
+        },
+        {
+          "token": "quantity",
+          "matches": [
+            {
+              "file": "db_modules/connection.py",
+              "count": 4
+            },
+            {
+              "file": "db_modules/inventory.py",
+              "count": 78
+            },
+            {
+              "file": "db_modules/inventory_compat.py",
+              "count": 5
+            }
+          ]
+        }
+      ],
+      "blocks_mutation": false
+    },
+    {
+      "contract": "STACKING",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/connection.py",
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py"
+      ],
+      "symbols": [
+        {
+          "symbol": "_inventory_required_new_stacks",
+          "locations": [
+            {
+              "file": "db_modules/inventory.py",
+              "line": 123,
+              "duplicate_count": 1
+            }
+          ]
+        },
+        {
+          "symbol": "compact_user_item_stacks",
+          "locations": [
+            {
+              "file": "db_modules/inventory.py",
+              "line": 226,
+              "duplicate_count": 1
+            }
+          ]
+        }
+      ],
+      "token_evidence": [
+        {
+          "token": "max_stack",
+          "matches": [
+            {
+              "file": "db_modules/connection.py",
+              "count": 5
+            },
+            {
+              "file": "db_modules/inventory.py",
+              "count": 15
+            },
+            {
+              "file": "db_modules/inventory_compat.py",
+              "count": 3
+            }
+          ]
+        },
+        {
+          "token": "quantity",
+          "matches": [
+            {
+              "file": "db_modules/connection.py",
+              "count": 4
+            },
+            {
+              "file": "db_modules/inventory.py",
+              "count": 78
+            },
+            {
+              "file": "db_modules/inventory_compat.py",
+              "count": 5
+            }
+          ]
+        }
+      ],
+      "blocks_mutation": false
+    },
+    {
+      "contract": "CAPACITY_BY_ROWS",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/connection.py",
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py"
+      ],
+      "symbols": [
+        {
+          "symbol": "get_bag_capacity",
+          "locations": [
+            {
+              "file": "db_modules/inventory.py",
+              "line": 13,
+              "duplicate_count": 1
+            }
+          ]
+        },
+        {
+          "symbol": "get_inventory_used_slots",
+          "locations": [
+            {
+              "file": "db_modules/inventory.py",
+              "line": 34,
+              "duplicate_count": 1
+            }
+          ]
+        }
+      ],
+      "token_evidence": [
+        {
+          "token": "COUNT",
+          "matches": [
+            {
+              "file": "db_modules/inventory.py",
+              "count": 6
+            },
+            {
+              "file": "db_modules/inventory_compat.py",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "token": "inventory",
+          "matches": [
+            {
+              "file": "db_modules/connection.py",
+              "count": 6
+            },
+            {
+              "file": "db_modules/inventory.py",
+              "count": 99
+            },
+            {
+              "file": "db_modules/inventory_compat.py",
+              "count": 58
+            }
+          ]
+        }
+      ],
+      "blocks_mutation": false
+    },
+    {
+      "contract": "NORMALIZATION",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/connection.py",
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py"
+      ],
+      "symbols": [
+        {
+          "symbol": "compact_user_item_stacks",
+          "locations": [
+            {
+              "file": "db_modules/inventory.py",
+              "line": 226,
+              "duplicate_count": 1
+            }
+          ]
+        }
+      ],
+      "token_evidence": [
+        {
+          "token": "quantity",
+          "matches": [
+            {
+              "file": "db_modules/connection.py",
+              "count": 4
+            },
+            {
+              "file": "db_modules/inventory.py",
+              "count": 78
+            },
+            {
+              "file": "db_modules/inventory_compat.py",
+              "count": 5
+            }
+          ]
+        }
+      ],
+      "blocks_mutation": false
+    },
+    {
+      "contract": "EXACT_INSTANCE_IDENTITY",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/connection.py",
+        "db_modules/equipment.py",
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py",
+        "systems/equipment_system.py"
+      ],
+      "symbols": [
+        {
+          "symbol": "get_inventory_entry",
+          "locations": [
+            {
+              "file": "db_modules/equipment.py",
+              "line": 134,
+              "duplicate_count": 1
+            },
+            {
+              "file": "systems/equipment_system.py",
+              "line": 116,
+              "duplicate_count": 2
+            }
+          ]
+        },
+        {
+          "symbol": "get_item_by_inventory_id",
+          "locations": [
+            {
+              "file": "db_modules/equipment.py",
+              "line": 162,
+              "duplicate_count": 1
+            },
+            {
+              "file": "systems/equipment_system.py",
+              "line": 122,
+              "duplicate_count": 2
+            }
+          ]
+        }
+      ],
+      "token_evidence": [
+        {
+          "token": "inventory_id",
+          "matches": [
+            {
+              "file": "db_modules/connection.py",
+              "count": 1
+            },
+            {
+              "file": "db_modules/equipment.py",
+              "count": 54
+            },
+            {
+              "file": "db_modules/inventory.py",
+              "count": 39
+            },
+            {
+              "file": "db_modules/inventory_compat.py",
+              "count": 28
+            },
+            {
+              "file": "systems/equipment_system.py",
+              "count": 182
+            }
+          ]
+        }
+      ],
+      "blocks_mutation": false
+    },
+    {
+      "contract": "OWNERSHIP",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/connection.py",
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py"
+      ],
+      "symbols": [
+        {
+          "symbol": "get_inventory",
+          "locations": [
+            {
+              "file": "db_modules/inventory.py",
+              "line": 57,
+              "duplicate_count": 1
+            }
+          ]
+        }
+      ],
+      "token_evidence": [
+        {
+          "token": "user_id",
+          "matches": [
+            {
+              "file": "db_modules/connection.py",
+              "count": 4
+            },
+            {
+              "file": "db_modules/inventory.py",
+              "count": 73
+            },
+            {
+              "file": "db_modules/inventory_compat.py",
+              "count": 16
+            }
+          ]
+        },
+        {
+          "token": "inventory",
+          "matches": [
+            {
+              "file": "db_modules/connection.py",
+              "count": 6
+            },
+            {
+              "file": "db_modules/inventory.py",
+              "count": 99
+            },
+            {
+              "file": "db_modules/inventory_compat.py",
+              "count": 58
+            }
+          ]
+        }
+      ],
+      "blocks_mutation": false
+    },
+    {
+      "contract": "RESERVED_QUANTITY",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "systems/auction_house_system.py",
+        "systems/player_interaction_system.py"
+      ],
+      "symbols": [
+        {
+          "symbol": "get_inventory_reserved_quantity",
+          "locations": [
+            {
+              "file": "systems/player_interaction_system.py",
+              "line": 1287,
+              "duplicate_count": 1
+            }
+          ]
+        },
+        {
+          "symbol": "get_inventory_available_quantity",
+          "locations": [
+            {
+              "file": "systems/player_interaction_system.py",
+              "line": 1301,
+              "duplicate_count": 1
+            }
+          ]
+        }
+      ],
+      "token_evidence": [
+        {
+          "token": "reserved",
+          "matches": [
+            {
+              "file": "systems/auction_house_system.py",
+              "count": 5
+            },
+            {
+              "file": "systems/player_interaction_system.py",
+              "count": 30
+            }
+          ]
+        },
+        {
+          "token": "quantity",
+          "matches": [
+            {
+              "file": "systems/auction_house_system.py",
+              "count": 198
+            },
+            {
+              "file": "systems/player_interaction_system.py",
+              "count": 132
+            }
+          ]
+        }
+      ],
+      "blocks_mutation": false
+    },
+    {
+      "contract": "RESERVATION_LIFECYCLE",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "systems/auction_house_system.py",
+        "systems/player_interaction_system.py"
+      ],
+      "symbols": [
+        {
+          "symbol": "reserve_inventory_for_trade",
+          "locations": [
+            {
+              "file": "systems/player_interaction_system.py",
+              "line": 1469,
+              "duplicate_count": 1
+            }
+          ]
+        },
+        {
+          "symbol": "release_trade_inventory_reservations",
+          "locations": [
+            {
+              "file": "systems/player_interaction_system.py",
+              "line": 1501,
+              "duplicate_count": 1
+            }
+          ]
+        },
+        {
+          "symbol": "recover_orphan_inventory_reservations",
+          "locations": [
+            {
+              "file": "systems/player_interaction_system.py",
+              "line": 1517,
+              "duplicate_count": 1
+            }
+          ]
+        }
+      ],
+      "token_evidence": [
+        {
+          "token": "reservation",
+          "matches": [
+            {
+              "file": "systems/auction_house_system.py",
+              "count": 4
+            },
+            {
+              "file": "systems/player_interaction_system.py",
+              "count": 72
+            }
+          ]
+        }
+      ],
+      "blocks_mutation": false
+    },
+    {
+      "contract": "ATOMICITY",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/connection.py",
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py",
+        "systems/auction_house_system.py",
+        "systems/player_interaction_system.py"
+      ],
+      "symbols": [
+        {
+          "symbol": "add_item",
+          "locations": [
+            {
+              "file": "db_modules/inventory.py",
+              "line": 129,
+              "duplicate_count": 1
+            }
+          ]
+        },
+        {
+          "symbol": "consume_inventory_item",
+          "locations": [
+            {
+              "file": "db_modules/inventory.py",
+              "line": 270,
+              "duplicate_count": 1
+            }
+          ]
+        }
+      ],
+      "token_evidence": [
+        {
+          "token": "commit",
+          "matches": [
+            {
+              "file": "db_modules/connection.py",
+              "count": 3
+            },
+            {
+              "file": "db_modules/inventory.py",
+              "count": 13
+            },
+            {
+              "file": "db_modules/inventory_compat.py",
+              "count": 5
+            },
+            {
+              "file": "systems/auction_house_system.py",
+              "count": 14
+            },
+            {
+              "file": "systems/player_interaction_system.py",
+              "count": 51
+            }
+          ]
+        },
+        {
+          "token": "rollback",
+          "matches": [
+            {
+              "file": "db_modules/inventory.py",
+              "count": 3
+            },
+            {
+              "file": "db_modules/inventory_compat.py",
+              "count": 1
+            },
+            {
+              "file": "systems/auction_house_system.py",
+              "count": 34
+            },
+            {
+              "file": "systems/player_interaction_system.py",
+              "count": 68
+            }
+          ]
+        }
+      ],
+      "blocks_mutation": false
+    },
+    {
+      "contract": "IDEMPOTENCY",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/connection.py",
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py",
+        "systems/auction_house_system.py",
+        "systems/player_interaction_system.py"
+      ],
+      "symbols": [],
+      "token_evidence": [
+        {
+          "token": "idempot",
+          "matches": [
+            {
+              "file": "systems/player_interaction_system.py",
+              "count": 2
+            }
+          ]
+        }
+      ],
+      "blocks_mutation": false
+    },
+    {
+      "contract": "FAILURE_TAXONOMY",
+      "classification": "V1_CONFIRMED",
+      "owner_files": [
+        "db_modules/connection.py",
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py"
+      ],
+      "symbols": [
+        {
+          "symbol": "add_item",
+          "locations": [
+            {
+              "file": "db_modules/inventory.py",
+              "line": 129,
+              "duplicate_count": 1
+            }
+          ]
+        },
+        {
+          "symbol": "consume_inventory_item",
+          "locations": [
+            {
+              "file": "db_modules/inventory.py",
+              "line": 270,
+              "duplicate_count": 1
+            }
+          ]
+        },
+        {
+          "symbol": "consume_user_item_by_item_id",
+          "locations": [
+            {
+              "file": "db_modules/inventory.py",
+              "line": 352,
+              "duplicate_count": 1
+            }
+          ]
+        }
+      ],
+      "token_evidence": [
+        {
+          "token": "return False",
+          "matches": [
+            {
+              "file": "db_modules/inventory.py",
+              "count": 4
+            },
+            {
+              "file": "db_modules/inventory_compat.py",
+              "count": 1
+            }
+          ]
+        },
+        {
+          "token": "RuntimeError",
+          "matches": [
+            {
+              "file": "db_modules/inventory.py",
+              "count": 2
+            }
+          ]
+        }
+      ],
+      "blocks_mutation": false
+    }
+  ],
+  "summary": {
+    "owner_file_count": 11,
+    "semantic_row_count": 13,
+    "unresolved_count": 0,
+    "duplicate_symbol_count": 44
+  },
+  "duplicate_symbols": [
+    "_auction_buy_normalize_category",
+    "_auction_get_inventory_row",
+    "_auction_inventory_style_weapon_type_line",
+    "_auction_stack_category_matches",
+    "apply_random_durability_wear_on_victory",
+    "build_auction_lot_public_details",
+    "build_user_unclaimed_auction_item_details",
+    "build_user_unclaimed_auction_sale_details",
+    "buy_common_equipment_from_trader",
+    "buy_item_for_gold",
+    "calculate_repair_cost",
+    "calculate_weapon_damage_by_values",
+    "create_equipment_auction_lot",
+    "damage_equipped_items_on_death",
+    "ensure_equipment_slots",
+    "equip_inventory_item",
+    "format_refined_item_name",
+    "get_all_equipped_items",
+    "get_equipment_rune_slot_info",
+    "get_equipped_items_for_repair",
+    "get_extractor_equipment",
+    "get_extractor_preview",
+    "get_inventory_detailed",
+    "get_inventory_entry",
+    "get_inventory_refine_level",
+    "get_inventory_refined_display_name",
+    "get_inventory_weapon_damage_display",
+    "get_item_by_inventory_id",
+    "get_item_by_inventory_id_full",
+    "get_sellable_equipment_items",
+    "get_user_sellable_stack_items_for_auction",
+    "get_weapon_damage_by_inventory_id",
+    "init_weapon_damage_system",
+    "insert_rune_into_equipment",
+    "normalize_auction_category",
+    "repair_all_equipped",
+    "repair_equipped_item",
+    "roll_equipment_wear_after_combat",
+    "sell_inventory_item_to_trader",
+    "unequip_incompatible_items_after_class_change",
+    "unequip_inventory_item",
+    "update_expired_auction_lots",
+    "use_potion_from_inventory",
+    "validate_inventory_stack_item_for_auction"
+  ],
+  "migration_activation_decision": {
+    "migration": "003",
+    "registered_for_runtime": false,
+    "activation_allowed_now": false,
+    "reason": "inventory repository/UoW and provisional-governance reconciliation must be implemented atomically with activation"
+  },
+  "implementation_requirements": [
+    "repository and UoW adapters must preserve V1 add/remove/stack/capacity semantics",
+    "exact inventory_id and aggregate item_id consumption must remain separate",
+    "reservations must reduce available quantity and be recoverable",
+    "migration 003 activation, registry update, provisional status change and regression updates must be atomic",
+    "no V1 display-name identity or inferred compatibility"
+  ],
+  "blockers": [],
+  "ci": {
+    "schema_version": 1,
+    "status": "PASS",
+    "failed_checks": [],
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "file_count": 84,
+        "failures": []
+      },
+      {
+        "name": "imports",
+        "status": "PASS",
+        "module_count": 60,
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-c",
+            "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.integration_evidence', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.derived_stats', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests_v2",
+            "-p",
+            "test_*.py"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "...........................................................................................\n----------------------------------------------------------------------\nRan 91 tests in 9.525s\n\nOK"
+        }
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "tools/verify_v2_architecture.py",
+            "--project-root",
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+          ],
+          "returncode": 0,
+          "stdout": "V2 architecture enforcement: PASS\nPhysical files: 60\nImport edges: 203\nViolations: 0",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "duplicate_scan",
+        "status": "PASS",
+        "symbol_count": 117,
+        "duplicates": {}
+      },
+      {
+        "name": "content_validation",
+        "status": "PASS",
+        "file_count": 0,
+        "failures": []
+      }
+    ]
+  },
+  "v1_sources_executed_or_imported": false,
+  "database_opened": false,
+  "production_code_changed": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_7_2b_implement_inventory_service.py"
+}
