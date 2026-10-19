@@ -265,3 +265,35 @@ failed_checks: []
 ## Acceptance decision
 
 All mandatory prerequisite reports are `PASS / GO`, focused regression is successful, full CI is successful, canonical ownership checks are successful, and protected runtime evidence is unchanged. Stage 21.6 is therefore `CLOSED / ACCEPTED`.
+
+<!-- STAGE_21_6_X2B_RECONCILIATION -->
+## Retrospective parity reconciliation after closure
+
+Stage `21.6.X2a` identified two evidence-level gaps. This addendum supersedes any
+stronger wording in the original closure document.
+
+### Provisional persistence contracts
+
+The following tables physically exist in migration `001_v2_baseline`, but their
+columns, constraints, foreign-key actions, and lifecycle semantics are **not** yet
+authoritative V1 parity:
+
+- `item_instances`
+- `equipment_slots`
+- `item_reservations`
+- `quest_progress`
+- `quest_item_balances`
+
+Their status is `PROVISIONAL_RESERVED`. Before the first mutation for the matching
+domain, an independent read-only V1 audit is mandatory. Any differences must be
+reconciled through a new forward migration; migration `001_v2_baseline` is not
+rewritten.
+
+### Full-stat snapshot integration level
+
+The canonical snapshot owner and the `for_profile`, `for_combat`, and `for_simulator`
+entrypoints are available at evidence level `API_READY`. Concrete adapters, runtime
+dispatch, and end-to-end acceptance are deferred to their later roadmap stages.
+Therefore the closure does **not** claim `ADAPTER_CONNECTED`,
+`RUNTIME_DISPATCH_VERIFIED`, or `END_TO_END_ACCEPTED`.
+

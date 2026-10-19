@@ -1,0 +1,263 @@
+{
+  "schema_version": 1,
+  "stage": "21.6.X2b",
+  "status": "PASS",
+  "conclusion": "GO",
+  "generated_at_utc": "2026-10-19T18:43:04Z",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "2090a23b5e9ff78021bf6ae008dc4c3c07accbc7",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "source_audit": "reports/stage_21_6_X2a_refined_semantic_v1_parity.json",
+  "reconciled_findings": {
+    "PERSIST-FUTURE-GAMEPLAY-TABLES": {
+      "status": "RECONCILED_AS_PROVISIONAL_RESERVED",
+      "tables": [
+        "item_instances",
+        "equipment_slots",
+        "item_reservations",
+        "quest_progress",
+        "quest_item_balances"
+      ],
+      "migration_001_rewritten": false,
+      "production_adapter_use_forbidden": true,
+      "future_v1_audit_required": true,
+      "forward_migration_required_if_contract_differs": true
+    },
+    "INTEGRATION-SNAPSHOT-CONSUMERS": {
+      "status": "RECONCILED_TO_API_READY",
+      "evidence_level": "API_READY",
+      "adapter_connected": false,
+      "runtime_dispatch_verified": false,
+      "end_to_end_accepted": false,
+      "consumer_wiring": {
+        "profile": "DEFERRED",
+        "combat": "DEFERRED",
+        "simulator": "DEFERRED"
+      }
+    }
+  },
+  "blocking_findings_before": 2,
+  "blocking_findings_after": 0,
+  "gameplay_formula_changed": false,
+  "schema_migration_changed": false,
+  "database_opened": false,
+  "production_gameplay_changed": false,
+  "v1_wal_shm_manipulated": false,
+  "protected_before": {
+    ".env": {
+      "exists": true,
+      "size": 339,
+      "mtime_ns": 1788524396934698500,
+      "sha256": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42"
+    },
+    "rom_v2/.env": {
+      "exists": true,
+      "size": 190,
+      "mtime_ns": 1792345023007170000,
+      "sha256": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc"
+    },
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    },
+    ".runtime/v2/db/rom_v2.db": {
+      "exists": true,
+      "size": 200704,
+      "mtime_ns": 1792352375873781800,
+      "sha256": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  },
+  "protected_after": {
+    ".env": {
+      "exists": true,
+      "size": 339,
+      "mtime_ns": 1788524396934698500,
+      "sha256": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42"
+    },
+    "rom_v2/.env": {
+      "exists": true,
+      "size": 190,
+      "mtime_ns": 1792345023007170000,
+      "sha256": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc"
+    },
+    "game.db": {
+      "exists": true,
+      "size": 1925120,
+      "mtime_ns": 1791928577995768700,
+      "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+    },
+    "game.db-wal": {
+      "exists": true,
+      "size": 4132392,
+      "mtime_ns": 1791931855310943600,
+      "sha256": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7"
+    },
+    "game.db-shm": {
+      "exists": true,
+      "size": 32768,
+      "mtime_ns": 1791931554269010100,
+      "sha256": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43"
+    },
+    ".runtime/v2/db/rom_v2.db": {
+      "exists": true,
+      "size": 200704,
+      "mtime_ns": 1792352375873781800,
+      "sha256": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  },
+  "focused_test": {
+    "status": "PASS",
+    "stdout": "",
+    "stderr": "....\n----------------------------------------------------------------------\nRan 4 tests in 0.136s\n\nOK\n"
+  },
+  "generated_bytecode_cleaned_before_ci": [
+    "rom_v2/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/__pycache__/bootstrap.cpython-314.pyc",
+    "rom_v2/__pycache__/config.cpython-314.pyc",
+    "rom_v2/__pycache__/container.cpython-314.pyc",
+    "rom_v2/__pycache__/lifecycle.cpython-314.pyc",
+    "rom_v2/__pycache__/main.cpython-314.pyc",
+    "rom_v2/__pycache__/runtime_paths.cpython-314.pyc",
+    "rom_v2/__pycache__/settings.cpython-314.pyc",
+    "rom_v2/__pycache__/structured_logging.cpython-314.pyc",
+    "rom_v2/app/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/application/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/application/__pycache__/account_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/account_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/character_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/character_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/full_stat_snapshot_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/primary_stat_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/primary_stat_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/resource_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/resource_service.cpython-314.pyc",
+    "rom_v2/application/ports/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/application/ports/__pycache__/clock.cpython-314.pyc",
+    "rom_v2/application/ports/__pycache__/random_source.cpython-314.pyc",
+    "rom_v2/application/ports/__pycache__/repositories.cpython-314.pyc",
+    "rom_v2/application/ports/__pycache__/unit_of_work.cpython-314.pyc",
+    "rom_v2/content/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/account.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/character.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/class_catalog.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/derived_stats.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/full_stat_snapshot.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/primary_stats.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/resource_lifecycle.cpython-314.pyc",
+    "rom_v2/infrastructure/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/account_repository.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/account_unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/character_repository.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/character_unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/connection_factory.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/migrator.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/primary_stat_repository.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/primary_stat_unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/repository_base.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/resource_repository.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/resource_unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/schema_contract.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/migrations/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/migrations/__pycache__/v001_v2_baseline.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/migrations/__pycache__/v002_primary_stats_parity.cpython-314.pyc",
+    "rom_v2/infrastructure/telegram/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/infrastructure/telegram/__pycache__/adapter.cpython-314.pyc",
+    "rom_v2/infrastructure/telegram/__pycache__/callback_codec.cpython-314.pyc",
+    "rom_v2/infrastructure/telegram/__pycache__/callback_registry.cpython-314.pyc"
+  ],
+  "ci": {
+    "schema_version": 1,
+    "status": "PASS",
+    "failed_checks": [],
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "file_count": 81,
+        "failures": []
+      },
+      {
+        "name": "imports",
+        "status": "PASS",
+        "module_count": 58,
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-c",
+            "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.integration_evidence', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.derived_stats', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests_v2",
+            "-p",
+            "test_*.py"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "........................................................................................\n----------------------------------------------------------------------\nRan 88 tests in 9.810s\n\nOK"
+        }
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "tools/verify_v2_architecture.py",
+            "--project-root",
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+          ],
+          "returncode": 0,
+          "stdout": "V2 architecture enforcement: PASS\nPhysical files: 58\nImport edges: 198\nViolations: 0",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "duplicate_scan",
+        "status": "PASS",
+        "symbol_count": 114,
+        "duplicates": {}
+      },
+      {
+        "name": "content_validation",
+        "status": "PASS",
+        "file_count": 0,
+        "failures": []
+      }
+    ]
+  },
+  "manual_check": "NOT_REQUIRED",
+  "stage_21_7_status": "UNBLOCKED_FOR_MANDATORY_V1_AUDIT"
+}
