@@ -1,0 +1,5721 @@
+{
+  "schema_version": 1,
+  "stage": "21.8.5b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "generated_at_utc": "2026-10-21T22:05:02.597937+00:00",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "35f47ff67f4b72f2b8fcc8b3b863ddc2f8b1b5bb",
+    "upstream": "origin/rewrite/rom-v2"
+  },
+  "prerequisite": {
+    "path": "reports/stage_21_8_5a_refined_skill_execution_contract.json",
+    "stage": "21.8.5a",
+    "conclusion": "REVIEW_REQUIRED",
+    "unresolved_contracts": [
+      "BASIC_ATTACK_TYPE_ROUTING"
+    ]
+  },
+  "resolution": {
+    "contract": "BASIC_ATTACK_TYPE_ROUTING",
+    "classification": "V1_CONFIRMED",
+    "owner": "systems/stat_system.py",
+    "function": "resolve_basic_attack_type",
+    "line_start": 30,
+    "line_end": 42,
+    "source_sha256": "a2a4d07421e55251d5317ed6b3257ae200b29d7220ad2b86481ae0fefdd36fff",
+    "owner_sha256": "fcacaf99c218d85f6632e9f74ca4bbef082faffe77340a7aa647823cae3b81bc",
+    "allowed_results": [
+      "physical",
+      "magical"
+    ],
+    "return_expressions": [
+      "BASIC_ATTACK_TYPE_BY_CLASS[class_key]"
+    ],
+    "referenced_names": [
+      "BASIC_ATTACK_TYPE_BY_CLASS",
+      "KeyError",
+      "ValueError",
+      "character_class",
+      "class_key",
+      "error",
+      "str"
+    ],
+    "module_string_values": [
+      "",
+      "Combine already-calculated HP components without redefining HP scaling.",
+      "Pure shadow stat calculations for ROM Stage 18.15.6.\n\nThis module has no database imports and is not connected to production wrappers.\nAll inputs must already be effective exact-once values assembled by the caller.\n",
+      "Return configurable class-aware magical attack.",
+      "Return configurable class-aware physical attack.",
+      "Return configurable maximum mana for mana classes.",
+      "Return the zero-resource basic-attack damage type for a player class.\n\n    The resolver is intentionally class-owned rather than weapon-owned: weapon\n    ranges remain part of damage calculation, while the class selects PATK/PDEF\n    or MATK/MDEF routing. Unknown classes fail closed instead of silently using\n    the historical physical fallback.\n    ",
+      "Stage 18.14.2: active item MDEF plus total WIS at coefficient 0.35.",
+      "Stage 18.14.2: active item PDEF plus total STA at coefficient 0.35.",
+      "Unsupported character class for basic attack: ",
+      "base",
+      "calculate_magical_attack",
+      "calculate_magical_defense",
+      "calculate_max_hp",
+      "calculate_max_mp",
+      "calculate_physical_attack",
+      "calculate_physical_defense",
+      "dex",
+      "int",
+      "knight",
+      "level",
+      "mage",
+      "magical",
+      "physical",
+      "priest",
+      "rogue",
+      "scout",
+      "sta",
+      "str",
+      "warrior",
+      "wis"
+    ],
+    "semantics": "Basic attacks delegate damage-type selection to the unique V1 resolve_basic_attack_type function. The V2 skill executor must call an equivalent typed policy and must not infer attack type from skill cost, resource kind, DTO labels, or presentation text."
+  },
+  "summary": {
+    "semantic_rows": 32,
+    "unresolved_rows": 0,
+    "unresolved_contracts": [],
+    "database_opened": false,
+    "production_changed": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "resolved_semantic_matrix": [
+    {
+      "contract": "PVE_SKILL_CATALOG_OWNER",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER",
+        "CLASS_SKILL_CATALOG"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "get_player_class_skills"
+          ],
+          "matched": [
+            "get_player_class_skills"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "class_key"
+          ],
+          "matched": [
+            "class_key"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "skill"
+          ],
+          "matched": [
+            "skill"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_class_combat_resource",
+          "line": 251,
+          "matched": [
+            "class_key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_skill_cooldowns",
+          "line": 725,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_skill_cooldown",
+          "line": 730,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "set_skill_cooldown",
+          "line": 736,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "tick_skill_cooldowns_at_player_turn",
+          "line": 750,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_skill_cooldown",
+          "line": 776,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_class_skills",
+          "line": 1082,
+          "matched": [
+            "class_key",
+            "get_player_class_skills",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_class_skill",
+          "line": 1091,
+          "matched": [
+            "get_player_class_skills",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_skill_by_key",
+          "line": 1100,
+          "matched": [
+            "get_player_class_skills",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_skill_menu_text",
+          "line": 1110,
+          "matched": [
+            "get_player_class_skills",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_and_pay_skill_cost",
+          "line": 1140,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_extra_rage_from_skill",
+          "line": 1282,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "roll_skill_stun",
+          "line": 1303,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_skill_special_effect",
+          "line": 1320,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_lethal_combat_log",
+          "line": 1703,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line": 2125,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "call_active_story_boss",
+          "line": 2128,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "hunt",
+          "line": 2177,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "attack",
+          "line": 2376,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "show_skills",
+          "line": 2648,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_skill_text_button",
+          "line": 2685,
+          "matched": [
+            "class_key",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "skill_locked",
+          "line": 3067,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_skill_locked_callback",
+          "line": 3169,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_use_skill_callback",
+          "line": 3184,
+          "matched": [
+            "class_key",
+            "skill"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "TECHNICAL_SKILL_IDENTITY",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER",
+        "PVE_AVAILABILITY_OWNER",
+        "PVP_MODEL_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "skill_key",
+            "key"
+          ],
+          "matched": [
+            "skill_key",
+            "key"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "skill"
+          ],
+          "matched": [
+            "skill"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_combat_callback_allowed_11_3_1",
+          "line": 141,
+          "matched": [
+            "key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_class_combat_resource",
+          "line": 251,
+          "matched": [
+            "key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_enemy_effect",
+          "line": 411,
+          "matched": [
+            "key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_player_effect",
+          "line": 457,
+          "matched": [
+            "key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "remove_enemy_effect",
+          "line": 464,
+          "matched": [
+            "key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "remove_player_effect",
+          "line": 471,
+          "matched": [
+            "key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_enemy_effects_text",
+          "line": 478,
+          "matched": [
+            "key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_effects_text",
+          "line": 495,
+          "matched": [
+            "key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_effective_mob_def",
+          "line": 516,
+          "matched": [
+            "key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_player_turn_start_effects",
+          "line": 580,
+          "matched": [
+            "key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_enemy_turn_start_effects",
+          "line": 644,
+          "matched": [
+            "key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_player_shield_absorb",
+          "line": 683,
+          "matched": [
+            "key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_skill_cooldowns",
+          "line": 725,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_skill_cooldown",
+          "line": 730,
+          "matched": [
+            "key",
+            "skill",
+            "skill_key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "set_skill_cooldown",
+          "line": 736,
+          "matched": [
+            "key",
+            "skill",
+            "skill_key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "tick_skill_cooldowns_at_player_turn",
+          "line": 750,
+          "matched": [
+            "key",
+            "skill",
+            "skill_key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_skill_cooldown",
+          "line": 776,
+          "matched": [
+            "key",
+            "skill",
+            "skill_key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_class_skills",
+          "line": 1082,
+          "matched": [
+            "key",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_class_skill",
+          "line": 1091,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_skill_by_key",
+          "line": 1100,
+          "matched": [
+            "key",
+            "skill",
+            "skill_key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_skill_menu_text",
+          "line": 1110,
+          "matched": [
+            "key",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_and_pay_skill_cost",
+          "line": 1140,
+          "matched": [
+            "key",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_extra_rage_from_skill",
+          "line": 1282,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "roll_skill_stun",
+          "line": 1303,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_skill_special_effect",
+          "line": 1320,
+          "matched": [
+            "key",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_potion_cooldown_turns_by_inventory_id",
+          "line": 1573,
+          "matched": [
+            "key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_combat_potion_kb",
+          "line": 1611,
+          "matched": [
+            "key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_lethal_combat_log",
+          "line": 1703,
+          "matched": [
+            "key",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_victory",
+          "line": 1964,
+          "matched": [
+            "key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line": 2125,
+          "matched": [
+            "key",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "call_active_story_boss",
+          "line": 2128,
+          "matched": [
+            "key",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "hunt",
+          "line": 2177,
+          "matched": [
+            "key",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "attack",
+          "line": 2376,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "show_skills",
+          "line": 2648,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_skill_text_button",
+          "line": 2685,
+          "matched": [
+            "key",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "skill_locked",
+          "line": 3067,
+          "matched": [
+            "key",
+            "skill",
+            "skill_key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_skill_locked_callback",
+          "line": 3169,
+          "matched": [
+            "key",
+            "skill",
+            "skill_key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_use_skill_callback",
+          "line": 3184,
+          "matched": [
+            "key",
+            "skill",
+            "skill_key"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "escape",
+          "line": 3752,
+          "matched": [
+            "key"
+          ]
+        },
+        {
+          "path": "systems/pve_skill_action_state.py",
+          "symbol": "get_pve_effective_skill_cost",
+          "line": 9,
+          "matched": [
+            "skill"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "SKILL_DEFINITION_FIELDS",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER",
+        "CLASS_SKILL_CATALOG"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "name"
+          ],
+          "matched": [
+            "name"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "description"
+          ],
+          "matched": [
+            "description"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "cost_type"
+          ],
+          "matched": [
+            "cost_type"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "cooldown"
+          ],
+          "matched": [
+            "cooldown"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_combat_message_allowed_11_3_1",
+          "line": 185,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_enemy_effects_text",
+          "line": 478,
+          "matched": [
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_effects_text",
+          "line": 495,
+          "matched": [
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_player_turn_start_effects",
+          "line": 580,
+          "matched": [
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_enemy_turn_start_effects",
+          "line": 644,
+          "matched": [
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_player_shield_absorb",
+          "line": 683,
+          "matched": [
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_skill_cooldowns",
+          "line": 725,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_skill_cooldown",
+          "line": 730,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "set_skill_cooldown",
+          "line": 736,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "tick_skill_cooldowns_at_player_turn",
+          "line": 750,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_skill_cooldown",
+          "line": 776,
+          "matched": [
+            "cooldown",
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_skill_menu_text",
+          "line": 1110,
+          "matched": [
+            "description",
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_and_pay_skill_cost",
+          "line": 1140,
+          "matched": [
+            "cost_type"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "roll_skill_stun",
+          "line": 1303,
+          "matched": [
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_skill_special_effect",
+          "line": 1320,
+          "matched": [
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_potion_cooldown_turns_by_inventory_id",
+          "line": 1573,
+          "matched": [
+            "cooldown",
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_combat_potion_kb",
+          "line": 1611,
+          "matched": [
+            "cooldown",
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_death_text",
+          "line": 1685,
+          "matched": [
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_lethal_combat_log",
+          "line": 1703,
+          "matched": [
+            "cooldown",
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_event_drop_victory_messages",
+          "line": 1772,
+          "matched": [
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_victory_text",
+          "line": 1791,
+          "matched": [
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_victory",
+          "line": 1964,
+          "matched": [
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line": 2125,
+          "matched": [
+            "cooldown",
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "patch_combat_bot_rate_limit_safe_send",
+          "line": 3849,
+          "matched": [
+            "description"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "call_active_story_boss",
+          "line": 2128,
+          "matched": [
+            "cooldown",
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "hunt",
+          "line": 2177,
+          "matched": [
+            "cooldown",
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "attack",
+          "line": 2376,
+          "matched": [
+            "cooldown",
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_skill_text_button",
+          "line": 2685,
+          "matched": [
+            "cooldown",
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_skill_locked_callback",
+          "line": 3169,
+          "matched": [
+            "cooldown",
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_use_skill_callback",
+          "line": 3184,
+          "matched": [
+            "cooldown",
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "choose_potion_in_combat",
+          "line": 3607,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_selected_potion_in_combat",
+          "line": 3663,
+          "matched": [
+            "cooldown",
+            "name"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "safe_send_message",
+          "line": 3856,
+          "matched": [
+            "description"
+          ]
+        },
+        {
+          "path": "data/classes.py",
+          "symbol": "exported_names",
+          "line": 69,
+          "matched": [
+            "name"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVE_ACTION_AVAILABILITY",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_AVAILABILITY_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "get_pve_skill_action_state"
+          ],
+          "matched": [
+            "get_pve_skill_action_state"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "available"
+          ],
+          "matched": [
+            "available"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "reason"
+          ],
+          "matched": [
+            "reason"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "systems/pve_skill_action_state.py",
+          "symbol": "_state",
+          "line": 38,
+          "matched": [
+            "available",
+            "reason"
+          ]
+        },
+        {
+          "path": "systems/pve_skill_action_state.py",
+          "symbol": "get_pve_skill_action_state",
+          "line": 55,
+          "matched": [
+            "available",
+            "get_pve_skill_action_state"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVE_EFFECTIVE_COST",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_AVAILABILITY_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "get_pve_effective_skill_cost"
+          ],
+          "matched": [
+            "get_pve_effective_skill_cost"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "cost"
+          ],
+          "matched": [
+            "cost"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "systems/pve_skill_action_state.py",
+          "symbol": "get_pve_effective_skill_cost",
+          "line": 9,
+          "matched": [
+            "cost",
+            "get_pve_effective_skill_cost"
+          ]
+        },
+        {
+          "path": "systems/pve_skill_action_state.py",
+          "symbol": "format_pve_skill_description",
+          "line": 17,
+          "matched": [
+            "cost"
+          ]
+        },
+        {
+          "path": "systems/pve_skill_action_state.py",
+          "symbol": "get_pve_skill_action_state",
+          "line": 55,
+          "matched": [
+            "cost",
+            "get_pve_effective_skill_cost"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVE_SELECTION_BOUNDARY",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "use_skill_text_button",
+            "combat_use_skill"
+          ],
+          "matched": [
+            "use_skill_text_button",
+            "combat_use_skill"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "skill"
+          ],
+          "matched": [
+            "skill"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_skill_cooldowns",
+          "line": 725,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_skill_cooldown",
+          "line": 730,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "set_skill_cooldown",
+          "line": 736,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "tick_skill_cooldowns_at_player_turn",
+          "line": 750,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_skill_cooldown",
+          "line": 776,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_class_skills",
+          "line": 1082,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_class_skill",
+          "line": 1091,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_skill_by_key",
+          "line": 1100,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_skill_menu_text",
+          "line": 1110,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_and_pay_skill_cost",
+          "line": 1140,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_extra_rage_from_skill",
+          "line": 1282,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "roll_skill_stun",
+          "line": 1303,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_skill_special_effect",
+          "line": 1320,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_lethal_combat_log",
+          "line": 1703,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line": 2125,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "call_active_story_boss",
+          "line": 2128,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "hunt",
+          "line": 2177,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "attack",
+          "line": 2376,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "show_skills",
+          "line": 2648,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_skill_text_button",
+          "line": 2685,
+          "matched": [
+            "skill",
+            "use_skill_text_button"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "skill_locked",
+          "line": 3067,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_skill_locked_callback",
+          "line": 3169,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_use_skill_callback",
+          "line": 3184,
+          "matched": [
+            "combat_use_skill",
+            "skill"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVE_VALIDATE_BEFORE_PAYMENT",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "validate_and_pay_skill_cost"
+          ],
+          "matched": [
+            "validate_and_pay_skill_cost"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "cost"
+          ],
+          "matched": [
+            "cost"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "success"
+          ],
+          "matched": [
+            "success"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_skill_cooldown",
+          "line": 776,
+          "matched": [
+            "success"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_and_pay_skill_cost",
+          "line": 1140,
+          "matched": [
+            "cost",
+            "success",
+            "validate_and_pay_skill_cost"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_event_drop_victory_messages",
+          "line": 1772,
+          "matched": [
+            "success"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line": 2125,
+          "matched": [
+            "success"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "call_active_story_boss",
+          "line": 2128,
+          "matched": [
+            "success"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "hunt",
+          "line": 2177,
+          "matched": [
+            "success"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_skill_text_button",
+          "line": 2685,
+          "matched": [
+            "cost",
+            "success",
+            "validate_and_pay_skill_cost"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_use_skill_callback",
+          "line": 3184,
+          "matched": [
+            "cost",
+            "success",
+            "validate_and_pay_skill_cost"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_selected_potion_in_combat",
+          "line": 3663,
+          "matched": [
+            "success"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVE_COOLDOWN_VALIDATION",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "validate_skill_cooldown"
+          ],
+          "matched": [
+            "validate_skill_cooldown"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "cooldown"
+          ],
+          "matched": [
+            "cooldown"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_combat_message_allowed_11_3_1",
+          "line": 185,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_skill_cooldowns",
+          "line": 725,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_skill_cooldown",
+          "line": 730,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "set_skill_cooldown",
+          "line": 736,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "tick_skill_cooldowns_at_player_turn",
+          "line": 750,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_skill_cooldown",
+          "line": 776,
+          "matched": [
+            "cooldown",
+            "validate_skill_cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_potion_cooldown_turns_by_inventory_id",
+          "line": 1573,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_combat_potion_kb",
+          "line": 1611,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_lethal_combat_log",
+          "line": 1703,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line": 2125,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "call_active_story_boss",
+          "line": 2128,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "hunt",
+          "line": 2177,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "attack",
+          "line": 2376,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_skill_text_button",
+          "line": 2685,
+          "matched": [
+            "cooldown",
+            "validate_skill_cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_skill_locked_callback",
+          "line": 3169,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_use_skill_callback",
+          "line": 3184,
+          "matched": [
+            "cooldown",
+            "validate_skill_cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "choose_potion_in_combat",
+          "line": 3607,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_selected_potion_in_combat",
+          "line": 3663,
+          "matched": [
+            "cooldown"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVE_COOLDOWN_START",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "set_skill_cooldown"
+          ],
+          "matched": [
+            "set_skill_cooldown"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "cooldown"
+          ],
+          "matched": [
+            "cooldown"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "skill"
+          ],
+          "matched": [
+            "skill"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_combat_message_allowed_11_3_1",
+          "line": 185,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_skill_cooldowns",
+          "line": 725,
+          "matched": [
+            "cooldown",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_skill_cooldown",
+          "line": 730,
+          "matched": [
+            "cooldown",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "set_skill_cooldown",
+          "line": 736,
+          "matched": [
+            "cooldown",
+            "set_skill_cooldown",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "tick_skill_cooldowns_at_player_turn",
+          "line": 750,
+          "matched": [
+            "cooldown",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_skill_cooldown",
+          "line": 776,
+          "matched": [
+            "cooldown",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_class_skills",
+          "line": 1082,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_class_skill",
+          "line": 1091,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_skill_by_key",
+          "line": 1100,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_skill_menu_text",
+          "line": 1110,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_and_pay_skill_cost",
+          "line": 1140,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_extra_rage_from_skill",
+          "line": 1282,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "roll_skill_stun",
+          "line": 1303,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_skill_special_effect",
+          "line": 1320,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_potion_cooldown_turns_by_inventory_id",
+          "line": 1573,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_combat_potion_kb",
+          "line": 1611,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_lethal_combat_log",
+          "line": 1703,
+          "matched": [
+            "cooldown",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line": 2125,
+          "matched": [
+            "cooldown",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "call_active_story_boss",
+          "line": 2128,
+          "matched": [
+            "cooldown",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "hunt",
+          "line": 2177,
+          "matched": [
+            "cooldown",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "attack",
+          "line": 2376,
+          "matched": [
+            "cooldown",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "show_skills",
+          "line": 2648,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_skill_text_button",
+          "line": 2685,
+          "matched": [
+            "cooldown",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "skill_locked",
+          "line": 3067,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_skill_locked_callback",
+          "line": 3169,
+          "matched": [
+            "cooldown",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_use_skill_callback",
+          "line": 3184,
+          "matched": [
+            "cooldown",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "choose_potion_in_combat",
+          "line": 3607,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_selected_potion_in_combat",
+          "line": 3663,
+          "matched": [
+            "cooldown"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVE_COOLDOWN_TICK",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "tick_skill_cooldowns_at_player_turn"
+          ],
+          "matched": [
+            "tick_skill_cooldowns_at_player_turn"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "cooldown"
+          ],
+          "matched": [
+            "cooldown"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "turn"
+          ],
+          "matched": [
+            "turn"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_calculate_enemy_turn_15_5_0",
+          "line": 34,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_finalize_enemy_turn_15_5_0",
+          "line": 65,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_apply_boss_dot_at_player_turn_15_5_0",
+          "line": 76,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_combat_extract_retry_after_11_3_1",
+          "line": 99,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_install_combat_safe_send_11_3_1",
+          "line": 110,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_combat_callback_allowed_11_3_1",
+          "line": 141,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_combat_message_allowed_11_3_1",
+          "line": 185,
+          "matched": [
+            "cooldown",
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_class_resource_line",
+          "line": 279,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "regenerate_class_resource_at_player_turn",
+          "line": 314,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_rage_for_player_attack",
+          "line": 334,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_rage_for_damage_taken",
+          "line": 350,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_rogue_combo_point",
+          "line": 373,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "consume_rogue_combo_points",
+          "line": 389,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_enemy_effect",
+          "line": 411,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_enemy_effects_text",
+          "line": 478,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_effects_text",
+          "line": 495,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_effective_mob_def",
+          "line": 516,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_effective_player_defenses",
+          "line": 550,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_player_turn_start_effects",
+          "line": 580,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_enemy_turn_start_effects",
+          "line": 644,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_player_shield_absorb",
+          "line": 683,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_skill_cooldowns",
+          "line": 725,
+          "matched": [
+            "cooldown"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_skill_cooldown",
+          "line": 730,
+          "matched": [
+            "cooldown",
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "set_skill_cooldown",
+          "line": 736,
+          "matched": [
+            "cooldown",
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "tick_skill_cooldowns_at_player_turn",
+          "line": 750,
+          "matched": [
+            "cooldown",
+            "tick_skill_cooldowns_at_player_turn",
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_skill_cooldown",
+          "line": 776,
+          "matched": [
+            "cooldown",
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_class_skills",
+          "line": 1082,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_class_skill",
+          "line": 1091,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_skill_by_key",
+          "line": 1100,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_skill_menu_text",
+          "line": 1110,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_and_pay_skill_cost",
+          "line": 1140,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_extra_rage_from_skill",
+          "line": 1282,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "roll_skill_stun",
+          "line": 1303,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_skill_special_effect",
+          "line": 1320,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "append_mp_restore_text",
+          "line": 1528,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "append_effects_to_combat_text",
+          "line": 1538,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "format_combat_turns_uk",
+          "line": 1554,
+          "matched": [
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_potion_cooldown_turns_by_inventory_id",
+          "line": 1573,
+          "matched": [
+            "cooldown",
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_combat_potion_kb",
+          "line": 1611,
+          "matched": [
+            "cooldown",
+            "turn"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_death_text",
+          "line": 1685,
+          "matched": [
+            "turn"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVE_HIT_ROLL_ROUTING",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_HIT_POLICY",
+        "PVE_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "skill_requires_pve_hit_roll"
+          ],
+          "matched": [
+            "skill_requires_pve_hit_roll"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "roll_player_pve_skill_hit"
+          ],
+          "matched": [
+            "roll_player_pve_skill_hit"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "hit",
+            "miss"
+          ],
+          "matched": [
+            "hit",
+            "miss"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_lethal_combat_log",
+          "line": 1703,
+          "matched": [
+            "hit"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "attack",
+          "line": 2376,
+          "matched": [
+            "hit"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_skill_text_button",
+          "line": 2685,
+          "matched": [
+            "hit",
+            "miss",
+            "roll_player_pve_skill_hit"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_use_skill_callback",
+          "line": 3184,
+          "matched": [
+            "hit",
+            "miss",
+            "roll_player_pve_skill_hit"
+          ]
+        },
+        {
+          "path": "systems/combat_system.py",
+          "symbol": "calculate_player_hit_chance",
+          "line": 27,
+          "matched": [
+            "hit"
+          ]
+        },
+        {
+          "path": "systems/combat_system.py",
+          "symbol": "roll_player_normal_attack_hit",
+          "line": 42,
+          "matched": [
+            "hit"
+          ]
+        },
+        {
+          "path": "systems/combat_system.py",
+          "symbol": "skill_requires_pve_hit_roll",
+          "line": 54,
+          "matched": [
+            "hit",
+            "skill_requires_pve_hit_roll"
+          ]
+        },
+        {
+          "path": "systems/combat_system.py",
+          "symbol": "roll_player_pve_skill_hit",
+          "line": 61,
+          "matched": [
+            "hit",
+            "roll_player_pve_skill_hit",
+            "skill_requires_pve_hit_roll"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "BASIC_ATTACK_TYPE_ROUTING",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_HIT_POLICY",
+        "PVE_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "resolve_basic_attack_type"
+          ],
+          "matched": [],
+          "pass": false
+        },
+        {
+          "alternatives": [
+            "physical",
+            "magical"
+          ],
+          "matched": [
+            "physical",
+            "magical"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_effective_mob_def",
+          "line": 516,
+          "matched": [
+            "magical"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_effective_player_defenses",
+          "line": 550,
+          "matched": [
+            "physical"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "hunt",
+          "line": 2177,
+          "matched": [
+            "physical"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "attack",
+          "line": 2376,
+          "matched": [
+            "physical"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_skill_text_button",
+          "line": 2685,
+          "matched": [
+            "magical",
+            "physical"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_use_skill_callback",
+          "line": 3184,
+          "matched": [
+            "magical",
+            "physical"
+          ]
+        },
+        {
+          "path": "systems/combat_system.py",
+          "symbol": "roll_player_pve_skill_hit",
+          "line": 61,
+          "matched": [
+            "magical",
+            "physical"
+          ]
+        },
+        {
+          "path": "systems/combat_system.py",
+          "symbol": "get_physical_crit_chance",
+          "line": 79,
+          "matched": [
+            "physical"
+          ]
+        },
+        {
+          "path": "systems/combat_system.py",
+          "symbol": "get_magical_crit_chance",
+          "line": 83,
+          "matched": [
+            "magical"
+          ]
+        },
+        {
+          "path": "systems/combat_system.py",
+          "symbol": "build_mob",
+          "line": 100,
+          "matched": [
+            "physical"
+          ]
+        },
+        {
+          "path": "systems/combat_system.py",
+          "symbol": "apply_elite_modifier",
+          "line": 151,
+          "matched": [
+            "physical"
+          ]
+        },
+        {
+          "path": "systems/combat_system.py",
+          "symbol": "generate_mob",
+          "line": 199,
+          "matched": [
+            "physical"
+          ]
+        },
+        {
+          "path": "systems/combat_system.py",
+          "symbol": "calculate_player_attack",
+          "line": 248,
+          "matched": [
+            "magical",
+            "physical"
+          ]
+        },
+        {
+          "path": "systems/combat_system.py",
+          "symbol": "calculate_mob_attack",
+          "line": 309,
+          "matched": [
+            "magical",
+            "physical"
+          ]
+        },
+        {
+          "path": "systems/combat_system.py",
+          "symbol": "_build_normal_mob",
+          "line": 200,
+          "matched": [
+            "physical"
+          ]
+        }
+      ],
+      "resolution_stage": "21.8.5b",
+      "resolution_owner": "systems/stat_system.py",
+      "resolution_function": "resolve_basic_attack_type"
+    },
+    {
+      "contract": "DAMAGE_MULTIPLIER_CONTRACT",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER",
+        "PVP_EXECUTION_OWNER",
+        "SIMULATOR_EXECUTION"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "damage_multiplier"
+          ],
+          "matched": [
+            "damage_multiplier"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "damage"
+          ],
+          "matched": [
+            "damage"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "skill"
+          ],
+          "matched": [
+            "skill"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_calculate_enemy_turn_15_5_0",
+          "line": 34,
+          "matched": [
+            "damage"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_finalize_enemy_turn_15_5_0",
+          "line": 65,
+          "matched": [
+            "damage"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_apply_boss_dot_at_player_turn_15_5_0",
+          "line": 76,
+          "matched": [
+            "damage"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_rage_for_damage_taken",
+          "line": 350,
+          "matched": [
+            "damage"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_enemy_effect",
+          "line": 411,
+          "matched": [
+            "damage"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_enemy_turn_start_effects",
+          "line": 644,
+          "matched": [
+            "damage"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_player_shield_absorb",
+          "line": 683,
+          "matched": [
+            "damage"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_skill_cooldowns",
+          "line": 725,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_skill_cooldown",
+          "line": 730,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "set_skill_cooldown",
+          "line": 736,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "tick_skill_cooldowns_at_player_turn",
+          "line": 750,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_skill_cooldown",
+          "line": 776,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_class_skills",
+          "line": 1082,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_class_skill",
+          "line": 1091,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_skill_by_key",
+          "line": 1100,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_skill_menu_text",
+          "line": 1110,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_and_pay_skill_cost",
+          "line": 1140,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_extra_rage_from_skill",
+          "line": 1282,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "roll_skill_stun",
+          "line": 1303,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_skill_special_effect",
+          "line": 1320,
+          "matched": [
+            "damage",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_death_text",
+          "line": 1685,
+          "matched": [
+            "damage"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_lethal_combat_log",
+          "line": 1703,
+          "matched": [
+            "damage",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_victory_text",
+          "line": 1791,
+          "matched": [
+            "damage"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line": 2125,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "call_active_story_boss",
+          "line": 2128,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "hunt",
+          "line": 2177,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "attack",
+          "line": 2376,
+          "matched": [
+            "damage",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "show_skills",
+          "line": 2648,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_skill_text_button",
+          "line": 2685,
+          "matched": [
+            "damage",
+            "damage_multiplier",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "skill_locked",
+          "line": 3067,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_skill_locked_callback",
+          "line": 3169,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_use_skill_callback",
+          "line": 3184,
+          "matched": [
+            "damage",
+            "damage_multiplier",
+            "skill"
+          ]
+        },
+        {
+          "path": "systems/pvp_round_engine.py",
+          "symbol": "_tick_start",
+          "line": 49,
+          "matched": [
+            "damage"
+          ]
+        },
+        {
+          "path": "systems/pvp_round_engine.py",
+          "symbol": "_base_damage",
+          "line": 102,
+          "matched": [
+            "damage",
+            "damage_multiplier"
+          ]
+        },
+        {
+          "path": "systems/pvp_round_engine.py",
+          "symbol": "_pay",
+          "line": 128,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "systems/pvp_round_engine.py",
+          "symbol": "_special",
+          "line": 164,
+          "matched": [
+            "damage",
+            "skill"
+          ]
+        },
+        {
+          "path": "systems/pvp_round_engine.py",
+          "symbol": "resolve_pvp_round",
+          "line": 224,
+          "matched": [
+            "damage",
+            "damage_multiplier",
+            "skill"
+          ]
+        },
+        {
+          "path": "systems/simulation/pve_battle.py",
+          "symbol": "__init__",
+          "line": 17,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "systems/simulation/pve_battle.py",
+          "symbol": "_tick_start",
+          "line": 27,
+          "matched": [
+            "damage"
+          ]
+        },
+        {
+          "path": "systems/simulation/pve_battle.py",
+          "symbol": "_absorb",
+          "line": 41,
+          "matched": [
+            "damage"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "NO_DAMAGE_SKILL_CONTRACT",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER",
+        "PVP_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "no_damage"
+          ],
+          "matched": [
+            "no_damage"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "skill"
+          ],
+          "matched": [
+            "skill"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "effect",
+            "special"
+          ],
+          "matched": [
+            "effect",
+            "special"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_combat_effects",
+          "line": 403,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_enemy_effect",
+          "line": 411,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_player_effect",
+          "line": 457,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "remove_enemy_effect",
+          "line": 464,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "remove_player_effect",
+          "line": 471,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_enemy_effects_text",
+          "line": 478,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_effects_text",
+          "line": 495,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_effective_mob_def",
+          "line": 516,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_effective_player_defenses",
+          "line": 550,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_player_turn_start_effects",
+          "line": 580,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_enemy_turn_start_effects",
+          "line": 644,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_player_shield_absorb",
+          "line": 683,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_skill_cooldowns",
+          "line": 725,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_skill_cooldown",
+          "line": 730,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "set_skill_cooldown",
+          "line": 736,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "tick_skill_cooldowns_at_player_turn",
+          "line": 750,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_skill_cooldown",
+          "line": 776,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_class_skills",
+          "line": 1082,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_class_skill",
+          "line": 1091,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_skill_by_key",
+          "line": 1100,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_skill_menu_text",
+          "line": 1110,
+          "matched": [
+            "effect",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_and_pay_skill_cost",
+          "line": 1140,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_extra_rage_from_skill",
+          "line": 1282,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "roll_skill_stun",
+          "line": 1303,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_skill_special_effect",
+          "line": 1320,
+          "matched": [
+            "effect",
+            "skill",
+            "special"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "append_effects_to_combat_text",
+          "line": 1538,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_lethal_combat_log",
+          "line": 1703,
+          "matched": [
+            "effect",
+            "no_damage",
+            "skill",
+            "special"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_victory_text",
+          "line": 1791,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "finalize_combat_state_before_victory",
+          "line": 1926,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line": 2125,
+          "matched": [
+            "effect",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "call_active_story_boss",
+          "line": 2128,
+          "matched": [
+            "effect",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "hunt",
+          "line": 2177,
+          "matched": [
+            "effect",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "attack",
+          "line": 2376,
+          "matched": [
+            "effect",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "show_skills",
+          "line": 2648,
+          "matched": [
+            "effect",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_skill_text_button",
+          "line": 2685,
+          "matched": [
+            "effect",
+            "no_damage",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "skill_locked",
+          "line": 3067,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_skill_locked_callback",
+          "line": 3169,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_use_skill_callback",
+          "line": 3184,
+          "matched": [
+            "effect",
+            "no_damage",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_selected_potion_in_combat",
+          "line": 3663,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "systems/pvp_round_engine.py",
+          "symbol": "_effect_value",
+          "line": 32,
+          "matched": [
+            "effect"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVE_SPECIAL_EFFECT_OWNER",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "apply_skill_special_effect"
+          ],
+          "matched": [
+            "apply_skill_special_effect"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "skill"
+          ],
+          "matched": [
+            "skill"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "effect"
+          ],
+          "matched": [
+            "effect"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_combat_effects",
+          "line": 403,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_enemy_effect",
+          "line": 411,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_player_effect",
+          "line": 457,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "remove_enemy_effect",
+          "line": 464,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "remove_player_effect",
+          "line": 471,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_enemy_effects_text",
+          "line": 478,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_effects_text",
+          "line": 495,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_effective_mob_def",
+          "line": 516,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_effective_player_defenses",
+          "line": 550,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_player_turn_start_effects",
+          "line": 580,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_enemy_turn_start_effects",
+          "line": 644,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_player_shield_absorb",
+          "line": 683,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_skill_cooldowns",
+          "line": 725,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_skill_cooldown",
+          "line": 730,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "set_skill_cooldown",
+          "line": 736,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "tick_skill_cooldowns_at_player_turn",
+          "line": 750,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_skill_cooldown",
+          "line": 776,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_class_skills",
+          "line": 1082,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_class_skill",
+          "line": 1091,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_skill_by_key",
+          "line": 1100,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_skill_menu_text",
+          "line": 1110,
+          "matched": [
+            "effect",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_and_pay_skill_cost",
+          "line": 1140,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_extra_rage_from_skill",
+          "line": 1282,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "roll_skill_stun",
+          "line": 1303,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_skill_special_effect",
+          "line": 1320,
+          "matched": [
+            "apply_skill_special_effect",
+            "effect",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "append_effects_to_combat_text",
+          "line": 1538,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_lethal_combat_log",
+          "line": 1703,
+          "matched": [
+            "effect",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_victory_text",
+          "line": 1791,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "finalize_combat_state_before_victory",
+          "line": 1926,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line": 2125,
+          "matched": [
+            "effect",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "call_active_story_boss",
+          "line": 2128,
+          "matched": [
+            "effect",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "hunt",
+          "line": 2177,
+          "matched": [
+            "effect",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "attack",
+          "line": 2376,
+          "matched": [
+            "effect",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "show_skills",
+          "line": 2648,
+          "matched": [
+            "effect",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_skill_text_button",
+          "line": 2685,
+          "matched": [
+            "effect",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "skill_locked",
+          "line": 3067,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_skill_locked_callback",
+          "line": 3169,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_use_skill_callback",
+          "line": 3184,
+          "matched": [
+            "effect",
+            "skill"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_selected_potion_in_combat",
+          "line": 3663,
+          "matched": [
+            "effect"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVE_STUN_POLICY",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "roll_skill_stun"
+          ],
+          "matched": [
+            "roll_skill_stun"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "stun"
+          ],
+          "matched": [
+            "stun"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "roll_skill_stun",
+          "line": 1303,
+          "matched": [
+            "roll_skill_stun",
+            "stun"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "finalize_combat_state_before_victory",
+          "line": 1926,
+          "matched": [
+            "stun"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line": 2125,
+          "matched": [
+            "stun"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "call_active_story_boss",
+          "line": 2128,
+          "matched": [
+            "stun"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "hunt",
+          "line": 2177,
+          "matched": [
+            "stun"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "attack",
+          "line": 2376,
+          "matched": [
+            "stun"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVE_DOT_EFFECTS",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "dot",
+            "bleed",
+            "poison"
+          ],
+          "matched": [
+            "dot",
+            "bleed",
+            "poison"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "effect"
+          ],
+          "matched": [
+            "effect"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_apply_boss_dot_at_player_turn_15_5_0",
+          "line": 76,
+          "matched": [
+            "dot"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_combat_effects",
+          "line": 403,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_enemy_effect",
+          "line": 411,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_player_effect",
+          "line": 457,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "remove_enemy_effect",
+          "line": 464,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "remove_player_effect",
+          "line": 471,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_enemy_effects_text",
+          "line": 478,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_effects_text",
+          "line": 495,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_effective_mob_def",
+          "line": 516,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_effective_player_defenses",
+          "line": 550,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_player_turn_start_effects",
+          "line": 580,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_enemy_turn_start_effects",
+          "line": 644,
+          "matched": [
+            "dot",
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_player_shield_absorb",
+          "line": 683,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_skill_menu_text",
+          "line": 1110,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_skill_special_effect",
+          "line": 1320,
+          "matched": [
+            "bleed",
+            "dot",
+            "effect",
+            "poison"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "append_effects_to_combat_text",
+          "line": 1538,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_lethal_combat_log",
+          "line": 1703,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_victory_text",
+          "line": 1791,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "finalize_combat_state_before_victory",
+          "line": 1926,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line": 2125,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "call_active_story_boss",
+          "line": 2128,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "hunt",
+          "line": 2177,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "attack",
+          "line": 2376,
+          "matched": [
+            "dot",
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "show_skills",
+          "line": 2648,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_skill_text_button",
+          "line": 2685,
+          "matched": [
+            "dot",
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_use_skill_callback",
+          "line": 3184,
+          "matched": [
+            "dot",
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_selected_potion_in_combat",
+          "line": 3663,
+          "matched": [
+            "effect"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVE_HOT_HEAL_EFFECTS",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "hot",
+            "heal",
+            "restore"
+          ],
+          "matched": [
+            "hot",
+            "heal",
+            "restore"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "effect"
+          ],
+          "matched": [
+            "effect"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_combat_effects",
+          "line": 403,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_enemy_effect",
+          "line": 411,
+          "matched": [
+            "effect",
+            "heal"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_player_effect",
+          "line": 457,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "remove_enemy_effect",
+          "line": 464,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "remove_player_effect",
+          "line": 471,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_enemy_effects_text",
+          "line": 478,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_effects_text",
+          "line": 495,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_effective_mob_def",
+          "line": 516,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_effective_player_defenses",
+          "line": 550,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_player_turn_start_effects",
+          "line": 580,
+          "matched": [
+            "effect",
+            "heal",
+            "hot"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_enemy_turn_start_effects",
+          "line": 644,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_player_shield_absorb",
+          "line": 683,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_skill_menu_text",
+          "line": 1110,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_and_pay_skill_cost",
+          "line": 1140,
+          "matched": [
+            "hot"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_skill_special_effect",
+          "line": 1320,
+          "matched": [
+            "effect",
+            "heal",
+            "hot",
+            "restore"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "append_mp_restore_text",
+          "line": 1528,
+          "matched": [
+            "restore"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "append_effects_to_combat_text",
+          "line": 1538,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_lethal_combat_log",
+          "line": 1703,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_victory_text",
+          "line": 1791,
+          "matched": [
+            "effect",
+            "restore"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "rollback_turn_start_hot_heal_on_victory",
+          "line": 1895,
+          "matched": [
+            "heal",
+            "hot"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "finalize_combat_state_before_victory",
+          "line": 1926,
+          "matched": [
+            "effect",
+            "heal",
+            "hot"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_victory",
+          "line": 1964,
+          "matched": [
+            "hot"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line": 2125,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "call_active_story_boss",
+          "line": 2128,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "hunt",
+          "line": 2177,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "attack",
+          "line": 2376,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "show_skills",
+          "line": 2648,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_skill_text_button",
+          "line": 2685,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_use_skill_callback",
+          "line": 3184,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_selected_potion_in_combat",
+          "line": 3663,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "escape_yes",
+          "line": 3782,
+          "matched": [
+            "restore"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVE_SHIELD_EFFECTS",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "shield"
+          ],
+          "matched": [
+            "shield"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "absorb"
+          ],
+          "matched": [
+            "absorb"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_effects_text",
+          "line": 495,
+          "matched": [
+            "absorb",
+            "shield"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_player_shield_absorb",
+          "line": 683,
+          "matched": [
+            "absorb",
+            "shield"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_skill_special_effect",
+          "line": 1320,
+          "matched": [
+            "absorb",
+            "shield"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVE_EXTRA_RAGE_EFFECT",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "apply_extra_rage_from_skill"
+          ],
+          "matched": [
+            "apply_extra_rage_from_skill"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "extra_rage"
+          ],
+          "matched": [
+            "extra_rage"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_extra_rage_from_skill",
+          "line": 1282,
+          "matched": [
+            "apply_extra_rage_from_skill",
+            "extra_rage"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVE_COMBO_REQUIREMENT",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER",
+        "PVE_AVAILABILITY_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "min_combo"
+          ],
+          "matched": [
+            "min_combo"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "combo"
+          ],
+          "matched": [
+            "combo"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "cost_type"
+          ],
+          "matched": [
+            "cost_type"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "init_class_combat_resource",
+          "line": 251,
+          "matched": [
+            "combo"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_class_resource_line",
+          "line": 279,
+          "matched": [
+            "combo"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "regenerate_class_resource_at_player_turn",
+          "line": 314,
+          "matched": [
+            "combo"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "add_rogue_combo_point",
+          "line": 373,
+          "matched": [
+            "combo"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "consume_rogue_combo_points",
+          "line": 389,
+          "matched": [
+            "combo"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "validate_and_pay_skill_cost",
+          "line": 1140,
+          "matched": [
+            "combo",
+            "cost_type",
+            "min_combo"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line": 2125,
+          "matched": [
+            "combo"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "call_active_story_boss",
+          "line": 2128,
+          "matched": [
+            "combo"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "hunt",
+          "line": 2177,
+          "matched": [
+            "combo"
+          ]
+        },
+        {
+          "path": "systems/pve_skill_action_state.py",
+          "symbol": "get_pve_effective_skill_cost",
+          "line": 9,
+          "matched": [
+            "cost_type"
+          ]
+        },
+        {
+          "path": "systems/pve_skill_action_state.py",
+          "symbol": "format_pve_skill_description",
+          "line": 17,
+          "matched": [
+            "cost_type"
+          ]
+        },
+        {
+          "path": "systems/pve_skill_action_state.py",
+          "symbol": "get_pve_skill_action_state",
+          "line": 55,
+          "matched": [
+            "combo",
+            "cost_type",
+            "min_combo"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVP_ACTION_VALIDATION",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVP_VALIDATION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "validate_pvp_action_choice"
+          ],
+          "matched": [
+            "validate_pvp_action_choice"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "skill"
+          ],
+          "matched": [
+            "skill"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "reason"
+          ],
+          "matched": [
+            "reason"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "systems/pvp_action_validation.py",
+          "symbol": "projected_round_cooldown",
+          "line": 11,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "systems/pvp_action_validation.py",
+          "symbol": "get_pvp_effective_skill_cost",
+          "line": 17,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "systems/pvp_action_validation.py",
+          "symbol": "validate_pvp_action_choice",
+          "line": 31,
+          "matched": [
+            "reason",
+            "skill",
+            "validate_pvp_action_choice"
+          ]
+        },
+        {
+          "path": "systems/pvp_action_validation.py",
+          "symbol": "pvp_skill_button_state",
+          "line": 97,
+          "matched": [
+            "reason",
+            "skill",
+            "validate_pvp_action_choice"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVP_EFFECTIVE_COST",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVP_VALIDATION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "get_pvp_effective_skill_cost"
+          ],
+          "matched": [
+            "get_pvp_effective_skill_cost"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "cost"
+          ],
+          "matched": [
+            "cost"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "systems/pvp_action_validation.py",
+          "symbol": "get_pvp_effective_skill_cost",
+          "line": 17,
+          "matched": [
+            "cost",
+            "get_pvp_effective_skill_cost"
+          ]
+        },
+        {
+          "path": "systems/pvp_action_validation.py",
+          "symbol": "validate_pvp_action_choice",
+          "line": 31,
+          "matched": [
+            "cost",
+            "get_pvp_effective_skill_cost"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVP_DETERMINISTIC_EXECUTION",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVP_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "resolve_pvp_round"
+          ],
+          "matched": [
+            "resolve_pvp_round"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "outcome"
+          ],
+          "matched": [
+            "outcome"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "skill"
+          ],
+          "matched": [
+            "skill"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "systems/pvp_round_engine.py",
+          "symbol": "_pay",
+          "line": 128,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "systems/pvp_round_engine.py",
+          "symbol": "_special",
+          "line": 164,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "systems/pvp_round_engine.py",
+          "symbol": "resolve_pvp_round",
+          "line": 224,
+          "matched": [
+            "outcome",
+            "resolve_pvp_round",
+            "skill"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVP_INTENT_AND_OUTCOME",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVP_MODEL_OWNER",
+        "PVP_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "PvpActionIntent"
+          ],
+          "matched": [
+            "PvpActionIntent"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "PvpActionOutcome"
+          ],
+          "matched": [
+            "PvpActionOutcome"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "skill_key"
+          ],
+          "matched": [
+            "skill_key"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "systems/pvp_round_engine.py",
+          "symbol": "resolve_pvp_round",
+          "line": 224,
+          "matched": [
+            "PvpActionIntent",
+            "PvpActionOutcome",
+            "skill_key"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PVP_PAYMENT_BEFORE_EFFECT",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVP_EXECUTION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "_pay"
+          ],
+          "matched": [
+            "_pay"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "cost"
+          ],
+          "matched": [
+            "cost"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "_special",
+            "damage"
+          ],
+          "matched": [
+            "_special",
+            "damage"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "systems/pvp_round_engine.py",
+          "symbol": "_tick_start",
+          "line": 49,
+          "matched": [
+            "cost",
+            "damage"
+          ]
+        },
+        {
+          "path": "systems/pvp_round_engine.py",
+          "symbol": "_base_damage",
+          "line": 102,
+          "matched": [
+            "damage"
+          ]
+        },
+        {
+          "path": "systems/pvp_round_engine.py",
+          "symbol": "_pay",
+          "line": 128,
+          "matched": [
+            "_pay",
+            "cost"
+          ]
+        },
+        {
+          "path": "systems/pvp_round_engine.py",
+          "symbol": "_special",
+          "line": 164,
+          "matched": [
+            "_special",
+            "damage"
+          ]
+        },
+        {
+          "path": "systems/pvp_round_engine.py",
+          "symbol": "resolve_pvp_round",
+          "line": 224,
+          "matched": [
+            "_pay",
+            "_special",
+            "cost",
+            "damage"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "SIMULATOR_AVAILABILITY_PARITY",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "SIMULATOR_EXECUTION"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "_can_use"
+          ],
+          "matched": [
+            "_can_use"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "_choose"
+          ],
+          "matched": [
+            "_choose"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "skill"
+          ],
+          "matched": [
+            "skill"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "systems/simulation/pve_battle.py",
+          "symbol": "__init__",
+          "line": 17,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "systems/simulation/pve_battle.py",
+          "symbol": "_effective_skill_cost",
+          "line": 48,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "systems/simulation/pve_battle.py",
+          "symbol": "_can_use",
+          "line": 54,
+          "matched": [
+            "_can_use",
+            "skill"
+          ]
+        },
+        {
+          "path": "systems/simulation/pve_battle.py",
+          "symbol": "_choose",
+          "line": 61,
+          "matched": [
+            "_can_use",
+            "_choose",
+            "skill"
+          ]
+        },
+        {
+          "path": "systems/simulation/pve_battle.py",
+          "symbol": "_pay",
+          "line": 89,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "systems/simulation/pve_battle.py",
+          "symbol": "_apply_effect",
+          "line": 96,
+          "matched": [
+            "skill"
+          ]
+        },
+        {
+          "path": "systems/simulation/pve_battle.py",
+          "symbol": "_player_action",
+          "line": 108,
+          "matched": [
+            "_choose",
+            "skill"
+          ]
+        },
+        {
+          "path": "systems/simulation/pve_battle.py",
+          "symbol": "run",
+          "line": 139,
+          "matched": [
+            "skill"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "SIMULATOR_EXECUTION_PARITY",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "SIMULATOR_EXECUTION"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "_player_action"
+          ],
+          "matched": [
+            "_player_action"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "_pay"
+          ],
+          "matched": [
+            "_pay"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "_apply_effect"
+          ],
+          "matched": [
+            "_apply_effect"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "systems/simulation/pve_battle.py",
+          "symbol": "_pay",
+          "line": 89,
+          "matched": [
+            "_pay"
+          ]
+        },
+        {
+          "path": "systems/simulation/pve_battle.py",
+          "symbol": "_apply_effect",
+          "line": 96,
+          "matched": [
+            "_apply_effect"
+          ]
+        },
+        {
+          "path": "systems/simulation/pve_battle.py",
+          "symbol": "_player_action",
+          "line": 108,
+          "matched": [
+            "_apply_effect",
+            "_pay",
+            "_player_action"
+          ]
+        },
+        {
+          "path": "systems/simulation/pve_battle.py",
+          "symbol": "run",
+          "line": 139,
+          "matched": [
+            "_player_action"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "SIMULATOR_CATALOG_PARITY",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "SIMULATOR_CATALOG"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "skill"
+          ],
+          "matched": [
+            "skill"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "class"
+          ],
+          "matched": [
+            "class"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "cost",
+            "cooldown"
+          ],
+          "matched": [
+            "cost",
+            "cooldown"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "systems/simulation/skill_catalog.py",
+          "symbol": "load_production_skill_catalog",
+          "line": 10,
+          "matched": [
+            "class",
+            "cooldown",
+            "cost",
+            "skill"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "PRESENTATION_IS_CONSUMER",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_EXECUTION_OWNER",
+        "PROFILE_PRESENTATION"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "show_skills",
+            "build_skill_menu_text",
+            "build_skills_text"
+          ],
+          "matched": [
+            "show_skills",
+            "build_skill_menu_text",
+            "build_skills_text"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "text"
+          ],
+          "matched": [
+            "text"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_finalize_enemy_turn_15_5_0",
+          "line": 65,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "_combat_extract_retry_after_11_3_1",
+          "line": 99,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_enemy_effects_text",
+          "line": 478,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "get_player_effects_text",
+          "line": 495,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_player_turn_start_effects",
+          "line": 580,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_enemy_turn_start_effects",
+          "line": 644,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_player_shield_absorb",
+          "line": 683,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "tick_skill_cooldowns_at_player_turn",
+          "line": 750,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_skill_menu_text",
+          "line": 1110,
+          "matched": [
+            "build_skill_menu_text",
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "apply_skill_special_effect",
+          "line": 1320,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "append_mp_restore_text",
+          "line": 1528,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "append_effects_to_combat_text",
+          "line": 1538,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_combat_potion_kb",
+          "line": 1611,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_death_text",
+          "line": 1685,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_lethal_combat_log",
+          "line": 1703,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "build_victory_text",
+          "line": 1791,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_victory",
+          "line": 1964,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line": 2125,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "patch_combat_bot_rate_limit_safe_send",
+          "line": 3849,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "hunt",
+          "line": 2177,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "attack",
+          "line": 2376,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "show_skills",
+          "line": 2648,
+          "matched": [
+            "build_skill_menu_text",
+            "show_skills",
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_skill_text_button",
+          "line": 2685,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "combat_use_skill_callback",
+          "line": 3184,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "use_selected_potion_in_combat",
+          "line": 3663,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "escape",
+          "line": 3752,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "escape_yes",
+          "line": 3782,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "safe_send_message",
+          "line": 3856,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/profile.py",
+          "symbol": "profile_inline_kb",
+          "line": 85,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/profile.py",
+          "symbol": "build_character_text",
+          "line": 295,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/profile.py",
+          "symbol": "build_stats_text",
+          "line": 441,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/profile.py",
+          "symbol": "build_equipment_text",
+          "line": 539,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/profile.py",
+          "symbol": "build_skills_text",
+          "line": 725,
+          "matched": [
+            "build_skills_text",
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/profile.py",
+          "symbol": "_history_list_text",
+          "line": 851,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/profile.py",
+          "symbol": "send_profile_root",
+          "line": 869,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/profile.py",
+          "symbol": "register_profile_handlers",
+          "line": 887,
+          "matched": [
+            "build_skills_text",
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/profile.py",
+          "symbol": "stats",
+          "line": 937,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/profile.py",
+          "symbol": "equipment",
+          "line": 957,
+          "matched": [
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/profile.py",
+          "symbol": "skills",
+          "line": 977,
+          "matched": [
+            "build_skills_text",
+            "text"
+          ]
+        },
+        {
+          "path": "handlers/profile.py",
+          "symbol": "profile_character_callback",
+          "line": 1005,
+          "matched": [
+            "text"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "BOSS_IS_ADJACENT_CONSUMER",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "BOSS_CONSUMER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "resolve_boss_combat_action"
+          ],
+          "matched": [
+            "resolve_boss_combat_action"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "effect",
+            "damage"
+          ],
+          "matched": [
+            "effect",
+            "damage"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "systems/boss_system.py",
+          "symbol": "build_location_boss",
+          "line": 114,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "systems/boss_system.py",
+          "symbol": "get_effective_boss_attack",
+          "line": 328,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "systems/boss_system.py",
+          "symbol": "get_effective_boss_defenses",
+          "line": 343,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "systems/boss_system.py",
+          "symbol": "build_boss_action_plan",
+          "line": 355,
+          "matched": [
+            "damage",
+            "effect"
+          ]
+        },
+        {
+          "path": "systems/boss_system.py",
+          "symbol": "calculate_boss_bleed_damage",
+          "line": 384,
+          "matched": [
+            "damage"
+          ]
+        },
+        {
+          "path": "systems/boss_system.py",
+          "symbol": "apply_boss_action_effects",
+          "line": 393,
+          "matched": [
+            "damage",
+            "effect"
+          ]
+        },
+        {
+          "path": "systems/boss_system.py",
+          "symbol": "apply_player_effect_instruction",
+          "line": 461,
+          "matched": [
+            "effect"
+          ]
+        },
+        {
+          "path": "systems/boss_system.py",
+          "symbol": "process_boss_player_dots",
+          "line": 472,
+          "matched": [
+            "damage",
+            "effect"
+          ]
+        },
+        {
+          "path": "systems/boss_system.py",
+          "symbol": "resolve_boss_combat_action",
+          "line": 520,
+          "matched": [
+            "damage",
+            "effect",
+            "resolve_boss_combat_action"
+          ]
+        },
+        {
+          "path": "systems/boss_system.py",
+          "symbol": "build_boss_damage_request",
+          "line": 597,
+          "matched": [
+            "damage",
+            "effect"
+          ]
+        },
+        {
+          "path": "systems/boss_system.py",
+          "symbol": "finalize_boss_turn",
+          "line": 607,
+          "matched": [
+            "damage",
+            "effect"
+          ]
+        },
+        {
+          "path": "systems/boss_system.py",
+          "symbol": "render_boss_action_text",
+          "line": 634,
+          "matched": [
+            "damage"
+          ]
+        }
+      ]
+    },
+    {
+      "contract": "FAILURE_WITHOUT_PARTIAL_MUTATION",
+      "classification": "V1_CONFIRMED",
+      "groups": [
+        "PVE_AVAILABILITY_OWNER",
+        "PVP_VALIDATION_OWNER"
+      ],
+      "checks": [
+        {
+          "alternatives": [
+            "reason"
+          ],
+          "matched": [
+            "reason"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "available",
+            "valid",
+            "success"
+          ],
+          "matched": [
+            "available",
+            "valid",
+            "success"
+          ],
+          "pass": true
+        },
+        {
+          "alternatives": [
+            "cost",
+            "cooldown"
+          ],
+          "matched": [
+            "cost",
+            "cooldown"
+          ],
+          "pass": true
+        }
+      ],
+      "function_evidence": [
+        {
+          "path": "systems/pve_skill_action_state.py",
+          "symbol": "get_pve_effective_skill_cost",
+          "line": 9,
+          "matched": [
+            "cost"
+          ]
+        },
+        {
+          "path": "systems/pve_skill_action_state.py",
+          "symbol": "format_pve_skill_description",
+          "line": 17,
+          "matched": [
+            "cost"
+          ]
+        },
+        {
+          "path": "systems/pve_skill_action_state.py",
+          "symbol": "_state",
+          "line": 38,
+          "matched": [
+            "available",
+            "reason"
+          ]
+        },
+        {
+          "path": "systems/pve_skill_action_state.py",
+          "symbol": "get_pve_skill_action_state",
+          "line": 55,
+          "matched": [
+            "available",
+            "cooldown",
+            "cost"
+          ]
+        },
+        {
+          "path": "systems/pvp_action_validation.py",
+          "symbol": "projected_round_cooldown",
+          "line": 11,
+          "matched": [
+            "cooldown",
+            "valid"
+          ]
+        },
+        {
+          "path": "systems/pvp_action_validation.py",
+          "symbol": "get_pvp_effective_skill_cost",
+          "line": 17,
+          "matched": [
+            "cost"
+          ]
+        },
+        {
+          "path": "systems/pvp_action_validation.py",
+          "symbol": "validate_pvp_action_choice",
+          "line": 31,
+          "matched": [
+            "available",
+            "cooldown",
+            "cost",
+            "reason",
+            "success",
+            "valid"
+          ]
+        },
+        {
+          "path": "systems/pvp_action_validation.py",
+          "symbol": "pvp_skill_button_state",
+          "line": 97,
+          "matched": [
+            "available",
+            "cooldown",
+            "reason",
+            "success",
+            "valid"
+          ]
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "compileall_returncode": 0,
+    "protected_before": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    },
+    "protected_after": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  }
+}
