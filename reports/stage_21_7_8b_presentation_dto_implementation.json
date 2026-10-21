@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "stage": "21.7.8b",
+  "status": "PASS",
+  "conclusion": "API_READY",
+  "implemented_at_utc": "2026-10-21T20:00:22.897018+00:00",
+  "parent": "d2b83a42d8422d09d3809d0ea4c345375f884c14",
+  "contracts": {
+    "authoritative_owner": "rom_v2/presentation/item_dto.py",
+    "typed": true,
+    "deterministic": true,
+    "technical_identity": [
+      "item_id",
+      "inventory_id",
+      "slot_key"
+    ],
+    "text_as_identity": false,
+    "business_mutation": false,
+    "business_formulas": false,
+    "telegram_role": "consumer",
+    "test_role": "consumer"
+  },
+  "files": [
+    "rom_v2/presentation/item_dto.py",
+    "tests/test_stage_21_7_8b_presentation_dto.py",
+    "tools/check_stage_21_7_8b_presentation_dto.py",
+    "reports/stage_21_7_8b_presentation_dto_implementation.json",
+    "MD/STAGE_21_7_8B_PRESENTATION_DTO_IMPLEMENTATION.md"
+  ],
+  "test_runner_mode": "DEPENDENCY_FREE_REQUIRED_GATES",
+  "runtime_dispatch_connected": false,
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "Stage 21.7 closure documentation and acceptance"
+}
