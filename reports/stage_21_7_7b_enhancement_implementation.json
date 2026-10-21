@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "stage": "21.7.7b",
+  "status": "PASS",
+  "conclusion": "API_READY",
+  "implemented_at_utc": "2026-10-21T19:44:35.216175+00:00",
+  "parent": "25743011b48dd68b3cae7c0ae79b0f8ab29c54fa",
+  "contracts": {
+    "stone_item_id": 601,
+    "success_rune_item_id": 602,
+    "weapon_cap": 10,
+    "armor_cap": 6,
+    "success_rune_chance": 100,
+    "rng": "inclusive_1_100",
+    "atomicity": "one gateway transaction",
+    "idempotency": "operation_id",
+    "durability_zero_gate": "consumer contract"
+  },
+  "files": [
+    "rom_v2/domain/enhancement.py",
+    "rom_v2/application/enhancement_service.py",
+    "tests/test_stage_21_7_7b_enhancement.py",
+    "tools/check_stage_21_7_7b_enhancement.py",
+    "reports/stage_21_7_7b_enhancement_implementation.json",
+    "MD/STAGE_21_7_7B_ENHANCEMENT_IMPLEMENTATION.md"
+  ],
+  "test_runner_mode": "DEPENDENCY_FREE_REQUIRED_GATES",
+  "runtime_dispatch_connected": false,
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_7_8_audit_existing_presentation_dto.py"
+}
