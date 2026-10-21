@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "stage": "21.7.6b",
+  "status": "PASS",
+  "conclusion": "API_READY",
+  "implemented_at_utc": "2026-10-21T18:11:51.033772+00:00",
+  "prerequisite_stage": "21.7.6a",
+  "prerequisite_contract_sha256": "5a166618441d62380b16abc8acf01fbe8af7b902c2520747b77418f62e60e425",
+  "contracts": {
+    "durability_range": "0..100 inclusive clamp",
+    "death_penalty": 5,
+    "zero_durability_contribution": false,
+    "repair_formula": "(100 - durability) * rarity_multiplier * 0.05, integer gold ROUND_HALF_UP, minimum 1 when damaged",
+    "rarity_multipliers": {
+      "common": "1.0",
+      "uncommon": "2.5",
+      "rare": "7.0",
+      "epic": "18.0"
+    },
+    "identity": "exact owned equipped inventory_id",
+    "reservation": "fail_closed",
+    "payment_and_mutation": "single atomic gateway operation",
+    "consumer_layers": [
+      "base equipment",
+      "runes",
+      "enhancement"
+    ]
+  },
+  "files": [
+    "rom_v2/domain/durability.py",
+    "rom_v2/application/durability_service.py",
+    "tests/test_stage_21_7_6b_durability_and_repair.py",
+    "tools/check_stage_21_7_6b_durability_and_repair.py",
+    "reports/stage_21_7_6b_durability_and_repair_implementation.json",
+    "MD/STAGE_21_7_6B_DURABILITY_AND_REPAIR_IMPLEMENTATION.md"
+  ],
+  "runtime_dispatch_connected": false,
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false,
+  "test_runner_mode": "DEPENDENCY_FREE_REQUIRED_GATES",
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_7_7_audit_existing_equipment_stat_aggregation.py"
+}
