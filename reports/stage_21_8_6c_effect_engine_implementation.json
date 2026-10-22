@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "stage": "21.8.6c",
+  "status": "PASS",
+  "conclusion": "API_READY",
+  "generated_at_utc": "2026-10-22T11:43:13.004955+00:00",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "f55a412397e00721ca1e29b18402c9774bec7656"
+  },
+  "contracts": {
+    "pure_transition": true,
+    "transient_battle_state": true,
+    "context_policy_injected": true,
+    "general_resist_immunity_added": false,
+    "persistence_added": false,
+    "runtime_dispatch_connected": false,
+    "priest_one_immediate_plus_two_ticks_supported": true,
+    "unchanged_state_on_failure": true
+  },
+  "files": [
+    "rom_v2/domain/effect_engine.py",
+    "tests_v2/test_effect_engine.py",
+    "tools/check_stage_21_8_6c_effect_engine.py",
+    "reports/stage_21_8_6c_effect_engine_implementation.json",
+    "MD/STAGE_21_8_6C_EFFECT_ENGINE_IMPLEMENTATION.md"
+  ],
+  "checks": {
+    "compile": 0,
+    "targeted_unittest": 0,
+    "smoke": 0,
+    "canonical_v2_ci": {
+      "schema_version": 1,
+      "status": "PASS",
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "compile",
+          "status": "PASS",
+          "file_count": 115,
+          "failures": []
+        },
+        {
+          "name": "imports",
+          "status": "PASS",
+          "module_count": 86,
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-c",
+              "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.mana_engine', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "unit",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "tests_v2",
+              "-p",
+              "test_*.py"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "................................................................................................................\n----------------------------------------------------------------------\nRan 112 tests in 14.152s\n\nOK"
+          }
+        },
+        {
+          "name": "architecture",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "tools/verify_v2_architecture.py",
+              "--project-root",
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+            ],
+            "returncode": 0,
+            "stdout": "V2 architecture enforcement: PASS\nPhysical files: 86\nImport edges: 301\nViolations: 0",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "duplicate_scan",
+          "status": "PASS",
+          "symbol_count": 266,
+          "duplicates": {}
+        },
+        {
+          "name": "content_validation",
+          "status": "PASS",
+          "file_count": 0,
+          "failures": []
+        }
+      ]
+    }
+  },
+  "removed_bytecode_before_ci": [
+    "rom_v2/__pycache__/bootstrap.cpython-314.pyc",
+    "rom_v2/__pycache__/config.cpython-314.pyc",
+    "rom_v2/__pycache__/container.cpython-314.pyc",
+    "rom_v2/__pycache__/lifecycle.cpython-314.pyc",
+    "rom_v2/__pycache__/main.cpython-314.pyc",
+    "rom_v2/__pycache__/runtime_paths.cpython-314.pyc",
+    "rom_v2/__pycache__/settings.cpython-314.pyc",
+    "rom_v2/__pycache__/structured_logging.cpython-314.pyc",
+    "rom_v2/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/presentation/__pycache__/item_dto.cpython-314.pyc",
+    "rom_v2/infrastructure/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/infrastructure/telegram/__pycache__/adapter.cpython-314.pyc",
+    "rom_v2/infrastructure/telegram/__pycache__/callback_codec.cpython-314.pyc",
+    "rom_v2/infrastructure/telegram/__pycache__/callback_registry.cpython-314.pyc",
+    "rom_v2/infrastructure/telegram/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/account_repository.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/account_unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/character_repository.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/character_unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/connection_factory.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/equipment_repository.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/equipment_unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/inventory_repository.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/inventory_unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/migrator.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/primary_stat_repository.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/primary_stat_unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/provisional_contracts.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/repository_base.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/resource_repository.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/resource_unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/schema_contract.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/migrations/__pycache__/v001_v2_baseline.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/migrations/__pycache__/v002_primary_stats_parity.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/migrations/__pycache__/v003_item_identity_parity.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/migrations/__pycache__/v004_equipment_slots_parity.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/migrations/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/account.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/battle.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/character.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/class_catalog.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/combat_resources.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/damage_engine.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/derived_stats.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/durability.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/effect_engine.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/enhancement.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/equipment.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/equipment_generation.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/full_stat_snapshot.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/item.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/mana_engine.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/primary_stats.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/resource_lifecycle.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/runes.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/skill_execution.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/content/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/application/__pycache__/account_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/account_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/character_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/character_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/durability_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/enhancement_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/equipment_generation_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/equipment_generation_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/equipment_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/equipment_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/full_stat_snapshot_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/integration_evidence.cpython-314.pyc",
+    "rom_v2/application/__pycache__/inventory_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/inventory_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/primary_stat_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/primary_stat_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/resource_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/resource_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/application/services/__pycache__/rune_lifecycle.cpython-314.pyc",
+    "rom_v2/application/ports/__pycache__/clock.cpython-314.pyc",
+    "rom_v2/application/ports/__pycache__/random_source.cpython-314.pyc",
+    "rom_v2/application/ports/__pycache__/repositories.cpython-314.pyc",
+    "rom_v2/application/ports/__pycache__/unit_of_work.cpython-314.pyc",
+    "rom_v2/application/ports/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/app/__pycache__/__init__.cpython-314.pyc",
+    "tests_v2/__pycache__/test_effect_engine.cpython-314.pyc",
+    "tests_v2/__pycache__/__init__.cpython-314.pyc",
+    "tools/__pycache__/check_stage_21_8_6c_effect_engine.cpython-314.pyc"
+  ],
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_8_7_audit_existing_cooldowns.py"
+}
