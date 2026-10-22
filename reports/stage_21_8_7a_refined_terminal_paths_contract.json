@@ -1,0 +1,621 @@
+{
+  "schema_version": 1,
+  "stage": "21.8.7a",
+  "status": "PASS",
+  "conclusion": "REVIEW_REQUIRED",
+  "generated_at_utc": "2026-10-22T17:32:54.933199+00:00",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "2b40cc5cdc683d6d55cb6903dfeb2c4d29013e80"
+  },
+  "prerequisite": {
+    "path": "reports/stage_21_8_7_existing_terminal_paths_audit.json",
+    "stage": "21.8.7",
+    "conclusion": "GO_TO_SEMANTIC_REFINEMENT"
+  },
+  "summary": {
+    "semantic_rows": 25,
+    "v1_confirmed_rows": 18,
+    "review_required_rows": 7,
+    "unresolved_contracts": [
+      "SINGLE_PVE_TERMINAL_OWNER",
+      "PVE_DEFEAT_EXACT_PATH",
+      "PVE_MANUAL_ESCAPE_EXACT_PATH",
+      "PVE_SETTLEMENT_ORDERING",
+      "DUPLICATE_MESSAGES_EVENTS",
+      "POST_TERMINAL_ACTION_GUARD",
+      "PVE_PVP_BOSS_SIMULATOR_PARITY"
+    ],
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "authoritative_context_owners": {
+    "pve": "handlers/combat.py",
+    "boss": "systems/boss_system.py",
+    "pvp": "systems/pvp_round_engine.py",
+    "simulator": "systems/simulation/pve_battle.py",
+    "pve_terminal_claim": "systems/pve_auto_escape_system.py",
+    "pvp_completion": "systems/pvp_completion_service.py"
+  },
+  "semantic_matrix": [
+    {
+      "contract": "PVE_VICTORY_OWNER",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Canonical manual PvE victory orchestration candidate.",
+      "evidence": {
+        "path": "handlers/combat.py",
+        "symbol": "process_victory",
+        "line_start": 1964,
+        "line_end": 2118,
+        "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+        "required_tokens": [],
+        "source_sha256": "330acb48958c4b1a63dd8e093a8bc6dada3032ab412a8264c463868b49e26d57"
+      }
+    },
+    {
+      "contract": "PVE_VICTORY_PRE_FINALIZE",
+      "classification": "V1_CONFIRMED",
+      "meaning": "PvE combat state is finalized before victory settlement/presentation.",
+      "evidence": {
+        "path": "handlers/combat.py",
+        "symbol": "finalize_combat_state_before_victory",
+        "line_start": 1926,
+        "line_end": 1962,
+        "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+        "required_tokens": [],
+        "source_sha256": "8559bc55ed170871375a9391b583011486b67b8458194d1725db047f6e8c4792"
+      }
+    },
+    {
+      "contract": "PVE_VICTORY_HOT_COMPENSATION",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Victory has an explicit turn-start HoT compensation boundary.",
+      "evidence": {
+        "path": "handlers/combat.py",
+        "symbol": "rollback_turn_start_hot_heal_on_victory",
+        "line_start": 1895,
+        "line_end": 1923,
+        "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+        "required_tokens": [],
+        "source_sha256": "7ea3d6aeeb52117d0b4d0a1afe495a0035aa02bfa5723f53034ec3ea49c5a2cb"
+      }
+    },
+    {
+      "contract": "PVE_VICTORY_PRESENTATION",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Victory text construction is separate from terminal mutation.",
+      "evidence": {
+        "path": "handlers/combat.py",
+        "symbol": "build_victory_text",
+        "line_start": 1791,
+        "line_end": 1891,
+        "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+        "required_tokens": [],
+        "source_sha256": "96b66da359712e0a02ece7084044abf9f5805cf317378676333dc2718023be2b"
+      }
+    },
+    {
+      "contract": "PVE_VICTORY_EVENT_DROP_PRESENTATION",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Event-drop victory messages are a separate presentation consumer.",
+      "evidence": {
+        "path": "handlers/combat.py",
+        "symbol": "_event_drop_victory_messages",
+        "line_start": 1772,
+        "line_end": 1788,
+        "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+        "required_tokens": [],
+        "source_sha256": "a55f47dc963bf8116c6f0dcf4643c3465933f85e3501686b332f1a8087fd077a"
+      }
+    },
+    {
+      "contract": "PVE_TERMINAL_CLAIM",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Persistent PvE terminal claim candidate for exactly-once arbitration.",
+      "evidence": {
+        "path": "systems/pve_auto_escape_system.py",
+        "symbol": "claim_pve_terminal",
+        "line_start": 79,
+        "line_end": 91,
+        "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+        "required_tokens": [],
+        "source_sha256": "f78c65b9e9889c7ed334c51d621fc76f9bd87d12b12ee1d890613c623dedfd03"
+      }
+    },
+    {
+      "contract": "PVE_ENCOUNTER_BEGIN",
+      "classification": "V1_CONFIRMED",
+      "meaning": "PvE encounter lifecycle starts in the auto-escape subsystem.",
+      "evidence": {
+        "path": "systems/pve_auto_escape_system.py",
+        "symbol": "begin_pve_encounter",
+        "line_start": 61,
+        "line_end": 72,
+        "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+        "required_tokens": [],
+        "source_sha256": "ecf03d453f7f71ada2c0795e98dbad2ecbe7911ad3b98ccba093d237b3c8378a"
+      }
+    },
+    {
+      "contract": "PVE_ACTIVE_ENCOUNTER_LOOKUP",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Active encounter lookup participates in post-terminal guarding.",
+      "evidence": {
+        "path": "systems/pve_auto_escape_system.py",
+        "symbol": "get_active_pve_encounter",
+        "line_start": 74,
+        "line_end": 77,
+        "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+        "required_tokens": [],
+        "source_sha256": "a2faa1518f3f4d2c94330722c0635da9ca6823453ebde073b4db7610f8a85ca0"
+      }
+    },
+    {
+      "contract": "PVE_AUTO_ESCAPE_EXPIRATION",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Auto-escape expiry is an independent terminal producer.",
+      "evidence": {
+        "path": "systems/pve_auto_escape_system.py",
+        "symbol": "expire_pve_encounters_once",
+        "line_start": 97,
+        "line_end": 105,
+        "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+        "required_tokens": [],
+        "source_sha256": "162a50a1a965873ab5f183abd851ff8ddfe74c8c3117cf99befcd9a3bb4f6007"
+      }
+    },
+    {
+      "contract": "PVE_RESTART_RECOVERY",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Startup recovery is an independent terminal/recovery path.",
+      "evidence": {
+        "path": "systems/pve_auto_escape_system.py",
+        "symbol": "recover_pve_encounters_after_restart",
+        "line_start": 107,
+        "line_end": 115,
+        "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+        "required_tokens": [],
+        "source_sha256": "4d782d23e5f7473b92d40b47a72af0fbf413efda1ddcad1c5eeef8c6ad4f9a5a"
+      }
+    },
+    {
+      "contract": "PVE_VICTORY_REWARD",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Victory reward calculation/mutation has a dedicated owner.",
+      "evidence": {
+        "path": "systems/reward_system.py",
+        "symbol": "process_victory_reward",
+        "line_start": 1008,
+        "line_end": 1069,
+        "sha256": "87a5d92d94735dd2593c5d847502622dd96bab75acf2c2177e48654d5608f5e5",
+        "required_tokens": [],
+        "source_sha256": "dfb0db24ce17f5fa2a1f91efc38af4a6ff8a19aeb88004e842560021397e89c5"
+      }
+    },
+    {
+      "contract": "PVE_ENEMY_DROPS",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Enemy drops have a dedicated owner separate from victory orchestration.",
+      "evidence": {
+        "path": "systems/reward_system.py",
+        "symbol": "process_enemy_drops",
+        "line_start": 868,
+        "line_end": 992,
+        "sha256": "87a5d92d94735dd2593c5d847502622dd96bab75acf2c2177e48654d5608f5e5",
+        "required_tokens": [],
+        "source_sha256": "d394e85c2a1803f0392b7ebb37d2d9d25086a0b82a3566513ef25c41d3ff5cce"
+      }
+    },
+    {
+      "contract": "PVP_ROUND_TERMINAL",
+      "classification": "V1_CONFIRMED",
+      "meaning": "PvP round engine creates terminal round output.",
+      "evidence": {
+        "path": "systems/pvp_round_engine.py",
+        "symbol": "_terminal",
+        "line_start": 92,
+        "line_end": 99,
+        "sha256": "927aeb2745d3e2184a2719f749090f1c06337ceb9b4375dd427be7d0f9c985d1",
+        "required_tokens": [],
+        "source_sha256": "bf4e31bd9fc00bc27b0edaecb1293885cd5f6b817fbb83ef31dc3d44e428f597"
+      }
+    },
+    {
+      "contract": "PVP_COMPLETE_ONCE",
+      "classification": "V1_CONFIRMED",
+      "meaning": "PvP exposes an explicit exactly-once completion service.",
+      "evidence": {
+        "path": "systems/pvp_completion_service.py",
+        "symbol": "complete_pvp_battle_once",
+        "line_start": 48,
+        "line_end": 58,
+        "sha256": "f4a8c3043b127792dedfe8c741d00f49a1de54dd78be6a2e5bb8c563067757d6",
+        "required_tokens": [],
+        "source_sha256": "e98df0f2ba3889247ac69ed41fbe95be4e59fea8898f1b18cc67b7b98bfa787e"
+      }
+    },
+    {
+      "contract": "PVP_TERMINAL_PRESENTATION",
+      "classification": "V1_CONFIRMED",
+      "meaning": "PvP terminal presentation is separated from completion.",
+      "evidence": {
+        "path": "systems/pvp_completion_service.py",
+        "symbol": "render_pvp_terminal_text",
+        "line_start": 79,
+        "line_end": 95,
+        "sha256": "f4a8c3043b127792dedfe8c741d00f49a1de54dd78be6a2e5bb8c563067757d6",
+        "required_tokens": [],
+        "source_sha256": "7897bacc18f6e3c13867033c7e3e8d16630365432dd5bd21147fecbea41b6104"
+      }
+    },
+    {
+      "contract": "PVP_TERMINAL_CLEANUP",
+      "classification": "V1_CONFIRMED",
+      "meaning": "PvP terminal session cleanup has a dedicated owner.",
+      "evidence": {
+        "path": "systems/pvp_completion_service.py",
+        "symbol": "cleanup_all_terminal_pvp_sessions",
+        "line_start": 98,
+        "line_end": 100,
+        "sha256": "f4a8c3043b127792dedfe8c741d00f49a1de54dd78be6a2e5bb8c563067757d6",
+        "required_tokens": [],
+        "source_sha256": "b93adc6211bc5d3ab4040e5b8e7f284ffe6e9f41f6f65498c4a51c3e4c8e29a4"
+      }
+    },
+    {
+      "contract": "STORY_BOSS_COMPLETION",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Story boss completion is a downstream victory consumer.",
+      "evidence": {
+        "path": "systems/story_quest_boss_completion_system.py",
+        "symbol": "process_rng_boss_story_completion",
+        "line_start": 12,
+        "line_end": 88,
+        "sha256": "c8388fcb0c4d0e979af82ff37f3efd90f30df27e0ad8cce97f0a85d7f19f1f4e",
+        "required_tokens": [],
+        "source_sha256": "7a52ee47d80ebb9675469b388a75e9ecbe0eaae0916c35d814f26ac1fc8227eb"
+      }
+    },
+    {
+      "contract": "EVENT_VICTORY_STATISTICS",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Event statistics are a downstream victory consumer.",
+      "evidence": {
+        "path": "systems/event_statistics_system.py",
+        "symbol": "record_event_mob_victory",
+        "line_start": 10,
+        "line_end": 23,
+        "sha256": "2581b7ba3e066dc047a66689b7a2e44a6e4bff6c873458e062ef73a5ea389d21",
+        "required_tokens": [],
+        "source_sha256": "808fe165774b05b545230be9dbdc43b28ec00bb1134518176005da852c89770d"
+      }
+    },
+    {
+      "contract": "SINGLE_PVE_TERMINAL_OWNER",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "Evidence must establish whether claim_pve_terminal arbitrates manual victory, defeat, manual escape, auto-escape and restart recovery.",
+      "evidence": {
+        "basis": "distributed V1 evidence requires an explicit decision; no behavior inferred"
+      }
+    },
+    {
+      "contract": "PVE_DEFEAT_EXACT_PATH",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "The exact defeat symbol, ordering and settlement boundary require focused resolution.",
+      "evidence": {
+        "basis": "distributed V1 evidence requires an explicit decision; no behavior inferred"
+      }
+    },
+    {
+      "contract": "PVE_MANUAL_ESCAPE_EXACT_PATH",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "The exact manual escape callback and its relationship to terminal claim require focused resolution.",
+      "evidence": {
+        "basis": "distributed V1 evidence requires an explicit decision; no behavior inferred"
+      }
+    },
+    {
+      "contract": "PVE_SETTLEMENT_ORDERING",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "EXP, gold, loot, durability, quest, guild, event and story completion ordering is distributed.",
+      "evidence": {
+        "basis": "distributed V1 evidence requires an explicit decision; no behavior inferred"
+      }
+    },
+    {
+      "contract": "DUPLICATE_MESSAGES_EVENTS",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "Exactly-once domain events and exactly-once presentation messages require separate explicit contracts.",
+      "evidence": {
+        "basis": "distributed V1 evidence requires an explicit decision; no behavior inferred"
+      }
+    },
+    {
+      "contract": "POST_TERMINAL_ACTION_GUARD",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "The canonical guard against actions after terminal settlement is not yet proven.",
+      "evidence": {
+        "basis": "distributed V1 evidence requires an explicit decision; no behavior inferred"
+      }
+    },
+    {
+      "contract": "PVE_PVP_BOSS_SIMULATOR_PARITY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "Terminal semantics are context-specific and must not be unified without V1 evidence.",
+      "evidence": {
+        "basis": "distributed V1 evidence requires an explicit decision; no behavior inferred"
+      }
+    }
+  ],
+  "implementation_authorized": false,
+  "verification": {
+    "canonical_v2_ci": {
+      "schema_version": 1,
+      "status": "PASS",
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "compile",
+          "status": "PASS",
+          "file_count": 115,
+          "failures": []
+        },
+        {
+          "name": "imports",
+          "status": "PASS",
+          "module_count": 86,
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-c",
+              "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.mana_engine', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "unit",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "tests_v2",
+              "-p",
+              "test_*.py"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "................................................................................................................\n----------------------------------------------------------------------\nRan 112 tests in 13.752s\n\nOK"
+          }
+        },
+        {
+          "name": "architecture",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "tools/verify_v2_architecture.py",
+              "--project-root",
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+            ],
+            "returncode": 0,
+            "stdout": "V2 architecture enforcement: PASS\nPhysical files: 86\nImport edges: 301\nViolations: 0",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "duplicate_scan",
+          "status": "PASS",
+          "symbol_count": 266,
+          "duplicates": {}
+        },
+        {
+          "name": "content_validation",
+          "status": "PASS",
+          "file_count": 0,
+          "failures": []
+        }
+      ]
+    },
+    "removed_bytecode_before_ci": [],
+    "protected_before": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26",
+      "rom_v2/__init__.py": "0f217bf0b7c071f522a83887f3c8467b422881203ceae1b8604548af38eab67a",
+      "rom_v2/app/__init__.py": "99940b37dcadccb96d2775217be2a3967d710776028423c6d4e63dc18c42292e",
+      "rom_v2/application/__init__.py": "6e5c0a06060b0cd2f879b4b371239254357d884279cd32f08923b3e8cd2b3f50",
+      "rom_v2/application/account_ports.py": "1393ab1bfe43b9ea5f39fdd78f2947f05307d320d5b9b64f3b5975fd980768e9",
+      "rom_v2/application/account_service.py": "201d86d7260361b371aad32ab571dd91513df27b3d302a56a54fe2572e5b9673",
+      "rom_v2/application/character_ports.py": "d48b40bc43142a05c8284167d673f58edce92ebf117886f76fe3ad545867eb58",
+      "rom_v2/application/character_service.py": "d8f68f1770cdf14028572ffbeebc253d67a34b4ae64403e199eddc0f5132b767",
+      "rom_v2/application/durability_service.py": "e329f32931aeddae1a8235e1274f88441406b7ccf0b6b65f1f47f93ee887b1f8",
+      "rom_v2/application/enhancement_service.py": "9f85c908f833e38411a66987b855e72a13e58332f776b87318da8eab60bb1c7e",
+      "rom_v2/application/equipment_generation_ports.py": "39b21fec6d3fba2102aaca518a9b113e4e18dddb9ef7e79ff94ad27f2688a6af",
+      "rom_v2/application/equipment_generation_service.py": "61fa00d463fadb3b0d5ecaf39f41d61058537a64102919c6aee973dc2dda623d",
+      "rom_v2/application/equipment_ports.py": "d69599c10f4c81eca867e1e5037cd813f50971f28b71f294bf78196c53d98904",
+      "rom_v2/application/equipment_service.py": "1b0b9c416886f067f5beb2a987ae4fa2b72309a37d8668f6095f2769d9dd8a09",
+      "rom_v2/application/full_stat_snapshot_service.py": "011ea96e9b0a6ccc96872c3a16fd33c399d06993e6315a714026130896a56de7",
+      "rom_v2/application/integration_evidence.py": "98b868698d4ee553b897298889fe76c5ad86beba20c80bd86a0a5795007b7ad7",
+      "rom_v2/application/inventory_ports.py": "888e5d54e6e0f60efc438b3cc6ed3bfd178ccec1da86aa8e1f98f3aa64d85c82",
+      "rom_v2/application/inventory_service.py": "6bf6498fda0d290af266c51df92f892706279c937df9cc5d4467bd66030ef65e",
+      "rom_v2/application/ports/__init__.py": "fc5dde1826bcc3c3b06add0f4989e64311033133f401a8526cd670374aff600e",
+      "rom_v2/application/ports/clock.py": "a023e54dae514692a5b76a491d7aa86f502d338a980e34e3ea8712eff1c9b6ee",
+      "rom_v2/application/ports/random_source.py": "91ee0496f217dd6f3c540936c224430fd8d1dcfb086f461dd9f3e8baaee11a5c",
+      "rom_v2/application/ports/repositories.py": "04c04f838b7326ae54159a2e4beca195bbd921009d71c6651e1609739044d8af",
+      "rom_v2/application/ports/unit_of_work.py": "478483f14652372af2dc698e867bf89da849d9acf3133bb54bac3b7f3e6679d4",
+      "rom_v2/application/primary_stat_ports.py": "13b7f2be183553b79e4c3cf31f412383512ecf66446576568c3869ab2bbf2fce",
+      "rom_v2/application/primary_stat_service.py": "ed4f62ad826bb457f48a6536f92272fb49b56831bded38a596081ec694b5ca06",
+      "rom_v2/application/resource_ports.py": "e229e7f8b65fc6d80105805b496c1a754776c619e63df48a76152c9c08c6f7a9",
+      "rom_v2/application/resource_service.py": "5088369b3d69e68c3960f4f9d36a44d0f17b9d75916714c847307cc96e4d2823",
+      "rom_v2/application/services/rune_lifecycle.py": "3caa305dac297272aaa07f107ba6b01178a4044024e8a1281b3c8d4016fe90c7",
+      "rom_v2/bootstrap.py": "665d51e5c5846575f4898f45c31ac1cbc6b08c1e81c364db860b3c22ad27b9ef",
+      "rom_v2/config.py": "2743eda44aece7d805f02881067ed9309248765eda58e76d8b79936344e8a115",
+      "rom_v2/container.py": "d3fc03ce6d154f95d6703081a1f75a01894a690408a03c204a17194de6e7d056",
+      "rom_v2/content/__init__.py": "c35a967d9914e47a6ba96af61b07f5de808762b534620e4c599ccd7a46badd72",
+      "rom_v2/domain/__init__.py": "ce0bbff3d1c97e2e2f645b8123e5bf355de6484cfc3bc7ff1746830b0862c755",
+      "rom_v2/domain/account.py": "166288c697a3b7036e7d4441aa25993c912d5dbe079db574af6293f3de179419",
+      "rom_v2/domain/battle.py": "931282d411f257cf1aab992b04ac63c019e58e50f2745d2023dffe6c425869ab",
+      "rom_v2/domain/character.py": "684efcb528747a7a1f4312d1eadf54483db6dfc81d01d869ffe7200c6def3c54",
+      "rom_v2/domain/class_catalog.py": "a3185a616704b5061bc8ec49cd54d2dd4830de6429c6858952df523bc5f6ef83",
+      "rom_v2/domain/combat_resources.py": "edb6a15cebab8a0dd4506ef88c754b92c54540fbcb31e406f741703beb9ca2b1",
+      "rom_v2/domain/damage_engine.py": "19a25dee24a088f683d13778ea41e3d7c3c303fdb62811808490455d224b9832",
+      "rom_v2/domain/derived_stats.py": "a6fdd9905c227549addf310c3b873b96bbc9e6d09a20b979f851a04fc8df6e1c",
+      "rom_v2/domain/durability.py": "5010a635664242767bdaedc8a84a443892062f3c5a6a1baf100f3d6a6ea112a9",
+      "rom_v2/domain/effect_engine.py": "4830496c19f2092defdb11c048ab5650886ecdef7a34790ec74f4d02c94db1f2",
+      "rom_v2/domain/enhancement.py": "d738bb2c5a30480b9cec875eda720d79dd33340ae7ea4fbd32a608fbb0c83bb8",
+      "rom_v2/domain/equipment.py": "b315cdd10a82b4a6b0e779e25df66b584a54fb6d1ad79aa5f20ea82dc96e1cff",
+      "rom_v2/domain/equipment_generation.py": "50d9291f57dfd206c232a33a778d403f76a2ae0ecc52c0494eb1d38ec7f532fb",
+      "rom_v2/domain/full_stat_snapshot.py": "7efd1d0de4693f549910797c0a617271a016d34b0d75e44d7fc2677b4ca81b14",
+      "rom_v2/domain/item.py": "fa797efef9e445235d256d6f31d5db16f79e765236e21f3d6cc7287b2b9c37f2",
+      "rom_v2/domain/mana_engine.py": "6838b1b5bf6be5383c6e0f87ad63fbb4fd325f58a62d5df3737bb1c46981993e",
+      "rom_v2/domain/primary_stats.py": "904560126d76a237afff801c8fc274d0ad9b5a1d7849b949b2db1328904059c6",
+      "rom_v2/domain/resource_lifecycle.py": "f4cecce143bc637cb5b4c56d2ef95b34f492585d37aa815778e3bf2ca0b5f978",
+      "rom_v2/domain/runes.py": "e24f4459584dc1f23e503e7740ec2e6782d740657c0d6c03344a47a1013f9fc0",
+      "rom_v2/domain/skill_execution.py": "00b6297f5c5e5011851563c0a1b4fa872d480feec4945e1b16f5480dd980fdf5",
+      "rom_v2/infrastructure/__init__.py": "1955a34cb3585a06baf952468ce78ac7bfc66e1a9674e865467a87cb983482df",
+      "rom_v2/infrastructure/persistence/__init__.py": "08dc4a3188d8f139bffb25a8abb35cd2b69a10e9e7bb7150ea8c80a5bf7832a7",
+      "rom_v2/infrastructure/persistence/account_repository.py": "6f7decea0dc280a362d6f402a2ce32a80952668c872e407b57a552e3c1a12ba1",
+      "rom_v2/infrastructure/persistence/account_unit_of_work.py": "30294f7e88febe1a70004b142bfbd1918a4c83052c240d7086890538194d81fc",
+      "rom_v2/infrastructure/persistence/character_repository.py": "464e1bbe09cbb213f07c1991a0601a7d2c6d32016b1584e9950a9e049b9e842a",
+      "rom_v2/infrastructure/persistence/character_unit_of_work.py": "1c587ea633b142b8348027963217a2809407e47a3b8ca19c7ff353f664a0d2a5",
+      "rom_v2/infrastructure/persistence/connection_factory.py": "15828a88fffc450f5c93112eddf74e36349f87fce198f95b0e4358a217a32dd2",
+      "rom_v2/infrastructure/persistence/equipment_repository.py": "a2502e256a385dd10381d2126ad00672dee7a2aeff9a08f02bc76e6b175a3245",
+      "rom_v2/infrastructure/persistence/equipment_unit_of_work.py": "cdeb81d4edc6c2635167c090c0e2b3a3f6cd2b71b5ef20f9640cf444656c9376",
+      "rom_v2/infrastructure/persistence/inventory_repository.py": "e404fa78d10aa15f7deab48d9101ecdb8a970bcd0d8d96fbaa28ee5975dd0dc0",
+      "rom_v2/infrastructure/persistence/inventory_unit_of_work.py": "8f7213c0018d4ad5a936c5c260e0f79d72be7e48ec7752efd569dc4b6dd8b4c9",
+      "rom_v2/infrastructure/persistence/migrations/__init__.py": "56e2a241f6046a218d493cd2fbfe382db128e79c4621c0358bd641656f4c4049",
+      "rom_v2/infrastructure/persistence/migrations/v001_v2_baseline.py": "d145d8a5bffb90f1bcd36a73a3b131e041c15c8a0d7f517664880a997915c6b7",
+      "rom_v2/infrastructure/persistence/migrations/v002_primary_stats_parity.py": "1f27ab86411ff93cf833a95d9e4b18c34bdb382f13178d29a2ed889180f7a8c9",
+      "rom_v2/infrastructure/persistence/migrations/v003_item_identity_parity.py": "644335d83dba5b91d23cf18b0ddba5f32a45d17b6dcac2f74b3615989d73b209",
+      "rom_v2/infrastructure/persistence/migrations/v004_equipment_slots_parity.py": "4e0bc38b4bd570c54a3e9adbd2f55ab1a34a968269b357f7ea317a8a2b2e1b6d",
+      "rom_v2/infrastructure/persistence/migrator.py": "68a5d676ae7fa535351712842fe6fa36f02f1f3e8e588dfd98644e57eac159b9",
+      "rom_v2/infrastructure/persistence/primary_stat_repository.py": "39692fff52f9153a445844cbd6d96c4529b6583118b640cfde64f878e2a19511",
+      "rom_v2/infrastructure/persistence/primary_stat_unit_of_work.py": "563d40c8e460c9565a11d4767cacb6b220b7803adad915954cb4a98adb9f76ca",
+      "rom_v2/infrastructure/persistence/provisional_contracts.py": "0a804824c1c56bd73ec437c466c9834f7dbad99a09834bc3947845341c183063",
+      "rom_v2/infrastructure/persistence/repository_base.py": "12d894e864eb52bf44090bc64bd8a5eae53b8002f6d2eb8598f4921395834a42",
+      "rom_v2/infrastructure/persistence/resource_repository.py": "3d0d505aed3c824170140b6c9cf88a49700f85a5ee0a77d01476e3ddc5dd3ce8",
+      "rom_v2/infrastructure/persistence/resource_unit_of_work.py": "fb2d9a2706ea84042af8834f5460834e4776e175763182034136f7dd51d686ce",
+      "rom_v2/infrastructure/persistence/schema_contract.py": "f3699faa19e2a4777e047da987807fb26b929dcb51663c1ee4c317a74da5972c",
+      "rom_v2/infrastructure/persistence/unit_of_work.py": "97b715f80a786e550b9bd1c234a09bfee80228e321dd7dab57fb9632959061cb",
+      "rom_v2/infrastructure/telegram/__init__.py": "086a0978ea3a017b1220f41bb31fb2b80e30815842d88f774d72d7b02704da92",
+      "rom_v2/infrastructure/telegram/adapter.py": "cf7cabc0edc22c9f437fb1145af4ae94b50304efe4ebe412b27753762f5a4174",
+      "rom_v2/infrastructure/telegram/callback_codec.py": "9a336dfca7888945825bdb932790c83f9b3a0768212b5682d469428ea443d186",
+      "rom_v2/infrastructure/telegram/callback_registry.py": "ef475da9e187ac743e8664accad445cd8e649c1aa3d21e80c553e1203e0dc6b6",
+      "rom_v2/lifecycle.py": "2ca260696d716a52d020c99bb78536a1df4e5c24a465014fd3e88ec0eedd6eec",
+      "rom_v2/main.py": "f7bdb0b6e93ae3baa1aeff24ba1aed9d71201f72db20629d8e7e5818c82842e4",
+      "rom_v2/presentation/item_dto.py": "8a221e3444fc2c2454206a152f9199211c97c13e60551d7c626750d1a8734115",
+      "rom_v2/runtime_paths.py": "7c5add0214f37402bc9eb33d117e8f47ebd52bba70c805d2beb23d85ec2a7fd2",
+      "rom_v2/settings.py": "2e84aaae21c061cb4f5923d8c2d0148dd904dd2650b5ec612989d2a853d95deb",
+      "rom_v2/structured_logging.py": "3603d9b39f312ec92e35b22f8275c811be22e5d74b833218e5742db63ef6bb9a"
+    },
+    "protected_after": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26",
+      "rom_v2/__init__.py": "0f217bf0b7c071f522a83887f3c8467b422881203ceae1b8604548af38eab67a",
+      "rom_v2/app/__init__.py": "99940b37dcadccb96d2775217be2a3967d710776028423c6d4e63dc18c42292e",
+      "rom_v2/application/__init__.py": "6e5c0a06060b0cd2f879b4b371239254357d884279cd32f08923b3e8cd2b3f50",
+      "rom_v2/application/account_ports.py": "1393ab1bfe43b9ea5f39fdd78f2947f05307d320d5b9b64f3b5975fd980768e9",
+      "rom_v2/application/account_service.py": "201d86d7260361b371aad32ab571dd91513df27b3d302a56a54fe2572e5b9673",
+      "rom_v2/application/character_ports.py": "d48b40bc43142a05c8284167d673f58edce92ebf117886f76fe3ad545867eb58",
+      "rom_v2/application/character_service.py": "d8f68f1770cdf14028572ffbeebc253d67a34b4ae64403e199eddc0f5132b767",
+      "rom_v2/application/durability_service.py": "e329f32931aeddae1a8235e1274f88441406b7ccf0b6b65f1f47f93ee887b1f8",
+      "rom_v2/application/enhancement_service.py": "9f85c908f833e38411a66987b855e72a13e58332f776b87318da8eab60bb1c7e",
+      "rom_v2/application/equipment_generation_ports.py": "39b21fec6d3fba2102aaca518a9b113e4e18dddb9ef7e79ff94ad27f2688a6af",
+      "rom_v2/application/equipment_generation_service.py": "61fa00d463fadb3b0d5ecaf39f41d61058537a64102919c6aee973dc2dda623d",
+      "rom_v2/application/equipment_ports.py": "d69599c10f4c81eca867e1e5037cd813f50971f28b71f294bf78196c53d98904",
+      "rom_v2/application/equipment_service.py": "1b0b9c416886f067f5beb2a987ae4fa2b72309a37d8668f6095f2769d9dd8a09",
+      "rom_v2/application/full_stat_snapshot_service.py": "011ea96e9b0a6ccc96872c3a16fd33c399d06993e6315a714026130896a56de7",
+      "rom_v2/application/integration_evidence.py": "98b868698d4ee553b897298889fe76c5ad86beba20c80bd86a0a5795007b7ad7",
+      "rom_v2/application/inventory_ports.py": "888e5d54e6e0f60efc438b3cc6ed3bfd178ccec1da86aa8e1f98f3aa64d85c82",
+      "rom_v2/application/inventory_service.py": "6bf6498fda0d290af266c51df92f892706279c937df9cc5d4467bd66030ef65e",
+      "rom_v2/application/ports/__init__.py": "fc5dde1826bcc3c3b06add0f4989e64311033133f401a8526cd670374aff600e",
+      "rom_v2/application/ports/clock.py": "a023e54dae514692a5b76a491d7aa86f502d338a980e34e3ea8712eff1c9b6ee",
+      "rom_v2/application/ports/random_source.py": "91ee0496f217dd6f3c540936c224430fd8d1dcfb086f461dd9f3e8baaee11a5c",
+      "rom_v2/application/ports/repositories.py": "04c04f838b7326ae54159a2e4beca195bbd921009d71c6651e1609739044d8af",
+      "rom_v2/application/ports/unit_of_work.py": "478483f14652372af2dc698e867bf89da849d9acf3133bb54bac3b7f3e6679d4",
+      "rom_v2/application/primary_stat_ports.py": "13b7f2be183553b79e4c3cf31f412383512ecf66446576568c3869ab2bbf2fce",
+      "rom_v2/application/primary_stat_service.py": "ed4f62ad826bb457f48a6536f92272fb49b56831bded38a596081ec694b5ca06",
+      "rom_v2/application/resource_ports.py": "e229e7f8b65fc6d80105805b496c1a754776c619e63df48a76152c9c08c6f7a9",
+      "rom_v2/application/resource_service.py": "5088369b3d69e68c3960f4f9d36a44d0f17b9d75916714c847307cc96e4d2823",
+      "rom_v2/application/services/rune_lifecycle.py": "3caa305dac297272aaa07f107ba6b01178a4044024e8a1281b3c8d4016fe90c7",
+      "rom_v2/bootstrap.py": "665d51e5c5846575f4898f45c31ac1cbc6b08c1e81c364db860b3c22ad27b9ef",
+      "rom_v2/config.py": "2743eda44aece7d805f02881067ed9309248765eda58e76d8b79936344e8a115",
+      "rom_v2/container.py": "d3fc03ce6d154f95d6703081a1f75a01894a690408a03c204a17194de6e7d056",
+      "rom_v2/content/__init__.py": "c35a967d9914e47a6ba96af61b07f5de808762b534620e4c599ccd7a46badd72",
+      "rom_v2/domain/__init__.py": "ce0bbff3d1c97e2e2f645b8123e5bf355de6484cfc3bc7ff1746830b0862c755",
+      "rom_v2/domain/account.py": "166288c697a3b7036e7d4441aa25993c912d5dbe079db574af6293f3de179419",
+      "rom_v2/domain/battle.py": "931282d411f257cf1aab992b04ac63c019e58e50f2745d2023dffe6c425869ab",
+      "rom_v2/domain/character.py": "684efcb528747a7a1f4312d1eadf54483db6dfc81d01d869ffe7200c6def3c54",
+      "rom_v2/domain/class_catalog.py": "a3185a616704b5061bc8ec49cd54d2dd4830de6429c6858952df523bc5f6ef83",
+      "rom_v2/domain/combat_resources.py": "edb6a15cebab8a0dd4506ef88c754b92c54540fbcb31e406f741703beb9ca2b1",
+      "rom_v2/domain/damage_engine.py": "19a25dee24a088f683d13778ea41e3d7c3c303fdb62811808490455d224b9832",
+      "rom_v2/domain/derived_stats.py": "a6fdd9905c227549addf310c3b873b96bbc9e6d09a20b979f851a04fc8df6e1c",
+      "rom_v2/domain/durability.py": "5010a635664242767bdaedc8a84a443892062f3c5a6a1baf100f3d6a6ea112a9",
+      "rom_v2/domain/effect_engine.py": "4830496c19f2092defdb11c048ab5650886ecdef7a34790ec74f4d02c94db1f2",
+      "rom_v2/domain/enhancement.py": "d738bb2c5a30480b9cec875eda720d79dd33340ae7ea4fbd32a608fbb0c83bb8",
+      "rom_v2/domain/equipment.py": "b315cdd10a82b4a6b0e779e25df66b584a54fb6d1ad79aa5f20ea82dc96e1cff",
+      "rom_v2/domain/equipment_generation.py": "50d9291f57dfd206c232a33a778d403f76a2ae0ecc52c0494eb1d38ec7f532fb",
+      "rom_v2/domain/full_stat_snapshot.py": "7efd1d0de4693f549910797c0a617271a016d34b0d75e44d7fc2677b4ca81b14",
+      "rom_v2/domain/item.py": "fa797efef9e445235d256d6f31d5db16f79e765236e21f3d6cc7287b2b9c37f2",
+      "rom_v2/domain/mana_engine.py": "6838b1b5bf6be5383c6e0f87ad63fbb4fd325f58a62d5df3737bb1c46981993e",
+      "rom_v2/domain/primary_stats.py": "904560126d76a237afff801c8fc274d0ad9b5a1d7849b949b2db1328904059c6",
+      "rom_v2/domain/resource_lifecycle.py": "f4cecce143bc637cb5b4c56d2ef95b34f492585d37aa815778e3bf2ca0b5f978",
+      "rom_v2/domain/runes.py": "e24f4459584dc1f23e503e7740ec2e6782d740657c0d6c03344a47a1013f9fc0",
+      "rom_v2/domain/skill_execution.py": "00b6297f5c5e5011851563c0a1b4fa872d480feec4945e1b16f5480dd980fdf5",
+      "rom_v2/infrastructure/__init__.py": "1955a34cb3585a06baf952468ce78ac7bfc66e1a9674e865467a87cb983482df",
+      "rom_v2/infrastructure/persistence/__init__.py": "08dc4a3188d8f139bffb25a8abb35cd2b69a10e9e7bb7150ea8c80a5bf7832a7",
+      "rom_v2/infrastructure/persistence/account_repository.py": "6f7decea0dc280a362d6f402a2ce32a80952668c872e407b57a552e3c1a12ba1",
+      "rom_v2/infrastructure/persistence/account_unit_of_work.py": "30294f7e88febe1a70004b142bfbd1918a4c83052c240d7086890538194d81fc",
+      "rom_v2/infrastructure/persistence/character_repository.py": "464e1bbe09cbb213f07c1991a0601a7d2c6d32016b1584e9950a9e049b9e842a",
+      "rom_v2/infrastructure/persistence/character_unit_of_work.py": "1c587ea633b142b8348027963217a2809407e47a3b8ca19c7ff353f664a0d2a5",
+      "rom_v2/infrastructure/persistence/connection_factory.py": "15828a88fffc450f5c93112eddf74e36349f87fce198f95b0e4358a217a32dd2",
+      "rom_v2/infrastructure/persistence/equipment_repository.py": "a2502e256a385dd10381d2126ad00672dee7a2aeff9a08f02bc76e6b175a3245",
+      "rom_v2/infrastructure/persistence/equipment_unit_of_work.py": "cdeb81d4edc6c2635167c090c0e2b3a3f6cd2b71b5ef20f9640cf444656c9376",
+      "rom_v2/infrastructure/persistence/inventory_repository.py": "e404fa78d10aa15f7deab48d9101ecdb8a970bcd0d8d96fbaa28ee5975dd0dc0",
+      "rom_v2/infrastructure/persistence/inventory_unit_of_work.py": "8f7213c0018d4ad5a936c5c260e0f79d72be7e48ec7752efd569dc4b6dd8b4c9",
+      "rom_v2/infrastructure/persistence/migrations/__init__.py": "56e2a241f6046a218d493cd2fbfe382db128e79c4621c0358bd641656f4c4049",
+      "rom_v2/infrastructure/persistence/migrations/v001_v2_baseline.py": "d145d8a5bffb90f1bcd36a73a3b131e041c15c8a0d7f517664880a997915c6b7",
+      "rom_v2/infrastructure/persistence/migrations/v002_primary_stats_parity.py": "1f27ab86411ff93cf833a95d9e4b18c34bdb382f13178d29a2ed889180f7a8c9",
+      "rom_v2/infrastructure/persistence/migrations/v003_item_identity_parity.py": "644335d83dba5b91d23cf18b0ddba5f32a45d17b6dcac2f74b3615989d73b209",
+      "rom_v2/infrastructure/persistence/migrations/v004_equipment_slots_parity.py": "4e0bc38b4bd570c54a3e9adbd2f55ab1a34a968269b357f7ea317a8a2b2e1b6d",
+      "rom_v2/infrastructure/persistence/migrator.py": "68a5d676ae7fa535351712842fe6fa36f02f1f3e8e588dfd98644e57eac159b9",
+      "rom_v2/infrastructure/persistence/primary_stat_repository.py": "39692fff52f9153a445844cbd6d96c4529b6583118b640cfde64f878e2a19511",
+      "rom_v2/infrastructure/persistence/primary_stat_unit_of_work.py": "563d40c8e460c9565a11d4767cacb6b220b7803adad915954cb4a98adb9f76ca",
+      "rom_v2/infrastructure/persistence/provisional_contracts.py": "0a804824c1c56bd73ec437c466c9834f7dbad99a09834bc3947845341c183063",
+      "rom_v2/infrastructure/persistence/repository_base.py": "12d894e864eb52bf44090bc64bd8a5eae53b8002f6d2eb8598f4921395834a42",
+      "rom_v2/infrastructure/persistence/resource_repository.py": "3d0d505aed3c824170140b6c9cf88a49700f85a5ee0a77d01476e3ddc5dd3ce8",
+      "rom_v2/infrastructure/persistence/resource_unit_of_work.py": "fb2d9a2706ea84042af8834f5460834e4776e175763182034136f7dd51d686ce",
+      "rom_v2/infrastructure/persistence/schema_contract.py": "f3699faa19e2a4777e047da987807fb26b929dcb51663c1ee4c317a74da5972c",
+      "rom_v2/infrastructure/persistence/unit_of_work.py": "97b715f80a786e550b9bd1c234a09bfee80228e321dd7dab57fb9632959061cb",
+      "rom_v2/infrastructure/telegram/__init__.py": "086a0978ea3a017b1220f41bb31fb2b80e30815842d88f774d72d7b02704da92",
+      "rom_v2/infrastructure/telegram/adapter.py": "cf7cabc0edc22c9f437fb1145af4ae94b50304efe4ebe412b27753762f5a4174",
+      "rom_v2/infrastructure/telegram/callback_codec.py": "9a336dfca7888945825bdb932790c83f9b3a0768212b5682d469428ea443d186",
+      "rom_v2/infrastructure/telegram/callback_registry.py": "ef475da9e187ac743e8664accad445cd8e649c1aa3d21e80c553e1203e0dc6b6",
+      "rom_v2/lifecycle.py": "2ca260696d716a52d020c99bb78536a1df4e5c24a465014fd3e88ec0eedd6eec",
+      "rom_v2/main.py": "f7bdb0b6e93ae3baa1aeff24ba1aed9d71201f72db20629d8e7e5818c82842e4",
+      "rom_v2/presentation/item_dto.py": "8a221e3444fc2c2454206a152f9199211c97c13e60551d7c626750d1a8734115",
+      "rom_v2/runtime_paths.py": "7c5add0214f37402bc9eb33d117e8f47ebd52bba70c805d2beb23d85ec2a7fd2",
+      "rom_v2/settings.py": "2e84aaae21c061cb4f5923d8c2d0148dd904dd2650b5ec612989d2a853d95deb",
+      "rom_v2/structured_logging.py": "3603d9b39f312ec92e35b22f8275c811be22e5d74b833218e5742db63ef6bb9a"
+    }
+  },
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_8_7b_resolve_terminal_paths.py"
+}
