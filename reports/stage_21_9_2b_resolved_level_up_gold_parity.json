@@ -1,0 +1,409 @@
+{
+  "schema_version": 1,
+  "stage": "21.9.2b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "generated_at_utc": "2026-10-22T20:58:02.992903+00:00",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "71fdfc00837c0dbdb94caf21d53fd3aa523255b6"
+  },
+  "source_contract": "reports/stage_21_9_2a_refined_level_up_gold_contract.json",
+  "source_contract_sha256": "7789b94563f85c75b5ad953698498c2fa6679e665c7a2da53c1f1bffe1f6f2de",
+  "resolved_contracts": [
+    {
+      "contract": "EXACT_MATRIX_VALUES",
+      "resolution": "LITERAL_MATRIX_EXTRACTED",
+      "decision": "Use only the exact reached-level to two-decimal gold values in the static matrix.",
+      "evidence": {
+        "path": "systems/level_up_reward_system.py",
+        "line": 33,
+        "file_sha256": "dca636a71be6f0b0a967647d9300269c2d0fce92f963814a87e1bebbc35d25fc",
+        "source_sha256": "9fcff9d31933698149eabf2afc7379916c6f6b23672519dbdaccca19a269a3bb",
+        "values": {
+          "2": "0.45",
+          "3": "1.43",
+          "4": "4.30",
+          "5": "11.98",
+          "6": "34.40",
+          "7": "69.58",
+          "8": "130.73",
+          "9": "255.74",
+          "10": "479.19",
+          "11": "881.25"
+        },
+        "count": 10,
+        "minimum_level": 2,
+        "maximum_level": 11,
+        "gaps": [],
+        "contiguous": true
+      }
+    },
+    {
+      "contract": "CONFIGURED_LEVEL_RANGE",
+      "resolution": "EXPLICIT_RANGE_AND_GAPS_RECORDED",
+      "decision": "Configured levels are 2 through 11; gaps are recorded explicitly and never filled by inference.",
+      "evidence": {
+        "path": "systems/level_up_reward_system.py",
+        "line": 33,
+        "file_sha256": "dca636a71be6f0b0a967647d9300269c2d0fce92f963814a87e1bebbc35d25fc",
+        "source_sha256": "9fcff9d31933698149eabf2afc7379916c6f6b23672519dbdaccca19a269a3bb",
+        "values": {
+          "2": "0.45",
+          "3": "1.43",
+          "4": "4.30",
+          "5": "11.98",
+          "6": "34.40",
+          "7": "69.58",
+          "8": "130.73",
+          "9": "255.74",
+          "10": "479.19",
+          "11": "881.25"
+        },
+        "count": 10,
+        "minimum_level": 2,
+        "maximum_level": 11,
+        "gaps": [],
+        "contiguous": true
+      }
+    },
+    {
+      "contract": "NO_FALLBACK_AFTER_LEVEL_11",
+      "resolution": "FAIL_CLOSED_VALUE_ERROR",
+      "decision": "Any reached level absent from the matrix raises ValueError; no formula, last-value, zero, extrapolation or post-11 legacy fallback is authorized.",
+      "evidence": {
+        "path": "systems/level_up_reward_system.py",
+        "symbol": "calculate_level_reward",
+        "line_start": 51,
+        "line_end": 83,
+        "file_sha256": "dca636a71be6f0b0a967647d9300269c2d0fce92f963814a87e1bebbc35d25fc",
+        "source_sha256": "7b1d1bbe6849b63c3e9baa28fabab8431ed99eccc99b26a7cd73cece7db5cc76",
+        "source": "def calculate_level_reward(reached_level):\n\n    level = int(reached_level)\n\n    if level not in LEVEL_UP_GOLD_BY_REACHED_LEVEL:\n        raise ValueError(\n            f\"Level-up gold is not configured for reached level {level}. \"\n            \"Add an audited combat-income matrix before enabling this level.\"\n        )\n\n    milestone = level % 5 == 0\n\n    return {\n\n        \"reached_level\": level,\n\n        \"gold\": LEVEL_UP_GOLD_BY_REACHED_LEVEL[level],\n\n        \"small_health_potions\": 3,\n\n        \"small_mana_potions\": 1,\n\n        \"refine_stones\": 4 if milestone else 2,\n\n        \"medium_health_potions\": 2 if milestone else 0,\n\n        \"medium_mana_potions\": 1 if milestone else 0,\n\n        \"crystals\": 0,\n\n        \"milestone\": milestone,\n\n    }",
+        "calls": [
+          "ValueError",
+          "int"
+        ],
+        "return_keys": [
+          "crystals",
+          "gold",
+          "medium_health_potions",
+          "medium_mana_potions",
+          "milestone",
+          "reached_level",
+          "refine_stones",
+          "small_health_potions",
+          "small_mana_potions"
+        ]
+      }
+    },
+    {
+      "contract": "MULTI_LEVEL_GOLD_ORDER",
+      "resolution": "ASCENDING_REACHED_LEVEL_AGGREGATION",
+      "decision": "Evaluate old_level+1 through new_level in ascending order, calculate each row, then sum row gold; new_level<=old_level yields no rows.",
+      "evidence": {
+        "path": "systems/level_up_reward_system.py",
+        "symbol": "calculate_level_rewards",
+        "line_start": 89,
+        "line_end": 125,
+        "file_sha256": "dca636a71be6f0b0a967647d9300269c2d0fce92f963814a87e1bebbc35d25fc",
+        "source_sha256": "8e3151ed3bbbf4c4f542d4948c6c580cadffcd447b2768b3521dd4cd659c2567",
+        "source": "def calculate_level_rewards(old_level, new_level):\n\n    old_level = int(old_level)\n\n    new_level = int(new_level)\n\n    levels = list(range(old_level + 1, new_level + 1)) if new_level > old_level else []\n\n    rows = [calculate_level_reward(level) for level in levels]\n\n    return {\n\n        \"old_level\": old_level,\n\n        \"new_level\": new_level,\n\n        \"reached_levels\": levels,\n\n        \"milestone_levels\": [row[\"reached_level\"] for row in rows if row[\"milestone\"]],\n\n        \"gold\": sum(row[\"gold\"] for row in rows),\n\n        \"small_health_potions\": sum(row[\"small_health_potions\"] for row in rows),\n\n        \"small_mana_potions\": sum(row[\"small_mana_potions\"] for row in rows),\n\n        \"refine_stones\": sum(row[\"refine_stones\"] for row in rows),\n\n        \"medium_health_potions\": sum(row[\"medium_health_potions\"] for row in rows),\n\n        \"medium_mana_potions\": sum(row[\"medium_mana_potions\"] for row in rows),\n\n        \"crystals\": 0,\n\n        \"rows\": rows,\n\n    }",
+        "calls": [
+          "calculate_level_reward",
+          "int",
+          "list",
+          "range",
+          "sum"
+        ],
+        "return_keys": [
+          "crystals",
+          "gold",
+          "medium_health_potions",
+          "medium_mana_potions",
+          "milestone_levels",
+          "new_level",
+          "old_level",
+          "reached_levels",
+          "refine_stones",
+          "rows",
+          "small_health_potions",
+          "small_mana_potions"
+        ]
+      }
+    },
+    {
+      "contract": "DECIMAL_AND_RESULT_SHAPE",
+      "resolution": "SOURCE_BOUND_NUMERIC_AND_KEYS",
+      "decision": "Preserve exact single-level and aggregate result keys, numeric conversion, settlement and presentation boundaries from V1 source.",
+      "evidence": {
+        "single": {
+          "path": "systems/level_up_reward_system.py",
+          "symbol": "calculate_level_reward",
+          "line_start": 51,
+          "line_end": 83,
+          "file_sha256": "dca636a71be6f0b0a967647d9300269c2d0fce92f963814a87e1bebbc35d25fc",
+          "source_sha256": "7b1d1bbe6849b63c3e9baa28fabab8431ed99eccc99b26a7cd73cece7db5cc76",
+          "source": "def calculate_level_reward(reached_level):\n\n    level = int(reached_level)\n\n    if level not in LEVEL_UP_GOLD_BY_REACHED_LEVEL:\n        raise ValueError(\n            f\"Level-up gold is not configured for reached level {level}. \"\n            \"Add an audited combat-income matrix before enabling this level.\"\n        )\n\n    milestone = level % 5 == 0\n\n    return {\n\n        \"reached_level\": level,\n\n        \"gold\": LEVEL_UP_GOLD_BY_REACHED_LEVEL[level],\n\n        \"small_health_potions\": 3,\n\n        \"small_mana_potions\": 1,\n\n        \"refine_stones\": 4 if milestone else 2,\n\n        \"medium_health_potions\": 2 if milestone else 0,\n\n        \"medium_mana_potions\": 1 if milestone else 0,\n\n        \"crystals\": 0,\n\n        \"milestone\": milestone,\n\n    }",
+          "calls": [
+            "ValueError",
+            "int"
+          ],
+          "return_keys": [
+            "crystals",
+            "gold",
+            "medium_health_potions",
+            "medium_mana_potions",
+            "milestone",
+            "reached_level",
+            "refine_stones",
+            "small_health_potions",
+            "small_mana_potions"
+          ]
+        },
+        "multi": {
+          "path": "systems/level_up_reward_system.py",
+          "symbol": "calculate_level_rewards",
+          "line_start": 89,
+          "line_end": 125,
+          "file_sha256": "dca636a71be6f0b0a967647d9300269c2d0fce92f963814a87e1bebbc35d25fc",
+          "source_sha256": "8e3151ed3bbbf4c4f542d4948c6c580cadffcd447b2768b3521dd4cd659c2567",
+          "source": "def calculate_level_rewards(old_level, new_level):\n\n    old_level = int(old_level)\n\n    new_level = int(new_level)\n\n    levels = list(range(old_level + 1, new_level + 1)) if new_level > old_level else []\n\n    rows = [calculate_level_reward(level) for level in levels]\n\n    return {\n\n        \"old_level\": old_level,\n\n        \"new_level\": new_level,\n\n        \"reached_levels\": levels,\n\n        \"milestone_levels\": [row[\"reached_level\"] for row in rows if row[\"milestone\"]],\n\n        \"gold\": sum(row[\"gold\"] for row in rows),\n\n        \"small_health_potions\": sum(row[\"small_health_potions\"] for row in rows),\n\n        \"small_mana_potions\": sum(row[\"small_mana_potions\"] for row in rows),\n\n        \"refine_stones\": sum(row[\"refine_stones\"] for row in rows),\n\n        \"medium_health_potions\": sum(row[\"medium_health_potions\"] for row in rows),\n\n        \"medium_mana_potions\": sum(row[\"medium_mana_potions\"] for row in rows),\n\n        \"crystals\": 0,\n\n        \"rows\": rows,\n\n    }",
+          "calls": [
+            "calculate_level_reward",
+            "int",
+            "list",
+            "range",
+            "sum"
+          ],
+          "return_keys": [
+            "crystals",
+            "gold",
+            "medium_health_potions",
+            "medium_mana_potions",
+            "milestone_levels",
+            "new_level",
+            "old_level",
+            "reached_levels",
+            "refine_stones",
+            "rows",
+            "small_health_potions",
+            "small_mana_potions"
+          ]
+        },
+        "settlement": {
+          "path": "systems/level_up_reward_system.py",
+          "symbol": "apply_level_up_rewards_in_transaction",
+          "line_start": 417,
+          "line_end": 425,
+          "file_sha256": "dca636a71be6f0b0a967647d9300269c2d0fce92f963814a87e1bebbc35d25fc",
+          "source_sha256": "fbbbf5e10637c0916e0d279f77cb8b78393c0e4c9b634d2b4dd4eec7771ee392",
+          "source": "def apply_level_up_rewards_in_transaction(db, user_id, old_level, new_level):\n\n    plan = calculate_level_rewards(old_level, new_level)\n\n    gold, inserted_levels = _insert_new_reward_rows(db, user_id, plan)\n\n    item_result = try_claim_pending_items(db, user_id)\n\n    return {**plan, \"gold_awarded_now\": gold, \"new_ledger_levels\": inserted_levels, \"item_result\": item_result}",
+          "calls": [
+            "_insert_new_reward_rows",
+            "calculate_level_rewards",
+            "try_claim_pending_items"
+          ],
+          "return_keys": [
+            "gold_awarded_now",
+            "item_result",
+            "new_ledger_levels"
+          ]
+        },
+        "presentation": {
+          "path": "systems/level_up_reward_system.py",
+          "symbol": "build_level_up_reward_message",
+          "line_start": 431,
+          "line_end": 481,
+          "file_sha256": "dca636a71be6f0b0a967647d9300269c2d0fce92f963814a87e1bebbc35d25fc",
+          "source_sha256": "bd1b145660b5025bbe014a4cacff3d8b785c0f3766a39fda243ab2e0788b1a19",
+          "source": "def build_level_up_reward_message(result):\n\n    levels = result.get(\"new_ledger_levels\") or []\n\n    if not levels:\n\n        return \"\"\n\n    title = f\"🎉 Новий рівень: {levels[0]}\" if len(levels) == 1 else f\"🎉 Отримано рівні: {levels[0]}–{levels[-1]}\"\n\n    rows = [row for row in result.get(\"rows\", []) if row.get(\"reached_level\") in levels]\n\n    total = lambda key: sum(int(row.get(key, 0)) for row in rows)\n\n    lines = [\n\n        title, \"\", \"🎁 Нагорода:\",\n\n        f\"• Золото: {float(result.get('gold_awarded_now', 0) or 0):.2f}\",\n\n        f\"• Мале зілля здоров’я ×{total('small_health_potions')}\",\n\n        f\"• Мале зілля мани ×{total('small_mana_potions')}\",\n\n        f\"• Камінь посилення ×{total('refine_stones')}\",\n\n    ]\n\n    if total(\"medium_health_potions\"):\n\n        lines.append(f\"• Середнє зілля здоров’я ×{total('medium_health_potions')}\")\n\n    if total(\"medium_mana_potions\"):\n\n        lines.append(f\"• Середнє зілля мани ×{total('medium_mana_potions')}\")\n\n    if result.get(\"item_result\", {}).get(\"pending\"):\n\n        lines.extend([\"\", \"🎒 Предметна нагорода очікує вільного місця в сумці.\"])\n\n    attribute_points_awarded = int(result.get(\"attribute_points_awarded\", 0) or 0)\n    if attribute_points_awarded > 0:\n        free_attribute_points = int(result.get(\"free_attribute_points\", 0) or 0)\n        lines.extend([\n            \"\",\n            f\"⭐ Отримано очок характеристик: {attribute_points_awarded}\",\n            f\"📌 Вільних очок загалом: {free_attribute_points}\",\n            \"\",\n            \"Розподілити очки можна у профілі: «Характеристики».\",\n        ])\n    return \"\\n\".join(lines)",
+          "calls": [
+            "append",
+            "extend",
+            "float",
+            "get",
+            "int",
+            "join",
+            "len",
+            "sum",
+            "total"
+          ],
+          "return_keys": []
+        }
+      }
+    },
+    {
+      "contract": "SHADOW_OWNER_ABSENCE",
+      "resolution": "SINGLE_PRODUCTION_MATRIX_OWNER",
+      "decision": "The bounded V1 production scan finds exactly one top-level matrix owner; tests, tools, reports and V2 are excluded from ownership.",
+      "evidence": {
+        "owners": [
+          {
+            "path": "systems/level_up_reward_system.py",
+            "line": 33
+          }
+        ],
+        "scan_exclusions": [
+          ".git",
+          ".runtime",
+          ".venv",
+          "MD",
+          "__pycache__",
+          "backup",
+          "patch",
+          "reports",
+          "rom_v2",
+          "tests",
+          "tests_v2",
+          "tools",
+          "venv"
+        ]
+      }
+    }
+  ],
+  "exact_gold_matrix": {
+    "path": "systems/level_up_reward_system.py",
+    "line": 33,
+    "file_sha256": "dca636a71be6f0b0a967647d9300269c2d0fce92f963814a87e1bebbc35d25fc",
+    "source_sha256": "9fcff9d31933698149eabf2afc7379916c6f6b23672519dbdaccca19a269a3bb",
+    "values": {
+      "2": "0.45",
+      "3": "1.43",
+      "4": "4.30",
+      "5": "11.98",
+      "6": "34.40",
+      "7": "69.58",
+      "8": "130.73",
+      "9": "255.74",
+      "10": "479.19",
+      "11": "881.25"
+    },
+    "count": 10,
+    "minimum_level": 2,
+    "maximum_level": 11,
+    "gaps": [],
+    "contiguous": true
+  },
+  "authoritative_owner": "systems/level_up_reward_system.py",
+  "implementation_boundary": {
+    "allowed": [
+      "pure exact single-level reward calculation",
+      "pure ascending multi-level aggregation",
+      "fail-closed unconfigured levels",
+      "source-faithful result shape"
+    ],
+    "forbidden": [
+      "runtime or Telegram wiring",
+      "SQLite settlement or repository integration",
+      "invented levels, fallback formula, extrapolation or zero default",
+      "changes to non-gold reward policy"
+    ]
+  },
+  "summary": {
+    "input_unresolved_contracts": 6,
+    "resolved_contracts": 6,
+    "remaining_unresolved_contracts": 0,
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "implementation_authorized": true,
+  "runtime_integration_authorized": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_9_2c_implement_level_up_gold.py",
+  "verification": {
+    "canonical_v2_ci": {
+      "schema_version": 1,
+      "status": "PASS",
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "compile",
+          "status": "PASS",
+          "file_count": 121,
+          "failures": []
+        },
+        {
+          "name": "imports",
+          "status": "PASS",
+          "module_count": 89,
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-c",
+              "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "unit",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "tests_v2",
+              "-p",
+              "test_*.py"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "......................................................................................................................................\n----------------------------------------------------------------------\nRan 134 tests in 12.248s\n\nOK"
+          }
+        },
+        {
+          "name": "architecture",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "tools/verify_v2_architecture.py",
+              "--project-root",
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+            ],
+            "returncode": 0,
+            "stdout": "V2 architecture enforcement: PASS\nPhysical files: 89\nImport edges: 314\nViolations: 0",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "duplicate_scan",
+          "status": "PASS",
+          "symbol_count": 287,
+          "duplicates": {}
+        },
+        {
+          "name": "content_validation",
+          "status": "PASS",
+          "file_count": 0,
+          "failures": []
+        }
+      ]
+    },
+    "removed_bytecode_before_ci": [],
+    "protected_before": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    },
+    "protected_after": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  }
+}
