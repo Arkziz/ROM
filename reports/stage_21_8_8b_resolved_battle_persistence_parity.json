@@ -1,0 +1,213 @@
+{
+  "schema_version": 1,
+  "stage": "21.8.8b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "generated_at_utc": "2026-10-22T19:41:10.046380+00:00",
+  "source_contract": "reports/stage_21_8_8a_refined_battle_persistence_contract.json",
+  "source_contract_sha256": "d4dc0cca2aa87519a852137db9d65f82b68db932a5b10ff629f3716bf2b12a78",
+  "source_audit": "reports/stage_21_8_8_existing_battle_persistence_audit.json",
+  "source_audit_sha256": "1ead114347b6bd1926efe234b42a80504e8671df14954ba5fe1183879e66e19f",
+  "resolved_contracts": [
+    {
+      "contract": "FULL_BATTLE_SNAPSHOT_SAVE",
+      "resolution": "NOT_IMPLEMENTED_IN_V1",
+      "v2_parity_rule": "Do not claim or implement complete per-action battle snapshot parity in Stage 21.8.8.",
+      "evidence": [
+        {
+          "path": "systems/pve_auto_escape_system.py",
+          "symbol": "begin_pve_encounter",
+          "line_start": 61,
+          "line_end": 72,
+          "file_sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+          "symbol_sha256": "ecf03d453f7f71ada2c0795e98dbad2ecbe7911ad3b98ccba093d237b3c8378a"
+        },
+        {
+          "path": "systems/pve_auto_escape_system.py",
+          "symbol": "get_active_pve_encounter",
+          "line_start": 74,
+          "line_end": 77,
+          "file_sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+          "symbol_sha256": "a2faa1518f3f4d2c94330722c0635da9ca6823453ebde073b4db7610f8a85ca0"
+        }
+      ],
+      "absence_family": "full_battle_snapshot"
+    },
+    {
+      "contract": "RESUME_EXACT_TURN_STATE",
+      "resolution": "NOT_IMPLEMENTED_IN_V1",
+      "v2_parity_rule": "Restart recovery may reproduce V1 encounter expiry/cleanup only; it must not restore exact turn, cooldown, effect, or RNG state.",
+      "evidence": [
+        {
+          "path": "systems/pve_auto_escape_system.py",
+          "symbol": "expire_pve_encounters_once",
+          "line_start": 97,
+          "line_end": 105,
+          "file_sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+          "symbol_sha256": "162a50a1a965873ab5f183abd851ff8ddfe74c8c3117cf99befcd9a3bb4f6007"
+        },
+        {
+          "path": "systems/pve_auto_escape_system.py",
+          "symbol": "recover_pve_encounters_after_restart",
+          "line_start": 107,
+          "line_end": 115,
+          "file_sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+          "symbol_sha256": "4d782d23e5f7473b92d40b47a72af0fbf413efda1ddcad1c5eeef8c6ad4f9a5a"
+        }
+      ],
+      "absence_family": "exact_turn_resume"
+    },
+    {
+      "contract": "STALE_ACTION_REVISION_TOKEN",
+      "resolution": "V1_ACTIVE_ENCOUNTER_AND_TERMINAL_CLAIM_ONLY",
+      "v2_parity_rule": "Protect stale terminal actions through active encounter identity and exactly-once terminal claim; do not invent a revision/version token.",
+      "evidence": [
+        {
+          "path": "systems/pve_auto_escape_system.py",
+          "symbol": "get_active_pve_encounter",
+          "line_start": 74,
+          "line_end": 77,
+          "file_sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+          "symbol_sha256": "a2faa1518f3f4d2c94330722c0635da9ca6823453ebde073b4db7610f8a85ca0"
+        },
+        {
+          "path": "systems/pve_auto_escape_system.py",
+          "symbol": "claim_pve_terminal",
+          "line_start": 79,
+          "line_end": 91,
+          "file_sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+          "symbol_sha256": "f78c65b9e9889c7ed334c51d621fc76f9bd87d12b12ee1d890613c623dedfd03"
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_victory",
+          "line_start": 1964,
+          "line_end": 2118,
+          "file_sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+          "symbol_sha256": "330acb48958c4b1a63dd8e093a8bc6dada3032ab412a8264c463868b49e26d57"
+        }
+      ],
+      "absence_family": "revision_token"
+    },
+    {
+      "contract": "SHARED_PVE_PVP_BOSS_REPOSITORY",
+      "resolution": "NOT_IMPLEMENTED_IN_V1",
+      "v2_parity_rule": "Keep Stage 21.8.8 bounded to the audited PvE encounter lifecycle; no unified PvE/PvP/boss repository is authorized.",
+      "evidence": [
+        {
+          "path": "systems/pve_auto_escape_system.py",
+          "symbol": "begin_pve_encounter",
+          "line_start": 61,
+          "line_end": 72,
+          "file_sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+          "symbol_sha256": "ecf03d453f7f71ada2c0795e98dbad2ecbe7911ad3b98ccba093d237b3c8378a"
+        },
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line_start": 2125,
+          "line_end": 3837,
+          "file_sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+          "symbol_sha256": "c0adcf7fcb1325d719f1839cdcab76d2447b593ee45ee545f2e257b5bec8191b"
+        }
+      ],
+      "absence_family": "shared_repository"
+    },
+    {
+      "contract": "SIMULATOR_PERSISTENCE_PARITY",
+      "resolution": "NOT_IMPLEMENTED_IN_V1",
+      "v2_parity_rule": "Simulator snapshot terminology is outside runtime persistence parity and must not authorize runtime save/resume behavior.",
+      "evidence": [],
+      "absence_family": "simulator_runtime_persistence"
+    }
+  ],
+  "bounded_absence_scans": {
+    "full_battle_snapshot": {
+      "status": "ABSENT_IN_AUDITED_V1_CORPUS",
+      "tokens": [
+        "save_full_battle_snapshot",
+        "persist_full_battle_state",
+        "restore_full_battle_snapshot",
+        "battle_snapshot_repository"
+      ],
+      "files_scanned": 275,
+      "hits": []
+    },
+    "exact_turn_resume": {
+      "status": "ABSENT_IN_AUDITED_V1_CORPUS",
+      "tokens": [
+        "resume_exact_turn_state",
+        "restore_rng_position",
+        "persist_cooldown_state",
+        "persist_effect_duration_state"
+      ],
+      "files_scanned": 275,
+      "hits": []
+    },
+    "revision_token": {
+      "status": "ABSENT_IN_AUDITED_V1_CORPUS",
+      "tokens": [
+        "battle_revision_token",
+        "expected_battle_revision",
+        "compare_and_swap_battle_revision",
+        "stale_battle_revision"
+      ],
+      "files_scanned": 275,
+      "hits": []
+    },
+    "shared_repository": {
+      "status": "ABSENT_IN_AUDITED_V1_CORPUS",
+      "tokens": [
+        "shared_battle_repository",
+        "unified_battle_repository",
+        "pve_pvp_boss_repository"
+      ],
+      "files_scanned": 275,
+      "hits": []
+    },
+    "simulator_runtime_persistence": {
+      "status": "ABSENT_IN_AUDITED_V1_CORPUS",
+      "tokens": [
+        "simulator_runtime_persistence",
+        "persist_simulator_battle",
+        "resume_simulator_battle"
+      ],
+      "files_scanned": 275,
+      "hits": []
+    }
+  },
+  "authorized_implementation_boundary": {
+    "model": "V1_PVE_ENCOUNTER_LIFECYCLE_MARKER",
+    "allowed": [
+      "begin an active PvE encounter marker",
+      "read the active encounter marker",
+      "claim one terminal outcome exactly once",
+      "find and expire stale active encounters",
+      "recover after restart through V1-equivalent expiry/cleanup"
+    ],
+    "forbidden": [
+      "full mutable battle aggregate snapshot persistence",
+      "exact turn/cooldown/effect/RNG resume",
+      "invented battle revision tokens",
+      "unified PvE/PvP/boss repository semantics",
+      "simulator-to-runtime persistence parity",
+      "Telegram/runtime wiring in this implementation stage"
+    ]
+  },
+  "summary": {
+    "input_unresolved_contracts": 5,
+    "resolved_contracts": 5,
+    "remaining_unresolved_contracts": 0,
+    "audited_v1_files_scanned": 275,
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "runtime_ready_claimed": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "implementation_authorized": true,
+  "runtime_integration_authorized": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_8_8c_implement_battle_persistence.py"
+}
