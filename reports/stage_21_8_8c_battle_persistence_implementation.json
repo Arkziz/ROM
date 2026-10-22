@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "stage": "21.8.8c",
+  "status": "PASS",
+  "conclusion": "API_READY",
+  "generated_at_utc": "2026-10-22T20:04:42.029198+00:00",
+  "prerequisite": "reports/stage_21_8_8b_resolved_battle_persistence_parity.json",
+  "implementation": "rom_v2/domain/battle_persistence.py",
+  "tests": "tests_v2/test_battle_persistence.py",
+  "smoke_tool": "tools/check_stage_21_8_8c_battle_persistence.py",
+  "implemented_boundary": [
+    "begin",
+    "read_active",
+    "claim_persisted_encounter_terminal_exactly_once",
+    "expire_persisted_encounter_once",
+    "restart_expiry_cleanup"
+  ],
+  "not_implemented": [
+    "full_battle_snapshot",
+    "exact_turn_resume",
+    "rng_resume",
+    "revision_token",
+    "shared_pve_pvp_boss_repository",
+    "runtime_or_telegram_wiring"
+  ],
+  "runtime_integration": "NOT_CONNECTED",
+  "production_persistence": "NOT_CONNECTED",
+  "manual_game_check": "NOT_REQUIRED",
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false
+}
