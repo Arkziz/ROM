@@ -1,0 +1,494 @@
+{
+  "schema_version": 1,
+  "stage": "21.9.1b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "generated_at_utc": "2026-10-22T20:29:29.319794+00:00",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "a04a8a3f9491f750e8d588894690045d6ab2094e"
+  },
+  "source_contract": "reports/stage_21_9_1a_refined_exp_and_level_up_contract.json",
+  "source_contract_sha256": "fc3364c297668d58d5ba7b4c2cb65bb8464679e468e873de1a7a349248b0a9d2",
+  "resolved_contracts": [
+    {
+      "contract": "LEVEL_CAP_EXACT_SEMANTICS",
+      "resolution": "SOURCE_BOUND_TO_CONFIGURATION_AND_PURE_TRANSITION",
+      "decision": "Gameplay cap and EXP-at-cap behavior must be copied from the exact V1 configuration and apply_exp_award control flow; configured levels above a runtime cap do not by themselves raise the gameplay cap.",
+      "evidence": [
+        {
+          "path": "data/player_progression.py",
+          "file_sha256": "2584a3911237d6e2884e1ee57be08b9b680ca8aedcbe361023a212dca956c1a2",
+          "constants": {
+            "BASE_EXP_BY_LEVEL": {
+              "line": 4,
+              "value_source": "{\n    # 1-10: smoothed early progression\n    1: 10, 2: 12, 3: 14, 4: 16, 5: 19,\n    6: 22, 7: 25, 8: 29, 9: 33, 10: 38,\n    # 11-14: bridge to unchanged level 15\n    11: 48, 12: 60, 13: 76, 14: 95,\n    # 15-30: unchanged production baseline\n    15: 120, 16: 135, 17: 150, 18: 170, 19: 190,\n    20: 220, 21: 240, 22: 270, 23: 300, 24: 340,\n    25: 380, 26: 420, 27: 460, 28: 520, 29: 600,\n    30: 600,\n    # 31-50: explicit endgame curve\n    31: 650, 32: 700, 33: 760, 34: 820, 35: 890,\n    36: 960, 37: 1040, 38: 1120, 39: 1210, 40: 1300,\n    41: 1400, 42: 1500, 43: 1620, 44: 1740, 45: 1870,\n    46: 2000, 47: 2150, 48: 2300, 49: 2470, 50: 2650,\n}",
+              "literal_type": "dict",
+              "literal_length": 50,
+              "minimum_key": 1,
+              "maximum_key": 50
+            },
+            "CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL": {
+              "line": 22,
+              "value_source": "{\n    # 1-10: smoothed early progression\n    1: 50, 2: 100, 3: 200, 4: 406, 5: 800,\n    6: 1136, 7: 1660, 8: 2379, 9: 3485, 10: 5000,\n    # 11-14: bridge to unchanged level 15\n    11: 5312, 12: 5750, 13: 6118, 14: 6579,\n    # 15-30: unchanged production baseline\n    15: 7000, 16: 7259, 17: 7667, 18: 7941, 19: 8158,\n    20: 8182, 21: 8750, 22: 9074, 23: 9500, 24: 9853,\n    25: 10263, 26: 10833, 27: 11522, 28: 11923, 29: 12000,\n    30: 14000,\n    # 31-50: explicit endgame curve\n    31: 14308, 32: 14643, 33: 15132, 34: 15549, 35: 15730,\n    36: 16146, 37: 16587, 38: 17188, 39: 17562, 40: 18077,\n    41: 18750, 42: 19333, 43: 19907, 44: 20546, 45: 21123,\n    46: 21875, 47: 22558, 48: 23478, 49: 24190, 50: 25000,\n}",
+              "literal_type": "dict",
+              "literal_length": 50,
+              "minimum_key": 1,
+              "maximum_key": 50
+            }
+          }
+        },
+        {
+          "path": "data/player_progression.py",
+          "symbol": "apply_exp_award",
+          "line_start": 58,
+          "line_end": 74,
+          "file_sha256": "2584a3911237d6e2884e1ee57be08b9b680ca8aedcbe361023a212dca956c1a2",
+          "source_sha256": "909069763b057135456c5366c93a8fcb005298412c6bd3de4af2aeb618cb8d9a",
+          "source": "def apply_exp_award(level: int, exp: int, amount: int, level_cap: int | None = None) -> dict:\n    level, exp, amount = int(level), int(exp), int(amount)\n    level_ups = 0\n    while amount > 0:\n        if level_cap is not None and level >= int(level_cap):\n            break\n        required = get_exp_to_next_level(level)\n        missing = required - exp\n        if amount < missing:\n            exp += amount\n            amount = 0\n        else:\n            amount -= missing\n            exp = 0\n            level += 1\n            level_ups += 1\n    return {\"level\": level, \"exp\": exp, \"exp_to_next\": get_exp_to_next_level(level), \"level_ups\": level_ups, \"unapplied_exp\": amount}",
+          "calls": [
+            "get_exp_to_next_level",
+            "int"
+          ],
+          "assigned_names": [
+            "amount",
+            "exp",
+            "level",
+            "level_ups",
+            "missing",
+            "required"
+          ],
+          "return_count": 1,
+          "loop_count": 1,
+          "branch_count": 2
+        }
+      ]
+    },
+    {
+      "contract": "LEVEL_UP_POINT_AWARD",
+      "resolution": "SOURCE_BOUND_TO_TRANSACTION_OWNER",
+      "decision": "Point types, quantities and per-level multiplication must be taken only from apply_exp_in_transaction and its explicit callees; no generic point award may be invented.",
+      "evidence": [
+        {
+          "path": "systems/player_system.py",
+          "symbol": "apply_exp_in_transaction",
+          "line_start": 1830,
+          "line_end": 1901,
+          "file_sha256": "b503e2514dd7b35136384561c873d03be27afb9cdd31325530e15a0df67c3571",
+          "source_sha256": "7f29fd412821991c063fc7fc29b39d95aa58ab1e39f49096fb7b26142dbe293b",
+          "source": "def apply_exp_in_transaction(connection, user_id: int, amount: int):\n    \"\"\"Apply canonical EXP semantics on the caller-owned production connection.\n\n    The function deliberately performs no BEGIN, commit or rollback. It requires\n    the canonical db connection because existing stat, equipment and level-reward\n    owners share that connection. This preserves all current level-up side effects\n    while allowing story completion to own one outer transaction.\n    \"\"\"\n    db = _db_module()\n    if connection is not db.conn:\n        raise ValueError(\"EXP transaction requires the canonical db connection\")\n    from systems.level_up_reward_system import (\n        apply_level_up_rewards_in_transaction,\n        build_level_up_reward_message,\n        init_level_up_reward_system,\n    )\n    init_level_up_reward_system(db)\n    row = connection.execute(\n        \"SELECT level, exp FROM users WHERE user_id=?\", (int(user_id),)\n    ).fetchone()\n    if not row:\n        return None\n    old_level = int(_row_get(row, \"level\", 0, 1) or 1)\n    level = old_level\n    exp = int(_row_get(row, \"exp\", 1, 0) or 0) + int(amount)\n    reached_levels = []\n    while exp >= db.get_exp_to_next_level(level):\n        exp -= db.get_exp_to_next_level(level)\n        level += 1\n        reached_levels.append(level)\n    level_ups = len(reached_levels)\n    attribute_points_awarded = level_ups * 5\n    if attribute_points_awarded:\n        connection.execute(\n            \"\"\"UPDATE users SET\n                   free_attribute_points=COALESCE(free_attribute_points,0)+?,\n                   total_attribute_points_earned=COALESCE(total_attribute_points_earned,0)+?\n                 WHERE user_id=?\"\"\",\n            (attribute_points_awarded, attribute_points_awarded, int(user_id)),\n        )\n    connection.execute(\n        \"UPDATE users SET level=?, exp=? WHERE user_id=?\",\n        (level, exp, int(user_id)),\n    )\n    # The canonical stat owner reads through the same global connection, which\n    # is exactly the connection required above, so uncommitted level is visible.\n    max_hp = get_max_hp(user_id)\n    connection.execute(\n        \"UPDATE users SET max_hp=? WHERE user_id=?\", (max_hp, int(user_id))\n    )\n    reward_result = apply_level_up_rewards_in_transaction(\n        db, int(user_id), old_level, level\n    )\n    free_row = connection.execute(\n        \"SELECT COALESCE(free_attribute_points,0) FROM users WHERE user_id=?\",\n        (int(user_id),),\n    ).fetchone()\n    reward_result[\"attribute_points_awarded\"] = attribute_points_awarded\n    reward_result[\"free_attribute_points\"] = int(\n        _row_get(free_row, \"free_attribute_points\", 0, 0) or 0\n    )\n    return {\n        \"old_level\": old_level,\n        \"level\": level,\n        \"exp\": exp,\n        \"exp_to_next\": db.get_exp_to_next_level(level),\n        \"level_ups\": level_ups,\n        \"attribute_points_awarded\": attribute_points_awarded,\n        \"reached_levels\": reached_levels,\n        \"level_up_rewards\": reward_result,\n        \"level_up_reward_message\": build_level_up_reward_message(reward_result),\n    }",
+          "calls": [
+            "ValueError",
+            "_db_module",
+            "_row_get",
+            "append",
+            "apply_level_up_rewards_in_transaction",
+            "build_level_up_reward_message",
+            "execute",
+            "fetchone",
+            "get_exp_to_next_level",
+            "get_max_hp",
+            "init_level_up_reward_system",
+            "int",
+            "len"
+          ],
+          "assigned_names": [
+            "attribute_points_awarded",
+            "db",
+            "exp",
+            "free_row",
+            "level",
+            "level_ups",
+            "max_hp",
+            "old_level",
+            "reached_levels",
+            "reward_result",
+            "row"
+          ],
+          "return_count": 2,
+          "loop_count": 1,
+          "branch_count": 3
+        }
+      ]
+    },
+    {
+      "contract": "MULTI_LEVEL_EVENT_ORDER",
+      "resolution": "PURE_RESULT_THEN_SINGLE_TRANSACTIONAL_SIDE_EFFECT_SEQUENCE",
+      "decision": "apply_exp_award calculates the complete level transition first; apply_exp_in_transaction then owns persistence and downstream side effects in its existing source order, including any per-level reward calculation.",
+      "evidence": [
+        {
+          "path": "data/player_progression.py",
+          "symbol": "apply_exp_award",
+          "line_start": 58,
+          "line_end": 74,
+          "file_sha256": "2584a3911237d6e2884e1ee57be08b9b680ca8aedcbe361023a212dca956c1a2",
+          "source_sha256": "909069763b057135456c5366c93a8fcb005298412c6bd3de4af2aeb618cb8d9a",
+          "source": "def apply_exp_award(level: int, exp: int, amount: int, level_cap: int | None = None) -> dict:\n    level, exp, amount = int(level), int(exp), int(amount)\n    level_ups = 0\n    while amount > 0:\n        if level_cap is not None and level >= int(level_cap):\n            break\n        required = get_exp_to_next_level(level)\n        missing = required - exp\n        if amount < missing:\n            exp += amount\n            amount = 0\n        else:\n            amount -= missing\n            exp = 0\n            level += 1\n            level_ups += 1\n    return {\"level\": level, \"exp\": exp, \"exp_to_next\": get_exp_to_next_level(level), \"level_ups\": level_ups, \"unapplied_exp\": amount}",
+          "calls": [
+            "get_exp_to_next_level",
+            "int"
+          ],
+          "assigned_names": [
+            "amount",
+            "exp",
+            "level",
+            "level_ups",
+            "missing",
+            "required"
+          ],
+          "return_count": 1,
+          "loop_count": 1,
+          "branch_count": 2
+        },
+        {
+          "path": "systems/player_system.py",
+          "symbol": "apply_exp_in_transaction",
+          "line_start": 1830,
+          "line_end": 1901,
+          "file_sha256": "b503e2514dd7b35136384561c873d03be27afb9cdd31325530e15a0df67c3571",
+          "source_sha256": "7f29fd412821991c063fc7fc29b39d95aa58ab1e39f49096fb7b26142dbe293b",
+          "source": "def apply_exp_in_transaction(connection, user_id: int, amount: int):\n    \"\"\"Apply canonical EXP semantics on the caller-owned production connection.\n\n    The function deliberately performs no BEGIN, commit or rollback. It requires\n    the canonical db connection because existing stat, equipment and level-reward\n    owners share that connection. This preserves all current level-up side effects\n    while allowing story completion to own one outer transaction.\n    \"\"\"\n    db = _db_module()\n    if connection is not db.conn:\n        raise ValueError(\"EXP transaction requires the canonical db connection\")\n    from systems.level_up_reward_system import (\n        apply_level_up_rewards_in_transaction,\n        build_level_up_reward_message,\n        init_level_up_reward_system,\n    )\n    init_level_up_reward_system(db)\n    row = connection.execute(\n        \"SELECT level, exp FROM users WHERE user_id=?\", (int(user_id),)\n    ).fetchone()\n    if not row:\n        return None\n    old_level = int(_row_get(row, \"level\", 0, 1) or 1)\n    level = old_level\n    exp = int(_row_get(row, \"exp\", 1, 0) or 0) + int(amount)\n    reached_levels = []\n    while exp >= db.get_exp_to_next_level(level):\n        exp -= db.get_exp_to_next_level(level)\n        level += 1\n        reached_levels.append(level)\n    level_ups = len(reached_levels)\n    attribute_points_awarded = level_ups * 5\n    if attribute_points_awarded:\n        connection.execute(\n            \"\"\"UPDATE users SET\n                   free_attribute_points=COALESCE(free_attribute_points,0)+?,\n                   total_attribute_points_earned=COALESCE(total_attribute_points_earned,0)+?\n                 WHERE user_id=?\"\"\",\n            (attribute_points_awarded, attribute_points_awarded, int(user_id)),\n        )\n    connection.execute(\n        \"UPDATE users SET level=?, exp=? WHERE user_id=?\",\n        (level, exp, int(user_id)),\n    )\n    # The canonical stat owner reads through the same global connection, which\n    # is exactly the connection required above, so uncommitted level is visible.\n    max_hp = get_max_hp(user_id)\n    connection.execute(\n        \"UPDATE users SET max_hp=? WHERE user_id=?\", (max_hp, int(user_id))\n    )\n    reward_result = apply_level_up_rewards_in_transaction(\n        db, int(user_id), old_level, level\n    )\n    free_row = connection.execute(\n        \"SELECT COALESCE(free_attribute_points,0) FROM users WHERE user_id=?\",\n        (int(user_id),),\n    ).fetchone()\n    reward_result[\"attribute_points_awarded\"] = attribute_points_awarded\n    reward_result[\"free_attribute_points\"] = int(\n        _row_get(free_row, \"free_attribute_points\", 0, 0) or 0\n    )\n    return {\n        \"old_level\": old_level,\n        \"level\": level,\n        \"exp\": exp,\n        \"exp_to_next\": db.get_exp_to_next_level(level),\n        \"level_ups\": level_ups,\n        \"attribute_points_awarded\": attribute_points_awarded,\n        \"reached_levels\": reached_levels,\n        \"level_up_rewards\": reward_result,\n        \"level_up_reward_message\": build_level_up_reward_message(reward_result),\n    }",
+          "calls": [
+            "ValueError",
+            "_db_module",
+            "_row_get",
+            "append",
+            "apply_level_up_rewards_in_transaction",
+            "build_level_up_reward_message",
+            "execute",
+            "fetchone",
+            "get_exp_to_next_level",
+            "get_max_hp",
+            "init_level_up_reward_system",
+            "int",
+            "len"
+          ],
+          "assigned_names": [
+            "attribute_points_awarded",
+            "db",
+            "exp",
+            "free_row",
+            "level",
+            "level_ups",
+            "max_hp",
+            "old_level",
+            "reached_levels",
+            "reward_result",
+            "row"
+          ],
+          "return_count": 2,
+          "loop_count": 1,
+          "branch_count": 3
+        },
+        {
+          "path": "systems/level_up_reward_system.py",
+          "symbol": "calculate_level_rewards",
+          "line_start": 89,
+          "line_end": 125,
+          "file_sha256": "dca636a71be6f0b0a967647d9300269c2d0fce92f963814a87e1bebbc35d25fc",
+          "source_sha256": "8e3151ed3bbbf4c4f542d4948c6c580cadffcd447b2768b3521dd4cd659c2567",
+          "source": "def calculate_level_rewards(old_level, new_level):\n\n    old_level = int(old_level)\n\n    new_level = int(new_level)\n\n    levels = list(range(old_level + 1, new_level + 1)) if new_level > old_level else []\n\n    rows = [calculate_level_reward(level) for level in levels]\n\n    return {\n\n        \"old_level\": old_level,\n\n        \"new_level\": new_level,\n\n        \"reached_levels\": levels,\n\n        \"milestone_levels\": [row[\"reached_level\"] for row in rows if row[\"milestone\"]],\n\n        \"gold\": sum(row[\"gold\"] for row in rows),\n\n        \"small_health_potions\": sum(row[\"small_health_potions\"] for row in rows),\n\n        \"small_mana_potions\": sum(row[\"small_mana_potions\"] for row in rows),\n\n        \"refine_stones\": sum(row[\"refine_stones\"] for row in rows),\n\n        \"medium_health_potions\": sum(row[\"medium_health_potions\"] for row in rows),\n\n        \"medium_mana_potions\": sum(row[\"medium_mana_potions\"] for row in rows),\n\n        \"crystals\": 0,\n\n        \"rows\": rows,\n\n    }",
+          "calls": [
+            "calculate_level_reward",
+            "int",
+            "list",
+            "range",
+            "sum"
+          ],
+          "assigned_names": [
+            "level",
+            "levels",
+            "new_level",
+            "old_level",
+            "row",
+            "rows"
+          ],
+          "return_count": 1,
+          "loop_count": 0,
+          "branch_count": 0
+        }
+      ]
+    },
+    {
+      "contract": "INVALID_AND_BOUNDARY_INPUTS",
+      "resolution": "MIRROR_EXACT_PURE_FUNCTION_BRANCHES",
+      "decision": "Zero, negative, threshold, large-award and cap-boundary behavior must mirror the explicit branches, loops and return shape of apply_exp_award; V2 must add no implicit clamping or correction absent from V1.",
+      "evidence": [
+        {
+          "path": "data/player_progression.py",
+          "symbol": "apply_exp_award",
+          "line_start": 58,
+          "line_end": 74,
+          "file_sha256": "2584a3911237d6e2884e1ee57be08b9b680ca8aedcbe361023a212dca956c1a2",
+          "source_sha256": "909069763b057135456c5366c93a8fcb005298412c6bd3de4af2aeb618cb8d9a",
+          "source": "def apply_exp_award(level: int, exp: int, amount: int, level_cap: int | None = None) -> dict:\n    level, exp, amount = int(level), int(exp), int(amount)\n    level_ups = 0\n    while amount > 0:\n        if level_cap is not None and level >= int(level_cap):\n            break\n        required = get_exp_to_next_level(level)\n        missing = required - exp\n        if amount < missing:\n            exp += amount\n            amount = 0\n        else:\n            amount -= missing\n            exp = 0\n            level += 1\n            level_ups += 1\n    return {\"level\": level, \"exp\": exp, \"exp_to_next\": get_exp_to_next_level(level), \"level_ups\": level_ups, \"unapplied_exp\": amount}",
+          "calls": [
+            "get_exp_to_next_level",
+            "int"
+          ],
+          "assigned_names": [
+            "amount",
+            "exp",
+            "level",
+            "level_ups",
+            "missing",
+            "required"
+          ],
+          "return_count": 1,
+          "loop_count": 1,
+          "branch_count": 2
+        },
+        {
+          "path": "data/player_progression.py",
+          "file_sha256": "2584a3911237d6e2884e1ee57be08b9b680ca8aedcbe361023a212dca956c1a2",
+          "constants": {
+            "BASE_EXP_BY_LEVEL": {
+              "line": 4,
+              "value_source": "{\n    # 1-10: smoothed early progression\n    1: 10, 2: 12, 3: 14, 4: 16, 5: 19,\n    6: 22, 7: 25, 8: 29, 9: 33, 10: 38,\n    # 11-14: bridge to unchanged level 15\n    11: 48, 12: 60, 13: 76, 14: 95,\n    # 15-30: unchanged production baseline\n    15: 120, 16: 135, 17: 150, 18: 170, 19: 190,\n    20: 220, 21: 240, 22: 270, 23: 300, 24: 340,\n    25: 380, 26: 420, 27: 460, 28: 520, 29: 600,\n    30: 600,\n    # 31-50: explicit endgame curve\n    31: 650, 32: 700, 33: 760, 34: 820, 35: 890,\n    36: 960, 37: 1040, 38: 1120, 39: 1210, 40: 1300,\n    41: 1400, 42: 1500, 43: 1620, 44: 1740, 45: 1870,\n    46: 2000, 47: 2150, 48: 2300, 49: 2470, 50: 2650,\n}",
+              "literal_type": "dict",
+              "literal_length": 50,
+              "minimum_key": 1,
+              "maximum_key": 50
+            },
+            "CONDITIONAL_MOBS_TO_NEXT_BY_LEVEL": {
+              "line": 22,
+              "value_source": "{\n    # 1-10: smoothed early progression\n    1: 50, 2: 100, 3: 200, 4: 406, 5: 800,\n    6: 1136, 7: 1660, 8: 2379, 9: 3485, 10: 5000,\n    # 11-14: bridge to unchanged level 15\n    11: 5312, 12: 5750, 13: 6118, 14: 6579,\n    # 15-30: unchanged production baseline\n    15: 7000, 16: 7259, 17: 7667, 18: 7941, 19: 8158,\n    20: 8182, 21: 8750, 22: 9074, 23: 9500, 24: 9853,\n    25: 10263, 26: 10833, 27: 11522, 28: 11923, 29: 12000,\n    30: 14000,\n    # 31-50: explicit endgame curve\n    31: 14308, 32: 14643, 33: 15132, 34: 15549, 35: 15730,\n    36: 16146, 37: 16587, 38: 17188, 39: 17562, 40: 18077,\n    41: 18750, 42: 19333, 43: 19907, 44: 20546, 45: 21123,\n    46: 21875, 47: 22558, 48: 23478, 49: 24190, 50: 25000,\n}",
+              "literal_type": "dict",
+              "literal_length": 50,
+              "minimum_key": 1,
+              "maximum_key": 50
+            }
+          }
+        }
+      ]
+    },
+    {
+      "contract": "IDEMPOTENCY_BOUNDARY",
+      "resolution": "NO_UNIVERSAL_EXP_OPERATION_ID_IN_V1",
+      "decision": "The canonical EXP entrypoint has no newly inferred universal delivery ledger. Duplicate prevention remains the responsibility of existing upstream producer contracts unless exact V1 operation-id evidence is present.",
+      "evidence": [
+        {
+          "path": "systems/player_system.py",
+          "symbol": "add_exp",
+          "line_start": 1924,
+          "line_end": 2148,
+          "file_sha256": "b503e2514dd7b35136384561c873d03be27afb9cdd31325530e15a0df67c3571",
+          "source_sha256": "f3d2bf09e6a918d28a74f9b711b93e0f982d34121de3889ecdbbff4ae530addf",
+          "source": "def add_exp(user_id: int, amount):\n\n\n    \"\"\"Apply EXP, stats, HP and exactly-once level rewards in one transaction.\"\"\"\n\n\n    db = _db_module()\n\n\n    from systems.level_up_reward_system import (\n\n\n        apply_level_up_rewards_in_transaction,\n\n\n        build_level_up_reward_message,\n\n\n        init_level_up_reward_system,\n\n\n    )\n\n\n\n\n\n    init_level_up_reward_system(db)\n\n\n    db.conn.execute(\"BEGIN IMMEDIATE\")\n\n\n    try:\n\n\n        row = db.cursor.execute(\n\n\n            \"SELECT level, exp FROM users WHERE user_id=?\",\n\n\n            (user_id,),\n\n\n        ).fetchone()\n\n\n        if not row:\n\n\n            db.conn.rollback()\n\n\n            return None\n\n\n\n\n\n        old_level = int(_row_get(row, \"level\", 0, 1) or 1)\n\n\n        level = old_level\n\n\n        exp = int(_row_get(row, \"exp\", 1, 0) or 0) + int(amount)\n\n\n        reached_levels = []\n\n\n\n\n\n        while exp >= db.get_exp_to_next_level(level):\n\n\n            exp -= db.get_exp_to_next_level(level)\n\n\n            level += 1\n\n\n            reached_levels.append(level)\n\n\n\n\n\n        level_ups = len(reached_levels)\n\n\n        attribute_points_awarded = 0\n\n        if level_ups:\n\n            attribute_points_awarded = level_ups * 5\n\n            db.cursor.execute(\n\n                \"\"\"UPDATE users SET\n\n                       free_attribute_points=COALESCE(free_attribute_points, 0)+?,\n\n                       total_attribute_points_earned=COALESCE(total_attribute_points_earned, 0)+?\n\n                     WHERE user_id=?\"\"\",\n\n                (attribute_points_awarded, attribute_points_awarded, user_id),\n\n            )\n\n\n\n\n\n        db.cursor.execute(\n\n\n            \"UPDATE users SET level=?, exp=? WHERE user_id=?\",\n\n\n            (level, exp, user_id),\n\n\n        )\n\n\n        max_hp = get_max_hp(user_id)\n\n\n        db.cursor.execute(\n\n\n            \"UPDATE users SET max_hp=? WHERE user_id=?\",\n\n\n            (max_hp, user_id),\n\n\n        )\n\n\n\n\n\n        reward_result = apply_level_up_rewards_in_transaction(\n\n\n            db, user_id, old_level, level\n\n\n        )\n\n\n        free_points_row = db.cursor.execute(\n            \"SELECT COALESCE(free_attribute_points, 0) FROM users WHERE user_id=?\",\n            (user_id,),\n        ).fetchone()\n        free_attribute_points = int(\n            _row_get(free_points_row, \"free_attribute_points\", 0, 0) or 0\n        )\n        reward_result[\"attribute_points_awarded\"] = attribute_points_awarded\n        reward_result[\"free_attribute_points\"] = free_attribute_points\n        if level_ups:\n            from systems.world_chronicle_system import (\n                get_character_name_snapshot,\n                record_world_chronicle_event,\n            )\n            character_name = get_character_name_snapshot(user_id, connection=db.conn)\n            if character_name:\n                record_world_chronicle_event(\n                    \"player_level_up\",\n                    user_id,\n                    character_name,\n                    f\"player_level_up:{int(user_id)}:{int(level)}\",\n                    metadata={\"level\": int(level)},\n                    connection=db.conn,\n                )\n        db.conn.commit()\n\n\n    except Exception:\n\n\n        db.conn.rollback()\n\n\n        raise\n\n\n\n\n\n    return {\n\n\n        \"old_level\": old_level,\n\n\n        \"level\": level,\n\n\n        \"exp\": exp,\n\n\n        \"exp_to_next\": db.get_exp_to_next_level(level),\n\n\n        \"level_ups\": level_ups,\n\n        \"attribute_points_awarded\": attribute_points_awarded,\n\n\n        \"reached_levels\": reached_levels,\n\n\n        \"level_up_rewards\": reward_result,\n\n\n        \"level_up_reward_message\": build_level_up_reward_message(reward_result),\n\n\n    }",
+          "calls": [
+            "_db_module",
+            "_row_get",
+            "append",
+            "apply_level_up_rewards_in_transaction",
+            "build_level_up_reward_message",
+            "commit",
+            "execute",
+            "fetchone",
+            "get_character_name_snapshot",
+            "get_exp_to_next_level",
+            "get_max_hp",
+            "init_level_up_reward_system",
+            "int",
+            "len",
+            "record_world_chronicle_event",
+            "rollback"
+          ],
+          "assigned_names": [
+            "attribute_points_awarded",
+            "character_name",
+            "db",
+            "exp",
+            "free_attribute_points",
+            "free_points_row",
+            "level",
+            "level_ups",
+            "max_hp",
+            "old_level",
+            "reached_levels",
+            "reward_result",
+            "row"
+          ],
+          "return_count": 2,
+          "loop_count": 1,
+          "branch_count": 4
+        },
+        {
+          "path": "systems/player_system.py",
+          "symbol": "apply_exp_in_transaction",
+          "line_start": 1830,
+          "line_end": 1901,
+          "file_sha256": "b503e2514dd7b35136384561c873d03be27afb9cdd31325530e15a0df67c3571",
+          "source_sha256": "7f29fd412821991c063fc7fc29b39d95aa58ab1e39f49096fb7b26142dbe293b",
+          "source": "def apply_exp_in_transaction(connection, user_id: int, amount: int):\n    \"\"\"Apply canonical EXP semantics on the caller-owned production connection.\n\n    The function deliberately performs no BEGIN, commit or rollback. It requires\n    the canonical db connection because existing stat, equipment and level-reward\n    owners share that connection. This preserves all current level-up side effects\n    while allowing story completion to own one outer transaction.\n    \"\"\"\n    db = _db_module()\n    if connection is not db.conn:\n        raise ValueError(\"EXP transaction requires the canonical db connection\")\n    from systems.level_up_reward_system import (\n        apply_level_up_rewards_in_transaction,\n        build_level_up_reward_message,\n        init_level_up_reward_system,\n    )\n    init_level_up_reward_system(db)\n    row = connection.execute(\n        \"SELECT level, exp FROM users WHERE user_id=?\", (int(user_id),)\n    ).fetchone()\n    if not row:\n        return None\n    old_level = int(_row_get(row, \"level\", 0, 1) or 1)\n    level = old_level\n    exp = int(_row_get(row, \"exp\", 1, 0) or 0) + int(amount)\n    reached_levels = []\n    while exp >= db.get_exp_to_next_level(level):\n        exp -= db.get_exp_to_next_level(level)\n        level += 1\n        reached_levels.append(level)\n    level_ups = len(reached_levels)\n    attribute_points_awarded = level_ups * 5\n    if attribute_points_awarded:\n        connection.execute(\n            \"\"\"UPDATE users SET\n                   free_attribute_points=COALESCE(free_attribute_points,0)+?,\n                   total_attribute_points_earned=COALESCE(total_attribute_points_earned,0)+?\n                 WHERE user_id=?\"\"\",\n            (attribute_points_awarded, attribute_points_awarded, int(user_id)),\n        )\n    connection.execute(\n        \"UPDATE users SET level=?, exp=? WHERE user_id=?\",\n        (level, exp, int(user_id)),\n    )\n    # The canonical stat owner reads through the same global connection, which\n    # is exactly the connection required above, so uncommitted level is visible.\n    max_hp = get_max_hp(user_id)\n    connection.execute(\n        \"UPDATE users SET max_hp=? WHERE user_id=?\", (max_hp, int(user_id))\n    )\n    reward_result = apply_level_up_rewards_in_transaction(\n        db, int(user_id), old_level, level\n    )\n    free_row = connection.execute(\n        \"SELECT COALESCE(free_attribute_points,0) FROM users WHERE user_id=?\",\n        (int(user_id),),\n    ).fetchone()\n    reward_result[\"attribute_points_awarded\"] = attribute_points_awarded\n    reward_result[\"free_attribute_points\"] = int(\n        _row_get(free_row, \"free_attribute_points\", 0, 0) or 0\n    )\n    return {\n        \"old_level\": old_level,\n        \"level\": level,\n        \"exp\": exp,\n        \"exp_to_next\": db.get_exp_to_next_level(level),\n        \"level_ups\": level_ups,\n        \"attribute_points_awarded\": attribute_points_awarded,\n        \"reached_levels\": reached_levels,\n        \"level_up_rewards\": reward_result,\n        \"level_up_reward_message\": build_level_up_reward_message(reward_result),\n    }",
+          "calls": [
+            "ValueError",
+            "_db_module",
+            "_row_get",
+            "append",
+            "apply_level_up_rewards_in_transaction",
+            "build_level_up_reward_message",
+            "execute",
+            "fetchone",
+            "get_exp_to_next_level",
+            "get_max_hp",
+            "init_level_up_reward_system",
+            "int",
+            "len"
+          ],
+          "assigned_names": [
+            "attribute_points_awarded",
+            "db",
+            "exp",
+            "free_row",
+            "level",
+            "level_ups",
+            "max_hp",
+            "old_level",
+            "reached_levels",
+            "reward_result",
+            "row"
+          ],
+          "return_count": 2,
+          "loop_count": 1,
+          "branch_count": 3
+        }
+      ],
+      "exact_idempotency_tokens_checked": [
+        "operation_id",
+        "idempotency_key",
+        "idempotent",
+        "exp_award_ledger",
+        "exp_operation_id",
+        "reward_delivery_id"
+      ],
+      "exact_idempotency_tokens_found": []
+    }
+  ],
+  "authoritative_owners": {
+    "configuration_and_pure_transition": "data/player_progression.py",
+    "transaction_and_public_entrypoint": "systems/player_system.py",
+    "legacy_compatibility": "db_modules/player.py",
+    "level_reward_calculation": "systems/level_up_reward_system.py"
+  },
+  "implementation_boundary": {
+    "allowed": [
+      "pure V2 EXP-threshold and award transition matching V1",
+      "residual EXP and multi-level result matching V1",
+      "explicit gameplay-cap behavior matching V1",
+      "pure result fields needed by later application adapters"
+    ],
+    "forbidden": [
+      "runtime or Telegram wiring",
+      "SQLite repository or UoW integration",
+      "invented EXP table, cap, point award, event order or idempotency ledger",
+      "changes to accepted V1 formulas or prepared configuration ranges"
+    ]
+  },
+  "summary": {
+    "input_unresolved_contracts": 5,
+    "resolved_contracts": 5,
+    "remaining_unresolved_contracts": 0,
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "implementation_authorized": true,
+  "runtime_integration_authorized": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_9_1c_implement_exp_and_level_up.py",
+  "verification": {
+    "canonical_v2_ci": {
+      "schema_version": 1,
+      "status": "PASS",
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "compile",
+          "status": "PASS",
+          "file_count": 119,
+          "failures": []
+        },
+        {
+          "name": "imports",
+          "status": "PASS",
+          "module_count": 88,
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-c",
+              "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.mana_engine', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "unit",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "tests_v2",
+              "-p",
+              "test_*.py"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "..............................................................................................................................\n----------------------------------------------------------------------\nRan 126 tests in 13.329s\n\nOK"
+          }
+        },
+        {
+          "name": "architecture",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "tools/verify_v2_architecture.py",
+              "--project-root",
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+            ],
+            "returncode": 0,
+            "stdout": "V2 architecture enforcement: PASS\nPhysical files: 88\nImport edges: 310\nViolations: 0",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "duplicate_scan",
+          "status": "PASS",
+          "symbol_count": 283,
+          "duplicates": {}
+        },
+        {
+          "name": "content_validation",
+          "status": "PASS",
+          "file_count": 0,
+          "failures": []
+        }
+      ]
+    },
+    "removed_bytecode_before_ci": [],
+    "protected_before": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    },
+    "protected_after": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  }
+}
