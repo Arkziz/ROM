@@ -1,0 +1,183 @@
+{
+  "schema_version": 1,
+  "stage": "21.8.8a",
+  "status": "PASS",
+  "conclusion": "REVIEW_REQUIRED",
+  "generated_at_utc": "2026-10-22T19:37:05.572350+00:00",
+  "source_audit": "reports/stage_21_8_8_existing_battle_persistence_audit.json",
+  "source_audit_sha256": "1ead114347b6bd1926efe234b42a80504e8671df14954ba5fe1183879e66e19f",
+  "source_audit_conclusion": "GO_TO_SEMANTIC_REFINEMENT",
+  "semantic_rows": [
+    {
+      "contract": "V1_PERSISTENCE_OWNER",
+      "classification": "V1_CONFIRMED",
+      "decision": "V1 persists a PvE encounter lifecycle marker.",
+      "evidence": [
+        {
+          "path": "systems/pve_auto_escape_system.py",
+          "symbol": "begin_pve_encounter",
+          "line_start": 61,
+          "line_end": 72,
+          "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+          "source_sha256": "ecf03d453f7f71ada2c0795e98dbad2ecbe7911ad3b98ccba093d237b3c8378a"
+        }
+      ]
+    },
+    {
+      "contract": "ACTIVE_ENCOUNTER_READ",
+      "classification": "V1_CONFIRMED",
+      "decision": "V1 reads the active persisted encounter marker.",
+      "evidence": [
+        {
+          "path": "systems/pve_auto_escape_system.py",
+          "symbol": "get_active_pve_encounter",
+          "line_start": 74,
+          "line_end": 77,
+          "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+          "source_sha256": "a2faa1518f3f4d2c94330722c0635da9ca6823453ebde073b4db7610f8a85ca0"
+        }
+      ]
+    },
+    {
+      "contract": "TERMINAL_CLAIM",
+      "classification": "V1_CONFIRMED",
+      "decision": "Terminal claim is guarded by the persisted active encounter.",
+      "evidence": [
+        {
+          "path": "systems/pve_auto_escape_system.py",
+          "symbol": "claim_pve_terminal",
+          "line_start": 79,
+          "line_end": 91,
+          "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+          "source_sha256": "f78c65b9e9889c7ed334c51d621fc76f9bd87d12b12ee1d890613c623dedfd03"
+        }
+      ]
+    },
+    {
+      "contract": "RESTART_RECOVERY",
+      "classification": "V1_CONFIRMED",
+      "decision": "Restart recovery expires or closes persisted PvE encounter markers.",
+      "evidence": [
+        {
+          "path": "systems/pve_auto_escape_system.py",
+          "symbol": "recover_pve_encounters_after_restart",
+          "line_start": 107,
+          "line_end": 115,
+          "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+          "source_sha256": "4d782d23e5f7473b92d40b47a72af0fbf413efda1ddcad1c5eeef8c6ad4f9a5a"
+        }
+      ]
+    },
+    {
+      "contract": "EXPIRE_ONCE",
+      "classification": "V1_CONFIRMED",
+      "decision": "Expiry uses a claim-once path rather than duplicate terminal mutation.",
+      "evidence": [
+        {
+          "path": "systems/pve_auto_escape_system.py",
+          "symbol": "expire_pve_encounters_once",
+          "line_start": 97,
+          "line_end": 105,
+          "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+          "source_sha256": "162a50a1a965873ab5f183abd851ff8ddfe74c8c3117cf99befcd9a3bb4f6007"
+        }
+      ]
+    },
+    {
+      "contract": "PVE_CONSUMER",
+      "classification": "V1_CONFIRMED",
+      "decision": "PvE handler consumes begin/read encounter operations.",
+      "evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "register_combat_handlers",
+          "line_start": 2125,
+          "line_end": 3837,
+          "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+          "source_sha256": "c0adcf7fcb1325d719f1839cdcab76d2447b593ee45ee545f2e257b5bec8191b"
+        }
+      ]
+    },
+    {
+      "contract": "VICTORY_TERMINAL_CONSUMER",
+      "classification": "V1_CONFIRMED",
+      "decision": "Victory consumes the terminal claim boundary.",
+      "evidence": [
+        {
+          "path": "handlers/combat.py",
+          "symbol": "process_victory",
+          "line_start": 1964,
+          "line_end": 2118,
+          "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+          "source_sha256": "330acb48958c4b1a63dd8e093a8bc6dada3032ab412a8264c463868b49e26d57"
+        }
+      ]
+    },
+    {
+      "contract": "PVP_TERMINAL_PERSISTENCE",
+      "classification": "V1_CONFIRMED",
+      "decision": "PvP has a separate completion/persistence boundary and is not evidence of shared PvE save/resume.",
+      "evidence": [
+        {
+          "path": "systems/pvp_completion_service.py",
+          "symbol": "<module>",
+          "line_start": 1,
+          "line_end": 100,
+          "sha256": "f4a8c3043b127792dedfe8c741d00f49a1de54dd78be6a2e5bb8c563067757d6",
+          "source_sha256": "f4a8c3043b127792dedfe8c741d00f49a1de54dd78be6a2e5bb8c563067757d6"
+        }
+      ]
+    },
+    {
+      "contract": "FULL_BATTLE_SNAPSHOT_SAVE",
+      "classification": "UNRESOLVED",
+      "decision": "No authoritative V1 owner proves persistence of the complete mutable battle aggregate after every action.",
+      "evidence": []
+    },
+    {
+      "contract": "RESUME_EXACT_TURN_STATE",
+      "classification": "UNRESOLVED",
+      "decision": "No authoritative V1 owner proves exact restart restoration of turn, cooldowns, effects and RNG position.",
+      "evidence": []
+    },
+    {
+      "contract": "STALE_ACTION_REVISION_TOKEN",
+      "classification": "UNRESOLVED",
+      "decision": "Encounter activity and terminal claims exist, but a canonical action revision/version token is not proven.",
+      "evidence": []
+    },
+    {
+      "contract": "SHARED_PVE_PVP_BOSS_REPOSITORY",
+      "classification": "UNRESOLVED",
+      "decision": "V1 evidence shows separate consumers; it does not prove one shared battle repository contract.",
+      "evidence": []
+    },
+    {
+      "contract": "SIMULATOR_PERSISTENCE_PARITY",
+      "classification": "UNRESOLVED",
+      "decision": "Simulator snapshot terminology does not prove runtime battle-persistence parity.",
+      "evidence": []
+    }
+  ],
+  "summary": {
+    "semantic_rows": 13,
+    "v1_confirmed_rows": 8,
+    "unresolved_rows": 5,
+    "unresolved_contracts": [
+      "FULL_BATTLE_SNAPSHOT_SAVE",
+      "RESUME_EXACT_TURN_STATE",
+      "STALE_ACTION_REVISION_TOKEN",
+      "SHARED_PVE_PVP_BOSS_REPOSITORY",
+      "SIMULATOR_PERSISTENCE_PARITY"
+    ],
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "runtime_ready_claimed": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "implementation_authorized": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_8_8b_resolve_battle_persistence_parity.py"
+}
