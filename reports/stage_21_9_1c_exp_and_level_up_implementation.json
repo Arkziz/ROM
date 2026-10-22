@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "stage": "21.9.1c",
+  "status": "PASS",
+  "conclusion": "API_READY",
+  "generated_at_utc": "2026-10-22T20:38:39.892040+00:00",
+  "source_v1": "data/player_progression.py",
+  "source_v1_sha256": "2584a3911237d6e2884e1ee57be08b9b680ca8aedcbe361023a212dca956c1a2",
+  "implementation": "rom_v2/domain/player_progression.py",
+  "tests": "tests_v2/test_player_progression.py",
+  "configured_levels": [
+    1,
+    50
+  ],
+  "implemented": [
+    "thresholds",
+    "residual_exp",
+    "multi_level",
+    "explicit_level_cap",
+    "unapplied_exp",
+    "reached_levels",
+    "attribute_points_projection"
+  ],
+  "not_connected": [
+    "sqlite",
+    "repository_uow",
+    "runtime",
+    "telegram",
+    "reward_delivery",
+    "profile"
+  ],
+  "manual_game_check": "NOT_REQUIRED",
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false
+}
