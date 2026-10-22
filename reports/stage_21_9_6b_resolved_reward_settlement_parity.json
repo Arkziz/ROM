@@ -1,0 +1,1763 @@
+{
+  "schema_version": 1,
+  "stage": "21.9.6b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "generated_at_utc": "2026-10-22T22:48:47.488078+00:00",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "5ab56a515e038e77411fc266a792987757024a68"
+  },
+  "source_contract": "reports/stage_21_9_6a_refined_post_combat_hooks_contract.json",
+  "source_contract_sha256": "c48e1858f233e4ffd25780ce71cf670fa5afdf6c48609f11cec599bf5e3d2b6a",
+  "resolved_contracts": [
+    {
+      "contract": "VICTORY_DURABILITY_DUPLICATE_DEFINITIONS",
+      "resolution": "LAST_DEFINITION_RUNTIME_BINDING_PRESERVED_AS_COMPATIBILITY",
+      "decision": "Python binds the last V1 definition at runtime; V2 records one durability consumer key and does not copy duplicate definitions.",
+      "evidence": {
+        "path": "systems/equipment_system.py",
+        "symbol": "apply_random_durability_wear_on_victory",
+        "definition_count": 2,
+        "file_sha256": "53e72297481aad38e9319bd69cee5a8a0056e46502bce78981b84686522836d4",
+        "definitions": [
+          {
+            "line_start": 3299,
+            "line_end": 3343,
+            "source_sha256": "9cc9f25d3dcb1a194e60f9dc694b2df3934b47d2585df2d452e2e9e97fc8aa89",
+            "source": "def apply_random_durability_wear_on_victory(user_id, chance=None, amount=1):\n\n    \"\"\"Зберігає старий принцип: за успішного roll зношується один випадковий вдягнений предмет.\"\"\"\n\n    import random\n\n    db = _equipment_db_9_0_12h2()\n\n    if chance is None:\n\n        chance = float(getattr(db, \"DURABILITY_WEAR_CHANCE\", 0.25))\n\n    chance = max(0.0, min(1.0, float(chance)))\n\n    if random.random() >= chance:\n\n        return {\"success\": True, \"worn\": False, \"damaged\": 0, \"items\": []}\n\n    rows = db.conn.execute(\n\n        \"\"\"\n\n        SELECT inv.id\n\n        FROM equipment_slots es\n\n        JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id\n\n        WHERE es.user_id=? AND es.inventory_id IS NOT NULL AND COALESCE(inv.durability,100)>0\n\n        \"\"\",\n\n        (int(user_id),),\n\n    ).fetchall()\n\n    if not rows:\n\n        return {\"success\": True, \"worn\": False, \"damaged\": 0, \"items\": []}\n\n    inventory_id = int(random.choice(rows)[0])\n\n    result = reduce_equipped_item_durability(user_id, inventory_id, amount=amount)\n\n    return {\"success\": bool(result.get(\"success\")), \"worn\": True, \"damaged\": 1, \"items\": [result], \"inventory_id\": inventory_id}"
+          },
+          {
+            "line_start": 3411,
+            "line_end": 3531,
+            "source_sha256": "2b8281be651be280211966e387242cd0a40c02dcf227a1c7e4c654f0c0e40ed9",
+            "source": "def apply_random_durability_wear_on_victory(user_id, chance_percent=25, **kwargs):\n\n    \"\"\"\n\n    Historical public contract used by build_victory_text():\n\n    {triggered: bool, message: str | None}.\n\n\n\n    On a successful roll exactly one equipped, non-broken item loses 1 durability.\n\n    \"\"\"\n\n    import random\n\n\n\n    try:\n\n        chance_percent = int(chance_percent)\n\n    except Exception:\n\n        chance_percent = 25\n\n    chance_percent = max(0, min(100, chance_percent))\n\n\n\n    roll = random.randint(1, 100)\n\n    if roll > chance_percent:\n\n        return {\"triggered\": False, \"message\": None}\n\n\n\n    db = _equipment_db_9_0_12h2()\n\n    rows = db.conn.execute(\n\n        \"SELECT es.slot_key, inv.id, COALESCE(inv.durability,100), it.name \"\n\n        \"FROM equipment_slots es \"\n\n        \"JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id \"\n\n        \"JOIN items it ON it.id=inv.item_id \"\n\n        \"WHERE es.user_id=? AND es.inventory_id IS NOT NULL \"\n\n        \"AND COALESCE(inv.durability,100)>0\",\n\n        (int(user_id),),\n\n    ).fetchall()\n\n\n\n    if not rows:\n\n        return {\"triggered\": False, \"message\": None}\n\n\n\n    slot_key, inventory_id, old_durability, base_name = random.choice(rows)\n\n    old_durability = max(0, min(100, int(old_durability or 0)))\n\n    new_durability = max(0, old_durability - 1)\n\n\n\n    db.conn.execute(\n\n        \"UPDATE inventory SET durability=? WHERE id=? AND user_id=?\",\n\n        (new_durability, int(inventory_id), int(user_id)),\n\n    )\n\n    db.conn.commit()\n\n    _equipment_sync_hp_9_0_12h2(user_id)\n\n\n\n    name = _equipment_display_name_9_0_12h2(inventory_id, base_name)\n\n    slot_name = _SLOT_NAMES_9_0_12H2.get(str(slot_key), str(slot_key))\n\n    broken_text = \" Предмет зламано!\" if new_durability <= 0 else \"\"\n\n    message = (\n\n        f\"🧱 {slot_name}: {name} втратив 1 міцності \"\n\n        f\"({old_durability} → {new_durability}/100).{broken_text}\"\n\n    )\n\n    return {\n\n        \"triggered\": True,\n\n        \"message\": message,\n\n        \"inventory_id\": int(inventory_id),\n\n        \"name\": name,\n\n        \"slot_key\": str(slot_key),\n\n        \"old\": old_durability,\n\n        \"new\": new_durability,\n\n        \"broken\": new_durability <= 0,\n\n    }"
+          }
+        ]
+      }
+    },
+    {
+      "contract": "AUTHORITATIVE_V2_POST_COMBAT_OWNER",
+      "resolution": "POST_COMBAT_HOOK_COORDINATOR",
+      "decision": "A single application-level PostCombatHookCoordinator plans deterministic consumers from one immutable event.",
+      "evidence": {
+        "path": "handlers/combat.py",
+        "symbol": "process_victory",
+        "definition_count": 1,
+        "file_sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+        "definitions": [
+          {
+            "line_start": 1964,
+            "line_end": 2118,
+            "source_sha256": "330acb48958c4b1a63dd8e093a8bc6dada3032ab412a8264c463868b49e26d57",
+            "source": "def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=\"\"):\n    encounter_id = (mob or {}).get(\"pve_encounter_id\")\n    if encounter_id and not claim_pve_terminal(user_id, 'victory', encounter_id):\n        bot.send_message(chat_id, STALE_COMBAT_TEXT, reply_markup=main_kb())\n        return\n    # ROM_STAGE_18_29_3F_EVENT_VICTORY_STATISTICS\n    event_key = str((mob or {}).get(\"event_key\") or \"\").strip()\n    event_mob_key = str((mob or {}).get(\"event_mob_key\") or \"\").strip()\n    if encounter_id and event_key and event_mob_key:\n        from db_modules.connection import conn as event_statistics_conn\n        from systems.event_statistics_system import record_event_mob_victory\n        record_event_mob_victory(\n            event_statistics_conn,\n            event_key=event_key,\n            user_id=user_id,\n            mob_key=event_mob_key,\n            terminal_event_id=encounter_id,\n        )\n        event_statistics_conn.commit()\n    \"\"\"\n    Завершення бою перемогою.\n\n    Перед виходом із бою фіксуємо поточне HP з бойового стану\n    і очищаємо тимчасові бойові ефекти.\n\n    Це виправляє кейс, коли жрець наклав HoT у фінальному раунді,\n    а залишкові тіки лікування некоректно доліковували героя після перемоги.\n    \"\"\"\n\n    finalize_combat_state_before_victory(\n        user_id=user_id,\n        mob=mob\n    )\n\n    if hasattr(bot, \"user_data\") and user_id in bot.user_data:\n        del bot.user_data[user_id]\n\n    reward = process_victory_reward(\n        user_id=user_id,\n        player_level=lvl,\n        mob=mob\n    )\n\n    if mob.get(\"is_boss\"):\n        encounter_id = mob.get(\"pve_encounter_id\")\n        if encounter_id:\n            from systems.world_chronicle_system import (\n                get_character_name_snapshot,\n                record_world_chronicle_event,\n            )\n            character_name = get_character_name_snapshot(user_id)\n            if character_name:\n                record_world_chronicle_event(\n                    \"location_boss_defeated\",\n                    user_id,\n                    character_name,\n                    f\"location_boss_defeated:{encounter_id}\",\n                    subject_key=str(mob.get(\"boss_key\") or \"\"),\n                    subject_name_snapshot=str(mob.get(\"name\") or mob.get(\"base_name\") or \"Бос\"),\n                    location_id=str(mob.get(\"location_id\") or \"\"),\n                )\n\n    # The RNG encounter has already passed the canonical terminal claim. A\n    # matching ACTIVE BOSS quest now completes and rewards exactly once.\n    story_boss_result = process_rng_boss_story_completion(\n        user_id=user_id,\n        mob=mob,\n        location_id=get_current_location(user_id),\n        encounter_id=encounter_id,\n    )\n\n    wear_result = apply_random_durability_wear_on_victory(\n        user_id=user_id,\n        chance_percent=25\n    )\n\n    contract_result = process_contract_progress_on_kill(\n        user_id=user_id,\n        mob=mob\n    )\n\n    daily_result = process_daily_quest_progress_on_kill(\n        user_id=user_id,\n        mob=mob\n    )\n\n    # Terminal victory was already claimed above, so this hook runs once per\n    # encounter and cannot double-count repeated Telegram terminal updates.\n    story_region_result = process_region_kill_story_progress(\n        user_id=user_id,\n        location_id=get_current_location(user_id),\n    )\n\n    # Dedicated quest items are rolled after the same terminal claim and never\n    # enter ordinary inventory or consume bag capacity.\n    story_item_result = process_story_quest_item_drop(\n        user_id=user_id,\n        location_id=get_current_location(user_id),\n    )\n\n    # Combat EXP was awarded before story progress. Evaluate the resulting level\n    # only after this terminal victory's progress/drop hooks have run.\n    exp_result = reward.get(\"exp_result\") or {}\n    resulting_level = int(exp_result.get(\"level\") or get_player_level(user_id))\n    story_skip_result = process_overlevel_story_quest_skip(\n        user_id=user_id,\n        current_level=resulting_level,\n    )\n\n    text = build_victory_text(\n        user_id=user_id,\n        lvl=lvl,\n        mob=mob,\n        reward=reward,\n        wear_result=wear_result,\n        contract_result=contract_result,\n        daily_result=daily_result,\n        prefix_text=prefix_text\n    )\n\n    bot.send_message(\n        chat_id,\n        text,\n        reply_markup=main_kb()\n    )\n\n    # Quest-item persistence is owned by the drop system. Telegram output is a\n    # separate consumer and is emitted exactly once only for an actual grant.\n    if int(story_item_result.get(\"granted\", 0) or 0) > 0:\n        story_drop_message = str(story_item_result.get(\"drop_message\") or \"\").strip()\n        if story_drop_message:\n            bot.send_message(chat_id, story_drop_message)\n\n    exp_result = reward.get(\"exp_result\") or {}\n    reward_message = str(exp_result.get(\"level_up_reward_message\") or \"\").strip()\n    level_ups = int(exp_result.get(\"level_ups\", 0) or 0)\n    if level_ups > 0 and not reward_message:\n        # Some levels have no special milestone item message. Always announce\n        # the canonical level transition and permanent attribute-point reward.\n        old_level = int(exp_result.get(\"old_level\", resulting_level - level_ups) or 0)\n        new_level = int(exp_result.get(\"level\", resulting_level) or resulting_level)\n        points = int(exp_result.get(\"attribute_points_awarded\", level_ups * 5) or 0)\n        reward_message = (\n            \"🎉 Рівень підвищено!\\n\\n\"\n            f\"🏆 Рівень: {old_level} → {new_level}\\n\"\n            f\"🌟 Вільні очки характеристик: +{points}\"\n        )\n    if reward_message:\n        bot.send_message(chat_id, reward_message)\n\n    # Emit one campaign-level summary only after the level-up notification.\n    # The lifecycle mutation is already committed and idempotent.\n    story_skip_message = str((story_skip_result or {}).get(\"message\") or \"\").strip()\n    if story_skip_message:\n        bot.send_message(chat_id, story_skip_message)"
+          }
+        ]
+      }
+    },
+    {
+      "contract": "IMMUTABLE_POST_COMBAT_EVENT_PAYLOAD",
+      "resolution": "FROZEN_SETTLED_VICTORY_EVENT",
+      "decision": "The event carries stable operation key, battle and actor IDs, enemy snapshot, location, terminal outcome, finalized settlement summary and committed status; no repositories or presentation text.",
+      "evidence": {
+        "path": "handlers/combat.py",
+        "symbol": "process_victory",
+        "definition_count": 1,
+        "file_sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+        "definitions": [
+          {
+            "line_start": 1964,
+            "line_end": 2118,
+            "source_sha256": "330acb48958c4b1a63dd8e093a8bc6dada3032ab412a8264c463868b49e26d57",
+            "source": "def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=\"\"):\n    encounter_id = (mob or {}).get(\"pve_encounter_id\")\n    if encounter_id and not claim_pve_terminal(user_id, 'victory', encounter_id):\n        bot.send_message(chat_id, STALE_COMBAT_TEXT, reply_markup=main_kb())\n        return\n    # ROM_STAGE_18_29_3F_EVENT_VICTORY_STATISTICS\n    event_key = str((mob or {}).get(\"event_key\") or \"\").strip()\n    event_mob_key = str((mob or {}).get(\"event_mob_key\") or \"\").strip()\n    if encounter_id and event_key and event_mob_key:\n        from db_modules.connection import conn as event_statistics_conn\n        from systems.event_statistics_system import record_event_mob_victory\n        record_event_mob_victory(\n            event_statistics_conn,\n            event_key=event_key,\n            user_id=user_id,\n            mob_key=event_mob_key,\n            terminal_event_id=encounter_id,\n        )\n        event_statistics_conn.commit()\n    \"\"\"\n    Завершення бою перемогою.\n\n    Перед виходом із бою фіксуємо поточне HP з бойового стану\n    і очищаємо тимчасові бойові ефекти.\n\n    Це виправляє кейс, коли жрець наклав HoT у фінальному раунді,\n    а залишкові тіки лікування некоректно доліковували героя після перемоги.\n    \"\"\"\n\n    finalize_combat_state_before_victory(\n        user_id=user_id,\n        mob=mob\n    )\n\n    if hasattr(bot, \"user_data\") and user_id in bot.user_data:\n        del bot.user_data[user_id]\n\n    reward = process_victory_reward(\n        user_id=user_id,\n        player_level=lvl,\n        mob=mob\n    )\n\n    if mob.get(\"is_boss\"):\n        encounter_id = mob.get(\"pve_encounter_id\")\n        if encounter_id:\n            from systems.world_chronicle_system import (\n                get_character_name_snapshot,\n                record_world_chronicle_event,\n            )\n            character_name = get_character_name_snapshot(user_id)\n            if character_name:\n                record_world_chronicle_event(\n                    \"location_boss_defeated\",\n                    user_id,\n                    character_name,\n                    f\"location_boss_defeated:{encounter_id}\",\n                    subject_key=str(mob.get(\"boss_key\") or \"\"),\n                    subject_name_snapshot=str(mob.get(\"name\") or mob.get(\"base_name\") or \"Бос\"),\n                    location_id=str(mob.get(\"location_id\") or \"\"),\n                )\n\n    # The RNG encounter has already passed the canonical terminal claim. A\n    # matching ACTIVE BOSS quest now completes and rewards exactly once.\n    story_boss_result = process_rng_boss_story_completion(\n        user_id=user_id,\n        mob=mob,\n        location_id=get_current_location(user_id),\n        encounter_id=encounter_id,\n    )\n\n    wear_result = apply_random_durability_wear_on_victory(\n        user_id=user_id,\n        chance_percent=25\n    )\n\n    contract_result = process_contract_progress_on_kill(\n        user_id=user_id,\n        mob=mob\n    )\n\n    daily_result = process_daily_quest_progress_on_kill(\n        user_id=user_id,\n        mob=mob\n    )\n\n    # Terminal victory was already claimed above, so this hook runs once per\n    # encounter and cannot double-count repeated Telegram terminal updates.\n    story_region_result = process_region_kill_story_progress(\n        user_id=user_id,\n        location_id=get_current_location(user_id),\n    )\n\n    # Dedicated quest items are rolled after the same terminal claim and never\n    # enter ordinary inventory or consume bag capacity.\n    story_item_result = process_story_quest_item_drop(\n        user_id=user_id,\n        location_id=get_current_location(user_id),\n    )\n\n    # Combat EXP was awarded before story progress. Evaluate the resulting level\n    # only after this terminal victory's progress/drop hooks have run.\n    exp_result = reward.get(\"exp_result\") or {}\n    resulting_level = int(exp_result.get(\"level\") or get_player_level(user_id))\n    story_skip_result = process_overlevel_story_quest_skip(\n        user_id=user_id,\n        current_level=resulting_level,\n    )\n\n    text = build_victory_text(\n        user_id=user_id,\n        lvl=lvl,\n        mob=mob,\n        reward=reward,\n        wear_result=wear_result,\n        contract_result=contract_result,\n        daily_result=daily_result,\n        prefix_text=prefix_text\n    )\n\n    bot.send_message(\n        chat_id,\n        text,\n        reply_markup=main_kb()\n    )\n\n    # Quest-item persistence is owned by the drop system. Telegram output is a\n    # separate consumer and is emitted exactly once only for an actual grant.\n    if int(story_item_result.get(\"granted\", 0) or 0) > 0:\n        story_drop_message = str(story_item_result.get(\"drop_message\") or \"\").strip()\n        if story_drop_message:\n            bot.send_message(chat_id, story_drop_message)\n\n    exp_result = reward.get(\"exp_result\") or {}\n    reward_message = str(exp_result.get(\"level_up_reward_message\") or \"\").strip()\n    level_ups = int(exp_result.get(\"level_ups\", 0) or 0)\n    if level_ups > 0 and not reward_message:\n        # Some levels have no special milestone item message. Always announce\n        # the canonical level transition and permanent attribute-point reward.\n        old_level = int(exp_result.get(\"old_level\", resulting_level - level_ups) or 0)\n        new_level = int(exp_result.get(\"level\", resulting_level) or resulting_level)\n        points = int(exp_result.get(\"attribute_points_awarded\", level_ups * 5) or 0)\n        reward_message = (\n            \"🎉 Рівень підвищено!\\n\\n\"\n            f\"🏆 Рівень: {old_level} → {new_level}\\n\"\n            f\"🌟 Вільні очки характеристик: +{points}\"\n        )\n    if reward_message:\n        bot.send_message(chat_id, reward_message)\n\n    # Emit one campaign-level summary only after the level-up notification.\n    # The lifecycle mutation is already committed and idempotent.\n    story_skip_message = str((story_skip_result or {}).get(\"message\") or \"\").strip()\n    if story_skip_message:\n        bot.send_message(chat_id, story_skip_message)"
+          }
+        ]
+      }
+    },
+    {
+      "contract": "STABLE_EVENT_AND_OPERATION_KEY",
+      "resolution": "REUSE_SETTLEMENT_OPERATION_KEY",
+      "decision": "The settled reward operation key is the canonical event key and consumer idempotency prefix; no derived text keys.",
+      "evidence": {
+        "path": "systems/reward_system.py",
+        "symbol": "process_victory_reward",
+        "definition_count": 1,
+        "file_sha256": "87a5d92d94735dd2593c5d847502622dd96bab75acf2c2177e48654d5608f5e5",
+        "definitions": [
+          {
+            "line_start": 1008,
+            "line_end": 1069,
+            "source_sha256": "dfb0db24ce17f5fa2a1f91efc38af4a6ff8a19aeb88004e842560021397e89c5",
+            "source": "def process_victory_reward(user_id, player_level, mob):\n\n    \"\"\"Apply Premium EXP and combat gold exactly once for a mob victory.\"\"\"\n\n    base_exp = calculate_exp_reward(player_level=player_level, mob=mob)\n\n    gold = calculate_gold_reward(player_level=player_level, mob=mob)\n\n    from systems.timed_exp_bonus_system import calculate_mob_kill_exp, calculate_mob_kill_gold\n\n    exp_breakdown = calculate_mob_kill_exp(user_id, base_exp)\n\n    gold_breakdown = calculate_mob_kill_gold(user_id, gold)\n\n    gold = float(gold_breakdown[\"final_gold\"])\n\n    exp = int(exp_breakdown[\"final_exp\"])\n\n    exp_result = add_exp(user_id, exp)\n\n    add_gold(user_id, gold)\n\n    add_kill(user_id)\n\n    drop_result = process_enemy_drops(user_id, mob)\n\n    # ROM_STAGE_18_29_4B_EVENT_DROP_INTEGRATION\n    event_drop_results = process_event_drops(user_id, mob)\n\n    return {\n\n        \"exp\": exp,\n\n        \"base_exp\": int(base_exp),\n\n        \"premium_exp_bonus\": int(exp_breakdown[\"bonus_exp\"]),\n\n        \"exp_bonus_active\": bool(exp_breakdown[\"active\"]),\n\n        \"gold\": gold,\n\n        \"base_gold\": float(gold_breakdown[\"base_gold\"]),\n\n        \"premium_gold_bonus\": float(gold_breakdown[\"bonus_gold\"]),\n\n        \"premium_gold_active\": bool(gold_breakdown[\"active\"]),\n\n        \"exp_result\": exp_result,\n\n        \"loot_messages\": drop_result[\"messages\"],\n\n        \"rune_drop\": drop_result[\"rune_drop\"],\n\n        \"central_drop_rules\": drop_result[\"executed_rules\"],\n\n        \"event_drop_results\": event_drop_results,\n\n        \"used_slots\": get_inventory_used_slots(user_id),\n\n        \"capacity\": get_bag_capacity(user_id),\n\n    }"
+          }
+        ]
+      }
+    },
+    {
+      "contract": "SETTLEMENT_BEFORE_HOOK_ORDER",
+      "resolution": "SETTLEMENT_COMMIT_PRECEDES_DISPATCH",
+      "decision": "Durable reward settlement completes successfully before post-combat dispatch; consumers cannot mutate settlement outputs.",
+      "evidence": {
+        "settlement": {
+          "path": "systems/reward_system.py",
+          "symbol": "process_victory_reward",
+          "definition_count": 1,
+          "file_sha256": "87a5d92d94735dd2593c5d847502622dd96bab75acf2c2177e48654d5608f5e5",
+          "definitions": [
+            {
+              "line_start": 1008,
+              "line_end": 1069,
+              "source_sha256": "dfb0db24ce17f5fa2a1f91efc38af4a6ff8a19aeb88004e842560021397e89c5",
+              "source": "def process_victory_reward(user_id, player_level, mob):\n\n    \"\"\"Apply Premium EXP and combat gold exactly once for a mob victory.\"\"\"\n\n    base_exp = calculate_exp_reward(player_level=player_level, mob=mob)\n\n    gold = calculate_gold_reward(player_level=player_level, mob=mob)\n\n    from systems.timed_exp_bonus_system import calculate_mob_kill_exp, calculate_mob_kill_gold\n\n    exp_breakdown = calculate_mob_kill_exp(user_id, base_exp)\n\n    gold_breakdown = calculate_mob_kill_gold(user_id, gold)\n\n    gold = float(gold_breakdown[\"final_gold\"])\n\n    exp = int(exp_breakdown[\"final_exp\"])\n\n    exp_result = add_exp(user_id, exp)\n\n    add_gold(user_id, gold)\n\n    add_kill(user_id)\n\n    drop_result = process_enemy_drops(user_id, mob)\n\n    # ROM_STAGE_18_29_4B_EVENT_DROP_INTEGRATION\n    event_drop_results = process_event_drops(user_id, mob)\n\n    return {\n\n        \"exp\": exp,\n\n        \"base_exp\": int(base_exp),\n\n        \"premium_exp_bonus\": int(exp_breakdown[\"bonus_exp\"]),\n\n        \"exp_bonus_active\": bool(exp_breakdown[\"active\"]),\n\n        \"gold\": gold,\n\n        \"base_gold\": float(gold_breakdown[\"base_gold\"]),\n\n        \"premium_gold_bonus\": float(gold_breakdown[\"bonus_gold\"]),\n\n        \"premium_gold_active\": bool(gold_breakdown[\"active\"]),\n\n        \"exp_result\": exp_result,\n\n        \"loot_messages\": drop_result[\"messages\"],\n\n        \"rune_drop\": drop_result[\"rune_drop\"],\n\n        \"central_drop_rules\": drop_result[\"executed_rules\"],\n\n        \"event_drop_results\": event_drop_results,\n\n        \"used_slots\": get_inventory_used_slots(user_id),\n\n        \"capacity\": get_bag_capacity(user_id),\n\n    }"
+            }
+          ]
+        },
+        "victory": {
+          "path": "handlers/combat.py",
+          "symbol": "process_victory",
+          "definition_count": 1,
+          "file_sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+          "definitions": [
+            {
+              "line_start": 1964,
+              "line_end": 2118,
+              "source_sha256": "330acb48958c4b1a63dd8e093a8bc6dada3032ab412a8264c463868b49e26d57",
+              "source": "def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=\"\"):\n    encounter_id = (mob or {}).get(\"pve_encounter_id\")\n    if encounter_id and not claim_pve_terminal(user_id, 'victory', encounter_id):\n        bot.send_message(chat_id, STALE_COMBAT_TEXT, reply_markup=main_kb())\n        return\n    # ROM_STAGE_18_29_3F_EVENT_VICTORY_STATISTICS\n    event_key = str((mob or {}).get(\"event_key\") or \"\").strip()\n    event_mob_key = str((mob or {}).get(\"event_mob_key\") or \"\").strip()\n    if encounter_id and event_key and event_mob_key:\n        from db_modules.connection import conn as event_statistics_conn\n        from systems.event_statistics_system import record_event_mob_victory\n        record_event_mob_victory(\n            event_statistics_conn,\n            event_key=event_key,\n            user_id=user_id,\n            mob_key=event_mob_key,\n            terminal_event_id=encounter_id,\n        )\n        event_statistics_conn.commit()\n    \"\"\"\n    Завершення бою перемогою.\n\n    Перед виходом із бою фіксуємо поточне HP з бойового стану\n    і очищаємо тимчасові бойові ефекти.\n\n    Це виправляє кейс, коли жрець наклав HoT у фінальному раунді,\n    а залишкові тіки лікування некоректно доліковували героя після перемоги.\n    \"\"\"\n\n    finalize_combat_state_before_victory(\n        user_id=user_id,\n        mob=mob\n    )\n\n    if hasattr(bot, \"user_data\") and user_id in bot.user_data:\n        del bot.user_data[user_id]\n\n    reward = process_victory_reward(\n        user_id=user_id,\n        player_level=lvl,\n        mob=mob\n    )\n\n    if mob.get(\"is_boss\"):\n        encounter_id = mob.get(\"pve_encounter_id\")\n        if encounter_id:\n            from systems.world_chronicle_system import (\n                get_character_name_snapshot,\n                record_world_chronicle_event,\n            )\n            character_name = get_character_name_snapshot(user_id)\n            if character_name:\n                record_world_chronicle_event(\n                    \"location_boss_defeated\",\n                    user_id,\n                    character_name,\n                    f\"location_boss_defeated:{encounter_id}\",\n                    subject_key=str(mob.get(\"boss_key\") or \"\"),\n                    subject_name_snapshot=str(mob.get(\"name\") or mob.get(\"base_name\") or \"Бос\"),\n                    location_id=str(mob.get(\"location_id\") or \"\"),\n                )\n\n    # The RNG encounter has already passed the canonical terminal claim. A\n    # matching ACTIVE BOSS quest now completes and rewards exactly once.\n    story_boss_result = process_rng_boss_story_completion(\n        user_id=user_id,\n        mob=mob,\n        location_id=get_current_location(user_id),\n        encounter_id=encounter_id,\n    )\n\n    wear_result = apply_random_durability_wear_on_victory(\n        user_id=user_id,\n        chance_percent=25\n    )\n\n    contract_result = process_contract_progress_on_kill(\n        user_id=user_id,\n        mob=mob\n    )\n\n    daily_result = process_daily_quest_progress_on_kill(\n        user_id=user_id,\n        mob=mob\n    )\n\n    # Terminal victory was already claimed above, so this hook runs once per\n    # encounter and cannot double-count repeated Telegram terminal updates.\n    story_region_result = process_region_kill_story_progress(\n        user_id=user_id,\n        location_id=get_current_location(user_id),\n    )\n\n    # Dedicated quest items are rolled after the same terminal claim and never\n    # enter ordinary inventory or consume bag capacity.\n    story_item_result = process_story_quest_item_drop(\n        user_id=user_id,\n        location_id=get_current_location(user_id),\n    )\n\n    # Combat EXP was awarded before story progress. Evaluate the resulting level\n    # only after this terminal victory's progress/drop hooks have run.\n    exp_result = reward.get(\"exp_result\") or {}\n    resulting_level = int(exp_result.get(\"level\") or get_player_level(user_id))\n    story_skip_result = process_overlevel_story_quest_skip(\n        user_id=user_id,\n        current_level=resulting_level,\n    )\n\n    text = build_victory_text(\n        user_id=user_id,\n        lvl=lvl,\n        mob=mob,\n        reward=reward,\n        wear_result=wear_result,\n        contract_result=contract_result,\n        daily_result=daily_result,\n        prefix_text=prefix_text\n    )\n\n    bot.send_message(\n        chat_id,\n        text,\n        reply_markup=main_kb()\n    )\n\n    # Quest-item persistence is owned by the drop system. Telegram output is a\n    # separate consumer and is emitted exactly once only for an actual grant.\n    if int(story_item_result.get(\"granted\", 0) or 0) > 0:\n        story_drop_message = str(story_item_result.get(\"drop_message\") or \"\").strip()\n        if story_drop_message:\n            bot.send_message(chat_id, story_drop_message)\n\n    exp_result = reward.get(\"exp_result\") or {}\n    reward_message = str(exp_result.get(\"level_up_reward_message\") or \"\").strip()\n    level_ups = int(exp_result.get(\"level_ups\", 0) or 0)\n    if level_ups > 0 and not reward_message:\n        # Some levels have no special milestone item message. Always announce\n        # the canonical level transition and permanent attribute-point reward.\n        old_level = int(exp_result.get(\"old_level\", resulting_level - level_ups) or 0)\n        new_level = int(exp_result.get(\"level\", resulting_level) or resulting_level)\n        points = int(exp_result.get(\"attribute_points_awarded\", level_ups * 5) or 0)\n        reward_message = (\n            \"🎉 Рівень підвищено!\\n\\n\"\n            f\"🏆 Рівень: {old_level} → {new_level}\\n\"\n            f\"🌟 Вільні очки характеристик: +{points}\"\n        )\n    if reward_message:\n        bot.send_message(chat_id, reward_message)\n\n    # Emit one campaign-level summary only after the level-up notification.\n    # The lifecycle mutation is already committed and idempotent.\n    story_skip_message = str((story_skip_result or {}).get(\"message\") or \"\").strip()\n    if story_skip_message:\n        bot.send_message(chat_id, story_skip_message)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "contract": "VICTORY_TERMINAL_SCOPE",
+      "resolution": "SETTLED_VICTORY_ONLY",
+      "decision": "Stage 21.9.6 dispatches only committed victory events; defeat and escape remain terminal-path concerns outside this hook set.",
+      "evidence": {
+        "victory": [
+          {
+            "path": "db_modules/__init__.py",
+            "sha256": "cfe6b42026692106e98c89d22f3af0d1635c7914a2cb298412b0bbb6a36d00eb"
+          },
+          {
+            "path": "db_modules/equipment.py",
+            "sha256": "564b39777715db434017fbdb3ed01713d6503471564eb2a51d38be5324476276"
+          },
+          {
+            "path": "handlers/combat.py",
+            "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409"
+          },
+          {
+            "path": "handlers/event_ui.py",
+            "sha256": "6151dbc850e3b0b86254c0f4d0fb75aaa40ad3e9466e1994d5605bc7d001d5a7"
+          },
+          {
+            "path": "handlers/story_quests.py",
+            "sha256": "2f6ecb8fa65f51b000fce4d16a24673f429b6d571ca11e214dacf71393bf1d28"
+          },
+          {
+            "path": "systems/drop_system.py",
+            "sha256": "bf3fbf54da608e719516727509fe51c5df26815c7d8576bb4f02105cf9f0cd9c"
+          },
+          {
+            "path": "systems/equipment_system.py",
+            "sha256": "53e72297481aad38e9319bd69cee5a8a0056e46502bce78981b84686522836d4"
+          },
+          {
+            "path": "systems/event_statistics_system.py",
+            "sha256": "2581b7ba3e066dc047a66689b7a2e44a6e4bff6c873458e062ef73a5ea389d21"
+          },
+          {
+            "path": "systems/guild_system.py",
+            "sha256": "e52c0fa05137c6eadca7493f18423c4451ff1db874858827d47d4a30f7d5aae2"
+          },
+          {
+            "path": "systems/pve_auto_escape_system.py",
+            "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507"
+          },
+          {
+            "path": "systems/reward_system.py",
+            "sha256": "87a5d92d94735dd2593c5d847502622dd96bab75acf2c2177e48654d5608f5e5"
+          },
+          {
+            "path": "systems/simulation/class_progression.py",
+            "sha256": "c1554cb617c25f61bdc0fe6b3e51a45b32cf3edad3b567297390f43f594496de"
+          },
+          {
+            "path": "systems/simulation/economic_ledger.py",
+            "sha256": "301030fe7241c7c8c232a4305ceb19273648b5f7b2c8e3d6d48344c8511c9284"
+          },
+          {
+            "path": "systems/simulation/loot_equipment_city.py",
+            "sha256": "650c5afa0020ec1e5062bac24b3a7d7c90bf8b03beda1171ddcf12f5fc923dc9"
+          },
+          {
+            "path": "systems/simulation/meta_progression.py",
+            "sha256": "81b021b7088035c082bc0e63eb1bc7d3e0dc834a77508cbb58b99366aeb5141a"
+          },
+          {
+            "path": "systems/simulation/progression_provider.py",
+            "sha256": "e835c07d721ef049884358d91b7607884db97afe22e9de83dcbce9312a8c6bcd"
+          },
+          {
+            "path": "systems/simulation/world_progression.py",
+            "sha256": "a8532f594dbb836c9fef79dc1ef27ab37316f3eab3c15967bb326972b834ba90"
+          },
+          {
+            "path": "systems/story_quest_boss_completion_system.py",
+            "sha256": "c8388fcb0c4d0e979af82ff37f3efd90f30df27e0ad8cce97f0a85d7f19f1f4e"
+          },
+          {
+            "path": "systems/story_quest_combat_progress_system.py",
+            "sha256": "e8c818e6fd47a1deff83fee65f9d28a60bc8396eae80e1b4f41a05a0f6d26932"
+          },
+          {
+            "path": "systems/story_quest_item_drop_system.py",
+            "sha256": "5c17d4f4beb3a2d83720bb489733ea541ce6892da3cbe032df21e6261475847b"
+          }
+        ],
+        "defeat": [
+          {
+            "path": "data/story_quests/start_path_41_50.py",
+            "sha256": "7cd79f589061ba7c543f99b37c942c9ce65037d08fce7b9c5fbf49e6f26539ad"
+          },
+          {
+            "path": "handlers/combat.py",
+            "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409"
+          },
+          {
+            "path": "handlers/world_chronicles.py",
+            "sha256": "f968928ca676a4a7c462c15f2fc9741c402615ba7dc1ef359bcdf6d96f458712"
+          },
+          {
+            "path": "systems/profile_history_system.py",
+            "sha256": "09ed2072e18e25a7a023d4ca6606ca10f5d2b591b91c0b286db81b1d5a5fa0ec"
+          },
+          {
+            "path": "systems/pve_auto_escape_system.py",
+            "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507"
+          },
+          {
+            "path": "systems/pvp_completion_service.py",
+            "sha256": "f4a8c3043b127792dedfe8c741d00f49a1de54dd78be6a2e5bb8c563067757d6"
+          },
+          {
+            "path": "systems/pvp_round_engine.py",
+            "sha256": "927aeb2745d3e2184a2719f749090f1c06337ceb9b4375dd427be7d0f9c985d1"
+          },
+          {
+            "path": "systems/simulation/class_progression.py",
+            "sha256": "c1554cb617c25f61bdc0fe6b3e51a45b32cf3edad3b567297390f43f594496de"
+          },
+          {
+            "path": "systems/simulation/excel_reporting.py",
+            "sha256": "8ca15fb6c4fbfd3bbf76e21fcabcb6b9f7f4a2e3d67c1d8c97214fdc67c01945"
+          },
+          {
+            "path": "systems/simulation/world_progression.py",
+            "sha256": "a8532f594dbb836c9fef79dc1ef27ab37316f3eab3c15967bb326972b834ba90"
+          },
+          {
+            "path": "systems/story_boss_invocation_adapter.py",
+            "sha256": "cdac42d824571b7d5e6367ea639d388cc703e82d43e3ca4cf246dde8d46a13de"
+          },
+          {
+            "path": "systems/world_chronicle_system.py",
+            "sha256": "6ae4c77cdc82c2f3028b7074a26faafaa3a8e7256b89c831bf0f32a3e59c5527"
+          }
+        ],
+        "escape": [
+          {
+            "path": "data/story_quests/start_path_41_50.py",
+            "sha256": "7cd79f589061ba7c543f99b37c942c9ce65037d08fce7b9c5fbf49e6f26539ad"
+          },
+          {
+            "path": "handlers/combat.py",
+            "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409"
+          },
+          {
+            "path": "main.py",
+            "sha256": "a7edf7a3b99437d04329201be44d7bace83668c1cd15edf7be720d529927ea59"
+          },
+          {
+            "path": "systems/pve_auto_escape_system.py",
+            "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507"
+          },
+          {
+            "path": "systems/pvp_combat_log.py",
+            "sha256": "69f1fc7c52f3fd1fdbb5192ed02a6003fd0d35e4e0a4684eb0386259ef0eea1b"
+          },
+          {
+            "path": "systems/pvp_round_ui.py",
+            "sha256": "78b0d5fd52de9b19294fd47fbb3237315310d6e66b4eb68700bc56d98cad3933"
+          },
+          {
+            "path": "systems/simulation/class_progression.py",
+            "sha256": "c1554cb617c25f61bdc0fe6b3e51a45b32cf3edad3b567297390f43f594496de"
+          },
+          {
+            "path": "systems/simulation/excel_reporting.py",
+            "sha256": "8ca15fb6c4fbfd3bbf76e21fcabcb6b9f7f4a2e3d67c1d8c97214fdc67c01945"
+          },
+          {
+            "path": "systems/story_quest_boss_completion_system.py",
+            "sha256": "c8388fcb0c4d0e979af82ff37f3efd90f30df27e0ad8cce97f0a85d7f19f1f4e"
+          }
+        ],
+        "auto_escape": [
+          {
+            "path": "handlers/combat.py",
+            "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409"
+          },
+          {
+            "path": "main.py",
+            "sha256": "a7edf7a3b99437d04329201be44d7bace83668c1cd15edf7be720d529927ea59"
+          },
+          {
+            "path": "systems/pve_auto_escape_system.py",
+            "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507"
+          }
+        ],
+        "terminal": [
+          {
+            "path": "data/story_quest_npcs.py",
+            "sha256": "131f927c8b022765e625b4eb7d51804058b6ea36d434b6ba95c000f3def921dc"
+          },
+          {
+            "path": "handlers/combat.py",
+            "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409"
+          },
+          {
+            "path": "handlers/player_interaction.py",
+            "sha256": "799e9ad6e745b3995886c6e504019b7c1b01073c917a0ae1b9ccc05b8948b0b9"
+          },
+          {
+            "path": "handlers/pvp_round_ui.py",
+            "sha256": "88e6663e4ea91941540304a529ad249baba03b2e42fde09550eb9646ff6006da"
+          },
+          {
+            "path": "migrations/050_event_kill_statistics.py",
+            "sha256": "773e3bdd790598936e78fabe60074d50412371ceda69fdd56432d037904f943c"
+          },
+          {
+            "path": "systems/event_statistics_system.py",
+            "sha256": "2581b7ba3e066dc047a66689b7a2e44a6e4bff6c873458e062ef73a5ea389d21"
+          },
+          {
+            "path": "systems/player_interaction_system.py",
+            "sha256": "7e0569317cab32cba42826dedfde2f804472c993b53250fc4497237d0004b171"
+          },
+          {
+            "path": "systems/profile_history_system.py",
+            "sha256": "09ed2072e18e25a7a023d4ca6606ca10f5d2b591b91c0b286db81b1d5a5fa0ec"
+          },
+          {
+            "path": "systems/pve_auto_escape_system.py",
+            "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507"
+          },
+          {
+            "path": "systems/pvp_adaptive_balance_optimizer.py",
+            "sha256": "e763a33f8663d2a15b11fe038c67efcf7af6138b331db7c46c52e91df8c1c371"
+          },
+          {
+            "path": "systems/pvp_anti_stall_survivability_candidate_sandbox.py",
+            "sha256": "c8a3ae4ce56f9e8373049d173e0077ee7cde36b1d0dfee4071eb0c42cf6f3b79"
+          },
+          {
+            "path": "systems/pvp_balance_simulator.py",
+            "sha256": "c4bd07f9e201ecbecb9c3937c63a64e5a25c0ec6117fa6a29ca12b3a58c434bc"
+          },
+          {
+            "path": "systems/pvp_completion_service.py",
+            "sha256": "f4a8c3043b127792dedfe8c741d00f49a1de54dd78be6a2e5bb8c563067757d6"
+          },
+          {
+            "path": "systems/pvp_knight_judgement_terminal_audit.py",
+            "sha256": "97dd72c60a55cc81acc76b3e700818d3ceab6aa961e1aa7359de75c5fe48691f"
+          },
+          {
+            "path": "systems/pvp_models.py",
+            "sha256": "8fd5ef0e8884104e64ac66d8b3f0f957632208283700ae5177c51b729493ff15"
+          },
+          {
+            "path": "systems/pvp_policy_balance_candidate_sandbox.py",
+            "sha256": "afbc23ad1e7984601da35fa025e34614e6d32d8c337b75f37c7d72cf5da8396a"
+          },
+          {
+            "path": "systems/pvp_policy_metrics_audit.py",
+            "sha256": "56f949c3648c7ad618af299a6a72d722b261788c161f327cf3c9c21ac441c111"
+          },
+          {
+            "path": "systems/pvp_primary_stat_scaling_combat_pacing_sandbox.py",
+            "sha256": "cca456ac7ea6fb003881f330c66ada6a0ea78a4343155e550f77b1ca0efce9c0"
+          },
+          {
+            "path": "systems/pvp_production_calibration.py",
+            "sha256": "ed0dd17745fb90e3dfbc4061a907af0044fe846d7a92747d0443339567bd324c"
+          },
+          {
+            "path": "systems/pvp_real_actor_root_cause_audit.py",
+            "sha256": "15b920045e9e06f7f942cfef9a9ff5f15b525eb40a7906c2401450478eec8caf"
+          },
+          {
+            "path": "systems/pvp_real_actor_state_replay.py",
+            "sha256": "5278d52021ba62b5b43e35a71a3d8fe83877a1381c6ffcf7c24e6a5d77541807"
+          },
+          {
+            "path": "systems/pvp_root_cause_metric_semantics.py",
+            "sha256": "fa9d4572d21dff4cb5108b43642f1818d58317ea9af04101f71327cbaa02d169"
+          },
+          {
+            "path": "systems/pvp_round_engine.py",
+            "sha256": "927aeb2745d3e2184a2719f749090f1c06337ceb9b4375dd427be7d0f9c985d1"
+          },
+          {
+            "path": "systems/pvp_system.py",
+            "sha256": "5055dd5f96e97eb20a5204681a12cf21cd8354c94292b8633f819d850901f8dc"
+          },
+          {
+            "path": "systems/pvp_targeted_mechanics_candidate_sandbox.py",
+            "sha256": "0e50bc22c5cb4f7922d8cf5e6c517f99a8cb92f0db6969ccc0b7f9deea1cc3b9"
+          },
+          {
+            "path": "systems/simulation/battle_models.py",
+            "sha256": "4e4777480246e7e4548c80c8eb724a99e8a169db1660c53a953f3ed99acbc676"
+          },
+          {
+            "path": "systems/story_quest_boss_completion_system.py",
+            "sha256": "c8388fcb0c4d0e979af82ff37f3efd90f30df27e0ad8cce97f0a85d7f19f1f4e"
+          },
+          {
+            "path": "systems/story_quest_combat_progress_system.py",
+            "sha256": "e8c818e6fd47a1deff83fee65f9d28a60bc8396eae80e1b4f41a05a0f6d26932"
+          },
+          {
+            "path": "systems/story_quest_item_drop_system.py",
+            "sha256": "5c17d4f4beb3a2d83720bb489733ea541ce6892da3cbe032df21e6261475847b"
+          },
+          {
+            "path": "systems/travel_system.py",
+            "sha256": "09525cdc1a89ce78091d1f04429ec56a58ff8fda5235699b3ecac0d0c8edc687"
+          },
+          {
+            "path": "tests/test_stage_21_8_1b_battle_aggregate.py",
+            "sha256": "a61ee894179dd65006eec6179b02dd4ab7f168bb008af57eec82a14297e41bff"
+          }
+        ]
+      }
+    },
+    {
+      "contract": "NORMAL_ELITE_BOSS_SCOPE",
+      "resolution": "COMMON_EVENT_WITH_ENEMY_CLASS",
+      "decision": "Normal, elite and boss victories share one event shape and expose enemy_class for consumer eligibility.",
+      "evidence": {
+        "path": "handlers/combat.py",
+        "symbol": "process_victory",
+        "definition_count": 1,
+        "file_sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+        "definitions": [
+          {
+            "line_start": 1964,
+            "line_end": 2118,
+            "source_sha256": "330acb48958c4b1a63dd8e093a8bc6dada3032ab412a8264c463868b49e26d57",
+            "source": "def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=\"\"):\n    encounter_id = (mob or {}).get(\"pve_encounter_id\")\n    if encounter_id and not claim_pve_terminal(user_id, 'victory', encounter_id):\n        bot.send_message(chat_id, STALE_COMBAT_TEXT, reply_markup=main_kb())\n        return\n    # ROM_STAGE_18_29_3F_EVENT_VICTORY_STATISTICS\n    event_key = str((mob or {}).get(\"event_key\") or \"\").strip()\n    event_mob_key = str((mob or {}).get(\"event_mob_key\") or \"\").strip()\n    if encounter_id and event_key and event_mob_key:\n        from db_modules.connection import conn as event_statistics_conn\n        from systems.event_statistics_system import record_event_mob_victory\n        record_event_mob_victory(\n            event_statistics_conn,\n            event_key=event_key,\n            user_id=user_id,\n            mob_key=event_mob_key,\n            terminal_event_id=encounter_id,\n        )\n        event_statistics_conn.commit()\n    \"\"\"\n    Завершення бою перемогою.\n\n    Перед виходом із бою фіксуємо поточне HP з бойового стану\n    і очищаємо тимчасові бойові ефекти.\n\n    Це виправляє кейс, коли жрець наклав HoT у фінальному раунді,\n    а залишкові тіки лікування некоректно доліковували героя після перемоги.\n    \"\"\"\n\n    finalize_combat_state_before_victory(\n        user_id=user_id,\n        mob=mob\n    )\n\n    if hasattr(bot, \"user_data\") and user_id in bot.user_data:\n        del bot.user_data[user_id]\n\n    reward = process_victory_reward(\n        user_id=user_id,\n        player_level=lvl,\n        mob=mob\n    )\n\n    if mob.get(\"is_boss\"):\n        encounter_id = mob.get(\"pve_encounter_id\")\n        if encounter_id:\n            from systems.world_chronicle_system import (\n                get_character_name_snapshot,\n                record_world_chronicle_event,\n            )\n            character_name = get_character_name_snapshot(user_id)\n            if character_name:\n                record_world_chronicle_event(\n                    \"location_boss_defeated\",\n                    user_id,\n                    character_name,\n                    f\"location_boss_defeated:{encounter_id}\",\n                    subject_key=str(mob.get(\"boss_key\") or \"\"),\n                    subject_name_snapshot=str(mob.get(\"name\") or mob.get(\"base_name\") or \"Бос\"),\n                    location_id=str(mob.get(\"location_id\") or \"\"),\n                )\n\n    # The RNG encounter has already passed the canonical terminal claim. A\n    # matching ACTIVE BOSS quest now completes and rewards exactly once.\n    story_boss_result = process_rng_boss_story_completion(\n        user_id=user_id,\n        mob=mob,\n        location_id=get_current_location(user_id),\n        encounter_id=encounter_id,\n    )\n\n    wear_result = apply_random_durability_wear_on_victory(\n        user_id=user_id,\n        chance_percent=25\n    )\n\n    contract_result = process_contract_progress_on_kill(\n        user_id=user_id,\n        mob=mob\n    )\n\n    daily_result = process_daily_quest_progress_on_kill(\n        user_id=user_id,\n        mob=mob\n    )\n\n    # Terminal victory was already claimed above, so this hook runs once per\n    # encounter and cannot double-count repeated Telegram terminal updates.\n    story_region_result = process_region_kill_story_progress(\n        user_id=user_id,\n        location_id=get_current_location(user_id),\n    )\n\n    # Dedicated quest items are rolled after the same terminal claim and never\n    # enter ordinary inventory or consume bag capacity.\n    story_item_result = process_story_quest_item_drop(\n        user_id=user_id,\n        location_id=get_current_location(user_id),\n    )\n\n    # Combat EXP was awarded before story progress. Evaluate the resulting level\n    # only after this terminal victory's progress/drop hooks have run.\n    exp_result = reward.get(\"exp_result\") or {}\n    resulting_level = int(exp_result.get(\"level\") or get_player_level(user_id))\n    story_skip_result = process_overlevel_story_quest_skip(\n        user_id=user_id,\n        current_level=resulting_level,\n    )\n\n    text = build_victory_text(\n        user_id=user_id,\n        lvl=lvl,\n        mob=mob,\n        reward=reward,\n        wear_result=wear_result,\n        contract_result=contract_result,\n        daily_result=daily_result,\n        prefix_text=prefix_text\n    )\n\n    bot.send_message(\n        chat_id,\n        text,\n        reply_markup=main_kb()\n    )\n\n    # Quest-item persistence is owned by the drop system. Telegram output is a\n    # separate consumer and is emitted exactly once only for an actual grant.\n    if int(story_item_result.get(\"granted\", 0) or 0) > 0:\n        story_drop_message = str(story_item_result.get(\"drop_message\") or \"\").strip()\n        if story_drop_message:\n            bot.send_message(chat_id, story_drop_message)\n\n    exp_result = reward.get(\"exp_result\") or {}\n    reward_message = str(exp_result.get(\"level_up_reward_message\") or \"\").strip()\n    level_ups = int(exp_result.get(\"level_ups\", 0) or 0)\n    if level_ups > 0 and not reward_message:\n        # Some levels have no special milestone item message. Always announce\n        # the canonical level transition and permanent attribute-point reward.\n        old_level = int(exp_result.get(\"old_level\", resulting_level - level_ups) or 0)\n        new_level = int(exp_result.get(\"level\", resulting_level) or resulting_level)\n        points = int(exp_result.get(\"attribute_points_awarded\", level_ups * 5) or 0)\n        reward_message = (\n            \"🎉 Рівень підвищено!\\n\\n\"\n            f\"🏆 Рівень: {old_level} → {new_level}\\n\"\n            f\"🌟 Вільні очки характеристик: +{points}\"\n        )\n    if reward_message:\n        bot.send_message(chat_id, reward_message)\n\n    # Emit one campaign-level summary only after the level-up notification.\n    # The lifecycle mutation is already committed and idempotent.\n    story_skip_message = str((story_skip_result or {}).get(\"message\") or \"\").strip()\n    if story_skip_message:\n        bot.send_message(chat_id, story_skip_message)"
+          }
+        ]
+      }
+    },
+    {
+      "contract": "STORY_HOOK_ORDER_AND_IDEMPOTENCY",
+      "resolution": "STORY_KILL_THEN_BOSS_THEN_ITEM",
+      "decision": "Story consumers are ordered region-kill, boss completion, then quest-item drop; each uses event-key plus consumer-key exact-once identity.",
+      "evidence": {
+        "region": {
+          "path": "systems/story_quest_combat_progress_system.py",
+          "symbol": "process_region_kill_story_progress",
+          "definition_count": 1,
+          "file_sha256": "e8c818e6fd47a1deff83fee65f9d28a60bc8396eae80e1b4f41a05a0f6d26932",
+          "definitions": [
+            {
+              "line_start": 10,
+              "line_end": 35,
+              "source_sha256": "306560879f146f3d012f4f2011e04d63398e0ff0e684ebb0b1214f6cc9b0d638",
+              "source": "def process_region_kill_story_progress(\n    *,\n    user_id: int,\n    location_id: str,\n    registry: Mapping[str, StoryQuestDefinition] = STORY_QUEST_REGISTRY,\n    connection=None,\n) -> dict:\n    \"\"\"Advance one region kill after a canonical terminal victory claim.\n\n    The combat owner supplies only user and location. Normal, elite and boss\n    victories therefore count equally, while concrete mob IDs are intentionally\n    excluded. Empty production content is a safe no-op. The lifecycle owner keeps\n    progress bounded and rejects non-ACTIVE, wrong-type and wrong-location quests.\n    \"\"\"\n    if not registry:\n        return {\"advanced\": 0, \"reason\": \"no_production_content\"}\n    if connection is None:\n        import db\n        connection = db.conn\n    return advance_region_kill_progress(\n        connection,\n        registry=registry,\n        user_id=int(user_id),\n        location_id=str(location_id),\n        amount=1,\n    )"
+            }
+          ]
+        },
+        "boss": {
+          "path": "systems/story_quest_boss_completion_system.py",
+          "symbol": "process_rng_boss_story_completion",
+          "definition_count": 1,
+          "file_sha256": "c8388fcb0c4d0e979af82ff37f3efd90f30df27e0ad8cce97f0a85d7f19f1f4e",
+          "definitions": [
+            {
+              "line_start": 12,
+              "line_end": 88,
+              "source_sha256": "7a52ee47d80ebb9675469b388a75e9ecbe0eaae0916c35d814f26ac1fc8227eb",
+              "source": "def process_rng_boss_story_completion(\n    *,\n    user_id: int,\n    mob: dict,\n    location_id: str,\n    encounter_id,\n    registry: Mapping[str, StoryQuestDefinition] = STORY_QUEST_REGISTRY,\n    connection=None,\n) -> dict:\n    \"\"\"Record a matching ACTIVE BOSS victory without completing the quest.\n\n    Combat reward ownership remains in the combat pipeline. This bridge only\n    advances the canonical BOSS objective to its bounded target. The quest stays\n    ACTIVE, reward_claimed stays unchanged, and the NPC completion owner later\n    completes and rewards the quest after the player reports the victory.\n\n    Repeated delivery of the same terminal victory is idempotent because bounded\n    progress is set to the same target. Defeat and escape never call this victory\n    bridge, so they leave progress unchanged and allow another invocation.\n    \"\"\"\n    if not registry:\n        return {\"advanced\": False, \"completed\": False, \"reason\": \"no_production_content\"}\n    if not bool((mob or {}).get(\"is_boss\")):\n        return {\"advanced\": False, \"completed\": False, \"reason\": \"not_boss\"}\n    if connection is None:\n        import db\n        connection = db.conn\n\n    active = get_active_story_quest(connection, int(user_id))\n    if active is None:\n        return {\"advanced\": False, \"completed\": False, \"reason\": \"no_active_quest\"}\n\n    quest = registry.get(str(active[\"quest_id\"]))\n    if quest is None:\n        return {\"advanced\": False, \"completed\": False, \"reason\": \"unknown_quest_definition\"}\n    if quest.quest_type is not QuestType.BOSS:\n        return {\"advanced\": False, \"completed\": False, \"reason\": \"objective_type_mismatch\"}\n    if quest.location_id != str(location_id):\n        return {\"advanced\": False, \"completed\": False, \"reason\": \"location_mismatch\"}\n    if str(quest.boss_key) != str((mob or {}).get(\"boss_key\") or \"\"):\n        return {\"advanced\": False, \"completed\": False, \"reason\": \"boss_key_mismatch\"}\n\n    before = int(active[\"progress\"])\n    target = int(quest.target_quantity)\n    if before >= target:\n        return {\n            \"advanced\": False,\n            \"completed\": False,\n            \"reason\": \"already_recorded\",\n            \"quest_id\": quest.quest_id,\n            \"progress\": before,\n            \"target_quantity\": target,\n            \"encounter_id\": encounter_id,\n            \"status\": str(active[\"status\"]),\n            \"reward_claimed\": int(active[\"reward_claimed\"]),\n        }\n\n    with connection:\n        row = set_story_quest_progress(\n            connection,\n            user_id=int(user_id),\n            quest_id=quest.quest_id,\n            progress=target,\n        )\n\n    after = int(row[\"progress\"])\n    return {\n        \"advanced\": after > before,\n        \"completed\": False,\n        \"reason\": \"progress_recorded\" if after > before else \"already_recorded\",\n        \"quest_id\": quest.quest_id,\n        \"progress\": after,\n        \"target_quantity\": target,\n        \"encounter_id\": encounter_id,\n        \"status\": str(row[\"status\"]),\n        \"reward_claimed\": int(row[\"reward_claimed\"]),\n    }"
+            }
+          ]
+        },
+        "item": {
+          "path": "systems/story_quest_item_drop_system.py",
+          "symbol": "process_story_quest_item_drop",
+          "definition_count": 1,
+          "file_sha256": "5c17d4f4beb3a2d83720bb489733ea541ce6892da3cbe032df21e6261475847b",
+          "definitions": [
+            {
+              "line_start": 12,
+              "line_end": 80,
+              "source_sha256": "16f3dc4f170bf81413464f6d68092796dd72c30e9342fc49894f269594c67da4",
+              "source": "def process_story_quest_item_drop(\n    *,\n    user_id: int,\n    location_id: str,\n    registry: Mapping[str, StoryQuestDefinition] = STORY_QUEST_REGISTRY,\n    connection=None,\n    random_value: Callable[[], float] = random.random,\n) -> dict:\n    \"\"\"Roll and grant one dedicated quest item after terminal victory.\n\n    Ordinary inventory, bag capacity, mob identity and ordinary loot tables are\n    intentionally excluded. The lifecycle owner rechecks ACTIVE/type/location/\n    item-key state and persistence bounds quantity to the definition target.\n    \"\"\"\n    if not registry:\n        return {\"granted\": 0, \"reason\": \"no_production_content\"}\n    if connection is None:\n        import db\n        connection = db.conn\n    active = get_active_story_quest(connection, int(user_id))\n    if active is None:\n        return {\"granted\": 0, \"reason\": \"no_active_quest\"}\n    quest = registry.get(str(active[\"quest_id\"]))\n    if quest is None:\n        return {\"granted\": 0, \"reason\": \"unknown_quest_definition\"}\n    if quest.quest_type is not QuestType.QUEST_ITEM or quest.quest_item is None:\n        return {\"granted\": 0, \"reason\": \"objective_type_mismatch\"}\n    if quest.location_id != str(location_id):\n        return {\"granted\": 0, \"reason\": \"location_mismatch\"}\n    current = get_story_quest_item_quantity(\n        connection, int(user_id), quest.quest_id, quest.quest_item.item_key\n    )\n    required = int(quest.quest_item.required_quantity)\n    if current >= required:\n        return {\n            \"granted\": 0,\n            \"quantity\": current,\n            \"required_quantity\": required,\n            \"objective_complete\": True,\n            \"reason\": \"target_reached\",\n        }\n    roll = float(random_value())\n    if not 0.0 <= roll < 1.0:\n        raise ValueError(\"random_value must return a value within [0, 1)\")\n    if roll >= float(quest.quest_item.drop_chance):\n        return {\n            \"granted\": 0,\n            \"quantity\": current,\n            \"required_quantity\": required,\n            \"objective_complete\": False,\n            \"reason\": \"drop_missed\",\n        }\n    result = collect_active_quest_item(\n        connection,\n        registry=registry,\n        user_id=int(user_id),\n        location_id=str(location_id),\n        item_key=quest.quest_item.item_key,\n        amount=1,\n    )\n    return {\n        **result,\n        \"item_key\": quest.quest_item.item_key,\n        \"display_name\": quest.quest_item.display_name,\n        # Presentation metadata is returned only after the canonical bounded\n        # grant. Consumers must display it only when granted > 0.\n        \"drop_message\": (f\"🧩 Сюжетна знахідка: {quest.quest_item.display_name}\" if result.get(\"granted\") else None),\n        \"reason\": \"granted\" if result.get(\"granted\") else \"target_reached\",\n    }"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "contract": "QUEST_AND_CONTRACT_HOOK_ORDER",
+      "resolution": "DAILY_QUEST_THEN_GUILD_CONTRACT",
+      "decision": "Daily quest progress precedes guild contract progress and both are exact-once consumers of the settled event.",
+      "evidence": {
+        "daily": {
+          "path": "db_modules/quests.py",
+          "symbol": "process_daily_quest_progress_on_kill",
+          "definition_count": 1,
+          "file_sha256": "40219bf84d6cad04ee592f112583429458708cc97878cf83a9aa1462551a5f30",
+          "definitions": [
+            {
+              "line_start": 284,
+              "line_end": 353,
+              "source_sha256": "141567cab401c7298efcbebebb511753202ddf832dc6bd69710bc18c641a696c",
+              "source": "def process_daily_quest_progress_on_kill(user_id, mob=None):\n    \"\"\"\n    Викликається після перемоги над будь-яким монстром.\n\n    Враховуються:\n    - звичайні монстри\n    - елітні монстри\n    - боси, коли вони будуть реалізовані\n    \"\"\"\n    from .daily_compat import get_daily_quest_status, reset_daily_quest_if_needed as _reset_canonical_daily_quest_if_needed\n    _reset_canonical_daily_quest_if_needed(user_id)\n\n    status = get_daily_quest_status(user_id)\n\n    if not status[\"exists\"]:\n        return {\n            \"updated\": False,\n            \"completed\": False,\n            \"message\": None\n        }\n\n    if status[\"reward_claimed\"]:\n        return {\n            \"updated\": False,\n            \"completed\": False,\n            \"message\": None\n        }\n\n    if status[\"completed\"]:\n        return {\n            \"updated\": False,\n            \"completed\": True,\n            \"message\": None\n        }\n\n    progress = status[\"progress\"]\n    target_count = status[\"target_count\"]\n\n    new_progress = min(target_count, progress + 1)\n    completed = 1 if new_progress >= target_count else 0\n\n    cursor.execute(\"\"\"\n    UPDATE user_daily_quests\n    SET progress=?,\n        completed=?\n    WHERE user_id=?\n    \"\"\", (\n        new_progress,\n        completed,\n        user_id\n    ))\n\n    conn.commit()\n\n    if completed:\n        return {\n            \"updated\": True,\n            \"completed\": True,\n            \"message\": (\n                \"📆 Щоденне завдання виконано!\\n\"\n                \"✅ Прогрес: 25/25\\n\"\n                \"🏛️ Поверніться до Ратуші за нагородою.\"\n            )\n        }\n\n    return {\n        \"updated\": True,\n        \"completed\": False,\n        \"message\": f\"📆 Щоденне завдання: {new_progress}/{target_count}\"\n    }"
+            }
+          ]
+        },
+        "contract": {
+          "path": "systems/contract_system.py",
+          "symbol": "process_contract_progress_on_kill",
+          "definition_count": 1,
+          "file_sha256": "4b8e73be52d59d3d8d897d94f9aa79430ce452a8c5cd972759846dacbd69e0e6",
+          "definitions": [
+            {
+              "line_start": 371,
+              "line_end": 458,
+              "source_sha256": "95481167463b6bdd27df35275adef70dff53bc7913cde37e5811f26747084cb1",
+              "source": "def process_contract_progress_on_kill(user_id, mob):\n    reset_daily_contracts_if_needed(user_id)\n\n    active_contract = get_active_contract(user_id)\n\n    if not active_contract:\n        return {\n            \"updated\": False,\n            \"completed\": False,\n            \"message\": None\n        }\n\n    if active_contract.get(\"reward_claimed\"):\n        return {\n            \"updated\": False,\n            \"completed\": False,\n            \"message\": None\n        }\n\n    if active_contract.get(\"completed\"):\n        return {\n            \"updated\": False,\n            \"completed\": True,\n            \"message\": None\n        }\n\n    mob_name = mob.get(\"name\", \"\")\n    mob_base_name = mob.get(\"base_name\", mob_name)\n    mob_level = int(mob.get(\"level\", active_contract[\"target_mob_level\"]))\n\n    target_name = active_contract[\"target_mob_name\"]\n    target_level = int(active_contract[\"target_mob_level\"])\n\n    if mob_base_name != target_name or mob_level != target_level:\n        return {\n            \"updated\": False,\n            \"completed\": False,\n            \"message\": None\n        }\n\n    new_progress = active_contract[\"current_kills\"] + 1\n\n    if new_progress >= active_contract[\"target_kills\"]:\n        cursor.execute(\"\"\"\n        UPDATE user_active_contracts\n        SET current_kills=?,\n            completed=1\n        WHERE id=?\n        \"\"\", (\n            active_contract[\"target_kills\"],\n            active_contract[\"id\"]\n        ))\n\n        conn.commit()\n\n        return {\n            \"updated\": True,\n            \"completed\": True,\n            \"message\": (\n                f\"📜 Контракт виконано!\\n\"\n                f\"🎯 Ціль: {target_name}\\n\"\n                f\"✅ Прогрес: {active_contract['target_kills']}/{active_contract['target_kills']}\\n\"\n                f\"🏛️ Поверніться до Гільдії Найманців, щоб здати контракт і отримати нагороду.\"\n            )\n        }\n\n    cursor.execute(\"\"\"\n    UPDATE user_active_contracts\n    SET current_kills=?\n    WHERE id=?\n    \"\"\", (new_progress, active_contract[\"id\"]))\n\n    conn.commit()\n\n    elite_note = \"\"\n\n    if mob.get(\"is_elite\"):\n        elite_note = \" ⭐ Елітна ціль зарахована!\"\n\n    return {\n        \"updated\": True,\n        \"completed\": False,\n        \"message\": (\n            f\"📜 Контракт: {target_name} \"\n            f\"{new_progress}/{active_contract['target_kills']}\"\n            f\"{elite_note}\"\n        )\n    }"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "contract": "HISTORY_CHRONICLE_ACHIEVEMENT_SCOPE",
+      "resolution": "OPTIONAL_REGISTERED_CONSUMERS_ONLY",
+      "decision": "History, chronicles and achievements run only when an explicit consumer port is registered; absent V1 ownership is not invented.",
+      "evidence": {
+        "battle_history": [],
+        "reward_history": [],
+        "chronicle": [
+          {
+            "path": "handlers/combat.py",
+            "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409"
+          },
+          {
+            "path": "handlers/world_chronicles.py",
+            "sha256": "f968928ca676a4a7c462c15f2fc9741c402615ba7dc1ef359bcdf6d96f458712"
+          },
+          {
+            "path": "main.py",
+            "sha256": "a7edf7a3b99437d04329201be44d7bace83668c1cd15edf7be720d529927ea59"
+          },
+          {
+            "path": "systems/character_system.py",
+            "sha256": "edb9128e33c5ce3e88c9cbc9a5c79a20bdd23bc721e461beacfb4a1a7e27468b"
+          },
+          {
+            "path": "systems/fresh_database_bootstrap.py",
+            "sha256": "d360a1cb617977f8082335fe12326615fea9e509ad440a4d2b89493e643f1cb2"
+          },
+          {
+            "path": "systems/player_system.py",
+            "sha256": "b503e2514dd7b35136384561c873d03be27afb9cdd31325530e15a0df67c3571"
+          },
+          {
+            "path": "systems/refine_system.py",
+            "sha256": "aebb056cf40ef532eee63d70451f201960073155c52cda58dc537ef75759c879"
+          },
+          {
+            "path": "systems/world_chronicle_system.py",
+            "sha256": "6ae4c77cdc82c2f3028b7074a26faafaa3a8e7256b89c831bf0f32a3e59c5527"
+          }
+        ],
+        "achievement": [],
+        "process_victory": [
+          {
+            "path": "handlers/combat.py",
+            "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409"
+          },
+          {
+            "path": "systems/reward_system.py",
+            "sha256": "87a5d92d94735dd2593c5d847502622dd96bab75acf2c2177e48654d5608f5e5"
+          },
+          {
+            "path": "systems/simulation/loot_equipment_city.py",
+            "sha256": "650c5afa0020ec1e5062bac24b3a7d7c90bf8b03beda1171ddcf12f5fc923dc9"
+          },
+          {
+            "path": "systems/simulation/world_progression.py",
+            "sha256": "a8532f594dbb836c9fef79dc1ef27ab37316f3eab3c15967bb326972b834ba90"
+          }
+        ]
+      }
+    },
+    {
+      "contract": "EVENT_AND_DURABILITY_HOOK_ORDER",
+      "resolution": "EVENT_STATISTICS_THEN_DURABILITY",
+      "decision": "Event statistics precede durability wear; durability is represented by one consumer despite duplicate V1 definitions.",
+      "evidence": {
+        "event": {
+          "path": "systems/event_statistics_system.py",
+          "symbol": "record_event_mob_victory",
+          "definition_count": 1,
+          "file_sha256": "2581b7ba3e066dc047a66689b7a2e44a6e4bff6c873458e062ef73a5ea389d21",
+          "definitions": [
+            {
+              "line_start": 10,
+              "line_end": 23,
+              "source_sha256": "808fe165774b05b545230be9dbdc43b28ec00bb1134518176005da852c89770d",
+              "source": "def record_event_mob_victory(conn,event_key,user_id,mob_key,terminal_event_id,*,now=None):\n    event_key=_text(event_key,\"event_key\"); mob_key=_text(mob_key,\"mob_key\"); terminal_event_id=_text(terminal_event_id,\"terminal_event_id\"); user_id=int(user_id)\n    timestamp=(now or datetime.now(timezone.utc)).astimezone(timezone.utc).isoformat()\n    conn.execute(\"SAVEPOINT event_kill_record\")\n    try:\n        cur=conn.execute(\"INSERT OR IGNORE INTO event_kill_receipts(event_key,terminal_event_id,user_id,mob_key,recorded_at) VALUES(?,?,?,?,?)\",(event_key,terminal_event_id,user_id,mob_key,timestamp))\n        if cur.rowcount==0:\n            conn.execute(\"RELEASE event_kill_record\"); return {\"success\":True,\"recorded\":False,\"duplicate\":True}\n        conn.execute(\"\"\"INSERT INTO event_kill_statistics(event_key,user_id,mob_key,kills,first_reached_at,updated_at) VALUES(?,?,?,?,?,?)\n          ON CONFLICT(event_key,user_id,mob_key) DO UPDATE SET kills=kills+1,updated_at=excluded.updated_at\"\"\",(event_key,user_id,mob_key,1,timestamp,timestamp))\n        kills=conn.execute(\"SELECT kills FROM event_kill_statistics WHERE event_key=? AND user_id=? AND mob_key=?\",(event_key,user_id,mob_key)).fetchone()[0]\n        conn.execute(\"RELEASE event_kill_record\"); return {\"success\":True,\"recorded\":True,\"duplicate\":False,\"kills\":int(kills)}\n    except Exception:\n        conn.execute(\"ROLLBACK TO event_kill_record\"); conn.execute(\"RELEASE event_kill_record\"); raise"
+            }
+          ]
+        },
+        "durability": {
+          "path": "systems/equipment_system.py",
+          "symbol": "apply_random_durability_wear_on_victory",
+          "definition_count": 2,
+          "file_sha256": "53e72297481aad38e9319bd69cee5a8a0056e46502bce78981b84686522836d4",
+          "definitions": [
+            {
+              "line_start": 3299,
+              "line_end": 3343,
+              "source_sha256": "9cc9f25d3dcb1a194e60f9dc694b2df3934b47d2585df2d452e2e9e97fc8aa89",
+              "source": "def apply_random_durability_wear_on_victory(user_id, chance=None, amount=1):\n\n    \"\"\"Зберігає старий принцип: за успішного roll зношується один випадковий вдягнений предмет.\"\"\"\n\n    import random\n\n    db = _equipment_db_9_0_12h2()\n\n    if chance is None:\n\n        chance = float(getattr(db, \"DURABILITY_WEAR_CHANCE\", 0.25))\n\n    chance = max(0.0, min(1.0, float(chance)))\n\n    if random.random() >= chance:\n\n        return {\"success\": True, \"worn\": False, \"damaged\": 0, \"items\": []}\n\n    rows = db.conn.execute(\n\n        \"\"\"\n\n        SELECT inv.id\n\n        FROM equipment_slots es\n\n        JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id\n\n        WHERE es.user_id=? AND es.inventory_id IS NOT NULL AND COALESCE(inv.durability,100)>0\n\n        \"\"\",\n\n        (int(user_id),),\n\n    ).fetchall()\n\n    if not rows:\n\n        return {\"success\": True, \"worn\": False, \"damaged\": 0, \"items\": []}\n\n    inventory_id = int(random.choice(rows)[0])\n\n    result = reduce_equipped_item_durability(user_id, inventory_id, amount=amount)\n\n    return {\"success\": bool(result.get(\"success\")), \"worn\": True, \"damaged\": 1, \"items\": [result], \"inventory_id\": inventory_id}"
+            },
+            {
+              "line_start": 3411,
+              "line_end": 3531,
+              "source_sha256": "2b8281be651be280211966e387242cd0a40c02dcf227a1c7e4c654f0c0e40ed9",
+              "source": "def apply_random_durability_wear_on_victory(user_id, chance_percent=25, **kwargs):\n\n    \"\"\"\n\n    Historical public contract used by build_victory_text():\n\n    {triggered: bool, message: str | None}.\n\n\n\n    On a successful roll exactly one equipped, non-broken item loses 1 durability.\n\n    \"\"\"\n\n    import random\n\n\n\n    try:\n\n        chance_percent = int(chance_percent)\n\n    except Exception:\n\n        chance_percent = 25\n\n    chance_percent = max(0, min(100, chance_percent))\n\n\n\n    roll = random.randint(1, 100)\n\n    if roll > chance_percent:\n\n        return {\"triggered\": False, \"message\": None}\n\n\n\n    db = _equipment_db_9_0_12h2()\n\n    rows = db.conn.execute(\n\n        \"SELECT es.slot_key, inv.id, COALESCE(inv.durability,100), it.name \"\n\n        \"FROM equipment_slots es \"\n\n        \"JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id \"\n\n        \"JOIN items it ON it.id=inv.item_id \"\n\n        \"WHERE es.user_id=? AND es.inventory_id IS NOT NULL \"\n\n        \"AND COALESCE(inv.durability,100)>0\",\n\n        (int(user_id),),\n\n    ).fetchall()\n\n\n\n    if not rows:\n\n        return {\"triggered\": False, \"message\": None}\n\n\n\n    slot_key, inventory_id, old_durability, base_name = random.choice(rows)\n\n    old_durability = max(0, min(100, int(old_durability or 0)))\n\n    new_durability = max(0, old_durability - 1)\n\n\n\n    db.conn.execute(\n\n        \"UPDATE inventory SET durability=? WHERE id=? AND user_id=?\",\n\n        (new_durability, int(inventory_id), int(user_id)),\n\n    )\n\n    db.conn.commit()\n\n    _equipment_sync_hp_9_0_12h2(user_id)\n\n\n\n    name = _equipment_display_name_9_0_12h2(inventory_id, base_name)\n\n    slot_name = _SLOT_NAMES_9_0_12H2.get(str(slot_key), str(slot_key))\n\n    broken_text = \" Предмет зламано!\" if new_durability <= 0 else \"\"\n\n    message = (\n\n        f\"🧱 {slot_name}: {name} втратив 1 міцності \"\n\n        f\"({old_durability} → {new_durability}/100).{broken_text}\"\n\n    )\n\n    return {\n\n        \"triggered\": True,\n\n        \"message\": message,\n\n        \"inventory_id\": int(inventory_id),\n\n        \"name\": name,\n\n        \"slot_key\": str(slot_key),\n\n        \"old\": old_durability,\n\n        \"new\": new_durability,\n\n        \"broken\": new_durability <= 0,\n\n    }"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "contract": "FAILURE_ROLLBACK_AND_PARTIAL_SUCCESS_POLICY",
+      "resolution": "DURABLE_CONSUMERS_FAIL_CLOSED_BEFORE_COMMIT",
+      "decision": "A coordinator Unit of Work commits all durable consumer marks and mutations once; any durable failure rolls back the hook transaction without touching the already-committed reward settlement.",
+      "evidence": {
+        "path": "handlers/combat.py",
+        "symbol": "process_victory",
+        "definition_count": 1,
+        "file_sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+        "definitions": [
+          {
+            "line_start": 1964,
+            "line_end": 2118,
+            "source_sha256": "330acb48958c4b1a63dd8e093a8bc6dada3032ab412a8264c463868b49e26d57",
+            "source": "def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=\"\"):\n    encounter_id = (mob or {}).get(\"pve_encounter_id\")\n    if encounter_id and not claim_pve_terminal(user_id, 'victory', encounter_id):\n        bot.send_message(chat_id, STALE_COMBAT_TEXT, reply_markup=main_kb())\n        return\n    # ROM_STAGE_18_29_3F_EVENT_VICTORY_STATISTICS\n    event_key = str((mob or {}).get(\"event_key\") or \"\").strip()\n    event_mob_key = str((mob or {}).get(\"event_mob_key\") or \"\").strip()\n    if encounter_id and event_key and event_mob_key:\n        from db_modules.connection import conn as event_statistics_conn\n        from systems.event_statistics_system import record_event_mob_victory\n        record_event_mob_victory(\n            event_statistics_conn,\n            event_key=event_key,\n            user_id=user_id,\n            mob_key=event_mob_key,\n            terminal_event_id=encounter_id,\n        )\n        event_statistics_conn.commit()\n    \"\"\"\n    Завершення бою перемогою.\n\n    Перед виходом із бою фіксуємо поточне HP з бойового стану\n    і очищаємо тимчасові бойові ефекти.\n\n    Це виправляє кейс, коли жрець наклав HoT у фінальному раунді,\n    а залишкові тіки лікування некоректно доліковували героя після перемоги.\n    \"\"\"\n\n    finalize_combat_state_before_victory(\n        user_id=user_id,\n        mob=mob\n    )\n\n    if hasattr(bot, \"user_data\") and user_id in bot.user_data:\n        del bot.user_data[user_id]\n\n    reward = process_victory_reward(\n        user_id=user_id,\n        player_level=lvl,\n        mob=mob\n    )\n\n    if mob.get(\"is_boss\"):\n        encounter_id = mob.get(\"pve_encounter_id\")\n        if encounter_id:\n            from systems.world_chronicle_system import (\n                get_character_name_snapshot,\n                record_world_chronicle_event,\n            )\n            character_name = get_character_name_snapshot(user_id)\n            if character_name:\n                record_world_chronicle_event(\n                    \"location_boss_defeated\",\n                    user_id,\n                    character_name,\n                    f\"location_boss_defeated:{encounter_id}\",\n                    subject_key=str(mob.get(\"boss_key\") or \"\"),\n                    subject_name_snapshot=str(mob.get(\"name\") or mob.get(\"base_name\") or \"Бос\"),\n                    location_id=str(mob.get(\"location_id\") or \"\"),\n                )\n\n    # The RNG encounter has already passed the canonical terminal claim. A\n    # matching ACTIVE BOSS quest now completes and rewards exactly once.\n    story_boss_result = process_rng_boss_story_completion(\n        user_id=user_id,\n        mob=mob,\n        location_id=get_current_location(user_id),\n        encounter_id=encounter_id,\n    )\n\n    wear_result = apply_random_durability_wear_on_victory(\n        user_id=user_id,\n        chance_percent=25\n    )\n\n    contract_result = process_contract_progress_on_kill(\n        user_id=user_id,\n        mob=mob\n    )\n\n    daily_result = process_daily_quest_progress_on_kill(\n        user_id=user_id,\n        mob=mob\n    )\n\n    # Terminal victory was already claimed above, so this hook runs once per\n    # encounter and cannot double-count repeated Telegram terminal updates.\n    story_region_result = process_region_kill_story_progress(\n        user_id=user_id,\n        location_id=get_current_location(user_id),\n    )\n\n    # Dedicated quest items are rolled after the same terminal claim and never\n    # enter ordinary inventory or consume bag capacity.\n    story_item_result = process_story_quest_item_drop(\n        user_id=user_id,\n        location_id=get_current_location(user_id),\n    )\n\n    # Combat EXP was awarded before story progress. Evaluate the resulting level\n    # only after this terminal victory's progress/drop hooks have run.\n    exp_result = reward.get(\"exp_result\") or {}\n    resulting_level = int(exp_result.get(\"level\") or get_player_level(user_id))\n    story_skip_result = process_overlevel_story_quest_skip(\n        user_id=user_id,\n        current_level=resulting_level,\n    )\n\n    text = build_victory_text(\n        user_id=user_id,\n        lvl=lvl,\n        mob=mob,\n        reward=reward,\n        wear_result=wear_result,\n        contract_result=contract_result,\n        daily_result=daily_result,\n        prefix_text=prefix_text\n    )\n\n    bot.send_message(\n        chat_id,\n        text,\n        reply_markup=main_kb()\n    )\n\n    # Quest-item persistence is owned by the drop system. Telegram output is a\n    # separate consumer and is emitted exactly once only for an actual grant.\n    if int(story_item_result.get(\"granted\", 0) or 0) > 0:\n        story_drop_message = str(story_item_result.get(\"drop_message\") or \"\").strip()\n        if story_drop_message:\n            bot.send_message(chat_id, story_drop_message)\n\n    exp_result = reward.get(\"exp_result\") or {}\n    reward_message = str(exp_result.get(\"level_up_reward_message\") or \"\").strip()\n    level_ups = int(exp_result.get(\"level_ups\", 0) or 0)\n    if level_ups > 0 and not reward_message:\n        # Some levels have no special milestone item message. Always announce\n        # the canonical level transition and permanent attribute-point reward.\n        old_level = int(exp_result.get(\"old_level\", resulting_level - level_ups) or 0)\n        new_level = int(exp_result.get(\"level\", resulting_level) or resulting_level)\n        points = int(exp_result.get(\"attribute_points_awarded\", level_ups * 5) or 0)\n        reward_message = (\n            \"🎉 Рівень підвищено!\\n\\n\"\n            f\"🏆 Рівень: {old_level} → {new_level}\\n\"\n            f\"🌟 Вільні очки характеристик: +{points}\"\n        )\n    if reward_message:\n        bot.send_message(chat_id, reward_message)\n\n    # Emit one campaign-level summary only after the level-up notification.\n    # The lifecycle mutation is already committed and idempotent.\n    story_skip_message = str((story_skip_result or {}).get(\"message\") or \"\").strip()\n    if story_skip_message:\n        bot.send_message(chat_id, story_skip_message)"
+          }
+        ]
+      }
+    },
+    {
+      "contract": "POST_COMMIT_NOTIFICATION_POLICY",
+      "resolution": "NOTIFICATIONS_AFTER_DURABLE_HOOK_COMMIT_FAIL_OPEN",
+      "decision": "Presentation and notifications run only after durable hooks commit, never mutate gameplay state, and failures are reported without replaying settlement.",
+      "evidence": {
+        "notification": [
+          {
+            "path": "db_modules/__init__.py",
+            "sha256": "cfe6b42026692106e98c89d22f3af0d1635c7914a2cb298412b0bbb6a36d00eb"
+          },
+          {
+            "path": "db_modules/systems_wrappers.py",
+            "sha256": "2100be668336ab18f896ba1082cf136fd9a943a3def60402e07228b842e5eda7"
+          },
+          {
+            "path": "handlers/admin_crystal_credit.py",
+            "sha256": "c457739364fc3c576f943d5df524ad6b39d35077bccfec617824cf94642fd835"
+          },
+          {
+            "path": "handlers/combat.py",
+            "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409"
+          },
+          {
+            "path": "main.py",
+            "sha256": "a7edf7a3b99437d04329201be44d7bace83668c1cd15edf7be720d529927ea59"
+          },
+          {
+            "path": "systems/energy_system.py",
+            "sha256": "b7d90b67c292d9076020b5a788db9ed37ff85e5e31ce71be11f49fb32cd6ceb4"
+          },
+          {
+            "path": "systems/notifications.py",
+            "sha256": "d2649d55e5f59eec2f0de6198e575e1818b607fd93ff295fc8e7a554a0867590"
+          },
+          {
+            "path": "systems/player_system.py",
+            "sha256": "b503e2514dd7b35136384561c873d03be27afb9cdd31325530e15a0df67c3571"
+          },
+          {
+            "path": "systems/regen_system.py",
+            "sha256": "3856becec64edf57f1e49ce9e84505d515d20c5161cfd52e17ec32136e9cc94b"
+          },
+          {
+            "path": "systems/story_quest_overlevel_system.py",
+            "sha256": "3718edb73bf6c5530366a4fd36e4abefbd612fc4f71b9755aee0db9568f1863d"
+          },
+          {
+            "path": "systems/travel_system.py",
+            "sha256": "09525cdc1a89ce78091d1f04429ec56a58ff8fda5235699b3ecac0d0c8edc687"
+          }
+        ],
+        "send_message": [
+          {
+            "path": "handlers/about_game.py",
+            "sha256": "1e1afdb05824563428956ff1ac24e2f3a1df9802dae383e1de47a0f0f8d17501"
+          },
+          {
+            "path": "handlers/admin_crystal_credit.py",
+            "sha256": "c457739364fc3c576f943d5df524ad6b39d35077bccfec617824cf94642fd835"
+          },
+          {
+            "path": "handlers/attribute_allocation.py",
+            "sha256": "27721667fd4a8b44bcac2ed4e737baa3f5b9bbdbef5137ed861e2a774d793238"
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "sha256": "9cd9b0ccccae8ea2f0bfb24abdc6428ae5691ba78a33a60d9b3fed84c4215f7a"
+          },
+          {
+            "path": "handlers/blacksmith.py",
+            "sha256": "8a6a64840f8b5a600d19d632114736af18824a02fd44b0651237d389e2897ad7"
+          },
+          {
+            "path": "handlers/blacksmith_repair_confirm.py",
+            "sha256": "16803c5d5bad701d626846156e5942b8a6edd64dc36aeb758c4ba790c44414c0"
+          },
+          {
+            "path": "handlers/city.py",
+            "sha256": "a73373e0bf4ae90e2d7d4e6c7b417847d401c6b4555514431a3acfed3836b0c3"
+          },
+          {
+            "path": "handlers/combat.py",
+            "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409"
+          },
+          {
+            "path": "handlers/contracts.py",
+            "sha256": "18eef1f5efa0ebc062a9d49e6bef00aebadb79c0702c2041c865e356a14dc8d6"
+          },
+          {
+            "path": "handlers/crystal_shop.py",
+            "sha256": "d0516012b4a094e70736058ca638687b2ef58ecb5122fc09c6cbaaa8932130d2"
+          },
+          {
+            "path": "handlers/daily.py",
+            "sha256": "520dcecfa0564b6e5b3e9c0f42167454150c71011a20cd538c4d1d1546f6857d"
+          },
+          {
+            "path": "handlers/dev.py",
+            "sha256": "c161907aa3d965cbb3f2ce50d1b6f46c181027ff7a3b517ae852a026b5827352"
+          },
+          {
+            "path": "handlers/event_ui.py",
+            "sha256": "6151dbc850e3b0b86254c0f4d0fb75aaa40ad3e9466e1994d5605bc7d001d5a7"
+          },
+          {
+            "path": "handlers/external_links.py",
+            "sha256": "4fee71ab68938fd2cedfff91b4a67860675afb68ecd35f4400713383174ab9a0"
+          },
+          {
+            "path": "handlers/fatigue_artifact.py",
+            "sha256": "aeeef7e11ddec5463dd7f8ac2003e75b04e69eb11db25839e98c79a044f88d5e"
+          },
+          {
+            "path": "handlers/guild.py",
+            "sha256": "de39b8627b59b33ad1500086b9862f775237c780d4718e8bc389e4ef88365d40"
+          },
+          {
+            "path": "handlers/inventory.py",
+            "sha256": "f0e43d3d2dcc22bf8f28be61e0e843698b1337ca928d5d42034ebc49d8d3b95b"
+          },
+          {
+            "path": "handlers/map.py",
+            "sha256": "5d8c46886c9989a2b8a956db075e14315875b61eb18f734c643dac9392f25cc3"
+          },
+          {
+            "path": "handlers/name_rune.py",
+            "sha256": "45085c6ae4b1ca356955f127d2838a1ab46ddc2f6ca72ed5e43fcdb7e69c2c44"
+          },
+          {
+            "path": "handlers/player_interaction.py",
+            "sha256": "799e9ad6e745b3995886c6e504019b7c1b01073c917a0ae1b9ccc05b8948b0b9"
+          },
+          {
+            "path": "handlers/player_rankings.py",
+            "sha256": "9973182ff63d3b62a486d80d35136fe51d20a405aa0f41eb1a6eb937e8b88e3c"
+          },
+          {
+            "path": "handlers/profile.py",
+            "sha256": "9546e06670a5bf830671d69b8006b0630edf9a95cb9365a9dff05630acf0524d"
+          },
+          {
+            "path": "handlers/pvp_interaction.py",
+            "sha256": "64e76770501b76d4fe82b8c11786a7a6bddaa9b9e453aa0f71f1177439fa0235"
+          },
+          {
+            "path": "handlers/pvp_round_ui.py",
+            "sha256": "88e6663e4ea91941540304a529ad249baba03b2e42fde09550eb9646ff6006da"
+          },
+          {
+            "path": "handlers/refine.py",
+            "sha256": "62037f4fa72024f61856d883e875a95a5b6a618d4d249321caa19565944cd1ab"
+          },
+          {
+            "path": "handlers/runes.py",
+            "sha256": "f2fd721c396fa957f9cbd74b85e5ae445d602545cfe417cf288bb9401231941a"
+          },
+          {
+            "path": "handlers/start.py",
+            "sha256": "45817027f66031a8a464dc890e701d0bc191e1543fe00745505e64918969fd75"
+          },
+          {
+            "path": "handlers/story_boss_invocation_wiring.py",
+            "sha256": "8eb613e10d0a608e29911df66014df69d2a3dc5da07d5f53a3d5e1430722bb8f"
+          },
+          {
+            "path": "handlers/story_quest_npc_runtime.py",
+            "sha256": "424ccfafd9e4e8a974229e014ff9d7c9224e5f0b3d1150cf92804accccbd50f6"
+          },
+          {
+            "path": "handlers/story_quests.py",
+            "sha256": "2f6ecb8fa65f51b000fce4d16a24673f429b6d571ca11e214dacf71393bf1d28"
+          },
+          {
+            "path": "handlers/timed_exp_bonus.py",
+            "sha256": "b1ab8e7bb97daff6b410975e1d0b6df3f04c130100ec00beffebdac73516069a"
+          },
+          {
+            "path": "handlers/world_chronicles.py",
+            "sha256": "f968928ca676a4a7c462c15f2fc9741c402615ba7dc1ef359bcdf6d96f458712"
+          },
+          {
+            "path": "main.py",
+            "sha256": "a7edf7a3b99437d04329201be44d7bace83668c1cd15edf7be720d529927ea59"
+          },
+          {
+            "path": "systems/inactivity_reminder_system.py",
+            "sha256": "b07df95d3c6b3424cc79697bc55c194ec78a4fd86020e8027c638d8bc190d4cc"
+          },
+          {
+            "path": "systems/notifications.py",
+            "sha256": "d2649d55e5f59eec2f0de6198e575e1818b607fd93ff295fc8e7a554a0867590"
+          },
+          {
+            "path": "systems/pve_auto_escape_system.py",
+            "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507"
+          },
+          {
+            "path": "systems/telegram_rate_limit.py",
+            "sha256": "504e1e24a297fac1d24b9683c1b00fea832563418e839817cada8a0e5ab99690"
+          },
+          {
+            "path": "systems/travel_system.py",
+            "sha256": "09525cdc1a89ce78091d1f04429ec56a58ff8fda5235699b3ecac0d0c8edc687"
+          }
+        ],
+        "build_victory_text": [
+          {
+            "path": "handlers/combat.py",
+            "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409"
+          },
+          {
+            "path": "systems/equipment_system.py",
+            "sha256": "53e72297481aad38e9319bd69cee5a8a0056e46502bce78981b84686522836d4"
+          }
+        ],
+        "message": [
+          {
+            "path": "data/drop_tables.py",
+            "sha256": "94d03fe78492d06e11a873ada35bab991eb35b4dfa5a053d42c55d92579c7cf4"
+          },
+          {
+            "path": "data/story_quest_content.py",
+            "sha256": "5b1aca59a36a86db00c7d775faca50428635b1b5831b9254579fe60d51369433"
+          },
+          {
+            "path": "data/story_quest_definitions.py",
+            "sha256": "be180e71dc857923517284b4e92aa14bec602baef0751eeec49662abe5a430d2"
+          },
+          {
+            "path": "data/story_quests/dark_forest_51_60.py",
+            "sha256": "031aacef24912e0b4fa3efd93e08505f0bc8856f00967697410fb07d56d61dfe"
+          },
+          {
+            "path": "data/story_quests/dark_forest_61_70.py",
+            "sha256": "7b6b29d90d4f268ac58cc9863050a21314e287225f687c2292c6f999188ea16b"
+          },
+          {
+            "path": "data/story_quests/dark_forest_71_80.py",
+            "sha256": "632e38fd5b0c863d82a30366b12144682c2f8841a2ec9af7e0e0fe2e8e6d2cba"
+          },
+          {
+            "path": "data/story_quests/dark_forest_81_90.py",
+            "sha256": "b9ca67fb7903e43ab3f5ca668e89ffc53d621931dde1e6b31b9a1d8436839b25"
+          },
+          {
+            "path": "data/story_quests/dark_forest_91_100.py",
+            "sha256": "7f2cf306d16a84a42ff2509fb4bb4683774cf74387766794b9d888167b7d1ca0"
+          },
+          {
+            "path": "data/story_quests/start_path_11_20.py",
+            "sha256": "2d29dbcd81815ef330a36da8203791897eb0425ac6584d603272c729237936ab"
+          },
+          {
+            "path": "data/story_quests/start_path_21_30.py",
+            "sha256": "150ae3d60b29cb0b2b2c5515dfa5bb7238be99cfcac1d5648264a402e72dcf7a"
+          },
+          {
+            "path": "data/story_quests/start_path_31_40.py",
+            "sha256": "4803d8a8e14127248bac1167d29c2b1ec57b2d35831c7b72125884899f6ff341"
+          },
+          {
+            "path": "data/story_quests/start_path_41_50.py",
+            "sha256": "7cd79f589061ba7c543f99b37c942c9ce65037d08fce7b9c5fbf49e6f26539ad"
+          },
+          {
+            "path": "db_modules/character.py",
+            "sha256": "3def807ae505baaa1102da998012c419d3615695cdc8154f0a41a1cef6dff0ea"
+          },
+          {
+            "path": "db_modules/daily_compat.py",
+            "sha256": "f8ba6547d52f0fdd586b8704fb4304fd8856c38b743d04af24477d3cb172f74b"
+          },
+          {
+            "path": "db_modules/dev_compat.py",
+            "sha256": "c140072edbb338a6f7ca396d0b442f559962a8dc8d7aa1148f7e2d3314069741"
+          },
+          {
+            "path": "db_modules/equipment.py",
+            "sha256": "564b39777715db434017fbdb3ed01713d6503471564eb2a51d38be5324476276"
+          },
+          {
+            "path": "db_modules/generated_equipment.py",
+            "sha256": "a23b6558917037098873de61f79c45ab347cf7587a8c5a5977230fb69dd11a4b"
+          },
+          {
+            "path": "db_modules/inventory.py",
+            "sha256": "4b44ec514027e2c49e275a0230a7f9c3415739b722dd108e9bc232e2cb85ad51"
+          },
+          {
+            "path": "db_modules/inventory_compat.py",
+            "sha256": "e677a6b85bb25d2a8b28bde1d14a5023d755741e27476629777fdeb2a7460aa1"
+          },
+          {
+            "path": "db_modules/quests.py",
+            "sha256": "40219bf84d6cad04ee592f112583429458708cc97878cf83a9aa1462551a5f30"
+          },
+          {
+            "path": "db_modules/shop.py",
+            "sha256": "9da1260fa7b375485480cd9a06d93b485efff54bae2ec369e560aa8e384facc0"
+          },
+          {
+            "path": "handlers/about_game.py",
+            "sha256": "1e1afdb05824563428956ff1ac24e2f3a1df9802dae383e1de47a0f0f8d17501"
+          },
+          {
+            "path": "handlers/admin_crystal_credit.py",
+            "sha256": "c457739364fc3c576f943d5df524ad6b39d35077bccfec617824cf94642fd835"
+          },
+          {
+            "path": "handlers/attribute_allocation.py",
+            "sha256": "27721667fd4a8b44bcac2ed4e737baa3f5b9bbdbef5137ed861e2a774d793238"
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "sha256": "9cd9b0ccccae8ea2f0bfb24abdc6428ae5691ba78a33a60d9b3fed84c4215f7a"
+          },
+          {
+            "path": "handlers/blacksmith.py",
+            "sha256": "8a6a64840f8b5a600d19d632114736af18824a02fd44b0651237d389e2897ad7"
+          },
+          {
+            "path": "handlers/blacksmith_repair_confirm.py",
+            "sha256": "16803c5d5bad701d626846156e5942b8a6edd64dc36aeb758c4ba790c44414c0"
+          },
+          {
+            "path": "handlers/city.py",
+            "sha256": "a73373e0bf4ae90e2d7d4e6c7b417847d401c6b4555514431a3acfed3836b0c3"
+          },
+          {
+            "path": "handlers/combat.py",
+            "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409"
+          },
+          {
+            "path": "handlers/contracts.py",
+            "sha256": "18eef1f5efa0ebc062a9d49e6bef00aebadb79c0702c2041c865e356a14dc8d6"
+          },
+          {
+            "path": "handlers/crystal_shop.py",
+            "sha256": "d0516012b4a094e70736058ca638687b2ef58ecb5122fc09c6cbaaa8932130d2"
+          },
+          {
+            "path": "handlers/daily.py",
+            "sha256": "520dcecfa0564b6e5b3e9c0f42167454150c71011a20cd538c4d1d1546f6857d"
+          },
+          {
+            "path": "handlers/dev.py",
+            "sha256": "c161907aa3d965cbb3f2ce50d1b6f46c181027ff7a3b517ae852a026b5827352"
+          },
+          {
+            "path": "handlers/event_ui.py",
+            "sha256": "6151dbc850e3b0b86254c0f4d0fb75aaa40ad3e9466e1994d5605bc7d001d5a7"
+          },
+          {
+            "path": "handlers/external_links.py",
+            "sha256": "4fee71ab68938fd2cedfff91b4a67860675afb68ecd35f4400713383174ab9a0"
+          },
+          {
+            "path": "handlers/fatigue_artifact.py",
+            "sha256": "aeeef7e11ddec5463dd7f8ac2003e75b04e69eb11db25839e98c79a044f88d5e"
+          },
+          {
+            "path": "handlers/guild.py",
+            "sha256": "de39b8627b59b33ad1500086b9862f775237c780d4718e8bc389e4ef88365d40"
+          },
+          {
+            "path": "handlers/inventory.py",
+            "sha256": "f0e43d3d2dcc22bf8f28be61e0e843698b1337ca928d5d42034ebc49d8d3b95b"
+          },
+          {
+            "path": "handlers/map.py",
+            "sha256": "5d8c46886c9989a2b8a956db075e14315875b61eb18f734c643dac9392f25cc3"
+          },
+          {
+            "path": "handlers/name_rune.py",
+            "sha256": "45085c6ae4b1ca356955f127d2838a1ab46ddc2f6ca72ed5e43fcdb7e69c2c44"
+          },
+          {
+            "path": "handlers/player_interaction.py",
+            "sha256": "799e9ad6e745b3995886c6e504019b7c1b01073c917a0ae1b9ccc05b8948b0b9"
+          },
+          {
+            "path": "handlers/player_rankings.py",
+            "sha256": "9973182ff63d3b62a486d80d35136fe51d20a405aa0f41eb1a6eb937e8b88e3c"
+          },
+          {
+            "path": "handlers/profile.py",
+            "sha256": "9546e06670a5bf830671d69b8006b0630edf9a95cb9365a9dff05630acf0524d"
+          },
+          {
+            "path": "handlers/pvp_interaction.py",
+            "sha256": "64e76770501b76d4fe82b8c11786a7a6bddaa9b9e453aa0f71f1177439fa0235"
+          },
+          {
+            "path": "handlers/pvp_round_ui.py",
+            "sha256": "88e6663e4ea91941540304a529ad249baba03b2e42fde09550eb9646ff6006da"
+          },
+          {
+            "path": "handlers/refine.py",
+            "sha256": "62037f4fa72024f61856d883e875a95a5b6a618d4d249321caa19565944cd1ab"
+          },
+          {
+            "path": "handlers/runes.py",
+            "sha256": "f2fd721c396fa957f9cbd74b85e5ae445d602545cfe417cf288bb9401231941a"
+          },
+          {
+            "path": "handlers/start.py",
+            "sha256": "45817027f66031a8a464dc890e701d0bc191e1543fe00745505e64918969fd75"
+          },
+          {
+            "path": "handlers/story_boss_invocation_wiring.py",
+            "sha256": "8eb613e10d0a608e29911df66014df69d2a3dc5da07d5f53a3d5e1430722bb8f"
+          },
+          {
+            "path": "handlers/story_quest_npc_runtime.py",
+            "sha256": "424ccfafd9e4e8a974229e014ff9d7c9224e5f0b3d1150cf92804accccbd50f6"
+          },
+          {
+            "path": "handlers/story_quests.py",
+            "sha256": "2f6ecb8fa65f51b000fce4d16a24673f429b6d571ca11e214dacf71393bf1d28"
+          },
+          {
+            "path": "handlers/timed_exp_bonus.py",
+            "sha256": "b1ab8e7bb97daff6b410975e1d0b6df3f04c130100ec00beffebdac73516069a"
+          },
+          {
+            "path": "handlers/world_chronicles.py",
+            "sha256": "f968928ca676a4a7c462c15f2fc9741c402615ba7dc1ef359bcdf6d96f458712"
+          },
+          {
+            "path": "main.py",
+            "sha256": "a7edf7a3b99437d04329201be44d7bace83668c1cd15edf7be720d529927ea59"
+          },
+          {
+            "path": "systems/admin_crystal_credit_system.py",
+            "sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61"
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "sha256": "664cfe8a60f7728e7364f542c936d52328bc5ba89a022b686a6c3be1f3b1ab59"
+          },
+          {
+            "path": "systems/character_system.py",
+            "sha256": "edb9128e33c5ce3e88c9cbc9a5c79a20bdd23bc721e461beacfb4a1a7e27468b"
+          },
+          {
+            "path": "systems/contract_system.py",
+            "sha256": "4b8e73be52d59d3d8d897d94f9aa79430ce452a8c5cd972759846dacbd69e0e6"
+          },
+          {
+            "path": "systems/crystal_bag_expansion_system.py",
+            "sha256": "829d008496d37a9e6d140a1d8b2f89af0e828fb3398a9e2081aed96210810626"
+          },
+          {
+            "path": "systems/crystal_shop_system.py",
+            "sha256": "601b1d678835a18e20c99daa4236e38cf419f25d5e1e13b9b8dc4f6eb80b6bc2"
+          },
+          {
+            "path": "systems/crystal_wallet_system.py",
+            "sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20"
+          },
+          {
+            "path": "systems/drop_system.py",
+            "sha256": "bf3fbf54da608e719516727509fe51c5df26815c7d8576bb4f02105cf9f0cd9c"
+          },
+          {
+            "path": "systems/energy_system.py",
+            "sha256": "b7d90b67c292d9076020b5a788db9ed37ff85e5e31ce71be11f49fb32cd6ceb4"
+          },
+          {
+            "path": "systems/equipment_system.py",
+            "sha256": "53e72297481aad38e9319bd69cee5a8a0056e46502bce78981b84686522836d4"
+          },
+          {
+            "path": "systems/fatigue_artifact_system.py",
+            "sha256": "03432d9774eec8ce9f2edc334d37caa8771dbd0402e86363b09a7cd8e1747cd4"
+          },
+          {
+            "path": "systems/guild_resource_system.py",
+            "sha256": "af4298ef1de8e4c4a8dc46aed20d1d7f7ee66a04dc3587687d6ef8e33cdd6a8f"
+          },
+          {
+            "path": "systems/guild_system.py",
+            "sha256": "e52c0fa05137c6eadca7493f18423c4451ff1db874858827d47d4a30f7d5aae2"
+          },
+          {
+            "path": "systems/inactivity_reminder_system.py",
+            "sha256": "b07df95d3c6b3424cc79697bc55c194ec78a4fd86020e8027c638d8bc190d4cc"
+          },
+          {
+            "path": "systems/level_up_reward_system.py",
+            "sha256": "dca636a71be6f0b0a967647d9300269c2d0fce92f963814a87e1bebbc35d25fc"
+          },
+          {
+            "path": "systems/name_rune_system.py",
+            "sha256": "d576015b5de121b89ed428bc534bc7002de2c831245d3c24593267bbbc003f6a"
+          },
+          {
+            "path": "systems/notifications.py",
+            "sha256": "d2649d55e5f59eec2f0de6198e575e1818b607fd93ff295fc8e7a554a0867590"
+          },
+          {
+            "path": "systems/player_interaction_system.py",
+            "sha256": "7e0569317cab32cba42826dedfde2f804472c993b53250fc4497237d0004b171"
+          },
+          {
+            "path": "systems/player_rankings_system.py",
+            "sha256": "14b09f8f04b4546ce98da61e77757eaea137c1470ec526bf9e13c7d3ae7e9aac"
+          },
+          {
+            "path": "systems/player_system.py",
+            "sha256": "b503e2514dd7b35136384561c873d03be27afb9cdd31325530e15a0df67c3571"
+          },
+          {
+            "path": "systems/potion_system.py",
+            "sha256": "0528917e22044b8f4465190aaf93e0e80cd3be149ce164c9845f81253017d0d7"
+          },
+          {
+            "path": "systems/premium_item_policy_system.py",
+            "sha256": "76e66c69839815c79597703c49955d04156092861015e3e2032813ce23cb0fea"
+          },
+          {
+            "path": "systems/production_logging.py",
+            "sha256": "dcc3242acd42ef579d591c3022a9bd2dc75f28daf49fd3466a9b2a2449fb3045"
+          },
+          {
+            "path": "systems/pve_auto_escape_system.py",
+            "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507"
+          },
+          {
+            "path": "systems/pve_skill_action_state.py",
+            "sha256": "7aef648aee8f5f674f09c3feae1b4e72f094897461b1d1c4349e3d695639f86f"
+          },
+          {
+            "path": "systems/pvp_action_validation.py",
+            "sha256": "288491257fc4aa8d44e316c427bfe9f36b4534d072bba24a28adb829e51e3c32"
+          },
+          {
+            "path": "systems/refine_system.py",
+            "sha256": "aebb056cf40ef532eee63d70451f201960073155c52cda58dc537ef75759c879"
+          },
+          {
+            "path": "systems/reward_system.py",
+            "sha256": "87a5d92d94735dd2593c5d847502622dd96bab75acf2c2177e48654d5608f5e5"
+          },
+          {
+            "path": "systems/rune_system.py",
+            "sha256": "56e988aee115054422cf6277065c498777e0329a087f1088d7808e4fe7836a04"
+          },
+          {
+            "path": "systems/story_boss_invocation_adapter.py",
+            "sha256": "cdac42d824571b7d5e6367ea639d388cc703e82d43e3ca4cf246dde8d46a13de"
+          },
+          {
+            "path": "systems/story_quest_item_drop_system.py",
+            "sha256": "5c17d4f4beb3a2d83720bb489733ea541ce6892da3cbe032df21e6261475847b"
+          },
+          {
+            "path": "systems/story_quest_overlevel_system.py",
+            "sha256": "3718edb73bf6c5530366a4fd36e4abefbd612fc4f71b9755aee0db9568f1863d"
+          },
+          {
+            "path": "systems/telegram_rate_limit.py",
+            "sha256": "504e1e24a297fac1d24b9683c1b00fea832563418e839817cada8a0e5ab99690"
+          },
+          {
+            "path": "systems/timed_exp_bonus_system.py",
+            "sha256": "18a733c82b31f2629ed3e66aed671db4c3131f133108f688e0e25ae0f13c20ae"
+          },
+          {
+            "path": "systems/travel_system.py",
+            "sha256": "09525cdc1a89ce78091d1f04429ec56a58ff8fda5235699b3ecac0d0c8edc687"
+          }
+        ]
+      }
+    },
+    {
+      "contract": "RETRY_RESTART_AND_PENDING_DELIVERY",
+      "resolution": "CONSUMER_LEDGER_EXACT_ONCE_RETRY",
+      "decision": "Retry uses event key plus consumer key; completed consumers are skipped, uncompleted consumers may retry, and settlement is never retried by this coordinator.",
+      "evidence": {
+        "path": "handlers/combat.py",
+        "symbol": "process_victory",
+        "definition_count": 1,
+        "file_sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+        "definitions": [
+          {
+            "line_start": 1964,
+            "line_end": 2118,
+            "source_sha256": "330acb48958c4b1a63dd8e093a8bc6dada3032ab412a8264c463868b49e26d57",
+            "source": "def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=\"\"):\n    encounter_id = (mob or {}).get(\"pve_encounter_id\")\n    if encounter_id and not claim_pve_terminal(user_id, 'victory', encounter_id):\n        bot.send_message(chat_id, STALE_COMBAT_TEXT, reply_markup=main_kb())\n        return\n    # ROM_STAGE_18_29_3F_EVENT_VICTORY_STATISTICS\n    event_key = str((mob or {}).get(\"event_key\") or \"\").strip()\n    event_mob_key = str((mob or {}).get(\"event_mob_key\") or \"\").strip()\n    if encounter_id and event_key and event_mob_key:\n        from db_modules.connection import conn as event_statistics_conn\n        from systems.event_statistics_system import record_event_mob_victory\n        record_event_mob_victory(\n            event_statistics_conn,\n            event_key=event_key,\n            user_id=user_id,\n            mob_key=event_mob_key,\n            terminal_event_id=encounter_id,\n        )\n        event_statistics_conn.commit()\n    \"\"\"\n    Завершення бою перемогою.\n\n    Перед виходом із бою фіксуємо поточне HP з бойового стану\n    і очищаємо тимчасові бойові ефекти.\n\n    Це виправляє кейс, коли жрець наклав HoT у фінальному раунді,\n    а залишкові тіки лікування некоректно доліковували героя після перемоги.\n    \"\"\"\n\n    finalize_combat_state_before_victory(\n        user_id=user_id,\n        mob=mob\n    )\n\n    if hasattr(bot, \"user_data\") and user_id in bot.user_data:\n        del bot.user_data[user_id]\n\n    reward = process_victory_reward(\n        user_id=user_id,\n        player_level=lvl,\n        mob=mob\n    )\n\n    if mob.get(\"is_boss\"):\n        encounter_id = mob.get(\"pve_encounter_id\")\n        if encounter_id:\n            from systems.world_chronicle_system import (\n                get_character_name_snapshot,\n                record_world_chronicle_event,\n            )\n            character_name = get_character_name_snapshot(user_id)\n            if character_name:\n                record_world_chronicle_event(\n                    \"location_boss_defeated\",\n                    user_id,\n                    character_name,\n                    f\"location_boss_defeated:{encounter_id}\",\n                    subject_key=str(mob.get(\"boss_key\") or \"\"),\n                    subject_name_snapshot=str(mob.get(\"name\") or mob.get(\"base_name\") or \"Бос\"),\n                    location_id=str(mob.get(\"location_id\") or \"\"),\n                )\n\n    # The RNG encounter has already passed the canonical terminal claim. A\n    # matching ACTIVE BOSS quest now completes and rewards exactly once.\n    story_boss_result = process_rng_boss_story_completion(\n        user_id=user_id,\n        mob=mob,\n        location_id=get_current_location(user_id),\n        encounter_id=encounter_id,\n    )\n\n    wear_result = apply_random_durability_wear_on_victory(\n        user_id=user_id,\n        chance_percent=25\n    )\n\n    contract_result = process_contract_progress_on_kill(\n        user_id=user_id,\n        mob=mob\n    )\n\n    daily_result = process_daily_quest_progress_on_kill(\n        user_id=user_id,\n        mob=mob\n    )\n\n    # Terminal victory was already claimed above, so this hook runs once per\n    # encounter and cannot double-count repeated Telegram terminal updates.\n    story_region_result = process_region_kill_story_progress(\n        user_id=user_id,\n        location_id=get_current_location(user_id),\n    )\n\n    # Dedicated quest items are rolled after the same terminal claim and never\n    # enter ordinary inventory or consume bag capacity.\n    story_item_result = process_story_quest_item_drop(\n        user_id=user_id,\n        location_id=get_current_location(user_id),\n    )\n\n    # Combat EXP was awarded before story progress. Evaluate the resulting level\n    # only after this terminal victory's progress/drop hooks have run.\n    exp_result = reward.get(\"exp_result\") or {}\n    resulting_level = int(exp_result.get(\"level\") or get_player_level(user_id))\n    story_skip_result = process_overlevel_story_quest_skip(\n        user_id=user_id,\n        current_level=resulting_level,\n    )\n\n    text = build_victory_text(\n        user_id=user_id,\n        lvl=lvl,\n        mob=mob,\n        reward=reward,\n        wear_result=wear_result,\n        contract_result=contract_result,\n        daily_result=daily_result,\n        prefix_text=prefix_text\n    )\n\n    bot.send_message(\n        chat_id,\n        text,\n        reply_markup=main_kb()\n    )\n\n    # Quest-item persistence is owned by the drop system. Telegram output is a\n    # separate consumer and is emitted exactly once only for an actual grant.\n    if int(story_item_result.get(\"granted\", 0) or 0) > 0:\n        story_drop_message = str(story_item_result.get(\"drop_message\") or \"\").strip()\n        if story_drop_message:\n            bot.send_message(chat_id, story_drop_message)\n\n    exp_result = reward.get(\"exp_result\") or {}\n    reward_message = str(exp_result.get(\"level_up_reward_message\") or \"\").strip()\n    level_ups = int(exp_result.get(\"level_ups\", 0) or 0)\n    if level_ups > 0 and not reward_message:\n        # Some levels have no special milestone item message. Always announce\n        # the canonical level transition and permanent attribute-point reward.\n        old_level = int(exp_result.get(\"old_level\", resulting_level - level_ups) or 0)\n        new_level = int(exp_result.get(\"level\", resulting_level) or resulting_level)\n        points = int(exp_result.get(\"attribute_points_awarded\", level_ups * 5) or 0)\n        reward_message = (\n            \"🎉 Рівень підвищено!\\n\\n\"\n            f\"🏆 Рівень: {old_level} → {new_level}\\n\"\n            f\"🌟 Вільні очки характеристик: +{points}\"\n        )\n    if reward_message:\n        bot.send_message(chat_id, reward_message)\n\n    # Emit one campaign-level summary only after the level-up notification.\n    # The lifecycle mutation is already committed and idempotent.\n    story_skip_message = str((story_skip_result or {}).get(\"message\") or \"\").strip()\n    if story_skip_message:\n        bot.send_message(chat_id, story_skip_message)"
+          }
+        ]
+      }
+    },
+    {
+      "contract": "NO_DUPLICATE_REWARD_SETTLEMENT",
+      "resolution": "EVENT_CONTAINS_SUMMARY_NOT_REWARD_COMMANDS",
+      "decision": "Post-combat payload exposes finalized reward summaries only and contains no EXP, gold, loot or quest-reward mutation commands.",
+      "evidence": {
+        "path": "systems/reward_system.py",
+        "symbol": "process_victory_reward",
+        "definition_count": 1,
+        "file_sha256": "87a5d92d94735dd2593c5d847502622dd96bab75acf2c2177e48654d5608f5e5",
+        "definitions": [
+          {
+            "line_start": 1008,
+            "line_end": 1069,
+            "source_sha256": "dfb0db24ce17f5fa2a1f91efc38af4a6ff8a19aeb88004e842560021397e89c5",
+            "source": "def process_victory_reward(user_id, player_level, mob):\n\n    \"\"\"Apply Premium EXP and combat gold exactly once for a mob victory.\"\"\"\n\n    base_exp = calculate_exp_reward(player_level=player_level, mob=mob)\n\n    gold = calculate_gold_reward(player_level=player_level, mob=mob)\n\n    from systems.timed_exp_bonus_system import calculate_mob_kill_exp, calculate_mob_kill_gold\n\n    exp_breakdown = calculate_mob_kill_exp(user_id, base_exp)\n\n    gold_breakdown = calculate_mob_kill_gold(user_id, gold)\n\n    gold = float(gold_breakdown[\"final_gold\"])\n\n    exp = int(exp_breakdown[\"final_exp\"])\n\n    exp_result = add_exp(user_id, exp)\n\n    add_gold(user_id, gold)\n\n    add_kill(user_id)\n\n    drop_result = process_enemy_drops(user_id, mob)\n\n    # ROM_STAGE_18_29_4B_EVENT_DROP_INTEGRATION\n    event_drop_results = process_event_drops(user_id, mob)\n\n    return {\n\n        \"exp\": exp,\n\n        \"base_exp\": int(base_exp),\n\n        \"premium_exp_bonus\": int(exp_breakdown[\"bonus_exp\"]),\n\n        \"exp_bonus_active\": bool(exp_breakdown[\"active\"]),\n\n        \"gold\": gold,\n\n        \"base_gold\": float(gold_breakdown[\"base_gold\"]),\n\n        \"premium_gold_bonus\": float(gold_breakdown[\"bonus_gold\"]),\n\n        \"premium_gold_active\": bool(gold_breakdown[\"active\"]),\n\n        \"exp_result\": exp_result,\n\n        \"loot_messages\": drop_result[\"messages\"],\n\n        \"rune_drop\": drop_result[\"rune_drop\"],\n\n        \"central_drop_rules\": drop_result[\"executed_rules\"],\n\n        \"event_drop_results\": event_drop_results,\n\n        \"used_slots\": get_inventory_used_slots(user_id),\n\n        \"capacity\": get_bag_capacity(user_id),\n\n    }"
+          }
+        ]
+      }
+    },
+    {
+      "contract": "SIMULATOR_DEV_AND_SHADOW_OWNER_CLASSIFICATION",
+      "resolution": "SIMULATOR_FIXTURE_CONSUMER_DEV_NO_ALTERNATE_OWNER",
+      "decision": "Simulator may consume the same event contract for fixtures; DEV and compatibility paths cannot become alternate production dispatch owners.",
+      "evidence": {
+        "simulation": [
+          {
+            "path": "data/player_progression.py",
+            "sha256": "2584a3911237d6e2884e1ee57be08b9b680ca8aedcbe361023a212dca956c1a2"
+          },
+          {
+            "path": "handlers/dev.py",
+            "sha256": "c161907aa3d965cbb3f2ce50d1b6f46c181027ff7a3b517ae852a026b5827352"
+          },
+          {
+            "path": "systems/boss_system.py",
+            "sha256": "3dab65e3229c1653b4be5bb5e47c39a479d7f602f3cdb38d807aa30416bedd2a"
+          },
+          {
+            "path": "systems/drop_system.py",
+            "sha256": "bf3fbf54da608e719516727509fe51c5df26815c7d8576bb4f02105cf9f0cd9c"
+          },
+          {
+            "path": "systems/pvp_production_calibration.py",
+            "sha256": "ed0dd17745fb90e3dfbc4061a907af0044fe846d7a92747d0443339567bd324c"
+          },
+          {
+            "path": "systems/rune_system.py",
+            "sha256": "56e988aee115054422cf6277065c498777e0329a087f1088d7808e4fe7836a04"
+          },
+          {
+            "path": "systems/simulation/__init__.py",
+            "sha256": "c82325c2657dc3eec182155088447b49ccda6e781f9bc820664e690bcd33cf26"
+          },
+          {
+            "path": "systems/simulation/asset_valuation.py",
+            "sha256": "44f4b2dc94dff79b630d5870866510410791b92390df3c5c366813dc8962e0df"
+          },
+          {
+            "path": "systems/simulation/balance_analyzer.py",
+            "sha256": "53b05bffaf7a8667dde6f2206f43bc1b4ba47a9fa12d318a98b42d488023c631"
+          },
+          {
+            "path": "systems/simulation/combat_actor_stats.py",
+            "sha256": "589eb92a3d7679e9162155370fbc2a0764b6cc53368dd84b35f0960983a4f589"
+          },
+          {
+            "path": "systems/simulation/config.py",
+            "sha256": "3c34b2e4c54890708f3138fe2a54484b62bd9b4a60a4484b33c0aaf9ff82e3b3"
+          },
+          {
+            "path": "systems/simulation/drop_inventory.py",
+            "sha256": "88d1a01123abf32d14ad48a1dbce886c292e30cbf025f5e8bdbf620c03141a34"
+          },
+          {
+            "path": "systems/simulation/economic_ledger.py",
+            "sha256": "301030fe7241c7c8c232a4305ceb19273648b5f7b2c8e3d6d48344c8511c9284"
+          },
+          {
+            "path": "systems/simulation/economy_guild_acceptance.py",
+            "sha256": "85319d94267f681da9f1e67b08e5e6d764a9b2c1e1c0e1042fdbbf9d7c953318"
+          },
+          {
+            "path": "systems/simulation/equipment_policy.py",
+            "sha256": "077542208208c6c3ed5eb44c95d9495bd52b51034109dbe84877c2aa7fcc69f9"
+          },
+          {
+            "path": "systems/simulation/equipment_service.py",
+            "sha256": "2c0a4a1759dda4bd8d53f10ccd7126f7818f02d7e3a63a85f7a4a6d97e53153b"
+          },
+          {
+            "path": "systems/simulation/excel_reporting.py",
+            "sha256": "8ca15fb6c4fbfd3bbf76e21fcabcb6b9f7f4a2e3d67c1d8c97214fdc67c01945"
+          },
+          {
+            "path": "systems/simulation/inventory_engine.py",
+            "sha256": "04596ec44aae83e463194ecd6cea180b39efd86efd8f212f2caac67cc1eaf559"
+          },
+          {
+            "path": "systems/simulation/loot_equipment_city.py",
+            "sha256": "650c5afa0020ec1e5062bac24b3a7d7c90bf8b03beda1171ddcf12f5fc923dc9"
+          },
+          {
+            "path": "systems/simulation/meta_progression.py",
+            "sha256": "81b021b7088035c082bc0e63eb1bc7d3e0dc834a77508cbb58b99366aeb5141a"
+          },
+          {
+            "path": "systems/simulation/models.py",
+            "sha256": "3223c8ae846790563c5ff88c3cb187bde86f88d92ad60ed055174b35d253c741"
+          },
+          {
+            "path": "systems/simulation/parity_foundation.py",
+            "sha256": "48031062b3e44b94d3eb24c6fee02ae4f01f5802a921b7b481e18370e4fa9470"
+          },
+          {
+            "path": "systems/simulation/patch_regression.py",
+            "sha256": "77005eb8136f176fcc63110a672de4b37d9b48c0f6d01948b00ccd801e181da4"
+          },
+          {
+            "path": "systems/simulation/population_cache.py",
+            "sha256": "b413357ad54c2363f0b04831c22082f30f2f49d09db934dc25c40b63a7977e58"
+          },
+          {
+            "path": "systems/simulation/potion_affordability.py",
+            "sha256": "ea6335198cd81ef15cc38d43934e17ea1e2cf0d62a148ad0e489d7b482965e27"
+          },
+          {
+            "path": "systems/simulation/progression_economy_reporting.py",
+            "sha256": "6f107e8ea0d4e858f077397231220db2f808e0685d08724fea668ec6ef9fa153"
+          },
+          {
+            "path": "systems/simulation/progression_wall_analyzer.py",
+            "sha256": "f9c6863d4172b5dbb9148ef27263716e17fbcbe5f3782768410155073cbe98a6"
+          },
+          {
+            "path": "systems/simulation/reporting.py",
+            "sha256": "0254bcbca39bb4d0ed733190bbd3c26dcf5911ccc6f2f696e8fe186f0b892d0e"
+          },
+          {
+            "path": "systems/simulation/survival_state.py",
+            "sha256": "cd7e848fbd0b7ac4559dacab0267437e07f7be366bf6c649200da876883689b4"
+          },
+          {
+            "path": "systems/simulation/world_progression.py",
+            "sha256": "a8532f594dbb836c9fef79dc1ef27ab37316f3eab3c15967bb326972b834ba90"
+          }
+        ],
+        "simulator": [
+          {
+            "path": "data/mana_policy.py",
+            "sha256": "4ab68cee6c5989c2c7e68fdf7388766f58d38d4d4086539e7e5dd5b1de6afa16"
+          },
+          {
+            "path": "data/priest_healing_policy.py",
+            "sha256": "beb0382f40fc5b7f66ba6fa05821eb7b0c6a14f2a8496c44978b075b716de54a"
+          },
+          {
+            "path": "handlers/dev.py",
+            "sha256": "c161907aa3d965cbb3f2ce50d1b6f46c181027ff7a3b517ae852a026b5827352"
+          },
+          {
+            "path": "systems/pvp_policy_metrics_audit.py",
+            "sha256": "56f949c3648c7ad618af299a6a72d722b261788c161f327cf3c9c21ac441c111"
+          },
+          {
+            "path": "systems/simulation/class_progression.py",
+            "sha256": "c1554cb617c25f61bdc0fe6b3e51a45b32cf3edad3b567297390f43f594496de"
+          },
+          {
+            "path": "systems/simulation/potion_affordability.py",
+            "sha256": "ea6335198cd81ef15cc38d43934e17ea1e2cf0d62a148ad0e489d7b482965e27"
+          }
+        ],
+        "on_victory": [
+          {
+            "path": "db_modules/__init__.py",
+            "sha256": "cfe6b42026692106e98c89d22f3af0d1635c7914a2cb298412b0bbb6a36d00eb"
+          },
+          {
+            "path": "db_modules/equipment.py",
+            "sha256": "564b39777715db434017fbdb3ed01713d6503471564eb2a51d38be5324476276"
+          },
+          {
+            "path": "handlers/combat.py",
+            "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409"
+          },
+          {
+            "path": "systems/equipment_system.py",
+            "sha256": "53e72297481aad38e9319bd69cee5a8a0056e46502bce78981b84686522836d4"
+          },
+          {
+            "path": "systems/simulation/meta_progression.py",
+            "sha256": "81b021b7088035c082bc0e63eb1bc7d3e0dc834a77508cbb58b99366aeb5141a"
+          },
+          {
+            "path": "systems/simulation/world_progression.py",
+            "sha256": "a8532f594dbb836c9fef79dc1ef27ab37316f3eab3c15967bb326972b834ba90"
+          }
+        ],
+        "process_victory": [
+          {
+            "path": "handlers/combat.py",
+            "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409"
+          },
+          {
+            "path": "systems/reward_system.py",
+            "sha256": "87a5d92d94735dd2593c5d847502622dd96bab75acf2c2177e48654d5608f5e5"
+          },
+          {
+            "path": "systems/simulation/loot_equipment_city.py",
+            "sha256": "650c5afa0020ec1e5062bac24b3a7d7c90bf8b03beda1171ddcf12f5fc923dc9"
+          },
+          {
+            "path": "systems/simulation/world_progression.py",
+            "sha256": "a8532f594dbb836c9fef79dc1ef27ab37316f3eab3c15967bb326972b834ba90"
+          }
+        ]
+      }
+    }
+  ],
+  "authoritative_v1_evidence": {
+    "handlers/combat.py::process_victory": {
+      "path": "handlers/combat.py",
+      "symbol": "process_victory",
+      "definition_count": 1,
+      "file_sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+      "definitions": [
+        {
+          "line_start": 1964,
+          "line_end": 2118,
+          "source_sha256": "330acb48958c4b1a63dd8e093a8bc6dada3032ab412a8264c463868b49e26d57",
+          "source": "def process_victory(bot, chat_id, user_id, lvl, mob, prefix_text=\"\"):\n    encounter_id = (mob or {}).get(\"pve_encounter_id\")\n    if encounter_id and not claim_pve_terminal(user_id, 'victory', encounter_id):\n        bot.send_message(chat_id, STALE_COMBAT_TEXT, reply_markup=main_kb())\n        return\n    # ROM_STAGE_18_29_3F_EVENT_VICTORY_STATISTICS\n    event_key = str((mob or {}).get(\"event_key\") or \"\").strip()\n    event_mob_key = str((mob or {}).get(\"event_mob_key\") or \"\").strip()\n    if encounter_id and event_key and event_mob_key:\n        from db_modules.connection import conn as event_statistics_conn\n        from systems.event_statistics_system import record_event_mob_victory\n        record_event_mob_victory(\n            event_statistics_conn,\n            event_key=event_key,\n            user_id=user_id,\n            mob_key=event_mob_key,\n            terminal_event_id=encounter_id,\n        )\n        event_statistics_conn.commit()\n    \"\"\"\n    Завершення бою перемогою.\n\n    Перед виходом із бою фіксуємо поточне HP з бойового стану\n    і очищаємо тимчасові бойові ефекти.\n\n    Це виправляє кейс, коли жрець наклав HoT у фінальному раунді,\n    а залишкові тіки лікування некоректно доліковували героя після перемоги.\n    \"\"\"\n\n    finalize_combat_state_before_victory(\n        user_id=user_id,\n        mob=mob\n    )\n\n    if hasattr(bot, \"user_data\") and user_id in bot.user_data:\n        del bot.user_data[user_id]\n\n    reward = process_victory_reward(\n        user_id=user_id,\n        player_level=lvl,\n        mob=mob\n    )\n\n    if mob.get(\"is_boss\"):\n        encounter_id = mob.get(\"pve_encounter_id\")\n        if encounter_id:\n            from systems.world_chronicle_system import (\n                get_character_name_snapshot,\n                record_world_chronicle_event,\n            )\n            character_name = get_character_name_snapshot(user_id)\n            if character_name:\n                record_world_chronicle_event(\n                    \"location_boss_defeated\",\n                    user_id,\n                    character_name,\n                    f\"location_boss_defeated:{encounter_id}\",\n                    subject_key=str(mob.get(\"boss_key\") or \"\"),\n                    subject_name_snapshot=str(mob.get(\"name\") or mob.get(\"base_name\") or \"Бос\"),\n                    location_id=str(mob.get(\"location_id\") or \"\"),\n                )\n\n    # The RNG encounter has already passed the canonical terminal claim. A\n    # matching ACTIVE BOSS quest now completes and rewards exactly once.\n    story_boss_result = process_rng_boss_story_completion(\n        user_id=user_id,\n        mob=mob,\n        location_id=get_current_location(user_id),\n        encounter_id=encounter_id,\n    )\n\n    wear_result = apply_random_durability_wear_on_victory(\n        user_id=user_id,\n        chance_percent=25\n    )\n\n    contract_result = process_contract_progress_on_kill(\n        user_id=user_id,\n        mob=mob\n    )\n\n    daily_result = process_daily_quest_progress_on_kill(\n        user_id=user_id,\n        mob=mob\n    )\n\n    # Terminal victory was already claimed above, so this hook runs once per\n    # encounter and cannot double-count repeated Telegram terminal updates.\n    story_region_result = process_region_kill_story_progress(\n        user_id=user_id,\n        location_id=get_current_location(user_id),\n    )\n\n    # Dedicated quest items are rolled after the same terminal claim and never\n    # enter ordinary inventory or consume bag capacity.\n    story_item_result = process_story_quest_item_drop(\n        user_id=user_id,\n        location_id=get_current_location(user_id),\n    )\n\n    # Combat EXP was awarded before story progress. Evaluate the resulting level\n    # only after this terminal victory's progress/drop hooks have run.\n    exp_result = reward.get(\"exp_result\") or {}\n    resulting_level = int(exp_result.get(\"level\") or get_player_level(user_id))\n    story_skip_result = process_overlevel_story_quest_skip(\n        user_id=user_id,\n        current_level=resulting_level,\n    )\n\n    text = build_victory_text(\n        user_id=user_id,\n        lvl=lvl,\n        mob=mob,\n        reward=reward,\n        wear_result=wear_result,\n        contract_result=contract_result,\n        daily_result=daily_result,\n        prefix_text=prefix_text\n    )\n\n    bot.send_message(\n        chat_id,\n        text,\n        reply_markup=main_kb()\n    )\n\n    # Quest-item persistence is owned by the drop system. Telegram output is a\n    # separate consumer and is emitted exactly once only for an actual grant.\n    if int(story_item_result.get(\"granted\", 0) or 0) > 0:\n        story_drop_message = str(story_item_result.get(\"drop_message\") or \"\").strip()\n        if story_drop_message:\n            bot.send_message(chat_id, story_drop_message)\n\n    exp_result = reward.get(\"exp_result\") or {}\n    reward_message = str(exp_result.get(\"level_up_reward_message\") or \"\").strip()\n    level_ups = int(exp_result.get(\"level_ups\", 0) or 0)\n    if level_ups > 0 and not reward_message:\n        # Some levels have no special milestone item message. Always announce\n        # the canonical level transition and permanent attribute-point reward.\n        old_level = int(exp_result.get(\"old_level\", resulting_level - level_ups) or 0)\n        new_level = int(exp_result.get(\"level\", resulting_level) or resulting_level)\n        points = int(exp_result.get(\"attribute_points_awarded\", level_ups * 5) or 0)\n        reward_message = (\n            \"🎉 Рівень підвищено!\\n\\n\"\n            f\"🏆 Рівень: {old_level} → {new_level}\\n\"\n            f\"🌟 Вільні очки характеристик: +{points}\"\n        )\n    if reward_message:\n        bot.send_message(chat_id, reward_message)\n\n    # Emit one campaign-level summary only after the level-up notification.\n    # The lifecycle mutation is already committed and idempotent.\n    story_skip_message = str((story_skip_result or {}).get(\"message\") or \"\").strip()\n    if story_skip_message:\n        bot.send_message(chat_id, story_skip_message)"
+        }
+      ]
+    },
+    "systems/reward_system.py::process_victory_reward": {
+      "path": "systems/reward_system.py",
+      "symbol": "process_victory_reward",
+      "definition_count": 1,
+      "file_sha256": "87a5d92d94735dd2593c5d847502622dd96bab75acf2c2177e48654d5608f5e5",
+      "definitions": [
+        {
+          "line_start": 1008,
+          "line_end": 1069,
+          "source_sha256": "dfb0db24ce17f5fa2a1f91efc38af4a6ff8a19aeb88004e842560021397e89c5",
+          "source": "def process_victory_reward(user_id, player_level, mob):\n\n    \"\"\"Apply Premium EXP and combat gold exactly once for a mob victory.\"\"\"\n\n    base_exp = calculate_exp_reward(player_level=player_level, mob=mob)\n\n    gold = calculate_gold_reward(player_level=player_level, mob=mob)\n\n    from systems.timed_exp_bonus_system import calculate_mob_kill_exp, calculate_mob_kill_gold\n\n    exp_breakdown = calculate_mob_kill_exp(user_id, base_exp)\n\n    gold_breakdown = calculate_mob_kill_gold(user_id, gold)\n\n    gold = float(gold_breakdown[\"final_gold\"])\n\n    exp = int(exp_breakdown[\"final_exp\"])\n\n    exp_result = add_exp(user_id, exp)\n\n    add_gold(user_id, gold)\n\n    add_kill(user_id)\n\n    drop_result = process_enemy_drops(user_id, mob)\n\n    # ROM_STAGE_18_29_4B_EVENT_DROP_INTEGRATION\n    event_drop_results = process_event_drops(user_id, mob)\n\n    return {\n\n        \"exp\": exp,\n\n        \"base_exp\": int(base_exp),\n\n        \"premium_exp_bonus\": int(exp_breakdown[\"bonus_exp\"]),\n\n        \"exp_bonus_active\": bool(exp_breakdown[\"active\"]),\n\n        \"gold\": gold,\n\n        \"base_gold\": float(gold_breakdown[\"base_gold\"]),\n\n        \"premium_gold_bonus\": float(gold_breakdown[\"bonus_gold\"]),\n\n        \"premium_gold_active\": bool(gold_breakdown[\"active\"]),\n\n        \"exp_result\": exp_result,\n\n        \"loot_messages\": drop_result[\"messages\"],\n\n        \"rune_drop\": drop_result[\"rune_drop\"],\n\n        \"central_drop_rules\": drop_result[\"executed_rules\"],\n\n        \"event_drop_results\": event_drop_results,\n\n        \"used_slots\": get_inventory_used_slots(user_id),\n\n        \"capacity\": get_bag_capacity(user_id),\n\n    }"
+        }
+      ]
+    },
+    "systems/story_quest_combat_progress_system.py::process_region_kill_story_progress": {
+      "path": "systems/story_quest_combat_progress_system.py",
+      "symbol": "process_region_kill_story_progress",
+      "definition_count": 1,
+      "file_sha256": "e8c818e6fd47a1deff83fee65f9d28a60bc8396eae80e1b4f41a05a0f6d26932",
+      "definitions": [
+        {
+          "line_start": 10,
+          "line_end": 35,
+          "source_sha256": "306560879f146f3d012f4f2011e04d63398e0ff0e684ebb0b1214f6cc9b0d638",
+          "source": "def process_region_kill_story_progress(\n    *,\n    user_id: int,\n    location_id: str,\n    registry: Mapping[str, StoryQuestDefinition] = STORY_QUEST_REGISTRY,\n    connection=None,\n) -> dict:\n    \"\"\"Advance one region kill after a canonical terminal victory claim.\n\n    The combat owner supplies only user and location. Normal, elite and boss\n    victories therefore count equally, while concrete mob IDs are intentionally\n    excluded. Empty production content is a safe no-op. The lifecycle owner keeps\n    progress bounded and rejects non-ACTIVE, wrong-type and wrong-location quests.\n    \"\"\"\n    if not registry:\n        return {\"advanced\": 0, \"reason\": \"no_production_content\"}\n    if connection is None:\n        import db\n        connection = db.conn\n    return advance_region_kill_progress(\n        connection,\n        registry=registry,\n        user_id=int(user_id),\n        location_id=str(location_id),\n        amount=1,\n    )"
+        }
+      ]
+    },
+    "systems/story_quest_boss_completion_system.py::process_rng_boss_story_completion": {
+      "path": "systems/story_quest_boss_completion_system.py",
+      "symbol": "process_rng_boss_story_completion",
+      "definition_count": 1,
+      "file_sha256": "c8388fcb0c4d0e979af82ff37f3efd90f30df27e0ad8cce97f0a85d7f19f1f4e",
+      "definitions": [
+        {
+          "line_start": 12,
+          "line_end": 88,
+          "source_sha256": "7a52ee47d80ebb9675469b388a75e9ecbe0eaae0916c35d814f26ac1fc8227eb",
+          "source": "def process_rng_boss_story_completion(\n    *,\n    user_id: int,\n    mob: dict,\n    location_id: str,\n    encounter_id,\n    registry: Mapping[str, StoryQuestDefinition] = STORY_QUEST_REGISTRY,\n    connection=None,\n) -> dict:\n    \"\"\"Record a matching ACTIVE BOSS victory without completing the quest.\n\n    Combat reward ownership remains in the combat pipeline. This bridge only\n    advances the canonical BOSS objective to its bounded target. The quest stays\n    ACTIVE, reward_claimed stays unchanged, and the NPC completion owner later\n    completes and rewards the quest after the player reports the victory.\n\n    Repeated delivery of the same terminal victory is idempotent because bounded\n    progress is set to the same target. Defeat and escape never call this victory\n    bridge, so they leave progress unchanged and allow another invocation.\n    \"\"\"\n    if not registry:\n        return {\"advanced\": False, \"completed\": False, \"reason\": \"no_production_content\"}\n    if not bool((mob or {}).get(\"is_boss\")):\n        return {\"advanced\": False, \"completed\": False, \"reason\": \"not_boss\"}\n    if connection is None:\n        import db\n        connection = db.conn\n\n    active = get_active_story_quest(connection, int(user_id))\n    if active is None:\n        return {\"advanced\": False, \"completed\": False, \"reason\": \"no_active_quest\"}\n\n    quest = registry.get(str(active[\"quest_id\"]))\n    if quest is None:\n        return {\"advanced\": False, \"completed\": False, \"reason\": \"unknown_quest_definition\"}\n    if quest.quest_type is not QuestType.BOSS:\n        return {\"advanced\": False, \"completed\": False, \"reason\": \"objective_type_mismatch\"}\n    if quest.location_id != str(location_id):\n        return {\"advanced\": False, \"completed\": False, \"reason\": \"location_mismatch\"}\n    if str(quest.boss_key) != str((mob or {}).get(\"boss_key\") or \"\"):\n        return {\"advanced\": False, \"completed\": False, \"reason\": \"boss_key_mismatch\"}\n\n    before = int(active[\"progress\"])\n    target = int(quest.target_quantity)\n    if before >= target:\n        return {\n            \"advanced\": False,\n            \"completed\": False,\n            \"reason\": \"already_recorded\",\n            \"quest_id\": quest.quest_id,\n            \"progress\": before,\n            \"target_quantity\": target,\n            \"encounter_id\": encounter_id,\n            \"status\": str(active[\"status\"]),\n            \"reward_claimed\": int(active[\"reward_claimed\"]),\n        }\n\n    with connection:\n        row = set_story_quest_progress(\n            connection,\n            user_id=int(user_id),\n            quest_id=quest.quest_id,\n            progress=target,\n        )\n\n    after = int(row[\"progress\"])\n    return {\n        \"advanced\": after > before,\n        \"completed\": False,\n        \"reason\": \"progress_recorded\" if after > before else \"already_recorded\",\n        \"quest_id\": quest.quest_id,\n        \"progress\": after,\n        \"target_quantity\": target,\n        \"encounter_id\": encounter_id,\n        \"status\": str(row[\"status\"]),\n        \"reward_claimed\": int(row[\"reward_claimed\"]),\n    }"
+        }
+      ]
+    },
+    "systems/story_quest_item_drop_system.py::process_story_quest_item_drop": {
+      "path": "systems/story_quest_item_drop_system.py",
+      "symbol": "process_story_quest_item_drop",
+      "definition_count": 1,
+      "file_sha256": "5c17d4f4beb3a2d83720bb489733ea541ce6892da3cbe032df21e6261475847b",
+      "definitions": [
+        {
+          "line_start": 12,
+          "line_end": 80,
+          "source_sha256": "16f3dc4f170bf81413464f6d68092796dd72c30e9342fc49894f269594c67da4",
+          "source": "def process_story_quest_item_drop(\n    *,\n    user_id: int,\n    location_id: str,\n    registry: Mapping[str, StoryQuestDefinition] = STORY_QUEST_REGISTRY,\n    connection=None,\n    random_value: Callable[[], float] = random.random,\n) -> dict:\n    \"\"\"Roll and grant one dedicated quest item after terminal victory.\n\n    Ordinary inventory, bag capacity, mob identity and ordinary loot tables are\n    intentionally excluded. The lifecycle owner rechecks ACTIVE/type/location/\n    item-key state and persistence bounds quantity to the definition target.\n    \"\"\"\n    if not registry:\n        return {\"granted\": 0, \"reason\": \"no_production_content\"}\n    if connection is None:\n        import db\n        connection = db.conn\n    active = get_active_story_quest(connection, int(user_id))\n    if active is None:\n        return {\"granted\": 0, \"reason\": \"no_active_quest\"}\n    quest = registry.get(str(active[\"quest_id\"]))\n    if quest is None:\n        return {\"granted\": 0, \"reason\": \"unknown_quest_definition\"}\n    if quest.quest_type is not QuestType.QUEST_ITEM or quest.quest_item is None:\n        return {\"granted\": 0, \"reason\": \"objective_type_mismatch\"}\n    if quest.location_id != str(location_id):\n        return {\"granted\": 0, \"reason\": \"location_mismatch\"}\n    current = get_story_quest_item_quantity(\n        connection, int(user_id), quest.quest_id, quest.quest_item.item_key\n    )\n    required = int(quest.quest_item.required_quantity)\n    if current >= required:\n        return {\n            \"granted\": 0,\n            \"quantity\": current,\n            \"required_quantity\": required,\n            \"objective_complete\": True,\n            \"reason\": \"target_reached\",\n        }\n    roll = float(random_value())\n    if not 0.0 <= roll < 1.0:\n        raise ValueError(\"random_value must return a value within [0, 1)\")\n    if roll >= float(quest.quest_item.drop_chance):\n        return {\n            \"granted\": 0,\n            \"quantity\": current,\n            \"required_quantity\": required,\n            \"objective_complete\": False,\n            \"reason\": \"drop_missed\",\n        }\n    result = collect_active_quest_item(\n        connection,\n        registry=registry,\n        user_id=int(user_id),\n        location_id=str(location_id),\n        item_key=quest.quest_item.item_key,\n        amount=1,\n    )\n    return {\n        **result,\n        \"item_key\": quest.quest_item.item_key,\n        \"display_name\": quest.quest_item.display_name,\n        # Presentation metadata is returned only after the canonical bounded\n        # grant. Consumers must display it only when granted > 0.\n        \"drop_message\": (f\"🧩 Сюжетна знахідка: {quest.quest_item.display_name}\" if result.get(\"granted\") else None),\n        \"reason\": \"granted\" if result.get(\"granted\") else \"target_reached\",\n    }"
+        }
+      ]
+    },
+    "systems/contract_system.py::process_contract_progress_on_kill": {
+      "path": "systems/contract_system.py",
+      "symbol": "process_contract_progress_on_kill",
+      "definition_count": 1,
+      "file_sha256": "4b8e73be52d59d3d8d897d94f9aa79430ce452a8c5cd972759846dacbd69e0e6",
+      "definitions": [
+        {
+          "line_start": 371,
+          "line_end": 458,
+          "source_sha256": "95481167463b6bdd27df35275adef70dff53bc7913cde37e5811f26747084cb1",
+          "source": "def process_contract_progress_on_kill(user_id, mob):\n    reset_daily_contracts_if_needed(user_id)\n\n    active_contract = get_active_contract(user_id)\n\n    if not active_contract:\n        return {\n            \"updated\": False,\n            \"completed\": False,\n            \"message\": None\n        }\n\n    if active_contract.get(\"reward_claimed\"):\n        return {\n            \"updated\": False,\n            \"completed\": False,\n            \"message\": None\n        }\n\n    if active_contract.get(\"completed\"):\n        return {\n            \"updated\": False,\n            \"completed\": True,\n            \"message\": None\n        }\n\n    mob_name = mob.get(\"name\", \"\")\n    mob_base_name = mob.get(\"base_name\", mob_name)\n    mob_level = int(mob.get(\"level\", active_contract[\"target_mob_level\"]))\n\n    target_name = active_contract[\"target_mob_name\"]\n    target_level = int(active_contract[\"target_mob_level\"])\n\n    if mob_base_name != target_name or mob_level != target_level:\n        return {\n            \"updated\": False,\n            \"completed\": False,\n            \"message\": None\n        }\n\n    new_progress = active_contract[\"current_kills\"] + 1\n\n    if new_progress >= active_contract[\"target_kills\"]:\n        cursor.execute(\"\"\"\n        UPDATE user_active_contracts\n        SET current_kills=?,\n            completed=1\n        WHERE id=?\n        \"\"\", (\n            active_contract[\"target_kills\"],\n            active_contract[\"id\"]\n        ))\n\n        conn.commit()\n\n        return {\n            \"updated\": True,\n            \"completed\": True,\n            \"message\": (\n                f\"📜 Контракт виконано!\\n\"\n                f\"🎯 Ціль: {target_name}\\n\"\n                f\"✅ Прогрес: {active_contract['target_kills']}/{active_contract['target_kills']}\\n\"\n                f\"🏛️ Поверніться до Гільдії Найманців, щоб здати контракт і отримати нагороду.\"\n            )\n        }\n\n    cursor.execute(\"\"\"\n    UPDATE user_active_contracts\n    SET current_kills=?\n    WHERE id=?\n    \"\"\", (new_progress, active_contract[\"id\"]))\n\n    conn.commit()\n\n    elite_note = \"\"\n\n    if mob.get(\"is_elite\"):\n        elite_note = \" ⭐ Елітна ціль зарахована!\"\n\n    return {\n        \"updated\": True,\n        \"completed\": False,\n        \"message\": (\n            f\"📜 Контракт: {target_name} \"\n            f\"{new_progress}/{active_contract['target_kills']}\"\n            f\"{elite_note}\"\n        )\n    }"
+        }
+      ]
+    },
+    "db_modules/quests.py::process_daily_quest_progress_on_kill": {
+      "path": "db_modules/quests.py",
+      "symbol": "process_daily_quest_progress_on_kill",
+      "definition_count": 1,
+      "file_sha256": "40219bf84d6cad04ee592f112583429458708cc97878cf83a9aa1462551a5f30",
+      "definitions": [
+        {
+          "line_start": 284,
+          "line_end": 353,
+          "source_sha256": "141567cab401c7298efcbebebb511753202ddf832dc6bd69710bc18c641a696c",
+          "source": "def process_daily_quest_progress_on_kill(user_id, mob=None):\n    \"\"\"\n    Викликається після перемоги над будь-яким монстром.\n\n    Враховуються:\n    - звичайні монстри\n    - елітні монстри\n    - боси, коли вони будуть реалізовані\n    \"\"\"\n    from .daily_compat import get_daily_quest_status, reset_daily_quest_if_needed as _reset_canonical_daily_quest_if_needed\n    _reset_canonical_daily_quest_if_needed(user_id)\n\n    status = get_daily_quest_status(user_id)\n\n    if not status[\"exists\"]:\n        return {\n            \"updated\": False,\n            \"completed\": False,\n            \"message\": None\n        }\n\n    if status[\"reward_claimed\"]:\n        return {\n            \"updated\": False,\n            \"completed\": False,\n            \"message\": None\n        }\n\n    if status[\"completed\"]:\n        return {\n            \"updated\": False,\n            \"completed\": True,\n            \"message\": None\n        }\n\n    progress = status[\"progress\"]\n    target_count = status[\"target_count\"]\n\n    new_progress = min(target_count, progress + 1)\n    completed = 1 if new_progress >= target_count else 0\n\n    cursor.execute(\"\"\"\n    UPDATE user_daily_quests\n    SET progress=?,\n        completed=?\n    WHERE user_id=?\n    \"\"\", (\n        new_progress,\n        completed,\n        user_id\n    ))\n\n    conn.commit()\n\n    if completed:\n        return {\n            \"updated\": True,\n            \"completed\": True,\n            \"message\": (\n                \"📆 Щоденне завдання виконано!\\n\"\n                \"✅ Прогрес: 25/25\\n\"\n                \"🏛️ Поверніться до Ратуші за нагородою.\"\n            )\n        }\n\n    return {\n        \"updated\": True,\n        \"completed\": False,\n        \"message\": f\"📆 Щоденне завдання: {new_progress}/{target_count}\"\n    }"
+        }
+      ]
+    },
+    "systems/event_statistics_system.py::record_event_mob_victory": {
+      "path": "systems/event_statistics_system.py",
+      "symbol": "record_event_mob_victory",
+      "definition_count": 1,
+      "file_sha256": "2581b7ba3e066dc047a66689b7a2e44a6e4bff6c873458e062ef73a5ea389d21",
+      "definitions": [
+        {
+          "line_start": 10,
+          "line_end": 23,
+          "source_sha256": "808fe165774b05b545230be9dbdc43b28ec00bb1134518176005da852c89770d",
+          "source": "def record_event_mob_victory(conn,event_key,user_id,mob_key,terminal_event_id,*,now=None):\n    event_key=_text(event_key,\"event_key\"); mob_key=_text(mob_key,\"mob_key\"); terminal_event_id=_text(terminal_event_id,\"terminal_event_id\"); user_id=int(user_id)\n    timestamp=(now or datetime.now(timezone.utc)).astimezone(timezone.utc).isoformat()\n    conn.execute(\"SAVEPOINT event_kill_record\")\n    try:\n        cur=conn.execute(\"INSERT OR IGNORE INTO event_kill_receipts(event_key,terminal_event_id,user_id,mob_key,recorded_at) VALUES(?,?,?,?,?)\",(event_key,terminal_event_id,user_id,mob_key,timestamp))\n        if cur.rowcount==0:\n            conn.execute(\"RELEASE event_kill_record\"); return {\"success\":True,\"recorded\":False,\"duplicate\":True}\n        conn.execute(\"\"\"INSERT INTO event_kill_statistics(event_key,user_id,mob_key,kills,first_reached_at,updated_at) VALUES(?,?,?,?,?,?)\n          ON CONFLICT(event_key,user_id,mob_key) DO UPDATE SET kills=kills+1,updated_at=excluded.updated_at\"\"\",(event_key,user_id,mob_key,1,timestamp,timestamp))\n        kills=conn.execute(\"SELECT kills FROM event_kill_statistics WHERE event_key=? AND user_id=? AND mob_key=?\",(event_key,user_id,mob_key)).fetchone()[0]\n        conn.execute(\"RELEASE event_kill_record\"); return {\"success\":True,\"recorded\":True,\"duplicate\":False,\"kills\":int(kills)}\n    except Exception:\n        conn.execute(\"ROLLBACK TO event_kill_record\"); conn.execute(\"RELEASE event_kill_record\"); raise"
+        }
+      ]
+    }
+  },
+  "durability_duplicate_evidence": {
+    "path": "systems/equipment_system.py",
+    "symbol": "apply_random_durability_wear_on_victory",
+    "definition_count": 2,
+    "file_sha256": "53e72297481aad38e9319bd69cee5a8a0056e46502bce78981b84686522836d4",
+    "definitions": [
+      {
+        "line_start": 3299,
+        "line_end": 3343,
+        "source_sha256": "9cc9f25d3dcb1a194e60f9dc694b2df3934b47d2585df2d452e2e9e97fc8aa89",
+        "source": "def apply_random_durability_wear_on_victory(user_id, chance=None, amount=1):\n\n    \"\"\"Зберігає старий принцип: за успішного roll зношується один випадковий вдягнений предмет.\"\"\"\n\n    import random\n\n    db = _equipment_db_9_0_12h2()\n\n    if chance is None:\n\n        chance = float(getattr(db, \"DURABILITY_WEAR_CHANCE\", 0.25))\n\n    chance = max(0.0, min(1.0, float(chance)))\n\n    if random.random() >= chance:\n\n        return {\"success\": True, \"worn\": False, \"damaged\": 0, \"items\": []}\n\n    rows = db.conn.execute(\n\n        \"\"\"\n\n        SELECT inv.id\n\n        FROM equipment_slots es\n\n        JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id\n\n        WHERE es.user_id=? AND es.inventory_id IS NOT NULL AND COALESCE(inv.durability,100)>0\n\n        \"\"\",\n\n        (int(user_id),),\n\n    ).fetchall()\n\n    if not rows:\n\n        return {\"success\": True, \"worn\": False, \"damaged\": 0, \"items\": []}\n\n    inventory_id = int(random.choice(rows)[0])\n\n    result = reduce_equipped_item_durability(user_id, inventory_id, amount=amount)\n\n    return {\"success\": bool(result.get(\"success\")), \"worn\": True, \"damaged\": 1, \"items\": [result], \"inventory_id\": inventory_id}"
+      },
+      {
+        "line_start": 3411,
+        "line_end": 3531,
+        "source_sha256": "2b8281be651be280211966e387242cd0a40c02dcf227a1c7e4c654f0c0e40ed9",
+        "source": "def apply_random_durability_wear_on_victory(user_id, chance_percent=25, **kwargs):\n\n    \"\"\"\n\n    Historical public contract used by build_victory_text():\n\n    {triggered: bool, message: str | None}.\n\n\n\n    On a successful roll exactly one equipped, non-broken item loses 1 durability.\n\n    \"\"\"\n\n    import random\n\n\n\n    try:\n\n        chance_percent = int(chance_percent)\n\n    except Exception:\n\n        chance_percent = 25\n\n    chance_percent = max(0, min(100, chance_percent))\n\n\n\n    roll = random.randint(1, 100)\n\n    if roll > chance_percent:\n\n        return {\"triggered\": False, \"message\": None}\n\n\n\n    db = _equipment_db_9_0_12h2()\n\n    rows = db.conn.execute(\n\n        \"SELECT es.slot_key, inv.id, COALESCE(inv.durability,100), it.name \"\n\n        \"FROM equipment_slots es \"\n\n        \"JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id \"\n\n        \"JOIN items it ON it.id=inv.item_id \"\n\n        \"WHERE es.user_id=? AND es.inventory_id IS NOT NULL \"\n\n        \"AND COALESCE(inv.durability,100)>0\",\n\n        (int(user_id),),\n\n    ).fetchall()\n\n\n\n    if not rows:\n\n        return {\"triggered\": False, \"message\": None}\n\n\n\n    slot_key, inventory_id, old_durability, base_name = random.choice(rows)\n\n    old_durability = max(0, min(100, int(old_durability or 0)))\n\n    new_durability = max(0, old_durability - 1)\n\n\n\n    db.conn.execute(\n\n        \"UPDATE inventory SET durability=? WHERE id=? AND user_id=?\",\n\n        (new_durability, int(inventory_id), int(user_id)),\n\n    )\n\n    db.conn.commit()\n\n    _equipment_sync_hp_9_0_12h2(user_id)\n\n\n\n    name = _equipment_display_name_9_0_12h2(inventory_id, base_name)\n\n    slot_name = _SLOT_NAMES_9_0_12H2.get(str(slot_key), str(slot_key))\n\n    broken_text = \" Предмет зламано!\" if new_durability <= 0 else \"\"\n\n    message = (\n\n        f\"🧱 {slot_name}: {name} втратив 1 міцності \"\n\n        f\"({old_durability} → {new_durability}/100).{broken_text}\"\n\n    )\n\n    return {\n\n        \"triggered\": True,\n\n        \"message\": message,\n\n        \"inventory_id\": int(inventory_id),\n\n        \"name\": name,\n\n        \"slot_key\": str(slot_key),\n\n        \"old\": old_durability,\n\n        \"new\": new_durability,\n\n        \"broken\": new_durability <= 0,\n\n    }"
+      }
+    ]
+  },
+  "v2_post_combat_contract": {
+    "coordinator": "PostCombatHookCoordinator",
+    "event": "SettledVictoryEvent",
+    "scope": "settled_victory_only",
+    "stable_key_source": "reward_settlement_operation_key",
+    "durable_consumer_order": [
+      "story_region_kill",
+      "story_boss_completion",
+      "story_item_drop",
+      "daily_quest",
+      "guild_contract",
+      "event_statistics",
+      "durability"
+    ],
+    "reward_mutation": false,
+    "presentation_inside_transaction": false,
+    "consumer_idempotency": true,
+    "single_hook_commit": true
+  },
+  "implementation_boundary": {
+    "allowed": [
+      "immutable event and result DTOs",
+      "consumer and Unit-of-Work ports",
+      "deterministic coordinator ordering",
+      "exact-once consumer ledger semantics",
+      "unit and integration fixtures with in-memory fakes"
+    ],
+    "forbidden": [
+      "SQLite or production consumer adapters",
+      "runtime or Telegram wiring",
+      "changes to V1 duplicate durability definitions",
+      "reward settlement replay or mutation",
+      "invented history, chronicle or achievement behavior"
+    ]
+  },
+  "summary": {
+    "input_unresolved_contracts": 16,
+    "resolved_contracts": 16,
+    "remaining_unresolved_contracts": 0,
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "implementation_authorized": true,
+  "runtime_integration_authorized": false,
+  "production_persistence_authorized": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_9_6c_implement_post_combat_hooks.py",
+  "verification": {
+    "canonical_v2_ci": {
+      "schema_version": 1,
+      "status": "PASS",
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "compile",
+          "status": "PASS",
+          "file_count": 129,
+          "failures": []
+        },
+        {
+          "name": "imports",
+          "status": "PASS",
+          "module_count": 93,
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-c",
+              "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "unit",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "tests_v2",
+              "-p",
+              "test_*.py"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ".....................................................................................................................................................................\n----------------------------------------------------------------------\nRan 165 tests in 13.522s\n\nOK"
+          }
+        },
+        {
+          "name": "architecture",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "tools/verify_v2_architecture.py",
+              "--project-root",
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+            ],
+            "returncode": 0,
+            "stdout": "V2 architecture enforcement: PASS\nPhysical files: 93\nImport edges: 328\nViolations: 0",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "duplicate_scan",
+          "status": "PASS",
+          "symbol_count": 319,
+          "duplicates": {}
+        },
+        {
+          "name": "content_validation",
+          "status": "PASS",
+          "file_count": 0,
+          "failures": []
+        }
+      ]
+    },
+    "removed_bytecode_before_ci": [],
+    "protected_before": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    },
+    "protected_after": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  }
+}
