@@ -1,0 +1,612 @@
+{
+  "schema_version": 1,
+  "stage": "21.10.8a",
+  "approved_admin_scope": {
+    "admin_only": true,
+    "credit": true,
+    "clamped_debit": true,
+    "recipient_notice": true,
+    "history": true
+  },
+  "status": "PASS",
+  "conclusion": "REVIEW_REQUIRED",
+  "generated_at_utc": "2026-10-23T21:50:40.254999+00:00",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "fbd06538a573ae7c59035fadfdf2a7d36fe41048"
+  },
+  "prerequisite": {
+    "path": "reports/stage_21_10_8_existing_admin_crystals_audit.json",
+    "stage": "21.10.8",
+    "conclusion": "GO_TO_SEMANTIC_REFINEMENT"
+  },
+  "summary": {
+    "semantic_rows": 19,
+    "v1_confirmed_rows": 13,
+    "review_required_rows": 6,
+    "unresolved_contracts": [
+      "AUTHORIZATION_AND_TARGET_IDENTITY",
+      "CREDIT_DEBIT_AND_CLAMP_POLICY",
+      "PREVIEW_CONFIRMATION_AND_IDEMPOTENCY",
+      "WALLET_LEDGER_ATOMICITY_AND_COMPENSATION",
+      "NOTIFICATION_ORDERING_AND_FAILURE_POLICY",
+      "HISTORY_DETAIL_AND_CONSUMER_ALLOWLIST"
+    ],
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "authoritative_context_owners": {
+    "admin_adjustment_owner": "systems/admin_crystal_credit_system.py",
+    "crystal_wallet": "systems/crystal_wallet_system.py",
+    "presentation": "handlers/admin_crystal_credit.py"
+  },
+  "semantic_matrix": [
+    {
+      "contract": "CANONICAL_ADMIN_ADJUSTMENT_OWNER",
+      "classification": "V1_CONFIRMED",
+      "meaning": "V1 centralizes administrative crystal credit and debit execution.",
+      "evidence": {
+        "path": "systems/admin_crystal_credit_system.py",
+        "symbol": "execute_admin_adjustment",
+        "line_start": 35,
+        "line_end": 54,
+        "sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+        "required_tokens": [],
+        "source_sha256": "772766816dcf1fe49ea99e1fc06bd3f106ece5695a3c67daf20fd72b040106a5"
+      }
+    },
+    {
+      "contract": "ADMIN_AUTHORIZATION_OWNER",
+      "classification": "V1_CONFIRMED",
+      "meaning": "V1 provides a dedicated administrative authorization predicate.",
+      "evidence": {
+        "path": "systems/admin_crystal_credit_system.py",
+        "symbol": "is_admin",
+        "line_start": 11,
+        "line_end": 11,
+        "sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+        "required_tokens": [],
+        "source_sha256": "915c2e64f9febc29bbb1b7927eb32ba718ff2330bd8d98978b1605c541bde31c"
+      }
+    },
+    {
+      "contract": "ADMIN_PREVIEW_OWNER",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Administrative adjustments have a preview boundary before mutation.",
+      "evidence": {
+        "path": "systems/admin_crystal_credit_system.py",
+        "symbol": "preview_admin_adjustment",
+        "line_start": 17,
+        "line_end": 34,
+        "sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+        "required_tokens": [],
+        "source_sha256": "472faa5f22c741167842063c6e103140a7b2361400410087a8b85d1afb8dcd17"
+      }
+    },
+    {
+      "contract": "ADMIN_HISTORY_OWNER",
+      "classification": "V1_CONFIRMED",
+      "meaning": "V1 exposes administrative adjustment history.",
+      "evidence": {
+        "path": "systems/admin_crystal_credit_system.py",
+        "symbol": "get_admin_adjustment_history",
+        "line_start": 55,
+        "line_end": 60,
+        "sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+        "required_tokens": [],
+        "source_sha256": "10adb3be351bb5577c4c295d501c367702a42cdd6bc9dc50185f5406914c6f8a"
+      }
+    },
+    {
+      "contract": "ADMIN_DETAIL_OWNER",
+      "classification": "V1_CONFIRMED",
+      "meaning": "V1 exposes exact administrative operation detail.",
+      "evidence": {
+        "path": "systems/admin_crystal_credit_system.py",
+        "symbol": "get_admin_adjustment_detail",
+        "line_start": 62,
+        "line_end": 71,
+        "sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+        "required_tokens": [],
+        "source_sha256": "a99ec516e2e426bb9ee51077ae6b85d69cd513e30a0bff8f40e845268e6fff1d"
+      }
+    },
+    {
+      "contract": "CRYSTAL_BALANCE_DEPENDENCY",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Balance reads remain a Crystal Wallet dependency.",
+      "evidence": {
+        "path": "systems/crystal_wallet_system.py",
+        "symbol": "get_crystal_balance",
+        "line_start": 56,
+        "line_end": 56,
+        "sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+        "required_tokens": [],
+        "source_sha256": "948be98d7b116846d19aa8fa5b38cc91f10c4f12a0dcd749289db9943e236fff"
+      }
+    },
+    {
+      "contract": "CRYSTAL_CREDIT_DEPENDENCY",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Credit mutation delegates to the canonical Crystal Wallet.",
+      "evidence": {
+        "path": "systems/crystal_wallet_system.py",
+        "symbol": "credit_crystals",
+        "line_start": 80,
+        "line_end": 80,
+        "sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+        "required_tokens": [],
+        "source_sha256": "1b0bb2f36a341eeeede4b580baba7f0b5e035a5e59b7fe7c3612d4f1e1bba1ac"
+      }
+    },
+    {
+      "contract": "CRYSTAL_DEBIT_DEPENDENCY",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Debit mutation delegates to the canonical Crystal Wallet.",
+      "evidence": {
+        "path": "systems/crystal_wallet_system.py",
+        "symbol": "debit_crystals",
+        "line_start": 81,
+        "line_end": 81,
+        "sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+        "required_tokens": [],
+        "source_sha256": "a7186a95deeaf7a6f38a1166f92802ef345dfcb2ae347e692f0ee3900d44d378"
+      }
+    },
+    {
+      "contract": "CRYSTAL_COMPENSATION_BOUNDARY",
+      "classification": "V1_CONFIRMED",
+      "meaning": "V1 exposes wallet compensation for downstream failure.",
+      "evidence": {
+        "path": "systems/crystal_wallet_system.py",
+        "symbol": "compensate_crystal_transaction",
+        "line_start": 87,
+        "line_end": 98,
+        "sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+        "required_tokens": [],
+        "source_sha256": "0e8a9e2bde140981ac9db3b61d86b103f4373c693be0fb54474e9a510ab6ec0e"
+      }
+    },
+    {
+      "contract": "PRESENTATION_COMMAND_BOUNDARY",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Admin command opening remains presentation-only.",
+      "evidence": {
+        "path": "handlers/admin_crystal_credit.py",
+        "symbol": "open_admin",
+        "line_start": 58,
+        "line_end": 60,
+        "sha256": "c457739364fc3c576f943d5df524ad6b39d35077bccfec617824cf94642fd835",
+        "required_tokens": [],
+        "source_sha256": "6c1fd423c91a4280953c36708ad8694ab6cff43a64878fef747021972983e32f"
+      }
+    },
+    {
+      "contract": "PRESENTATION_CALLBACK_BOUNDARY",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Callbacks remain consumers rather than mutation owners.",
+      "evidence": {
+        "path": "handlers/admin_crystal_credit.py",
+        "symbol": "callback",
+        "line_start": 73,
+        "line_end": 93,
+        "sha256": "c457739364fc3c576f943d5df524ad6b39d35077bccfec617824cf94642fd835",
+        "required_tokens": [],
+        "source_sha256": "cf4757f333fa4b128d17e8251ff04bfcc47495fbf0ca50b3682c7f0acfef85bd"
+      }
+    },
+    {
+      "contract": "RECIPIENT_NOTIFICATION_BOUNDARY",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Recipient delivery remains an explicit post-operation boundary.",
+      "evidence": {
+        "path": "handlers/admin_crystal_credit.py",
+        "symbol": "_notify_target",
+        "line_start": 27,
+        "line_end": 30,
+        "sha256": "c457739364fc3c576f943d5df524ad6b39d35077bccfec617824cf94642fd835",
+        "required_tokens": [],
+        "source_sha256": "522664893527faa8c42619081613f5be75384437914808a85e2e9ceed9759c5b"
+      }
+    },
+    {
+      "contract": "PRESENTATION_HISTORY_BOUNDARY",
+      "classification": "V1_CONFIRMED",
+      "meaning": "History rendering remains outside mutation ownership.",
+      "evidence": {
+        "path": "handlers/admin_crystal_credit.py",
+        "symbol": "history",
+        "line_start": 65,
+        "line_end": 66,
+        "sha256": "c457739364fc3c576f943d5df524ad6b39d35077bccfec617824cf94642fd835",
+        "required_tokens": [],
+        "source_sha256": "ea632e85785971da0fd90128a328c3fdc0da8d943296a81c39d86f53ee370242"
+      }
+    },
+    {
+      "contract": "AUTHORIZATION_AND_TARGET_IDENTITY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "Admin identity, target user_id lookup and fail-closed authorization require explicit normalization.",
+      "evidence": {
+        "path": "systems/admin_crystal_credit_system.py",
+        "symbol": "is_admin",
+        "line_start": 11,
+        "line_end": 11,
+        "sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+        "required_tokens": [],
+        "source_sha256": "915c2e64f9febc29bbb1b7927eb32ba718ff2330bd8d98978b1605c541bde31c"
+      }
+    },
+    {
+      "contract": "CREDIT_DEBIT_AND_CLAMP_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "Credit amount and clamped debit actual-applied amount require one precise contract.",
+      "evidence": {
+        "path": "systems/admin_crystal_credit_system.py",
+        "symbol": "execute_admin_adjustment",
+        "line_start": 35,
+        "line_end": 54,
+        "sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+        "required_tokens": [],
+        "source_sha256": "772766816dcf1fe49ea99e1fc06bd3f106ece5695a3c67daf20fd72b040106a5"
+      }
+    },
+    {
+      "contract": "PREVIEW_CONFIRMATION_AND_IDEMPOTENCY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "Stable operation keys, preview snapshots, replay and changed-payload conflict require resolution.",
+      "evidence": {
+        "path": "systems/admin_crystal_credit_system.py",
+        "symbol": "preview_admin_adjustment",
+        "line_start": 17,
+        "line_end": 34,
+        "sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+        "required_tokens": [],
+        "source_sha256": "472faa5f22c741167842063c6e103140a7b2361400410087a8b85d1afb8dcd17"
+      }
+    },
+    {
+      "contract": "WALLET_LEDGER_ATOMICITY_AND_COMPENSATION",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "Wallet mutation, admin receipt, ledger metadata and compensation require one Unit-of-Work boundary.",
+      "evidence": {
+        "path": "systems/admin_crystal_credit_system.py",
+        "symbol": "execute_admin_adjustment",
+        "line_start": 35,
+        "line_end": 54,
+        "sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+        "required_tokens": [],
+        "source_sha256": "772766816dcf1fe49ea99e1fc06bd3f106ece5695a3c67daf20fd72b040106a5"
+      }
+    },
+    {
+      "contract": "NOTIFICATION_ORDERING_AND_FAILURE_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "Commit-before-notification ordering, delivery failure and retry semantics require resolution.",
+      "evidence": {
+        "path": "handlers/admin_crystal_credit.py",
+        "symbol": "_notify_target",
+        "line_start": 27,
+        "line_end": 30,
+        "sha256": "c457739364fc3c576f943d5df524ad6b39d35077bccfec617824cf94642fd835",
+        "required_tokens": [],
+        "source_sha256": "522664893527faa8c42619081613f5be75384437914808a85e2e9ceed9759c5b"
+      }
+    },
+    {
+      "contract": "HISTORY_DETAIL_AND_CONSUMER_ALLOWLIST",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "Pagination, current display name, detail fields, allowed consumers and shadow owners require an explicit boundary.",
+      "evidence": {
+        "path": "systems/admin_crystal_credit_system.py",
+        "symbol": "get_admin_adjustment_history",
+        "line_start": 55,
+        "line_end": 60,
+        "sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+        "required_tokens": [],
+        "source_sha256": "10adb3be351bb5577c4c295d501c367702a42cdd6bc9dc50185f5406914c6f8a"
+      }
+    }
+  ],
+  "implementation_authorized": false,
+  "verification": {
+    "canonical_v2_ci": {
+      "schema_version": 1,
+      "status": "PASS",
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "compile",
+          "status": "PASS",
+          "file_count": 145,
+          "failures": []
+        },
+        {
+          "name": "imports",
+          "status": "PASS",
+          "module_count": 101,
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-c",
+              "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.bag_expansion', 'rom_v2.application.base_equipment_shop', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.daily_reward', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.potion_trading', 'rom_v2.application.premium_shop', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "unit",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "tests_v2",
+              "-p",
+              "test_*.py"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "..............................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 238 tests in 13.545s\n\nOK"
+          }
+        },
+        {
+          "name": "architecture",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "tools/verify_v2_architecture.py",
+              "--project-root",
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+            ],
+            "returncode": 0,
+            "stdout": "V2 architecture enforcement: PASS\nPhysical files: 101\nImport edges: 360\nViolations: 0",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "duplicate_scan",
+          "status": "PASS",
+          "symbol_count": 410,
+          "duplicates": {}
+        },
+        {
+          "name": "content_validation",
+          "status": "PASS",
+          "file_count": 0,
+          "failures": []
+        }
+      ]
+    },
+    "removed_bytecode_before_ci": [],
+    "protected_before": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26",
+      "rom_v2/__init__.py": "0f217bf0b7c071f522a83887f3c8467b422881203ceae1b8604548af38eab67a",
+      "rom_v2/app/__init__.py": "99940b37dcadccb96d2775217be2a3967d710776028423c6d4e63dc18c42292e",
+      "rom_v2/application/__init__.py": "6e5c0a06060b0cd2f879b4b371239254357d884279cd32f08923b3e8cd2b3f50",
+      "rom_v2/application/account_ports.py": "1393ab1bfe43b9ea5f39fdd78f2947f05307d320d5b9b64f3b5975fd980768e9",
+      "rom_v2/application/account_service.py": "201d86d7260361b371aad32ab571dd91513df27b3d302a56a54fe2572e5b9673",
+      "rom_v2/application/bag_expansion.py": "11cf3c03a6a616f3993450318f41e1638f08b48eefac97f2bde38adf561bbc11",
+      "rom_v2/application/base_equipment_shop.py": "295f1d18d797ed80b57b58cdf9cc247a5469fe8e3ff604031ecfb4c33e19c885",
+      "rom_v2/application/character_ports.py": "d48b40bc43142a05c8284167d673f58edce92ebf117886f76fe3ad545867eb58",
+      "rom_v2/application/character_service.py": "d8f68f1770cdf14028572ffbeebc253d67a34b4ae64403e199eddc0f5132b767",
+      "rom_v2/application/crystal_wallet_ledger.py": "b5f97a567a55ca270e320e48f69ad98fad22dce023b7c83f5d2279ad089a5b0f",
+      "rom_v2/application/daily_reward.py": "aaaba0ac866cb7fdd1cf008e9ca0733262c307d7bea4b36d249d31eff01a2e23",
+      "rom_v2/application/durability_service.py": "e329f32931aeddae1a8235e1274f88441406b7ccf0b6b65f1f47f93ee887b1f8",
+      "rom_v2/application/enhancement_service.py": "9f85c908f833e38411a66987b855e72a13e58332f776b87318da8eab60bb1c7e",
+      "rom_v2/application/equipment_generation_ports.py": "39b21fec6d3fba2102aaca518a9b113e4e18dddb9ef7e79ff94ad27f2688a6af",
+      "rom_v2/application/equipment_generation_service.py": "61fa00d463fadb3b0d5ecaf39f41d61058537a64102919c6aee973dc2dda623d",
+      "rom_v2/application/equipment_ports.py": "d69599c10f4c81eca867e1e5037cd813f50971f28b71f294bf78196c53d98904",
+      "rom_v2/application/equipment_service.py": "1b0b9c416886f067f5beb2a987ae4fa2b72309a37d8668f6095f2769d9dd8a09",
+      "rom_v2/application/full_stat_snapshot_service.py": "011ea96e9b0a6ccc96872c3a16fd33c399d06993e6315a714026130896a56de7",
+      "rom_v2/application/gold_wallet.py": "8ebf4970269c9ad9de0f6b49e25f5a48516751af69a630e136a25ef151ed6562",
+      "rom_v2/application/integration_evidence.py": "98b868698d4ee553b897298889fe76c5ad86beba20c80bd86a0a5795007b7ad7",
+      "rom_v2/application/inventory_ports.py": "888e5d54e6e0f60efc438b3cc6ed3bfd178ccec1da86aa8e1f98f3aa64d85c82",
+      "rom_v2/application/inventory_service.py": "6bf6498fda0d290af266c51df92f892706279c937df9cc5d4467bd66030ef65e",
+      "rom_v2/application/ports/__init__.py": "fc5dde1826bcc3c3b06add0f4989e64311033133f401a8526cd670374aff600e",
+      "rom_v2/application/ports/clock.py": "a023e54dae514692a5b76a491d7aa86f502d338a980e34e3ea8712eff1c9b6ee",
+      "rom_v2/application/ports/random_source.py": "91ee0496f217dd6f3c540936c224430fd8d1dcfb086f461dd9f3e8baaee11a5c",
+      "rom_v2/application/ports/repositories.py": "04c04f838b7326ae54159a2e4beca195bbd921009d71c6651e1609739044d8af",
+      "rom_v2/application/ports/unit_of_work.py": "478483f14652372af2dc698e867bf89da849d9acf3133bb54bac3b7f3e6679d4",
+      "rom_v2/application/post_combat_hooks.py": "43fa33d268fb1d5de66acb55648c3d215c23f26e8568c03b4486950cdb24c1d8",
+      "rom_v2/application/potion_trading.py": "b55b6ee63fd7cfa6b4dcceecc6d0c93c123373b0dff7837cd32ddf2b76706769",
+      "rom_v2/application/premium_shop.py": "07d79dfd85be092eee12d09986cc55a21d562bc727d27dd4eaf75a507c2b6f4a",
+      "rom_v2/application/primary_stat_ports.py": "13b7f2be183553b79e4c3cf31f412383512ecf66446576568c3869ab2bbf2fce",
+      "rom_v2/application/primary_stat_service.py": "ed4f62ad826bb457f48a6536f92272fb49b56831bded38a596081ec694b5ca06",
+      "rom_v2/application/resource_ports.py": "e229e7f8b65fc6d80105805b496c1a754776c619e63df48a76152c9c08c6f7a9",
+      "rom_v2/application/resource_service.py": "5088369b3d69e68c3960f4f9d36a44d0f17b9d75916714c847307cc96e4d2823",
+      "rom_v2/application/reward_settlement.py": "a1fe24234faf72b4f646e7cbc27ebe92d4c0f56e84f3ad86aa8d793b9441b791",
+      "rom_v2/application/services/rune_lifecycle.py": "3caa305dac297272aaa07f107ba6b01178a4044024e8a1281b3c8d4016fe90c7",
+      "rom_v2/bootstrap.py": "665d51e5c5846575f4898f45c31ac1cbc6b08c1e81c364db860b3c22ad27b9ef",
+      "rom_v2/config.py": "2743eda44aece7d805f02881067ed9309248765eda58e76d8b79936344e8a115",
+      "rom_v2/container.py": "d3fc03ce6d154f95d6703081a1f75a01894a690408a03c204a17194de6e7d056",
+      "rom_v2/content/__init__.py": "c35a967d9914e47a6ba96af61b07f5de808762b534620e4c599ccd7a46badd72",
+      "rom_v2/domain/__init__.py": "ce0bbff3d1c97e2e2f645b8123e5bf355de6484cfc3bc7ff1746830b0862c755",
+      "rom_v2/domain/account.py": "166288c697a3b7036e7d4441aa25993c912d5dbe079db574af6293f3de179419",
+      "rom_v2/domain/battle.py": "931282d411f257cf1aab992b04ac63c019e58e50f2745d2023dffe6c425869ab",
+      "rom_v2/domain/battle_persistence.py": "30048c3e6e462f48ce312cfdd1390815f4a8f42e571f00cb3ad3785c67ea51d9",
+      "rom_v2/domain/central_loot.py": "96509c933eeb02063eb1688a8da017a9becaece2124b00b57670f74b34fd3ce6",
+      "rom_v2/domain/character.py": "684efcb528747a7a1f4312d1eadf54483db6dfc81d01d869ffe7200c6def3c54",
+      "rom_v2/domain/class_catalog.py": "a3185a616704b5061bc8ec49cd54d2dd4830de6429c6858952df523bc5f6ef83",
+      "rom_v2/domain/combat_resources.py": "edb6a15cebab8a0dd4506ef88c754b92c54540fbcb31e406f741703beb9ca2b1",
+      "rom_v2/domain/damage_engine.py": "19a25dee24a088f683d13778ea41e3d7c3c303fdb62811808490455d224b9832",
+      "rom_v2/domain/derived_stats.py": "a6fdd9905c227549addf310c3b873b96bbc9e6d09a20b979f851a04fc8df6e1c",
+      "rom_v2/domain/durability.py": "5010a635664242767bdaedc8a84a443892062f3c5a6a1baf100f3d6a6ea112a9",
+      "rom_v2/domain/effect_engine.py": "4830496c19f2092defdb11c048ab5650886ecdef7a34790ec74f4d02c94db1f2",
+      "rom_v2/domain/enhancement.py": "d738bb2c5a30480b9cec875eda720d79dd33340ae7ea4fbd32a608fbb0c83bb8",
+      "rom_v2/domain/equipment.py": "b315cdd10a82b4a6b0e779e25df66b584a54fb6d1ad79aa5f20ea82dc96e1cff",
+      "rom_v2/domain/equipment_generation.py": "50d9291f57dfd206c232a33a778d403f76a2ae0ecc52c0494eb1d38ec7f532fb",
+      "rom_v2/domain/full_stat_snapshot.py": "7efd1d0de4693f549910797c0a617271a016d34b0d75e44d7fc2677b4ca81b14",
+      "rom_v2/domain/item.py": "fa797efef9e445235d256d6f31d5db16f79e765236e21f3d6cc7287b2b9c37f2",
+      "rom_v2/domain/level_up_gold.py": "7a51c5576174ea4b63b435c9a0eb4cc8767e49b65f57d63a03cd9a70e1c3cb11",
+      "rom_v2/domain/mana_engine.py": "6838b1b5bf6be5383c6e0f87ad63fbb4fd325f58a62d5df3737bb1c46981993e",
+      "rom_v2/domain/player_progression.py": "84d81b01a3442d403d986d1d16b3f3c28ab23edeed4d13ba41ae14d4c8772348",
+      "rom_v2/domain/premium_combat.py": "e6f36ce64ab06606acb9a65d1fe005b6c37b2c44865e75ecef1a1aac670a5c91",
+      "rom_v2/domain/primary_stats.py": "904560126d76a237afff801c8fc274d0ad9b5a1d7849b949b2db1328904059c6",
+      "rom_v2/domain/resource_lifecycle.py": "f4cecce143bc637cb5b4c56d2ef95b34f492585d37aa815778e3bf2ca0b5f978",
+      "rom_v2/domain/runes.py": "e24f4459584dc1f23e503e7740ec2e6782d740657c0d6c03344a47a1013f9fc0",
+      "rom_v2/domain/skill_execution.py": "00b6297f5c5e5011851563c0a1b4fa872d480feec4945e1b16f5480dd980fdf5",
+      "rom_v2/domain/terminal_paths.py": "0d975e0654cbc0308b6c295badb373af46d5ee572ee88ae3524aa26fd9c25c45",
+      "rom_v2/infrastructure/__init__.py": "1955a34cb3585a06baf952468ce78ac7bfc66e1a9674e865467a87cb983482df",
+      "rom_v2/infrastructure/persistence/__init__.py": "08dc4a3188d8f139bffb25a8abb35cd2b69a10e9e7bb7150ea8c80a5bf7832a7",
+      "rom_v2/infrastructure/persistence/account_repository.py": "6f7decea0dc280a362d6f402a2ce32a80952668c872e407b57a552e3c1a12ba1",
+      "rom_v2/infrastructure/persistence/account_unit_of_work.py": "30294f7e88febe1a70004b142bfbd1918a4c83052c240d7086890538194d81fc",
+      "rom_v2/infrastructure/persistence/character_repository.py": "464e1bbe09cbb213f07c1991a0601a7d2c6d32016b1584e9950a9e049b9e842a",
+      "rom_v2/infrastructure/persistence/character_unit_of_work.py": "1c587ea633b142b8348027963217a2809407e47a3b8ca19c7ff353f664a0d2a5",
+      "rom_v2/infrastructure/persistence/connection_factory.py": "15828a88fffc450f5c93112eddf74e36349f87fce198f95b0e4358a217a32dd2",
+      "rom_v2/infrastructure/persistence/equipment_repository.py": "a2502e256a385dd10381d2126ad00672dee7a2aeff9a08f02bc76e6b175a3245",
+      "rom_v2/infrastructure/persistence/equipment_unit_of_work.py": "cdeb81d4edc6c2635167c090c0e2b3a3f6cd2b71b5ef20f9640cf444656c9376",
+      "rom_v2/infrastructure/persistence/inventory_repository.py": "e404fa78d10aa15f7deab48d9101ecdb8a970bcd0d8d96fbaa28ee5975dd0dc0",
+      "rom_v2/infrastructure/persistence/inventory_unit_of_work.py": "8f7213c0018d4ad5a936c5c260e0f79d72be7e48ec7752efd569dc4b6dd8b4c9",
+      "rom_v2/infrastructure/persistence/migrations/__init__.py": "56e2a241f6046a218d493cd2fbfe382db128e79c4621c0358bd641656f4c4049",
+      "rom_v2/infrastructure/persistence/migrations/v001_v2_baseline.py": "d145d8a5bffb90f1bcd36a73a3b131e041c15c8a0d7f517664880a997915c6b7",
+      "rom_v2/infrastructure/persistence/migrations/v002_primary_stats_parity.py": "1f27ab86411ff93cf833a95d9e4b18c34bdb382f13178d29a2ed889180f7a8c9",
+      "rom_v2/infrastructure/persistence/migrations/v003_item_identity_parity.py": "644335d83dba5b91d23cf18b0ddba5f32a45d17b6dcac2f74b3615989d73b209",
+      "rom_v2/infrastructure/persistence/migrations/v004_equipment_slots_parity.py": "4e0bc38b4bd570c54a3e9adbd2f55ab1a34a968269b357f7ea317a8a2b2e1b6d",
+      "rom_v2/infrastructure/persistence/migrator.py": "68a5d676ae7fa535351712842fe6fa36f02f1f3e8e588dfd98644e57eac159b9",
+      "rom_v2/infrastructure/persistence/primary_stat_repository.py": "39692fff52f9153a445844cbd6d96c4529b6583118b640cfde64f878e2a19511",
+      "rom_v2/infrastructure/persistence/primary_stat_unit_of_work.py": "563d40c8e460c9565a11d4767cacb6b220b7803adad915954cb4a98adb9f76ca",
+      "rom_v2/infrastructure/persistence/provisional_contracts.py": "0a804824c1c56bd73ec437c466c9834f7dbad99a09834bc3947845341c183063",
+      "rom_v2/infrastructure/persistence/repository_base.py": "12d894e864eb52bf44090bc64bd8a5eae53b8002f6d2eb8598f4921395834a42",
+      "rom_v2/infrastructure/persistence/resource_repository.py": "3d0d505aed3c824170140b6c9cf88a49700f85a5ee0a77d01476e3ddc5dd3ce8",
+      "rom_v2/infrastructure/persistence/resource_unit_of_work.py": "fb2d9a2706ea84042af8834f5460834e4776e175763182034136f7dd51d686ce",
+      "rom_v2/infrastructure/persistence/schema_contract.py": "f3699faa19e2a4777e047da987807fb26b929dcb51663c1ee4c317a74da5972c",
+      "rom_v2/infrastructure/persistence/unit_of_work.py": "97b715f80a786e550b9bd1c234a09bfee80228e321dd7dab57fb9632959061cb",
+      "rom_v2/infrastructure/telegram/__init__.py": "086a0978ea3a017b1220f41bb31fb2b80e30815842d88f774d72d7b02704da92",
+      "rom_v2/infrastructure/telegram/adapter.py": "cf7cabc0edc22c9f437fb1145af4ae94b50304efe4ebe412b27753762f5a4174",
+      "rom_v2/infrastructure/telegram/callback_codec.py": "9a336dfca7888945825bdb932790c83f9b3a0768212b5682d469428ea443d186",
+      "rom_v2/infrastructure/telegram/callback_registry.py": "ef475da9e187ac743e8664accad445cd8e649c1aa3d21e80c553e1203e0dc6b6",
+      "rom_v2/lifecycle.py": "2ca260696d716a52d020c99bb78536a1df4e5c24a465014fd3e88ec0eedd6eec",
+      "rom_v2/main.py": "f7bdb0b6e93ae3baa1aeff24ba1aed9d71201f72db20629d8e7e5818c82842e4",
+      "rom_v2/presentation/item_dto.py": "8a221e3444fc2c2454206a152f9199211c97c13e60551d7c626750d1a8734115",
+      "rom_v2/runtime_paths.py": "7c5add0214f37402bc9eb33d117e8f47ebd52bba70c805d2beb23d85ec2a7fd2",
+      "rom_v2/settings.py": "2e84aaae21c061cb4f5923d8c2d0148dd904dd2650b5ec612989d2a853d95deb",
+      "rom_v2/structured_logging.py": "3603d9b39f312ec92e35b22f8275c811be22e5d74b833218e5742db63ef6bb9a"
+    },
+    "protected_after": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26",
+      "rom_v2/__init__.py": "0f217bf0b7c071f522a83887f3c8467b422881203ceae1b8604548af38eab67a",
+      "rom_v2/app/__init__.py": "99940b37dcadccb96d2775217be2a3967d710776028423c6d4e63dc18c42292e",
+      "rom_v2/application/__init__.py": "6e5c0a06060b0cd2f879b4b371239254357d884279cd32f08923b3e8cd2b3f50",
+      "rom_v2/application/account_ports.py": "1393ab1bfe43b9ea5f39fdd78f2947f05307d320d5b9b64f3b5975fd980768e9",
+      "rom_v2/application/account_service.py": "201d86d7260361b371aad32ab571dd91513df27b3d302a56a54fe2572e5b9673",
+      "rom_v2/application/bag_expansion.py": "11cf3c03a6a616f3993450318f41e1638f08b48eefac97f2bde38adf561bbc11",
+      "rom_v2/application/base_equipment_shop.py": "295f1d18d797ed80b57b58cdf9cc247a5469fe8e3ff604031ecfb4c33e19c885",
+      "rom_v2/application/character_ports.py": "d48b40bc43142a05c8284167d673f58edce92ebf117886f76fe3ad545867eb58",
+      "rom_v2/application/character_service.py": "d8f68f1770cdf14028572ffbeebc253d67a34b4ae64403e199eddc0f5132b767",
+      "rom_v2/application/crystal_wallet_ledger.py": "b5f97a567a55ca270e320e48f69ad98fad22dce023b7c83f5d2279ad089a5b0f",
+      "rom_v2/application/daily_reward.py": "aaaba0ac866cb7fdd1cf008e9ca0733262c307d7bea4b36d249d31eff01a2e23",
+      "rom_v2/application/durability_service.py": "e329f32931aeddae1a8235e1274f88441406b7ccf0b6b65f1f47f93ee887b1f8",
+      "rom_v2/application/enhancement_service.py": "9f85c908f833e38411a66987b855e72a13e58332f776b87318da8eab60bb1c7e",
+      "rom_v2/application/equipment_generation_ports.py": "39b21fec6d3fba2102aaca518a9b113e4e18dddb9ef7e79ff94ad27f2688a6af",
+      "rom_v2/application/equipment_generation_service.py": "61fa00d463fadb3b0d5ecaf39f41d61058537a64102919c6aee973dc2dda623d",
+      "rom_v2/application/equipment_ports.py": "d69599c10f4c81eca867e1e5037cd813f50971f28b71f294bf78196c53d98904",
+      "rom_v2/application/equipment_service.py": "1b0b9c416886f067f5beb2a987ae4fa2b72309a37d8668f6095f2769d9dd8a09",
+      "rom_v2/application/full_stat_snapshot_service.py": "011ea96e9b0a6ccc96872c3a16fd33c399d06993e6315a714026130896a56de7",
+      "rom_v2/application/gold_wallet.py": "8ebf4970269c9ad9de0f6b49e25f5a48516751af69a630e136a25ef151ed6562",
+      "rom_v2/application/integration_evidence.py": "98b868698d4ee553b897298889fe76c5ad86beba20c80bd86a0a5795007b7ad7",
+      "rom_v2/application/inventory_ports.py": "888e5d54e6e0f60efc438b3cc6ed3bfd178ccec1da86aa8e1f98f3aa64d85c82",
+      "rom_v2/application/inventory_service.py": "6bf6498fda0d290af266c51df92f892706279c937df9cc5d4467bd66030ef65e",
+      "rom_v2/application/ports/__init__.py": "fc5dde1826bcc3c3b06add0f4989e64311033133f401a8526cd670374aff600e",
+      "rom_v2/application/ports/clock.py": "a023e54dae514692a5b76a491d7aa86f502d338a980e34e3ea8712eff1c9b6ee",
+      "rom_v2/application/ports/random_source.py": "91ee0496f217dd6f3c540936c224430fd8d1dcfb086f461dd9f3e8baaee11a5c",
+      "rom_v2/application/ports/repositories.py": "04c04f838b7326ae54159a2e4beca195bbd921009d71c6651e1609739044d8af",
+      "rom_v2/application/ports/unit_of_work.py": "478483f14652372af2dc698e867bf89da849d9acf3133bb54bac3b7f3e6679d4",
+      "rom_v2/application/post_combat_hooks.py": "43fa33d268fb1d5de66acb55648c3d215c23f26e8568c03b4486950cdb24c1d8",
+      "rom_v2/application/potion_trading.py": "b55b6ee63fd7cfa6b4dcceecc6d0c93c123373b0dff7837cd32ddf2b76706769",
+      "rom_v2/application/premium_shop.py": "07d79dfd85be092eee12d09986cc55a21d562bc727d27dd4eaf75a507c2b6f4a",
+      "rom_v2/application/primary_stat_ports.py": "13b7f2be183553b79e4c3cf31f412383512ecf66446576568c3869ab2bbf2fce",
+      "rom_v2/application/primary_stat_service.py": "ed4f62ad826bb457f48a6536f92272fb49b56831bded38a596081ec694b5ca06",
+      "rom_v2/application/resource_ports.py": "e229e7f8b65fc6d80105805b496c1a754776c619e63df48a76152c9c08c6f7a9",
+      "rom_v2/application/resource_service.py": "5088369b3d69e68c3960f4f9d36a44d0f17b9d75916714c847307cc96e4d2823",
+      "rom_v2/application/reward_settlement.py": "a1fe24234faf72b4f646e7cbc27ebe92d4c0f56e84f3ad86aa8d793b9441b791",
+      "rom_v2/application/services/rune_lifecycle.py": "3caa305dac297272aaa07f107ba6b01178a4044024e8a1281b3c8d4016fe90c7",
+      "rom_v2/bootstrap.py": "665d51e5c5846575f4898f45c31ac1cbc6b08c1e81c364db860b3c22ad27b9ef",
+      "rom_v2/config.py": "2743eda44aece7d805f02881067ed9309248765eda58e76d8b79936344e8a115",
+      "rom_v2/container.py": "d3fc03ce6d154f95d6703081a1f75a01894a690408a03c204a17194de6e7d056",
+      "rom_v2/content/__init__.py": "c35a967d9914e47a6ba96af61b07f5de808762b534620e4c599ccd7a46badd72",
+      "rom_v2/domain/__init__.py": "ce0bbff3d1c97e2e2f645b8123e5bf355de6484cfc3bc7ff1746830b0862c755",
+      "rom_v2/domain/account.py": "166288c697a3b7036e7d4441aa25993c912d5dbe079db574af6293f3de179419",
+      "rom_v2/domain/battle.py": "931282d411f257cf1aab992b04ac63c019e58e50f2745d2023dffe6c425869ab",
+      "rom_v2/domain/battle_persistence.py": "30048c3e6e462f48ce312cfdd1390815f4a8f42e571f00cb3ad3785c67ea51d9",
+      "rom_v2/domain/central_loot.py": "96509c933eeb02063eb1688a8da017a9becaece2124b00b57670f74b34fd3ce6",
+      "rom_v2/domain/character.py": "684efcb528747a7a1f4312d1eadf54483db6dfc81d01d869ffe7200c6def3c54",
+      "rom_v2/domain/class_catalog.py": "a3185a616704b5061bc8ec49cd54d2dd4830de6429c6858952df523bc5f6ef83",
+      "rom_v2/domain/combat_resources.py": "edb6a15cebab8a0dd4506ef88c754b92c54540fbcb31e406f741703beb9ca2b1",
+      "rom_v2/domain/damage_engine.py": "19a25dee24a088f683d13778ea41e3d7c3c303fdb62811808490455d224b9832",
+      "rom_v2/domain/derived_stats.py": "a6fdd9905c227549addf310c3b873b96bbc9e6d09a20b979f851a04fc8df6e1c",
+      "rom_v2/domain/durability.py": "5010a635664242767bdaedc8a84a443892062f3c5a6a1baf100f3d6a6ea112a9",
+      "rom_v2/domain/effect_engine.py": "4830496c19f2092defdb11c048ab5650886ecdef7a34790ec74f4d02c94db1f2",
+      "rom_v2/domain/enhancement.py": "d738bb2c5a30480b9cec875eda720d79dd33340ae7ea4fbd32a608fbb0c83bb8",
+      "rom_v2/domain/equipment.py": "b315cdd10a82b4a6b0e779e25df66b584a54fb6d1ad79aa5f20ea82dc96e1cff",
+      "rom_v2/domain/equipment_generation.py": "50d9291f57dfd206c232a33a778d403f76a2ae0ecc52c0494eb1d38ec7f532fb",
+      "rom_v2/domain/full_stat_snapshot.py": "7efd1d0de4693f549910797c0a617271a016d34b0d75e44d7fc2677b4ca81b14",
+      "rom_v2/domain/item.py": "fa797efef9e445235d256d6f31d5db16f79e765236e21f3d6cc7287b2b9c37f2",
+      "rom_v2/domain/level_up_gold.py": "7a51c5576174ea4b63b435c9a0eb4cc8767e49b65f57d63a03cd9a70e1c3cb11",
+      "rom_v2/domain/mana_engine.py": "6838b1b5bf6be5383c6e0f87ad63fbb4fd325f58a62d5df3737bb1c46981993e",
+      "rom_v2/domain/player_progression.py": "84d81b01a3442d403d986d1d16b3f3c28ab23edeed4d13ba41ae14d4c8772348",
+      "rom_v2/domain/premium_combat.py": "e6f36ce64ab06606acb9a65d1fe005b6c37b2c44865e75ecef1a1aac670a5c91",
+      "rom_v2/domain/primary_stats.py": "904560126d76a237afff801c8fc274d0ad9b5a1d7849b949b2db1328904059c6",
+      "rom_v2/domain/resource_lifecycle.py": "f4cecce143bc637cb5b4c56d2ef95b34f492585d37aa815778e3bf2ca0b5f978",
+      "rom_v2/domain/runes.py": "e24f4459584dc1f23e503e7740ec2e6782d740657c0d6c03344a47a1013f9fc0",
+      "rom_v2/domain/skill_execution.py": "00b6297f5c5e5011851563c0a1b4fa872d480feec4945e1b16f5480dd980fdf5",
+      "rom_v2/domain/terminal_paths.py": "0d975e0654cbc0308b6c295badb373af46d5ee572ee88ae3524aa26fd9c25c45",
+      "rom_v2/infrastructure/__init__.py": "1955a34cb3585a06baf952468ce78ac7bfc66e1a9674e865467a87cb983482df",
+      "rom_v2/infrastructure/persistence/__init__.py": "08dc4a3188d8f139bffb25a8abb35cd2b69a10e9e7bb7150ea8c80a5bf7832a7",
+      "rom_v2/infrastructure/persistence/account_repository.py": "6f7decea0dc280a362d6f402a2ce32a80952668c872e407b57a552e3c1a12ba1",
+      "rom_v2/infrastructure/persistence/account_unit_of_work.py": "30294f7e88febe1a70004b142bfbd1918a4c83052c240d7086890538194d81fc",
+      "rom_v2/infrastructure/persistence/character_repository.py": "464e1bbe09cbb213f07c1991a0601a7d2c6d32016b1584e9950a9e049b9e842a",
+      "rom_v2/infrastructure/persistence/character_unit_of_work.py": "1c587ea633b142b8348027963217a2809407e47a3b8ca19c7ff353f664a0d2a5",
+      "rom_v2/infrastructure/persistence/connection_factory.py": "15828a88fffc450f5c93112eddf74e36349f87fce198f95b0e4358a217a32dd2",
+      "rom_v2/infrastructure/persistence/equipment_repository.py": "a2502e256a385dd10381d2126ad00672dee7a2aeff9a08f02bc76e6b175a3245",
+      "rom_v2/infrastructure/persistence/equipment_unit_of_work.py": "cdeb81d4edc6c2635167c090c0e2b3a3f6cd2b71b5ef20f9640cf444656c9376",
+      "rom_v2/infrastructure/persistence/inventory_repository.py": "e404fa78d10aa15f7deab48d9101ecdb8a970bcd0d8d96fbaa28ee5975dd0dc0",
+      "rom_v2/infrastructure/persistence/inventory_unit_of_work.py": "8f7213c0018d4ad5a936c5c260e0f79d72be7e48ec7752efd569dc4b6dd8b4c9",
+      "rom_v2/infrastructure/persistence/migrations/__init__.py": "56e2a241f6046a218d493cd2fbfe382db128e79c4621c0358bd641656f4c4049",
+      "rom_v2/infrastructure/persistence/migrations/v001_v2_baseline.py": "d145d8a5bffb90f1bcd36a73a3b131e041c15c8a0d7f517664880a997915c6b7",
+      "rom_v2/infrastructure/persistence/migrations/v002_primary_stats_parity.py": "1f27ab86411ff93cf833a95d9e4b18c34bdb382f13178d29a2ed889180f7a8c9",
+      "rom_v2/infrastructure/persistence/migrations/v003_item_identity_parity.py": "644335d83dba5b91d23cf18b0ddba5f32a45d17b6dcac2f74b3615989d73b209",
+      "rom_v2/infrastructure/persistence/migrations/v004_equipment_slots_parity.py": "4e0bc38b4bd570c54a3e9adbd2f55ab1a34a968269b357f7ea317a8a2b2e1b6d",
+      "rom_v2/infrastructure/persistence/migrator.py": "68a5d676ae7fa535351712842fe6fa36f02f1f3e8e588dfd98644e57eac159b9",
+      "rom_v2/infrastructure/persistence/primary_stat_repository.py": "39692fff52f9153a445844cbd6d96c4529b6583118b640cfde64f878e2a19511",
+      "rom_v2/infrastructure/persistence/primary_stat_unit_of_work.py": "563d40c8e460c9565a11d4767cacb6b220b7803adad915954cb4a98adb9f76ca",
+      "rom_v2/infrastructure/persistence/provisional_contracts.py": "0a804824c1c56bd73ec437c466c9834f7dbad99a09834bc3947845341c183063",
+      "rom_v2/infrastructure/persistence/repository_base.py": "12d894e864eb52bf44090bc64bd8a5eae53b8002f6d2eb8598f4921395834a42",
+      "rom_v2/infrastructure/persistence/resource_repository.py": "3d0d505aed3c824170140b6c9cf88a49700f85a5ee0a77d01476e3ddc5dd3ce8",
+      "rom_v2/infrastructure/persistence/resource_unit_of_work.py": "fb2d9a2706ea84042af8834f5460834e4776e175763182034136f7dd51d686ce",
+      "rom_v2/infrastructure/persistence/schema_contract.py": "f3699faa19e2a4777e047da987807fb26b929dcb51663c1ee4c317a74da5972c",
+      "rom_v2/infrastructure/persistence/unit_of_work.py": "97b715f80a786e550b9bd1c234a09bfee80228e321dd7dab57fb9632959061cb",
+      "rom_v2/infrastructure/telegram/__init__.py": "086a0978ea3a017b1220f41bb31fb2b80e30815842d88f774d72d7b02704da92",
+      "rom_v2/infrastructure/telegram/adapter.py": "cf7cabc0edc22c9f437fb1145af4ae94b50304efe4ebe412b27753762f5a4174",
+      "rom_v2/infrastructure/telegram/callback_codec.py": "9a336dfca7888945825bdb932790c83f9b3a0768212b5682d469428ea443d186",
+      "rom_v2/infrastructure/telegram/callback_registry.py": "ef475da9e187ac743e8664accad445cd8e649c1aa3d21e80c553e1203e0dc6b6",
+      "rom_v2/lifecycle.py": "2ca260696d716a52d020c99bb78536a1df4e5c24a465014fd3e88ec0eedd6eec",
+      "rom_v2/main.py": "f7bdb0b6e93ae3baa1aeff24ba1aed9d71201f72db20629d8e7e5818c82842e4",
+      "rom_v2/presentation/item_dto.py": "8a221e3444fc2c2454206a152f9199211c97c13e60551d7c626750d1a8734115",
+      "rom_v2/runtime_paths.py": "7c5add0214f37402bc9eb33d117e8f47ebd52bba70c805d2beb23d85ec2a7fd2",
+      "rom_v2/settings.py": "2e84aaae21c061cb4f5923d8c2d0148dd904dd2650b5ec612989d2a853d95deb",
+      "rom_v2/structured_logging.py": "3603d9b39f312ec92e35b22f8275c811be22e5d74b833218e5742db63ef6bb9a"
+    }
+  },
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_10_8b_resolve_admin_crystals_parity.py"
+}
