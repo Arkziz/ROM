@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "stage": "21.10.5c",
+  "status": "PASS",
+  "conclusion": "API_READY",
+  "generated_at_utc": "2026-10-23T20:50:59.476201+00:00",
+  "source_contract": "reports/stage_21_10_5b_resolved_premium_shop_parity.json",
+  "application_service": "PremiumShopService",
+  "implementation": "rom_v2/application/premium_shop.py",
+  "tests": "tests_v2/test_premium_shop.py",
+  "implemented": [
+    "fixed_plan_premium_15d_100",
+    "fixed_plan_premium_30d_180",
+    "account_level_user_id",
+    "timezone_aware_utc_expiry",
+    "inactive_activation_from_now",
+    "active_extension_from_expiry",
+    "stable_operation_key",
+    "same_payload_idempotent_replay",
+    "changed_payload_conflict",
+    "stale_plan_price_rejection",
+    "atomic_crystal_expiry_receipt",
+    "single_commit",
+    "atomic_rollback",
+    "restart_replay",
+    "character_reset_survival_contract",
+    "presentation_excluded"
+  ],
+  "not_connected": [
+    "sqlite",
+    "production_repository_adapters",
+    "runtime",
+    "telegram",
+    "presentation"
+  ],
+  "runtime_integration": "NOT_CONNECTED",
+  "production_persistence": "NOT_CONNECTED",
+  "manual_game_check": "NOT_REQUIRED",
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false,
+  "verification": {
+    "targeted_unittest_returncode": 0,
+    "targeted_smoke": "STAGE_21_10_5C_PREMIUM_SHOP_SMOKE: PASS",
+    "canonical_v2_ci": {
+      "schema_version": 1,
+      "status": "PASS",
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "compile",
+          "status": "PASS",
+          "file_count": 141,
+          "failures": []
+        },
+        {
+          "name": "imports",
+          "status": "PASS",
+          "module_count": 99,
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-c",
+              "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.base_equipment_shop', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.potion_trading', 'rom_v2.application.premium_shop', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "unit",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "tests_v2",
+              "-p",
+              "test_*.py"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "............................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 220 tests in 14.278s\n\nOK"
+          }
+        },
+        {
+          "name": "architecture",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "tools/verify_v2_architecture.py",
+              "--project-root",
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+            ],
+            "returncode": 0,
+            "stdout": "V2 architecture enforcement: PASS\nPhysical files: 99\nImport edges: 354\nViolations: 0",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "duplicate_scan",
+          "status": "PASS",
+          "symbol_count": 385,
+          "duplicates": {}
+        },
+        {
+          "name": "content_validation",
+          "status": "PASS",
+          "file_count": 0,
+          "failures": []
+        }
+      ]
+    },
+    "removed_bytecode_before_ci": [
+      "rom_v2/application/__pycache__/premium_shop.cpython-314.pyc",
+      "tests_v2/__pycache__/test_premium_shop.cpython-314.pyc",
+      "tools/__pycache__/check_stage_21_10_5c_premium_shop.cpython-314.pyc"
+    ]
+  }
+}
