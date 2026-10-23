@@ -1,0 +1,380 @@
+{
+  "schema_version": 1,
+  "stage": "21.10.8b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "approved_admin_scope": {
+    "admin_only": true,
+    "credit": true,
+    "clamped_debit": true,
+    "recipient_notice": true,
+    "history": true
+  },
+  "generated_at_utc": "2026-10-23T21:54:49.017638+00:00",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "26e9f549f05e8357245edd6984fd39f1d1160735"
+  },
+  "source_contract": "reports/stage_21_10_8a_refined_admin_crystals_contract.json",
+  "source_contract_sha256": "1cc274581911417a260e34f40d66d1a13eca231ef9f8b225c98ef98a4fb170bf",
+  "resolved_contracts": {
+    "AUTHORIZATION_AND_TARGET_IDENTITY": {
+      "status": "RESOLVED",
+      "decision": "AdminCrystalAdjustmentService fails closed unless actor_user_id is authorized by the admin policy port. The target is an account identified only by target_user_id; current character_name is presentation metadata resolved at read time and never a financial identity."
+    },
+    "CREDIT_DEBIT_AND_CLAMP_POLICY": {
+      "status": "RESOLVED",
+      "decision": "Requested amount must be a positive integer. Credit applies the full requested amount. Debit is clamped to min(requested_amount,current_balance), never produces a negative balance, and records requested_amount and applied_amount separately. A zero applied debit is a valid audited no-op receipt."
+    },
+    "PREVIEW_CONFIRMATION_AND_IDEMPOTENCY": {
+      "status": "RESOLVED",
+      "decision": "Preview returns an immutable quote containing actor_user_id, target_user_id, adjustment_kind, requested_amount, expected_balance_before and applied_amount. Confirmation requires a stable operation_key. Identical replay returns the original receipt; changed payload conflicts. A changed balance makes the quote stale and rejects before mutation."
+    },
+    "WALLET_LEDGER_ATOMICITY_AND_COMPENSATION": {
+      "status": "RESOLVED",
+      "decision": "Wallet mutation, canonical Crystal Ledger entry and immutable admin adjustment receipt execute in one caller-owned Unit of Work with one commit. Any pre-commit failure rolls all effects back. Compensation is reserved for an explicitly committed downstream recovery operation and must reference the original transaction."
+    },
+    "NOTIFICATION_ORDERING_AND_FAILURE_POLICY": {
+      "status": "RESOLVED",
+      "decision": "Financial commit occurs before recipient notification. Notification delivery is a post-commit side effect with its own delivery status and retry key. Delivery failure never rolls back or repeats the crystal adjustment; retry may only resend the notice for the existing receipt."
+    },
+    "HISTORY_DETAIL_AND_CONSUMER_ALLOWLIST": {
+      "status": "RESOLVED",
+      "decision": "History is newest-first, ten records per page, persistent without expiry, and detail exposes operation key, actor, target, kind, requested/applied amounts, balances and timestamp. Current character_name is resolved when rendering. Only admin presentation and explicit audit/testing adapters may consume the service; direct SQL, handler-owned mutation and duplicate admin adjustment owners are forbidden."
+    }
+  },
+  "authoritative_v1_evidence": {
+    "systems/admin_crystal_credit_system.py::is_admin": {
+      "path": "systems/admin_crystal_credit_system.py",
+      "symbol": "is_admin",
+      "definition_count": 1,
+      "file_sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+      "definitions": [
+        {
+          "line_start": 11,
+          "line_end": 11,
+          "source_sha256": "915c2e64f9febc29bbb1b7927eb32ba718ff2330bd8d98978b1605c541bde31c",
+          "source": "def is_admin(user_id):return int(user_id) in ROM_ADMIN_USER_IDS"
+        }
+      ]
+    },
+    "systems/admin_crystal_credit_system.py::preview_admin_adjustment": {
+      "path": "systems/admin_crystal_credit_system.py",
+      "symbol": "preview_admin_adjustment",
+      "definition_count": 1,
+      "file_sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+      "definitions": [
+        {
+          "line_start": 17,
+          "line_end": 34,
+          "source_sha256": "472faa5f22c741167842063c6e103140a7b2361400410087a8b85d1afb8dcd17",
+          "source": "def preview_admin_adjustment(admin_user_id,target_user_id,operation,requested_amount,reason,db_path=None):\n if not is_admin(admin_user_id):return {'success':False,'message':'Доступ заборонено.'}\n try:target=int(target_user_id);amount=int(requested_amount)\n except Exception:return {'success':False,'message':'ID користувача та сума мають бути цілими числами.'}\n op=str(operation);limit=ROM_ADMIN_CRYSTAL_CREDIT_MAX if op=='credit' else ROM_ADMIN_CRYSTAL_DEBIT_MAX\n if op not in ('credit','debit'):return {'success':False,'message':'Невідома операція.'}\n if amount<1 or amount>limit:return {'success':False,'message':f'Сума має бути від 1 до {limit}.'}\n reason=str(reason or '').strip()\n if not reason:return {'success':False,'message':'Причина є обов’язковою.'}\n c=_connect(db_path)\n try:\n  user=c.execute('SELECT user_id FROM users WHERE user_id=?',(target,)).fetchone()\n  if not user:return {'success':False,'message':'Користувача не знайдено.'}\n  c.execute('INSERT OR IGNORE INTO crystal_wallets(user_id,balance,created_at,updated_at) VALUES(?,0,?,?)',(target,_utc(),_utc()));c.commit();before=int(c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(target,)).fetchone()[0])\n finally:c.close()\n actual=amount if op=='credit' else min(amount,before)\n if op=='debit' and actual==0:return {'success':False,'message':'У користувача немає кристалів для вилучення.','balance':0}\n return {'success':True,'admin_user_id':int(admin_user_id),'target_user_id':target,'operation':op,'requested_amount':amount,'actual_amount':actual,'balance_before':before,'balance_after':before+actual if op=='credit' else before-actual,'reason':reason,'clamped':op=='debit' and actual<amount}"
+        }
+      ]
+    },
+    "systems/admin_crystal_credit_system.py::execute_admin_adjustment": {
+      "path": "systems/admin_crystal_credit_system.py",
+      "symbol": "execute_admin_adjustment",
+      "definition_count": 1,
+      "file_sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+      "definitions": [
+        {
+          "line_start": 35,
+          "line_end": 54,
+          "source_sha256": "772766816dcf1fe49ea99e1fc06bd3f106ece5695a3c67daf20fd72b040106a5",
+          "source": "def execute_admin_adjustment(admin_user_id,target_user_id,operation,requested_amount,reason,idempotency_key,db_path=None):\n key=str(idempotency_key or '').strip()\n if not key:return {'success':False,'message':'Відсутній idempotency key.'}\n c=_connect(db_path)\n try:\n  c.execute('BEGIN IMMEDIATE');existing=c.execute('SELECT * FROM admin_crystal_credit_audit WHERE idempotency_key=?',(key,)).fetchone()\n  if existing:c.commit();return {'success':True,'idempotent_replay':True,'audit':dict(existing),'balance':int(existing['balance_after'])}\n  if not is_admin(admin_user_id):raise ValueError('Доступ заборонено.')\n  target=int(target_user_id);amount=int(requested_amount);op=str(operation);reason=str(reason or '').strip();limit=ROM_ADMIN_CRYSTAL_CREDIT_MAX if op=='credit' else ROM_ADMIN_CRYSTAL_DEBIT_MAX\n  if op not in ('credit','debit') or amount<1 or amount>limit or not reason:raise ValueError('Параметри операції більше не валідні.')\n  if not c.execute('SELECT 1 FROM users WHERE user_id=?',(target,)).fetchone():raise ValueError('Користувача не знайдено.')\n  now=_utc();c.execute('INSERT OR IGNORE INTO crystal_wallets(user_id,balance,created_at,updated_at) VALUES(?,0,?,?)',(target,now,now));before=int(c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(target,)).fetchone()[0]);actual=amount if op=='credit' else min(amount,before)\n  if actual<=0:raise ValueError('У користувача немає кристалів для вилучення.')\n  after=before+actual if op=='credit' else before-actual\n  changed=c.execute('UPDATE crystal_wallets SET balance=?,updated_at=? WHERE user_id=? AND balance=?',(after,now,target,before)).rowcount\n  if changed!=1:raise RuntimeError('Баланс змінився. Операцію скасовано.')\n  txkey='admin:'+key;cur=c.execute('INSERT INTO crystal_transactions(user_id,operation,amount,reason_code,balance_before,balance_after,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)',(target,op,actual,'admin_crystal_'+op,before,after,txkey,key,json.dumps({'admin_operation':True,'requested_amount':amount,'reason':reason},ensure_ascii=False,sort_keys=True),now));txid=int(cur.lastrowid)\n  cur=c.execute('INSERT INTO admin_crystal_credit_audit(admin_user_id,target_user_id,operation,requested_amount,actual_amount,balance_before,balance_after,reason,idempotency_key,crystal_transaction_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(int(admin_user_id),target,op,amount,actual,before,after,reason,key,txid,now));aid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'audit_id':aid,'transaction_id':txid,'operation':op,'requested_amount':amount,'actual_amount':actual,'balance_before':before,'balance_after':after,'balance':after,'clamped':op=='debit' and actual<amount}\n except Exception as e:c.rollback();return {'success':False,'message':f'Операцію скасовано: {e}'}\n finally:c.close()"
+        }
+      ]
+    },
+    "systems/admin_crystal_credit_system.py::get_admin_adjustment_history": {
+      "path": "systems/admin_crystal_credit_system.py",
+      "symbol": "get_admin_adjustment_history",
+      "definition_count": 1,
+      "file_sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+      "definitions": [
+        {
+          "line_start": 55,
+          "line_end": 60,
+          "source_sha256": "10adb3be351bb5577c4c295d501c367702a42cdd6bc9dc50185f5406914c6f8a",
+          "source": "def get_admin_adjustment_history(admin_user_id,page=0,page_size=10,db_path=None):\n if not is_admin(admin_user_id):return {'success':False,'message':'Доступ заборонено.'}\n size=max(1,min(20,int(page_size)));page=max(0,int(page));c=_connect(db_path)\n try:\n  total=int(c.execute('SELECT COUNT(*) FROM admin_crystal_credit_audit').fetchone()[0]);rows=[dict(r) for r in c.execute(\"SELECT a.*,TRIM(COALESCE(u.character_name,'')) AS character_name FROM admin_crystal_credit_audit a LEFT JOIN users u ON u.user_id=a.target_user_id ORDER BY a.id DESC LIMIT ? OFFSET ?\",(size,page*size)).fetchall()];total_pages=max(1,(total+size-1)//size);return {'success':True,'items':rows,'page':page,'page_size':size,'total':total,'total_pages':total_pages,'has_next':page+1<total_pages,'has_previous':page>0}\n finally:c.close()"
+        }
+      ]
+    },
+    "systems/admin_crystal_credit_system.py::get_admin_adjustment_detail": {
+      "path": "systems/admin_crystal_credit_system.py",
+      "symbol": "get_admin_adjustment_detail",
+      "definition_count": 1,
+      "file_sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+      "definitions": [
+        {
+          "line_start": 62,
+          "line_end": 71,
+          "source_sha256": "a99ec516e2e426bb9ee51077ae6b85d69cd513e30a0bff8f40e845268e6fff1d",
+          "source": "def get_admin_adjustment_detail(admin_user_id,audit_id,db_path=None):\n if not is_admin(admin_user_id):return {'success':False,'message':'Доступ заборонено.'}\n try:identifier=int(audit_id)\n except Exception:return {'success':False,'message':'Некоректний номер операції.'}\n if identifier<=0:return {'success':False,'message':'Некоректний номер операції.'}\n c=_connect(db_path)\n try:\n  row=c.execute(\"SELECT a.*,TRIM(COALESCE(u.character_name,'')) AS character_name FROM admin_crystal_credit_audit a LEFT JOIN users u ON u.user_id=a.target_user_id WHERE a.id=?\",(identifier,)).fetchone()\n  return {'success':True,'item':dict(row)} if row else {'success':False,'message':'Операцію не знайдено.'}\n finally:c.close()"
+        }
+      ]
+    },
+    "systems/crystal_wallet_system.py::get_crystal_balance": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "get_crystal_balance",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 56,
+          "line_end": 56,
+          "source_sha256": "948be98d7b116846d19aa8fa5b38cc91f10c4f12a0dcd749289db9943e236fff",
+          "source": "def get_crystal_balance(user_id,db_path=None):return int(get_crystal_wallet(user_id,db_path)['balance'])"
+        }
+      ]
+    },
+    "systems/crystal_wallet_system.py::credit_crystals": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "credit_crystals",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 80,
+          "line_end": 80,
+          "source_sha256": "1b0bb2f36a341eeeede4b580baba7f0b5e035a5e59b7fe7c3612d4f1e1bba1ac",
+          "source": "def credit_crystals(user_id,amount,reason_code,idempotency_key,external_reference=None,metadata=None,db_path=None):return _apply(user_id,amount,'credit',reason_code,idempotency_key,external_reference,metadata,None,db_path)"
+        }
+      ]
+    },
+    "systems/crystal_wallet_system.py::debit_crystals": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "debit_crystals",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 81,
+          "line_end": 81,
+          "source_sha256": "a7186a95deeaf7a6f38a1166f92802ef345dfcb2ae347e692f0ee3900d44d378",
+          "source": "def debit_crystals(user_id,amount,reason_code,idempotency_key,external_reference=None,metadata=None,db_path=None):return _apply(user_id,amount,'debit',reason_code,idempotency_key,external_reference,metadata,None,db_path)"
+        }
+      ]
+    },
+    "systems/crystal_wallet_system.py::compensate_crystal_transaction": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "compensate_crystal_transaction",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 87,
+          "line_end": 98,
+          "source_sha256": "0e8a9e2bde140981ac9db3b61d86b103f4373c693be0fb54474e9a510ab6ec0e",
+          "source": "def compensate_crystal_transaction(original_transaction_id,idempotency_key,reason_code='dev_compensation',db_path=None):\n c=_connect(db_path)\n try:row=c.execute('SELECT * FROM crystal_transactions WHERE id=?',(int(original_transaction_id),)).fetchone()\n finally:c.close()\n if not row:return {'success':False,'message':'Початкову транзакцію не знайдено.'}\n func=debit_crystals if row['operation']=='credit' else credit_crystals\n result=func(int(row['user_id']),int(row['amount']),reason_code,idempotency_key,external_reference=f\"compensates:{int(row['id'])}\",metadata={'original_transaction_id':int(row['id'])},db_path=db_path)\n if result.get('success') and not result.get('idempotent_replay'):\n  c=_connect(db_path)\n  try:c.execute('UPDATE crystal_transactions SET compensates_transaction_id=? WHERE id=? AND compensates_transaction_id IS NULL',(int(row['id']),int(result['transaction_id'])));c.commit()\n  finally:c.close()\n return result"
+        }
+      ]
+    },
+    "handlers/admin_crystal_credit.py::open_admin": {
+      "path": "handlers/admin_crystal_credit.py",
+      "symbol": "open_admin",
+      "definition_count": 1,
+      "file_sha256": "c457739364fc3c576f943d5df524ad6b39d35077bccfec617824cf94642fd835",
+      "definitions": [
+        {
+          "line_start": 58,
+          "line_end": 60,
+          "source_sha256": "6c1fd423c91a4280953c36708ad8694ab6cff43a64878fef747021972983e32f",
+          "source": "def open_admin(message):\n  if not is_admin(message.from_user.id):return\n  _clear(message.from_user.id);bot.send_message(message.chat.id,'🛡️ Адміністративні операції з кристалами',reply_markup=_menu())"
+        }
+      ]
+    },
+    "handlers/admin_crystal_credit.py::callback": {
+      "path": "handlers/admin_crystal_credit.py",
+      "symbol": "callback",
+      "definition_count": 1,
+      "file_sha256": "c457739364fc3c576f943d5df524ad6b39d35077bccfec617824cf94642fd835",
+      "definitions": [
+        {
+          "line_start": 73,
+          "line_end": 93,
+          "source_sha256": "cf4757f333fa4b128d17e8251ff04bfcc47495fbf0ca50b3682c7f0acfef85bd",
+          "source": "def callback(call):\n  uid=call.from_user.id\n  if not is_admin(uid):bot.answer_callback_query(call.id,'Доступ заборонено.',show_alert=True);return\n  state=states.get(uid);data=str(call.data)\n  if data=='ac:noop':bot.answer_callback_query(call.id);return\n  if data=='ac:history_close':bot.edit_message_text('✅ Історію закрито.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id);return\n  if data.startswith('ac:history_detail:'):\n   parts=data.split(':');audit_id=int(parts[2]);page=max(0,int(parts[3]));result=get_admin_adjustment_detail(uid,audit_id)\n   if not result.get('success'):bot.answer_callback_query(call.id,result.get('message','Операцію не знайдено.'),show_alert=True);return\n   bot.edit_message_text(_detail_text(result['item']),call.message.chat.id,call.message.message_id,reply_markup=_detail_kb(page));bot.answer_callback_query(call.id);return\n  if data.startswith('ac:history:'):\n   page=max(0,int(data.rsplit(':',1)[1]));result=get_admin_adjustment_history(uid,page=page,page_size=10);bot.edit_message_text(_history_text(result),call.message.chat.id,call.message.message_id,reply_markup=_history_kb(result));bot.answer_callback_query(call.id);return\n  if data=='ac:cancel':_clear(uid);bot.edit_message_text('❌ Операцію скасовано.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id);return\n  if data.startswith('ac:confirm:'):\n   nonce=data.split(':',2)[2]\n   if not state or state.get('step')!='confirm' or state.get('nonce')!=nonce:bot.answer_callback_query(call.id,'Ця кнопка застаріла.',show_alert=True);return\n   key=f\"telegram:admin_crystal:{uid}:{call.message.chat.id}:{call.message.message_id}:{nonce}\";result=execute_admin_adjustment(uid,state['target'],state['operation'],state['amount'],state['reason'],key)\n   if result.get('success'):\n    delivery=_notify_target(bot,state['target'],result,state['reason']);delivery_note='' if delivery.get('delivered') or not delivery.get('attempted') else '\\n⚠️ Повідомлення користувачу не доставлено.'\n    _clear(uid);bot.edit_message_text(f\"✅ Операцію завершено.\\nЗапитано: {result['requested_amount']} 💎\\nФактично: {result['actual_amount']} 💎\\nБаланс: {result['balance_before']} → {result['balance_after']} 💎{delivery_note}\",call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Готово')\n   else:bot.answer_callback_query(call.id,result.get('message','Операцію не виконано.'),show_alert=True)"
+        }
+      ]
+    },
+    "handlers/admin_crystal_credit.py::_notify_target": {
+      "path": "handlers/admin_crystal_credit.py",
+      "symbol": "_notify_target",
+      "definition_count": 1,
+      "file_sha256": "c457739364fc3c576f943d5df524ad6b39d35077bccfec617824cf94642fd835",
+      "definitions": [
+        {
+          "line_start": 27,
+          "line_end": 30,
+          "source_sha256": "522664893527faa8c42619081613f5be75384437914808a85e2e9ceed9759c5b",
+          "source": "def _notify_target(bot,target_user_id,result,reason):\n if result.get('idempotent_replay'):return {'attempted':False,'delivered':False,'reason':'idempotent_replay'}\n try:bot.send_message(int(target_user_id),_notification_text(result,reason));return {'attempted':True,'delivered':True}\n except Exception as error:return {'attempted':True,'delivered':False,'error_type':type(error).__name__}"
+        }
+      ]
+    },
+    "handlers/admin_crystal_credit.py::history": {
+      "path": "handlers/admin_crystal_credit.py",
+      "symbol": "history",
+      "definition_count": 1,
+      "file_sha256": "c457739364fc3c576f943d5df524ad6b39d35077bccfec617824cf94642fd835",
+      "definitions": [
+        {
+          "line_start": 65,
+          "line_end": 66,
+          "source_sha256": "ea632e85785971da0fd90128a328c3fdc0da8d943296a81c39d86f53ee370242",
+          "source": "def history(message):\n  result=get_admin_adjustment_history(message.from_user.id,page=0,page_size=10);bot.send_message(message.chat.id,_history_text(result),reply_markup=_history_kb(result))"
+        }
+      ]
+    }
+  },
+  "v2_admin_crystals_contract": {
+    "canonical_owner": "AdminCrystalAdjustmentService",
+    "actor_identity": "actor_user_id",
+    "target_identity": "target_user_id",
+    "admin_authorization_required": true,
+    "positive_integer_amount": true,
+    "credit_full_requested_amount": true,
+    "debit_clamped_to_balance": true,
+    "non_negative_balance": true,
+    "requested_and_applied_amounts_recorded": true,
+    "zero_applied_debit_audited": true,
+    "stable_operation_key_required": true,
+    "stale_balance_rejected": true,
+    "atomic_wallet_ledger_receipt": true,
+    "single_commit": true,
+    "post_commit_notification": true,
+    "notification_failure_does_not_rollback": true,
+    "notification_retry_does_not_repeat_adjustment": true,
+    "history_page_size": 10,
+    "history_newest_first": true,
+    "history_no_expiry": true,
+    "current_character_name_at_read": true,
+    "restart_safe": true,
+    "presentation_separate": true
+  },
+  "implementation_boundary": {
+    "allowed": [
+      "typed preview, command, receipt, result and notification DTOs",
+      "Admin Crystals service plus authorization, account, crystal wallet, ledger, receipt, notification outbox and Unit-of-Work ports",
+      "full credit and clamped debit semantics",
+      "in-memory fixtures",
+      "authorization, stale quote, idempotency, rollback, notification and restart tests"
+    ],
+    "forbidden": [
+      "SQLite or production adapters",
+      "runtime or Telegram wiring",
+      "direct SQL wallet mutation",
+      "handler-owned financial mutation",
+      "notification rollback of committed finance",
+      "second admin adjustment owner"
+    ]
+  },
+  "summary": {
+    "input_unresolved_contracts": 6,
+    "resolved_contracts": 6,
+    "remaining_unresolved_contracts": 0,
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "implementation_authorized": true,
+  "runtime_integration_authorized": false,
+  "production_persistence_authorized": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_10_8c_implement_admin_crystals.py",
+  "verification": {
+    "canonical_v2_ci": {
+      "schema_version": 1,
+      "status": "PASS",
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "compile",
+          "status": "PASS",
+          "file_count": 145,
+          "failures": []
+        },
+        {
+          "name": "imports",
+          "status": "PASS",
+          "module_count": 101,
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-c",
+              "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.bag_expansion', 'rom_v2.application.base_equipment_shop', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.daily_reward', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.potion_trading', 'rom_v2.application.premium_shop', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "unit",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "tests_v2",
+              "-p",
+              "test_*.py"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "..............................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 238 tests in 13.442s\n\nOK"
+          }
+        },
+        {
+          "name": "architecture",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "tools/verify_v2_architecture.py",
+              "--project-root",
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+            ],
+            "returncode": 0,
+            "stdout": "V2 architecture enforcement: PASS\nPhysical files: 101\nImport edges: 360\nViolations: 0",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "duplicate_scan",
+          "status": "PASS",
+          "symbol_count": 410,
+          "duplicates": {}
+        },
+        {
+          "name": "content_validation",
+          "status": "PASS",
+          "file_count": 0,
+          "failures": []
+        }
+      ]
+    },
+    "removed_bytecode_before_ci": [],
+    "protected_before": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    },
+    "protected_after": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  }
+}

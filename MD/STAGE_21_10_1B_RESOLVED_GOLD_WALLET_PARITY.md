@@ -1,4 +1,4 @@
-# Stage 21.10.7b - Resolved Bag Expansion parity
+# Stage 21.10.8b - Resolved Admin Crystals parity
 
 - Status: **PASS**
 - Conclusion: **GO_TO_IMPLEMENTATION**
@@ -8,37 +8,38 @@
 - Database opened: **False**
 - Manual game check: **NOT_REQUIRED**
 
-## Approved capacity path
+## Approved behavior
 
-- `bag_60_to_80`: 60 to 80 for 75 crystals
-- `bag_80_to_100`: 80 to 100 for 150 crystals
-- Maximum capacity: 100
+- Admin-only credit and clamped debit
+- Account identity by target_user_id
+- Financial commit before recipient notification
+- Newest-first permanent history, 10 records per page
 
 ## Resolutions
 
-### CAPACITY_PATH_AND_PRICES
+### AUTHORIZATION_AND_TARGET_IDENTITY
 
-Use stable expansion keys bag_60_to_80 and bag_80_to_100. Their immutable transitions and prices are exactly 60 to 80 for 75 crystals and 80 to 100 for 150 crystals. Presentation labels are never identifiers; unknown or changed quotes fail closed.
+AdminCrystalAdjustmentService fails closed unless actor_user_id is authorized by the admin policy port. The target is an account identified only by target_user_id; current character_name is presentation metadata resolved at read time and never a financial identity.
 
-### SEQUENTIAL_AND_MAXIMUM_POLICY
+### CREDIT_DEBIT_AND_CLAMP_POLICY
 
-Only the transition matching the account's current capacity is valid. Capacity 60 permits only bag_60_to_80; capacity 80 permits only bag_80_to_100; capacity 100 is terminal and returns maximum_capacity. Skipping, downgrading or repeating a completed transition is forbidden.
+Requested amount must be a positive integer. Credit applies the full requested amount. Debit is clamped to min(requested_amount,current_balance), never produces a negative balance, and records requested_amount and applied_amount separately. A zero applied debit is a valid audited no-op receipt.
 
-### CRYSTAL_DEBIT_CAPACITY_ATOMICITY
+### PREVIEW_CONFIRMATION_AND_IDEMPOTENCY
 
-BagExpansionService validates user, current capacity, target capacity, quote and crystal balance before mutation. Crystal debit, account-level capacity update and immutable purchase receipt execute in one caller-owned Unit of Work with one commit; any failure rolls all effects back.
+Preview returns an immutable quote containing actor_user_id, target_user_id, adjustment_kind, requested_amount, expected_balance_before and applied_amount. Confirmation requires a stable operation_key. Identical replay returns the original receipt; changed payload conflicts. A changed balance makes the quote stale and rejects before mutation.
 
-### IDEMPOTENCY_AND_STALE_CONFIRMATION
+### WALLET_LEDGER_ATOMICITY_AND_COMPENSATION
 
-Every confirmation requires a stable operation_key. Same key with identical user_id, expansion_key, current capacity, target capacity and quoted price replays the original receipt. Changed payload conflicts. Stale capacity, stale price, insufficient crystals or maximum capacity reject without mutation.
+Wallet mutation, canonical Crystal Ledger entry and immutable admin adjustment receipt execute in one caller-owned Unit of Work with one commit. Any pre-commit failure rolls all effects back. Compensation is reserved for an explicitly committed downstream recovery operation and must reference the original transaction.
 
-### ACCOUNT_SCOPE_RESET_AND_RESTART
+### NOTIFICATION_ORDERING_AND_FAILURE_POLICY
 
-Bag capacity is account-level by user_id, survives character reset and persists across restart. Receipts store previous_capacity, target_capacity and price so replay cannot expand or debit twice.
+Financial commit occurs before recipient notification. Notification delivery is a post-commit side effect with its own delivery status and retry key. Delivery failure never rolls back or repeats the crystal adjustment; retry may only resend the notice for the existing receipt.
 
-### CONSUMER_ALLOWLIST_AND_SHADOW_OWNERS
+### HISTORY_DETAIL_AND_CONSUMER_ALLOWLIST
 
-BagExpansionService is the sole V2 mutation owner. Allowed consumers are Crystal Shop presentation delegation, canonical inventory capacity readers and explicit recovery/testing adapters. Crystal Wallet remains a dependency. Direct SQL capacity updates, presentation-owned mutation and duplicate expansion owners are forbidden.
+History is newest-first, ten records per page, persistent without expiry, and detail exposes operation key, actor, target, kind, requested/applied amounts, balances and timestamp. Current character_name is resolved when rendering. Only admin presentation and explicit audit/testing adapters may consume the service; direct SQL, handler-owned mutation and duplicate admin adjustment owners are forbidden.
 
 ## Implementation boundary
 
@@ -46,4 +47,4 @@ Only the API-ready V2 domain/application layer is authorized. SQLite, production
 
 ## Next patch
 
-`patch_21_10_7c_implement_bag_expansion.py`
+`patch_21_10_8c_implement_admin_crystals.py`
