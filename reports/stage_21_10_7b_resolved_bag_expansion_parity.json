@@ -1,0 +1,380 @@
+{
+  "schema_version": 1,
+  "stage": "21.10.7b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "approved_capacity_scope": {
+    "capacity_path": [
+      60,
+      80,
+      100
+    ],
+    "prices_crystals": [
+      75,
+      150
+    ]
+  },
+  "generated_at_utc": "2026-10-23T21:30:16.567072+00:00",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "f936bb7586a42c94c55e0a21f536963d94e0c3b2"
+  },
+  "source_contract": "reports/stage_21_10_7a_refined_bag_expansion_contract.json",
+  "source_contract_sha256": "6527cb9f3fcbd26ba79a4934cf2bbaed4f5c89a298f5d862eedce7f79b341049",
+  "resolved_contracts": {
+    "CAPACITY_PATH_AND_PRICES": {
+      "status": "RESOLVED",
+      "decision": "Use stable expansion keys bag_60_to_80 and bag_80_to_100. Their immutable transitions and prices are exactly 60 to 80 for 75 crystals and 80 to 100 for 150 crystals. Presentation labels are never identifiers; unknown or changed quotes fail closed."
+    },
+    "SEQUENTIAL_AND_MAXIMUM_POLICY": {
+      "status": "RESOLVED",
+      "decision": "Only the transition matching the account's current capacity is valid. Capacity 60 permits only bag_60_to_80; capacity 80 permits only bag_80_to_100; capacity 100 is terminal and returns maximum_capacity. Skipping, downgrading or repeating a completed transition is forbidden."
+    },
+    "CRYSTAL_DEBIT_CAPACITY_ATOMICITY": {
+      "status": "RESOLVED",
+      "decision": "BagExpansionService validates user, current capacity, target capacity, quote and crystal balance before mutation. Crystal debit, account-level capacity update and immutable purchase receipt execute in one caller-owned Unit of Work with one commit; any failure rolls all effects back."
+    },
+    "IDEMPOTENCY_AND_STALE_CONFIRMATION": {
+      "status": "RESOLVED",
+      "decision": "Every confirmation requires a stable operation_key. Same key with identical user_id, expansion_key, current capacity, target capacity and quoted price replays the original receipt. Changed payload conflicts. Stale capacity, stale price, insufficient crystals or maximum capacity reject without mutation."
+    },
+    "ACCOUNT_SCOPE_RESET_AND_RESTART": {
+      "status": "RESOLVED",
+      "decision": "Bag capacity is account-level by user_id, survives character reset and persists across restart. Receipts store previous_capacity, target_capacity and price so replay cannot expand or debit twice."
+    },
+    "CONSUMER_ALLOWLIST_AND_SHADOW_OWNERS": {
+      "status": "RESOLVED",
+      "decision": "BagExpansionService is the sole V2 mutation owner. Allowed consumers are Crystal Shop presentation delegation, canonical inventory capacity readers and explicit recovery/testing adapters. Crystal Wallet remains a dependency. Direct SQL capacity updates, presentation-owned mutation and duplicate expansion owners are forbidden."
+    }
+  },
+  "authoritative_v1_evidence": {
+    "systems/crystal_bag_expansion_system.py::get_crystal_bag_expansion_state": {
+      "path": "systems/crystal_bag_expansion_system.py",
+      "symbol": "get_crystal_bag_expansion_state",
+      "definition_count": 1,
+      "file_sha256": "829d008496d37a9e6d140a1d8b2f89af0e828fb3398a9e2081aed96210810626",
+      "definitions": [
+        {
+          "line_start": 24,
+          "line_end": 27,
+          "source_sha256": "3aa0a546b06ea204d382fedd38c3dcc3af2cd9ca7b53c232b8c5345cc3693924",
+          "source": "def get_crystal_bag_expansion_state(user_id,db_path=None):\n c=_connect(db_path)\n try:return _state(c,user_id)\n finally:c.close()"
+        }
+      ]
+    },
+    "systems/crystal_bag_expansion_system.py::preview_crystal_bag_expansion": {
+      "path": "systems/crystal_bag_expansion_system.py",
+      "symbol": "preview_crystal_bag_expansion",
+      "definition_count": 1,
+      "file_sha256": "829d008496d37a9e6d140a1d8b2f89af0e828fb3398a9e2081aed96210810626",
+      "definitions": [
+        {
+          "line_start": 28,
+          "line_end": 33,
+          "source_sha256": "3c3245a6513d2445766ca9af5d19b66a9a5a645dd29f46375b9fea034e2ba5fe",
+          "source": "def preview_crystal_bag_expansion(user_id,db_path=None):\n state=get_crystal_bag_expansion_state(user_id,db_path)\n if not state:return {'success':False,'message':'❌ Користувача не знайдено.'}\n if state['maximum_reached']:return {**state,'success':False,'message':f\"🎒 Сумка вже має максимальну місткість: {state['current_capacity']} слотів.\"}\n if not state['supported_capacity']:return {**state,'success':False,'message':'❌ Поточний рівень сумки не підтримує автоматичне розширення.'}\n ok=state['balance']>=state['price'];return {**state,'success':ok,'balance_after':state['balance']-state['price'],'message':'OK' if ok else '❌ Недостатньо кристалів.'}"
+        }
+      ]
+    },
+    "systems/crystal_bag_expansion_system.py::purchase_crystal_bag_expansion": {
+      "path": "systems/crystal_bag_expansion_system.py",
+      "symbol": "purchase_crystal_bag_expansion",
+      "definition_count": 1,
+      "file_sha256": "829d008496d37a9e6d140a1d8b2f89af0e828fb3398a9e2081aed96210810626",
+      "definitions": [
+        {
+          "line_start": 34,
+          "line_end": 63,
+          "source_sha256": "772cf1d37eea6fc6013bef9c473b0395d3eefe8e813612f308c7d44c42739bfc",
+          "source": "def purchase_crystal_bag_expansion(user_id,target_capacity,idempotency_key,db_path=None):\n uid=int(user_id);target=int(target_capacity);key=str(idempotency_key or '').strip()\n if not key:return {'success':False,'message':'❌ Відсутній ключ операції.'}\n c=_connect(db_path)\n try:\n  c.execute('BEGIN IMMEDIATE')\n  previous=c.execute('SELECT * FROM account_bag_expansion_purchases WHERE idempotency_key=?',(key,)).fetchone()\n  if previous:\n   c.commit();row=dict(previous);row.update({'success':True,'idempotent_replay':True,'current_capacity':int(row['to_capacity']),'balance':int(row['balance_after'])});return row\n  state=_state(c,uid)\n  if not state:c.rollback();return {'success':False,'message':'❌ Користувача не знайдено.'}\n  if state['maximum_reached']:c.rollback();return {**state,'success':False,'message':f\"🎒 Сумка вже має максимальну місткість: {state['current_capacity']} слотів.\"}\n  tier=BAG_EXPANSION_TIERS.get(state['current_capacity'])\n  if not tier or target!=tier['target_capacity']:c.rollback();return {**state,'success':False,'message':'❌ Доступне лише наступне послідовне розширення сумки.'}\n  price=int(tier['price']);before=int(state['balance'])\n  if before<price:c.rollback();return {**state,'success':False,'message':'❌ Недостатньо кристалів.'}\n  after=before-price;now=_utc();txkey='bag_expansion:debit:'+key\n  tx=c.execute(\"INSERT INTO crystal_transactions(user_id,operation,amount,reason_code,balance_before,balance_after,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)\",(uid,'debit',price,'bag_expansion_purchase',before,after,txkey,key,json.dumps({'from_capacity':state['current_capacity'],'to_capacity':target},sort_keys=True),now));txid=int(tx.lastrowid)\n  changed=c.execute('UPDATE crystal_wallets SET balance=?,updated_at=? WHERE user_id=? AND balance=?',(after,now,uid,before)).rowcount\n  if changed!=1:raise RuntimeError('wallet concurrent update')\n  changed=c.execute('UPDATE users SET bag_slots=? WHERE user_id=? AND COALESCE(bag_slots,60)=?',(target,uid,state['current_capacity'])).rowcount\n  if changed!=1:raise RuntimeError('bag capacity concurrent update')\n  cur=c.execute('INSERT INTO account_bag_expansion_purchases(user_id,from_capacity,to_capacity,crystal_price,balance_before,balance_after,idempotency_key,crystal_transaction_id,created_at) VALUES(?,?,?,?,?,?,?,?,?)',(uid,state['current_capacity'],target,price,before,after,key,txid,now));pid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'purchase_id':pid,'transaction_id':txid,'from_capacity':state['current_capacity'],'to_capacity':target,'current_capacity':target,'price':price,'balance_before':before,'balance_after':after,'balance':after}\n except sqlite3.IntegrityError:\n  c.rollback();row=c.execute('SELECT * FROM account_bag_expansion_purchases WHERE idempotency_key=?',(key,)).fetchone()\n  if row:\n   data=dict(row);data.update({'success':True,'idempotent_replay':True,'current_capacity':int(data['to_capacity']),'balance':int(data['balance_after'])});return data\n  return {'success':False,'message':'❌ Це розширення вже придбано.'}\n except Exception as error:c.rollback();return {'success':False,'message':f'❌ Покупку не завершено: {error}'}\n finally:c.close()"
+        }
+      ]
+    },
+    "systems/crystal_bag_expansion_system.py::get_crystal_bag_expansion_purchases": {
+      "path": "systems/crystal_bag_expansion_system.py",
+      "symbol": "get_crystal_bag_expansion_purchases",
+      "definition_count": 1,
+      "file_sha256": "829d008496d37a9e6d140a1d8b2f89af0e828fb3398a9e2081aed96210810626",
+      "definitions": [
+        {
+          "line_start": 64,
+          "line_end": 67,
+          "source_sha256": "78024d0032135cfb53ea8232ce5fa77ba0f0a9edffc1936c2e2d6a725cc43ffc",
+          "source": "def get_crystal_bag_expansion_purchases(user_id,db_path=None):\n c=_connect(db_path)\n try:return [dict(row) for row in c.execute('SELECT * FROM account_bag_expansion_purchases WHERE user_id=? ORDER BY id DESC',(int(user_id),)).fetchall()]\n finally:c.close()"
+        }
+      ]
+    },
+    "systems/crystal_wallet_system.py::get_crystal_balance": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "get_crystal_balance",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 56,
+          "line_end": 56,
+          "source_sha256": "948be98d7b116846d19aa8fa5b38cc91f10c4f12a0dcd749289db9943e236fff",
+          "source": "def get_crystal_balance(user_id,db_path=None):return int(get_crystal_wallet(user_id,db_path)['balance'])"
+        }
+      ]
+    },
+    "systems/crystal_wallet_system.py::debit_crystals": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "debit_crystals",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 81,
+          "line_end": 81,
+          "source_sha256": "a7186a95deeaf7a6f38a1166f92802ef345dfcb2ae347e692f0ee3900d44d378",
+          "source": "def debit_crystals(user_id,amount,reason_code,idempotency_key,external_reference=None,metadata=None,db_path=None):return _apply(user_id,amount,'debit',reason_code,idempotency_key,external_reference,metadata,None,db_path)"
+        }
+      ]
+    },
+    "systems/crystal_wallet_system.py::compensate_crystal_transaction": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "compensate_crystal_transaction",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 87,
+          "line_end": 98,
+          "source_sha256": "0e8a9e2bde140981ac9db3b61d86b103f4373c693be0fb54474e9a510ab6ec0e",
+          "source": "def compensate_crystal_transaction(original_transaction_id,idempotency_key,reason_code='dev_compensation',db_path=None):\n c=_connect(db_path)\n try:row=c.execute('SELECT * FROM crystal_transactions WHERE id=?',(int(original_transaction_id),)).fetchone()\n finally:c.close()\n if not row:return {'success':False,'message':'Початкову транзакцію не знайдено.'}\n func=debit_crystals if row['operation']=='credit' else credit_crystals\n result=func(int(row['user_id']),int(row['amount']),reason_code,idempotency_key,external_reference=f\"compensates:{int(row['id'])}\",metadata={'original_transaction_id':int(row['id'])},db_path=db_path)\n if result.get('success') and not result.get('idempotent_replay'):\n  c=_connect(db_path)\n  try:c.execute('UPDATE crystal_transactions SET compensates_transaction_id=? WHERE id=? AND compensates_transaction_id IS NULL',(int(row['id']),int(result['transaction_id'])));c.commit()\n  finally:c.close()\n return result"
+        }
+      ]
+    },
+    "systems/crystal_shop_system.py::preview_crystal_shop_purchase": {
+      "path": "systems/crystal_shop_system.py",
+      "symbol": "preview_crystal_shop_purchase",
+      "definition_count": 1,
+      "file_sha256": "601b1d678835a18e20c99daa4236e38cf419f25d5e1e13b9b8dc4f6eb80b6bc2",
+      "definitions": [
+        {
+          "line_start": 20,
+          "line_end": 30,
+          "source_sha256": "37850ef7b886c39198965a1d653305f6b19b51818c5394742c52b3e4d2f13ab1",
+          "source": "def preview_crystal_shop_purchase(user_id,item_id,quantity,db_path=None):\n try:uid=int(user_id);iid=int(item_id);qty=int(quantity)\n except Exception:return {'success':False,'message':'❌ Некоректні дані покупки.'}\n if iid not in CRYSTAL_SHOP_CATALOG:return {'success':False,'message':'❌ Предмет відсутній у магазині.'}\n if qty<=0:return {'success':False,'message':'❌ Кількість має бути більшою за нуль.'}\n c=_connect(db_path)\n try:\n  wallet=c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(uid,)).fetchone()\n  if not wallet:return {'success':False,'message':'❌ Гаманець кристалів не знайдено.'}\n  used,cap,needed,_=_capacity(c,uid,iid,qty);price=CRYSTAL_SHOP_CATALOG[iid]['price'];total=price*qty;balance=int(wallet[0]);return {'success':balance>=total and used+needed<=cap,'item_id':iid,'name':CRYSTAL_SHOP_CATALOG[iid]['name'],'quantity':qty,'unit_price':price,'total_price':total,'balance':balance,'balance_after':balance-total,'used_slots':used,'capacity':cap,'needed_slots':needed,'message':'OK' if balance>=total and used+needed<=cap else ('🎒 Сумка переповнена. Кристали не списано.' if used+needed>cap else '❌ Недостатньо кристалів.')}\n finally:c.close()"
+        }
+      ]
+    },
+    "systems/crystal_shop_system.py::purchase_crystal_shop_item": {
+      "path": "systems/crystal_shop_system.py",
+      "symbol": "purchase_crystal_shop_item",
+      "definition_count": 1,
+      "file_sha256": "601b1d678835a18e20c99daa4236e38cf419f25d5e1e13b9b8dc4f6eb80b6bc2",
+      "definitions": [
+        {
+          "line_start": 39,
+          "line_end": 61,
+          "source_sha256": "26a1c430353ea32cc65e7414a70c0ab69c78b767e75c17e8549d0b42f1d54677",
+          "source": "def purchase_crystal_shop_item(user_id,item_id,quantity,idempotency_key,db_path=None):\n try:uid=int(user_id);iid=int(item_id);qty=int(quantity)\n except Exception:return {'success':False,'message':'❌ Некоректні дані покупки.'}\n key=str(idempotency_key or '').strip()\n if iid not in CRYSTAL_SHOP_CATALOG or qty<=0 or not key:return {'success':False,'message':'❌ Некоректна або неповна покупка.'}\n c=_connect(db_path)\n try:\n  c.execute('BEGIN IMMEDIATE');old=c.execute('SELECT * FROM crystal_shop_purchases WHERE idempotency_key=?',(key,)).fetchone()\n  if old:c.commit();return {'success':True,'idempotent_replay':True,'purchase':dict(old),'balance':int(old['balance_after'])}\n  allowed={501:{'crystal_shop'},602:{'crystal_shop'},728:{'crystal_shop'},502:{'crystal_shop'}}\n  if 'crystal_shop' not in allowed.get(iid,set()):c.rollback();return {'success':False,'message':'❌ Джерело видачі заборонене.'}\n  wallet=c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(uid,)).fetchone();item=c.execute('SELECT id FROM items WHERE id=?',(iid,)).fetchone()\n  if not wallet or not item:c.rollback();return {'success':False,'message':'❌ Гаманець або предмет не знайдено.'}\n  before=int(wallet[0]);unit=int(CRYSTAL_SHOP_CATALOG[iid]['price']);total=unit*qty;used,cap,needed,max_stack=_capacity(c,uid,iid,qty)\n  if used+needed>cap:c.rollback();return {'success':False,'message':'🎒 Сумка переповнена. Кристали не списано.','balance':before}\n  if before<total:c.rollback();return {'success':False,'message':'❌ Недостатньо кристалів.','balance':before}\n  after=before-total;now=_utc();changed=c.execute('UPDATE crystal_wallets SET balance=?,updated_at=? WHERE user_id=? AND balance=?',(after,now,uid,before)).rowcount\n  if changed!=1:raise RuntimeError('Баланс змінився. Покупку скасовано.')\n  tx_key='shop:debit:'+key;cur=c.execute(\"INSERT INTO crystal_transactions(user_id,operation,amount,reason_code,balance_before,balance_after,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)\",(uid,'debit',total,'crystal_shop_purchase',before,after,tx_key,key,json.dumps({'item_id':iid,'quantity':qty},sort_keys=True),now));txid=int(cur.lastrowid)\n  inv_id=_stack(c,uid,iid,qty,max_stack);grant_key='shop:grant:'+key;cur=c.execute('INSERT INTO premium_item_grants(user_id,item_id,quantity,source,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?)',(uid,iid,qty,'crystal_shop',grant_key,key,json.dumps({'total_price':total},sort_keys=True),now));gid=int(cur.lastrowid)\n  cur=c.execute('INSERT INTO crystal_shop_purchases(user_id,item_id,quantity,unit_price,total_price,balance_before,balance_after,idempotency_key,crystal_transaction_id,premium_grant_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(uid,iid,qty,unit,total,before,after,key,txid,gid,now));pid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'purchase_id':pid,'transaction_id':txid,'grant_id':gid,'inventory_id':inv_id,'item_id':iid,'name':CRYSTAL_SHOP_CATALOG[iid]['name'],'quantity':qty,'unit_price':unit,'total_price':total,'balance_before':before,'balance_after':after,'balance':after}\n except Exception as e:c.rollback();return {'success':False,'message':f'❌ Покупку скасовано: {e}'}\n finally:c.close()"
+        }
+      ]
+    },
+    "db_modules/inventory.py::get_bag_capacity": {
+      "path": "db_modules/inventory.py",
+      "symbol": "get_bag_capacity",
+      "definition_count": 1,
+      "file_sha256": "4b44ec514027e2c49e275a0230a7f9c3415739b722dd108e9bc232e2cb85ad51",
+      "definitions": [
+        {
+          "line_start": 13,
+          "line_end": 31,
+          "source_sha256": "2a33781e9bfa5d0668b77af934709bbc42fe2e9f8586873bd8a582b20b3bee36",
+          "source": "def get_bag_capacity(user_id):\n    \"\"\"Повертає максимальну ємність сумки.\"\"\"\n    cursor.execute(\"\"\"\n    SELECT bag_slots\n    FROM users\n    WHERE user_id=?\n    \"\"\", (user_id,))\n    \n    row = cursor.fetchone()\n    \n    if not row:\n        return DEFAULT_BAG_SLOTS\n    \n    try:\n        capacity = int(row[0] or DEFAULT_BAG_SLOTS)\n    except Exception:\n        capacity = DEFAULT_BAG_SLOTS\n    \n    return max(DEFAULT_BAG_SLOTS, capacity)"
+        }
+      ]
+    },
+    "db_modules/inventory.py::add_item": {
+      "path": "db_modules/inventory.py",
+      "symbol": "add_item",
+      "definition_count": 1,
+      "file_sha256": "4b44ec514027e2c49e275a0230a7f9c3415739b722dd108e9bc232e2cb85ad51",
+      "definitions": [
+        {
+          "line_start": 129,
+          "line_end": 218,
+          "source_sha256": "8475dc4b7402e1e9407e6050d5f22137359fc4e886212651c1de3e2a12755845",
+          "source": "def add_item(user_id, item_id, quantity=1, durability=100, commit=True):\n    \"\"\"Add items atomically; commit=False leaves final transaction ownership to caller.\"\"\"\n    # ROM 17.5.1 ADD_ITEM TRANSACTION OWNERSHIP\n    try:\n        user_id = int(user_id)\n        item_id = int(item_id)\n        quantity = int(quantity)\n    except Exception:\n        return {\"success\": False, \"name\": \"Предмет\", \"added\": 0, \"lost\": 0,\n                \"message\": \"❌ Некоректні дані предмета.\"}\n    if quantity <= 0:\n        return {\"success\": False, \"name\": \"Предмет\", \"added\": 0, \"lost\": 0,\n                \"message\": \"❌ Кількість має бути більшою за нуль.\"}\n\n    item = cursor.execute(\n        \"SELECT name, COALESCE(max_stack, 1) FROM items WHERE id=?\", (item_id,)\n    ).fetchone()\n    if not item:\n        return {\"success\": False, \"name\": \"Предмет\", \"added\": 0, \"lost\": quantity,\n                \"message\": \"❌ Предмет не знайдено.\"}\n    name = str(item[0] or \"Предмет\")\n    max_stack = max(1, int(item[1] or 1))\n    requested = quantity\n    savepoint = \"rom_add_item_17_5_1\"\n\n    try:\n        cursor.execute(f\"SAVEPOINT {savepoint}\")\n        capacity = get_bag_capacity(user_id)\n        used_slots = get_inventory_used_slots(user_id)\n        partial = []\n        free_space = 0\n        if max_stack > 1 and not _inventory_reserved_ids_for_item(user_id, item_id):\n            partial = cursor.execute(\n                \"\"\"SELECT id, quantity FROM inventory\n                   WHERE user_id=? AND item_id=? AND quantity>0 AND quantity<?\n                   ORDER BY id ASC\"\"\",\n                (user_id, item_id, max_stack),\n            ).fetchall()\n            free_space = sum(max(0, max_stack-int(row[1] or 0)) for row in partial)\n\n        new_stacks = _inventory_required_new_stacks(quantity, free_space, max_stack)\n        if used_slots + new_stacks > capacity:\n            cursor.execute(f\"ROLLBACK TO {savepoint}\")\n            cursor.execute(f\"RELEASE {savepoint}\")\n            return {\"success\": False, \"name\": name, \"added\": 0, \"lost\": requested,\n                    \"inventory_id\": None, \"used_slots\": used_slots, \"capacity\": capacity,\n                    \"message\": \"🎒 Сумка переповнена!\"}\n\n        first_inventory_id = None\n        for inventory_id, current in partial:\n            if quantity <= 0:\n                break\n            current = max(0, int(current or 0))\n            moved = min(quantity, max_stack-current)\n            if moved:\n                cursor.execute(\n                    \"UPDATE inventory SET quantity=? WHERE id=? AND user_id=? AND item_id=?\",\n                    (current+moved, int(inventory_id), user_id, item_id),\n                )\n                if cursor.rowcount != 1:\n                    raise RuntimeError(\"Не вдалося оновити існуючий стак.\")\n                first_inventory_id = first_inventory_id or int(inventory_id)\n                quantity -= moved\n\n        while quantity > 0:\n            stack_quantity = min(quantity, max_stack)\n            cursor.execute(\n                \"INSERT INTO inventory (user_id,item_id,quantity,durability) VALUES (?,?,?,?)\",\n                (user_id,item_id,stack_quantity,durability),\n            )\n            first_inventory_id = first_inventory_id or int(cursor.lastrowid)\n            quantity -= stack_quantity\n\n        cursor.execute(f\"RELEASE {savepoint}\")\n        if commit:\n            conn.commit()\n        return {\"success\": True, \"name\": name, \"added\": requested, \"lost\": 0,\n                \"inventory_id\": first_inventory_id,\n                \"used_slots\": get_inventory_used_slots(user_id), \"capacity\": capacity,\n                \"message\": f\"✅ Додано {name} x{requested}\"}\n    except Exception as error:\n        try:\n            cursor.execute(f\"ROLLBACK TO {savepoint}\")\n            cursor.execute(f\"RELEASE {savepoint}\")\n        except Exception:\n            if commit:\n                conn.rollback()\n        return {\"success\": False, \"name\": name, \"added\": 0, \"lost\": requested,\n                \"inventory_id\": None,\n                \"message\": f\"❌ Не вдалося додати предмет: {error}\"}"
+        }
+      ]
+    },
+    "handlers/crystal_shop.py::bag_expansion": {
+      "path": "handlers/crystal_shop.py",
+      "symbol": "bag_expansion",
+      "definition_count": 1,
+      "file_sha256": "d0516012b4a094e70736058ca638687b2ef58ecb5122fc09c6cbaaa8932130d2",
+      "definitions": [
+        {
+          "line_start": 95,
+          "line_end": 101,
+          "source_sha256": "f438e0a3bfb2211455767e476d9a2820bb011bed15246a884c5372d43db15a79",
+          "source": "def bag_expansion(message):\n  _close_shop_session(bot,message.from_user.id)\n  p=preview_crystal_bag_expansion(message.from_user.id)\n  if p.get('maximum_reached') or not p.get('next_capacity'):\n   bot.send_message(message.chat.id,p.get('message','🎒 Розширення недоступне.'),reply_markup=_shop_kb());return\n  kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton('➡️ Продовжити',callback_data=f\"bg:review:{p['next_capacity']}\"),types.InlineKeyboardButton('❌ Скасувати',callback_data='bg:cancel'))\n  bot.send_message(message.chat.id,f\"🎒 Розширення сумки\\n\\nПоточна місткість: {p['current_capacity']} слотів\\nПісля розширення: {p['next_capacity']} слотів\\nВартість: {p['price']} 💎\\nБаланс: {p['balance']} 💎\",reply_markup=kb)"
+        }
+      ]
+    },
+    "handlers/crystal_shop.py::bag_expansion_callback": {
+      "path": "handlers/crystal_shop.py",
+      "symbol": "bag_expansion_callback",
+      "definition_count": 1,
+      "file_sha256": "d0516012b4a094e70736058ca638687b2ef58ecb5122fc09c6cbaaa8932130d2",
+      "definitions": [
+        {
+          "line_start": 103,
+          "line_end": 127,
+          "source_sha256": "b977c20a588466dbd12f1cc2ddd41d3fc5047bb06aa3561e85dc526f46bb1ee9",
+          "source": "def bag_expansion_callback(call):\n  data=str(call.data or '');uid=call.from_user.id\n  if data=='bg:cancel':\n   bot.edit_message_text('❌ Розширення сумки скасовано.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Скасовано');return\n  parts=data.split(':');action=parts[1]\n  if action in ('review','back'):\n   target=int(parts[2]);p=preview_crystal_bag_expansion(uid)\n   if not p.get('success') or int(p.get('next_capacity') or 0)!=target:\n    bot.answer_callback_query(call.id,p.get('message','Розширення недоступне.'),show_alert=True);return\n   kb=types.InlineKeyboardMarkup()\n   if action=='review':\n    kb.row(types.InlineKeyboardButton('✅ Так, придбати',callback_data=f'bg:buy:{target}'),types.InlineKeyboardButton('↩️ Ні, повернутися',callback_data=f'bg:back:{target}'))\n    kb.row(types.InlineKeyboardButton('❌ Скасувати',callback_data='bg:cancel'))\n    text=f\"⚠️ Ви впевнені?\\n\\nБуде списано {p['price']} 💎.\\nМісткість сумки збільшиться до {target} слотів.\\nОперацію не можна скасувати після виконання.\"\n   else:\n    kb.row(types.InlineKeyboardButton('➡️ Продовжити',callback_data=f'bg:review:{target}'),types.InlineKeyboardButton('❌ Скасувати',callback_data='bg:cancel'))\n    text=f\"🎒 Розширення сумки\\n\\nПоточна місткість: {p['current_capacity']} слотів\\nПісля розширення: {target} слотів\\nВартість: {p['price']} 💎\\nБаланс: {p['balance']} 💎\"\n   bot.edit_message_text(text,call.message.chat.id,call.message.message_id,reply_markup=kb);bot.answer_callback_query(call.id);return\n  if action!='buy':\n   bot.answer_callback_query(call.id,'Невідома дія.',show_alert=True);return\n  target=int(parts[2]);key=f\"telegram:bag_expansion:{uid}:{call.message.chat.id}:{call.message.message_id}:{target}\";res=purchase_crystal_bag_expansion(uid,target,key)\n  if res.get('success'):\n   bot.edit_message_text(f\"✅ Сумку розширено до {res['current_capacity']} слотів.\\nСписано: {res['price']} 💎\\nБаланс: {res['balance']} 💎\",call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Готово')\n  else:\n   bot.answer_callback_query(call.id,res.get('message','Покупку не завершено.'),show_alert=True)"
+        }
+      ]
+    }
+  },
+  "v2_bag_expansion_contract": {
+    "canonical_owner": "BagExpansionService",
+    "account_identity": "user_id",
+    "first_expansion_key": "bag_60_to_80",
+    "first_from_capacity": 60,
+    "first_to_capacity": 80,
+    "first_price_crystals": 75,
+    "second_expansion_key": "bag_80_to_100",
+    "second_from_capacity": 80,
+    "second_to_capacity": 100,
+    "second_price_crystals": 150,
+    "maximum_capacity": 100,
+    "sequential_only": true,
+    "stable_operation_key_required": true,
+    "atomic_crystal_capacity_receipt": true,
+    "character_reset_survival": true,
+    "restart_safe": true,
+    "caller_owned_unit_of_work": true,
+    "single_commit": true,
+    "presentation_separate": true
+  },
+  "implementation_boundary": {
+    "allowed": [
+      "typed expansion, preview, command, receipt and result DTOs",
+      "Bag Expansion service plus account capacity, crystal wallet, receipt and Unit-of-Work ports",
+      "exact sequential 60/80/100 transitions with 75/150 prices",
+      "in-memory fixtures",
+      "maximum, stale, idempotency, rollback, reset and restart tests"
+    ],
+    "forbidden": [
+      "SQLite or production adapters",
+      "runtime or Telegram wiring",
+      "capacity or prices outside approved scope",
+      "direct SQL capacity mutation",
+      "second expansion owner",
+      "presentation text as technical identity"
+    ]
+  },
+  "summary": {
+    "input_unresolved_contracts": 6,
+    "resolved_contracts": 6,
+    "remaining_unresolved_contracts": 0,
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "implementation_authorized": true,
+  "runtime_integration_authorized": false,
+  "production_persistence_authorized": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_10_7c_implement_bag_expansion.py",
+  "verification": {
+    "canonical_v2_ci": {
+      "schema_version": 1,
+      "status": "PASS",
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "compile",
+          "status": "PASS",
+          "file_count": 143,
+          "failures": []
+        },
+        {
+          "name": "imports",
+          "status": "PASS",
+          "module_count": 100,
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-c",
+              "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.base_equipment_shop', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.daily_reward', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.potion_trading', 'rom_v2.application.premium_shop', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "unit",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "tests_v2",
+              "-p",
+              "test_*.py"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ".....................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 229 tests in 15.108s\n\nOK"
+          }
+        },
+        {
+          "name": "architecture",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "tools/verify_v2_architecture.py",
+              "--project-root",
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+            ],
+            "returncode": 0,
+            "stdout": "V2 architecture enforcement: PASS\nPhysical files: 100\nImport edges: 357\nViolations: 0",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "duplicate_scan",
+          "status": "PASS",
+          "symbol_count": 399,
+          "duplicates": {}
+        },
+        {
+          "name": "content_validation",
+          "status": "PASS",
+          "file_count": 0,
+          "failures": []
+        }
+      ]
+    },
+    "removed_bytecode_before_ci": [],
+    "protected_before": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    },
+    "protected_after": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  }
+}
