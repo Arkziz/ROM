@@ -1,0 +1,348 @@
+{
+  "schema_version": 1,
+  "stage": "21.10.4b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "generated_at_utc": "2026-10-23T20:30:12.362253+00:00",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "864bce49bd0b798cc80a59be889de3e0d6d862b0"
+  },
+  "source_contract": "reports/stage_21_10_4a_refined_potion_trading_contract.json",
+  "source_contract_sha256": "e2fbab65cf0a7a89e5589a90cfb17b918fd06279b73360b0619bc759b30a620a",
+  "resolved_contracts": {
+    "BUY_QUANTITY_AND_PRICE_SNAPSHOT": {
+      "status": "RESOLVED",
+      "decision": "Buy quantity must be a positive integer and may not exceed the quantity affordable from the accepted catalog price. Confirmation uses a typed potion_key and an immutable quoted unit buy price from the preview; changed or unavailable catalog data fails closed before mutation."
+    },
+    "SELL_QUANTITY_RESERVATION_AND_PRICE": {
+      "status": "RESOLVED",
+      "decision": "Sell quantity must be a positive integer and may not exceed inventory quantity after subtracting active reservations. Sell-all means all currently available, non-reserved units. Confirmation uses the accepted quoted unit sell price and rejects stale availability or a changed quote."
+    },
+    "STACK_PLAN_APPLICATION_ORDER": {
+      "status": "RESOLVED",
+      "decision": "Validate potion allowlist, quantity, price, gold and reservation-aware availability first. Build and validate the deterministic stack plan before the first mutation. Apply inventory normalization inside the same Unit of Work as the trade; never normalize on a rejected transaction."
+    },
+    "ATOMIC_BUY_AND_SELL": {
+      "status": "RESOLVED",
+      "decision": "PotionTradingService owns one application transaction. Buy atomically debits gold, adds quantity, normalizes stacks and writes a receipt. Sell atomically removes only available quantity, credits gold, normalizes stacks and writes a receipt. One caller-owned commit finalizes all effects; failure rolls all effects back."
+    },
+    "IDEMPOTENCY_AND_STALE_CONFIRMATION": {
+      "status": "RESOLVED",
+      "decision": "Every confirmed trade requires a stable operation_key. Same key with the same canonical direction, potion_key, quantity and quoted unit price replays the original receipt. Changed payload conflicts. Stale price, insufficient gold, changed inventory availability or changed reservations reject without mutation."
+    },
+    "CONSUMER_ALLOWLIST_AND_SHADOW_OWNERS": {
+      "status": "RESOLVED",
+      "decision": "PotionTradingService is the sole V2 owner. Allowed consumers are Alchemist presentation and explicit recovery/testing adapters. Player-trade reservation queries are read-only dependencies. Simulator paths, direct SQL mutation, presentation-owned mutation and a second potion-trading owner are forbidden."
+    }
+  },
+  "authoritative_v1_evidence": {
+    "systems/potion_system.py::get_alchemist_potion_stock_17_19_3": {
+      "path": "systems/potion_system.py",
+      "symbol": "get_alchemist_potion_stock_17_19_3",
+      "definition_count": 1,
+      "file_sha256": "0528917e22044b8f4465190aaf93e0e80cd3be149ce164c9845f81253017d0d7",
+      "definitions": [
+        {
+          "line_start": 562,
+          "line_end": 591,
+          "source_sha256": "8de047588f4fa1b9b220da591bd89d35ee380bf79f25c870fcb542e01eaf9a7c",
+          "source": "def get_alchemist_potion_stock_17_19_3(user_id):\n    \"\"\"Return total, reserved and sellable quantities for canonical Alchemist potions.\"\"\"\n    from db_modules.connection import cursor\n    try:\n        from systems.player_interaction_system import get_inventory_reserved_quantity\n    except Exception:\n        get_inventory_reserved_quantity = None\n    potion_ids = tuple(int(item_id) for item_id in ALCHEMIST_SHOP)\n    placeholders = \",\".join(\"?\" for _ in potion_ids)\n    rows = cursor.execute(\n        f\"\"\"SELECT inv.id, inv.item_id, COALESCE(inv.quantity,0),\n                   it.name, COALESCE(it.sell_price,0)\n            FROM inventory inv JOIN items it ON it.id=inv.item_id\n            WHERE inv.user_id=? AND inv.item_id IN ({placeholders})\n            ORDER BY inv.item_id, inv.id\"\"\",\n        (int(user_id), *potion_ids),\n    ).fetchall()\n    grouped = {}\n    for inventory_id,item_id,quantity,name,sell_price in rows:\n        item_id=int(item_id); quantity=max(0,int(quantity or 0))\n        reserved=0\n        if get_inventory_reserved_quantity is not None:\n            try: reserved=max(0,int(get_inventory_reserved_quantity(int(inventory_id)) or 0))\n            except TypeError:\n                try: reserved=max(0,int(get_inventory_reserved_quantity(int(user_id),int(inventory_id)) or 0))\n                except Exception: reserved=0\n            except Exception: reserved=0\n        rec=grouped.setdefault(item_id,{\"item_id\":item_id,\"name\":str(name),\"sell_price\":float(sell_price or 0),\"total\":0,\"reserved\":0,\"available\":0})\n        rec[\"total\"] += quantity; rec[\"reserved\"] += min(quantity,reserved); rec[\"available\"] += max(0,quantity-reserved)\n    return [grouped[i] for i in sorted(grouped)]"
+        }
+      ]
+    },
+    "systems/potion_system.py::build_potion_stack_plan_17_19_3_5": {
+      "path": "systems/potion_system.py",
+      "symbol": "build_potion_stack_plan_17_19_3_5",
+      "definition_count": 1,
+      "file_sha256": "0528917e22044b8f4465190aaf93e0e80cd3be149ce164c9845f81253017d0d7",
+      "definitions": [
+        {
+          "line_start": 594,
+          "line_end": 617,
+          "source_sha256": "1092679ebe2daabe15f55ec0126c1778c97be23d1820e63f7d8f85fa6e73fc57",
+          "source": "def build_potion_stack_plan_17_19_3_5(rows, max_stack):\n    \"\"\"Pure reservation-safe compaction plan.\n\n    rows: iterable of (inventory_id, quantity, reserved_quantity).\n    Reserved quantities stay attached to their inventory IDs. Free quantities are\n    packed into the earliest rows up to max_stack. Empty unreserved rows become 0.\n    \"\"\"\n    max_stack = max(1, int(max_stack or 1))\n    normalized = []\n    free_total = 0\n    prepared = []\n    for inventory_id, quantity, reserved in rows:\n        quantity = max(0, int(quantity or 0))\n        reserved = max(0, min(quantity, int(reserved or 0)))\n        prepared.append((int(inventory_id), quantity, reserved))\n        free_total += quantity - reserved\n    for inventory_id, _quantity, reserved in prepared:\n        capacity = max(0, max_stack - reserved)\n        allocated = min(free_total, capacity)\n        normalized.append((inventory_id, reserved + allocated))\n        free_total -= allocated\n    if free_total != 0:\n        raise RuntimeError(\"Недостатня місткість наявних стаків для нормалізації\")\n    return normalized"
+        }
+      ]
+    },
+    "systems/potion_system.py::normalize_potion_stacks_17_19_3_5": {
+      "path": "systems/potion_system.py",
+      "symbol": "normalize_potion_stacks_17_19_3_5",
+      "definition_count": 1,
+      "file_sha256": "0528917e22044b8f4465190aaf93e0e80cd3be149ce164c9845f81253017d0d7",
+      "definitions": [
+        {
+          "line_start": 620,
+          "line_end": 651,
+          "source_sha256": "36fb63247f5204eb584dd086563562dabc6a21cafa62f91ebb49f1ce55576680",
+          "source": "def normalize_potion_stacks_17_19_3_5(user_id, item_id, cursor_obj=None):\n    \"\"\"Compact potion stacks inside the caller-owned transaction.\"\"\"\n    if int(item_id) not in ALCHEMIST_SHOP:\n        return {\"success\": False, \"reason\": \"unsupported_item\"}\n    if cursor_obj is None:\n        from db_modules.connection import cursor as cursor_obj\n    item_row = cursor_obj.execute(\n        \"SELECT COALESCE(max_stack,1) FROM items WHERE id=?\", (int(item_id),)\n    ).fetchone()\n    max_stack = max(1, int((item_row[0] if item_row else 1) or 1))\n    rows = cursor_obj.execute(\n        \"\"\"SELECT inv.id, COALESCE(inv.quantity,0),\n                  COALESCE((SELECT SUM(r.quantity) FROM inventory_reservations r\n                            WHERE r.inventory_id=inv.id),0)\n           FROM inventory inv\n           WHERE inv.user_id=? AND inv.item_id=?\n           ORDER BY inv.id\"\"\",\n        (int(user_id), int(item_id)),\n    ).fetchall()\n    plan = build_potion_stack_plan_17_19_3_5(rows, max_stack)\n    for inventory_id, new_quantity in plan:\n        if int(new_quantity) <= 0:\n            cursor_obj.execute(\n                \"DELETE FROM inventory WHERE id=? AND user_id=? AND item_id=?\",\n                (int(inventory_id), int(user_id), int(item_id)),\n            )\n        else:\n            cursor_obj.execute(\n                \"UPDATE inventory SET quantity=? WHERE id=? AND user_id=? AND item_id=?\",\n                (int(new_quantity), int(inventory_id), int(user_id), int(item_id)),\n            )\n    return {\"success\": True, \"stacks\": [int(q) for _inventory_id, q in plan if int(q) > 0]}"
+        }
+      ]
+    },
+    "systems/potion_system.py::buy_alchemist_potion_17_19_3": {
+      "path": "systems/potion_system.py",
+      "symbol": "buy_alchemist_potion_17_19_3",
+      "definition_count": 1,
+      "file_sha256": "0528917e22044b8f4465190aaf93e0e80cd3be149ce164c9845f81253017d0d7",
+      "definitions": [
+        {
+          "line_start": 654,
+          "line_end": 676,
+          "source_sha256": "e0088ecb4f1cac518d190fecdd446f1d91df07e6a404a8a3d096c17a287742b1",
+          "source": "def buy_alchemist_potion_17_19_3(user_id,item_id,quantity):\n    \"\"\"Atomically purchase an exact quantity at the current canonical price.\"\"\"\n    from db_modules.connection import conn,cursor\n    from db_modules.inventory import add_item\n    item_id=int(item_id); quantity=int(quantity)\n    potion=POTIONS.get(item_id)\n    if not potion or item_id not in ALCHEMIST_SHOP: return {\"success\":False,\"message\":\"❌ Такого зілля немає в Алхіміка.\"}\n    if quantity<1 or quantity>999: return {\"success\":False,\"message\":\"❌ Кількість має бути від 1 до 999.\"}\n    unit=float(potion[\"buy_price\"]); total=round(unit*quantity,2)\n    try:\n        cursor.execute(\"BEGIN IMMEDIATE\")\n        row=cursor.execute(\"SELECT COALESCE(gold,0) FROM users WHERE user_id=?\",(int(user_id),)).fetchone()\n        gold=float(row[0] or 0) if row else 0.0\n        if gold<total: conn.rollback(); return {\"success\":False,\"message\":f\"❌ Недостатньо золота. Потрібно: {total:.2f}, є: {gold:.2f}.\"}\n        result=add_item(int(user_id),item_id,quantity,commit=False)\n        if not result.get(\"success\") or int(result.get(\"added\",0) or 0)!=quantity or int(result.get(\"lost\",0) or 0)!=0:\n            conn.rollback(); return {\"success\":False,\"message\":result.get(\"message\") or \"❌ Зілля не вдалося додати.\"}\n        changed=cursor.execute(\"UPDATE users SET gold=COALESCE(gold,0)-? WHERE user_id=? AND COALESCE(gold,0)>=?\",(total,int(user_id),total)).rowcount\n        if changed!=1: conn.rollback(); return {\"success\":False,\"message\":\"❌ Баланс змінився. Купівлю скасовано.\"}\n        normalize_potion_stacks_17_19_3_5(int(user_id), item_id, cursor)\n        conn.commit(); return {\"success\":True,\"message\":f\"✅ Куплено {potion['name']} ×{quantity} за {total:.2f} золота.\",\"quantity\":quantity,\"total\":total}\n    except Exception as e:\n        conn.rollback(); return {\"success\":False,\"message\":f\"❌ Купівлю не завершено: {e}\"}"
+        }
+      ]
+    },
+    "systems/potion_system.py::sell_alchemist_potion_17_19_3": {
+      "path": "systems/potion_system.py",
+      "symbol": "sell_alchemist_potion_17_19_3",
+      "definition_count": 1,
+      "file_sha256": "0528917e22044b8f4465190aaf93e0e80cd3be149ce164c9845f81253017d0d7",
+      "definitions": [
+        {
+          "line_start": 678,
+          "line_end": 711,
+          "source_sha256": "22595868a2ab520df036eed5bbbf8f7ac7d277074f1c6fb8ff3eebc0b2c6bdcc",
+          "source": "def sell_alchemist_potion_17_19_3(user_id,item_id,quantity):\n    \"\"\"Atomically sell only unreserved potion quantity across multiple stacks.\"\"\"\n    from db_modules.connection import conn,cursor\n    item_id=int(item_id); quantity=int(quantity)\n    potion=POTIONS.get(item_id)\n    if not potion or item_id not in ALCHEMIST_SHOP: return {\"success\":False,\"message\":\"❌ Це зілля Алхімік не купує.\"}\n    if quantity<1 or quantity>999999: return {\"success\":False,\"message\":\"❌ Некоректна кількість.\"}\n    try:\n        cursor.execute(\"BEGIN IMMEDIATE\")\n        rows=cursor.execute(\"SELECT id,COALESCE(quantity,0) FROM inventory WHERE user_id=? AND item_id=? ORDER BY id\",(int(user_id),item_id)).fetchall()\n        available_rows=[]; total_available=0\n        for inv_id,stack_qty in rows:\n            stack_qty=max(0,int(stack_qty or 0))\n            reserved_row=cursor.execute(\"SELECT COALESCE(SUM(quantity),0) FROM inventory_reservations WHERE inventory_id=?\",(int(inv_id),)).fetchone()\n            reserved=max(0,int((reserved_row[0] if reserved_row else 0) or 0))\n            free=max(0,stack_qty-reserved); available_rows.append((int(inv_id),stack_qty,free)); total_available+=free\n        if total_available<quantity:\n            conn.rollback(); return {\"success\":False,\"message\":f\"❌ Доступно для продажу лише {total_available}. Зарезервовані зілля не продаються.\"}\n        remaining=quantity\n        for inv_id,stack_qty,free in available_rows:\n            take=min(remaining,free)\n            if take<=0: continue\n            new_qty=stack_qty-take\n            if new_qty<=0: cursor.execute(\"DELETE FROM inventory WHERE id=? AND user_id=?\",(inv_id,int(user_id)))\n            else: cursor.execute(\"UPDATE inventory SET quantity=? WHERE id=? AND user_id=?\",(new_qty,inv_id,int(user_id)))\n            remaining-=take\n            if remaining<=0: break\n        unit=float(potion[\"sell_price\"]); total=round(unit*quantity,2)\n        changed=cursor.execute(\"UPDATE users SET gold=COALESCE(gold,0)+? WHERE user_id=?\",(total,int(user_id))).rowcount\n        if changed!=1: raise RuntimeError(\"Не вдалося зарахувати золото\")\n        normalize_potion_stacks_17_19_3_5(int(user_id), item_id, cursor)\n        conn.commit(); return {\"success\":True,\"message\":f\"✅ Продано {potion['name']} ×{quantity}. Отримано {total:.2f} золота.\",\"quantity\":quantity,\"total\":total}\n    except Exception as e:\n        conn.rollback(); return {\"success\":False,\"message\":f\"❌ Продаж не завершено: {e}\"}"
+        }
+      ]
+    },
+    "handlers/city.py::build_alchemist_buy_preview_17_19_3": {
+      "path": "handlers/city.py",
+      "symbol": "build_alchemist_buy_preview_17_19_3",
+      "definition_count": 1,
+      "file_sha256": "a73373e0bf4ae90e2d7d4e6c7b417847d401c6b4555514431a3acfed3836b0c3",
+      "definitions": [
+        {
+          "line_start": 181,
+          "line_end": 195,
+          "source_sha256": "3ecca88988d775d1cce95d4491e0ae44b306774ba2398659ae71222fa2863a67",
+          "source": "def build_alchemist_buy_preview_17_19_3(user_id, item_id, quantity=1):\n    potion = POTIONS.get(int(item_id))\n    quantity = max(1, min(999, int(quantity)))\n    if not potion:\n        return ('❌ Зілля не знайдено.', types.InlineKeyboardMarkup())\n    total = round(float(potion['buy_price']) * quantity, 2)\n    gold = get_wallet(user_id)\n    effect = f\"+{potion['restore']} {('HP' if potion['type'] == 'hp' else 'MP')}\"\n    text = f\"🛒 Купівля зілля\\n\\n{float(potion['name']):.2f}\\nЕфект: {float(effect):.2f}\\nЦіна за одне: {float(potion['buy_price']):.2f}\\n📦 Кількість: {float(quantity):.2f}\\n💳 Загальна вартість: {float(total):.2f}\\n💰 Золото: {float(gold):.2f}\"\n    kb = types.InlineKeyboardMarkup(row_width=3)\n    kb.row(types.InlineKeyboardButton('➖', callback_data=f'alchemist:buyset:{item_id}:{max(1, quantity - 1)}'), types.InlineKeyboardButton(f'×{quantity}', callback_data=f'alchemist:buyqty:{item_id}'), types.InlineKeyboardButton('➕', callback_data=f'alchemist:buyset:{item_id}:{min(999, quantity + 1)}'))\n    kb.add(types.InlineKeyboardButton('✏️ Вказати кількість', callback_data=f'alchemist:buyqty:{item_id}'))\n    kb.add(types.InlineKeyboardButton(f'✅ Купити за {format_gold(total)}', callback_data=f'alchemist:buydo:{item_id}:{quantity}'))\n    kb.add(types.InlineKeyboardButton('🔙 До зіль', callback_data='alchemist:buy'))\n    return (text, kb)"
+        }
+      ]
+    },
+    "handlers/city.py::build_alchemist_sell_preview_17_19_3": {
+      "path": "handlers/city.py",
+      "symbol": "build_alchemist_sell_preview_17_19_3",
+      "definition_count": 1,
+      "file_sha256": "a73373e0bf4ae90e2d7d4e6c7b417847d401c6b4555514431a3acfed3836b0c3",
+      "definitions": [
+        {
+          "line_start": 210,
+          "line_end": 225,
+          "source_sha256": "4c8723ee8badbdcb570bace222b675a4381f0fb3e21abe3a0bb68ad3d06ed066",
+          "source": "def build_alchemist_sell_preview_17_19_3(user_id, item_id, quantity=1):\n    potion = POTIONS.get(int(item_id))\n    stock = next((row for row in get_alchemist_potion_stock_17_19_3(user_id) if row['item_id'] == int(item_id)), None)\n    available = int((stock or {}).get('available', 0))\n    if not potion or available <= 0:\n        return build_alchemist_sell_list_17_19_3(user_id)\n    quantity = max(1, min(available, int(quantity)))\n    total = round(float(potion['sell_price']) * quantity, 2)\n    text = f\"💰 Продаж зілля\\n\\n{potion['name']}\\n🎒 Доступно: {available}\\n🔒 Зарезервовано: {int((stock or {}).get('reserved', 0))}\\nЦіна за одне: {format_gold(potion['sell_price'])}\\n📦 Кількість: {quantity}\\n💰 Отримаєш: {format_gold(total)}\"\n    kb = types.InlineKeyboardMarkup(row_width=3)\n    kb.row(types.InlineKeyboardButton('➖', callback_data=f'alchemist:sellset:{item_id}:{max(1, quantity - 1)}'), types.InlineKeyboardButton(f'×{quantity}', callback_data=f'alchemist:sellqty:{item_id}'), types.InlineKeyboardButton('➕', callback_data=f'alchemist:sellset:{item_id}:{min(available, quantity + 1)}'))\n    kb.add(types.InlineKeyboardButton(f'📦 Продати все ×{available}', callback_data=f'alchemist:sellset:{item_id}:{available}'))\n    kb.add(types.InlineKeyboardButton('✏️ Вказати кількість', callback_data=f'alchemist:sellqty:{item_id}'))\n    kb.add(types.InlineKeyboardButton(f'✅ Продати за {format_gold(total)}', callback_data=f'alchemist:sellconfirm:{item_id}:{quantity}'))\n    kb.add(types.InlineKeyboardButton('🔙 До списку', callback_data='alchemist:sell'))\n    return (text, kb)"
+        }
+      ]
+    },
+    "handlers/city.py::build_alchemist_sell_confirm_17_19_3": {
+      "path": "handlers/city.py",
+      "symbol": "build_alchemist_sell_confirm_17_19_3",
+      "definition_count": 1,
+      "file_sha256": "a73373e0bf4ae90e2d7d4e6c7b417847d401c6b4555514431a3acfed3836b0c3",
+      "definitions": [
+        {
+          "line_start": 227,
+          "line_end": 234,
+          "source_sha256": "02bfd471990a9d63c86377e0a9450a93aaa36dc71a4245bbf76c0086646e5697",
+          "source": "def build_alchemist_sell_confirm_17_19_3(user_id, item_id, quantity):\n    potion = POTIONS.get(int(item_id))\n    quantity = int(quantity)\n    total = round(float(potion['sell_price']) * quantity, 2)\n    kb = types.InlineKeyboardMarkup(row_width=1)\n    kb.add(types.InlineKeyboardButton('✅ Продати', callback_data=f'alchemist:selldo:{item_id}:{quantity}'))\n    kb.add(types.InlineKeyboardButton('❌ Скасувати', callback_data=f'alchemist:sellitem:{item_id}'))\n    return (f\"Продати {potion['name']} ×{quantity}?\\n\\nЦіна за одне: {format_gold(potion['sell_price'])}\\nОтримаєш: {format_gold(total)}\", kb)"
+        }
+      ]
+    },
+    "handlers/city.py::alchemist_exact_quantity_17_19_3": {
+      "path": "handlers/city.py",
+      "symbol": "alchemist_exact_quantity_17_19_3",
+      "definition_count": 1,
+      "file_sha256": "a73373e0bf4ae90e2d7d4e6c7b417847d401c6b4555514431a3acfed3836b0c3",
+      "definitions": [
+        {
+          "line_start": 769,
+          "line_end": 789,
+          "source_sha256": "04b723473efcb544b8bdfb100129506574120efde93098600fce978c9761785b",
+          "source": "def alchemist_exact_quantity_17_19_3(message):\n        user_id = int(message.from_user.id)\n        state = _ALCHEMIST_INPUT_17_19_3.pop(user_id, None)\n        try:\n            quantity = int(str(message.text).strip())\n        except Exception:\n            bot.send_message(message.chat.id, '❌ Введи ціле число.')\n            return\n        if quantity < 1:\n            bot.send_message(message.chat.id, '❌ Кількість має бути більшою за нуль.')\n            return\n        if state['mode'] == 'buy':\n            text, kb = build_alchemist_buy_preview_17_19_3(user_id, state['item_id'], quantity)\n        else:\n            stock = next((r for r in get_alchemist_potion_stock_17_19_3(user_id) if r['item_id'] == state['item_id']), None)\n            available = int((stock or {}).get('available', 0))\n            if quantity > available:\n                bot.send_message(message.chat.id, f'❌ Доступно для продажу лише {available}.')\n                return\n            text, kb = build_alchemist_sell_confirm_17_19_3(user_id, state['item_id'], quantity)\n        bot.send_message(message.chat.id, text, reply_markup=kb)"
+        }
+      ]
+    },
+    "handlers/city.py::alchemist_trade_17_19_3": {
+      "path": "handlers/city.py",
+      "symbol": "alchemist_trade_17_19_3",
+      "definition_count": 1,
+      "file_sha256": "a73373e0bf4ae90e2d7d4e6c7b417847d401c6b4555514431a3acfed3836b0c3",
+      "definitions": [
+        {
+          "line_start": 707,
+          "line_end": 752,
+          "source_sha256": "08fe7cb08ce9538e4fb52a5b8aca52d05d2b4dccbafc71b1fe1b4660daac9b42",
+          "source": "def alchemist_trade_17_19_3(call):\n        user_id = int(call.from_user.id)\n        data = str(call.data)\n        parts = data.split(':')\n        try:\n            bot.answer_callback_query(call.id)\n        except Exception:\n            pass\n        if data == 'alchemist:root':\n            text, kb = build_alchemist_root_17_19_3(user_id)\n        elif data == 'alchemist:buy':\n            text, kb = build_alchemist_buy_list_17_19_3(user_id)\n        elif data == 'alchemist:sell':\n            text, kb = build_alchemist_sell_list_17_19_3(user_id)\n        elif parts[1] == 'buyitem':\n            text, kb = build_alchemist_buy_preview_17_19_3(user_id, int(parts[2]), 1)\n        elif parts[1] == 'buyset':\n            text, kb = build_alchemist_buy_preview_17_19_3(user_id, int(parts[2]), int(parts[3]))\n        elif parts[1] == 'buyqty':\n            _ALCHEMIST_INPUT_17_19_3[user_id] = {'mode': 'buy', 'item_id': int(parts[2]), 'chat_id': call.message.chat.id}\n            bot.send_message(call.message.chat.id, 'Введи кількість зіль для купівлі, від 1 до 999.')\n            return\n        elif parts[1] == 'buydo':\n            result = buy_alchemist_potion_17_19_3(user_id, int(parts[2]), int(parts[3]))\n            bot.send_message(call.message.chat.id, result['message'], reply_markup=alchemist_reply_kb_17_19_3_1())\n            if result.get('success'):\n                text, kb = build_alchemist_buy_list_17_19_3(user_id)\n            else:\n                text, kb = build_alchemist_buy_preview_17_19_3(user_id, int(parts[2]), int(parts[3]))\n        elif parts[1] == 'sellitem':\n            text, kb = build_alchemist_sell_preview_17_19_3(user_id, int(parts[2]), 1)\n        elif parts[1] == 'sellset':\n            text, kb = build_alchemist_sell_preview_17_19_3(user_id, int(parts[2]), int(parts[3]))\n        elif parts[1] == 'sellqty':\n            _ALCHEMIST_INPUT_17_19_3[user_id] = {'mode': 'sell', 'item_id': int(parts[2]), 'chat_id': call.message.chat.id}\n            bot.send_message(call.message.chat.id, 'Введи кількість зіль для продажу.')\n            return\n        elif parts[1] == 'sellconfirm':\n            text, kb = build_alchemist_sell_confirm_17_19_3(user_id, int(parts[2]), int(parts[3]))\n        elif parts[1] == 'selldo':\n            result = sell_alchemist_potion_17_19_3(user_id, int(parts[2]), int(parts[3]))\n            bot.send_message(call.message.chat.id, result['message'], reply_markup=alchemist_reply_kb_17_19_3_1())\n            text, kb = build_alchemist_sell_list_17_19_3(user_id)\n        else:\n            return\n        bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        }
+      ]
+    },
+    "systems/player_interaction_system.py::get_inventory_reserved_quantity": {
+      "path": "systems/player_interaction_system.py",
+      "symbol": "get_inventory_reserved_quantity",
+      "definition_count": 1,
+      "file_sha256": "7e0569317cab32cba42826dedfde2f804472c993b53250fc4497237d0004b171",
+      "definitions": [
+        {
+          "line_start": 1287,
+          "line_end": 1298,
+          "source_sha256": "74e4254c719dd8d5fbe44f9f6f5538261214004e981cd21a39ec8dc3507ccb72",
+          "source": "def get_inventory_reserved_quantity(inventory_id, *, exclude_reference_id=None, db_path=None):\n    conn = _connect(db_path)\n    try:\n        _init_inventory_reservation_schema(conn)\n        query = \"SELECT COALESCE(SUM(quantity),0) FROM inventory_reservations WHERE inventory_id=?\"\n        params = [int(inventory_id)]\n        if exclude_reference_id is not None:\n            query += \" AND NOT (reservation_type=? AND reference_id=?)\"\n            params.extend((TRADE_RESERVATION_TYPE, int(exclude_reference_id)))\n        return int(conn.execute(query, tuple(params)).fetchone()[0] or 0)\n    finally:\n        conn.close()"
+        }
+      ]
+    },
+    "systems/player_interaction_system.py::get_inventory_available_quantity": {
+      "path": "systems/player_interaction_system.py",
+      "symbol": "get_inventory_available_quantity",
+      "definition_count": 1,
+      "file_sha256": "7e0569317cab32cba42826dedfde2f804472c993b53250fc4497237d0004b171",
+      "definitions": [
+        {
+          "line_start": 1301,
+          "line_end": 1324,
+          "source_sha256": "886050ec2b6f587c4ed1b94ca2aa56660f0ea1e434835cc784e730889412b828",
+          "source": "def get_inventory_available_quantity(user_id, inventory_id, *, exclude_reference_id=None, db_path=None):\n    conn = _connect(db_path)\n    try:\n        inv_columns = _inventory_columns(conn)\n        quantity_col = _first_existing(inv_columns, (\"quantity\", \"qty\", \"count\"))\n        if quantity_col is None:\n            return 0\n        row = conn.execute(\n            f'SELECT \"{quantity_col}\" FROM inventory WHERE id=? AND user_id=?',\n            (int(inventory_id), int(user_id)),\n        ).fetchone()\n        if not row:\n            return 0\n        reserved = conn.execute(\n            \"SELECT COALESCE(SUM(quantity),0) FROM inventory_reservations \"\n            \"WHERE inventory_id=?\" +\n            (\" AND NOT (reservation_type=? AND reference_id=?)\" if exclude_reference_id is not None else \"\"),\n            ((int(inventory_id), TRADE_RESERVATION_TYPE, int(exclude_reference_id))\n             if exclude_reference_id is not None else (int(inventory_id),)),\n        ).fetchone()[0]\n        auction = _active_auction_reserved_quantity(conn, inventory_id)\n        return max(0, int(row[0] or 0) - int(reserved or 0) - int(auction or 0))\n    finally:\n        conn.close()"
+        }
+      ]
+    }
+  },
+  "v2_potion_trading_contract": {
+    "canonical_owner": "PotionTradingService",
+    "typed_potion_keys": true,
+    "positive_integer_quantity": true,
+    "quoted_buy_price_locked": true,
+    "quoted_sell_price_locked": true,
+    "reservation_aware_sell": true,
+    "deterministic_stack_plan": true,
+    "stable_operation_key_required": true,
+    "atomic_gold_inventory_receipt": true,
+    "caller_owned_unit_of_work": true,
+    "single_commit": true,
+    "presentation_separate": true
+  },
+  "implementation_boundary": {
+    "allowed": [
+      "typed quote, command, stack-plan, receipt and result DTOs",
+      "potion catalog, inventory, reservation, wallet, receipt and Unit-of-Work ports",
+      "deterministic buy/sell validation and stack normalization contracts",
+      "in-memory fixtures",
+      "quantity, stale, reservation, idempotency, rollback and restart tests"
+    ],
+    "forbidden": [
+      "SQLite or production adapters",
+      "runtime or Telegram wiring",
+      "new potion types or changed accepted prices",
+      "direct SQL mutation",
+      "second trading owner",
+      "presentation text as technical identity"
+    ]
+  },
+  "summary": {
+    "input_unresolved_contracts": 6,
+    "resolved_contracts": 6,
+    "remaining_unresolved_contracts": 0,
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "implementation_authorized": true,
+  "runtime_integration_authorized": false,
+  "production_persistence_authorized": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_10_4c_implement_potion_trading.py",
+  "verification": {
+    "canonical_v2_ci": {
+      "schema_version": 1,
+      "status": "PASS",
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "compile",
+          "status": "PASS",
+          "file_count": 137,
+          "failures": []
+        },
+        {
+          "name": "imports",
+          "status": "PASS",
+          "module_count": 97,
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-c",
+              "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.base_equipment_shop', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "unit",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "tests_v2",
+              "-p",
+              "test_*.py"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "..........................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 202 tests in 13.406s\n\nOK"
+          }
+        },
+        {
+          "name": "architecture",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "tools/verify_v2_architecture.py",
+              "--project-root",
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+            ],
+            "returncode": 0,
+            "stdout": "V2 architecture enforcement: PASS\nPhysical files: 97\nImport edges: 346\nViolations: 0",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "duplicate_scan",
+          "status": "PASS",
+          "symbol_count": 359,
+          "duplicates": {}
+        },
+        {
+          "name": "content_validation",
+          "status": "PASS",
+          "file_count": 0,
+          "failures": []
+        }
+      ]
+    },
+    "removed_bytecode_before_ci": [],
+    "protected_before": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    },
+    "protected_after": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  }
+}
