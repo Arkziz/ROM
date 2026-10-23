@@ -1,0 +1,357 @@
+{
+  "schema_version": 1,
+  "stage": "21.10.6b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "approved_reward_scope": {
+    "small_hp_potions": 3,
+    "phirius_tokens": 3
+  },
+  "generated_at_utc": "2026-10-23T21:06:22.772095+00:00",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "4367948d0bb38491341ab0fe4f5c655b3231e9a7"
+  },
+  "source_contract": "reports/stage_21_10_6a_refined_daily_reward_contract.json",
+  "source_contract_sha256": "474c8f6ab059ef6c050f01e9c7095b587ae97b6cfbac86c0a1c64ba59f3fd356",
+  "resolved_contracts": {
+    "REWARD_CATALOG_AND_KEYS": {
+      "status": "RESOLVED",
+      "decision": "Use stable reward_key daily_reward_3hp_3firius and typed item/currency keys small_hp_potion and phirius_token. The exact immutable reward is 3 small HP potions and 3 Phirius Tokens. The previous 5-token value is superseded and forbidden for V2 parity."
+    },
+    "PERIOD_BOUNDARY_AND_ONCE_POLICY": {
+      "status": "RESOLVED",
+      "decision": "A claim is account-level by user_id and unique for a stable daily period_key produced by the canonical period provider. One successful claim is allowed per user_id plus period_key. Repeated claims for the same period fail closed or replay the original receipt when the operation_key matches."
+    },
+    "CLAIM_STATE_AND_REWARD_ORDERING": {
+      "status": "RESOLVED",
+      "decision": "DailyRewardService validates quest existence, completion, matching period and unclaimed state before mutation. It then validates reward capacity, builds reward plans, grants both reward components, marks the claim state and writes one receipt inside the same Unit of Work."
+    },
+    "INVENTORY_CAPACITY_AND_STACKS": {
+      "status": "RESOLVED",
+      "decision": "The service builds and validates the small-HP stack plan for exactly 3 units before the first mutation. Capacity failure rejects the whole claim. Stack application and optional compaction occur inside the claim transaction; rejected claims never normalize inventory."
+    },
+    "ATOMICITY_IDEMPOTENCY_AND_RESTART": {
+      "status": "RESOLVED",
+      "decision": "Every claim requires a stable operation_key. Same key with identical user_id, period_key and reward_key replays one immutable receipt. Changed payload conflicts. Potion grant, 3-token credit, claim-state update and receipt use one caller-owned commit; any failure rolls all effects back. Persisted receipt and claim state prevent duplicate rewards after restart."
+    },
+    "CONSUMER_ALLOWLIST_AND_SHADOW_OWNERS": {
+      "status": "RESOLVED",
+      "decision": "DailyRewardService is the sole V2 mutation owner. Allowed consumers are daily presentation and explicit recovery/testing adapters. Quest state, inventory and token wallet are dependencies. Compatibility wrappers may delegate only. Direct SQL grants, presentation-owned mutation, simulator grants and duplicate reward owners are forbidden."
+    }
+  },
+  "authoritative_v1_evidence": {
+    "systems/rune_system.py::claim_daily_quest_reward_with_firius_tokens": {
+      "path": "systems/rune_system.py",
+      "symbol": "claim_daily_quest_reward_with_firius_tokens",
+      "definition_count": 1,
+      "file_sha256": "56e988aee115054422cf6277065c498777e0329a087f1088d7808e4fe7836a04",
+      "definitions": [
+        {
+          "line_start": 303,
+          "line_end": 387,
+          "source_sha256": "6f9f62b31456cc8459f5427f76c2691a58172ca3fb30ce165b297953568eace4",
+          "source": "def claim_daily_quest_reward_with_firius_tokens(user_id):\n    \"\"\"Atomically claim the base reward plus 5 cumulative Firius Tokens.\"\"\"\n    from data.balance import DAILY_QUEST_REWARD_ITEM_ID, DAILY_QUEST_REWARD_QUANTITY\n\n    db = _db()\n    db.reset_daily_quest_if_needed(user_id)\n    conn = db.conn\n    try:\n        conn.execute(\"BEGIN IMMEDIATE\")\n        row = conn.execute(\n            \"\"\"\n            SELECT progress, target_count, completed, reward_claimed\n            FROM user_daily_quests WHERE user_id=?\n            \"\"\",\n            (int(user_id),),\n        ).fetchone()\n        if not row:\n            conn.rollback()\n            return {\"success\": False, \"message\": \"❌ Щоденне завдання не знайдено.\"}\n        progress, target_count, completed, reward_claimed = row\n        if not bool(completed):\n            conn.rollback()\n            return {\n                \"success\": False,\n                \"message\": (\n                    \"❌ Щоденне завдання ще не виконано.\\n\\n\"\n                    f\"📈 Прогрес: {int(progress or 0)}/{int(target_count or 0)}\"\n                ),\n            }\n        if bool(reward_claimed):\n            conn.rollback()\n            return {\"success\": False, \"message\": \"✅ Нагороду за сьогодні вже отримано.\"}\n\n        base_plan = _plan_stack_addition(\n            conn, user_id, DAILY_QUEST_REWARD_ITEM_ID, DAILY_QUEST_REWARD_QUANTITY\n        )\n        token_plan = _plan_stack_addition(\n            conn, user_id, FIRIUS_TOKEN_ITEM_ID, FIRIUS_TOKENS_PER_DAILY_REWARD\n        )\n        bag_row = conn.execute(\n            \"SELECT bag_slots FROM users WHERE user_id=?\", (int(user_id),)\n        ).fetchone()\n        used_slots = int(conn.execute(\n            \"SELECT COUNT(*) FROM inventory WHERE user_id=?\", (int(user_id),)\n        ).fetchone()[0] or 0)\n        capacity = int((bag_row[0] if bag_row else 0) or 0)\n        required_slots = base_plan[\"new_slots\"] + token_plan[\"new_slots\"]\n        if used_slots + required_slots > capacity:\n            conn.rollback()\n            return {\n                \"success\": False,\n                \"code\": \"bag_full\",\n                \"message\": (\n                    \"🎒 Сумка переповнена.\\n\\n\"\n                    \"Звільни місце в інвентарі та спробуй забрати нагороду ще раз.\\n\"\n                    \"Нічого не було втрачено або частково нараховано.\"\n                ),\n            }\n\n        _apply_stack_plan(conn, user_id, base_plan)\n        _apply_stack_plan(conn, user_id, token_plan)\n        updated = conn.execute(\n            \"UPDATE user_daily_quests SET reward_claimed=1 \"\n            \"WHERE user_id=? AND completed=1 AND reward_claimed=0\",\n            (int(user_id),),\n        ).rowcount\n        if updated != 1:\n            raise RuntimeError(\"Daily reward state changed during claim\")\n        conn.commit()\n        return {\n            \"success\": True,\n            \"base_item_id\": base_plan[\"item_id\"],\n            \"base_quantity\": base_plan[\"quantity\"],\n            \"firius_token_item_id\": FIRIUS_TOKEN_ITEM_ID,\n            \"firius_token_quantity\": FIRIUS_TOKENS_PER_DAILY_REWARD,\n            \"message\": (\n                \"🎁 Ви отримали нагороду за щоденне завдання!\\n\\n\"\n                f\"📦 {base_plan['name']} ×{base_plan['quantity']}\\n\"\n                f\"🪙 {token_plan['name']} ×{token_plan['quantity']}\\n\\n\"\n                \"Жетони Фіріуса накопичуються та не зникають наступного дня.\"\n            ),\n        }\n    except Exception:\n        conn.rollback()\n        raise"
+        }
+      ]
+    },
+    "systems/rune_system.py::_plan_stack_addition": {
+      "path": "systems/rune_system.py",
+      "symbol": "_plan_stack_addition",
+      "definition_count": 1,
+      "file_sha256": "56e988aee115054422cf6277065c498777e0329a087f1088d7808e4fe7836a04",
+      "definitions": [
+        {
+          "line_start": 248,
+          "line_end": 287,
+          "source_sha256": "beb79ce5d1a02d916e52295776ef688be637ba112a520d20ee6bec710713cfe7",
+          "source": "def _plan_stack_addition(conn, user_id, item_id, quantity):\n    \"\"\"Build a no-write stack plan and required new-slot count.\"\"\"\n    quantity = int(quantity)\n    row = conn.execute(\n        \"SELECT name, max_stack FROM items WHERE id=?\", (int(item_id),)\n    ).fetchone()\n    if not row:\n        raise RuntimeError(f\"Reward item does not exist: {item_id}\")\n    name = str(row[0])\n    max_stack = max(1, int(row[1] or 1))\n    stacks = conn.execute(\n        \"SELECT id, quantity FROM inventory \"\n        \"WHERE user_id=? AND item_id=? ORDER BY id\",\n        (int(user_id), int(item_id)),\n    ).fetchall()\n    remaining = quantity\n    updates = []\n    for inventory_id, current in stacks:\n        current = int(current or 0)\n        free = max(0, max_stack - current)\n        if free <= 0:\n            continue\n        add = min(free, remaining)\n        updates.append((current + add, int(inventory_id)))\n        remaining -= add\n        if remaining <= 0:\n            break\n    inserts = []\n    while remaining > 0:\n        add = min(max_stack, remaining)\n        inserts.append(add)\n        remaining -= add\n    return {\n        \"item_id\": int(item_id),\n        \"name\": name,\n        \"quantity\": quantity,\n        \"updates\": updates,\n        \"inserts\": inserts,\n        \"new_slots\": len(inserts),\n    }"
+        }
+      ]
+    },
+    "systems/rune_system.py::_apply_stack_plan": {
+      "path": "systems/rune_system.py",
+      "symbol": "_apply_stack_plan",
+      "definition_count": 1,
+      "file_sha256": "56e988aee115054422cf6277065c498777e0329a087f1088d7808e4fe7836a04",
+      "definitions": [
+        {
+          "line_start": 290,
+          "line_end": 300,
+          "source_sha256": "f2dd9fe0659832040c0cc571fedf100216d2c9e35cebd09b2e0823533e766395",
+          "source": "def _apply_stack_plan(conn, user_id, plan):\n    for new_quantity, inventory_id in plan[\"updates\"]:\n        conn.execute(\n            \"UPDATE inventory SET quantity=? WHERE id=? AND user_id=?\",\n            (new_quantity, inventory_id, int(user_id)),\n        )\n    for quantity in plan[\"inserts\"]:\n        conn.execute(\n            \"INSERT INTO inventory (user_id, item_id, quantity) VALUES (?, ?, ?)\",\n            (int(user_id), plan[\"item_id\"], quantity),\n        )"
+        }
+      ]
+    },
+    "systems/rune_system.py::get_firius_token_quantity": {
+      "path": "systems/rune_system.py",
+      "symbol": "get_firius_token_quantity",
+      "definition_count": 1,
+      "file_sha256": "56e988aee115054422cf6277065c498777e0329a087f1088d7808e4fe7836a04",
+      "definitions": [
+        {
+          "line_start": 915,
+          "line_end": 916,
+          "source_sha256": "9f2c78e5823c27e923e3230ac454ad10949cdf2e72729641ef2814397c60b488",
+          "source": "def get_firius_token_quantity(user_id):\n    return _inventory_item_total(_db().conn, user_id, FIRIUS_TOKEN_ITEM_ID)"
+        }
+      ]
+    },
+    "db_modules/quests.py::claim_daily_quest_reward": {
+      "path": "db_modules/quests.py",
+      "symbol": "claim_daily_quest_reward",
+      "definition_count": 1,
+      "file_sha256": "40219bf84d6cad04ee592f112583429458708cc97878cf83a9aa1462551a5f30",
+      "definitions": [
+        {
+          "line_start": 122,
+          "line_end": 182,
+          "source_sha256": "1b1382443064dde0fc4b57af329fc09d46eed8a5ed503387b3bd99b3b6c5e211",
+          "source": "def claim_daily_quest_reward(user_id):\n    \"\"\"Atomically grant all daily quest rewards and mark the claim.\"\"\"\n    # ROM 17.5.1 ATOMIC DAILY QUEST REWARD\n    from data.balance import DAILY_QUEST_REWARDS\n    from .inventory import add_item\n\n    quest = get_user_daily_quest(user_id)\n    if quest[\"status\"] == \"claimed\":\n        return (False, \"⚠️ Ви вже отримали винагороду за сьогодні!\", None)\n    if not is_daily_quest_complete(user_id):\n        return (False, \"⚠️ Квест ще не виконано!\", None)\n\n    today = get_daily_today_str()\n    rewards = {}\n    try:\n        cursor.execute(\"BEGIN IMMEDIATE\")\n        current = cursor.execute(\n            \"SELECT status FROM user_daily_activity WHERE user_id=? AND daily_key=?\",\n            (user_id, today),\n        ).fetchone()\n        if not current or str(current[0]) == \"claimed\":\n            conn.rollback()\n            return (False, \"⚠️ Винагорода вже отримана або квест недоступний.\", None)\n\n        item_results = []\n        for item_id, quantity in DAILY_QUEST_REWARDS.get(\"items\", []):\n            result = add_item(user_id, item_id, quantity, commit=False)\n            if (not result.get(\"success\") or\n                    int(result.get(\"added\", 0) or 0) != int(quantity) or\n                    int(result.get(\"lost\", 0) or 0) != 0):\n                conn.rollback()\n                name = result.get(\"name\", f\"ID {item_id}\")\n                reason = result.get(\"message\", \"Предмет не вдалося додати.\")\n                return (False, f\"❌ Не вдалося отримати нагороду: {name}. {reason}\", None)\n            item_results.append((item_id, quantity))\n\n        gold_amount = float(DAILY_QUEST_REWARDS.get(\"gold\", 0) or 0)\n        if gold_amount:\n            changed = cursor.execute(\n                \"UPDATE users SET gold=COALESCE(gold,0)+? WHERE user_id=?\",\n                (gold_amount, user_id),\n            ).rowcount\n            if changed != 1:\n                raise RuntimeError(\"Не вдалося видати золото щоденного завдання.\")\n            rewards[\"gold\"] = gold_amount\n        if \"items\" in DAILY_QUEST_REWARDS:\n            rewards[\"items\"] = item_results\n\n        changed = cursor.execute(\n            \"\"\"UPDATE user_daily_activity\n               SET status='claimed', claimed_at=CURRENT_TIMESTAMP\n               WHERE user_id=? AND daily_key=? AND status<>'claimed'\"\"\",\n            (user_id, today),\n        ).rowcount\n        if changed != 1:\n            raise RuntimeError(\"Не вдалося зафіксувати отримання нагороди.\")\n        conn.commit()\n        return (True, \"✅ Винагорода отримана!\", rewards)\n    except Exception as error:\n        conn.rollback()\n        return (False, f\"❌ Не вдалося отримати нагороду: {error}\", None)"
+        }
+      ]
+    },
+    "db_modules/quests.py::is_daily_quest_complete": {
+      "path": "db_modules/quests.py",
+      "symbol": "is_daily_quest_complete",
+      "definition_count": 1,
+      "file_sha256": "40219bf84d6cad04ee592f112583429458708cc97878cf83a9aa1462551a5f30",
+      "definitions": [
+        {
+          "line_start": 107,
+          "line_end": 119,
+          "source_sha256": "c8bd31174c49aa464a412376c92b7e0759edeb62cf62ee8bbebd212c88b66755",
+          "source": "def is_daily_quest_complete(user_id):\n    \"\"\"Перевіряє чи виконано щоденний квест.\"\"\"\n    from data.balance import DAILY_QUEST_REQUIREMENTS\n    \n    quest = get_user_daily_quest(user_id)\n    \n    if quest[\"status\"] != \"active\":\n        return False\n    \n    return (\n        quest[\"total_kills\"] >= DAILY_QUEST_REQUIREMENTS[\"total_kills\"] and\n        quest[\"elite_kills\"] >= DAILY_QUEST_REQUIREMENTS[\"elite_kills\"]\n    )"
+        }
+      ]
+    },
+    "db_modules/quests.py::get_user_daily_quest": {
+      "path": "db_modules/quests.py",
+      "symbol": "get_user_daily_quest",
+      "definition_count": 1,
+      "file_sha256": "40219bf84d6cad04ee592f112583429458708cc97878cf83a9aa1462551a5f30",
+      "definitions": [
+        {
+          "line_start": 41,
+          "line_end": 84,
+          "source_sha256": "c56a9c1ae82d949e875037116f2e37a98a45b05324ec665a30e751a6862611f7",
+          "source": "def get_user_daily_quest(user_id):\n    \"\"\"Отримує поточний щоденний квест гравця.\"\"\"\n    init_daily_quest_system()\n    \n    today = get_daily_today_str()\n    \n    cursor.execute(\"\"\"\n    SELECT user_id, daily_key, total_kills, elite_kills, pvp_kills, \n           trades_completed, status, claimed_at\n    FROM user_daily_activity\n    WHERE user_id=? AND daily_key=?\n    \"\"\", (user_id, today))\n    \n    row = cursor.fetchone()\n    if not row:\n        # Create new quest for today\n        cursor.execute(\"\"\"\n        INSERT INTO user_daily_activity \n        (user_id, daily_key, total_kills, elite_kills, pvp_kills, trades_completed, status)\n        VALUES (?, ?, 0, 0, 0, 0, 'active')\n        \"\"\", (user_id, today))\n        conn.commit()\n        \n        return {\n            \"user_id\": user_id,\n            \"daily_key\": today,\n            \"total_kills\": 0,\n            \"elite_kills\": 0,\n            \"pvp_kills\": 0,\n            \"trades_completed\": 0,\n            \"status\": \"active\",\n            \"claimed_at\": None\n        }\n    \n    return {\n        \"user_id\": row[0],\n        \"daily_key\": row[1],\n        \"total_kills\": row[2],\n        \"elite_kills\": row[3],\n        \"pvp_kills\": row[4],\n        \"trades_completed\": row[5],\n        \"status\": row[6],\n        \"claimed_at\": row[7]\n    }"
+        }
+      ]
+    },
+    "db_modules/quests.py::reset_daily_quest_if_needed": {
+      "path": "db_modules/quests.py",
+      "symbol": "reset_daily_quest_if_needed",
+      "definition_count": 1,
+      "file_sha256": "40219bf84d6cad04ee592f112583429458708cc97878cf83a9aa1462551a5f30",
+      "definitions": [
+        {
+          "line_start": 232,
+          "line_end": 280,
+          "source_sha256": "11201e3f20e56ab89c90d3bb106d7a68653fcfeeed0f3996d7d11879b53d6d97",
+          "source": "def reset_daily_quest_if_needed(user_id):\n    \"\"\"Roll the single per-user daily row to today without requiring the bot to stay online.\"\"\"\n    today = get_daily_today_str()\n    columns = {str(row[1]) for row in cursor.execute(\n        \"PRAGMA table_info(user_daily_activity)\"\n    ).fetchall()}\n    if not columns:\n        init_daily_quest_system()\n        columns = {str(row[1]) for row in cursor.execute(\n            \"PRAGMA table_info(user_daily_activity)\"\n        ).fetchall()}\n\n    date_column = next((name for name in (\n        \"daily_key\", \"quest_date\", \"daily_date\", \"reset_date\", \"created_date\", \"date\"\n    ) if name in columns), None)\n    if not date_column:\n        return {\"success\": True, \"reset\": False, \"mode\": \"no_date_column\"}\n\n    row = cursor.execute(\n        f\"SELECT {date_column} FROM user_daily_activity WHERE user_id=?\",\n        (int(user_id),),\n    ).fetchone()\n    if not row:\n        return {\"success\": True, \"reset\": False, \"mode\": date_column, \"missing\": True}\n    stored_date = str(row[0] or \"\")\n    if stored_date == str(today):\n        return {\"success\": True, \"reset\": False, \"mode\": date_column}\n\n    assignments = []\n    params = []\n    for name, value in (\n        (\"progress\", 0), (\"completed\", 0), (\"reward_claimed\", 0),\n        (\"total_kills\", 0), (\"elite_kills\", 0), (\"pvp_kills\", 0),\n        (\"trades_completed\", 0), (\"status\", \"active\"), (\"claimed_at\", None),\n        (date_column, today),\n    ):\n        if name in columns:\n            assignments.append(f\"{name}=?\")\n            params.append(value)\n    if not assignments:\n        return {\"success\": True, \"reset\": False, \"mode\": \"no_reset_columns\"}\n    params.append(int(user_id))\n    cursor.execute(\n        f\"UPDATE user_daily_activity SET {', '.join(assignments)} WHERE user_id=?\",\n        tuple(params),\n    )\n    conn.commit()\n    return {\"success\": True, \"reset\": True, \"mode\": date_column,\n            \"from\": stored_date, \"to\": str(today)}"
+        }
+      ]
+    },
+    "db_modules/daily_compat.py::get_daily_today_str": {
+      "path": "db_modules/daily_compat.py",
+      "symbol": "get_daily_today_str",
+      "definition_count": 1,
+      "file_sha256": "f8ba6547d52f0fdd586b8704fb4304fd8856c38b743d04af24477d3cb172f74b",
+      "definitions": [
+        {
+          "line_start": 23,
+          "line_end": 25,
+          "source_sha256": "cca9c3ef5dfd82dc84dfc191e3c1639f9356b5837c2aea462096de214b52d143",
+          "source": "def get_daily_today_str():\n    from datetime import date\n    return date.today().isoformat()"
+        }
+      ]
+    },
+    "db_modules/inventory.py::add_item": {
+      "path": "db_modules/inventory.py",
+      "symbol": "add_item",
+      "definition_count": 1,
+      "file_sha256": "4b44ec514027e2c49e275a0230a7f9c3415739b722dd108e9bc232e2cb85ad51",
+      "definitions": [
+        {
+          "line_start": 129,
+          "line_end": 218,
+          "source_sha256": "8475dc4b7402e1e9407e6050d5f22137359fc4e886212651c1de3e2a12755845",
+          "source": "def add_item(user_id, item_id, quantity=1, durability=100, commit=True):\n    \"\"\"Add items atomically; commit=False leaves final transaction ownership to caller.\"\"\"\n    # ROM 17.5.1 ADD_ITEM TRANSACTION OWNERSHIP\n    try:\n        user_id = int(user_id)\n        item_id = int(item_id)\n        quantity = int(quantity)\n    except Exception:\n        return {\"success\": False, \"name\": \"Предмет\", \"added\": 0, \"lost\": 0,\n                \"message\": \"❌ Некоректні дані предмета.\"}\n    if quantity <= 0:\n        return {\"success\": False, \"name\": \"Предмет\", \"added\": 0, \"lost\": 0,\n                \"message\": \"❌ Кількість має бути більшою за нуль.\"}\n\n    item = cursor.execute(\n        \"SELECT name, COALESCE(max_stack, 1) FROM items WHERE id=?\", (item_id,)\n    ).fetchone()\n    if not item:\n        return {\"success\": False, \"name\": \"Предмет\", \"added\": 0, \"lost\": quantity,\n                \"message\": \"❌ Предмет не знайдено.\"}\n    name = str(item[0] or \"Предмет\")\n    max_stack = max(1, int(item[1] or 1))\n    requested = quantity\n    savepoint = \"rom_add_item_17_5_1\"\n\n    try:\n        cursor.execute(f\"SAVEPOINT {savepoint}\")\n        capacity = get_bag_capacity(user_id)\n        used_slots = get_inventory_used_slots(user_id)\n        partial = []\n        free_space = 0\n        if max_stack > 1 and not _inventory_reserved_ids_for_item(user_id, item_id):\n            partial = cursor.execute(\n                \"\"\"SELECT id, quantity FROM inventory\n                   WHERE user_id=? AND item_id=? AND quantity>0 AND quantity<?\n                   ORDER BY id ASC\"\"\",\n                (user_id, item_id, max_stack),\n            ).fetchall()\n            free_space = sum(max(0, max_stack-int(row[1] or 0)) for row in partial)\n\n        new_stacks = _inventory_required_new_stacks(quantity, free_space, max_stack)\n        if used_slots + new_stacks > capacity:\n            cursor.execute(f\"ROLLBACK TO {savepoint}\")\n            cursor.execute(f\"RELEASE {savepoint}\")\n            return {\"success\": False, \"name\": name, \"added\": 0, \"lost\": requested,\n                    \"inventory_id\": None, \"used_slots\": used_slots, \"capacity\": capacity,\n                    \"message\": \"🎒 Сумка переповнена!\"}\n\n        first_inventory_id = None\n        for inventory_id, current in partial:\n            if quantity <= 0:\n                break\n            current = max(0, int(current or 0))\n            moved = min(quantity, max_stack-current)\n            if moved:\n                cursor.execute(\n                    \"UPDATE inventory SET quantity=? WHERE id=? AND user_id=? AND item_id=?\",\n                    (current+moved, int(inventory_id), user_id, item_id),\n                )\n                if cursor.rowcount != 1:\n                    raise RuntimeError(\"Не вдалося оновити існуючий стак.\")\n                first_inventory_id = first_inventory_id or int(inventory_id)\n                quantity -= moved\n\n        while quantity > 0:\n            stack_quantity = min(quantity, max_stack)\n            cursor.execute(\n                \"INSERT INTO inventory (user_id,item_id,quantity,durability) VALUES (?,?,?,?)\",\n                (user_id,item_id,stack_quantity,durability),\n            )\n            first_inventory_id = first_inventory_id or int(cursor.lastrowid)\n            quantity -= stack_quantity\n\n        cursor.execute(f\"RELEASE {savepoint}\")\n        if commit:\n            conn.commit()\n        return {\"success\": True, \"name\": name, \"added\": requested, \"lost\": 0,\n                \"inventory_id\": first_inventory_id,\n                \"used_slots\": get_inventory_used_slots(user_id), \"capacity\": capacity,\n                \"message\": f\"✅ Додано {name} x{requested}\"}\n    except Exception as error:\n        try:\n            cursor.execute(f\"ROLLBACK TO {savepoint}\")\n            cursor.execute(f\"RELEASE {savepoint}\")\n        except Exception:\n            if commit:\n                conn.rollback()\n        return {\"success\": False, \"name\": name, \"added\": 0, \"lost\": requested,\n                \"inventory_id\": None,\n                \"message\": f\"❌ Не вдалося додати предмет: {error}\"}"
+        }
+      ]
+    },
+    "db_modules/inventory.py::compact_user_item_stacks": {
+      "path": "db_modules/inventory.py",
+      "symbol": "compact_user_item_stacks",
+      "definition_count": 1,
+      "file_sha256": "4b44ec514027e2c49e275a0230a7f9c3415739b722dd108e9bc232e2cb85ad51",
+      "definitions": [
+        {
+          "line_start": 226,
+          "line_end": 264,
+          "source_sha256": "b4069946b752a724d1c450ccc6113a95da5243074ac5fe29addc707c1872b090",
+          "source": "def compact_user_item_stacks(user_id, item_id, commit=False, connection=None):\n    \"\"\"Compact safe unreserved stacks for one user/item without changing totals.\"\"\"\n    database = connection or conn\n    user_id, item_id = int(user_id), int(item_id)\n    item = database.execute(\"SELECT COALESCE(max_stack,1) FROM items WHERE id=?\", (item_id,)).fetchone()\n    max_stack = max(1, int(item[0] or 1)) if item else 1\n    if max_stack <= 1:\n        return {\"success\": True, \"changed\": False, \"reason\": \"not_stackable\"}\n    reserved = set()\n    if database.execute(\"SELECT 1 FROM sqlite_master WHERE type='table' AND name='inventory_reservations'\").fetchone():\n        reserved = {int(row[0]) for row in database.execute(\n            \"SELECT DISTINCT inventory_id FROM inventory_reservations WHERE user_id=? AND COALESCE(quantity,0)>0\",\n            (user_id,),\n        ).fetchall()}\n    rows = database.execute(\n        \"SELECT id,COALESCE(quantity,0) FROM inventory WHERE user_id=? AND item_id=? AND quantity>0 ORDER BY id\",\n        (user_id,item_id),\n    ).fetchall()\n    safe = [(int(row[0]),int(row[1] or 0)) for row in rows if int(row[0]) not in reserved]\n    if len(safe) <= 1:\n        return {\"success\": True, \"changed\": False, \"reason\": \"nothing_to_compact\"}\n    total = sum(quantity for _inventory_id, quantity in safe)\n    desired = []\n    remaining = total\n    while remaining > 0:\n        desired.append(min(max_stack, remaining)); remaining -= desired[-1]\n    before = [quantity for _inventory_id, quantity in safe]\n    if before == desired:\n        return {\"success\": True, \"changed\": False, \"reason\": \"already_compact\"}\n    for index, quantity in enumerate(desired):\n        database.execute(\"UPDATE inventory SET quantity=? WHERE id=? AND user_id=? AND item_id=?\", (quantity,safe[index][0],user_id,item_id))\n    for inventory_id, _quantity in safe[len(desired):]:\n        database.execute(\"DELETE FROM inventory WHERE id=? AND user_id=? AND item_id=?\", (inventory_id,user_id,item_id))\n    after_total = int(database.execute(\"SELECT COALESCE(SUM(quantity),0) FROM inventory WHERE user_id=? AND item_id=?\",(user_id,item_id)).fetchone()[0] or 0)\n    before_total = sum(int(row[1] or 0) for row in rows)\n    if after_total != before_total:\n        raise RuntimeError(\"Stack compaction changed total quantity\")\n    if commit: database.commit()\n    return {\"success\": True, \"changed\": True, \"rows_before\": len(safe), \"rows_after\": len(desired), \"freed_rows\": len(safe)-len(desired)}"
+        }
+      ]
+    },
+    "handlers/daily.py::claim_daily_reward": {
+      "path": "handlers/daily.py",
+      "symbol": "claim_daily_reward",
+      "definition_count": 1,
+      "file_sha256": "520dcecfa0564b6e5b3e9c0f42167454150c71011a20cd538c4d1d1546f6857d",
+      "definitions": [
+        {
+          "line_start": 91,
+          "line_end": 110,
+          "source_sha256": "a4c5d0a5de43228b8cb38c877fecceaf159d6d9a392fb1e7f34ad5c4b45cee98",
+          "source": "def claim_daily_reward(call):\n        user_id = call.from_user.id\n\n        result = claim_daily_quest_reward(user_id)\n\n        bot.answer_callback_query(call.id)\n\n        bot.send_message(\n            call.message.chat.id,\n            result[\"message\"],\n            reply_markup=daily_quest_kb()\n        )\n\n        text, kb = build_daily_quest_text(user_id)\n\n        bot.send_message(\n            call.message.chat.id,\n            text,\n            reply_markup=kb\n        )"
+        }
+      ]
+    }
+  },
+  "v2_daily_reward_contract": {
+    "canonical_owner": "DailyRewardService",
+    "account_identity": "user_id",
+    "reward_key": "daily_reward_3hp_3firius",
+    "small_hp_potion_key": "small_hp_potion",
+    "small_hp_potion_quantity": 3,
+    "phirius_token_key": "phirius_token",
+    "phirius_token_quantity": 3,
+    "once_per_period": true,
+    "stable_period_key_required": true,
+    "quest_completion_required": true,
+    "inventory_preflight": true,
+    "stable_operation_key_required": true,
+    "atomic_potion_token_claim_receipt": true,
+    "restart_safe": true,
+    "caller_owned_unit_of_work": true,
+    "single_commit": true,
+    "presentation_separate": true
+  },
+  "implementation_boundary": {
+    "allowed": [
+      "typed reward, claim command, stack plan, receipt and result DTOs",
+      "Daily Reward service plus quest, period, inventory, token wallet, receipt and Unit-of-Work ports",
+      "exact 3 small HP plus 3 Phirius Token settlement",
+      "in-memory fixtures",
+      "already-claimed, stale-period, capacity, idempotency, rollback and restart tests"
+    ],
+    "forbidden": [
+      "SQLite or production adapters",
+      "runtime or Telegram wiring",
+      "5 Phirius Tokens or any reward other than approved 3+3",
+      "direct SQL reward mutation",
+      "second reward owner",
+      "presentation text as technical identity"
+    ]
+  },
+  "summary": {
+    "input_unresolved_contracts": 6,
+    "resolved_contracts": 6,
+    "remaining_unresolved_contracts": 0,
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "implementation_authorized": true,
+  "runtime_integration_authorized": false,
+  "production_persistence_authorized": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_10_6c_implement_daily_reward.py",
+  "verification": {
+    "canonical_v2_ci": {
+      "schema_version": 1,
+      "status": "PASS",
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "compile",
+          "status": "PASS",
+          "file_count": 141,
+          "failures": []
+        },
+        {
+          "name": "imports",
+          "status": "PASS",
+          "module_count": 99,
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-c",
+              "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.base_equipment_shop', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.potion_trading', 'rom_v2.application.premium_shop', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "unit",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "tests_v2",
+              "-p",
+              "test_*.py"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "............................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 220 tests in 16.571s\n\nOK"
+          }
+        },
+        {
+          "name": "architecture",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "tools/verify_v2_architecture.py",
+              "--project-root",
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+            ],
+            "returncode": 0,
+            "stdout": "V2 architecture enforcement: PASS\nPhysical files: 99\nImport edges: 354\nViolations: 0",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "duplicate_scan",
+          "status": "PASS",
+          "symbol_count": 385,
+          "duplicates": {}
+        },
+        {
+          "name": "content_validation",
+          "status": "PASS",
+          "file_count": 0,
+          "failures": []
+        }
+      ]
+    },
+    "removed_bytecode_before_ci": [],
+    "protected_before": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    },
+    "protected_after": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  }
+}
