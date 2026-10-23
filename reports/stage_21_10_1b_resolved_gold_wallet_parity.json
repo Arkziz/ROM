@@ -1,0 +1,380 @@
+{
+  "schema_version": 1,
+  "stage": "21.10.1b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "generated_at_utc": "2026-10-23T19:05:51.366384+00:00",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "ec01a2430cc7a6cb1f8cecdd3601cc2216ff83f5"
+  },
+  "source_contract": "reports/stage_21_10_1a_refined_gold_wallet_contract.json",
+  "source_contract_sha256": "f6d1680cf81b3facca23b87ae2ea96f81d3386b3ceb30e1911b2b5554496b793",
+  "resolved_contracts": {
+    "MONEY_REPRESENTATION": {
+      "status": "RESOLVED",
+      "decision": "Decimal-only domain amounts with two fractional places; construct from strings, quantize explicitly, and forbid float at public boundaries.",
+      "scale": "0.01",
+      "rounding": "ROUND_HALF_UP",
+      "reason": "Preserves the established two-decimal gold presentation while satisfying the roadmap no-float invariant."
+    },
+    "NON_NEGATIVE_DEBIT_POLICY": {
+      "status": "RESOLVED",
+      "decision": "Credit requires amount > 0. Debit requires amount > 0 and sufficient balance; insufficient funds fail closed without mutation. Balance may never be negative.",
+      "reason": "A clamped generic debit would conceal partial payment and violate explicit transaction semantics."
+    },
+    "GENERAL_GOLD_TRANSACTION_HISTORY": {
+      "status": "RESOLVED",
+      "decision": "Every successful wallet mutation emits one immutable wallet operation record; domain-specific auction/trade histories remain separate projections.",
+      "record_fields": [
+        "operation_key",
+        "account_id",
+        "direction",
+        "amount",
+        "balance_before",
+        "balance_after",
+        "reason_code",
+        "created_at"
+      ],
+      "reason": "Provides the roadmap audit trail without treating presentation or domain histories as the canonical wallet ledger."
+    },
+    "IDEMPOTENCY_POLICY": {
+      "status": "RESOLVED",
+      "decision": "Each mutation requires a stable operation_key. Replaying the same key with the same canonical payload returns the original result; a changed payload is rejected as a conflict.",
+      "reason": "Guarantees exact-once wallet mutation across retries and restarts."
+    },
+    "TRANSACTION_OWNERSHIP": {
+      "status": "RESOLVED",
+      "decision": "GoldWalletService performs validation and mutation inside a caller-supplied Unit of Work. The application use case owns exactly one commit; any failure rolls back balance and operation record together.",
+      "reason": "Prevents nested commits and partial mutation across shops, rewards, auction and trade."
+    },
+    "DIRECT_MUTATION_CONSUMER_ALLOWLIST": {
+      "status": "RESOLVED",
+      "decision": "Production consumers may use only the GoldWalletService port. Direct SQL/setter mutation and a second wallet owner are forbidden. V1 wrappers are migration evidence, not V2 owners.",
+      "allowed_consumer_categories": [
+        "combat_reward",
+        "level_up_reward",
+        "quest_reward",
+        "shop_purchase",
+        "shop_sale",
+        "repair",
+        "enhancement",
+        "guild",
+        "auction",
+        "trade",
+        "admin",
+        "refund"
+      ],
+      "excluded": [
+        "crystal_wallet",
+        "simulator",
+        "presentation_formatter"
+      ]
+    }
+  },
+  "authoritative_v1_evidence": {
+    "systems/player_system.py::get_wallet": {
+      "path": "systems/player_system.py",
+      "symbol": "get_wallet",
+      "definition_count": 2,
+      "file_sha256": "b503e2514dd7b35136384561c873d03be27afb9cdd31325530e15a0df67c3571",
+      "definitions": [
+        {
+          "line_start": 292,
+          "line_end": 310,
+          "source_sha256": "9899441ff838c20ff8b8fb0f7598d4494f5c04edaa632555601b2613cff3422c",
+          "source": "def get_wallet(user_id: int):\n\n\n    legacy = _legacy_function(\"get_wallet\")\n\n\n    if legacy:\n\n\n        return legacy(user_id)\n\n\n\n\n\n    row = _fetchone(\"SELECT gold FROM users WHERE user_id=?\", (user_id,))\n\n\n    return float(_row_get(row, \"gold\", 0, 0) or 0)"
+        },
+        {
+          "line_start": 1252,
+          "line_end": 1267,
+          "source_sha256": "e6aa776dee78b25a1bb4be04662e285ba0abee41b2672f8e7c156079b3c95290",
+          "source": "def get_wallet(user_id: int):\n\n\n    row = _player_direct_fetchone(\"SELECT gold FROM users WHERE user_id=?\", (int(user_id),))\n\n\n    try:\n\n\n        return float(_player_direct_value(row, \"gold\", 0, 0.0) or 0.0)\n\n\n    except Exception:\n\n\n        return 0.0"
+        }
+      ]
+    },
+    "systems/player_system.py::add_gold": {
+      "path": "systems/player_system.py",
+      "symbol": "add_gold",
+      "definition_count": 2,
+      "file_sha256": "b503e2514dd7b35136384561c873d03be27afb9cdd31325530e15a0df67c3571",
+      "definitions": [
+        {
+          "line_start": 319,
+          "line_end": 343,
+          "source_sha256": "b8f6c6ec7ce1a90410e14afb62e77c4b3c0130679720b9e3e91b1ab2e23946c1",
+          "source": "def add_gold(user_id: int, amount):\n\n\n    legacy = _legacy_function(\"add_gold\")\n\n\n    if legacy:\n\n\n        return legacy(user_id, amount)\n\n\n\n\n\n    current = get_wallet(user_id)\n\n\n    new_value = current + float(amount)\n\n\n    _execute_commit(\"UPDATE users SET gold=? WHERE user_id=?\", (new_value, user_id))\n\n\n    return new_value"
+        },
+        {
+          "line_start": 1273,
+          "line_end": 1297,
+          "source_sha256": "19f946daed3636c786d75d2ab7f8275f05a9cd53de3fe246d268513b2d29b636",
+          "source": "def add_gold(user_id: int, amount):\n\n\n    db = _player_direct_db()\n\n\n    try:\n\n\n        amount = float(amount)\n\n\n    except Exception:\n\n\n        amount = 0.0\n\n\n    db.cursor.execute(\"UPDATE users SET gold=COALESCE(gold,0)+? WHERE user_id=?\", (amount, int(user_id)))\n\n\n    db.conn.commit()\n\n\n    return None"
+        }
+      ]
+    },
+    "systems/player_system.py::apply_gold_in_transaction": {
+      "path": "systems/player_system.py",
+      "symbol": "apply_gold_in_transaction",
+      "definition_count": 1,
+      "file_sha256": "b503e2514dd7b35136384561c873d03be27afb9cdd31325530e15a0df67c3571",
+      "definitions": [
+        {
+          "line_start": 1904,
+          "line_end": 1919,
+          "source_sha256": "3f98304061299df515905bc257252e9c37ed344762580a1225fb2ea3785fb7ed",
+          "source": "def apply_gold_in_transaction(connection, user_id: int, amount):\n    \"\"\"Credit canonical users.gold without owning the surrounding transaction.\"\"\"\n    db = _db_module()\n    if connection is not db.conn:\n        raise ValueError(\"gold transaction requires the canonical db connection\")\n    value = float(amount)\n    connection.execute(\n        \"UPDATE users SET gold=COALESCE(gold,0)+? WHERE user_id=?\",\n        (value, int(user_id)),\n    )\n    row = connection.execute(\n        \"SELECT gold FROM users WHERE user_id=?\", (int(user_id),)\n    ).fetchone()\n    if not row:\n        raise ValueError(f\"unknown user_id: {user_id}\")\n    return float(_row_get(row, \"gold\", 0, 0.0) or 0.0)"
+        }
+      ]
+    },
+    "db_modules/player.py::add_gold": {
+      "path": "db_modules/player.py",
+      "symbol": "add_gold",
+      "definition_count": 1,
+      "file_sha256": "611815281e1169e7324285ea0d81f30f63e3d2f0834e8681a9de7c7c601d602a",
+      "definitions": [
+        {
+          "line_start": 48,
+          "line_end": 49,
+          "source_sha256": "040d3c05280982f0cb3ad02400754a692d9254dd0b1af151da1f06ae7a9ebad5",
+          "source": "def add_gold(user_id, amount):\n    return _player_system().add_gold(user_id, amount)"
+        }
+      ]
+    },
+    "systems/auction_house_system.py::buy_auction_lot": {
+      "path": "systems/auction_house_system.py",
+      "symbol": "buy_auction_lot",
+      "definition_count": 1,
+      "file_sha256": "664cfe8a60f7728e7364f542c936d52328bc5ba89a022b686a6c3be1f3b1ab59",
+      "definitions": [
+        {
+          "line_start": 2052,
+          "line_end": 2209,
+          "source_sha256": "d2dc218bcdcdcdc12482fc65a4fc83382f630504b2ec4aef90015a0f16e26aa2",
+          "source": "def buy_auction_lot(buyer_user_id, lot_id):\n    \"\"\"\n    Transactional purchase.\n\n    Checks:\n    - lot exists and ACTIVE;\n    - buyer is not seller;\n    - buyer has enough gold;\n    - buyer has inventory space or stack can be merged;\n    - status update is guarded with WHERE status='ACTIVE'.\n    \"\"\"\n\n    init_auction_house()\n    lot_id = int(lot_id)\n    buyer_user_id = int(buyer_user_id)\n\n    try:\n        conn.execute(\"BEGIN IMMEDIATE\")\n\n        cursor.execute(\"SELECT * FROM auction_lots WHERE id=?\", (lot_id,))\n        lot = cursor.fetchone()\n\n        if not lot:\n            conn.rollback()\n            return {\n                \"success\": False,\n                \"message\": \"❌ Лот не знайдено.\",\n            }\n\n        if lot[\"status\"] != AUCTION_STATUS_ACTIVE:\n            conn.rollback()\n            return {\n                \"success\": False,\n                \"message\": \"⚠️ Лот уже продано або він недоступний.\",\n            }\n\n        seller_user_id = int(lot[\"seller_user_id\"])\n        if seller_user_id == buyer_user_id:\n            conn.rollback()\n            return {\n                \"success\": False,\n                \"message\": \"❌ Не можна купити власний лот.\",\n            }\n\n        price = auction_price_to_decimal(lot[\"price\"])\n        buyer_gold = _auction_get_user_gold(buyer_user_id)\n\n        if buyer_gold < price:\n            conn.rollback()\n            return {\n                \"success\": False,\n                \"message\": f\"❌ Недостатньо золота. Потрібно: {lot['price']}.\",\n            }\n\n        snapshot = safe_json_loads(lot[\"item_snapshot_json\"])\n        quantity = int(lot[\"quantity\"] or 1)\n\n        # Inventory space check before money/status changes.\n        is_stack = lot[\"category\"] in [AUCTION_CATEGORY_MATERIAL, AUCTION_CATEGORY_POTION]\n        item_id = int(snapshot.get(\"item_id\", 0) or 0)\n        if is_stack and item_id > 0:\n            existing_stack = _auction_get_existing_stack_inventory_id(buyer_user_id, item_id)\n            needs_slot = existing_stack is None\n        else:\n            needs_slot = True\n\n        if needs_slot and not _auction_has_inventory_space(buyer_user_id, 1):\n            conn.rollback()\n            return {\n                \"success\": False,\n                \"message\": \"⚠️ Недостатньо місця в інвентарі.\",\n            }\n\n        now = now_iso()\n        delete_after = iso_after_days(AUCTION_CLAIM_DAYS)\n\n        cursor.execute(\"\"\"\n        UPDATE auction_lots\n        SET status=?,\n            buyer_user_id=?,\n            sold_at=?,\n            delete_after=?,\n            updated_at=?\n        WHERE id=? AND status=?\n        \"\"\", (\n            AUCTION_STATUS_SOLD_UNCLAIMED,\n            buyer_user_id,\n            now,\n            delete_after,\n            now,\n            lot_id,\n            AUCTION_STATUS_ACTIVE,\n        ))\n\n        if cursor.rowcount != 1:\n            conn.rollback()\n            return {\n                \"success\": False,\n                \"message\": \"⚠️ Лот уже продано.\",\n            }\n\n        _auction_set_user_gold(buyer_user_id, buyer_gold - price)\n        new_inventory_id = _auction_insert_inventory_from_snapshot(buyer_user_id, snapshot, quantity=quantity)\n\n        cursor.execute(\"\"\"\n        INSERT INTO auction_history (\n            lot_id,\n            event_type,\n            actor_user_id,\n            seller_user_id,\n            buyer_user_id,\n            item_name,\n            category,\n            quantity,\n            price,\n            status_before,\n            status_after,\n            details_json,\n            created_at\n        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n        \"\"\", (\n            lot_id,\n            AUCTION_HISTORY_SOLD,\n            buyer_user_id,\n            seller_user_id,\n            buyer_user_id,\n            lot[\"item_name\"],\n            lot[\"category\"],\n            quantity,\n            lot[\"price\"],\n            AUCTION_STATUS_ACTIVE,\n            AUCTION_STATUS_SOLD_UNCLAIMED,\n            safe_json_dumps({\"buyer_inventory_id\": new_inventory_id}),\n            now,\n        ))\n\n        conn.commit()\n\n        return {\n            \"success\": True,\n            \"message\": \"✅ Покупку завершено.\",\n            \"lot_id\": lot_id,\n            \"item_name\": lot[\"item_name\"],\n            \"price\": lot[\"price\"],\n            \"quantity\": quantity,\n            \"inventory_id\": new_inventory_id,\n        }\n\n    except Exception as error:\n        try:\n            conn.rollback()\n        except Exception:\n            pass\n\n        return {\n            \"success\": False,\n            \"message\": f\"❌ Помилка покупки: {error}\",\n        }"
+        }
+      ]
+    },
+    "systems/auction_house_system.py::claim_auction_sale_gold": {
+      "path": "systems/auction_house_system.py",
+      "symbol": "claim_auction_sale_gold",
+      "definition_count": 1,
+      "file_sha256": "664cfe8a60f7728e7364f542c936d52328bc5ba89a022b686a6c3be1f3b1ab59",
+      "definitions": [
+        {
+          "line_start": 3781,
+          "line_end": 3882,
+          "source_sha256": "aeb2b5a09e2ad374df900411e33e96e8e4ec8124d229576940b5445ce8b40bb4",
+          "source": "def claim_auction_sale_gold(user_id, lot_id):\n    \"\"\"\n    Claims gold from SOLD_UNCLAIMED sale.\n\n    Status: SOLD_UNCLAIMED -> SOLD_CLAIMED.\n    Gold is added to seller's balance.\n    \"\"\"\n    init_auction_house()\n    update_expired_auction_lots()\n\n    user_id = int(user_id)\n    lot_id = int(lot_id)\n\n    try:\n        conn.execute(\"BEGIN IMMEDIATE\")\n\n        cursor.execute(\n            \"SELECT * FROM auction_lots WHERE id=? AND seller_user_id=?\",\n            (lot_id, user_id)\n        )\n        lot = cursor.fetchone()\n\n        if not lot:\n            conn.rollback()\n            return {\"success\": False, \"message\": \"❌ Продаж не знайдено.\"}\n\n        if lot[\"status\"] != AUCTION_STATUS_SOLD_UNCLAIMED:\n            conn.rollback()\n            return {\"success\": False, \"message\": \"⚠️ Золото вже отримано або виплата недоступна.\"}\n\n        price = auction_price_to_decimal(lot[\"price\"])\n        current_gold = _auction_get_user_gold(user_id)\n        _auction_set_user_gold(user_id, current_gold + price)\n\n        now = now_iso()\n        cursor.execute(\"\"\"\n        UPDATE auction_lots\n        SET status=?,\n            claimed_at=?,\n            updated_at=?\n        WHERE id=? AND seller_user_id=? AND status=?\n        \"\"\", (\n            AUCTION_STATUS_SOLD_CLAIMED,\n            now,\n            now,\n            lot_id,\n            user_id,\n            AUCTION_STATUS_SOLD_UNCLAIMED,\n        ))\n\n        if cursor.rowcount != 1:\n            conn.rollback()\n            return {\"success\": False, \"message\": \"⚠️ Виплату вже отримано.\"}\n\n        cursor.execute(\"\"\"\n        INSERT INTO auction_history (\n            lot_id,\n            event_type,\n            actor_user_id,\n            seller_user_id,\n            buyer_user_id,\n            item_name,\n            category,\n            quantity,\n            price,\n            status_before,\n            status_after,\n            details_json,\n            created_at\n        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n        \"\"\", (\n            lot_id,\n            AUCTION_HISTORY_GOLD_CLAIMED,\n            user_id,\n            user_id,\n            lot[\"buyer_user_id\"],\n            lot[\"item_name\"],\n            lot[\"category\"],\n            int(lot[\"quantity\"] or 1),\n            lot[\"price\"],\n            AUCTION_STATUS_SOLD_UNCLAIMED,\n            AUCTION_STATUS_SOLD_CLAIMED,\n            safe_json_dumps({\"claimed_gold\": lot[\"price\"]}),\n            now,\n        ))\n\n        conn.commit()\n\n        return {\n            \"success\": True,\n            \"message\": f\"✅ Отримано {lot['price']} золота.\",\n            \"lot_id\": lot_id,\n            \"item_name\": lot[\"item_name\"],\n            \"amount\": lot[\"price\"],\n        }\n\n    except Exception as error:\n        try:\n            conn.rollback()\n        except Exception:\n            pass\n        return {\"success\": False, \"message\": f\"❌ Помилка отримання золота: {error}\"}"
+        }
+      ]
+    },
+    "systems/player_interaction_system.py::set_player_trade_gold_offer": {
+      "path": "systems/player_interaction_system.py",
+      "symbol": "set_player_trade_gold_offer",
+      "definition_count": 1,
+      "file_sha256": "7e0569317cab32cba42826dedfde2f804472c993b53250fc4497237d0004b171",
+      "definitions": [
+        {
+          "line_start": 1733,
+          "line_end": 1774,
+          "source_sha256": "dfa2062242f015ed84d4c4e3822894bcd688c819cfcc55e15a35eda30bc709a9",
+          "source": "def set_player_trade_gold_offer(trade_id, owner_user_id, gold_amount, *, now=None, db_path=None):\n    trade_id = int(trade_id); uid = int(owner_user_id)\n    try:\n        amount = round(float(gold_amount), 2)\n    except (TypeError, ValueError):\n        return {\"success\": False, \"reason\": \"invalid_gold\", \"message\": \"Некоректна сума золота.\"}\n    if amount < 0:\n        return {\"success\": False, \"reason\": \"invalid_gold\", \"message\": \"Сума золота не може бути від’ємною.\"}\n    conn = _connect(db_path)\n    try:\n        conn.execute(\"BEGIN IMMEDIATE\"); _init_player_trade_schema(conn)\n        trade_row = conn.execute(\"SELECT * FROM player_trades WHERE id=?\", (trade_id,)).fetchone()\n        if not trade_row:\n            conn.rollback(); return {\"success\": False, \"reason\": \"trade_not_found\"}\n        trade = dict(trade_row)\n        if trade[\"status\"] != \"editing\" or not _trade_offer_actor(trade, uid):\n            conn.rollback(); return {\"success\": False, \"reason\": \"trade_not_editing\"}\n        if _trade_actor_offer_locked_12_7_0(trade, uid):\n            conn.rollback(); return {\"success\": False, \"reason\": \"own_offer_locked\", \"message\": \"Ваша пропозиція вже зафіксована. Натисніть «↩️ Змінити свою пропозицію».\"}\n        wallet = conn.execute(\"SELECT gold FROM users WHERE user_id=?\", (uid,)).fetchone()\n        available = round(float((wallet[0] if wallet else 0) or 0), 2)\n        if amount > available:\n            conn.rollback(); return {\"success\": False, \"reason\": \"insufficient_gold\",\n                                     \"message\": \"Недостатньо золота.\", \"available_gold\": available}\n        stamp = _text(now)\n        conn.execute(\"DELETE FROM player_trade_offers WHERE trade_id=? AND owner_user_id=? AND asset_type='gold'\",\n                     (trade_id, uid))\n        if amount > 0:\n            conn.execute(\n                \"INSERT INTO player_trade_offers(trade_id,owner_user_id,asset_type,inventory_id,item_id,quantity,gold_amount,snapshot_json,created_at,updated_at) \"\n                \"VALUES(?,?,'gold',NULL,NULL,NULL,?,'{}',?,?)\",\n                (trade_id, uid, amount, stamp, stamp),\n            )\n        revision, expires_at = _trade_offer_mutation(\n            conn, trade, uid, \"offer_gold_set\", stamp, {\"gold_amount\": amount})\n        conn.commit()\n        return {\"success\": True, \"trade_id\": trade_id, \"gold_amount\": amount,\n                \"available_gold\": available, \"revision\": revision, \"expires_at\": expires_at}\n    except Exception:\n        conn.rollback(); raise\n    finally:\n        conn.close()"
+        }
+      ]
+    },
+    "systems/player_interaction_system.py::_commit_player_trade_12_7_0": {
+      "path": "systems/player_interaction_system.py",
+      "symbol": "_commit_player_trade_12_7_0",
+      "definition_count": 1,
+      "file_sha256": "7e0569317cab32cba42826dedfde2f804472c993b53250fc4497237d0004b171",
+      "definitions": [
+        {
+          "line_start": 2175,
+          "line_end": 2207,
+          "source_sha256": "b73ef510ef865d5abc3afa42a7bc7b7570163469e5d21c0035c18c80f2aeedab",
+          "source": "def _commit_player_trade_12_7_0(conn, trade, offers, stamp):\n    tid = int(trade[\"id\"]); a = int(trade[\"initiator_user_id\"]); b = int(trade[\"recipient_user_id\"])\n    gold = {a: 0.0, b: 0.0}; validated = []\n    for offer in offers:\n        offer = dict(offer)\n        if offer[\"asset_type\"] == \"gold\": gold[int(offer[\"owner_user_id\"])] = round(float(offer[\"gold_amount\"] or 0), 2); continue\n        pair, error = _trade_commit_validate_item_12_7_0(conn, tid, offer)\n        if error: return _trade_commit_fail_12_7_0(conn, \"item_validation_failed\", error)\n        validated.append((offer, pair[0], pair[1]))\n    wallets = {int(r[\"user_id\"]): round(float(r[\"gold\"] or 0),2) for r in conn.execute(\"SELECT user_id,gold FROM users WHERE user_id IN (?,?)\", (a,b))}\n    if wallets.get(a,0) < gold[a] or wallets.get(b,0) < gold[b]: return _trade_commit_fail_12_7_0(conn, \"insufficient_gold\", \"Недостатньо золота для завершення обміну.\")\n    # Conservative capacity check after outgoing full rows and incoming new slots.\n    for recipient in (a,b):\n        used = int(conn.execute(\"SELECT COUNT(*) FROM inventory WHERE user_id=?\", (recipient,)).fetchone()[0]); cap = int(conn.execute(\"SELECT COALESCE(bag_slots,60) FROM users WHERE user_id=?\", (recipient,)).fetchone()[0] or 60)  # ROM 17.8.1 BASE BAG CAPACITY 60\n        outgoing_full = sum(1 for offer, inv, item in validated if int(offer[\"owner_user_id\"]) == recipient and int(inv[\"quantity\"] or 0) == int(offer[\"quantity\"]) and int(item.get(\"max_stack\") or 1) <= 1)\n        incoming = 0\n        for offer, inv, item in validated:\n            if int(offer[\"owner_user_id\"]) == recipient: continue\n            if int(item.get(\"max_stack\") or 1) <= 1: incoming += 1\n            else: incoming += _trade_stack_slots_needed_12_7_0(conn, recipient, int(inv[\"item_id\"]), int(offer[\"quantity\"]), max(1,int(item.get(\"max_stack\") or 1)))\n        if used - outgoing_full + incoming > cap: return _trade_commit_fail_12_7_0(conn, \"bag_full\", \"Недостатньо місця в сумці одного з учасників.\")\n    conn.execute(\"UPDATE users SET gold=ROUND(COALESCE(gold,0)-?+?,2) WHERE user_id=?\", (gold[a],gold[b],a)); conn.execute(\"UPDATE users SET gold=ROUND(COALESCE(gold,0)-?+?,2) WHERE user_id=?\", (gold[b],gold[a],b))\n    for offer, inv, item in validated:\n        owner=int(offer[\"owner_user_id\"]); recipient=b if owner==a else a; quantity=int(offer[\"quantity\"])\n        if int(item.get(\"max_stack\") or 1) <= 1:\n            conn.execute(\"UPDATE inventory SET user_id=? WHERE id=? AND user_id=?\", (recipient,int(inv[\"id\"]),owner))\n        else: _trade_transfer_stack_12_7_0(conn, inv, recipient, quantity, item)\n    conn.execute(\"DELETE FROM inventory_reservations WHERE reservation_type=? AND reference_id=?\", (TRADE_RESERVATION_TYPE,tid)); conn.execute(\"DELETE FROM player_activity_sessions WHERE activity_type='trade' AND reference_id=?\", (str(tid),))\n    conn.execute(\"UPDATE player_trades SET status='completed',completed_at=?,updated_at=?,expires_at=?,initiator_confirmed=1,recipient_confirmed=1 WHERE id=?\", (stamp,stamp,stamp,tid))\n    _trade_event(conn,tid,None,\"completed\",int(trade[\"revision\"]),stamp,json.dumps({\"gold\":gold,\"items\":len(validated)},ensure_ascii=False))\n    _write_trade_history(conn,trade,\"completed\",stamp)\n    conn.execute(\"UPDATE player_trade_history SET initiator_offer_snapshot=?,recipient_offer_snapshot=?,summary_json=? WHERE trade_id=?\", (_trade_offer_snapshot_12_7_0(offers,a),_trade_offer_snapshot_12_7_0(offers,b),json.dumps({\"gold\":gold,\"item_offer_count\":len(validated)},ensure_ascii=False),tid))\n    conn.commit(); return {\"success\":True,\"completed\":True,\"trade_id\":tid,\"initiator_user_id\":a,\"recipient_user_id\":b,\"revision\":int(trade[\"revision\"])}"
+        }
+      ]
+    },
+    "systems/reward_system.py::process_victory_reward": {
+      "path": "systems/reward_system.py",
+      "symbol": "process_victory_reward",
+      "definition_count": 1,
+      "file_sha256": "87a5d92d94735dd2593c5d847502622dd96bab75acf2c2177e48654d5608f5e5",
+      "definitions": [
+        {
+          "line_start": 1008,
+          "line_end": 1069,
+          "source_sha256": "dfb0db24ce17f5fa2a1f91efc38af4a6ff8a19aeb88004e842560021397e89c5",
+          "source": "def process_victory_reward(user_id, player_level, mob):\n\n    \"\"\"Apply Premium EXP and combat gold exactly once for a mob victory.\"\"\"\n\n    base_exp = calculate_exp_reward(player_level=player_level, mob=mob)\n\n    gold = calculate_gold_reward(player_level=player_level, mob=mob)\n\n    from systems.timed_exp_bonus_system import calculate_mob_kill_exp, calculate_mob_kill_gold\n\n    exp_breakdown = calculate_mob_kill_exp(user_id, base_exp)\n\n    gold_breakdown = calculate_mob_kill_gold(user_id, gold)\n\n    gold = float(gold_breakdown[\"final_gold\"])\n\n    exp = int(exp_breakdown[\"final_exp\"])\n\n    exp_result = add_exp(user_id, exp)\n\n    add_gold(user_id, gold)\n\n    add_kill(user_id)\n\n    drop_result = process_enemy_drops(user_id, mob)\n\n    # ROM_STAGE_18_29_4B_EVENT_DROP_INTEGRATION\n    event_drop_results = process_event_drops(user_id, mob)\n\n    return {\n\n        \"exp\": exp,\n\n        \"base_exp\": int(base_exp),\n\n        \"premium_exp_bonus\": int(exp_breakdown[\"bonus_exp\"]),\n\n        \"exp_bonus_active\": bool(exp_breakdown[\"active\"]),\n\n        \"gold\": gold,\n\n        \"base_gold\": float(gold_breakdown[\"base_gold\"]),\n\n        \"premium_gold_bonus\": float(gold_breakdown[\"bonus_gold\"]),\n\n        \"premium_gold_active\": bool(gold_breakdown[\"active\"]),\n\n        \"exp_result\": exp_result,\n\n        \"loot_messages\": drop_result[\"messages\"],\n\n        \"rune_drop\": drop_result[\"rune_drop\"],\n\n        \"central_drop_rules\": drop_result[\"executed_rules\"],\n\n        \"event_drop_results\": event_drop_results,\n\n        \"used_slots\": get_inventory_used_slots(user_id),\n\n        \"capacity\": get_bag_capacity(user_id),\n\n    }"
+        }
+      ]
+    },
+    "systems/level_up_reward_system.py::apply_level_up_rewards_in_transaction": {
+      "path": "systems/level_up_reward_system.py",
+      "symbol": "apply_level_up_rewards_in_transaction",
+      "definition_count": 1,
+      "file_sha256": "dca636a71be6f0b0a967647d9300269c2d0fce92f963814a87e1bebbc35d25fc",
+      "definitions": [
+        {
+          "line_start": 417,
+          "line_end": 425,
+          "source_sha256": "fbbbf5e10637c0916e0d279f77cb8b78393c0e4c9b634d2b4dd4eec7771ee392",
+          "source": "def apply_level_up_rewards_in_transaction(db, user_id, old_level, new_level):\n\n    plan = calculate_level_rewards(old_level, new_level)\n\n    gold, inserted_levels = _insert_new_reward_rows(db, user_id, plan)\n\n    item_result = try_claim_pending_items(db, user_id)\n\n    return {**plan, \"gold_awarded_now\": gold, \"new_ledger_levels\": inserted_levels, \"item_result\": item_result}"
+        }
+      ]
+    },
+    "db_modules/utils.py::format_gold": {
+      "path": "db_modules/utils.py",
+      "symbol": "format_gold",
+      "definition_count": 1,
+      "file_sha256": "ce3c86d8bd6d5119bc1cdd1c0cde552370a10f4b7290922fb0205fec92df0a8d",
+      "definitions": [
+        {
+          "line_start": 8,
+          "line_end": 17,
+          "source_sha256": "bcb32b7a12fa186055cef09e158c5ee6fe7436203b9af19507bd31aa262a6c99",
+          "source": "def format_gold(amount):\n    try:\n        amount = float(amount)\n    except Exception:\n        amount = 0.0\n\n    GOLD_ICON = \"💰\"\n    GOLD_NAME = \"золото\"\n    \n    return f\"{amount:.2f} {GOLD_ICON} {GOLD_NAME}\""
+        }
+      ]
+    }
+  },
+  "v2_gold_wallet_contract": {
+    "canonical_owner": "GoldWalletService",
+    "amount_type": "Decimal",
+    "scale": "0.01",
+    "rounding": "ROUND_HALF_UP",
+    "non_negative_balance": true,
+    "stable_operation_key_required": true,
+    "immutable_operation_history": true,
+    "caller_owned_unit_of_work": true,
+    "single_commit": true,
+    "presentation_separate": true
+  },
+  "implementation_boundary": {
+    "allowed": [
+      "domain amount and typed command/result contracts",
+      "GoldWalletService and repository/Unit-of-Work ports",
+      "in-memory implementation fixtures",
+      "immutable wallet operation records",
+      "Decimal, rejection, idempotency, rollback and restart tests"
+    ],
+    "forbidden": [
+      "SQLite or production repository adapters",
+      "runtime or Telegram wiring",
+      "float money arithmetic",
+      "negative balances or clamped generic debit",
+      "direct SQL mutation or a second production wallet owner",
+      "Crystal Wallet implementation from Stage 21.10.2"
+    ]
+  },
+  "summary": {
+    "input_unresolved_contracts": 6,
+    "resolved_contracts": 6,
+    "remaining_unresolved_contracts": 0,
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "implementation_authorized": true,
+  "runtime_integration_authorized": false,
+  "production_persistence_authorized": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_10_1c_implement_gold_wallet.py",
+  "verification": {
+    "canonical_v2_ci": {
+      "schema_version": 1,
+      "status": "PASS",
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "compile",
+          "status": "PASS",
+          "file_count": 131,
+          "failures": []
+        },
+        {
+          "name": "imports",
+          "status": "PASS",
+          "module_count": 94,
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-c",
+              "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "unit",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "tests_v2",
+              "-p",
+              "test_*.py"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "............................................................................................................................................................................\n----------------------------------------------------------------------\nRan 172 tests in 15.971s\n\nOK"
+          }
+        },
+        {
+          "name": "architecture",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "tools/verify_v2_architecture.py",
+              "--project-root",
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+            ],
+            "returncode": 0,
+            "stdout": "V2 architecture enforcement: PASS\nPhysical files: 94\nImport edges: 331\nViolations: 0",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "duplicate_scan",
+          "status": "PASS",
+          "symbol_count": 326,
+          "duplicates": {}
+        },
+        {
+          "name": "content_validation",
+          "status": "PASS",
+          "file_count": 0,
+          "failures": []
+        }
+      ]
+    },
+    "removed_bytecode_before_ci": [],
+    "protected_before": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    },
+    "protected_after": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  }
+}
