@@ -1,0 +1,317 @@
+{
+  "schema_version": 1,
+  "stage": "21.10.2b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "generated_at_utc": "2026-10-23T19:27:52.687096+00:00",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "1ac21ac9c26851aa6d1feb4097ed1dde525fa1ba"
+  },
+  "source_contract": "reports/stage_21_10_2a_refined_crystal_wallet_ledger_contract.json",
+  "source_contract_sha256": "8985e2943602c67ef49166a03bcd4a845ed69a38cea211cf79c7405c561352ae",
+  "resolved_contracts": {
+    "LEDGER_SCHEMA_AND_APPEND_ONLY": {
+      "status": "RESOLVED",
+      "decision": "Every successful mutation appends one immutable ledger row containing transaction_id, idempotency_key, user_id, direction, amount, balance_before, balance_after, reason_code, source, original_transaction_id and created_at. Existing rows are never updated or deleted."
+    },
+    "IDEMPOTENCY_KEY_CONFLICT_POLICY": {
+      "status": "RESOLVED",
+      "decision": "Every mutation requires a stable idempotency_key. Same key plus identical canonical payload returns the original transaction; same key with changed payload fails as conflict without mutation."
+    },
+    "COMPENSATION_EXACT_ONCE_POLICY": {
+      "status": "RESOLVED",
+      "decision": "Compensation is a new opposite-direction ledger transaction linked to exactly one original transaction. Repeating the same compensation key replays; a second distinct compensation for an already compensated original is rejected. Compensation of compensation is forbidden."
+    },
+    "NON_NEGATIVE_AND_CLAMP_POLICY": {
+      "status": "RESOLVED",
+      "decision": "Canonical debit is fail-closed and never clamps. Administrative removal may calculate a clamped requested amount before issuing one explicit debit command; the wallet itself still rejects insufficient balance and never becomes negative."
+    },
+    "TRANSACTION_AND_COMMIT_OWNERSHIP": {
+      "status": "RESOLVED",
+      "decision": "CrystalWalletLedgerService mutates wallet and appends ledger through a caller-supplied Unit of Work. The application use case owns exactly one commit; every failure rolls back balance, ledger and consumer mutation together."
+    },
+    "CONSUMER_ALLOWLIST_AND_SHADOW_OWNERS": {
+      "status": "RESOLVED",
+      "decision": "Production consumers use only CrystalWalletLedgerService. Allowed categories are admin, crystal_shop, bag_expansion, premium_purchase, daily_or_milestone_reward, refund and compensation. Direct SQL/setter mutation, DEV/presentation ownership and a second wallet owner are forbidden."
+    }
+  },
+  "authoritative_v1_evidence": {
+    "systems/crystal_wallet_system.py::_apply": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "_apply",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 57,
+          "line_end": 79,
+          "source_sha256": "9537231479bee0eb0f0a400d7da8bee8c857c5aafe8c4de38570c7eace36bd33",
+          "source": "def _apply(user_id,amount,operation,reason_code,idempotency_key,external_reference=None,metadata=None,compensates_transaction_id=None,db_path=None):\n uid=int(user_id);amount=int(amount);key=str(idempotency_key or '').strip();reason=str(reason_code or '').strip()\n if amount<=0:return {'success':False,'message':'Кількість кристалів має бути більшою за нуль.'}\n if not key:return {'success':False,'message':'idempotency_key є обов’язковим.'}\n if not reason:return {'success':False,'message':'reason_code є обов’язковим.'}\n c=_connect(db_path)\n try:\n  c.execute('BEGIN IMMEDIATE');existing=c.execute('SELECT * FROM crystal_transactions WHERE idempotency_key=?',(key,)).fetchone()\n  if existing:\n   c.commit();return {'success':True,'idempotent_replay':True,'transaction':dict(existing),'balance':int(existing['balance_after'])}\n  _ensure_wallet(c,uid);before=int(c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(uid,)).fetchone()[0]);after=before+amount if operation=='credit' else before-amount\n  if after<0:c.rollback();return {'success':False,'message':'Недостатньо кристалів.','balance':before}\n  now=_utc();changed=c.execute('UPDATE crystal_wallets SET balance=?,updated_at=? WHERE user_id=? AND balance=?',(after,now,uid,before)).rowcount\n  if changed!=1:raise RuntimeError('Баланс змінився. Операцію скасовано.')\n  payload=json.dumps(metadata or {},ensure_ascii=False,sort_keys=True,separators=(',',':'))\n  cur=c.execute('INSERT INTO crystal_transactions(user_id,operation,amount,reason_code,balance_before,balance_after,idempotency_key,external_reference,metadata_json,compensates_transaction_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(uid,operation,amount,reason,before,after,key,external_reference,payload,compensates_transaction_id,now));tid=int(cur.lastrowid);c.commit()\n  return {'success':True,'idempotent_replay':False,'transaction_id':tid,'operation':operation,'amount':amount,'balance_before':before,'balance_after':after,'balance':after}\n except sqlite3.IntegrityError:\n  c.rollback();row=c.execute('SELECT * FROM crystal_transactions WHERE idempotency_key=?',(key,)).fetchone()\n  if row:return {'success':True,'idempotent_replay':True,'transaction':dict(row),'balance':int(row['balance_after'])}\n  raise\n except Exception:c.rollback();raise\n finally:c.close()"
+        }
+      ]
+    },
+    "systems/crystal_wallet_system.py::get_crystal_wallet": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "get_crystal_wallet",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 50,
+          "line_end": 55,
+          "source_sha256": "ce47365e4d449441c68e060aa44abfec420ca3c50f3182cfa842545b830ada3a",
+          "source": "def get_crystal_wallet(user_id,db_path=None):\n c=_connect(db_path)\n try:\n  c.execute('BEGIN IMMEDIATE');_ensure_wallet(c,user_id);row=c.execute('SELECT user_id,balance,created_at,updated_at FROM crystal_wallets WHERE user_id=?',(int(user_id),)).fetchone();c.commit();return dict(row)\n except Exception:c.rollback();raise\n finally:c.close()"
+        }
+      ]
+    },
+    "systems/crystal_wallet_system.py::_ensure_wallet": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "_ensure_wallet",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 46,
+          "line_end": 49,
+          "source_sha256": "99448cf8e71385003c279a9621bc0f99f292712a5c60a6992fad3e8fe333e2f6",
+          "source": "def _ensure_wallet(c,user_id):\n uid=int(user_id);row=c.execute('SELECT user_id FROM users WHERE user_id=?',(uid,)).fetchone()\n if not row:raise ValueError('Акаунт не знайдено. Спочатку натисни /start.')\n now=_utc();c.execute('INSERT OR IGNORE INTO crystal_wallets(user_id,balance,created_at,updated_at) VALUES(?,0,?,?)',(uid,now,now))"
+        }
+      ]
+    },
+    "systems/crystal_wallet_system.py::credit_crystals": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "credit_crystals",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 80,
+          "line_end": 80,
+          "source_sha256": "1b0bb2f36a341eeeede4b580baba7f0b5e035a5e59b7fe7c3612d4f1e1bba1ac",
+          "source": "def credit_crystals(user_id,amount,reason_code,idempotency_key,external_reference=None,metadata=None,db_path=None):return _apply(user_id,amount,'credit',reason_code,idempotency_key,external_reference,metadata,None,db_path)"
+        }
+      ]
+    },
+    "systems/crystal_wallet_system.py::debit_crystals": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "debit_crystals",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 81,
+          "line_end": 81,
+          "source_sha256": "a7186a95deeaf7a6f38a1166f92802ef345dfcb2ae347e692f0ee3900d44d378",
+          "source": "def debit_crystals(user_id,amount,reason_code,idempotency_key,external_reference=None,metadata=None,db_path=None):return _apply(user_id,amount,'debit',reason_code,idempotency_key,external_reference,metadata,None,db_path)"
+        }
+      ]
+    },
+    "systems/crystal_wallet_system.py::get_crystal_transactions": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "get_crystal_transactions",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 82,
+          "line_end": 86,
+          "source_sha256": "2a12e946b5b02dfb6fde35872ea4c51de0f77de3c962ffbfb51d6297314f1528",
+          "source": "def get_crystal_transactions(user_id,page=0,page_size=CRYSTAL_HISTORY_PAGE_SIZE,db_path=None):\n page=max(0,int(page));size=max(1,min(50,int(page_size)));c=_connect(db_path)\n try:\n  rows=c.execute('SELECT * FROM crystal_transactions WHERE user_id=? ORDER BY id DESC LIMIT ? OFFSET ?',(int(user_id),size,page*size)).fetchall();total=c.execute('SELECT COUNT(*) FROM crystal_transactions WHERE user_id=?',(int(user_id),)).fetchone()[0];return {'items':[dict(x) for x in rows],'page':page,'total':int(total),'has_next':(page+1)*size<int(total)}\n finally:c.close()"
+        }
+      ]
+    },
+    "systems/crystal_wallet_system.py::compensate_crystal_transaction": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "compensate_crystal_transaction",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 87,
+          "line_end": 98,
+          "source_sha256": "0e8a9e2bde140981ac9db3b61d86b103f4373c693be0fb54474e9a510ab6ec0e",
+          "source": "def compensate_crystal_transaction(original_transaction_id,idempotency_key,reason_code='dev_compensation',db_path=None):\n c=_connect(db_path)\n try:row=c.execute('SELECT * FROM crystal_transactions WHERE id=?',(int(original_transaction_id),)).fetchone()\n finally:c.close()\n if not row:return {'success':False,'message':'Початкову транзакцію не знайдено.'}\n func=debit_crystals if row['operation']=='credit' else credit_crystals\n result=func(int(row['user_id']),int(row['amount']),reason_code,idempotency_key,external_reference=f\"compensates:{int(row['id'])}\",metadata={'original_transaction_id':int(row['id'])},db_path=db_path)\n if result.get('success') and not result.get('idempotent_replay'):\n  c=_connect(db_path)\n  try:c.execute('UPDATE crystal_transactions SET compensates_transaction_id=? WHERE id=? AND compensates_transaction_id IS NULL',(int(row['id']),int(result['transaction_id'])));c.commit()\n  finally:c.close()\n return result"
+        }
+      ]
+    },
+    "systems/admin_crystal_credit_system.py::execute_admin_adjustment": {
+      "path": "systems/admin_crystal_credit_system.py",
+      "symbol": "execute_admin_adjustment",
+      "definition_count": 1,
+      "file_sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+      "definitions": [
+        {
+          "line_start": 35,
+          "line_end": 54,
+          "source_sha256": "772766816dcf1fe49ea99e1fc06bd3f106ece5695a3c67daf20fd72b040106a5",
+          "source": "def execute_admin_adjustment(admin_user_id,target_user_id,operation,requested_amount,reason,idempotency_key,db_path=None):\n key=str(idempotency_key or '').strip()\n if not key:return {'success':False,'message':'Відсутній idempotency key.'}\n c=_connect(db_path)\n try:\n  c.execute('BEGIN IMMEDIATE');existing=c.execute('SELECT * FROM admin_crystal_credit_audit WHERE idempotency_key=?',(key,)).fetchone()\n  if existing:c.commit();return {'success':True,'idempotent_replay':True,'audit':dict(existing),'balance':int(existing['balance_after'])}\n  if not is_admin(admin_user_id):raise ValueError('Доступ заборонено.')\n  target=int(target_user_id);amount=int(requested_amount);op=str(operation);reason=str(reason or '').strip();limit=ROM_ADMIN_CRYSTAL_CREDIT_MAX if op=='credit' else ROM_ADMIN_CRYSTAL_DEBIT_MAX\n  if op not in ('credit','debit') or amount<1 or amount>limit or not reason:raise ValueError('Параметри операції більше не валідні.')\n  if not c.execute('SELECT 1 FROM users WHERE user_id=?',(target,)).fetchone():raise ValueError('Користувача не знайдено.')\n  now=_utc();c.execute('INSERT OR IGNORE INTO crystal_wallets(user_id,balance,created_at,updated_at) VALUES(?,0,?,?)',(target,now,now));before=int(c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(target,)).fetchone()[0]);actual=amount if op=='credit' else min(amount,before)\n  if actual<=0:raise ValueError('У користувача немає кристалів для вилучення.')\n  after=before+actual if op=='credit' else before-actual\n  changed=c.execute('UPDATE crystal_wallets SET balance=?,updated_at=? WHERE user_id=? AND balance=?',(after,now,target,before)).rowcount\n  if changed!=1:raise RuntimeError('Баланс змінився. Операцію скасовано.')\n  txkey='admin:'+key;cur=c.execute('INSERT INTO crystal_transactions(user_id,operation,amount,reason_code,balance_before,balance_after,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)',(target,op,actual,'admin_crystal_'+op,before,after,txkey,key,json.dumps({'admin_operation':True,'requested_amount':amount,'reason':reason},ensure_ascii=False,sort_keys=True),now));txid=int(cur.lastrowid)\n  cur=c.execute('INSERT INTO admin_crystal_credit_audit(admin_user_id,target_user_id,operation,requested_amount,actual_amount,balance_before,balance_after,reason,idempotency_key,crystal_transaction_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(int(admin_user_id),target,op,amount,actual,before,after,reason,key,txid,now));aid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'audit_id':aid,'transaction_id':txid,'operation':op,'requested_amount':amount,'actual_amount':actual,'balance_before':before,'balance_after':after,'balance':after,'clamped':op=='debit' and actual<amount}\n except Exception as e:c.rollback();return {'success':False,'message':f'Операцію скасовано: {e}'}\n finally:c.close()"
+        }
+      ]
+    },
+    "systems/crystal_shop_system.py::purchase_crystal_shop_item": {
+      "path": "systems/crystal_shop_system.py",
+      "symbol": "purchase_crystal_shop_item",
+      "definition_count": 1,
+      "file_sha256": "601b1d678835a18e20c99daa4236e38cf419f25d5e1e13b9b8dc4f6eb80b6bc2",
+      "definitions": [
+        {
+          "line_start": 39,
+          "line_end": 61,
+          "source_sha256": "26a1c430353ea32cc65e7414a70c0ab69c78b767e75c17e8549d0b42f1d54677",
+          "source": "def purchase_crystal_shop_item(user_id,item_id,quantity,idempotency_key,db_path=None):\n try:uid=int(user_id);iid=int(item_id);qty=int(quantity)\n except Exception:return {'success':False,'message':'❌ Некоректні дані покупки.'}\n key=str(idempotency_key or '').strip()\n if iid not in CRYSTAL_SHOP_CATALOG or qty<=0 or not key:return {'success':False,'message':'❌ Некоректна або неповна покупка.'}\n c=_connect(db_path)\n try:\n  c.execute('BEGIN IMMEDIATE');old=c.execute('SELECT * FROM crystal_shop_purchases WHERE idempotency_key=?',(key,)).fetchone()\n  if old:c.commit();return {'success':True,'idempotent_replay':True,'purchase':dict(old),'balance':int(old['balance_after'])}\n  allowed={501:{'crystal_shop'},602:{'crystal_shop'},728:{'crystal_shop'},502:{'crystal_shop'}}\n  if 'crystal_shop' not in allowed.get(iid,set()):c.rollback();return {'success':False,'message':'❌ Джерело видачі заборонене.'}\n  wallet=c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(uid,)).fetchone();item=c.execute('SELECT id FROM items WHERE id=?',(iid,)).fetchone()\n  if not wallet or not item:c.rollback();return {'success':False,'message':'❌ Гаманець або предмет не знайдено.'}\n  before=int(wallet[0]);unit=int(CRYSTAL_SHOP_CATALOG[iid]['price']);total=unit*qty;used,cap,needed,max_stack=_capacity(c,uid,iid,qty)\n  if used+needed>cap:c.rollback();return {'success':False,'message':'🎒 Сумка переповнена. Кристали не списано.','balance':before}\n  if before<total:c.rollback();return {'success':False,'message':'❌ Недостатньо кристалів.','balance':before}\n  after=before-total;now=_utc();changed=c.execute('UPDATE crystal_wallets SET balance=?,updated_at=? WHERE user_id=? AND balance=?',(after,now,uid,before)).rowcount\n  if changed!=1:raise RuntimeError('Баланс змінився. Покупку скасовано.')\n  tx_key='shop:debit:'+key;cur=c.execute(\"INSERT INTO crystal_transactions(user_id,operation,amount,reason_code,balance_before,balance_after,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)\",(uid,'debit',total,'crystal_shop_purchase',before,after,tx_key,key,json.dumps({'item_id':iid,'quantity':qty},sort_keys=True),now));txid=int(cur.lastrowid)\n  inv_id=_stack(c,uid,iid,qty,max_stack);grant_key='shop:grant:'+key;cur=c.execute('INSERT INTO premium_item_grants(user_id,item_id,quantity,source,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?)',(uid,iid,qty,'crystal_shop',grant_key,key,json.dumps({'total_price':total},sort_keys=True),now));gid=int(cur.lastrowid)\n  cur=c.execute('INSERT INTO crystal_shop_purchases(user_id,item_id,quantity,unit_price,total_price,balance_before,balance_after,idempotency_key,crystal_transaction_id,premium_grant_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(uid,iid,qty,unit,total,before,after,key,txid,gid,now));pid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'purchase_id':pid,'transaction_id':txid,'grant_id':gid,'inventory_id':inv_id,'item_id':iid,'name':CRYSTAL_SHOP_CATALOG[iid]['name'],'quantity':qty,'unit_price':unit,'total_price':total,'balance_before':before,'balance_after':after,'balance':after}\n except Exception as e:c.rollback();return {'success':False,'message':f'❌ Покупку скасовано: {e}'}\n finally:c.close()"
+        }
+      ]
+    },
+    "systems/crystal_bag_expansion_system.py::purchase_crystal_bag_expansion": {
+      "path": "systems/crystal_bag_expansion_system.py",
+      "symbol": "purchase_crystal_bag_expansion",
+      "definition_count": 1,
+      "file_sha256": "829d008496d37a9e6d140a1d8b2f89af0e828fb3398a9e2081aed96210810626",
+      "definitions": [
+        {
+          "line_start": 34,
+          "line_end": 63,
+          "source_sha256": "772cf1d37eea6fc6013bef9c473b0395d3eefe8e813612f308c7d44c42739bfc",
+          "source": "def purchase_crystal_bag_expansion(user_id,target_capacity,idempotency_key,db_path=None):\n uid=int(user_id);target=int(target_capacity);key=str(idempotency_key or '').strip()\n if not key:return {'success':False,'message':'❌ Відсутній ключ операції.'}\n c=_connect(db_path)\n try:\n  c.execute('BEGIN IMMEDIATE')\n  previous=c.execute('SELECT * FROM account_bag_expansion_purchases WHERE idempotency_key=?',(key,)).fetchone()\n  if previous:\n   c.commit();row=dict(previous);row.update({'success':True,'idempotent_replay':True,'current_capacity':int(row['to_capacity']),'balance':int(row['balance_after'])});return row\n  state=_state(c,uid)\n  if not state:c.rollback();return {'success':False,'message':'❌ Користувача не знайдено.'}\n  if state['maximum_reached']:c.rollback();return {**state,'success':False,'message':f\"🎒 Сумка вже має максимальну місткість: {state['current_capacity']} слотів.\"}\n  tier=BAG_EXPANSION_TIERS.get(state['current_capacity'])\n  if not tier or target!=tier['target_capacity']:c.rollback();return {**state,'success':False,'message':'❌ Доступне лише наступне послідовне розширення сумки.'}\n  price=int(tier['price']);before=int(state['balance'])\n  if before<price:c.rollback();return {**state,'success':False,'message':'❌ Недостатньо кристалів.'}\n  after=before-price;now=_utc();txkey='bag_expansion:debit:'+key\n  tx=c.execute(\"INSERT INTO crystal_transactions(user_id,operation,amount,reason_code,balance_before,balance_after,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)\",(uid,'debit',price,'bag_expansion_purchase',before,after,txkey,key,json.dumps({'from_capacity':state['current_capacity'],'to_capacity':target},sort_keys=True),now));txid=int(tx.lastrowid)\n  changed=c.execute('UPDATE crystal_wallets SET balance=?,updated_at=? WHERE user_id=? AND balance=?',(after,now,uid,before)).rowcount\n  if changed!=1:raise RuntimeError('wallet concurrent update')\n  changed=c.execute('UPDATE users SET bag_slots=? WHERE user_id=? AND COALESCE(bag_slots,60)=?',(target,uid,state['current_capacity'])).rowcount\n  if changed!=1:raise RuntimeError('bag capacity concurrent update')\n  cur=c.execute('INSERT INTO account_bag_expansion_purchases(user_id,from_capacity,to_capacity,crystal_price,balance_before,balance_after,idempotency_key,crystal_transaction_id,created_at) VALUES(?,?,?,?,?,?,?,?,?)',(uid,state['current_capacity'],target,price,before,after,key,txid,now));pid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'purchase_id':pid,'transaction_id':txid,'from_capacity':state['current_capacity'],'to_capacity':target,'current_capacity':target,'price':price,'balance_before':before,'balance_after':after,'balance':after}\n except sqlite3.IntegrityError:\n  c.rollback();row=c.execute('SELECT * FROM account_bag_expansion_purchases WHERE idempotency_key=?',(key,)).fetchone()\n  if row:\n   data=dict(row);data.update({'success':True,'idempotent_replay':True,'current_capacity':int(data['to_capacity']),'balance':int(data['balance_after'])});return data\n  return {'success':False,'message':'❌ Це розширення вже придбано.'}\n except Exception as error:c.rollback();return {'success':False,'message':f'❌ Покупку не завершено: {error}'}\n finally:c.close()"
+        }
+      ]
+    }
+  },
+  "v2_crystal_wallet_ledger_contract": {
+    "canonical_owner": "CrystalWalletLedgerService",
+    "identity": "user_id",
+    "amount_type": "int",
+    "non_negative_balance": true,
+    "append_only_ledger": true,
+    "stable_idempotency_key_required": true,
+    "exact_once_compensation": true,
+    "caller_owned_unit_of_work": true,
+    "single_commit": true,
+    "presentation_separate": true
+  },
+  "implementation_boundary": {
+    "allowed": [
+      "typed command/result and immutable ledger DTOs",
+      "service and repository/Unit-of-Work ports",
+      "in-memory fixtures",
+      "credit, debit, idempotency, compensation, rollback and restart tests"
+    ],
+    "forbidden": [
+      "SQLite or production adapters",
+      "runtime or Telegram wiring",
+      "direct SQL mutation",
+      "negative or clamped wallet debit",
+      "second wallet owner",
+      "invented crystal sources or prices"
+    ]
+  },
+  "summary": {
+    "input_unresolved_contracts": 6,
+    "resolved_contracts": 6,
+    "remaining_unresolved_contracts": 0,
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "implementation_authorized": true,
+  "runtime_integration_authorized": false,
+  "production_persistence_authorized": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_10_2c_implement_crystal_wallet_ledger.py",
+  "verification": {
+    "canonical_v2_ci": {
+      "schema_version": 1,
+      "status": "PASS",
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "compile",
+          "status": "PASS",
+          "file_count": 133,
+          "failures": []
+        },
+        {
+          "name": "imports",
+          "status": "PASS",
+          "module_count": 95,
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-c",
+              "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "unit",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "tests_v2",
+              "-p",
+              "test_*.py"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "........................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 184 tests in 13.968s\n\nOK"
+          }
+        },
+        {
+          "name": "architecture",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "tools/verify_v2_architecture.py",
+              "--project-root",
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+            ],
+            "returncode": 0,
+            "stdout": "V2 architecture enforcement: PASS\nPhysical files: 95\nImport edges: 337\nViolations: 0",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "duplicate_scan",
+          "status": "PASS",
+          "symbol_count": 336,
+          "duplicates": {}
+        },
+        {
+          "name": "content_validation",
+          "status": "PASS",
+          "file_count": 0,
+          "failures": []
+        }
+      ]
+    },
+    "removed_bytecode_before_ci": [],
+    "protected_before": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    },
+    "protected_after": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  }
+}
