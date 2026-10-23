@@ -1,0 +1,354 @@
+{
+  "schema_version": 1,
+  "stage": "21.10.5b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "generated_at_utc": "2026-10-23T20:47:17.342834+00:00",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "521c531c4de8b064273fd164907f6e9feaf4e972"
+  },
+  "source_contract": "reports/stage_21_10_5a_refined_premium_shop_contract.json",
+  "source_contract_sha256": "08d61d1762f4a6474c0b83faab715e8341740a1e8fbda14c1c3e0eaa9a60dd36",
+  "resolved_contracts": {
+    "PLAN_KEYS_AND_PRICES": {
+      "status": "RESOLVED",
+      "decision": "Use stable technical plan keys premium_15d and premium_30d. Their immutable catalog values are exactly 15 days / 100 crystals and 30 days / 180 crystals. Presentation labels are not identifiers, and any changed or unknown quote fails closed."
+    },
+    "ACTIVATION_AND_EXTENSION_BASE": {
+      "status": "RESOLVED",
+      "decision": "All domain timestamps are timezone-aware UTC. If current Premium expiry is absent or not later than now, activation starts at now. If expiry is later than now, extension starts at the existing expiry. The selected plan duration is added exactly once."
+    },
+    "CRYSTAL_DEBIT_AND_PREMIUM_ATOMICITY": {
+      "status": "RESOLVED",
+      "decision": "PremiumShopService validates account, plan, quote and crystal balance before mutation. Crystal debit, Premium expiry update and immutable purchase receipt execute in one caller-owned Unit of Work with one commit; any failure rolls all effects back."
+    },
+    "IDEMPOTENCY_AND_STALE_CONFIRMATION": {
+      "status": "RESOLVED",
+      "decision": "Every confirmation requires a stable operation_key. Same key with identical user_id, plan_key and quoted crystal price replays the original receipt. Changed payload conflicts. Unknown plan, changed price, insufficient crystals or changed account state reject without mutation."
+    },
+    "ACCOUNT_SCOPE_AND_RESTART": {
+      "status": "RESOLVED",
+      "decision": "Premium is account-level by user_id, survives character reset, and persists across restart. Receipts store previous_expiry, base_expiry and new_expiry in UTC so that replay does not extend Premium twice."
+    },
+    "CONSUMER_ALLOWLIST_AND_SHADOW_OWNERS": {
+      "status": "RESOLVED",
+      "decision": "PremiumShopService is the sole V2 mutation owner. Allowed consumers are timed-Premium presentation, Crystal Shop presentation delegation and explicit recovery/testing adapters. Crystal Wallet remains a dependency. Direct SQL expiry updates, presentation-owned mutation and duplicate Premium owners are forbidden."
+    }
+  },
+  "authoritative_v1_evidence": {
+    "systems/timed_exp_bonus_system.py::get_exp_bonus_status": {
+      "path": "systems/timed_exp_bonus_system.py",
+      "symbol": "get_exp_bonus_status",
+      "definition_count": 1,
+      "file_sha256": "18a733c82b31f2629ed3e66aed671db4c3131f133108f688e0e25ae0f13c20ae",
+      "definitions": [
+        {
+          "line_start": 19,
+          "line_end": 23,
+          "source_sha256": "f32677e601b82b9568fd8f15bfb70abe7a4e7cc2342e61a7278f3ebe877243bd",
+          "source": "def get_exp_bonus_status(user_id,db_path=None,now=None):\n c=_conn(db_path)\n try:\n  row=c.execute('SELECT * FROM account_exp_bonus_entitlements WHERE user_id=?',(int(user_id),)).fetchone();dt=_parse(row['expires_at']) if row else None;n=now or _utc();active=bool(dt and dt>n);return {'active':active,'bonus_percent':25 if active else 0,'expires_at':dt.isoformat() if dt else None}\n finally:c.close()"
+        }
+      ]
+    },
+    "systems/timed_exp_bonus_system.py::preview_exp_bonus_purchase": {
+      "path": "systems/timed_exp_bonus_system.py",
+      "symbol": "preview_exp_bonus_purchase",
+      "definition_count": 1,
+      "file_sha256": "18a733c82b31f2629ed3e66aed671db4c3131f133108f688e0e25ae0f13c20ae",
+      "definitions": [
+        {
+          "line_start": 31,
+          "line_end": 37,
+          "source_sha256": "fb048c2079be89baa62da8557ed581ec80481366a016fc2e4ecd8562bd9c7ed3",
+          "source": "def preview_exp_bonus_purchase(user_id,duration_days,db_path=None,now=None):\n days=int(duration_days);price=PLANS.get(days)\n if not price:return {'success':False,'message':'❌ Невідомий тариф.'}\n c=_conn(db_path)\n try:\n  wallet=c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(int(user_id),)).fetchone();balance=int(wallet[0]) if wallet else 0;n=now or _utc();st=get_exp_bonus_status(user_id,db_path,n);old=_parse(st['expires_at']);base=old if old and old>n else n;new=base+timedelta(days=days);return {'success':balance>=price,'duration_days':days,'price':price,'balance':balance,'balance_after':balance-price,'expires_at_before':old.isoformat() if old else None,'expires_at_after':new.isoformat(),'message':'OK' if balance>=price else '❌ Недостатньо кристалів.'}\n finally:c.close()"
+        }
+      ]
+    },
+    "systems/timed_exp_bonus_system.py::purchase_exp_bonus": {
+      "path": "systems/timed_exp_bonus_system.py",
+      "symbol": "purchase_exp_bonus",
+      "definition_count": 1,
+      "file_sha256": "18a733c82b31f2629ed3e66aed671db4c3131f133108f688e0e25ae0f13c20ae",
+      "definitions": [
+        {
+          "line_start": 38,
+          "line_end": 57,
+          "source_sha256": "399fc4e3dd0679828fa00fe6ac787586e3bfb9296a062d2af50f93de86c9e937",
+          "source": "def purchase_exp_bonus(user_id,duration_days,idempotency_key,db_path=None,now=None):\n uid=int(user_id);days=int(duration_days);price=PLANS.get(days);key=str(idempotency_key or '').strip()\n if not price or not key:return {'success':False,'message':'❌ Некоректна покупка.'}\n c=_conn(db_path)\n try:\n  c.execute('BEGIN IMMEDIATE');old=c.execute('SELECT * FROM exp_bonus_purchases WHERE idempotency_key=?',(key,)).fetchone()\n  if old:c.commit();return {'success':True,'idempotent_replay':True,'purchase':dict(old),'balance':int(old['balance_after']),'expires_at_after':old['expires_at_after']}\n  wallet=c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(uid,)).fetchone()\n  if not wallet:c.rollback();return {'success':False,'message':'❌ Гаманець не знайдено.'}\n  before=int(wallet[0])\n  if before<price:c.rollback();return {'success':False,'message':'❌ Недостатньо кристалів.'}\n  n=now or _utc();ent=c.execute('SELECT expires_at,created_at FROM account_exp_bonus_entitlements WHERE user_id=?',(uid,)).fetchone();old_exp=_parse(ent['expires_at']) if ent else None;base=old_exp if old_exp and old_exp>n else n;new_exp=base+timedelta(days=days);after=before-price;stamp=n.isoformat()\n  if c.execute('UPDATE crystal_wallets SET balance=?,updated_at=? WHERE user_id=? AND balance=?',(after,stamp,uid,before)).rowcount!=1:raise RuntimeError('wallet changed concurrently')\n  txkey='exp_bonus:debit:'+key;cur=c.execute(\"INSERT INTO crystal_transactions(user_id,operation,amount,reason_code,balance_before,balance_after,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)\",(uid,'debit',price,'timed_exp_bonus_purchase',before,after,txkey,key,json.dumps({'duration_days':days,'bonus_percent':25},sort_keys=True),stamp));txid=int(cur.lastrowid)\n  if ent:c.execute('UPDATE account_exp_bonus_entitlements SET bonus_percent=25,expires_at=?,updated_at=? WHERE user_id=?',(new_exp.isoformat(),stamp,uid))\n  else:c.execute('INSERT INTO account_exp_bonus_entitlements(user_id,bonus_percent,expires_at,created_at,updated_at) VALUES(?,?,?,?,?)',(uid,25,new_exp.isoformat(),stamp,stamp))\n  code=f'exp25_{days}d';cur=c.execute('INSERT INTO exp_bonus_purchases(user_id,product_code,duration_days,bonus_percent,price_crystals,balance_before,balance_after,expires_at_before,expires_at_after,crystal_transaction_id,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',(uid,code,days,25,price,before,after,old_exp.isoformat() if old_exp else None,new_exp.isoformat(),txid,key,stamp));pid=int(cur.lastrowid);c.commit();return {'success':True,'idempotent_replay':False,'purchase_id':pid,'duration_days':days,'price':price,'balance':after,'expires_at_after':new_exp.isoformat()}\n except Exception as e:\n  c.rollback();return {'success':False,'message':f'❌ Покупку скасовано без списання: {e}'}\n finally:c.close()"
+        }
+      ]
+    },
+    "systems/timed_exp_bonus_system.py::get_exp_bonus_account_summary": {
+      "path": "systems/timed_exp_bonus_system.py",
+      "symbol": "get_exp_bonus_account_summary",
+      "definition_count": 1,
+      "file_sha256": "18a733c82b31f2629ed3e66aed671db4c3131f133108f688e0e25ae0f13c20ae",
+      "definitions": [
+        {
+          "line_start": 60,
+          "line_end": 84,
+          "source_sha256": "90e29cfbf758bb94e7db4a90d49f911c3448d26ce50af0aaaf0711625fbaeca8",
+          "source": "def get_exp_bonus_account_summary(user_id, db_path=None, now=None):\n    uid = int(user_id)\n    status = get_exp_bonus_status(uid, db_path=db_path, now=now)\n    connection = _conn(db_path)\n    try:\n        columns = {str(row[1]) for row in connection.execute(\"PRAGMA table_info(users)\")}\n        registration_value = None\n        registration_column = None\n        for candidate in (\"registered_at\", \"created_at\", \"registration_date\", \"registered_date\"):\n            if candidate in columns:\n                registration_column = candidate\n                row = connection.execute(f\"SELECT {candidate} FROM users WHERE user_id=?\", (uid,)).fetchone()\n                registration_value = row[0] if row else None\n                break\n        registration_dt = _parse(registration_value) if registration_value else None\n        return {\n            \"user_id\": uid,\n            \"active\": bool(status[\"active\"]),\n            \"bonus_percent\": int(status[\"bonus_percent\"]),\n            \"expires_at\": status[\"expires_at\"],\n            \"registered_at\": registration_dt.isoformat() if registration_dt else None,\n            \"registration_column\": registration_column,\n        }\n    finally:\n        connection.close()"
+        }
+      ]
+    },
+    "systems/crystal_shop_system.py::get_crystal_shop_catalog": {
+      "path": "systems/crystal_shop_system.py",
+      "symbol": "get_crystal_shop_catalog",
+      "definition_count": 1,
+      "file_sha256": "601b1d678835a18e20c99daa4236e38cf419f25d5e1e13b9b8dc4f6eb80b6bc2",
+      "definitions": [
+        {
+          "line_start": 17,
+          "line_end": 17,
+          "source_sha256": "fd956d2fc028d95757049f4f3aed973bf0d68f2fdb772f1d069d255e9c862ce9",
+          "source": "def get_crystal_shop_catalog():return {k:dict(v) for k,v in CRYSTAL_SHOP_CATALOG.items()}"
+        }
+      ]
+    },
+    "systems/crystal_shop_system.py::preview_crystal_shop_purchase": {
+      "path": "systems/crystal_shop_system.py",
+      "symbol": "preview_crystal_shop_purchase",
+      "definition_count": 1,
+      "file_sha256": "601b1d678835a18e20c99daa4236e38cf419f25d5e1e13b9b8dc4f6eb80b6bc2",
+      "definitions": [
+        {
+          "line_start": 20,
+          "line_end": 30,
+          "source_sha256": "37850ef7b886c39198965a1d653305f6b19b51818c5394742c52b3e4d2f13ab1",
+          "source": "def preview_crystal_shop_purchase(user_id,item_id,quantity,db_path=None):\n try:uid=int(user_id);iid=int(item_id);qty=int(quantity)\n except Exception:return {'success':False,'message':'❌ Некоректні дані покупки.'}\n if iid not in CRYSTAL_SHOP_CATALOG:return {'success':False,'message':'❌ Предмет відсутній у магазині.'}\n if qty<=0:return {'success':False,'message':'❌ Кількість має бути більшою за нуль.'}\n c=_connect(db_path)\n try:\n  wallet=c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(uid,)).fetchone()\n  if not wallet:return {'success':False,'message':'❌ Гаманець кристалів не знайдено.'}\n  used,cap,needed,_=_capacity(c,uid,iid,qty);price=CRYSTAL_SHOP_CATALOG[iid]['price'];total=price*qty;balance=int(wallet[0]);return {'success':balance>=total and used+needed<=cap,'item_id':iid,'name':CRYSTAL_SHOP_CATALOG[iid]['name'],'quantity':qty,'unit_price':price,'total_price':total,'balance':balance,'balance_after':balance-total,'used_slots':used,'capacity':cap,'needed_slots':needed,'message':'OK' if balance>=total and used+needed<=cap else ('🎒 Сумка переповнена. Кристали не списано.' if used+needed>cap else '❌ Недостатньо кристалів.')}\n finally:c.close()"
+        }
+      ]
+    },
+    "systems/crystal_wallet_system.py::get_crystal_balance": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "get_crystal_balance",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 56,
+          "line_end": 56,
+          "source_sha256": "948be98d7b116846d19aa8fa5b38cc91f10c4f12a0dcd749289db9943e236fff",
+          "source": "def get_crystal_balance(user_id,db_path=None):return int(get_crystal_wallet(user_id,db_path)['balance'])"
+        }
+      ]
+    },
+    "systems/crystal_wallet_system.py::debit_crystals": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "debit_crystals",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 81,
+          "line_end": 81,
+          "source_sha256": "a7186a95deeaf7a6f38a1166f92802ef345dfcb2ae347e692f0ee3900d44d378",
+          "source": "def debit_crystals(user_id,amount,reason_code,idempotency_key,external_reference=None,metadata=None,db_path=None):return _apply(user_id,amount,'debit',reason_code,idempotency_key,external_reference,metadata,None,db_path)"
+        }
+      ]
+    },
+    "systems/crystal_wallet_system.py::compensate_crystal_transaction": {
+      "path": "systems/crystal_wallet_system.py",
+      "symbol": "compensate_crystal_transaction",
+      "definition_count": 1,
+      "file_sha256": "69457e16cf6cd636775b29cec66337393dc84b0e33a8ee2a210568cfc14bcc20",
+      "definitions": [
+        {
+          "line_start": 87,
+          "line_end": 98,
+          "source_sha256": "0e8a9e2bde140981ac9db3b61d86b103f4373c693be0fb54474e9a510ab6ec0e",
+          "source": "def compensate_crystal_transaction(original_transaction_id,idempotency_key,reason_code='dev_compensation',db_path=None):\n c=_connect(db_path)\n try:row=c.execute('SELECT * FROM crystal_transactions WHERE id=?',(int(original_transaction_id),)).fetchone()\n finally:c.close()\n if not row:return {'success':False,'message':'Початкову транзакцію не знайдено.'}\n func=debit_crystals if row['operation']=='credit' else credit_crystals\n result=func(int(row['user_id']),int(row['amount']),reason_code,idempotency_key,external_reference=f\"compensates:{int(row['id'])}\",metadata={'original_transaction_id':int(row['id'])},db_path=db_path)\n if result.get('success') and not result.get('idempotent_replay'):\n  c=_connect(db_path)\n  try:c.execute('UPDATE crystal_transactions SET compensates_transaction_id=? WHERE id=? AND compensates_transaction_id IS NULL',(int(row['id']),int(result['transaction_id'])));c.commit()\n  finally:c.close()\n return result"
+        }
+      ]
+    },
+    "handlers/timed_exp_bonus.py::open_bonus": {
+      "path": "handlers/timed_exp_bonus.py",
+      "symbol": "open_bonus",
+      "definition_count": 1,
+      "file_sha256": "b1ab8e7bb97daff6b410975e1d0b6df3f04c130100ec00beffebdac73516069a",
+      "definitions": [
+        {
+          "line_start": 22,
+          "line_end": 23,
+          "source_sha256": "2715b6c9353382f2d9d173390cd3228039b8ff855295f16001589afac9cc7bbc",
+          "source": "def open_bonus(message):\n  st=get_exp_bonus_status(message.from_user.id);kb=types.InlineKeyboardMarkup(row_width=1);kb.add(types.InlineKeyboardButton('15 днів — 100 💎',callback_data='expb:preview:15'));kb.add(types.InlineKeyboardButton('30 днів — 180 💎',callback_data='expb:preview:30'));text='💎 Premium-бонус\\n\\nПід час перемоги над звичайними, елітними мобами та босами ти отримуєш:\\n\\n• +25% досвіду;\\n• +25% золота.\\n\\nPremium не збільшує нагороди за квести, контракти, продаж предметів, аукціон, адміністративні операції та нагороди гільдії.\\n\\nСтатус: '+('активний до '+_format_premium_expiration_kyiv(st['expires_at']) if st['active'] else 'неактивний');bot.send_message(message.chat.id,text,reply_markup=kb)"
+        }
+      ]
+    },
+    "handlers/timed_exp_bonus.py::callbacks": {
+      "path": "handlers/timed_exp_bonus.py",
+      "symbol": "callbacks",
+      "definition_count": 1,
+      "file_sha256": "b1ab8e7bb97daff6b410975e1d0b6df3f04c130100ec00beffebdac73516069a",
+      "definitions": [
+        {
+          "line_start": 25,
+          "line_end": 34,
+          "source_sha256": "8ff7ae5563916e0d6e1ef2f7b89e0a068b3610a1751227ff05a5ea6502a13a33",
+          "source": "def callbacks(call):\n  parts=call.data.split(':');action=parts[1];days=int(parts[2]);uid=call.from_user.id\n  if action=='preview':\n   p=preview_exp_bonus_purchase(uid,days)\n   if not p['success']:bot.answer_callback_query(call.id,p['message'],show_alert=True);return\n   kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton('✅ Придбати',callback_data=f'expb:buy:{days}'),types.InlineKeyboardButton('❌ Скасувати',callback_data=f'expb:cancel:{days}'));bot.edit_message_text(f\"💎 Premium-бонус\\n\\nПід час перемоги над звичайними, елітними мобами та босами ти отримуєш:\\n\\n• +25% досвіду;\\n• +25% золота.\\n\\nPremium не збільшує нагороди за квести, контракти, продаж предметів, аукціон, адміністративні операції та нагороди гільдії.\\n\\nТривалість: {days} днів\\nЦіна: {p['price']} 💎\\nБаланс: {p['balance']} → {p['balance_after']} 💎\\nДіятиме до: {_format_premium_expiration_kyiv(p['expires_at_after'])}\",call.message.chat.id,call.message.message_id,reply_markup=kb);bot.answer_callback_query(call.id);return\n  if action=='cancel':bot.edit_message_text('❌ Покупку бонусу досвіду скасовано.',call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id);return\n  key=f\"telegram:exp_bonus:{uid}:{call.message.chat.id}:{call.message.message_id}:{days}\";res=purchase_exp_bonus(uid,days,key)\n  if res['success']:bot.edit_message_text(f\"✅ 💎 Premium-бонус активовано.\\n\\n+25% досвіду та +25% золота за перемогу над мобами.\\n\\nТривалість: {days} днів\\nСписано: {res.get('price',res.get('purchase',{}).get('price_crystals'))} 💎\\nБаланс: {res['balance']} 💎\\nДіє до: {_format_premium_expiration_kyiv(res['expires_at_after'])}\",call.message.chat.id,call.message.message_id);bot.answer_callback_query(call.id,'Готово')\n  else:bot.answer_callback_query(call.id,res['message'],show_alert=True)"
+        }
+      ]
+    },
+    "handlers/timed_exp_bonus.py::_format_premium_expiration_kyiv": {
+      "path": "handlers/timed_exp_bonus.py",
+      "symbol": "_format_premium_expiration_kyiv",
+      "definition_count": 1,
+      "file_sha256": "b1ab8e7bb97daff6b410975e1d0b6df3f04c130100ec00beffebdac73516069a",
+      "definitions": [
+        {
+          "line_start": 6,
+          "line_end": 19,
+          "source_sha256": "70e33baa9ae6204f4884033acb22daa90fa061e5c2da9efe8a53eac0605c6b06",
+          "source": "def _format_premium_expiration_kyiv(value):\n \"\"\"Render a UTC string or datetime in the approved Kyiv presentation format.\"\"\"\n try:\n  from datetime import datetime as _datetime, timezone as _timezone\n  from zoneinfo import ZoneInfo\n  if isinstance(value, _datetime):\n   parsed=value\n  else:\n   parsed=_datetime.fromisoformat(str(value or '').replace('Z','+00:00'))\n  if parsed.tzinfo is None:\n   parsed=parsed.replace(tzinfo=_timezone.utc)\n  return parsed.astimezone(ZoneInfo('Europe/Kyiv')).strftime('%d.%m.%Y %H:%M за Києвом')\n except Exception:\n  return 'час завершення невідомий'"
+        }
+      ]
+    }
+  },
+  "v2_premium_shop_contract": {
+    "canonical_owner": "PremiumShopService",
+    "account_identity": "user_id",
+    "plan_15_key": "premium_15d",
+    "plan_15_days": 15,
+    "plan_15_price_crystals": 100,
+    "plan_30_key": "premium_30d",
+    "plan_30_days": 30,
+    "plan_30_price_crystals": 180,
+    "utc_expiry": true,
+    "inactive_base_now": true,
+    "active_base_existing_expiry": true,
+    "stable_operation_key_required": true,
+    "atomic_crystal_expiry_receipt": true,
+    "character_reset_survival": true,
+    "restart_safe": true,
+    "caller_owned_unit_of_work": true,
+    "single_commit": true,
+    "presentation_separate": true
+  },
+  "implementation_boundary": {
+    "allowed": [
+      "typed plan, preview, command, receipt and result DTOs",
+      "Premium service plus account, catalog, crystal wallet, receipt, clock and Unit-of-Work ports",
+      "UTC activation/extension semantics",
+      "in-memory fixtures",
+      "activation, extension, stale, idempotency, rollback and restart tests"
+    ],
+    "forbidden": [
+      "SQLite or production adapters",
+      "runtime or Telegram wiring",
+      "prices other than 100/180 or durations other than 15/30 days",
+      "direct SQL Premium mutation",
+      "second Premium owner",
+      "presentation text as technical identity"
+    ]
+  },
+  "summary": {
+    "input_unresolved_contracts": 6,
+    "resolved_contracts": 6,
+    "remaining_unresolved_contracts": 0,
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "implementation_authorized": true,
+  "runtime_integration_authorized": false,
+  "production_persistence_authorized": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_10_5c_implement_premium_shop.py",
+  "verification": {
+    "canonical_v2_ci": {
+      "schema_version": 1,
+      "status": "PASS",
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "compile",
+          "status": "PASS",
+          "file_count": 139,
+          "failures": []
+        },
+        {
+          "name": "imports",
+          "status": "PASS",
+          "module_count": 98,
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-c",
+              "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.base_equipment_shop', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.potion_trading', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "unit",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "tests_v2",
+              "-p",
+              "test_*.py"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": "...................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 211 tests in 14.030s\n\nOK"
+          }
+        },
+        {
+          "name": "architecture",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "tools/verify_v2_architecture.py",
+              "--project-root",
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+            ],
+            "returncode": 0,
+            "stdout": "V2 architecture enforcement: PASS\nPhysical files: 98\nImport edges: 350\nViolations: 0",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "duplicate_scan",
+          "status": "PASS",
+          "symbol_count": 373,
+          "duplicates": {}
+        },
+        {
+          "name": "content_validation",
+          "status": "PASS",
+          "file_count": 0,
+          "failures": []
+        }
+      ]
+    },
+    "removed_bytecode_before_ci": [],
+    "protected_before": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    },
+    "protected_after": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  }
+}
