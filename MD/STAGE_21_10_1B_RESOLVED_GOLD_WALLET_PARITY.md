@@ -1,4 +1,4 @@
-# Stage 21.10.2b - Resolved Crystal Wallet/Ledger parity
+# Stage 21.10.3b - Resolved Base Equipment Shop parity
 
 - Status: **PASS**
 - Conclusion: **GO_TO_IMPLEMENTATION**
@@ -10,29 +10,29 @@
 
 ## Resolutions
 
-### LEDGER_SCHEMA_AND_APPEND_ONLY
+### OFFER_AND_SUBOFFER_IDENTITY
 
-Every successful mutation appends one immutable ledger row containing transaction_id, idempotency_key, user_id, direction, amount, balance_before, balance_after, reason_code, source, original_transaction_id and created_at. Existing rows are never updated or deleted.
+Use stable technical offer_key and suboffer_key values derived from canonical slot/profile identifiers. Presentation labels are never identifiers. Unknown, mismatched or stale keys fail closed before mutation.
 
-### IDEMPOTENCY_KEY_CONFLICT_POLICY
+### PREVIEW_SNAPSHOT_AND_EXPIRY
 
-Every mutation requires a stable idempotency_key. Same key plus identical canonical payload returns the original transaction; same key with changed payload fails as conflict without mutation.
+A preview is an immutable user-owned snapshot containing preview_id, user_id, offer_key, suboffer_key, class_key, generated item snapshot, quoted_price and created_at. Only one active preview per user/offer context is authoritative; cancel, replacement and expiry invalidate it without consuming a permanent ID.
 
-### COMPENSATION_EXACT_ONCE_POLICY
+### PRICE_AND_GOLD_DEBIT_SNAPSHOT
 
-Compensation is a new opposite-direction ledger transaction linked to exactly one original transaction. Repeating the same compensation key replays; a second distinct compensation for an already compensated original is rejected. Compensation of compensation is forbidden.
+Confirmation uses the quoted_price stored in the preview. Sufficient gold is checked before promotion or inventory mutation. Gold debit, promotion, inventory insertion and receipt share one caller-owned Unit of Work and one commit.
 
-### NON_NEGATIVE_AND_CLAMP_POLICY
+### INVENTORY_CAPACITY_AND_INSERTION
 
-Canonical debit is fail-closed and never clamps. Administrative removal may calculate a clamped requested amount before issuing one explicit debit command; the wallet itself still rejects insufficient balance and never becomes negative.
+Inventory capacity and user ownership are validated before the first mutation. A purchased promoted item is inserted exactly once with the preview's complete equipment snapshot; full inventory fails closed without debit or promotion.
 
-### TRANSACTION_AND_COMMIT_OWNERSHIP
+### PROMOTION_ATOMICITY_AND_IDEMPOTENCY
 
-CrystalWalletLedgerService mutates wallet and appends ledger through a caller-supplied Unit of Work. The application use case owns exactly one commit; every failure rolls back balance, ledger and consumer mutation together.
+Confirmation requires a stable operation_key. Same key and same preview payload replay the original receipt. Changed payload conflicts. Preview-to-permanent promotion allocates one never-reused permanent ID and commits atomically with debit and insertion; rollback leaves no partial purchase.
 
 ### CONSUMER_ALLOWLIST_AND_SHADOW_OWNERS
 
-Production consumers use only CrystalWalletLedgerService. Allowed categories are admin, crystal_shop, bag_expansion, premium_purchase, daily_or_milestone_reward, refund and compensation. Direct SQL/setter mutation, DEV/presentation ownership and a second wallet owner are forbidden.
+BaseEquipmentShopService is the sole V2 owner. Allowed consumers are shop presentation and explicit recovery tooling. Legacy direct trader purchase, direct SQL mutation, allocator bypass and presentation-owned mutation are forbidden production paths.
 
 ## Implementation boundary
 
@@ -40,4 +40,4 @@ Only the API-ready V2 domain/application layer is authorized. SQLite, production
 
 ## Next patch
 
-`patch_21_10_2c_implement_crystal_wallet_ledger.py`
+`patch_21_10_3c_implement_base_equipment_shop.py`

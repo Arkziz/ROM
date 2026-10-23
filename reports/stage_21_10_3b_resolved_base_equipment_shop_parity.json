@@ -1,0 +1,349 @@
+{
+  "schema_version": 1,
+  "stage": "21.10.3b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "generated_at_utc": "2026-10-23T20:12:41.674452+00:00",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "parent": "94a871bd835551dda149ea663174f451e8665d39"
+  },
+  "source_contract": "reports/stage_21_10_3a_refined_base_equipment_shop_contract.json",
+  "source_contract_sha256": "08dd80f3a80a6df864becef8beb772e2923b9836f24504d8fc36ba82364cee08",
+  "resolved_contracts": {
+    "OFFER_AND_SUBOFFER_IDENTITY": {
+      "status": "RESOLVED",
+      "decision": "Use stable technical offer_key and suboffer_key values derived from canonical slot/profile identifiers. Presentation labels are never identifiers. Unknown, mismatched or stale keys fail closed before mutation."
+    },
+    "PREVIEW_SNAPSHOT_AND_EXPIRY": {
+      "status": "RESOLVED",
+      "decision": "A preview is an immutable user-owned snapshot containing preview_id, user_id, offer_key, suboffer_key, class_key, generated item snapshot, quoted_price and created_at. Only one active preview per user/offer context is authoritative; cancel, replacement and expiry invalidate it without consuming a permanent ID."
+    },
+    "PRICE_AND_GOLD_DEBIT_SNAPSHOT": {
+      "status": "RESOLVED",
+      "decision": "Confirmation uses the quoted_price stored in the preview. Sufficient gold is checked before promotion or inventory mutation. Gold debit, promotion, inventory insertion and receipt share one caller-owned Unit of Work and one commit."
+    },
+    "INVENTORY_CAPACITY_AND_INSERTION": {
+      "status": "RESOLVED",
+      "decision": "Inventory capacity and user ownership are validated before the first mutation. A purchased promoted item is inserted exactly once with the preview's complete equipment snapshot; full inventory fails closed without debit or promotion."
+    },
+    "PROMOTION_ATOMICITY_AND_IDEMPOTENCY": {
+      "status": "RESOLVED",
+      "decision": "Confirmation requires a stable operation_key. Same key and same preview payload replay the original receipt. Changed payload conflicts. Preview-to-permanent promotion allocates one never-reused permanent ID and commits atomically with debit and insertion; rollback leaves no partial purchase."
+    },
+    "CONSUMER_ALLOWLIST_AND_SHADOW_OWNERS": {
+      "status": "RESOLVED",
+      "decision": "BaseEquipmentShopService is the sole V2 owner. Allowed consumers are shop presentation and explicit recovery tooling. Legacy direct trader purchase, direct SQL mutation, allocator bypass and presentation-owned mutation are forbidden production paths."
+    }
+  },
+  "authoritative_v1_evidence": {
+    "db_modules/shop.py::get_common_equipment_shop_offer": {
+      "path": "db_modules/shop.py",
+      "symbol": "get_common_equipment_shop_offer",
+      "definition_count": 1,
+      "file_sha256": "9da1260fa7b375485480cd9a06d93b485efff54bae2ec369e560aa8e384facc0",
+      "definitions": [
+        {
+          "line_start": 83,
+          "line_end": 101,
+          "source_sha256": "5aa724aabb436b689c9e6881f725434ef1eb5e07b58ebb21f9150175e6f6be25",
+          "source": "def get_common_equipment_shop_offer(user_id):\n    \"\"\"Формує список пропозицій магазину екіпірування для користувача.\"\"\"\n    from .player import get_player_level\n    \n    player_level = get_player_level(user_id)\n    offers = []\n\n    for slot_key in SLOT_ORDER:\n        slot_name = EQUIPMENT_SLOTS.get(slot_key, slot_key)\n        price = get_common_equipment_price_for_slot(player_level, slot_key)\n\n        offers.append({\n            \"slot_key\": slot_key,\n            \"slot_name\": slot_name,\n            \"item_level\": player_level,\n            \"price\": price\n        })\n\n    return offers"
+        }
+      ]
+    },
+    "db_modules/shop.py::get_common_equipment_shop_suboffers": {
+      "path": "db_modules/shop.py",
+      "symbol": "get_common_equipment_shop_suboffers",
+      "definition_count": 1,
+      "file_sha256": "9da1260fa7b375485480cd9a06d93b485efff54bae2ec369e560aa8e384facc0",
+      "definitions": [
+        {
+          "line_start": 104,
+          "line_end": 143,
+          "source_sha256": "c380412d448c40362a407fe2542d08a85773191169b9b7eabc348c89f224b5ef",
+          "source": "def get_common_equipment_shop_suboffers(user_id, slot_key):\n    \"\"\"Повертає підпропозиції для конкретного слота екіпірування.\"\"\"\n    from .player import get_player_level\n    \n    player_level = get_player_level(user_id)\n    price = get_common_equipment_price_for_slot(player_level, slot_key)\n\n    if slot_key == \"main_hand\":\n        allowed_profiles = get_allowed_shop_main_hand_profiles(user_id)\n\n        return [\n            {\n                \"slot_key\": slot_key,\n                \"profile_key\": profile_key,\n                \"name\": MAIN_HAND_PROFILES[profile_key][\"name\"],\n                \"hands\": MAIN_HAND_PROFILES[profile_key][\"hands\"],\n                \"attack_type\": MAIN_HAND_PROFILES[profile_key][\"attack_type\"],\n                \"item_level\": player_level,\n                \"price\": price\n            }\n            for profile_key in allowed_profiles\n        ]\n\n    if slot_key == \"off_hand\":\n        allowed_profiles = get_allowed_shop_off_hand_profiles(user_id)\n\n        return [\n            {\n                \"slot_key\": slot_key,\n                \"profile_key\": profile_key,\n                \"name\": OFF_HAND_PROFILES[profile_key][\"name\"],\n                \"hands\": 1,\n                \"attack_type\": OFF_HAND_PROFILES[profile_key][\"attack_type\"],\n                \"item_level\": player_level,\n                \"price\": price\n            }\n            for profile_key in allowed_profiles\n        ]\n\n    return []"
+        }
+      ]
+    },
+    "db_modules/shop.py::get_common_equipment_price_for_slot": {
+      "path": "db_modules/shop.py",
+      "symbol": "get_common_equipment_price_for_slot",
+      "definition_count": 1,
+      "file_sha256": "9da1260fa7b375485480cd9a06d93b485efff54bae2ec369e560aa8e384facc0",
+      "definitions": [
+        {
+          "line_start": 39,
+          "line_end": 42,
+          "source_sha256": "844a71412e62961257eeb69d73e009cc6986ee2922c4f6ba6b9a10203f283524",
+          "source": "def get_common_equipment_price_for_slot(item_level, slot_key):\n    \"\"\"Розраховує ціну для звичайного предмета за слотом.\"\"\"\n    multiplier = COMMON_SHOP_PRICE_MULTIPLIERS.get(slot_key, 1.5)\n    return round(max(1.0, item_level * multiplier), 2)"
+        }
+      ]
+    },
+    "db_modules/shop.py::create_common_equipment_shop_preview": {
+      "path": "db_modules/shop.py",
+      "symbol": "create_common_equipment_shop_preview",
+      "definition_count": 1,
+      "file_sha256": "9da1260fa7b375485480cd9a06d93b485efff54bae2ec369e560aa8e384facc0",
+      "definitions": [
+        {
+          "line_start": 190,
+          "line_end": 402,
+          "source_sha256": "3213b3c00a6790a024f0d581d68ffd072a42a092395216e886597c5d6af80c4f",
+          "source": "def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):\n    \"\"\"\n    Створює preview-предмет у таблиці items для попереднього перегляду покупки.\n    \"\"\"\n    from systems import dynamic_equipment_system\n    from systems.equipment_system import is_armor_slot\n    from .equipment import init_weapon_damage_system, calculate_weapon_damage_by_values\n    from .player import get_player_level\n    from .inventory import get_bag_capacity, get_inventory_used_slots\n    from .utils import format_gold\n    from .character import get_character_class\n    from data.equipment_stat_policy import redistribute_primary_stat_budget\n\n    \n    # Init systems\n    try:\n        dynamic_equipment_system.init_dynamic_equipment_system()\n    except:\n        pass\n    \n    init_weapon_damage_system()\n    init_shop_preview_system()\n    cleanup_shop_previews_for_user(user_id)\n\n    if slot_key not in SLOT_ORDER:\n        return {\n            \"success\": False,\n            \"message\": \"❌ Невідомий слот спорядження.\"\n        }\n\n    if slot_key == \"main_hand\" and item_profile not in MAIN_HAND_PROFILES:\n        return {\n            \"success\": False,\n            \"message\": \"❌ Невідомий тип зброї.\"\n        }\n\n    if slot_key == \"off_hand\" and item_profile not in OFF_HAND_PROFILES:\n        return {\n            \"success\": False,\n            \"message\": \"❌ Невідомий тип предмета для другої руки.\"\n        }\n\n    if slot_key in [\"main_hand\", \"off_hand\"]:\n        if not is_shop_profile_allowed_for_user(user_id, slot_key, item_profile):\n            return {\n                \"success\": False,\n                \"message\": \"❌ Цей предмет не підходить твоєму класу.\"\n            }\n\n    player_level = get_player_level(user_id)\n    item_level = player_level\n    rarity = \"common\"\n    price = get_common_equipment_price_for_slot(item_level, slot_key)\n\n    item_profile = get_profile_for_generated_item(slot_key, item_profile)\n\n    weapon_hands = 1\n    weapon_attack_type = \"\"\n    armor_type = \"\"\n\n    if slot_key == \"main_hand\":\n        profile = MAIN_HAND_PROFILES[item_profile]\n        weapon_hands = profile[\"hands\"]\n        weapon_attack_type = profile[\"attack_type\"]\n        name = dynamic_equipment_system.get_dynamic_weapon_name(slot_key, rarity, weapon_hands, item_profile)\n        type_ = \"weapon\"\n\n    elif slot_key == \"off_hand\":\n        profile = OFF_HAND_PROFILES[item_profile]\n        weapon_hands = 1\n        weapon_attack_type = profile[\"attack_type\"]\n        name = dynamic_equipment_system.get_dynamic_weapon_name(slot_key, rarity, weapon_hands, item_profile)\n        type_ = \"offhand\"\n\n    else:\n        item_profile = \"\"\n        weapon_hands = 1\n        armor_type = get_shop_armor_type_for_user(user_id)\n        name = dynamic_equipment_system.get_dynamic_armor_name(slot_key, rarity)\n        type_ = slot_key\n\n    name = f\"{name} {item_level} рівня\"\n\n    stats = dynamic_equipment_system.generate_dynamic_equipment_stats(\n        slot_key=slot_key,\n        item_level=item_level,\n        rarity=rarity,\n        weapon_hands=weapon_hands,\n        item_profile=item_profile\n    )\n\n    if is_armor_slot(slot_key):\n        stats = dynamic_equipment_system.apply_armor_type_defense_profile_to_stats(\n            stats=stats,\n            armor_type=armor_type\n        )\n\n    # Stage 20.6.5b: the base shop is strict class-aware, including jewelry.\n    # Mob loot remains identity-aware and keeps universal random jewelry stats.\n    target_class = get_character_class(user_id)\n    if slot_key == \"main_hand\":\n        equipment_kind = \"weapon\"\n    elif slot_key == \"off_hand\":\n        equipment_kind = \"off_hand\"\n    elif slot_key in (\"necklace\", \"ring\"):\n        equipment_kind = \"jewelry\"\n    else:\n        equipment_kind = \"armor\"\n    stats = redistribute_primary_stat_budget(\n        stats,\n        target_class,\n        equipment_kind,\n        item_subtype=item_profile,\n        chooser=lambda profile: random.choices(\n            [stat for stat, _weight in profile],\n            weights=[weight for _stat, weight in profile],\n            k=1,\n        )[0],\n    )\n\n    sell_price = dynamic_equipment_system.get_dynamic_sell_price(item_level, rarity)\n\n    weapon_min_damage = 0\n    weapon_max_damage = 0\n    weapon_min_magic_damage = 0\n    weapon_max_magic_damage = 0\n\n    if slot_key == \"main_hand\":\n        min_dmg, max_dmg = calculate_weapon_damage_by_values(\n            item_level=item_level,\n            rarity=rarity,\n            weapon_hands=weapon_hands\n        )\n\n        if weapon_attack_type == \"magical\":\n            weapon_min_magic_damage = min_dmg\n            weapon_max_magic_damage = max_dmg\n        else:\n            weapon_min_damage = min_dmg\n            weapon_max_damage = max_dmg\n\n    item_id = allocate_shop_preview_item_id(conn)\n    cursor.execute(\"\"\"\n    INSERT INTO items (\n        id,\n        name,\n        type,\n        rarity,\n        category,\n        slot_key,\n        weapon_hands,\n        max_stack,\n        sell_price,\n        bonus_str,\n        bonus_dex,\n        bonus_int,\n        bonus_wis,\n        bonus_sta,\n        pdef,\n        mdef,\n        item_level,\n        is_generated,\n        item_subtype,\n        weapon_min_damage,\n        weapon_max_damage,\n        weapon_min_magic_damage,\n        weapon_max_magic_damage,\n        weapon_attack_type,\n        armor_type,\n        shop_preview_owner,\n        shop_preview_price\n    )\n    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n    \"\"\", (\n        item_id,\n        name,\n        type_,\n        rarity,\n        \"equipment\",\n        slot_key,\n        weapon_hands,\n        1,\n        sell_price,\n        stats[\"bonus_str\"],\n        stats[\"bonus_dex\"],\n        stats[\"bonus_int\"],\n        stats[\"bonus_wis\"],\n        stats[\"bonus_sta\"],\n        stats[\"pdef\"],\n        stats[\"mdef\"],\n        item_level,\n        1,\n        item_profile,\n        weapon_min_damage,\n        weapon_max_damage,\n        weapon_min_magic_damage,\n        weapon_max_magic_damage,\n        weapon_attack_type,\n        armor_type,\n        user_id,\n        price\n    ))\n\n    conn.commit()\n\n    return {\n        \"success\": True,\n        \"item_id\": item_id,\n        \"price\": price,\n        \"name\": name,\n        \"armor_type\": armor_type,\n        \"item_subtype\": item_profile\n    }"
+        }
+      ]
+    },
+    "db_modules/shop.py::cancel_common_equipment_shop_preview": {
+      "path": "db_modules/shop.py",
+      "symbol": "cancel_common_equipment_shop_preview",
+      "definition_count": 1,
+      "file_sha256": "9da1260fa7b375485480cd9a06d93b485efff54bae2ec369e560aa8e384facc0",
+      "definitions": [
+        {
+          "line_start": 444,
+          "line_end": 462,
+          "source_sha256": "29aeea4400812a322f01412d8aa8817a3a292aca7a900e36ed2b4f94421393f6",
+          "source": "def cancel_common_equipment_shop_preview(user_id, item_id):\n    \"\"\"Скасовує preview покупки.\"\"\"\n    init_shop_preview_system()\n\n    cursor.execute(\"\"\"\n    DELETE FROM items\n    WHERE id=?\n      AND shop_preview_owner=?\n      AND id NOT IN (\n          SELECT item_id FROM inventory\n      )\n    \"\"\", (item_id, user_id))\n\n    conn.commit()\n\n    return {\n        \"success\": True,\n        \"message\": \"❌ Купівлю скасовано.\"\n    }"
+        }
+      ]
+    },
+    "db_modules/shop.py::confirm_common_equipment_shop_preview": {
+      "path": "db_modules/shop.py",
+      "symbol": "confirm_common_equipment_shop_preview",
+      "definition_count": 1,
+      "file_sha256": "9da1260fa7b375485480cd9a06d93b485efff54bae2ec369e560aa8e384facc0",
+      "definitions": [
+        {
+          "line_start": 465,
+          "line_end": 485,
+          "source_sha256": "d81e871960d117a9883e39d0127520087a8e92e597494c73dbad5a069ee6c34e",
+          "source": "def confirm_common_equipment_shop_preview(user_id, item_id):\n    \"\"\"Canonical UI adapter for the atomic preview purchase path.\"\"\"\n    from .utils import format_gold\n    preview = get_shop_preview_item(item_id, user_id)\n    if not preview:\n        return {\"success\": False, \"message\": \"❌ Попередній перегляд предмета не знайдено або застарів.\"}\n    price = float(preview[24] or 0)\n    name = str(preview[1] or \"Предмет\")\n    success, message = purchase_shop_preview_item(user_id, item_id)\n    if not success:\n        return {\"success\": False, \"message\": message}\n    from .player import get_wallet\n    return {\n        \"success\": True,\n        \"message\": (\n            f\"✅ Куплено базове спорядження.\\n\\n\"\n            f\"📦 {name}\\n\"\n            f\"💳 Сплачено: {format_gold(price)}\\n\"\n            f\"💰 Залишилось: {format_gold(get_wallet(user_id))}\"\n        )\n    }"
+        }
+      ]
+    },
+    "db_modules/shop.py::purchase_shop_preview_item": {
+      "path": "db_modules/shop.py",
+      "symbol": "purchase_shop_preview_item",
+      "definition_count": 1,
+      "file_sha256": "9da1260fa7b375485480cd9a06d93b485efff54bae2ec369e560aa8e384facc0",
+      "definitions": [
+        {
+          "line_start": 648,
+          "line_end": 699,
+          "source_sha256": "f1b578765838891fc27433a7fcaf04977ec381e44b3684d6252cec21a8a25468",
+          "source": "def purchase_shop_preview_item(user_id, item_id):\n    \"\"\"Atomically revalidate, deliver, and charge for a shop-preview item.\"\"\"\n    # ROM 17.5.1 ATOMIC SHOP PURCHASE\n    from .inventory import add_item\n\n    try:\n        cursor.execute(\"BEGIN IMMEDIATE\")\n        row = cursor.execute(\n            \"\"\"SELECT id, name, shop_preview_price\n               FROM items\n               WHERE id=? AND shop_preview_owner=?\n                 AND shop_preview_price>0\"\"\",\n            (item_id, user_id),\n        ).fetchone()\n        if not row:\n            conn.rollback()\n            return (False, \"❌ Предмет не знайдено в магазині!\")\n        preview_item_id = int(row[0])\n        current_item_id = promote_shop_preview_item(conn, preview_item_id)\n        name = str(row[1] or \"Предмет\")\n        price = float(row[2] or 0)\n        wallet_row = cursor.execute(\n            \"SELECT COALESCE(gold,0) FROM users WHERE user_id=?\", (user_id,)\n        ).fetchone()\n        wallet = float(wallet_row[0] or 0) if wallet_row else 0.0\n        if wallet < price:\n            conn.rollback()\n            return (False, f\"❌ Недостатньо золота! Потрібно: {price}, є: {wallet}\")\n\n        result = add_item(\n            user_id, current_item_id, quantity=1, durability=100, commit=False\n        )\n        if (not result.get(\"success\") or\n                int(result.get(\"added\", 0) or 0) != 1 or\n                int(result.get(\"lost\", 0) or 0) != 0):\n            conn.rollback()\n            return (False, result.get(\"message\", \"❌ Предмет не вдалося додати.\"))\n\n        changed = cursor.execute(\n            \"\"\"UPDATE users SET gold=COALESCE(gold,0)-?\n               WHERE user_id=? AND COALESCE(gold,0)>=?\"\"\",\n            (price, user_id, price),\n        ).rowcount\n        if changed != 1:\n            conn.rollback()\n            return (False, \"❌ Баланс змінився. Покупку скасовано.\")\n        cursor.execute(\"DELETE FROM items WHERE id=?\", (preview_item_id,))\n        conn.commit()\n        return (True, f\"✅ Куплено {name} за {price} золота!\")\n    except Exception as error:\n        conn.rollback()\n        return (False, f\"❌ Не вдалося завершити покупку: {error}\")"
+        }
+      ]
+    },
+    "db_modules/shop.py::generate_class_shop_equipment": {
+      "path": "db_modules/shop.py",
+      "symbol": "generate_class_shop_equipment",
+      "definition_count": 1,
+      "file_sha256": "9da1260fa7b375485480cd9a06d93b485efff54bae2ec369e560aa8e384facc0",
+      "definitions": [
+        {
+          "line_start": 816,
+          "line_end": 871,
+          "source_sha256": "e821867eb734ea9118fa9d323cb392fc67696893e2d4b3f88284525e0e07dd6c",
+          "source": "def generate_class_shop_equipment(character_class, player_level):\n    \"\"\"Return canonical read-only class-shop offer descriptors.\n\n    Compatibility API only. This function does not generate random stats, create\n    item rows, or create shop previews. Actual preview creation remains owned by\n    create_common_equipment_shop_preview(user_id, slot_key, item_profile).\n    \"\"\"\n    from data.equipment_stat_policy import (\n        CLASS_ARMOR_TYPES,\n        CLASS_MAIN_HAND_SUBTYPES,\n        CLASS_OFF_HAND_SUBTYPES,\n        normalize_equipment_class,\n    )\n\n    class_key = normalize_equipment_class(character_class)\n    try:\n        item_level = max(1, int(player_level))\n    except (TypeError, ValueError):\n        item_level = 1\n\n    offers = []\n    armor_type = CLASS_ARMOR_TYPES[class_key]\n    for slot_key in (\"helmet\", \"shoulders\", \"chest\", \"gloves\", \"legs\", \"boots\"):\n        offers.append({\n            \"slot_key\": slot_key,\n            \"item_profile\": \"\",\n            \"armor_type\": armor_type,\n            \"item_level\": item_level,\n            \"rarity\": \"common\",\n            \"target_class\": class_key,\n            \"preview_api\": \"create_common_equipment_shop_preview\",\n        })\n\n    for item_profile in CLASS_MAIN_HAND_SUBTYPES[class_key]:\n        offers.append({\n            \"slot_key\": \"main_hand\",\n            \"item_profile\": item_profile,\n            \"armor_type\": \"\",\n            \"item_level\": item_level,\n            \"rarity\": \"common\",\n            \"target_class\": class_key,\n            \"preview_api\": \"create_common_equipment_shop_preview\",\n        })\n\n    for item_profile in CLASS_OFF_HAND_SUBTYPES[class_key]:\n        offers.append({\n            \"slot_key\": \"off_hand\",\n            \"item_profile\": item_profile,\n            \"armor_type\": \"\",\n            \"item_level\": item_level,\n            \"rarity\": \"common\",\n            \"target_class\": class_key,\n            \"preview_api\": \"create_common_equipment_shop_preview\",\n        })\n\n    return offers"
+        }
+      ]
+    },
+    "systems/item_id_allocator_system.py::allocate_shop_preview_item_id": {
+      "path": "systems/item_id_allocator_system.py",
+      "symbol": "allocate_shop_preview_item_id",
+      "definition_count": 1,
+      "file_sha256": "36a0497ed8ed00e91e4fea6cf56347774690f671b772c1269efc65552f045045",
+      "definitions": [
+        {
+          "line_start": 55,
+          "line_end": 56,
+          "source_sha256": "d670c2cccb8134fc62930718dc82b9c617a5de59708370142f1e2dc1243714fe",
+          "source": "def allocate_shop_preview_item_id(conn):\n    return _allocate(conn,PREVIEW_NAMESPACE)"
+        }
+      ]
+    },
+    "systems/item_id_allocator_system.py::promote_shop_preview_item": {
+      "path": "systems/item_id_allocator_system.py",
+      "symbol": "promote_shop_preview_item",
+      "definition_count": 1,
+      "file_sha256": "36a0497ed8ed00e91e4fea6cf56347774690f671b772c1269efc65552f045045",
+      "definitions": [
+        {
+          "line_start": 61,
+          "line_end": 72,
+          "source_sha256": "c3cbd1b448909a2b5bd62c321cd9f67d0ad1a40cb1f1fa4e339b9e65903bf1f5",
+          "source": "def promote_shop_preview_item(conn,preview_item_id):\n    preview_item_id=int(preview_item_id)\n    row=conn.execute(\"SELECT * FROM items WHERE id=? AND shop_preview_owner IS NOT NULL AND COALESCE(shop_preview_price,0)>0\",(preview_item_id,)).fetchone()\n    if not row: raise RuntimeError(\"Shop preview item not found\")\n    columns=[str(r[1]) for r in conn.execute(\"PRAGMA table_info(items)\")]\n    target=allocate_generated_item_id(conn)\n    values=list(row); values[columns.index(\"id\")]=target\n    if \"shop_preview_owner\" in columns: values[columns.index(\"shop_preview_owner\")]=None\n    if \"shop_preview_price\" in columns: values[columns.index(\"shop_preview_price\")]=0\n    conn.execute(\"INSERT INTO items(\"+\",\".join('\"'+c+'\"' for c in columns)+\") VALUES(\"+\",\".join('?' for _ in columns)+\")\",values)\n    record_item_id_mapping(conn,preview_item_id,target,\"shop_preview_purchase\",\"18.1.9a\")\n    return target"
+        }
+      ]
+    },
+    "systems/item_id_allocator_system.py::recover_stranded_preview_item": {
+      "path": "systems/item_id_allocator_system.py",
+      "symbol": "recover_stranded_preview_item",
+      "definition_count": 1,
+      "file_sha256": "36a0497ed8ed00e91e4fea6cf56347774690f671b772c1269efc65552f045045",
+      "definitions": [
+        {
+          "line_start": 73,
+          "line_end": 88,
+          "source_sha256": "d3108642cea7654c6181b38e75d2a03f5dc1efa9b66414ef01cbab3ea62aa576",
+          "source": "def recover_stranded_preview_item(conn,source_item_id):\n    \"\"\"Move an already-purchased item out of preview namespace atomically.\"\"\"\n    source_item_id=int(source_item_id)\n    row=conn.execute(\"SELECT * FROM items WHERE id=? AND shop_preview_owner IS NULL AND COALESCE(shop_preview_price,0)=0\",(source_item_id,)).fetchone()\n    if not row: raise RuntimeError(\"Stranded preview item not found\")\n    columns=[str(r[1]) for r in conn.execute(\"PRAGMA table_info(items)\")]\n    target=allocate_generated_item_id(conn)\n    values=list(row); values[columns.index(\"id\")]=target\n    conn.execute(\"INSERT INTO items(\"+\",\".join('\"'+c+'\"' for c in columns)+\") VALUES(\"+\",\".join('?' for _ in columns)+\")\",values)\n    reference_columns=((\"auction_lots\",\"item_ref_id\"),(\"character_name_changes\",\"item_id\"),(\"crystal_shop_purchases\",\"item_id\"),(\"inventory\",\"item_id\"),(\"inventory_runes\",\"rune_item_id\"),(\"player_trade_offers\",\"item_id\"),(\"premium_item_grants\",\"item_id\"),(\"refine_attempts\",\"item_id\"))\n    for table,column in reference_columns:\n        known={str(r[1]) for r in conn.execute('PRAGMA table_info(\"'+table+'\")')}\n        if column in known: conn.execute(f'UPDATE \"{table}\" SET \"{column}\"=? WHERE \"{column}\"=?',(target,source_item_id))\n    record_item_id_mapping(conn,source_item_id,target,\"shop_preview_purchase_recovery\",\"18.1.9b\")\n    conn.execute(\"DELETE FROM items WHERE id=?\",(source_item_id,))\n    return target"
+        }
+      ]
+    },
+    "handlers/city.py::confirm_common_shop_purchase": {
+      "path": "handlers/city.py",
+      "symbol": "confirm_common_shop_purchase",
+      "definition_count": 1,
+      "file_sha256": "a73373e0bf4ae90e2d7d4e6c7b417847d401c6b4555514431a3acfed3836b0c3",
+      "definitions": [
+        {
+          "line_start": 664,
+          "line_end": 672,
+          "source_sha256": "ed49ec6a771b56a70524d00c8f53a4b5101f8ca4752af8a5cb1b87698f23e728",
+          "source": "def confirm_common_shop_purchase(call):\n        user_id = call.from_user.id\n        item_id = int(call.data.split(':')[1])\n        slot_key = get_base_equipment_preview_slot_17_11_1_1(user_id, item_id)\n        result = confirm_common_equipment_shop_preview(user_id=user_id, item_id=item_id)\n        bot.answer_callback_query(call.id)\n        bot.send_message(call.message.chat.id, result['message'], reply_markup=trade_district_submenu_kb_17_11_1())\n        text, kb = build_base_equipment_return_view_17_11_1_1(user_id, slot_key)\n        bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        }
+      ]
+    }
+  },
+  "v2_base_equipment_shop_contract": {
+    "canonical_owner": "BaseEquipmentShopService",
+    "class_aware_offers": true,
+    "stable_offer_keys": true,
+    "immutable_preview_snapshot": true,
+    "quoted_price_locked": true,
+    "user_owned_preview": true,
+    "inventory_preflight": true,
+    "stable_operation_key_required": true,
+    "never_reuse_permanent_id": true,
+    "atomic_promotion_purchase": true,
+    "caller_owned_unit_of_work": true,
+    "single_commit": true,
+    "presentation_separate": true
+  },
+  "implementation_boundary": {
+    "allowed": [
+      "typed offer, preview, confirmation, receipt and result DTOs",
+      "shop service and offer/generator/allocator/inventory/wallet/Unit-of-Work ports",
+      "deterministic class-aware offer filtering",
+      "in-memory fixtures",
+      "stale, rejection, idempotency, rollback and restart tests"
+    ],
+    "forbidden": [
+      "SQLite or production adapters",
+      "runtime or Telegram wiring",
+      "new prices, items, classes or compatibility rules",
+      "direct SQL purchase mutation",
+      "second shop owner",
+      "presentation text as technical identity"
+    ]
+  },
+  "summary": {
+    "input_unresolved_contracts": 6,
+    "resolved_contracts": 6,
+    "remaining_unresolved_contracts": 0,
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "implementation_authorized": true,
+  "runtime_integration_authorized": false,
+  "production_persistence_authorized": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_10_3c_implement_base_equipment_shop.py",
+  "verification": {
+    "canonical_v2_ci": {
+      "schema_version": 1,
+      "status": "PASS",
+      "failed_checks": [],
+      "checks": [
+        {
+          "name": "compile",
+          "status": "PASS",
+          "file_count": 135,
+          "failures": []
+        },
+        {
+          "name": "imports",
+          "status": "PASS",
+          "module_count": 96,
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-c",
+              "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "unit",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "-m",
+              "unittest",
+              "discover",
+              "-s",
+              "tests_v2",
+              "-p",
+              "test_*.py"
+            ],
+            "returncode": 0,
+            "stdout": "",
+            "stderr": ".................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 193 tests in 13.190s\n\nOK"
+          }
+        },
+        {
+          "name": "architecture",
+          "status": "PASS",
+          "execution": {
+            "command": [
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+              "tools/verify_v2_architecture.py",
+              "--project-root",
+              "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+            ],
+            "returncode": 0,
+            "stdout": "V2 architecture enforcement: PASS\nPhysical files: 96\nImport edges: 342\nViolations: 0",
+            "stderr": ""
+          }
+        },
+        {
+          "name": "duplicate_scan",
+          "status": "PASS",
+          "symbol_count": 345,
+          "duplicates": {}
+        },
+        {
+          "name": "content_validation",
+          "status": "PASS",
+          "file_count": 0,
+          "failures": []
+        }
+      ]
+    },
+    "removed_bytecode_before_ci": [],
+    "protected_before": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    },
+    "protected_after": {
+      "game.db": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac",
+      "game.db-wal": "b3f39f4497c80a940f218c935988fca0a8e8db2008c117fae825cd3c3ac651e7",
+      "game.db-shm": "67f8f627628085d930a8972f09048d384092949703b2262be31162513a550a43",
+      ".env": "78f098fe5f0773e20121eb898e02c40ab3b1ba231204a13bf19ac40a5e7e8b42",
+      "rom_v2/.env": "32e9334b989a658a1969a50da832477c8561a9813532f38e87ef49de5a26bcfc",
+      ".runtime/v2/db/rom_v2.db": "647e399f865d5a0360278d904258f35954aa8ec053da815b2705ae0e0dce3c26"
+    }
+  }
+}
