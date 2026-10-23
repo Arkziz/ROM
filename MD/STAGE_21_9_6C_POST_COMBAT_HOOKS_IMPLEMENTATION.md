@@ -1,4 +1,4 @@
-# Stage 21.9.6c - Premium combat modifiers implementation
+## Stage 21.9.6c - Post-combat hooks implementation
 
 - Status: **PASS**
 - Conclusion: **API_READY**
