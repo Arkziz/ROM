@@ -1,0 +1,405 @@
+{
+  "schema_version": 1,
+  "stage": "21.11.3",
+  "status": "PASS",
+  "conclusion": "GO_TO_SEMANTIC_REFINEMENT",
+  "generated_at_utc": "2026-10-24T21:08:53.579276+00:00",
+  "source_prerequisite": "reports/stage_21_11_2c_world_graph_implementation.json",
+  "summary": {
+    "contract_count": 10,
+    "v1_confirmed_contracts": 3,
+    "review_required_contracts": 7,
+    "unresolved_contracts": [
+      "START_AND_AVAILABILITY_PIPELINE",
+      "SINGLE_ACTIVE_AND_BUSY_RESTRICTIONS",
+      "CANCEL_REVISION_AND_TERMINAL_POLICY",
+      "COMPLETE_LOCATION_MUTATION_ATOMICITY",
+      "RESTART_RECOVERY_AND_WORKER_POLICY",
+      "FAILURE_REASONS_AND_IDEMPOTENCY",
+      "CONSUMER_PRESENTATION_AND_NOTIFICATION_BOUNDARY"
+    ],
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "canonical_v1_evidence": {
+    "authoritative_owner": "systems/travel_system.py",
+    "owner_symbols": [
+      "cancel_travel",
+      "complete_travel",
+      "get_active_travel",
+      "get_due_active_travels",
+      "get_travel",
+      "init_travel_system",
+      "is_user_travelling",
+      "recover_due_travels",
+      "recover_travels_after_restart",
+      "start_travel",
+      "start_travel_worker"
+    ],
+    "schema": {
+      "table": "location_travels",
+      "columns": [
+        "id",
+        "user_id",
+        "from_node",
+        "to_node",
+        "status",
+        "revision",
+        "started_at",
+        "arrival_at",
+        "cancelled_at",
+        "completed_at",
+        "created_at",
+        "updated_at"
+      ],
+      "statuses": [
+        "active",
+        "arrived",
+        "cancelled",
+        "failed"
+      ],
+      "single_active_user_partial_unique_index": true,
+      "due_scan_index": true,
+      "revision_minimum": 1
+    },
+    "dependencies": {
+      "world_graph": [
+        "CITY_NODE",
+        "TRAVEL_SECONDS",
+        "WORLD_NODES",
+        "are_adjacent"
+      ],
+      "location_catalog": [
+        "is_location_unlocked"
+      ],
+      "travel_presentation": [
+        "format_arrival_destination",
+        "get_route_presentation"
+      ]
+    },
+    "observed_pipeline": {
+      "start": [
+        "BEGIN IMMEDIATE",
+        "load user/current source",
+        "validate target",
+        "validate adjacency",
+        "validate destination unlock",
+        "optional busy_checker",
+        "reject existing active travel",
+        "insert active row",
+        "commit"
+      ],
+      "cancel": [
+        "BEGIN IMMEDIATE",
+        "owner/status/not-due/revision conditional update",
+        "set cancelled and increment revision",
+        "commit or rollback"
+      ],
+      "complete": [
+        "BEGIN IMMEDIATE",
+        "claim due active travel",
+        "verify source unchanged",
+        "update users.location",
+        "set arrived and increment revision",
+        "commit"
+      ],
+      "restart": [
+        "query due active travels ordered by arrival_at,id",
+        "complete each through canonical complete_travel",
+        "optional arrival notification"
+      ]
+    },
+    "failure_reasons": [
+      "already_terminal",
+      "already_travelling",
+      "invalid_current_node",
+      "location_locked",
+      "not_adjacent",
+      "not_cancellable",
+      "not_due",
+      "player_busy",
+      "source_changed",
+      "terminal_claim_lost",
+      "travel_not_found",
+      "unknown_destination",
+      "user_not_found"
+    ],
+    "busy_related_literals": [
+      "already_travelling",
+      "busy",
+      "player_busy"
+    ],
+    "consumer_imports": {
+      "handlers/map.py": [
+        "cancel_travel",
+        "get_active_travel",
+        "get_travel",
+        "is_user_travelling",
+        "start_travel"
+      ],
+      "systems/location_context_system.py": [
+        "is_user_travelling"
+      ]
+    },
+    "persistence_evidence": {
+      "sqlite_import": true,
+      "begin_immediate": true,
+      "commit_calls": 5,
+      "rollback_calls": 11,
+      "critical_state_persisted": true,
+      "ram_only_state": false
+    },
+    "utc_evidence": {
+      "timezone_utc": true,
+      "iso_seconds": true,
+      "eta_uses_travel_seconds": true
+    },
+    "source_hashes": {
+      "systems/travel_system.py": "09525cdc1a89ce78091d1f04429ec56a58ff8fda5235699b3ecac0d0c8edc687",
+      "handlers/map.py": "5d8c46886c9989a2b8a956db075e14315875b61eb18f734c643dac9392f25cc3",
+      "systems/location_context_system.py": "17ac3d3dc82e7632280a495bd3d527600be75fa4f2c506d2247c5885d72d2761",
+      "data/location_graph.py": "1d76c85a2b92b75efbb3df3c7d8268cc199b81032c9ee81ffd0a6b94f1f53e68",
+      "data/locations.py": "f831aab545d91399e86e9ff738a026b9c51904a6b0dfc9ee40ce7fdc8e249043",
+      "data/travel_presentation.py": "1280e3493e586c56561aa55565715ffc81d85b9be23d9eaefeb31e4f4f3f0f2c"
+    }
+  },
+  "contract_matrix": [
+    {
+      "contract": "TRAVEL_AGGREGATE_OWNER_AND_SCHEMA",
+      "classification": "V1_CONFIRMED",
+      "meaning": "systems/travel_system.py owns persisted location_travels state, ACTIVE/terminal lifecycle and revisioned rows."
+    },
+    {
+      "contract": "START_AND_AVAILABILITY_PIPELINE",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 validates user, target, adjacency, unlock, optional busy state and existing active travel before insert; exact ordering and result contract require refinement."
+    },
+    {
+      "contract": "ETA_TIME_AND_UTC_POLICY",
+      "classification": "V1_CONFIRMED",
+      "meaning": "UTC second-precision timestamps and TRAVEL_SECONDS define started_at and arrival_at."
+    },
+    {
+      "contract": "SINGLE_ACTIVE_AND_BUSY_RESTRICTIONS",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "A partial unique index enforces one active travel; optional busy_checker behavior and exhaustive busy reasons require refinement."
+    },
+    {
+      "contract": "CANCEL_REVISION_AND_TERMINAL_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "Cancellation is allowed only for owned active not-yet-due travel and optionally checks expected_revision; exact stale/idempotency semantics require refinement."
+    },
+    {
+      "contract": "COMPLETE_LOCATION_MUTATION_ATOMICITY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "Completion verifies due/active/source state and updates users.location with terminal arrival in one transaction; exact claim and retry semantics require refinement."
+    },
+    {
+      "contract": "RESTART_RECOVERY_AND_WORKER_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "Due persisted travel is recovered after restart; worker ownership, ordering, limits and notification failure policy require refinement."
+    },
+    {
+      "contract": "FAILURE_REASONS_AND_IDEMPOTENCY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "Machine-readable V1 reasons were discovered; retry and terminal replay behavior require an explicit parity matrix."
+    },
+    {
+      "contract": "PERSISTENCE_TRANSACTION_AND_ROLLBACK",
+      "classification": "V1_CONFIRMED",
+      "meaning": "V1 uses SQLite, BEGIN IMMEDIATE, commit and rollback; critical travel state is not RAM-only."
+    },
+    {
+      "contract": "CONSUMER_PRESENTATION_AND_NOTIFICATION_BOUNDARY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "Map and restart notification consumers exist; exact domain/application/presentation boundary requires refinement."
+    }
+  ],
+  "implementation_authorized": false,
+  "canonical_v2_ci": {
+    "schema_version": 1,
+    "status": "PASS",
+    "failed_checks": [],
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "file_count": 151,
+        "failures": []
+      },
+      {
+        "name": "imports",
+        "status": "PASS",
+        "module_count": 104,
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-c",
+            "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.admin_crystals', 'rom_v2.application.bag_expansion', 'rom_v2.application.base_equipment_shop', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.daily_reward', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.potion_trading', 'rom_v2.application.premium_shop', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.content.location_catalog', 'rom_v2.content.world_graph', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests_v2",
+            "-p",
+            "test_*.py"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "..............................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 254 tests in 19.717s\n\nOK"
+        }
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "tools/verify_v2_architecture.py",
+            "--project-root",
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+          ],
+          "returncode": 0,
+          "stdout": "V2 architecture enforcement: PASS\nPhysical files: 104\nImport edges: 370\nViolations: 0",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "duplicate_scan",
+        "status": "PASS",
+        "symbol_count": 429,
+        "duplicates": {}
+      },
+      {
+        "name": "content_validation",
+        "status": "PASS",
+        "file_count": 2,
+        "failures": []
+      }
+    ]
+  },
+  "removed_bytecode_before_ci": [
+    "rom_v2/__pycache__/bootstrap.cpython-314.pyc",
+    "rom_v2/__pycache__/config.cpython-314.pyc",
+    "rom_v2/__pycache__/container.cpython-314.pyc",
+    "rom_v2/__pycache__/lifecycle.cpython-314.pyc",
+    "rom_v2/__pycache__/main.cpython-314.pyc",
+    "rom_v2/__pycache__/runtime_paths.cpython-314.pyc",
+    "rom_v2/__pycache__/settings.cpython-314.pyc",
+    "rom_v2/__pycache__/structured_logging.cpython-314.pyc",
+    "rom_v2/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/presentation/__pycache__/item_dto.cpython-314.pyc",
+    "rom_v2/infrastructure/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/infrastructure/telegram/__pycache__/adapter.cpython-314.pyc",
+    "rom_v2/infrastructure/telegram/__pycache__/callback_codec.cpython-314.pyc",
+    "rom_v2/infrastructure/telegram/__pycache__/callback_registry.cpython-314.pyc",
+    "rom_v2/infrastructure/telegram/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/account_repository.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/account_unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/character_repository.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/character_unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/connection_factory.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/equipment_repository.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/equipment_unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/inventory_repository.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/inventory_unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/migrator.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/primary_stat_repository.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/primary_stat_unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/provisional_contracts.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/repository_base.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/resource_repository.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/resource_unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/schema_contract.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/unit_of_work.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/migrations/__pycache__/v001_v2_baseline.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/migrations/__pycache__/v002_primary_stats_parity.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/migrations/__pycache__/v003_item_identity_parity.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/migrations/__pycache__/v004_equipment_slots_parity.cpython-314.pyc",
+    "rom_v2/infrastructure/persistence/migrations/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/account.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/battle.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/battle_persistence.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/central_loot.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/character.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/class_catalog.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/combat_resources.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/damage_engine.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/derived_stats.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/durability.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/effect_engine.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/enhancement.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/equipment.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/equipment_generation.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/full_stat_snapshot.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/item.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/level_up_gold.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/mana_engine.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/player_progression.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/premium_combat.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/primary_stats.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/resource_lifecycle.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/runes.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/skill_execution.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/terminal_paths.cpython-314.pyc",
+    "rom_v2/domain/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/content/__pycache__/location_catalog.cpython-314.pyc",
+    "rom_v2/content/__pycache__/world_graph.cpython-314.pyc",
+    "rom_v2/content/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/application/__pycache__/account_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/account_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/admin_crystals.cpython-314.pyc",
+    "rom_v2/application/__pycache__/bag_expansion.cpython-314.pyc",
+    "rom_v2/application/__pycache__/base_equipment_shop.cpython-314.pyc",
+    "rom_v2/application/__pycache__/character_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/character_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/crystal_wallet_ledger.cpython-314.pyc",
+    "rom_v2/application/__pycache__/daily_reward.cpython-314.pyc",
+    "rom_v2/application/__pycache__/durability_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/enhancement_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/equipment_generation_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/equipment_generation_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/equipment_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/equipment_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/full_stat_snapshot_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/gold_wallet.cpython-314.pyc",
+    "rom_v2/application/__pycache__/integration_evidence.cpython-314.pyc",
+    "rom_v2/application/__pycache__/inventory_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/inventory_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/post_combat_hooks.cpython-314.pyc",
+    "rom_v2/application/__pycache__/potion_trading.cpython-314.pyc",
+    "rom_v2/application/__pycache__/premium_shop.cpython-314.pyc",
+    "rom_v2/application/__pycache__/primary_stat_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/primary_stat_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/resource_ports.cpython-314.pyc",
+    "rom_v2/application/__pycache__/resource_service.cpython-314.pyc",
+    "rom_v2/application/__pycache__/reward_settlement.cpython-314.pyc",
+    "rom_v2/application/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/application/services/__pycache__/rune_lifecycle.cpython-314.pyc",
+    "rom_v2/application/ports/__pycache__/clock.cpython-314.pyc",
+    "rom_v2/application/ports/__pycache__/random_source.cpython-314.pyc",
+    "rom_v2/application/ports/__pycache__/repositories.cpython-314.pyc",
+    "rom_v2/application/ports/__pycache__/unit_of_work.cpython-314.pyc",
+    "rom_v2/application/ports/__pycache__/__init__.cpython-314.pyc",
+    "rom_v2/app/__pycache__/__init__.cpython-314.pyc"
+  ],
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_11_3a_refine_travel_aggregate_contract.py",
+  "backup_path": "backup/stage_21_11_3_20261024T210827Z"
+}
