@@ -55,12 +55,7 @@ LOCATIONS: Mapping[str, LocationDefinition] = MappingProxyType({
     START_PATH_ID: _START_PATH,
     DARK_FOREST_ID: _DARK_FOREST,
 })
-WORLD_NODE_ORDER: tuple[str, ...] = (CITY_NODE_ID, START_PATH_ID, DARK_FOREST_ID)
-LOCATION_GRAPH: Mapping[str, tuple[str, ...]] = MappingProxyType({
-    CITY_NODE_ID: (START_PATH_ID,),
-    START_PATH_ID: (CITY_NODE_ID, DARK_FOREST_ID),
-    DARK_FOREST_ID: (START_PATH_ID,),
-})
+from rom_v2.content.world_graph import validate_world_graph
 
 def get_location(location_id: str) -> LocationDefinition | None:
     """Return a canonical location or None; never fabricate an unknown record."""
@@ -88,22 +83,9 @@ def get_unlocked_locations(player_level: int) -> tuple[LocationDefinition, ...]:
         raise ValueError("player_level must be a positive integer")
     return tuple(LOCATIONS[key] for key in LOCATION_ORDER if player_level>=LOCATIONS[key].unlock_level)
 
-def get_adjacent_nodes(node_id: str) -> tuple[str, ...]:
-    """Return static adjacent nodes and fail closed for an unknown world node."""
-    normalized=str(node_id or "").strip()
-    if normalized not in LOCATION_GRAPH: raise KeyError(f"unknown world node: {normalized}")
-    return LOCATION_GRAPH[normalized]
-
-def are_adjacent(from_node: str, to_node: str) -> bool:
-    """Check one canonical graph edge without permitting inferred travel."""
-    normalized_to=str(to_node or "").strip()
-    if normalized_to not in LOCATION_GRAPH: raise KeyError(f"unknown world node: {normalized_to}")
-    return normalized_to in get_adjacent_nodes(from_node)
-
 def validate_location_catalog() -> None:
     """Validate IDs, order, levels, references and symmetric graph integrity."""
     if tuple(LOCATIONS) != LOCATION_ORDER: raise ValueError("location order mismatch")
-    if set(LOCATION_GRAPH) != set(WORLD_NODE_ORDER): raise ValueError("world graph node mismatch")
     for key, location in LOCATIONS.items():
         if key != location.location_id: raise ValueError(f"location identity mismatch: {key}")
         if not (1 <= location.level_min <= location.level_max): raise ValueError(f"invalid level range: {key}")
@@ -111,9 +93,6 @@ def validate_location_catalog() -> None:
         if not location.name or not location.description or not location.boss_name or not location.mob_names:
             raise ValueError(f"incomplete location: {key}")
         if len(location.mob_names) != len(set(location.mob_names)): raise ValueError(f"duplicate mob: {key}")
-    for node, neighbors in LOCATION_GRAPH.items():
-        if len(neighbors) != len(set(neighbors)): raise ValueError(f"duplicate edge: {node}")
-        for neighbor in neighbors:
-            if node not in LOCATION_GRAPH.get(neighbor, ()): raise ValueError(f"asymmetric edge: {node}->{neighbor}")
+    validate_world_graph(location_ids=set(LOCATIONS))
 
 validate_location_catalog()
