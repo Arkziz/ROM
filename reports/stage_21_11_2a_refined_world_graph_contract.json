@@ -1,0 +1,215 @@
+{
+  "schema_version": 1,
+  "stage": "21.11.2a",
+  "status": "PASS",
+  "conclusion": "REVIEW_REQUIRED",
+  "generated_at_utc": "2026-10-24T20:34:42.027851+00:00",
+  "source_audit": "reports/stage_21_11_2_existing_world_graph_audit.json",
+  "summary": {
+    "refined_contracts": 4,
+    "review_required_contracts": 4,
+    "unresolved_contracts": [
+      "TRAVEL_REQUIREMENTS_AND_UNLOCK_BOUNDARY",
+      "UNKNOWN_NODE_FAIL_CLOSED_POLICY",
+      "LOCATION_CATALOG_AND_TRAVEL_AGGREGATE_BOUNDARY",
+      "CONSUMER_ALLOWLIST_AND_SHADOW_GRAPH_POLICY"
+    ],
+    "database_opened": false,
+    "production_code_changed": false,
+    "runtime_dispatch_connected": false,
+    "production_persistence_connected": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "authoritative_evidence": {
+    "authoritative_owners": {
+      "static_world_graph": "data/location_graph.py",
+      "location_content_and_unlock": "data/locations.py",
+      "route_presentation": "data/travel_presentation.py",
+      "travel_aggregate_and_persistence": "systems/travel_system.py",
+      "telegram_map_consumer": "handlers/map.py",
+      "world_context_consumer": "systems/location_context_system.py"
+    },
+    "consumer_imports": {
+      "handlers/map.py": [
+        "CITY_NODE",
+        "TRAVEL_SECONDS",
+        "WORLD_NODES",
+        "get_adjacent_nodes"
+      ],
+      "systems/travel_system.py": [
+        "CITY_NODE",
+        "TRAVEL_SECONDS",
+        "WORLD_NODES",
+        "are_adjacent"
+      ],
+      "systems/location_context_system.py": [
+        "CITY_NODE",
+        "WORLD_NODES"
+      ]
+    },
+    "relevant_calls": {
+      "data/location_graph.py": [
+        "get_adjacent_nodes"
+      ],
+      "data/locations.py": [],
+      "data/travel_presentation.py": [],
+      "handlers/map.py": [
+        "get_adjacent_nodes",
+        "get_location",
+        "is_location_unlocked"
+      ],
+      "systems/travel_system.py": [
+        "are_adjacent",
+        "is_location_unlocked"
+      ],
+      "systems/location_context_system.py": []
+    },
+    "unknown_node_static_semantics": {
+      "get_world_node": "returns None via dict.get",
+      "get_adjacent_nodes": "returns empty tuple via dict.get default",
+      "are_adjacent": "returns False because membership is checked in the empty tuple",
+      "graph_validation": "raises ValueError for definition-time invalid graph data"
+    },
+    "travel_boundary_evidence": {
+      "adjacency_gate": "systems/travel_system.py calls are_adjacent before travel creation",
+      "non_adjacent_reason": "not_adjacent",
+      "duration_owner": "TRAVEL_SECONDS from data/location_graph.py",
+      "aggregate_owner": "systems/travel_system.py",
+      "database_usage_confined_to_travel_owner": true
+    },
+    "transport_requirement_bounded_absence": {
+      "owner_has_requirement_structure": false,
+      "semantic_rule": "do not invent per-edge transport requirements"
+    },
+    "source_hashes": {
+      "data/location_graph.py": "1d76c85a2b92b75efbb3df3c7d8268cc199b81032c9ee81ffd0a6b94f1f53e68",
+      "data/locations.py": "f831aab545d91399e86e9ff738a026b9c51904a6b0dfc9ee40ce7fdc8e249043",
+      "data/travel_presentation.py": "1280e3493e586c56561aa55565715ffc81d85b9be23d9eaefeb31e4f4f3f0f2c",
+      "handlers/map.py": "5d8c46886c9989a2b8a956db075e14315875b61eb18f734c643dac9392f25cc3",
+      "systems/travel_system.py": "09525cdc1a89ce78091d1f04429ec56a58ff8fda5235699b3ecac0d0c8edc687",
+      "systems/location_context_system.py": "17ac3d3dc82e7632280a495bd3d527600be75fa4f2c506d2247c5885d72d2761"
+    }
+  },
+  "refined_contract_matrix": [
+    {
+      "contract": "TRAVEL_REQUIREMENTS_AND_UNLOCK_BOUNDARY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "Static graph edges have no item, ticket, fare or mount requirement structure.",
+        "Map availability combines adjacency with location unlock checks.",
+        "Travel aggregate independently rejects non-adjacent routes."
+      ],
+      "remaining_question": "Resolve the exact V2 ordering and responsibility split between adjacency, destination unlock and travel command validation."
+    },
+    {
+      "contract": "UNKNOWN_NODE_FAIL_CLOSED_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "get_world_node returns None for an unknown ID.",
+        "get_adjacent_nodes returns an empty tuple for an unknown ID.",
+        "are_adjacent returns False when either endpoint cannot form a canonical edge."
+      ],
+      "remaining_question": "Resolve one explicit V2 public API contract so lookup, query and command paths do not diverge between None, empty tuple, False and typed errors."
+    },
+    {
+      "contract": "LOCATION_CATALOG_AND_TRAVEL_AGGREGATE_BOUNDARY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "data/location_graph.py owns static nodes, adjacency and 20-second duration.",
+        "data/locations.py owns huntable location content and unlock thresholds.",
+        "systems/travel_system.py owns active travel lifecycle and persistence."
+      ],
+      "remaining_question": "Resolve the V2 application/domain port boundary without moving persistence or active-travel state into the static graph owner."
+    },
+    {
+      "contract": "CONSUMER_ALLOWLIST_AND_SHADOW_GRAPH_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "handlers/map.py consumes adjacency, nodes and duration for map presentation.",
+        "systems/travel_system.py consumes adjacency and duration for travel commands.",
+        "systems/location_context_system.py consumes canonical node identity/context.",
+        "data/travel_presentation.py owns route prose but not graph connectivity."
+      ],
+      "remaining_question": "Resolve the exhaustive V2 consumer allowlist and forbid editable duplicate graph definitions in presentation, handlers, tests and adapters."
+    }
+  ],
+  "implementation_authorized": false,
+  "canonical_v2_ci": {
+    "schema_version": 1,
+    "status": "PASS",
+    "failed_checks": [],
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "file_count": 149,
+        "failures": []
+      },
+      {
+        "name": "imports",
+        "status": "PASS",
+        "module_count": 103,
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-c",
+            "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.admin_crystals', 'rom_v2.application.bag_expansion', 'rom_v2.application.base_equipment_shop', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.daily_reward', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.potion_trading', 'rom_v2.application.premium_shop', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.content.location_catalog', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests_v2",
+            "-p",
+            "test_*.py"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ".........................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 249 tests in 13.327s\n\nOK"
+        }
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "tools/verify_v2_architecture.py",
+            "--project-root",
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+          ],
+          "returncode": 0,
+          "stdout": "V2 architecture enforcement: PASS\nPhysical files: 103\nImport edges: 365\nViolations: 0",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "duplicate_scan",
+        "status": "PASS",
+        "symbol_count": 426,
+        "duplicates": {}
+      },
+      {
+        "name": "content_validation",
+        "status": "PASS",
+        "file_count": 1,
+        "failures": []
+      }
+    ]
+  },
+  "removed_bytecode_before_ci": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_11_2b_resolve_world_graph_parity.py",
+  "backup_path": "backup/stage_21_11_2a_20261024T203423Z"
+}
