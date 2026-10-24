@@ -65,6 +65,4 @@ Runtime/Telegram dispatch and production persistence remain unconnected.
 
 ## Mandatory next step
 
-`patch_21_11_1a_refine_location_catalog_contract.py`
-
-Semantic refinement must establish authoritative post-combat event ownership, immutable payload and stable key, settlement ordering, victory/terminal scope, exact-once hook behavior, failure and rollback policy, retry/restart semantics, story/contract/history/notification boundaries, presentation, simulator consumers, and duplicate/shadow hook owners before implementation.
+Run semantic refinement for Location Catalog ownership, stable IDs, localized names, unlock policy, graph/travel, content references and shadow catalogs. Implementation remains unauthorized.
