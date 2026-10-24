@@ -1,0 +1,221 @@
+{
+  "schema_version": 1,
+  "stage": "21.11.4a",
+  "status": "PASS",
+  "conclusion": "REVIEW_REQUIRED",
+  "generated_at_utc": "2026-10-24T21:30:53.016116+00:00",
+  "source_audit": "reports/stage_21_11_4_existing_map_presentation_audit.json",
+  "summary": {
+    "refined_contracts": 6,
+    "review_required_contracts": 6,
+    "unresolved_contracts": [
+      "NAVIGATION_DTO_AND_CALLBACK_POLICY",
+      "DIRECTION_BUTTONS_AND_UNLOCK_FILTERING",
+      "ACTIVE_TRAVEL_PRESENTATION_POLICY",
+      "ARRIVAL_CANCEL_AND_REFRESH_POLICY",
+      "TECHNICAL_ID_NON_DISCLOSURE",
+      "PRESENTATION_DOMAIN_BOUNDARY"
+    ],
+    "database_opened": false,
+    "production_code_changed": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "authoritative_evidence": {
+    "authoritative_owner": "handlers/map.py",
+    "presentation_owner": "data/travel_presentation.py",
+    "owner_symbols": [
+      "_failure_message",
+      "_node_name",
+      "_remaining_seconds",
+      "_safe_answer",
+      "_travel_start_busy",
+      "build_location_info_text",
+      "build_map_inline_kb",
+      "build_travel_preview_kb",
+      "build_travel_preview_text",
+      "build_world_map_text",
+      "get_player_level_from_stats",
+      "register_map_handlers",
+      "render_map_message"
+    ],
+    "presentation_symbols": [
+      "format_arrival_destination",
+      "get_node_name",
+      "get_route_presentation"
+    ],
+    "technical_ids_present_in_source": [
+      "start_path"
+    ],
+    "localized_names_present": {
+      "Початок Шляху": true,
+      "Темний Бір": false,
+      "Місто": true
+    },
+    "callback_prefixes": [
+      "map:open",
+      "map:players"
+    ],
+    "dependencies": {
+      "graph": true,
+      "unlock": true,
+      "travel_state": true,
+      "duration": true
+    },
+    "source_hashes": {
+      "handlers/map.py": "5d8c46886c9989a2b8a956db075e14315875b61eb18f734c643dac9392f25cc3",
+      "data/travel_presentation.py": "1280e3493e586c56561aa55565715ffc81d85b9be23d9eaefeb31e4f4f3f0f2c",
+      "data/location_graph.py": "1d76c85a2b92b75efbb3df3c7d8268cc199b81032c9ee81ffd0a6b94f1f53e68",
+      "data/locations.py": "f831aab545d91399e86e9ff738a026b9c51904a6b0dfc9ee40ce7fdc8e249043",
+      "systems/location_context_system.py": "17ac3d3dc82e7632280a495bd3d527600be75fa4f2c506d2247c5885d72d2761",
+      "systems/travel_system.py": "09525cdc1a89ce78091d1f04429ec56a58ff8fda5235699b3ecac0d0c8edc687"
+    }
+  },
+  "refined_contract_matrix": [
+    {
+      "contract": "NAVIGATION_DTO_AND_CALLBACK_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "map text and inline keyboard are built separately",
+        "callback handlers are registered inside register_map_handlers",
+        "callback actions include open, info, preview, start, cancel and players flows",
+        "travel cancel callback carries travel_id and revision"
+      ],
+      "remaining_question": "Resolve a typed navigation DTO and stable callback codec so handlers never parse presentation text or accept stale actions implicitly."
+    },
+    {
+      "contract": "DIRECTION_BUTTONS_AND_UNLOCK_FILTERING",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "directions derive from get_adjacent_nodes(current)",
+        "huntable destination availability is filtered through is_location_unlocked",
+        "city is not subject to a location-level unlock gate",
+        "preview is separate from start"
+      ],
+      "remaining_question": "Resolve exact locked-destination visibility, ordering, labels and button/action states for every current node and level boundary."
+    },
+    {
+      "contract": "ACTIVE_TRAVEL_PRESENTATION_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "get_active_travel switches map rendering into an in-transit state",
+        "remaining seconds are derived from arrival_at and current UTC time",
+        "active travel offers cancellation using travel_id and revision",
+        "normal direction actions are not used as the active-travel primary flow"
+      ],
+      "remaining_question": "Resolve the DTO fields, countdown rounding, refresh behavior and stale active-travel snapshot handling."
+    },
+    {
+      "contract": "ARRIVAL_CANCEL_AND_REFRESH_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "start and cancel callbacks re-render the map",
+        "cancel presentation currently compresses failures into a generic terminal message",
+        "arrival notification is produced outside the map handler by travel recovery",
+        "refresh/open returns to the canonical map render"
+      ],
+      "remaining_question": "Resolve typed result-to-message mapping, arrival/cancel refresh actions, obsolete callback behavior and post-commit notification boundary."
+    },
+    {
+      "contract": "TECHNICAL_ID_NON_DISCLOSURE",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "technical IDs occur in callback/source logic",
+        "user-facing node names are resolved through node/location metadata",
+        "Початок Шляху and Місто are visible labels",
+        "Темний Бір is data-driven and need not appear as a hard-coded handler literal"
+      ],
+      "remaining_question": "Resolve a hard invariant that technical IDs may exist only in DTO/callback payloads and never in user-visible text or fallback formatting."
+    },
+    {
+      "contract": "PRESENTATION_DOMAIN_BOUNDARY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "handlers/map.py owns Telegram rendering and callback registration",
+        "data/travel_presentation.py owns route prose and node-name resolution",
+        "World Graph owns adjacency and duration",
+        "Location Catalog owns unlocks",
+        "Travel Aggregate owns travel state and transitions"
+      ],
+      "remaining_question": "Resolve one application query DTO boundary so presentation does not call persistence/domain owners through multiple ad hoc paths or duplicate business rules."
+    }
+  ],
+  "implementation_authorized": false,
+  "canonical_v2_ci": {
+    "schema_version": 1,
+    "status": "PASS",
+    "failed_checks": [],
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "file_count": 154,
+        "failures": []
+      },
+      {
+        "name": "imports",
+        "status": "PASS",
+        "module_count": 106,
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-c",
+            "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.admin_crystals', 'rom_v2.application.bag_expansion', 'rom_v2.application.base_equipment_shop', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.daily_reward', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.potion_trading', 'rom_v2.application.premium_shop', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.application.travel_service', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.content.location_catalog', 'rom_v2.content.world_graph', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.domain.travel_aggregate', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests_v2",
+            "-p",
+            "test_*.py"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "...................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 259 tests in 13.904s\n\nOK"
+        }
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "tools/verify_v2_architecture.py",
+            "--project-root",
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+          ],
+          "returncode": 0,
+          "stdout": "V2 architecture enforcement: PASS\nPhysical files: 106\nImport edges: 380\nViolations: 0",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "duplicate_scan",
+        "status": "PASS",
+        "symbol_count": 435,
+        "duplicates": {}
+      },
+      {
+        "name": "content_validation",
+        "status": "PASS",
+        "file_count": 2,
+        "failures": []
+      }
+    ]
+  },
+  "removed_bytecode_before_ci": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_11_4b_resolve_map_presentation_parity.py",
+  "backup_path": "backup/stage_21_11_4a_20261024T213031Z"
+}
