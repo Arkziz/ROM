@@ -1,0 +1,317 @@
+{
+  "schema_version": 1,
+  "stage": "21.11.3b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "generated_at_utc": "2026-10-24T21:15:44.964816+00:00",
+  "source_refinement": "reports/stage_21_11_3a_refined_travel_aggregate_contract.json",
+  "resolved_contracts": [
+    "START_AND_AVAILABILITY_PIPELINE",
+    "SINGLE_ACTIVE_AND_BUSY_RESTRICTIONS",
+    "CANCEL_REVISION_AND_TERMINAL_POLICY",
+    "COMPLETE_LOCATION_MUTATION_ATOMICITY",
+    "RESTART_RECOVERY_AND_WORKER_POLICY",
+    "FAILURE_REASONS_AND_IDEMPOTENCY",
+    "CONSUMER_PRESENTATION_AND_NOTIFICATION_BOUNDARY"
+  ],
+  "unresolved_contracts": [],
+  "resolutions": {
+    "START_AND_AVAILABILITY_PIPELINE": {
+      "decision": "StartTravel evaluates busy state first, then opens one Unit of Work. Inside it: load account/current location and level; validate source and destination IDs; validate adjacency; validate destination unlock unless destination is city; reject an existing ACTIVE travel; create ACTIVE revision 1 with started_at=UTC now and arrival_at=now+20 seconds; commit once.",
+      "reasons": [
+        "player_busy",
+        "user_not_found",
+        "invalid_current_node",
+        "unknown_destination",
+        "not_adjacent",
+        "location_locked",
+        "already_travelling"
+      ]
+    },
+    "SINGLE_ACTIVE_AND_BUSY_RESTRICTIONS": {
+      "decision": "BusyStatePort is authoritative for incompatible activity. A truthy busy snapshot rejects before mutation as player_busy. The repository and database unique constraint remain the race-safe final guard for one ACTIVE travel per user; constraint collision maps to already_travelling."
+    },
+    "CANCEL_REVISION_AND_TERMINAL_POLICY": {
+      "decision": "Cancel requires travel existence, ownership, ACTIVE state, not-yet-due ETA and matching expected revision. V2 uses expected_revision as required command concurrency data. Success sets CANCELLED, increments revision once and timestamps cancelled_at/updated_at. Replays are read-only typed rejections.",
+      "reasons": [
+        "travel_not_found",
+        "wrong_owner",
+        "already_terminal",
+        "already_due",
+        "stale_revision"
+      ]
+    },
+    "COMPLETE_LOCATION_MUTATION_ATOMICITY": {
+      "decision": "Complete claims one due ACTIVE travel in one Unit of Work. It verifies the user's current location still equals from_node. Source drift sets FAILED and increments revision. Successful completion compare-and-sets current_location to to_node and sets ARRIVED with one revision increment in the same commit. Any persistence exception rolls back both changes."
+    },
+    "RESTART_RECOVERY_AND_WORKER_POLICY": {
+      "decision": "Recovery queries persisted due ACTIVE rows ordered by arrival_at then id, bounded to 100 per batch, and invokes the same completion service. Scheduler ownership is application/infrastructure, not entity logic. Multi-process correctness relies on transactional terminal claim. Notification occurs after commit and failure never rolls back travel; durable outbox is deferred because V1 has none."
+    },
+    "FAILURE_REASONS_AND_IDEMPOTENCY": {
+      "decision": "Queries are side-effect free. Start retry after a successful commit returns already_travelling. Cancel and complete terminal replays never mutate or increment revision. Completion races return terminal_claim_lost or the persisted terminal snapshot. All validation failures occur before aggregate mutation; persistence failures raise after rollback.",
+      "canonical_reasons": [
+        "already_terminal",
+        "already_travelling",
+        "invalid_current_node",
+        "location_locked",
+        "not_adjacent",
+        "not_cancellable",
+        "not_due",
+        "player_busy",
+        "source_changed",
+        "terminal_claim_lost",
+        "travel_not_found",
+        "unknown_destination",
+        "user_not_found",
+        "wrong_owner",
+        "already_due",
+        "stale_revision"
+      ]
+    },
+    "CONSUMER_PRESENTATION_AND_NOTIFICATION_BOUNDARY": {
+      "decision": "Domain owns immutable travel state and transitions. Application service owns commands, Unit of Work, World Graph/Location Catalog/BusyState ports and recovery orchestration. Persistence adapter owns storage. Scheduler triggers recovery. Telegram/map adapters render DTOs and send notifications after commit. Presentation text and keyboards never enter domain/application owners."
+    }
+  },
+  "authoritative_evidence": {
+    "authoritative_owner": "systems/travel_system.py",
+    "owner_symbols": [
+      "cancel_travel",
+      "complete_travel",
+      "get_active_travel",
+      "get_due_active_travels",
+      "get_travel",
+      "init_travel_system",
+      "is_user_travelling",
+      "recover_due_travels",
+      "recover_travels_after_restart",
+      "start_travel",
+      "start_travel_worker"
+    ],
+    "schema": {
+      "table": "location_travels",
+      "columns": [
+        "id",
+        "user_id",
+        "from_node",
+        "to_node",
+        "status",
+        "revision",
+        "started_at",
+        "arrival_at",
+        "cancelled_at",
+        "completed_at",
+        "created_at",
+        "updated_at"
+      ],
+      "statuses": [
+        "active",
+        "arrived",
+        "cancelled",
+        "failed"
+      ],
+      "single_active_user_partial_unique_index": true,
+      "due_scan_index": true,
+      "revision_minimum": 1
+    },
+    "dependencies": {
+      "world_graph": [
+        "CITY_NODE",
+        "TRAVEL_SECONDS",
+        "WORLD_NODES",
+        "are_adjacent"
+      ],
+      "location_catalog": [
+        "is_location_unlocked"
+      ],
+      "travel_presentation": [
+        "format_arrival_destination",
+        "get_route_presentation"
+      ]
+    },
+    "observed_pipeline": {
+      "start": [
+        "BEGIN IMMEDIATE",
+        "load user/current source",
+        "validate target",
+        "validate adjacency",
+        "validate destination unlock",
+        "optional busy_checker",
+        "reject existing active travel",
+        "insert active row",
+        "commit"
+      ],
+      "cancel": [
+        "BEGIN IMMEDIATE",
+        "owner/status/not-due/revision conditional update",
+        "set cancelled and increment revision",
+        "commit or rollback"
+      ],
+      "complete": [
+        "BEGIN IMMEDIATE",
+        "claim due active travel",
+        "verify source unchanged",
+        "update users.location",
+        "set arrived and increment revision",
+        "commit"
+      ],
+      "restart": [
+        "query due active travels ordered by arrival_at,id",
+        "complete each through canonical complete_travel",
+        "optional arrival notification"
+      ]
+    },
+    "failure_reasons": [
+      "already_terminal",
+      "already_travelling",
+      "invalid_current_node",
+      "location_locked",
+      "not_adjacent",
+      "not_cancellable",
+      "not_due",
+      "player_busy",
+      "source_changed",
+      "terminal_claim_lost",
+      "travel_not_found",
+      "unknown_destination",
+      "user_not_found"
+    ],
+    "busy_related_literals": [
+      "already_travelling",
+      "busy",
+      "player_busy"
+    ],
+    "consumer_imports": {
+      "handlers/map.py": [
+        "cancel_travel",
+        "get_active_travel",
+        "get_travel",
+        "is_user_travelling",
+        "start_travel"
+      ],
+      "systems/location_context_system.py": [
+        "is_user_travelling"
+      ]
+    },
+    "persistence_evidence": {
+      "sqlite_import": true,
+      "begin_immediate": true,
+      "commit_calls": 5,
+      "rollback_calls": 11,
+      "critical_state_persisted": true,
+      "ram_only_state": false
+    },
+    "utc_evidence": {
+      "timezone_utc": true,
+      "iso_seconds": true,
+      "eta_uses_travel_seconds": true
+    },
+    "source_hashes": {
+      "systems/travel_system.py": "09525cdc1a89ce78091d1f04429ec56a58ff8fda5235699b3ecac0d0c8edc687",
+      "handlers/map.py": "5d8c46886c9989a2b8a956db075e14315875b61eb18f734c643dac9392f25cc3",
+      "systems/location_context_system.py": "17ac3d3dc82e7632280a495bd3d527600be75fa4f2c506d2247c5885d72d2761",
+      "data/location_graph.py": "1d76c85a2b92b75efbb3df3c7d8268cc199b81032c9ee81ffd0a6b94f1f53e68",
+      "data/locations.py": "f831aab545d91399e86e9ff738a026b9c51904a6b0dfc9ee40ce7fdc8e249043",
+      "data/travel_presentation.py": "1280e3493e586c56561aa55565715ffc81d85b9be23d9eaefeb31e4f4f3f0f2c"
+    }
+  },
+  "implementation_boundary": {
+    "authorized": true,
+    "authorized_scope": [
+      "pure Travel Aggregate and immutable DTOs",
+      "application command/query service",
+      "ports and in-memory Unit of Work fixtures",
+      "start cancel complete recovery policies",
+      "focused tests and smoke verifier"
+    ],
+    "forbidden_scope": [
+      "SQLite production adapter or migration",
+      "Telegram/runtime wiring",
+      "worker thread or scheduler integration",
+      "arrival notification delivery",
+      "production database access"
+    ]
+  },
+  "implementation_authorized": true,
+  "runtime_integration_authorized": false,
+  "production_persistence_authorized": false,
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false,
+  "canonical_v2_ci": {
+    "schema_version": 1,
+    "status": "PASS",
+    "failed_checks": [],
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "file_count": 151,
+        "failures": []
+      },
+      {
+        "name": "imports",
+        "status": "PASS",
+        "module_count": 104,
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-c",
+            "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.admin_crystals', 'rom_v2.application.bag_expansion', 'rom_v2.application.base_equipment_shop', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.daily_reward', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.potion_trading', 'rom_v2.application.premium_shop', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.content.location_catalog', 'rom_v2.content.world_graph', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests_v2",
+            "-p",
+            "test_*.py"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "..............................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 254 tests in 13.133s\n\nOK"
+        }
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "tools/verify_v2_architecture.py",
+            "--project-root",
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+          ],
+          "returncode": 0,
+          "stdout": "V2 architecture enforcement: PASS\nPhysical files: 104\nImport edges: 370\nViolations: 0",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "duplicate_scan",
+        "status": "PASS",
+        "symbol_count": 429,
+        "duplicates": {}
+      },
+      {
+        "name": "content_validation",
+        "status": "PASS",
+        "file_count": 2,
+        "failures": []
+      }
+    ]
+  },
+  "removed_bytecode_before_ci": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_11_3c_implement_travel_aggregate.py",
+  "backup_path": "backup/stage_21_11_3b_20261024T211526Z"
+}
