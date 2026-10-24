@@ -1,0 +1,221 @@
+{
+  "schema_version": 1,
+  "stage": "21.12.3a",
+  "status": "PASS",
+  "conclusion": "REVIEW_REQUIRED",
+  "generated_at_utc": "2026-10-24T22:44:12.765114+00:00",
+  "source_audit": "reports/stage_21_12_3_existing_guild_contracts_history_audit.json",
+  "summary": {
+    "refined_contracts": 7,
+    "review_required_contracts": 7,
+    "unresolved_contracts": [
+      "CONTRACT_TARGET_NAME_PROPAGATION",
+      "GUILD_PROGRESS_AND_REWARD_ATOMICITY",
+      "LOCALIZED_GUILD_LOG_POLICY",
+      "GUILD_LOG_RETENTION_POLICY",
+      "CONTRACT_COMPLETION_IDEMPOTENCY",
+      "HISTORY_PERMISSION_AND_VISIBILITY",
+      "PRESENTATION_AND_HANDLER_BOUNDARY"
+    ],
+    "database_opened": false,
+    "production_code_changed": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "authoritative_evidence": {
+    "authoritative_guild_owner": "systems/guild_system.py",
+    "contract_source": "systems/contract_system.py",
+    "handler_consumer": "handlers/guild.py",
+    "owner_symbols": [
+      "add_guild_log",
+      "add_guild_progress",
+      "add_user_guild_progress",
+      "award_guild_contract_completion",
+      "get_guild_logs",
+      "get_guild_logs_count"
+    ],
+    "history": {
+      "newest_first": true,
+      "limit_offset": true,
+      "count_query": true
+    },
+    "contract_reward": {
+      "contract_payload_parameter": true,
+      "target_name_keys": [
+        "target_mob_name",
+        "name",
+        "title",
+        "contract_name"
+      ],
+      "generic_fallback": true,
+      "contract_reason": true
+    },
+    "presentation": {
+      "build_guild_logs_text": true,
+      "guild_logs_kb": true
+    },
+    "source_hashes": {
+      "systems/guild_system.py": "e52c0fa05137c6eadca7493f18423c4451ff1db874858827d47d4a30f7d5aae2",
+      "handlers/guild.py": "de39b8627b59b33ad1500086b9862f775237c780d4718e8bc389e4ef88365d40",
+      "systems/guild_resource_system.py": "af4298ef1de8e4c4a8dc46aed20d1d7f7ee66a04dc3587687d6ef8e33cdd6a8f",
+      "systems/contract_system.py": "4b8e73be52d59d3d8d897d94f9aa79430ce452a8c5cd972759846dacbd69e0e6"
+    }
+  },
+  "refined_contract_matrix": [
+    {
+      "contract": "CONTRACT_TARGET_NAME_PROPAGATION",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "award_guild_contract_completion accepts contract payload",
+        "target name resolution checks target_mob_name, name, title and contract_name in order",
+        "generic контракт is the final fallback",
+        "contract completion caller can pass either a structured payload or a string"
+      ],
+      "remaining_question": "Resolve one typed completion DTO and authoritative target_name field, legacy alias handling, missing-name result and the exact boundary that prevents generic fallback when canonical target metadata exists."
+    },
+    {
+      "contract": "GUILD_PROGRESS_AND_REWARD_ATOMICITY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "contract completion delegates to add_user_guild_progress",
+        "guild EXP, resource, contract counter and member contribution are coordinated by Guild System",
+        "history reason is derived before progress mutation",
+        "non-member completion returns without guild progress"
+      ],
+      "remaining_question": "Resolve one Unit of Work for guild totals, member contribution and history append, including rollback and result mapping when any write fails."
+    },
+    {
+      "contract": "LOCALIZED_GUILD_LOG_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "contract reason uses GUILD_CONTRACT_SCORE_REASON",
+        "resolved contract_name and optional actor character name are embedded in the reason",
+        "handler formats persisted log text for Ukrainian presentation",
+        "user_id leakage has separate character-name compatibility work"
+      ],
+      "remaining_question": "Resolve typed event payload versus persisted localized text, punctuation, unknown actor/target fallbacks and a hard rule that available target metadata must render the localized mob name rather than контракт."
+    },
+    {
+      "contract": "GUILD_LOG_RETENTION_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "guild_logs are persisted and countable",
+        "reader clamps page size to 1..100",
+        "reader pagination does not itself delete rows",
+        "audit found no canonical retention cleanup in the verified owner path"
+      ],
+      "remaining_question": "Resolve whether V2 preserves unbounded persisted history or adopts the separately approved last-100 event policy, and define cleanup ownership without silently deleting V1 data."
+    },
+    {
+      "contract": "CONTRACT_COMPLETION_IDEMPOTENCY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "award entrypoint accepts no explicit idempotency key",
+        "progress and history are produced from completion flow",
+        "repeated calls can be operationally distinct unless caller state prevents replay",
+        "contract system owns completion state"
+      ],
+      "remaining_question": "Resolve the completion identity key, exactly-once claim location, duplicate result, crash-after-commit recovery and whether Guild System trusts a pre-claimed completion."
+    },
+    {
+      "contract": "HISTORY_PERMISSION_AND_VISIBILITY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "history is scoped by guild_id",
+        "presentation enters through the current user's guild context",
+        "pagination exposes count and page navigation",
+        "history is a read-only guild feature"
+      ],
+      "remaining_question": "Resolve member-only visibility, behavior after leaving or dissolution, actor-name privacy, empty/out-of-range pages and authorization ownership outside Telegram handlers."
+    },
+    {
+      "contract": "PRESENTATION_AND_HANDLER_BOUNDARY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "Guild System owns persisted log rows and counts",
+        "handlers/guild.py owns text, dates, keyboards and page state",
+        "contract system initiates reward after completion",
+        "presentation consumes already persisted reason text"
+      ],
+      "remaining_question": "Resolve typed history DTOs, event-to-text localization, one application query service and handler registration boundary without importing Telegram into domain/application code."
+    }
+  ],
+  "implementation_authorized": false,
+  "canonical_v2_ci": {
+    "schema_version": 1,
+    "status": "PASS",
+    "failed_checks": [],
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "file_count": 162,
+        "failures": []
+      },
+      {
+        "name": "imports",
+        "status": "PASS",
+        "module_count": 111,
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-c",
+            "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.admin_crystals', 'rom_v2.application.bag_expansion', 'rom_v2.application.base_equipment_shop', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.daily_reward', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.guild_core_service', 'rom_v2.application.guild_management_service', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.map_presentation', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.potion_trading', 'rom_v2.application.premium_shop', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.application.travel_service', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.content.location_catalog', 'rom_v2.content.world_graph', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.guild_application', 'rom_v2.domain.guild_core', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.domain.travel_aggregate', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests_v2",
+            "-p",
+            "test_*.py"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ".....................................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 277 tests in 13.893s\n\nOK"
+        }
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "tools/verify_v2_architecture.py",
+            "--project-root",
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+          ],
+          "returncode": 0,
+          "stdout": "V2 architecture enforcement: PASS\nPhysical files: 111\nImport edges: 400\nViolations: 0",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "duplicate_scan",
+        "status": "PASS",
+        "symbol_count": 457,
+        "duplicates": {}
+      },
+      {
+        "name": "content_validation",
+        "status": "PASS",
+        "file_count": 2,
+        "failures": []
+      }
+    ]
+  },
+  "removed_bytecode_before_ci": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_12_3b_resolve_guild_contracts_history_parity.py",
+  "backup_path": "backup/stage_21_12_3a_20261024T224353Z"
+}
