@@ -1,0 +1,2054 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.6a",
+  "status": "PASS",
+  "conclusion": "GO_TO_PARITY_RESOLUTION",
+  "parent": "de4973b1b4f673683fcfd25b238b6d216dfb4c9a",
+  "source_audit": "reports/stage_21_13_6_existing_story_navigation_audit.json",
+  "source_audit_sha256": "13ee136452cfc881545d4d4d42725ff9ece106ca5359169bcc392dc53ae353e9",
+  "summary": {
+    "contract_count": 8,
+    "refined_contracts": 8,
+    "confirmed_contracts": 0,
+    "review_required_contracts": 0,
+    "implementation_authorized": false,
+    "database_opened": false,
+    "production_code_changed": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "authoritative_owners": {
+    "data/story_quest_hierarchy.py": {
+      "sha256": "37fb88d8e9fd960d797e21c06ec191b1b3efd598f8de7011f45aab74effde18e",
+      "line_count": 255,
+      "semantic_hits": [
+        {
+          "line": 3,
+          "text": "\"\"\"Canonical presentation metadata for hierarchical story quest navigation."
+        },
+        {
+          "line": 5,
+          "text": "This module owns story and section grouping only. It does not render Telegram"
+        },
+        {
+          "line": 6,
+          "text": "UI, mutate quest state, or expose technical location IDs to players."
+        },
+        {
+          "line": 12,
+          "text": "from data.story_quest_content import STORY_QUEST_REGISTRY"
+        },
+        {
+          "line": 13,
+          "text": "from systems.story_quest_location_presentation import resolve_story_quest_location_name"
+        },
+        {
+          "line": 17,
+          "text": "class StorySectionMetadata:"
+        },
+        {
+          "line": 18,
+          "text": "\"\"\"One production-visible story section and its ordered quest numbers.\"\"\""
+        },
+        {
+          "line": 20,
+          "text": "section_id: str"
+        },
+        {
+          "line": 21,
+          "text": "location_id: str"
+        },
+        {
+          "line": 25,
+          "text": "quest_numbers: tuple[int, ...]"
+        },
+        {
+          "line": 30,
+          "text": "\"\"\"Return the canonical Ukrainian player-facing section title.\"\"\""
+        },
+        {
+          "line": 31,
+          "text": "return f\"Розділ {self.number}. {self.title}\""
+        },
+        {
+          "line": 35,
+          "text": "class StoryLocationMetadata:"
+        },
+        {
+          "line": 36,
+          "text": "\"\"\"One production story grouped under a canonical game location.\"\"\""
+        },
+        {
+          "line": 38,
+          "text": "story_id: str"
+        },
+        {
+          "line": 39,
+          "text": "location_id: str"
+        },
+        {
+          "line": 42,
+          "text": "section_ids: tuple[str, ...]"
+        },
+        {
+          "line": 46,
+          "text": "\"\"\"Resolve the localized location name without formatting its ID.\"\"\""
+        },
+        {
+          "line": 47,
+          "text": "return resolve_story_quest_location_name(self.location_id)"
+        },
+        {
+          "line": 51,
+          "text": "\"\"\"Return the canonical player-facing story button label.\"\"\""
+        },
+        {
+          "line": 55,
+          "text": "STORY_SECTIONS: dict[str, StorySectionMetadata] = {"
+        },
+        {
+          "line": 56,
+          "text": "\"start_path_01\": StorySectionMetadata("
+        },
+        {
+          "line": 57,
+          "text": "section_id=\"start_path_01\","
+        },
+        {
+          "line": 58,
+          "text": "location_id=\"start_path\","
+        },
+        {
+          "line": 62,
+          "text": "quest_numbers=tuple(range(1, 11)),"
+        },
+        {
+          "line": 65,
+          "text": "\"start_path_02\": StorySectionMetadata("
+        },
+        {
+          "line": 66,
+          "text": "section_id=\"start_path_02\","
+        },
+        {
+          "line": 67,
+          "text": "location_id=\"start_path\","
+        },
+        {
+          "line": 71,
+          "text": "quest_numbers=tuple(range(11, 21)),"
+        },
+        {
+          "line": 74,
+          "text": "\"start_path_03\": StorySectionMetadata("
+        },
+        {
+          "line": 75,
+          "text": "section_id=\"start_path_03\","
+        },
+        {
+          "line": 76,
+          "text": "location_id=\"start_path\","
+        },
+        {
+          "line": 80,
+          "text": "quest_numbers=tuple(range(21, 31)),"
+        },
+        {
+          "line": 83,
+          "text": "\"start_path_04\": StorySectionMetadata("
+        },
+        {
+          "line": 84,
+          "text": "section_id=\"start_path_04\","
+        },
+        {
+          "line": 85,
+          "text": "location_id=\"start_path\","
+        },
+        {
+          "line": 89,
+          "text": "quest_numbers=tuple(range(31, 41)),"
+        },
+        {
+          "line": 93,
+          "text": "\"start_path_05\": StorySectionMetadata("
+        },
+        {
+          "line": 94,
+          "text": "section_id=\"start_path_05\","
+        },
+        {
+          "line": 95,
+          "text": "location_id=\"start_path\","
+        },
+        {
+          "line": 99,
+          "text": "quest_numbers=tuple(range(41, 51)),"
+        },
+        {
+          "line": 102,
+          "text": "\"dark_forest_01\": StorySectionMetadata("
+        },
+        {
+          "line": 103,
+          "text": "section_id=\"dark_forest_01\", location_id=\"dark_forest\", number=1,"
+        },
+        {
+          "line": 105,
+          "text": "quest_numbers=tuple(range(51, 61)), sort_order=60,"
+        },
+        {
+          "line": 107,
+          "text": "\"dark_forest_02\": StorySectionMetadata("
+        },
+        {
+          "line": 108,
+          "text": "section_id=\"dark_forest_02\", location_id=\"dark_forest\", number=2,"
+        },
+        {
+          "line": 110,
+          "text": "quest_numbers=tuple(range(61, 71)), sort_order=70,"
+        },
+        {
+          "line": 112,
+          "text": "\"dark_forest_03\": StorySectionMetadata("
+        },
+        {
+          "line": 113,
+          "text": "section_id=\"dark_forest_03\", location_id=\"dark_forest\", number=3,"
+        },
+        {
+          "line": 115,
+          "text": "quest_numbers=tuple(range(71, 81)), sort_order=80,"
+        },
+        {
+          "line": 117,
+          "text": "\"dark_forest_04\": StorySectionMetadata("
+        },
+        {
+          "line": 118,
+          "text": "section_id=\"dark_forest_04\", location_id=\"dark_forest\", number=4,"
+        },
+        {
+          "line": 120,
+          "text": "quest_numbers=tuple(range(81, 91)), sort_order=90,"
+        },
+        {
+          "line": 122,
+          "text": "\"dark_forest_05\": StorySectionMetadata("
+        },
+        {
+          "line": 123,
+          "text": "section_id=\"dark_forest_05\", location_id=\"dark_forest\", number=5,"
+        },
+        {
+          "line": 125,
+          "text": "quest_numbers=tuple(range(91, 101)), sort_order=100,"
+        },
+        {
+          "line": 130,
+          "text": "STORY_LOCATIONS: dict[str, StoryLocationMetadata] = {"
+        },
+        {
+          "line": 131,
+          "text": "\"start_path\": StoryLocationMetadata("
+        },
+        {
+          "line": 132,
+          "text": "story_id=\"start_path\","
+        },
+        {
+          "line": 133,
+          "text": "location_id=\"start_path\","
+        },
+        {
+          "line": 136,
+          "text": "section_ids=("
+        },
+        {
+          "line": 144,
+          "text": "\"dark_forest\": StoryLocationMetadata("
+        },
+        {
+          "line": 145,
+          "text": "story_id=\"dark_forest\", location_id=\"dark_forest\", icon=\"🌲\","
+        },
+        {
+          "line": 146,
+          "text": "sort_order=20, section_ids=(\"dark_forest_01\", \"dark_forest_02\", \"dark_forest_03\", \"dark_forest_04\", \"dark_forest_05\"),"
+        },
+        {
+          "line": 151,
+          "text": "def ordered_story_locations() -> tuple[StoryLocationMetadata, ...]:"
+        },
+        {
+          "line": 153,
+          "text": "return tuple(sorted(STORY_LOCATIONS.values(), key=lambda story: story.sort_order))"
+        },
+        {
+          "line": 156,
+          "text": "def ordered_story_sections(location_id: str) -> tuple[StorySectionMetadata, ...]:"
+        },
+        {
+          "line": 157,
+          "text": "\"\"\"Return production sections for one location in stable display order.\"\"\""
+        },
+        {
+          "line": 158,
+          "text": "story = STORY_LOCATIONS.get(location_id)"
+        },
+        {
+          "line": 159,
+          "text": "if story is None:"
+        },
+        {
+          "line": 160,
+          "text": "raise KeyError(f\"Unknown story location: {location_id}\")"
+        },
+        {
+          "line": 161,
+          "text": "return tuple(sorted((STORY_SECTIONS[section_id] for section_id in story.section_ids), key=lambda section: section.sort_order))"
+        },
+        {
+          "line": 164,
+          "text": "def get_story_location(location_id: str) -> StoryLocationMetadata:"
+        },
+        {
+          "line": 165,
+          "text": "\"\"\"Return canonical story metadata or fail closed for an unknown ID.\"\"\""
+        },
+        {
+          "line": 167,
+          "text": "return STORY_LOCATIONS[location_id]"
+        },
+        {
+          "line": 169,
+          "text": "raise KeyError(f\"Unknown story location: {location_id}\") from exc"
+        },
+        {
+          "line": 172,
+          "text": "def get_story_section(section_id: str) -> StorySectionMetadata:"
+        },
+        {
+          "line": 173,
+          "text": "\"\"\"Return canonical section metadata or fail closed for an unknown ID.\"\"\""
+        },
+        {
+          "line": 175,
+          "text": "return STORY_SECTIONS[section_id]"
+        },
+        {
+          "line": 177,
+          "text": "raise KeyError(f\"Unknown story section: {section_id}\") from exc"
+        },
+        {
+          "line": 180,
+          "text": "def get_story_section_for_quest_number(quest_number: int) -> StorySectionMetadata:"
+        },
+        {
+          "line": 181,
+          "text": "\"\"\"Resolve exactly one production section for a production quest number.\"\"\""
+        },
+        {
+          "line": 182,
+          "text": "matches = tuple(section for section in STORY_SECTIONS.values() if quest_number in section.quest_numbers)"
+        },
+        {
+          "line": 184,
+          "text": "raise KeyError(f\"Quest {quest_number} belongs to {len(matches)} story sections\")"
+        },
+        {
+          "line": 188,
+          "text": "def validate_story_hierarchy_metadata() -> dict[str, object]:"
+        },
+        {
+          "line": 189,
+          "text": "\"\"\"Validate registry coverage, ordering, localization, and section contracts.\"\"\""
+        },
+        {
+          "line": 190,
+          "text": "production_by_number = {quest.number: quest for quest in STORY_QUEST_REGISTRY.values()}"
+        },
+        {
+          "line": 195,
+          "text": "if tuple(sorted(STORY_LOCATIONS, key=lambda location_id: STORY_LOCATIONS[location_id].sort_order)) != tuple("
+        },
+        {
+          "line": 196,
+          "text": "story.story_id for story in ordered_story_locations()"
+        },
+        {
+          "line": 198,
+          "text": "raise ValueError(\"Story location ordering is not stable\")"
+        },
+        {
+          "line": 200,
+          "text": "for story in ordered_story_locations():"
+        },
+        {
+          "line": 201,
+          "text": "if story.story_id != story.location_id:"
+        },
+        {
+          "line": 202,
+          "text": "raise ValueError(f\"Story ID must equal canonical location ID: {story.story_id}\")"
+        },
+        {
+          "line": 203,
+          "text": "if story.display_name != \"Початок Шляху\" and story.location_id == \"start_path\":"
+        },
+        {
+          "line": 205,
+          "text": "if story.location_id in story.button_label or \"Start Path\" in story.button_label:"
+        },
+        {
+          "line": 206,
+          "text": "raise ValueError(\"Technical location ID leaked into player-facing story label\")"
+        },
+        {
+          "line": 207,
+          "text": "sections = ordered_story_sections(story.location_id)"
+        },
+        {
+          "line": 208,
+          "text": "if tuple(section.section_id for section in sections) != story.section_ids:"
+        },
+        {
+          "line": 209,
+          "text": "raise ValueError(f\"Section order mismatch for {story.story_id}\")"
+        },
+        {
+          "line": 210,
+          "text": "expected_section_numbers = tuple(range(1, len(sections) + 1))"
+        },
+        {
+          "line": 211,
+          "text": "if tuple(section.number for section in sections) != expected_section_numbers:"
+        },
+        {
+          "line": 212,
+          "text": "raise ValueError(f\"Section numbers must be continuous for {story.story_id}\")"
+        },
+        {
+          "line": 214,
+          "text": "for section in sections:"
+        },
+        {
+          "line": 215,
+          "text": "if section.location_id != story.location_id:"
+        },
+        {
+          "line": 216,
+          "text": "raise ValueError(f\"Section {section.section_id} location mismatch\")"
+        },
+        {
+          "line": 217,
+          "text": "if \"глава\" in section.display_title.casefold():"
+        },
+        {
+          "line": 218,
+          "text": "raise ValueError(f\"Forbidden Ukrainian term in {section.section_id}\")"
+        },
+        {
+          "line": 219,
+          "text": "if not section.display_title.startswith(\"Розділ \"):"
+        },
+        {
+          "line": 220,
+          "text": "raise ValueError(f\"Invalid section presentation title: {section.display_title}\")"
+        },
+        {
+          "line": 221,
+          "text": "if not section.quest_numbers:"
+        },
+        {
+          "line": 222,
+          "text": "raise ValueError(f\"Empty section: {section.section_id}\")"
+        },
+        {
+          "line": 223,
+          "text": "if section.quest_numbers != tuple(range(section.quest_numbers[0], section.quest_numbers[-1] + 1)):"
+        },
+        {
+          "line": 224,
+          "text": "raise ValueError(f\"Non-contiguous quest range: {section.section_id}\")"
+        },
+        {
+          "line": 225,
+          "text": "for quest_number in section.quest_numbers:"
+        },
+        {
+          "line": 226,
+          "text": "if quest_number in seen_numbers:"
+        },
+        {
+          "line": 227,
+          "text": "raise ValueError(f\"Quest {quest_number} belongs to multiple sections\")"
+        },
+        {
+          "line": 228,
+          "text": "seen_numbers.add(quest_number)"
+        },
+        {
+          "line": 229,
+          "text": "metadata_numbers.append(quest_number)"
+        },
+        {
+          "line": 230,
+          "text": "quest = production_by_number.get(quest_number)"
+        },
+        {
+          "line": 231,
+          "text": "if quest is None:"
+        },
+        {
+          "line": 232,
+          "text": "raise ValueError(f\"Metadata exposes inactive quest {quest_number}\")"
+        },
+        {
+          "line": 233,
+          "text": "if quest.location_id != story.location_id:"
+        },
+        {
+          "line": 234,
+          "text": "raise ValueError(f\"Quest {quest_number} location mismatch\")"
+        },
+        {
+          "line": 235,
+          "text": "if quest.unlock_level != section.required_level:"
+        },
+        {
+          "line": 236,
+          "text": "raise ValueError(f\"Quest {quest_number} unlock level mismatch\")"
+        },
+        {
+          "line": 244,
+          "text": "\"story_ids\": tuple(story.story_id for story in ordered_story_locations()),"
+        },
+        {
+          "line": 245,
+          "text": "\"section_ids\": tuple(section.section_id for section in STORY_SECTIONS.values()),"
+        },
+        {
+          "line": 246,
+          "text": "\"quest_numbers\": tuple(metadata_numbers),"
+        },
+        {
+          "line": 247,
+          "text": "\"production_quest_count\": len(production_numbers),"
+        },
+        {
+          "line": 248,
+          "text": "\"metadata_quest_count\": len(metadata_numbers),"
+        },
+        {
+          "line": 249,
+          "text": "\"localized_start_path\": STORY_LOCATIONS[\"start_path\"].display_name,"
+        },
+        {
+          "line": 250,
+          "text": "\"start_path_button_label\": STORY_LOCATIONS[\"start_path\"].button_label,"
+        },
+        {
+          "line": 251,
+          "text": "\"section_titles\": tuple(section.display_title for section in ordered_story_sections(\"start_path\")),"
+        },
+        {
+          "line": 255,
+          "text": "STORY_HIERARCHY_VALIDATION = validate_story_hierarchy_metadata()"
+        }
+      ]
+    },
+    "handlers/story_quest_hierarchy_ui.py": {
+      "sha256": "71b57d0330255bfa09aceb295cb316e1dd5c66bf9b15221847877ec524aecb59",
+      "line_count": 169,
+      "semantic_hits": [
+        {
+          "line": 3,
+          "text": "\"\"\"Presentation-only hierarchy for the story quest journal."
+        },
+        {
+          "line": 5,
+          "text": "Hierarchy: stories -> sections -> quests -> existing quest detail."
+        },
+        {
+          "line": 14,
+          "text": "from data.story_quest_content import STORY_QUEST_REGISTRY"
+        },
+        {
+          "line": 15,
+          "text": "from data.story_quest_hierarchy import ("
+        },
+        {
+          "line": 16,
+          "text": "get_story_location,"
+        },
+        {
+          "line": 17,
+          "text": "get_story_section,"
+        },
+        {
+          "line": 18,
+          "text": "get_story_section_for_quest_number,"
+        },
+        {
+          "line": 19,
+          "text": "ordered_story_locations,"
+        },
+        {
+          "line": 20,
+          "text": "ordered_story_sections,"
+        },
+        {
+          "line": 23,
+          "text": "CALLBACK_PREFIX = \"sqh:v1\""
+        },
+        {
+          "line": 24,
+          "text": "ROOT_CALLBACK = f\"{CALLBACK_PREFIX}:index\""
+        },
+        {
+          "line": 25,
+          "text": "# Route through the existing canonical story-journal handler, which delegates"
+        },
+        {
+          "line": 27,
+          "text": "PROFILE_CALLBACK = \"story_quest:profile\""
+        },
+        {
+          "line": 36,
+          "text": "def _callback(*parts: object) -> str:"
+        },
+        {
+          "line": 37,
+          "text": "value = \":\".join((CALLBACK_PREFIX, *(str(part) for part in parts)))"
+        },
+        {
+          "line": 39,
+          "text": "raise ValueError(f\"Story hierarchy callback is too long: {value}\")"
+        },
+        {
+          "line": 43,
+          "text": "def parse_hierarchy_callback(data: str) -> HierarchyAction | None:"
+        },
+        {
+          "line": 44,
+          "text": "if data == ROOT_CALLBACK:"
+        },
+        {
+          "line": 46,
+          "text": "if not data.startswith(f\"{CALLBACK_PREFIX}:\"):"
+        },
+        {
+          "line": 52,
+          "text": "return HierarchyAction(\"location\", parts[3])"
+        },
+        {
+          "line": 54,
+          "text": "return HierarchyAction(\"section\", parts[3])"
+        },
+        {
+          "line": 56,
+          "text": "return HierarchyAction(\"quest\", int(parts[3]))"
+        },
+        {
+          "line": 63,
+          "text": "return {quest.number: quest for quest in STORY_QUEST_REGISTRY.values()}"
+        },
+        {
+          "line": 66,
+          "text": "def _completed_numbers(user_id: int, status_reader: Callable[[int, object], str]) -> set[int]:"
+        },
+        {
+          "line": 67,
+          "text": "completed = set()"
+        },
+        {
+          "line": 68,
+          "text": "for quest in STORY_QUEST_REGISTRY.values():"
+        },
+        {
+          "line": 69,
+          "text": "if status_reader(user_id, quest) == \"completed\":"
+        },
+        {
+          "line": 70,
+          "text": "completed.add(quest.number)"
+        },
+        {
+          "line": 71,
+          "text": "return completed"
+        },
+        {
+          "line": 76,
+          "text": "\"completed\": \"✅\","
+        },
+        {
+          "line": 77,
+          "text": "\"active\": \"📖\","
+        },
+        {
+          "line": 79,
+          "text": "\"locked\": \"🔒\","
+        },
+        {
+          "line": 84,
+          "text": "def build_story_index(user_id: int, status_reader: Callable[[int, object], str]) -> tuple[str, types.InlineKeyboardMarkup]:"
+        },
+        {
+          "line": 86,
+          "text": "completed = _completed_numbers(user_id, status_reader)"
+        },
+        {
+          "line": 87,
+          "text": "text = \"📜 Сюжетні історії\\n\\nОберіть історію, яку хочете переглянути.\""
+        },
+        {
+          "line": 89,
+          "text": "for story in ordered_story_locations():"
+        },
+        {
+          "line": 90,
+          "text": "story_numbers = [n for section in ordered_story_sections(story.location_id) for n in section.quest_numbers if n in rows]"
+        },
+        {
+          "line": 92,
+          "text": "text=f\"{story.button_label} · {len(completed.intersection(story_numbers))}/{len(story_numbers)}\","
+        },
+        {
+          "line": 93,
+          "text": "callback_data=_callback(\"loc\", story.location_id),"
+        },
+        {
+          "line": 95,
+          "text": "keyboard.add(types.InlineKeyboardButton(\"🔙 До профілю\", callback_data=PROFILE_CALLBACK))"
+        },
+        {
+          "line": 99,
+          "text": "def _section_status(user_id: int, section, status_reader: Callable[[int, object], str]) -> str:"
+        },
+        {
+          "line": 101,
+          "text": "statuses = [status_reader(user_id, rows[number]) for number in section.quest_numbers if number in rows]"
+        },
+        {
+          "line": 102,
+          "text": "if statuses and all(status == \"completed\" for status in statuses):"
+        },
+        {
+          "line": 103,
+          "text": "return \"completed\""
+        },
+        {
+          "line": 104,
+          "text": "if \"active\" in statuses:"
+        },
+        {
+          "line": 105,
+          "text": "return \"active\""
+        },
+        {
+          "line": 108,
+          "text": "# A fully finalized section containing SKIPPED quests is not locked. Keep"
+        },
+        {
+          "line": 109,
+          "text": "# progress honest by counting only COMPLETED, while ⏭️ explains closure."
+        },
+        {
+          "line": 110,
+          "text": "if \"skipped\" in statuses and all(status in {\"completed\", \"skipped\"} for status in statuses):"
+        },
+        {
+          "line": 112,
+          "text": "return \"locked\""
+        },
+        {
+          "line": 115,
+          "text": "def build_section_index(location_id: str, user_id: int, status_reader: Callable[[int, object], str]) -> tuple[str, types.InlineKeyboardMarkup]:"
+        },
+        {
+          "line": 116,
+          "text": "story = get_story_location(location_id)"
+        },
+        {
+          "line": 117,
+          "text": "sections = ordered_story_sections(location_id)"
+        },
+        {
+          "line": 119,
+          "text": "completed = _completed_numbers(user_id, status_reader)"
+        },
+        {
+          "line": 120,
+          "text": "story_numbers = [n for section in sections for n in section.quest_numbers if n in rows]"
+        },
+        {
+          "line": 122,
+          "text": "f\"{story.button_label}\\n\\n\""
+        },
+        {
+          "line": 123,
+          "text": "f\"Прогрес історії: {len(completed.intersection(story_numbers))}/{len(story_numbers)}\\n\\n\""
+        },
+        {
+          "line": 124,
+          "text": "\"Оберіть розділ:\""
+        },
+        {
+          "line": 127,
+          "text": "for section in sections:"
+        },
+        {
+          "line": 128,
+          "text": "status = _section_status(user_id, section, status_reader)"
+        },
+        {
+          "line": 129,
+          "text": "completed_count = len(completed.intersection(section.quest_numbers))"
+        },
+        {
+          "line": 131,
+          "text": "text=f\"{_status_icon(status)} {section.display_title} · {completed_count}/{len(section.quest_numbers)}\","
+        },
+        {
+          "line": 132,
+          "text": "callback_data=_callback(\"sec\", section.section_id),"
+        },
+        {
+          "line": 134,
+          "text": "keyboard.add(types.InlineKeyboardButton(\"🔙 Сюжетні історії\", callback_data=ROOT_CALLBACK))"
+        },
+        {
+          "line": 138,
+          "text": "def build_section_quests(section_id: str, user_id: int, status_reader: Callable[[int, object], str], title_reader: Callable[[int, object], str]) -> tuple[str, types.InlineKeyboardMarkup]:"
+        },
+        {
+          "line": 139,
+          "text": "section = get_story_section(section_id)"
+        },
+        {
+          "line": 140,
+          "text": "story = get_story_location(section.location_id)"
+        },
+        {
+          "line": 142,
+          "text": "completed = _completed_numbers(user_id, status_reader)"
+        },
+        {
+          "line": 143,
+          "text": "visible_numbers = [number for number in section.quest_numbers if number in rows]"
+        },
+        {
+          "line": 145,
+          "text": "f\"📖 {section.display_title}\\n\\n\""
+        },
+        {
+          "line": 146,
+          "text": "f\"Історія: {story.display_name}\\n\""
+        },
+        {
+          "line": 147,
+          "text": "f\"Рівень розділу: {section.required_level}\\n\""
+        },
+        {
+          "line": 148,
+          "text": "f\"Прогрес: {len(completed.intersection(visible_numbers))}/{len(visible_numbers)}\\n\\n\""
+        },
+        {
+          "line": 149,
+          "text": "\"Оберіть квест:\""
+        },
+        {
+          "line": 153,
+          "text": "quest = rows[number]"
+        },
+        {
+          "line": 154,
+          "text": "status = status_reader(user_id, quest)"
+        },
+        {
+          "line": 156,
+          "text": "text=f\"{_status_icon(status)} {quest.number}. {title_reader(user_id, quest)}\","
+        },
+        {
+          "line": 157,
+          "text": "callback_data=_callback(\"q\", quest.number),"
+        },
+        {
+          "line": 159,
+          "text": "keyboard.add(types.InlineKeyboardButton(\"🔙 Розділи\", callback_data=_callback(\"loc\", section.location_id)))"
+        },
+        {
+          "line": 160,
+          "text": "keyboard.add(types.InlineKeyboardButton(\"📜 Сюжетні історії\", callback_data=ROOT_CALLBACK))"
+        },
+        {
+          "line": 164,
+          "text": "def section_callback_for_quest(quest_number: int) -> str:"
+        },
+        {
+          "line": 165,
+          "text": "return _callback(\"sec\", get_story_section_for_quest_number(quest_number).section_id)"
+        },
+        {
+          "line": 168,
+          "text": "def quest_callback(quest_number: int) -> str:"
+        },
+        {
+          "line": 169,
+          "text": "return _callback(\"q\", quest_number)"
+        }
+      ]
+    },
+    "handlers/profile.py": {
+      "sha256": "9546e06670a5bf830671d69b8006b0630edf9a95cb9365a9dff05630acf0524d",
+      "line_count": 1155,
+      "semantic_hits": [
+        {
+          "line": 21,
+          "text": "get_user_progress,"
+        },
+        {
+          "line": 63,
+          "text": "from systems.profile_history_system import init_profile_history, get_trade_history, get_trade_history_detail, get_pvp_history, get_pvp_history_detail"
+        },
+        {
+          "line": 65,
+          "text": "from handlers.attribute_allocation import register_attribute_allocation_handlers"
+        },
+        {
+          "line": 85,
+          "text": "def profile_inline_kb(active_tab=\"character\"):"
+        },
+        {
+          "line": 93,
+          "text": "active_tab:"
+        },
+        {
+          "line": 119,
+          "text": "if active_tab != \"character\":"
+        },
+        {
+          "line": 125,
+          "text": "callback_data=\"profile_character\""
+        },
+        {
+          "line": 131,
+          "text": "if active_tab != \"stats\":"
+        },
+        {
+          "line": 137,
+          "text": "callback_data=\"profile_stats\""
+        },
+        {
+          "line": 143,
+          "text": "if active_tab != \"equipment\":"
+        },
+        {
+          "line": 149,
+          "text": "callback_data=\"profile_equipment\""
+        },
+        {
+          "line": 155,
+          "text": "if active_tab != \"attributes\":"
+        },
+        {
+          "line": 161,
+          "text": "callback_data=\"profile_attributes\""
+        },
+        {
+          "line": 167,
+          "text": "if active_tab != \"skills\":"
+        },
+        {
+          "line": 173,
+          "text": "callback_data=\"profile_skills\""
+        },
+        {
+          "line": 329,
+          "text": "progress = get_user_progress(user_id)"
+        },
+        {
+          "line": 333,
+          "text": "if progress:"
+        },
+        {
+          "line": 335,
+          "text": "exp = progress[\"exp\"]"
+        },
+        {
+          "line": 337,
+          "text": "exp_to_next = progress[\"exp_to_next\"]"
+        },
+        {
+          "line": 339,
+          "text": "gold = progress[\"gold\"]"
+        },
+        {
+          "line": 341,
+          "text": "kills = progress[\"kills\"]"
+        },
+        {
+          "line": 343,
+          "text": "daily_hunts = progress[\"daily_hunts\"]"
+        },
+        {
+          "line": 813,
+          "text": "def _history_menu_kb():"
+        },
+        {
+          "line": 817,
+          "text": "kb.add(types.InlineKeyboardButton(\"🤝 Історія обмінів\",callback_data=\"profile_history_trade:0\"))"
+        },
+        {
+          "line": 819,
+          "text": "kb.add(types.InlineKeyboardButton(\"⚔️ Історія PvP\",callback_data=\"profile_history_pvp:0\"))"
+        },
+        {
+          "line": 821,
+          "text": "kb.add(types.InlineKeyboardButton(\"🔙 Профіль\",callback_data=\"profile_character\"))"
+        },
+        {
+          "line": 827,
+          "text": "def _history_list_kb(kind,data):"
+        },
+        {
+          "line": 831,
+          "text": "prefix=\"profile_history_trade_detail\" if kind==\"trade\" else \"profile_history_pvp_detail\""
+        },
+        {
+          "line": 837,
+          "text": "kb.add(types.InlineKeyboardButton(label,callback_data=f\"{prefix}:{item['id']}:{data['page']}\"))"
+        },
+        {
+          "line": 841,
+          "text": "if data.get(\"has_prev\"):nav.append(types.InlineKeyboardButton(\"⬅️\",callback_data=f\"profile_history_{kind}:{data['page']-1}\"))"
+        },
+        {
+          "line": 843,
+          "text": "if data.get(\"has_next\"):nav.append(types.InlineKeyboardButton(\"➡️\",callback_data=f\"profile_history_{kind}:{data['page']+1}\"))"
+        },
+        {
+          "line": 847,
+          "text": "kb.add(types.InlineKeyboardButton(\"🔙 Історія\",callback_data=\"profile_history\"));return kb"
+        },
+        {
+          "line": 851,
+          "text": "def _history_list_text(kind,data):"
+        },
+        {
+          "line": 853,
+          "text": "title=\"🤝 Історія обмінів\" if kind==\"trade\" else \"⚔️ Історія PvP\""
+        },
+        {
+          "line": 861,
+          "text": "if kind==\"trade\":lines += [\"\",f\"🤝 {item['other_name']}\",f\"📅 {item['completed_at']}\"]"
+        },
+        {
+          "line": 863,
+          "text": "else:lines += [\"\",f\"{'🏆 Перемога проти' if item['won'] else '💀 Поразка від'} {item['other_name']}\",f\"📅 {item['completed_at']}\",f\"⚔️ Раундів: {item['rounds']}\"]"
+        },
+        {
+          "line": 870,
+          "text": "\"\"\"Render the canonical Profile entry for reply and callback navigation."
+        },
+        {
+          "line": 872,
+          "text": "Story-quest callbacks reuse this owner instead of copying Profile text,"
+        },
+        {
+          "line": 873,
+          "text": "keyboards, character rendering, or active-tab behavior."
+        },
+        {
+          "line": 877,
+          "text": "\"👤 Розділ персонажа відкрито\","
+        },
+        {
+          "line": 883,
+          "text": "reply_markup=profile_inline_kb(active_tab=\"character\"),"
+        },
+        {
+          "line": 889,
+          "text": "register_attribute_allocation_handlers(bot, profile_inline_kb, build_character_text)"
+        },
+        {
+          "line": 891,
+          "text": "init_profile_history()"
+        },
+        {
+          "line": 895,
+          "text": "@bot.message_handler(func=lambda message: getattr(message, \"text\", None) == \"📜 Історія\")"
+        },
+        {
+          "line": 897,
+          "text": "def profile_history_reply_message_17_24_1_1(message):"
+        },
+        {
+          "line": 903,
+          "text": "\"📜 Історія\\n\\nОберіть розділ:\","
+        },
+        {
+          "line": 905,
+          "text": "reply_markup=_history_menu_kb(),"
+        },
+        {
+          "line": 949,
+          "text": "reply_markup=profile_inline_kb(active_tab=\"stats\")"
+        },
+        {
+          "line": 969,
+          "text": "reply_markup=profile_inline_kb(active_tab=\"equipment\")"
+        },
+        {
+          "line": 989,
+          "text": "reply_markup=profile_inline_kb(active_tab=\"skills\")"
+        },
+        {
+          "line": 997,
+          "text": "# INLINE CALLBACKS"
+        },
+        {
+          "line": 1003,
+          "text": "@bot.callback_query_handler(func=lambda call: call.data == \"profile_character\")"
+        },
+        {
+          "line": 1005,
+          "text": "def profile_character_callback(call):"
+        },
+        {
+          "line": 1011,
+          "text": "bot.answer_callback_query(call.id)"
+        },
+        {
+          "line": 1021,
+          "text": "reply_markup=profile_inline_kb(active_tab=\"character\")"
+        },
+        {
+          "line": 1027,
+          "text": "@bot.callback_query_handler(func=lambda call: call.data == \"profile_stats\")"
+        },
+        {
+          "line": 1029,
+          "text": "def profile_stats_callback(call):"
+        },
+        {
+          "line": 1035,
+          "text": "bot.answer_callback_query(call.id)"
+        },
+        {
+          "line": 1045,
+          "text": "reply_markup=profile_inline_kb(active_tab=\"stats\")"
+        },
+        {
+          "line": 1051,
+          "text": "@bot.callback_query_handler(func=lambda call: call.data == \"profile_equipment\")"
+        },
+        {
+          "line": 1053,
+          "text": "def profile_equipment_callback(call):"
+        },
+        {
+          "line": 1059,
+          "text": "bot.answer_callback_query(call.id)"
+        },
+        {
+          "line": 1069,
+          "text": "reply_markup=profile_inline_kb(active_tab=\"equipment\")"
+        },
+        {
+          "line": 1075,
+          "text": "@bot.callback_query_handler(func=lambda call: call.data == \"profile_skills\")"
+        },
+        {
+          "line": 1077,
+          "text": "def profile_skills_callback(call):"
+        },
+        {
+          "line": 1083,
+          "text": "bot.answer_callback_query(call.id)"
+        },
+        {
+          "line": 1093,
+          "text": "reply_markup=profile_inline_kb(active_tab=\"skills\")"
+        },
+        {
+          "line": 1121,
+          "text": "@bot.callback_query_handler(func=lambda call: str(getattr(call,\"data\",\"\")).startswith(\"profile_history\"))"
+        },
+        {
+          "line": 1123,
+          "text": "def profile_history_callback(call):"
+        },
+        {
+          "line": 1127,
+          "text": "try:bot.answer_callback_query(call.id)"
+        },
+        {
+          "line": 1131,
+          "text": "if data==\"profile_history\":"
+        },
+        {
+          "line": 1133,
+          "text": "bot.send_message(call.message.chat.id,\"📜 Історія\\n\\nОберіть розділ:\",reply_markup=_history_menu_kb());return"
+        },
+        {
+          "line": 1137,
+          "text": "if data.startswith(\"profile_history_trade_detail:\"):"
+        },
+        {
+          "line": 1139,
+          "text": "item=get_trade_history_detail(uid,int(parts[1]));page=int(parts[2])"
+        },
+        {
+          "line": 1141,
+          "text": "text=(\"🤝 Завершений обмін\\n\\n\"+f\"Учасник: {item['other_name']}\\nДата: {item['completed_at']}\\n\\n📤 Ти передав:\\n\"+\"\\n\".join(item['give_lines'])+\"\\n\\n📥 Ти отримав:\\n\"+\"\\n\".join(item['take_lines'])) if item else \"Запис не знайдено.\""
+        },
+        {
+          "line": 1143,
+          "text": "kb=types.InlineKeyboardMarkup();kb.add(types.InlineKeyboardButton(\"🔙 До обмінів\",callback_data=f\"profile_history_trade:{page}\"));bot.send_message(call.message.chat.id,text,reply_markup=kb);return"
+        },
+        {
+          "line": 1145,
+          "text": "if data.startswith(\"profile_history_pvp_detail:\"):"
+        },
+        {
+          "line": 1147,
+          "text": "item=get_pvp_history_detail(uid,int(parts[1]));page=int(parts[2])"
+        },
+        {
+          "line": 1149,
+          "text": "text=(f\"⚔️ PvP-бій\\n\\nРезультат: {'🏆 Перемога' if item['won'] else '💀 Поразка'}\\nСуперник: {item['other_name']}\\nДата: {item['completed_at']}\\nРаундів: {item['rounds']}\\nПричина: {item['reason']}\") if item else \"Запис не знайдено.\""
+        },
+        {
+          "line": 1151,
+          "text": "kb=types.InlineKeyboardMarkup();kb.add(types.InlineKeyboardButton(\"🔙 До PvP\",callback_data=f\"profile_history_pvp:{page}\"));bot.send_message(call.message.chat.id,text,reply_markup=kb);return"
+        },
+        {
+          "line": 1153,
+          "text": "kind=\"trade\" if data.startswith(\"profile_history_trade:\") else \"pvp\";page=max(0,int(parts[1]));result=get_trade_history(uid,page,5) if kind==\"trade\" else get_pvp_history(uid,page,5)"
+        },
+        {
+          "line": 1155,
+          "text": "bot.send_message(call.message.chat.id,_history_list_text(kind,result),reply_markup=_history_list_kb(kind,result))"
+        }
+      ]
+    },
+    "systems/story_quest_location_presentation.py": {
+      "sha256": "7ca73e7e90804e70afa715db3b276420a1c5ebb8d49fec38a74677e04aa70a5e",
+      "line_count": 27,
+      "semantic_hits": [
+        {
+          "line": 3,
+          "text": "\"\"\"Canonical localized display names for story-quest locations.\"\"\""
+        },
+        {
+          "line": 7,
+          "text": "from data.locations import LOCATIONS"
+        },
+        {
+          "line": 10,
+          "text": "def resolve_story_quest_location_name(location_id: str) -> str:"
+        },
+        {
+          "line": 11,
+          "text": "\"\"\"Return the canonical player-facing location name or fail closed."
+        },
+        {
+          "line": 13,
+          "text": "Story presentation must never derive user-facing text from technical IDs."
+        },
+        {
+          "line": 17,
+          "text": "normalized = str(location_id or \"\").strip()"
+        },
+        {
+          "line": 19,
+          "text": "raise ValueError(\"story quest location_id is empty\")"
+        },
+        {
+          "line": 20,
+          "text": "location = LOCATIONS.get(normalized)"
+        },
+        {
+          "line": 21,
+          "text": "if location is None:"
+        },
+        {
+          "line": 22,
+          "text": "raise KeyError(f\"unknown story quest location_id: {normalized}\")"
+        },
+        {
+          "line": 23,
+          "text": "raw_name = location.get(\"name\") if isinstance(location, dict) else getattr(location, \"name\", None)"
+        },
+        {
+          "line": 26,
+          "text": "raise ValueError(f\"location has no player-facing name: {normalized}\")"
+        }
+      ]
+    },
+    "data/story_quest_title_presentation.py": {
+      "sha256": "2750b9fe11a8d1875ce7bddd3c34757a1050fb9f95e197e416e5a2508cd62f1d",
+      "line_count": 22,
+      "semantic_hits": [
+        {
+          "line": 3,
+          "text": "\"\"\"Canonical presentation-title policy for spoiler-safe story quest UI.\"\"\""
+        },
+        {
+          "line": 6,
+          "text": "from data.story_quest_definitions import QuestType"
+        },
+        {
+          "line": 8,
+          "text": "PRE_REVEAL_TITLE_BY_QUEST_ID = MappingProxyType({'start_path_004_guard_uniform_scrap': 'Слід патруля', 'start_path_007_broken_guard_lantern': 'Знахідка біля мосту', 'start_path_013_runic_crystal_fragment': 'Матеріальний слід аномалії', 'start_path_019_guards_note': 'Слід зниклого патруля', 'start_path_023_guards_ring': 'Особиста річ вартового', 'start_path_029_torn_guard_cloak': 'Слід нападу', 'start_path_034_runemarked_wolf_pelt': 'Матеріал для Коваля', 'start_path_043_pack_leader_seal': 'Незви"
+        },
+        {
+          "line": 11,
+          "text": "def resolve_story_quest_presentation_title(quest, status: str, quest_item_quantity: int = 0) -> str:"
+        },
+        {
+          "line": 12,
+          "text": "\"\"\"Return a neutral title until a hidden quest item is actually acquired.\"\"\""
+        },
+        {
+          "line": 13,
+          "text": "if quest.quest_type is not QuestType.QUEST_ITEM:"
+        },
+        {
+          "line": 14,
+          "text": "return str(quest.title)"
+        },
+        {
+          "line": 15,
+          "text": "state = str(status or \"LOCKED\").upper()"
+        },
+        {
+          "line": 16,
+          "text": "if state in {\"COMPLETED\", \"SKIPPED\"}:"
+        },
+        {
+          "line": 17,
+          "text": "return str(quest.title)"
+        },
+        {
+          "line": 18,
+          "text": "item = quest.quest_item"
+        },
+        {
+          "line": 19,
+          "text": "required = int(item.required_quantity) if item is not None else int(quest.target_quantity)"
+        },
+        {
+          "line": 20,
+          "text": "if int(quest_item_quantity or 0) >= max(1, required):"
+        },
+        {
+          "line": 21,
+          "text": "return str(quest.title)"
+        },
+        {
+          "line": 22,
+          "text": "return str(PRE_REVEAL_TITLE_BY_QUEST_ID.get(quest.quest_id, quest.title))"
+        }
+      ]
+    },
+    "db_modules/story_quests.py": {
+      "sha256": "cedc91f344f44dafc6daf35c6ba93d54e280f0f17b00709b32142abe503a4975",
+      "line_count": 333,
+      "semantic_hits": [
+        {
+          "line": 1,
+          "text": "\"\"\"Canonical persistence API for story-quest state and quest items."
+        },
+        {
+          "line": 12,
+          "text": "VALID_PERSISTENT_STATUSES = frozenset({\"ACTIVE\", \"COMPLETED\", \"SKIPPED\"})"
+        },
+        {
+          "line": 15,
+          "text": "class StoryQuestPersistenceError(RuntimeError):"
+        },
+        {
+          "line": 16,
+          "text": "\"\"\"Base error for rejected story-quest persistence operations.\"\"\""
+        },
+        {
+          "line": 19,
+          "text": "class StoryQuestConflictError(StoryQuestPersistenceError):"
+        },
+        {
+          "line": 20,
+          "text": "\"\"\"The requested write conflicts with current persistent state.\"\"\""
+        },
+        {
+          "line": 34,
+          "text": "raise StoryQuestPersistenceError(\"connection row_factory must expose mapping rows\")"
+        },
+        {
+          "line": 44,
+          "text": "def get_story_quest(connection, user_id: int, quest_id: str) -> Optional[dict[str, Any]]:"
+        },
+        {
+          "line": 45,
+          "text": "\"\"\"Return one persisted quest row without deriving LOCKED or AVAILABLE.\"\"\""
+        },
+        {
+          "line": 47,
+          "text": "\"SELECT * FROM user_story_quests WHERE user_id=? AND quest_id=?\","
+        },
+        {
+          "line": 48,
+          "text": "(int(user_id), str(quest_id)),"
+        },
+        {
+          "line": 53,
+          "text": "def get_active_story_quest(connection, user_id: int) -> Optional[dict[str, Any]]:"
+        },
+        {
+          "line": 54,
+          "text": "\"\"\"Return the single ACTIVE quest guaranteed by the partial unique index.\"\"\""
+        },
+        {
+          "line": 56,
+          "text": "\"SELECT * FROM user_story_quests WHERE user_id=? AND status='ACTIVE'\","
+        },
+        {
+          "line": 62,
+          "text": "def list_story_quest_journal(connection, user_id: int) -> list[dict[str, Any]]:"
+        },
+        {
+          "line": 63,
+          "text": "\"\"\"Return materialized quest history in canonical quest-number order.\"\"\""
+        },
+        {
+          "line": 65,
+          "text": "\"\"\"SELECT * FROM user_story_quests"
+        },
+        {
+          "line": 66,
+          "text": "WHERE user_id=? ORDER BY quest_number ASC, id ASC\"\"\","
+        },
+        {
+          "line": 72,
+          "text": "def activate_story_quest("
+        },
+        {
+          "line": 76,
+          "text": "quest_id: str,"
+        },
+        {
+          "line": 77,
+          "text": "quest_number: int,"
+        },
+        {
+          "line": 81,
+          "text": "\"\"\"Insert one ACTIVE quest without committing the caller-owned transaction."
+        },
+        {
+          "line": 83,
+          "text": "Repeated activation of the same already-active quest is idempotent. Any"
+        },
+        {
+          "line": 84,
+          "text": "different existing row or another active quest is a conflict that the"
+        },
+        {
+          "line": 87,
+          "text": "quest_key = str(quest_id or \"\").strip()"
+        },
+        {
+          "line": 88,
+          "text": "if not quest_key:"
+        },
+        {
+          "line": 89,
+          "text": "raise ValueError(\"quest_id is required\")"
+        },
+        {
+          "line": 90,
+          "text": "number = _require_positive(quest_number, \"quest_number\")"
+        },
+        {
+          "line": 93,
+          "text": "existing = get_story_quest(connection, user_id, quest_key)"
+        },
+        {
+          "line": 95,
+          "text": "if existing[\"status\"] == \"ACTIVE\":"
+        },
+        {
+          "line": 97,
+          "text": "raise StoryQuestConflictError("
+        },
+        {
+          "line": 98,
+          "text": "f\"quest {quest_key} already has persistent status {existing['status']}\""
+        },
+        {
+          "line": 100,
+          "text": "if get_active_story_quest(connection, user_id) is not None:"
+        },
+        {
+          "line": 101,
+          "text": "raise StoryQuestConflictError(\"user already has an ACTIVE story quest\")"
+        },
+        {
+          "line": 104,
+          "text": "\"\"\"INSERT INTO user_story_quests"
+        },
+        {
+          "line": 105,
+          "text": "(user_id, quest_id, quest_number, status, progress, target_quantity,"
+        },
+        {
+          "line": 107,
+          "text": "VALUES (?, ?, ?, 'ACTIVE', 0, ?, 0, ?, ?)\"\"\","
+        },
+        {
+          "line": 108,
+          "text": "(int(user_id), quest_key, number, target, now, now),"
+        },
+        {
+          "line": 111,
+          "text": "raise StoryQuestConflictError(\"cannot activate story quest\") from error"
+        },
+        {
+          "line": 112,
+          "text": "return get_story_quest(connection, user_id, quest_key)"
+        },
+        {
+          "line": 115,
+          "text": "def set_story_quest_progress("
+        },
+        {
+          "line": 119,
+          "text": "quest_id: str,"
+        },
+        {
+          "line": 120,
+          "text": "progress: int,"
+        },
+        {
+          "line": 123,
+          "text": "\"\"\"Set bounded ACTIVE progress while preserving monotonic advancement.\"\"\""
+        },
+        {
+          "line": 124,
+          "text": "row = get_story_quest(connection, user_id, quest_id)"
+        },
+        {
+          "line": 125,
+          "text": "if row is None or row[\"status\"] != \"ACTIVE\":"
+        },
+        {
+          "line": 126,
+          "text": "raise StoryQuestConflictError(\"quest is not ACTIVE\")"
+        },
+        {
+          "line": 127,
+          "text": "requested = max(0, int(progress))"
+        },
+        {
+          "line": 128,
+          "text": "bounded = min(requested, int(row[\"target_quantity\"]))"
+        },
+        {
+          "line": 129,
+          "text": "if bounded < int(row[\"progress\"]):"
+        },
+        {
+          "line": 130,
+          "text": "raise StoryQuestConflictError(\"story quest progress cannot decrease\")"
+        },
+        {
+          "line": 132,
+          "text": "\"\"\"UPDATE user_story_quests SET progress=?, updated_at=?"
+        },
+        {
+          "line": 133,
+          "text": "WHERE user_id=? AND quest_id=? AND status='ACTIVE'\"\"\","
+        },
+        {
+          "line": 134,
+          "text": "(bounded, str(timestamp or utc_now_iso()), int(user_id), str(quest_id)),"
+        },
+        {
+          "line": 136,
+          "text": "return get_story_quest(connection, user_id, quest_id)"
+        },
+        {
+          "line": 139,
+          "text": "def get_story_quest_item_quantity("
+        },
+        {
+          "line": 140,
+          "text": "connection, user_id: int, quest_id: str, item_key: str"
+        },
+        {
+          "line": 142,
+          "text": "\"\"\"Return an isolated quest-item quantity without reading ordinary inventory.\"\"\""
+        },
+        {
+          "line": 144,
+          "text": "\"\"\"SELECT quantity FROM user_story_quest_items"
+        },
+        {
+          "line": 145,
+          "text": "WHERE user_id=? AND quest_id=? AND item_key=?\"\"\","
+        },
+        {
+          "line": 146,
+          "text": "(int(user_id), str(quest_id), str(item_key)),"
+        },
+        {
+          "line": 151,
+          "text": "def get_total_story_quest_item_quantity(connection, user_id: int, item_key: str) -> int:"
+        },
+        {
+          "line": 152,
+          "text": "\"\"\"Return one clue quantity across source quests for later retained turn-ins.\"\"\""
+        },
+        {
+          "line": 154,
+          "text": "\"\"\"SELECT COALESCE(SUM(quantity),0) FROM user_story_quest_items"
+        },
+        {
+          "line": 161,
+          "text": "def consume_story_quest_item_quantity("
+        },
+        {
+          "line": 172,
+          "text": "raise StoryQuestPersistenceError(\"consume quantity must be positive\")"
+        },
+        {
+          "line": 174,
+          "text": "\"\"\"SELECT quest_id, quantity FROM user_story_quest_items"
+        },
+        {
+          "line": 176,
+          "text": "ORDER BY updated_at, quest_id\"\"\","
+        },
+        {
+          "line": 180,
+          "text": "raise StoryQuestConflictError(\"required quest item quantity is incomplete\")"
+        },
+        {
+          "line": 182,
+          "text": "for quest_id, current_raw in rows:"
+        },
+        {
+          "line": 189,
+          "text": "\"\"\"DELETE FROM user_story_quest_items"
+        },
+        {
+          "line": 190,
+          "text": "WHERE user_id=? AND quest_id=? AND item_key=? AND quantity=?\"\"\","
+        },
+        {
+          "line": 191,
+          "text": "(int(user_id), str(quest_id), str(item_key), current),"
+        },
+        {
+          "line": 195,
+          "text": "\"\"\"UPDATE user_story_quest_items SET quantity=quantity-?, updated_at=?"
+        },
+        {
+          "line": 196,
+          "text": "WHERE user_id=? AND quest_id=? AND item_key=? AND quantity=?\"\"\","
+        },
+        {
+          "line": 197,
+          "text": "(take, utc_now_iso(), int(user_id), str(quest_id), str(item_key), current),"
+        },
+        {
+          "line": 200,
+          "text": "raise StoryQuestConflictError(\"quest item quantity changed concurrently\")"
+        },
+        {
+          "line": 207,
+          "text": "def add_story_quest_item("
+        },
+        {
+          "line": 211,
+          "text": "quest_id: str,"
+        },
+        {
+          "line": 217,
+          "text": "\"\"\"Grant a bounded quest-item quantity only to the matching ACTIVE quest."
+        },
+        {
+          "line": 220,
+          "text": "actually granted and the resulting quantity for user-visible progress."
+        },
+        {
+          "line": 227,
+          "text": "quest = get_story_quest(connection, user_id, quest_id)"
+        },
+        {
+          "line": 228,
+          "text": "if quest is None or quest[\"status\"] != \"ACTIVE\":"
+        },
+        {
+          "line": 229,
+          "text": "raise StoryQuestConflictError(\"quest is not ACTIVE\")"
+        },
+        {
+          "line": 230,
+          "text": "current = get_story_quest_item_quantity(connection, user_id, quest_id, key)"
+        },
+        {
+          "line": 235,
+          "text": "\"\"\"INSERT INTO user_story_quest_items"
+        },
+        {
+          "line": 236,
+          "text": "(user_id, quest_id, item_key, quantity, updated_at)"
+        },
+        {
+          "line": 238,
+          "text": "ON CONFLICT(user_id, quest_id, item_key) DO UPDATE SET"
+        },
+        {
+          "line": 241,
+          "text": "(int(user_id), str(quest_id), key, resulting,"
+        },
+        {
+          "line": 247,
+          "text": "def reconcile_story_location_as_skipped("
+        },
+        {
+          "line": 251,
+          "text": "quests,"
+        },
+        {
+          "line": 254,
+          "text": "\"\"\"Persist every unfinished quest in one exceeded location as SKIPPED."
+        },
+        {
+          "line": 256,
+          "text": "Existing COMPLETED rows remain authoritative. Existing SKIPPED rows are"
+        },
+        {
+          "line": 257,
+          "text": "idempotent. ACTIVE rows and not-yet-materialized AVAILABLE/LOCKED quests are"
+        },
+        {
+          "line": 258,
+          "text": "finalized without rewards; isolated quest-item rows for the location are"
+        },
+        {
+          "line": 261,
+          "text": "ordered = sorted(tuple(quests), key=lambda quest: int(quest.number))"
+        },
+        {
+          "line": 263,
+          "text": "completed = skipped_now = already_skipped = 0"
+        },
+        {
+          "line": 264,
+          "text": "quest_ids = []"
+        },
+        {
+          "line": 265,
+          "text": "for quest in ordered:"
+        },
+        {
+          "line": 266,
+          "text": "quest_id = str(quest.quest_id); quest_ids.append(quest_id)"
+        },
+        {
+          "line": 267,
+          "text": "row = get_story_quest(connection, int(user_id), quest_id)"
+        },
+        {
+          "line": 268,
+          "text": "if row is not None and str(row[\"status\"]) == \"COMPLETED\":"
+        },
+        {
+          "line": 269,
+          "text": "completed += 1"
+        },
+        {
+          "line": 276,
+          "text": "\"\"\"UPDATE user_story_quests"
+        },
+        {
+          "line": 278,
+          "text": "completed_at=NULL, updated_at=?"
+        },
+        {
+          "line": 279,
+          "text": "WHERE user_id=? AND quest_id=? AND status='ACTIVE'\"\"\","
+        },
+        {
+          "line": 280,
+          "text": "(now, now, int(user_id), quest_id),"
+        },
+        {
+          "line": 283,
+          "text": "raise StoryQuestConflictError(\"story quest changed concurrently\")"
+        },
+        {
+          "line": 286,
+          "text": "\"\"\"INSERT INTO user_story_quests"
+        },
+        {
+          "line": 287,
+          "text": "(user_id, quest_id, quest_number, status, progress,"
+        },
+        {
+          "line": 288,
+          "text": "target_quantity, reward_claimed, started_at, completed_at,"
+        },
+        {
+          "line": 291,
+          "text": "(int(user_id), quest_id, int(quest.number),"
+        },
+        {
+          "line": 292,
+          "text": "int(quest.target_quantity), now, now, now),"
+        },
+        {
+          "line": 295,
+          "text": "if quest_ids:"
+        },
+        {
+          "line": 296,
+          "text": "placeholders = \",\".join(\"?\" for _ in quest_ids)"
+        },
+        {
+          "line": 298,
+          "text": "f\"DELETE FROM user_story_quest_items WHERE user_id=? AND quest_id IN ({placeholders})\","
+        },
+        {
+          "line": 299,
+          "text": "(int(user_id), *quest_ids),"
+        },
+        {
+          "line": 301,
+          "text": "return {\"completed\": completed, \"skipped_now\": skipped_now,"
+        },
+        {
+          "line": 302,
+          "text": "\"already_skipped\": already_skipped, \"quest_count\": len(ordered)}"
+        },
+        {
+          "line": 305,
+          "text": "def skip_active_story_quest("
+        },
+        {
+          "line": 309,
+          "text": "quest_id: str,"
+        },
+        {
+          "line": 312,
+          "text": "\"\"\"Mark one ACTIVE quest SKIPPED and remove only its isolated quest items."
+        },
+        {
+          "line": 317,
+          "text": "row = get_story_quest(connection, user_id, quest_id)"
+        },
+        {
+          "line": 318,
+          "text": "if row is None or row[\"status\"] != \"ACTIVE\":"
+        },
+        {
+          "line": 319,
+          "text": "raise StoryQuestConflictError(\"quest is not ACTIVE\")"
+        },
+        {
+          "line": 322,
+          "text": "\"\"\"UPDATE user_story_quests"
+        },
+        {
+          "line": 324,
+          "text": "WHERE user_id=? AND quest_id=? AND status='ACTIVE'\"\"\","
+        },
+        {
+          "line": 325,
+          "text": "(now, now, int(user_id), str(quest_id)),"
+        },
+        {
+          "line": 328,
+          "text": "raise StoryQuestConflictError(\"ACTIVE quest changed concurrently\")"
+        },
+        {
+          "line": 330,
+          "text": "\"DELETE FROM user_story_quest_items WHERE user_id=? AND quest_id=?\","
+        },
+        {
+          "line": 331,
+          "text": "(int(user_id), str(quest_id)),"
+        },
+        {
+          "line": 333,
+          "text": "return get_story_quest(connection, user_id, quest_id)"
+        }
+      ]
+    }
+  },
+  "runtime_forbidden_term_hits": [
+    {
+      "file": "data/story_quest_hierarchy.py",
+      "line": 217,
+      "text": "if \"глава\" in section.display_title.casefold():"
+    }
+  ],
+  "contract_matrix": [
+    {
+      "contract": "STORY_TO_SECTION_TO_QUEST_HIERARCHY",
+      "classification": "REFINED",
+      "decision": {
+        "rule": "The user flow is Story list -> Section list -> Quest list -> Quest detail; section boundaries and ordering come only from canonical hierarchy metadata.",
+        "owners": [
+          "data/story_quest_hierarchy.py",
+          "handlers/story_quest_hierarchy_ui.py"
+        ],
+        "must_preserve": [
+          "stories",
+          "sections",
+          "quests",
+          "quest_detail"
+        ],
+        "must_not": "Flatten the hierarchy or derive sections from display text."
+      },
+      "implementation_status": "WAIT_FOR_PARITY_RESOLUTION"
+    },
+    {
+      "contract": "LOCALIZED_LOCATION_AND_SECTION_NAMES",
+      "classification": "REFINED",
+      "decision": {
+        "rule": "Every user-facing location and section label is resolved from canonical metadata; technical IDs are internal only.",
+        "owners": [
+          "data/story_quest_hierarchy.py",
+          "systems/story_quest_location_presentation.py"
+        ],
+        "required_labels": {
+          "start_path": "Початок Шляху",
+          "dark_forest": "Темний Бір"
+        },
+        "must_not": "Format start_path or dark_forest directly for UI."
+      },
+      "implementation_status": "WAIT_FOR_PARITY_RESOLUTION"
+    },
+    {
+      "contract": "ACTIVE_QUEST_TARGET_PRESENTATION",
+      "classification": "REFINED",
+      "decision": {
+        "rule": "The active quest detail presents its current canonical objective/progress text and does not invent a target from quest type or ID.",
+        "owners": [
+          "db_modules/story_quests.py",
+          "handlers/story_quest_hierarchy_ui.py"
+        ],
+        "source_priority": [
+          "persisted active quest state",
+          "canonical objective/progress metadata"
+        ],
+        "must_not": "Guess active target from title, location ID, or quest number."
+      },
+      "implementation_status": "WAIT_FOR_PARITY_RESOLUTION"
+    },
+    {
+      "contract": "QUEST_STATUS_AND_PROGRESS_PRESENTATION",
+      "classification": "REFINED",
+      "decision": {
+        "rule": "Quest entries distinguish active, available, locked, and completed states; progress belongs to the active quest state and completion is persistent.",
+        "owners": [
+          "db_modules/story_quests.py",
+          "handlers/story_quest_hierarchy_ui.py"
+        ],
+        "statuses": [
+          "active",
+          "available",
+          "locked",
+          "completed"
+        ],
+        "must_not": "Treat unavailable as completed or expose stale progress after completion."
+      },
+      "implementation_status": "WAIT_FOR_PARITY_RESOLUTION"
+    },
+    {
+      "contract": "NAVIGATION_CALLBACK_AND_RETURN_PATHS",
+      "classification": "REFINED",
+      "decision": {
+        "rule": "Callbacks form a bounded hierarchy and every detail/list surface returns to its immediate parent, while the root returns to the canonical profile/account surface.",
+        "owners": [
+          "handlers/story_quest_hierarchy_ui.py",
+          "handlers/profile.py"
+        ],
+        "return_chain": [
+          "quest_detail->quest_list",
+          "quest_list->section_list",
+          "section_list->story_list",
+          "story_list->profile"
+        ],
+        "must_not": "Create dead-end callbacks or return directly to an unrelated menu."
+      },
+      "implementation_status": "WAIT_FOR_PARITY_RESOLUTION"
+    },
+    {
+      "contract": "LOCKED_AVAILABLE_COMPLETED_VISIBILITY",
+      "classification": "REFINED",
+      "decision": {
+        "rule": "Visibility and labels follow V1 hierarchy policy: completed remains visible, active is identifiable, available can be opened, and locked remains non-actionable without leaking spoiler titles.",
+        "owners": [
+          "handlers/story_quest_hierarchy_ui.py",
+          "data/story_quest_title_presentation.py",
+          "db_modules/story_quests.py"
+        ],
+        "spoiler_policy": "Locked quest labels use the canonical spoiler-safe title presentation path.",
+        "must_not": "Expose locked quest spoiler titles or make locked entries actionable."
+      },
+      "implementation_status": "WAIT_FOR_PARITY_RESOLUTION"
+    },
+    {
+      "contract": "NO_FORBIDDEN_CHAPTER_TERM_IN_UI",
+      "classification": "REFINED",
+      "decision": {
+        "rule": "All Ukrainian user-facing Story navigation uses 'розділ'; forms of 'глава' are forbidden in UI text and metadata.",
+        "owners": [
+          "data/story_quest_hierarchy.py",
+          "handlers/story_quest_hierarchy_ui.py",
+          "handlers/profile.py"
+        ],
+        "allowed_term": "розділ",
+        "forbidden_terms": [
+          "глава",
+          "глави",
+          "главу",
+          "главою",
+          "главі"
+        ],
+        "scope": "User-visible runtime strings and Story navigation metadata; historical tests/reports/comments are evidence only and not runtime defects."
+      },
+      "implementation_status": "WAIT_FOR_PARITY_RESOLUTION"
+    },
+    {
+      "contract": "STABLE_ID_TO_HUMAN_LABEL_RESOLUTION",
+      "classification": "REFINED",
+      "decision": {
+        "rule": "Stable story/location/section/quest IDs remain internal keys and all human labels are obtained through canonical resolvers or authoritative metadata.",
+        "owners": [
+          "data/story_quest_hierarchy.py",
+          "systems/story_quest_location_presentation.py",
+          "data/story_quest_title_presentation.py"
+        ],
+        "must_not": "Humanize IDs with replace/strip/title or duplicate label maps in handlers."
+      },
+      "implementation_status": "WAIT_FOR_PARITY_RESOLUTION"
+    }
+  ],
+  "parity_resolution_requirements": [
+    "Classify every runtime-owner forbidden-term hit as user-visible, metadata, comment, or test-only.",
+    "Verify exact callback grammar and immediate-parent return paths.",
+    "Verify active/available/locked/completed state derivation from persisted V1 state.",
+    "Verify spoiler-safe locked quest labels and canonical location/section resolvers.",
+    "Produce a resolved 8/8 contract matrix before any implementation."
+  ],
+  "manual_game_check": "NOT_REQUIRED_CONTRACT_ONLY",
+  "suggested_next_patch": "patch_21_13_6b_resolve_story_navigation_parity.py",
+  "backup_path": "backup/stage_21_13_6a_20261025T223511Z"
+}
