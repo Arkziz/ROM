@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.4g",
+  "status": "PASS",
+  "conclusion": "API_READY_STORY_CONTENT_1_50_COMPLETE",
+  "parent": "8d6952f746a229589d299abae6d84692e05c85eb",
+  "candidate_sha256": "08b3322a79f288c3f74773e7ca604a087b36e3e776fa229d55fcf922ef81223a",
+  "implemented_files": [
+    "rom_v2/domain/story_content.py",
+    "rom_v2/content/story_start_path_41_50.py"
+  ],
+  "extended_owner": "rom_v2/domain/story_content.py",
+  "package": {
+    "range": "41-50",
+    "count": 10,
+    "numbers": [
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50
+    ],
+    "level": 5,
+    "location_id": "start_path",
+    "bridge_predecessor": "start_path_040_before_the_final_hunt",
+    "reward_matrix": [
+      {
+        "number": 41,
+        "exp": 57,
+        "gold": 1.29
+      },
+      {
+        "number": 42,
+        "exp": 57,
+        "gold": 1.29
+      },
+      {
+        "number": 43,
+        "exp": 57,
+        "gold": 1.29
+      },
+      {
+        "number": 44,
+        "exp": 57,
+        "gold": 1.29
+      },
+      {
+        "number": 45,
+        "exp": 57,
+        "gold": 1.29
+      },
+      {
+        "number": 46,
+        "exp": 57,
+        "gold": 1.29
+      },
+      {
+        "number": 47,
+        "exp": 57,
+        "gold": 1.29
+      },
+      {
+        "number": 48,
+        "exp": 57,
+        "gold": 1.29
+      },
+      {
+        "number": 49,
+        "exp": 95,
+        "gold": 2.15
+      },
+      {
+        "number": 50,
+        "exp": 57,
+        "gold": 1.29
+      }
+    ],
+    "boss_quest": 49,
+    "terminal_quest": 50
+  },
+  "story_1_50": {
+    "packages": [
+      "1-10",
+      "11-20",
+      "21-30",
+      "31-40",
+      "41-50"
+    ],
+    "canonical_records": 50,
+    "api_ready": true
+  },
+  "tests": {
+    "targeted": "PASS",
+    "smoke": "PASS",
+    "content_boundary": "PASS"
+  },
+  "runtime_integration": "NOT_CONNECTED",
+  "production_persistence": "NOT_CONNECTED",
+  "canonical_reference_changed": false,
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_game_check": "NOT_REQUIRED_API_ONLY",
+  "canonical_v2_ci": {
+    "status": "PASS",
+    "stdout": "ROM V2 CI baseline: PASS\n[PASS] compile\n[PASS] imports\n[PASS] unit\n[PASS] architecture\n[PASS] duplicate_scan\n[PASS] content_validation\n",
+    "stderr": ""
+  }
+}
