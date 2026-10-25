@@ -1,0 +1,252 @@
+{
+  "schema_version": 1,
+  "stage": "21.12.4a",
+  "status": "PASS",
+  "conclusion": "REVIEW_REQUIRED",
+  "generated_at_utc": "2026-10-25T18:42:10.571251+00:00",
+  "source_audit": "reports/stage_21_12_4_existing_direct_trade_audit.json",
+  "normalized_source_summary": {
+    "contract_count": 10,
+    "v1_confirmed_contracts": 2,
+    "review_required_contracts": 8,
+    "source_summary_claimed_confirmed": 3,
+    "normalization_reason": "Source audit counted a stale contract key not present in its ten-row matrix."
+  },
+  "summary": {
+    "refined_contracts": 8,
+    "review_required_contracts": 8,
+    "unresolved_contracts": [
+      "SAME_LOCATION_ONLINE_AND_BUSY_POLICY",
+      "TRADEABLE_ITEM_POLICY",
+      "OFFER_REVISION_AND_EDITING_POLICY",
+      "TWO_PHASE_CONFIRMATION",
+      "ATOMIC_ITEM_AND_GOLD_SETTLEMENT",
+      "CANCEL_EXPIRY_AND_RELEASE_POLICY",
+      "RESTART_RECOVERY_POLICY",
+      "PRESENTATION_AND_HANDLER_BOUNDARY"
+    ],
+    "database_opened": false,
+    "production_code_changed": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "authoritative_evidence": {
+    "authoritative_owner": "systems/player_interaction_system.py",
+    "handler_consumer": "handlers/player_interaction.py",
+    "compatibility_facade": "db_modules/systems_wrappers.py",
+    "owner_symbols": [
+      "cancel_player_trade",
+      "confirm_player_trade",
+      "create_player_trade_from_accepted_request",
+      "expire_stale_player_trades",
+      "get_active_player_trade",
+      "get_player_trade",
+      "get_player_trade_offers",
+      "recover_active_player_trades_after_restart",
+      "release_trade_inventory_reservations",
+      "reserve_inventory_for_trade",
+      "return_player_trade_to_editing",
+      "set_player_trade_gold_offer",
+      "set_player_trade_item_offer",
+      "set_player_trade_ready"
+    ],
+    "eligibility": {
+      "online": true,
+      "busy": true,
+      "location_references": 69
+    },
+    "reservation": {
+      "inventory_reservations": true,
+      "reserve": true,
+      "release": true
+    },
+    "revision_and_confirmation": {
+      "expected_revision": true,
+      "editing_return": true,
+      "ready_columns": true,
+      "confirmed_columns": true
+    },
+    "atomicity": {
+      "begin_immediate": true,
+      "commit_owner": "_commit_player_trade"
+    },
+    "recovery": {
+      "restart_recovery": true,
+      "cancel": true,
+      "expiry": true
+    },
+    "source_hashes": {
+      "systems/player_interaction_system.py": "7e0569317cab32cba42826dedfde2f804472c993b53250fc4497237d0004b171",
+      "handlers/player_interaction.py": "799e9ad6e745b3995886c6e504019b7c1b01073c917a0ae1b9ccc05b8948b0b9",
+      "db_modules/systems_wrappers.py": "2100be668336ab18f896ba1082cf136fd9a943a3def60402e07228b842e5eda7"
+    }
+  },
+  "refined_contract_matrix": [
+    {
+      "contract": "SAME_LOCATION_ONLINE_AND_BUSY_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "trade creation originates from an accepted interaction request",
+        "player presence has a canonical online predicate",
+        "activity sessions provide a canonical busy predicate",
+        "location metadata participates in interaction eligibility"
+      ],
+      "remaining_question": "Resolve the exact create-time and confirm-time recheck order for same location, online status, busy state, self-target, active trade and accepted request under concurrent changes."
+    },
+    {
+      "contract": "TRADEABLE_ITEM_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "trade offers use inventory_id and immutable item snapshots",
+        "policy rejects equipped, reserved and non-tradeable inventory",
+        "premium, quest, DEV and other bound categories participate in policy checks",
+        "gold is offered through a separate wallet path"
+      ],
+      "remaining_question": "Resolve the complete V1 rejection matrix, snapshot fields, stack quantities, generated-equipment identity and the single policy owner shared by editor and final settlement."
+    },
+    {
+      "contract": "OFFER_REVISION_AND_EDITING_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "trade state carries a revision",
+        "mutations accept expected_revision",
+        "offer changes invalidate readiness and confirmations",
+        "ready trades can return to editing"
+      ],
+      "remaining_question": "Resolve every revision increment, stale-revision result, which mutations clear one or both ready/confirmed flags, and idempotent no-change behavior."
+    },
+    {
+      "contract": "TWO_PHASE_CONFIRMATION",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "each participant has an independent ready flag",
+        "final confirmation is stored independently for initiator and recipient",
+        "final settlement requires both ready and both confirmed",
+        "repeated confirmation detects already-confirmed state"
+      ],
+      "remaining_question": "Resolve the exact state machine editing to ready to confirming to completed, participant-specific replay results, offer immutability after ready and behavior when either side returns to editing."
+    },
+    {
+      "contract": "ATOMIC_ITEM_AND_GOLD_SETTLEMENT",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "final confirmation uses BEGIN IMMEDIATE",
+        "_commit_player_trade is the authoritative settlement owner",
+        "reservations and current inventory quantities are revalidated",
+        "items, stacks, gold, terminal status, history and activity release are coordinated"
+      ],
+      "remaining_question": "Resolve the exact settlement write order, bag-capacity and wallet checks, generated equipment transfer identity, rollback guarantees, retry mapping and crash-after-commit result."
+    },
+    {
+      "contract": "CANCEL_EXPIRY_AND_RELEASE_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "participants can cancel active trade",
+        "stale trades expire through a dedicated operation",
+        "reservation release is a canonical operation",
+        "terminal history and activity-session cleanup exist"
+      ],
+      "remaining_question": "Resolve cancellable statuses, actor authorization, cancellation/expiry idempotency, reservation release ordering, event/history reason and behavior when release finds drift or missing rows."
+    },
+    {
+      "contract": "RESTART_RECOVERY_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "recover_active_player_trades_after_restart is canonical V1 behavior",
+        "recovery inspects active trades and activity sessions",
+        "expiry and orphan-session cleanup are available",
+        "terminal trades must not be settled again after restart"
+      ],
+      "remaining_question": "Resolve which active statuses survive restart, which are cancelled or expired, how reservations are reconciled, how sessions are reacquired/released, and the exact idempotent recovery report."
+    },
+    {
+      "contract": "PRESENTATION_AND_HANDLER_BOUNDARY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "systems/player_interaction_system.py owns trade mutations",
+        "handlers/player_interaction.py owns Telegram interaction and editor state",
+        "db_modules/systems_wrappers.py is a compatibility facade",
+        "machine-readable results already cross the handler boundary"
+      ],
+      "remaining_question": "Resolve typed command/result DTOs, one application service owner, error-to-text mapping, callback revision tokens and a single handler registration path without Telegram imports in domain/application code."
+    }
+  ],
+  "implementation_authorized": false,
+  "canonical_v2_ci": {
+    "schema_version": 1,
+    "status": "PASS",
+    "failed_checks": [],
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "file_count": 165,
+        "failures": []
+      },
+      {
+        "name": "imports",
+        "status": "PASS",
+        "module_count": 113,
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-c",
+            "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.admin_crystals', 'rom_v2.application.bag_expansion', 'rom_v2.application.base_equipment_shop', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.daily_reward', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.guild_contract_history_service', 'rom_v2.application.guild_core_service', 'rom_v2.application.guild_management_service', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.map_presentation', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.potion_trading', 'rom_v2.application.premium_shop', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.application.travel_service', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.content.location_catalog', 'rom_v2.content.world_graph', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.guild_application', 'rom_v2.domain.guild_contract_history', 'rom_v2.domain.guild_core', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.domain.travel_aggregate', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests_v2",
+            "-p",
+            "test_*.py"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "...........................................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 283 tests in 14.377s\n\nOK"
+        }
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "tools/verify_v2_architecture.py",
+            "--project-root",
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+          ],
+          "returncode": 0,
+          "stdout": "V2 architecture enforcement: PASS\nPhysical files: 113\nImport edges: 405\nViolations: 0",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "duplicate_scan",
+        "status": "PASS",
+        "symbol_count": 464,
+        "duplicates": {}
+      },
+      {
+        "name": "content_validation",
+        "status": "PASS",
+        "file_count": 2,
+        "failures": []
+      }
+    ]
+  },
+  "removed_bytecode_before_ci": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_12_4b_resolve_direct_trade_parity.py",
+  "backup_path": "backup/stage_21_12_4a_20261025T184149Z"
+}
