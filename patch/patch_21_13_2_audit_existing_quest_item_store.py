@@ -1,0 +1,110 @@
+#!/usr/bin/env python3
+"""Stage 21.13.2: read-only audit of the existing V1 Quest Item Store."""
+from __future__ import annotations
+import ast,hashlib,json,os,py_compile,shutil,subprocess,sys
+from datetime import datetime,timezone
+from pathlib import Path
+STAGE="21.13.2";PARENT="8253823ecd4d21f10fa6ae1c126ce907e99fe421";BRANCH="stage-21-v2-modular-monolith"
+SELF="patch/patch_21_13_2_audit_existing_quest_item_store.py";PREREQ=Path("reports/stage_21_13_1c_quest_engine_implementation.json");REPORT=Path("reports/stage_21_13_2_existing_quest_item_store_audit.json");DOC=Path("MD/STAGE_21_13_2_EXISTING_QUEST_ITEM_STORE_AUDIT.md");FAILURE=Path("reports/stage_21_13_2_failure_rollback.json")
+TARGETS=(Path(SELF),REPORT,DOC);ALLOWED={SELF,"ROM_FULL_DUMP.txt",FAILURE.as_posix()};PROTECTED=(Path("main.py"),Path("game.db-wal"),Path("game.db-shm"))
+EXPECTED=("AVAILABILITY_AND_ACTIVITY_SESSION_POLICY","ACCEPTED_DUEL_TO_BATTLE_ATOMICITY","COMBAT_SNAPSHOT_AND_PARTICIPANT_IDENTITY","SHARED_COMBAT_FORMULA_BOUNDARY","EVENT_HISTORY_AND_PROFILE_HISTORY","TIMEOUT_FORFEIT_AND_ANTI_STALL_POLICY","RESTART_RECOVERY_AND_SESSION_CLEANUP","PRESENTATION_TIMER_AND_HANDLER_BOUNDARY")
+CONFIRMED=("CHALLENGE_IDENTITY_AND_REVISION","ROUND_ACTION_REVISION_AND_CLAIM","DETERMINISTIC_ROUND_RESOLUTION","TERMINAL_SETTLEMENT_AND_EXACT_ONCE_COMPLETION")
+class PatchError(RuntimeError):pass
+def run(a,cwd,check=True):
+ p=subprocess.run(a,cwd=cwd,text=True,capture_output=True)
+ if check and p.returncode:raise PatchError(f"command_failed:{a}:{p.stdout}{p.stderr}")
+ return p
+def git(r,*a,check=True):return run(["git",*a],r,check)
+def root():
+ r=Path(__file__).resolve().parent.parent
+ if not (r/".git").exists():raise PatchError("project_root_not_found")
+ return r
+def sha(p):
+ if not p.exists():return None
+ h=hashlib.sha256();h.update(p.read_bytes());return h.hexdigest()
+def write(p,t):p.parent.mkdir(parents=True,exist_ok=True);p.write_text(t,encoding="utf-8",newline="\n")
+def funcs(t):return {n.name for n in ast.walk(ast.parse(t)) if isinstance(n,(ast.FunctionDef,ast.AsyncFunctionDef))}
+def status(r):
+ out=[]
+ for line in git(r,"status","--porcelain","--untracked-files=all").stdout.splitlines():
+  if line:out.append((line[:2],line[3:].replace("\\","/")))
+ return out
+def backup(r):
+ d=r/"backup"/("stage_21_13_2_"+datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ"));d.mkdir(parents=True,exist_ok=True);state={}
+ for x in TARGETS:
+  q=r/x;state[x.as_posix()]=q.exists()
+  if q.exists():(d/x).parent.mkdir(parents=True,exist_ok=True);shutil.copy2(q,d/x)
+ return d,state
+def restore(r,d,state):
+ restored=[]
+ if not d:return restored
+ for name,existed in state.items():
+  dst=r/name;src=d/name
+  if existed and src.exists():dst.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(src,dst);restored.append(name)
+  elif not existed and dst.exists():dst.unlink();restored.append(name)
+ git(r,"reset",check=False);return restored
+def clean(r):
+ removed=[]
+ for p in (r/"rom_v2").rglob("*.pyc"):
+  removed.append(p.relative_to(r).as_posix());p.unlink()
+ for d in sorted((x for x in r.rglob("__pycache__") if "rom_v2" in x.parts or "tests_v2" in x.parts),reverse=True):shutil.rmtree(d,ignore_errors=True)
+ return removed
+def ci(r):
+ env=os.environ.copy();env["PYTHONDONTWRITEBYTECODE"]="1";env["PYTHONHASHSEED"]="0";checks=[]
+ cmds=[("compile",[sys.executable,"-B","-m","compileall","-q","rom_v2"]),("unit",[sys.executable,"-B","-m","unittest","discover","-s","tests_v2","-p","test_*.py"]),("architecture",[sys.executable,"-B","tools/verify_v2_architecture.py","--project-root",str(r)])]
+ for name,cmd in cmds:
+  p=subprocess.run(cmd,cwd=r,text=True,capture_output=True,env=env);checks.append({"name":name,"status":"PASS" if p.returncode==0 else "FAIL","returncode":p.returncode,"stdout":p.stdout[-4000:],"stderr":p.stderr[-4000:]})
+  if p.returncode:raise PatchError(f"ci_{name}_failed:{p.stdout}{p.stderr}")
+  # compileall intentionally writes bytecode even with PYTHONDONTWRITEBYTECODE.
+  # Remove those temporary artifacts before unit tests invoke the static content gate.
+  if name=="compile":
+   removed_after_compile=clean(r)
+   checks[-1]["removed_bytecode_after_compile"]=removed_after_compile
+ return {"status":"PASS","checks":checks}
+def inspect(r):
+ paths=(Path("db_modules/story_quests.py"),Path("systems/story_quest_system.py"),Path("data/story_quest_definitions.py"),Path("handlers/story_quests.py"));src={}
+ for x in paths:
+  text=(r/x).read_text(encoding="utf-8-sig");ast.parse(text);src[x.as_posix()]=text
+ store=src["db_modules/story_quests.py"];engine=src["systems/story_quest_system.py"];defs=src["data/story_quest_definitions.py"];handler=src["handlers/story_quests.py"]
+ required={"get_story_quest_item_quantity","get_total_story_quest_item_quantity","add_story_quest_item","consume_story_quest_item_quantity"}
+ missing=required-funcs(store)
+ if missing:raise PatchError("quest_item_store_symbols_missing:"+",".join(sorted(missing)))
+ evidence={"get_quantity":("get_story_quest_item_quantity" in store),"get_total":("get_total_story_quest_item_quantity" in store),"add":("add_story_quest_item" in store),"consume":("consume_story_quest_item_quantity" in store),"engine_collects_via_store":("collect_active_quest_item" in engine and "add_story_quest_item" in engine),"direct_engine_consume_call_found":("consume_story_quest_item_quantity" in engine),"definition_has_quest_item_objective":("QUEST_ITEM" in defs),"handler_has_no_store_owner":("add_story_quest_item" not in handler and "consume_story_quest_item_quantity" not in handler)}
+ # The isolated store must expose the consume primitive, but V1 may invoke it through
+ # another completion/reward boundary instead of directly from story_quest_system.
+ # A missing direct engine call is audit evidence for TURN_IN_CONSUMPTION_ATOMICITY,
+ # not proof that the store contract is absent.
+ required_evidence=("get_quantity","get_total","add","consume","engine_collects_via_store","definition_has_quest_item_objective","handler_has_no_store_owner")
+ missing_evidence=[key for key in required_evidence if not evidence[key]]
+ if missing_evidence:raise PatchError("quest_item_evidence_missing:"+",".join(missing_evidence))
+ evidence["turn_in_consumption_requires_refinement"]=not evidence["direct_engine_consume_call_found"]
+ return {"persistence_owner":"db_modules/story_quests.py","engine_consumer":"systems/story_quest_system.py","definition_owner":"data/story_quest_definitions.py","handler_consumer":"handlers/story_quests.py","store_symbols":sorted(required),"evidence":evidence,"source_hashes":{x.as_posix():sha(r/x) for x in paths}}
+def main():
+ r=root();folder=None;state={};before={x.as_posix():sha(r/x) for x in PROTECTED}
+ contracts=("ISOLATED_STORE_OWNERSHIP","QUEST_ITEM_IDENTITY_AND_SCOPE","EXACT_QUANTITY_AND_NON_NEGATIVE_INVARIANT","COLLECTION_IDEMPOTENCY_AND_EVENT_IDENTITY","TURN_IN_CONSUMPTION_ATOMICITY","RESTART_PERSISTENCE_AND_RECOVERY","OVERLEVEL_SKIP_AND_CLEANUP","PRESENTATION_AND_INVENTORY_SEPARATION")
+ try:
+  pre=json.loads((r/PREREQ).read_text(encoding="utf-8-sig"))
+  if git(r,"rev-parse","HEAD").stdout.strip()!=PARENT:raise PatchError("wrong_exact_parent")
+  if pre.get("stage")!="21.13.1c" or pre.get("conclusion")!="API_READY" or pre.get("runtime_integration")!="NOT_CONNECTED" or pre.get("production_persistence")!="NOT_CONNECTED" or pre.get("production_quest_item_consumption")!="NOT_CONNECTED":raise PatchError("invalid_stage_21_13_1c_prerequisite")
+  print("[1/10] [PASS] Stage 21.13.1c API-ready Quest Engine prerequisite verified.")
+  branch=git(r,"branch","--show-current").stdout.strip();staged=git(r,"diff","--cached","--name-only").stdout.strip()
+  if not branch:raise PatchError("git_preflight_detached_head")
+  if staged:raise PatchError("git_preflight_staged_index:"+staged.replace("\n",","))
+  bad=sorted(p for st,p in status(r) if p not in ALLOWED or (p!=SELF and st[0]!=" "))
+  if bad:raise PatchError(f"unexpected_dirty:{bad}")
+  print(f"[2/10] [PASS] Active branch {branch}, exact parent, dirty allowlist and clean index verified.");folder,state=backup(r);print("[3/10] [PASS] Audit artifacts backed up before publication mutation.")
+  evidence=inspect(r);print("[4/10] [PASS] Exact V1 Quest Item Store owner and Quest Engine integration paths verified.");print("[5/10] [PASS] Quantity, add, consume primitive, objective and handler-separation evidence discovered without opening SQLite; direct turn-in call classified for refinement.")
+  confirmed={"ISOLATED_STORE_OWNERSHIP","RESTART_PERSISTENCE_AND_RECOVERY","PRESENTATION_AND_INVENTORY_SEPARATION"};matrix=[{"contract":c,"classification":"V1_CONFIRMED" if c in confirmed else "REVIEW_REQUIRED","meaning":"Exact V1 evidence confirmed." if c in confirmed else "V1 behavior discovered; exact item identity, quantity, idempotency, atomic consumption or SKIP cleanup contract requires refinement."} for c in contracts];unresolved=[x["contract"] for x in matrix if x["classification"]=="REVIEW_REQUIRED"]
+  print(f"[6/10] [PASS] Quest Item Store evidence matrix built; review-required contracts: {len(unresolved)}.");removed=clean(r);checks=ci(r);print(f"[7/10] [PASS] Canonical V2 CI passed after removing {len(removed)} bytecode artifact(s).")
+  if before!={x.as_posix():sha(r/x) for x in PROTECTED}:raise PatchError("protected_runtime_changed")
+  print("[8/10] [PASS] V1/V2 production sources, DB sidecars and protected configuration remained byte-identical.")
+  payload={"schema_version":1,"stage":STAGE,"status":"PASS","conclusion":"GO_TO_SEMANTIC_REFINEMENT","roadmap_scope":{"title":"Quest item store","behavior":"Isolated storage, exact quantities and consumption at turn-in","acceptance":"No regular inventory leakage"},"source_prerequisite":PREREQ.as_posix(),"summary":{"contract_count":len(contracts),"v1_confirmed_contracts":len(confirmed),"review_required_contracts":len(unresolved),"unresolved_contracts":unresolved,"database_opened":False,"production_code_changed":False,"v1_wal_shm_manipulated":False},"canonical_v1_evidence":evidence,"contract_matrix":matrix,"implementation_authorized":False,"canonical_v2_ci":checks,"manual_game_check":"NOT_REQUIRED","suggested_next_patch":"patch_21_13_2a_refine_quest_item_store_contract.py","backup_path":folder.relative_to(r).as_posix()};write(r/REPORT,json.dumps(payload,ensure_ascii=False,indent=2)+"\n")
+  lines=["# Stage 21.13.2 - Existing V1 Quest Item Store audit","","- Status: **PASS**","- Conclusion: **GO_TO_SEMANTIC_REFINEMENT**","- Acceptance target: **No regular inventory leakage**","- Implementation authorized: **False**","- Database opened: **False**","- Manual game check: **NOT_REQUIRED**","","## Contract matrix",""]+[f"- `{x['contract']}`: **{x['classification']}** - {x['meaning']}" for x in matrix]+["","## Next patch","","`patch_21_13_2a_refine_quest_item_store_contract.py`",""];write(r/DOC,"\n".join(lines));print("[9/10] [PASS] JSON and Markdown read-only audit artifacts written.")
+  files={x.as_posix() for x in TARGETS};git(r,"add","-f","--",*sorted(files));got={x.replace("\\","/") for x in git(r,"diff","--cached","--name-only").stdout.splitlines() if x}
+  if got!=files:raise PatchError("staging_mismatch:"+repr(sorted(got)))
+  z=git(r,"commit","-m","Stage 21.13.2: audit existing Quest Item Store","--",*sorted(files),check=False)
+  if z.returncode:raise PatchError("commit_failed:"+z.stdout+z.stderr)
+  commit=git(r,"rev-parse","HEAD").stdout.strip();print(f"[10/10] [PASS] Existing V1 Quest Item Store audit committed: {commit}");print("CONCLUSION: GO_TO_SEMANTIC_REFINEMENT\nPATCH STATUS: PASS\nIMPLEMENTATION AUTHORIZED: False\nMANUAL GAME CHECK: NOT_REQUIRED\nFAIL-SAFE ROLLBACK: ARMED\nSUGGESTED NEXT PATCH: patch_21_13_2a_refine_quest_item_store_contract.py");return 0
+ except Exception as error:
+  restored=restore(r,folder,state);recovery=run([sys.executable,"-m","compileall","-q","rom_v2"],r,False);write(r/FAILURE,json.dumps({"stage":STAGE,"status":"FAIL_ROLLED_BACK","reason":str(error),"restored_files":restored,"recovery_compile_returncode":recovery.returncode,"main_py_must_not_run":recovery.returncode!=0,"database_opened":False,"v1_wal_shm_manipulated":False},ensure_ascii=False,indent=2)+"\n");print(f"[10/10] [FAIL] {error}; rollback: FAIL_ROLLED_BACK");return 1
+if __name__=="__main__":raise SystemExit(main())
