@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.6c",
+  "status": "PASS",
+  "conclusion": "API_READY_STORY_NAVIGATION",
+  "parent": "fbb527090c50daceac8b0a83d40ae3b3b0275f4d",
+  "implemented_files": [
+    "rom_v2/domain/story_navigation.py",
+    "rom_v2/application/story_navigation_service.py",
+    "rom_v2/presentation/story_navigation.py"
+  ],
+  "contracts": {
+    "hierarchy": "PASS",
+    "localized_labels": "PASS",
+    "active_target": "PASS",
+    "status_model": "PASS",
+    "callbacks": "PASS",
+    "return_paths": "PASS",
+    "spoiler_safe": "PASS",
+    "terminology_and_id_leakage": "PASS"
+  },
+  "coverage": {
+    "stories": 2,
+    "sections": 10,
+    "quests": 100,
+    "persistent_statuses": [
+      "ACTIVE",
+      "COMPLETED",
+      "SKIPPED"
+    ],
+    "derived_statuses": [
+      "AVAILABLE",
+      "LOCKED"
+    ],
+    "callback_prefix": "sqh:v2"
+  },
+  "tests": {
+    "targeted": "PASS",
+    "smoke": "PASS",
+    "architecture_boundary": "PASS",
+    "canonical_v2_ci": [
+      {
+        "command": "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe -m compileall -q rom_v2",
+        "returncode": 0
+      },
+      {
+        "command": "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe -m unittest discover -s tests_v2 -p test_*.py",
+        "returncode": 0
+      }
+    ]
+  },
+  "runtime_integration": "NOT_CONNECTED",
+  "production_persistence": "NOT_CONNECTED",
+  "database_opened": false,
+  "canonical_reference_changed": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_game_check": "NOT_REQUIRED_API_ONLY",
+  "next_stage": "21.13.7"
+}
