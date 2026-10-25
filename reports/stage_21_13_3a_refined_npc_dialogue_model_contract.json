@@ -1,0 +1,299 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.3a",
+  "status": "PASS",
+  "conclusion": "REVIEW_REQUIRED",
+  "source_audit": "reports/stage_21_13_3_existing_npc_dialogue_model_audit.json",
+  "summary": {
+    "contract_count": 9,
+    "v1_confirmed_contracts": 3,
+    "refined_contracts": 6,
+    "review_required_contracts": 6,
+    "unresolved_contracts": [
+      "DIALOGUE_NODE_AND_ACTION_SCHEMA",
+      "NPC_AVAILABILITY_AND_CONDITION_POLICY",
+      "QUEST_AND_NPC_INTERACTION_BOUNDARY",
+      "SHOP_SERVICE_AND_OTHER_ACTION_BOUNDARIES",
+      "LOCALIZATION_AND_TECHNICAL_ID_NON_DISCLOSURE",
+      "PERSISTENCE_RESTART_AND_CONTENT_INDEPENDENCE"
+    ],
+    "database_opened": false,
+    "production_code_changed": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "authoritative_evidence": {
+    "registry_owner": "data/story_quest_npcs.py",
+    "quest_definition_owner": "data/story_quest_definitions.py",
+    "acceptance_owner": "systems/story_quest_npc_acceptance_system.py",
+    "runtime_consumer": "handlers/story_quest_npc_runtime.py",
+    "story_handler_consumer": "handlers/story_quests.py",
+    "city_consumer": "handlers/city.py",
+    "evidence": {
+      "registry_symbols": [
+        "StoryQuestNpcDefinition",
+        "get_missing_story_quest_npc_routes",
+        "get_story_quest_npc",
+        "validate_story_quest_npc_references",
+        "validate_story_quest_npc_registry"
+      ],
+      "acceptance_symbols": [
+        "accept_story_quest_from_npc",
+        "build_npc_story_quest_presentation",
+        "find_npc_story_quest"
+      ],
+      "runtime_symbols": [
+        "has_story_npc_if_present",
+        "register_story_quest_npc_runtime_handlers",
+        "send_story_npc_if_present"
+      ],
+      "registry_constant_found": true,
+      "definition_type_found": true,
+      "location_assignment_found": true,
+      "npc_role_found": true,
+      "quest_reference_found": true,
+      "dialogue_literal_count": 3,
+      "conversation_literal_count": 0,
+      "talk_literal_count": 10,
+      "callback_boundary_found": true,
+      "placeholder_boundary_found": true,
+      "handler_does_not_own_registry": true
+    },
+    "source_hashes": {
+      "data/story_quest_npcs.py": "131f927c8b022765e625b4eb7d51804058b6ea36d434b6ba95c000f3def921dc",
+      "data/story_quest_definitions.py": "be180e71dc857923517284b4e92aa14bec602baef0751eeec49662abe5a430d2",
+      "systems/story_quest_npc_acceptance_system.py": "2acbc1522a4ca00827e586f778fc3369dbe802958b4d6768f556c20068b306a9",
+      "handlers/story_quest_npc_runtime.py": "424ccfafd9e4e8a974229e014ff9d7c9224e5f0b3d1150cf92804accccbd50f6",
+      "handlers/story_quests.py": "2f6ecb8fa65f51b000fce4d16a24673f429b6d571ca11e214dacf71393bf1d28",
+      "handlers/city.py": "a73373e0bf4ae90e2d7d4e6c7b417847d401c6b4555514431a3acfed3836b0c3"
+    }
+  },
+  "refined_contract_matrix": [
+    {
+      "contract": "DIALOGUE_NODE_AND_ACTION_SCHEMA",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "V1 has a typed StoryQuestNpcDefinition and STORY_QUEST_NPCS registry",
+        "the acceptance system builds NPC story-quest presentation",
+        "runtime callbacks are registered outside the registry",
+        "the audited sources contain dialogue mentions but no confirmed generic conversation graph owner"
+      ],
+      "remaining_question": "Determine whether V1 parity is a bounded NPC action/presentation model rather than a generic branching dialogue graph; identify stable action identity, allowed action kinds and whether any dialogue node IDs persist across callbacks."
+    },
+    {
+      "contract": "NPC_AVAILABILITY_AND_CONDITION_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "NPC definitions are assigned to locations",
+        "quest definitions reference NPC identity",
+        "acceptance resolves an NPC story quest before mutation",
+        "runtime checks whether a story NPC is present"
+      ],
+      "remaining_question": "Resolve the exact order of location, route, quest-state, level, prerequisite and visibility checks; define unknown NPC, unavailable NPC and stale callback results without adding conditions absent from V1."
+    },
+    {
+      "contract": "QUEST_AND_NPC_INTERACTION_BOUNDARY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "data/story_quest_npcs.py owns static NPC content",
+        "systems/story_quest_npc_acceptance_system.py owns find, presentation and accept orchestration",
+        "Quest Engine remains the owner of quest availability and acceptance state",
+        "handlers consume the acceptance API"
+      ],
+      "remaining_question": "Define the typed query/command boundary so NPC interaction never duplicates Quest Engine prerequisites, progress or reward rules; identify expected quest/NPC identity and revision inputs for stale interaction protection."
+    },
+    {
+      "contract": "SHOP_SERVICE_AND_OTHER_ACTION_BOUNDARIES",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "the authoritative NPC registry is story-quest specific",
+        "broad discovery produced unrelated auction, daily and rune token matches",
+        "handlers/city.py contains placeholder presentation",
+        "no audited evidence establishes the NPC registry as owner of shop, guild or crafting mutations"
+      ],
+      "remaining_question": "Classify non-story NPC actions as external application-service links rather than NPC-owned business logic; enumerate only V1-confirmed action targets and explicitly reject invented universal shop/service action types."
+    },
+    {
+      "contract": "LOCALIZATION_AND_TECHNICAL_ID_NON_DISCLOSURE",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "stable NPC IDs exist separately from definitions",
+        "presentation is built by the acceptance system and handlers",
+        "technical IDs are required for quest references and callbacks",
+        "user-facing story terminology must use localized human names"
+      ],
+      "remaining_question": "Locate the canonical NPC display-name resolver and define fail-closed behavior for unknown IDs; prohibit raw NPC IDs, auto title-casing and technical location IDs in user-visible text while allowing IDs in DTO identity, callbacks, logs and tests."
+    },
+    {
+      "contract": "PERSISTENCE_RESTART_AND_CONTENT_INDEPENDENCE",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "NPC definitions are represented by a static registry",
+        "quest state persists outside the NPC registry",
+        "handlers do not own the registry",
+        "registry and quest references have validators"
+      ],
+      "remaining_question": "Resolve whether NPC/dialogue content is immutable and needs no independent persistence; define restart stability, validation of duplicate IDs/routes/references and an executable gate preventing reusable model code from branching on concrete NPC IDs, quest IDs or localized content."
+    }
+  ],
+  "observations": {
+    "generic_dialogue_graph_confirmed": false,
+    "story_quest_npc_registry_confirmed": true,
+    "non_story_service_ownership_confirmed": false,
+    "content_registry_persistence_requires_resolution": true
+  },
+  "implementation_authorized": false,
+  "canonical_v2_ci": {
+    "status": "PASS",
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "",
+        "removed_bytecode_after_compile": [
+          "rom_v2/__pycache__/bootstrap.cpython-314.pyc",
+          "rom_v2/__pycache__/config.cpython-314.pyc",
+          "rom_v2/__pycache__/container.cpython-314.pyc",
+          "rom_v2/__pycache__/lifecycle.cpython-314.pyc",
+          "rom_v2/__pycache__/main.cpython-314.pyc",
+          "rom_v2/__pycache__/runtime_paths.cpython-314.pyc",
+          "rom_v2/__pycache__/settings.cpython-314.pyc",
+          "rom_v2/__pycache__/structured_logging.cpython-314.pyc",
+          "rom_v2/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/presentation/__pycache__/item_dto.cpython-314.pyc",
+          "rom_v2/infrastructure/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/adapter.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/callback_codec.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/callback_registry.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/account_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/account_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/character_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/character_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/connection_factory.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/equipment_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/equipment_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/inventory_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/inventory_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/migrator.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/primary_stat_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/primary_stat_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/provisional_contracts.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/repository_base.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/resource_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/resource_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/schema_contract.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v001_v2_baseline.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v002_primary_stats_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v003_item_identity_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v004_equipment_slots_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/account.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/auction.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/battle.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/battle_persistence.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/central_loot.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/character.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/class_catalog.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/combat_resources.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/damage_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/derived_stats.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/direct_trade.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/durability.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/effect_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/enhancement.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/equipment.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/equipment_generation.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/full_stat_snapshot.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_application.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_contract_history.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_core.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/item.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/level_up_gold.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/mana_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/player_progression.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/premium_combat.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/primary_stats.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/pvp.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/quest_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/quest_item_store.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/resource_lifecycle.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/runes.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/skill_execution.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/terminal_paths.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/travel_aggregate.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/content/__pycache__/location_catalog.cpython-314.pyc",
+          "rom_v2/content/__pycache__/world_graph.cpython-314.pyc",
+          "rom_v2/content/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/application/__pycache__/account_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/account_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/admin_crystals.cpython-314.pyc",
+          "rom_v2/application/__pycache__/auction_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/bag_expansion.cpython-314.pyc",
+          "rom_v2/application/__pycache__/base_equipment_shop.cpython-314.pyc",
+          "rom_v2/application/__pycache__/character_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/character_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/crystal_wallet_ledger.cpython-314.pyc",
+          "rom_v2/application/__pycache__/daily_reward.cpython-314.pyc",
+          "rom_v2/application/__pycache__/direct_trade_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/durability_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/enhancement_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_generation_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_generation_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/full_stat_snapshot_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/gold_wallet.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_contract_history_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_core_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_management_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/integration_evidence.cpython-314.pyc",
+          "rom_v2/application/__pycache__/inventory_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/inventory_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/map_presentation.cpython-314.pyc",
+          "rom_v2/application/__pycache__/post_combat_hooks.cpython-314.pyc",
+          "rom_v2/application/__pycache__/potion_trading.cpython-314.pyc",
+          "rom_v2/application/__pycache__/premium_shop.cpython-314.pyc",
+          "rom_v2/application/__pycache__/primary_stat_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/primary_stat_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/pvp_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/quest_engine_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/quest_item_store_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/resource_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/resource_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/reward_settlement.cpython-314.pyc",
+          "rom_v2/application/__pycache__/travel_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/application/services/__pycache__/rune_lifecycle.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/clock.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/random_source.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/repositories.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/unit_of_work.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/app/__pycache__/__init__.cpython-314.pyc"
+        ]
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "...........................................................................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 315 tests in 13.393s\n\nOK\n"
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "V2 architecture enforcement: PASS\nPhysical files: 123\nImport edges: 431\nViolations: 0\n",
+        "stderr": ""
+      }
+    ]
+  },
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_13_3b_resolve_npc_dialogue_model_parity.py",
+  "backup_path": "backup/stage_21_13_3a_20261025T205613Z"
+}
