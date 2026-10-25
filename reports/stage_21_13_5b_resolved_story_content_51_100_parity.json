@@ -1,0 +1,3125 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.5b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "source_refinement": "reports/stage_21_13_5a_refined_story_content_51_100_contract.json",
+  "summary": {
+    "contract_count": 11,
+    "resolved_contracts": 11,
+    "unresolved_contracts": [],
+    "canonical_record_count": 50,
+    "database_opened": false,
+    "production_code_changed": false,
+    "canonical_reference_changed": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "authoritative_evidence": {
+    "candidate_file": "Квести/ROM_квести_Темний_Бір_candidate.json",
+    "candidate_sha256": "14a31852d13cbd42f303ff31e3f7e3da0bcf7afc0ed29f2745656f65ce656bbf",
+    "canonical_record_count": 50,
+    "canonical_numbers": [
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100
+    ],
+    "package_manifests": {
+      "51-60": [
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "61-70": [
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70
+      ],
+      "71-80": [
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80
+      ],
+      "81-90": [
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89,
+        90
+      ],
+      "91-100": [
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100
+      ]
+    },
+    "quest_matrix": [
+      {
+        "quest_number": 51,
+        "array_index": 0,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_access_policy",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_051_shadow_beyond_the_border",
+          "number": 51,
+          "title": "Тінь за межею",
+          "quest_type": "TALK",
+          "location_id": "dark_forest",
+          "unlock_level": 6,
+          "previous_quest_id": "start_path_050_road_ahead",
+          "giver_npc_id": "elder",
+          "turn_in_npc_id": "elder",
+          "target_quantity": 1,
+          "description": "Після перемоги над Ватажком Староста отримує тривожні повідомлення зі старого прикордонного шляху. Біля входу до Темного Бору з’явилися гоблінські дозори, а кілька мисливців не повернулися з лісу.",
+          "objective_text": "Поговорити зі Старостою про загрозу біля Темного Бору.",
+          "acceptance_text": "Перемога над Ватажком повернула спокій на дорогу через Початок Шляху, але ненадовго. Наші мисливці простежили рунічний слід до старого прикордонного шляху, що веде в Темний Бір.\n\nКілька тижнів тому там почали з’являтися гоблінські дозори. Спочатку вони ховалися серед дерев, але тепер перекривають стежки й не пропускають людей углиб лісу. Учора з розвідки не повернулися двоє мисливців.\n\nМіська варта не може вирушити туди без підготовки. Поки що ми знаємо лише те, що загроза з Початку Шляху не зникла, а простяглася до кордону Темного Бору.",
+          "completion_text": "Староста завершує доповідь про зниклих мисливців, гоблінські дозори та рунічний слід, що веде до Темного Бору.",
+          "reward": {
+            "exp": 66,
+            "gold": 1.84,
+            "item_keys": []
+          },
+          "next_route": {
+            "npc_id": "mercenary_head",
+            "route_text": "🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова Найманців"
+          },
+          "location_access_policy": {
+            "story_hint_only": true,
+            "does_not_bypass_unlock": true,
+            "canonical_unlock_level": 6
+          }
+        }
+      },
+      {
+        "quest_number": 52,
+        "array_index": 1,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_052_dark_forest_border",
+          "number": 52,
+          "title": "Межа Темного Бору",
+          "quest_type": "KILL_REGION",
+          "location_id": "dark_forest",
+          "unlock_level": 6,
+          "previous_quest_id": "dark_forest_051_shadow_beyond_the_border",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 8,
+          "description": "Голова Найманців просить перевірити прикордонні стежки Темного Бору, відтіснити перші дозори й створити безпечний прохід для розвідників.",
+          "objective_text": "Перемогти 8 будь-яких істот у локації Темний Бір.",
+          "acceptance_text": "Староста вже передав мені звістку. Гобліни ніколи не підходили так близько до кордону. Раніше вони трималися в глибині лісу й нападали лише на необережних мандрівників. Тепер їхні дозори ходять уздовж старого шляху, наче охороняють встановлену межу.\n\nМи не зможемо розпочати пошуки зниклих мисливців, поки стежки контролюють ворожі загони. Вирушай у Темний Бір і відтісни тих, хто тримає підступи до лісу.\n\nНе намагайся заходити надто далеко. Зараз нам потрібно лише відкрити шлях для розвідки й перевірити, наскільки серйозно гобліни укріпили кордон.",
+          "completion_text": "Перші дозори відступили вглиб лісу. Розвідники Гільдії Найманців отримали можливість оглянути старий шлях і помітили, що гобліни діють організовано.",
+          "reward": {
+            "exp": 66,
+            "gold": 1.84,
+            "item_keys": []
+          },
+          "progress_text": "Розвідка межі Темного Бору: {progress}/8"
+        }
+      },
+      {
+        "quest_number": 53,
+        "array_index": 2,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_053_not_a_random_patrol",
+          "number": 53,
+          "title": "Не випадковий дозор",
+          "quest_type": "TALK",
+          "location_id": "dark_forest",
+          "unlock_level": 6,
+          "previous_quest_id": "dark_forest_052_dark_forest_border",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Голова Найманців розповідає про результати розвідки: гобліни не просто блукають біля кордону, а позначають територію й передають сигнали між дозорами.",
+          "objective_text": "Отримати від Голови Найманців результати розвідки прикордонного шляху.",
+          "acceptance_text": "Розвідники повернулися зі старого шляху. Напади припинилися одразу після того, як ти відтіснив передові загони, але гобліни не розбіглися. Вони відійшли до лісу й зайняли нові позиції.\n\nНа деревах уздовж стежки розвідники помітили зарубки, а між камінням були розкладені зв’язки сухих гілок. Це не випадкові сліди. Так гобліни позначають контрольовану територію й попереджають один одного про чужинців.",
+          "completion_text": "Голова Найманців завершує доповідь: зарубки й сигнальні зв’язки підтверджують, що гоблінські дозори координують дії та контролюють прикордонний шлях.",
+          "reward": {
+            "exp": 66,
+            "gold": 1.84,
+            "item_keys": []
+          }
+        }
+      },
+      {
+        "quest_number": 54,
+        "array_index": 3,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "item_reveal_policy",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_054_sign_on_the_old_road",
+          "number": 54,
+          "title": "Знак на старому шляху",
+          "quest_type": "QUEST_ITEM",
+          "location_id": "dark_forest",
+          "unlock_level": 6,
+          "previous_quest_id": "dark_forest_053_not_a_random_patrol",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Голова Найманців просить знайти гоблінський прикордонний знак біля старого шляху та зберегти його як доказ організованої присутності дозорів.",
+          "objective_text": "Шукати під час полювання доказ того, що гобліни позначають межі контрольованої території.",
+          "acceptance_text": "Знак має бути вирізаний із темного дерева й перев’язаний червоною мотузкою. Розвідники не стали торкатися його, бо поряд були свіжі сліди гоблінів.\n\nОбшукай місцевість під час полювання. Якщо знайдеш позначку, не ламай її й не викидай. Староста має побачити доказ, що гобліни не просто нападають на мандрівників, а встановлюють власний кордон біля міських земель.",
+          "completion_text": "На темній дерев’яній дощечці вирізаний символ гоблінського дозору. Червона мотузка свіжа, а на зворотному боці залишилися сліди смоли. Знак встановили нещодавно. Доказ потрібно передати Старості.",
+          "reward": {
+            "exp": 66,
+            "gold": 1.84,
+            "item_keys": []
+          },
+          "quest_item": {
+            "item_key": "dark_forest_goblin_patrol_border_sign",
+            "display_name": "Прикордонний знак гоблінського дозору",
+            "quantity": 1,
+            "drop_chance": 0.15,
+            "drop_location_id": "dark_forest",
+            "drop_message": "🧩 Сюжетна знахідка: Прикордонний знак гоблінського дозору"
+          },
+          "progress_text": "Пошук прикордонного знака: {progress}/1",
+          "item_reveal_policy": {
+            "pre_reveal_title": "Знак на старому шляху",
+            "post_reveal_title": "Знак на старому шляху",
+            "reveal_on_first_drop": true
+          },
+          "next_route": {
+            "npc_id": "elder",
+            "route_text": "🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста"
+          }
+        }
+      },
+      {
+        "quest_number": 55,
+        "array_index": 4,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_055_border_that_never_existed",
+          "number": 55,
+          "title": "Межа, якої не було",
+          "quest_type": "TURN_IN",
+          "location_id": "dark_forest",
+          "unlock_level": 6,
+          "previous_quest_id": "dark_forest_054_sign_on_the_old_road",
+          "giver_npc_id": "elder",
+          "turn_in_npc_id": "elder",
+          "target_quantity": 1,
+          "description": "Передати Старості гоблінський прикордонний знак і підтвердити, що дозори намагаються встановити контроль над старим шляхом.",
+          "objective_text": "Передати Старості прикордонний знак гоблінського дозору.",
+          "acceptance_text": "Цей знак не схожий на випадковий трофей. Гобліни встановили його на нашому старому прикордонному шляху, де раніше проходили мисливці й торгові вози. Вони оголосили цю землю своєю без жодного нападу на місто й без відкритої вимоги.\n\nЯкщо за дозорами стоїть єдиний ватажок, він намагається відрізати Темний Бір від решти земель і приховати те, що відбувається в глибині.\n\nЯ залишу знак у Ратуші як доказ того, що гобліни свідомо встановлюють нову межу біля міських земель.",
+          "completion_text": "Староста приймає гоблінський знак і підтверджує, що дозори свідомо встановлюють новий кордон на старому прикордонному шляху.",
+          "reward": {
+            "exp": 66,
+            "gold": 1.84,
+            "item_keys": []
+          },
+          "required_quest_items": [
+            {
+              "item_key": "dark_forest_goblin_patrol_border_sign",
+              "quantity": 1,
+              "consume": true
+            }
+          ],
+          "next_route": {
+            "npc_id": "mercenary_head",
+            "route_text": "🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова Найманців"
+          }
+        }
+      },
+      {
+        "quest_number": 56,
+        "array_index": 5,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_056_camp_by_the_road",
+          "number": 56,
+          "title": "Табір біля дороги",
+          "quest_type": "KILL_REGION",
+          "location_id": "dark_forest",
+          "unlock_level": 6,
+          "previous_quest_id": "dark_forest_055_border_that_never_existed",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 10,
+          "description": "Голова Найманців наказує розчистити старий шлях і зруйнувати оборону тимчасового табору, з якого гобліни керують прикордонними дозорами.",
+          "objective_text": "Перемогти 10 будь-яких істот у локації Темний Бір.",
+          "acceptance_text": "Після твоєї знахідки ми повторно перевірили старий шлях. За першою лінією дозорів стоїть тимчасовий табір. Гобліни використовують його як перевалочний пункт: звідти виходять патрулі, туди приносять припаси й там змінюють варту.\n\nПоки табір діє, наші розвідники не зможуть пройти далі. Зачисти шлях і змусь його варту відступити вглиб Темного Бору.",
+          "completion_text": "Прикордонний табір утратив охорону. Гоблінські загони відступили, а старий шлях став доступним для подальшої розвідки.",
+          "reward": {
+            "exp": 66,
+            "gold": 1.84,
+            "item_keys": []
+          },
+          "progress_text": "Зачистка табору біля дороги: {progress}/10"
+        }
+      },
+      {
+        "quest_number": 57,
+        "array_index": 6,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "item_reveal_policy",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_057_runic_trace",
+          "number": 57,
+          "title": "Рунічний слід",
+          "quest_type": "QUEST_ITEM",
+          "location_id": "dark_forest",
+          "unlock_level": 6,
+          "previous_quest_id": "dark_forest_056_camp_by_the_road",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Після зачистки прикордонного табору Голова Найманців просить знайти предмет, який пояснить синювате світіння серед гоблінських трофеїв.",
+          "objective_text": "Шукати під час полювання предмет зі слідами рунічної корупції.",
+          "acceptance_text": "Розвідники бачили серед покинутих речей уламки темного металу. Частина з них була холодною, хоча лежала біля згаслого багаття, а на поверхні проступало синє світіння.\n\nМи вже бачили щось подібне біля лігва Ватажка, але ці уламки мають іншу форму. Можливо, гобліни носять їх як обереги або отримують від когось, хто володіє рунічною магією.\n\nПродовжуй полювання в Темному Борі й знайди цілий фрагмент. Не намагайся самостійно очищати або ламати його. Якщо це руна, предмет має оглянути Рунний Майстер.",
+          "completion_text": "На уламку темного металу збереглася частина руни. Її лінії світяться тим самим холодним світлом, яке було помітне на слідах корупції біля лігва Ватажка. Знахідку потрібно передати Рунному Майстру.",
+          "reward": {
+            "exp": 66,
+            "gold": 1.84,
+            "item_keys": []
+          },
+          "quest_item": {
+            "item_key": "dark_forest_runic_amulet_fragment",
+            "display_name": "Уламок рунічного амулета",
+            "quantity": 1,
+            "drop_chance": 0.15,
+            "drop_location_id": "dark_forest",
+            "drop_message": "🧩 Сюжетна знахідка: Уламок рунічного амулета"
+          },
+          "progress_text": "Пошук рунічного уламка: {progress}/1",
+          "item_reveal_policy": {
+            "pre_reveal_title": "Рунічний слід",
+            "post_reveal_title": "Рунічний слід",
+            "reveal_on_first_drop": true
+          },
+          "next_route": {
+            "npc_id": "rune_master",
+            "route_text": "🏙️ Місто → ⚒️ Ремісничий квартал → 💠 Рунний Майстер"
+          }
+        }
+      },
+      {
+        "quest_number": 58,
+        "array_index": 7,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_058_familiar_rune",
+          "number": 58,
+          "title": "Знайома руна",
+          "quest_type": "TURN_IN",
+          "location_id": "dark_forest",
+          "unlock_level": 6,
+          "previous_quest_id": "dark_forest_057_runic_trace",
+          "giver_npc_id": "rune_master",
+          "turn_in_npc_id": "rune_master",
+          "target_quantity": 1,
+          "description": "Передати Рунному Майстру уламок амулета й з’ясувати, чи пов’язаний він із корупцією, яка підсилювала Ватажка.",
+          "objective_text": "Передати Рунному Майстру уламок рунічного амулета.",
+          "acceptance_text": "Цей метал не належить старим міським рунам. Він грубо оброблений, але символ нанесено точно. Подивись на зламані лінії: у них повторюється той самий вузол, який ми бачили на слідах корупції біля лігва Ватажка.\n\nАмулет не створював силу сам по собі. Він проводив її від іншого джерела й передавав носієві. Ватажок міг отримати подібний предмет від тих самих істот, що зараз керують гоблінськими дозорами.\n\nЯ залишу уламок для подальшого дослідження. Його руна підтверджує зв’язок між подіями на Початку Шляху та загрозою у Темному Борі.",
+          "completion_text": "Рунний Майстер підтверджує: символ на амулеті належить до тієї самої системи рун, яка підсилювала Ватажка. Гоблінські дозори пов’язані з джерелом корупції в глибині Темного Бору.",
+          "reward": {
+            "exp": 66,
+            "gold": 1.84,
+            "item_keys": []
+          },
+          "required_quest_items": [
+            {
+              "item_key": "dark_forest_runic_amulet_fragment",
+              "quantity": 1,
+              "consume": true
+            }
+          ],
+          "next_route": {
+            "npc_id": "mercenary_head",
+            "route_text": "🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова Найманців"
+          }
+        }
+      },
+      {
+        "quest_number": 59,
+        "array_index": 8,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_059_road_deeper",
+          "number": 59,
+          "title": "Дорога вглиб",
+          "quest_type": "KILL_REGION",
+          "location_id": "dark_forest",
+          "unlock_level": 6,
+          "previous_quest_id": "dark_forest_058_familiar_rune",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 10,
+          "description": "Після висновку Рунного Майстра Голова Найманців наказує пробити безпечний шлях за прикордонні табори й визначити напрямок, звідки надходять рунічні амулети.",
+          "objective_text": "Перемогти 10 будь-яких істот у локації Темний Бір.",
+          "acceptance_text": "Тепер ми знаємо, що гобліни не самі створили ці амулети. Хтось постачає їм рунічні предмети й використовує дозори, щоб приховати шлях углиб лісу.\n\nНаші розвідники знайшли вузьку стежку за прикордонним табором. Вона веде до старих вирубок, але на кожному повороті стоять нові загони. Якщо очистити стежку, ми зможемо простежити рух гоблінів і знайти їхні основні табори.\n\nПробий шлях углиб Темного Бору. Не переслідуй тих, хто відступає надто далеко. Нам потрібен безпечний маршрут для наступної серії вилазок, а не необережний штурм невідомої фортеці.",
+          "completion_text": "Шлях за прикордонними таборами відкрито. Розвідники помітили сліди великої кількості гоблінів, що рухаються між кількома укріпленими стоянками. Це вже не окремі дозори, а впорядкована мережа таборів.",
+          "reward": {
+            "exp": 66,
+            "gold": 1.84,
+            "item_keys": []
+          },
+          "progress_text": "Розчищення дороги вглиб: {progress}/10",
+          "next_route": {
+            "npc_id": "elder",
+            "route_text": "🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста"
+          }
+        }
+      },
+      {
+        "quest_number": 60,
+        "array_index": 9,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "itemless_turn_in_policy",
+          "location_id",
+          "next_quest_preview",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_060_threat_from_the_depths",
+          "number": 60,
+          "title": "Загроза з глибини",
+          "quest_type": "TURN_IN",
+          "location_id": "dark_forest",
+          "unlock_level": 6,
+          "previous_quest_id": "dark_forest_059_road_deeper",
+          "giver_npc_id": "elder",
+          "turn_in_npc_id": "elder",
+          "target_quantity": 1,
+          "description": "Доповісти Старості про гоблінські табори, рунічні амулети та підтверджений зв’язок із корупцією, що підсилювала Ватажка.",
+          "objective_text": "Доповісти Старості про результати першої розвідки Темного Бору.",
+          "acceptance_text": "Отже, гобліни встановили власну межу, укріпили старий шлях і отримують рунічні амулети з глибини Темного Бору. Ватажок був не джерелом корупції, а лише одним із тих, кого вона підсилила.\n\nЦе пояснює, чому після його загибелі рунічний слід не зник. Хтось продовжує виготовляти або роздавати ці предмети, а гоблінські дозори захищають дорогу до джерела.\n\nТвоєї доповіді достатньо, щоб підтвердити: загроза Темного Бору організована й пов’язана з подіями на Початку Шляху. Перша розвідка завершена.",
+          "completion_text": "Староста приймає доповідь про гоблінські дозори та рунічний амулет. Перша розвідка підтвердила: події на Початку Шляху й загроза Темного Бору є частинами одного задуму.\n\nГобліни створили мережу укріплених таборів і отримують рунічні предмети від невідомої сили в глибині лісу.\n\n✅ Розділ «Тінь за Темним Бором» завершено.",
+          "reward": {
+            "exp": 66,
+            "gold": 1.84,
+            "item_keys": []
+          },
+          "required_quest_items": [],
+          "itemless_turn_in_policy": {
+            "enabled": true,
+            "purpose": "final_report",
+            "button_text": "🗣️ Доповісти Старості"
+          },
+          "next_quest_preview": {
+            "number": 61,
+            "title": "Наказ про вилазки",
+            "giver_npc_id": "mercenary_head",
+            "unlock_level": 7
+          },
+          "next_route": {
+            "npc_id": "mercenary_head",
+            "route_text": "🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова Найманців"
+          }
+        }
+      },
+      {
+        "quest_number": 61,
+        "array_index": 10,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_061_sortie_orders",
+          "number": 61,
+          "title": "Наказ про вилазки",
+          "quest_type": "TALK",
+          "location_id": "dark_forest",
+          "unlock_level": 7,
+          "previous_quest_id": "dark_forest_060_threat_from_the_depths",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Після доповіді Старості Голова Найманців розпочинає операцію проти внутрішніх гоблінських стоянок.",
+          "objective_text": "Отримати від Голови Найманців наказ про подальші вилазки.",
+          "acceptance_text": "Староста затвердив операцію. Відтепер ми не просто захищаємо старий шлях, а намагаємося зрозуміти, як працює мережа гоблінських дозорів.\n\nРозвідники нанесли на карту кілька стоянок. Окремо вони не схожі на великі табори, але між ними постійно рухаються патрулі. Один загін змінює інший, а на високих деревах чергують спостерігачі.\n\nЦі стоянки діють узгоджено. Патрулі підтримують зв’язок і контролюють внутрішні стежки значно краще, ніж ми припускали після першої розвідки.",
+          "completion_text": "Голова Найманців завершує доповідь про розташування внутрішніх стоянок і узгоджений рух гоблінських патрулів.",
+          "reward": {
+            "exp": 75,
+            "gold": 2.36,
+            "item_keys": []
+          }
+        }
+      },
+      {
+        "quest_number": 62,
+        "array_index": 11,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_062_changing_of_the_guard",
+          "number": 62,
+          "title": "Зміна варти",
+          "quest_type": "KILL_REGION",
+          "location_id": "dark_forest",
+          "unlock_level": 7,
+          "previous_quest_id": "dark_forest_061_sortie_orders",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 8,
+          "description": "Гравець атакує гоблінські патрулі під час зміни варти, щоб порушити рух між внутрішніми стоянками.",
+          "objective_text": "Перемогти 8 будь-яких істот у локації Темний Бір.",
+          "acceptance_text": "Патрулі змінюються біля старого поваленого дуба. Саме там зустрічаються загони з північної та західної стежок.\n\nПід час зміни варти обидві групи ненадовго збираються в одному місці. Це дозволить завдати удару до того, як сусідні стоянки зрозуміють, що сталося.\n\nПереможи вісім ворогів і повернися з доповіддю. Не відходь далеко від позначеної ділянки.",
+          "completion_text": "Зміну варти зірвано. Гоблінські патрулі втратили контроль над ділянкою біля поваленого дуба.",
+          "reward": {
+            "exp": 75,
+            "gold": 2.36,
+            "item_keys": []
+          },
+          "progress_text": "Порушення зміни варти: {progress}/8"
+        }
+      },
+      {
+        "quest_number": 63,
+        "array_index": 12,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_063_answer_from_the_forest",
+          "number": 63,
+          "title": "Відповідь із лісу",
+          "quest_type": "TALK",
+          "location_id": "dark_forest",
+          "unlock_level": 7,
+          "previous_quest_id": "dark_forest_062_changing_of_the_guard",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Після зриву зміни варти розвідники помітили незвичний спосіб передавання сигналів між гоблінськими стоянками.",
+          "objective_text": "Отримати від Голови Найманців результати спостереження за гоблінськими патрулями.",
+          "acceptance_text": "Після твого удару патрулі почали відступати в різні боки. Один із дозорних подав короткий звуковий сигнал, а через кілька миттєвостей із глибини лісу надійшла відповідь.\n\nІнші гобліни одразу змінили напрямок руху. Отже, звук був не випадковим попередженням, а наказом.\n\nРозвідники не змогли роздивитися предмет, яким скористався дозорний. Вони лише помітили, що гоблін підніс до обличчя щось невелике, прикріплене до пояса.",
+          "completion_text": "Голова Найманців підтверджує, що гоблінські стоянки обмінюються звуковими сигналами.",
+          "reward": {
+            "exp": 75,
+            "gold": 2.36,
+            "item_keys": []
+          }
+        }
+      },
+      {
+        "quest_number": 64,
+        "array_index": 13,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "first_drop_text",
+          "giver_npc_id",
+          "item_reveal_policy",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_064_voice_of_the_patrol",
+          "number": 64,
+          "title": "Голос дозору",
+          "quest_type": "QUEST_ITEM",
+          "location_id": "dark_forest",
+          "unlock_level": 7,
+          "previous_quest_id": "dark_forest_063_answer_from_the_forest",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Знайти предмет, за допомогою якого гоблінські дозорні передають звукові сигнали.",
+          "objective_text": "Шукати під час полювання предмет для передавання сигналів.",
+          "acceptance_text": "Тепер ми знаємо, що дозорні використовують невеликий предмет, який носять на поясі.\n\nПродовжуй полювання поблизу внутрішніх стежок. Нам потрібен один цілий екземпляр, а не випадковий уламок.\n\nНе намагайся самостійно відтворювати почутий сигнал. Ми ще не знаємо, що саме він означає і хто може на нього відповісти.",
+          "completion_text": "Знайдено цілий гоблінський сигнальний ріг із насічками на металевому обручі.",
+          "reward": {
+            "exp": 75,
+            "gold": 2.36,
+            "item_keys": []
+          },
+          "quest_item": {
+            "item_key": "dark_forest_goblin_signal_horn",
+            "display_name": "Гоблінський сигнальний ріг",
+            "quantity": 1,
+            "drop_chance": 0.15,
+            "drop_location_id": "dark_forest",
+            "drop_message": "🧩 Сюжетна знахідка: Гоблінський сигнальний ріг"
+          },
+          "first_drop_text": "Знайдений предмет виявився коротким рогом, обтягнутим темною шкірою. Металевий обруч укритий короткими й довгими насічками.",
+          "progress_text": "Пошук предмета гоблінського дозору: {progress}/1",
+          "item_reveal_policy": {
+            "pre_reveal_title": "Голос дозору",
+            "post_reveal_title": "Голос дозору",
+            "reveal_on_first_drop": true
+          },
+          "next_route": {
+            "npc_id": "blacksmith",
+            "route_text": "🏙️ Місто → ⚒️ Ремісничий квартал → ⚒️ Коваль"
+          }
+        }
+      },
+      {
+        "quest_number": 65,
+        "array_index": 14,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_065_notches_on_the_band",
+          "number": 65,
+          "title": "Насічки на обручі",
+          "quest_type": "TURN_IN",
+          "location_id": "dark_forest",
+          "unlock_level": 7,
+          "previous_quest_id": "dark_forest_064_voice_of_the_patrol",
+          "giver_npc_id": "blacksmith",
+          "turn_in_npc_id": "blacksmith",
+          "target_quantity": 1,
+          "description": "Передати Ковалю сигнальний ріг для огляду металевого обруча та насічок.",
+          "objective_text": "Передати Ковалю гоблінський сигнальний ріг.",
+          "acceptance_text": "Сам ріг зроблено грубо, але металевий обруч виготовлено значно уважніше.\n\nГобліни нагріли залізо на слабкому вогні, а потім затягнули його на місце, поки метал залишався м’яким. Короткі та довгі насічки нанесено вже після охолодження.\n\nВони розташовані групами й не схожі на звичайні прикраси. Можливо, кожна група відповідає окремому звуковому сигналу.\n\nНа внутрішньому боці обруча також є знак із трьома зубцями над ламаною лінією. Я раніше такого символу не бачив.",
+          "completion_text": "Коваль приймає сигнальний ріг і підтверджує, що насічки нанесено навмисно та розподілено на окремі групи.",
+          "reward": {
+            "exp": 75,
+            "gold": 2.36,
+            "item_keys": []
+          },
+          "required_quest_items": [
+            {
+              "item_key": "dark_forest_goblin_signal_horn",
+              "quantity": 1,
+              "consume": true
+            }
+          ],
+          "next_route": {
+            "npc_id": "trader",
+            "route_text": "🏙️ Місто → 🛒 Торговий ряд → 🧙 Торговець"
+          }
+        }
+      },
+      {
+        "quest_number": 66,
+        "array_index": 15,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_066_three_pronged_mark",
+          "number": 66,
+          "title": "Знак із трьома зубцями",
+          "quest_type": "TALK",
+          "location_id": "dark_forest",
+          "unlock_level": 7,
+          "previous_quest_id": "dark_forest_065_notches_on_the_band",
+          "giver_npc_id": "trader",
+          "turn_in_npc_id": "trader",
+          "target_quantity": 1,
+          "description": "Торговець може знати походження символу, нанесеного на внутрішній бік металевого обруча.",
+          "objective_text": "Розпитати Торговця про знак із трьома зубцями.",
+          "acceptance_text": "Так, цей символ мені знайомий.\n\nКілька місяців тому знак із трьома зубцями з’явився на ящиках із припасами, які перевозили північною дорогою. Караван зник ще до того, як дістався Початку Шляху.\n\nПізніше мисливці знайшли порожні вози, але більшість вантажу зникла. Ми вирішили, що це звичайне пограбування.\n\nЯкщо той самий знак нанесено на ріг гоблінського дозору, викрадений вантаж міг потрапити до їхніх стоянок.",
+          "completion_text": "Торговець упізнає знак із трьома зубцями та пов’язує його зі зниклим караваном.",
+          "reward": {
+            "exp": 75,
+            "gold": 2.36,
+            "item_keys": []
+          },
+          "next_route": {
+            "npc_id": "mercenary_head",
+            "route_text": "🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова Найманців"
+          }
+        }
+      },
+      {
+        "quest_number": 67,
+        "array_index": 16,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_067_cut_the_supply_line",
+          "number": 67,
+          "title": "Перерізати постачання",
+          "quest_type": "KILL_REGION",
+          "location_id": "dark_forest",
+          "unlock_level": 7,
+          "previous_quest_id": "dark_forest_066_three_pronged_mark",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 10,
+          "description": "Відомості Торговця дозволили розвідникам визначити стежку, якою гобліни перевозять викрадені припаси.",
+          "objective_text": "Перемогти 10 будь-яких істот у локації Темний Бір.",
+          "acceptance_text": "Розвідники перевірили західну стежку. Нею регулярно проходять гоблінські загони з мішками та невеликими ящиками.\n\nЩо міститься у вантажі та куди саме його несуть, поки невідомо. Але якщо зупинити охорону стежки, рух припасів буде порушено.\n\nПереможи десять ворогів у Темному Борі й повернися з доповіддю. Не підпалюй ящики та не намагайся самостійно переслідувати носіїв углиб лісу.",
+          "completion_text": "Охорону західної стежки розбито. Рух гоблінських припасів через цю ділянку зупинено.",
+          "reward": {
+            "exp": 75,
+            "gold": 2.36,
+            "item_keys": []
+          },
+          "progress_text": "Переривання постачання: {progress}/10"
+        }
+      },
+      {
+        "quest_number": 68,
+        "array_index": 17,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "first_drop_text",
+          "giver_npc_id",
+          "item_reveal_policy",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_068_heavy_token",
+          "number": 68,
+          "title": "Важкий жетон",
+          "quest_type": "QUEST_ITEM",
+          "location_id": "dark_forest",
+          "unlock_level": 7,
+          "previous_quest_id": "dark_forest_067_cut_the_supply_line",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Після бою розвідники помітили, що окремі гоблінські дозорні носять на поясах металеві предмети.",
+          "objective_text": "Шукати під час полювання металевий предмет гоблінського дозорного.",
+          "acceptance_text": "Під час зачистки розвідники помітили незвичну деталь. Деякі дозорні носили на поясах важкі металеві предмети.\n\nЗдалеку неможливо визначити, чи це прикраса, перепустка або знак належності до окремого загону.\n\nЗнайди один цілий предмет. Не намагайся використати його та не показуй гоблінам, якщо вони помітять тебе раніше.",
+          "completion_text": "Знайдено важкий залізний жетон із символом трьох зубців і сімома зарубками на звороті.",
+          "reward": {
+            "exp": 75,
+            "gold": 2.36,
+            "item_keys": []
+          },
+          "quest_item": {
+            "item_key": "dark_forest_goblin_patrol_command_token",
+            "display_name": "Командний жетон гоблінського дозору",
+            "quantity": 1,
+            "drop_chance": 0.15,
+            "drop_location_id": "dark_forest",
+            "drop_message": "🧩 Сюжетна знахідка: Командний жетон гоблінського дозору"
+          },
+          "first_drop_text": "Знайдений предмет виявився важким залізним жетоном. На лицьовому боці вибито три зубці над ламаною лінією, а на звороті нанесено сім коротких зарубок.",
+          "progress_text": "Пошук металевого предмета дозорного: {progress}/1",
+          "item_reveal_policy": {
+            "pre_reveal_title": "Важкий жетон",
+            "post_reveal_title": "Важкий жетон",
+            "reveal_on_first_drop": true
+          },
+          "next_route": {
+            "npc_id": "trader",
+            "route_text": "🏙️ Місто → 🛒 Торговий ряд → 🧙 Торговець"
+          }
+        }
+      },
+      {
+        "quest_number": 69,
+        "array_index": 18,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_069_seven_notches",
+          "number": 69,
+          "title": "Сім зарубок",
+          "quest_type": "TALK",
+          "location_id": "dark_forest",
+          "unlock_level": 7,
+          "previous_quest_id": "dark_forest_068_heavy_token",
+          "giver_npc_id": "trader",
+          "turn_in_npc_id": "trader",
+          "target_quantity": 1,
+          "description": "Показати Торговцю залізний жетон і з’ясувати можливе значення семи зарубок.",
+          "objective_text": "Показати Торговцю командний жетон гоблінського дозору.",
+          "acceptance_text": "Символ на лицьовому боці такий самий, як на зниклих ящиках. Але сім зарубок на звороті мають інше призначення.\n\nКараванники використовували подібні позначки, коли товари прямували до одного з кількох пунктів. Кількість зарубок могла вказувати на маршрут або кінцеве місце доставки.\n\nЯкщо гобліни перейняли цю систему, жетон пов’язаний із сьомим внутрішнім маршрутом. Більше я за ним визначити не зможу.",
+          "completion_text": "Торговець оглядає жетон і підтверджує, що сім зарубок можуть позначати окремий маршрут або кінцевий пункт доставки.",
+          "reward": {
+            "exp": 75,
+            "gold": 2.36,
+            "item_keys": []
+          },
+          "required_quest_items": [
+            {
+              "item_key": "dark_forest_goblin_patrol_command_token",
+              "quantity": 1,
+              "consume": false
+            }
+          ],
+          "next_route": {
+            "npc_id": "mercenary_head",
+            "route_text": "🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова Найманців"
+          }
+        }
+      },
+      {
+        "quest_number": 70,
+        "array_index": 19,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_quest_preview",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_070_seventh_camp",
+          "number": 70,
+          "title": "Сьома стоянка",
+          "quest_type": "TURN_IN",
+          "location_id": "dark_forest",
+          "unlock_level": 7,
+          "previous_quest_id": "dark_forest_069_seven_notches",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Передати Голові Найманців жетон із сімома зарубками для зіставлення з картою гоблінських маршрутів.",
+          "objective_text": "Передати Голові Найманців командний жетон гоблінського дозору.",
+          "acceptance_text": "Сім зарубок пояснюють те, що досі не складалося в єдину картину.\n\nРозвідники знайшли шість внутрішніх стоянок, але патрулів і припасів було більше, ніж ці табори могли прийняти.\n\nЯкщо кожна зарубка позначає окремий маршрут, у Темному Борі існує ще одна стоянка. Її немає на наших картах, а всі відомі стежки закінчуються раніше.\n\nЯ залишу жетон для порівняння з маршрутами розвідників. Тепер ми маємо доказ, що мережа гоблінських дозорів більша, ніж здавалося.",
+          "completion_text": "Голова Найманців приймає жетон і підтверджує існування сьомого внутрішнього маршруту.\n\nГоблінські дозори мають спільну систему сигналів, використовують викрадені припаси й підтримують щонайменше сім окремих маршрутів.\n\n✅ Розділ «Гоблінські дозори» завершено.",
+          "reward": {
+            "exp": 75,
+            "gold": 2.36,
+            "item_keys": []
+          },
+          "required_quest_items": [
+            {
+              "item_key": "dark_forest_goblin_patrol_command_token",
+              "quantity": 1,
+              "consume": true
+            }
+          ],
+          "next_quest_preview": {
+            "number": 71,
+            "giver_npc_id": "mercenary_head",
+            "unlock_level": 8
+          }
+        }
+      },
+      {
+        "quest_number": 71,
+        "array_index": 20,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_071_path_to_the_seventh_camp",
+          "number": 71,
+          "title": "Шлях до сьомої стоянки",
+          "quest_type": "TALK",
+          "location_id": "dark_forest",
+          "unlock_level": 8,
+          "previous_quest_id": "dark_forest_070_seventh_camp",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Голова Найманців зіставив командний жетон із картою Темного Бору та визначив маршрут, який може вести до невідомої сьомої стоянки.",
+          "objective_text": "Отримати від Голови Найманців маршрут до сьомої стоянки.",
+          "acceptance_text": "Ми зіставили сім зарубок на жетоні з відомими стежками. Шість маршрутів ведуть до стоянок, які розвідники вже бачили. Остання стежка проходить через стару вирубку й зникає біля кам’яного яру.\n\nУночі над деревами в тому напрямку видно червоне світло, а вітер приносить запах диму. До яру регулярно прямують озброєні гобліни.\n\nЦе перший маршрут, який не збігається з жодною відомою стоянкою. Отже, за кам’яним яром прихована частина мережі, якої ще немає на наших картах.",
+          "completion_text": "Голова Найманців завершує доповідь про невідомий маршрут, що проходить через стару вирубку до кам’яного яру.",
+          "reward": {
+            "exp": 87,
+            "gold": 3.23,
+            "item_keys": []
+          }
+        }
+      },
+      {
+        "quest_number": 72,
+        "array_index": 21,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_072_approaches_to_the_ravine",
+          "number": 72,
+          "title": "Підступи до яру",
+          "quest_type": "KILL_REGION",
+          "location_id": "dark_forest",
+          "unlock_level": 8,
+          "previous_quest_id": "dark_forest_071_path_to_the_seventh_camp",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 8,
+          "description": "Прохід до кам’яного яру охороняють гоблінські загони. Шлях потрібно очистити для розвідників.",
+          "objective_text": "Перемогти 8 будь-яких істот у локації Темний Бір.",
+          "acceptance_text": "Шлях до яру проходить між двома кам’яними схилами. На деревах немає звичних гоблінських позначок, але земля витоптана важкими ногами, а на камінні видно сліди кіптяви.\n\nЗовнішня охорона тримається невеликими групами. Розбий загони до того, як вони встигнуть подати сигнал.\n\nВосьми перемог буде достатньо, щоб відкрити прохід. Не заходь за кам’яні схили самостійно. Після зачистки повернися до мене з доповіддю.",
+          "completion_text": "Зовнішню охорону розбито. Кам’яний прохід очищено, а гоблінські загони відступили вглиб яру.",
+          "reward": {
+            "exp": 87,
+            "gold": 3.23,
+            "item_keys": []
+          },
+          "progress_text": "Зачистка підступів до яру: {progress}/8"
+        }
+      },
+      {
+        "quest_number": 73,
+        "array_index": 22,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_073_not_a_military_camp",
+          "number": 73,
+          "title": "Не військовий табір",
+          "quest_type": "TALK",
+          "location_id": "dark_forest",
+          "unlock_level": 8,
+          "previous_quest_id": "dark_forest_072_approaches_to_the_ravine",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Після очищення проходу розвідники змогли оглянути сьому стоянку й передали Голові Найманців несподівані відомості.",
+          "objective_text": "Отримати від Голови Найманців результати розвідки сьомої стоянки.",
+          "acceptance_text": "Розвідники пройшли за кам’яний прохід. Це не звичайний військовий табір.\n\nУсередині яру майже немає наметів, запасів їжі або місць для відпочинку. Натомість там стоять обпалені стовпи, кам’яні чаші й дерев’яні столи, вкриті невідомими знаками.\n\nРозвідники не змогли наблизитися до столів. Місцевість досі охороняють, а предмети на них видно лише здалеку.\n\nУсе вказує на те, що сьома стоянка має інше призначення, ніж звичайні гоблінські табори.",
+          "completion_text": "Голова Найманців завершує доповідь про сьому стоянку з обпаленими стовпами, кам’яними чашами та столами, вкритими невідомими знаками.",
+          "reward": {
+            "exp": 87,
+            "gold": 3.23,
+            "item_keys": []
+          }
+        }
+      },
+      {
+        "quest_number": 74,
+        "array_index": 23,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "first_drop_text",
+          "giver_npc_id",
+          "item_reveal_policy",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_074_signs_by_the_stone_ravine",
+          "number": 74,
+          "title": "Знаки біля кам’яного яру",
+          "quest_type": "QUEST_ITEM",
+          "location_id": "dark_forest",
+          "unlock_level": 8,
+          "previous_quest_id": "dark_forest_073_not_a_military_camp",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Серед предметів сьомої стоянки може зберігатися доказ призначення невідомих знаків.",
+          "objective_text": "Шукати під час полювання предмет зі знаками зі сьомої стоянки.",
+          "acceptance_text": "Розвідники позначили місце, але не змогли визначити, що саме лежить на столах.\n\nШукай предмет, на якому збереглося хоча б одне повне зображення. Звичайні уламки без знаків нічого не доведуть.\n\nНе очищай знахідку водою й не торкайся вирізаних ліній. Ми ще не знаємо, з чим маємо справу.",
+          "completion_text": "Серед залишків сьомої стоянки знайдено фрагмент таблички з невідомим символом.",
+          "reward": {
+            "exp": 87,
+            "gold": 3.23,
+            "item_keys": []
+          },
+          "quest_item": {
+            "item_key": "dark_forest_ritual_tablet_fragment",
+            "display_name": "Фрагмент ритуальної таблички",
+            "quantity": 1,
+            "drop_chance": 0.15,
+            "drop_location_id": "dark_forest",
+            "drop_message": "🧩 Сюжетна знахідка: Фрагмент ритуальної таблички"
+          },
+          "progress_text": "Пошук предмета зі знаками: {progress}/1",
+          "item_reveal_policy": {
+            "pre_reveal_title": "Знаки біля кам’яного яру",
+            "post_reveal_title": "Знаки біля кам’яного яру",
+            "reveal_on_first_drop": true
+          },
+          "first_drop_text": "Знайдений предмет виявився фрагментом таблички з чорної обпаленої глини. На поверхні зберігся невідомий символ, а в заглибленнях мерехтить синюватий порошок.",
+          "next_route": {
+            "npc_id": "rune_master",
+            "route_text": "🏙️ Місто → ⚒️ Ремісничий квартал → 💠 Рунний Майстер"
+          }
+        }
+      },
+      {
+        "quest_number": 75,
+        "array_index": 24,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_075_open_circle",
+          "number": 75,
+          "title": "Розімкнене коло",
+          "quest_type": "TURN_IN",
+          "location_id": "dark_forest",
+          "unlock_level": 8,
+          "previous_quest_id": "dark_forest_074_signs_by_the_stone_ravine",
+          "giver_npc_id": "rune_master",
+          "turn_in_npc_id": "rune_master",
+          "target_quantity": 1,
+          "description": "Передати Рунному Майстру фрагмент таблички для визначення збереженого символу.",
+          "objective_text": "Передати Рунному Майстру фрагмент ритуальної таблички.",
+          "acceptance_text": "Поклади табличку на камінь і не торкайся порошку.\n\nСимвол у центрі не є звичайною руною посилення. Розімкнене коло позначає незавершений зв’язок, а три промені вказують на передавання сили від одного джерела кільком носіям.\n\nПодібні символи використовують не для зберігання енергії, а для проведення обряду. Амулети, які ми знаходили раніше, могли бути провідниками цієї сили.\n\nЯ залишу фрагмент для безпечного вивчення.",
+          "completion_text": "Рунний Майстер приймає фрагмент і підтверджує, що символ описує передавання рунічної сили від одного джерела кільком носіям.",
+          "reward": {
+            "exp": 87,
+            "gold": 3.23,
+            "item_keys": []
+          },
+          "required_quest_items": [
+            {
+              "item_key": "dark_forest_ritual_tablet_fragment",
+              "quantity": 1,
+              "consume": true
+            }
+          ],
+          "next_route": {
+            "npc_id": "alchemist",
+            "route_text": "🏙️ Місто → ⚒️ Ремісничий квартал → 🧪 Алхімік"
+          }
+        }
+      },
+      {
+        "quest_number": 76,
+        "array_index": 25,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_076_admixture_in_runic_powder",
+          "number": 76,
+          "title": "Домішка в рунічному порошку",
+          "quest_type": "TALK",
+          "location_id": "dark_forest",
+          "unlock_level": 8,
+          "previous_quest_id": "dark_forest_075_open_circle",
+          "giver_npc_id": "alchemist",
+          "turn_in_npc_id": "alchemist",
+          "target_quantity": 1,
+          "description": "Алхімік отримав від Рунного Майстра невелику пробу матеріалу з таблички й готовий повідомити перші результати.",
+          "objective_text": "Отримати від Алхіміка результати дослідження рунічного порошку.",
+          "acceptance_text": "Рунний Майстер передав мені невелику пробу з таблички. У ній є подрібнений рунічний кристал, деревна смола, кров і залишки горючої олії.\n\nКоли суміш нагрівають, руна на короткий час стає активною. Але проба надто мала, щоб визначити всі її складники.\n\nЦього достатньо, щоб підтвердити: порошок готували спеціально для обряду, а його дія залежить від постійного нагрівання.",
+          "completion_text": "Алхімік визначає основні речовини в рунічному порошку й підтверджує, що суміш активується під час нагрівання.",
+          "reward": {
+            "exp": 87,
+            "gold": 3.23,
+            "item_keys": []
+          }
+        }
+      },
+      {
+        "quest_number": 77,
+        "array_index": 26,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_077_extinguish_the_ritual_fires",
+          "number": 77,
+          "title": "Погасити ритуальні вогні",
+          "quest_type": "KILL_REGION",
+          "location_id": "dark_forest",
+          "unlock_level": 8,
+          "previous_quest_id": "dark_forest_076_admixture_in_runic_powder",
+          "giver_npc_id": "alchemist",
+          "turn_in_npc_id": "alchemist",
+          "target_quantity": 10,
+          "description": "Охорона сьомої стоянки підтримує вогні та не дозволяє безпечно наблизитися до ритуальних чаш.",
+          "objective_text": "Перемогти 10 будь-яких істот у локації Темний Бір.",
+          "acceptance_text": "Ритуальні чаші постійно нагрівають, а охорона приносить до них нові компоненти.\n\nСпочатку зупини тих, хто підтримує вогні. Поки охорона залишається на місці, наближатися до чаш надто небезпечно.\n\nПісля десяти перемог залиш стоянку й повернися до мене. Не торкайся чаш і не намагайся самостійно збирати їхній вміст.",
+          "completion_text": "Охорону ритуальних вогнів розбито. Гобліни залишили чаші та відступили зі сьомої стоянки.",
+          "reward": {
+            "exp": 87,
+            "gold": 3.23,
+            "item_keys": []
+          },
+          "progress_text": "Знищення охорони ритуальних вогнів: {progress}/10"
+        }
+      },
+      {
+        "quest_number": 78,
+        "array_index": 27,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "first_drop_text",
+          "giver_npc_id",
+          "item_reveal_policy",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_078_remnants_of_the_ritual",
+          "number": 78,
+          "title": "Залишки обряду",
+          "quest_type": "QUEST_ITEM",
+          "location_id": "dark_forest",
+          "unlock_level": 8,
+          "previous_quest_id": "dark_forest_077_extinguish_the_ritual_fires",
+          "giver_npc_id": "alchemist",
+          "turn_in_npc_id": "alchemist",
+          "target_quantity": 1,
+          "description": "Після відступу охорони можна оглянути залишки матеріалів у ритуальних чашах.",
+          "objective_text": "Шукати під час полювання зразок матеріалу з ритуальних чаш.",
+          "acceptance_text": "Тепер до чаш можна наблизитися, але залишки суміші все ще можуть бути небезпечними.\n\nВикористовуй лише видану посудину. Не торкайся матеріалу руками й не змішуй залишки з різних чаш.\n\nПотрібен один зразок із місця, де ще видно слабке світіння. Щойно посудина наповниться, одразу закрий кришку.",
+          "completion_text": "Із ритуальної чаші зібрано та запечатано один зразок невідомого матеріалу.",
+          "reward": {
+            "exp": 87,
+            "gold": 3.23,
+            "item_keys": []
+          },
+          "quest_item": {
+            "item_key": "dark_forest_ritual_ash_sample",
+            "display_name": "Проба ритуального попелу",
+            "quantity": 1,
+            "drop_chance": 0.15,
+            "drop_location_id": "dark_forest",
+            "drop_message": "🧩 Сюжетна знахідка: Проба ритуального попелу"
+          },
+          "progress_text": "Пошук зразка з ритуальної чаші: {progress}/1",
+          "item_reveal_policy": {
+            "pre_reveal_title": "Залишки обряду",
+            "post_reveal_title": "Залишки обряду",
+            "reveal_on_first_drop": true
+          },
+          "first_drop_text": "У чаші знайдено чорний попіл із дрібними синюватими крупинками. Матеріал зібрано в захисну посудину й запечатано.",
+          "next_route": {
+            "npc_id": "alchemist",
+            "route_text": "🏙️ Місто → ⚒️ Ремісничий квартал → 🧪 Алхімік"
+          }
+        }
+      },
+      {
+        "quest_number": 79,
+        "array_index": 28,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_079_price_of_the_ritual",
+          "number": 79,
+          "title": "Ціна обряду",
+          "quest_type": "TURN_IN",
+          "location_id": "dark_forest",
+          "unlock_level": 8,
+          "previous_quest_id": "dark_forest_078_remnants_of_the_ritual",
+          "giver_npc_id": "alchemist",
+          "turn_in_npc_id": "alchemist",
+          "target_quantity": 1,
+          "description": "Передати Алхіміку запечатану пробу для визначення матеріалів, використаних під час обряду.",
+          "objective_text": "Передати Алхіміку пробу ритуального попелу.",
+          "acceptance_text": "Постав посудину в захисну камеру. Я нагрію лише невелику частину проби й простежу за реакцією крупинок.\n\nТут є залишки деревної смоли, крові та рунічного кристала. Але основний компонент значно небезпечніший.\n\nУ попелі містяться сліди кісткового порошку й тканин істот, змінених рунічною корупцією. Під час обряду з них витягували енергію, а потім накопичували її в підготовлених амулетах.\n\nТепер зрозуміло, як підсилювали Ватажка та гоблінських берсерків. Але ця суміш надто складна, щоб гобліни могли створити її самостійно.",
+          "completion_text": "Алхімік приймає пробу й підтверджує, що під час обряду рунічну силу витягували з істот, змінених корупцією.",
+          "reward": {
+            "exp": 87,
+            "gold": 3.23,
+            "item_keys": []
+          },
+          "required_quest_items": [
+            {
+              "item_key": "dark_forest_ritual_ash_sample",
+              "quantity": 1,
+              "consume": true
+            }
+          ],
+          "next_route": {
+            "npc_id": "elder",
+            "route_text": "🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста"
+          }
+        }
+      },
+      {
+        "quest_number": 80,
+        "array_index": 29,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "itemless_turn_in_policy",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_080_trace_of_the_runic_cult",
+          "number": 80,
+          "title": "Слід рунічного культу",
+          "quest_type": "TURN_IN",
+          "location_id": "dark_forest",
+          "unlock_level": 8,
+          "previous_quest_id": "dark_forest_079_price_of_the_ritual",
+          "giver_npc_id": "elder",
+          "turn_in_npc_id": "elder",
+          "target_quantity": 1,
+          "description": "Доповісти Старості про сьому стоянку, рунічні знаки та спосіб підсилення гоблінів.",
+          "objective_text": "Доповісти Старості про результати розслідування сьомої стоянки.",
+          "acceptance_text": "Тепер усі знахідки складаються в одну картину.\n\nСьома стоянка була місцем обрядів. Там готували амулети, підсилювали гоблінів і витягували рунічну енергію з істот, змінених корупцією.\n\nВатажок із Початку Шляху був лише одним із носіїв. Гоблінські командири також не є справжнім джерелом загрози.\n\nХтось навчив гоблінів проводити обряди, постачає їм рунічні матеріали та контролює мережу таборів. Це не випадкові досліди окремого шамана, а організована діяльність.\n\nВідтепер ми вважатимемо цю невідому групу рунічним культом, доки не встановимо, хто саме до неї входить.",
+          "completion_text": "Староста приймає доповідь про сьому стоянку.\n\nЗібрані докази підтверджують, що рунічна корупція поширюється навмисно. Амулети, підсилення Ватажка та обряди в Темному Борі пов’язані між собою.\n\n✅ Розділ «Слід рунічного культу» завершено.",
+          "reward": {
+            "exp": 87,
+            "gold": 3.23,
+            "item_keys": []
+          },
+          "required_quest_items": [],
+          "itemless_turn_in_policy": {
+            "enabled": true,
+            "purpose": "final_report",
+            "button_text": "🗣️ Доповісти Старості"
+          }
+        }
+      },
+      {
+        "quest_number": 81,
+        "array_index": 30,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_081_trace_beyond_the_stone_ravine",
+          "number": 81,
+          "title": "Слід за кам’яним яром",
+          "quest_type": "TALK",
+          "location_id": "dark_forest",
+          "unlock_level": 9,
+          "previous_quest_id": "dark_forest_080_trace_of_the_runic_cult",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Голова Найманців отримав нові відомості про рух невідомих істот поблизу сьомої стоянки.",
+          "objective_text": "Отримати від Голови Найманців результати спостереження.",
+          "acceptance_text": "Після завершення операції розвідники залишилися спостерігати за сьомою стоянкою.\n\nГобліни майже не користуються основним проходом, але на протилежному боці кам’яного яру виявлено інші сліди. Вони ведуть до вузької стежки між корінням і скелями.\n\nСліди не схожі на сліди звичайних гоблінських дозорів. Невідомі проходили там неодноразово й намагалися приховати свій маршрут.",
+          "completion_text": "Голова Найманців показує на карті місце, де розвідники виявили приховану стежку.",
+          "reward": {
+            "exp": 99,
+            "gold": 4.13,
+            "item_keys": []
+          }
+        }
+      },
+      {
+        "quest_number": 82,
+        "array_index": 31,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_082_hidden_path",
+          "number": 82,
+          "title": "Прихована стежка",
+          "quest_type": "KILL_REGION",
+          "location_id": "dark_forest",
+          "unlock_level": 9,
+          "previous_quest_id": "dark_forest_081_trace_beyond_the_stone_ravine",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 8,
+          "description": "Озброєні загони перекривають підхід до прихованої стежки.",
+          "objective_text": "Перемогти 8 будь-яких істот у локації Темний Бір.",
+          "acceptance_text": "Розвідники спробували наблизитися до прихованої стежки, але вхід до неї перекритий.\n\nБіля кам’яної тріщини чергують озброєні загони. Вони не залишають своїх позицій навіть тоді, коли чують рух або бій осторонь.\n\nПереможи вісім ворогів біля позначеної ділянки. Не заходь за кам’яні схили. Зараз потрібно лише звільнити підхід.",
+          "completion_text": "Охорону біля кам’яної тріщини розбито. Підхід до прихованої стежки звільнено.",
+          "reward": {
+            "exp": 99,
+            "gold": 4.13,
+            "item_keys": []
+          },
+          "progress_text": "Зачистка підходу до прихованої стежки: {progress}/8"
+        }
+      },
+      {
+        "quest_number": 83,
+        "array_index": 32,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_083_land_without_tracks",
+          "number": 83,
+          "title": "Земля без слідів",
+          "quest_type": "TALK",
+          "location_id": "dark_forest",
+          "unlock_level": 9,
+          "previous_quest_id": "dark_forest_082_hidden_path",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Розвідники оглянули початок прихованої стежки та помітили незвичайні зміни місцевості.",
+          "objective_text": "Отримати від Голови Найманців результати огляду прихованої стежки.",
+          "acceptance_text": "Після звільнення проходу розвідники змогли оглянути початок стежки.\n\nДалі звичайна лісова земля різко змінюється. Ґрунт стає темним і твердим, трава зникає, а коріння дерев виходить на поверхню.\n\nНа цій ділянці майже неможливо розрізнити сліди. Невідомо, чи зміни виникли природно, чи стали наслідком рунічного впливу.",
+          "completion_text": "Голова Найманців передає опис безплідної ділянки за прихованою стежкою.",
+          "reward": {
+            "exp": 99,
+            "gold": 4.13,
+            "item_keys": []
+          }
+        }
+      },
+      {
+        "quest_number": 84,
+        "array_index": 33,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "first_drop_text",
+          "giver_npc_id",
+          "item_reveal_policy",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_084_dark_soil",
+          "number": 84,
+          "title": "Темний ґрунт",
+          "quest_type": "QUEST_ITEM",
+          "location_id": "dark_forest",
+          "unlock_level": 9,
+          "previous_quest_id": "dark_forest_083_land_without_tracks",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Потрібно отримати матеріал із безплідної ділянки для подальшого дослідження.",
+          "objective_text": "Шукати під час полювання зразок матеріалу з безплідної ділянки.",
+          "acceptance_text": "Зовнішніх ознак недостатньо, щоб визначити природу змін.\n\nВізьми підготовлену посудину та знайди матеріал, який помітно відрізняється від звичайної землі Темного Бору.\n\nНе набирай попіл біля згаслих вогнищ або звичайну суху глину. Потрібен один зразок безпосередньо з безплідної ділянки.",
+          "completion_text": "Із безплідної ділянки зібрано й запечатано один зразок неприродно темного ґрунту.",
+          "reward": {
+            "exp": 99,
+            "gold": 4.13,
+            "item_keys": []
+          },
+          "quest_item": {
+            "item_key": "dark_forest_tainted_soil_sample",
+            "display_name": "Зразок оскверненого ґрунту",
+            "quantity": 1,
+            "drop_chance": 0.15,
+            "drop_location_id": "dark_forest",
+            "drop_message": "🧩 Сюжетна знахідка: Зразок оскверненого ґрунту"
+          },
+          "first_drop_text": "Знайдений ґрунт має неприродно чорний колір. Між грудками видно тонкі синюваті прожилки, які слабко мерехтять у темряві.",
+          "progress_text": "Пошук матеріалу з безплідної ділянки: {progress}/1",
+          "item_reveal_policy": {
+            "pre_reveal_title": "Темний ґрунт",
+            "post_reveal_title": "Темний ґрунт",
+            "reveal_on_first_drop": true
+          },
+          "next_route": {
+            "npc_id": "alchemist",
+            "route_text": "🏙️ Місто → ⚒️ Ремісничий квартал → 🧪 Алхімік"
+          }
+        }
+      },
+      {
+        "quest_number": 85,
+        "array_index": 34,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_085_roots_of_corruption",
+          "number": 85,
+          "title": "Коріння осквернення",
+          "quest_type": "TURN_IN",
+          "location_id": "dark_forest",
+          "unlock_level": 9,
+          "previous_quest_id": "dark_forest_084_dark_soil",
+          "giver_npc_id": "alchemist",
+          "turn_in_npc_id": "alchemist",
+          "target_quantity": 1,
+          "description": "Передати Алхіміку запечатаний зразок зміненого ґрунту.",
+          "objective_text": "Передати Алхіміку зразок оскверненого ґрунту.",
+          "acceptance_text": "Постав посудину на кам’яну поверхню. Не відкривай її над дерев’яним столом.\n\nУ зразку є звичайні мінерали Темного Бору, але між ними накопичилася рунічна речовина.\n\nВона вже проникла в землю та зв’язалася з корінням рослин. Саме тому ґрунт потемнів, а трава на ділянці зникла.\n\nЗа одним зразком неможливо визначити розмір зміненої території.",
+          "completion_text": "Алхімік приймає зразок і підтверджує, що рунічна речовина проникла у ґрунт та коріння рослин.",
+          "reward": {
+            "exp": 99,
+            "gold": 4.13,
+            "item_keys": []
+          },
+          "required_quest_items": [
+            {
+              "item_key": "dark_forest_tainted_soil_sample",
+              "quantity": 1,
+              "consume": true
+            }
+          ]
+        }
+      },
+      {
+        "quest_number": 86,
+        "array_index": 35,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_086_boundary_of_corruption",
+          "number": 86,
+          "title": "Межа осквернення",
+          "quest_type": "TALK",
+          "location_id": "dark_forest",
+          "unlock_level": 9,
+          "previous_quest_id": "dark_forest_085_roots_of_corruption",
+          "giver_npc_id": "alchemist",
+          "turn_in_npc_id": "alchemist",
+          "target_quantity": 1,
+          "description": "Алхімік підготував спосіб перевірки землі вздовж прихованої стежки.",
+          "objective_text": "Отримати від Алхіміка засіб для перевірки зміненого ґрунту.",
+          "acceptance_text": "Я підготував смужки обробленої тканини.\n\nБіля звичайної землі вони не змінюються. Якщо в ґрунті є та сама рунічна речовина, тканина поступово темніє.\n\nСмужки дадуть змогу перевірити землю без прямого контакту. Але використовувати їх потрібно обережно: бруд, попіл або кров можуть спотворити результат.",
+          "completion_text": "Алхімік передає оброблені смужки тканини та пояснює, як перевіряти ними землю.",
+          "reward": {
+            "exp": 99,
+            "gold": 4.13,
+            "item_keys": []
+          }
+        }
+      },
+      {
+        "quest_number": 87,
+        "array_index": 36,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_087_through_black_roots",
+          "number": 87,
+          "title": "Крізь чорне коріння",
+          "quest_type": "KILL_REGION",
+          "location_id": "dark_forest",
+          "unlock_level": 9,
+          "previous_quest_id": "dark_forest_086_boundary_of_corruption",
+          "giver_npc_id": "alchemist",
+          "turn_in_npc_id": "alchemist",
+          "target_quantity": 10,
+          "description": "Озброєні загони не дозволяють провести перевірку ґрунту вздовж прихованої стежки.",
+          "objective_text": "Перемогти 10 будь-яких істот у локації Темний Бір.",
+          "acceptance_text": "Розвідники спробували встановити смужки, але далі стежку знову перекрили ворожі загони.\n\nПід час бою тканина легко забрудниться, тому спочатку потрібно звільнити ділянку.\n\nПереможи десять ворогів уздовж прихованої стежки. Не торкайся чорного коріння й не відходь від позначеного маршруту.",
+          "completion_text": "Охорону вздовж прихованої стежки послаблено. Ділянка біля чорного коріння стала доступною.",
+          "reward": {
+            "exp": 99,
+            "gold": 4.13,
+            "item_keys": []
+          },
+          "progress_text": "Зачистка ділянки біля чорного коріння: {progress}/10"
+        }
+      },
+      {
+        "quest_number": 88,
+        "array_index": 37,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "first_drop_text",
+          "giver_npc_id",
+          "item_reveal_policy",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_088_traces_among_the_roots",
+          "number": 88,
+          "title": "Сліди серед коріння",
+          "quest_type": "QUEST_ITEM",
+          "location_id": "dark_forest",
+          "unlock_level": 9,
+          "previous_quest_id": "dark_forest_087_through_black_roots",
+          "giver_npc_id": "alchemist",
+          "turn_in_npc_id": "alchemist",
+          "target_quantity": 1,
+          "description": "Перевірити територію біля чорного коріння та знайти предмет, який не міг з’явитися там природним шляхом.",
+          "objective_text": "Шукати під час полювання сторонній предмет біля чорного коріння.",
+          "acceptance_text": "Після зачистки розвідники змогли встановити смужки тканини. На одній ділянці вони темніють значно швидше.\n\nОглянь місцевість поблизу цього місця. Шукай будь-що, що не належить до природного середовища Темного Бору.\n\nНе відкривай футляри, згортки або посудини. Якщо на предметі є невідомі знаки, залиш його закритим.",
+          "completion_text": "Біля чорного коріння знайдено запечатаний футляр із невідомим документом.",
+          "reward": {
+            "exp": 99,
+            "gold": 4.13,
+            "item_keys": []
+          },
+          "quest_item": {
+            "item_key": "dark_forest_sealed_runic_order",
+            "display_name": "Запечатаний рунічний наказ",
+            "quantity": 1,
+            "drop_chance": 0.15,
+            "drop_location_id": "dark_forest",
+            "drop_message": "🧩 Сюжетна знахідка: Запечатаний рунічний наказ"
+          },
+          "first_drop_text": "Між чорним корінням знайдено невеликий футляр. Усередині видно складений аркуш, запечатаний темним воском із рунічним символом.",
+          "progress_text": "Пошук стороннього предмета: {progress}/1",
+          "item_reveal_policy": {
+            "pre_reveal_title": "Сліди серед коріння",
+            "post_reveal_title": "Сліди серед коріння",
+            "reveal_on_first_drop": true
+          },
+          "next_route": {
+            "npc_id": "rune_master",
+            "route_text": "🏙️ Місто → ⚒️ Ремісничий квартал → 💠 Рунний Майстер"
+          }
+        }
+      },
+      {
+        "quest_number": 89,
+        "array_index": 38,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_089_seal_without_a_name",
+          "number": 89,
+          "title": "Печатка без імені",
+          "quest_type": "TURN_IN",
+          "location_id": "dark_forest",
+          "unlock_level": 9,
+          "previous_quest_id": "dark_forest_088_traces_among_the_roots",
+          "giver_npc_id": "rune_master",
+          "turn_in_npc_id": "rune_master",
+          "target_quantity": 1,
+          "description": "Передати Рунному Майстру запечатаний футляр для безпечного відкриття.",
+          "objective_text": "Передати Рунному Майстру запечатаний рунічний наказ.",
+          "acceptance_text": "Не ламай печатку. Навколо воску нанесено тонку руну, яка може пошкодити вміст футляра.\n\nЯ послаблю зовнішню лінію й відкрию його в захисному колі.\n\nУсередині справді міститься документ. Частину тексту записано умовними символами, а замість імені відправника використано рунічну печатку.\n\nЗі збереженого фрагмента зрозуміло лише те, що повідомлення призначалося охоронцям зміненої ділянки.",
+          "completion_text": "Рунний Майстер безпечно відкриває футляр і підтверджує, що всередині міститься наказ із рунічною печаткою без особистого імені.",
+          "reward": {
+            "exp": 99,
+            "gold": 4.13,
+            "item_keys": []
+          },
+          "required_quest_items": [
+            {
+              "item_key": "dark_forest_sealed_runic_order",
+              "quantity": 1,
+              "consume": true
+            }
+          ],
+          "next_route": {
+            "npc_id": "elder",
+            "route_text": "🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста"
+          }
+        }
+      },
+      {
+        "quest_number": 90,
+        "array_index": 39,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "itemless_turn_in_policy",
+          "location_id",
+          "next_quest_preview",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_090_corrupted_lands",
+          "number": 90,
+          "title": "Осквернені землі",
+          "quest_type": "TURN_IN",
+          "location_id": "dark_forest",
+          "unlock_level": 9,
+          "previous_quest_id": "dark_forest_089_seal_without_a_name",
+          "giver_npc_id": "elder",
+          "turn_in_npc_id": "elder",
+          "target_quantity": 1,
+          "description": "Доповісти Старості про змінену землю та запечатаний наказ.",
+          "objective_text": "Доповісти Старості про результати дослідження прихованої стежки.",
+          "acceptance_text": "Прихована стежка веде через землю, у яку проникла рунічна речовина.\n\nЦе вже не короткий слід окремого обряду. Вплив змінив ґрунт, коріння й рослини.\n\nЗнайдений наказ підтверджує, що хтось контролює цю ділянку та передає розпорядження її охоронцям. Ім’я відправника приховано, але рунічна печатка пов’язує документ із попередніми знахідками.\n\nОтже, діяльність культу не обмежується амулетами й обрядами. Його вплив уже проник у сам Темний Бір.",
+          "completion_text": "Староста приймає доповідь про приховану стежку та змінену землю.\n\nЗібрані докази підтверджують, що рунічний вплив поширився на ґрунт і рослини Темного Бору, а охорона змінених ділянок виконує письмові накази.\n\n✅ Розділ «Осквернені землі» завершено.",
+          "reward": {
+            "exp": 99,
+            "gold": 4.13,
+            "item_keys": []
+          },
+          "required_quest_items": [],
+          "itemless_turn_in_policy": {
+            "enabled": true,
+            "purpose": "final_report",
+            "button_text": "🗣️ Доповісти Старості"
+          },
+          "next_quest_preview": {
+            "number": 91,
+            "unlock_level": 10
+          }
+        }
+      },
+      {
+        "quest_number": 91,
+        "array_index": 40,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_091_unread_lines",
+          "number": 91,
+          "title": "Непрочитані рядки",
+          "quest_type": "TALK",
+          "location_id": "dark_forest",
+          "unlock_level": 10,
+          "previous_quest_id": "dark_forest_090_corrupted_lands",
+          "giver_npc_id": "rune_master",
+          "turn_in_npc_id": "rune_master",
+          "target_quantity": 1,
+          "description": "Рунний Майстер завершив додаткове вивчення документа, знайденого серед чорного коріння.",
+          "objective_text": "Отримати від Рунного Майстра результати подальшого вивчення документа.",
+          "acceptance_text": "Після першого огляду я залишив документ у захисному футлярі. Частина символів була прихована під шаром рунічного пилу, тому прочитати їх одразу не вдалося.\n\nТепер вдалося відновити кілька рядків. У них згадується місце збору біля старих кам’яних руїн. Туди мали доставляти припаси, амулети та відомості від гоблінських дозорів.\n\nІм’я одержувача не вказано. Замість нього використано символ корони над трьома зубцями. Такий знак раніше не траплявся серед наших знахідок.",
+          "completion_text": "Рунний Майстер показує відновлений фрагмент документа із символом корони над трьома зубцями.",
+          "reward": {
+            "exp": 114,
+            "gold": 5.29,
+            "item_keys": []
+          },
+          "next_route": {
+            "npc_id": "mercenary_head",
+            "route_text": "🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова Найманців"
+          }
+        }
+      },
+      {
+        "quest_number": 92,
+        "array_index": 41,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_092_road_to_the_ruins",
+          "number": 92,
+          "title": "Дорога до руїн",
+          "quest_type": "KILL_REGION",
+          "location_id": "dark_forest",
+          "unlock_level": 10,
+          "previous_quest_id": "dark_forest_091_unread_lines",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 8,
+          "description": "Шлях у напрямку старих руїн перекривають посилені загони Темного Бору.",
+          "objective_text": "Перемогти 8 будь-яких істот у локації Темний Бір.",
+          "acceptance_text": "Рунний Майстер передав мені копію відновлених рядків. Старі руїни розташовані за зараженою ділянкою, але прямий шлях до них перекритий.\n\nРозвідники не можуть наблизитися до кам’яних споруд через постійні патрулі. Ці загони краще споряджені за звичайних дозорних і не відходять далеко від маршруту.\n\nПереможи вісім ворогів уздовж позначеної стежки. Не заходь усередину руїн. Зараз потрібно лише звільнити підхід.",
+          "completion_text": "Охорону на дорозі до старих руїн розбито. Розвідники отримали доступ до зовнішньої частини ділянки.",
+          "reward": {
+            "exp": 114,
+            "gold": 5.29,
+            "item_keys": []
+          },
+          "progress_text": "Зачистка дороги до руїн: {progress}/8"
+        }
+      },
+      {
+        "quest_number": 93,
+        "array_index": 42,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_093_sign_above_the_gate",
+          "number": 93,
+          "title": "Знак над брамою",
+          "quest_type": "TALK",
+          "location_id": "dark_forest",
+          "unlock_level": 10,
+          "previous_quest_id": "dark_forest_092_road_to_the_ruins",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Після очищення дороги розвідники змогли оглянути зовнішню частину старих руїн.",
+          "objective_text": "Отримати від Голови Найманців результати огляду старих руїн.",
+          "acceptance_text": "Розвідники наблизилися до руїн. Кам’яні споруди значно старші за гоблінські табори, але їх нещодавно укріпили дерев’яними загородженнями.\n\nНад центральним проходом закріплено металевий знак. Здалеку видно лише його верхню частину, схожу на корону. Такий самий символ був на відновленому фрагменті наказу.\n\nБіля брами чергують стражі, а сам знак закріплений надто високо, щоб роздивитися деталі з безпечної відстані.",
+          "completion_text": "Голова Найманців передає опис укріплених руїн і символу над центральним проходом.",
+          "reward": {
+            "exp": 114,
+            "gold": 5.29,
+            "item_keys": []
+          }
+        }
+      },
+      {
+        "quest_number": 94,
+        "array_index": 43,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "first_drop_text",
+          "giver_npc_id",
+          "item_reveal_policy",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_094_symbol_of_the_old_ruins",
+          "number": 94,
+          "title": "Символ старих руїн",
+          "quest_type": "QUEST_ITEM",
+          "location_id": "dark_forest",
+          "unlock_level": 10,
+          "previous_quest_id": "dark_forest_093_sign_above_the_gate",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Потрібно знайти частину знака зі старих руїн, на якій збереглося повне зображення.",
+          "objective_text": "Шукати під час полювання фрагмент символу зі старих руїн.",
+          "acceptance_text": "Під час сутичок біля руїн частина зовнішніх укріплень була пошкоджена. На землі могли залишитися уламки металевого знака.\n\nЗнайди фрагмент, на якому збереглася хоча б частина центрального зображення. Звичайні шматки металу не допоможуть визначити значення символу.\n\nНе намагайся самостійно очищати рунічні лінії, якщо вони є на поверхні.",
+          "completion_text": "Біля старих руїн знайдено металевий уламок із частиною корони та рунічного кола.",
+          "reward": {
+            "exp": 114,
+            "gold": 5.29,
+            "item_keys": []
+          },
+          "quest_item": {
+            "item_key": "dark_forest_royal_seal_fragment",
+            "display_name": "Уламок королівської печатки",
+            "quantity": 1,
+            "drop_chance": 0.15,
+            "drop_location_id": "dark_forest",
+            "drop_message": "🧩 Сюжетна знахідка: Уламок королівської печатки"
+          },
+          "first_drop_text": "Серед уламків знайдено важкий металевий фрагмент. На поверхні збереглася частина корони, три зубці та тонке рунічне коло.",
+          "progress_text": "Пошук фрагмента символу: {progress}/1",
+          "item_reveal_policy": {
+            "pre_reveal_title": "Символ старих руїн",
+            "post_reveal_title": "Символ старих руїн",
+            "reveal_on_first_drop": true
+          },
+          "next_route": {
+            "npc_id": "rune_master",
+            "route_text": "🏙️ Місто → ⚒️ Ремісничий квартал → 💠 Рунний Майстер"
+          }
+        }
+      },
+      {
+        "quest_number": 95,
+        "array_index": 44,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_095_crown_and_three_prongs",
+          "number": 95,
+          "title": "Корона і три зубці",
+          "quest_type": "TURN_IN",
+          "location_id": "dark_forest",
+          "unlock_level": 10,
+          "previous_quest_id": "dark_forest_094_symbol_of_the_old_ruins",
+          "giver_npc_id": "rune_master",
+          "turn_in_npc_id": "rune_master",
+          "target_quantity": 1,
+          "description": "Передати Рунному Майстру уламок символу для перевірки рунічних ліній.",
+          "objective_text": "Передати Рунному Майстру уламок королівської печатки.",
+          "acceptance_text": "Поклади уламок у захисне коло. Рунічна лінія на поверхні ще зберігає слабкий заряд.\n\nКорона й три зубці утворюють єдиний знак. Він не позначає окремий маршрут або табір, як попередні жетони. Це символ влади над усіма гоблінськими загонами Темного Бору.\n\nРунічне коло навколо символу додали пізніше. Воно пов’язує печатку з обрядами та амулетами, але сама корона має гоблінське походження.\n\nОтже, служителі культу не замінили гоблінського правителя. Вони уклали з ним союз або підкорили його своїм впливом.",
+          "completion_text": "Рунний Майстер приймає уламок і підтверджує, що корона з трьома зубцями є символом верховної влади над гоблінськими загонами Темного Бору.",
+          "reward": {
+            "exp": 114,
+            "gold": 5.29,
+            "item_keys": []
+          },
+          "required_quest_items": [
+            {
+              "item_key": "dark_forest_royal_seal_fragment",
+              "quantity": 1,
+              "consume": true
+            }
+          ],
+          "next_route": {
+            "npc_id": "mercenary_head",
+            "route_text": "🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова Найманців"
+          }
+        }
+      },
+      {
+        "quest_number": 96,
+        "array_index": 45,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_096_one_whom_the_patrols_serve",
+          "number": 96,
+          "title": "Той, кому служать дозори",
+          "quest_type": "TALK",
+          "location_id": "dark_forest",
+          "unlock_level": 10,
+          "previous_quest_id": "dark_forest_095_crown_and_three_prongs",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Голова Найманців зіставив висновок Рунного Майстра зі свідченнями розвідників.",
+          "objective_text": "Отримати від Голови Найманців висновок про правителя гоблінських загонів.",
+          "acceptance_text": "Розвідники давно чули один і той самий титул, але не розуміли, кого саме мають на увазі гобліни.\n\nПід час зміни варти дозорні говорили про накази Короля. На ящиках, жетонах і сигнальних рогах використовували різні позначки, але всі маршрути зрештою ведуть до руїн із короною над брамою.\n\nТепер сумнівів немає. Гоблінськими загонами Темного Бору керує Король Гоблінів. Рунічний культ постачає його воїнам амулети й проводить обряди на підконтрольній території.\n\nНаскільки сильно корупція вплинула на самого Короля, поки невідомо.",
+          "completion_text": "Голова Найманців підтверджує, що старі руїни належать Королю Гоблінів, якому підпорядковуються дозори Темного Бору.",
+          "reward": {
+            "exp": 114,
+            "gold": 5.29,
+            "item_keys": []
+          }
+        }
+      },
+      {
+        "quest_number": 97,
+        "array_index": 46,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_097_outer_guard",
+          "number": 97,
+          "title": "Зовнішня охорона",
+          "quest_type": "KILL_REGION",
+          "location_id": "dark_forest",
+          "unlock_level": 10,
+          "previous_quest_id": "dark_forest_096_one_whom_the_patrols_serve",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 10,
+          "description": "Перед підготовкою загону потрібно послабити зовнішню охорону старих руїн.",
+          "objective_text": "Перемогти 10 будь-яких істот у локації Темний Бір.",
+          "acceptance_text": "Руїни захищають кілька ліній варти. Поки зовнішні загони залишаються на місці, наші люди не зможуть утримати шлях до центрального проходу.\n\nПослаб охорону навколо руїн. Не заходь усередину й не намагайся знайти Короля самостійно.\n\nПісля десяти перемог повернися до мене. Загін має знати, чи зможе втримати відкритий прохід.",
+          "completion_text": "Зовнішню охорону старих руїн послаблено. Шлях до центрального проходу більше не контролюють передові гоблінські загони.",
+          "reward": {
+            "exp": 114,
+            "gold": 5.29,
+            "item_keys": []
+          },
+          "progress_text": "Зачистка зовнішньої охорони: {progress}/10"
+        }
+      },
+      {
+        "quest_number": 98,
+        "array_index": 47,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_098_before_the_decisive_campaign",
+          "number": 98,
+          "title": "Перед вирішальним походом",
+          "quest_type": "TALK",
+          "location_id": "dark_forest",
+          "unlock_level": 10,
+          "previous_quest_id": "dark_forest_097_outer_guard",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Голова Найманців повідомляє про стан загону після послаблення зовнішньої охорони.",
+          "objective_text": "Отримати від Голови Найманців підсумок підготовки загону.",
+          "acceptance_text": "Зовнішній шлях утримується. Розвідники закріпилися біля кам’яного проходу, а гоблінські загони відійшли до внутрішньої частини руїн.\n\nКоваль завершив перевірку спорядження, Алхімік передав захисні суміші, а Рунний Майстер підготував засоби проти рунічного впливу.\n\nЗагін готовий рухатися до центральної брами. Після початку походу дороги назад не перекриють, але Король може використати всю силу руїн і своїх слуг.",
+          "completion_text": "Голова Найманців підтверджує, що спорядження, захисні засоби й шлях до центральної брами підготовлені.",
+          "reward": {
+            "exp": 114,
+            "gold": 5.29,
+            "item_keys": []
+          }
+        }
+      },
+      {
+        "quest_number": 99,
+        "array_index": 48,
+        "keys": [
+          "acceptance_text",
+          "boss_combat_reward_is_separate",
+          "boss_key",
+          "boss_story_policy",
+          "completion_text",
+          "description",
+          "encounter_paths",
+          "giver_npc_id",
+          "guaranteed_call_after_success",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "retry_after_defeat_or_escape",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_099_goblin_king",
+          "number": 99,
+          "title": "Король Гоблінів",
+          "quest_type": "BOSS",
+          "location_id": "dark_forest",
+          "unlock_level": 10,
+          "previous_quest_id": "dark_forest_098_before_the_decisive_campaign",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": "mercenary_head",
+          "target_quantity": 1,
+          "description": "Після довгої підготовки шлях до старих руїн відкрито. Настав час покласти край владі Короля Гоблінів над загонами Темного Бору.",
+          "objective_text": "Перемогти Короля Гоблінів і доповісти Голові Найманців.",
+          "acceptance_text": "Усе готово. Зовнішню охорону послаблено, шлях до центральної брами відкритий, а наш загін утримує підступи до руїн.\n\nКороль Гоблінів більше не зможе керувати дозорами з безпечного укриття. Якщо він хоче зберегти владу над Темним Бором, йому доведеться прийняти бій.\n\nНе недооцінюй його. Король пережив безліч сутичок, тримає біля себе найсильніших воїнів і користується підтримкою рунічного культу. Печатка з руїн доводить, що корупція могла торкнутися і його.\n\nВирушай у Темний Бір і натисни «👀 Роззирнутися». Там Короля Гоблінів можна викликати на бій. Також він може зустрітися випадково під час звичайного полювання. Якщо ще не готовий до бою, продовжуй підготовку та повернися до виклику пізніше.\n\nПереможи Короля Гоблінів. Після бою повернися до мене з доповіддю.",
+          "completion_text": "Голова Найманців приймає доповідь про перемогу над Королем Гоблінів.\n\nГоблінські загони втратили верховного правителя, а старі руїни більше не є центром їхнього командування. Підготовка загону дала змогу втримати підступи та не дозволила охороні втрутитися у вирішальний бій.",
+          "reward": {
+            "exp": 190,
+            "gold": 8.81,
+            "item_keys": []
+          },
+          "boss_key": "goblin_king",
+          "encounter_paths": [
+            "rng_hunt",
+            "guaranteed_story_call"
+          ],
+          "guaranteed_call_after_success": "blocked",
+          "retry_after_defeat_or_escape": "allowed",
+          "boss_combat_reward_is_separate": true,
+          "progress_text": "Перемогти Короля Гоблінів: {progress}/1. Після перемоги повернутися до Голови Найманців.",
+          "required_quest_items": [],
+          "boss_story_policy": {
+            "boss_key": "goblin_king",
+            "random_hunt_encounter_allowed": true,
+            "forced_invocation_allowed": true,
+            "forced_invocation_surface": "look_around_inline",
+            "boss_level_source": "current_player_level",
+            "victory_progress": "set 1/1 only for correct boss_key and dark_forest",
+            "completion_mode": "deferred_turn_in_to_mercenary_head",
+            "story_reward_owner": "quest_99_turn_in_completion",
+            "combat_reward_owner": "canonical_boss_victory",
+            "defeat_retry": true,
+            "manual_escape_retry": true,
+            "auto_escape_retry": true,
+            "forced_invocation_after_victory": false,
+            "stale_callback_after_victory": "reject_and_point_to_mercenary_head",
+            "double_callback_guard": "canonical_active_encounter_guard",
+            "anti_farm": "progress 1/1 immediately disables forced invocation before quest turn-in"
+          },
+          "next_route": {
+            "npc_id": "elder",
+            "route_text": "🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста"
+          }
+        }
+      },
+      {
+        "quest_number": 100,
+        "array_index": 49,
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "itemless_turn_in_policy",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "dark_forest_100_dark_forest_complete",
+          "number": 100,
+          "title": "Завершення Темного Бору",
+          "quest_type": "TURN_IN",
+          "location_id": "dark_forest",
+          "unlock_level": 10,
+          "previous_quest_id": "dark_forest_099_goblin_king",
+          "giver_npc_id": "elder",
+          "turn_in_npc_id": "elder",
+          "target_quantity": 1,
+          "description": "Доповісти Старості про перемогу над Королем Гоблінів і завершити історію Темного Бору.",
+          "objective_text": "Доповісти Старості про перемогу над Королем Гоблінів.",
+          "acceptance_text": "Староста чекає остаточної доповіді про старі руїни, Короля Гоблінів і наслідки вирішального бою.",
+          "completion_text": "Староста вислуховує доповідь про перемогу над Королем Гоблінів.\n\nБез верховного правителя гоблінські дозори втратили спільне командування. Частина загонів залишила старі руїни, а решта відступила в глибину лісу. Рунічний культ утратив основного союзника та укріплений центр у Темному Борі.\n\nМіські розвідники отримали можливість безпечніше пересуватися старими стежками, а заражені ділянки залишилися під наглядом Рунного Майстра й Алхіміка.\n\n✅ Розділ «Король Гоблінів» завершено.\n✅ Історію «Темний Бір» завершено.",
+          "reward": {
+            "exp": 114,
+            "gold": 5.29,
+            "item_keys": []
+          },
+          "required_quest_items": [],
+          "itemless_turn_in_policy": {
+            "enabled": true,
+            "purpose": "campaign_final_report",
+            "button_text": "🗣️ Доповісти Старості"
+          }
+        }
+      }
+    ],
+    "quest_51": {
+      "quest_id": "dark_forest_051_shadow_beyond_the_border",
+      "number": 51,
+      "title": "Тінь за межею",
+      "quest_type": "TALK",
+      "location_id": "dark_forest",
+      "unlock_level": 6,
+      "previous_quest_id": "start_path_050_road_ahead",
+      "giver_npc_id": "elder",
+      "turn_in_npc_id": "elder",
+      "target_quantity": 1,
+      "description": "Після перемоги над Ватажком Староста отримує тривожні повідомлення зі старого прикордонного шляху. Біля входу до Темного Бору з’явилися гоблінські дозори, а кілька мисливців не повернулися з лісу.",
+      "objective_text": "Поговорити зі Старостою про загрозу біля Темного Бору.",
+      "acceptance_text": "Перемога над Ватажком повернула спокій на дорогу через Початок Шляху, але ненадовго. Наші мисливці простежили рунічний слід до старого прикордонного шляху, що веде в Темний Бір.\n\nКілька тижнів тому там почали з’являтися гоблінські дозори. Спочатку вони ховалися серед дерев, але тепер перекривають стежки й не пропускають людей углиб лісу. Учора з розвідки не повернулися двоє мисливців.\n\nМіська варта не може вирушити туди без підготовки. Поки що ми знаємо лише те, що загроза з Початку Шляху не зникла, а простяглася до кордону Темного Бору.",
+      "completion_text": "Староста завершує доповідь про зниклих мисливців, гоблінські дозори та рунічний слід, що веде до Темного Бору.",
+      "reward": {
+        "exp": 66,
+        "gold": 1.84,
+        "item_keys": []
+      },
+      "next_route": {
+        "npc_id": "mercenary_head",
+        "route_text": "🏙️ Місто → 📜 Гільдія Найманців → ⚔️ Голова Найманців"
+      },
+      "location_access_policy": {
+        "story_hint_only": true,
+        "does_not_bypass_unlock": true,
+        "canonical_unlock_level": 6
+      }
+    },
+    "quest_99": {
+      "quest_id": "dark_forest_099_goblin_king",
+      "number": 99,
+      "title": "Король Гоблінів",
+      "quest_type": "BOSS",
+      "location_id": "dark_forest",
+      "unlock_level": 10,
+      "previous_quest_id": "dark_forest_098_before_the_decisive_campaign",
+      "giver_npc_id": "mercenary_head",
+      "turn_in_npc_id": "mercenary_head",
+      "target_quantity": 1,
+      "description": "Після довгої підготовки шлях до старих руїн відкрито. Настав час покласти край владі Короля Гоблінів над загонами Темного Бору.",
+      "objective_text": "Перемогти Короля Гоблінів і доповісти Голові Найманців.",
+      "acceptance_text": "Усе готово. Зовнішню охорону послаблено, шлях до центральної брами відкритий, а наш загін утримує підступи до руїн.\n\nКороль Гоблінів більше не зможе керувати дозорами з безпечного укриття. Якщо він хоче зберегти владу над Темним Бором, йому доведеться прийняти бій.\n\nНе недооцінюй його. Король пережив безліч сутичок, тримає біля себе найсильніших воїнів і користується підтримкою рунічного культу. Печатка з руїн доводить, що корупція могла торкнутися і його.\n\nВирушай у Темний Бір і натисни «👀 Роззирнутися». Там Короля Гоблінів можна викликати на бій. Також він може зустрітися випадково під час звичайного полювання. Якщо ще не готовий до бою, продовжуй підготовку та повернися до виклику пізніше.\n\nПереможи Короля Гоблінів. Після бою повернися до мене з доповіддю.",
+      "completion_text": "Голова Найманців приймає доповідь про перемогу над Королем Гоблінів.\n\nГоблінські загони втратили верховного правителя, а старі руїни більше не є центром їхнього командування. Підготовка загону дала змогу втримати підступи та не дозволила охороні втрутитися у вирішальний бій.",
+      "reward": {
+        "exp": 190,
+        "gold": 8.81,
+        "item_keys": []
+      },
+      "boss_key": "goblin_king",
+      "encounter_paths": [
+        "rng_hunt",
+        "guaranteed_story_call"
+      ],
+      "guaranteed_call_after_success": "blocked",
+      "retry_after_defeat_or_escape": "allowed",
+      "boss_combat_reward_is_separate": true,
+      "progress_text": "Перемогти Короля Гоблінів: {progress}/1. Після перемоги повернутися до Голови Найманців.",
+      "required_quest_items": [],
+      "boss_story_policy": {
+        "boss_key": "goblin_king",
+        "random_hunt_encounter_allowed": true,
+        "forced_invocation_allowed": true,
+        "forced_invocation_surface": "look_around_inline",
+        "boss_level_source": "current_player_level",
+        "victory_progress": "set 1/1 only for correct boss_key and dark_forest",
+        "completion_mode": "deferred_turn_in_to_mercenary_head",
+        "story_reward_owner": "quest_99_turn_in_completion",
+        "combat_reward_owner": "canonical_boss_victory",
+        "defeat_retry": true,
+        "manual_escape_retry": true,
+        "auto_escape_retry": true,
+        "forced_invocation_after_victory": false,
+        "stale_callback_after_victory": "reject_and_point_to_mercenary_head",
+        "double_callback_guard": "canonical_active_encounter_guard",
+        "anti_farm": "progress 1/1 immediately disables forced invocation before quest turn-in"
+      },
+      "next_route": {
+        "npc_id": "elder",
+        "route_text": "🏙️ Місто → 🏛️ Ратуша → 🗣️ Староста"
+      }
+    },
+    "quest_100": {
+      "quest_id": "dark_forest_100_dark_forest_complete",
+      "number": 100,
+      "title": "Завершення Темного Бору",
+      "quest_type": "TURN_IN",
+      "location_id": "dark_forest",
+      "unlock_level": 10,
+      "previous_quest_id": "dark_forest_099_goblin_king",
+      "giver_npc_id": "elder",
+      "turn_in_npc_id": "elder",
+      "target_quantity": 1,
+      "description": "Доповісти Старості про перемогу над Королем Гоблінів і завершити історію Темного Бору.",
+      "objective_text": "Доповісти Старості про перемогу над Королем Гоблінів.",
+      "acceptance_text": "Староста чекає остаточної доповіді про старі руїни, Короля Гоблінів і наслідки вирішального бою.",
+      "completion_text": "Староста вислуховує доповідь про перемогу над Королем Гоблінів.\n\nБез верховного правителя гоблінські дозори втратили спільне командування. Частина загонів залишила старі руїни, а решта відступила в глибину лісу. Рунічний культ утратив основного союзника та укріплений центр у Темному Борі.\n\nМіські розвідники отримали можливість безпечніше пересуватися старими стежками, а заражені ділянки залишилися під наглядом Рунного Майстра й Алхіміка.\n\n✅ Розділ «Король Гоблінів» завершено.\n✅ Історію «Темний Бір» завершено.",
+      "reward": {
+        "exp": 114,
+        "gold": 5.29,
+        "item_keys": []
+      },
+      "required_quest_items": [],
+      "itemless_turn_in_policy": {
+        "enabled": true,
+        "purpose": "campaign_final_report",
+        "button_text": "🗣️ Доповісти Старості"
+      }
+    },
+    "reference_hashes": {
+      "Квести/ROM_квести_Початок_Шляху_50.docx": "f22eac9bb0d9a055e843a53fcd807ddfaf94fc1187225d1e44e6f7d7421959be",
+      "Квести/ROM_квести_Початок_Шляху_candidate.json": "08b3322a79f288c3f74773e7ca604a087b36e3e776fa229d55fcf922ef81223a",
+      "Квести/ROM_квести_Темний_Бір_50.docx": "d050a39524772a145f2fb33a5850fa8b9cd417c36991c074fc0b0a2284e0bc7e",
+      "Квести/ROM_квести_Темний_Бір_candidate.json": "14a31852d13cbd42f303ff31e3f7e3da0bcf7afc0ed29f2745656f65ce656bbf"
+    }
+  },
+  "canonical_contracts": [
+    "CANONICAL_DARK_FOREST_REFERENCE_AND_SOURCE_INVENTORY",
+    "PRODUCTION_STORY_SCHEMA_OWNER",
+    "QUEST_CHAIN_BOUNDARY_51_TO_100",
+    "EXACT_QUEST_RECORDS_51_TO_100",
+    "LEVEL_GATES_AND_SEQUENTIAL_PREREQUISITES_51_TO_100",
+    "OBJECTIVES_TARGETS_AND_QUEST_ITEMS_51_TO_100",
+    "REWARD_PARITY_51_TO_100",
+    "NPC_LOCATION_AND_LOCALIZED_DARK_FOREST_REFERENCES",
+    "BOSS_99_AND_FORCED_ENCOUNTER_CONTRACT",
+    "PACKAGE_BY_TEN_AND_CONTENT_VALIDATION_51_TO_100",
+    "QUEST_100_FINAL_STORY_FLOW"
+  ],
+  "resolved_contract_matrix": [
+    {
+      "contract": "EXACT_QUEST_RECORDS_51_TO_100",
+      "classification": "V2_RESOLVED",
+      "decision": "The authoritative migration matrix is exactly the 50 ordered objects in $.quests of Квести/ROM_квести_Темний_Бір_candidate.json. Quest identity is the explicit number 51-100 plus the record stable quest_id. Nested policy objects remain references and cannot become additional quest records.",
+      "typed_reasons": [
+        "missing_quest_record",
+        "duplicate_quest_number",
+        "out_of_order_chain",
+        "invalid_stable_id"
+      ]
+    },
+    {
+      "contract": "LEVEL_GATES_AND_SEQUENTIAL_PREREQUISITES_51_TO_100",
+      "classification": "V2_RESOLVED",
+      "decision": "Quest 51 bridges from start_path_050_road_ahead and remains subject to the canonical Dark Forest location unlock and its declared level 6 gate. Every quest 52-100 requires the immediately preceding stable quest ID and its candidate-declared level. Existing overlevel/SKIP policy is preserved; no gate is inferred or relaxed.",
+      "typed_reasons": [
+        "level_too_low",
+        "location_locked",
+        "predecessor_not_satisfied",
+        "chain_gap"
+      ]
+    },
+    {
+      "contract": "OBJECTIVES_TARGETS_AND_QUEST_ITEMS_51_TO_100",
+      "classification": "V2_RESOLVED",
+      "decision": "Every quest uses only candidate-declared objective type, target, quantity, region/mob/NPC identity and quest-item metadata. Quest items stay isolated from regular inventory; drop chances, accumulation and consumption remain quest-specific; duplicate event identities cannot progress twice.",
+      "typed_reasons": [
+        "unsupported_objective",
+        "invalid_target",
+        "quest_item_mismatch",
+        "duplicate_event"
+      ]
+    },
+    {
+      "contract": "REWARD_PARITY_51_TO_100",
+      "classification": "V2_RESOLVED",
+      "decision": "The exact EXP and gold values stored in each canonical record are authoritative content inputs to the shared reward pipeline. No package formula, extrapolation or invented rounding is authorized. Quest 99 story reward is 190 EXP and 8.81 gold; quest 100 reward is 114 EXP and 5.29 gold. Boss combat reward remains separately owned.",
+      "typed_reasons": [
+        "reward_missing",
+        "reward_mismatch",
+        "reward_formula_in_content",
+        "combat_story_reward_collision"
+      ]
+    },
+    {
+      "contract": "NPC_LOCATION_AND_LOCALIZED_DARK_FOREST_REFERENCES",
+      "classification": "V2_RESOLVED",
+      "decision": "All records use stable NPC IDs and technical dark_forest only as identity. User-visible location text resolves to Темний Бір. NPC routes and giver/turn-in references must validate against canonical registries. Raw technical IDs, automatic title-casing and the term глава are forbidden in presentation.",
+      "typed_reasons": [
+        "unknown_npc_reference",
+        "unknown_location_reference",
+        "technical_id_disclosure",
+        "forbidden_term"
+      ]
+    },
+    {
+      "contract": "BOSS_99_AND_FORCED_ENCOUNTER_CONTRACT",
+      "classification": "V2_RESOLVED",
+      "decision": "Quest 99 targets goblin_king in dark_forest. Both ordinary Hunting encounter and guaranteed story call are valid; boss level equals current player level and shared boss formulas remain authoritative. Defeat or escape permits retry. Exact victory records progress 1/1 once, immediately blocks another forced call, rejects stale/double callbacks, preserves anti-farm protection and leaves completion pending for mercenary_head turn-in.",
+      "typed_reasons": [
+        "wrong_boss_key",
+        "wrong_location",
+        "forced_call_already_won",
+        "stale_boss_event",
+        "duplicate_boss_event"
+      ]
+    },
+    {
+      "contract": "PACKAGE_BY_TEN_AND_CONTENT_VALIDATION_51_TO_100",
+      "classification": "V2_RESOLVED",
+      "decision": "Implementation is split into packages 51-60, 61-70, 71-80, 81-90 and 91-100. Each package requires executable validation for count, ordered numbers, stable IDs, predecessor chain, levels, objectives, NPC/location references, quest items, exact rewards, localization and duplicates before the next package is authorized.",
+      "typed_reasons": [
+        "package_manifest_invalid",
+        "cross_package_gap",
+        "content_validation_failed"
+      ]
+    },
+    {
+      "contract": "QUEST_100_FINAL_STORY_FLOW",
+      "classification": "V2_RESOLVED",
+      "decision": "Quest 100 is an itemless TURN_IN following quest 99, given and completed through elder after quest 99 turn-in. Completion is idempotent and persistently marks the Король Гоблінів section and Темний Бір story complete. No next-location unlock, extra reward or new story content is added.",
+      "typed_reasons": [
+        "predecessor_not_completed",
+        "turn_in_npc_mismatch",
+        "terminal_state_invalid",
+        "duplicate_completion"
+      ]
+    }
+  ],
+  "implementation_plan": {
+    "package_order": [
+      "51-60",
+      "61-70",
+      "71-80",
+      "81-90",
+      "91-100"
+    ],
+    "first_authorized_package": "51-60",
+    "manual_game_check_after_each_runtime_connected_package": true,
+    "full_chain_manual_acceptance_after_91_100": true
+  },
+  "implementation_boundary": {
+    "authorized": [
+      "typed immutable Story content records 51-60",
+      "package 51-60 manifest and validators",
+      "candidate-to-V2 mapping without content invention",
+      "Quest Engine and NPC/location references",
+      "focused tests, smoke and content gates"
+    ],
+    "forbidden": [
+      "packages 61-100 before prior package acceptance",
+      "new quests, NPCs, objectives, rewards or formulas",
+      "production SQLite adapter or migration",
+      "Telegram/runtime wiring",
+      "editing canonical Квести references",
+      "inventing next-location unlock after quest 100"
+    ]
+  },
+  "implementation_authorized": true,
+  "authorized_package": "51-60",
+  "packages_61_100_authorized": false,
+  "runtime_integration_authorized": false,
+  "production_persistence_authorized": false,
+  "canonical_v2_ci": {
+    "status": "PASS",
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "",
+        "removed_bytecode_after_compile": [
+          "rom_v2/__pycache__/bootstrap.cpython-314.pyc",
+          "rom_v2/__pycache__/config.cpython-314.pyc",
+          "rom_v2/__pycache__/container.cpython-314.pyc",
+          "rom_v2/__pycache__/lifecycle.cpython-314.pyc",
+          "rom_v2/__pycache__/main.cpython-314.pyc",
+          "rom_v2/__pycache__/runtime_paths.cpython-314.pyc",
+          "rom_v2/__pycache__/settings.cpython-314.pyc",
+          "rom_v2/__pycache__/structured_logging.cpython-314.pyc",
+          "rom_v2/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/presentation/__pycache__/item_dto.cpython-314.pyc",
+          "rom_v2/infrastructure/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/adapter.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/callback_codec.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/callback_registry.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/account_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/account_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/character_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/character_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/connection_factory.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/equipment_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/equipment_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/inventory_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/inventory_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/migrator.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/primary_stat_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/primary_stat_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/provisional_contracts.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/repository_base.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/resource_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/resource_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/schema_contract.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v001_v2_baseline.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v002_primary_stats_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v003_item_identity_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v004_equipment_slots_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/account.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/auction.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/battle.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/battle_persistence.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/central_loot.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/character.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/class_catalog.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/combat_resources.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/damage_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/derived_stats.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/direct_trade.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/durability.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/effect_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/enhancement.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/equipment.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/equipment_generation.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/full_stat_snapshot.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_application.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_contract_history.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_core.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/item.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/level_up_gold.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/mana_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/npc_dialogue_model.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/player_progression.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/premium_combat.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/primary_stats.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/pvp.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/quest_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/quest_item_store.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/resource_lifecycle.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/runes.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/skill_execution.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/story_content.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/terminal_paths.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/travel_aggregate.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/content/__pycache__/location_catalog.cpython-314.pyc",
+          "rom_v2/content/__pycache__/story_start_path_1_10.cpython-314.pyc",
+          "rom_v2/content/__pycache__/world_graph.cpython-314.pyc",
+          "rom_v2/content/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/application/__pycache__/account_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/account_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/admin_crystals.cpython-314.pyc",
+          "rom_v2/application/__pycache__/auction_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/bag_expansion.cpython-314.pyc",
+          "rom_v2/application/__pycache__/base_equipment_shop.cpython-314.pyc",
+          "rom_v2/application/__pycache__/character_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/character_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/crystal_wallet_ledger.cpython-314.pyc",
+          "rom_v2/application/__pycache__/daily_reward.cpython-314.pyc",
+          "rom_v2/application/__pycache__/direct_trade_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/durability_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/enhancement_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_generation_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_generation_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/full_stat_snapshot_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/gold_wallet.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_contract_history_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_core_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_management_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/integration_evidence.cpython-314.pyc",
+          "rom_v2/application/__pycache__/inventory_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/inventory_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/map_presentation.cpython-314.pyc",
+          "rom_v2/application/__pycache__/npc_dialogue_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/post_combat_hooks.cpython-314.pyc",
+          "rom_v2/application/__pycache__/potion_trading.cpython-314.pyc",
+          "rom_v2/application/__pycache__/premium_shop.cpython-314.pyc",
+          "rom_v2/application/__pycache__/primary_stat_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/primary_stat_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/pvp_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/quest_engine_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/quest_item_store_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/resource_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/resource_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/reward_settlement.cpython-314.pyc",
+          "rom_v2/application/__pycache__/travel_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/application/services/__pycache__/rune_lifecycle.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/clock.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/random_source.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/repositories.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/unit_of_work.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/app/__pycache__/__init__.cpython-314.pyc"
+        ]
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "",
+        "stderr": ".....................................................................................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 325 tests in 15.145s\n\nOK\n"
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "V2 architecture enforcement: PASS\nPhysical files: 127\nImport edges: 442\nViolations: 0\n",
+        "stderr": ""
+      }
+    ]
+  },
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_13_5c_implement_story_content_51_60.py",
+  "backup_path": "backup/stage_21_13_5b_20261025T213253Z"
+}
