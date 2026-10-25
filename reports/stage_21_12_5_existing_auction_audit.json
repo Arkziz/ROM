@@ -1,0 +1,209 @@
+{
+  "schema_version": 1,
+  "stage": "21.12.5",
+  "status": "PASS",
+  "conclusion": "GO_TO_SEMANTIC_REFINEMENT",
+  "generated_at_utc": "2026-10-25T18:59:59.126319+00:00",
+  "roadmap_scope": {
+    "title": "Auction",
+    "behavior": "Listing, reservation, buy, cancel, expiry, identity, atomic transfer",
+    "acceptance": "No double registration/settlement"
+  },
+  "source_prerequisite": "reports/stage_21_12_4c_direct_trade_implementation.json",
+  "summary": {
+    "contract_count": 11,
+    "v1_confirmed_contracts": 3,
+    "review_required_contracts": 8,
+    "unresolved_contracts": [
+      "PRICE_CATEGORY_AND_LIMIT_POLICY",
+      "LISTING_RESERVATION_AND_REMOVAL_ATOMICITY",
+      "PUBLIC_BROWSE_AND_SELF_PURCHASE_POLICY",
+      "BUYER_GOLD_BAG_AND_ITEM_TRANSFER",
+      "SELLER_PROCEEDS_AND_UNCLAIMED_ASSETS",
+      "CANCEL_EXPIRY_AND_CLAIM_POLICY",
+      "HISTORY_IDEMPOTENCY_AND_RESTART_RECOVERY",
+      "PRESENTATION_AND_HANDLER_BOUNDARY"
+    ],
+    "database_opened": false,
+    "production_code_changed": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "canonical_v1_evidence": {
+    "authoritative_owner": "systems/auction_house_system.py",
+    "handler_consumer": "handlers/auction_house.py",
+    "compatibility_facade": "db_modules/systems_wrappers.py",
+    "owner_symbols": [
+      "buy_auction_lot",
+      "cancel_active_auction_lot",
+      "create_auction_lot_record",
+      "create_equipment_auction_lot",
+      "create_stack_auction_lot",
+      "get_auction_lot_by_id",
+      "get_auction_lots",
+      "get_public_auction_lots_for_buyer",
+      "init_auction_house",
+      "update_expired_auction_lots"
+    ],
+    "listing": {
+      "equipment": true,
+      "stack": true,
+      "snapshot": true
+    },
+    "purchase": {
+      "begin_immediate": true,
+      "guarded_active_status": true,
+      "buyer_gold": true,
+      "bag_capacity": true
+    },
+    "terminal": {
+      "cancel": true,
+      "expiry": true,
+      "sold_unclaimed": true,
+      "expired_unclaimed": true
+    },
+    "history": {
+      "append_only_events": true
+    },
+    "source_hashes": {
+      "systems/auction_house_system.py": "664cfe8a60f7728e7364f542c936d52328bc5ba89a022b686a6c3be1f3b1ab59",
+      "handlers/auction_house.py": "9cd9b0ccccae8ea2f0bfb24abdc6428ae5691ba78a33a60d9b3fed84c4215f7a",
+      "db_modules/systems_wrappers.py": "2100be668336ab18f896ba1082cf136fd9a943a3def60402e07228b842e5eda7"
+    }
+  },
+  "contract_matrix": [
+    {
+      "contract": "LOT_IDENTITY_AND_STATUS_LIFECYCLE",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Exact V1 evidence confirmed."
+    },
+    {
+      "contract": "PRICE_CATEGORY_AND_LIMIT_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 behavior discovered; exact price, listing, purchase, proceeds, claim, recovery or handler contract requires refinement."
+    },
+    {
+      "contract": "SELLABLE_ITEM_AND_SNAPSHOT_POLICY",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Exact V1 evidence confirmed."
+    },
+    {
+      "contract": "LISTING_RESERVATION_AND_REMOVAL_ATOMICITY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 behavior discovered; exact price, listing, purchase, proceeds, claim, recovery or handler contract requires refinement."
+    },
+    {
+      "contract": "PUBLIC_BROWSE_AND_SELF_PURCHASE_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 behavior discovered; exact price, listing, purchase, proceeds, claim, recovery or handler contract requires refinement."
+    },
+    {
+      "contract": "BUYER_GOLD_BAG_AND_ITEM_TRANSFER",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 behavior discovered; exact price, listing, purchase, proceeds, claim, recovery or handler contract requires refinement."
+    },
+    {
+      "contract": "ATOMIC_PURCHASE_AND_DOUBLE_SETTLEMENT_GUARD",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Exact V1 evidence confirmed."
+    },
+    {
+      "contract": "SELLER_PROCEEDS_AND_UNCLAIMED_ASSETS",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 behavior discovered; exact price, listing, purchase, proceeds, claim, recovery or handler contract requires refinement."
+    },
+    {
+      "contract": "CANCEL_EXPIRY_AND_CLAIM_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 behavior discovered; exact price, listing, purchase, proceeds, claim, recovery or handler contract requires refinement."
+    },
+    {
+      "contract": "HISTORY_IDEMPOTENCY_AND_RESTART_RECOVERY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 behavior discovered; exact price, listing, purchase, proceeds, claim, recovery or handler contract requires refinement."
+    },
+    {
+      "contract": "PRESENTATION_AND_HANDLER_BOUNDARY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 behavior discovered; exact price, listing, purchase, proceeds, claim, recovery or handler contract requires refinement."
+    }
+  ],
+  "implementation_authorized": false,
+  "canonical_v2_ci": {
+    "schema_version": 1,
+    "status": "PASS",
+    "failed_checks": [],
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "file_count": 168,
+        "failures": []
+      },
+      {
+        "name": "imports",
+        "status": "PASS",
+        "module_count": 115,
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-c",
+            "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.admin_crystals', 'rom_v2.application.bag_expansion', 'rom_v2.application.base_equipment_shop', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.daily_reward', 'rom_v2.application.direct_trade_service', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.guild_contract_history_service', 'rom_v2.application.guild_core_service', 'rom_v2.application.guild_management_service', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.map_presentation', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.potion_trading', 'rom_v2.application.premium_shop', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.application.travel_service', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.content.location_catalog', 'rom_v2.content.world_graph', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.direct_trade', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.guild_application', 'rom_v2.domain.guild_contract_history', 'rom_v2.domain.guild_core', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.domain.travel_aggregate', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests_v2",
+            "-p",
+            "test_*.py"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "..................................................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 290 tests in 13.235s\n\nOK"
+        }
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "tools/verify_v2_architecture.py",
+            "--project-root",
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+          ],
+          "returncode": 0,
+          "stdout": "V2 architecture enforcement: PASS\nPhysical files: 115\nImport edges: 411\nViolations: 0",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "duplicate_scan",
+        "status": "PASS",
+        "symbol_count": 472,
+        "duplicates": {}
+      },
+      {
+        "name": "content_validation",
+        "status": "PASS",
+        "file_count": 2,
+        "failures": []
+      }
+    ]
+  },
+  "removed_bytecode_before_ci": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_12_5a_refine_auction_contract.py",
+  "backup_path": "backup/stage_21_12_5_20261025T185939Z"
+}
