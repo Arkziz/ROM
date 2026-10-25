@@ -1,0 +1,830 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.7a",
+  "status": "PASS",
+  "conclusion": "GO_TO_PARITY_RESOLUTION",
+  "parent": "fa51987ba82010889b15bcf0da4b808ae7bc189c",
+  "policy_anchor": "Stage 19.18 SKIP policy",
+  "authoritative_owners": {
+    "orchestration": {
+      "role": "orchestration",
+      "path": "systems/story_quest_overlevel_system.py",
+      "sha256": "3718edb73bf6c5530366a4fd36e4abefbd612fc4f71b9755aee0db9568f1863d",
+      "symbols": [
+        {
+          "name": "build_story_location_max_levels",
+          "kind": "FunctionDef",
+          "line": 11
+        },
+        {
+          "name": "build_overlevel_story_skip_message",
+          "kind": "FunctionDef",
+          "line": 20
+        },
+        {
+          "name": "process_overlevel_story_quest_skip",
+          "kind": "FunctionDef",
+          "line": 38
+        }
+      ]
+    },
+    "lifecycle": {
+      "role": "lifecycle",
+      "path": "systems/story_quest_system.py",
+      "sha256": "56fcc92d3af25177cd8838e4ba5899be20a2c388a7878e0e383d856089e80fcb",
+      "symbols": [
+        {
+          "name": "StoryQuestLifecycleError",
+          "kind": "ClassDef",
+          "line": 35
+        },
+        {
+          "name": "StoryQuestUnavailableError",
+          "kind": "ClassDef",
+          "line": 39
+        },
+        {
+          "name": "StoryQuestObjectiveError",
+          "kind": "ClassDef",
+          "line": 43
+        },
+        {
+          "name": "immediate_transaction",
+          "kind": "FunctionDef",
+          "line": 48
+        },
+        {
+          "name": "build_story_quest_registry",
+          "kind": "FunctionDef",
+          "line": 65
+        },
+        {
+          "name": "_definition",
+          "kind": "FunctionDef",
+          "line": 106
+        },
+        {
+          "name": "get_story_quest_status",
+          "kind": "FunctionDef",
+          "line": 113
+        },
+        {
+          "name": "get_story_quest_view",
+          "kind": "FunctionDef",
+          "line": 141
+        },
+        {
+          "name": "accept_story_quest",
+          "kind": "FunctionDef",
+          "line": 175
+        },
+        {
+          "name": "advance_region_kill_progress",
+          "kind": "FunctionDef",
+          "line": 211
+        },
+        {
+          "name": "collect_active_quest_item",
+          "kind": "FunctionDef",
+          "line": 253
+        },
+        {
+          "name": "reconcile_overlevel_story_locations",
+          "kind": "FunctionDef",
+          "line": 290
+        },
+        {
+          "name": "skip_overlevel_active_quest",
+          "kind": "FunctionDef",
+          "line": 322
+        },
+        {
+          "name": "get_materialized_story_journal",
+          "kind": "FunctionDef",
+          "line": 355
+        }
+      ]
+    },
+    "persistence": {
+      "role": "persistence",
+      "path": "db_modules/story_quests.py",
+      "sha256": "cedc91f344f44dafc6daf35c6ba93d54e280f0f17b00709b32142abe503a4975",
+      "symbols": [
+        {
+          "name": "StoryQuestPersistenceError",
+          "kind": "ClassDef",
+          "line": 15
+        },
+        {
+          "name": "StoryQuestConflictError",
+          "kind": "ClassDef",
+          "line": 19
+        },
+        {
+          "name": "utc_now_iso",
+          "kind": "FunctionDef",
+          "line": 23
+        },
+        {
+          "name": "_row_dict",
+          "kind": "FunctionDef",
+          "line": 28
+        },
+        {
+          "name": "_require_positive",
+          "kind": "FunctionDef",
+          "line": 37
+        },
+        {
+          "name": "get_story_quest",
+          "kind": "FunctionDef",
+          "line": 44
+        },
+        {
+          "name": "get_active_story_quest",
+          "kind": "FunctionDef",
+          "line": 53
+        },
+        {
+          "name": "list_story_quest_journal",
+          "kind": "FunctionDef",
+          "line": 62
+        },
+        {
+          "name": "activate_story_quest",
+          "kind": "FunctionDef",
+          "line": 72
+        },
+        {
+          "name": "set_story_quest_progress",
+          "kind": "FunctionDef",
+          "line": 115
+        },
+        {
+          "name": "get_story_quest_item_quantity",
+          "kind": "FunctionDef",
+          "line": 139
+        },
+        {
+          "name": "get_total_story_quest_item_quantity",
+          "kind": "FunctionDef",
+          "line": 151
+        },
+        {
+          "name": "consume_story_quest_item_quantity",
+          "kind": "FunctionDef",
+          "line": 161
+        },
+        {
+          "name": "add_story_quest_item",
+          "kind": "FunctionDef",
+          "line": 207
+        },
+        {
+          "name": "reconcile_story_location_as_skipped",
+          "kind": "FunctionDef",
+          "line": 247
+        },
+        {
+          "name": "skip_active_story_quest",
+          "kind": "FunctionDef",
+          "line": 305
+        }
+      ]
+    },
+    "hook": {
+      "role": "hook",
+      "path": "handlers/combat.py",
+      "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+      "symbols": [
+        {
+          "name": "_calculate_enemy_turn_15_5_0",
+          "kind": "FunctionDef",
+          "line": 34
+        },
+        {
+          "name": "_finalize_enemy_turn_15_5_0",
+          "kind": "FunctionDef",
+          "line": 65
+        },
+        {
+          "name": "_apply_boss_dot_at_player_turn_15_5_0",
+          "kind": "FunctionDef",
+          "line": 76
+        },
+        {
+          "name": "_combat_extract_retry_after_11_3_1",
+          "kind": "FunctionDef",
+          "line": 99
+        },
+        {
+          "name": "_install_combat_safe_send_11_3_1",
+          "kind": "FunctionDef",
+          "line": 110
+        },
+        {
+          "name": "_combat_callback_allowed_11_3_1",
+          "kind": "FunctionDef",
+          "line": 141
+        },
+        {
+          "name": "_combat_message_allowed_11_3_1",
+          "kind": "FunctionDef",
+          "line": 185
+        },
+        {
+          "name": "init_class_combat_resource",
+          "kind": "FunctionDef",
+          "line": 251
+        },
+        {
+          "name": "get_class_resource_line",
+          "kind": "FunctionDef",
+          "line": 279
+        },
+        {
+          "name": "regenerate_class_resource_at_player_turn",
+          "kind": "FunctionDef",
+          "line": 314
+        },
+        {
+          "name": "add_rage_for_player_attack",
+          "kind": "FunctionDef",
+          "line": 334
+        },
+        {
+          "name": "add_rage_for_damage_taken",
+          "kind": "FunctionDef",
+          "line": 350
+        },
+        {
+          "name": "add_rogue_combo_point",
+          "kind": "FunctionDef",
+          "line": 373
+        },
+        {
+          "name": "consume_rogue_combo_points",
+          "kind": "FunctionDef",
+          "line": 389
+        },
+        {
+          "name": "init_combat_effects",
+          "kind": "FunctionDef",
+          "line": 403
+        },
+        {
+          "name": "add_enemy_effect",
+          "kind": "FunctionDef",
+          "line": 411
+        },
+        {
+          "name": "add_player_effect",
+          "kind": "FunctionDef",
+          "line": 457
+        },
+        {
+          "name": "remove_enemy_effect",
+          "kind": "FunctionDef",
+          "line": 464
+        },
+        {
+          "name": "remove_player_effect",
+          "kind": "FunctionDef",
+          "line": 471
+        },
+        {
+          "name": "get_enemy_effects_text",
+          "kind": "FunctionDef",
+          "line": 478
+        },
+        {
+          "name": "get_player_effects_text",
+          "kind": "FunctionDef",
+          "line": 495
+        },
+        {
+          "name": "get_effective_mob_def",
+          "kind": "FunctionDef",
+          "line": 516
+        },
+        {
+          "name": "get_effective_player_defenses",
+          "kind": "FunctionDef",
+          "line": 550
+        },
+        {
+          "name": "process_player_turn_start_effects",
+          "kind": "FunctionDef",
+          "line": 580
+        },
+        {
+          "name": "process_enemy_turn_start_effects",
+          "kind": "FunctionDef",
+          "line": 644
+        },
+        {
+          "name": "apply_player_shield_absorb",
+          "kind": "FunctionDef",
+          "line": 683
+        },
+        {
+          "name": "init_skill_cooldowns",
+          "kind": "FunctionDef",
+          "line": 725
+        },
+        {
+          "name": "get_skill_cooldown",
+          "kind": "FunctionDef",
+          "line": 730
+        },
+        {
+          "name": "set_skill_cooldown",
+          "kind": "FunctionDef",
+          "line": 736
+        },
+        {
+          "name": "tick_skill_cooldowns_at_player_turn",
+          "kind": "FunctionDef",
+          "line": 750
+        },
+        {
+          "name": "validate_skill_cooldown",
+          "kind": "FunctionDef",
+          "line": 776
+        },
+        {
+          "name": "get_player_class_skills",
+          "kind": "FunctionDef",
+          "line": 1082
+        },
+        {
+          "name": "get_player_class_skill",
+          "kind": "FunctionDef",
+          "line": 1091
+        },
+        {
+          "name": "get_player_skill_by_key",
+          "kind": "FunctionDef",
+          "line": 1100
+        },
+        {
+          "name": "build_skill_menu_text",
+          "kind": "FunctionDef",
+          "line": 1110
+        },
+        {
+          "name": "validate_and_pay_skill_cost",
+          "kind": "FunctionDef",
+          "line": 1140
+        },
+        {
+          "name": "apply_extra_rage_from_skill",
+          "kind": "FunctionDef",
+          "line": 1282
+        },
+        {
+          "name": "roll_skill_stun",
+          "kind": "FunctionDef",
+          "line": 1303
+        },
+        {
+          "name": "apply_skill_special_effect",
+          "kind": "FunctionDef",
+          "line": 1320
+        },
+        {
+          "name": "append_mp_restore_text",
+          "kind": "FunctionDef",
+          "line": 1528
+        },
+        {
+          "name": "append_effects_to_combat_text",
+          "kind": "FunctionDef",
+          "line": 1538
+        },
+        {
+          "name": "format_combat_turns_uk",
+          "kind": "FunctionDef",
+          "line": 1554
+        },
+        {
+          "name": "get_potion_cooldown_turns_by_inventory_id",
+          "kind": "FunctionDef",
+          "line": 1573
+        },
+        {
+          "name": "build_combat_potion_kb",
+          "kind": "FunctionDef",
+          "line": 1611
+        },
+        {
+          "name": "build_death_text",
+          "kind": "FunctionDef",
+          "line": 1685
+        },
+        {
+          "name": "build_lethal_combat_log",
+          "kind": "FunctionDef",
+          "line": 1703
+        },
+        {
+          "name": "_event_drop_victory_messages",
+          "kind": "FunctionDef",
+          "line": 1772
+        },
+        {
+          "name": "build_victory_text",
+          "kind": "FunctionDef",
+          "line": 1791
+        },
+        {
+          "name": "rollback_turn_start_hot_heal_on_victory",
+          "kind": "FunctionDef",
+          "line": 1895
+        },
+        {
+          "name": "finalize_combat_state_before_victory",
+          "kind": "FunctionDef",
+          "line": 1926
+        },
+        {
+          "name": "process_victory",
+          "kind": "FunctionDef",
+          "line": 1964
+        },
+        {
+          "name": "register_combat_handlers",
+          "kind": "FunctionDef",
+          "line": 2125
+        },
+        {
+          "name": "patch_combat_bot_rate_limit_safe_send",
+          "kind": "FunctionDef",
+          "line": 3849
+        },
+        {
+          "name": "safe_send_message",
+          "kind": "FunctionDef",
+          "line": 117
+        },
+        {
+          "name": "call_active_story_boss",
+          "kind": "FunctionDef",
+          "line": 2128
+        },
+        {
+          "name": "hunt",
+          "kind": "FunctionDef",
+          "line": 2177
+        },
+        {
+          "name": "combat_placeholder",
+          "kind": "FunctionDef",
+          "line": 2358
+        },
+        {
+          "name": "attack",
+          "kind": "FunctionDef",
+          "line": 2376
+        },
+        {
+          "name": "show_skills",
+          "kind": "FunctionDef",
+          "line": 2648
+        },
+        {
+          "name": "use_skill_text_button",
+          "kind": "FunctionDef",
+          "line": 2685
+        },
+        {
+          "name": "skill_locked",
+          "kind": "FunctionDef",
+          "line": 3067
+        },
+        {
+          "name": "combat_attack_callback",
+          "kind": "FunctionDef",
+          "line": 3099
+        },
+        {
+          "name": "combat_potion_callback",
+          "kind": "FunctionDef",
+          "line": 3123
+        },
+        {
+          "name": "combat_flee_callback",
+          "kind": "FunctionDef",
+          "line": 3146
+        },
+        {
+          "name": "combat_skill_locked_callback",
+          "kind": "FunctionDef",
+          "line": 3169
+        },
+        {
+          "name": "combat_use_skill_callback",
+          "kind": "FunctionDef",
+          "line": 3184
+        },
+        {
+          "name": "choose_potion_in_combat",
+          "kind": "FunctionDef",
+          "line": 3607
+        },
+        {
+          "name": "combat_back",
+          "kind": "FunctionDef",
+          "line": 3639
+        },
+        {
+          "name": "use_selected_potion_in_combat",
+          "kind": "FunctionDef",
+          "line": 3663
+        },
+        {
+          "name": "escape",
+          "kind": "FunctionDef",
+          "line": 3752
+        },
+        {
+          "name": "escape_yes",
+          "kind": "FunctionDef",
+          "line": 3782
+        },
+        {
+          "name": "escape_no",
+          "kind": "FunctionDef",
+          "line": 3816
+        },
+        {
+          "name": "safe_send_message",
+          "kind": "FunctionDef",
+          "line": 3856
+        },
+        {
+          "name": "FakeMessage",
+          "kind": "ClassDef",
+          "line": 3114
+        },
+        {
+          "name": "FakeMessage",
+          "kind": "ClassDef",
+          "line": 3137
+        },
+        {
+          "name": "FakeMessage",
+          "kind": "ClassDef",
+          "line": 3160
+        },
+        {
+          "name": "__init__",
+          "kind": "FunctionDef",
+          "line": 3115
+        },
+        {
+          "name": "__init__",
+          "kind": "FunctionDef",
+          "line": 3138
+        },
+        {
+          "name": "__init__",
+          "kind": "FunctionDef",
+          "line": 3161
+        }
+      ]
+    },
+    "presentation": {
+      "role": "presentation",
+      "path": "handlers/story_quest_hierarchy_ui.py",
+      "sha256": "71b57d0330255bfa09aceb295cb316e1dd5c66bf9b15221847877ec524aecb59",
+      "symbols": [
+        {
+          "name": "HierarchyAction",
+          "kind": "ClassDef",
+          "line": 31
+        },
+        {
+          "name": "_callback",
+          "kind": "FunctionDef",
+          "line": 36
+        },
+        {
+          "name": "parse_hierarchy_callback",
+          "kind": "FunctionDef",
+          "line": 43
+        },
+        {
+          "name": "_registry_by_number",
+          "kind": "FunctionDef",
+          "line": 62
+        },
+        {
+          "name": "_completed_numbers",
+          "kind": "FunctionDef",
+          "line": 66
+        },
+        {
+          "name": "_status_icon",
+          "kind": "FunctionDef",
+          "line": 74
+        },
+        {
+          "name": "build_story_index",
+          "kind": "FunctionDef",
+          "line": 84
+        },
+        {
+          "name": "_section_status",
+          "kind": "FunctionDef",
+          "line": 99
+        },
+        {
+          "name": "build_section_index",
+          "kind": "FunctionDef",
+          "line": 115
+        },
+        {
+          "name": "build_section_quests",
+          "kind": "FunctionDef",
+          "line": 138
+        },
+        {
+          "name": "section_callback_for_quest",
+          "kind": "FunctionDef",
+          "line": 164
+        },
+        {
+          "name": "quest_callback",
+          "kind": "FunctionDef",
+          "line": 168
+        }
+      ]
+    },
+    "hook_fixture": {
+      "role": "hook_fixture",
+      "path": "tools/check_story_quest_overlevel_skip_hook.py",
+      "sha256": "0477bfd8b94b5860770ee49785eccd60e8b5f17254c20a2ac92811c07b215aff",
+      "symbols": [
+        {
+          "name": "function",
+          "kind": "FunctionDef",
+          "line": 13
+        },
+        {
+          "name": "schema",
+          "kind": "FunctionDef",
+          "line": 20
+        },
+        {
+          "name": "fixture_registry",
+          "kind": "FunctionDef",
+          "line": 26
+        },
+        {
+          "name": "new_db",
+          "kind": "FunctionDef",
+          "line": 37
+        },
+        {
+          "name": "main",
+          "kind": "FunctionDef",
+          "line": 45
+        }
+      ]
+    },
+    "atomic_fixture": {
+      "role": "atomic_fixture",
+      "path": "tools/verify_stage_19_34_2_atomic_location_story_skip.py",
+      "sha256": "6911f85bb3546adaa7697612742d018597f9098d660af22a354b528be8a69dc6",
+      "symbols": []
+    }
+  },
+  "contract_matrix": [
+    {
+      "contract": "OVERLEVEL_TRIGGER_AND_THRESHOLD",
+      "status": "REFINED",
+      "rule": "A location is exceeded only when current_level is strictly greater than its configured maximum; equality does not trigger reconciliation.",
+      "owners": [
+        "systems/story_quest_system.py",
+        "tools/check_story_quest_overlevel_skip_hook.py"
+      ]
+    },
+    {
+      "contract": "AFFECTED_QUEST_RANGE_AND_SECTION_BOUNDARY",
+      "status": "REFINED",
+      "rule": "Reconciliation is location-wide: every canonical quest of each exceeded story location is materialized; section boundaries do not limit the mutation.",
+      "owners": [
+        "systems/story_quest_system.py",
+        "db_modules/story_quests.py",
+        "tools/verify_stage_19_34_2_atomic_location_story_skip.py"
+      ]
+    },
+    {
+      "contract": "ACTIVE_QUEST_AND_CURRENT_PROGRESS_HANDLING",
+      "status": "REFINED",
+      "rule": "An unfinished ACTIVE row in an exceeded location becomes SKIPPED with no completion conversion; its location quest-item rows are removed. Already finalized rows remain authoritative.",
+      "owners": [
+        "db_modules/story_quests.py",
+        "tools/verify_stage_19_34_2_atomic_location_story_skip.py"
+      ]
+    },
+    {
+      "contract": "SKIPPED_STATE_PERSISTENCE_AND_IDEMPOTENCY",
+      "status": "REFINED",
+      "rule": "SKIPPED is persistent and finalized. Re-running reconciliation after the same state produces changed=0 and must not rewrite COMPLETED or already SKIPPED rows.",
+      "owners": [
+        "db_modules/story_quests.py",
+        "tools/verify_stage_19_34_2_atomic_location_story_skip.py"
+      ]
+    },
+    {
+      "contract": "NEXT_QUEST_AVAILABILITY_AND_CHAIN_CONTINUITY",
+      "status": "REFINED",
+      "rule": "A predecessor in COMPLETED or SKIPPED satisfies the sequential chain predicate; overlevel reconciliation may finalize a location without leaving a false locked chain.",
+      "owners": [
+        "systems/story_quest_system.py",
+        "handlers/story_quest_hierarchy_ui.py"
+      ]
+    },
+    {
+      "contract": "NO_REWARD_AND_NO_QUEST_ITEM_CONSUMPTION",
+      "status": "REFINED",
+      "rule": "Newly skipped quests retain reward_claimed=0, grant no EXP/gold/items, and delete story quest-item rows for the exceeded location rather than consuming them as a turn-in.",
+      "owners": [
+        "db_modules/story_quests.py",
+        "systems/story_quest_overlevel_system.py",
+        "tools/verify_stage_19_34_2_atomic_location_story_skip.py"
+      ]
+    },
+    {
+      "contract": "EXPLICIT_SKIP_VS_AUTOMATIC_RECONCILIATION",
+      "status": "REFINED",
+      "rule": "The canonical Stage 19.18 path is automatic location reconciliation after a qualifying level result. The narrower active-quest skip primitive is not a substitute for location-wide reconciliation.",
+      "owners": [
+        "systems/story_quest_overlevel_system.py",
+        "systems/story_quest_system.py",
+        "db_modules/story_quests.py"
+      ]
+    },
+    {
+      "contract": "RESTART_RECOVERY_AND_TRANSACTION_BOUNDARY",
+      "status": "REFINED",
+      "rule": "The database reconciliation owner performs the location-wide write atomically on the supplied connection. Persisted SKIPPED rows and removal of location quest items survive restart; orchestration must not add a hidden commit.",
+      "owners": [
+        "db_modules/story_quests.py",
+        "systems/story_quest_system.py"
+      ]
+    },
+    {
+      "contract": "PRESENTATION_HISTORY_AND_NAVIGATION_VISIBILITY",
+      "status": "REFINED",
+      "rule": "SKIPPED remains visible as a finalized journal/navigation state. User messaging reports the location and the newly skipped count explicitly as skipped without rewards.",
+      "owners": [
+        "handlers/story_quest_hierarchy_ui.py",
+        "systems/story_quest_overlevel_system.py"
+      ]
+    },
+    {
+      "contract": "STAGE_19_18_POLICY_AUTHORITY_AND_SUPERSESSION",
+      "status": "REFINED",
+      "rule": "The current production runtime chain and its later atomic-location verification are authoritative. Historical candidates, broad token hits and shadow helpers cannot supersede this policy without a separate explicit decision.",
+      "owners": [
+        "handlers/combat.py",
+        "systems/story_quest_overlevel_system.py",
+        "systems/story_quest_system.py",
+        "db_modules/story_quests.py",
+        "tools/verify_stage_19_34_2_atomic_location_story_skip.py"
+      ]
+    }
+  ],
+  "behavior_boundary": {
+    "production_hook_order": "victory reward -> story progress -> quest-item drop -> overlevel reconciliation",
+    "level_source": "resulting player level after reward processing",
+    "trigger_operator": "current_level > location_max_level",
+    "location_max_levels": {
+      "start_path": 5,
+      "dark_forest": 10
+    },
+    "finalized_statuses": [
+      "COMPLETED",
+      "SKIPPED"
+    ],
+    "skip_reward_policy": "NO_REWARD",
+    "quest_item_policy": "DELETE_LOCATION_ROWS",
+    "idempotency": "SECOND_IDENTICAL_RECONCILIATION_CHANGED_0",
+    "narrow_active_skip": "NON_AUTHORITATIVE_FOR_LOCATION_RECONCILIATION"
+  },
+  "summary": {
+    "refined_contracts": 10,
+    "review_required_contracts": 0,
+    "total_contracts": 10,
+    "implementation_authorized": false
+  },
+  "database_opened": false,
+  "production_code_changed": false,
+  "canonical_reference_changed": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_game_check": "NOT_REQUIRED_CONTRACT_ONLY",
+  "suggested_next_patch": "patch_21_13_7b_resolve_overlevel_policy_parity.py"
+}
