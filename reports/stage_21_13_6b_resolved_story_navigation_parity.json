@@ -1,0 +1,309 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.6b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "parent": "cba83ae204ef255def7d82eee7e76071cf7bdfcb",
+  "source_contract": "reports/stage_21_13_6a_refined_story_navigation_contract.json",
+  "source_contract_sha256": "5d3af7e41f691c85e1f62b782b8ddc8383bea9703f312e35c477dfa832a86f80",
+  "summary": {
+    "contract_count": 8,
+    "resolved_contracts": 8,
+    "unresolved_contracts": 0,
+    "implementation_authorized": true,
+    "database_opened": false,
+    "production_code_changed": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "authoritative_owner_hashes": {
+    "hierarchy": {
+      "path": "data/story_quest_hierarchy.py",
+      "sha256": "37fb88d8e9fd960d797e21c06ec191b1b3efd598f8de7011f45aab74effde18e"
+    },
+    "ui": {
+      "path": "handlers/story_quest_hierarchy_ui.py",
+      "sha256": "71b57d0330255bfa09aceb295cb316e1dd5c66bf9b15221847877ec524aecb59"
+    },
+    "profile": {
+      "path": "handlers/profile.py",
+      "sha256": "9546e06670a5bf830671d69b8006b0630edf9a95cb9365a9dff05630acf0524d"
+    },
+    "locations": {
+      "path": "systems/story_quest_location_presentation.py",
+      "sha256": "7ca73e7e90804e70afa715db3b276420a1c5ebb8d49fec38a74677e04aa70a5e"
+    },
+    "titles": {
+      "path": "data/story_quest_title_presentation.py",
+      "sha256": "2750b9fe11a8d1875ce7bddd3c34757a1050fb9f95e197e416e5a2508cd62f1d"
+    },
+    "store": {
+      "path": "db_modules/story_quests.py",
+      "sha256": "cedc91f344f44dafc6daf35c6ba93d54e280f0f17b00709b32142abe503a4975"
+    }
+  },
+  "resolved_location_labels": {
+    "start_path": "Початок Шляху",
+    "dark_forest": "Темний Бір"
+  },
+  "callback_contract": {
+    "parity": "RESOLVED",
+    "prefix": "sqh:v1",
+    "routes": [
+      "sqh:v1:index",
+      "sqh:v1:loc:<location_id>",
+      "sqh:v1:sec:<section_id>",
+      "sqh:v1:q:<quest_number>"
+    ],
+    "return_chain": [
+      "quest_detail->quest_list",
+      "quest_list->section_list",
+      "section_list->story_list",
+      "story_list->profile"
+    ]
+  },
+  "status_contract": {
+    "parity": "RESOLVED",
+    "persistent": [
+      "ACTIVE",
+      "COMPLETED",
+      "SKIPPED"
+    ],
+    "derived": [
+      "AVAILABLE",
+      "LOCKED"
+    ],
+    "progress_monotonic": true
+  },
+  "terminology_evidence": [
+    {
+      "owner": "data/story_quest_hierarchy.py",
+      "line": 217,
+      "text": "if \"глава\" in section.display_title.casefold():"
+    }
+  ],
+  "terminology_classification": "VALIDATION_GUARD_NON_USER_VISIBLE_KEEP",
+  "contract_matrix": [
+    {
+      "contract": "STORY_TO_SECTION_TO_QUEST_HIERARCHY",
+      "classification": "RESOLVED",
+      "refined_decision": {
+        "rule": "The user flow is Story list -> Section list -> Quest list -> Quest detail; section boundaries and ordering come only from canonical hierarchy metadata.",
+        "owners": [
+          "data/story_quest_hierarchy.py",
+          "handlers/story_quest_hierarchy_ui.py"
+        ],
+        "must_preserve": [
+          "stories",
+          "sections",
+          "quests",
+          "quest_detail"
+        ],
+        "must_not": "Flatten the hierarchy or derive sections from display text."
+      },
+      "parity_resolution": {
+        "parity": "RESOLVED",
+        "flow": [
+          "story_list",
+          "section_list",
+          "quest_list",
+          "quest_detail"
+        ],
+        "source": "canonical hierarchy metadata"
+      }
+    },
+    {
+      "contract": "LOCALIZED_LOCATION_AND_SECTION_NAMES",
+      "classification": "RESOLVED",
+      "refined_decision": {
+        "rule": "Every user-facing location and section label is resolved from canonical metadata; technical IDs are internal only.",
+        "owners": [
+          "data/story_quest_hierarchy.py",
+          "systems/story_quest_location_presentation.py"
+        ],
+        "required_labels": {
+          "start_path": "Початок Шляху",
+          "dark_forest": "Темний Бір"
+        },
+        "must_not": "Format start_path or dark_forest directly for UI."
+      },
+      "parity_resolution": {
+        "parity": "RESOLVED",
+        "labels": {
+          "start_path": "Початок Шляху",
+          "dark_forest": "Темний Бір"
+        },
+        "source": "canonical location and section resolvers"
+      }
+    },
+    {
+      "contract": "ACTIVE_QUEST_TARGET_PRESENTATION",
+      "classification": "RESOLVED",
+      "refined_decision": {
+        "rule": "The active quest detail presents its current canonical objective/progress text and does not invent a target from quest type or ID.",
+        "owners": [
+          "db_modules/story_quests.py",
+          "handlers/story_quest_hierarchy_ui.py"
+        ],
+        "source_priority": [
+          "persisted active quest state",
+          "canonical objective/progress metadata"
+        ],
+        "must_not": "Guess active target from title, location ID, or quest number."
+      },
+      "parity_resolution": {
+        "parity": "RESOLVED",
+        "source_priority": [
+          "persisted ACTIVE state",
+          "canonical objective/progress metadata"
+        ],
+        "no_inference": true
+      }
+    },
+    {
+      "contract": "QUEST_STATUS_AND_PROGRESS_PRESENTATION",
+      "classification": "RESOLVED",
+      "refined_decision": {
+        "rule": "Quest entries distinguish active, available, locked, and completed states; progress belongs to the active quest state and completion is persistent.",
+        "owners": [
+          "db_modules/story_quests.py",
+          "handlers/story_quest_hierarchy_ui.py"
+        ],
+        "statuses": [
+          "active",
+          "available",
+          "locked",
+          "completed"
+        ],
+        "must_not": "Treat unavailable as completed or expose stale progress after completion."
+      },
+      "parity_resolution": {
+        "parity": "RESOLVED",
+        "persistent": [
+          "ACTIVE",
+          "COMPLETED",
+          "SKIPPED"
+        ],
+        "derived": [
+          "AVAILABLE",
+          "LOCKED"
+        ],
+        "progress_monotonic": true
+      }
+    },
+    {
+      "contract": "NAVIGATION_CALLBACK_AND_RETURN_PATHS",
+      "classification": "RESOLVED",
+      "refined_decision": {
+        "rule": "Callbacks form a bounded hierarchy and every detail/list surface returns to its immediate parent, while the root returns to the canonical profile/account surface.",
+        "owners": [
+          "handlers/story_quest_hierarchy_ui.py",
+          "handlers/profile.py"
+        ],
+        "return_chain": [
+          "quest_detail->quest_list",
+          "quest_list->section_list",
+          "section_list->story_list",
+          "story_list->profile"
+        ],
+        "must_not": "Create dead-end callbacks or return directly to an unrelated menu."
+      },
+      "parity_resolution": {
+        "parity": "RESOLVED",
+        "prefix": "sqh:v1",
+        "routes": [
+          "sqh:v1:index",
+          "sqh:v1:loc:<location_id>",
+          "sqh:v1:sec:<section_id>",
+          "sqh:v1:q:<quest_number>"
+        ],
+        "return_chain": [
+          "quest_detail->quest_list",
+          "quest_list->section_list",
+          "section_list->story_list",
+          "story_list->profile"
+        ]
+      }
+    },
+    {
+      "contract": "LOCKED_AVAILABLE_COMPLETED_VISIBILITY",
+      "classification": "RESOLVED",
+      "refined_decision": {
+        "rule": "Visibility and labels follow V1 hierarchy policy: completed remains visible, active is identifiable, available can be opened, and locked remains non-actionable without leaking spoiler titles.",
+        "owners": [
+          "handlers/story_quest_hierarchy_ui.py",
+          "data/story_quest_title_presentation.py",
+          "db_modules/story_quests.py"
+        ],
+        "spoiler_policy": "Locked quest labels use the canonical spoiler-safe title presentation path.",
+        "must_not": "Expose locked quest spoiler titles or make locked entries actionable."
+      },
+      "parity_resolution": {
+        "parity": "RESOLVED",
+        "completed_visible": true,
+        "active_identifiable": true,
+        "available_actionable": true,
+        "locked_actionable": false,
+        "locked_title": "spoiler-safe resolver",
+        "skipped_finalized": true
+      }
+    },
+    {
+      "contract": "NO_FORBIDDEN_CHAPTER_TERM_IN_UI",
+      "classification": "RESOLVED",
+      "refined_decision": {
+        "rule": "All Ukrainian user-facing Story navigation uses 'розділ'; forms of 'глава' are forbidden in UI text and metadata.",
+        "owners": [
+          "data/story_quest_hierarchy.py",
+          "handlers/story_quest_hierarchy_ui.py",
+          "handlers/profile.py"
+        ],
+        "allowed_term": "розділ",
+        "forbidden_terms": [
+          "глава",
+          "глави",
+          "главу",
+          "главою",
+          "главі"
+        ],
+        "scope": "User-visible runtime strings and Story navigation metadata; historical tests/reports/comments are evidence only and not runtime defects."
+      },
+      "parity_resolution": {
+        "parity": "RESOLVED",
+        "allowed_term": "розділ",
+        "runtime_ui_hits": 0,
+        "validation_guard_hits": 1,
+        "classification": "VALIDATION_GUARD_NON_USER_VISIBLE_KEEP"
+      }
+    },
+    {
+      "contract": "STABLE_ID_TO_HUMAN_LABEL_RESOLUTION",
+      "classification": "RESOLVED",
+      "refined_decision": {
+        "rule": "Stable story/location/section/quest IDs remain internal keys and all human labels are obtained through canonical resolvers or authoritative metadata.",
+        "owners": [
+          "data/story_quest_hierarchy.py",
+          "systems/story_quest_location_presentation.py",
+          "data/story_quest_title_presentation.py"
+        ],
+        "must_not": "Humanize IDs with replace/strip/title or duplicate label maps in handlers."
+      },
+      "parity_resolution": {
+        "parity": "RESOLVED",
+        "technical_ids_internal": true,
+        "canonical_resolvers_required": true,
+        "ad_hoc_humanization_forbidden": true
+      }
+    }
+  ],
+  "implementation_requirements": [
+    "Implement V2 hierarchy story->section->quest->detail from canonical metadata.",
+    "Use localized resolvers for location, section and spoiler-safe quest titles.",
+    "Preserve persistent ACTIVE/COMPLETED/SKIPPED and derived AVAILABLE/LOCKED semantics.",
+    "Preserve sqh:v1-equivalent bounded routes and immediate-parent return behavior without coupling V2 to V1 handlers.",
+    "Expose canonical active objective/progress without inference.",
+    "Reject forbidden chapter terminology and technical ID leakage in user-visible output."
+  ],
+  "manual_game_check": "NOT_REQUIRED_PARITY_ONLY",
+  "suggested_next_patch": "patch_21_13_6c_implement_story_navigation.py",
+  "backup_path": "backup/stage_21_13_6b_20261025T224347Z"
+}
