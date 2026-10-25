@@ -1,0 +1,4024 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.4a",
+  "status": "PASS",
+  "conclusion": "REVIEW_REQUIRED",
+  "source_audit": "reports/stage_21_13_4_existing_story_content_1_50_audit.json",
+  "summary": {
+    "contract_count": 11,
+    "v1_confirmed_contracts": 3,
+    "refined_contracts": 8,
+    "review_required_contracts": 8,
+    "unresolved_contracts": [
+      "EXACT_QUEST_RECORDS_1_TO_50",
+      "LEVEL_GATES_AND_SEQUENTIAL_PREREQUISITES",
+      "OBJECTIVES_TARGETS_AND_QUEST_ITEMS",
+      "REWARD_PARITY_AND_TRIPLE_NORMAL_MOB_POLICY",
+      "NPC_LOCATION_AND_LOCALIZED_PRESENTATION_REFERENCES",
+      "BOSS_AND_FORCED_ENCOUNTER_CONTRACT",
+      "PACKAGE_BY_TEN_AND_CONTENT_VALIDATION",
+      "QUEST_49_50_TERMINAL_FLOW_AND_KNOWN_PRESENTATION_NUANCE"
+    ],
+    "database_opened": false,
+    "production_code_changed": false,
+    "canonical_reference_changed": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "authoritative_evidence": {
+    "candidate_file": "Квести/ROM_квести_Початок_Шляху_candidate.json",
+    "candidate_sha256": "08b3322a79f288c3f74773e7ca604a087b36e3e776fa229d55fcf922ef81223a",
+    "candidate_root_type": "dict",
+    "candidate_structure": [
+      {
+        "path": "$",
+        "type": "object",
+        "keys": [
+          "approved_policy",
+          "batches",
+          "campaign",
+          "document_type",
+          "production_authoritative",
+          "quests",
+          "schema_version",
+          "source_reference"
+        ]
+      },
+      {
+        "path": "$.source_reference",
+        "type": "object",
+        "keys": [
+          "file",
+          "folder",
+          "must_not_be_modified_by_candidate_updates",
+          "role"
+        ]
+      },
+      {
+        "path": "$.campaign",
+        "type": "object",
+        "keys": [
+          "access_policy",
+          "approved_batches",
+          "batch_size",
+          "campaign_id",
+          "location_id",
+          "planned_quest_range",
+          "strict_sequential_chain",
+          "title"
+        ]
+      },
+      {
+        "path": "$.campaign.planned_quest_range",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.campaign.approved_batches",
+        "type": "array",
+        "length": 5
+      },
+      {
+        "path": "$.campaign.approved_batches[0]",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.campaign.approved_batches[1]",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.campaign.approved_batches[2]",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.campaign.approved_batches[3]",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.campaign.approved_batches[4]",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.campaign.access_policy",
+        "type": "object",
+        "keys": [
+          "overlevel_skip_policy",
+          "package_unlock_levels",
+          "requires_previous_quest_completion",
+          "requires_unlock_level"
+        ]
+      },
+      {
+        "path": "$.campaign.access_policy.package_unlock_levels",
+        "type": "object",
+        "keys": [
+          "1-10",
+          "11-20",
+          "21-30",
+          "31-40",
+          "41-50"
+        ]
+      },
+      {
+        "path": "$.approved_policy",
+        "type": "object",
+        "keys": [
+          "batch_11_20_reward",
+          "batch_1_10_reward",
+          "batch_21_30_multi_item_turn_in",
+          "batch_21_30_reward",
+          "batch_31_40_content_policy",
+          "batch_31_40_reward",
+          "batch_41_50_content_and_boss_policy",
+          "batch_41_50_regular_reward",
+          "level_gating",
+          "quest_14_type_change",
+          "quest_24_item_handling",
+          "quest_37_item_normalization",
+          "quest_38_type_change",
+          "quest_44_type_change",
+          "quest_47_type_change",
+          "quest_49_boss_story_reward",
+          "quest_50_dark_forest_policy",
+          "quest_8_type_change",
+          "quest_item_drop_chance"
+        ]
+      },
+      {
+        "path": "$.approved_policy.quest_item_drop_chance",
+        "type": "object",
+        "keys": [
+          "quest_13",
+          "quest_15",
+          "quest_19",
+          "quest_23",
+          "quest_26",
+          "quest_29",
+          "quest_34",
+          "quest_37",
+          "quest_4",
+          "quest_43",
+          "quest_46",
+          "quest_7"
+        ]
+      },
+      {
+        "path": "$.approved_policy.quest_8_type_change",
+        "type": "object",
+        "keys": [
+          "from",
+          "to"
+        ]
+      },
+      {
+        "path": "$.approved_policy.quest_14_type_change",
+        "type": "object",
+        "keys": [
+          "from",
+          "to"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_21_30_multi_item_turn_in",
+        "type": "object",
+        "keys": [
+          "accumulate_quest_items_from",
+          "consume_all_in_quest",
+          "mode"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_21_30_multi_item_turn_in.accumulate_quest_items_from",
+        "type": "array",
+        "length": 3
+      },
+      {
+        "path": "$.approved_policy.quest_38_type_change",
+        "type": "object",
+        "keys": [
+          "from",
+          "to"
+        ]
+      },
+      {
+        "path": "$.approved_policy.quest_37_item_normalization",
+        "type": "object",
+        "keys": [
+          "from",
+          "item_key",
+          "to"
+        ]
+      },
+      {
+        "path": "$.approved_policy.quest_44_type_change",
+        "type": "object",
+        "keys": [
+          "from",
+          "to"
+        ]
+      },
+      {
+        "path": "$.approved_policy.quest_47_type_change",
+        "type": "object",
+        "keys": [
+          "from",
+          "to"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_31_40_content_policy",
+        "type": "object",
+        "keys": [
+          "item_reveal",
+          "itemless_turn_in",
+          "kill_region_targets",
+          "quest_40",
+          "quest_item_handoff",
+          "quest_item_pairs",
+          "quest_types",
+          "reward_per_quest",
+          "section_display_title",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_31_40_content_policy.quest_types",
+        "type": "object",
+        "keys": [
+          "31",
+          "32",
+          "33",
+          "34",
+          "35",
+          "36",
+          "37",
+          "38",
+          "39",
+          "40"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_31_40_content_policy.kill_region_targets",
+        "type": "object",
+        "keys": [
+          "32",
+          "36",
+          "39"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_31_40_content_policy.quest_item_pairs",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.approved_policy.batch_31_40_content_policy.quest_item_pairs[0]",
+        "type": "object",
+        "keys": [
+          "consumption",
+          "drop_chance",
+          "item_key",
+          "source_quest",
+          "turn_in_quest"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_31_40_content_policy.quest_item_pairs[1]",
+        "type": "object",
+        "keys": [
+          "consumption",
+          "drop_chance",
+          "item_key",
+          "source_quest",
+          "turn_in_quest"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_31_40_content_policy.reward_per_quest",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_31_40_content_policy.quest_item_handoff",
+        "type": "object",
+        "keys": [
+          "recovery",
+          "retain_on_source_completion",
+          "source_quests",
+          "turn_in_consumption",
+          "turn_in_quests"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_31_40_content_policy.quest_item_handoff.source_quests",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.approved_policy.batch_31_40_content_policy.quest_item_handoff.turn_in_quests",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.approved_policy.batch_31_40_content_policy.itemless_turn_in",
+        "type": "object",
+        "keys": [
+          "active_action",
+          "available_action",
+          "conclusion",
+          "quest",
+          "required_items"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_41_50_content_and_boss_policy",
+        "type": "object",
+        "keys": [
+          "boss_completion",
+          "boss_quest",
+          "boss_story_reward",
+          "kill_region_targets",
+          "next_quest",
+          "production_activation",
+          "quest_item_pairs",
+          "quest_numbers",
+          "quest_types",
+          "regular_reward",
+          "section_display_title",
+          "section_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_41_50_content_and_boss_policy.quest_numbers",
+        "type": "array",
+        "length": 10
+      },
+      {
+        "path": "$.approved_policy.batch_41_50_content_and_boss_policy.quest_types",
+        "type": "object",
+        "keys": [
+          "41",
+          "42",
+          "43",
+          "44",
+          "45",
+          "46",
+          "47",
+          "48",
+          "49",
+          "50"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_41_50_content_and_boss_policy.kill_region_targets",
+        "type": "object",
+        "keys": [
+          "42",
+          "45",
+          "48"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_41_50_content_and_boss_policy.quest_item_pairs",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.approved_policy.batch_41_50_content_and_boss_policy.quest_item_pairs[0]",
+        "type": "object",
+        "keys": [
+          "consumption",
+          "drop_chance",
+          "item_key",
+          "retain_on_source_completion",
+          "source_quest",
+          "turn_in_quest"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_41_50_content_and_boss_policy.quest_item_pairs[1]",
+        "type": "object",
+        "keys": [
+          "consumption",
+          "drop_chance",
+          "item_key",
+          "retain_on_source_completion",
+          "source_quest",
+          "turn_in_quest"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_41_50_content_and_boss_policy.regular_reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.approved_policy.batch_41_50_content_and_boss_policy.boss_story_reward",
+        "type": "object",
+        "keys": [
+          "combat_reward_separate",
+          "exp",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests",
+        "type": "array",
+        "length": 50
+      },
+      {
+        "path": "$.quests[0]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[0].next_route",
+        "type": "array",
+        "length": 3
+      },
+      {
+        "path": "$.quests[0].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[0].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "multiplier",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type"
+        ]
+      },
+      {
+        "path": "$.quests[1]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[1].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[1].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "multiplier",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type"
+        ]
+      },
+      {
+        "path": "$.quests[2]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[2].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[2].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "multiplier",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type"
+        ]
+      },
+      {
+        "path": "$.quests[3]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[3].quest_item",
+        "type": "object",
+        "keys": [
+          "display_name",
+          "drop_chance",
+          "drop_message",
+          "item_key",
+          "required_quantity"
+        ]
+      },
+      {
+        "path": "$.quests[3].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[3].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "multiplier",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type"
+        ]
+      },
+      {
+        "path": "$.quests[4]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[4].required_quest_items",
+        "type": "array",
+        "length": 1
+      },
+      {
+        "path": "$.quests[4].required_quest_items[0]",
+        "type": "object",
+        "keys": [
+          "item_key",
+          "quantity"
+        ]
+      },
+      {
+        "path": "$.quests[4].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[4].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "multiplier",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type"
+        ]
+      },
+      {
+        "path": "$.quests[5]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[5].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[5].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "multiplier",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type"
+        ]
+      },
+      {
+        "path": "$.quests[6]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[6].quest_item",
+        "type": "object",
+        "keys": [
+          "display_name",
+          "drop_chance",
+          "drop_message",
+          "item_key",
+          "required_quantity"
+        ]
+      },
+      {
+        "path": "$.quests[6].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[6].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "multiplier",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type"
+        ]
+      },
+      {
+        "path": "$.quests[7]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[7].required_quest_items",
+        "type": "array",
+        "length": 1
+      },
+      {
+        "path": "$.quests[7].required_quest_items[0]",
+        "type": "object",
+        "keys": [
+          "item_key",
+          "quantity"
+        ]
+      },
+      {
+        "path": "$.quests[7].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[7].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "multiplier",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type"
+        ]
+      },
+      {
+        "path": "$.quests[8]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[8].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[8].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "multiplier",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type"
+        ]
+      },
+      {
+        "path": "$.quests[9]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_chapter",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[9].next_chapter",
+        "type": "object",
+        "keys": [
+          "first_npc_id",
+          "quest_range",
+          "title",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[9].next_chapter.quest_range",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.quests[9].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[9].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "multiplier",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type"
+        ]
+      },
+      {
+        "path": "$.quests[10]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[10].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[10].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[11]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[11].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[11].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[12]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[12].quest_item",
+        "type": "object",
+        "keys": [
+          "consume_on_completion",
+          "display_name",
+          "drop_chance",
+          "drop_message",
+          "item_key",
+          "required_quantity"
+        ]
+      },
+      {
+        "path": "$.quests[12].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[12].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[13]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[13].required_quest_items",
+        "type": "array",
+        "length": 1
+      },
+      {
+        "path": "$.quests[13].required_quest_items[0]",
+        "type": "object",
+        "keys": [
+          "item_key",
+          "quantity"
+        ]
+      },
+      {
+        "path": "$.quests[13].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[13].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[14]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[14].quest_item",
+        "type": "object",
+        "keys": [
+          "consume_on_completion",
+          "display_name",
+          "drop_chance",
+          "drop_message",
+          "item_key",
+          "required_quantity"
+        ]
+      },
+      {
+        "path": "$.quests[14].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[14].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[15]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[15].required_quest_items",
+        "type": "array",
+        "length": 1
+      },
+      {
+        "path": "$.quests[15].required_quest_items[0]",
+        "type": "object",
+        "keys": [
+          "item_key",
+          "quantity"
+        ]
+      },
+      {
+        "path": "$.quests[15].next_route",
+        "type": "array",
+        "length": 3
+      },
+      {
+        "path": "$.quests[15].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[15].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[16]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[16].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[16].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[17]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[17].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[17].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[18]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[18].quest_item",
+        "type": "object",
+        "keys": [
+          "consume_on_completion",
+          "display_name",
+          "drop_chance",
+          "drop_message",
+          "item_key",
+          "required_quantity"
+        ]
+      },
+      {
+        "path": "$.quests[18].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[18].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[19]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_chapter",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[19].required_quest_items",
+        "type": "array",
+        "length": 1
+      },
+      {
+        "path": "$.quests[19].required_quest_items[0]",
+        "type": "object",
+        "keys": [
+          "item_key",
+          "quantity"
+        ]
+      },
+      {
+        "path": "$.quests[19].next_chapter",
+        "type": "object",
+        "keys": [
+          "first_npc_id",
+          "quest_range",
+          "title",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[19].next_chapter.quest_range",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.quests[19].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[19].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[20]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[20].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[20].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[21]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[21].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[21].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[22]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "retain_until_quest_id",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[22].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[22].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[22].quest_item",
+        "type": "object",
+        "keys": [
+          "consume_on_completion",
+          "display_name",
+          "drop_chance",
+          "drop_message",
+          "item_key",
+          "required_quantity"
+        ]
+      },
+      {
+        "path": "$.quests[23]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_item_consumption",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[23].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[23].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[23].required_quest_items",
+        "type": "array",
+        "length": 1
+      },
+      {
+        "path": "$.quests[23].required_quest_items[0]",
+        "type": "object",
+        "keys": [
+          "consume",
+          "item_key",
+          "quantity"
+        ]
+      },
+      {
+        "path": "$.quests[24]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[24].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[24].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[25]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "retain_until_quest_id",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[25].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[25].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[25].quest_item",
+        "type": "object",
+        "keys": [
+          "consume_on_completion",
+          "display_name",
+          "drop_chance",
+          "drop_message",
+          "item_key",
+          "required_quantity"
+        ]
+      },
+      {
+        "path": "$.quests[26]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[26].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[26].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[27]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[27].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[27].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[28]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "retain_until_quest_id",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[28].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[28].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[28].quest_item",
+        "type": "object",
+        "keys": [
+          "consume_on_completion",
+          "display_name",
+          "drop_chance",
+          "drop_message",
+          "item_key",
+          "required_quantity"
+        ]
+      },
+      {
+        "path": "$.quests[29]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_chapter",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_item_consumption",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[29].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[29].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[29].required_quest_items",
+        "type": "array",
+        "length": 3
+      },
+      {
+        "path": "$.quests[29].required_quest_items[0]",
+        "type": "object",
+        "keys": [
+          "consume",
+          "item_key",
+          "quantity"
+        ]
+      },
+      {
+        "path": "$.quests[29].required_quest_items[1]",
+        "type": "object",
+        "keys": [
+          "consume",
+          "item_key",
+          "quantity"
+        ]
+      },
+      {
+        "path": "$.quests[29].required_quest_items[2]",
+        "type": "object",
+        "keys": [
+          "consume",
+          "item_key",
+          "quantity"
+        ]
+      },
+      {
+        "path": "$.quests[29].next_chapter",
+        "type": "object",
+        "keys": [
+          "first_npc_id",
+          "quest_range",
+          "title",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[29].next_chapter.quest_range",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.quests[30]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[30].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[30].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[31]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[31].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[31].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[32]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[32].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[32].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[33]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "item_reveal_policy",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[33].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[33].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[33].quest_item",
+        "type": "object",
+        "keys": [
+          "consume_on_completion",
+          "display_name",
+          "drop_chance",
+          "drop_message",
+          "item_key",
+          "required_quantity"
+        ]
+      },
+      {
+        "path": "$.quests[33].item_reveal_policy",
+        "type": "object",
+        "keys": [
+          "drop_message_once",
+          "mode",
+          "pre_drop_label",
+          "reveal_on"
+        ]
+      },
+      {
+        "path": "$.quests[34]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_item_consumption",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[34].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[34].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[34].required_quest_items",
+        "type": "array",
+        "length": 1
+      },
+      {
+        "path": "$.quests[34].required_quest_items[0]",
+        "type": "object",
+        "keys": [
+          "consume",
+          "item_key",
+          "quantity"
+        ]
+      },
+      {
+        "path": "$.quests[35]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[35].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[35].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[36]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "item_reveal_policy",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[36].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[36].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[36].quest_item",
+        "type": "object",
+        "keys": [
+          "consume_on_completion",
+          "display_name",
+          "drop_chance",
+          "drop_message",
+          "item_key",
+          "required_quantity"
+        ]
+      },
+      {
+        "path": "$.quests[36].item_reveal_policy",
+        "type": "object",
+        "keys": [
+          "drop_message_once",
+          "mode",
+          "pre_drop_label",
+          "reveal_on"
+        ]
+      },
+      {
+        "path": "$.quests[37]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_item_consumption",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[37].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[37].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[37].required_quest_items",
+        "type": "array",
+        "length": 1
+      },
+      {
+        "path": "$.quests[37].required_quest_items[0]",
+        "type": "object",
+        "keys": [
+          "consume",
+          "item_key",
+          "quantity"
+        ]
+      },
+      {
+        "path": "$.quests[38]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[38].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[38].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[39]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_chapter",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[39].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[39].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[39].next_chapter",
+        "type": "object",
+        "keys": [
+          "first_npc_id",
+          "quest_range",
+          "title",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[39].next_chapter.quest_range",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.quests[40]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[40].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[40].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[41]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[41].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[41].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[42]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "item_reveal_policy",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[42].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[42].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[42].quest_item",
+        "type": "object",
+        "keys": [
+          "consume_on_completion",
+          "display_name",
+          "drop_chance",
+          "drop_message",
+          "item_key",
+          "required_quantity"
+        ]
+      },
+      {
+        "path": "$.quests[42].item_reveal_policy",
+        "type": "object",
+        "keys": [
+          "drop_message_once",
+          "mode",
+          "pre_drop_label",
+          "reveal_on"
+        ]
+      },
+      {
+        "path": "$.quests[43]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_item_consumption",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[43].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[43].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[43].required_quest_items",
+        "type": "array",
+        "length": 1
+      },
+      {
+        "path": "$.quests[43].required_quest_items[0]",
+        "type": "object",
+        "keys": [
+          "consume",
+          "item_key",
+          "quantity"
+        ]
+      },
+      {
+        "path": "$.quests[44]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[44].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[44].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[45]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "item_reveal_policy",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_item",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[45].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[45].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[45].quest_item",
+        "type": "object",
+        "keys": [
+          "consume_on_completion",
+          "display_name",
+          "drop_chance",
+          "drop_message",
+          "item_key",
+          "required_quantity"
+        ]
+      },
+      {
+        "path": "$.quests[45].item_reveal_policy",
+        "type": "object",
+        "keys": [
+          "drop_message_once",
+          "mode",
+          "pre_drop_label",
+          "reveal_on"
+        ]
+      },
+      {
+        "path": "$.quests[46]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_item_consumption",
+          "quest_type",
+          "required_quest_items",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[46].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[46].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[46].required_quest_items",
+        "type": "array",
+        "length": 1
+      },
+      {
+        "path": "$.quests[46].required_quest_items[0]",
+        "type": "object",
+        "keys": [
+          "consume",
+          "item_key",
+          "quantity"
+        ]
+      },
+      {
+        "path": "$.quests[47]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[47].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[47].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[48]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "boss_combat_reward_is_separate",
+          "boss_key",
+          "boss_story_policy",
+          "completion_text",
+          "description",
+          "encounter_paths",
+          "giver_npc_id",
+          "guaranteed_call_after_success",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "retry_after_defeat_or_escape",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[48].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[48].reward.formula",
+        "type": "object",
+        "keys": [
+          "boss_combat_reward_is_separate",
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[48].encounter_paths",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.quests[48].boss_story_policy",
+        "type": "object",
+        "keys": [
+          "anti_farm",
+          "auto_escape_retry",
+          "boss_key",
+          "boss_level_source",
+          "canonical_factory",
+          "city_npc_help_only",
+          "combat_reward_owner",
+          "completion_mode",
+          "defeat_retry",
+          "double_callback_guard",
+          "forced_invocation_after_victory",
+          "forced_invocation_allowed",
+          "forced_invocation_surface",
+          "help_callback",
+          "invoke_callback",
+          "manual_escape_retry",
+          "permanent_reply_button",
+          "random_hunt_encounter_allowed",
+          "return_callback",
+          "stale_callback_after_victory",
+          "story_reward_owner",
+          "victory_progress"
+        ]
+      },
+      {
+        "path": "$.quests[49]",
+        "type": "object",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "itemless_turn_in_policy",
+          "location_id",
+          "next_campaign_hint",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.quests[49].reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "formula",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.quests[49].reward.formula",
+        "type": "object",
+        "keys": [
+          "canonical_expected_exp",
+          "canonical_expected_gold_unrounded",
+          "multiplier",
+          "quest_gold_unrounded",
+          "randomness_applied_to_quest_reward",
+          "reference_enemy_level",
+          "reference_enemy_type",
+          "rounding"
+        ]
+      },
+      {
+        "path": "$.quests[49].next_campaign_hint",
+        "type": "object",
+        "keys": [
+          "canonical_unlock_level",
+          "location_id",
+          "story_completion_does_not_unlock_location"
+        ]
+      },
+      {
+        "path": "$.quests[49].itemless_turn_in_policy",
+        "type": "object",
+        "keys": [
+          "active_action",
+          "available_action",
+          "conclusion"
+        ]
+      },
+      {
+        "path": "$.batches",
+        "type": "array",
+        "length": 5
+      },
+      {
+        "path": "$.batches[0]",
+        "type": "object",
+        "keys": [
+          "chapter_number",
+          "chapter_title",
+          "expected_quest_item_victories",
+          "expected_required_kill_region_victories",
+          "expected_total_victories",
+          "range",
+          "reward_reference_level",
+          "status",
+          "story_reward_totals",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.batches[0].range",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.batches[0].story_reward_totals",
+        "type": "object",
+        "keys": [
+          "exp",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.batches[1]",
+        "type": "object",
+        "keys": [
+          "chapter_number",
+          "chapter_title",
+          "expected_quest_item_victories",
+          "expected_required_kill_region_victories",
+          "expected_total_victories",
+          "range",
+          "reward_reference_level",
+          "status",
+          "story_reward_totals",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.batches[1].range",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.batches[1].story_reward_totals",
+        "type": "object",
+        "keys": [
+          "exp",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.batches[2]",
+        "type": "object",
+        "keys": [
+          "chapter_number",
+          "chapter_title",
+          "expected_quest_item_victories",
+          "expected_required_kill_region_victories",
+          "expected_total_victories",
+          "range",
+          "reward_reference_level",
+          "status",
+          "story_reward_totals",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.batches[2].range",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.batches[2].story_reward_totals",
+        "type": "object",
+        "keys": [
+          "exp",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.batches[3]",
+        "type": "object",
+        "keys": [
+          "chapter_number",
+          "chapter_title",
+          "display_title",
+          "expected_quest_item_victories",
+          "expected_required_kill_region_victories",
+          "expected_total_victories",
+          "range",
+          "reward_reference_level",
+          "section_number",
+          "section_title",
+          "status",
+          "story_reward_totals",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.batches[3].range",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.batches[3].story_reward_totals",
+        "type": "object",
+        "keys": [
+          "exp",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.batches[4]",
+        "type": "object",
+        "keys": [
+          "boss_quest_reward",
+          "chapter_number",
+          "chapter_title",
+          "display_title",
+          "expected_boss_victories",
+          "expected_quest_item_victories",
+          "expected_required_kill_region_victories",
+          "expected_total_victories",
+          "range",
+          "regular_quest_reward",
+          "reward_reference_level",
+          "section_number",
+          "section_title",
+          "status",
+          "story_reward_totals",
+          "unlock_level"
+        ]
+      },
+      {
+        "path": "$.batches[4].range",
+        "type": "array",
+        "length": 2
+      },
+      {
+        "path": "$.batches[4].story_reward_totals",
+        "type": "object",
+        "keys": [
+          "exp",
+          "gold"
+        ]
+      },
+      {
+        "path": "$.batches[4].regular_quest_reward",
+        "type": "object",
+        "keys": [
+          "exp",
+          "gold",
+          "quest_numbers"
+        ]
+      },
+      {
+        "path": "$.batches[4].regular_quest_reward.quest_numbers",
+        "type": "array",
+        "length": 9
+      },
+      {
+        "path": "$.batches[4].boss_quest_reward",
+        "type": "object",
+        "keys": [
+          "boss_combat_reward_is_separate",
+          "exp",
+          "gold",
+          "quest_number"
+        ]
+      }
+    ],
+    "candidate_quest_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50
+    ],
+    "candidate_record_count": 51,
+    "candidate_quest_like_count": 50,
+    "missing_quest_ids": [],
+    "duplicate_quest_ids": {
+      "49": 2
+    },
+    "sample_records": {
+      "1": {
+        "quest_id": 1,
+        "path": "$.quests[0]",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "location_id",
+          "next_route",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "start_path_001_missing_patrol",
+          "number": 1,
+          "title": "Патруль не повернувся",
+          "quest_type": "TALK",
+          "location_id": "start_path",
+          "unlock_level": 1,
+          "previous_quest_id": null,
+          "giver_npc_id": "elder",
+          "turn_in_npc_id": "elder",
+          "target_quantity": 1,
+          "description": "Черговий патруль не повернувся з обходу околиць. Староста просить героя почати розслідування та звернутися до Голови Найманців.",
+          "objective_text": "Поговорити зі Старостою про зникнення патруля.",
+          "acceptance_text": "Кілька годин тому черговий патруль мав повернутися з обходу околиць. Вартові перевіряли стежку біля старого мосту, але від них досі немає звістки. У таборі бракує людей, а посилати ще один непідготовлений загін надто ризиковано. Поговори з Головою Найманців. Можливо, у гільдії вже щось чули про зниклих вартових.",
+          "completion_text": "Староста передає короткий опис маршруту патруля та просить звернутися до Голови Найманців.",
+          "next_route": [
+            "🏙️ Місто",
+            "📜 Гільдія Найманців",
+            "⚔️ Голова Найманців"
+          ],
+          "reward": {
+            "exp": 30,
+            "gold": 0.27,
+            "formula": {
+              "reference_enemy_type": "normal",
+              "reference_enemy_level": 1,
+              "multiplier": 3,
+              "canonical_expected_exp": 10,
+              "canonical_expected_gold": 0.09,
+              "randomness_applied_to_quest_reward": false
+            }
+          }
+        }
+      },
+      "49": {
+        "quest_id": 49,
+        "path": "$.quests[48]",
+        "keys": [
+          "acceptance_text",
+          "boss_combat_reward_is_separate",
+          "boss_key",
+          "boss_story_policy",
+          "completion_text",
+          "description",
+          "encounter_paths",
+          "giver_npc_id",
+          "guaranteed_call_after_success",
+          "location_id",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "retry_after_defeat_or_escape",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "start_path_049_pack_leader",
+          "number": 49,
+          "title": "Ватажок зграї",
+          "quest_type": "BOSS",
+          "location_id": "start_path",
+          "unlock_level": 5,
+          "previous_quest_id": "start_path_048_final_perimeter",
+          "giver_npc_id": "mercenary_head",
+          "turn_in_npc_id": null,
+          "target_quantity": 1,
+          "description": "Герой перемагає Ватажка через RNG encounter або гарантований виклик.",
+          "objective_text": "Перемогти Ватажка зграї у локації «Початок Шляху», а потім доповісти Голові Найманців.",
+          "acceptance_text": "Ватажок тримається біля лігва. Вирушай у «Початок Шляху» та натисни «👀 Роззирнутися». Там Ватажка можна викликати на бій. Також він може зустрітися випадково під час звичайного полювання. Якщо ще не готовий до бою, продовжуй полювання та повернися до виклику пізніше.",
+          "completion_text": "Голова Найманців вислуховує доповідь про перемогу над Ватажком. Зграя втратила провідника, а шлях біля лігва став безпечнішим. Підготовка загону була недаремною. Тепер Староста має почути, чим завершився вирішальний похід. Повернися до Ратуші та доповідь Старості.",
+          "reward": {
+            "exp": 95,
+            "gold": 2.15,
+            "formula": {
+              "reference_enemy_type": "normal",
+              "reference_enemy_level": 5,
+              "multiplier": 5,
+              "canonical_expected_exp": 19,
+              "canonical_expected_gold_unrounded": 0.43,
+              "quest_gold_unrounded": 2.15,
+              "randomness_applied_to_quest_reward": false,
+              "rounding": "round final quest gold to 2 decimals",
+              "boss_combat_reward_is_separate": true
+            }
+          },
+          "boss_key": "pack_leader",
+          "encounter_paths": [
+            "rng_hunt",
+            "guaranteed_story_call"
+          ],
+          "guaranteed_call_after_success": "blocked",
+          "retry_after_defeat_or_escape": "allowed",
+          "boss_combat_reward_is_separate": true,
+          "progress_text": "Перемогти Ватажка зграї: {progress}/1. Після перемоги повернутися до Голови Найманців.",
+          "boss_story_policy": {
+            "boss_key": "canonical_start_path_pack_leader_pending_adapter_confirmation",
+            "random_hunt_encounter_allowed": true,
+            "forced_invocation_allowed": true,
+            "forced_invocation_surface": "look_around_inline",
+            "invoke_callback": "sqboss:v1:invoke:49",
+            "help_callback": "sqboss:v1:help:49",
+            "return_callback": "sqboss:v1:return:49",
+            "city_npc_help_only": true,
+            "permanent_reply_button": false,
+            "canonical_factory": "systems.boss_system.build_location_boss",
+            "boss_level_source": "current_player_level",
+            "victory_progress": "set 1/1 only for correct boss_key and location",
+            "completion_mode": "deferred_turn_in_to_mercenary_head",
+            "story_reward_owner": "quest_49_turn_in_completion",
+            "combat_reward_owner": "canonical_boss_victory",
+            "defeat_retry": true,
+            "manual_escape_retry": true,
+            "auto_escape_retry": true,
+            "forced_invocation_after_victory": false,
+            "stale_callback_after_victory": "reject_and_point_to_mercenary_head",
+            "double_callback_guard": "canonical_active_encounter_guard",
+            "anti_farm": "progress 1/1 immediately disables forced invocation before quest turn-in"
+          }
+        }
+      },
+      "50": {
+        "quest_id": 50,
+        "path": "$.quests[49]",
+        "keys": [
+          "acceptance_text",
+          "completion_text",
+          "description",
+          "giver_npc_id",
+          "itemless_turn_in_policy",
+          "location_id",
+          "next_campaign_hint",
+          "number",
+          "objective_text",
+          "previous_quest_id",
+          "progress_text",
+          "quest_id",
+          "quest_type",
+          "reward",
+          "target_quantity",
+          "title",
+          "turn_in_npc_id",
+          "unlock_level"
+        ],
+        "record": {
+          "quest_id": "start_path_050_road_ahead",
+          "number": 50,
+          "title": "Дорога далі",
+          "quest_type": "TURN_IN",
+          "location_id": "start_path",
+          "unlock_level": 5,
+          "previous_quest_id": "start_path_049_pack_leader",
+          "giver_npc_id": "elder",
+          "turn_in_npc_id": "elder",
+          "target_quantity": 1,
+          "description": "Герой повертається до Старости з підсумком перемоги над Ватажком і завершує історію «Початок Шляху».",
+          "objective_text": "Доповісти Старості про перемогу над Ватажком і завершення вирішального походу.",
+          "acceptance_text": "Староста чекає остаточної доповіді про Ватажка, стан зграї та безпеку шляху біля лігва.",
+          "completion_text": "Староста вислуховує доповідь про перемогу над Ватажком. Без провідника зграя відступає від табору, а дорога через «Початок Шляху» знову відкрита для мандрівників. Рада дякує за підготовку загону та вирішальний бій.\n\n✅ Розділ «Вирішальний похід» завершено.\n✅ Історію «Початок Шляху» завершено.",
+          "reward": {
+            "exp": 57,
+            "gold": 1.29,
+            "formula": {
+              "reference_enemy_type": "normal",
+              "reference_enemy_level": 5,
+              "multiplier": 3,
+              "canonical_expected_exp": 19,
+              "canonical_expected_gold_unrounded": 0.43,
+              "quest_gold_unrounded": 1.29,
+              "randomness_applied_to_quest_reward": false,
+              "rounding": "round final quest gold to 2 decimals"
+            }
+          },
+          "next_campaign_hint": {
+            "location_id": "dark_forest",
+            "canonical_unlock_level": 6,
+            "story_completion_does_not_unlock_location": true
+          },
+          "progress_text": "Доповісти Старості про перемогу над Ватажком і завершення вирішального походу.",
+          "itemless_turn_in_policy": {
+            "available_action": "📖 Почати розмову",
+            "active_action": "🗣️ Доповісти Старості",
+            "conclusion": "completion_only"
+          }
+        }
+      }
+    },
+    "production_definition_file": "data/story_quest_definitions.py",
+    "production_sha256": "be180e71dc857923517284b4e92aa14bec602baef0751eeec49662abe5a430d2",
+    "production_functions": [
+      "_q",
+      "_require",
+      "_text",
+      "derive_story_quest_status",
+      "validate_story_quest_definition",
+      "validate_story_quest_pack"
+    ],
+    "production_imports": [
+      {
+        "module": "__future__",
+        "names": [
+          "annotations"
+        ]
+      },
+      {
+        "module": "dataclasses",
+        "names": [
+          "dataclass",
+          "field"
+        ]
+      },
+      {
+        "module": "enum",
+        "names": [
+          "Enum"
+        ]
+      },
+      {
+        "module": "types",
+        "names": [
+          "MappingProxyType"
+        ]
+      },
+      {
+        "module": "typing",
+        "names": [
+          "Optional",
+          "Sequence",
+          "Tuple"
+        ]
+      },
+      {
+        "module": "data.story_quest_item_identity",
+        "names": [
+          "validate_story_quest_item_key"
+        ]
+      }
+    ],
+    "production_call_counts": {
+      "dataclass": 5,
+      "validate_story_quest_pack": 1,
+      "field": 1,
+      "_require": 38,
+      "set": 3,
+      "enumerate": 1,
+      "MappingProxyType": 1,
+      "dict": 1,
+      "update": 1,
+      "StoryQuestDefinition": 1,
+      "_q": 5,
+      "QuestDefinitionError": 1,
+      "isinstance": 5,
+      "bool": 2,
+      "_text": 11,
+      "validate_story_quest_item_key": 2,
+      "add": 3,
+      "validate_story_quest_definition": 1,
+      "strip": 1,
+      "all": 1,
+      "NavigationDefinition": 3,
+      "QuestItemDefinition": 1,
+      "len": 1
+    },
+    "builder_candidates": [
+      "derive_story_quest_status",
+      "validate_story_quest_definition",
+      "validate_story_quest_pack"
+    ],
+    "literal_start_path_found": false,
+    "literal_49_found": false,
+    "literal_50_found": false
+  },
+  "refined_contract_matrix": [
+    {
+      "contract": "EXACT_QUEST_RECORDS_1_TO_50",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "canonical candidate JSON is parsed structurally rather than searched only by literals",
+        "quest-like dictionaries are indexed by stable numeric identity when present",
+        "missing and duplicate candidate IDs are reported explicitly",
+        "production definition builders, imports and call sites are inventoried"
+      ],
+      "remaining_question": "Resolve the exact authoritative record for every quest ID 1-50, including title, description, objective, target, NPC references, location, rewards and predecessor; reconcile candidate records against the actual production builder output without treating text or array position as identity."
+    },
+    {
+      "contract": "LEVEL_GATES_AND_SEQUENTIAL_PREREQUISITES",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "the canonical chain boundary is 1-50",
+        "the approved package gates are 1-10 level 1, 11-20 level 2, 21-30 level 3, 31-40 level 4 and 41-50 level 5",
+        "each package requires the corresponding level",
+        "the chain requires completion or authorized SKIP of the previous quest"
+      ],
+      "remaining_question": "Extract the actual candidate and V1 fields that encode required level and predecessor, then produce a 50-row executable matrix proving exact package gates, quest 1 root semantics and quest N predecessor N-1 for N=2..50."
+    },
+    {
+      "contract": "OBJECTIVES_TARGETS_AND_QUEST_ITEMS",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "V1 supports TALK, KILL_REGION, QUEST_ITEM, TURN_IN and BOSS through the Quest Engine contract",
+        "candidate records expose their available objective-shaped fields for exact reconciliation",
+        "quest items must remain isolated from regular inventory",
+        "known approved quest-item chances and special target rules must not be generalized beyond their quests"
+      ],
+      "remaining_question": "Resolve every quest objective type, target, region/mob identity, quest-item key, quantity, 15% drop chance where approved, accumulation/consumption boundary and exact-once event identity; flag every candidate/production mismatch rather than inventing defaults."
+    },
+    {
+      "contract": "REWARD_PARITY_AND_TRIPLE_NORMAL_MOB_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "rewards are content data consumed by the generic Quest Engine",
+        "packages 1-10, 11-20 and 21-30 have approved full triple rewards based on canonical normal mobs of levels 1, 2 and 3 respectively",
+        "TALK, QUEST_ITEM and TURN_IN receive the same package policy where approved",
+        "reward formulas must not be copied into content definitions"
+      ],
+      "remaining_question": "Locate the canonical reward resolver inputs and determine exact reward references for quests 1-50; preserve approved package policies and identify unresolved policy for 31-50 from actual V1 evidence instead of extrapolating."
+    },
+    {
+      "contract": "NPC_LOCATION_AND_LOCALIZED_PRESENTATION_REFERENCES",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "stable NPC IDs and location assignment have API-ready owners",
+        "the user-facing location name must be Початок Шляху",
+        "technical start_path remains allowed only as identity",
+        "handlers must not own quest-specific conditions"
+      ],
+      "remaining_question": "Resolve start/completion NPC IDs, canonical location IDs and localized presentation references for every quest; verify all referenced NPCs and routes exist and prohibit raw technical location/NPC IDs or the term глава in user-visible metadata."
+    },
+    {
+      "contract": "BOSS_AND_FORCED_ENCOUNTER_CONTRACT",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "boss objectives are owned by shared combat and Quest Engine boundaries",
+        "the location boss normally appears through Hunting, not a separate boss button",
+        "quest 49 has an accepted forced leader encounter and completion flow",
+        "new boss formulas or encounter rules are not authorized"
+      ],
+      "remaining_question": "Locate the exact V1 forced-encounter evidence for quest 49, boss identity/level behavior, exact-once victory evidence and retry/restart semantics; distinguish ordinary random boss encounters from quest-forced encounter orchestration."
+    },
+    {
+      "contract": "PACKAGE_BY_TEN_AND_CONTENT_VALIDATION",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "roadmap requires migration in packages of ten",
+        "candidate content covers the Початок Шляху chain",
+        "each package must be independently validated before the next mutation",
+        "canonical Quest Engine and NPC model are content-independent"
+      ],
+      "remaining_question": "Define five exact package manifests 1-10, 11-20, 21-30, 31-40 and 41-50 plus validators for IDs, predecessor chain, levels, objective schema, NPC/location references, quest items, rewards, localization and duplicate content."
+    },
+    {
+      "contract": "QUEST_49_50_TERMINAL_FLOW_AND_KNOWN_PRESENTATION_NUANCE",
+      "classification": "REVIEW_REQUIRED",
+      "confirmed": [
+        "quest 49 forced encounter and turn-in were manually accepted in V1",
+        "quest 50 ends the Початок Шляху story by talking to the Elder",
+        "a known V1 presentation defect hides 1/1 progress after the leader victory until quest 49 turn-in",
+        "the defect is presentation-only and must be tracked explicitly"
+      ],
+      "remaining_question": "Resolve the exact quest 49 and 50 records, NPCs, objective transitions and completion flags; decide from V1 evidence whether V2 must preserve or correct the hidden 1/1 presentation nuance, without changing accepted combat or completion semantics."
+    }
+  ],
+  "observations": {
+    "candidate_record_count": 51,
+    "candidate_quest_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50
+    ],
+    "missing_candidate_ids": [],
+    "duplicate_candidate_ids": {
+      "49": 2
+    },
+    "production_builder_candidates": [
+      "derive_story_quest_status",
+      "validate_story_quest_definition",
+      "validate_story_quest_pack"
+    ],
+    "exact_50_record_matrix_requires_resolution": true
+  },
+  "implementation_authorized": false,
+  "canonical_v2_ci": {
+    "status": "PASS",
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "",
+        "removed_bytecode_after_compile": [
+          "rom_v2/__pycache__/bootstrap.cpython-314.pyc",
+          "rom_v2/__pycache__/config.cpython-314.pyc",
+          "rom_v2/__pycache__/container.cpython-314.pyc",
+          "rom_v2/__pycache__/lifecycle.cpython-314.pyc",
+          "rom_v2/__pycache__/main.cpython-314.pyc",
+          "rom_v2/__pycache__/runtime_paths.cpython-314.pyc",
+          "rom_v2/__pycache__/settings.cpython-314.pyc",
+          "rom_v2/__pycache__/structured_logging.cpython-314.pyc",
+          "rom_v2/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/presentation/__pycache__/item_dto.cpython-314.pyc",
+          "rom_v2/infrastructure/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/adapter.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/callback_codec.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/callback_registry.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/account_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/account_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/character_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/character_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/connection_factory.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/equipment_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/equipment_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/inventory_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/inventory_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/migrator.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/primary_stat_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/primary_stat_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/provisional_contracts.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/repository_base.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/resource_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/resource_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/schema_contract.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v001_v2_baseline.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v002_primary_stats_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v003_item_identity_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v004_equipment_slots_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/account.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/auction.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/battle.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/battle_persistence.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/central_loot.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/character.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/class_catalog.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/combat_resources.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/damage_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/derived_stats.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/direct_trade.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/durability.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/effect_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/enhancement.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/equipment.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/equipment_generation.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/full_stat_snapshot.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_application.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_contract_history.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_core.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/item.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/level_up_gold.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/mana_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/npc_dialogue_model.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/player_progression.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/premium_combat.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/primary_stats.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/pvp.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/quest_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/quest_item_store.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/resource_lifecycle.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/runes.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/skill_execution.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/terminal_paths.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/travel_aggregate.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/content/__pycache__/location_catalog.cpython-314.pyc",
+          "rom_v2/content/__pycache__/world_graph.cpython-314.pyc",
+          "rom_v2/content/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/application/__pycache__/account_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/account_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/admin_crystals.cpython-314.pyc",
+          "rom_v2/application/__pycache__/auction_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/bag_expansion.cpython-314.pyc",
+          "rom_v2/application/__pycache__/base_equipment_shop.cpython-314.pyc",
+          "rom_v2/application/__pycache__/character_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/character_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/crystal_wallet_ledger.cpython-314.pyc",
+          "rom_v2/application/__pycache__/daily_reward.cpython-314.pyc",
+          "rom_v2/application/__pycache__/direct_trade_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/durability_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/enhancement_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_generation_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_generation_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/full_stat_snapshot_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/gold_wallet.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_contract_history_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_core_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_management_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/integration_evidence.cpython-314.pyc",
+          "rom_v2/application/__pycache__/inventory_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/inventory_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/map_presentation.cpython-314.pyc",
+          "rom_v2/application/__pycache__/npc_dialogue_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/post_combat_hooks.cpython-314.pyc",
+          "rom_v2/application/__pycache__/potion_trading.cpython-314.pyc",
+          "rom_v2/application/__pycache__/premium_shop.cpython-314.pyc",
+          "rom_v2/application/__pycache__/primary_stat_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/primary_stat_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/pvp_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/quest_engine_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/quest_item_store_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/resource_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/resource_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/reward_settlement.cpython-314.pyc",
+          "rom_v2/application/__pycache__/travel_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/application/services/__pycache__/rune_lifecycle.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/clock.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/random_source.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/repositories.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/unit_of_work.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/app/__pycache__/__init__.cpython-314.pyc"
+        ]
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "................................................................................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 320 tests in 14.549s\n\nOK\n"
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "V2 architecture enforcement: PASS\nPhysical files: 125\nImport edges: 436\nViolations: 0\n",
+        "stderr": ""
+      }
+    ]
+  },
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_13_4b_resolve_story_content_1_50_parity.py",
+  "backup_path": "backup/stage_21_13_4a_20261025T211428Z"
+}
