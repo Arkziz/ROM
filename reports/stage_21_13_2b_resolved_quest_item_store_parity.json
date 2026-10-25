@@ -1,0 +1,283 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.2b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "source_refinement": "reports/stage_21_13_2a_refined_quest_item_store_contract.json",
+  "summary": {
+    "contract_count": 8,
+    "resolved_contracts": 8,
+    "unresolved_contracts": [],
+    "database_opened": false,
+    "production_code_changed": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "authoritative_evidence": {
+    "persistence_owner": "db_modules/story_quests.py",
+    "engine_consumer": "systems/story_quest_system.py",
+    "definition_owner": "data/story_quest_definitions.py",
+    "handler_consumer": "handlers/story_quests.py",
+    "evidence": {
+      "store_primitives": [
+        "add_story_quest_item",
+        "consume_story_quest_item_quantity",
+        "get_story_quest_item_quantity",
+        "get_total_story_quest_item_quantity"
+      ],
+      "engine_collection_owner": true,
+      "direct_engine_consume_call_found": false,
+      "quest_item_objective_defined": true,
+      "handler_has_no_store_mutation": true,
+      "isolated_from_regular_inventory": true
+    },
+    "source_hashes": {
+      "db_modules/story_quests.py": "cedc91f344f44dafc6daf35c6ba93d54e280f0f17b00709b32142abe503a4975",
+      "systems/story_quest_system.py": "56fcc92d3af25177cd8838e4ba5899be20a2c388a7878e0e383d856089e80fcb",
+      "data/story_quest_definitions.py": "be180e71dc857923517284b4e92aa14bec602baef0751eeec49662abe5a430d2",
+      "handlers/story_quests.py": "2f6ecb8fa65f51b000fce4d16a24673f429b6d571ca11e214dacf71393bf1d28"
+    }
+  },
+  "canonical_contracts": [
+    "ISOLATED_STORE_OWNERSHIP",
+    "RESTART_PERSISTENCE_AND_RECOVERY",
+    "PRESENTATION_AND_INVENTORY_SEPARATION",
+    "QUEST_ITEM_IDENTITY_AND_SCOPE",
+    "EXACT_QUANTITY_AND_NON_NEGATIVE_INVARIANT",
+    "COLLECTION_IDEMPOTENCY_AND_EVENT_IDENTITY",
+    "TURN_IN_CONSUMPTION_ATOMICITY",
+    "OVERLEVEL_SKIP_AND_CLEANUP"
+  ],
+  "resolved_contract_matrix": [
+    {
+      "contract": "QUEST_ITEM_IDENTITY_AND_SCOPE",
+      "classification": "V2_RESOLVED",
+      "decision": "The canonical store key is scoped by user_id, quest_id and item_key. A per-quest query reads only that key; total quantity is an explicit aggregate across quest scopes and never changes ownership. Identical item keys in different quests remain distinct persisted balances. Source/objective metadata may validate collection but is not a second balance owner.",
+      "typed_reasons": [
+        "invalid_identity",
+        "quest_not_active",
+        "item_not_required"
+      ]
+    },
+    {
+      "contract": "EXACT_QUANTITY_AND_NON_NEGATIVE_INVARIANT",
+      "classification": "V2_RESOLVED",
+      "decision": "Quantities are non-negative integers. Add requires a positive integer. Consume requires a positive integer and succeeds only when the scoped balance is sufficient. Insufficient quantity returns a typed result without mutation. Zero balances are observationally equivalent to an absent row and may be deleted atomically. Concurrent add/consume is serialized by one Unit of Work with conditional quantity update.",
+      "typed_reasons": [
+        "invalid_quantity",
+        "insufficient_quantity",
+        "stale_revision"
+      ]
+    },
+    {
+      "contract": "COLLECTION_IDEMPOTENCY_AND_EVENT_IDENTITY",
+      "classification": "V2_RESOLVED",
+      "decision": "Collection identity is user_id + quest_id + event_id. The engine validates the active QUEST_ITEM objective, source/item match and event identity before mutation. Chance evaluation belongs to the upstream drop/event producer and is not repeated by the store. A committed event replay returns already_collected without adding again. Stored quantity may exceed the current target only when V1 producer semantics explicitly deliver surplus; readiness remains clamped to the objective target.",
+      "typed_reasons": [
+        "duplicate_event",
+        "objective_mismatch",
+        "source_mismatch"
+      ]
+    },
+    {
+      "contract": "TURN_IN_CONSUMPTION_ATOMICITY",
+      "classification": "V2_RESOLVED",
+      "decision": "Quest Item Store exposes the canonical consume primitive, while Quest Engine turn-in service owns orchestration. Stage 21.13.2 does not invent a second V1 caller. The V2 Unit of Work must recheck readiness and revision, conditionally consume the exact scoped quantity, grant rewards, persist completion and record the completion idempotency key in one atomic commit. Failure before commit rolls all parts back; retry after commit returns the persisted completed result without another consume or reward.",
+      "typed_reasons": [
+        "quest_not_ready",
+        "insufficient_quantity",
+        "stale_revision",
+        "already_completed"
+      ]
+    },
+    {
+      "contract": "OVERLEVEL_SKIP_AND_CLEANUP",
+      "classification": "V2_RESOLVED",
+      "decision": "Automatic overlevel reconciliation and explicit SKIP never consume quest items, never grant rewards and never move quest items into regular inventory. Existing scoped balances are preserved as inert persisted evidence until a separately authorized cleanup policy exists. Completed quest turn-in may consume only its own scoped requirement. Repeated reconciliation or SKIP is idempotent and never deletes unrelated quest balances.",
+      "typed_reasons": [
+        "already_skipped",
+        "already_completed",
+        "cleanup_not_authorized"
+      ]
+    }
+  ],
+  "implementation_boundary": {
+    "authorized": [
+      "immutable Quest Item balance and collection DTOs",
+      "isolated store ports",
+      "quantity and non-negative policy",
+      "collection event idempotency",
+      "atomic turn-in consumption planning",
+      "SKIP and overlevel preservation policy",
+      "in-memory Unit of Work",
+      "focused tests and smoke verifier",
+      "no-regular-inventory-leakage gate"
+    ],
+    "forbidden": [
+      "production SQLite adapter or migration",
+      "production database access",
+      "real quest-item quantity mutation",
+      "real reward grant",
+      "regular inventory integration",
+      "automatic cleanup of skipped quest balances",
+      "Telegram or runtime wiring",
+      "new quest content or item rules"
+    ]
+  },
+  "implementation_authorized": true,
+  "production_quantity_mutation_authorized": false,
+  "production_turn_in_authorized": false,
+  "runtime_integration_authorized": false,
+  "production_persistence_authorized": false,
+  "canonical_v2_ci": {
+    "status": "PASS",
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "",
+        "removed_bytecode_after_compile": [
+          "rom_v2/__pycache__/bootstrap.cpython-314.pyc",
+          "rom_v2/__pycache__/config.cpython-314.pyc",
+          "rom_v2/__pycache__/container.cpython-314.pyc",
+          "rom_v2/__pycache__/lifecycle.cpython-314.pyc",
+          "rom_v2/__pycache__/main.cpython-314.pyc",
+          "rom_v2/__pycache__/runtime_paths.cpython-314.pyc",
+          "rom_v2/__pycache__/settings.cpython-314.pyc",
+          "rom_v2/__pycache__/structured_logging.cpython-314.pyc",
+          "rom_v2/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/presentation/__pycache__/item_dto.cpython-314.pyc",
+          "rom_v2/infrastructure/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/adapter.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/callback_codec.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/callback_registry.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/account_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/account_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/character_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/character_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/connection_factory.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/equipment_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/equipment_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/inventory_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/inventory_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/migrator.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/primary_stat_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/primary_stat_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/provisional_contracts.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/repository_base.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/resource_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/resource_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/schema_contract.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v001_v2_baseline.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v002_primary_stats_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v003_item_identity_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v004_equipment_slots_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/account.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/auction.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/battle.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/battle_persistence.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/central_loot.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/character.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/class_catalog.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/combat_resources.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/damage_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/derived_stats.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/direct_trade.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/durability.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/effect_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/enhancement.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/equipment.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/equipment_generation.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/full_stat_snapshot.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_application.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_contract_history.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_core.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/item.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/level_up_gold.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/mana_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/player_progression.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/premium_combat.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/primary_stats.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/pvp.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/quest_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/resource_lifecycle.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/runes.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/skill_execution.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/terminal_paths.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/travel_aggregate.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/content/__pycache__/location_catalog.cpython-314.pyc",
+          "rom_v2/content/__pycache__/world_graph.cpython-314.pyc",
+          "rom_v2/content/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/application/__pycache__/account_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/account_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/admin_crystals.cpython-314.pyc",
+          "rom_v2/application/__pycache__/auction_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/bag_expansion.cpython-314.pyc",
+          "rom_v2/application/__pycache__/base_equipment_shop.cpython-314.pyc",
+          "rom_v2/application/__pycache__/character_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/character_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/crystal_wallet_ledger.cpython-314.pyc",
+          "rom_v2/application/__pycache__/daily_reward.cpython-314.pyc",
+          "rom_v2/application/__pycache__/direct_trade_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/durability_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/enhancement_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_generation_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_generation_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/full_stat_snapshot_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/gold_wallet.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_contract_history_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_core_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_management_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/integration_evidence.cpython-314.pyc",
+          "rom_v2/application/__pycache__/inventory_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/inventory_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/map_presentation.cpython-314.pyc",
+          "rom_v2/application/__pycache__/post_combat_hooks.cpython-314.pyc",
+          "rom_v2/application/__pycache__/potion_trading.cpython-314.pyc",
+          "rom_v2/application/__pycache__/premium_shop.cpython-314.pyc",
+          "rom_v2/application/__pycache__/primary_stat_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/primary_stat_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/pvp_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/quest_engine_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/resource_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/resource_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/reward_settlement.cpython-314.pyc",
+          "rom_v2/application/__pycache__/travel_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/application/services/__pycache__/rune_lifecycle.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/clock.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/random_source.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/repositories.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/unit_of_work.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/app/__pycache__/__init__.cpython-314.pyc"
+        ]
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "......................................................................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 310 tests in 14.108s\n\nOK\n"
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "V2 architecture enforcement: PASS\nPhysical files: 121\nImport edges: 426\nViolations: 0\n",
+        "stderr": ""
+      }
+    ]
+  },
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_13_2c_implement_quest_item_store.py",
+  "backup_path": "backup/stage_21_13_2b_20261025T204137Z"
+}
