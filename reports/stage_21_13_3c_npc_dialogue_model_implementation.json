@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.3c",
+  "status": "PASS",
+  "conclusion": "API_READY",
+  "parent": "66e9ff5cdfa4998ab39bde92c8444c45fdf578c3",
+  "implemented_files": [
+    "rom_v2/domain/npc_dialogue_model.py",
+    "rom_v2/application/npc_dialogue_service.py"
+  ],
+  "tests": {
+    "targeted": "PASS",
+    "smoke": "PASS",
+    "content_independence": "PASS"
+  },
+  "generic_dialogue_graph": "NOT_CONNECTED",
+  "external_service_mutation": "NOT_CONNECTED",
+  "runtime_integration": "NOT_CONNECTED",
+  "production_persistence": "NOT_CONNECTED",
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "canonical_v2_ci": {
+    "status": "PASS",
+    "stdout": "ROM V2 CI baseline: PASS\n[PASS] compile\n[PASS] imports\n[PASS] unit\n[PASS] architecture\n[PASS] duplicate_scan\n[PASS] content_validation\n",
+    "stderr": ""
+  }
+}
