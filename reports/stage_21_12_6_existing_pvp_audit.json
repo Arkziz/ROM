@@ -1,0 +1,221 @@
+{
+  "schema_version": 1,
+  "stage": "21.12.6",
+  "status": "PASS",
+  "conclusion": "GO_TO_SEMANTIC_REFINEMENT",
+  "generated_at_utc": "2026-10-25T19:39:39.964072+00:00",
+  "roadmap_scope": {
+    "title": "PvP",
+    "behavior": "Challenge, availability, shared combat engine, history, terminal settlement",
+    "acceptance": "No copied formulas"
+  },
+  "source_prerequisite": "reports/stage_21_12_5c_auction_implementation.json",
+  "summary": {
+    "contract_count": 12,
+    "v1_confirmed_contracts": 4,
+    "review_required_contracts": 8,
+    "unresolved_contracts": [
+      "AVAILABILITY_AND_ACTIVITY_SESSION_POLICY",
+      "ACCEPTED_DUEL_TO_BATTLE_ATOMICITY",
+      "COMBAT_SNAPSHOT_AND_PARTICIPANT_IDENTITY",
+      "SHARED_COMBAT_FORMULA_BOUNDARY",
+      "EVENT_HISTORY_AND_PROFILE_HISTORY",
+      "TIMEOUT_FORFEIT_AND_ANTI_STALL_POLICY",
+      "RESTART_RECOVERY_AND_SESSION_CLEANUP",
+      "PRESENTATION_TIMER_AND_HANDLER_BOUNDARY"
+    ],
+    "database_opened": false,
+    "production_code_changed": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "canonical_v1_evidence": {
+    "battle_owner": "systems/pvp_system.py",
+    "challenge_owner": "systems/pvp_request_service.py",
+    "round_engine": "systems/pvp_round_engine.py",
+    "handler_consumer": "handlers/pvp_interaction.py",
+    "battle_factory": "systems/pvp_battle_factory.py",
+    "completion_service": "systems/pvp_completion_service.py",
+    "timer_service": "systems/pvp_timer_service.py",
+    "owner_symbols": [
+      "claim_pvp_round_resolution",
+      "cleanup_terminal_pvp_activity_sessions",
+      "complete_pvp_battle",
+      "create_pvp_battle",
+      "get_pvp_recovery_plan",
+      "init_pvp_foundation",
+      "recover_pvp_after_restart",
+      "release_pvp_round_resolution",
+      "resolve_persisted_pvp_round",
+      "submit_pvp_action"
+    ],
+    "request_symbols": [
+      "cancel_failed_accepted_pvp_duel_request",
+      "create_pvp_duel_request",
+      "respond_to_pvp_duel_request"
+    ],
+    "atomicity": {
+      "begin_immediate": true,
+      "round_claim": true,
+      "terminal_completion": true
+    },
+    "shared_engine": {
+      "resolve_pvp_round": true,
+      "skill_adapter": "systems/pvp_skill_adapter.py"
+    },
+    "activity_sessions": {
+      "acquire": true,
+      "cleanup": true
+    },
+    "source_hashes": {
+      "systems/pvp_system.py": "5055dd5f96e97eb20a5204681a12cf21cd8354c94292b8633f819d850901f8dc",
+      "handlers/pvp_interaction.py": "64e76770501b76d4fe82b8c11786a7a6bddaa9b9e453aa0f71f1177439fa0235",
+      "systems/pvp_round_engine.py": "927aeb2745d3e2184a2719f749090f1c06337ceb9b4375dd427be7d0f9c985d1",
+      "systems/pvp_request_service.py": "436957b218d7afbb030cf49a2ce9040a41bdc7ec575bda4c2955bd39ebb9bb6f",
+      "systems/pvp_battle_factory.py": "c435a0c119f4ea57453f13dd5df4dbb699ffc44e39cf5bbdc0733e056fae4336",
+      "systems/pvp_completion_service.py": "f4a8c3043b127792dedfe8c741d00f49a1de54dd78be6a2e5bb8c563067757d6",
+      "systems/pvp_timer_service.py": "0755e73384d60e726972ff3921d0b708064d64eb43ccce303756bf516bedd9d5",
+      "systems/pvp_models.py": "8fd5ef0e8884104e64ac66d8b3f0f957632208283700ae5177c51b729493ff15"
+    }
+  },
+  "contract_matrix": [
+    {
+      "contract": "CHALLENGE_IDENTITY_AND_REVISION",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Exact V1 evidence confirmed."
+    },
+    {
+      "contract": "AVAILABILITY_AND_ACTIVITY_SESSION_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 behavior discovered; exact availability, snapshot, shared-formula, history, timeout, recovery or handler contract requires refinement."
+    },
+    {
+      "contract": "ACCEPTED_DUEL_TO_BATTLE_ATOMICITY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 behavior discovered; exact availability, snapshot, shared-formula, history, timeout, recovery or handler contract requires refinement."
+    },
+    {
+      "contract": "COMBAT_SNAPSHOT_AND_PARTICIPANT_IDENTITY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 behavior discovered; exact availability, snapshot, shared-formula, history, timeout, recovery or handler contract requires refinement."
+    },
+    {
+      "contract": "SHARED_COMBAT_FORMULA_BOUNDARY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 behavior discovered; exact availability, snapshot, shared-formula, history, timeout, recovery or handler contract requires refinement."
+    },
+    {
+      "contract": "ROUND_ACTION_REVISION_AND_CLAIM",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Exact V1 evidence confirmed."
+    },
+    {
+      "contract": "DETERMINISTIC_ROUND_RESOLUTION",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Exact V1 evidence confirmed."
+    },
+    {
+      "contract": "TERMINAL_SETTLEMENT_AND_EXACT_ONCE_COMPLETION",
+      "classification": "V1_CONFIRMED",
+      "meaning": "Exact V1 evidence confirmed."
+    },
+    {
+      "contract": "EVENT_HISTORY_AND_PROFILE_HISTORY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 behavior discovered; exact availability, snapshot, shared-formula, history, timeout, recovery or handler contract requires refinement."
+    },
+    {
+      "contract": "TIMEOUT_FORFEIT_AND_ANTI_STALL_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 behavior discovered; exact availability, snapshot, shared-formula, history, timeout, recovery or handler contract requires refinement."
+    },
+    {
+      "contract": "RESTART_RECOVERY_AND_SESSION_CLEANUP",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 behavior discovered; exact availability, snapshot, shared-formula, history, timeout, recovery or handler contract requires refinement."
+    },
+    {
+      "contract": "PRESENTATION_TIMER_AND_HANDLER_BOUNDARY",
+      "classification": "REVIEW_REQUIRED",
+      "meaning": "V1 behavior discovered; exact availability, snapshot, shared-formula, history, timeout, recovery or handler contract requires refinement."
+    }
+  ],
+  "implementation_authorized": false,
+  "canonical_v2_ci": {
+    "schema_version": 1,
+    "status": "PASS",
+    "failed_checks": [],
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "file_count": 171,
+        "failures": []
+      },
+      {
+        "name": "imports",
+        "status": "PASS",
+        "module_count": 117,
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-c",
+            "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.admin_crystals', 'rom_v2.application.auction_service', 'rom_v2.application.bag_expansion', 'rom_v2.application.base_equipment_shop', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.daily_reward', 'rom_v2.application.direct_trade_service', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.guild_contract_history_service', 'rom_v2.application.guild_core_service', 'rom_v2.application.guild_management_service', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.map_presentation', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.potion_trading', 'rom_v2.application.premium_shop', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.application.travel_service', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.content.location_catalog', 'rom_v2.content.world_graph', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.auction', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.direct_trade', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.guild_application', 'rom_v2.domain.guild_contract_history', 'rom_v2.domain.guild_core', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.domain.travel_aggregate', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests_v2",
+            "-p",
+            "test_*.py"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "..........................................................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 298 tests in 15.345s\n\nOK"
+        }
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "tools/verify_v2_architecture.py",
+            "--project-root",
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+          ],
+          "returncode": 0,
+          "stdout": "V2 architecture enforcement: PASS\nPhysical files: 117\nImport edges: 418\nViolations: 0",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "duplicate_scan",
+        "status": "PASS",
+        "symbol_count": 481,
+        "duplicates": {}
+      },
+      {
+        "name": "content_validation",
+        "status": "PASS",
+        "file_count": 2,
+        "failures": []
+      }
+    ]
+  },
+  "removed_bytecode_before_ci": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_12_6a_refine_pvp_contract.py",
+  "backup_path": "backup/stage_21_12_6_20261025T193917Z"
+}
