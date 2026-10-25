@@ -1,0 +1,265 @@
+{
+  "schema_version": 1,
+  "stage": "21.12.6b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "source_refinement": "reports/stage_21_12_6a_refined_pvp_contract.json",
+  "contract_matrix": {
+    "total": 12,
+    "v1_confirmed": 4,
+    "resolved_now": 8,
+    "unresolved": 0
+  },
+  "resolved_contracts": [
+    "AVAILABILITY_AND_ACTIVITY_SESSION_POLICY",
+    "ACCEPTED_DUEL_TO_BATTLE_ATOMICITY",
+    "COMBAT_SNAPSHOT_AND_PARTICIPANT_IDENTITY",
+    "SHARED_COMBAT_FORMULA_BOUNDARY",
+    "EVENT_HISTORY_AND_PROFILE_HISTORY",
+    "TIMEOUT_FORFEIT_AND_ANTI_STALL_POLICY",
+    "RESTART_RECOVERY_AND_SESSION_CLEANUP",
+    "PRESENTATION_TIMER_AND_HANDLER_BOUNDARY"
+  ],
+  "unresolved_contracts": [],
+  "resolutions": {
+    "AVAILABILITY_AND_ACTIVITY_SESSION_POLICY": {
+      "decision": "Challenge creation rejects self-target and requires both users online, in the same canonical location, free of PvE and other interaction activity, without another pending duel or active battle. Acceptance repeats all checks against the accepted request revision. After immutable snapshots are prepared, both pvp_battle activity sessions are acquired for the same battle_id; failure to acquire either session compensates any acquired session and cancels the created battle."
+    },
+    "ACCEPTED_DUEL_TO_BATTLE_ATOMICITY": {
+      "decision": "The accepted request is the idempotency key for battle creation. One application orchestration prepares both snapshots, creates exactly one battle under BEGIN IMMEDIATE, acquires both activity sessions, and publishes success only after all steps pass. A retry returns the existing battle. Failure before commit creates nothing; failure after battle creation but before both sessions are acquired cancels that battle and releases every acquired session."
+    },
+    "COMBAT_SNAPSHOT_AND_PARTICIPANT_IDENTITY": {
+      "decision": "Each participant is persisted by stable user_id plus immutable side and a battle-start snapshot. The snapshot freezes class, level, max/current HP, attack, defenses, critical, dodge, resource type/value, combo, equipment-derived bonuses and skill availability. Battle-start HP is full canonical max HP; resource initialization follows the shared class resource policy. Durability and equipment changes after acceptance do not refresh an active battle snapshot."
+    },
+    "SHARED_COMBAT_FORMULA_BOUNDARY": {
+      "decision": "PvP orchestration may sequence simultaneous actions, status effects, timeout intents and terminal checks, but it must consume shared canonical damage, defense, critical, dodge, resource-cost, regeneration and skill-effect policies through imports or adapters. Handlers and presentation may not calculate combat values. The Stage 21.12.6c architecture gate must fail on local duplicate formula constants/functions or direct arithmetic implementations outside approved shared adapters. No new PvP-only damage or resource formulas are authorized."
+    },
+    "EVENT_HISTORY_AND_PROFILE_HISTORY": {
+      "decision": "Battle events are append-only and ordered by battle_id, round_number, event sequence and stable event id. Participants may read their own complete battle history; non-participants receive no private battle payload. Only resultful completed battles publish one profile-history entry per participant, keyed by battle_id and user_id. Cancelled or setup-failed battles are excluded. Machine reasons remain stable keys and Ukrainian text is presentation-only."
+    },
+    "TIMEOUT_FORFEIT_AND_ANTI_STALL_POLICY": {
+      "decision": "Each required action uses the persisted round deadline owned by the timer service. Repeated timer ticks are idempotent. If exactly one participant misses the final deadline, that participant forfeits and the opponent wins; if both miss it, the battle ends without a winner using the canonical double-timeout reason. Warnings do not mutate battle state. Maximum-round or no-progress termination uses the existing round-engine terminal policy and never introduces copied damage formulas."
+    },
+    "RESTART_RECOVERY_AND_SESSION_CLEANUP": {
+      "decision": "Restart recovery classifies every non-terminal battle from persisted round, revision, actions, resolution claim and deadline. Unclaimed complete rounds resume resolution with the same seed/revision; partially submitted rounds resume until their reconstructed deadline; stale unresolved claims are released before retry. Terminal battles are never reopened. Missing active sessions are reconciled when safe, while orphan sessions for terminal or absent battles are released. Repeated recovery returns the same typed per-battle outcome without duplicate events or completion."
+    },
+    "PRESENTATION_TIMER_AND_HANDLER_BOUNDARY": {
+      "decision": "One PvP application service owns challenge acceptance, battle creation, action commands, recovery and terminal completion through typed commands/results. The pure round engine owns deterministic resolution; the timer port supplies deadlines and timeout commands. Telegram handlers own callback parsing, keyboards and Ukrainian text, pass battle_id, round_number and expected_revision, and register one canonical route. Handlers, timer adapters and presentation modules may not contain combat formulas."
+    }
+  },
+  "authoritative_evidence": {
+    "owners": [
+      "systems/pvp_system.py",
+      "systems/pvp_request_service.py",
+      "systems/pvp_round_engine.py",
+      "systems/pvp_battle_factory.py",
+      "systems/pvp_completion_service.py",
+      "systems/pvp_timer_service.py",
+      "systems/pvp_models.py",
+      "systems/pvp_skill_adapter.py",
+      "handlers/pvp_interaction.py"
+    ],
+    "shared_formula_evidence": {
+      "critical_multiplier_imported": true,
+      "dodge_calculator_imported": true,
+      "skill_adapter": true
+    },
+    "availability": {
+      "online": true,
+      "busy": true,
+      "activity_session": true
+    },
+    "source_hashes": {
+      "systems/pvp_system.py": "5055dd5f96e97eb20a5204681a12cf21cd8354c94292b8633f819d850901f8dc",
+      "systems/pvp_request_service.py": "436957b218d7afbb030cf49a2ce9040a41bdc7ec575bda4c2955bd39ebb9bb6f",
+      "systems/pvp_round_engine.py": "927aeb2745d3e2184a2719f749090f1c06337ceb9b4375dd427be7d0f9c985d1",
+      "systems/pvp_battle_factory.py": "c435a0c119f4ea57453f13dd5df4dbb699ffc44e39cf5bbdc0733e056fae4336",
+      "systems/pvp_completion_service.py": "f4a8c3043b127792dedfe8c741d00f49a1de54dd78be6a2e5bb8c563067757d6",
+      "systems/pvp_timer_service.py": "0755e73384d60e726972ff3921d0b708064d64eb43ccce303756bf516bedd9d5",
+      "systems/pvp_models.py": "8fd5ef0e8884104e64ac66d8b3f0f957632208283700ae5177c51b729493ff15",
+      "systems/pvp_skill_adapter.py": "2f4ed46c893d10ac832b6223b32926f7405930fe86da378e11a9ddedb649de0f",
+      "handlers/pvp_interaction.py": "64e76770501b76d4fe82b8c11786a7a6bddaa9b9e453aa0f71f1177439fa0235"
+    }
+  },
+  "acceptance": {
+    "no_copied_formulas": true,
+    "architecture_gate_required": true
+  },
+  "implementation_boundary": {
+    "authorized": true,
+    "authorized_scope": [
+      "immutable PvP challenge battle participant snapshot action and event DTOs",
+      "availability and activity-session policy ports",
+      "accepted-duel idempotency and compensation planning",
+      "shared combat policy adapter interfaces without copied formulas",
+      "round revision claim timeout forfeit history and recovery state machine",
+      "in-memory Unit of Work fixtures",
+      "focused tests smoke verifier and no-copied-formulas gate"
+    ],
+    "forbidden_scope": [
+      "production SQLite adapter or migration",
+      "Telegram/runtime handler wiring",
+      "production database access",
+      "real battle execution or terminal settlement",
+      "production timer scheduling",
+      "new PvP damage defense critical dodge resource or skill formulas",
+      "changes to V1 combat balance"
+    ]
+  },
+  "implementation_authorized": true,
+  "runtime_integration_authorized": false,
+  "production_persistence_authorized": false,
+  "production_battle_execution_authorized": false,
+  "production_terminal_settlement_authorized": false,
+  "production_timer_authorized": false,
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false,
+  "canonical_v2_ci": {
+    "status": "PASS",
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "",
+        "removed_bytecode_after_compile": [
+          "rom_v2/__pycache__/bootstrap.cpython-314.pyc",
+          "rom_v2/__pycache__/config.cpython-314.pyc",
+          "rom_v2/__pycache__/container.cpython-314.pyc",
+          "rom_v2/__pycache__/lifecycle.cpython-314.pyc",
+          "rom_v2/__pycache__/main.cpython-314.pyc",
+          "rom_v2/__pycache__/runtime_paths.cpython-314.pyc",
+          "rom_v2/__pycache__/settings.cpython-314.pyc",
+          "rom_v2/__pycache__/structured_logging.cpython-314.pyc",
+          "rom_v2/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/presentation/__pycache__/item_dto.cpython-314.pyc",
+          "rom_v2/infrastructure/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/adapter.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/callback_codec.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/callback_registry.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/account_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/account_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/character_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/character_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/connection_factory.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/equipment_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/equipment_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/inventory_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/inventory_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/migrator.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/primary_stat_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/primary_stat_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/provisional_contracts.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/repository_base.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/resource_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/resource_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/schema_contract.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v001_v2_baseline.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v002_primary_stats_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v003_item_identity_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v004_equipment_slots_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/account.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/auction.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/battle.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/battle_persistence.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/central_loot.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/character.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/class_catalog.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/combat_resources.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/damage_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/derived_stats.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/direct_trade.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/durability.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/effect_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/enhancement.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/equipment.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/equipment_generation.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/full_stat_snapshot.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_application.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_contract_history.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_core.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/item.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/level_up_gold.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/mana_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/player_progression.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/premium_combat.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/primary_stats.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/resource_lifecycle.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/runes.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/skill_execution.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/terminal_paths.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/travel_aggregate.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/content/__pycache__/location_catalog.cpython-314.pyc",
+          "rom_v2/content/__pycache__/world_graph.cpython-314.pyc",
+          "rom_v2/content/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/application/__pycache__/account_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/account_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/admin_crystals.cpython-314.pyc",
+          "rom_v2/application/__pycache__/auction_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/bag_expansion.cpython-314.pyc",
+          "rom_v2/application/__pycache__/base_equipment_shop.cpython-314.pyc",
+          "rom_v2/application/__pycache__/character_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/character_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/crystal_wallet_ledger.cpython-314.pyc",
+          "rom_v2/application/__pycache__/daily_reward.cpython-314.pyc",
+          "rom_v2/application/__pycache__/direct_trade_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/durability_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/enhancement_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_generation_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_generation_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/full_stat_snapshot_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/gold_wallet.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_contract_history_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_core_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_management_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/integration_evidence.cpython-314.pyc",
+          "rom_v2/application/__pycache__/inventory_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/inventory_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/map_presentation.cpython-314.pyc",
+          "rom_v2/application/__pycache__/post_combat_hooks.cpython-314.pyc",
+          "rom_v2/application/__pycache__/potion_trading.cpython-314.pyc",
+          "rom_v2/application/__pycache__/premium_shop.cpython-314.pyc",
+          "rom_v2/application/__pycache__/primary_stat_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/primary_stat_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/resource_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/resource_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/reward_settlement.cpython-314.pyc",
+          "rom_v2/application/__pycache__/travel_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/application/services/__pycache__/rune_lifecycle.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/clock.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/random_source.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/repositories.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/unit_of_work.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/app/__pycache__/__init__.cpython-314.pyc"
+        ]
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "..........................................................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 298 tests in 14.460s\n\nOK\n"
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "V2 architecture enforcement: PASS\nPhysical files: 117\nImport edges: 418\nViolations: 0\n",
+        "stderr": ""
+      }
+    ]
+  },
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_12_6c_implement_pvp.py",
+  "backup_path": "backup/stage_21_12_6b_20261025T195223Z"
+}
