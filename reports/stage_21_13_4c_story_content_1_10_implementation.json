@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.4c",
+  "status": "PASS",
+  "conclusion": "API_READY_PACKAGE_1_10",
+  "parent": "d551643fd821c42e37327165dc5ad8ab4d7df765",
+  "candidate_sha256": "08b3322a79f288c3f74773e7ca604a087b36e3e776fa229d55fcf922ef81223a",
+  "implemented_files": [
+    "rom_v2/domain/story_content.py",
+    "rom_v2/content/story_start_path_1_10.py"
+  ],
+  "package": {
+    "range": "1-10",
+    "count": 10,
+    "numbers": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "level": 1,
+    "reward_exp_each": 30,
+    "reward_gold_each": 0.27
+  },
+  "tests": {
+    "targeted": "PASS",
+    "smoke": "PASS",
+    "content_boundary": "PASS"
+  },
+  "packages_11_50": "NOT_CONNECTED",
+  "runtime_integration": "NOT_CONNECTED",
+  "production_persistence": "NOT_CONNECTED",
+  "canonical_reference_changed": false,
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_game_check": "REQUIRED_BEFORE_NEXT_PACKAGE",
+  "canonical_v2_ci": {
+    "status": "PASS",
+    "stdout": "ROM V2 CI baseline: PASS\n[PASS] compile\n[PASS] imports\n[PASS] unit\n[PASS] architecture\n[PASS] duplicate_scan\n[PASS] content_validation\n",
+    "stderr": ""
+  }
+}
