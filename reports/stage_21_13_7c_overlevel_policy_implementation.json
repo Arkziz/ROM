@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.7c",
+  "status": "PASS",
+  "conclusion": "API_READY_OVERLEVEL_POLICY",
+  "parent": "082e922b33834c6053667e805d50542bfe78af34",
+  "policy_anchor": "Stage 19.18 SKIP policy",
+  "implemented_files": [
+    "rom_v2/domain/overlevel_policy.py",
+    "rom_v2/application/overlevel_policy_service.py",
+    "rom_v2/presentation/overlevel_policy.py"
+  ],
+  "contracts": {
+    "strict_threshold": "PASS",
+    "location_wide_scope": "PASS",
+    "active_and_missing_to_skipped": "PASS",
+    "finalized_rows_preserved": "PASS",
+    "no_rewards": "PASS",
+    "quest_items_deleted": "PASS",
+    "idempotency": "PASS",
+    "atomic_rollback": "PASS",
+    "presentation": "PASS",
+    "authority_boundary": "PASS"
+  },
+  "behavior": {
+    "location_max_levels": {
+      "start_path": 5,
+      "dark_forest": 10
+    },
+    "trigger": "current_level > location_max_level",
+    "finalized_statuses": [
+      "COMPLETED",
+      "SKIPPED"
+    ],
+    "reward_policy": "NO_REWARD",
+    "quest_item_policy": "DELETE_LOCATION_ROWS"
+  },
+  "tests": [
+    {
+      "command": "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe -m unittest -v tests_v2.test_overlevel_policy",
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "test_atomic_rollback (tests_v2.test_overlevel_policy.OverlevelPolicyTest.test_atomic_rollback) ... ok\ntest_exact_max_is_noop (tests_v2.test_overlevel_policy.OverlevelPolicyTest.test_exact_max_is_noop) ... ok\ntest_idempotent (tests_v2.test_overlevel_policy.OverlevelPolicyTest.test_idempotent) ... ok\ntest_level_11_reconciles_both (tests_v2.test_overlevel_policy.OverlevelPolicyTest.test_level_11_reconciles_both) ... ok\ntest_skipped_reward_guard (tests_v2.test_overlevel_policy.OverlevelPolicyTest.test_skipped_reward_guard) ... ok\ntest_start_path_location_wide (tests_v2.test_overlevel_policy.OverlevelPolicyTest.test_start_path_location_wide) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 0.010s\n\nOK\n"
+    },
+    {
+      "command": "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\tools\\check_stage_21_13_7c_overlevel_policy.py",
+      "returncode": 0,
+      "stdout": "Stage 21.13.7c Overlevel policy smoke: PASS\n",
+      "stderr": ""
+    },
+    {
+      "command": "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\tools\\verify_stage_21_13_7c_overlevel_policy.py",
+      "returncode": 0,
+      "stdout": "Stage 21.13.7c Overlevel policy boundary: PASS\n",
+      "stderr": ""
+    }
+  ],
+  "runtime_integration": "NOT_CONNECTED",
+  "production_persistence": "NOT_CONNECTED",
+  "database_opened": false,
+  "canonical_reference_changed": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_game_check": "NOT_REQUIRED_API_ONLY",
+  "stage_21_13_status": "API_READY_COMPLETE",
+  "suggested_next_stage": "21.14"
+}
