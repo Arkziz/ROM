@@ -1,0 +1,178 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.7b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "parent": "53511890ef7151eed3ea2d62cb57de66f31d2fe4",
+  "policy_anchor": "Stage 19.18 SKIP policy",
+  "contract_matrix": [
+    {
+      "contract": "OVERLEVEL_TRIGGER_AND_THRESHOLD",
+      "status": "RESOLVED",
+      "rule": "A location is exceeded only when current_level is strictly greater than its configured maximum; equality does not trigger reconciliation.",
+      "owners": [
+        "systems/story_quest_system.py",
+        "tools/check_story_quest_overlevel_skip_hook.py"
+      ],
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "AFFECTED_QUEST_RANGE_AND_SECTION_BOUNDARY",
+      "status": "RESOLVED",
+      "rule": "Reconciliation is location-wide: every canonical quest of each exceeded story location is materialized; section boundaries do not limit the mutation.",
+      "owners": [
+        "systems/story_quest_system.py",
+        "db_modules/story_quests.py",
+        "tools/verify_stage_19_34_2_atomic_location_story_skip.py"
+      ],
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "ACTIVE_QUEST_AND_CURRENT_PROGRESS_HANDLING",
+      "status": "RESOLVED",
+      "rule": "An unfinished ACTIVE row in an exceeded location becomes SKIPPED with no completion conversion; its location quest-item rows are removed. Already finalized rows remain authoritative.",
+      "owners": [
+        "db_modules/story_quests.py",
+        "tools/verify_stage_19_34_2_atomic_location_story_skip.py"
+      ],
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "SKIPPED_STATE_PERSISTENCE_AND_IDEMPOTENCY",
+      "status": "RESOLVED",
+      "rule": "SKIPPED is persistent and finalized. Re-running reconciliation after the same state produces changed=0 and must not rewrite COMPLETED or already SKIPPED rows.",
+      "owners": [
+        "db_modules/story_quests.py",
+        "tools/verify_stage_19_34_2_atomic_location_story_skip.py"
+      ],
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "NEXT_QUEST_AVAILABILITY_AND_CHAIN_CONTINUITY",
+      "status": "RESOLVED",
+      "rule": "A predecessor in COMPLETED or SKIPPED satisfies the sequential chain predicate; overlevel reconciliation may finalize a location without leaving a false locked chain.",
+      "owners": [
+        "systems/story_quest_system.py",
+        "handlers/story_quest_hierarchy_ui.py"
+      ],
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "NO_REWARD_AND_NO_QUEST_ITEM_CONSUMPTION",
+      "status": "RESOLVED",
+      "rule": "Newly skipped quests retain reward_claimed=0, grant no EXP/gold/items, and delete story quest-item rows for the exceeded location rather than consuming them as a turn-in.",
+      "owners": [
+        "db_modules/story_quests.py",
+        "systems/story_quest_overlevel_system.py",
+        "tools/verify_stage_19_34_2_atomic_location_story_skip.py"
+      ],
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "EXPLICIT_SKIP_VS_AUTOMATIC_RECONCILIATION",
+      "status": "RESOLVED",
+      "rule": "The canonical Stage 19.18 path is automatic location reconciliation after a qualifying level result. The narrower active-quest skip primitive is not a substitute for location-wide reconciliation.",
+      "owners": [
+        "systems/story_quest_overlevel_system.py",
+        "systems/story_quest_system.py",
+        "db_modules/story_quests.py"
+      ],
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "RESTART_RECOVERY_AND_TRANSACTION_BOUNDARY",
+      "status": "RESOLVED",
+      "rule": "The database reconciliation owner performs the location-wide write atomically on the supplied connection. Persisted SKIPPED rows and removal of location quest items survive restart; orchestration must not add a hidden commit.",
+      "owners": [
+        "db_modules/story_quests.py",
+        "systems/story_quest_system.py"
+      ],
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "PRESENTATION_HISTORY_AND_NAVIGATION_VISIBILITY",
+      "status": "RESOLVED",
+      "rule": "SKIPPED remains visible as a finalized journal/navigation state. User messaging reports the location and the newly skipped count explicitly as skipped without rewards.",
+      "owners": [
+        "handlers/story_quest_hierarchy_ui.py",
+        "systems/story_quest_overlevel_system.py"
+      ],
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "STAGE_19_18_POLICY_AUTHORITY_AND_SUPERSESSION",
+      "status": "RESOLVED",
+      "rule": "The current production runtime chain and its later atomic-location verification are authoritative. Historical candidates, broad token hits and shadow helpers cannot supersede this policy without a separate explicit decision.",
+      "owners": [
+        "handlers/combat.py",
+        "systems/story_quest_overlevel_system.py",
+        "systems/story_quest_system.py",
+        "db_modules/story_quests.py",
+        "tools/verify_stage_19_34_2_atomic_location_story_skip.py"
+      ],
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    }
+  ],
+  "resolved_behavior_boundary": {
+    "production_hook_order": "victory reward -> story progress -> quest-item drop -> overlevel reconciliation",
+    "level_source": "resulting player level after reward processing",
+    "trigger_operator": "current_level > location_max_level",
+    "location_max_levels": {
+      "start_path": 5,
+      "dark_forest": 10
+    },
+    "finalized_statuses": [
+      "COMPLETED",
+      "SKIPPED"
+    ],
+    "skip_reward_policy": "NO_REWARD",
+    "quest_item_policy": "DELETE_LOCATION_ROWS",
+    "idempotency": "SECOND_IDENTICAL_RECONCILIATION_CHANGED_0",
+    "narrow_active_skip": "NON_AUTHORITATIVE_FOR_LOCATION_RECONCILIATION"
+  },
+  "authoritative_owner_hashes": {
+    "systems/story_quest_overlevel_system.py": "3718edb73bf6c5530366a4fd36e4abefbd612fc4f71b9755aee0db9568f1863d",
+    "systems/story_quest_system.py": "56fcc92d3af25177cd8838e4ba5899be20a2c388a7878e0e383d856089e80fcb",
+    "db_modules/story_quests.py": "cedc91f344f44dafc6daf35c6ba93d54e280f0f17b00709b32142abe503a4975",
+    "handlers/combat.py": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+    "handlers/story_quest_hierarchy_ui.py": "71b57d0330255bfa09aceb295cb316e1dd5c66bf9b15221847877ec524aecb59",
+    "tools/check_story_quest_overlevel_skip_hook.py": "0477bfd8b94b5860770ee49785eccd60e8b5f17254c20a2ac92811c07b215aff",
+    "tools/verify_stage_19_34_2_atomic_location_story_skip.py": "6911f85bb3546adaa7697612742d018597f9098d660af22a354b528be8a69dc6"
+  },
+  "parity_fixtures": [
+    {
+      "fixture": "tools/check_story_quest_overlevel_skip_hook.py",
+      "mode": "STRUCTURAL_ONLY",
+      "classification": "SUPERSEDED_RETURN_SHAPE_ASSERTION",
+      "retained_checks": [
+        "single production hook",
+        "hook order",
+        "resulting-level source"
+      ],
+      "excluded_assertion": "exact-max call returns None"
+    },
+    {
+      "fixture": "tools/verify_stage_19_34_2_atomic_location_story_skip.py",
+      "mode": "EXECUTED_BEHAVIORAL_ORACLE",
+      "returncode": 0,
+      "stdout": "PASS: Stage 19.34.2\n",
+      "stderr": ""
+    }
+  ],
+  "fixture_policy": {
+    "hook_checker": "STRUCTURAL_ONLY_SUPERSEDED_RETURN_SHAPE_ASSERTION",
+    "atomic_location_verifier": "EXECUTED_AUTHORITATIVE_BEHAVIORAL_ORACLE"
+  },
+  "summary": {
+    "resolved_contracts": 10,
+    "unresolved_contracts": 0,
+    "total_contracts": 10,
+    "implementation_authorized": true
+  },
+  "database_opened": false,
+  "production_code_changed": false,
+  "canonical_reference_changed": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_game_check": "NOT_REQUIRED_PARITY_ONLY",
+  "suggested_next_patch": "patch_21_13_7c_implement_overlevel_policy.py"
+}
