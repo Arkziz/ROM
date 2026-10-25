@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.2c",
+  "status": "PASS",
+  "conclusion": "API_READY",
+  "parent": "1d90cae5098cff26b9aba593c2d2492b729da919",
+  "implemented_files": [
+    "rom_v2/domain/quest_item_store.py",
+    "rom_v2/application/quest_item_store_service.py"
+  ],
+  "tests": {
+    "targeted": "PASS",
+    "smoke": "PASS",
+    "no_regular_inventory_leakage": "PASS"
+  },
+  "production_quantity_mutation": "NOT_CONNECTED",
+  "production_turn_in": "NOT_CONNECTED",
+  "runtime_integration": "NOT_CONNECTED",
+  "production_persistence": "NOT_CONNECTED",
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "canonical_v2_ci": {
+    "status": "PASS",
+    "stdout": "ROM V2 CI baseline: PASS\n[PASS] compile\n[PASS] imports\n[PASS] unit\n[PASS] architecture\n[PASS] duplicate_scan\n[PASS] content_validation\n",
+    "stderr": ""
+  }
+}
