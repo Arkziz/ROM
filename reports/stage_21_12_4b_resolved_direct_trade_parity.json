@@ -1,0 +1,203 @@
+{
+  "schema_version": 1,
+  "stage": "21.12.4b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "generated_at_utc": "2026-10-25T18:46:37.267450+00:00",
+  "source_refinement": "reports/stage_21_12_4a_refined_direct_trade_contract.json",
+  "normalized_contract_matrix": {
+    "total": 10,
+    "v1_confirmed": 2,
+    "resolved_now": 8,
+    "unresolved": 0
+  },
+  "resolved_contracts": [
+    "SAME_LOCATION_ONLINE_AND_BUSY_POLICY",
+    "TRADEABLE_ITEM_POLICY",
+    "OFFER_REVISION_AND_EDITING_POLICY",
+    "TWO_PHASE_CONFIRMATION",
+    "ATOMIC_ITEM_AND_GOLD_SETTLEMENT",
+    "CANCEL_EXPIRY_AND_RELEASE_POLICY",
+    "RESTART_RECOVERY_POLICY",
+    "PRESENTATION_AND_HANDLER_BOUNDARY"
+  ],
+  "unresolved_contracts": [],
+  "resolutions": {
+    "SAME_LOCATION_ONLINE_AND_BUSY_POLICY": {
+      "decision": "Trade creation requires an accepted trade request between two different users who are online, in the same canonical location, not busy in another activity and not already in an active trade. The same participant, active-trade and activity-session invariants are rechecked before ready and final settlement; a location or availability change returns a typed rejection before transfer. Eligibility belongs to the application service, not Telegram handlers."
+    },
+    "TRADEABLE_ITEM_POLICY": {
+      "decision": "One canonical item-policy service is used by inventory browsing, reservation and settlement. It rejects equipped items, auction-reserved items, gray loot, Firius Tokens, Rune of Success, Perfect Extractor, Sphere of the New Path, quest/DEV/premium-bound items and any item with tradeable=False; Simple Extractor remains permitted. Offers reference exact inventory_id, quantity and immutable snapshot, preserving generated-equipment identity."
+    },
+    "OFFER_REVISION_AND_EDITING_POLICY": {
+      "decision": "Every effective item or gold offer mutation increments trade revision and clears both participants' ready and confirmed flags. expected_revision mismatch returns stale_revision without mutation. An idempotent no-change request reports unchanged and does not increment revision. Returning to editing is allowed for either participant before completion, increments revision once and clears all readiness/confirmation state."
+    },
+    "TWO_PHASE_CONFIRMATION": {
+      "decision": "The canonical state flow is editing -> ready -> final confirmation -> completed. Both participants independently mark ready against the same revision; only when both are ready may either confirm. Each participant confirms once; the first confirmation is non-terminal, the second triggers settlement. Replays return already_ready or already_confirmed without duplicate mutation. Any offer edit or return-to-editing invalidates all confirmations."
+    },
+    "ATOMIC_ITEM_AND_GOLD_SETTLEMENT": {
+      "decision": "The second final confirmation opens one BEGIN IMMEDIATE Unit of Work. It reloads trade and revision, verifies both ready/confirmed flags, participants, reservations, exact quantities, item policy, snapshots, wallet balances and recipient bag capacity, then transfers items and gold, writes terminal status/history, releases reservations and activity sessions, and commits once. Any failure rolls back every transfer and leaves the trade non-completed; retry uses persisted terminal status to prevent double settlement."
+    },
+    "CANCEL_EXPIRY_AND_RELEASE_POLICY": {
+      "decision": "Either participant may cancel an active non-terminal trade. Expiry is a system action for stale active trades. Cancel and expiry atomically set one terminal status/reason, append history, release every trade reservation and release matching activity sessions. Replays against the same terminal trade are idempotent and perform no second release. Completed trades cannot be cancelled or expired."
+    },
+    "RESTART_RECOVERY_POLICY": {
+      "decision": "Restart recovery scans persisted active trades. Expired or structurally invalid trades are terminally expired/cancelled with atomic reservation and session release. Valid unexpired trades preserve offers and reservations, clear transient ready/confirmed state when V1 evidence requires it, and restore or reconcile matching activity sessions. Completed/cancelled/expired trades are never reopened or settled again. Repeated recovery returns a typed per-trade report and is idempotent."
+    },
+    "PRESENTATION_AND_HANDLER_BOUNDARY": {
+      "decision": "A single Direct Trade application service owns commands, lifecycle, policy and typed results. Domain/application code does not import Telegram. Handlers own keyboards, localized text, editor page state and callback parsing, pass trade_id plus expected_revision, and map typed reasons to Ukrainian presentation. Compatibility wrappers delegate only and never become a second production owner."
+    }
+  },
+  "authoritative_evidence": {
+    "authoritative_owner": "systems/player_interaction_system.py",
+    "handler_consumer": "handlers/player_interaction.py",
+    "compatibility_facade": "db_modules/systems_wrappers.py",
+    "owner_symbols": [
+      "cancel_player_trade",
+      "confirm_player_trade",
+      "create_player_trade_from_accepted_request",
+      "expire_stale_player_trades",
+      "recover_active_player_trades_after_restart",
+      "release_trade_inventory_reservations",
+      "reserve_inventory_for_trade",
+      "return_player_trade_to_editing",
+      "set_player_trade_gold_offer",
+      "set_player_trade_item_offer",
+      "set_player_trade_ready"
+    ],
+    "eligibility": {
+      "online": true,
+      "busy": true,
+      "location_references": 69
+    },
+    "reservation": {
+      "inventory_reservations": true,
+      "reserve": true,
+      "release": true
+    },
+    "revision_and_confirmation": {
+      "expected_revision": true,
+      "editing_return": true,
+      "ready_columns": true,
+      "confirmed_columns": true
+    },
+    "atomicity": {
+      "begin_immediate": true,
+      "commit_owner": "_commit_player_trade"
+    },
+    "recovery": {
+      "restart_recovery": true,
+      "cancel": true,
+      "expiry": true
+    },
+    "source_hashes": {
+      "systems/player_interaction_system.py": "7e0569317cab32cba42826dedfde2f804472c993b53250fc4497237d0004b171",
+      "handlers/player_interaction.py": "799e9ad6e745b3995886c6e504019b7c1b01073c917a0ae1b9ccc05b8948b0b9",
+      "db_modules/systems_wrappers.py": "2100be668336ab18f896ba1082cf136fd9a943a3def60402e07228b842e5eda7"
+    }
+  },
+  "implementation_boundary": {
+    "authorized": true,
+    "authorized_scope": [
+      "immutable trade state and offer DTOs",
+      "canonical eligibility and item-policy ports",
+      "revision and two-phase confirmation state machine",
+      "pure atomic-settlement planning service",
+      "cancel expiry and restart-recovery policies",
+      "in-memory Unit of Work fixtures",
+      "focused tests and smoke verifier"
+    ],
+    "forbidden_scope": [
+      "production SQLite adapter or migration",
+      "Telegram/runtime handler wiring",
+      "production database access",
+      "real inventory or gold mutation",
+      "auction or PvP behavior",
+      "new tradeable-item rules outside confirmed V1 policy"
+    ]
+  },
+  "implementation_authorized": true,
+  "runtime_integration_authorized": false,
+  "production_persistence_authorized": false,
+  "production_settlement_authorized": false,
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false,
+  "canonical_v2_ci": {
+    "schema_version": 1,
+    "status": "PASS",
+    "failed_checks": [],
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "file_count": 165,
+        "failures": []
+      },
+      {
+        "name": "imports",
+        "status": "PASS",
+        "module_count": 113,
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-c",
+            "import importlib; [importlib.import_module(name) for name in ['rom_v2', 'rom_v2.app', 'rom_v2.application', 'rom_v2.application.account_ports', 'rom_v2.application.account_service', 'rom_v2.application.admin_crystals', 'rom_v2.application.bag_expansion', 'rom_v2.application.base_equipment_shop', 'rom_v2.application.character_ports', 'rom_v2.application.character_service', 'rom_v2.application.crystal_wallet_ledger', 'rom_v2.application.daily_reward', 'rom_v2.application.durability_service', 'rom_v2.application.enhancement_service', 'rom_v2.application.equipment_generation_ports', 'rom_v2.application.equipment_generation_service', 'rom_v2.application.equipment_ports', 'rom_v2.application.equipment_service', 'rom_v2.application.full_stat_snapshot_service', 'rom_v2.application.gold_wallet', 'rom_v2.application.guild_contract_history_service', 'rom_v2.application.guild_core_service', 'rom_v2.application.guild_management_service', 'rom_v2.application.integration_evidence', 'rom_v2.application.inventory_ports', 'rom_v2.application.inventory_service', 'rom_v2.application.map_presentation', 'rom_v2.application.ports', 'rom_v2.application.ports.clock', 'rom_v2.application.ports.random_source', 'rom_v2.application.ports.repositories', 'rom_v2.application.ports.unit_of_work', 'rom_v2.application.post_combat_hooks', 'rom_v2.application.potion_trading', 'rom_v2.application.premium_shop', 'rom_v2.application.primary_stat_ports', 'rom_v2.application.primary_stat_service', 'rom_v2.application.resource_ports', 'rom_v2.application.resource_service', 'rom_v2.application.reward_settlement', 'rom_v2.application.services.rune_lifecycle', 'rom_v2.application.travel_service', 'rom_v2.bootstrap', 'rom_v2.config', 'rom_v2.container', 'rom_v2.content', 'rom_v2.content.location_catalog', 'rom_v2.content.world_graph', 'rom_v2.domain', 'rom_v2.domain.account', 'rom_v2.domain.battle', 'rom_v2.domain.battle_persistence', 'rom_v2.domain.central_loot', 'rom_v2.domain.character', 'rom_v2.domain.class_catalog', 'rom_v2.domain.combat_resources', 'rom_v2.domain.damage_engine', 'rom_v2.domain.derived_stats', 'rom_v2.domain.durability', 'rom_v2.domain.effect_engine', 'rom_v2.domain.enhancement', 'rom_v2.domain.equipment', 'rom_v2.domain.equipment_generation', 'rom_v2.domain.full_stat_snapshot', 'rom_v2.domain.guild_application', 'rom_v2.domain.guild_contract_history', 'rom_v2.domain.guild_core', 'rom_v2.domain.item', 'rom_v2.domain.level_up_gold', 'rom_v2.domain.mana_engine', 'rom_v2.domain.player_progression', 'rom_v2.domain.premium_combat', 'rom_v2.domain.primary_stats', 'rom_v2.domain.resource_lifecycle', 'rom_v2.domain.runes', 'rom_v2.domain.skill_execution', 'rom_v2.domain.terminal_paths', 'rom_v2.domain.travel_aggregate', 'rom_v2.infrastructure', 'rom_v2.infrastructure.persistence', 'rom_v2.infrastructure.persistence.account_repository', 'rom_v2.infrastructure.persistence.account_unit_of_work', 'rom_v2.infrastructure.persistence.character_repository', 'rom_v2.infrastructure.persistence.character_unit_of_work', 'rom_v2.infrastructure.persistence.connection_factory', 'rom_v2.infrastructure.persistence.equipment_repository', 'rom_v2.infrastructure.persistence.equipment_unit_of_work', 'rom_v2.infrastructure.persistence.inventory_repository', 'rom_v2.infrastructure.persistence.inventory_unit_of_work', 'rom_v2.infrastructure.persistence.migrations', 'rom_v2.infrastructure.persistence.migrations.v001_v2_baseline', 'rom_v2.infrastructure.persistence.migrations.v002_primary_stats_parity', 'rom_v2.infrastructure.persistence.migrations.v003_item_identity_parity', 'rom_v2.infrastructure.persistence.migrations.v004_equipment_slots_parity', 'rom_v2.infrastructure.persistence.migrator', 'rom_v2.infrastructure.persistence.primary_stat_repository', 'rom_v2.infrastructure.persistence.primary_stat_unit_of_work', 'rom_v2.infrastructure.persistence.provisional_contracts', 'rom_v2.infrastructure.persistence.repository_base', 'rom_v2.infrastructure.persistence.resource_repository', 'rom_v2.infrastructure.persistence.resource_unit_of_work', 'rom_v2.infrastructure.persistence.schema_contract', 'rom_v2.infrastructure.persistence.unit_of_work', 'rom_v2.infrastructure.telegram', 'rom_v2.infrastructure.telegram.adapter', 'rom_v2.infrastructure.telegram.callback_codec', 'rom_v2.infrastructure.telegram.callback_registry', 'rom_v2.lifecycle', 'rom_v2.main', 'rom_v2.presentation.item_dto', 'rom_v2.runtime_paths', 'rom_v2.settings', 'rom_v2.structured_logging']]"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "-m",
+            "unittest",
+            "discover",
+            "-s",
+            "tests_v2",
+            "-p",
+            "test_*.py"
+          ],
+          "returncode": 0,
+          "stdout": "",
+          "stderr": "...........................................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 283 tests in 14.029s\n\nOK"
+        }
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "execution": {
+          "command": [
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM\\.venv\\Scripts\\python.exe",
+            "tools/verify_v2_architecture.py",
+            "--project-root",
+            "C:\\Users\\Oleh\\OneDrive\\Документи\\ROM"
+          ],
+          "returncode": 0,
+          "stdout": "V2 architecture enforcement: PASS\nPhysical files: 113\nImport edges: 405\nViolations: 0",
+          "stderr": ""
+        }
+      },
+      {
+        "name": "duplicate_scan",
+        "status": "PASS",
+        "symbol_count": 464,
+        "duplicates": {}
+      },
+      {
+        "name": "content_validation",
+        "status": "PASS",
+        "file_count": 2,
+        "failures": []
+      }
+    ]
+  },
+  "removed_bytecode_before_ci": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_12_4c_implement_direct_trade.py",
+  "backup_path": "backup/stage_21_12_4b_20261025T184616Z"
+}
