@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.4f",
+  "status": "PASS",
+  "conclusion": "API_READY_PACKAGE_31_40",
+  "parent": "175b365bde195d30ed761c2d2a52ce4c6d101bb8",
+  "candidate_sha256": "08b3322a79f288c3f74773e7ca604a087b36e3e776fa229d55fcf922ef81223a",
+  "implemented_files": [
+    "rom_v2/content/story_start_path_31_40.py"
+  ],
+  "reused_owner": "rom_v2/domain/story_content.py",
+  "package": {
+    "range": "31-40",
+    "count": 10,
+    "numbers": [
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40
+    ],
+    "level": 4,
+    "location_id": "start_path",
+    "bridge_predecessor": "start_path_030_scene_of_the_attack",
+    "reward_exp_each": 48,
+    "reward_gold_each": 0.89
+  },
+  "tests": {
+    "targeted": "PASS",
+    "smoke": "PASS",
+    "content_boundary": "PASS"
+  },
+  "packages_41_50": "NOT_CONNECTED",
+  "runtime_integration": "NOT_CONNECTED",
+  "production_persistence": "NOT_CONNECTED",
+  "canonical_reference_changed": false,
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_game_check": "NOT_REQUIRED_API_ONLY",
+  "canonical_v2_ci": {
+    "status": "PASS",
+    "stdout": "ROM V2 CI baseline: PASS\n[PASS] compile\n[PASS] imports\n[PASS] unit\n[PASS] architecture\n[PASS] duplicate_scan\n[PASS] content_validation\n",
+    "stderr": ""
+  }
+}
