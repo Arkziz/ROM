@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.5g",
+  "status": "PASS",
+  "conclusion": "API_READY_STORY_CONTENT_51_100_COMPLETE",
+  "parent": "31e283976f89026c25b23f6e45e2ef6cdbf2dc21",
+  "candidate_sha256": "14a31852d13cbd42f303ff31e3f7e3da0bcf7afc0ed29f2745656f65ce656bbf",
+  "implemented_files": [
+    "rom_v2/content/story_dark_forest_91_100.py"
+  ],
+  "reused_owner": "rom_v2/domain/story_content.py",
+  "package": {
+    "range": "91-100",
+    "count": 10,
+    "numbers": [
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97,
+      98,
+      99,
+      100
+    ],
+    "level": 10,
+    "location_id": "dark_forest",
+    "bridge_predecessor": "dark_forest_090_corrupted_lands",
+    "reward_matrix": [
+      {
+        "number": 91,
+        "exp": 114,
+        "gold": 5.29
+      },
+      {
+        "number": 92,
+        "exp": 114,
+        "gold": 5.29
+      },
+      {
+        "number": 93,
+        "exp": 114,
+        "gold": 5.29
+      },
+      {
+        "number": 94,
+        "exp": 114,
+        "gold": 5.29
+      },
+      {
+        "number": 95,
+        "exp": 114,
+        "gold": 5.29
+      },
+      {
+        "number": 96,
+        "exp": 114,
+        "gold": 5.29
+      },
+      {
+        "number": 97,
+        "exp": 114,
+        "gold": 5.29
+      },
+      {
+        "number": 98,
+        "exp": 114,
+        "gold": 5.29
+      },
+      {
+        "number": 99,
+        "exp": 190,
+        "gold": 8.81
+      },
+      {
+        "number": 100,
+        "exp": 114,
+        "gold": 5.29
+      }
+    ],
+    "terminal_quest": 100
+  },
+  "tests": {
+    "targeted": "PASS",
+    "smoke": "PASS",
+    "content_boundary": "PASS"
+  },
+  "story_51_100": {
+    "packages": [
+      "51-60",
+      "61-70",
+      "71-80",
+      "81-90",
+      "91-100"
+    ],
+    "canonical_records": 50,
+    "api_ready": true
+  },
+  "runtime_integration": "NOT_CONNECTED",
+  "production_persistence": "NOT_CONNECTED",
+  "canonical_reference_changed": false,
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_game_check": "NOT_REQUIRED_API_ONLY",
+  "canonical_v2_ci": {
+    "status": "PASS",
+    "stdout": "ROM V2 CI baseline: PASS\n[PASS] compile\n[PASS] imports\n[PASS] unit\n[PASS] architecture\n[PASS] duplicate_scan\n[PASS] content_validation\n",
+    "stderr": ""
+  }
+}
