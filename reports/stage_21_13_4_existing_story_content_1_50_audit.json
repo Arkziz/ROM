@@ -1,0 +1,394 @@
+{
+  "schema_version": 1,
+  "stage": "21.13.4",
+  "status": "PASS",
+  "conclusion": "GO_TO_SEMANTIC_REFINEMENT",
+  "roadmap_scope": {
+    "title": "Story content 1-50",
+    "goal": "Transfer in packages of 10 with level access, sequential chain, rewards and bosses",
+    "acceptance": "Chain 1-50 complete"
+  },
+  "summary": {
+    "contract_count": 11,
+    "v1_confirmed_contracts": 3,
+    "review_required_contracts": 8,
+    "unresolved_contracts": [
+      "EXACT_QUEST_RECORDS_1_TO_50",
+      "LEVEL_GATES_AND_SEQUENTIAL_PREREQUISITES",
+      "OBJECTIVES_TARGETS_AND_QUEST_ITEMS",
+      "REWARD_PARITY_AND_TRIPLE_NORMAL_MOB_POLICY",
+      "NPC_LOCATION_AND_LOCALIZED_PRESENTATION_REFERENCES",
+      "BOSS_AND_FORCED_ENCOUNTER_CONTRACT",
+      "PACKAGE_BY_TEN_AND_CONTENT_VALIDATION",
+      "QUEST_49_50_TERMINAL_FLOW_AND_KNOWN_PRESENTATION_NUANCE"
+    ],
+    "database_opened": false,
+    "production_code_changed": false,
+    "canonical_reference_changed": false,
+    "v1_wal_shm_manipulated": false
+  },
+  "authoritative_evidence": {
+    "reference_folder": "Квести",
+    "reference_files": [
+      {
+        "file": "Квести/ROM_квести_Початок_Шляху_50.docx",
+        "size": 6545,
+        "sha256": "f22eac9bb0d9a055e843a53fcd807ddfaf94fc1187225d1e44e6f7d7421959be",
+        "encoding": "binary_or_non_utf8",
+        "mentions_1_50": false,
+        "quest_number_hits": 0
+      },
+      {
+        "file": "Квести/ROM_квести_Початок_Шляху_candidate.json",
+        "size": 119778,
+        "sha256": "08b3322a79f288c3f74773e7ca604a087b36e3e776fa229d55fcf922ef81223a",
+        "encoding": "utf-8",
+        "mentions_1_50": true,
+        "quest_number_hits": 3
+      },
+      {
+        "file": "Квести/ROM_квести_Темний_Бір_50.docx",
+        "size": 6843,
+        "sha256": "d050a39524772a145f2fb33a5850fa8b9cd417c36991c074fc0b0a2284e0bc7e",
+        "encoding": "binary_or_non_utf8",
+        "mentions_1_50": false,
+        "quest_number_hits": 0
+      },
+      {
+        "file": "Квести/ROM_квести_Темний_Бір_candidate.json",
+        "size": 119387,
+        "sha256": "14a31852d13cbd42f303ff31e3f7e3da0bcf7afc0ed29f2745656f65ce656bbf",
+        "encoding": "utf-8",
+        "mentions_1_50": true,
+        "quest_number_hits": 0
+      }
+    ],
+    "reference_candidates": [
+      "Квести/ROM_квести_Початок_Шляху_candidate.json",
+      "Квести/ROM_квести_Темний_Бір_candidate.json"
+    ],
+    "production_sources": [
+      {
+        "file": "data/story_quest_definitions.py",
+        "sha256": "be180e71dc857923517284b4e92aa14bec602baef0751eeec49662abe5a430d2"
+      },
+      {
+        "file": "data/story_quest_npcs.py",
+        "sha256": "131f927c8b022765e625b4eb7d51804058b6ea36d434b6ba95c000f3def921dc"
+      },
+      {
+        "file": "systems/story_quest_system.py",
+        "sha256": "56fcc92d3af25177cd8838e4ba5899be20a2c388a7878e0e383d856089e80fcb"
+      },
+      {
+        "file": "systems/story_quest_npc_acceptance_system.py",
+        "sha256": "2acbc1522a4ca00827e586f778fc3369dbe802958b4d6768f556c20068b306a9"
+      },
+      {
+        "file": "handlers/story_quests.py",
+        "sha256": "2f6ecb8fa65f51b000fce4d16a24673f429b6d571ca11e214dacf71393bf1d28"
+      },
+      {
+        "file": "handlers/story_quest_npc_runtime.py",
+        "sha256": "424ccfafd9e4e8a974229e014ff9d7c9224e5f0b3d1150cf92804accccbd50f6"
+      }
+    ],
+    "definition_symbols": [
+      "_q",
+      "_require",
+      "_text",
+      "derive_story_quest_status",
+      "validate_story_quest_definition",
+      "validate_story_quest_pack"
+    ],
+    "quest_number_token_hits": {
+      "1": 10,
+      "2": 2,
+      "3": 1,
+      "4": 1,
+      "5": 2,
+      "6": 0,
+      "7": 0,
+      "8": 0,
+      "9": 0,
+      "10": 0,
+      "11": 0,
+      "12": 0,
+      "13": 0,
+      "14": 0,
+      "15": 0,
+      "16": 0,
+      "17": 0,
+      "18": 0,
+      "19": 0,
+      "20": 0,
+      "21": 0,
+      "22": 0,
+      "23": 0,
+      "24": 0,
+      "25": 0,
+      "26": 0,
+      "27": 0,
+      "28": 0,
+      "29": 0,
+      "30": 0,
+      "31": 0,
+      "32": 0,
+      "33": 0,
+      "34": 0,
+      "35": 0,
+      "36": 0,
+      "37": 0,
+      "38": 0,
+      "39": 0,
+      "40": 0,
+      "41": 0,
+      "42": 0,
+      "43": 0,
+      "44": 0,
+      "45": 0,
+      "46": 0,
+      "47": 0,
+      "48": 0,
+      "49": 0,
+      "50": 0
+    },
+    "objective_token_counts": {
+      "TALK": 3,
+      "TURN_IN": 5,
+      "QUEST_ITEM": 7,
+      "KILL": 3,
+      "KILL_REGION": 3
+    },
+    "start_path_found": false,
+    "localized_start_path_found": false,
+    "quest_49_found": false,
+    "quest_50_found": false,
+    "npc_reference_found": true,
+    "reward_fields_found": true,
+    "boss_evidence_found": true,
+    "production_literal_evidence_complete": false,
+    "production_definition_resolution_required": true,
+    "missing_literal_evidence": [
+      "start_path",
+      "quest_49",
+      "quest_50"
+    ]
+  },
+  "literal_evidence_complete": false,
+  "production_definition_resolution_required": true,
+  "contract_matrix": [
+    {
+      "contract": "CANONICAL_REFERENCE_FOLDER_AND_SOURCE_INVENTORY",
+      "classification": "V1_CONFIRMED",
+      "evidence": "see authoritative_evidence"
+    },
+    {
+      "contract": "PRODUCTION_DEFINITION_OWNER",
+      "classification": "V1_CONFIRMED",
+      "evidence": "see authoritative_evidence"
+    },
+    {
+      "contract": "QUEST_CHAIN_BOUNDARY_1_TO_50",
+      "classification": "V1_CONFIRMED",
+      "evidence": "see authoritative_evidence"
+    },
+    {
+      "contract": "EXACT_QUEST_RECORDS_1_TO_50",
+      "classification": "REVIEW_REQUIRED",
+      "evidence": "see authoritative_evidence"
+    },
+    {
+      "contract": "LEVEL_GATES_AND_SEQUENTIAL_PREREQUISITES",
+      "classification": "REVIEW_REQUIRED",
+      "evidence": "see authoritative_evidence"
+    },
+    {
+      "contract": "OBJECTIVES_TARGETS_AND_QUEST_ITEMS",
+      "classification": "REVIEW_REQUIRED",
+      "evidence": "see authoritative_evidence"
+    },
+    {
+      "contract": "REWARD_PARITY_AND_TRIPLE_NORMAL_MOB_POLICY",
+      "classification": "REVIEW_REQUIRED",
+      "evidence": "see authoritative_evidence"
+    },
+    {
+      "contract": "NPC_LOCATION_AND_LOCALIZED_PRESENTATION_REFERENCES",
+      "classification": "REVIEW_REQUIRED",
+      "evidence": "see authoritative_evidence"
+    },
+    {
+      "contract": "BOSS_AND_FORCED_ENCOUNTER_CONTRACT",
+      "classification": "REVIEW_REQUIRED",
+      "evidence": "see authoritative_evidence"
+    },
+    {
+      "contract": "PACKAGE_BY_TEN_AND_CONTENT_VALIDATION",
+      "classification": "REVIEW_REQUIRED",
+      "evidence": "see authoritative_evidence"
+    },
+    {
+      "contract": "QUEST_49_50_TERMINAL_FLOW_AND_KNOWN_PRESENTATION_NUANCE",
+      "classification": "REVIEW_REQUIRED",
+      "evidence": "see authoritative_evidence"
+    }
+  ],
+  "implementation_authorized": false,
+  "canonical_v2_ci": {
+    "status": "PASS",
+    "checks": [
+      {
+        "name": "compile",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "",
+        "removed_bytecode_after_compile": [
+          "rom_v2/__pycache__/bootstrap.cpython-314.pyc",
+          "rom_v2/__pycache__/config.cpython-314.pyc",
+          "rom_v2/__pycache__/container.cpython-314.pyc",
+          "rom_v2/__pycache__/lifecycle.cpython-314.pyc",
+          "rom_v2/__pycache__/main.cpython-314.pyc",
+          "rom_v2/__pycache__/runtime_paths.cpython-314.pyc",
+          "rom_v2/__pycache__/settings.cpython-314.pyc",
+          "rom_v2/__pycache__/structured_logging.cpython-314.pyc",
+          "rom_v2/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/presentation/__pycache__/item_dto.cpython-314.pyc",
+          "rom_v2/infrastructure/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/adapter.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/callback_codec.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/callback_registry.cpython-314.pyc",
+          "rom_v2/infrastructure/telegram/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/account_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/account_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/character_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/character_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/connection_factory.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/equipment_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/equipment_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/inventory_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/inventory_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/migrator.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/primary_stat_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/primary_stat_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/provisional_contracts.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/repository_base.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/resource_repository.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/resource_unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/schema_contract.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/unit_of_work.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v001_v2_baseline.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v002_primary_stats_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v003_item_identity_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/v004_equipment_slots_parity.cpython-314.pyc",
+          "rom_v2/infrastructure/persistence/migrations/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/account.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/auction.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/battle.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/battle_persistence.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/central_loot.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/character.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/class_catalog.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/combat_resources.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/damage_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/derived_stats.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/direct_trade.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/durability.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/effect_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/enhancement.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/equipment.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/equipment_generation.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/full_stat_snapshot.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_application.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_contract_history.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/guild_core.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/item.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/level_up_gold.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/mana_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/npc_dialogue_model.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/player_progression.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/premium_combat.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/primary_stats.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/pvp.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/quest_engine.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/quest_item_store.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/resource_lifecycle.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/runes.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/skill_execution.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/terminal_paths.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/travel_aggregate.cpython-314.pyc",
+          "rom_v2/domain/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/content/__pycache__/location_catalog.cpython-314.pyc",
+          "rom_v2/content/__pycache__/world_graph.cpython-314.pyc",
+          "rom_v2/content/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/application/__pycache__/account_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/account_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/admin_crystals.cpython-314.pyc",
+          "rom_v2/application/__pycache__/auction_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/bag_expansion.cpython-314.pyc",
+          "rom_v2/application/__pycache__/base_equipment_shop.cpython-314.pyc",
+          "rom_v2/application/__pycache__/character_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/character_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/crystal_wallet_ledger.cpython-314.pyc",
+          "rom_v2/application/__pycache__/daily_reward.cpython-314.pyc",
+          "rom_v2/application/__pycache__/direct_trade_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/durability_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/enhancement_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_generation_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_generation_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/equipment_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/full_stat_snapshot_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/gold_wallet.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_contract_history_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_core_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/guild_management_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/integration_evidence.cpython-314.pyc",
+          "rom_v2/application/__pycache__/inventory_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/inventory_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/map_presentation.cpython-314.pyc",
+          "rom_v2/application/__pycache__/npc_dialogue_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/post_combat_hooks.cpython-314.pyc",
+          "rom_v2/application/__pycache__/potion_trading.cpython-314.pyc",
+          "rom_v2/application/__pycache__/premium_shop.cpython-314.pyc",
+          "rom_v2/application/__pycache__/primary_stat_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/primary_stat_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/pvp_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/quest_engine_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/quest_item_store_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/resource_ports.cpython-314.pyc",
+          "rom_v2/application/__pycache__/resource_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/reward_settlement.cpython-314.pyc",
+          "rom_v2/application/__pycache__/travel_service.cpython-314.pyc",
+          "rom_v2/application/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/application/services/__pycache__/rune_lifecycle.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/clock.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/random_source.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/repositories.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/unit_of_work.cpython-314.pyc",
+          "rom_v2/application/ports/__pycache__/__init__.cpython-314.pyc",
+          "rom_v2/app/__pycache__/__init__.cpython-314.pyc"
+        ]
+      },
+      {
+        "name": "unit",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "",
+        "stderr": "................................................................................................................................................................................................................................................................................................................................\n----------------------------------------------------------------------\nRan 320 tests in 15.895s\n\nOK\n"
+      },
+      {
+        "name": "architecture",
+        "status": "PASS",
+        "returncode": 0,
+        "stdout": "V2 architecture enforcement: PASS\nPhysical files: 125\nImport edges: 436\nViolations: 0\n",
+        "stderr": ""
+      }
+    ]
+  },
+  "manual_game_check": "NOT_REQUIRED",
+  "suggested_next_patch": "patch_21_13_4a_refine_story_content_1_50_contract.py",
+  "backup_path": "backup/stage_21_13_4_20261025T211031Z"
+}
