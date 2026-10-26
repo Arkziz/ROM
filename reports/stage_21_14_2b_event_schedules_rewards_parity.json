@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "stage": "21.14.2b",
+  "title": "Event Schedules and Rewards Parity Resolution",
+  "mode": "EVIDENCE_ONLY_PARITY_RESOLUTION",
+  "status": "PASS",
+  "conclusion": "STOP_IMPLEMENTATION_BLOCKED",
+  "generated_at_utc": "2026-10-26T20:54:24.829442+00:00",
+  "preflight": {
+    "branch": "rewrite/rom-v2",
+    "starting_head": "af3828a6bef2d619a076968cdb7ca28f7e2d78e0",
+    "allowed_dirty": [
+      " M ROM_FULL_DUMP.txt"
+    ],
+    "audit_report": "reports/stage_21_14_2_existing_event_schedules_rewards_audit.json",
+    "audit_sha256": "a98db02871359e49d80da1d646bbeac814725c408331a81e4ff961a30627d085",
+    "refinement_report": "reports/stage_21_14_2a_refined_event_schedules_rewards_contract.json",
+    "refinement_sha256": "2238cfd9b75b9c83f0e18caec61cf24c0afc22447baa087fe066320452839599",
+    "protected_runtime_files_present": [
+      "backup/about_game_18_4_1_20260904_143827/game.db-shm",
+      "backup/about_game_18_4_1_20260904_143827/game.db-wal",
+      "game.db-shm",
+      "game.db-wal"
+    ]
+  },
+  "summary": {
+    "audit_conclusion": "GO_TO_SEMANTIC_REFINEMENT",
+    "claims_total": 1,
+    "resolved": 0,
+    "unresolved": 1,
+    "conflicts": 0,
+    "informational": 0,
+    "implementation_authorized": false,
+    "next_step": "STOP_IMPLEMENTATION_BLOCKED",
+    "policy": "No missing schedule or reward rule was inferred, defaulted, or invented."
+  },
+  "claims": [
+    {
+      "claim_id": "$",
+      "json_path": "$",
+      "source_status_key": "status",
+      "status": "UNRESOLVED",
+      "scope": null,
+      "decision": "GO_TO_PARITY_RESOLUTION",
+      "evidence": null,
+      "blocking": true,
+      "raw_sha256": "b491fe6b22d25f0f4c837961204e1db8d286de7247c42c12cbda3117b613aab7",
+      "resolution_reason": "Confirmed claim lacks explicit source evidence"
+    }
+  ],
+  "safety": {
+    "database_opened": false,
+    "runtime_started": false,
+    "telegram_started": false,
+    "production_source_modified": false,
+    "wal_shm_manipulated": false,
+    "main_py_started": false
+  },
+  "manual_game_check": "NOT_REQUIRED_CONTRACT_RESOLUTION_ONLY"
+}
