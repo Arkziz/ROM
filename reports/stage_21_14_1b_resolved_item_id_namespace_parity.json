@@ -1,0 +1,274 @@
+{
+  "schema_version": 1,
+  "stage": "21.14.1b",
+  "status": "PASS",
+  "conclusion": "GO_TO_IMPLEMENTATION",
+  "parent": "cc816b7ecdb4e2d7256f4be7431a0040f369fde7",
+  "policy_anchor": "Stage 21.14.1 plus accepted Stage 18.28 event ID policy",
+  "contract_matrix": [
+    {
+      "contract": "STATIC_CATALOG_NAMESPACE",
+      "status": "RESOLVED",
+      "rule": null,
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "STORY_QUEST_ITEM_KEY_NAMESPACE",
+      "status": "RESOLVED",
+      "rule": null,
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "EVENT_STATIC_NAMESPACE",
+      "status": "RESOLVED",
+      "rule": null,
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP",
+      "range": [
+        4000,
+        9999
+      ],
+      "block_size": 25,
+      "block_count": 240
+    },
+    {
+      "contract": "EVENT_BLOCK_ALLOCATION",
+      "status": "RESOLVED",
+      "rule": "25-ID immutable blocks; 240 blocks; explicit same-key extension only; no block or ID reuse",
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "GENERATED_PERMANENT_NAMESPACE",
+      "status": "RESOLVED",
+      "rule": null,
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP",
+      "range": [
+        10000,
+        10009999
+      ],
+      "reuse": "NEVER_REUSE"
+    },
+    {
+      "contract": "SHOP_PREVIEW_NAMESPACE",
+      "status": "RESOLVED",
+      "rule": null,
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP",
+      "range": [
+        10010000,
+        11009999
+      ],
+      "lifecycle": "PREVIEW_TO_FRESH_PERMANENT_THEN_DELETE_PREVIEW"
+    },
+    {
+      "contract": "PREVIEW_TO_PERMANENT_PROMOTION",
+      "status": "RESOLVED",
+      "rule": "preview identity is replaced by a fresh permanent ID atomically; preview references must not survive",
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "NEVER_REUSE_POLICY",
+      "status": "RESOLVED",
+      "rule": "event assignments and generated permanent identities are irreversible; deleted/retired identities are not recycled",
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "ALLOCATOR_PERSISTENCE",
+      "status": "RESOLVED",
+      "rule": "allocator state and assignment registries are persisted owners, not MAX(items.id)+1 guesses at call sites",
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "CROSS_NAMESPACE_COLLISION_GUARDS",
+      "status": "RESOLVED",
+      "rule": "fail closed before insert/promotion/assignment when an ID is outside its owner range or collides with another namespace",
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "LEGACY_OR_TEST_ONLY_IDS",
+      "status": "RESOLVED",
+      "rule": "fixture, migration sentinel and orphan test IDs are evidence only and never expand production namespaces",
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    },
+    {
+      "contract": "UNASSIGNED_GAPS_POLICY",
+      "status": "RESOLVED",
+      "rule": "numeric gaps remain UNASSIGNED_RESERVED until explicitly assigned by a canonical migration or allocator contract",
+      "resolution": "V1_AUTHORITATIVE_PARITY_KEEP"
+    }
+  ],
+  "resolved_namespace_matrix": {
+    "STATIC_CATALOG_NAMESPACE": {
+      "name": "STATIC_CATALOG_NAMESPACE",
+      "identity": "numeric items.id",
+      "known_ids_and_bands": [
+        [
+          201,
+          204
+        ],
+        [
+          301,
+          301
+        ],
+        [
+          401,
+          404
+        ],
+        [
+          501,
+          528
+        ],
+        [
+          601,
+          602
+        ],
+        [
+          701,
+          728
+        ],
+        [
+          900,
+          900
+        ]
+      ],
+      "gaps": "UNASSIGNED_RESERVED_NOT_FREE",
+      "allocation": "explicit migration/catalog assignment only",
+      "reuse": "no implicit reuse of gaps or retired IDs",
+      "status": "REFINED"
+    },
+    "STORY_QUEST_ITEM_KEY_NAMESPACE": {
+      "name": "STORY_QUEST_ITEM_KEY_NAMESPACE",
+      "identity": "(user_id, quest_id, item_key)",
+      "numeric_item_id": "NOT_USED",
+      "inventory_id": "NOT_USED",
+      "global_item_namespace_consumed": false,
+      "status": "REFINED"
+    },
+    "EVENT_STATIC_NAMESPACE": {
+      "name": "EVENT_STATIC_NAMESPACE",
+      "identity": "numeric item_id",
+      "range": {
+        "min": 4000,
+        "max": 9999,
+        "inclusive": true
+      },
+      "allocation_unit": 25,
+      "block_count": 240,
+      "first_block": [
+        4000,
+        4024
+      ],
+      "second_block": [
+        4025,
+        4049
+      ],
+      "last_block": [
+        9975,
+        9999
+      ],
+      "owner_key": "EVENT_KEY",
+      "first_allocation": "one immutable free block",
+      "extension": "same EVENT_KEY may explicitly receive another free block",
+      "reuse": "FORBIDDEN_FOR_BLOCKS_AND_IDS",
+      "status": "REFINED"
+    },
+    "GENERATED_PERMANENT_NAMESPACE": {
+      "name": "GENERATED_PERMANENT_NAMESPACE",
+      "identity": "numeric items.id",
+      "range": {
+        "min": 10000,
+        "max": 10009999,
+        "inclusive": true,
+        "boundary_status": "REFINED_FROM_V1_ALLOCATOR_AND_MIGRATION"
+      },
+      "allocation": "persistent monotonically allocated permanent ID",
+      "reuse": "NEVER_REUSE",
+      "preview_overlap": "FORBIDDEN",
+      "status": "REFINED"
+    },
+    "SHOP_PREVIEW_NAMESPACE": {
+      "name": "SHOP_PREVIEW_NAMESPACE",
+      "identity": "temporary numeric preview item ID",
+      "range": {
+        "min": 10010000,
+        "max": 11009999,
+        "inclusive": true
+      },
+      "lifecycle": "temporary preview -> atomic promotion to a newly allocated permanent generated ID -> preview row removed",
+      "inventory_reference": "preview IDs forbidden after promotion",
+      "reuse": "not a permanent identity",
+      "status": "REFINED"
+    }
+  },
+  "event_partition": {
+    "namespace": [
+      4000,
+      9999
+    ],
+    "block_size": 25,
+    "block_count": 240,
+    "first_block": [
+      4000,
+      4024
+    ],
+    "second_block": [
+      4025,
+      4049
+    ],
+    "last_block": [
+      9975,
+      9999
+    ],
+    "contiguous": true,
+    "overlap_free": true
+  },
+  "authoritative_owner_hashes": {
+    "systems/item_id_allocator_system.py": "36a0497ed8ed00e91e4fea6cf56347774690f671b772c1269efc65552f045045",
+    "db_modules/generated_equipment.py": "a23b6558917037098873de61f79c45ab347cf7587a8c5a5977230fb69dd11a4b",
+    "db_modules/shop.py": "9da1260fa7b375485480cd9a06d93b485efff54bae2ec369e560aa8e384facc0",
+    "migrations/030_static_item_namespace.py": "3aa3e0e0a06b65fbae11e4d87c85d2bc0577f644dc4eac8572e366b902a7bd40",
+    "migrations/040_generated_equipment_namespace.py": "54b746737f665fa4b075491b0c1122ed8f09726c840796c614b46d6f990995b6",
+    "migrations/041_shop_preview_promotion_recovery.py": "0114ded4288526b8032e95c6ee3838211b9912dfa1bf23d2c065c14046f0692e"
+  },
+  "fixture_policy": {
+    "legacy_fixture": "STRUCTURAL_ONLY_SUPERSEDED_EMPTY_REGISTRY_ASSERTION",
+    "resolved_parity_contract": "EXECUTED_AUTHORITATIVE_PARITY_CONTRACT"
+  },
+  "parity_fixtures": [
+    {
+      "fixture": "tools/smoke_test_event_item_blocks_25_18_29_1a.py",
+      "mode": "STRUCTURAL_ONLY_SUPERSEDED_EMPTY_REGISTRY_ASSERTION",
+      "executed": false,
+      "sha256": "eb49adbbb9d1e2d606d3bd4674d9d8eb62289e1aabeefc8866f66e99cc3ee386",
+      "superseded_assertion": "assert EVENT_ITEM_BLOCKS == {}",
+      "retained_evidence": [
+        "namespace boundaries",
+        "25-ID block arithmetic",
+        "240-block partition",
+        "allocation API markers"
+      ]
+    },
+    {
+      "fixture": "embedded_resolved_event_block_behavior",
+      "mode": "EXECUTED_AUTHORITATIVE_PARITY_CONTRACT",
+      "status": "PASS",
+      "checks": {
+        "first_assignment": 0,
+        "idempotent_replay": 0,
+        "second_event": 1,
+        "explicit_same_key_extension": 2,
+        "reuse_forbidden": true
+      }
+    }
+  ],
+  "summary": {
+    "resolved_contracts": 12,
+    "unresolved_contracts": 0,
+    "total_contracts": 12,
+    "implementation_authorized": true
+  },
+  "database_opened": false,
+  "production_code_changed": false,
+  "canonical_reference_changed": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_game_check": "NOT_REQUIRED_PARITY_ONLY",
+  "suggested_next_patch": "patch_21_14_1c_implement_item_id_namespace.py"
+}
