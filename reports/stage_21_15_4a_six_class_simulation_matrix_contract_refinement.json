@@ -1,0 +1,468 @@
+{
+  "audit_prerequisite": {
+    "conclusion": "PASS_REVIEW_REQUIRED",
+    "path": "reports/stage_21_15_4_existing_six_class_simulation_matrix_audit.json",
+    "sha256": "8ec3664a1231db78875143fe2fcb1386b48fdbbf55e20b1f6ef2a68dacb95e86"
+  },
+  "canonical_classes": [
+    "warrior",
+    "knight",
+    "scout",
+    "rogue",
+    "mage",
+    "priest"
+  ],
+  "catalog_static_scan_missing": [],
+  "class_labels": {
+    "knight": "Лицар",
+    "mage": "Маг",
+    "priest": "Жрець",
+    "rogue": "Розбійник",
+    "scout": "Скаут",
+    "warrior": "Воїн"
+  },
+  "decision": "REFINED_SIX_CLASS_PARITY_RESOLUTION_REQUIRED",
+  "environment_file_opened": false,
+  "explicit_prohibitions": [
+    "No Scout-only acceptance path.",
+    "No long progression simulation or six-class balance run in this stage.",
+    "No production game.db, .env, Telegram runtime or main.py execution.",
+    "No duplicate formulas, class stats, skills, runes, equipment compatibility or reward rules.",
+    "No nested rom_v2/domain package."
+  ],
+  "flat_domain_required": true,
+  "game_db_wal_shm": "NOT_MANIPULATED",
+  "generated_at": "2026-10-27T23:28:02.747691+00:00",
+  "long_simulation_executed": false,
+  "main_started": false,
+  "manual_verification": {
+    "reason": "Read-only semantic refinement; no simulator execution.",
+    "required": false
+  },
+  "matrix": [
+    {
+      "class_key": "warrior",
+      "label": "Воїн",
+      "long_progression_run_required_now": false,
+      "required_short_contracts": [
+        "canonical_character_creation",
+        "canonical_primary_and_derived_stat_snapshot",
+        "hp_mp_and_attack_mode",
+        "equipment_compatibility_and_hand_rules",
+        "class_rune_compatibility",
+        "skill_loadout_and_mana_costs",
+        "deterministic_encounter_setup",
+        "bounded_combat_turn_smoke",
+        "result_serialization"
+      ]
+    },
+    {
+      "class_key": "knight",
+      "label": "Лицар",
+      "long_progression_run_required_now": false,
+      "required_short_contracts": [
+        "canonical_character_creation",
+        "canonical_primary_and_derived_stat_snapshot",
+        "hp_mp_and_attack_mode",
+        "equipment_compatibility_and_hand_rules",
+        "class_rune_compatibility",
+        "skill_loadout_and_mana_costs",
+        "deterministic_encounter_setup",
+        "bounded_combat_turn_smoke",
+        "result_serialization"
+      ]
+    },
+    {
+      "class_key": "scout",
+      "label": "Скаут",
+      "long_progression_run_required_now": false,
+      "required_short_contracts": [
+        "canonical_character_creation",
+        "canonical_primary_and_derived_stat_snapshot",
+        "hp_mp_and_attack_mode",
+        "equipment_compatibility_and_hand_rules",
+        "class_rune_compatibility",
+        "skill_loadout_and_mana_costs",
+        "deterministic_encounter_setup",
+        "bounded_combat_turn_smoke",
+        "result_serialization"
+      ]
+    },
+    {
+      "class_key": "rogue",
+      "label": "Розбійник",
+      "long_progression_run_required_now": false,
+      "required_short_contracts": [
+        "canonical_character_creation",
+        "canonical_primary_and_derived_stat_snapshot",
+        "hp_mp_and_attack_mode",
+        "equipment_compatibility_and_hand_rules",
+        "class_rune_compatibility",
+        "skill_loadout_and_mana_costs",
+        "deterministic_encounter_setup",
+        "bounded_combat_turn_smoke",
+        "result_serialization"
+      ]
+    },
+    {
+      "class_key": "mage",
+      "label": "Маг",
+      "long_progression_run_required_now": false,
+      "required_short_contracts": [
+        "canonical_character_creation",
+        "canonical_primary_and_derived_stat_snapshot",
+        "hp_mp_and_attack_mode",
+        "equipment_compatibility_and_hand_rules",
+        "class_rune_compatibility",
+        "skill_loadout_and_mana_costs",
+        "deterministic_encounter_setup",
+        "bounded_combat_turn_smoke",
+        "result_serialization"
+      ]
+    },
+    {
+      "class_key": "priest",
+      "label": "Жрець",
+      "long_progression_run_required_now": false,
+      "required_short_contracts": [
+        "canonical_character_creation",
+        "canonical_primary_and_derived_stat_snapshot",
+        "hp_mp_and_attack_mode",
+        "equipment_compatibility_and_hand_rules",
+        "class_rune_compatibility",
+        "skill_loadout_and_mana_costs",
+        "deterministic_encounter_setup",
+        "bounded_combat_turn_smoke",
+        "result_serialization"
+      ]
+    }
+  ],
+  "next_action": "GO_TO_SIX_CLASS_PARITY_RESOLUTION",
+  "owner_evidence": [
+    {
+      "classes_found": [
+        "warrior",
+        "knight",
+        "scout",
+        "rogue",
+        "mage",
+        "priest"
+      ],
+      "clock_mentions": 0,
+      "exists": true,
+      "path": "rom_v2/domain/class_catalog.py",
+      "repository_mentions": 0,
+      "rng_mentions": 0,
+      "scout_mentions": 1,
+      "sha256": "a3185a616704b5061bc8ec49cd54d2dd4830de6429c6858952df523bc5f6ef83",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 8,
+          "name": "CharacterClassDefinition"
+        },
+        {
+          "kind": "ClassDef",
+          "line": 34,
+          "name": "ClassCatalog"
+        }
+      ]
+    },
+    {
+      "classes_found": [
+        "warrior",
+        "knight",
+        "scout",
+        "rogue",
+        "mage",
+        "priest"
+      ],
+      "clock_mentions": 0,
+      "exists": true,
+      "path": "rom_v2/domain/derived_stats.py",
+      "repository_mentions": 0,
+      "rng_mentions": 0,
+      "scout_mentions": 2,
+      "sha256": "a6fdd9905c227549addf310c3b873b96bbc9e6d09a20b979f851a04fc8df6e1c",
+      "symbols": []
+    },
+    {
+      "classes_found": [],
+      "exists": false,
+      "path": "rom_v2/domain/combat_actor_stats.py",
+      "sha256": null,
+      "symbols": []
+    },
+    {
+      "classes_found": [],
+      "exists": false,
+      "path": "rom_v2/application/services/character_service.py",
+      "sha256": null,
+      "symbols": []
+    },
+    {
+      "classes_found": [],
+      "exists": false,
+      "path": "rom_v2/application/services/equipment_generation_service.py",
+      "sha256": null,
+      "symbols": []
+    },
+    {
+      "classes_found": [],
+      "exists": false,
+      "path": "rom_v2/application/services/full_stat_snapshot_service.py",
+      "sha256": null,
+      "symbols": []
+    },
+    {
+      "classes_found": [],
+      "clock_mentions": 3,
+      "exists": true,
+      "path": "rom_v2/application/ports/clock.py",
+      "repository_mentions": 0,
+      "rng_mentions": 0,
+      "scout_mentions": 0,
+      "sha256": "a023e54dae514692a5b76a491d7aa86f502d338a980e34e3ea8712eff1c9b6ee",
+      "symbols": []
+    },
+    {
+      "classes_found": [],
+      "clock_mentions": 0,
+      "exists": true,
+      "path": "rom_v2/application/ports/random_source.py",
+      "repository_mentions": 0,
+      "rng_mentions": 1,
+      "scout_mentions": 0,
+      "sha256": "91ee0496f217dd6f3c540936c224430fd8d1dcfb086f461dd9f3e8baaee11a5c",
+      "symbols": []
+    },
+    {
+      "classes_found": [
+        "warrior",
+        "knight",
+        "scout",
+        "rogue",
+        "mage",
+        "priest"
+      ],
+      "clock_mentions": 9,
+      "exists": true,
+      "path": "systems/simulation/parity_foundation.py",
+      "repository_mentions": 0,
+      "rng_mentions": 4,
+      "scout_mentions": 3,
+      "sha256": "48031062b3e44b94d3eb24c6fee02ae4f01f5802a921b7b481e18370e4fa9470",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 30,
+          "name": "SimulatorScenarioPolicy"
+        },
+        {
+          "kind": "ClassDef",
+          "line": 63,
+          "name": "SimulatorMetrics"
+        },
+        {
+          "kind": "ClassDef",
+          "line": 98,
+          "name": "IsolatedSimulatorState"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 89,
+          "name": "snapshot"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 153,
+          "name": "snapshot"
+        }
+      ]
+    },
+    {
+      "classes_found": [],
+      "clock_mentions": 0,
+      "exists": true,
+      "path": "systems/simulation/class_progression.py",
+      "repository_mentions": 0,
+      "rng_mentions": 0,
+      "scout_mentions": 0,
+      "sha256": "c1554cb617c25f61bdc0fe6b3e51a45b32cf3edad3b567297390f43f594496de",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 18,
+          "name": "ClassProgressionRequest"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 174,
+          "name": "run_class_progression"
+        }
+      ]
+    },
+    {
+      "classes_found": [
+        "warrior",
+        "knight",
+        "scout",
+        "rogue",
+        "mage",
+        "priest"
+      ],
+      "clock_mentions": 0,
+      "exists": true,
+      "path": "systems/simulation/world_progression.py",
+      "repository_mentions": 0,
+      "rng_mentions": 8,
+      "scout_mentions": 1,
+      "sha256": "a8532f594dbb836c9fef79dc1ef27ab37316f3eab3c15967bb326972b834ba90",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 27,
+          "name": "WorldProgressionSimulator"
+        }
+      ]
+    },
+    {
+      "classes_found": [
+        "warrior",
+        "knight",
+        "scout",
+        "rogue",
+        "mage",
+        "priest"
+      ],
+      "clock_mentions": 0,
+      "exists": true,
+      "path": "systems/pvp_balance_simulator.py",
+      "repository_mentions": 0,
+      "rng_mentions": 0,
+      "scout_mentions": 3,
+      "sha256": "c4bd07f9e201ecbecb9c3937c63a64e5a25c0ec6117fa6a29ca12b3a58c434bc",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 28,
+          "name": "simulate_duel"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 45,
+          "name": "simulate_matchup"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 54,
+          "name": "simulate_matrix"
+        }
+      ]
+    },
+    {
+      "classes_found": [
+        "warrior",
+        "knight",
+        "scout",
+        "rogue",
+        "mage",
+        "priest"
+      ],
+      "clock_mentions": 0,
+      "exists": true,
+      "path": "tests_v2/test_class_catalog.py",
+      "repository_mentions": 0,
+      "rng_mentions": 0,
+      "scout_mentions": 2,
+      "sha256": "c6db0d1b40d26f9bb9f18552f38886aa64cf84977927b142649a0a0ede721054",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 18,
+          "name": "ClassCatalogTest"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 19,
+          "name": "test_exact_audited_parity_matrix"
+        }
+      ]
+    }
+  ],
+  "production_mutation": false,
+  "production_sqlite_opened": false,
+  "refined_contract": [
+    {
+      "area": "class_roster",
+      "contract": "The matrix is exactly six classes: warrior, knight, scout, rogue, mage and priest. Scout is one row, not the default or sole acceptance class.",
+      "status": "REFINED"
+    },
+    {
+      "area": "matrix_shape",
+      "contract": "Every short contract test is parametrized over all six classes. Adding one Scout-only test does not satisfy the matrix contract.",
+      "status": "REFINED"
+    },
+    {
+      "area": "execution_scope",
+      "contract": "Stage 21.15.4 must not run long 1-to-target-level progression, balance calibration, performance sampling or production-sized simulation batches. Only bounded deterministic construction and short combat smoke checks are authorized.",
+      "status": "REFINED"
+    },
+    {
+      "area": "production_reuse",
+      "contract": "Character creation, class catalog, derived stats, combat actor stats, equipment generation and full-stat snapshots must reuse production V2 services/domain logic. Simulator-only copies of formulas or class coefficients are prohibited.",
+      "status": "REFINED"
+    },
+    {
+      "area": "clock_rng",
+      "contract": "Short checks use injected Clock and seeded RandomSource adapters. Wall-clock access and module-global random state are prohibited inside the matrix contract.",
+      "status": "REFINED"
+    },
+    {
+      "area": "repository_isolation",
+      "contract": "Fixtures use isolated in-memory or temporary sandbox repositories/UoW and never production game.db or accumulated local player state.",
+      "status": "REFINED"
+    },
+    {
+      "area": "combat_smoke",
+      "contract": "For each class, prepare one deterministic encounter and execute only a bounded number of turns sufficient to validate actor construction, legal skill/action selection, resource accounting and serialization. Victory, leveling or balance conclusions are not required.",
+      "status": "REFINED"
+    },
+    {
+      "area": "reporting",
+      "contract": "Output records one row per class with fixture creation, stats, compatibility, loadout, encounter setup, bounded-turn and serialization status. No aggregate balance ranking is authorized.",
+      "status": "REFINED"
+    },
+    {
+      "area": "flat_domain",
+      "contract": "Any Stage 21.15.4 implementation owner must remain a flat rom_v2/domain/*.py module or application adapter consistent with Stage 21.15.1d; no nested domain package is authorized.",
+      "status": "REFINED"
+    }
+  ],
+  "revision": "2026-10-28-r1-six-class-no-long-run",
+  "simulator_executed": false,
+  "stage": "21.15.4a",
+  "status": "PASS",
+  "unresolved_for_parity": [
+    {
+      "key": "exact_short_turn_bound",
+      "reason": "Parity resolution must select the smallest deterministic turn bound supported by existing combat APIs without converting this stage into a full simulation."
+    },
+    {
+      "key": "class_specific_skill_fixture_owner",
+      "reason": "Exact skill loadouts and mana-capable class behavior must come from authoritative production owners, not hard-coded refinement data."
+    },
+    {
+      "key": "equipment_and_rune_fixture_owner",
+      "reason": "Exact equipment and class-rune fixtures must be resolved from production compatibility policy for all six classes."
+    },
+    {
+      "key": "sandbox_repository_implementation",
+      "reason": "Parity resolution must identify the existing isolated UoW/repository implementation to reuse and forbid production SQLite access."
+    },
+    {
+      "key": "catalog_source_confirmation",
+      "reason": "If static source scanning does not expose all six keys in class_catalog.py, parity resolution must use accepted class-catalog evidence without inventing aliases."
+    }
+  ]
+}
