@@ -1,0 +1,2775 @@
+{
+  "audit_prerequisite": {
+    "conclusion": "PASS_REVIEW_REQUIRED",
+    "path": "reports/stage_21_15_3_existing_simulator_adapters_audit.json",
+    "sha256": "9f9f50d682a439b9eb954ad8535eb8cc36d09a585593b1be38d715ad8c4d88fc"
+  },
+  "authoritative_owner_candidates": [
+    {
+      "evidence": {
+        "clock": [
+          {
+            "line": 13,
+            "pattern": "SimulationClock",
+            "snippet": "class SimulationClock:"
+          },
+          {
+            "line": 23,
+            "pattern": "SimulationClock",
+            "snippet": "def at_start(cls, year: int = 2026, month: int = 1, day: int = 1) -> \"SimulationClock\":"
+          },
+          {
+            "line": 38,
+            "pattern": "SimulationClock",
+            "snippet": "raise ValueError(\"SimulationClock cannot move backwards\")"
+          }
+        ],
+        "formula": [],
+        "repository": [],
+        "reuse": [],
+        "rng": [],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "systems/simulation/clock.py",
+      "sha256": "795429f079a86168e47952e3d1a4cf2c0dad332e65dfdbacb01d80c5dfc27d17",
+      "symbols": [
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 13,
+          "name": "SimulationClock"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [],
+        "repository": [],
+        "reuse": [],
+        "rng": [
+          {
+            "line": 11,
+            "pattern": "SimulationRng",
+            "snippet": "class SimulationRng:"
+          },
+          {
+            "line": 12,
+            "pattern": "\\brng\\b",
+            "snippet": "\"\"\"Seeded RNG wrapper. No module-level random state is used.\"\"\""
+          },
+          {
+            "line": 14,
+            "pattern": "seed",
+            "snippet": "def __init__(self, seed: int) -> None:"
+          },
+          {
+            "line": 15,
+            "pattern": "seed",
+            "snippet": "self.seed = int(seed)"
+          },
+          {
+            "line": 16,
+            "pattern": "random\\.",
+            "snippet": "self._random = random.Random(self.seed)"
+          },
+          {
+            "line": 24,
+            "pattern": "random\\.",
+            "snippet": "return self._random.random()"
+          },
+          {
+            "line": 28,
+            "pattern": "random\\.",
+            "snippet": "return self._random.randint(a, b)"
+          },
+          {
+            "line": 32,
+            "pattern": "random\\.",
+            "snippet": "return self._random.uniform(a, b)"
+          },
+          {
+            "line": 38,
+            "pattern": "random\\.",
+            "snippet": "return self._random.choice(values)"
+          },
+          {
+            "line": 44,
+            "pattern": "random\\.",
+            "snippet": "return self._random.choices(values, weights=weights, k=k)"
+          },
+          {
+            "line": 48,
+            "pattern": "random\\.",
+            "snippet": "self._random.shuffle(values)"
+          },
+          {
+            "line": 51,
+            "pattern": "random\\.",
+            "snippet": "return sha256(pickle.dumps(self._random.getstate(), protocol=4)).hexdigest()"
+          },
+          {
+            "line": 54,
+            "pattern": "seed",
+            "snippet": "return {\"seed\": self.seed, \"draw_count\": self.draw_count, \"state_digest\": self.state_digest()}"
+          }
+        ],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "systems/simulation/rng.py",
+      "sha256": "c276dfb76a716b5964f5479db21dfd4b445fd96bf8884126d7c5209d908a90d9",
+      "symbols": [
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 11,
+          "name": "SimulationRng"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 22,
+          "name": "random"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 53,
+          "name": "snapshot"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [],
+        "repository": [],
+        "reuse": [],
+        "rng": [
+          {
+            "line": 6,
+            "pattern": "SimulationRng",
+            "snippet": "from .rng import SimulationRng"
+          },
+          {
+            "line": 12,
+            "pattern": "SimulationRng",
+            "snippet": "\"\"\"Subset of random module API backed by one SimulationRng instance.\"\"\""
+          },
+          {
+            "line": 14,
+            "pattern": "SimulationRng",
+            "snippet": "def __init__(self, rng: SimulationRng) -> None:"
+          },
+          {
+            "line": 15,
+            "pattern": "\\brng\\b",
+            "snippet": "self.rng = rng"
+          },
+          {
+            "line": 18,
+            "pattern": "\\brng\\b",
+            "snippet": "return self.rng.random()"
+          },
+          {
+            "line": 21,
+            "pattern": "\\brng\\b",
+            "snippet": "return self.rng.randint(a, b)"
+          },
+          {
+            "line": 24,
+            "pattern": "\\brng\\b",
+            "snippet": "return self.rng.uniform(a, b)"
+          },
+          {
+            "line": 27,
+            "pattern": "\\brng\\b",
+            "snippet": "return self.rng.choice(values)"
+          },
+          {
+            "line": 31,
+            "pattern": "SimulationRng",
+            "snippet": "raise ValueError(\"cum_weights is not supported by SimulationRng adapter\")"
+          },
+          {
+            "line": 32,
+            "pattern": "\\brng\\b",
+            "snippet": "return self.rng.choices(population, weights=weights, k=k)"
+          },
+          {
+            "line": 35,
+            "pattern": "\\brng\\b",
+            "snippet": "self.rng.shuffle(values)"
+          },
+          {
+            "line": 39,
+            "pattern": "SimulationRng",
+            "snippet": "def inject_module_rng(module: Any, rng: SimulationRng) -> Iterator[RandomModuleAdapter]:"
+          },
+          {
+            "line": 40,
+            "pattern": "\\brng\\b",
+            "snippet": "\"\"\"Temporarily replace module.random without touching Python global RNG state.\"\"\""
+          },
+          {
+            "line": 44,
+            "pattern": "\\brng\\b",
+            "snippet": "adapter = RandomModuleAdapter(rng)"
+          }
+        ],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "systems/simulation/rng_adapter.py",
+      "sha256": "da67d1fad41f9131671ac4f2df4ff47d554e0fa04d948ba88dd8aa513b8d1700",
+      "symbols": [
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 11,
+          "name": "RandomModuleAdapter"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 39,
+          "name": "inject_module_rng"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 17,
+          "name": "random"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [
+          {
+            "line": 15,
+            "pattern": "SimulationClock",
+            "snippet": "from .clock import SimulationClock"
+          },
+          {
+            "line": 100,
+            "pattern": "SimulationClock",
+            "snippet": "clock: SimulationClock"
+          },
+          {
+            "line": 139,
+            "pattern": "\\bClock\\b",
+            "snippet": "self.clock.advance(seconds=seconds)"
+          },
+          {
+            "line": 156,
+            "pattern": "\\bClock\\b",
+            "snippet": "\"clock\": self.clock.iso(),"
+          },
+          {
+            "line": 213,
+            "pattern": "SimulationClock",
+            "snippet": "def build_isolated_state(character_class: str, seed: int, clock: SimulationClock | None = None) -> IsolatedSimulatorState:"
+          },
+          {
+            "line": 217,
+            "pattern": "SimulationClock",
+            "snippet": "clock=clock if clock is not None else SimulationClock.at_start(),"
+          }
+        ],
+        "formula": [
+          {
+            "line": 6,
+            "pattern": "formula",
+            "snippet": "attack, defense, progression, drop, repair, rune or refine formulas."
+          },
+          {
+            "line": 26,
+            "pattern": "chance",
+            "snippet": "REFINE_MINIMUM_SUCCESS_CHANCE = 0.50"
+          },
+          {
+            "line": 40,
+            "pattern": "chance",
+            "snippet": "refine_minimum_success_chance: float = REFINE_MINIMUM_SUCCESS_CHANCE"
+          },
+          {
+            "line": 56,
+            "pattern": "chance",
+            "snippet": "if self.refine_minimum_success_chance != 0.50:"
+          },
+          {
+            "line": 176,
+            "pattern": "calculate",
+            "snippet": "CanonicalOwnerSpec(\"max_hp\", \"data.player_hp\", \"calculate_base_max_hp\"),"
+          },
+          {
+            "line": 177,
+            "pattern": "calculate",
+            "snippet": "CanonicalOwnerSpec(\"physical_crit\", \"data.player_combat_chances\", \"calculate_physical_crit_chance\"),"
+          },
+          {
+            "line": 178,
+            "pattern": "calculate",
+            "snippet": "CanonicalOwnerSpec(\"magical_crit\", \"data.player_combat_chances\", \"calculate_magical_crit_chance\"),"
+          },
+          {
+            "line": 179,
+            "pattern": "calculate",
+            "snippet": "CanonicalOwnerSpec(\"dodge\", \"data.player_combat_chances\", \"calculate_dodge_chance\"),"
+          },
+          {
+            "line": 180,
+            "pattern": "calculate",
+            "snippet": "CanonicalOwnerSpec(\"defense\", \"data.defense_policy\", \"calculate_total_defense\"),"
+          },
+          {
+            "line": 181,
+            "pattern": "calculate",
+            "snippet": "CanonicalOwnerSpec(\"repair\", \"db_modules.equipment\", \"calculate_repair_cost\"),"
+          }
+        ],
+        "repository": [],
+        "reuse": [
+          {
+            "line": 3,
+            "pattern": "canonical",
+            "snippet": "\"\"\"Canonical-owner foundation for deterministic Stage 18.30 simulations."
+          },
+          {
+            "line": 17,
+            "pattern": "parity",
+            "snippet": "# ROM 18.30.2 SIMULATOR PARITY FOUNDATION"
+          },
+          {
+            "line": 168,
+            "pattern": "canonical",
+            "snippet": "class CanonicalOwnerSpec:"
+          },
+          {
+            "line": 174,
+            "pattern": "canonical",
+            "snippet": "CANONICAL_OWNER_SPECS = ("
+          },
+          {
+            "line": 175,
+            "pattern": "canonical",
+            "snippet": "CanonicalOwnerSpec(\"progression\", \"data.player_progression\", \"apply_exp_award\"),"
+          },
+          {
+            "line": 176,
+            "pattern": "canonical",
+            "snippet": "CanonicalOwnerSpec(\"max_hp\", \"data.player_hp\", \"calculate_base_max_hp\"),"
+          },
+          {
+            "line": 177,
+            "pattern": "canonical",
+            "snippet": "CanonicalOwnerSpec(\"physical_crit\", \"data.player_combat_chances\", \"calculate_physical_crit_chance\"),"
+          },
+          {
+            "line": 178,
+            "pattern": "canonical",
+            "snippet": "CanonicalOwnerSpec(\"magical_crit\", \"data.player_combat_chances\", \"calculate_magical_crit_chance\"),"
+          },
+          {
+            "line": 179,
+            "pattern": "canonical",
+            "snippet": "CanonicalOwnerSpec(\"dodge\", \"data.player_combat_chances\", \"calculate_dodge_chance\"),"
+          },
+          {
+            "line": 180,
+            "pattern": "canonical",
+            "snippet": "CanonicalOwnerSpec(\"defense\", \"data.defense_policy\", \"calculate_total_defense\"),"
+          },
+          {
+            "line": 181,
+            "pattern": "canonical",
+            "snippet": "CanonicalOwnerSpec(\"repair\", \"db_modules.equipment\", \"calculate_repair_cost\"),"
+          },
+          {
+            "line": 182,
+            "pattern": "canonical",
+            "snippet": "CanonicalOwnerSpec(\"rune_definition\", \"data.runes\", \"get_rune_definition\"),"
+          },
+          {
+            "line": 186,
+            "pattern": "canonical",
+            "snippet": "class CanonicalOwnerResolver:"
+          },
+          {
+            "line": 187,
+            "pattern": "canonical",
+            "snippet": "def __init__(self, specs: tuple[CanonicalOwnerSpec, ...] = CANONICAL_OWNER_SPECS):"
+          },
+          {
+            "line": 197,
+            "pattern": "canonical",
+            "snippet": "raise KeyError(f\"Unknown canonical owner: {normalized}\")"
+          },
+          {
+            "line": 201,
+            "pattern": "canonical",
+            "snippet": "raise RuntimeError(f\"Canonical owner is not callable: {spec.module}.{spec.attribute}\")"
+          },
+          {
+            "line": 221,
+            "pattern": "parity",
+            "snippet": "def validate_parity_foundation() -> dict[str, Any]:"
+          },
+          {
+            "line": 224,
+            "pattern": "canonical",
+            "snippet": "owners = CanonicalOwnerResolver().validate_all()"
+          },
+          {
+            "line": 245,
+            "pattern": "canonical",
+            "snippet": "\"canonical_owners\": dict(owners),"
+          }
+        ],
+        "rng": [
+          {
+            "line": 101,
+            "pattern": "seed",
+            "snippet": "seed: int"
+          },
+          {
+            "line": 115,
+            "pattern": "\\brng\\b",
+            "snippet": "self.rng = Random(int(self.seed))"
+          },
+          {
+            "line": 157,
+            "pattern": "seed",
+            "snippet": "\"seed\": int(self.seed),"
+          },
+          {
+            "line": 213,
+            "pattern": "seed",
+            "snippet": "def build_isolated_state(character_class: str, seed: int, clock: SimulationClock | None = None) -> IsolatedSimulatorState:"
+          },
+          {
+            "line": 216,
+            "pattern": "seed",
+            "snippet": "seed=int(seed),"
+          },
+          {
+            "line": 227,
+            "pattern": "\\brng\\b",
+            "snippet": "deterministic = [first.rng.random() for _ in range(5)] == [second.rng.random() for _ in range(5)]"
+          },
+          {
+            "line": 229,
+            "pattern": "\\brng\\b",
+            "snippet": "raise RuntimeError(\"Deterministic RNG contract failed\")"
+          }
+        ],
+        "sandbox": [
+          {
+            "line": 98,
+            "pattern": "isolated",
+            "snippet": "class IsolatedSimulatorState:"
+          },
+          {
+            "line": 114,
+            "pattern": "isolated",
+            "snippet": "raise ValueError(\"Stage 18.30 isolated state must start with zero fatigue\")"
+          },
+          {
+            "line": 149,
+            "pattern": "isolated",
+            "snippet": "raise ValueError(\"Insufficient isolated gold balance\")"
+          },
+          {
+            "line": 213,
+            "pattern": "isolated",
+            "snippet": "def build_isolated_state(character_class: str, seed: int, clock: SimulationClock | None = None) -> IsolatedSimulatorState:"
+          },
+          {
+            "line": 214,
+            "pattern": "isolated",
+            "snippet": "return IsolatedSimulatorState("
+          },
+          {
+            "line": 225,
+            "pattern": "isolated",
+            "snippet": "first = build_isolated_state(\"scout\", 180302)"
+          },
+          {
+            "line": 226,
+            "pattern": "isolated",
+            "snippet": "second = build_isolated_state(\"scout\", 180302)"
+          }
+        ]
+      },
+      "exists": true,
+      "path": "systems/simulation/parity_foundation.py",
+      "sha256": "48031062b3e44b94d3eb24c6fee02ae4f01f5802a921b7b481e18370e4fa9470",
+      "symbols": [
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 30,
+          "name": "SimulatorScenarioPolicy"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 63,
+          "name": "SimulatorMetrics"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 98,
+          "name": "IsolatedSimulatorState"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 213,
+          "name": "build_isolated_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 221,
+          "name": "validate_parity_foundation"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 89,
+          "name": "snapshot"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 153,
+          "name": "snapshot"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [],
+        "repository": [],
+        "reuse": [
+          {
+            "line": 75,
+            "pattern": "production",
+            "snippet": "raise ValueError(\"PvP simulation is deferred until production PvP exists\")"
+          }
+        ],
+        "rng": [
+          {
+            "line": 38,
+            "pattern": "seed",
+            "snippet": "seed: int = 1"
+          }
+        ],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "systems/simulation/config.py",
+      "sha256": "3c34b2e4c54890708f3138fe2a54484b62bd9b4a60a4484b33c0aaf9ff82e3b3",
+      "symbols": [
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 10,
+          "name": "SimulationProfile"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 34,
+          "name": "SimulationConfig"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [
+          {
+            "line": 155,
+            "pattern": "max_hp",
+            "snippet": "max_hp: int = 100"
+          },
+          {
+            "line": 157,
+            "pattern": "max_mp",
+            "snippet": "max_mp: int = 0"
+          },
+          {
+            "line": 167,
+            "pattern": "max_hp",
+            "snippet": "if not (0 <= self.hp <= self.max_hp) or not (0 <= self.mp <= self.max_mp):"
+          }
+        ],
+        "repository": [],
+        "reuse": [],
+        "rng": [
+          {
+            "line": 209,
+            "pattern": "seed",
+            "snippet": "seed: int"
+          },
+          {
+            "line": 210,
+            "pattern": "\\brng\\b",
+            "snippet": "rng: Dict[str, Any]"
+          }
+        ],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "systems/simulation/models.py",
+      "sha256": "3223c8ae846790563c5ff88c3cb187bde86f88d92ad60ed055174b35d253c741",
+      "symbols": [
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 13,
+          "name": "SimulationRuneSocket"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 21,
+          "name": "SimulationInventoryItem"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 62,
+          "name": "SimulationInventory"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 107,
+          "name": "SimulationEquipment"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 121,
+          "name": "SimulationContract"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 131,
+          "name": "SimulationDailyQuest"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 141,
+          "name": "SimulationGuildProgress"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 149,
+          "name": "SimulationCharacter"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 174,
+          "name": "SimulationState"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 204,
+          "name": "SimulationRunResult"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 53,
+          "name": "is_equipment"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [
+          {
+            "line": 64,
+            "pattern": "max_hp",
+            "snippet": "survival = PersistentCombatState(initial_actor.max_hp, initial_actor.max_hp, initial_actor.max_resource, initial_actor.max_resource)"
+          },
+          {
+            "line": 93,
+            "pattern": "max_hp",
+            "snippet": "potion = self.policy.choose_potion(survival.hp, survival.max_hp, survival.mp, survival.max_mp, mana_class, hp_potions, mp_potions)"
+          },
+          {
+            "line": 97,
+            "pattern": "max_hp",
+            "snippet": "maximum = survival.max_hp if kind == \"hp\" else survival.max_mp"
+          },
+          {
+            "line": 106,
+            "pattern": "max_hp",
+            "snippet": "need_hp = survival.max_hp > 0 and survival.hp / survival.max_hp < self.policy.hp_potion_threshold"
+          },
+          {
+            "line": 107,
+            "pattern": "max_mp",
+            "snippet": "need_mp = mana_class and survival.max_mp > 0 and survival.mp / survival.max_mp < self.policy.mp_potion_threshold"
+          },
+          {
+            "line": 112,
+            "pattern": "max_hp",
+            "snippet": "restored = min((survival.max_hp-survival.hp) if kind==\"hp\" else (survival.max_mp-survival.mp), int(row[\"restore\"]))"
+          },
+          {
+            "line": 117,
+            "pattern": "max_hp",
+            "snippet": "if survival.max_hp > 0 and survival.hp / survival.max_hp <= 0.25:"
+          },
+          {
+            "line": 120,
+            "pattern": "max_hp",
+            "snippet": "events.append(ProgressionEvent(elapsed, day, \"pre_hunt_hp_wait\", {\"threshold_percent\": 25, \"healed\": healed, \"hp\": survival.hp, \"max_hp\": survival.max_hp}))"
+          },
+          {
+            "line": 158,
+            "pattern": "calculate",
+            "snippet": "from systems.timed_exp_bonus_system import calculate_premium_combat_gold"
+          },
+          {
+            "line": 159,
+            "pattern": "calculate",
+            "snippet": "gold_breakdown = calculate_premium_combat_gold(base_gold, self.premium_active)"
+          },
+          {
+            "line": 181,
+            "pattern": "attack",
+            "snippet": "events.append(ProgressionEvent(elapsed, day, \"victory\", {\"level\": level, \"player_level\": level, \"mob\": selected[\"name\"], \"mob_level\": int(selected.get(\"level\", level)), \"level_delta\": int(selected.get(\"level\", level)) - int(level), \"location_id\": str(selected.get(\"location_id\", self.provider.location_for_level(level)))"
+          },
+          {
+            "line": 196,
+            "pattern": "damage",
+            "snippet": "durability = survival_service.damage_on_death()"
+          },
+          {
+            "line": 198,
+            "pattern": "attack",
+            "snippet": "events.append(ProgressionEvent(elapsed, day, \"death\", {\"level\": level, \"player_level\": level, \"mob\": selected[\"name\"], \"mob_level\": int(selected.get(\"level\", level)), \"level_delta\": int(selected.get(\"level\", level)) - int(level), \"location_id\": str(selected.get(\"location_id\", self.provider.location_for_level(level))), "
+          }
+        ],
+        "repository": [],
+        "reuse": [
+          {
+            "line": 132,
+            "pattern": "production",
+            "snippet": "raise RuntimeError(f\"production content gap: no mob for player level {level}; current max mob level={self.provider.content_max_mob_level()}\")"
+          },
+          {
+            "line": 136,
+            "pattern": "canonical",
+            "snippet": "selection_reason = \"canonical_boss_roll\""
+          },
+          {
+            "line": 138,
+            "pattern": "canonical",
+            "snippet": "selection_reason = \"canonical_elite_roll\""
+          }
+        ],
+        "rng": [
+          {
+            "line": 12,
+            "pattern": "SimulationRng",
+            "snippet": "from .rng import SimulationRng"
+          },
+          {
+            "line": 28,
+            "pattern": "seed",
+            "snippet": "def __init__(self, project_root: Path, character_class: str, target_level: int, profile: str, seed: int, inventory_capacity: int = 40, max_days: int = 365, provider: Optional[ProgressionProvider] = None, premium_active: bool = False):"
+          },
+          {
+            "line": 39,
+            "pattern": "seed",
+            "snippet": "self.seed = int(seed)"
+          },
+          {
+            "line": 43,
+            "pattern": "SimulationRng",
+            "snippet": "self.rng = SimulationRng(seed)"
+          },
+          {
+            "line": 66,
+            "pattern": "\\brng\\b",
+            "snippet": "loot_city = SimulationLootEquipmentCityService(self.character_class, self.inventory, self.equipment, self.rng)"
+          },
+          {
+            "line": 67,
+            "pattern": "\\brng\\b",
+            "snippet": "meta = SimulationMetaProgressionService(self.inventory, self.equipment, self.rng)"
+          },
+          {
+            "line": 68,
+            "pattern": "seed",
+            "snippet": "run_id = f\"progress_{self.character_class}_l{self.target_level}_{self.profile.key}_{self.seed}\""
+          },
+          {
+            "line": 128,
+            "pattern": "seed",
+            "snippet": "selection_reason = \"contract_target\" if selected is not None else \"seeded_random\""
+          },
+          {
+            "line": 130,
+            "pattern": "\\brng\\b",
+            "snippet": "selected = self.rng.choice(allowed)"
+          },
+          {
+            "line": 134,
+            "pattern": "\\brng\\b",
+            "snippet": "selected = self.provider.resolve_encounter(level, selected_template, self.rng)"
+          },
+          {
+            "line": 140,
+            "pattern": "\\brng\\b",
+            "snippet": "battle_seed = self.rng.randint(1, 2_147_483_647)"
+          },
+          {
+            "line": 141,
+            "pattern": "seed",
+            "snippet": "result = ExactPveBattleEngine(self.root, battle_seed).run("
+          },
+          {
+            "line": 157,
+            "pattern": "\\brng\\b",
+            "snippet": "gained_exp, base_gold = self.provider.reward(level, selected, self.rng)"
+          },
+          {
+            "line": 228,
+            "pattern": "seed",
+            "snippet": "run_id, self.character_class, self.target_level, level, self.profile.key, self.seed,"
+          }
+        ],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "systems/simulation/world_progression.py",
+      "sha256": "a8532f594dbb836c9fef79dc1ef27ab37316f3eab3c15967bb326972b834ba90",
+      "symbols": [
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 27,
+          "name": "WorldProgressionSimulator"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [],
+        "repository": [],
+        "reuse": [
+          {
+            "line": 13,
+            "pattern": "production",
+            "snippet": "# Explicit simulation fixtures are rolled one by one. Full production-table"
+          }
+        ],
+        "rng": [
+          {
+            "line": 10,
+            "pattern": "\\brng\\b",
+            "snippet": "def __init__(self,inventory,rng,item_resolver):self.inventory=inventory;self.rng=rng;self.item_resolver=item_resolver;self.inventory_engine=SimulationInventoryEngine(inventory)"
+          },
+          {
+            "line": 12,
+            "pattern": "\\brng\\b",
+            "snippet": "if rules is None:return drop_system.roll_enemy_drops(mob,self.rng.random)"
+          },
+          {
+            "line": 15,
+            "pattern": "\\brng\\b",
+            "snippet": "return [drop_system.roll_drop_rule(rule,mob,self.rng.random) for rule in rules]"
+          }
+        ],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "systems/simulation/drop_inventory.py",
+      "sha256": "88d1a01123abf32d14ad48a1dbce886c292e30cbf025f5e8bdbf620c03141a34",
+      "symbols": [
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 9,
+          "name": "SimulationDropInventoryEngine"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [],
+        "repository": [],
+        "reuse": [],
+        "rng": [],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "systems/simulation/equipment_service.py",
+      "sha256": "2c0a4a1759dda4bd8d53f10ccd7126f7818f02d7e3a63a85f7a4a6d97e53153b",
+      "symbols": [
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 6,
+          "name": "SimulationEquipmentService"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [],
+        "repository": [],
+        "reuse": [],
+        "rng": [],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "systems/simulation/inventory_engine.py",
+      "sha256": "04596ec44aae83e463194ecd6cea180b39efd86efd8f212f2caac67cc1eaf559",
+      "symbols": [
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 14,
+          "name": "SimulationInventoryEngine"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 8,
+          "name": "is_equipment"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [
+          {
+            "line": 8,
+            "pattern": "chance",
+            "snippet": "from systems.refine_system import get_item_refine_kind,get_refine_failure_level,get_refine_max_level,get_refine_success_chance"
+          },
+          {
+            "line": 21,
+            "pattern": "chance",
+            "snippet": "WEAPON_REFINE_SUCCESS_CHANCES={0:100,1:100,2:100,3:80,4:70,5:60,6:50,7:40,8:30,9:20}"
+          },
+          {
+            "line": 22,
+            "pattern": "chance",
+            "snippet": "ARMOR_REFINE_SUCCESS_CHANCES={0:100,1:100,2:70,3:50,4:30,5:20}"
+          },
+          {
+            "line": 124,
+            "pattern": "chance",
+            "snippet": "chance=int(get_refine_success_chance(kind,level))"
+          },
+          {
+            "line": 125,
+            "pattern": "chance",
+            "snippet": "if chance<50:continue"
+          },
+          {
+            "line": 126,
+            "pattern": "chance",
+            "snippet": "eligible.append((item,kind,level,chance))"
+          },
+          {
+            "line": 128,
+            "pattern": "chance",
+            "snippet": "item,kind,level,chance=max(eligible,key=lambda row:(int(row[0].item_level or 0),rarity_rank.get(str(row[0].rarity).lower(),-1),int(row[0].simulation_item_id)))"
+          },
+          {
+            "line": 131,
+            "pattern": "chance",
+            "snippet": "if self.rng.randint(1,100)<=chance:"
+          }
+        ],
+        "repository": [],
+        "reuse": [],
+        "rng": [
+          {
+            "line": 41,
+            "pattern": "\\brng\\b",
+            "snippet": "def __init__(self,inventory,equipment,rng):self.inventory=inventory;self.equipment=equipment;self.rng=rng;self.state=SimulationMetaState()"
+          },
+          {
+            "line": 131,
+            "pattern": "\\brng\\b",
+            "snippet": "if self.rng.randint(1,100)<=chance:"
+          }
+        ],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "systems/simulation/meta_progression.py",
+      "sha256": "81b021b7088035c082bc0e63eb1bc7d3e0dc834a77508cbb58b99366aeb5141a",
+      "symbols": [
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 33,
+          "name": "GuildSimulationState"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 37,
+          "name": "SimulationMetaState"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 40,
+          "name": "SimulationMetaProgressionService"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 114,
+          "name": "refine_best"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [
+          {
+            "line": 15,
+            "pattern": "max_hp",
+            "snippet": "max_hp: int"
+          },
+          {
+            "line": 17,
+            "pattern": "max_mp",
+            "snippet": "max_mp: int"
+          },
+          {
+            "line": 20,
+            "pattern": "max_hp",
+            "snippet": "self.hp=max(0,min(int(self.hp),int(self.max_hp)))"
+          },
+          {
+            "line": 21,
+            "pattern": "max_mp",
+            "snippet": "self.mp=max(0,min(int(self.mp),int(self.max_mp)))"
+          },
+          {
+            "line": 24,
+            "pattern": "max_hp",
+            "snippet": "ticks=max(0,int(minutes)); per_tick=max(1,int(self.max_hp*0.10)); before=self.hp"
+          },
+          {
+            "line": 25,
+            "pattern": "max_hp",
+            "snippet": "self.hp=min(self.max_hp,self.hp+ticks*per_tick)"
+          },
+          {
+            "line": 31,
+            "pattern": "max_mp",
+            "snippet": "self.mp = apply_post_combat_mp_floor_value(self.mp, self.max_mp)"
+          },
+          {
+            "line": 36,
+            "pattern": "max_mp",
+            "snippet": "self.mp=self.max_mp"
+          },
+          {
+            "line": 59,
+            "pattern": "damage",
+            "snippet": "def damage_on_death(self) -> DurabilityResult:"
+          }
+        ],
+        "repository": [],
+        "reuse": [
+          {
+            "line": 7,
+            "pattern": "canonical",
+            "snippet": "from .canonical_rules import call_rule"
+          },
+          {
+            "line": 29,
+            "pattern": "canonical",
+            "snippet": "\"\"\"Apply the canonical 50% floor without adding or reducing current MP.\"\"\""
+          }
+        ],
+        "rng": [],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "systems/simulation/survival_state.py",
+      "sha256": "cd7e848fbd0b7ac4559dacab0267437e07f7be366bf6c649200da876883689b4",
+      "symbols": [
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 51,
+          "name": "SimulationSurvivalService"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 59,
+          "name": "damage_on_death"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [
+          {
+            "line": 39,
+            "pattern": "\\bClock\\b",
+            "snippet": "f\"- Clock: `{payload.get('clock_start', '')}` -> `{payload.get('clock_end', '')}`\","
+          }
+        ],
+        "formula": [
+          {
+            "line": 55,
+            "pattern": "max_hp",
+            "snippet": "f\"- HP: `{character.get('hp', '')}/{character.get('max_hp', '')}`\","
+          },
+          {
+            "line": 56,
+            "pattern": "max_mp",
+            "snippet": "f\"- MP: `{character.get('mp', '')}/{character.get('max_mp', '')}`\","
+          }
+        ],
+        "repository": [],
+        "reuse": [
+          {
+            "line": 15,
+            "pattern": "canonical",
+            "snippet": "def canonical_json(payload: Dict[str, Any]) -> str:"
+          },
+          {
+            "line": 86,
+            "pattern": "canonical",
+            "snippet": "json_tmp.write_text(canonical_json(payload), encoding=\"utf-8\")"
+          }
+        ],
+        "rng": [
+          {
+            "line": 36,
+            "pattern": "seed",
+            "snippet": "f\"- Seed: `{payload.get('seed', '')}`\","
+          }
+        ],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "systems/simulation/reporting.py",
+      "sha256": "0254bcbca39bb4d0ed733190bbd3c26dcf5911ccc6f2f696e8fe186f0b892d0e",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 78,
+          "name": "write_simulation_reports"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [
+          {
+            "line": 26,
+            "pattern": "chance",
+            "snippet": "CanonicalRuleDescriptor(\"physical_crit_chance\", \"systems.combat_system\", \"get_physical_crit_chance\", True),"
+          },
+          {
+            "line": 27,
+            "pattern": "chance",
+            "snippet": "CanonicalRuleDescriptor(\"magical_crit_chance\", \"systems.combat_system\", \"get_magical_crit_chance\", True),"
+          },
+          {
+            "line": 28,
+            "pattern": "chance",
+            "snippet": "CanonicalRuleDescriptor(\"dodge_chance\", \"systems.combat_system\", \"get_dodge_chance\", True),"
+          },
+          {
+            "line": 31,
+            "pattern": "calculate",
+            "snippet": "CanonicalRuleDescriptor(\"player_attack\", \"systems.combat_system\", \"calculate_player_attack\", True, True),"
+          },
+          {
+            "line": 32,
+            "pattern": "calculate",
+            "snippet": "CanonicalRuleDescriptor(\"mob_attack\", \"systems.combat_system\", \"calculate_mob_attack\", True, True),"
+          },
+          {
+            "line": 33,
+            "pattern": "calculate",
+            "snippet": "CanonicalRuleDescriptor(\"weapon_damage\", \"systems.equipment_system\", \"calculate_weapon_damage_by_values\", True),"
+          },
+          {
+            "line": 34,
+            "pattern": "calculate",
+            "snippet": "CanonicalRuleDescriptor(\"repair_cost\", \"systems.equipment_system\", \"calculate_repair_cost\", True),"
+          },
+          {
+            "line": 36,
+            "pattern": "damage",
+            "snippet": "CanonicalRuleDescriptor(\"weapon_refine_damage\", \"systems.refine_system\", \"apply_weapon_refine_to_damage\", True),"
+          },
+          {
+            "line": 37,
+            "pattern": "chance",
+            "snippet": "CanonicalRuleDescriptor(\"refine_success_chance\", \"systems.refine_system\", \"get_refine_success_chance\", True),"
+          },
+          {
+            "line": 41,
+            "pattern": "calculate",
+            "snippet": "CanonicalRuleDescriptor(\"exp_reward\", \"systems.reward_system\", \"calculate_exp_reward\", True, True),"
+          },
+          {
+            "line": 42,
+            "pattern": "calculate",
+            "snippet": "CanonicalRuleDescriptor(\"gold_reward\", \"systems.reward_system\", \"calculate_gold_reward\", True, True),"
+          }
+        ],
+        "repository": [],
+        "reuse": [
+          {
+            "line": 11,
+            "pattern": "canonical",
+            "snippet": "class CanonicalRuleError(RuntimeError):"
+          },
+          {
+            "line": 16,
+            "pattern": "canonical",
+            "snippet": "class CanonicalRuleDescriptor:"
+          },
+          {
+            "line": 25,
+            "pattern": "canonical",
+            "snippet": "RULES: Tuple[CanonicalRuleDescriptor, ...] = ("
+          },
+          {
+            "line": 26,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"physical_crit_chance\", \"systems.combat_system\", \"get_physical_crit_chance\", True),"
+          },
+          {
+            "line": 27,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"magical_crit_chance\", \"systems.combat_system\", \"get_magical_crit_chance\", True),"
+          },
+          {
+            "line": 28,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"dodge_chance\", \"systems.combat_system\", \"get_dodge_chance\", True),"
+          },
+          {
+            "line": 29,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"elite_modifier\", \"systems.combat_system\", \"apply_elite_modifier\", True),"
+          },
+          {
+            "line": 30,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"available_mobs\", \"systems.combat_system\", \"get_available_mobs\", True),"
+          },
+          {
+            "line": 31,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"player_attack\", \"systems.combat_system\", \"calculate_player_attack\", True, True),"
+          },
+          {
+            "line": 32,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"mob_attack\", \"systems.combat_system\", \"calculate_mob_attack\", True, True),"
+          },
+          {
+            "line": 33,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"weapon_damage\", \"systems.equipment_system\", \"calculate_weapon_damage_by_values\", True),"
+          },
+          {
+            "line": 34,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"repair_cost\", \"systems.equipment_system\", \"calculate_repair_cost\", True),"
+          },
+          {
+            "line": 35,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"armor_refine_hp_percent\", \"systems.refine_system\", \"get_armor_refine_hp_bonus_percent\", True),"
+          },
+          {
+            "line": 36,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"weapon_refine_damage\", \"systems.refine_system\", \"apply_weapon_refine_to_damage\", True),"
+          },
+          {
+            "line": 37,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"refine_success_chance\", \"systems.refine_system\", \"get_refine_success_chance\", True),"
+          },
+          {
+            "line": 38,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"refine_success_roll\", \"systems.refine_system\", \"roll_refine_success\", True, True),"
+          },
+          {
+            "line": 39,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"normal_equipment_rarity\", \"systems.reward_system\", \"roll_normal_equipment_rarity\", True, True),"
+          },
+          {
+            "line": 40,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"elite_equipment_rarity\", \"systems.reward_system\", \"roll_elite_equipment_rarity\", True, True),"
+          },
+          {
+            "line": 41,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"exp_reward\", \"systems.reward_system\", \"calculate_exp_reward\", True, True),"
+          },
+          {
+            "line": 42,
+            "pattern": "canonical",
+            "snippet": "CanonicalRuleDescriptor(\"gold_reward\", \"systems.reward_system\", \"calculate_gold_reward\", True, True),"
+          },
+          {
+            "line": 50,
+            "pattern": "canonical",
+            "snippet": "def _resolve(descriptor: CanonicalRuleDescriptor) -> Tuple[Any, Callable[..., Any]]:"
+          },
+          {
+            "line": 54,
+            "pattern": "canonical",
+            "snippet": "raise CanonicalRuleError(f\"missing canonical function {descriptor.module}.{descriptor.function}\")"
+          },
+          {
+            "line": 58,
+            "pattern": "canonical",
+            "snippet": "def descriptor(name: str) -> CanonicalRuleDescriptor:"
+          },
+          {
+            "line": 62,
+            "pattern": "canonical",
+            "snippet": "raise CanonicalRuleError(f\"unknown canonical rule: {name}\")"
+          },
+          {
+            "line": 72,
+            "pattern": "canonical",
+            "snippet": "raise CanonicalRuleError(f\"rule {name} requires SimulationRng\")"
+          },
+          {
+            "line": 76,
+            "pattern": "canonical",
+            "snippet": "raise CanonicalRuleError(f\"rule {name} does not accept RNG\")"
+          }
+        ],
+        "rng": [
+          {
+            "line": 7,
+            "pattern": "SimulationRng",
+            "snippet": "from .rng import SimulationRng"
+          },
+          {
+            "line": 65,
+            "pattern": "SimulationRng",
+            "snippet": "def call_rule(name: str, *args: Any, rng: Optional[SimulationRng] = None, **kwargs: Any) -> Any:"
+          },
+          {
+            "line": 71,
+            "pattern": "\\brng\\b",
+            "snippet": "if rng is None:"
+          },
+          {
+            "line": 72,
+            "pattern": "SimulationRng",
+            "snippet": "raise CanonicalRuleError(f\"rule {name} requires SimulationRng\")"
+          },
+          {
+            "line": 73,
+            "pattern": "\\brng\\b",
+            "snippet": "with inject_module_rng(module, rng):"
+          },
+          {
+            "line": 75,
+            "pattern": "\\brng\\b",
+            "snippet": "if rng is not None:"
+          },
+          {
+            "line": 76,
+            "pattern": "\\brng\\b",
+            "snippet": "raise CanonicalRuleError(f\"rule {name} does not accept RNG\")"
+          }
+        ],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "systems/simulation/canonical_rules.py",
+      "sha256": "53669cf984766aed47c371f1a87bfc0b1d66a38feed8fb3eca7439a8cf157f85",
+      "symbols": []
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [
+          {
+            "line": 84,
+            "pattern": "chance",
+            "snippet": "cases.append(ParityCase(f\"pcrit_{level}_{value}\", \"physical_crit_chance\", (value, level), {}))"
+          },
+          {
+            "line": 85,
+            "pattern": "chance",
+            "snippet": "cases.append(ParityCase(f\"mcrit_{level}_{value}\", \"magical_crit_chance\", (value, level), {}))"
+          },
+          {
+            "line": 87,
+            "pattern": "chance",
+            "snippet": "cases.append(ParityCase(f\"dodge_{level}_{player_dex}_{mob_dex}\", \"dodge_chance\", (player_dex, mob_dex, level), {}))"
+          },
+          {
+            "line": 88,
+            "pattern": "attack",
+            "snippet": "mob = {\"name\": \"fixture\", \"hp\": 100, \"max_hp\": 100, \"attack\": 20, \"pdef\": 12, \"mdef\": 8, \"def\": 10, \"exp\": 10, \"gold\": 5}"
+          },
+          {
+            "line": 91,
+            "pattern": "damage",
+            "snippet": "cases.append(ParityCase(f\"weapon_{level}_{rarity}_{hands}\", \"weapon_damage\", (level, rarity, hands), {}))"
+          },
+          {
+            "line": 95,
+            "pattern": "attack",
+            "snippet": "for attack_type in (\"physical\", \"magical\"):"
+          },
+          {
+            "line": 96,
+            "pattern": "attack",
+            "snippet": "cases.append(ParityCase(f\"player_attack_{attack_type}\", \"player_attack\", (50, 20, 30, 30, 10, attack_type, 5, 10), {}, 1302001))"
+          },
+          {
+            "line": 97,
+            "pattern": "attack",
+            "snippet": "cases.append(ParityCase(f\"mob_attack_{attack_type}\", \"mob_attack\", (30, 20, 15, 25, 20, 20, 10, attack_type), {}, 1302002))"
+          }
+        ],
+        "repository": [],
+        "reuse": [
+          {
+            "line": 11,
+            "pattern": "canonical",
+            "snippet": "from .canonical_rules import RULES, call_rule, descriptor, rule_manifest"
+          },
+          {
+            "line": 16,
+            "pattern": "parity",
+            "snippet": "class ParityCase:"
+          },
+          {
+            "line": 25,
+            "pattern": "parity",
+            "snippet": "class ParityResult:"
+          },
+          {
+            "line": 29,
+            "pattern": "canonical",
+            "snippet": "canonical: Any"
+          },
+          {
+            "line": 30,
+            "pattern": "production",
+            "snippet": "production: Any"
+          },
+          {
+            "line": 43,
+            "pattern": "production",
+            "snippet": "def _production_call(case: ParityCase) -> Any:"
+          },
+          {
+            "line": 66,
+            "pattern": "parity",
+            "snippet": "def run_case(case: ParityCase) -> ParityResult:"
+          },
+          {
+            "line": 68,
+            "pattern": "production",
+            "snippet": "production = _production_call(case)"
+          },
+          {
+            "line": 70,
+            "pattern": "canonical",
+            "snippet": "canonical = call_rule(case.rule, *case.args, rng=rng, **case.kwargs)"
+          },
+          {
+            "line": 71,
+            "pattern": "parity",
+            "snippet": "return ParityResult("
+          },
+          {
+            "line": 72,
+            "pattern": "canonical",
+            "snippet": "case.case_id, case.rule, canonical == production,"
+          },
+          {
+            "line": 73,
+            "pattern": "canonical",
+            "snippet": "_jsonable(canonical), _jsonable(production), case.seed,"
+          },
+          {
+            "line": 74,
+            "pattern": "canonical",
+            "snippet": "\"\" if canonical == production else \"result mismatch\","
+          },
+          {
+            "line": 77,
+            "pattern": "parity",
+            "snippet": "return ParityResult(case.case_id, case.rule, False, None, None, case.seed, f\"{type(error).__name__}: {error}\")"
+          },
+          {
+            "line": 80,
+            "pattern": "parity",
+            "snippet": "def required_cases() -> List[ParityCase]:"
+          },
+          {
+            "line": 81,
+            "pattern": "parity",
+            "snippet": "cases: List[ParityCase] = []"
+          },
+          {
+            "line": 84,
+            "pattern": "parity",
+            "snippet": "cases.append(ParityCase(f\"pcrit_{level}_{value}\", \"physical_crit_chance\", (value, level), {}))"
+          },
+          {
+            "line": 85,
+            "pattern": "parity",
+            "snippet": "cases.append(ParityCase(f\"mcrit_{level}_{value}\", \"magical_crit_chance\", (value, level), {}))"
+          },
+          {
+            "line": 87,
+            "pattern": "parity",
+            "snippet": "cases.append(ParityCase(f\"dodge_{level}_{player_dex}_{mob_dex}\", \"dodge_chance\", (player_dex, mob_dex, level), {}))"
+          },
+          {
+            "line": 89,
+            "pattern": "parity",
+            "snippet": "cases.append(ParityCase(\"elite_modifier\", \"elite_modifier\", (mob,), {}))"
+          },
+          {
+            "line": 91,
+            "pattern": "parity",
+            "snippet": "cases.append(ParityCase(f\"weapon_{level}_{rarity}_{hands}\", \"weapon_damage\", (level, rarity, hands), {}))"
+          },
+          {
+            "line": 94,
+            "pattern": "parity",
+            "snippet": "cases.append(ParityCase(f\"repair_{durability}_{rarity}\", \"repair_cost\", (durability, rarity), {}))"
+          },
+          {
+            "line": 96,
+            "pattern": "parity",
+            "snippet": "cases.append(ParityCase(f\"player_attack_{attack_type}\", \"player_attack\", (50, 20, 30, 30, 10, attack_type, 5, 10), {}, 1302001))"
+          },
+          {
+            "line": 97,
+            "pattern": "parity",
+            "snippet": "cases.append(ParityCase(f\"mob_attack_{attack_type}\", \"mob_attack\", (30, 20, 15, 25, 20, 20, 10, attack_type), {}, 1302002))"
+          },
+          {
+            "line": 101,
+            "pattern": "parity",
+            "snippet": "def run_required_parity() -> Dict[str, Any]:"
+          }
+        ],
+        "rng": [
+          {
+            "line": 12,
+            "pattern": "SimulationRng",
+            "snippet": "from .rng import SimulationRng"
+          },
+          {
+            "line": 21,
+            "pattern": "seed",
+            "snippet": "seed: Optional[int] = None"
+          },
+          {
+            "line": 31,
+            "pattern": "seed",
+            "snippet": "seed: Optional[int]"
+          },
+          {
+            "line": 51,
+            "pattern": "random\\.",
+            "snippet": "state = random.getstate()"
+          },
+          {
+            "line": 54,
+            "pattern": "random\\.",
+            "snippet": "random.seed(int(case.seed))"
+          },
+          {
+            "line": 59,
+            "pattern": "seed",
+            "snippet": "if hasattr(module_random, \"seed\"):"
+          },
+          {
+            "line": 60,
+            "pattern": "random\\.",
+            "snippet": "module_random.seed(int(case.seed))"
+          },
+          {
+            "line": 63,
+            "pattern": "random\\.",
+            "snippet": "random.setstate(state)"
+          },
+          {
+            "line": 69,
+            "pattern": "SimulationRng",
+            "snippet": "rng = SimulationRng(int(case.seed)) if case.seed is not None else None"
+          },
+          {
+            "line": 70,
+            "pattern": "\\brng\\b",
+            "snippet": "canonical = call_rule(case.rule, *case.args, rng=rng, **case.kwargs)"
+          },
+          {
+            "line": 73,
+            "pattern": "seed",
+            "snippet": "_jsonable(canonical), _jsonable(production), case.seed,"
+          },
+          {
+            "line": 77,
+            "pattern": "seed",
+            "snippet": "return ParityResult(case.case_id, case.rule, False, None, None, case.seed, f\"{type(error).__name__}: {error}\")"
+          }
+        ],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "systems/simulation/production_parity.py",
+      "sha256": "387953a62e58243ef4c2f60b59e9b4527775b0040a9ff5ef3202355403f45f32",
+      "symbols": [
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 16,
+          "name": "ParityCase"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 25,
+          "name": "ParityResult"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 101,
+          "name": "run_required_parity"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [
+          {
+            "line": 1,
+            "pattern": "\\bClock\\b",
+            "snippet": "\"\"\"Clock port for deterministic ROM V2 time access.\"\"\""
+          },
+          {
+            "line": 8,
+            "pattern": "\\bClock\\b",
+            "snippet": "class Clock(Protocol):"
+          },
+          {
+            "line": 11,
+            "pattern": "now_utc",
+            "snippet": "def now_utc(self) -> datetime:"
+          }
+        ],
+        "formula": [],
+        "repository": [],
+        "reuse": [],
+        "rng": [],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "rom_v2/application/ports/clock.py",
+      "sha256": "a023e54dae514692a5b76a491d7aa86f502d338a980e34e3ea8712eff1c9b6ee",
+      "symbols": [
+        {
+          "base_names": [
+            "Protocol"
+          ],
+          "is_protocol": true,
+          "kind": "ClassDef",
+          "line": 8,
+          "name": "Clock"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [],
+        "repository": [],
+        "reuse": [],
+        "rng": [
+          {
+            "line": 9,
+            "pattern": "RandomSource",
+            "snippet": "class RandomSource(Protocol):"
+          },
+          {
+            "line": 10,
+            "pattern": "seed",
+            "snippet": "\"\"\"Expose explicit gameplay random operations without hidden reseeding.\"\"\""
+          }
+        ],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "rom_v2/application/ports/random_source.py",
+      "sha256": "91ee0496f217dd6f3c540936c224430fd8d1dcfb086f461dd9f3e8baaee11a5c",
+      "symbols": [
+        {
+          "base_names": [
+            "Protocol"
+          ],
+          "is_protocol": true,
+          "kind": "ClassDef",
+          "line": 9,
+          "name": "RandomSource"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 12,
+          "name": "random"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [],
+        "repository": [
+          {
+            "line": 1,
+            "pattern": "Repository",
+            "snippet": "\"\"\"Aggregate-oriented repository ports for ROM V2.\"\"\""
+          },
+          {
+            "line": 10,
+            "pattern": "Repository",
+            "snippet": "class AggregateRepository(Protocol[AggregateT, AggregateIdT]):"
+          }
+        ],
+        "reuse": [],
+        "rng": [],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "rom_v2/application/ports/repositories.py",
+      "sha256": "04c04f838b7326ae54159a2e4beca195bbd921009d71c6651e1609739044d8af",
+      "symbols": [
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 10,
+          "name": "AggregateRepository"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [
+          {
+            "line": 11,
+            "pattern": "formula",
+            "snippet": "Formulas remain behind audited policy ports so V2 does not invent or duplicate"
+          }
+        ],
+        "repository": [],
+        "reuse": [
+          {
+            "line": 9,
+            "pattern": "canonical",
+            "snippet": "\"\"\"Coordinate source-aware identity selection and canonical numeric generation."
+          },
+          {
+            "line": 12,
+            "pattern": "canonical",
+            "snippet": "V1 stat calculations. Every consumer passes one canonical item_level value."
+          },
+          {
+            "line": 31,
+            "pattern": "for_simulator",
+            "snippet": "def for_simulator(self,request:EquipmentGenerationRequest)->GeneratedEquipment:"
+          }
+        ],
+        "rng": [],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "rom_v2/application/equipment_generation_service.py",
+      "sha256": "61fa00d463fadb3b0d5ecaf39f41d61058537a64102919c6aee973dc2dda623d",
+      "symbols": [
+        {
+          "base_names": [
+            "RuntimeError"
+          ],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 6,
+          "name": "EquipmentGenerationError"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 8,
+          "name": "EquipmentGenerationService"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 31,
+          "name": "for_simulator"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [],
+        "repository": [],
+        "reuse": [
+          {
+            "line": 5,
+            "pattern": "full_stat_snapshot",
+            "snippet": "from rom_v2.domain.full_stat_snapshot import FullStatSnapshot, FullStatSnapshotInput, build_full_stat_snapshot"
+          },
+          {
+            "line": 20,
+            "pattern": "full_stat_snapshot",
+            "snippet": "return build_full_stat_snapshot(source)"
+          },
+          {
+            "line": 28,
+            "pattern": "for_simulator",
+            "snippet": "def for_simulator(self, source: FullStatSnapshotInput) -> FullStatSnapshot:"
+          }
+        ],
+        "rng": [],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "rom_v2/application/full_stat_snapshot_service.py",
+      "sha256": "011ea96e9b0a6ccc96872c3a16fd33c399d06993e6315a714026130896a56de7",
+      "symbols": [
+        {
+          "base_names": [
+            "str",
+            "Enum"
+          ],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 8,
+          "name": "SnapshotConsumer"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 14,
+          "name": "FullStatSnapshotService"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 28,
+          "name": "for_simulator"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [
+          {
+            "line": 1,
+            "pattern": "damage",
+            "snippet": "\"\"\"Canonical V1-parity damage engine for PvE, PvP and simulation consumers.\"\"\""
+          },
+          {
+            "line": 6,
+            "pattern": "defense",
+            "snippet": "DEFENSE_STAT_COEFFICIENT=0.35"
+          },
+          {
+            "line": 7,
+            "pattern": "damage",
+            "snippet": "DAMAGE_DEFENSE_COEFFICIENT=0.5"
+          },
+          {
+            "line": 8,
+            "pattern": "damage",
+            "snippet": "MINIMUM_DAMAGE=1"
+          },
+          {
+            "line": 9,
+            "pattern": "damage",
+            "snippet": "CRITICAL_DAMAGE_MULTIPLIER=1.5"
+          },
+          {
+            "line": 10,
+            "pattern": "chance",
+            "snippet": "CRIT_BASE_CHANCE=5.0"
+          },
+          {
+            "line": 13,
+            "pattern": "chance",
+            "snippet": "CRIT_MIN_CHANCE=1.0"
+          },
+          {
+            "line": 15,
+            "pattern": "chance",
+            "snippet": "CRIT_SOFT_CAP_TRANSITION_CHANCE=19.0"
+          },
+          {
+            "line": 19,
+            "pattern": "chance",
+            "snippet": "DODGE_BASE_CHANCE=5.0"
+          },
+          {
+            "line": 21,
+            "pattern": "chance",
+            "snippet": "DODGE_MIN_CHANCE=1.0"
+          },
+          {
+            "line": 23,
+            "pattern": "chance",
+            "snippet": "DODGE_SOFT_CAP_TRANSITION_CHANCE=13.0"
+          },
+          {
+            "line": 27,
+            "pattern": "damage",
+            "snippet": "class DamageType(str,Enum):PHYSICAL=\"PHYSICAL\";MAGICAL=\"MAGICAL\""
+          },
+          {
+            "line": 28,
+            "pattern": "damage",
+            "snippet": "class DamageRandomSource(Protocol):"
+          },
+          {
+            "line": 31,
+            "pattern": "damage",
+            "snippet": "class DamageRequest:"
+          },
+          {
+            "line": 32,
+            "pattern": "chance",
+            "snippet": "damage_type:DamageType;attack:float;defense:float;critical_chance:float=0.0;evasion_chance:float=0.0;damage_multiplier:float=1.0"
+          },
+          {
+            "line": 34,
+            "pattern": "chance",
+            "snippet": "if min(self.attack,self.defense,self.critical_chance,self.evasion_chance)<0 or self.damage_multiplier<0:raise ValueError(\"invalid_damage_request\")"
+          },
+          {
+            "line": 36,
+            "pattern": "damage",
+            "snippet": "class DamageResult:"
+          },
+          {
+            "line": 37,
+            "pattern": "damage",
+            "snippet": "damage:int;critical:bool;evaded:bool;raw_damage:float;mitigated_damage:float"
+          },
+          {
+            "line": 39,
+            "pattern": "chance",
+            "snippet": "def damage_clamp_chance(value:float,minimum:float,maximum:float)->float:return max(float(minimum),min(float(maximum),float(value)))"
+          },
+          {
+            "line": 40,
+            "pattern": "calculate",
+            "snippet": "def damage_calculate_stat_defense(primary_stat:float)->float:return max(0.0,float(primary_stat))*DEFENSE_STAT_COEFFICIENT"
+          },
+          {
+            "line": 41,
+            "pattern": "calculate",
+            "snippet": "def damage_total_defense(item_defense:float,primary_stat:float)->float:return max(0.0,float(item_defense))+damage_calculate_stat_defense(primary_stat)"
+          },
+          {
+            "line": 42,
+            "pattern": "damage",
+            "snippet": "def damage_after_defense(attack:float,defense:float)->float:return max(float(MINIMUM_DAMAGE),float(attack)-max(0.0,float(defense))*DAMAGE_DEFENSE_COEFFICIENT)"
+          },
+          {
+            "line": 43,
+            "pattern": "chance",
+            "snippet": "def damage_crit_chance(total_stat:float)->float:"
+          },
+          {
+            "line": 45,
+            "pattern": "chance",
+            "snippet": "if stat<=CRIT_SOFT_CAP_TRANSITION_STAT:return damage_clamp_chance(CRIT_BASE_CHANCE+max(0.0,stat-CRIT_STAT_BASELINE)*CRIT_PER_STAT,CRIT_MIN_CHANCE,CRIT_SOFT_CAP_ASYMPTOTE)"
+          },
+          {
+            "line": 47,
+            "pattern": "chance",
+            "snippet": "return CRIT_SOFT_CAP_TRANSITION_CHANCE+CRIT_SOFT_CAP_RANGE*excess/(excess+CRIT_SOFT_CAP_K)"
+          },
+          {
+            "line": 48,
+            "pattern": "chance",
+            "snippet": "def damage_dodge_chance(defender_dex:float,attacker_dex:float)->float:"
+          },
+          {
+            "line": 49,
+            "pattern": "attack",
+            "snippet": "delta=float(defender_dex or 0)-float(attacker_dex or 0)"
+          },
+          {
+            "line": 50,
+            "pattern": "chance",
+            "snippet": "if delta<=-20:return DODGE_MIN_CHANCE"
+          },
+          {
+            "line": 51,
+            "pattern": "chance",
+            "snippet": "if delta<=DODGE_SOFT_CAP_TRANSITION_DELTA:return DODGE_BASE_CHANCE+delta*DODGE_PER_DEX_DELTA"
+          },
+          {
+            "line": 53,
+            "pattern": "chance",
+            "snippet": "return DODGE_SOFT_CAP_TRANSITION_CHANCE+DODGE_SOFT_CAP_RANGE*excess/(excess+DODGE_SOFT_CAP_K)"
+          },
+          {
+            "line": 54,
+            "pattern": "chance",
+            "snippet": "def damage_enemy_crit_chance(player_sta:float)->float:return damage_clamp_chance(10.0-(int(player_sta or 0)//25),0.0,10.0)"
+          },
+          {
+            "line": 55,
+            "pattern": "chance",
+            "snippet": "def damage_roll_chance(chance:float,rng:DamageRandomSource)->bool:return rng.random()*100.0<damage_clamp_chance(chance,0.0,100.0)"
+          },
+          {
+            "line": 56,
+            "pattern": "damage",
+            "snippet": "def resolve_damage(request:DamageRequest,rng:DamageRandomSource)->DamageResult:"
+          },
+          {
+            "line": 58,
+            "pattern": "chance",
+            "snippet": "if damage_roll_chance(request.evasion_chance,rng):return DamageResult(0,False,True,request.attack,0.0)"
+          },
+          {
+            "line": 59,
+            "pattern": "damage",
+            "snippet": "mitigated=damage_after_defense(request.attack,request.defense)"
+          },
+          {
+            "line": 60,
+            "pattern": "chance",
+            "snippet": "critical=damage_roll_chance(request.critical_chance,rng)"
+          },
+          {
+            "line": 61,
+            "pattern": "damage",
+            "snippet": "scaled=mitigated*request.damage_multiplier*(CRITICAL_DAMAGE_MULTIPLIER if critical else 1.0)"
+          },
+          {
+            "line": 62,
+            "pattern": "damage",
+            "snippet": "return DamageResult(max(MINIMUM_DAMAGE,round(scaled)),critical,False,request.attack,mitigated)"
+          }
+        ],
+        "repository": [],
+        "reuse": [
+          {
+            "line": 1,
+            "pattern": "canonical",
+            "snippet": "\"\"\"Canonical V1-parity damage engine for PvE, PvP and simulation consumers.\"\"\""
+          }
+        ],
+        "rng": [
+          {
+            "line": 28,
+            "pattern": "RandomSource",
+            "snippet": "class DamageRandomSource(Protocol):"
+          },
+          {
+            "line": 55,
+            "pattern": "RandomSource",
+            "snippet": "def damage_roll_chance(chance:float,rng:DamageRandomSource)->bool:return rng.random()*100.0<damage_clamp_chance(chance,0.0,100.0)"
+          },
+          {
+            "line": 56,
+            "pattern": "RandomSource",
+            "snippet": "def resolve_damage(request:DamageRequest,rng:DamageRandomSource)->DamageResult:"
+          },
+          {
+            "line": 58,
+            "pattern": "\\brng\\b",
+            "snippet": "if damage_roll_chance(request.evasion_chance,rng):return DamageResult(0,False,True,request.attack,0.0)"
+          },
+          {
+            "line": 60,
+            "pattern": "\\brng\\b",
+            "snippet": "critical=damage_roll_chance(request.critical_chance,rng)"
+          }
+        ],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "rom_v2/domain/damage_engine.py",
+      "sha256": "19a25dee24a088f683d13778ea41e3d7c3c303fdb62811808490455d224b9832",
+      "symbols": [
+        {
+          "base_names": [
+            "str",
+            "Enum"
+          ],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 27,
+          "name": "DamageType"
+        },
+        {
+          "base_names": [
+            "Protocol"
+          ],
+          "is_protocol": true,
+          "kind": "ClassDef",
+          "line": 28,
+          "name": "DamageRandomSource"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 31,
+          "name": "DamageRequest"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 36,
+          "name": "DamageResult"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 39,
+          "name": "damage_clamp_chance"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 40,
+          "name": "damage_calculate_stat_defense"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 41,
+          "name": "damage_total_defense"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 42,
+          "name": "damage_after_defense"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 43,
+          "name": "damage_crit_chance"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 48,
+          "name": "damage_dodge_chance"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 54,
+          "name": "damage_enemy_crit_chance"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 55,
+          "name": "damage_roll_chance"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 56,
+          "name": "resolve_damage"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 29,
+          "name": "random"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [],
+        "repository": [],
+        "reuse": [
+          {
+            "line": 1,
+            "pattern": "canonical",
+            "snippet": "\"\"\"V1-parity value objects for canonical equipment generation.\"\"\""
+          }
+        ],
+        "rng": [],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "rom_v2/domain/equipment_generation.py",
+      "sha256": "50d9291f57dfd206c232a33a778d403f76a2ae0ecc52c0494eb1d38ec7f532fb",
+      "symbols": [
+        {
+          "base_names": [
+            "StrEnum"
+          ],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 13,
+          "name": "EquipmentGenerationSource"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 17,
+          "name": "EquipmentGenerationRequest"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 34,
+          "name": "EquipmentIdentity"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 50,
+          "name": "GeneratedEquipment"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [
+          {
+            "line": 5,
+            "pattern": "formula",
+            "snippet": "redefine item generation, rune levels, or refinement formulas."
+          },
+          {
+            "line": 14,
+            "pattern": "calculate",
+            "snippet": "calculate_dodge,"
+          },
+          {
+            "line": 15,
+            "pattern": "calculate",
+            "snippet": "calculate_magical_crit,"
+          },
+          {
+            "line": 16,
+            "pattern": "calculate",
+            "snippet": "calculate_matk,"
+          },
+          {
+            "line": 17,
+            "pattern": "calculate",
+            "snippet": "calculate_max_hp,"
+          },
+          {
+            "line": 18,
+            "pattern": "calculate",
+            "snippet": "calculate_max_mp,"
+          },
+          {
+            "line": 19,
+            "pattern": "calculate",
+            "snippet": "calculate_mdef,"
+          },
+          {
+            "line": 20,
+            "pattern": "calculate",
+            "snippet": "calculate_patk,"
+          },
+          {
+            "line": 21,
+            "pattern": "calculate",
+            "snippet": "calculate_pdef,"
+          },
+          {
+            "line": 22,
+            "pattern": "calculate",
+            "snippet": "calculate_physical_crit,"
+          },
+          {
+            "line": 87,
+            "pattern": "attack",
+            "snippet": "attacker_dex: int = 0"
+          },
+          {
+            "line": 94,
+            "pattern": "attack",
+            "snippet": "if self.attacker_dex < 0:"
+          },
+          {
+            "line": 95,
+            "pattern": "attack",
+            "snippet": "raise ValueError(\"attacker_dex_negative\")"
+          },
+          {
+            "line": 134,
+            "pattern": "calculate",
+            "snippet": "max_hp = calculate_max_hp(source.level, total_primary.sta) + extra.hp"
+          },
+          {
+            "line": 135,
+            "pattern": "calculate",
+            "snippet": "max_mp = calculate_max_mp(class_key, source.level, total_primary.int, total_primary.wis)"
+          },
+          {
+            "line": 137,
+            "pattern": "max_mp",
+            "snippet": "max_mp += extra.mp"
+          },
+          {
+            "line": 139,
+            "pattern": "max_hp",
+            "snippet": "max_hp=max_hp,"
+          },
+          {
+            "line": 140,
+            "pattern": "max_mp",
+            "snippet": "max_mp=max_mp,"
+          },
+          {
+            "line": 141,
+            "pattern": "calculate",
+            "snippet": "patk=calculate_patk(class_key, stat_map) + extra.patk,"
+          },
+          {
+            "line": 142,
+            "pattern": "calculate",
+            "snippet": "matk=calculate_matk(class_key, stat_map) + extra.matk,"
+          },
+          {
+            "line": 143,
+            "pattern": "calculate",
+            "snippet": "pdef=calculate_pdef(extra.pdef, total_primary.sta),"
+          },
+          {
+            "line": 144,
+            "pattern": "calculate",
+            "snippet": "mdef=calculate_mdef(extra.mdef, total_primary.wis),"
+          },
+          {
+            "line": 145,
+            "pattern": "calculate",
+            "snippet": "physical_crit=calculate_physical_crit(total_primary.dex),"
+          },
+          {
+            "line": 146,
+            "pattern": "calculate",
+            "snippet": "magical_crit=calculate_magical_crit(total_primary.wis),"
+          },
+          {
+            "line": 147,
+            "pattern": "calculate",
+            "snippet": "dodge=calculate_dodge(total_primary.dex, source.attacker_dex),"
+          }
+        ],
+        "repository": [],
+        "reuse": [
+          {
+            "line": 1,
+            "pattern": "canonical",
+            "snippet": "\"\"\"Canonical source-separated full player-stat snapshot for ROM V2."
+          },
+          {
+            "line": 122,
+            "pattern": "full_stat_snapshot",
+            "snippet": "def build_full_stat_snapshot(source: FullStatSnapshotInput) -> FullStatSnapshot:"
+          },
+          {
+            "line": 123,
+            "pattern": "canonical",
+            "snippet": "\"\"\"Build the sole canonical full stat snapshot from source-separated inputs.\"\"\""
+          }
+        ],
+        "rng": [],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "rom_v2/domain/full_stat_snapshot.py",
+      "sha256": "7efd1d0de4693f549910797c0a617271a016d34b0d75e44d7fc2677b4ca81b14",
+      "symbols": [
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 79,
+          "name": "FullStatSnapshotInput"
+        },
+        {
+          "base_names": [],
+          "is_protocol": false,
+          "kind": "ClassDef",
+          "line": 102,
+          "name": "FullStatSnapshot"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 122,
+          "name": "build_full_stat_snapshot"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "clock": [],
+        "formula": [
+          {
+            "line": 10,
+            "pattern": "chance",
+            "snippet": "WEAPON_REFINE_SUCCESS_CHANCES={0:100,1:100,2:100,3:80,4:70,5:60,6:50,7:40,8:30,9:20}"
+          },
+          {
+            "line": 11,
+            "pattern": "chance",
+            "snippet": "ARMOR_REFINE_SUCCESS_CHANCES={0:100,1:100,2:70,3:50,4:30,5:20}"
+          },
+          {
+            "line": 12,
+            "pattern": "damage",
+            "snippet": "WEAPON_REFINE_DAMAGE_MULTIPLIERS={0:1.0,1:1.05,2:1.10,3:1.15,4:1.22,5:1.30,6:1.40,7:1.52,8:1.66,9:1.82,10:2.0}"
+          },
+          {
+            "line": 23,
+            "pattern": "chance",
+            "snippet": "def get_refine_success_chance(kind:str,current_level:int,use_success_rune:bool=False)->int:"
+          },
+          {
+            "line": 25,
+            "pattern": "chance",
+            "snippet": "table=WEAPON_REFINE_SUCCESS_CHANCES if kind==\"weapon\" else ARMOR_REFINE_SUCCESS_CHANCES if kind==\"armor\" else {}"
+          },
+          {
+            "line": 27,
+            "pattern": "chance",
+            "snippet": "def roll_refine_success(chance:int,rng:Random)->bool:"
+          },
+          {
+            "line": 28,
+            "pattern": "chance",
+            "snippet": "\"\"\"V1 roll is inclusive 1..100 and succeeds when roll <= chance.\"\"\""
+          },
+          {
+            "line": 29,
+            "pattern": "chance",
+            "snippet": "return rng.randint(1,100)<=max(0,min(100,int(chance)))"
+          },
+          {
+            "line": 36,
+            "pattern": "damage",
+            "snippet": "def get_weapon_refine_damage_multiplier(level:int)->float:return WEAPON_REFINE_DAMAGE_MULTIPLIERS.get(normalize_refine_level(level),1.0)"
+          },
+          {
+            "line": 37,
+            "pattern": "damage",
+            "snippet": "def apply_weapon_refine_to_damage(base_damage:int,level:int)->int:return max(0,int(round(int(base_damage)*get_weapon_refine_damage_multiplier(level))))"
+          },
+          {
+            "line": 54,
+            "pattern": "chance",
+            "snippet": "item:EnhancementItem;chance:int;stone_item_id:int=REFINE_STONE_ITEM_ID;stone_quantity:int=1;success_rune_item_id:int|None=None"
+          }
+        ],
+        "repository": [],
+        "reuse": [
+          {
+            "line": 1,
+            "pattern": "canonical",
+            "snippet": "\"\"\"Canonical V1-parity equipment enhancement policy.\"\"\""
+          }
+        ],
+        "rng": [
+          {
+            "line": 27,
+            "pattern": "\\brng\\b",
+            "snippet": "def roll_refine_success(chance:int,rng:Random)->bool:"
+          },
+          {
+            "line": 29,
+            "pattern": "\\brng\\b",
+            "snippet": "return rng.randint(1,100)<=max(0,min(100,int(chance)))"
+          }
+        ],
+        "sandbox": []
+      },
+      "exists": true,
+      "path": "rom_v2/domain/enhancement.py",
+      "sha256": "d738bb2c5a30480b9cec875eda720d79dd33340ae7ea4fbd32a608fbb0c83bb8",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 19,
+          "name": "normalize_refine_level"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 22,
+          "name": "get_refine_max_level"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 23,
+          "name": "get_refine_success_chance"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 27,
+          "name": "roll_refine_success"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 30,
+          "name": "get_refine_failure_level"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 36,
+          "name": "get_weapon_refine_damage_multiplier"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 37,
+          "name": "apply_weapon_refine_to_damage"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 38,
+          "name": "get_armor_refine_hp_bonus_percent"
+        }
+      ]
+    }
+  ],
+  "decision": "REFINED_PARITY_RESOLUTION_REQUIRED",
+  "environment_file_opened": false,
+  "flat_domain_policy": {
+    "future_module": "rom_v2/domain/simulator_adapters.py",
+    "nested_package_authorized": false,
+    "required": true
+  },
+  "game_db_wal_shm": "NOT_MANIPULATED",
+  "generated_at": "2026-10-27T22:47:43.669940+00:00",
+  "main_started": false,
+  "manual_verification": {
+    "reason": "Read-only semantic contract refinement.",
+    "required": false
+  },
+  "next_action": "GO_TO_PARITY_RESOLUTION",
+  "observations": {
+    "flat_domain_target": "rom_v2/domain/simulator_adapters.py",
+    "isolated_state_found": true,
+    "rng_adapter_found": true,
+    "simulation_clock_found": true,
+    "simulation_rng_found": true,
+    "v2_clock_port_found": true,
+    "v2_random_source_port_found": true
+  },
+  "production_mutation": false,
+  "production_sqlite_opened": false,
+  "refined_contract": [
+    {
+      "area": "clock_boundary",
+      "contract": "Simulator time must be supplied through an injected deterministic clock. SimulationClock is V1 evidence; V2 already owns a Clock port. Stage 21.15.3b must resolve the adapter mapping and enumerate any simulator path that still reads wall-clock time directly.",
+      "owners": [
+        "systems/simulation/clock.py",
+        "rom_v2/application/ports/clock.py",
+        "systems/simulation/parity_foundation.py"
+      ],
+      "status": "REFINED_WITH_PARITY_REVIEW_REQUIRED"
+    },
+    {
+      "area": "rng_boundary",
+      "contract": "One caller-supplied seed must determine a run. SimulationRng owns seeded draws, draw count and state evidence in V1; V2 RandomSource remains the application port. Global/module random injection is compatibility evidence and must be scoped and restored, not treated as a preferred V2 boundary.",
+      "owners": [
+        "systems/simulation/rng.py",
+        "systems/simulation/rng_adapter.py",
+        "rom_v2/application/ports/random_source.py"
+      ],
+      "status": "REFINED_WITH_PARITY_REVIEW_REQUIRED"
+    },
+    {
+      "area": "sandbox_isolation",
+      "contract": "A simulation run must use isolated state or explicit in-memory/fake repositories and must not open accumulated production game.db state. No adapter may silently fall back to production SQLite, shared mutable globals, or live Telegram/runtime state.",
+      "owners": [
+        "systems/simulation/parity_foundation.py",
+        "rom_v2/application/ports/repositories.py"
+      ],
+      "status": "REFINED"
+    },
+    {
+      "area": "repository_and_uow",
+      "contract": "Simulator repositories must satisfy existing V2 repository and Unit-of-Work contracts. A run has explicit begin/commit-or-rollback semantics in its sandbox; production repository adapters and direct SQL are not simulator defaults.",
+      "owners": [
+        "rom_v2/application/ports/repositories.py",
+        "rom_v2/infrastructure/persistence"
+      ],
+      "status": "REFINED_WITH_PARITY_REVIEW_REQUIRED"
+    },
+    {
+      "area": "production_domain_reuse",
+      "contract": "Simulator adapters orchestrate production domain/application services. They must not duplicate combat, derived-stat, equipment-generation, enhancement, durability, EXP, reward, loot or repair formulas when an authoritative production owner exists.",
+      "owners": [
+        "systems/simulation/canonical_rules.py",
+        "rom_v2/domain/damage_engine.py",
+        "rom_v2/domain/equipment_generation.py",
+        "rom_v2/domain/full_stat_snapshot.py",
+        "rom_v2/domain/enhancement.py"
+      ],
+      "status": "REFINED"
+    },
+    {
+      "area": "simulator_factories",
+      "contract": "Existing for_simulator factories are approved reuse seams only for the behavior they explicitly construct. They do not authorize parallel formula implementations or production persistence access.",
+      "owners": [
+        "rom_v2/application/equipment_generation_service.py",
+        "rom_v2/application/full_stat_snapshot_service.py"
+      ],
+      "status": "REFINED"
+    },
+    {
+      "area": "fixtures",
+      "contract": "Fixtures must be deterministic, minimal and explicit for accounts, characters, primary stats, equipment, runes, resources and encounters. Existing numeric fixture values are evidence, not new production content or balance policy.",
+      "owners": [
+        "systems/simulation/models.py",
+        "systems/simulation/config.py",
+        "tests_v2"
+      ],
+      "status": "REFINED_WITH_PARITY_REVIEW_REQUIRED"
+    },
+    {
+      "area": "repeatability_and_recovery",
+      "contract": "Same configuration, seed, clock and fixture must reproduce the same result and draw/state evidence. Failed runs must discard sandbox mutations; retries must start from a fresh fixture rather than partially reused state.",
+      "owners": [
+        "systems/simulation/rng.py",
+        "systems/simulation/parity_foundation.py",
+        "systems/simulation/reporting.py"
+      ],
+      "status": "REFINED_WITH_PARITY_REVIEW_REQUIRED"
+    },
+    {
+      "area": "reporting_boundary",
+      "contract": "Reports may describe deterministic inputs, outputs, seed, clock, draw counts and warnings. Reporting must not mutate production state or promote sandbox candidate settings to canonical gameplay policy.",
+      "owners": [
+        "systems/simulation/reporting.py",
+        "systems/simulation/production_parity.py"
+      ],
+      "status": "REFINED"
+    },
+    {
+      "area": "flat_domain_layout",
+      "contract": "Any Stage 21.15.3 implementation must use the flat module rom_v2/domain/simulator_adapters.py. A nested rom_v2/domain/simulator_adapters package is not authorized.",
+      "owners": [
+        "rom_v2/domain"
+      ],
+      "status": "REFINED"
+    }
+  ],
+  "revision": "2026-10-27-r2-ast-protocol-resolution",
+  "simulator_executed": false,
+  "stage": "21.15.3a",
+  "status": "PASS",
+  "superseded_interpretations": [
+    "Keyword evidence alone does not establish simulator ownership.",
+    "Direct SQL in legacy systems is not an approved simulator repository adapter.",
+    "Global random or temporary module injection is not the preferred V2 RNG boundary.",
+    "Sandbox candidate parameters are not canonical live balance policy.",
+    "Simulator-local formula copies are not authoritative where production domain/application owners exist."
+  ],
+  "unresolved_for_parity": [
+    {
+      "key": "clock_adapter_mapping",
+      "reason": "Resolve exact SimulationClock-to-Clock semantics, start instant, advance rules and all remaining wall-clock reads used by simulator paths."
+    },
+    {
+      "key": "rng_adapter_coverage",
+      "reason": "Resolve the exact seeded source, supported draw methods, draw-count/state-digest contract, and every global/module random compatibility injection that must be eliminated or safely restored."
+    },
+    {
+      "key": "sandbox_repository_inventory",
+      "reason": "Map each simulator state mutation to an isolated repository/UoW or pure state owner and prove that production SQLite cannot be selected implicitly."
+    },
+    {
+      "key": "formula_reuse_matrix",
+      "reason": "For combat, stats, equipment, enhancement, loot, EXP, rewards, repair and survival, identify the exact authoritative production callable and every simulator duplicate or compatibility copy."
+    },
+    {
+      "key": "fixture_contract",
+      "reason": "Resolve canonical deterministic fixture builders and which numeric values are parity fixtures rather than production defaults or new content."
+    },
+    {
+      "key": "run_transaction_and_recovery",
+      "reason": "Resolve run begin, success, failure, rollback, retry and report-write boundaries, including whether reports survive a failed sandbox run."
+    },
+    {
+      "key": "candidate_sandbox_separation",
+      "reason": "Identify candidate-only PvP/balance sandboxes and prevent their parameters from being interpreted as approved live policy."
+    }
+  ]
+}
