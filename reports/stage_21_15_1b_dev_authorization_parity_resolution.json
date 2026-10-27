@@ -1,0 +1,2081 @@
+{
+  "authorization": {
+    "authorized": true,
+    "next_stage": "21.15.1c",
+    "scope": "API-ready DEV authorization domain only"
+  },
+  "checks": {
+    "admin_crystal_audit_evidence": true,
+    "auction_identity_is_separate": true,
+    "dev_compat_is_helper_layer": true,
+    "dev_mode_evidence": true,
+    "effective_registration_exists": true,
+    "local_dev_mode_paths_exist": true,
+    "main_registration_call": true,
+    "rom_admin_identity_evidence": true
+  },
+  "decision": "PARITY_RESOLVED_IMPLEMENTATION_AUTHORIZED",
+  "environment_file_opened": false,
+  "failed_checks": [],
+  "game_db_wal_shm": "NOT_MANIPULATED",
+  "generated_at": "2026-10-27T20:51:21.053886+00:00",
+  "implementation_contract": {
+    "audit_policy": "DECLARED_PER_OPERATION_FROM_V1_EVIDENCE",
+    "decision_function": "A single pure guard evaluates capability, identity requirement, allowed caller IDs, command risk class, and required adapter guarantees before execution.",
+    "default_behavior": "FAIL_CLOSED",
+    "disabled_behavior": "DENY_BEFORE_SIDE_EFFECT",
+    "idempotency_policy": "DECLARED_PER_OPERATION_FROM_V1_EVIDENCE",
+    "identity_values": "CONFIGURATION_INJECTED_ONLY",
+    "production_persistence": "OUT_OF_SCOPE",
+    "risk_classes": [
+      "READ_ONLY",
+      "CONTROLLED_MUTATION",
+      "DESTRUCTIVE_RESET",
+      "ADMIN_PRODUCTION"
+    ],
+    "runtime_registration": "OUT_OF_SCOPE",
+    "telegram_transport": "OUT_OF_SCOPE",
+    "unauthorized_behavior": "DENY_BEFORE_SIDE_EFFECT",
+    "unknown_command_behavior": "DENY_BEFORE_SIDE_EFFECT"
+  },
+  "main_started": false,
+  "manual_verification": {
+    "reason": "Read-only parity resolution.",
+    "required": false
+  },
+  "prerequisites": {
+    "reports/stage_21_15_1_existing_dev_authorization_audit.json": {
+      "sha256": "a91946a49f3cb829e8a10957832634171fafd676a2a6b88bbda11af56effbb37",
+      "status": "PASS"
+    },
+    "reports/stage_21_15_1a_dev_authorization_contract_refinement.json": {
+      "decision": "REFINED_PARITY_RESOLUTION_REQUIRED",
+      "sha256": "b45a09a264ef61bceac863693dabac03180fab2ca0ab1c2d9f9fef2ad0911cf1",
+      "status": "PASS"
+    }
+  },
+  "production_sqlite_opened": false,
+  "prohibitions": [
+    "Do not hard-code developer or administrator IDs.",
+    "Do not merge auction administrator policy with ROM administrator or DEV policy.",
+    "Do not invent audit rows or idempotency guarantees absent from V1.",
+    "Do not register Telegram handlers, start main.py, open production SQLite, read .env, or wire production persistence.",
+    "Do not execute any DEV or administrator operation during implementation tests."
+  ],
+  "resolutions": [
+    {
+      "implementation_rule": "Authorization input = capability_enabled plus operation policy. Identity is required only where the authoritative V1 operation owner requires it; identity values are injected by configuration and never embedded.",
+      "key": "canonical_dev_identity_policy",
+      "owners": [
+        "handlers/dev.py",
+        "config.py",
+        "systems/admin_crystal_credit_system.py"
+      ],
+      "resolution": "Preserve V1 separation. DEV_MODE is a capability gate, not proof of caller identity. Commands that V1 intentionally exposes only through DEV handler registration remain DEV-capability operations; administrative production operations retain their authoritative allowlist guard. V2 must represent both inputs explicitly and must not invent developer IDs.",
+      "status": "RESOLVED"
+    },
+    {
+      "evidence": {
+        "definition_lines": [
+          184,
+          1019,
+          1049,
+          1058
+        ],
+        "effective_line": 1058
+      },
+      "key": "effective_register_dev_handlers_chain",
+      "owners": [
+        "handlers/dev.py",
+        "main.py"
+      ],
+      "resolution": "Python last-definition semantics select the final top-level register_dev_handlers definition in handlers/dev.py. main.py invokes that exported name. Earlier same-name definitions are shadow evidence, not parallel runtime owners.",
+      "status": "RESOLVED"
+    },
+    {
+      "key": "command_inventory_and_risk_class",
+      "observed_dev_symbol_count": 43,
+      "owners": [
+        "handlers/dev.py",
+        "db_modules/dev_compat.py"
+      ],
+      "resolution": "V2 must register only explicitly declared command specifications. Each specification requires one of READ_ONLY, CONTROLLED_MUTATION, DESTRUCTIVE_RESET, or ADMIN_PRODUCTION. db_modules/dev_compat.py helpers cannot authorize or self-register commands. Exact Telegram command names remain transport metadata and are not implemented in the API-ready domain stage.",
+      "status": "RESOLVED_AS_CLASSIFICATION_CONTRACT"
+    },
+    {
+      "key": "audit_requirements_per_command",
+      "owners": [
+        "systems/admin_crystal_credit_system.py",
+        "handlers/dev.py"
+      ],
+      "resolution": "Preserve operation-specific V1 guarantees. ADMIN_PRODUCTION operations that already have durable audit/idempotency must require those capabilities. DEV operations without proven V1 durable audit must not receive an invented ledger; their API contract exposes audit_required and idempotency_required flags for fail-closed adapter validation.",
+      "status": "RESOLVED"
+    },
+    {
+      "key": "separate_auction_admin_policy",
+      "owners": [
+        "handlers/auction_house.py",
+        "config.py"
+      ],
+      "resolution": "Auction administrator authorization remains a separate authoritative policy. It must not be merged into ROM_ADMIN_USER_IDS or the DEV capability gate by Stage 21.15.1 implementation.",
+      "status": "RESOLVED"
+    }
+  ],
+  "source_facts": [
+    {
+      "definitions": [
+        {
+          "kind": "FunctionDef",
+          "line": 64,
+          "name": "parse_dev_rune_request"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 110,
+          "name": "parse_dev_quantity_request"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 126,
+          "name": "format_rune_drop_simulation"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 149,
+          "name": "parse_dev_drop_sim_request"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 165,
+          "name": "format_universal_drop_simulation"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 184,
+          "name": "register_dev_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 985,
+          "name": "_register_pvp_production_calibration_handlers_14_6_2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1019,
+          "name": "register_dev_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1027,
+          "name": "_register_pvp_fixture_audit_handlers_14_6_2a"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1049,
+          "name": "register_dev_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1058,
+          "name": "register_dev_handlers"
+        }
+      ],
+      "exists": true,
+      "path": "handlers/dev.py",
+      "sha256": "c161907aa3d965cbb3f2ce50d1b6f46c181027ff7a3b517ae852a026b5827352"
+    },
+    {
+      "definitions": [
+        {
+          "kind": "FunctionDef",
+          "line": 33,
+          "name": "get_bag_capacity"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 51,
+          "name": "get_inventory_used_slots"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 65,
+          "name": "get_exp_to_next_level"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 103,
+          "name": "get_dynamic_stat_value"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 109,
+          "name": "get_dynamic_sell_price"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 114,
+          "name": "get_dynamic_armor_name"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 120,
+          "name": "set_player_level_for_test"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 204,
+          "name": "reset_player_level_for_test"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 207,
+          "name": "set_gold_for_test"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 258,
+          "name": "_get_dev_reset_hero_lock"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 265,
+          "name": "_dev_reset_table_exists"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 272,
+          "name": "_dev_reset_table_columns"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 277,
+          "name": "_dev_reset_delete_by_user_columns"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 289,
+          "name": "reset_hero_for_test"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 520,
+          "name": "init_dynamic_equipment_system"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 535,
+          "name": "add_stat_value"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 547,
+          "name": "get_random_main_hand_profile"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 550,
+          "name": "get_random_off_hand_profile"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 553,
+          "name": "get_profile_for_generated_item"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 568,
+          "name": "get_dynamic_weapon_name"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 583,
+          "name": "generate_dynamic_equipment_stats"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 735,
+          "name": "seed_class_reset_sphere_item"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 811,
+          "name": "init_class_equipment_restrictions_system"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 831,
+          "name": "normalize_equipment_restriction_value"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 837,
+          "name": "get_armor_type_label"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 841,
+          "name": "get_item_subtype_label"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 940,
+          "name": "pick_weighted_stat"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 975,
+          "name": "add_primary_stat_to_stats"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1000,
+          "name": "get_existing_primary_stat_budget"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1014,
+          "name": "clear_primary_stat_bonuses"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1025,
+          "name": "apply_armor_type_primary_stat_profile_to_stats"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1093,
+          "name": "apply_armor_type_defense_profile_to_stats"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1166,
+          "name": "normalize_dev_rarity"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1194,
+          "name": "create_dev_armor_item_for_test"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1367,
+          "name": "create_dev_weapon_item_for_test"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1562,
+          "name": "_player_system_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1566,
+          "name": "get_max_hp"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1569,
+          "name": "_equipment_system_ro_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1573,
+          "name": "init_weapon_damage_system"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1576,
+          "name": "calculate_weapon_damage_by_values"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1579,
+          "name": "_player_system_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1583,
+          "name": "get_player_level"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1589,
+          "name": "set_current_exp_for_test_17_14_1_1"
+        }
+      ],
+      "exists": true,
+      "path": "db_modules/dev_compat.py",
+      "sha256": "c140072edbb338a6f7ca396d0b442f559962a8dc8d7aa1148f7e2d3314069741"
+    },
+    {
+      "definitions": [
+        {
+          "kind": "FunctionDef",
+          "line": 29,
+          "name": "run_bot_polling_resilient"
+        }
+      ],
+      "exists": true,
+      "path": "main.py",
+      "sha256": "a7edf7a3b99437d04329201be44d7bace83668c1cd15edf7be720d529927ea59"
+    },
+    {
+      "definitions": [
+        {
+          "kind": "FunctionDef",
+          "line": 6,
+          "name": "_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 8,
+          "name": "register_fatigue_artifact_handlers"
+        }
+      ],
+      "exists": true,
+      "path": "handlers/fatigue_artifact.py",
+      "sha256": "aeeef7e11ddec5463dd7f8ac2003e75b04e69eb11db25839e98c79a044f88d5e"
+    },
+    {
+      "definitions": [
+        {
+          "kind": "FunctionDef",
+          "line": 51,
+          "name": "guild_hall_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 71,
+          "name": "guild_create_cancel_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 78,
+          "name": "guild_create_confirm_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 86,
+          "name": "guild_list_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 121,
+          "name": "guild_detail_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 141,
+          "name": "normalize_guild_tag_input"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 145,
+          "name": "reset_guild_browse_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 149,
+          "name": "get_guild_browse_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 153,
+          "name": "set_selected_guild"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 158,
+          "name": "validate_guild_name_for_ui"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 169,
+          "name": "validate_guild_tag_for_ui"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 180,
+          "name": "reset_guild_create_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 184,
+          "name": "start_guild_create_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 193,
+          "name": "get_guild_create_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 197,
+          "name": "format_ua_date"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 213,
+          "name": "build_guild_hall_no_guild_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 231,
+          "name": "build_guild_hall_member_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 269,
+          "name": "build_guild_hall_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 277,
+          "name": "build_guild_info_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 314,
+          "name": "build_guild_members_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 342,
+          "name": "build_guild_ranking_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 374,
+          "name": "build_guild_list_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 399,
+          "name": "build_guild_detail_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 428,
+          "name": "build_my_applications_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 452,
+          "name": "build_guild_placeholder_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 460,
+          "name": "build_guild_create_name_prompt"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 482,
+          "name": "build_guild_create_tag_prompt"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 497,
+          "name": "build_guild_create_icon_prompt"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 512,
+          "name": "build_guild_create_confirm_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 522,
+          "name": "open_guild_hall"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 527,
+          "name": "send_guild_section"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 531,
+          "name": "send_city"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 536,
+          "name": "send_guild_create_prompt"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 540,
+          "name": "show_guild_list"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 546,
+          "name": "show_guild_detail"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 559,
+          "name": "start_guild_creation"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 579,
+          "name": "handle_guild_creation_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 654,
+          "name": "handle_guild_list_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 697,
+          "name": "register_guild_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 784,
+          "name": "validate_guild_icon_for_ui"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 808,
+          "name": "_guild_row_get"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 815,
+          "name": "guild_list_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 876,
+          "name": "reset_guild_application_review_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 880,
+          "name": "get_guild_application_review_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 884,
+          "name": "_app_row_get"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 891,
+          "name": "guild_applications_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 924,
+          "name": "guild_application_detail_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 932,
+          "name": "build_guild_applications_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 959,
+          "name": "build_guild_application_detail_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 999,
+          "name": "show_guild_applications"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1006,
+          "name": "guild_applicant_profile_link_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1040,
+          "name": "show_guild_application_detail"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1060,
+          "name": "handle_guild_application_review_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1107,
+          "name": "register_guild_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1166,
+          "name": "reset_guild_member_manage_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1170,
+          "name": "get_guild_member_manage_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1174,
+          "name": "_member_row_get"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1181,
+          "name": "can_actor_manage_target"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1203,
+          "name": "guild_members_manage_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1237,
+          "name": "guild_member_detail_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1258,
+          "name": "build_guild_member_manage_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1288,
+          "name": "build_guild_member_detail_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1345,
+          "name": "show_guild_members_manage"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1354,
+          "name": "show_guild_member_detail"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1366,
+          "name": "refresh_selected_member_or_list"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1375,
+          "name": "handle_guild_member_manage_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1436,
+          "name": "register_guild_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1465,
+          "name": "_guild_format_ua_date_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1477,
+          "name": "_guild_safe_reset_other_states_for_members_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1488,
+          "name": "_guild_has_other_officer_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1501,
+          "name": "build_guild_applications_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1528,
+          "name": "build_guild_application_detail_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1569,
+          "name": "guild_member_detail_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1594,
+          "name": "build_guild_member_detail_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1663,
+          "name": "send_guild_members_manage_for_actor_17_21_3_4"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1673,
+          "name": "show_guild_members_manage"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1682,
+          "name": "guild_kick_confirmation_kb_17_21_3_2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1693,
+          "name": "handle_guild_member_manage_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1767,
+          "name": "show_guild_applications"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1780,
+          "name": "handle_guild_application_review_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1846,
+          "name": "_guild_progress_bar"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1856,
+          "name": "guild_hall_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1879,
+          "name": "build_guild_progress_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1915,
+          "name": "build_guild_contribution_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1959,
+          "name": "guild_contribution_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1967,
+          "name": "send_guild_contribution"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1975,
+          "name": "send_guild_progress"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1989,
+          "name": "register_guild_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2063,
+          "name": "_guild_progress_reset_navigation_states_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2075,
+          "name": "_guild_progress_handle_dev_command_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2130,
+          "name": "_guild_progress_handle_global_guild_buttons_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2191,
+          "name": "handle_guild_list_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2207,
+          "name": "handle_guild_application_review_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2223,
+          "name": "handle_guild_member_manage_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2239,
+          "name": "handle_guild_creation_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2267,
+          "name": "reset_guild_logs_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2271,
+          "name": "get_guild_logs_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2275,
+          "name": "_guild_log_row_get"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2282,
+          "name": "_guild_log_format_ua_datetime"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2301,
+          "name": "guild_logs_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2332,
+          "name": "build_guild_logs_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2368,
+          "name": "show_guild_logs"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2389,
+          "name": "handle_guild_logs_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2425,
+          "name": "register_guild_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2449,
+          "name": "_guild_journal_character_name_by_user_id_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2464,
+          "name": "_guild_journal_pretty_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2475,
+          "name": "build_guild_logs_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2535,
+          "name": "_guild_contracts_reset_guild_states_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2548,
+          "name": "_guild_open_contracts_board_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2578,
+          "name": "_guild_open_mercenary_hall_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2600,
+          "name": "_guild_open_city_from_stale_state_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2622,
+          "name": "_guild_progress_handle_global_guild_buttons_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2657,
+          "name": "reset_all_guild_ui_states"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2676,
+          "name": "get_active_guild_ui_states"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2698,
+          "name": "format_guild_debug_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2744,
+          "name": "format_guild_cleanup_result_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2767,
+          "name": "_guild_global_navigation_passthrough_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2838,
+          "name": "_guild_progress_handle_global_guild_buttons_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2856,
+          "name": "_guild_leadership_candidates_17_22_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2859,
+          "name": "_guild_leadership_select_kb_17_22_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2865,
+          "name": "_guild_leadership_confirm_kb_17_22_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2868,
+          "name": "register_guild_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2984,
+          "name": "_compact_guild_actions_17_11_2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3001,
+          "name": "build_guild_hall_no_guild_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3008,
+          "name": "build_guild_hall_member_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3014,
+          "name": "build_guild_member_detail_text"
+        }
+      ],
+      "exists": true,
+      "path": "handlers/guild.py",
+      "sha256": "de39b8627b59b33ad1500086b9862f775237c780d4718e8bc389e4ef88365d40"
+    },
+    {
+      "definitions": [
+        {
+          "kind": "FunctionDef",
+          "line": 49,
+          "name": "_utc"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 52,
+          "name": "_conn"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 58,
+          "name": "_dev_enabled"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 67,
+          "name": "init_premium_item_policy"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 106,
+          "name": "init_premium_item_policy_system"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 118,
+          "name": "get_premium_item_policy"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 124,
+          "name": "can_grant_item_from_source"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 178,
+          "name": "_inventory_columns"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 181,
+          "name": "_grant_stack"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 205,
+          "name": "grant_item_from_source"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 265,
+          "name": "get_premium_item_grants"
+        }
+      ],
+      "exists": true,
+      "path": "systems/premium_item_policy_system.py",
+      "sha256": "76e66c69839815c79597703c49955d04156092861015e3e2032813ce23cb0fea"
+    },
+    {
+      "definitions": [
+        {
+          "kind": "FunctionDef",
+          "line": 8,
+          "name": "_positive_int_env"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 15,
+          "name": "_admin_ids_env"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 34,
+          "name": "_validated_external_https_url"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 67,
+          "name": "get_external_links_config"
+        }
+      ],
+      "exists": true,
+      "path": "config.py",
+      "sha256": "aae925e7e3e40c5b9bde60a4f9373df611b8a4ab4d36031b1b81b6f24e27d793"
+    },
+    {
+      "definitions": [
+        {
+          "kind": "FunctionDef",
+          "line": 8,
+          "name": "_utc"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 9,
+          "name": "_connect"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 11,
+          "name": "is_admin"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 12,
+          "name": "init_admin_crystal_credit_system"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 17,
+          "name": "preview_admin_adjustment"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 35,
+          "name": "execute_admin_adjustment"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 55,
+          "name": "get_admin_adjustment_history"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 62,
+          "name": "get_admin_adjustment_detail"
+        }
+      ],
+      "exists": true,
+      "path": "systems/admin_crystal_credit_system.py",
+      "sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61"
+    },
+    {
+      "definitions": [
+        {
+          "kind": "FunctionDef",
+          "line": 13,
+          "name": "_auction_equipment_typed_name_11_4_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 40,
+          "name": "_auction_snapshot_typed_name_11_4_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 45,
+          "name": "_auction_lot_typed_name_17_1_0"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 148,
+          "name": "auction_house_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 160,
+          "name": "get_city_reply_keyboard"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 182,
+          "name": "build_auction_house_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 224,
+          "name": "build_auction_placeholder_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 237,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 337,
+          "name": "clear_auction_sell_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 350,
+          "name": "auction_sell_category_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 357,
+          "name": "auction_sell_items_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 399,
+          "name": "build_auction_sell_start_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 413,
+          "name": "build_auction_sell_item_list_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 436,
+          "name": "build_auction_sell_price_prompt"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 453,
+          "name": "build_auction_sell_confirm_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 468,
+          "name": "auction_sell_confirm_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 475,
+          "name": "_auction_parse_inventory_id_from_button"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 482,
+          "name": "_auction_register_sell_equipment_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 669,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 692,
+          "name": "clear_auction_sell_state_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 696,
+          "name": "auction_sell_category_kb_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 704,
+          "name": "build_auction_sell_start_text_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 720,
+          "name": "auction_stack_items_kb_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 755,
+          "name": "build_auction_stack_item_list_text_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 777,
+          "name": "build_auction_stack_quantity_prompt_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 786,
+          "name": "build_auction_stack_price_prompt_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 800,
+          "name": "build_auction_stack_confirm_text_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 811,
+          "name": "_auction_open_item_list_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 826,
+          "name": "_auction_register_sell_all_handlers_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1088,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1109,
+          "name": "clear_auction_buy_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1113,
+          "name": "_auction_parse_lot_id_from_button"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1120,
+          "name": "auction_buy_lots_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1157,
+          "name": "build_auction_buy_list_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1178,
+          "name": "auction_lot_view_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1185,
+          "name": "build_auction_buy_confirm_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1194,
+          "name": "_auction_register_buy_lot_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1361,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1386,
+          "name": "_auction_clear_all_sell_states_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1390,
+          "name": "_auction_clear_all_buy_states_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1397,
+          "name": "_auction_inline_truncate"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1408,
+          "name": "auction_sell_inline_category_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1416,
+          "name": "build_auction_sell_start_text_inline_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1432,
+          "name": "auction_sell_items_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1484,
+          "name": "build_auction_sell_inline_list_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1502,
+          "name": "_auction_register_sell_inline_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1725,
+          "name": "auction_buy_lots_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1763,
+          "name": "build_auction_buy_inline_list_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1778,
+          "name": "auction_lot_inline_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1786,
+          "name": "auction_lot_inline_confirm_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1793,
+          "name": "_auction_register_buy_inline_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1897,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1913,
+          "name": "_auction_clear_sell_review_state_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1917,
+          "name": "auction_sell_review_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1930,
+          "name": "_auction_send_sell_review_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1960,
+          "name": "_auction_register_sell_review_before_price_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2190,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2205,
+          "name": "auction_my_lots_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2243,
+          "name": "build_auction_my_lots_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2258,
+          "name": "auction_my_lot_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2266,
+          "name": "auction_my_lot_cancel_confirm_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2273,
+          "name": "_auction_register_my_lots_cancel_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2387,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2402,
+          "name": "auction_unclaimed_items_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2439,
+          "name": "build_auction_unclaimed_items_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2454,
+          "name": "auction_unclaimed_item_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2462,
+          "name": "auction_unclaimed_claim_confirm_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2469,
+          "name": "_auction_register_unclaimed_items_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2582,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2597,
+          "name": "auction_completed_sales_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2634,
+          "name": "build_auction_completed_sales_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2649,
+          "name": "auction_completed_sale_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2657,
+          "name": "auction_completed_sale_claim_confirm_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2664,
+          "name": "_auction_register_completed_sales_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2777,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2811,
+          "name": "auction_buy_category_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2820,
+          "name": "auction_buy_sort_inline_row_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2831,
+          "name": "auction_buy_lots_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2877,
+          "name": "build_auction_buy_category_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2890,
+          "name": "build_auction_buy_lots_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2902,
+          "name": "auction_buy_lot_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2910,
+          "name": "auction_buy_confirm_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2917,
+          "name": "_auction_register_buy_filters_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3071,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3084,
+          "name": "_auction_clear_runtime_states_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3114,
+          "name": "_auction_main_menu_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3144,
+          "name": "_auction_register_back_to_menu_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3172,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3187,
+          "name": "_auction_clear_runtime_states_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3217,
+          "name": "_auction_main_menu_text_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3248,
+          "name": "auction_buy_lots_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3300,
+          "name": "auction_buy_lot_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3311,
+          "name": "auction_buy_confirm_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3322,
+          "name": "_auction_register_reply_back_to_house_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3342,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3355,
+          "name": "auction_buy_lots_reply_back_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3369,
+          "name": "_auction_register_buy_category_keyboard_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3436,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3461,
+          "name": "auction_sell_category_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3472,
+          "name": "auction_sell_listing_back_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3485,
+          "name": "build_auction_sell_category_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3503,
+          "name": "_auction_sanitize_sell_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3539,
+          "name": "_auction_call_equipment_sell_list_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3560,
+          "name": "_auction_try_stack_sell_list_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3596,
+          "name": "_auction_send_sell_category_listing_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3648,
+          "name": "_auction_register_sell_category_keyboard_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3699,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3724,
+          "name": "_auction_register_reply_back_to_house_restore_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3769,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3802,
+          "name": "auction_reply_back_only_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3810,
+          "name": "_auction_strip_back_to_house_inline_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3851,
+          "name": "auction_my_lots_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3865,
+          "name": "auction_my_lot_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3883,
+          "name": "auction_unclaimed_items_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3897,
+          "name": "auction_unclaimed_item_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3915,
+          "name": "auction_completed_sales_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3929,
+          "name": "auction_completed_sale_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3941,
+          "name": "_auction_register_section_back_keyboard_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4003,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4020,
+          "name": "auction_buy_category_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4032,
+          "name": "build_auction_buy_category_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4048,
+          "name": "auction_search_reply_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4055,
+          "name": "auction_search_results_reply_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4063,
+          "name": "build_auction_search_prompt_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4076,
+          "name": "auction_search_sort_inline_buttons_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4084,
+          "name": "auction_search_results_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4129,
+          "name": "build_auction_search_results_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4140,
+          "name": "auction_search_lot_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4147,
+          "name": "auction_search_confirm_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4154,
+          "name": "_auction_get_search_query_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4159,
+          "name": "_auction_show_search_results_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4177,
+          "name": "_auction_register_buy_search_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4364,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4387,
+          "name": "auction_history_reply_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4394,
+          "name": "auction_market_price_search_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4401,
+          "name": "auction_history_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4421,
+          "name": "_auction_history_row_to_line_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4446,
+          "name": "build_auction_history_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4474,
+          "name": "build_auction_market_price_prompt_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4487,
+          "name": "build_auction_market_price_search_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4523,
+          "name": "build_auction_lot_market_price_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4565,
+          "name": "auction_buy_lot_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4590,
+          "name": "auction_search_lot_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4605,
+          "name": "auction_price_back_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4611,
+          "name": "_auction_register_history_market_prices_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4705,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4725,
+          "name": "_auction_open_history_screen_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4753,
+          "name": "_auction_register_history_keyboard_restore_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4773,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4787,
+          "name": "build_auction_cleanup_report_text_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4811,
+          "name": "build_auction_house_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4829,
+          "name": "_auction_register_expiration_cleanup_handlers_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4861,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4873,
+          "name": "_auction_list_short_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4885,
+          "name": "build_auction_diagnostics_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4920,
+          "name": "_auction_register_stabilization_diagnostics_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4953,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4977,
+          "name": "_auction_get_admin_ids_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5000,
+          "name": "_auction_is_admin_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5004,
+          "name": "_auction_admin_denied_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5011,
+          "name": "_auction_safe_report_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5025,
+          "name": "_auction_register_admin_command_guard_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5101,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5122,
+          "name": "auction_sell_inline_category_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5130,
+          "name": "build_auction_sell_start_text_inline_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5143,
+          "name": "build_auction_sell_inline_list_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5152,
+          "name": "auction_buy_category_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5162,
+          "name": "_compact_action_list_17_11_2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5180,
+          "name": "build_auction_house_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5187,
+          "name": "_auction_main_menu_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5193,
+          "name": "_auction_main_menu_text_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5199,
+          "name": "build_auction_buy_category_text_v1"
+        }
+      ],
+      "exists": true,
+      "path": "handlers/auction_house.py",
+      "sha256": "9cd9b0ccccae8ea2f0bfb24abdc6428ae5691ba78a33a60d9b3fed84c4215f7a"
+    }
+  ],
+  "stage": "21.15.1b",
+  "status": "PASS"
+}
