@@ -1,0 +1,34 @@
+{
+  "branch": "rewrite/rom-v2",
+  "decision": "API_READY_IMPLEMENTED",
+  "dev_operations_executed": false,
+  "direct_sql": false,
+  "flat_module": "rom_v2/domain/dev_data_operations.py",
+  "game_db_wal_shm": "NOT_MANIPULATED",
+  "generated_at": "2026-10-27T22:31:51.455827+00:00",
+  "head_before": "feb95d939d870f1ad7cb4971e09639ab8af0a671",
+  "manual_verification": {
+    "reason": "API-ready ports and orchestration only.",
+    "required": false
+  },
+  "nested_package_created": false,
+  "parity": {
+    "decision": "PARITY_RESOLVED_IMPLEMENTATION_AUTHORIZED",
+    "path": "reports/stage_21_15_2b_dev_data_operations_parity_resolution.json",
+    "sha256": "ede6231a75b69743ec75269e8f758d68c43ab5c0a879bc7a60fb5e45f423767d"
+  },
+  "production_persistence_connected": false,
+  "revision": "2026-10-27-r2-ast-dependency-check",
+  "runtime_connected": false,
+  "stage": "21.15.2c",
+  "status": "PASS",
+  "telegram_connected": false,
+  "tests": {
+    "py_compile": "PASS",
+    "smoke": "PASS",
+    "smoke_stdout": "",
+    "unit": "PASS",
+    "unit_stderr": "test_command_validation_fail_closed (tests_v2.test_dev_data_operations.Tests.test_command_validation_fail_closed) ... ok\ntest_denied_before_any_side_effect (tests_v2.test_dev_data_operations.Tests.test_denied_before_any_side_effect) ... ok\ntest_failure_rolls_back_and_does_not_record (tests_v2.test_dev_data_operations.Tests.test_failure_rolls_back_and_does_not_record) ... ok\ntest_give_reset_set_delegate_and_commit (tests_v2.test_dev_data_operations.Tests.test_give_reset_set_delegate_and_commit) ... ok\ntest_module_has_no_sql_or_runtime_dependencies (tests_v2.test_dev_data_operations.Tests.test_module_has_no_sql_or_runtime_dependencies) ... ok\ntest_replay_has_no_mutation_or_receipt (tests_v2.test_dev_data_operations.Tests.test_replay_has_no_mutation_or_receipt) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 0.005s\n\nOK\n",
+    "unit_stdout": ""
+  }
+}
