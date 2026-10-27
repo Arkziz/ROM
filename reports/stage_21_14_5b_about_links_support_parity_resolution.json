@@ -1,0 +1,118 @@
+{
+  "authoritative_sources": [
+    {
+      "path": "data/about_game.py",
+      "sha256": "417a9803f12c0b287802c433ac0d83e6be8a5996347e04a34916df44234c8a84"
+    },
+    {
+      "path": "handlers/about_game.py",
+      "sha256": "1e1afdb05824563428956ff1ac24e2f3a1df9802dae383e1de47a0f0f8d17501"
+    },
+    {
+      "path": "config.py",
+      "sha256": "aae925e7e3e40c5b9bde60a4f9373df611b8a4ab4d36031b1b81b6f24e27d793"
+    }
+  ],
+  "checks": {
+    "about_canonical_owner": true,
+    "account_return_evidence": true,
+    "game_chat_config_key": true,
+    "https_evidence": true,
+    "news_channel_config_key": true,
+    "support_config_key": true,
+    "support_navigation_evidence": true,
+    "useful_links_evidence": true
+  },
+  "decision": "PARITY_RESOLVED_IMPLEMENTATION_AUTHORIZED",
+  "environment_file_opened": false,
+  "failed_checks": [],
+  "game_db_wal_shm": "NOT_MANIPULATED",
+  "generated_at": "2026-10-27T20:34:09.767065+00:00",
+  "manual_verification": {
+    "reason": "Read-only parity resolution.",
+    "required": false
+  },
+  "prerequisites": {
+    "reports/stage_21_14_5_existing_about_links_support_audit.json": {
+      "sha256": "02b8c7016562e1f7761175ae0d9e5168141c4d0cb13547eba7dace1b13f975a6",
+      "status": "PASS"
+    },
+    "reports/stage_21_14_5a_about_links_support_contract_refinement.json": {
+      "sha256": "baf2b68d569658b610b7bc394c9f9ffc53352a5369f9079bdb80ae78c5523fcf",
+      "status": "PASS"
+    }
+  },
+  "production_sqlite_opened": false,
+  "prohibitions": [
+    "Do not read or commit .env values.",
+    "Do not invent About sections or lore.",
+    "Do not hard-code chat, channel, support or payment destinations.",
+    "Do not permit HTTP, Telegram usernames or arbitrary text as URL fallbacks unless separately evidenced and authorized.",
+    "Do not add Telegram/runtime wiring or production persistence in Stage 21.14.5c.",
+    "Do not manipulate game.db-wal or game.db-shm."
+  ],
+  "refinement_https_literals": [],
+  "resolutions": [
+    {
+      "area": "about_content",
+      "contract": "About content is canonical source-owned structured content. V2 must preserve confirmed section identity, ordering, titles and bodies without inventing or rewriting lore.",
+      "owners": [
+        "data/about_game.py",
+        "handlers/about_game.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "configuration",
+      "contract": "GAME_CHAT_URL, NEWS_CHANNEL_URL and SUPPORT_URL remain optional configuration keys. Runtime values are external configuration and must not be copied from .env into source, reports or defaults.",
+      "owners": [
+        "config.py",
+        ".env at runtime only"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "url_validation",
+      "contract": "Configured public link buttons use fail-closed HTTPS validation. Missing, blank, malformed or non-HTTPS values are treated as unavailable rather than rendered.",
+      "owners": [
+        "V1 URL validation/configuration path"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "useful_links_visibility",
+      "contract": "Useful-links navigation exposes only individually configured valid links. One unavailable link does not authorize a placeholder, guessed URL or fallback transport.",
+      "owners": [
+        "V1 account/useful-links keyboard path"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "support",
+      "contract": "Support is an optional validated external URL button. Provider name, destination and payment details are configuration data, not domain defaults; no payment flow or ledger mutation is added.",
+      "owners": [
+        "SUPPORT_URL configuration and account menu"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "navigation",
+      "contract": "About and useful-links screens return to the canonical account menu. Callback and row layout must be copied only from confirmed V1 presentation evidence during adapter integration.",
+      "owners": [
+        "handlers/about_game.py",
+        "account menu owner"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "runtime_boundary",
+      "contract": "Stage 21.14.5c may implement API-ready content/configuration/validation models only. Telegram handlers, environment loading, runtime registration and production persistence remain disconnected.",
+      "owners": [
+        "Stage 21 V2 architecture boundary"
+      ],
+      "status": "RESOLVED"
+    }
+  ],
+  "stage": "21.14.5b",
+  "status": "PASS"
+}
