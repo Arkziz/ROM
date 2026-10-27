@@ -1,0 +1,645 @@
+{
+  "audit_status": "PASS",
+  "contracts": [
+    {
+      "area": "threshold",
+      "contract": "A reminder becomes eligible only after seven full 24-hour periods have elapsed since canonical last_activity_at; equality at the threshold is eligible, earlier instants are not.",
+      "status": "RESOLVED"
+    },
+    {
+      "area": "clock",
+      "contract": "All comparisons use timezone-aware UTC instants and an injected evaluation instant. Unit tests must not depend on wall-clock time.",
+      "status": "RESOLVED"
+    },
+    {
+      "area": "cycle_identity",
+      "contract": "The inactivity cycle is anchored to the observed last_activity_at value. A changed last_activity_at starts a new cycle; an unchanged value keeps the same cycle.",
+      "status": "RESOLVED"
+    },
+    {
+      "area": "exact_once",
+      "contract": "At most one successful reminder is recorded for one user and one inactivity-cycle anchor. Repeated evaluation of the same cycle must not send again.",
+      "status": "RESOLVED"
+    },
+    {
+      "area": "persistent_audit",
+      "contract": "Successful delivery is persisted in inactivity_reminders with the user, cycle anchor and delivery timestamp sufficient to enforce exact-once behavior across restarts.",
+      "status": "RESOLVED"
+    },
+    {
+      "area": "delivery_failure",
+      "contract": "A failed delivery must not be promoted to a successful exact-once receipt. Retry behavior remains eligible until a successful receipt exists; no retry cadence is invented.",
+      "status": "RESOLVED"
+    },
+    {
+      "area": "scheduler_boundary",
+      "contract": "This contract defines deterministic eligibility and receipt semantics only. It does not authorize a scheduler cadence, background worker, Telegram runtime wiring, or startup catch-up policy.",
+      "status": "RESOLVED"
+    },
+    {
+      "area": "content_boundary",
+      "contract": "No new reminder text, reward, penalty, eligibility gate, channel, or user preference is invented. Presentation content remains owned by confirmed V1 evidence or a later runtime-integration stage.",
+      "status": "RESOLVED"
+    }
+  ],
+  "decision": "PARITY_RESOLVED_IMPLEMENTATION_AUTHORIZED",
+  "implementation_scope": {
+    "authorized": [
+      "API-ready deterministic eligibility policy",
+      "cycle identity value object",
+      "exact-once receipt port",
+      "repository protocol without production adapter",
+      "unit tests with injected UTC clock"
+    ],
+    "prohibited": [
+      "scheduler or background worker",
+      "Telegram/runtime wiring",
+      "production persistence adapter or migration",
+      "new reminder content, rewards, penalties or eligibility gates"
+    ]
+  },
+  "manual_verification": {
+    "reason": "Read-only parity resolution; production code and runtime are unchanged.",
+    "required": false
+  },
+  "prerequisites": {
+    "reports/stage_21_14_3_existing_inactivity_reminders_audit.json": {
+      "sha256": "1f8c3acc4e62db495d07485cf88511646317386d063e20b6080c2ee05a2de0c8",
+      "status": "PASS"
+    },
+    "reports/stage_21_14_3a_inactivity_reminders_contract_refinement.json": {
+      "sha256": "3d7a96de2984ce346baa2258ad2be196939b1bd03908ed18561583c8cfe5dcf0",
+      "status": "PASS"
+    }
+  },
+  "refinement_status": "PASS",
+  "resolved_at": "2026-10-27T18:20:29.136457+00:00",
+  "stage": "21.14.3b",
+  "status": "PASS",
+  "unresolved": [],
+  "v1_evidence": {
+    "data/guild_resource_policy.py": {
+      "matches": [
+        {
+          "line": 2,
+          "snippet": "\"\"\"Inactive design registry for future guild-resource uses.",
+          "terms": [
+            "inactive"
+          ]
+        }
+      ],
+      "sha256": "fd398b7d3452f4a5ace0a3dec0da221911343d8888c1beef96d8f6d06e1beae2",
+      "symbols": []
+    },
+    "data/story_quest_hierarchy.py": {
+      "matches": [
+        {
+          "line": 232,
+          "snippet": "raise ValueError(f\"Metadata exposes inactive quest {quest_number}\")",
+          "terms": [
+            "inactive"
+          ]
+        }
+      ],
+      "sha256": "37fb88d8e9fd960d797e21c06ec191b1b3efd598f8de7011f45aab74effde18e",
+      "symbols": []
+    },
+    "db_modules/dev_compat.py": {
+      "matches": [
+        {
+          "line": 446,
+          "snippet": "\"last_activity_at\": None,",
+          "terms": [
+            "last_activity_at"
+          ]
+        }
+      ],
+      "sha256": "c140072edbb338a6f7ca396d0b442f559962a8dc8d7aa1148f7e2d3314069741",
+      "symbols": []
+    },
+    "main.py": {
+      "matches": [
+        {
+          "line": 115,
+          "snippet": "from systems.inactivity_reminder_system import init_inactivity_reminder_system",
+          "terms": [
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 186,
+          "snippet": "init_inactivity_reminder_system()",
+          "terms": [
+            "inactivity",
+            "reminder"
+          ]
+        }
+      ],
+      "sha256": "a7edf7a3b99437d04329201be44d7bace83668c1cd15edf7be720d529927ea59",
+      "symbols": []
+    },
+    "systems/event_shop_system.py": {
+      "matches": [
+        {
+          "line": 53,
+          "snippet": "if not event_active or not module.config.ENABLED: return {\"success\":False,\"reason\":\"event_inactive\"}",
+          "terms": [
+            "inactive"
+          ]
+        }
+      ],
+      "sha256": "569f7a833db0ae817d83fd9e5d805ace3ce21f6cfe3eaadba84733db6b2ae83c",
+      "symbols": []
+    },
+    "systems/guild_resource_system.py": {
+      "matches": [
+        {
+          "line": 18,
+          "snippet": "GUILD_RESOURCE_INACTIVE_MESSAGE = (",
+          "terms": [
+            "inactive"
+          ]
+        },
+        {
+          "line": 43,
+          "snippet": "def validate_guild_resource_feature_inactive():",
+          "terms": [
+            "inactive"
+          ]
+        },
+        {
+          "line": 47,
+          "snippet": "\"code\": \"guild_resource_spending_inactive\",",
+          "terms": [
+            "inactive"
+          ]
+        },
+        {
+          "line": 48,
+          "snippet": "\"message\": GUILD_RESOURCE_INACTIVE_MESSAGE,",
+          "terms": [
+            "inactive"
+          ]
+        },
+        {
+          "line": 54,
+          "snippet": "return validate_guild_resource_feature_inactive()",
+          "terms": [
+            "inactive"
+          ]
+        },
+        {
+          "line": 59,
+          "snippet": "return validate_guild_resource_feature_inactive()",
+          "terms": [
+            "inactive"
+          ]
+        }
+      ],
+      "sha256": "af4298ef1de8e4c4a8dc46aed20d1d7f7ee66a04dc3587687d6ef8e33cdd6a8f",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 43,
+          "name": "validate_guild_resource_feature_inactive"
+        }
+      ]
+    },
+    "systems/inactivity_reminder_system.py": {
+      "matches": [
+        {
+          "line": 2,
+          "snippet": "\"\"\"Persistent one-attempt-per-cycle inactivity reminder policy.\"\"\"",
+          "terms": [
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 8,
+          "snippet": "INACTIVITY_THRESHOLD_SECONDS=7*24*60*60",
+          "terms": [
+            "inactivity"
+          ]
+        },
+        {
+          "line": 9,
+          "snippet": "INACTIVITY_SCAN_INTERVAL_SECONDS=60*60",
+          "terms": [
+            "inactivity"
+          ]
+        },
+        {
+          "line": 10,
+          "snippet": "INACTIVITY_REMINDER_TEXT=\"💠 Руни знову кличуть вас!\\n\\nМинуло понад 7 днів від вашої останньої пригоди.\\n\\nСвіт продовжує змінюватися, а небезпечні землі все ще приховують здобич, руни та випробування.\\n\\nНатисніть /start, щоб повернутися до гри й продовжити свій шлях!\"",
+          "terms": [
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 18,
+          "snippet": "def init_inactivity_reminder_system(db_path=None):",
+          "terms": [
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 21,
+          "snippet": "c.executescript(\"\"\"CREATE TABLE IF NOT EXISTS inactivity_reminders(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,inactivity_started_at TEXT NOT NULL,eligible_at TEXT NOT NULL,attempted_at TEXT NOT NULL,delivery_status TEXT NOT NULL CHECK(delivery_status IN ('pending','sent','blocked','failed')),error_ty",
+          "terms": [
+            "inactivity_reminders",
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 23,
+          "snippet": "def get_eligible_inactivity_users(now=None,db_path=None):",
+          "terms": [
+            "inactivity"
+          ]
+        },
+        {
+          "line": 24,
+          "snippet": "current=_utc(now);cutoff=_stamp(current-timedelta(seconds=INACTIVITY_THRESHOLD_SECONDS));c=_connection(db_path)",
+          "terms": [
+            "inactivity"
+          ]
+        },
+        {
+          "line": 26,
+          "snippet": "rows=c.execute(\"\"\"SELECT u.user_id,u.last_activity_at,u.character_name,u.character_class FROM users u WHERE u.last_activity_at IS NOT NULL AND TRIM(COALESCE(u.character_name,''))<>'' AND TRIM(COALESCE(u.character_class,''))<>'' AND u.last_activity_at<=? AND NOT EXISTS(SELECT 1 FROM inactivity_reminders r WHERE r.user_i",
+          "terms": [
+            "inactivity_reminders",
+            "last_activity_at",
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 28,
+          "snippet": "def claim_inactivity_reminder(user_id,inactivity_started_at,now=None,db_path=None):",
+          "terms": [
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 29,
+          "snippet": "current=_utc(now);started=str(inactivity_started_at or '').strip()",
+          "terms": [
+            "inactivity"
+          ]
+        },
+        {
+          "line": 31,
+          "snippet": "try:eligible=_stamp(datetime.fromisoformat(started.replace('Z','+00:00'))+timedelta(seconds=INACTIVITY_THRESHOLD_SECONDS))",
+          "terms": [
+            "inactivity"
+          ]
+        },
+        {
+          "line": 35,
+          "snippet": "c.execute('BEGIN IMMEDIATE');row=c.execute(\"SELECT last_activity_at,character_name,character_class FROM users WHERE user_id=?\",(int(user_id),)).fetchone()",
+          "terms": [
+            "last_activity_at"
+          ]
+        },
+        {
+          "line": 36,
+          "snippet": "if not row or str(row['last_activity_at'] or '')!=started or not str(row['character_name'] or '').strip() or not str(row['character_class'] or '').strip():c.rollback();return {'success':False,'claimed':False,'reason':'stale_or_ineligible'}",
+          "terms": [
+            "last_activity_at"
+          ]
+        },
+        {
+          "line": 38,
+          "snippet": "stamp=_stamp(current);cur=c.execute(\"INSERT OR IGNORE INTO inactivity_reminders(user_id,inactivity_started_at,eligible_at,attempted_at,delivery_status,error_type,created_at,updated_at) VALUES(?,?,?,?, 'pending',NULL,?,?)\",(int(user_id),started,eligible,stamp,stamp,stamp));claimed=cur.rowcount==1;c.commit();return {'suc",
+          "terms": [
+            "inactivity_reminders",
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 41,
+          "snippet": "def finalize_inactivity_reminder(user_id,inactivity_started_at,status,error_type=None,now=None,db_path=None):",
+          "terms": [
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 45,
+          "snippet": "cur=c.execute(\"UPDATE inactivity_reminders SET delivery_status=?,error_type=?,updated_at=? WHERE user_id=? AND inactivity_started_at=? AND delivery_status='pending'\",(status,str(error_type or '')[:120] or None,_stamp(now),int(user_id),str(inactivity_started_at)));c.commit();return {'success':cur.rowcount==1,'updated':c",
+          "terms": [
+            "inactivity_reminders",
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 50,
+          "snippet": "def process_inactivity_reminders(bot,now=None,db_path=None):",
+          "terms": [
+            "inactivity_reminders",
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 52,
+          "snippet": "for row in get_eligible_inactivity_users(current,db_path):",
+          "terms": [
+            "inactivity"
+          ]
+        },
+        {
+          "line": 53,
+          "snippet": "result['eligible']+=1;claim=claim_inactivity_reminder(row['user_id'],row['last_activity_at'],current,db_path)",
+          "terms": [
+            "last_activity_at",
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 56,
+          "snippet": "try:bot.send_message(int(row['user_id']),INACTIVITY_REMINDER_TEXT);status,error_type='sent',None",
+          "terms": [
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 58,
+          "snippet": "finalize_inactivity_reminder(row['user_id'],row['last_activity_at'],status,error_type,current,db_path);result[status]+=1",
+          "terms": [
+            "last_activity_at",
+            "inactivity",
+            "reminder"
+          ]
+        }
+      ],
+      "sha256": "b07df95d3c6b3424cc79697bc55c194ec78a4fd86020e8027c638d8bc190d4cc",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 18,
+          "name": "init_inactivity_reminder_system"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 23,
+          "name": "get_eligible_inactivity_users"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 28,
+          "name": "claim_inactivity_reminder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 41,
+          "name": "finalize_inactivity_reminder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 50,
+          "name": "process_inactivity_reminders"
+        }
+      ]
+    },
+    "systems/notifications.py": {
+      "matches": [
+        {
+          "line": 12,
+          "snippet": "from systems.inactivity_reminder_system import process_inactivity_reminders, INACTIVITY_SCAN_INTERVAL_SECONDS",
+          "terms": [
+            "inactivity_reminders",
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 14,
+          "snippet": "_INACTIVITY_REMINDER_NEXT_SCAN_MONOTONIC = 0.0",
+          "terms": [
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 487,
+          "snippet": "global _INACTIVITY_REMINDER_NEXT_SCAN_MONOTONIC",
+          "terms": [
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 489,
+          "snippet": "if _now_monotonic >= _INACTIVITY_REMINDER_NEXT_SCAN_MONOTONIC:",
+          "terms": [
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 490,
+          "snippet": "_result = process_inactivity_reminders(bot_instance)",
+          "terms": [
+            "inactivity_reminders",
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 491,
+          "snippet": "_INACTIVITY_REMINDER_NEXT_SCAN_MONOTONIC = _now_monotonic + INACTIVITY_SCAN_INTERVAL_SECONDS",
+          "terms": [
+            "inactivity",
+            "reminder"
+          ]
+        },
+        {
+          "line": 493,
+          "snippet": "PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', f\"INACTIVITY REMINDER SCAN: {_result}\")",
+          "terms": [
+            "inactivity",
+            "reminder"
+          ]
+        }
+      ],
+      "sha256": "d2649d55e5f59eec2f0de6198e575e1818b607fd93ff295fc8e7a554a0867590",
+      "symbols": []
+    },
+    "systems/player_interaction_system.py": {
+      "matches": [
+        {
+          "line": 68,
+          "snippet": "if \"last_activity_at\" not in columns:",
+          "terms": [
+            "last_activity_at"
+          ]
+        },
+        {
+          "line": 69,
+          "snippet": "conn.execute(\"ALTER TABLE users ADD COLUMN last_activity_at TEXT NULL\")",
+          "terms": [
+            "last_activity_at"
+          ]
+        },
+        {
+          "line": 85,
+          "snippet": "CREATE INDEX IF NOT EXISTS idx_users_last_activity_at",
+          "terms": [
+            "last_activity_at"
+          ]
+        },
+        {
+          "line": 86,
+          "snippet": "ON users(last_activity_at);",
+          "terms": [
+            "last_activity_at"
+          ]
+        },
+        {
+          "line": 116,
+          "snippet": "cur = conn.execute(\"UPDATE users SET last_activity_at=? WHERE user_id=?\", (stamp, uid))",
+          "terms": [
+            "last_activity_at"
+          ]
+        },
+        {
+          "line": 124,
+          "snippet": "return {\"success\": True, \"updated\": True, \"last_activity_at\": stamp}",
+          "terms": [
+            "last_activity_at"
+          ]
+        },
+        {
+          "line": 130,
+          "snippet": "row = conn.execute(\"SELECT last_activity_at FROM users WHERE user_id=?\", (int(user_id),)).fetchone()",
+          "terms": [
+            "last_activity_at"
+          ]
+        },
+        {
+          "line": 356,
+          "snippet": "'last_activity_at IS NOT NULL AND last_activity_at>=? '",
+          "terms": [
+            "last_activity_at"
+          ]
+        },
+        {
+          "line": 412,
+          "snippet": "f'\"{location_col}\" AS current_location, last_activity_at '",
+          "terms": [
+            "last_activity_at"
+          ]
+        },
+        {
+          "line": 414,
+          "snippet": "f'AND last_activity_at IS NOT NULL AND last_activity_at>=? '",
+          "terms": [
+            "last_activity_at"
+          ]
+        },
+        {
+          "line": 462,
+          "snippet": "f'last_activity_at FROM users WHERE user_id=?',",
+          "terms": [
+            "last_activity_at"
+          ]
+        },
+        {
+          "line": 469,
+          "snippet": "last = _parse(target[\"last_activity_at\"])",
+          "terms": [
+            "last_activity_at"
+          ]
+        },
+        {
+          "line": 535,
+          "snippet": "f'\"{location_col}\" AS current_location, last_activity_at '",
+          "terms": [
+            "last_activity_at"
+          ]
+        },
+        {
+          "line": 542,
+          "snippet": "last = _parse(row[\"last_activity_at\"]) if row else None",
+          "terms": [
+            "last_activity_at"
+          ]
+        }
+      ],
+      "sha256": "7e0569317cab32cba42826dedfde2f804472c993b53250fc4497237d0004b171",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 105,
+          "name": "touch_player_activity"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 127,
+          "name": "get_player_last_activity"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 147,
+          "name": "expire_stale_player_activity_sessions"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 160,
+          "name": "get_player_activity_session"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 175,
+          "name": "acquire_player_activity_session"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 219,
+          "name": "refresh_player_activity_session"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 248,
+          "name": "release_player_activity_session"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 752,
+          "name": "recover_orphan_player_activity_sessions"
+        }
+      ]
+    },
+    "tests_v2/test_premium_combat.py": {
+      "matches": [
+        {
+          "line": 11,
+          "snippet": "def test_inactive_is_identity(self):",
+          "terms": [
+            "inactive"
+          ]
+        }
+      ],
+      "sha256": "ffa7b2f4322d9addcafad74e1337a2fbce42e64a7c5fae9d5ea5f2e3ae8e7972",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 11,
+          "name": "test_inactive_is_identity"
+        }
+      ]
+    }
+  }
+}
