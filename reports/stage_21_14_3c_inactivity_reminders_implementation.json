@@ -1,0 +1,56 @@
+{
+  "branch": "rewrite/rom-v2",
+  "cycle_identity": "sha256(user_id + normalized last_activity_at)",
+  "decision": "API_READY_IMPLEMENTED",
+  "documentation": "MD/STAGE_21_14_3C_INACTIVITY_REMINDERS_IMPLEMENTATION.md",
+  "game_db_wal_shm": "NOT_MANIPULATED",
+  "generated_at": "2026-10-27T18:27:25.621105+00:00",
+  "head_before": "0e68363a96bacb6681477d95b11a9940904b3619",
+  "manual_verification": {
+    "reason": "API-ready domain is not connected to runtime, Telegram or production persistence.",
+    "required": false
+  },
+  "message_content_implemented": false,
+  "prerequisites": {
+    "reports/stage_21_14_3_existing_inactivity_reminders_audit.json": {
+      "decision": null,
+      "sha256": "1f8c3acc4e62db495d07485cf88511646317386d063e20b6080c2ee05a2de0c8",
+      "status": "PASS"
+    },
+    "reports/stage_21_14_3a_inactivity_reminders_contract_refinement.json": {
+      "decision": "GO_TO_PARITY_RESOLUTION",
+      "sha256": "3d7a96de2984ce346baa2258ad2be196939b1bd03908ed18561583c8cfe5dcf0",
+      "status": "PASS"
+    },
+    "reports/stage_21_14_3b_inactivity_reminders_parity_resolution.json": {
+      "decision": "PARITY_RESOLVED_IMPLEMENTATION_AUTHORIZED",
+      "sha256": "c56db45076852ddbd9a3c900ce4086f32cb0d3a73397588585fe5ca28ea2373b",
+      "status": "PASS"
+    }
+  },
+  "production_files": [
+    "rom_v2/domain/inactivity_reminders/__init__.py",
+    "rom_v2/domain/inactivity_reminders/model.py",
+    "rom_v2/domain/inactivity_reminders/service.py"
+  ],
+  "production_persistence_connected": false,
+  "runtime_connected": false,
+  "scheduler_implemented": false,
+  "stage": "21.14.3c",
+  "status": "PASS",
+  "telegram_connected": false,
+  "test_files": [
+    "tests/unit/inactivity_reminders/__init__.py",
+    "tests/unit/inactivity_reminders/test_inactivity_reminders.py"
+  ],
+  "tests": {
+    "py_compile": "PASS",
+    "smoke": "PASS",
+    "smoke_stdout": "PASS: Stage 21.14.3c API-ready inactivity reminders\n",
+    "unit": "PASS",
+    "unit_stderr": "test_cycle_key_is_stable_across_timezone_representation (tests.unit.inactivity_reminders.test_inactivity_reminders.InactivityReminderTests.test_cycle_key_is_stable_across_timezone_representation) ... ok\ntest_evaluation_is_clock_deterministic (tests.unit.inactivity_reminders.test_inactivity_reminders.InactivityReminderTests.test_evaluation_is_clock_deterministic) ... ok\ntest_naive_timestamps_fail_closed (tests.unit.inactivity_reminders.test_inactivity_reminders.InactivityReminderTests.test_naive_timestamps_fail_closed) ... ok\ntest_new_activity_creates_new_cycle (tests.unit.inactivity_reminders.test_inactivity_reminders.InactivityReminderTests.test_new_activity_creates_new_cycle) ... ok\ntest_noncanonical_threshold_is_rejected (tests.unit.inactivity_reminders.test_inactivity_reminders.InactivityReminderTests.test_noncanonical_threshold_is_rejected) ... ok\ntest_receipt_requires_due_cycle_and_success_time (tests.unit.inactivity_reminders.test_inactivity_reminders.InactivityReminderTests.test_receipt_requires_due_cycle_and_success_time) ... ok\ntest_same_cycle_is_suppressed_by_persistent_audit_key (tests.unit.inactivity_reminders.test_inactivity_reminders.InactivityReminderTests.test_same_cycle_is_suppressed_by_persistent_audit_key) ... ok\ntest_service_contains_no_scheduler_message_or_transport (tests.unit.inactivity_reminders.test_inactivity_reminders.InactivityReminderTests.test_service_contains_no_scheduler_message_or_transport) ... ok\ntest_threshold_is_exactly_seven_full_days (tests.unit.inactivity_reminders.test_inactivity_reminders.InactivityReminderTests.test_threshold_is_exactly_seven_full_days) ... ok\n\n----------------------------------------------------------------------\nRan 9 tests in 0.003s\n\nOK\n",
+    "unit_stdout": ""
+  },
+  "threshold_seconds": 604800,
+  "tool": "tools/check_stage_21_14_3c_inactivity_reminders.py"
+}
