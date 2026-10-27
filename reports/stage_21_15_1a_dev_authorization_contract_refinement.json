@@ -1,0 +1,5494 @@
+{
+  "audit_prerequisite": {
+    "conclusion": "PASS_REVIEW_REQUIRED",
+    "path": "reports/stage_21_15_1_existing_dev_authorization_audit.json",
+    "sha256": "a91946a49f3cb829e8a10957832634171fafd676a2a6b88bbda11af56effbb37"
+  },
+  "authoritative_owner_candidates": [
+    {
+      "evidence": {
+        "audit": [
+          {
+            "line": 854,
+            "pattern": "audit",
+            "snippet": "@bot.message_handler(commands=[\"dev_pvp_audit\"])"
+          },
+          {
+            "line": 855,
+            "pattern": "audit",
+            "snippet": "def dev_pvp_audit(message):"
+          },
+          {
+            "line": 858,
+            "pattern": "audit",
+            "snippet": "from systems.pvp_policy_metrics_audit import audit_all_policies,format_summary,save_report"
+          },
+          {
+            "line": 862,
+            "pattern": "audit",
+            "snippet": "bot.send_message(message.chat.id,\"🔬 Запущено PvP policy audit. Зачекайте на результат.\")"
+          },
+          {
+            "line": 863,
+            "pattern": "audit",
+            "snippet": "result=audit_all_policies(trials)"
+          },
+          {
+            "line": 864,
+            "pattern": "audit",
+            "snippet": "path=save_report(result,Path(__file__).resolve().parents[1]/\"tools/pvp_policy_metrics_audit_report.json\")"
+          },
+          {
+            "line": 1025,
+            "pattern": "audit",
+            "snippet": "# ROM 14.6.2a PVP PRODUCTION FIXTURE AUDIT"
+          },
+          {
+            "line": 1027,
+            "pattern": "audit",
+            "snippet": "def _register_pvp_fixture_audit_handlers_14_6_2a(bot):"
+          },
+          {
+            "line": 1028,
+            "pattern": "audit",
+            "snippet": "@bot.message_handler(commands=[\"dev_pvp_fixture_audit\"])"
+          },
+          {
+            "line": 1029,
+            "pattern": "audit",
+            "snippet": "def dev_pvp_fixture_audit_14_6_2a(message):"
+          },
+          {
+            "line": 1031,
+            "pattern": "audit",
+            "snippet": "from systems.pvp_production_fixture_audit import format_summary, run_audit, save_report"
+          },
+          {
+            "line": 1037,
+            "pattern": "audit",
+            "snippet": "bot.reply_to(message,\"🔎 Запущено audit усіх 6 класів, 18 навичок і matrix integrity.\")"
+          },
+          {
+            "line": 1038,
+            "pattern": "audit",
+            "snippet": "result=run_audit(trials,level,rarity)"
+          },
+          {
+            "line": 1039,
+            "pattern": "audit",
+            "snippet": "path=save_report(result,Path(__file__).resolve().parents[1]/\"tools/pvp_production_fixture_audit_report.json\")"
+          },
+          {
+            "line": 1042,
+            "pattern": "audit",
+            "snippet": "bot.reply_to(message,f\"❌ PvP fixture audit: {error}\")"
+          },
+          {
+            "line": 1045,
+            "pattern": "audit",
+            "snippet": "_register_dev_handlers_before_pvp_fixture_audit_14_6_2a=register_dev_handlers"
+          },
+          {
+            "line": 1047,
+            "pattern": "audit",
+            "snippet": "_register_dev_handlers_before_pvp_fixture_audit_14_6_2a=None"
+          },
+          {
+            "line": 1050,
+            "pattern": "audit",
+            "snippet": "if _register_dev_handlers_before_pvp_fixture_audit_14_6_2a:"
+          },
+          {
+            "line": 1051,
+            "pattern": "audit",
+            "snippet": "_register_dev_handlers_before_pvp_fixture_audit_14_6_2a(bot)"
+          },
+          {
+            "line": 1052,
+            "pattern": "audit",
+            "snippet": "_register_pvp_fixture_audit_handlers_14_6_2a(bot)"
+          },
+          {
+            "line": 1112,
+            "pattern": "history",
+            "snippet": "@bot.message_handler(commands=[\"crystal_history\"])"
+          },
+          {
+            "line": 1113,
+            "pattern": "history",
+            "snippet": "def crystal_history_17_25_1(message):"
+          },
+          {
+            "line": 1118,
+            "pattern": "operation",
+            "snippet": "sign=\"+\" if row[\"operation\"]==\"credit\" else \"-\";lines.append(f\"#{row['id']} {sign}{row['amount']} | {row['reason_code']} | баланс {row['balance_after']}\")"
+          }
+        ],
+        "dev_mode": [
+          {
+            "line": 32,
+            "pattern": "DEV_MODE",
+            "snippet": "DEV_MODE = os.getenv(\"DEV_MODE\", \"false\").lower() == \"true\""
+          },
+          {
+            "line": 192,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 258,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 292,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 310,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 358,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 409,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 455,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 488,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 590,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 606,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 656,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 706,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 728,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 751,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 770,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 798,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 811,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 829,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE: return"
+          },
+          {
+            "line": 842,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE: return"
+          },
+          {
+            "line": 856,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE: return"
+          },
+          {
+            "line": 869,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 932,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 1063,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 1083,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:return"
+          },
+          {
+            "line": 1090,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:return"
+          },
+          {
+            "line": 1102,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:return"
+          },
+          {
+            "line": 1114,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:return"
+          },
+          {
+            "line": 1124,
+            "pattern": "DEV_MODE",
+            "snippet": "if not DEV_MODE:return"
+          },
+          {
+            "line": 1130,
+            "pattern": "DEV_MODE",
+            "snippet": "result=grant_item_from_source(message.from_user.id,item_id,quantity,\"dev_command\",f\"dev:premium:{message.from_user.id}:{message.message_id}\",metadata={\"telegram_message_id\":message.message_id},dev_mode=True)"
+          }
+        ],
+        "guard": [
+          {
+            "line": 192,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 258,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 292,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 310,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 358,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 409,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 455,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 488,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 590,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 606,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 656,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 706,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 728,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 751,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 770,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 798,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 811,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 829,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE: return"
+          },
+          {
+            "line": 842,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE: return"
+          },
+          {
+            "line": 856,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE: return"
+          },
+          {
+            "line": 869,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 932,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 1063,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:"
+          },
+          {
+            "line": 1083,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:return"
+          },
+          {
+            "line": 1090,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:return"
+          },
+          {
+            "line": 1102,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:return"
+          },
+          {
+            "line": 1114,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:return"
+          },
+          {
+            "line": 1124,
+            "pattern": "if\\s+not\\s+DEV_MODE",
+            "snippet": "if not DEV_MODE:return"
+          }
+        ],
+        "identity": [],
+        "mutation": [
+          {
+            "line": 7,
+            "pattern": "reset",
+            "snippet": "reset_player_level_for_test,"
+          },
+          {
+            "line": 11,
+            "pattern": "set_gold",
+            "snippet": "set_gold_for_test,"
+          },
+          {
+            "line": 15,
+            "pattern": "reset",
+            "snippet": "reset_hero_for_test,"
+          },
+          {
+            "line": 16,
+            "pattern": "reset",
+            "snippet": "CLASS_RESET_SPHERE_ITEM_ID,"
+          },
+          {
+            "line": 17,
+            "pattern": "reset",
+            "snippet": "seed_class_reset_sphere_item"
+          },
+          {
+            "line": 187,
+            "pattern": "give",
+            "snippet": "# /give item_id quantity"
+          },
+          {
+            "line": 190,
+            "pattern": "give",
+            "snippet": "@bot.message_handler(commands=[\"give\"])"
+          },
+          {
+            "line": 191,
+            "pattern": "give",
+            "snippet": "def give_item(message):"
+          },
+          {
+            "line": 203,
+            "pattern": "give",
+            "snippet": "\"/give item_id [quantity]\\n\\n\""
+          },
+          {
+            "line": 205,
+            "pattern": "give",
+            "snippet": "\"/give 201 5\""
+          },
+          {
+            "line": 257,
+            "pattern": "set_level",
+            "snippet": "def set_level(message):"
+          },
+          {
+            "line": 287,
+            "pattern": "reset",
+            "snippet": "# /resetlevel"
+          },
+          {
+            "line": 290,
+            "pattern": "reset",
+            "snippet": "@bot.message_handler(commands=[\"resetlevel\"])"
+          },
+          {
+            "line": 291,
+            "pattern": "reset",
+            "snippet": "def reset_level(message):"
+          },
+          {
+            "line": 296,
+            "pattern": "reset",
+            "snippet": "result = reset_player_level_for_test(user_id)"
+          },
+          {
+            "line": 305,
+            "pattern": "reset",
+            "snippet": "# /resethero CONFIRM"
+          },
+          {
+            "line": 308,
+            "pattern": "reset",
+            "snippet": "@bot.message_handler(commands=[\"resethero\"])"
+          },
+          {
+            "line": 309,
+            "pattern": "reset",
+            "snippet": "def reset_hero(message):"
+          },
+          {
+            "line": 329,
+            "pattern": "reset",
+            "snippet": "\"/resethero CONFIRM\""
+          },
+          {
+            "line": 335,
+            "pattern": "reset",
+            "snippet": "result = reset_hero_for_test(user_id)"
+          },
+          {
+            "line": 454,
+            "pattern": "set_gold",
+            "snippet": "def set_gold(message):"
+          },
+          {
+            "line": 474,
+            "pattern": "set_gold",
+            "snippet": "result = set_gold_for_test(user_id, parts[1])"
+          },
+          {
+            "line": 880,
+            "pattern": "give",
+            "snippet": "\"/give item_id [quantity]\\n\""
+          },
+          {
+            "line": 890,
+            "pattern": "reset",
+            "snippet": "\"/resetlevel\\n\""
+          },
+          {
+            "line": 891,
+            "pattern": "reset",
+            "snippet": "\"/resethero CONFIRM\\n\\n\""
+          },
+          {
+            "line": 916,
+            "pattern": "reset",
+            "snippet": "\"/resethero CONFIRM\""
+          },
+          {
+            "line": 927,
+            "pattern": "reset",
+            "snippet": "# DEV: give class reset sphere"
+          },
+          {
+            "line": 931,
+            "pattern": "reset",
+            "snippet": "def give_class_reset_sphere(message):"
+          },
+          {
+            "line": 952,
+            "pattern": "reset",
+            "snippet": "seed_class_reset_sphere_item()"
+          },
+          {
+            "line": 956,
+            "pattern": "reset",
+            "snippet": "item_id=CLASS_RESET_SPHERE_ITEM_ID,"
+          },
+          {
+            "line": 1081,
+            "pattern": "crystal",
+            "snippet": "@bot.message_handler(commands=[\"crystals\"])"
+          },
+          {
+            "line": 1082,
+            "pattern": "crystal",
+            "snippet": "def crystal_balance_17_25_1(message):"
+          },
+          {
+            "line": 1084,
+            "pattern": "crystal",
+            "snippet": "from systems.crystal_wallet_system import get_crystal_balance"
+          },
+          {
+            "line": 1085,
+            "pattern": "crystal",
+            "snippet": "balance=get_crystal_balance(message.from_user.id)"
+          },
+          {
+            "line": 1088,
+            "pattern": "crystal",
+            "snippet": "@bot.message_handler(commands=[\"crystal_credit\"])"
+          },
+          {
+            "line": 1089,
+            "pattern": "crystal",
+            "snippet": "def crystal_credit_17_25_1(message):"
+          },
+          {
+            "line": 1091,
+            "pattern": "crystal",
+            "snippet": "from systems.crystal_wallet_system import credit_crystals"
+          },
+          {
+            "line": 1095,
+            "pattern": "crystal",
+            "snippet": "bot.send_message(message.chat.id,\"❌ Формат: /crystal_credit N\",reply_markup=main_kb());return"
+          },
+          {
+            "line": 1096,
+            "pattern": "crystal",
+            "snippet": "result=credit_crystals(message.from_user.id,amount,\"dev_credit\",f\"dev:credit:{message.from_user.id}:{message.message_id}\",metadata={\"telegram_message_id\":message.message_id})"
+          },
+          {
+            "line": 1100,
+            "pattern": "crystal",
+            "snippet": "@bot.message_handler(commands=[\"crystal_debit\"])"
+          },
+          {
+            "line": 1101,
+            "pattern": "crystal",
+            "snippet": "def crystal_debit_17_25_1(message):"
+          },
+          {
+            "line": 1103,
+            "pattern": "crystal",
+            "snippet": "from systems.crystal_wallet_system import debit_crystals"
+          },
+          {
+            "line": 1107,
+            "pattern": "crystal",
+            "snippet": "bot.send_message(message.chat.id,\"❌ Формат: /crystal_debit N\",reply_markup=main_kb());return"
+          },
+          {
+            "line": 1108,
+            "pattern": "crystal",
+            "snippet": "result=debit_crystals(message.from_user.id,amount,\"dev_debit\",f\"dev:debit:{message.from_user.id}:{message.message_id}\",metadata={\"telegram_message_id\":message.message_id})"
+          },
+          {
+            "line": 1112,
+            "pattern": "crystal",
+            "snippet": "@bot.message_handler(commands=[\"crystal_history\"])"
+          },
+          {
+            "line": 1113,
+            "pattern": "crystal",
+            "snippet": "def crystal_history_17_25_1(message):"
+          },
+          {
+            "line": 1115,
+            "pattern": "crystal",
+            "snippet": "from systems.crystal_wallet_system import get_crystal_transactions"
+          },
+          {
+            "line": 1116,
+            "pattern": "crystal",
+            "snippet": "data=get_crystal_transactions(message.from_user.id,page=0,page_size=10);lines=[\"💎 Останні транзакції:\"]"
+          },
+          {
+            "line": 1125,
+            "pattern": "grant",
+            "snippet": "from systems.premium_item_policy_system import grant_item_from_source"
+          },
+          {
+            "line": 1130,
+            "pattern": "grant",
+            "snippet": "result=grant_item_from_source(message.from_user.id,item_id,quantity,\"dev_command\",f\"dev:premium:{message.from_user.id}:{message.message_id}\",metadata={\"telegram_message_id\":message.message_id},dev_mode=True)"
+          }
+        ],
+        "registration": [
+          {
+            "line": 184,
+            "pattern": "register_dev_handlers",
+            "snippet": "def register_dev_handlers(bot):"
+          },
+          {
+            "line": 985,
+            "pattern": "register_.*handler",
+            "snippet": "def _register_pvp_production_calibration_handlers_14_6_2(bot):"
+          },
+          {
+            "line": 1015,
+            "pattern": "register_dev_handlers",
+            "snippet": "_register_dev_handlers_before_pvp_production_14_6_2 = register_dev_handlers"
+          },
+          {
+            "line": 1017,
+            "pattern": "register_dev_handlers",
+            "snippet": "_register_dev_handlers_before_pvp_production_14_6_2 = None"
+          },
+          {
+            "line": 1019,
+            "pattern": "register_dev_handlers",
+            "snippet": "def register_dev_handlers(bot):"
+          },
+          {
+            "line": 1020,
+            "pattern": "register_dev_handlers",
+            "snippet": "if _register_dev_handlers_before_pvp_production_14_6_2:"
+          },
+          {
+            "line": 1021,
+            "pattern": "register_dev_handlers",
+            "snippet": "_register_dev_handlers_before_pvp_production_14_6_2(bot)"
+          },
+          {
+            "line": 1022,
+            "pattern": "register_.*handler",
+            "snippet": "_register_pvp_production_calibration_handlers_14_6_2(bot)"
+          },
+          {
+            "line": 1027,
+            "pattern": "register_.*handler",
+            "snippet": "def _register_pvp_fixture_audit_handlers_14_6_2a(bot):"
+          },
+          {
+            "line": 1045,
+            "pattern": "register_dev_handlers",
+            "snippet": "_register_dev_handlers_before_pvp_fixture_audit_14_6_2a=register_dev_handlers"
+          },
+          {
+            "line": 1047,
+            "pattern": "register_dev_handlers",
+            "snippet": "_register_dev_handlers_before_pvp_fixture_audit_14_6_2a=None"
+          },
+          {
+            "line": 1049,
+            "pattern": "register_dev_handlers",
+            "snippet": "def register_dev_handlers(bot):"
+          },
+          {
+            "line": 1050,
+            "pattern": "register_dev_handlers",
+            "snippet": "if _register_dev_handlers_before_pvp_fixture_audit_14_6_2a:"
+          },
+          {
+            "line": 1051,
+            "pattern": "register_dev_handlers",
+            "snippet": "_register_dev_handlers_before_pvp_fixture_audit_14_6_2a(bot)"
+          },
+          {
+            "line": 1052,
+            "pattern": "register_.*handler",
+            "snippet": "_register_pvp_fixture_audit_handlers_14_6_2a(bot)"
+          },
+          {
+            "line": 1055,
+            "pattern": "register_dev_handlers",
+            "snippet": "_BASE_REGISTER_DEV_HANDLERS_17_14_1_1 = register_dev_handlers"
+          },
+          {
+            "line": 1058,
+            "pattern": "register_dev_handlers",
+            "snippet": "def register_dev_handlers(bot):"
+          },
+          {
+            "line": 1059,
+            "pattern": "register_dev_handlers",
+            "snippet": "_BASE_REGISTER_DEV_HANDLERS_17_14_1_1(bot)"
+          }
+        ]
+      },
+      "exists": true,
+      "path": "handlers/dev.py",
+      "sha256": "c161907aa3d965cbb3f2ce50d1b6f46c181027ff7a3b517ae852a026b5827352",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 64,
+          "name": "parse_dev_rune_request"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 110,
+          "name": "parse_dev_quantity_request"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 149,
+          "name": "parse_dev_drop_sim_request"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 184,
+          "name": "register_dev_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 985,
+          "name": "_register_pvp_production_calibration_handlers_14_6_2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1019,
+          "name": "register_dev_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1027,
+          "name": "_register_pvp_fixture_audit_handlers_14_6_2a"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1049,
+          "name": "register_dev_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1058,
+          "name": "register_dev_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 291,
+          "name": "reset_level"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 309,
+          "name": "reset_hero"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 605,
+          "name": "dev_armor"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 655,
+          "name": "dev_weapon"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 705,
+          "name": "dev_rune"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 727,
+          "name": "dev_firius"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 750,
+          "name": "dev_extractor"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 769,
+          "name": "dev_extractor_perfect"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 797,
+          "name": "dev_drop_sim"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 810,
+          "name": "dev_rune_drop_sim"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 828,
+          "name": "dev_pvp"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 841,
+          "name": "dev_pvp_all"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 855,
+          "name": "dev_pvp_audit"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 868,
+          "name": "dev_help"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 931,
+          "name": "give_class_reset_sphere"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 987,
+          "name": "dev_pvp_prod_14_6_2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 996,
+          "name": "dev_pvp_prod_all_14_6_2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1005,
+          "name": "dev_pvp_calibrate_14_6_2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1029,
+          "name": "dev_pvp_fixture_audit_14_6_2a"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1082,
+          "name": "crystal_balance_17_25_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1089,
+          "name": "crystal_credit_17_25_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1101,
+          "name": "crystal_debit_17_25_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1113,
+          "name": "crystal_history_17_25_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1123,
+          "name": "dev_premium_item_17_26_1"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "audit": [
+          {
+            "line": 293,
+            "pattern": "history",
+            "snippet": "interaction history from breaking the reset. All mutations are enclosed in"
+          },
+          {
+            "line": 348,
+            "pattern": "history",
+            "snippet": "\"player_trade_history\","
+          },
+          {
+            "line": 504,
+            "pattern": "operation",
+            "snippet": "locked = isinstance(error, sqlite3.OperationalError) and \"locked\" in str(error).lower()"
+          }
+        ],
+        "dev_mode": [],
+        "guard": [],
+        "identity": [],
+        "mutation": [
+          {
+            "line": 3,
+            "pattern": "reset",
+            "snippet": "# ROM 17.12.1.1 DEV RESET HERO LOCK INITIALIZATION"
+          },
+          {
+            "line": 15,
+            "pattern": "reset",
+            "snippet": "from data.classes import CLASS_CONFIGS, CLASS_RESET_SPHERE_ITEM_ID"
+          },
+          {
+            "line": 34,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"\"\""
+          },
+          {
+            "line": 52,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"\"\""
+          },
+          {
+            "line": 135,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"\"\""
+          },
+          {
+            "line": 151,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"\"\""
+          },
+          {
+            "line": 176,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"\"\""
+          },
+          {
+            "line": 204,
+            "pattern": "reset",
+            "snippet": "def reset_player_level_for_test(user_id):"
+          },
+          {
+            "line": 207,
+            "pattern": "set_gold",
+            "snippet": "def set_gold_for_test(user_id, amount):"
+          },
+          {
+            "line": 227,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"\"\""
+          },
+          {
+            "line": 241,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"\"\""
+          },
+          {
+            "line": 255,
+            "pattern": "reset",
+            "snippet": "_DEV_RESET_HERO_LOCK = None"
+          },
+          {
+            "line": 258,
+            "pattern": "reset",
+            "snippet": "def _get_dev_reset_hero_lock():"
+          },
+          {
+            "line": 259,
+            "pattern": "reset",
+            "snippet": "global _DEV_RESET_HERO_LOCK"
+          },
+          {
+            "line": 260,
+            "pattern": "reset",
+            "snippet": "if _DEV_RESET_HERO_LOCK is None:"
+          },
+          {
+            "line": 262,
+            "pattern": "reset",
+            "snippet": "_DEV_RESET_HERO_LOCK = threading.RLock()"
+          },
+          {
+            "line": 263,
+            "pattern": "reset",
+            "snippet": "return _DEV_RESET_HERO_LOCK"
+          },
+          {
+            "line": 265,
+            "pattern": "reset",
+            "snippet": "def _dev_reset_table_exists(table_name):"
+          },
+          {
+            "line": 266,
+            "pattern": "execute\\(",
+            "snippet": "row = cursor.execute("
+          },
+          {
+            "line": 272,
+            "pattern": "reset",
+            "snippet": "def _dev_reset_table_columns(table_name):"
+          },
+          {
+            "line": 273,
+            "pattern": "reset",
+            "snippet": "if not _dev_reset_table_exists(table_name):"
+          },
+          {
+            "line": 275,
+            "pattern": "execute\\(",
+            "snippet": "return {str(row[1]) for row in cursor.execute(f'PRAGMA table_info(\"{table_name}\")').fetchall()}"
+          },
+          {
+            "line": 277,
+            "pattern": "reset",
+            "snippet": "def _dev_reset_delete_by_user_columns(table_name, user_id, candidate_columns):"
+          },
+          {
+            "line": 278,
+            "pattern": "reset",
+            "snippet": "columns = _dev_reset_table_columns(table_name)"
+          },
+          {
+            "line": 283,
+            "pattern": "execute\\(",
+            "snippet": "result = cursor.execute("
+          },
+          {
+            "line": 289,
+            "pattern": "reset",
+            "snippet": "def reset_hero_for_test(user_id):"
+          },
+          {
+            "line": 290,
+            "pattern": "reset",
+            "snippet": "\"\"\"Atomically reset character progress without deleting the users parent row."
+          },
+          {
+            "line": 293,
+            "pattern": "reset",
+            "snippet": "interaction history from breaking the reset. All mutations are enclosed in"
+          },
+          {
+            "line": 301,
+            "pattern": "reset",
+            "snippet": "lock = _get_dev_reset_hero_lock()"
+          },
+          {
+            "line": 314,
+            "pattern": "execute\\(",
+            "snippet": "conn.execute(\"PRAGMA foreign_keys=ON\")"
+          },
+          {
+            "line": 315,
+            "pattern": "execute\\(",
+            "snippet": "conn.execute(\"PRAGMA busy_timeout=30000\")"
+          },
+          {
+            "line": 317,
+            "pattern": "execute\\(",
+            "snippet": "conn.execute(\"BEGIN IMMEDIATE\")"
+          },
+          {
+            "line": 319,
+            "pattern": "execute\\(",
+            "snippet": "row = cursor.execute("
+          },
+          {
+            "line": 334,
+            "pattern": "reset",
+            "snippet": "if _dev_reset_table_exists(\"player_trades\"):"
+          },
+          {
+            "line": 337,
+            "pattern": "execute\\(",
+            "snippet": "for row in cursor.execute("
+          },
+          {
+            "line": 350,
+            "pattern": "reset",
+            "snippet": "columns = _dev_reset_table_columns(table_name)"
+          },
+          {
+            "line": 352,
+            "pattern": "execute\\(",
+            "snippet": "result = cursor.execute("
+          },
+          {
+            "line": 357,
+            "pattern": "execute\\(",
+            "snippet": "result = cursor.execute("
+          },
+          {
+            "line": 378,
+            "pattern": "crystal",
+            "snippet": "protected_tables = {\"users\", \"items\", \"inventory\", \"equipment_slots\", \"inventory_runes\", \"crystal_wallets\", \"crystal_transactions\"}"
+          },
+          {
+            "line": 381,
+            "pattern": "execute\\(",
+            "snippet": "for row in cursor.execute("
+          },
+          {
+            "line": 388,
+            "pattern": "reset",
+            "snippet": "count = _dev_reset_delete_by_user_columns(table_name, user_id, user_column_names)"
+          },
+          {
+            "line": 393,
+            "pattern": "reset",
+            "snippet": "if _dev_reset_table_exists(\"inventory_runes\"):"
+          },
+          {
+            "line": 394,
+            "pattern": "execute\\(",
+            "snippet": "result = cursor.execute("
+          },
+          {
+            "line": 399,
+            "pattern": "reset",
+            "snippet": "if _dev_reset_table_exists(\"inventory_reservations\"):"
+          },
+          {
+            "line": 400,
+            "pattern": "execute\\(",
+            "snippet": "result = cursor.execute("
+          },
+          {
+            "line": 405,
+            "pattern": "reset",
+            "snippet": "if _dev_reset_table_exists(\"equipment_slots\"):"
+          },
+          {
+            "line": 406,
+            "pattern": "execute\\(",
+            "snippet": "result = cursor.execute(\"DELETE FROM equipment_slots WHERE user_id=?\", (user_id,))"
+          },
+          {
+            "line": 408,
+            "pattern": "reset",
+            "snippet": "if _dev_reset_table_exists(\"inventory\"):"
+          },
+          {
+            "line": 409,
+            "pattern": "execute\\(",
+            "snippet": "result = cursor.execute(\"DELETE FROM inventory WHERE user_id=?\", (user_id,))"
+          },
+          {
+            "line": 412,
+            "pattern": "reset",
+            "snippet": "stage = \"user_in_place_reset\""
+          },
+          {
+            "line": 422,
+            "pattern": "reset",
+            "snippet": "\"current_location\": \"start_path\",  # ROM 18.23.3 DEV reset mirrors new-character start"
+          },
+          {
+            "line": 448,
+            "pattern": "reset",
+            "snippet": "user_columns = _dev_reset_table_columns(\"users\")"
+          },
+          {
+            "line": 456,
+            "pattern": "reset",
+            "snippet": "raise RuntimeError(\"users table has no resettable columns\")"
+          },
+          {
+            "line": 458,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute("
+          },
+          {
+            "line": 466,
+            "pattern": "reset",
+            "snippet": "# Recreate empty slots only after the atomic reset committed."
+          },
+          {
+            "line": 470,
+            "pattern": "execute\\(",
+            "snippet": "foreign_key_errors = cursor.execute(\"PRAGMA foreign_key_check\").fetchall()"
+          },
+          {
+            "line": 475,
+            "pattern": "reset",
+            "snippet": "\"❌ DEV reset completed, але foreign_key_check виявив помилки. \""
+          },
+          {
+            "line": 512,
+            "pattern": "reset",
+            "snippet": "\"message\": f\"❌ DEV reset error at {stage}: {error}\","
+          },
+          {
+            "line": 517,
+            "pattern": "reset",
+            "snippet": "\"message\": f\"❌ DEV reset error: {last_error}\","
+          },
+          {
+            "line": 529,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(f\"ALTER TABLE {table} ADD COLUMN {column} {column_type}\")"
+          },
+          {
+            "line": 735,
+            "pattern": "reset",
+            "snippet": "def seed_class_reset_sphere_item():"
+          },
+          {
+            "line": 743,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"\"\""
+          },
+          {
+            "line": 780,
+            "pattern": "reset",
+            "snippet": "CLASS_RESET_SPHERE_ITEM_ID,"
+          },
+          {
+            "line": 782,
+            "pattern": "reset",
+            "snippet": "\"class_reset\","
+          },
+          {
+            "line": 825,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(f\"ALTER TABLE {table} ADD COLUMN {column} {column_type}\")"
+          },
+          {
+            "line": 1273,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"\"\""
+          },
+          {
+            "line": 1331,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"\"\""
+          },
+          {
+            "line": 1468,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"\"\""
+          },
+          {
+            "line": 1526,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"\"\""
+          },
+          {
+            "line": 1586,
+            "pattern": "reset",
+            "snippet": "__all__ = ['set_player_level_for_test', 'reset_player_level_for_test', 'set_gold_for_test', 'create_dev_armor_item_for_test', 'create_dev_weapon_item_for_test', 'reset_hero_for_test', 'seed_class_reset_sphere_item']"
+          },
+          {
+            "line": 1590,
+            "pattern": "execute\\(",
+            "snippet": "row = cursor.execute("
+          },
+          {
+            "line": 1620,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"UPDATE users SET exp=? WHERE user_id=?\", (value, int(user_id)))"
+          }
+        ],
+        "registration": []
+      },
+      "exists": true,
+      "path": "db_modules/dev_compat.py",
+      "sha256": "c140072edbb338a6f7ca396d0b442f559962a8dc8d7aa1148f7e2d3314069741",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 204,
+          "name": "reset_player_level_for_test"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 258,
+          "name": "_get_dev_reset_hero_lock"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 265,
+          "name": "_dev_reset_table_exists"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 272,
+          "name": "_dev_reset_table_columns"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 277,
+          "name": "_dev_reset_delete_by_user_columns"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 289,
+          "name": "reset_hero_for_test"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 735,
+          "name": "seed_class_reset_sphere_item"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1166,
+          "name": "normalize_dev_rarity"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1194,
+          "name": "create_dev_armor_item_for_test"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1367,
+          "name": "create_dev_weapon_item_for_test"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "audit": [
+          {
+            "line": 142,
+            "pattern": "history",
+            "snippet": "# ROM 12.4.0 PLAYER TRADE DATABASE AND HISTORY FOUNDATION"
+          }
+        ],
+        "dev_mode": [],
+        "guard": [],
+        "identity": [],
+        "mutation": [
+          {
+            "line": 73,
+            "pattern": "reset",
+            "snippet": "init_class_reset_sphere"
+          },
+          {
+            "line": 102,
+            "pattern": "crystal",
+            "snippet": "from handlers.crystal_shop import register_crystal_shop_handlers"
+          },
+          {
+            "line": 103,
+            "pattern": "crystal",
+            "snippet": "from handlers.admin_crystal_credit import register_admin_crystal_credit_handlers"
+          },
+          {
+            "line": 104,
+            "pattern": "crystal",
+            "snippet": "from systems.admin_crystal_credit_system import init_admin_crystal_credit_system"
+          },
+          {
+            "line": 111,
+            "pattern": "crystal",
+            "snippet": "from systems.crystal_shop_system import init_crystal_shop_system"
+          },
+          {
+            "line": 112,
+            "pattern": "crystal",
+            "snippet": "from systems.crystal_bag_expansion_system import init_crystal_bag_expansion_system"
+          },
+          {
+            "line": 173,
+            "pattern": "reset",
+            "snippet": "init_class_reset_sphere()"
+          },
+          {
+            "line": 180,
+            "pattern": "crystal",
+            "snippet": "init_crystal_shop_system()"
+          },
+          {
+            "line": 181,
+            "pattern": "crystal",
+            "snippet": "init_crystal_bag_expansion_system()"
+          },
+          {
+            "line": 182,
+            "pattern": "crystal",
+            "snippet": "init_admin_crystal_credit_system()"
+          },
+          {
+            "line": 196,
+            "pattern": "crystal",
+            "snippet": "register_crystal_shop_handlers(bot)"
+          },
+          {
+            "line": 197,
+            "pattern": "crystal",
+            "snippet": "register_admin_crystal_credit_handlers(bot)"
+          }
+        ],
+        "registration": [
+          {
+            "line": 80,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.start import register_start_handlers"
+          },
+          {
+            "line": 81,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.profile import register_profile_handlers"
+          },
+          {
+            "line": 82,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.story_quests import register_story_quest_handlers"
+          },
+          {
+            "line": 83,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.story_quest_npc_runtime import register_story_quest_npc_runtime_handlers"
+          },
+          {
+            "line": 84,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.inventory import register_inventory_handlers"
+          },
+          {
+            "line": 85,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.fatigue_artifact import register_fatigue_artifact_handlers"
+          },
+          {
+            "line": 87,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.combat import register_combat_handlers"
+          },
+          {
+            "line": 88,
+            "pattern": "register_dev_handlers",
+            "snippet": "from handlers.dev import register_dev_handlers"
+          },
+          {
+            "line": 89,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.map import register_map_handlers"
+          },
+          {
+            "line": 90,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.city import register_city_handlers"
+          },
+          {
+            "line": 91,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.about_game import register_about_game_handlers"
+          },
+          {
+            "line": 92,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.event_ui import register_event_ui_handlers"
+          },
+          {
+            "line": 93,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.external_links import register_external_links_handlers"
+          },
+          {
+            "line": 94,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.contracts import register_contract_handlers"
+          },
+          {
+            "line": 95,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.daily import register_daily_handlers"
+          },
+          {
+            "line": 96,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.refine import register_refine_handlers"
+          },
+          {
+            "line": 97,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.runes import register_rune_handlers, register_rune_fusion_handlers, register_simple_rune_extractor_handlers, register_rune_master_shop_handlers"
+          },
+          {
+            "line": 98,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.blacksmith import register_blacksmith_repair_hotfix_handlers"
+          },
+          {
+            "line": 99,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.guild import register_guild_handlers"
+          },
+          {
+            "line": 100,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.auction_house import register_auction_house_handlers"
+          },
+          {
+            "line": 101,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.blacksmith_repair_confirm import register_blacksmith_repair_confirmation_handlers"
+          },
+          {
+            "line": 102,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.crystal_shop import register_crystal_shop_handlers"
+          },
+          {
+            "line": 103,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.admin_crystal_credit import register_admin_crystal_credit_handlers"
+          },
+          {
+            "line": 105,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.player_rankings import register_player_rankings_handlers"
+          },
+          {
+            "line": 106,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.timed_exp_bonus import register_timed_exp_bonus_handlers"
+          },
+          {
+            "line": 107,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.world_chronicles import register_world_chronicle_handlers"
+          },
+          {
+            "line": 109,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.name_rune import register_name_rune_handlers"
+          },
+          {
+            "line": 189,
+            "pattern": "register_.*handler",
+            "snippet": "_registered_event_handler_keys = seasonal_events.register_event_handlers(bot)"
+          },
+          {
+            "line": 196,
+            "pattern": "register_.*handler",
+            "snippet": "register_crystal_shop_handlers(bot)"
+          },
+          {
+            "line": 197,
+            "pattern": "register_.*handler",
+            "snippet": "register_admin_crystal_credit_handlers(bot)"
+          },
+          {
+            "line": 198,
+            "pattern": "register_.*handler",
+            "snippet": "register_player_rankings_handlers(bot)"
+          },
+          {
+            "line": 199,
+            "pattern": "register_.*handler",
+            "snippet": "register_timed_exp_bonus_handlers(bot)"
+          },
+          {
+            "line": 200,
+            "pattern": "register_.*handler",
+            "snippet": "register_world_chronicle_handlers(bot)"
+          },
+          {
+            "line": 201,
+            "pattern": "register_.*handler",
+            "snippet": "register_start_handlers(bot)"
+          },
+          {
+            "line": 202,
+            "pattern": "register_.*handler",
+            "snippet": "register_profile_handlers(bot)"
+          },
+          {
+            "line": 203,
+            "pattern": "register_.*handler",
+            "snippet": "register_story_quest_handlers(bot)"
+          },
+          {
+            "line": 204,
+            "pattern": "register_.*handler",
+            "snippet": "register_story_quest_npc_runtime_handlers(bot)"
+          },
+          {
+            "line": 205,
+            "pattern": "register_.*handler",
+            "snippet": "register_inventory_handlers(bot)"
+          },
+          {
+            "line": 206,
+            "pattern": "register_.*handler",
+            "snippet": "register_fatigue_artifact_handlers(bot)"
+          },
+          {
+            "line": 207,
+            "pattern": "register_.*handler",
+            "snippet": "register_combat_handlers(bot)"
+          },
+          {
+            "line": 208,
+            "pattern": "register_dev_handlers",
+            "snippet": "register_dev_handlers(bot)"
+          },
+          {
+            "line": 209,
+            "pattern": "register_.*handler",
+            "snippet": "register_map_handlers(bot)"
+          },
+          {
+            "line": 210,
+            "pattern": "register_.*handler",
+            "snippet": "register_blacksmith_repair_confirmation_handlers(bot)"
+          },
+          {
+            "line": 211,
+            "pattern": "register_.*handler",
+            "snippet": "register_blacksmith_repair_hotfix_handlers(bot)"
+          },
+          {
+            "line": 212,
+            "pattern": "register_.*handler",
+            "snippet": "register_about_game_handlers(bot)"
+          },
+          {
+            "line": 214,
+            "pattern": "register_.*handler",
+            "snippet": "register_event_ui_handlers(bot)"
+          },
+          {
+            "line": 215,
+            "pattern": "register_.*handler",
+            "snippet": "register_external_links_handlers(bot)"
+          },
+          {
+            "line": 216,
+            "pattern": "register_.*handler",
+            "snippet": "register_city_handlers(bot)"
+          },
+          {
+            "line": 217,
+            "pattern": "register_.*handler",
+            "snippet": "register_guild_handlers(bot)"
+          },
+          {
+            "line": 218,
+            "pattern": "register_.*handler",
+            "snippet": "register_auction_house_handlers(bot)"
+          },
+          {
+            "line": 219,
+            "pattern": "register_.*handler",
+            "snippet": "register_contract_handlers(bot)"
+          },
+          {
+            "line": 220,
+            "pattern": "register_.*handler",
+            "snippet": "register_daily_handlers(bot)"
+          },
+          {
+            "line": 221,
+            "pattern": "register_.*handler",
+            "snippet": "register_rune_handlers(bot)"
+          },
+          {
+            "line": 222,
+            "pattern": "register_.*handler",
+            "snippet": "register_rune_fusion_handlers(bot)"
+          },
+          {
+            "line": 223,
+            "pattern": "register_.*handler",
+            "snippet": "register_simple_rune_extractor_handlers(bot)"
+          },
+          {
+            "line": 224,
+            "pattern": "register_.*handler",
+            "snippet": "register_rune_master_shop_handlers(bot)"
+          },
+          {
+            "line": 227,
+            "pattern": "register_.*handler",
+            "snippet": "register_refine_handlers(bot)"
+          },
+          {
+            "line": 228,
+            "pattern": "register_.*handler",
+            "snippet": "register_name_rune_handlers(bot)"
+          },
+          {
+            "line": 243,
+            "pattern": "register_.*handler",
+            "snippet": "from handlers.player_interaction import register_player_interaction_handlers"
+          },
+          {
+            "line": 244,
+            "pattern": "register_.*handler",
+            "snippet": "register_player_interaction_handlers(bot)"
+          }
+        ]
+      },
+      "exists": true,
+      "path": "main.py",
+      "sha256": "a7edf7a3b99437d04329201be44d7bace83668c1cd15edf7be720d529927ea59",
+      "symbols": []
+    },
+    {
+      "evidence": {
+        "audit": [],
+        "dev_mode": [
+          {
+            "line": 21,
+            "pattern": "DEV_MODE",
+            "snippet": "if str(os.getenv('DEV_MODE','')).lower() not in ('1','true','yes','on'):return"
+          }
+        ],
+        "guard": [],
+        "identity": [],
+        "mutation": [
+          {
+            "line": 19,
+            "pattern": "give",
+            "snippet": "@bot.message_handler(commands=['give_fatigue_artifact'])"
+          },
+          {
+            "line": 20,
+            "pattern": "grant",
+            "snippet": "def dev_grant(message):"
+          }
+        ],
+        "registration": [
+          {
+            "line": 8,
+            "pattern": "register_.*handler",
+            "snippet": "def register_fatigue_artifact_handlers(bot):"
+          }
+        ]
+      },
+      "exists": true,
+      "path": "handlers/fatigue_artifact.py",
+      "sha256": "aeeef7e11ddec5463dd7f8ac2003e75b04e69eb11db25839e98c79a044f88d5e",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 8,
+          "name": "register_fatigue_artifact_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 20,
+          "name": "dev_grant"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "audit": [],
+        "dev_mode": [],
+        "guard": [],
+        "identity": [],
+        "mutation": [
+          {
+            "line": 145,
+            "pattern": "reset",
+            "snippet": "def reset_guild_browse_state(user_id):"
+          },
+          {
+            "line": 180,
+            "pattern": "reset",
+            "snippet": "def reset_guild_create_state(user_id):"
+          },
+          {
+            "line": 291,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"SELECT character_name FROM users WHERE user_id=?\", (guild[\"leader_user_id\"],))"
+          },
+          {
+            "line": 523,
+            "pattern": "reset",
+            "snippet": "reset_guild_browse_state(user_id)"
+          },
+          {
+            "line": 588,
+            "pattern": "reset",
+            "snippet": "reset_guild_create_state(user_id)"
+          },
+          {
+            "line": 638,
+            "pattern": "reset",
+            "snippet": "reset_guild_create_state(user_id)"
+          },
+          {
+            "line": 709,
+            "pattern": "reset",
+            "snippet": "reset_guild_browse_state(message.from_user.id)"
+          },
+          {
+            "line": 713,
+            "pattern": "reset",
+            "snippet": "reset_guild_browse_state(message.from_user.id)"
+          },
+          {
+            "line": 717,
+            "pattern": "reset",
+            "snippet": "reset_guild_browse_state(message.from_user.id)"
+          },
+          {
+            "line": 726,
+            "pattern": "reset",
+            "snippet": "reset_guild_create_state(message.from_user.id)"
+          },
+          {
+            "line": 727,
+            "pattern": "reset",
+            "snippet": "reset_guild_browse_state(message.from_user.id)"
+          },
+          {
+            "line": 732,
+            "pattern": "reset",
+            "snippet": "reset_guild_create_state(message.from_user.id)"
+          },
+          {
+            "line": 733,
+            "pattern": "reset",
+            "snippet": "reset_guild_browse_state(message.from_user.id)"
+          },
+          {
+            "line": 876,
+            "pattern": "reset",
+            "snippet": "def reset_guild_application_review_state(user_id):"
+          },
+          {
+            "line": 977,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"SELECT character_name, level FROM users WHERE user_id=?\", (app[\"user_id\"],))"
+          },
+          {
+            "line": 1069,
+            "pattern": "reset",
+            "snippet": "reset_guild_application_review_state(user_id)"
+          },
+          {
+            "line": 1115,
+            "pattern": "reset",
+            "snippet": "reset_guild_application_review_state(message.from_user.id)"
+          },
+          {
+            "line": 1166,
+            "pattern": "reset",
+            "snippet": "def reset_guild_member_manage_state(user_id):"
+          },
+          {
+            "line": 1304,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"SELECT character_name, level FROM users WHERE user_id=?\", (target_user_id,))"
+          },
+          {
+            "line": 1384,
+            "pattern": "reset",
+            "snippet": "reset_guild_member_manage_state(user_id)"
+          },
+          {
+            "line": 1477,
+            "pattern": "reset",
+            "snippet": "def _guild_safe_reset_other_states_for_members_v2(user_id):"
+          },
+          {
+            "line": 1479,
+            "pattern": "reset",
+            "snippet": "reset_guild_browse_state(user_id)"
+          },
+          {
+            "line": 1483,
+            "pattern": "reset",
+            "snippet": "reset_guild_application_review_state(user_id)"
+          },
+          {
+            "line": 1546,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"SELECT character_name, level FROM users WHERE user_id=?\", (app[\"user_id\"],))"
+          },
+          {
+            "line": 1610,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"SELECT character_name, level FROM users WHERE user_id=?\", (target_user_id,))"
+          },
+          {
+            "line": 1665,
+            "pattern": "reset",
+            "snippet": "_guild_safe_reset_other_states_for_members_v2(user_id)"
+          },
+          {
+            "line": 1702,
+            "pattern": "reset",
+            "snippet": "reset_guild_member_manage_state(user_id)"
+          },
+          {
+            "line": 1789,
+            "pattern": "reset",
+            "snippet": "reset_guild_application_review_state(user_id)"
+          },
+          {
+            "line": 2063,
+            "pattern": "reset",
+            "snippet": "def _guild_progress_reset_navigation_states_v1(user_id):"
+          },
+          {
+            "line": 2064,
+            "pattern": "reset",
+            "snippet": "for reset_func_name in ["
+          },
+          {
+            "line": 2065,
+            "pattern": "reset",
+            "snippet": "\"reset_guild_browse_state\","
+          },
+          {
+            "line": 2066,
+            "pattern": "reset",
+            "snippet": "\"reset_guild_application_review_state\","
+          },
+          {
+            "line": 2067,
+            "pattern": "reset",
+            "snippet": "\"reset_guild_member_manage_state\","
+          },
+          {
+            "line": 2070,
+            "pattern": "reset",
+            "snippet": "globals()[reset_func_name](user_id)"
+          },
+          {
+            "line": 2138,
+            "pattern": "reset",
+            "snippet": "_guild_progress_reset_navigation_states_v1(user_id)"
+          },
+          {
+            "line": 2143,
+            "pattern": "reset",
+            "snippet": "_guild_progress_reset_navigation_states_v1(user_id)"
+          },
+          {
+            "line": 2148,
+            "pattern": "reset",
+            "snippet": "_guild_progress_reset_navigation_states_v1(user_id)"
+          },
+          {
+            "line": 2154,
+            "pattern": "reset",
+            "snippet": "_guild_progress_reset_navigation_states_v1(user_id)"
+          },
+          {
+            "line": 2160,
+            "pattern": "reset",
+            "snippet": "_guild_progress_reset_navigation_states_v1(user_id)"
+          },
+          {
+            "line": 2168,
+            "pattern": "reset",
+            "snippet": "_guild_progress_reset_navigation_states_v1(user_id)"
+          },
+          {
+            "line": 2176,
+            "pattern": "reset",
+            "snippet": "_guild_progress_reset_navigation_states_v1(user_id)"
+          },
+          {
+            "line": 2267,
+            "pattern": "reset",
+            "snippet": "def reset_guild_logs_state(user_id):"
+          },
+          {
+            "line": 2372,
+            "pattern": "reset",
+            "snippet": "for reset_func_name in ["
+          },
+          {
+            "line": 2373,
+            "pattern": "reset",
+            "snippet": "\"reset_guild_browse_state\","
+          },
+          {
+            "line": 2374,
+            "pattern": "reset",
+            "snippet": "\"reset_guild_application_review_state\","
+          },
+          {
+            "line": 2375,
+            "pattern": "reset",
+            "snippet": "\"reset_guild_member_manage_state\","
+          },
+          {
+            "line": 2378,
+            "pattern": "reset",
+            "snippet": "globals()[reset_func_name](user_id)"
+          },
+          {
+            "line": 2400,
+            "pattern": "reset",
+            "snippet": "reset_guild_logs_state(user_id)"
+          },
+          {
+            "line": 2452,
+            "pattern": "execute\\(",
+            "snippet": "cursor.execute(\"SELECT character_name FROM users WHERE user_id=?\", (int(user_id),))"
+          },
+          {
+            "line": 2535,
+            "pattern": "reset",
+            "snippet": "def _guild_contracts_reset_guild_states_v1(user_id):"
+          },
+          {
+            "line": 2536,
+            "pattern": "reset",
+            "snippet": "for reset_func_name in ["
+          },
+          {
+            "line": 2537,
+            "pattern": "reset",
+            "snippet": "\"reset_guild_browse_state\","
+          },
+          {
+            "line": 2538,
+            "pattern": "reset",
+            "snippet": "\"reset_guild_application_review_state\","
+          },
+          {
+            "line": 2539,
+            "pattern": "reset",
+            "snippet": "\"reset_guild_member_manage_state\","
+          },
+          {
+            "line": 2540,
+            "pattern": "reset",
+            "snippet": "\"reset_guild_logs_state\","
+          },
+          {
+            "line": 2543,
+            "pattern": "reset",
+            "snippet": "globals()[reset_func_name](user_id)"
+          },
+          {
+            "line": 2550,
+            "pattern": "reset",
+            "snippet": "_guild_contracts_reset_guild_states_v1(user_id)"
+          },
+          {
+            "line": 2580,
+            "pattern": "reset",
+            "snippet": "_guild_contracts_reset_guild_states_v1(user_id)"
+          },
+          {
+            "line": 2602,
+            "pattern": "reset",
+            "snippet": "_guild_contracts_reset_guild_states_v1(user_id)"
+          },
+          {
+            "line": 2646,
+            "pattern": "reset",
+            "snippet": "# - one central state reset;"
+          },
+          {
+            "line": 2657,
+            "pattern": "reset",
+            "snippet": "def reset_all_guild_ui_states(user_id):"
+          },
+          {
+            "line": 2663,
+            "pattern": "reset",
+            "snippet": "for reset_func_name in ["
+          },
+          {
+            "line": 2664,
+            "pattern": "reset",
+            "snippet": "\"reset_guild_create_state\","
+          },
+          {
+            "line": 2665,
+            "pattern": "reset",
+            "snippet": "\"reset_guild_browse_state\","
+          },
+          {
+            "line": 2666,
+            "pattern": "reset",
+            "snippet": "\"reset_guild_application_review_state\","
+          },
+          {
+            "line": 2667,
+            "pattern": "reset",
+            "snippet": "\"reset_guild_member_manage_state\","
+          },
+          {
+            "line": 2668,
+            "pattern": "reset",
+            "snippet": "\"reset_guild_logs_state\","
+          },
+          {
+            "line": 2671,
+            "pattern": "reset",
+            "snippet": "globals()[reset_func_name](user_id)"
+          },
+          {
+            "line": 2776,
+            "pattern": "reset",
+            "snippet": "reset_all_guild_ui_states(user_id)"
+          },
+          {
+            "line": 2781,
+            "pattern": "reset",
+            "snippet": "reset_all_guild_ui_states(user_id)"
+          },
+          {
+            "line": 2794,
+            "pattern": "reset",
+            "snippet": "reset_all_guild_ui_states(user_id)"
+          },
+          {
+            "line": 2799,
+            "pattern": "reset",
+            "snippet": "reset_all_guild_ui_states(user_id)"
+          },
+          {
+            "line": 2804,
+            "pattern": "reset",
+            "snippet": "reset_all_guild_ui_states(user_id)"
+          },
+          {
+            "line": 2809,
+            "pattern": "reset",
+            "snippet": "reset_all_guild_ui_states(user_id)"
+          },
+          {
+            "line": 2814,
+            "pattern": "reset",
+            "snippet": "reset_all_guild_ui_states(user_id)"
+          },
+          {
+            "line": 2819,
+            "pattern": "reset",
+            "snippet": "reset_all_guild_ui_states(user_id)"
+          },
+          {
+            "line": 2824,
+            "pattern": "reset",
+            "snippet": "reset_all_guild_ui_states(user_id)"
+          },
+          {
+            "line": 2935,
+            "pattern": "reset",
+            "snippet": "reset_all_guild_ui_states(message.from_user.id)"
+          }
+        ],
+        "registration": [
+          {
+            "line": 697,
+            "pattern": "register_.*handler",
+            "snippet": "def register_guild_handlers(bot):"
+          },
+          {
+            "line": 1100,
+            "pattern": "register_.*handler",
+            "snippet": "# Patch register_guild_handlers by wrapping the existing function."
+          },
+          {
+            "line": 1102,
+            "pattern": "register_.*handler",
+            "snippet": "_base_register_guild_handlers_before_application_review_v1 = register_guild_handlers"
+          },
+          {
+            "line": 1104,
+            "pattern": "register_.*handler",
+            "snippet": "_base_register_guild_handlers_before_application_review_v1 = None"
+          },
+          {
+            "line": 1107,
+            "pattern": "register_.*handler",
+            "snippet": "def register_guild_handlers(bot):"
+          },
+          {
+            "line": 1108,
+            "pattern": "register_.*handler",
+            "snippet": "if _base_register_guild_handlers_before_application_review_v1 is not None:"
+          },
+          {
+            "line": 1109,
+            "pattern": "register_.*handler",
+            "snippet": "_base_register_guild_handlers_before_application_review_v1(bot)"
+          },
+          {
+            "line": 1431,
+            "pattern": "register_.*handler",
+            "snippet": "_base_register_guild_handlers_before_members_roles_v1 = register_guild_handlers"
+          },
+          {
+            "line": 1433,
+            "pattern": "register_.*handler",
+            "snippet": "_base_register_guild_handlers_before_members_roles_v1 = None"
+          },
+          {
+            "line": 1436,
+            "pattern": "register_.*handler",
+            "snippet": "def register_guild_handlers(bot):"
+          },
+          {
+            "line": 1437,
+            "pattern": "register_.*handler",
+            "snippet": "if _base_register_guild_handlers_before_members_roles_v1 is not None:"
+          },
+          {
+            "line": 1438,
+            "pattern": "register_.*handler",
+            "snippet": "_base_register_guild_handlers_before_members_roles_v1(bot)"
+          },
+          {
+            "line": 1984,
+            "pattern": "register_.*handler",
+            "snippet": "_base_register_guild_handlers_before_progress_v1 = register_guild_handlers"
+          },
+          {
+            "line": 1986,
+            "pattern": "register_.*handler",
+            "snippet": "_base_register_guild_handlers_before_progress_v1 = None"
+          },
+          {
+            "line": 1989,
+            "pattern": "register_.*handler",
+            "snippet": "def register_guild_handlers(bot):"
+          },
+          {
+            "line": 1990,
+            "pattern": "register_.*handler",
+            "snippet": "if _base_register_guild_handlers_before_progress_v1 is not None:"
+          },
+          {
+            "line": 1991,
+            "pattern": "register_.*handler",
+            "snippet": "_base_register_guild_handlers_before_progress_v1(bot)"
+          },
+          {
+            "line": 2420,
+            "pattern": "register_.*handler",
+            "snippet": "_base_register_guild_handlers_before_logs_v1 = register_guild_handlers"
+          },
+          {
+            "line": 2422,
+            "pattern": "register_.*handler",
+            "snippet": "_base_register_guild_handlers_before_logs_v1 = None"
+          },
+          {
+            "line": 2425,
+            "pattern": "register_.*handler",
+            "snippet": "def register_guild_handlers(bot):"
+          },
+          {
+            "line": 2426,
+            "pattern": "register_.*handler",
+            "snippet": "if _base_register_guild_handlers_before_logs_v1 is not None:"
+          },
+          {
+            "line": 2427,
+            "pattern": "register_.*handler",
+            "snippet": "_base_register_guild_handlers_before_logs_v1(bot)"
+          },
+          {
+            "line": 2849,
+            "pattern": "register_.*handler",
+            "snippet": "_base_register_guild_handlers_before_cleanup_diag_v1 = register_guild_handlers"
+          },
+          {
+            "line": 2851,
+            "pattern": "register_.*handler",
+            "snippet": "_base_register_guild_handlers_before_cleanup_diag_v1 = None"
+          },
+          {
+            "line": 2868,
+            "pattern": "register_.*handler",
+            "snippet": "def register_guild_handlers(bot):"
+          },
+          {
+            "line": 2922,
+            "pattern": "register_.*handler",
+            "snippet": "if _base_register_guild_handlers_before_cleanup_diag_v1 is not None:"
+          },
+          {
+            "line": 2923,
+            "pattern": "register_.*handler",
+            "snippet": "_base_register_guild_handlers_before_cleanup_diag_v1(bot)"
+          }
+        ]
+      },
+      "exists": true,
+      "path": "handlers/guild.py",
+      "sha256": "de39b8627b59b33ad1500086b9862f775237c780d4718e8bc389e4ef88365d40",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 145,
+          "name": "reset_guild_browse_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 180,
+          "name": "reset_guild_create_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 697,
+          "name": "register_guild_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 876,
+          "name": "reset_guild_application_review_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1107,
+          "name": "register_guild_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1166,
+          "name": "reset_guild_member_manage_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1436,
+          "name": "register_guild_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1477,
+          "name": "_guild_safe_reset_other_states_for_members_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1989,
+          "name": "register_guild_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2063,
+          "name": "_guild_progress_reset_navigation_states_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2075,
+          "name": "_guild_progress_handle_dev_command_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2267,
+          "name": "reset_guild_logs_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2425,
+          "name": "register_guild_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2535,
+          "name": "_guild_contracts_reset_guild_states_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2657,
+          "name": "reset_all_guild_ui_states"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2868,
+          "name": "register_guild_handlers"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "audit": [],
+        "dev_mode": [
+          {
+            "line": 64,
+            "pattern": "DEV_MODE",
+            "snippet": "return str(os.getenv('DEV_MODE','false')).strip().lower()=='true'"
+          },
+          {
+            "line": 124,
+            "pattern": "DEV_MODE",
+            "snippet": "def can_grant_item_from_source(user_id,item_id,quantity,source,*,milestone_level=None,dev_mode=None,db_path=None):"
+          },
+          {
+            "line": 145,
+            "pattern": "DEV_MODE",
+            "snippet": "if src==SOURCE_DEV and not _dev_enabled(dev_mode):return {'success':False,'reason':'dev_mode_required','message':'DEV-видача вимкнена у цьому середовищі.'}"
+          },
+          {
+            "line": 205,
+            "pattern": "DEV_MODE",
+            "snippet": "def grant_item_from_source(user_id,item_id,quantity,source,idempotency_key,*,external_reference=None,metadata=None,milestone_level=None,dev_mode=None,db_path=None):"
+          },
+          {
+            "line": 208,
+            "pattern": "DEV_MODE",
+            "snippet": "check=can_grant_item_from_source(user_id,item_id,quantity,source,milestone_level=milestone_level,dev_mode=dev_mode,db_path=db_path)"
+          }
+        ],
+        "guard": [],
+        "identity": [],
+        "mutation": [
+          {
+            "line": 4,
+            "pattern": "grant",
+            "snippet": "\"\"\"Canonical source policy for character-bound premium inventory grants.\"\"\""
+          },
+          {
+            "line": 22,
+            "pattern": "crystal",
+            "snippet": "SOURCE_DEV='dev_command';SOURCE_SHOP='crystal_shop';SOURCE_MILESTONE='level_milestone_reward';SOURCE_ADMIN='admin_compensation'"
+          },
+          {
+            "line": 28,
+            "pattern": "reset",
+            "snippet": "501:{'name':'Сфера нового шляху','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_MILESTONE,SOURCE_ADMIN)),'milestone_levels':frozenset((5,10))},"
+          },
+          {
+            "line": 31,
+            "pattern": "reset",
+            "snippet": "602:{'name':'Руна Успіху','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},"
+          },
+          {
+            "line": 34,
+            "pattern": "reset",
+            "snippet": "728:{'name':'Досконалий Екстрактор','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},"
+          },
+          {
+            "line": 37,
+            "pattern": "reset",
+            "snippet": "502:{'name':'Руна імені','ownership':'character_bound','resethero':'delete','allowed_sources':frozenset((SOURCE_DEV,SOURCE_SHOP,SOURCE_ADMIN)),'milestone_levels':frozenset()},"
+          },
+          {
+            "line": 55,
+            "pattern": "execute\\(",
+            "snippet": "c=sqlite3.connect(str(db_path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c"
+          },
+          {
+            "line": 79,
+            "pattern": "grant",
+            "snippet": "CREATE TABLE IF NOT EXISTS premium_item_grants("
+          },
+          {
+            "line": 94,
+            "pattern": "grant",
+            "snippet": "CREATE INDEX IF NOT EXISTS ix_premium_item_grants_user_created ON premium_item_grants(user_id,id DESC);"
+          },
+          {
+            "line": 97,
+            "pattern": "grant",
+            "snippet": "CREATE INDEX IF NOT EXISTS ix_premium_item_grants_item_source ON premium_item_grants(item_id,source,id DESC);"
+          },
+          {
+            "line": 124,
+            "pattern": "grant",
+            "snippet": "def can_grant_item_from_source(user_id,item_id,quantity,source,*,milestone_level=None,dev_mode=None,db_path=None):"
+          },
+          {
+            "line": 166,
+            "pattern": "execute\\(",
+            "snippet": "if not c.execute('SELECT 1 FROM users WHERE user_id=?',(uid,)).fetchone():return {'success':False,'reason':'user_missing','message':'Акаунт не знайдено.'}"
+          },
+          {
+            "line": 169,
+            "pattern": "execute\\(",
+            "snippet": "if not c.execute('SELECT 1 FROM items WHERE id=?',(iid,)).fetchone():return {'success':False,'reason':'item_missing','message':'Предмет не знайдено.'}"
+          },
+          {
+            "line": 178,
+            "pattern": "execute\\(",
+            "snippet": "def _inventory_columns(c):return {r[1] for r in c.execute('PRAGMA table_info(inventory)')}"
+          },
+          {
+            "line": 181,
+            "pattern": "grant",
+            "snippet": "def _grant_stack(c,uid,iid,qty):"
+          },
+          {
+            "line": 184,
+            "pattern": "execute\\(",
+            "snippet": "cols=_inventory_columns(c);row=c.execute('SELECT id,quantity FROM inventory WHERE user_id=? AND item_id=? ORDER BY id LIMIT 1',(uid,iid)).fetchone()"
+          },
+          {
+            "line": 187,
+            "pattern": "execute\\(",
+            "snippet": "if row:c.execute('UPDATE inventory SET quantity=quantity+? WHERE id=?',(qty,int(row['id'])));return int(row['id'])"
+          },
+          {
+            "line": 202,
+            "pattern": "execute\\(",
+            "snippet": "cur=c.execute('INSERT INTO inventory('+','.join(names)+') VALUES('+','.join('?' for _ in names)+')',values);return int(cur.lastrowid)"
+          },
+          {
+            "line": 205,
+            "pattern": "grant",
+            "snippet": "def grant_item_from_source(user_id,item_id,quantity,source,idempotency_key,*,external_reference=None,metadata=None,milestone_level=None,dev_mode=None,db_path=None):"
+          },
+          {
+            "line": 208,
+            "pattern": "grant",
+            "snippet": "check=can_grant_item_from_source(user_id,item_id,quantity,source,milestone_level=milestone_level,dev_mode=dev_mode,db_path=db_path)"
+          },
+          {
+            "line": 226,
+            "pattern": "grant",
+            "snippet": "c.execute('BEGIN IMMEDIATE');existing=c.execute('SELECT * FROM premium_item_grants WHERE idempotency_key=?',(key,)).fetchone()"
+          },
+          {
+            "line": 229,
+            "pattern": "grant",
+            "snippet": "if existing:c.commit();return {'success':True,'idempotent_replay':True,'grant':dict(existing)}"
+          },
+          {
+            "line": 238,
+            "pattern": "grant",
+            "snippet": "inventory_id=_grant_stack(c,check['user_id'],check['item_id'],check['quantity']);now=_utc()"
+          },
+          {
+            "line": 241,
+            "pattern": "grant",
+            "snippet": "cur=c.execute('INSERT INTO premium_item_grants(user_id,item_id,quantity,source,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?)',(check['user_id'],check['item_id'],check['quantity'],check['source'],key,external_reference,json.dumps(payload,ensure_ascii=False,sort_keys=True,separators"
+          },
+          {
+            "line": 244,
+            "pattern": "grant",
+            "snippet": "return {'success':True,'idempotent_replay':False,'grant_id':grant_id,'inventory_id':inventory_id,**check}"
+          },
+          {
+            "line": 250,
+            "pattern": "grant",
+            "snippet": "c.rollback();row=c.execute('SELECT * FROM premium_item_grants WHERE idempotency_key=?',(key,)).fetchone()"
+          },
+          {
+            "line": 253,
+            "pattern": "grant",
+            "snippet": "if row:return {'success':True,'idempotent_replay':True,'grant':dict(row)}"
+          },
+          {
+            "line": 265,
+            "pattern": "grant",
+            "snippet": "def get_premium_item_grants(user_id,page=0,page_size=20,db_path=None):"
+          },
+          {
+            "line": 271,
+            "pattern": "grant",
+            "snippet": "try:return [dict(r) for r in c.execute('SELECT * FROM premium_item_grants WHERE user_id=? ORDER BY id DESC LIMIT ? OFFSET ?',(int(user_id),max(1,min(100,int(page_size))),max(0,int(page))*max(1,min(100,int(page_size))))).fetchall()]"
+          }
+        ],
+        "registration": []
+      },
+      "exists": true,
+      "path": "systems/premium_item_policy_system.py",
+      "sha256": "76e66c69839815c79597703c49955d04156092861015e3e2032813ce23cb0fea",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 58,
+          "name": "_dev_enabled"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 124,
+          "name": "can_grant_item_from_source"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 181,
+          "name": "_grant_stack"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 205,
+          "name": "grant_item_from_source"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 265,
+          "name": "get_premium_item_grants"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "audit": [],
+        "dev_mode": [],
+        "guard": [],
+        "identity": [
+          {
+            "line": 15,
+            "pattern": "ADMIN_IDS",
+            "snippet": "def _admin_ids_env():"
+          },
+          {
+            "line": 16,
+            "pattern": "ROM_ADMIN_USER_IDS",
+            "snippet": "raw = str(os.getenv(\"ROM_ADMIN_USER_IDS\", \"\")).strip()"
+          },
+          {
+            "line": 19,
+            "pattern": "ADMIN_IDS",
+            "snippet": "ROM_ADMIN_USER_IDS = _admin_ids_env()"
+          }
+        ],
+        "mutation": [
+          {
+            "line": 20,
+            "pattern": "crystal",
+            "snippet": "ROM_ADMIN_CRYSTAL_CREDIT_MAX = _positive_int_env(\"ROM_ADMIN_CRYSTAL_CREDIT_MAX\", \"10000\")"
+          },
+          {
+            "line": 21,
+            "pattern": "crystal",
+            "snippet": "ROM_ADMIN_CRYSTAL_DEBIT_MAX = _positive_int_env(\"ROM_ADMIN_CRYSTAL_DEBIT_MAX\", \"10000\")"
+          }
+        ],
+        "registration": []
+      },
+      "exists": true,
+      "path": "config.py",
+      "sha256": "aae925e7e3e40c5b9bde60a4f9373df611b8a4ab4d36031b1b81b6f24e27d793",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 15,
+          "name": "_admin_ids_env"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "audit": [
+          {
+            "line": 2,
+            "pattern": "audit",
+            "snippet": "\"\"\"Production-safe admin crystal adjustments with immutable audit records.\"\"\""
+          },
+          {
+            "line": 15,
+            "pattern": "audit",
+            "snippet": "c.executescript(\"\"\"CREATE TABLE IF NOT EXISTS admin_crystal_credit_audit(id INTEGER PRIMARY KEY AUTOINCREMENT,admin_user_id INTEGER NOT NULL,target_user_id INTEGER NOT NULL,operation TEXT NOT NULL CHECK(operation IN ('credit','debit')),requested_amount INTEGER NOT NULL CHECK(requested_amount>0),actual_amount INTEGER NO"
+          },
+          {
+            "line": 17,
+            "pattern": "operation",
+            "snippet": "def preview_admin_adjustment(admin_user_id,target_user_id,operation,requested_amount,reason,db_path=None):"
+          },
+          {
+            "line": 21,
+            "pattern": "operation",
+            "snippet": "op=str(operation);limit=ROM_ADMIN_CRYSTAL_CREDIT_MAX if op=='credit' else ROM_ADMIN_CRYSTAL_DEBIT_MAX"
+          },
+          {
+            "line": 34,
+            "pattern": "operation",
+            "snippet": "return {'success':True,'admin_user_id':int(admin_user_id),'target_user_id':target,'operation':op,'requested_amount':amount,'actual_amount':actual,'balance_before':before,'balance_after':before+actual if op=='credit' else before-actual,'reason':reason,'clamped':op=='debit' and actual<amount}"
+          },
+          {
+            "line": 35,
+            "pattern": "operation",
+            "snippet": "def execute_admin_adjustment(admin_user_id,target_user_id,operation,requested_amount,reason,idempotency_key,db_path=None):"
+          },
+          {
+            "line": 40,
+            "pattern": "audit",
+            "snippet": "c.execute('BEGIN IMMEDIATE');existing=c.execute('SELECT * FROM admin_crystal_credit_audit WHERE idempotency_key=?',(key,)).fetchone()"
+          },
+          {
+            "line": 41,
+            "pattern": "audit",
+            "snippet": "if existing:c.commit();return {'success':True,'idempotent_replay':True,'audit':dict(existing),'balance':int(existing['balance_after'])}"
+          },
+          {
+            "line": 43,
+            "pattern": "operation",
+            "snippet": "target=int(target_user_id);amount=int(requested_amount);op=str(operation);reason=str(reason or '').strip();limit=ROM_ADMIN_CRYSTAL_CREDIT_MAX if op=='credit' else ROM_ADMIN_CRYSTAL_DEBIT_MAX"
+          },
+          {
+            "line": 51,
+            "pattern": "operation",
+            "snippet": "txkey='admin:'+key;cur=c.execute('INSERT INTO crystal_transactions(user_id,operation,amount,reason_code,balance_before,balance_after,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)',(target,op,actual,'admin_crystal_'+op,before,after,txkey,key,json.dumps({'admin_operation':True,'"
+          },
+          {
+            "line": 52,
+            "pattern": "audit",
+            "snippet": "cur=c.execute('INSERT INTO admin_crystal_credit_audit(admin_user_id,target_user_id,operation,requested_amount,actual_amount,balance_before,balance_after,reason,idempotency_key,crystal_transaction_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(int(admin_user_id),target,op,amount,actual,before,after,reason,key,txid,now))"
+          },
+          {
+            "line": 55,
+            "pattern": "history",
+            "snippet": "def get_admin_adjustment_history(admin_user_id,page=0,page_size=10,db_path=None):"
+          },
+          {
+            "line": 59,
+            "pattern": "audit",
+            "snippet": "total=int(c.execute('SELECT COUNT(*) FROM admin_crystal_credit_audit').fetchone()[0]);rows=[dict(r) for r in c.execute(\"SELECT a.*,TRIM(COALESCE(u.character_name,'')) AS character_name FROM admin_crystal_credit_audit a LEFT JOIN users u ON u.user_id=a.target_user_id ORDER BY a.id DESC LIMIT ? OFFSET ?\",(size,page*size)"
+          },
+          {
+            "line": 62,
+            "pattern": "audit",
+            "snippet": "def get_admin_adjustment_detail(admin_user_id,audit_id,db_path=None):"
+          },
+          {
+            "line": 64,
+            "pattern": "audit",
+            "snippet": "try:identifier=int(audit_id)"
+          },
+          {
+            "line": 69,
+            "pattern": "audit",
+            "snippet": "row=c.execute(\"SELECT a.*,TRIM(COALESCE(u.character_name,'')) AS character_name FROM admin_crystal_credit_audit a LEFT JOIN users u ON u.user_id=a.target_user_id WHERE a.id=?\",(identifier,)).fetchone()"
+          }
+        ],
+        "dev_mode": [],
+        "guard": [
+          {
+            "line": 11,
+            "pattern": "is_admin",
+            "snippet": "def is_admin(user_id):return int(user_id) in ROM_ADMIN_USER_IDS"
+          },
+          {
+            "line": 18,
+            "pattern": "is_admin",
+            "snippet": "if not is_admin(admin_user_id):return {'success':False,'message':'Доступ заборонено.'}"
+          },
+          {
+            "line": 42,
+            "pattern": "is_admin",
+            "snippet": "if not is_admin(admin_user_id):raise ValueError('Доступ заборонено.')"
+          },
+          {
+            "line": 56,
+            "pattern": "is_admin",
+            "snippet": "if not is_admin(admin_user_id):return {'success':False,'message':'Доступ заборонено.'}"
+          },
+          {
+            "line": 63,
+            "pattern": "is_admin",
+            "snippet": "if not is_admin(admin_user_id):return {'success':False,'message':'Доступ заборонено.'}"
+          }
+        ],
+        "identity": [
+          {
+            "line": 6,
+            "pattern": "ROM_ADMIN_USER_IDS",
+            "snippet": "from config import ROM_ADMIN_USER_IDS, ROM_ADMIN_CRYSTAL_CREDIT_MAX, ROM_ADMIN_CRYSTAL_DEBIT_MAX"
+          },
+          {
+            "line": 11,
+            "pattern": "ROM_ADMIN_USER_IDS",
+            "snippet": "def is_admin(user_id):return int(user_id) in ROM_ADMIN_USER_IDS"
+          },
+          {
+            "line": 18,
+            "pattern": "is_admin",
+            "snippet": "if not is_admin(admin_user_id):return {'success':False,'message':'Доступ заборонено.'}"
+          },
+          {
+            "line": 42,
+            "pattern": "is_admin",
+            "snippet": "if not is_admin(admin_user_id):raise ValueError('Доступ заборонено.')"
+          },
+          {
+            "line": 56,
+            "pattern": "is_admin",
+            "snippet": "if not is_admin(admin_user_id):return {'success':False,'message':'Доступ заборонено.'}"
+          },
+          {
+            "line": 63,
+            "pattern": "is_admin",
+            "snippet": "if not is_admin(admin_user_id):return {'success':False,'message':'Доступ заборонено.'}"
+          }
+        ],
+        "mutation": [
+          {
+            "line": 2,
+            "pattern": "crystal",
+            "snippet": "\"\"\"Production-safe admin crystal adjustments with immutable audit records.\"\"\""
+          },
+          {
+            "line": 6,
+            "pattern": "crystal",
+            "snippet": "from config import ROM_ADMIN_USER_IDS, ROM_ADMIN_CRYSTAL_CREDIT_MAX, ROM_ADMIN_CRYSTAL_DEBIT_MAX"
+          },
+          {
+            "line": 12,
+            "pattern": "crystal",
+            "snippet": "def init_admin_crystal_credit_system(db_path=None):"
+          },
+          {
+            "line": 15,
+            "pattern": "crystal",
+            "snippet": "c.executescript(\"\"\"CREATE TABLE IF NOT EXISTS admin_crystal_credit_audit(id INTEGER PRIMARY KEY AUTOINCREMENT,admin_user_id INTEGER NOT NULL,target_user_id INTEGER NOT NULL,operation TEXT NOT NULL CHECK(operation IN ('credit','debit')),requested_amount INTEGER NOT NULL CHECK(requested_amount>0),actual_amount INTEGER NO"
+          },
+          {
+            "line": 21,
+            "pattern": "crystal",
+            "snippet": "op=str(operation);limit=ROM_ADMIN_CRYSTAL_CREDIT_MAX if op=='credit' else ROM_ADMIN_CRYSTAL_DEBIT_MAX"
+          },
+          {
+            "line": 28,
+            "pattern": "execute\\(",
+            "snippet": "user=c.execute('SELECT user_id FROM users WHERE user_id=?',(target,)).fetchone()"
+          },
+          {
+            "line": 30,
+            "pattern": "crystal",
+            "snippet": "c.execute('INSERT OR IGNORE INTO crystal_wallets(user_id,balance,created_at,updated_at) VALUES(?,0,?,?)',(target,_utc(),_utc()));c.commit();before=int(c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(target,)).fetchone()[0])"
+          },
+          {
+            "line": 40,
+            "pattern": "crystal",
+            "snippet": "c.execute('BEGIN IMMEDIATE');existing=c.execute('SELECT * FROM admin_crystal_credit_audit WHERE idempotency_key=?',(key,)).fetchone()"
+          },
+          {
+            "line": 43,
+            "pattern": "crystal",
+            "snippet": "target=int(target_user_id);amount=int(requested_amount);op=str(operation);reason=str(reason or '').strip();limit=ROM_ADMIN_CRYSTAL_CREDIT_MAX if op=='credit' else ROM_ADMIN_CRYSTAL_DEBIT_MAX"
+          },
+          {
+            "line": 45,
+            "pattern": "execute\\(",
+            "snippet": "if not c.execute('SELECT 1 FROM users WHERE user_id=?',(target,)).fetchone():raise ValueError('Користувача не знайдено.')"
+          },
+          {
+            "line": 46,
+            "pattern": "crystal",
+            "snippet": "now=_utc();c.execute('INSERT OR IGNORE INTO crystal_wallets(user_id,balance,created_at,updated_at) VALUES(?,0,?,?)',(target,now,now));before=int(c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(target,)).fetchone()[0]);actual=amount if op=='credit' else min(amount,before)"
+          },
+          {
+            "line": 49,
+            "pattern": "crystal",
+            "snippet": "changed=c.execute('UPDATE crystal_wallets SET balance=?,updated_at=? WHERE user_id=? AND balance=?',(after,now,target,before)).rowcount"
+          },
+          {
+            "line": 51,
+            "pattern": "crystal",
+            "snippet": "txkey='admin:'+key;cur=c.execute('INSERT INTO crystal_transactions(user_id,operation,amount,reason_code,balance_before,balance_after,idempotency_key,external_reference,metadata_json,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)',(target,op,actual,'admin_crystal_'+op,before,after,txkey,key,json.dumps({'admin_operation':True,'"
+          },
+          {
+            "line": 52,
+            "pattern": "crystal",
+            "snippet": "cur=c.execute('INSERT INTO admin_crystal_credit_audit(admin_user_id,target_user_id,operation,requested_amount,actual_amount,balance_before,balance_after,reason,idempotency_key,crystal_transaction_id,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(int(admin_user_id),target,op,amount,actual,before,after,reason,key,txid,now))"
+          },
+          {
+            "line": 59,
+            "pattern": "crystal",
+            "snippet": "total=int(c.execute('SELECT COUNT(*) FROM admin_crystal_credit_audit').fetchone()[0]);rows=[dict(r) for r in c.execute(\"SELECT a.*,TRIM(COALESCE(u.character_name,'')) AS character_name FROM admin_crystal_credit_audit a LEFT JOIN users u ON u.user_id=a.target_user_id ORDER BY a.id DESC LIMIT ? OFFSET ?\",(size,page*size)"
+          },
+          {
+            "line": 69,
+            "pattern": "crystal",
+            "snippet": "row=c.execute(\"SELECT a.*,TRIM(COALESCE(u.character_name,'')) AS character_name FROM admin_crystal_credit_audit a LEFT JOIN users u ON u.user_id=a.target_user_id WHERE a.id=?\",(identifier,)).fetchone()"
+          }
+        ],
+        "registration": []
+      },
+      "exists": true,
+      "path": "systems/admin_crystal_credit_system.py",
+      "sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 11,
+          "name": "is_admin"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 12,
+          "name": "init_admin_crystal_credit_system"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 17,
+          "name": "preview_admin_adjustment"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 35,
+          "name": "execute_admin_adjustment"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 55,
+          "name": "get_admin_adjustment_history"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 62,
+          "name": "get_admin_adjustment_detail"
+        }
+      ]
+    },
+    {
+      "evidence": {
+        "audit": [
+          {
+            "line": 140,
+            "pattern": "history",
+            "snippet": "AUCTION_HISTORY_BUTTON = \"📜 Історія аукціону\""
+          },
+          {
+            "line": 155,
+            "pattern": "history",
+            "snippet": "kb.add(AUCTION_SOLD_BUTTON, AUCTION_HISTORY_BUTTON)"
+          },
+          {
+            "line": 310,
+            "pattern": "history",
+            "snippet": "@bot.message_handler(func=lambda m: m.text == AUCTION_HISTORY_BUTTON)"
+          },
+          {
+            "line": 311,
+            "pattern": "history",
+            "snippet": "def auction_history_placeholder(message):"
+          },
+          {
+            "line": 3097,
+            "pattern": "history",
+            "snippet": "\"AUCTION_HISTORY_STATE\","
+          },
+          {
+            "line": 3200,
+            "pattern": "history",
+            "snippet": "\"AUCTION_HISTORY_STATE\","
+          },
+          {
+            "line": 3982,
+            "pattern": "history",
+            "snippet": "@bot.message_handler(func=lambda m: m.text == AUCTION_HISTORY_BUTTON)"
+          },
+          {
+            "line": 3983,
+            "pattern": "history",
+            "snippet": "def auction_history_start_section_cleanup_v1(message):"
+          },
+          {
+            "line": 4373,
+            "pattern": "history",
+            "snippet": "# ✅ AUCTION HOUSE HISTORY AND MARKET PRICES UI V1"
+          },
+          {
+            "line": 4376,
+            "pattern": "history",
+            "snippet": "AUCTION_HISTORY_PAGE_SIZE_V1 = 8"
+          },
+          {
+            "line": 4377,
+            "pattern": "history",
+            "snippet": "AUCTION_HISTORY_STATE_V1 = {}"
+          },
+          {
+            "line": 4380,
+            "pattern": "history",
+            "snippet": "AUCTION_HISTORY_MODE_LABELS_V1 = {"
+          },
+          {
+            "line": 4387,
+            "pattern": "history",
+            "snippet": "def auction_history_reply_kb_v1():"
+          },
+          {
+            "line": 4401,
+            "pattern": "history",
+            "snippet": "def auction_history_inline_kb_v1(mode=\"all\", page=0, has_next=False):"
+          },
+          {
+            "line": 4405,
+            "pattern": "history",
+            "snippet": "for key, label in AUCTION_HISTORY_MODE_LABELS_V1.items():"
+          },
+          {
+            "line": 4421,
+            "pattern": "history",
+            "snippet": "def _auction_history_row_to_line_v1(row, viewer_user_id, index):"
+          },
+          {
+            "line": 4422,
+            "pattern": "history",
+            "snippet": "from db import format_auction_history_date"
+          },
+          {
+            "line": 4435,
+            "pattern": "history",
+            "snippet": "date_text = format_auction_history_date(sold_date, with_time=True)"
+          },
+          {
+            "line": 4446,
+            "pattern": "history",
+            "snippet": "def build_auction_history_text_v1(user_id, mode=\"all\", page=0):"
+          },
+          {
+            "line": 4447,
+            "pattern": "history",
+            "snippet": "from db import get_user_auction_history"
+          },
+          {
+            "line": 4450,
+            "pattern": "history",
+            "snippet": "offset = page * AUCTION_HISTORY_PAGE_SIZE_V1"
+          },
+          {
+            "line": 4451,
+            "pattern": "history",
+            "snippet": "rows = get_user_auction_history(user_id, mode=mode, limit=AUCTION_HISTORY_PAGE_SIZE_V1 + 1, offset=offset)"
+          },
+          {
+            "line": 4453,
+            "pattern": "history",
+            "snippet": "visible = rows[:AUCTION_HISTORY_PAGE_SIZE_V1]"
+          },
+          {
+            "line": 4454,
+            "pattern": "history",
+            "snippet": "has_next = len(rows) > AUCTION_HISTORY_PAGE_SIZE_V1"
+          },
+          {
+            "line": 4455,
+            "pattern": "history",
+            "snippet": "mode_label = AUCTION_HISTORY_MODE_LABELS_V1.get(mode, AUCTION_HISTORY_MODE_LABELS_V1[\"all\"])"
+          },
+          {
+            "line": 4468,
+            "pattern": "history",
+            "snippet": "lines.append(_auction_history_row_to_line_v1(row, user_id, idx))"
+          },
+          {
+            "line": 4471,
+            "pattern": "history",
+            "snippet": "return text, auction_history_inline_kb_v1(mode=mode, page=page, has_next=has_next)"
+          },
+          {
+            "line": 4488,
+            "pattern": "history",
+            "snippet": "from db import search_auction_market_price_stats, format_auction_history_date"
+          },
+          {
+            "line": 4510,
+            "pattern": "history",
+            "snippet": "last_sale = format_auction_history_date(row[\"last_sale_at\"], with_time=True)"
+          },
+          {
+            "line": 4524,
+            "pattern": "history",
+            "snippet": "from db import get_auction_lot_market_price_stats, format_auction_history_date"
+          },
+          {
+            "line": 4552,
+            "pattern": "history",
+            "snippet": "date_text = format_auction_history_date(row[\"history_date\"], with_time=True)"
+          },
+          {
+            "line": 4560,
+            "pattern": "history",
+            "snippet": "_auction_base_buy_lot_view_kb_before_history_v1 = auction_buy_lot_view_kb_v1"
+          },
+          {
+            "line": 4562,
+            "pattern": "history",
+            "snippet": "_auction_base_buy_lot_view_kb_before_history_v1 = None"
+          },
+          {
+            "line": 4566,
+            "pattern": "history",
+            "snippet": "if not _auction_base_buy_lot_view_kb_before_history_v1:"
+          },
+          {
+            "line": 4572,
+            "pattern": "history",
+            "snippet": "kb = _auction_base_buy_lot_view_kb_before_history_v1(lot_id, category=category, sort_key=sort_key, page=page)"
+          },
+          {
+            "line": 4585,
+            "pattern": "history",
+            "snippet": "_auction_base_search_lot_view_kb_before_history_v1 = auction_search_lot_view_kb_v1"
+          },
+          {
+            "line": 4587,
+            "pattern": "history",
+            "snippet": "_auction_base_search_lot_view_kb_before_history_v1 = None"
+          },
+          {
+            "line": 4591,
+            "pattern": "history",
+            "snippet": "if not _auction_base_search_lot_view_kb_before_history_v1:"
+          },
+          {
+            "line": 4597,
+            "pattern": "history",
+            "snippet": "kb = _auction_base_search_lot_view_kb_before_history_v1(lot_id, sort_key=sort_key, page=page)"
+          },
+          {
+            "line": 4611,
+            "pattern": "history",
+            "snippet": "def _auction_register_history_market_prices_handlers_v1(bot):"
+          },
+          {
+            "line": 4613,
+            "pattern": "history",
+            "snippet": "@bot.message_handler(func=lambda m: m.text == AUCTION_HISTORY_BUTTON)"
+          },
+          {
+            "line": 4614,
+            "pattern": "history",
+            "snippet": "def auction_history_start_v1(message):"
+          },
+          {
+            "line": 4616,
+            "pattern": "history",
+            "snippet": "text, inline_kb = build_auction_history_text_v1(user_id, mode=\"all\", page=0)"
+          },
+          {
+            "line": 4620,
+            "pattern": "history",
+            "snippet": "reply_markup=auction_history_reply_kb_v1()"
+          },
+          {
+            "line": 4625,
+            "pattern": "history",
+            "snippet": "def auction_history_page_callback_v1(call):"
+          },
+          {
+            "line": 4630,
+            "pattern": "history",
+            "snippet": "text, inline_kb = build_auction_history_text_v1(user_id, mode=mode, page=page)"
+          },
+          {
+            "line": 4653,
+            "pattern": "history",
+            "snippet": "def auction_market_price_back_history_v1(message):"
+          },
+          {
+            "line": 4656,
+            "pattern": "history",
+            "snippet": "text, inline_kb = build_auction_history_text_v1(user_id, mode=\"all\", page=0)"
+          },
+          {
+            "line": 4687,
+            "pattern": "history",
+            "snippet": "def auction_lot_price_history_callback_v1(call):"
+          },
+          {
+            "line": 4700,
+            "pattern": "history",
+            "snippet": "_auction_base_register_handlers_before_history_market_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 4702,
+            "pattern": "history",
+            "snippet": "_auction_base_register_handlers_before_history_market_v1 = None"
+          },
+          {
+            "line": 4706,
+            "pattern": "history",
+            "snippet": "# History/market price handlers should be before old placeholder history handlers."
+          },
+          {
+            "line": 4707,
+            "pattern": "history",
+            "snippet": "_auction_register_history_market_prices_handlers_v1(bot)"
+          },
+          {
+            "line": 4709,
+            "pattern": "history",
+            "snippet": "if _auction_base_register_handlers_before_history_market_v1:"
+          },
+          {
+            "line": 4710,
+            "pattern": "history",
+            "snippet": "_auction_base_register_handlers_before_history_market_v1(bot)"
+          },
+          {
+            "line": 4714,
+            "pattern": "history",
+            "snippet": "# ✅ AUCTION HISTORY KEYBOARD RESTORE V1"
+          },
+          {
+            "line": 4725,
+            "pattern": "history",
+            "snippet": "def _auction_open_history_screen_v1(bot, chat_id, user_id, mode=\"all\", page=0):"
+          },
+          {
+            "line": 4734,
+            "pattern": "history",
+            "snippet": "text, inline_kb = build_auction_history_text_v1(user_id, mode=mode, page=page)"
+          },
+          {
+            "line": 4744,
+            "pattern": "history",
+            "snippet": "reply_markup=auction_history_reply_kb_v1()"
+          },
+          {
+            "line": 4753,
+            "pattern": "history",
+            "snippet": "def _auction_register_history_keyboard_restore_v1(bot):"
+          },
+          {
+            "line": 4756,
+            "pattern": "history",
+            "snippet": "def auction_history_back_restore_keyboard_v1(message):"
+          },
+          {
+            "line": 4758,
+            "pattern": "history",
+            "snippet": "_auction_open_history_screen_v1("
+          },
+          {
+            "line": 4768,
+            "pattern": "history",
+            "snippet": "_auction_base_register_handlers_before_history_keyboard_restore_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 4770,
+            "pattern": "history",
+            "snippet": "_auction_base_register_handlers_before_history_keyboard_restore_v1 = None"
+          },
+          {
+            "line": 4776,
+            "pattern": "history",
+            "snippet": "_auction_register_history_keyboard_restore_v1(bot)"
+          },
+          {
+            "line": 4778,
+            "pattern": "history",
+            "snippet": "if _auction_base_register_handlers_before_history_keyboard_restore_v1:"
+          },
+          {
+            "line": 4779,
+            "pattern": "history",
+            "snippet": "_auction_base_register_handlers_before_history_keyboard_restore_v1(bot)"
+          }
+        ],
+        "dev_mode": [],
+        "guard": [
+          {
+            "line": 5000,
+            "pattern": "is_admin",
+            "snippet": "def _auction_is_admin_v1(user_id):"
+          },
+          {
+            "line": 5029,
+            "pattern": "is_admin",
+            "snippet": "if not _auction_is_admin_v1(message.from_user.id):"
+          },
+          {
+            "line": 5037,
+            "pattern": "is_admin",
+            "snippet": "if not _auction_is_admin_v1(message.from_user.id):"
+          },
+          {
+            "line": 5045,
+            "pattern": "is_admin",
+            "snippet": "if not _auction_is_admin_v1(message.from_user.id):"
+          },
+          {
+            "line": 5071,
+            "pattern": "is_admin",
+            "snippet": "if not _auction_is_admin_v1(message.from_user.id):"
+          }
+        ],
+        "identity": [
+          {
+            "line": 4973,
+            "pattern": "ADMIN_IDS",
+            "snippet": "# AUCTION_ADMIN_IDS=243129101,123456789"
+          },
+          {
+            "line": 4974,
+            "pattern": "ADMIN_USER_IDS",
+            "snippet": "# або ADMIN_USER_IDS=243129101,123456789"
+          },
+          {
+            "line": 4977,
+            "pattern": "ADMIN_IDS",
+            "snippet": "def _auction_get_admin_ids_v1():"
+          },
+          {
+            "line": 4981,
+            "pattern": "ADMIN_IDS",
+            "snippet": "os.getenv(\"AUCTION_ADMIN_IDS\")"
+          },
+          {
+            "line": 4982,
+            "pattern": "ADMIN_USER_IDS",
+            "snippet": "or os.getenv(\"ADMIN_USER_IDS\")"
+          },
+          {
+            "line": 5000,
+            "pattern": "is_admin",
+            "snippet": "def _auction_is_admin_v1(user_id):"
+          },
+          {
+            "line": 5001,
+            "pattern": "ADMIN_IDS",
+            "snippet": "return int(user_id) in _auction_get_admin_ids_v1()"
+          },
+          {
+            "line": 5029,
+            "pattern": "is_admin",
+            "snippet": "if not _auction_is_admin_v1(message.from_user.id):"
+          },
+          {
+            "line": 5037,
+            "pattern": "is_admin",
+            "snippet": "if not _auction_is_admin_v1(message.from_user.id):"
+          },
+          {
+            "line": 5045,
+            "pattern": "is_admin",
+            "snippet": "if not _auction_is_admin_v1(message.from_user.id):"
+          },
+          {
+            "line": 5071,
+            "pattern": "is_admin",
+            "snippet": "if not _auction_is_admin_v1(message.from_user.id):"
+          }
+        ],
+        "mutation": [],
+        "registration": [
+          {
+            "line": 237,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 482,
+            "pattern": "register_.*handler",
+            "snippet": "def _auction_register_sell_equipment_handlers(bot):"
+          },
+          {
+            "line": 664,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_sell_equipment_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 666,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_sell_equipment_v1 = None"
+          },
+          {
+            "line": 669,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 672,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_register_sell_equipment_handlers(bot)"
+          },
+          {
+            "line": 674,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_sell_equipment_v1:"
+          },
+          {
+            "line": 675,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_sell_equipment_v1(bot)"
+          },
+          {
+            "line": 826,
+            "pattern": "register_.*handler",
+            "snippet": "def _auction_register_sell_all_handlers_v2(bot):"
+          },
+          {
+            "line": 1083,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_stack_listing_v2 = register_auction_house_handlers"
+          },
+          {
+            "line": 1085,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_stack_listing_v2 = None"
+          },
+          {
+            "line": 1088,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 1090,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_register_sell_all_handlers_v2(bot)"
+          },
+          {
+            "line": 1092,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_stack_listing_v2:"
+          },
+          {
+            "line": 1093,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_stack_listing_v2(bot)"
+          },
+          {
+            "line": 1194,
+            "pattern": "register_.*handler",
+            "snippet": "def _auction_register_buy_lot_handlers_v1(bot):"
+          },
+          {
+            "line": 1356,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_buy_lot_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 1358,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_buy_lot_v1 = None"
+          },
+          {
+            "line": 1361,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 1363,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_register_buy_lot_handlers_v1(bot)"
+          },
+          {
+            "line": 1365,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_buy_lot_v1:"
+          },
+          {
+            "line": 1366,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_buy_lot_v1(bot)"
+          },
+          {
+            "line": 1502,
+            "pattern": "register_.*handler",
+            "snippet": "def _auction_register_sell_inline_handlers_v1(bot):"
+          },
+          {
+            "line": 1793,
+            "pattern": "register_.*handler",
+            "snippet": "def _auction_register_buy_inline_handlers_v1(bot):"
+          },
+          {
+            "line": 1892,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_inline_lists_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 1894,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_inline_lists_v1 = None"
+          },
+          {
+            "line": 1897,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 1899,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_register_sell_inline_handlers_v1(bot)"
+          },
+          {
+            "line": 1900,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_register_buy_inline_handlers_v1(bot)"
+          },
+          {
+            "line": 1902,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_inline_lists_v1:"
+          },
+          {
+            "line": 1903,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_inline_lists_v1(bot)"
+          },
+          {
+            "line": 1960,
+            "pattern": "register_.*handler",
+            "snippet": "def _auction_register_sell_review_before_price_handlers_v1(bot):"
+          },
+          {
+            "line": 2185,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_sell_review_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 2187,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_sell_review_v1 = None"
+          },
+          {
+            "line": 2190,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 2192,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_register_sell_review_before_price_handlers_v1(bot)"
+          },
+          {
+            "line": 2194,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_sell_review_v1:"
+          },
+          {
+            "line": 2195,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_sell_review_v1(bot)"
+          },
+          {
+            "line": 2273,
+            "pattern": "register_.*handler",
+            "snippet": "def _auction_register_my_lots_cancel_handlers_v1(bot):"
+          },
+          {
+            "line": 2382,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_my_lots_cancel_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 2384,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_my_lots_cancel_v1 = None"
+          },
+          {
+            "line": 2387,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 2389,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_register_my_lots_cancel_handlers_v1(bot)"
+          },
+          {
+            "line": 2391,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_my_lots_cancel_v1:"
+          },
+          {
+            "line": 2392,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_my_lots_cancel_v1(bot)"
+          },
+          {
+            "line": 2469,
+            "pattern": "register_.*handler",
+            "snippet": "def _auction_register_unclaimed_items_handlers_v1(bot):"
+          },
+          {
+            "line": 2577,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_unclaimed_items_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 2579,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_unclaimed_items_v1 = None"
+          },
+          {
+            "line": 2582,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 2584,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_register_unclaimed_items_handlers_v1(bot)"
+          },
+          {
+            "line": 2586,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_unclaimed_items_v1:"
+          },
+          {
+            "line": 2587,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_unclaimed_items_v1(bot)"
+          },
+          {
+            "line": 2664,
+            "pattern": "register_.*handler",
+            "snippet": "def _auction_register_completed_sales_handlers_v1(bot):"
+          },
+          {
+            "line": 2772,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_completed_sales_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 2774,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_completed_sales_v1 = None"
+          },
+          {
+            "line": 2777,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 2779,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_register_completed_sales_handlers_v1(bot)"
+          },
+          {
+            "line": 2781,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_completed_sales_v1:"
+          },
+          {
+            "line": 2782,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_completed_sales_v1(bot)"
+          },
+          {
+            "line": 2917,
+            "pattern": "register_.*handler",
+            "snippet": "def _auction_register_buy_filters_handlers_v1(bot):"
+          },
+          {
+            "line": 3066,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_buy_filters_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 3068,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_buy_filters_v1 = None"
+          },
+          {
+            "line": 3071,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 3073,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_register_buy_filters_handlers_v1(bot)"
+          },
+          {
+            "line": 3075,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_buy_filters_v1:"
+          },
+          {
+            "line": 3076,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_buy_filters_v1(bot)"
+          },
+          {
+            "line": 3167,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_back_to_menu_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 3169,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_back_to_menu_v1 = None"
+          },
+          {
+            "line": 3172,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 3176,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_back_to_menu_v1:"
+          },
+          {
+            "line": 3177,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_back_to_menu_v1(bot)"
+          },
+          {
+            "line": 3337,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_reply_back_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 3339,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_reply_back_v1 = None"
+          },
+          {
+            "line": 3342,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 3346,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_reply_back_v1:"
+          },
+          {
+            "line": 3347,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_reply_back_v1(bot)"
+          },
+          {
+            "line": 3431,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_buy_cat_keyboard_cleanup_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 3433,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_buy_cat_keyboard_cleanup_v1 = None"
+          },
+          {
+            "line": 3436,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 3440,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_buy_cat_keyboard_cleanup_v1:"
+          },
+          {
+            "line": 3441,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_buy_cat_keyboard_cleanup_v1(bot)"
+          },
+          {
+            "line": 3694,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_sell_cat_cleanup_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 3696,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_sell_cat_cleanup_v1 = None"
+          },
+          {
+            "line": 3699,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 3703,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_sell_cat_cleanup_v1:"
+          },
+          {
+            "line": 3704,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_sell_cat_cleanup_v1(bot)"
+          },
+          {
+            "line": 3759,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_register_before_broken_sell_cleanup_v1 = _auction_base_register_handlers_before_sell_cat_cleanup_v1"
+          },
+          {
+            "line": 3764,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_current_register_before_restore_sell_inline_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 3769,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 3773,
+            "pattern": "register_.*handler",
+            "snippet": "If _auction_base_register_handlers_before_sell_cat_cleanup_v1 exists, it points to"
+          },
+          {
+            "line": 3774,
+            "pattern": "register_.*handler",
+            "snippet": "the register_auction_house_handlers version that existed before 8.0.9d was applied."
+          },
+          {
+            "line": 3998,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_section_back_cleanup_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 4000,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_section_back_cleanup_v1 = None"
+          },
+          {
+            "line": 4003,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 4007,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_section_back_cleanup_v1:"
+          },
+          {
+            "line": 4008,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_section_back_cleanup_v1(bot)"
+          },
+          {
+            "line": 4177,
+            "pattern": "register_.*handler",
+            "snippet": "def _auction_register_buy_search_handlers_v1(bot):"
+          },
+          {
+            "line": 4359,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_buy_search_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 4361,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_buy_search_v1 = None"
+          },
+          {
+            "line": 4364,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 4366,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_register_buy_search_handlers_v1(bot)"
+          },
+          {
+            "line": 4368,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_buy_search_v1:"
+          },
+          {
+            "line": 4369,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_buy_search_v1(bot)"
+          },
+          {
+            "line": 4611,
+            "pattern": "register_.*handler",
+            "snippet": "def _auction_register_history_market_prices_handlers_v1(bot):"
+          },
+          {
+            "line": 4700,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_history_market_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 4702,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_history_market_v1 = None"
+          },
+          {
+            "line": 4705,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 4707,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_register_history_market_prices_handlers_v1(bot)"
+          },
+          {
+            "line": 4709,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_history_market_v1:"
+          },
+          {
+            "line": 4710,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_history_market_v1(bot)"
+          },
+          {
+            "line": 4768,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_history_keyboard_restore_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 4770,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_history_keyboard_restore_v1 = None"
+          },
+          {
+            "line": 4773,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 4778,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_history_keyboard_restore_v1:"
+          },
+          {
+            "line": 4779,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_history_keyboard_restore_v1(bot)"
+          },
+          {
+            "line": 4829,
+            "pattern": "register_.*handler",
+            "snippet": "def _auction_register_expiration_cleanup_handlers_v2(bot):"
+          },
+          {
+            "line": 4856,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_expiration_cleanup_v2 = register_auction_house_handlers"
+          },
+          {
+            "line": 4858,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_expiration_cleanup_v2 = None"
+          },
+          {
+            "line": 4861,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 4862,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_register_expiration_cleanup_handlers_v2(bot)"
+          },
+          {
+            "line": 4864,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_expiration_cleanup_v2:"
+          },
+          {
+            "line": 4865,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_expiration_cleanup_v2(bot)"
+          },
+          {
+            "line": 4920,
+            "pattern": "register_.*handler",
+            "snippet": "def _auction_register_stabilization_diagnostics_handlers_v1(bot):"
+          },
+          {
+            "line": 4948,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_stabilization_diagnostics_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 4950,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_stabilization_diagnostics_v1 = None"
+          },
+          {
+            "line": 4953,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 4954,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_register_stabilization_diagnostics_handlers_v1(bot)"
+          },
+          {
+            "line": 4956,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_stabilization_diagnostics_v1:"
+          },
+          {
+            "line": 4957,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_stabilization_diagnostics_v1(bot)"
+          },
+          {
+            "line": 5096,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_admin_guard_v1 = register_auction_house_handlers"
+          },
+          {
+            "line": 5098,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_admin_guard_v1 = None"
+          },
+          {
+            "line": 5101,
+            "pattern": "register_.*handler",
+            "snippet": "def register_auction_house_handlers(bot):"
+          },
+          {
+            "line": 5106,
+            "pattern": "register_.*handler",
+            "snippet": "if _auction_base_register_handlers_before_admin_guard_v1:"
+          },
+          {
+            "line": 5107,
+            "pattern": "register_.*handler",
+            "snippet": "_auction_base_register_handlers_before_admin_guard_v1(bot)"
+          }
+        ]
+      },
+      "exists": true,
+      "path": "handlers/auction_house.py",
+      "sha256": "9cd9b0ccccae8ea2f0bfb24abdc6428ae5691ba78a33a60d9b3fed84c4215f7a",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 13,
+          "name": "_auction_equipment_typed_name_11_4_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 40,
+          "name": "_auction_snapshot_typed_name_11_4_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 45,
+          "name": "_auction_lot_typed_name_17_1_0"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 148,
+          "name": "auction_house_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 182,
+          "name": "build_auction_house_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 224,
+          "name": "build_auction_placeholder_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 237,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 337,
+          "name": "clear_auction_sell_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 350,
+          "name": "auction_sell_category_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 357,
+          "name": "auction_sell_items_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 399,
+          "name": "build_auction_sell_start_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 413,
+          "name": "build_auction_sell_item_list_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 436,
+          "name": "build_auction_sell_price_prompt"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 453,
+          "name": "build_auction_sell_confirm_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 468,
+          "name": "auction_sell_confirm_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 475,
+          "name": "_auction_parse_inventory_id_from_button"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 482,
+          "name": "_auction_register_sell_equipment_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 669,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 692,
+          "name": "clear_auction_sell_state_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 696,
+          "name": "auction_sell_category_kb_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 704,
+          "name": "build_auction_sell_start_text_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 720,
+          "name": "auction_stack_items_kb_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 755,
+          "name": "build_auction_stack_item_list_text_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 777,
+          "name": "build_auction_stack_quantity_prompt_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 786,
+          "name": "build_auction_stack_price_prompt_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 800,
+          "name": "build_auction_stack_confirm_text_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 811,
+          "name": "_auction_open_item_list_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 826,
+          "name": "_auction_register_sell_all_handlers_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1088,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1109,
+          "name": "clear_auction_buy_state"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1113,
+          "name": "_auction_parse_lot_id_from_button"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1120,
+          "name": "auction_buy_lots_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1157,
+          "name": "build_auction_buy_list_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1178,
+          "name": "auction_lot_view_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1185,
+          "name": "build_auction_buy_confirm_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1194,
+          "name": "_auction_register_buy_lot_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1361,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1386,
+          "name": "_auction_clear_all_sell_states_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1390,
+          "name": "_auction_clear_all_buy_states_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1397,
+          "name": "_auction_inline_truncate"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1408,
+          "name": "auction_sell_inline_category_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1416,
+          "name": "build_auction_sell_start_text_inline_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1432,
+          "name": "auction_sell_items_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1484,
+          "name": "build_auction_sell_inline_list_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1502,
+          "name": "_auction_register_sell_inline_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1725,
+          "name": "auction_buy_lots_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1763,
+          "name": "build_auction_buy_inline_list_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1778,
+          "name": "auction_lot_inline_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1786,
+          "name": "auction_lot_inline_confirm_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1793,
+          "name": "_auction_register_buy_inline_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1897,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1913,
+          "name": "_auction_clear_sell_review_state_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1917,
+          "name": "auction_sell_review_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1930,
+          "name": "_auction_send_sell_review_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1960,
+          "name": "_auction_register_sell_review_before_price_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2190,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2205,
+          "name": "auction_my_lots_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2243,
+          "name": "build_auction_my_lots_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2258,
+          "name": "auction_my_lot_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2266,
+          "name": "auction_my_lot_cancel_confirm_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2273,
+          "name": "_auction_register_my_lots_cancel_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2387,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2402,
+          "name": "auction_unclaimed_items_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2439,
+          "name": "build_auction_unclaimed_items_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2454,
+          "name": "auction_unclaimed_item_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2462,
+          "name": "auction_unclaimed_claim_confirm_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2469,
+          "name": "_auction_register_unclaimed_items_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2582,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2597,
+          "name": "auction_completed_sales_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2634,
+          "name": "build_auction_completed_sales_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2649,
+          "name": "auction_completed_sale_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2657,
+          "name": "auction_completed_sale_claim_confirm_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2664,
+          "name": "_auction_register_completed_sales_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2777,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2811,
+          "name": "auction_buy_category_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2820,
+          "name": "auction_buy_sort_inline_row_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2831,
+          "name": "auction_buy_lots_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2877,
+          "name": "build_auction_buy_category_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2890,
+          "name": "build_auction_buy_lots_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2902,
+          "name": "auction_buy_lot_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2910,
+          "name": "auction_buy_confirm_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2917,
+          "name": "_auction_register_buy_filters_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3071,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3084,
+          "name": "_auction_clear_runtime_states_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3114,
+          "name": "_auction_main_menu_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3144,
+          "name": "_auction_register_back_to_menu_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3172,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3187,
+          "name": "_auction_clear_runtime_states_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3217,
+          "name": "_auction_main_menu_text_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3248,
+          "name": "auction_buy_lots_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3300,
+          "name": "auction_buy_lot_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3311,
+          "name": "auction_buy_confirm_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3322,
+          "name": "_auction_register_reply_back_to_house_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3342,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3355,
+          "name": "auction_buy_lots_reply_back_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3369,
+          "name": "_auction_register_buy_category_keyboard_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3436,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3461,
+          "name": "auction_sell_category_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3472,
+          "name": "auction_sell_listing_back_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3485,
+          "name": "build_auction_sell_category_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3503,
+          "name": "_auction_sanitize_sell_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3539,
+          "name": "_auction_call_equipment_sell_list_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3560,
+          "name": "_auction_try_stack_sell_list_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3596,
+          "name": "_auction_send_sell_category_listing_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3648,
+          "name": "_auction_register_sell_category_keyboard_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3699,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3724,
+          "name": "_auction_register_reply_back_to_house_restore_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3769,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3802,
+          "name": "auction_reply_back_only_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3810,
+          "name": "_auction_strip_back_to_house_inline_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3851,
+          "name": "auction_my_lots_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3865,
+          "name": "auction_my_lot_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3883,
+          "name": "auction_unclaimed_items_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3897,
+          "name": "auction_unclaimed_item_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3915,
+          "name": "auction_completed_sales_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3929,
+          "name": "auction_completed_sale_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3941,
+          "name": "_auction_register_section_back_keyboard_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4003,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4020,
+          "name": "auction_buy_category_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4032,
+          "name": "build_auction_buy_category_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4048,
+          "name": "auction_search_reply_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4055,
+          "name": "auction_search_results_reply_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4063,
+          "name": "build_auction_search_prompt_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4076,
+          "name": "auction_search_sort_inline_buttons_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4084,
+          "name": "auction_search_results_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4129,
+          "name": "build_auction_search_results_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4140,
+          "name": "auction_search_lot_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4147,
+          "name": "auction_search_confirm_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4154,
+          "name": "_auction_get_search_query_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4159,
+          "name": "_auction_show_search_results_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4177,
+          "name": "_auction_register_buy_search_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4364,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4387,
+          "name": "auction_history_reply_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4394,
+          "name": "auction_market_price_search_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4401,
+          "name": "auction_history_inline_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4421,
+          "name": "_auction_history_row_to_line_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4446,
+          "name": "build_auction_history_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4474,
+          "name": "build_auction_market_price_prompt_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4487,
+          "name": "build_auction_market_price_search_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4523,
+          "name": "build_auction_lot_market_price_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4565,
+          "name": "auction_buy_lot_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4590,
+          "name": "auction_search_lot_view_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4605,
+          "name": "auction_price_back_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4611,
+          "name": "_auction_register_history_market_prices_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4705,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4725,
+          "name": "_auction_open_history_screen_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4753,
+          "name": "_auction_register_history_keyboard_restore_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4773,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4787,
+          "name": "build_auction_cleanup_report_text_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4811,
+          "name": "build_auction_house_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4829,
+          "name": "_auction_register_expiration_cleanup_handlers_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4861,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4873,
+          "name": "_auction_list_short_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4885,
+          "name": "build_auction_diagnostics_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4920,
+          "name": "_auction_register_stabilization_diagnostics_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4953,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4977,
+          "name": "_auction_get_admin_ids_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5000,
+          "name": "_auction_is_admin_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5004,
+          "name": "_auction_admin_denied_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5011,
+          "name": "_auction_safe_report_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5025,
+          "name": "_auction_register_admin_command_guard_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5101,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5122,
+          "name": "auction_sell_inline_category_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5130,
+          "name": "build_auction_sell_start_text_inline_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5143,
+          "name": "build_auction_sell_inline_list_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5152,
+          "name": "auction_buy_category_kb_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5180,
+          "name": "build_auction_house_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5187,
+          "name": "_auction_main_menu_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5193,
+          "name": "_auction_main_menu_text_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5199,
+          "name": "build_auction_buy_category_text_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 240,
+          "name": "show_auction_house"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 249,
+          "name": "auction_back_to_city"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 257,
+          "name": "auction_buy_placeholder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 267,
+          "name": "auction_sell_placeholder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 278,
+          "name": "auction_my_lots_placeholder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 289,
+          "name": "auction_unclaimed_items_placeholder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 300,
+          "name": "auction_sold_placeholder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 311,
+          "name": "auction_history_placeholder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 484,
+          "name": "auction_sell_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 498,
+          "name": "auction_sell_state_router_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 828,
+          "name": "auction_sell_start_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 843,
+          "name": "auction_sell_state_router_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1197,
+          "name": "auction_buy_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1208,
+          "name": "auction_buy_state_router_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1504,
+          "name": "auction_sell_start_inline_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1517,
+          "name": "auction_sell_inline_state_message_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1642,
+          "name": "auction_inline_menu_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1653,
+          "name": "auction_sell_inline_page_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1669,
+          "name": "auction_sell_inline_item_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1796,
+          "name": "auction_buy_start_inline_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1803,
+          "name": "auction_buy_inline_page_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1814,
+          "name": "auction_buy_inline_lot_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1840,
+          "name": "auction_buy_inline_confirm_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1863,
+          "name": "auction_buy_inline_execute_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1962,
+          "name": "auction_sell_start_review_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1973,
+          "name": "auction_sell_review_message_router_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2102,
+          "name": "auction_sell_review_item_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2125,
+          "name": "auction_sell_review_price_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2155,
+          "name": "auction_sell_review_quantity_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2276,
+          "name": "auction_my_lots_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2282,
+          "name": "auction_my_lots_page_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2293,
+          "name": "auction_my_lot_view_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2319,
+          "name": "auction_my_lot_cancel_confirm_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2349,
+          "name": "auction_my_lot_cancel_do_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2472,
+          "name": "auction_unclaimed_items_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2478,
+          "name": "auction_unclaimed_items_page_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2489,
+          "name": "auction_unclaimed_item_view_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2515,
+          "name": "auction_unclaimed_claim_confirm_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2545,
+          "name": "auction_unclaimed_claim_do_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2667,
+          "name": "auction_completed_sales_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2673,
+          "name": "auction_completed_sales_page_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2684,
+          "name": "auction_completed_sale_view_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2710,
+          "name": "auction_completed_sale_claim_confirm_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2740,
+          "name": "auction_completed_sale_claim_do_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2920,
+          "name": "auction_buy_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2927,
+          "name": "auction_buy_category_selected_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2941,
+          "name": "auction_buy_categories_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2949,
+          "name": "auction_buy_page_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2969,
+          "name": "auction_buy_lot_view_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2995,
+          "name": "auction_buy_confirm_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3027,
+          "name": "auction_buy_do_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3147,
+          "name": "auction_back_to_menu_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3325,
+          "name": "auction_reply_back_to_house_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3372,
+          "name": "auction_buy_category_selected_clean_keyboard_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3416,
+          "name": "auction_buy_categories_restore_reply_keyboard_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3651,
+          "name": "auction_sell_start_categories_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3660,
+          "name": "auction_sell_category_equipment_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3664,
+          "name": "auction_sell_category_potion_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3668,
+          "name": "auction_sell_category_material_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3672,
+          "name": "auction_sell_category_rune_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3676,
+          "name": "auction_sell_category_consumable_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3680,
+          "name": "auction_sell_back_to_categories_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3728,
+          "name": "auction_reply_back_to_house_restore_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3944,
+          "name": "auction_my_lots_start_section_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3957,
+          "name": "auction_unclaimed_items_start_section_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3970,
+          "name": "auction_completed_sales_start_section_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3983,
+          "name": "auction_history_start_section_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4180,
+          "name": "auction_search_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4190,
+          "name": "auction_search_new_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4200,
+          "name": "auction_search_back_to_categories_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4210,
+          "name": "auction_search_query_router_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4249,
+          "name": "auction_search_page_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4269,
+          "name": "auction_search_lot_view_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4294,
+          "name": "auction_search_confirm_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4325,
+          "name": "auction_search_do_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4614,
+          "name": "auction_history_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4625,
+          "name": "auction_history_page_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4643,
+          "name": "auction_market_price_search_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4653,
+          "name": "auction_market_price_back_history_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4660,
+          "name": "auction_market_price_search_query_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4687,
+          "name": "auction_lot_price_history_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4756,
+          "name": "auction_history_back_restore_keyboard_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4832,
+          "name": "auction_cleanup_command_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4850,
+          "name": "auction_debug_command_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4923,
+          "name": "auction_sanity_command_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4929,
+          "name": "auction_fix_command_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5028,
+          "name": "auction_sanity_admin_guard_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5036,
+          "name": "auction_debug_admin_guard_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5044,
+          "name": "auction_fix_admin_guard_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5070,
+          "name": "auction_cleanup_admin_guard_v1"
+        }
+      ]
+    }
+  ],
+  "decision": "REFINED_PARITY_RESOLUTION_REQUIRED",
+  "environment_file_opened": false,
+  "explicit_non_goals": [
+    "No V1/V2 production mutation.",
+    "No new developer/admin identity values.",
+    "No command execution, Telegram connection, production SQLite connection, migration, or runtime registration.",
+    "No reading or reporting of .env values."
+  ],
+  "game_db_wal_shm": "NOT_MANIPULATED",
+  "generated_at": "2026-10-27T20:48:05.551862+00:00",
+  "main_started": false,
+  "manual_verification": {
+    "reason": "Read-only semantic contract refinement.",
+    "required": false
+  },
+  "next_action": "GO_TO_PARITY_RESOLUTION",
+  "observations": {
+    "admin_crystal_audit_found": true,
+    "auction_separate_identity_found": true,
+    "dev_mode_owner_found": true,
+    "dev_registration_found": true,
+    "rom_admin_identity_found": true
+  },
+  "production_sqlite_opened": false,
+  "refined_contract": [
+    {
+      "area": "dev_mode",
+      "contract": "DEV_MODE is an environment-controlled capability gate. Disabled DEV_MODE must prevent DEV handler registration or fail closed before any DEV side effect, according to the authoritative V1 registration path.",
+      "owners": [
+        "handlers/dev.py",
+        "main.py"
+      ],
+      "status": "REFINED"
+    },
+    {
+      "area": "identity",
+      "contract": "DEV_MODE and administrator identity are distinct dimensions. ROM_ADMIN_USER_IDS is evidence for administrative authorization; auction-specific identity sources are separate V1 policy and must not be silently merged without parity resolution.",
+      "owners": [
+        "config.py",
+        "systems/admin_crystal_credit_system.py",
+        "handlers/auction_house.py"
+      ],
+      "status": "REFINED_WITH_PARITY_REVIEW_REQUIRED"
+    },
+    {
+      "area": "single_guard",
+      "contract": "V2 requires one explicit authorization decision before command execution: capability enabled, caller authorized for the operation class, and command classified as allowed. Existing V1 local checks remain evidence, not automatically canonical duplicates.",
+      "owners": [
+        "handlers/dev.py",
+        "handlers/fatigue_artifact.py",
+        "handlers/guild.py",
+        "systems/premium_item_policy_system.py"
+      ],
+      "status": "TARGET_CONTRACT_REQUIRES_PARITY_RESOLUTION"
+    },
+    {
+      "area": "registration",
+      "contract": "The effective register_dev_handlers definition and main.py invocation chain must be identified by Python last-definition semantics. Earlier duplicate definitions are shadow candidates and cannot be treated as simultaneous canonical owners.",
+      "owners": [
+        "handlers/dev.py",
+        "main.py"
+      ],
+      "status": "REFINED_WITH_SHADOW_REVIEW_REQUIRED"
+    },
+    {
+      "area": "command_classes",
+      "contract": "Commands must be classified as read-only diagnostics, controlled reversible mutation, destructive reset, or administrative production operation. Test helpers in db_modules/dev_compat.py are not Telegram authorization policy by themselves.",
+      "owners": [
+        "handlers/dev.py",
+        "db_modules/dev_compat.py",
+        "systems/admin_crystal_credit_system.py"
+      ],
+      "status": "REFINED"
+    },
+    {
+      "area": "guard_order",
+      "contract": "Authorization must complete before database writes, item grants, currency changes, resets, notifications, or other observable side effects. Unauthorized and disabled paths must not partially mutate state.",
+      "owners": [
+        "handlers/dev.py",
+        "systems/admin_crystal_credit_system.py",
+        "handlers/auction_house.py"
+      ],
+      "status": "REFINED"
+    },
+    {
+      "area": "audit_and_idempotency",
+      "contract": "Where V1 provides durable audit or idempotency, V2 must preserve it. The audit must not invent a universal ledger for commands whose V1 owner has none; gaps require explicit parity resolution.",
+      "owners": [
+        "systems/admin_crystal_credit_system.py",
+        "handlers/dev.py"
+      ],
+      "status": "REFINED_WITH_PARITY_REVIEW_REQUIRED"
+    },
+    {
+      "area": "configuration_secrecy",
+      "contract": "Configuration variable names may be modeled, but .env values and identity lists must never be copied into reports, tests, documentation, or source defaults.",
+      "owners": [
+        "config.py",
+        "handlers/dev.py",
+        "handlers/auction_house.py"
+      ],
+      "status": "REFINED"
+    }
+  ],
+  "stage": "21.15.1a",
+  "status": "PASS",
+  "superseded_policy": [
+    "Keyword matches outside authoritative owners are not DEV authorization policy.",
+    "db_modules/dev_compat.py mutation helpers do not independently authorize callers.",
+    "A DEV_MODE check alone must not be assumed equivalent to an administrator identity check.",
+    "Earlier duplicate register_dev_handlers definitions are shadow candidates until exact resolution."
+  ],
+  "unresolved_for_parity": [
+    {
+      "key": "canonical_dev_identity_policy",
+      "reason": "Audit evidence shows DEV_MODE gating and separate administrator allowlists; parity resolution must decide which V1 commands are intentionally DEV_MODE-only and which require identity authorization."
+    },
+    {
+      "key": "effective_register_dev_handlers_chain",
+      "reason": "Duplicate or extended register_dev_handlers definitions require exact last-definition and invocation-order resolution."
+    },
+    {
+      "key": "command_inventory_and_risk_class",
+      "reason": "Each effective command must be mapped to read-only, controlled mutation, destructive reset, or administrative production operation from authoritative V1 code."
+    },
+    {
+      "key": "audit_requirements_per_command",
+      "reason": "Durable audit and idempotency exist for some administrative operations but are not proven universal for all DEV commands."
+    },
+    {
+      "key": "separate_auction_admin_policy",
+      "reason": "Auction administrator environment variables appear separate from ROM_ADMIN_USER_IDS and cannot be merged by refinement alone."
+    }
+  ]
+}
