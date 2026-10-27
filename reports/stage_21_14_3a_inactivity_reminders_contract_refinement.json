@@ -1,0 +1,5504 @@
+{
+  "audit_prerequisite": {
+    "decision": null,
+    "path": "reports/stage_21_14_3_existing_inactivity_reminders_audit.json",
+    "sha256": "1f8c3acc4e62db495d07485cf88511646317386d063e20b6080c2ee05a2de0c8",
+    "status": "PASS"
+  },
+  "decision": "GO_TO_PARITY_RESOLUTION",
+  "evidence_checks": {
+    "cycle_deduplication_evidenced": true,
+    "delivery_call_evidenced": true,
+    "last_activity_owner_evidenced": true,
+    "persistent_ledger_evidenced": true,
+    "seven_day_threshold_evidenced": true
+  },
+  "generated_at": "2026-10-27T18:17:06.928665+00:00",
+  "manual_verification": {
+    "reason": "Read-only semantic refinement; no runtime or gameplay mutation.",
+    "required": false
+  },
+  "prohibitions": [
+    "Do not invent reminder text, scheduler cadence, retry policy, opt-out policy, or batch limits.",
+    "Do not equate candidate selection with successful Telegram delivery.",
+    "Do not record a successful reminder before delivery succeeds.",
+    "Do not use process-local memory as the exact-once authority.",
+    "Do not connect V2 runtime, Telegram, or production persistence during refinement.",
+    "Do not open or manipulate game.db, game.db-wal, or game.db-shm."
+  ],
+  "refined_contract": [
+    {
+      "area": "threshold",
+      "contract": "A reminder becomes due only after seven full 24-hour days since canonical last_activity_at; equality at the threshold is due.",
+      "status": "CONFIRMED"
+    },
+    {
+      "area": "clock",
+      "contract": "Eligibility is evaluated against an explicit timezone-aware UTC instant. Unit tests must use an injected deterministic clock, never wall-clock sleeps.",
+      "status": "CONFIRMED"
+    },
+    {
+      "area": "cycle_identity",
+      "contract": "The inactivity cycle is anchored to the last_activity_at value used for eligibility. At most one successful reminder receipt may exist per user and cycle anchor.",
+      "status": "CONFIRMED"
+    },
+    {
+      "area": "new_cycle",
+      "contract": "A later canonical last_activity_at creates a distinct cycle after another seven-full-days interval; an earlier receipt must not suppress the new cycle.",
+      "status": "CONFIRMED"
+    },
+    {
+      "area": "persistence",
+      "contract": "Successful reminder delivery is represented by persistent inactivity_reminders evidence. In-memory flags are not authoritative across restarts.",
+      "status": "CONFIRMED"
+    },
+    {
+      "area": "delivery_boundary",
+      "contract": "Eligibility selection, Telegram delivery, and durable success receipt are distinct boundaries. A failed delivery must not be recorded as successfully sent.",
+      "status": "CONFIRMED"
+    },
+    {
+      "area": "scheduler_scope",
+      "contract": "This contract does not invent scheduler cadence, startup timing, batch size, retry backoff, concurrency locking, message text, or recipient opt-out semantics unless authoritative V1 evidence explicitly owns them.",
+      "status": "REFINED_BOUNDARY"
+    },
+    {
+      "area": "v2_scope",
+      "contract": "A later implementation may create API-ready domain/service ports only after parity resolution; Telegram runtime and production persistence wiring remain out of scope until explicitly authorized.",
+      "status": "REFINED_BOUNDARY"
+    }
+  ],
+  "schema_evidence": [
+    {
+      "excerpts": [
+        {
+          "line": 21,
+          "text": "c.executescript(\"\"\"CREATE TABLE IF NOT EXISTS inactivity_reminders(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,inactivity_started_at TEXT NOT NULL,eligible_at TEXT NOT NULL,attempted_at TEXT NOT NULL,delivery_status TEXT NOT NULL CHECK(delivery_status IN ('pending','sent','blocked','failed')),error_type TEXT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,UNIQUE(user_id,in"
+        },
+        {
+          "line": 26,
+          "text": "rows=c.execute(\"\"\"SELECT u.user_id,u.last_activity_at,u.character_name,u.character_class FROM users u WHERE u.last_activity_at IS NOT NULL AND TRIM(COALESCE(u.character_name,''))<>'' AND TRIM(COALESCE(u.character_class,''))<>'' AND u.last_activity_at<=? AND NOT EXISTS(SELECT 1 FROM inactivity_reminders r WHERE r.user_id=u.user_id AND r.inactivity_started_at=u.last_activity_at) ORDER BY u.user_id\"\""
+        },
+        {
+          "line": 35,
+          "text": "c.execute('BEGIN IMMEDIATE');row=c.execute(\"SELECT last_activity_at,character_name,character_class FROM users WHERE user_id=?\",(int(user_id),)).fetchone()"
+        },
+        {
+          "line": 36,
+          "text": "if not row or str(row['last_activity_at'] or '')!=started or not str(row['character_name'] or '').strip() or not str(row['character_class'] or '').strip():c.rollback();return {'success':False,'claimed':False,'reason':'stale_or_ineligible'}"
+        },
+        {
+          "line": 38,
+          "text": "stamp=_stamp(current);cur=c.execute(\"INSERT OR IGNORE INTO inactivity_reminders(user_id,inactivity_started_at,eligible_at,attempted_at,delivery_status,error_type,created_at,updated_at) VALUES(?,?,?,?, 'pending',NULL,?,?)\",(int(user_id),started,eligible,stamp,stamp,stamp));claimed=cur.rowcount==1;c.commit();return {'success':True,'claimed':claimed,'reason':'claimed' if claimed else 'already_attempt"
+        },
+        {
+          "line": 45,
+          "text": "cur=c.execute(\"UPDATE inactivity_reminders SET delivery_status=?,error_type=?,updated_at=? WHERE user_id=? AND inactivity_started_at=? AND delivery_status='pending'\",(status,str(error_type or '')[:120] or None,_stamp(now),int(user_id),str(inactivity_started_at)));c.commit();return {'success':cur.rowcount==1,'updated':cur.rowcount}"
+        },
+        {
+          "line": 50,
+          "text": "def process_inactivity_reminders(bot,now=None,db_path=None):"
+        },
+        {
+          "line": 53,
+          "text": "result['eligible']+=1;claim=claim_inactivity_reminder(row['user_id'],row['last_activity_at'],current,db_path)"
+        },
+        {
+          "line": 58,
+          "text": "finalize_inactivity_reminder(row['user_id'],row['last_activity_at'],status,error_type,current,db_path);result[status]+=1"
+        }
+      ],
+      "path": "systems/inactivity_reminder_system.py",
+      "sha256": "b07df95d3c6b3424cc79697bc55c194ec78a4fd86020e8027c638d8bc190d4cc"
+    },
+    {
+      "excerpts": [
+        {
+          "line": 12,
+          "text": "from systems.inactivity_reminder_system import process_inactivity_reminders, INACTIVITY_SCAN_INTERVAL_SECONDS"
+        },
+        {
+          "line": 490,
+          "text": "_result = process_inactivity_reminders(bot_instance)"
+        }
+      ],
+      "path": "systems/notifications.py",
+      "sha256": "d2649d55e5f59eec2f0de6198e575e1818b607fd93ff295fc8e7a554a0867590"
+    }
+  ],
+  "source_evidence": [
+    {
+      "constants": [
+        {
+          "line": 2,
+          "value": "Inactive design registry for future guild-resource uses.\n\nStage 18.8.1 intentionally activates no spending, buffs, storage or upgrades.\n"
+        }
+      ],
+      "excerpts": [
+        {
+          "line": 2,
+          "text": "\"\"\"Inactive design registry for future guild-resource uses."
+        }
+      ],
+      "keyword_hits": [
+        "inactive"
+      ],
+      "path": "data/guild_resource_policy.py",
+      "sha256": "fd398b7d3452f4a5ace0a3dec0da221911343d8888c1beef96d8f6d06e1beae2",
+      "symbols": []
+    },
+    {
+      "constants": [
+        {
+          "line": 109,
+          "value": 7
+        },
+        {
+          "line": 232,
+          "value": "Metadata exposes inactive quest "
+        }
+      ],
+      "excerpts": [
+        {
+          "line": 232,
+          "text": "raise ValueError(f\"Metadata exposes inactive quest {quest_number}\")"
+        }
+      ],
+      "keyword_hits": [
+        "inactive"
+      ],
+      "path": "data/story_quest_hierarchy.py",
+      "sha256": "37fb88d8e9fd960d797e21c06ec191b1b3efd598f8de7011f45aab74effde18e",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 188,
+          "name": "validate_story_hierarchy_metadata"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 446,
+          "text": "\"last_activity_at\": None,"
+        }
+      ],
+      "keyword_hits": [
+        "last_activity_at"
+      ],
+      "path": "db_modules/dev_compat.py",
+      "sha256": "c140072edbb338a6f7ca396d0b442f559962a8dc8d7aa1148f7e2d3314069741",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 289,
+          "name": "reset_hero_for_test"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 22,
+          "text": "bot.send_message(chat_id,build_account_menu_text_17_30_1_4(uid),reply_markup=account_menu_kb_17_30_1_4())"
+        },
+        {
+          "line": 26,
+          "text": "if not _registered(message.from_user.id):bot.send_message(message.chat.id,\"❗ Спочатку завершіть створення персонажа.\");return"
+        },
+        {
+          "line": 27,
+          "text": "bot.send_message(message.chat.id,ABOUT_GAME_INTRO,reply_markup=_about_menu_kb())"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/about_game.py",
+      "sha256": "1e1afdb05824563428956ff1ac24e2f3a1df9802dae383e1de47a0f0f8d17501",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 18,
+          "name": "_return_account_menu"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 23,
+          "name": "register_about_game_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 25,
+          "name": "open_about"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 29,
+          "text": "try:bot.send_message(int(target_user_id),_notification_text(result,reason));return {'attempted':True,'delivered':True}"
+        },
+        {
+          "line": 60,
+          "text": "_clear(message.from_user.id);bot.send_message(message.chat.id,'🛡️ Адміністративні операції з кристалами',reply_markup=_menu())"
+        },
+        {
+          "line": 63,
+          "text": "states[message.from_user.id]={'step':'target','operation':'credit' if message.text.startswith('➕') else 'debit'};bot.send_message(message.chat.id,'Введіть Telegram user ID отримувача:')"
+        },
+        {
+          "line": 66,
+          "text": "result=get_admin_adjustment_history(message.from_user.id,page=0,page_size=10);bot.send_message(message.chat.id,_history_text(result),reply_markup=_history_kb(result))"
+        },
+        {
+          "line": 71,
+          "text": "bot.send_message(message.chat.id,build_account_menu_text_17_30_1_4(message.from_user.id),reply_markup=account_menu_kb_17_30_1_4())"
+        },
+        {
+          "line": 99,
+          "text": "except Exception:bot.send_message(message.chat.id,'❌ Введіть цілий Telegram user ID.');return"
+        },
+        {
+          "line": 100,
+          "text": "state['step']='amount';bot.send_message(message.chat.id,'Введіть кількість від 1 до 10000:');return"
+        },
+        {
+          "line": 103,
+          "text": "except Exception:bot.send_message(message.chat.id,'❌ Введіть ціле число.');return"
+        },
+        {
+          "line": 104,
+          "text": "state['step']='reason';bot.send_message(message.chat.id,'Введіть обов’язкову причину операції:');return"
+        },
+        {
+          "line": 107,
+          "text": "if not preview.get('success'):_clear(uid);bot.send_message(message.chat.id,preview.get('message','Операцію не можна підготувати.'),reply_markup=_menu());return"
+        },
+        {
+          "line": 110,
+          "text": "bot.send_message(message.chat.id,f\"🛡️ Підтвердження\\n\\nОперація: {preview['operation']}\\nКористувач: {preview['target_user_id']}\\nЗапитано: {preview['requested_amount']} 💎\\nФактично: {preview['actual_amount']} 💎\\nБаланс: {preview['balance_before']} → {preview['balance_after']} 💎\\nПричина: {preview['reason']}{warning}\",reply_markup=k)"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/admin_crystal_credit.py",
+      "sha256": "c457739364fc3c576f943d5df524ad6b39d35077bccfec617824cf94642fd835",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 27,
+          "name": "_notify_target"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 56,
+          "name": "register_admin_crystal_credit_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 58,
+          "name": "open_admin"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 62,
+          "name": "choose"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 65,
+          "name": "history"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 68,
+          "name": "close"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 95,
+          "name": "input_router"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 361,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=markup)"
+        },
+        {
+          "line": 451,
+          "text": "bot.send_message("
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/attribute_allocation.py",
+      "sha256": "27721667fd4a8b44bcac2ed4e737baa3f5b9bbdbef5137ed861e2a774d793238",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 322,
+          "name": "_render"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 370,
+          "name": "register_attribute_allocation_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 406,
+          "name": "attribute_allocation_callback"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 242,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 250,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 258,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 268,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 279,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 290,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 301,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 312,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 491,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 506,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 515,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 524,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 535,
+          "text": "bot.send_message(message.chat.id, list_text, reply_markup=kb)"
+        },
+        {
+          "line": 546,
+          "text": "bot.send_message(message.chat.id, list_text, reply_markup=kb)"
+        },
+        {
+          "line": 554,
+          "text": "bot.send_message(message.chat.id, list_text, reply_markup=kb)"
+        },
+        {
+          "line": 559,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 570,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 583,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 595,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 606,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 615,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 633,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 640,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 655,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 823,
+          "text": "bot.send_message(message.chat.id, list_text, reply_markup=kb)"
+        },
+        {
+          "line": 836,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 851,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 860,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 869,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 902,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 919,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 930,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 946,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 961,
+          "text": "bot.send_message(message.chat.id, \"❌ Введіть кількість числом.\")"
+        },
+        {
+          "line": 973,
+          "text": "bot.send_message(message.chat.id, validation.get(\"message\", \"❌ Некоректна кількість.\"))"
+        },
+        {
+          "line": 984,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 996,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1016,
+          "text": "bot.send_message(message.chat.id, confirm_text, reply_markup=auction_sell_confirm_kb())"
+        },
+        {
+          "line": 1021,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1050,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1061,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1075,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1205,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 1216,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1231,
+          "text": "bot.send_message(message.chat.id, list_text, reply_markup=kb)"
+        },
+        {
+          "line": 1239,
+          "text": "bot.send_message(message.chat.id, list_text, reply_markup=kb)"
+        },
+        {
+          "line": 1245,
+          "text": "bot.send_message(message.chat.id, list_text, reply_markup=kb)"
+        },
+        {
+          "line": 1252,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1263,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1278,
+          "text": "bot.send_message(message.chat.id, list_text, reply_markup=kb)"
+        },
+        {
+          "line": 1286,
+          "text": "bot.send_message(message.chat.id, details.get(\"message\", \"⚠️ Лот недоступний.\"), reply_markup=auction_house_kb())"
+        },
+        {
+          "line": 1288,
+          "text": "bot.send_message(message.chat.id, details[\"text\"], reply_markup=auction_lot_view_kb())"
+        },
+        {
+          "line": 1295,
+          "text": "bot.send_message(message.chat.id, details.get(\"message\", \"⚠️ Лот недоступний.\"), reply_markup=auction_house_kb())"
+        },
+        {
+          "line": 1300,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1316,
+          "text": "bot.send_message(message.chat.id, details[\"text\"], reply_markup=auction_lot_view_kb())"
+        },
+        {
+          "line": 1319,
+          "text": "bot.send_message(message.chat.id, details.get(\"message\", \"⚠️ Лот недоступний.\"), reply_markup=auction_house_kb())"
+        },
+        {
+          "line": 1323,
+          "text": "bot.send_message(message.chat.id, \"Підтвердьте покупку або поверніться назад.\", reply_markup=auction_lot_view_kb())"
+        },
+        {
+          "line": 1332,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1339,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1352,
+          "text": "bot.send_message(message.chat.id, \"ℹ️ Стан покупки скинуто.\", reply_markup=auction_house_kb())"
+        },
+        {
+          "line": 1510,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1525,
+          "text": "bot.send_message(message.chat.id, build_auction_house_text(user_id), reply_markup=auction_house_kb())"
+        },
+        {
+          "line": 1530,
+          "text": "bot.send_message(message.chat.id, \"❌ Виставлення товару скасовано.\", reply_markup=auction_house_kb())"
+        },
+        {
+          "line": 1535,
+          "text": "bot.send_message(message.chat.id, \"Оберіть категорію кнопкою нижче.\", reply_markup=auction_sell_inline_category_kb_v1())"
+        },
+        {
+          "line": 1542,
+          "text": "bot.send_message(message.chat.id, list_text, reply_markup=kb)"
+        },
+        {
+          "line": 1552,
+          "text": "bot.send_message(message.chat.id, \"❌ Введіть кількість числом.\")"
+        },
+        {
+          "line": 1564,
+          "text": "bot.send_message(message.chat.id, validation.get(\"message\", \"❌ Некоректна кількість.\"))"
+        },
+        {
+          "line": 1573,
+          "text": "bot.send_message(message.chat.id, build_auction_stack_price_prompt_v2(validation[\"snapshot\"], quantity), reply_markup=types.ReplyKeyboardRemove())"
+        },
+        {
+          "line": 1580,
+          "text": "bot.send_message(message.chat.id, price_result.get(\"message\", \"❌ Некоректна ціна.\") + \"\\n\\nСпробуйте ще раз або напишіть ❌ Скасувати.\", reply_markup=auction_sell_confirm_kb())"
+        },
+        {
+          "line": 1592,
+          "text": "bot.send_message(message.chat.id, confirm_text, reply_markup=auction_sell_confirm_kb())"
+        },
+        {
+          "line": 1597,
+          "text": "bot.send_message(message.chat.id, \"Підтвердіть виставлення або скасуйте дію.\", reply_markup=auction_sell_confirm_kb())"
+        },
+        {
+          "line": 1622,
+          "text": "bot.send_message(message.chat.id, result.get(\"message\", \"❌ Не вдалося створити лот.\"), reply_markup=auction_house_kb())"
+        },
+        {
+          "line": 1625,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1639,
+          "text": "bot.send_message(message.chat.id, \"ℹ️ Стан виставлення товару скинуто.\", reply_markup=auction_house_kb())"
+        },
+        {
+          "line": 1650,
+          "text": "bot.send_message(call.message.chat.id, build_auction_house_text(user_id), reply_markup=auction_house_kb())"
+        },
+        {
+          "line": 1666,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 1686,
+          "text": "bot.send_message(call.message.chat.id, validation.get(\"message\", \"❌ Предмет не можна виставити.\"), reply_markup=auction_house_kb())"
+        },
+        {
+          "line": 1687,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 1699,
+          "text": "bot.send_message(call.message.chat.id, build_auction_sell_price_prompt(snapshot), reply_markup=types.ReplyKeyboardRemove())"
+        },
+        {
+          "line": 1706,
+          "text": "bot.send_message(call.message.chat.id, snapshot_result.get(\"message\", \"❌ Предмет не знайдено.\"), reply_markup=auction_house_kb())"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/auction_house.py",
+      "sha256": "9cd9b0ccccae8ea2f0bfb24abdc6428ae5691ba78a33a60d9b3fed84c4215f7a",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 237,
+          "name": "register_auction_house_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 482,
+          "name": "_auction_register_sell_equipment_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 811,
+          "name": "_auction_open_item_list_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 826,
+          "name": "_auction_register_sell_all_handlers_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1194,
+          "name": "_auction_register_buy_lot_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1502,
+          "name": "_auction_register_sell_inline_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1793,
+          "name": "_auction_register_buy_inline_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1930,
+          "name": "_auction_send_sell_review_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1960,
+          "name": "_auction_register_sell_review_before_price_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2273,
+          "name": "_auction_register_my_lots_cancel_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2469,
+          "name": "_auction_register_unclaimed_items_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2664,
+          "name": "_auction_register_completed_sales_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2917,
+          "name": "_auction_register_buy_filters_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3144,
+          "name": "_auction_register_back_to_menu_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3322,
+          "name": "_auction_register_reply_back_to_house_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3369,
+          "name": "_auction_register_buy_category_keyboard_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3596,
+          "name": "_auction_send_sell_category_listing_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3648,
+          "name": "_auction_register_sell_category_keyboard_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3724,
+          "name": "_auction_register_reply_back_to_house_restore_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3941,
+          "name": "_auction_register_section_back_keyboard_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4159,
+          "name": "_auction_show_search_results_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4177,
+          "name": "_auction_register_buy_search_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4611,
+          "name": "_auction_register_history_market_prices_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4725,
+          "name": "_auction_open_history_screen_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4829,
+          "name": "_auction_register_expiration_cleanup_handlers_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4920,
+          "name": "_auction_register_stabilization_diagnostics_handlers_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5025,
+          "name": "_auction_register_admin_command_guard_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 240,
+          "name": "show_auction_house"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 249,
+          "name": "auction_back_to_city"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 257,
+          "name": "auction_buy_placeholder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 267,
+          "name": "auction_sell_placeholder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 278,
+          "name": "auction_my_lots_placeholder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 289,
+          "name": "auction_unclaimed_items_placeholder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 300,
+          "name": "auction_sold_placeholder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 311,
+          "name": "auction_history_placeholder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 484,
+          "name": "auction_sell_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 498,
+          "name": "auction_sell_state_router_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 828,
+          "name": "auction_sell_start_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 843,
+          "name": "auction_sell_state_router_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1197,
+          "name": "auction_buy_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1208,
+          "name": "auction_buy_state_router_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1504,
+          "name": "auction_sell_start_inline_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1517,
+          "name": "auction_sell_inline_state_message_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1642,
+          "name": "auction_inline_menu_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1653,
+          "name": "auction_sell_inline_page_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1669,
+          "name": "auction_sell_inline_item_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1796,
+          "name": "auction_buy_start_inline_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1803,
+          "name": "auction_buy_inline_page_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1814,
+          "name": "auction_buy_inline_lot_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1840,
+          "name": "auction_buy_inline_confirm_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1863,
+          "name": "auction_buy_inline_execute_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1962,
+          "name": "auction_sell_start_review_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1973,
+          "name": "auction_sell_review_message_router_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2125,
+          "name": "auction_sell_review_price_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2155,
+          "name": "auction_sell_review_quantity_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2276,
+          "name": "auction_my_lots_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2282,
+          "name": "auction_my_lots_page_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2293,
+          "name": "auction_my_lot_view_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2319,
+          "name": "auction_my_lot_cancel_confirm_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2349,
+          "name": "auction_my_lot_cancel_do_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2472,
+          "name": "auction_unclaimed_items_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2478,
+          "name": "auction_unclaimed_items_page_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2489,
+          "name": "auction_unclaimed_item_view_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2515,
+          "name": "auction_unclaimed_claim_confirm_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2545,
+          "name": "auction_unclaimed_claim_do_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2667,
+          "name": "auction_completed_sales_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2673,
+          "name": "auction_completed_sales_page_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2684,
+          "name": "auction_completed_sale_view_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2710,
+          "name": "auction_completed_sale_claim_confirm_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2740,
+          "name": "auction_completed_sale_claim_do_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2920,
+          "name": "auction_buy_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2927,
+          "name": "auction_buy_category_selected_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2941,
+          "name": "auction_buy_categories_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2949,
+          "name": "auction_buy_page_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2969,
+          "name": "auction_buy_lot_view_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2995,
+          "name": "auction_buy_confirm_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3027,
+          "name": "auction_buy_do_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3147,
+          "name": "auction_back_to_menu_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3325,
+          "name": "auction_reply_back_to_house_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3372,
+          "name": "auction_buy_category_selected_clean_keyboard_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3416,
+          "name": "auction_buy_categories_restore_reply_keyboard_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3651,
+          "name": "auction_sell_start_categories_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3680,
+          "name": "auction_sell_back_to_categories_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3728,
+          "name": "auction_reply_back_to_house_restore_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3944,
+          "name": "auction_my_lots_start_section_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3957,
+          "name": "auction_unclaimed_items_start_section_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3970,
+          "name": "auction_completed_sales_start_section_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3983,
+          "name": "auction_history_start_section_cleanup_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4180,
+          "name": "auction_search_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4190,
+          "name": "auction_search_new_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4200,
+          "name": "auction_search_back_to_categories_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4210,
+          "name": "auction_search_query_router_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4249,
+          "name": "auction_search_page_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4269,
+          "name": "auction_search_lot_view_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4294,
+          "name": "auction_search_confirm_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4325,
+          "name": "auction_search_do_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4614,
+          "name": "auction_history_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4625,
+          "name": "auction_history_page_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4643,
+          "name": "auction_market_price_search_start_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4653,
+          "name": "auction_market_price_back_history_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4660,
+          "name": "auction_market_price_search_query_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4687,
+          "name": "auction_lot_price_history_callback_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4832,
+          "name": "auction_cleanup_command_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4850,
+          "name": "auction_debug_command_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4923,
+          "name": "auction_sanity_command_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 4929,
+          "name": "auction_fix_command_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5028,
+          "name": "auction_sanity_admin_guard_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5036,
+          "name": "auction_debug_admin_guard_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5044,
+          "name": "auction_fix_admin_guard_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 5070,
+          "name": "auction_cleanup_admin_guard_v1"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 35,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 77,
+          "text": "bot.send_message(chat_id, text, reply_markup=kb)"
+        },
+        {
+          "line": 125,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 139,
+          "text": "bot.send_message(call.message.chat.id, \"❌ Не вдалося визначити предмет для ремонту.\")"
+        },
+        {
+          "line": 151,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 169,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 185,
+          "text": "bot.send_message(call.message.chat.id, \"❌ Не вдалося визначити предмет для ремонту.\")"
+        },
+        {
+          "line": 195,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 208,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 322,
+          "text": "bot.send_message(chat_id, text, reply_markup=kb)"
+        },
+        {
+          "line": 374,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 386,
+          "text": "bot.send_message(call.message.chat.id, \"❌ Не вдалося визначити предмет для ремонту.\")"
+        },
+        {
+          "line": 399,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 411,
+          "text": "bot.send_message(call.message.chat.id, _blacksmith_result_message_v3(result), reply_markup=blacksmith_kb())"
+        },
+        {
+          "line": 422,
+          "text": "bot.send_message(call.message.chat.id, \"❌ Не вдалося визначити предмет для ремонту.\")"
+        },
+        {
+          "line": 426,
+          "text": "bot.send_message(call.message.chat.id, _blacksmith_result_message_v3(result), reply_markup=blacksmith_kb())"
+        },
+        {
+          "line": 433,
+          "text": "bot.send_message(call.message.chat.id, \"❌ Ремонт скасовано.\", reply_markup=blacksmith_kb())"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/blacksmith.py",
+      "sha256": "8a6a64840f8b5a600d19d632114736af18824a02fd44b0651237d389e2897ad7",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 23,
+          "name": "register_blacksmith_repair_hotfix_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 74,
+          "name": "_blacksmith_show_repair_menu_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 112,
+          "name": "_blacksmith_register_repair_confirmation_handlers_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 319,
+          "name": "_blacksmith_show_repair_menu_v3"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 362,
+          "name": "_blacksmith_register_repair_confirmation_handlers_v3"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 31,
+          "name": "blacksmith_repair_hotfix"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 115,
+          "name": "blacksmith_repair_all_confirm_prompt_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 132,
+          "name": "blacksmith_repair_prompt_one_v3_confirm_prompt_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 158,
+          "name": "blacksmith_repair_all_do_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 178,
+          "name": "blacksmith_repair_prompt_one_v3_do_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 204,
+          "name": "blacksmith_repair_cancel_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 365,
+          "name": "blacksmith_repair_all_confirm_prompt_v3"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 381,
+          "name": "blacksmith_repair_prompt_one_v3_confirm_prompt_v3"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 406,
+          "name": "blacksmith_repair_all_do_v3"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 415,
+          "name": "blacksmith_repair_prompt_one_v3_do_v3"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 430,
+          "name": "blacksmith_repair_cancel_v3"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 115,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 130,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 148,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 164,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 178,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 184,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 190,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 209,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 215,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 221,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 230,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 333,
+          "text": "bot.send_message(chat_id, text, reply_markup=kb)"
+        },
+        {
+          "line": 336,
+          "text": "bot.send_message(chat_id, f\"⚠️ Не вдалося оновити список ремонту: {error}\")"
+        },
+        {
+          "line": 360,
+          "text": "bot.send_message(call.message.chat.id, \"❌ Не вдалося визначити предмет для ремонту.\")"
+        },
+        {
+          "line": 372,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=_confirm_one_kb(inventory_id))"
+        },
+        {
+          "line": 384,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=_confirm_all_kb())"
+        },
+        {
+          "line": 396,
+          "text": "bot.send_message(call.message.chat.id, \"❌ Не вдалося визначити предмет для ремонту.\")"
+        },
+        {
+          "line": 407,
+          "text": "bot.send_message(call.message.chat.id, f\"❌ Помилка ремонту: {error}\")"
+        },
+        {
+          "line": 410,
+          "text": "bot.send_message(call.message.chat.id, f\"❌ Помилка ремонту: {error}\")"
+        },
+        {
+          "line": 413,
+          "text": "bot.send_message(call.message.chat.id, _result_message(result, \"✅ Предмет відремонтовано.\"))"
+        },
+        {
+          "line": 430,
+          "text": "bot.send_message(call.message.chat.id, f\"❌ Помилка ремонту: {error}\")"
+        },
+        {
+          "line": 433,
+          "text": "bot.send_message(call.message.chat.id, f\"❌ Помилка ремонту: {error}\")"
+        },
+        {
+          "line": 436,
+          "text": "bot.send_message(call.message.chat.id, _result_message(result, \"✅ Одягнене спорядження відремонтовано.\"))"
+        },
+        {
+          "line": 444,
+          "text": "bot.send_message(call.message.chat.id, \"❌ Ремонт скасовано.\")"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/blacksmith_repair_confirm.py",
+      "sha256": "16803c5d5bad701d626846156e5942b8a6edd64dc36aeb758c4ba790c44414c0",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 91,
+          "name": "register_blacksmith_repair_confirmation_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 319,
+          "name": "_brc_show_repair_menu_after_action_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 341,
+          "name": "register_blacksmith_repair_confirmation_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 106,
+          "name": "blacksmith_repair_prompt_one"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 139,
+          "name": "blacksmith_repair_prompt_all"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 155,
+          "name": "blacksmith_repair_confirm_one"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 196,
+          "name": "blacksmith_repair_confirm_all"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 227,
+          "name": "blacksmith_repair_cancel"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 353,
+          "name": "blacksmith_repair_prompt_one_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 375,
+          "name": "blacksmith_repair_prompt_all_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 387,
+          "name": "blacksmith_repair_confirm_one_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 417,
+          "name": "blacksmith_repair_confirm_all_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 440,
+          "name": "blacksmith_repair_cancel_v1"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 494,
+          "text": "bot.send_message(chat_id, 'Оберіть дію зі списку нижче.', reply_markup=trade_district_submenu_kb_17_11_1())"
+        },
+        {
+          "line": 502,
+          "text": "bot.send_message(message.chat.id, build_city_text(user_id), reply_markup=city_kb())"
+        },
+        {
+          "line": 510,
+          "text": "bot.send_message(message.chat.id, build_city_text(user_id), reply_markup=city_kb())"
+        },
+        {
+          "line": 515,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 522,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 528,
+          "text": "bot.send_message(message.chat.id, build_main_menu_text(user_id), reply_markup=main_kb())"
+        },
+        {
+          "line": 534,
+          "text": "bot.send_message(message.chat.id, build_city_text(user_id), reply_markup=city_kb())"
+        },
+        {
+          "line": 539,
+          "text": "bot.send_message(message.chat.id, build_trade_district_text(user_id), reply_markup=trader_kb())"
+        },
+        {
+          "line": 546,
+          "text": "bot.send_message(message.chat.id, build_craft_district_text(user_id), reply_markup=craft_kb())"
+        },
+        {
+          "line": 551,
+          "text": "bot.send_message(message.chat.id, build_guild_district_text(user_id), reply_markup=guild_kb())"
+        },
+        {
+          "line": 555,
+          "text": "bot.send_message(message.chat.id, build_townhall_text(), reply_markup=townhall_kb())"
+        },
+        {
+          "line": 559,
+          "text": "bot.send_message(message.chat.id, build_tavern_text(), reply_markup=tavern_kb())"
+        },
+        {
+          "line": 564,
+          "text": "bot.send_message(message.chat.id, build_trade_district_text(user_id), reply_markup=trader_kb())"
+        },
+        {
+          "line": 570,
+          "text": "bot.send_message(message.chat.id, build_craft_district_text(user_id), reply_markup=craft_kb())"
+        },
+        {
+          "line": 575,
+          "text": "bot.send_message(message.chat.id, build_guild_district_text(user_id), reply_markup=guild_kb())"
+        },
+        {
+          "line": 582,
+          "text": "bot.send_message(message.chat.id, '💰 У тебе немає сірого луту для продажу.', reply_markup=trader_kb())"
+        },
+        {
+          "line": 588,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=trader_kb())"
+        },
+        {
+          "line": 595,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 603,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 613,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 623,
+          "text": "bot.send_message(call.message.chat.id, result['message'], reply_markup=trade_district_submenu_kb_17_11_1())"
+        },
+        {
+          "line": 625,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 632,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 639,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 647,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 658,
+          "text": "bot.send_message(call.message.chat.id, result['message'], reply_markup=trade_district_submenu_kb_17_11_1())"
+        },
+        {
+          "line": 661,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 670,
+          "text": "bot.send_message(call.message.chat.id, result['message'], reply_markup=trade_district_submenu_kb_17_11_1())"
+        },
+        {
+          "line": 672,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 681,
+          "text": "bot.send_message(call.message.chat.id, result['message'], reply_markup=trade_district_submenu_kb_17_11_1())"
+        },
+        {
+          "line": 683,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 689,
+          "text": "bot.send_message(call.message.chat.id, build_trade_district_text(user_id), reply_markup=trader_kb())"
+        },
+        {
+          "line": 695,
+          "text": "bot.send_message(call.message.chat.id, build_trade_district_text(user_id), reply_markup=trader_kb())"
+        },
+        {
+          "line": 702,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=alchemist_reply_kb_17_19_3_1())"
+        },
+        {
+          "line": 727,
+          "text": "bot.send_message(call.message.chat.id, 'Введи кількість зіль для купівлі, від 1 до 999.')"
+        },
+        {
+          "line": 731,
+          "text": "bot.send_message(call.message.chat.id, result['message'], reply_markup=alchemist_reply_kb_17_19_3_1())"
+        },
+        {
+          "line": 742,
+          "text": "bot.send_message(call.message.chat.id, 'Введи кількість зіль для продажу.')"
+        },
+        {
+          "line": 748,
+          "text": "bot.send_message(call.message.chat.id, result['message'], reply_markup=alchemist_reply_kb_17_19_3_1())"
+        },
+        {
+          "line": 752,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 759,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 766,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 775,
+          "text": "bot.send_message(message.chat.id, '❌ Введи ціле число.')"
+        },
+        {
+          "line": 778,
+          "text": "bot.send_message(message.chat.id, '❌ Кількість має бути більшою за нуль.')"
+        },
+        {
+          "line": 786,
+          "text": "bot.send_message(message.chat.id, f'❌ Доступно для продажу лише {available}.')"
+        },
+        {
+          "line": 789,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 797,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 800,
+          "text": "bot.send_message(message.chat.id, '⚒️ Ти підійшов до Коваля.', reply_markup=blacksmith_kb())"
+        },
+        {
+          "line": 802,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 809,
+          "text": "bot.send_message(call.message.chat.id, result['message'], reply_markup=blacksmith_kb())"
+        },
+        {
+          "line": 811,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 819,
+          "text": "bot.send_message(call.message.chat.id, result['message'], reply_markup=blacksmith_kb())"
+        },
+        {
+          "line": 821,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 826,
+          "text": "bot.send_message(message.chat.id, build_main_menu_text(user_id), reply_markup=main_kb())"
+        },
+        {
+          "line": 832,
+          "text": "bot.send_message(message.chat.id, build_blacksmith_repair_text(message.from_user.id), reply_markup=blacksmith_kb())"
+        },
+        {
+          "line": 864,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 1310,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1323,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1332,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1342,
+          "text": "bot.send_message(message.chat.id, build_townhall_text(), reply_markup=townhall_kb())"
+        },
+        {
+          "line": 1346,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1354,
+          "text": "bot.send_message(message.chat.id, build_tavern_text(), reply_markup=tavern_kb())"
+        },
+        {
+          "line": 1365,
+          "text": "bot.send_message(message.chat.id, build_account_menu_text_17_30_1_4(message.from_user.id), reply_markup=account_menu_kb_17_30_1_4())"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/city.py",
+      "sha256": "a73373e0bf4ae90e2d7d4e6c7b417847d401c6b4555514431a3acfed3836b0c3",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 492,
+          "name": "send_trade_district_submenu_17_11_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 496,
+          "name": "register_city_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 828,
+          "name": "register_blacksmith_repair_button_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 858,
+          "name": "register_blacksmith_repair_button_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1305,
+          "name": "register_city_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 500,
+          "name": "show_city"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 505,
+          "name": "look_around"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 532,
+          "name": "back_to_city"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 537,
+          "name": "show_trade_district"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 544,
+          "name": "show_craft_district"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 549,
+          "name": "show_guild_district"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 554,
+          "name": "show_townhall"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 558,
+          "name": "show_tavern"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 562,
+          "name": "back_to_trade_district_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 567,
+          "name": "back_to_craft_district_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 573,
+          "name": "back_to_guild_district_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 578,
+          "name": "sell_trash"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 591,
+          "name": "show_sell_equipment"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 598,
+          "name": "sell_equipment_page"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 606,
+          "name": "sell_equipment_confirm"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 616,
+          "name": "sell_equipment_do"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 628,
+          "name": "show_common_equipment_shop"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 635,
+          "name": "common_equipment_back_to_slots"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 642,
+          "name": "common_equipment_slot_choice"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 650,
+          "name": "preview_common_equipment"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 664,
+          "name": "confirm_common_shop_purchase"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 675,
+          "name": "cancel_common_shop_purchase"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 686,
+          "name": "back_to_trade_district"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 692,
+          "name": "back_to_trader_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 698,
+          "name": "show_alchemist"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 707,
+          "name": "alchemist_trade_17_19_3"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 755,
+          "name": "alchemist_buy_message_17_19_3_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 762,
+          "name": "alchemist_sell_message_17_19_3_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 769,
+          "name": "alchemist_exact_quantity_17_19_3"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 792,
+          "name": "show_blacksmith"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 805,
+          "name": "repair_all"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 814,
+          "name": "repair_one"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 824,
+          "name": "back_to_main"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 831,
+          "name": "blacksmith_repair_button_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 861,
+          "name": "blacksmith_repair_button_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1307,
+          "name": "show_story_elder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1317,
+          "name": "show_story_mercenary_head"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1331,
+          "name": "show_story_bartender"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1341,
+          "name": "back_to_story_townhall"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1345,
+          "name": "back_to_story_mercenary_guild"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1353,
+          "name": "back_to_story_tavern"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1359,
+          "name": "open_main_menu_17_30_1_3"
+        }
+      ]
+    },
+    {
+      "constants": [
+        {
+          "line": 987,
+          "value": 7
+        }
+      ],
+      "excerpts": [
+        {
+          "line": 115,
+          "text": "original_send_message = bot.send_message"
+        },
+        {
+          "line": 117,
+          "text": "def safe_send_message(chat_id, *args, **kwargs):"
+        },
+        {
+          "line": 125,
+          "text": "return original_send_message(chat_id, *args, **kwargs)"
+        },
+        {
+          "line": 137,
+          "text": "bot.send_message = safe_send_message"
+        },
+        {
+          "line": 1967,
+          "text": "bot.send_message(chat_id, STALE_COMBAT_TEXT, reply_markup=main_kb())"
+        },
+        {
+          "line": 2084,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2095,
+          "text": "bot.send_message(chat_id, story_drop_message)"
+        },
+        {
+          "line": 2112,
+          "text": "bot.send_message(chat_id, reward_message)"
+        },
+        {
+          "line": 2118,
+          "text": "bot.send_message(chat_id, story_skip_message)"
+        },
+        {
+          "line": 2140,
+          "text": "bot.send_message(message.chat.id, \"⚠️ Виклик сюжетного боса зараз недоступний.\", reply_markup=main_kb())"
+        },
+        {
+          "line": 2143,
+          "text": "bot.send_message(message.chat.id, \"⚔️ Спочатку заверши поточний бій.\", reply_markup=combat_placeholder_kb())"
+        },
+        {
+          "line": 2147,
+          "text": "bot.send_message(message.chat.id,\"❗ Спочатку натисни /start\",reply_markup=main_kb());return"
+        },
+        {
+          "line": 2150,
+          "text": "bot.send_message(message.chat.id,\"😴 Здоров’я занадто низьке для виклику боса.\",reply_markup=main_kb());return"
+        },
+        {
+          "line": 2153,
+          "text": "bot.send_message(message.chat.id,\"⚠️ Ціль сюжетного квесту не відповідає босу цієї локації.\",reply_markup=main_kb());return"
+        },
+        {
+          "line": 2163,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2168,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2182,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2198,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2209,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2227,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2244,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2261,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2345,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2351,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2363,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2369,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2380,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2399,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2579,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2641,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2652,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2666,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2673,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2689,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2712,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2723,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2739,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2748,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2989,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3060,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3106,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3130,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3153,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3192,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3208,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3219,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3235,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3247,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3519,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3600,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3611,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3624,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3631,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3644,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3656,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3671,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3687,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3703,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3744,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3756,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3775,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3789,
+          "text": "bot.send_message(call.message.chat.id, STALE_COMBAT_TEXT, reply_markup=main_kb())"
+        },
+        {
+          "line": 3809,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3821,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3833,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3853,
+          "text": "original_send_message = bot.send_message"
+        },
+        {
+          "line": 3854,
+          "text": "bot._rom_original_send_message = original_send_message"
+        },
+        {
+          "line": 3856,
+          "text": "def safe_send_message(chat_id, text, *args, **kwargs):"
+        },
+        {
+          "line": 3858,
+          "text": "return original_send_message(chat_id, text, *args, **kwargs)"
+        },
+        {
+          "line": 3894,
+          "text": "PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f\"⚠️ Telegram rate limit 429. Waiting {retry_after + 1}s before retry send_message.\")"
+        },
+        {
+          "line": 3896,
+          "text": "return original_send_message(chat_id, text, *args, **kwargs)"
+        },
+        {
+          "line": 3898,
+          "text": "PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'error', f\"❌ send_message retry failed after 429: {retry_error}\")"
+        },
+        {
+          "line": 3901,
+          "text": "bot.send_message = safe_send_message"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/combat.py",
+      "sha256": "325e99a1825cec61bae628f878fdf1c8f04a2f4cc62fd38bd87329d8d8e9b409",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 110,
+          "name": "_install_combat_safe_send_11_3_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1964,
+          "name": "process_victory"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2125,
+          "name": "register_combat_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3849,
+          "name": "patch_combat_bot_rate_limit_safe_send"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 117,
+          "name": "safe_send_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2128,
+          "name": "call_active_story_boss"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2177,
+          "name": "hunt"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2358,
+          "name": "combat_placeholder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2376,
+          "name": "attack"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2648,
+          "name": "show_skills"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2685,
+          "name": "use_skill_text_button"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3099,
+          "name": "combat_attack_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3123,
+          "name": "combat_potion_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3146,
+          "name": "combat_flee_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3184,
+          "name": "combat_use_skill_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3607,
+          "name": "choose_potion_in_combat"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3639,
+          "name": "combat_back"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3663,
+          "name": "use_selected_potion_in_combat"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3752,
+          "name": "escape"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3782,
+          "name": "escape_yes"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3816,
+          "name": "escape_no"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3856,
+          "name": "safe_send_message"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 190,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 198,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 213,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 223,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 238,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 256,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 264,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 278,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 286,
+          "text": "bot.send_message(call.message.chat.id, reward_message)"
+        },
+        {
+          "line": 290,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 304,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 312,
+          "text": "bot.send_message("
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/contracts.py",
+      "sha256": "18eef1f5efa0ebc062a9d49e6bef00aebadb79c0702c2041c865e356a14dc8d6",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 184,
+          "name": "register_contract_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 187,
+          "name": "show_contracts"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 205,
+          "name": "take_contract"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 271,
+          "name": "claim_contract"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 297,
+          "name": "abandon_contract"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 88,
+          "text": "bot.send_message(message.chat.id,f\"💎 Магазин кристалів\\n\\nБаланс: {get_crystal_balance(message.from_user.id)} 💎\\n\\nОберіть предмет:\",reply_markup=_shop_kb())"
+        },
+        {
+          "line": 93,
+          "text": "bot.send_message(message.chat.id,build_account_menu_text_17_30_1_4(message.from_user.id),reply_markup=account_menu_kb_17_30_1_4())"
+        },
+        {
+          "line": 99,
+          "text": "bot.send_message(message.chat.id,p.get('message','🎒 Розширення недоступне.'),reply_markup=_shop_kb());return"
+        },
+        {
+          "line": 101,
+          "text": "bot.send_message(message.chat.id,f\"🎒 Розширення сумки\\n\\nПоточна місткість: {p['current_capacity']} слотів\\nПісля розширення: {p['next_capacity']} слотів\\nВартість: {p['price']} 💎\\nБаланс: {p['balance']} 💎\",reply_markup=kb)"
+        },
+        {
+          "line": 133,
+          "text": "sent=bot.send_message(message.chat.id,f\"{v['name']}\\nЦіна: {v['price']} 💎\\nКількість: 1\\nРазом: {v['price']} 💎\",reply_markup=_qty_kb(iid,1))"
+        },
+        {
+          "line": 155,
+          "text": "msg=bot.send_message(call.message.chat.id,'✍️ Введіть кількість від 1 до 999:');bot.register_next_step_handler(msg,manual_quantity,iid,call.message.message_id);bot.answer_callback_query(call.id);return"
+        },
+        {
+          "line": 175,
+          "text": "except Exception:bot.send_message(message.chat.id,'❌ Введіть ціле число від 1 до 999.');return"
+        },
+        {
+          "line": 176,
+          "text": "if qty<1 or qty>999:bot.send_message(message.chat.id,'❌ Кількість має бути від 1 до 999.');return"
+        },
+        {
+          "line": 179,
+          "text": "bot.send_message(message.chat.id,'Це меню покупки вже неактивне.');return"
+        },
+        {
+          "line": 180,
+          "text": "v=CRYSTAL_SHOP_CATALOG[iid];sent=bot.send_message(message.chat.id,f\"{v['name']}\\nЦіна: {v['price']} 💎\\nКількість: {qty}\\nРазом: {v['price']*qty} 💎\",reply_markup=_qty_kb(iid,qty))"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/crystal_shop.py",
+      "sha256": "d0516012b4a094e70736058ca638687b2ef58ecb5122fc09c6cbaaa8932130d2",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 84,
+          "name": "register_crystal_shop_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 86,
+          "name": "shop"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 90,
+          "name": "back"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 95,
+          "name": "bag_expansion"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 129,
+          "name": "choose"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 136,
+          "name": "callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 173,
+          "name": "manual_quantity"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 76,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 84,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 98,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 106,
+          "text": "bot.send_message("
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/daily.py",
+      "sha256": "520dcecfa0564b6e5b3e9c0f42167454150c71011a20cd538c4d1d1546f6857d",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 67,
+          "name": "register_daily_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 70,
+          "name": "show_daily_quest"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 91,
+          "name": "claim_daily_reward"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 199,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 215,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 228,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 244,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 265,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 280,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 298,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 317,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 346,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 365,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 396,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 418,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 434,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 443,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 462,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 476,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 495,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 521,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 536,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 556,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 578,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 593,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 613,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 644,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 663,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 693,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 710,
+          "text": "bot.send_message(message.chat.id, request[\"message\"], reply_markup=main_kb())"
+        },
+        {
+          "line": 717,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 733,
+          "text": "bot.send_message(message.chat.id, request[\"message\"], reply_markup=main_kb())"
+        },
+        {
+          "line": 740,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 756,
+          "text": "bot.send_message(message.chat.id, request[\"message\"], reply_markup=main_kb())"
+        },
+        {
+          "line": 759,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 775,
+          "text": "bot.send_message(message.chat.id, request[\"message\"], reply_markup=main_kb())"
+        },
+        {
+          "line": 782,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 802,
+          "text": "bot.send_message(message.chat.id,parsed[\"message\"],reply_markup=main_kb()); return"
+        },
+        {
+          "line": 805,
+          "text": "bot.send_message(message.chat.id,format_universal_drop_simulation(result),reply_markup=main_kb())"
+        },
+        {
+          "line": 816,
+          "text": "bot.send_message(message.chat.id,"
+        },
+        {
+          "line": 821,
+          "text": "bot.send_message(message.chat.id, format_rune_drop_simulation(result), reply_markup=main_kb())"
+        },
+        {
+          "line": 833,
+          "text": "bot.send_message(message.chat.id,\"❌ Формат: /dev_pvp warrior knight [trials]\\nКласи: warrior, knight, scout, rogue, mage, priest\"); return"
+        },
+        {
+          "line": 838,
+          "text": "bot.send_message(message.chat.id,format_matchup(result))"
+        },
+        {
+          "line": 852,
+          "text": "bot.send_message(message.chat.id,\"\\n\".join(lines),parse_mode=\"HTML\")"
+        },
+        {
+          "line": 862,
+          "text": "bot.send_message(message.chat.id,\"🔬 Запущено PvP policy audit. Зачекайте на результат.\")"
+        },
+        {
+          "line": 865,
+          "text": "bot.send_message(message.chat.id,format_summary(result)+f\"\\n\\nJSON: {path.name}\",parse_mode=\"HTML\")"
+        },
+        {
+          "line": 919,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 961,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 977,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1067,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1075,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1086,
+          "text": "bot.send_message(message.chat.id,f\"💎 Кристали: {balance}\\n🆔 Account ID: {message.from_user.id}\",reply_markup=main_kb())"
+        },
+        {
+          "line": 1095,
+          "text": "bot.send_message(message.chat.id,\"❌ Формат: /crystal_credit N\",reply_markup=main_kb());return"
+        },
+        {
+          "line": 1098,
+          "text": "bot.send_message(message.chat.id,text,reply_markup=main_kb())"
+        },
+        {
+          "line": 1107,
+          "text": "bot.send_message(message.chat.id,\"❌ Формат: /crystal_debit N\",reply_markup=main_kb());return"
+        },
+        {
+          "line": 1110,
+          "text": "bot.send_message(message.chat.id,text,reply_markup=main_kb())"
+        },
+        {
+          "line": 1120,
+          "text": "bot.send_message(message.chat.id,\"\\n\".join(lines),reply_markup=main_kb())"
+        },
+        {
+          "line": 1129,
+          "text": "bot.send_message(message.chat.id,\"❌ Формат: /dev_premium_item item_id [quantity]\",reply_markup=main_kb());return"
+        },
+        {
+          "line": 1132,
+          "text": "bot.send_message(message.chat.id,text,reply_markup=main_kb())"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/dev.py",
+      "sha256": "c161907aa3d965cbb3f2ce50d1b6f46c181027ff7a3b517ae852a026b5827352",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 184,
+          "name": "register_dev_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1058,
+          "name": "register_dev_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 191,
+          "name": "give_item"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 257,
+          "name": "set_level"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 291,
+          "name": "reset_level"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 309,
+          "name": "reset_hero"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 357,
+          "name": "progress"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 408,
+          "name": "set_energy"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 454,
+          "name": "set_gold"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 487,
+          "name": "generate_drop"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 589,
+          "name": "my_id"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 605,
+          "name": "dev_armor"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 655,
+          "name": "dev_weapon"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 705,
+          "name": "dev_rune"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 727,
+          "name": "dev_firius"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 750,
+          "name": "dev_extractor"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 769,
+          "name": "dev_extractor_perfect"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 797,
+          "name": "dev_drop_sim"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 810,
+          "name": "dev_rune_drop_sim"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 828,
+          "name": "dev_pvp"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 841,
+          "name": "dev_pvp_all"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 855,
+          "name": "dev_pvp_audit"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 868,
+          "name": "dev_help"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 931,
+          "name": "give_class_reset_sphere"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1062,
+          "name": "set_exp_17_14_1_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1082,
+          "name": "crystal_balance_17_25_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1089,
+          "name": "crystal_credit_17_25_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1101,
+          "name": "crystal_debit_17_25_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1113,
+          "name": "crystal_history_17_25_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1123,
+          "name": "dev_premium_item_17_26_1"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 63,
+          "text": "bot.send_message(chat_id,build_account_menu_text_17_30_1_4(user_id),reply_markup=account_menu_kb_17_30_1_4())"
+        },
+        {
+          "line": 74,
+          "text": "sent=bot.send_message(int(call.message.chat.id),text,reply_markup=kb)"
+        },
+        {
+          "line": 115,
+          "text": "scope=bot.send_message(message.chat.id,\"🎉 Розділ івентів\",reply_markup=_scope_kb())"
+        },
+        {
+          "line": 117,
+          "text": "card=bot.send_message(message.chat.id,catalog_text,reply_markup=catalog_kb)"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/event_ui.py",
+      "sha256": "6151dbc850e3b0b86254c0f4d0fb75aaa40ad3e9466e1994d5605bc7d001d5a7",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 58,
+          "name": "_close"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 67,
+          "name": "_edit"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 110,
+          "name": "register_event_ui_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 112,
+          "name": "open_events"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 39,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 52,
+          "text": "bot.send_message("
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/external_links.py",
+      "sha256": "4fee71ab68938fd2cedfff91b4a67860675afb68ecd35f4400713383174ab9a0",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 33,
+          "name": "_return_account_menu"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 46,
+          "name": "register_external_links_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 50,
+          "name": "open_external_links"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 24,
+          "text": "res=add_fatigue_artifacts(message.from_user.id,qty);bot.send_message(message.chat.id,f\"✅ DEV: видано 💠 Артефакт відновлення сил ×{res['added']}.\\nЗагалом: ×{res['total']}\" + (f\"\\nНе вмістилося: ×{res['lost']}\" if res['lost'] else ''))"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/fatigue_artifact.py",
+      "sha256": "aeeef7e11ddec5463dd7f8ac2003e75b04e69eb11db25839e98c79a044f88d5e",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 8,
+          "name": "register_fatigue_artifact_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 20,
+          "name": "dev_grant"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 524,
+          "text": "bot.send_message(chat_id, build_guild_hall_text(user_id), reply_markup=guild_hall_kb(user_id))"
+        },
+        {
+          "line": 528,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=guild_hall_kb(message.from_user.id))"
+        },
+        {
+          "line": 533,
+          "text": "bot.send_message(message.chat.id, build_city_text(message.from_user.id), reply_markup=city_kb())"
+        },
+        {
+          "line": 537,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=guild_create_cancel_kb())"
+        },
+        {
+          "line": 543,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 548,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 564,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 572,
+          "text": "bot.send_message(message.chat.id, \"❌ Ти вже перебуваєш у гільдії.\", reply_markup=guild_hall_kb(user_id))"
+        },
+        {
+          "line": 629,
+          "text": "bot.send_message(message.chat.id, build_guild_create_confirm_text(state, user_id), reply_markup=guild_create_confirm_kb())"
+        },
+        {
+          "line": 634,
+          "text": "bot.send_message(message.chat.id, \"Натисни ✅ Створити гільдію або скасуй створення.\", reply_markup=guild_create_confirm_kb())"
+        },
+        {
+          "line": 641,
+          "text": "bot.send_message(message.chat.id, result.get(\"message\", \"✅ Гільдію створено.\"), reply_markup=guild_hall_kb(user_id))"
+        },
+        {
+          "line": 644,
+          "text": "bot.send_message(message.chat.id, result.get(\"message\", \"❌ Не вдалося створити гільдію.\"), reply_markup=guild_hall_kb(user_id))"
+        },
+        {
+          "line": 677,
+          "text": "bot.send_message(message.chat.id, \"❌ Спочатку обери гільдію зі списку.\", reply_markup=guild_list_kb(user_id, state.get(\"page\", 0)))"
+        },
+        {
+          "line": 681,
+          "text": "bot.send_message(message.chat.id, result.get(\"message\", \"\"), reply_markup=guild_detail_kb(user_id, guild_id))"
+        },
+        {
+          "line": 1003,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 1045,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1053,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1085,
+          "text": "bot.send_message(message.chat.id, \"❌ Спочатку обери заявку зі списку.\", reply_markup=guild_applications_kb(user_id))"
+        },
+        {
+          "line": 1093,
+          "text": "bot.send_message(message.chat.id, result.get(\"message\", \"\"), reply_markup=guild_applications_kb(user_id))"
+        },
+        {
+          "line": 1347,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1359,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1401,
+          "text": "bot.send_message(message.chat.id, \"❌ Спочатку обери учасника.\", reply_markup=guild_members_manage_kb(user_id))"
+        },
+        {
+          "line": 1404,
+          "text": "bot.send_message(message.chat.id, result.get(\"message\", \"\"), reply_markup=guild_members_manage_kb(user_id))"
+        },
+        {
+          "line": 1410,
+          "text": "bot.send_message(message.chat.id, \"❌ Спочатку обери учасника.\", reply_markup=guild_members_manage_kb(user_id))"
+        },
+        {
+          "line": 1413,
+          "text": "bot.send_message(message.chat.id, result.get(\"message\", \"\"), reply_markup=guild_members_manage_kb(user_id))"
+        },
+        {
+          "line": 1419,
+          "text": "bot.send_message(message.chat.id, \"❌ Спочатку обери учасника.\", reply_markup=guild_members_manage_kb(user_id))"
+        },
+        {
+          "line": 1422,
+          "text": "bot.send_message(message.chat.id, result.get(\"message\", \"\"), reply_markup=guild_members_manage_kb(user_id))"
+        },
+        {
+          "line": 1666,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1719,
+          "text": "bot.send_message(message.chat.id, \"❌ Спочатку обери учасника.\", reply_markup=guild_members_manage_kb(user_id))"
+        },
+        {
+          "line": 1722,
+          "text": "bot.send_message(message.chat.id, result.get(\"message\", \"\"), reply_markup=guild_members_manage_kb(user_id))"
+        },
+        {
+          "line": 1728,
+          "text": "bot.send_message(message.chat.id, \"❌ Спочатку обери учасника.\", reply_markup=guild_members_manage_kb(user_id))"
+        },
+        {
+          "line": 1731,
+          "text": "bot.send_message(message.chat.id, result.get(\"message\", \"\"), reply_markup=guild_members_manage_kb(user_id))"
+        },
+        {
+          "line": 1737,
+          "text": "bot.send_message(message.chat.id, \"❌ Спочатку обери учасника.\", reply_markup=guild_members_manage_kb(user_id))"
+        },
+        {
+          "line": 1740,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1776,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 1805,
+          "text": "bot.send_message(message.chat.id, \"❌ Спочатку обери заявку зі списку.\", reply_markup=guild_applications_kb(user_id))"
+        },
+        {
+          "line": 1819,
+          "text": "bot.send_message(message.chat.id, result.get(\"message\", \"\"), reply_markup=guild_applications_kb(user_id))"
+        },
+        {
+          "line": 1968,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1976,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2014,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2028,
+          "text": "bot.send_message(message.chat.id, \"❌ Значення мають бути цілими числами.\", reply_markup=guild_hall_kb(message.from_user.id))"
+        },
+        {
+          "line": 2040,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2084,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2098,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2115,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2121,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2382,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2556,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2563,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2570,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2587,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2607,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2614,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2788,
+          "text": "bot.send_message(message.chat.id, build_city_text(user_id), reply_markup=city_kb())"
+        },
+        {
+          "line": 2790,
+          "text": "bot.send_message(message.chat.id, f\"❌ Не вдалося повернутися в місто: {error}\", reply_markup=guild_hall_kb(user_id))"
+        },
+        {
+          "line": 2875,
+          "text": "bot.send_message(message.chat.id, '❌ Ти не перебуваєш у гільдії.', reply_markup=guild_hall_kb(user_id))"
+        },
+        {
+          "line": 2879,
+          "text": "if not candidates: bot.send_message(message.chat.id,\"❌ Голова не може покинути одноосібну гільдію.\",reply_markup=guild_hall_kb(user_id)); return"
+        },
+        {
+          "line": 2881,
+          "text": "bot.send_message(message.chat.id,\"Оберіть нового голову. Після підтвердження ти покинеш гільдію.\",reply_markup=_guild_leadership_select_kb_17_22_1(user_id,\"leave\"))"
+        },
+        {
+          "line": 2885,
+          "text": "bot.send_message(message.chat.id, f\"Покинути гільдію {get_guild_display_name(guild)}?\\n\\nПісля виходу ти не зможеш вступити до іншої гільдії або створити власну протягом 24 годин.\", reply_markup=kb)"
+        },
+        {
+          "line": 2896,
+          "text": "bot.send_message(call.message.chat.id, 'ℹ️ Вихід із гільдії скасовано.', reply_markup=guild_hall_kb(user_id))"
+        },
+        {
+          "line": 2899,
+          "text": "bot.send_message(call.message.chat.id, result.get('message', '❌ Не вдалося виконати дію.'), reply_markup=guild_hall_kb(user_id))"
+        },
+        {
+          "line": 2903,
+          "text": "if str(get_user_guild_role(uid) or \"\")!=\"leader\": bot.send_message(message.chat.id,\"❌ Передавати керівництво може тільки голова.\"); return"
+        },
+        {
+          "line": 2904,
+          "text": "if not candidates: bot.send_message(message.chat.id,\"❌ У гільдії немає іншого учасника.\",reply_markup=guild_hall_kb(uid)); return"
+        },
+        {
+          "line": 2905,
+          "text": "_GUILD_LEADERSHIP_STATE_17_22_1[uid]={\"mode\":\"transfer\"}; bot.send_message(message.chat.id,\"Оберіть нового голову:\",reply_markup=_guild_leadership_select_kb_17_22_1(uid,\"transfer\"))"
+        },
+        {
+          "line": 2911,
+          "text": "if data==\"guild_leadership_cancel\": _GUILD_LEADERSHIP_STATE_17_22_1.pop(uid,None); bot.send_message(call.message.chat.id,\"❌ Операцію скасовано.\",reply_markup=guild_hall_kb(uid)); return"
+        },
+        {
+          "line": 2915,
+          "text": "if str(get_user_guild_role(uid) or \"\")!=\"leader\" or not target: _GUILD_LEADERSHIP_STATE_17_22_1.pop(uid,None); bot.send_message(call.message.chat.id,\"❌ Склад гільдії змінився. Почніть знову.\",reply_markup=guild_hall_kb(uid)); return"
+        },
+        {
+          "line": 2917,
+          "text": "if parts[0]==\"guild_leadership_select\": _GUILD_LEADERSHIP_STATE_17_22_1[uid]={\"mode\":mode,\"target_id\":target_id}; bot.send_message(call.message.chat.id,f\"Новий голова — {name}. Підтвердити?\",reply_markup=_guild_leadership_confirm_kb_17_22_1(mode,target_id)); return"
+        },
+        {
+          "line": 2919,
+          "text": "if not state or state.get(\"mode\")!=mode or int(state.get(\"target_id\",0))!=target_id: bot.send_message(call.message.chat.id,\"❌ Підтвердження застаріло.\",reply_markup=guild_hall_kb(uid)); return"
+        },
+        {
+          "line": 2921,
+          "text": "bot.send_message(call.message.chat.id,result.get(\"message\",\"❌ Операцію не завершено.\"),reply_markup=guild_hall_kb(uid))"
+        },
+        {
+          "line": 2927,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2941,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2966,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 2973,
+          "text": "bot.send_message("
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/guild.py",
+      "sha256": "de39b8627b59b33ad1500086b9862f775237c780d4718e8bc389e4ef88365d40",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 522,
+          "name": "open_guild_hall"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 527,
+          "name": "send_guild_section"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 531,
+          "name": "send_city"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 536,
+          "name": "send_guild_create_prompt"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 540,
+          "name": "show_guild_list"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 546,
+          "name": "show_guild_detail"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 559,
+          "name": "start_guild_creation"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 579,
+          "name": "handle_guild_creation_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 654,
+          "name": "handle_guild_list_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 999,
+          "name": "show_guild_applications"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1040,
+          "name": "show_guild_application_detail"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1060,
+          "name": "handle_guild_application_review_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1345,
+          "name": "show_guild_members_manage"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1354,
+          "name": "show_guild_member_detail"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1375,
+          "name": "handle_guild_member_manage_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1663,
+          "name": "send_guild_members_manage_for_actor_17_21_3_4"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1693,
+          "name": "handle_guild_member_manage_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1767,
+          "name": "show_guild_applications"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1780,
+          "name": "handle_guild_application_review_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1967,
+          "name": "send_guild_contribution"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1975,
+          "name": "send_guild_progress"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1989,
+          "name": "register_guild_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2075,
+          "name": "_guild_progress_handle_dev_command_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2368,
+          "name": "show_guild_logs"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2548,
+          "name": "_guild_open_contracts_board_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2578,
+          "name": "_guild_open_mercenary_hall_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2600,
+          "name": "_guild_open_city_from_stale_state_v1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2767,
+          "name": "_guild_global_navigation_passthrough_v2"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2868,
+          "name": "register_guild_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2010,
+          "name": "guild_add_progress_command"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2870,
+          "name": "guild_leave_prompt_17_21_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2887,
+          "name": "guild_leave_callback_17_21_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2901,
+          "name": "guild_leadership_start_17_22_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2907,
+          "name": "guild_leadership_callback_17_22_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2926,
+          "name": "guild_debug_command"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2934,
+          "name": "guild_fix_states_command"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 2949,
+          "name": "guild_kick_confirmation_callback_17_21_3_2"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 3211,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3267,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3311,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3331,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3403,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3499,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3575,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3623,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3699,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3747,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3831,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3899,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 3955,
+          "text": "bot.send_message(call.message.chat.id, result_message)"
+        },
+        {
+          "line": 4063,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        },
+        {
+          "line": 4155,
+          "text": "bot.send_message(call.message.chat.id, text, reply_markup=kb)"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/inventory.py",
+      "sha256": "f0e43d3d2dcc22bf8f28be61e0e843698b1337ca928d5d42034ebc49d8d3b95b",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 3179,
+          "name": "register_inventory_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3191,
+          "name": "show_inventory"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3239,
+          "name": "inventory_home_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3295,
+          "name": "inventory_profile_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3359,
+          "name": "inventory_category_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3431,
+          "name": "item_details_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3527,
+          "name": "equip_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3651,
+          "name": "unequip_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 3775,
+          "name": "use_potion_callback"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 84,
+          "text": "bot.send_message(chat_id,text,reply_markup=inline)"
+        },
+        {
+          "line": 103,
+          "text": "bot.send_message(message.chat.id,\"🗺️ Мапу відкрито.\",reply_markup=map_kb());render_map_message(bot,message.chat.id,message.from_user.id)"
+        },
+        {
+          "line": 110,
+          "text": "bot.send_message(message.chat.id,text,reply_markup=kb)"
+        },
+        {
+          "line": 114,
+          "text": "bot.send_message(message.chat.id,\"🚶 Міські дії недоступні під час подорожі. Відкрий мапу, щоб переглянути статус або скасувати маршрут.\")"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/map.py",
+      "sha256": "5d8c46886c9989a2b8a956db075e14315875b61eb18f734c643dac9392f25cc3",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 79,
+          "name": "render_map_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 100,
+          "name": "register_map_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 102,
+          "name": "show_map"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 106,
+          "name": "collapse_map"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 113,
+          "name": "block_city_actions_during_travel"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 9,
+          "text": "bot.send_message(chat_id,'❌ ✍️ Руну імені не знайдено в інвентарі.');return"
+        },
+        {
+          "line": 10,
+          "text": "states[user_id]={'stage':'input','inventory_id':int(rune['id'])};msg=bot.send_message(chat_id,'✍️ Введіть нове ім’я персонажа:');bot.register_next_step_handler(msg,input_name)"
+        },
+        {
+          "line": 22,
+          "text": "if not p['success']:states.pop(uid,None);bot.send_message(message.chat.id,'❌ '+p['message']);return"
+        },
+        {
+          "line": 23,
+          "text": "if int(p['inventory_id'])!=int(state['inventory_id']):states.pop(uid,None);bot.send_message(message.chat.id,'❌ Це меню вже неактивне.');return"
+        },
+        {
+          "line": 24,
+          "text": "states[uid]={'stage':'confirm','new_name':p['new_name'],'inventory_id':int(p['inventory_id'])};kb=types.InlineKeyboardMarkup();kb.row(types.InlineKeyboardButton('✅ Підтвердити',callback_data='nr:confirm'),types.InlineKeyboardButton('❌ Скасувати',callback_data='nr:cancel'));sent=bot.send_message(message.chat.id,f\"✍️ Зміна імені персонажа\\n\\nПоточне ім’я: {p['old_name']}\\nНове ім’я: {p['new_name']}\\"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/name_rune.py",
+      "sha256": "45085c6ae4b1ca356955f127d2838a1ab46ddc2f6ca72ed5e43fcdb7e69c2c44",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 5,
+          "name": "register_name_rune_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 6,
+          "name": "begin"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 18,
+          "name": "input_name"
+        }
+      ]
+    },
+    {
+      "constants": [
+        {
+          "line": 1616,
+          "value": 7
+        },
+        {
+          "line": 455,
+          "value": 7
+        }
+      ],
+      "excerpts": [
+        {
+          "line": 194,
+          "text": "bot.send_message(chat_id, \"ℹ️ Обмін уже неактивний.\")"
+        },
+        {
+          "line": 211,
+          "text": "sent = bot.send_message("
+        },
+        {
+          "line": 231,
+          "text": "bot.send_message(message.chat.id, \"❌ Не вдалося визначити поточну локацію персонажа.\")"
+        },
+        {
+          "line": 233,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 299,
+          "text": "bot.send_message(call.message.chat.id, \"❌ Гравець недоступний.\")"
+        },
+        {
+          "line": 306,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 317,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 325,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 356,
+          "text": "bot.send_message(int(result[\"initiator_user_id\"]), \"❌ Запрошення на обмін відхилено.\")"
+        },
+        {
+          "line": 369,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 377,
+          "text": "bot.send_message(initiator_id, text)"
+        },
+        {
+          "line": 380,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 399,
+          "text": "bot.send_message(call.message.chat.id, \"ℹ️ Обмін уже неактивний або був скасований раніше.\")"
+        },
+        {
+          "line": 405,
+          "text": "bot.send_message(other, \"❌ Інший гравець скасував обмін.\\n\\n✅ Знову можна надсилати й отримувати запити на обмін.\")"
+        },
+        {
+          "line": 988,
+          "text": "bot.send_message(c.message.chat.id,f\"⌨️ Введення золота\\n\\nУ гаманці: {_trade_money_12_6_2(wallet.get('wallet_gold'))}\\nЗараз у пропозиції: {_trade_money_12_6_2(wallet.get('offered_gold'))}\\n\\nВведіть загальну суму золота для пропозиції.\",reply_markup=_trade_amount_cancel_kb_12_6_3())"
+        },
+        {
+          "line": 996,
+          "text": "bot.send_message(c.message.chat.id,f\"⌨️ Введення кількості\\n\\nПредмет: {name}\\nУже в пропозиції: {int(preview.get('offered_quantity') or 0)}\\nДоступно максимум: {int(preview.get('maximum_quantity') or 0)}\\n\\nВведіть загальну кількість у пропозиції.\",reply_markup=_trade_amount_cancel_kb_12_6_3())"
+        },
+        {
+          "line": 1007,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1018,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1025,
+          "text": "TRADE_AMOUNT_INPUT_STATE_12_6_3.pop(uid,None); bot.send_message(m.chat.id,\"Час введення минув.\",reply_markup=types.ReplyKeyboardRemove()); return"
+        },
+        {
+          "line": 1029,
+          "text": "if not parsed.get(\"success\"): bot.send_message(m.chat.id,\"❌ \"+parsed[\"message\"],reply_markup=_trade_amount_cancel_kb_12_6_3()); return"
+        },
+        {
+          "line": 1034,
+          "text": "if not parsed.get(\"success\"): bot.send_message(m.chat.id,\"❌ \"+parsed[\"message\"],reply_markup=_trade_amount_cancel_kb_12_6_3()); return"
+        },
+        {
+          "line": 1038,
+          "text": "if not result.get(\"success\"): bot.send_message(m.chat.id,\"❌ \"+str(result.get(\"message\") or \"Не вдалося зберегти значення.\"),reply_markup=_trade_amount_cancel_kb_12_6_3()); return"
+        },
+        {
+          "line": 1040,
+          "text": "bot.send_message(m.chat.id,\"✅ Значення оновлено.\",reply_markup=types.ReplyKeyboardRemove())"
+        },
+        {
+          "line": 1500,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1659,
+          "text": "bot.send_message(call.message.chat.id, \"ℹ️ Обмін уже неактивний.\", reply_markup=main_kb())"
+        },
+        {
+          "line": 1666,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1679,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1850,
+          "text": "bot.send_message(int(user_id), fallback)"
+        },
+        {
+          "line": 1879,
+          "text": "sent = bot.send_message(chat_id, text, parse_mode=\"HTML\", reply_markup=keyboard)"
+        },
+        {
+          "line": 2012,
+          "text": "bot.send_message("
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/player_interaction.py",
+      "sha256": "799e9ad6e745b3995886c6e504019b7c1b01073c917a0ae1b9ccc05b8948b0b9",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 185,
+          "name": "_send_trade_editor"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 224,
+          "name": "_register_player_interaction_base_handlers_12_6_8"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 960,
+          "name": "_trade_register_amount_input_12_6_3"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1465,
+          "name": "_install_player_trade_handler_level_navigation_guard_12_6_6"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1564,
+          "name": "_register_trade_navigation_and_categories_12_6_4"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1828,
+          "name": "_terminalize_player_trade_panel_18_22_6"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1857,
+          "name": "_trade_show_current_stage_12_7_0"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1898,
+          "name": "_register_trade_confirmation_handlers_12_7_0"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 226,
+          "name": "show_location_players"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 289,
+          "name": "trade_request"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 334,
+          "name": "trade_request_response"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 391,
+          "name": "cancel_trade_foundation"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 984,
+          "name": "gold_input"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 991,
+          "name": "quantity_input"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 999,
+          "name": "amount_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1493,
+          "name": "active_trade_message_guard"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1653,
+          "name": "trade_cancel_with_keyboard_restore"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1971,
+          "name": "confirm"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 41,
+          "text": "bot.send_message(message.chat.id,'🏆 Рейтинг гравців\\n\\nОберіть категорію:',reply_markup=player_rankings_exit_kb())"
+        },
+        {
+          "line": 42,
+          "text": "bot.send_message(message.chat.id,'Оберіть категорію рейтингу:',reply_markup=player_rankings_category_inline_kb())"
+        },
+        {
+          "line": 46,
+          "text": "bot.send_message(message.chat.id,build_account_menu_text_17_30_1_4(message.from_user.id),reply_markup=account_menu_kb_17_30_1_4())"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/player_rankings.py",
+      "sha256": "9973182ff63d3b62a486d80d35136fe51d20a405aa0f41eb1a6eb937e8b88e3c",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 38,
+          "name": "register_player_rankings_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 40,
+          "name": "rankings_menu"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 44,
+          "name": "rankings_back"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 875,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 880,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 899,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 943,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 963,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 983,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1015,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1039,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1063,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1087,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1111,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 1133,
+          "text": "bot.send_message(call.message.chat.id,\"📜 Історія\\n\\nОберіть розділ:\",reply_markup=_history_menu_kb());return"
+        },
+        {
+          "line": 1143,
+          "text": "kb=types.InlineKeyboardMarkup();kb.add(types.InlineKeyboardButton(\"🔙 До обмінів\",callback_data=f\"profile_history_trade:{page}\"));bot.send_message(call.message.chat.id,text,reply_markup=kb);return"
+        },
+        {
+          "line": 1151,
+          "text": "kb=types.InlineKeyboardMarkup();kb.add(types.InlineKeyboardButton(\"🔙 До PvP\",callback_data=f\"profile_history_pvp:{page}\"));bot.send_message(call.message.chat.id,text,reply_markup=kb);return"
+        },
+        {
+          "line": 1155,
+          "text": "bot.send_message(call.message.chat.id,_history_list_text(kind,result),reply_markup=_history_list_kb(kind,result))"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/profile.py",
+      "sha256": "9546e06670a5bf830671d69b8006b0630edf9a95cb9365a9dff05630acf0524d",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 869,
+          "name": "send_profile_root"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 887,
+          "name": "register_profile_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 897,
+          "name": "profile_history_reply_message_17_24_1_1"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 937,
+          "name": "stats"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 957,
+          "name": "equipment"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 977,
+          "name": "skills"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1005,
+          "name": "profile_character_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1029,
+          "name": "profile_stats_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1053,
+          "name": "profile_equipment_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1077,
+          "name": "profile_skills_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1109,
+          "name": "back_from_profile"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 1123,
+          "name": "profile_history_callback"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 67,
+          "text": "bot.send_message(call.message.chat.id, _failure(result.get(\"reason\")))"
+        },
+        {
+          "line": 74,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 82,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 125,
+          "text": "bot.send_message(int(result[\"initiator_user_id\"]), \"❌ Виклик на дуель відхилено.\")"
+        },
+        {
+          "line": 134,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 150,
+          "text": "bot.send_message(int(result[\"initiator_user_id\"]), text, parse_mode=\"HTML\")"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/pvp_interaction.py",
+      "sha256": "64e76770501b76d4fe82b8c11786a7a6bddaa9b9e453aa0f71f1177439fa0235",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 50,
+          "name": "register_pvp_interaction_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 56,
+          "name": "pvp_duel_request"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 90,
+          "name": "pvp_duel_response"
+        }
+      ]
+    },
+    {
+      "constants": [
+        {
+          "line": 147,
+          "value": 7
+        },
+        {
+          "line": 162,
+          "value": 7
+        },
+        {
+          "line": 162,
+          "value": 7
+        }
+      ],
+      "excerpts": [
+        {
+          "line": 89,
+          "text": "bot.send_message(int(user_id),render_pvp_terminal_text(int(battle_id),int(user_id)),parse_mode=\"HTML\",reply_markup=_main_kb())"
+        },
+        {
+          "line": 91,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 104,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 127,
+          "text": "bot.send_message(uid,\"⚔️ Режим дуелі активовано.\",reply_markup=pvp_active_reply_kb())"
+        },
+        {
+          "line": 140,
+          "text": "bot.send_message(message.chat.id,\"ℹ️ Активної дуелі немає.\",reply_markup=_main_kb())"
+        },
+        {
+          "line": 201,
+          "text": "bot.send_message(int(call.from_user.id),\"🏳️ <b>Підтвердіть, що ви бажаєте здатися.</b>\\n\\nПісля підтвердження суперник буде оголошений переможцем, а дуель завершиться.\",parse_mode=\"HTML\",reply_markup=kb); return"
+        },
+        {
+          "line": 212,
+          "text": "try: bot.send_message(uid,render_pvp_terminal_text(battle_id,uid),parse_mode=\"HTML\",reply_markup=_main_kb())"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/pvp_round_ui.py",
+      "sha256": "88e6663e4ea91941540304a529ad249baba03b2e42fde09550eb9646ff6006da",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 82,
+          "name": "send_pvp_round_panel"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 99,
+          "name": "broadcast_pvp_round_log"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 123,
+          "name": "activate_pvp_battle_ui"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 131,
+          "name": "register_pvp_round_ui_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 137,
+          "name": "pvp_status_message"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 182,
+          "name": "pvp_surrender_callback"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 382,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 522,
+          "text": "bot.send_message(call.message.chat.id, \"✅ Меню заточки закрито.\")"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/refine.py",
+      "sha256": "62037f4fa72024f61856d883e875a95a5b6a618d4d249321caa19565944cd1ab",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 369,
+          "name": "_send_or_edit"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 423,
+          "name": "register_refine_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 517,
+          "name": "refine_close_callback"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 169,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 188,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=keyboard)"
+        },
+        {
+          "line": 193,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=keyboard)"
+        },
+        {
+          "line": 244,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 366,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 423,
+          "text": "text,kb=build_extractor_home(message.from_user.id,0);bot.send_message(message.chat.id,text,reply_markup=kb)"
+        },
+        {
+          "line": 585,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=keyboard)"
+        },
+        {
+          "line": 597,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 633,
+          "text": "bot.send_message(message.chat.id, \"❌ Введіть ціле число від 1 до 100.\", reply_markup=rune_master_kb())"
+        },
+        {
+          "line": 636,
+          "text": "bot.send_message(message.chat.id, \"❌ Введіть ціле число від 1 до 100.\", reply_markup=rune_master_kb())"
+        },
+        {
+          "line": 642,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 654,
+          "text": "bot.send_message(message.chat.id, text, reply_markup=keyboard)"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/runes.py",
+      "sha256": "f2fd721c396fa957f9cbd74b85e5ae445d602545cfe417cf288bb9401231941a",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 166,
+          "name": "register_rune_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 334,
+          "name": "register_rune_fusion_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 420,
+          "name": "register_simple_rune_extractor_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 580,
+          "name": "register_rune_master_shop_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 168,
+          "name": "show_rune_master"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 186,
+          "name": "show_rune_insertion"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 191,
+          "name": "show_rune_fusion"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 196,
+          "name": "rune_master_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 336,
+          "name": "rune_fusion_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 422,
+          "name": "show_extractor"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 582,
+          "name": "show_rune_master_shop"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 588,
+          "name": "rune_master_shop_callback"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 627,
+          "name": "rune_master_shop_quantity_input"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 264,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 271,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 278,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 289,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 295,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 331,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 340,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 348,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 354,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 361,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 381,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 387,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 395,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 413,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 426,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 449,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 464,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 474,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 664,
+          "text": "bot.send_message(call.message.chat.id, result[\"message\"])"
+        },
+        {
+          "line": 666,
+          "text": "bot.send_message(call.message.chat.id, f\"{result['message']}\\n\\nТвій шлях починається.\")"
+        },
+        {
+          "line": 672,
+          "text": "bot.send_message(call.message.chat.id, result[\"message\"])"
+        },
+        {
+          "line": 677,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 681,
+          "text": "bot.send_message("
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/start.py",
+      "sha256": "45817027f66031a8a464dc890e701d0bc191e1543fe00745505e64918969fd75",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 256,
+          "name": "continue_registration_or_main"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 285,
+          "name": "start_class_change_flow"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 306,
+          "name": "register_start_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 610,
+          "name": "register_start_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 327,
+          "name": "receive_character_name"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 372,
+          "name": "select_class"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 406,
+          "name": "change_class"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 647,
+          "name": "class_confirm_17_13_1"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 126,
+          "text": "bot.send_message(message.chat.id, presentation.text_suffix, reply_markup=_inline_markup(presentation.rows))"
+        },
+        {
+          "line": 218,
+          "text": "bot.send_message(call.message.chat.id, f\"✅ {boss_name} вже переможено. Повернися до Міста → 📜 Гільдія Найманців → ⚔️ Голова Найманців і доповідь про перемогу.\")"
+        },
+        {
+          "line": 220,
+          "text": "bot.send_message(call.message.chat.id, story_boss_help_text(quest_number))"
+        },
+        {
+          "line": 224,
+          "text": "bot.send_message(call.message.chat.id, \"🧭 Повернися до Міста → 📜 Гільдія Найманців → ⚔️ Голова Найманців.\")"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/story_boss_invocation_wiring.py",
+      "sha256": "8eb613e10d0a608e29911df66014df69d2a3dc5da07d5f53a3d5e1430722bb8f",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 122,
+          "name": "send_story_boss_look_around_if_present"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 192,
+          "name": "register_story_boss_invocation_callbacks"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 199,
+          "name": "story_boss_invocation_callback"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 141,
+          "text": "bot.send_message(message.chat.id,_text(p),reply_markup=_markup(p,user_id=message.from_user.id,connection=db.conn));return True"
+        },
+        {
+          "line": 217,
+          "text": "bot.send_message(call.message.chat.id,f\"{marker}\\n\\n{_text(p)}\",reply_markup=_markup(p,user_id=uid,connection=db.conn))"
+        },
+        {
+          "line": 223,
+          "text": "bot.send_message(call.message.chat.id,message)"
+        },
+        {
+          "line": 226,
+          "text": "bot.send_message(call.message.chat.id,_text(p),reply_markup=_markup(p,user_id=uid,connection=db.conn))"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/story_quest_npc_runtime.py",
+      "sha256": "424ccfafd9e4e8a974229e014ff9d7c9224e5f0b3d1150cf92804accccbd50f6",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 138,
+          "name": "send_story_npc_if_present"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 205,
+          "name": "register_story_quest_npc_runtime_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 207,
+          "name": "callback"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 209,
+          "text": "bot.send_message("
+        },
+        {
+          "line": 381,
+          "text": "return bot.send_message(message.chat.id, text, reply_markup=keyboard)"
+        },
+        {
+          "line": 448,
+          "text": "bot.send_message(message.chat.id,snapshot[\"text\"],reply_markup=_inline_markup(snapshot[\"keyboard\"]))"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/story_quests.py",
+      "sha256": "2f6ecb8fa65f51b000fce4d16a24673f429b6d571ca11e214dacf71393bf1d28",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 206,
+          "name": "_send_empty_story_journal"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 346,
+          "name": "register_story_quest_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 380,
+          "name": "_send_hierarchy"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 441,
+          "name": "story_quest_profile_reply"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 23,
+          "text": "st=get_exp_bonus_status(message.from_user.id);kb=types.InlineKeyboardMarkup(row_width=1);kb.add(types.InlineKeyboardButton('15 днів — 100 💎',callback_data='expb:preview:15'));kb.add(types.InlineKeyboardButton('30 днів — 180 💎',callback_data='expb:preview:30'));text='💎 Premium-бонус\\n\\nПід час перемоги над звичайними, елітними мобами та босами ти отримуєш:\\n\\n• +25% досвіду;\\n• +25% золота.\\n\\nPrem"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/timed_exp_bonus.py",
+      "sha256": "b1ab8e7bb97daff6b410975e1d0b6df3f04c130100ec00beffebdac73516069a",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 20,
+          "name": "register_timed_exp_bonus_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 22,
+          "name": "open_bonus"
+        }
+      ]
+    },
+    {
+      "constants": [
+        {
+          "line": 26,
+          "value": 7
+        }
+      ],
+      "excerpts": [
+        {
+          "line": 113,
+          "text": "bot.send_message(chat_id, text, reply_markup=keyboard)"
+        },
+        {
+          "line": 139,
+          "text": "bot.send_message("
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "handlers/world_chronicles.py",
+      "sha256": "f968928ca676a4a7c462c15f2fc9741c402615ba7dc1ef359bcdf6d96f458712",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 108,
+          "name": "_show_world_chronicles"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 125,
+          "name": "register_world_chronicle_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 131,
+          "name": "world_chronicles_callback"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 115,
+          "text": "from systems.inactivity_reminder_system import init_inactivity_reminder_system"
+        },
+        {
+          "line": 186,
+          "text": "init_inactivity_reminder_system()"
+        },
+        {
+          "line": 250,
+          "text": "bot.send_message("
+        }
+      ],
+      "keyword_hits": [
+        "reminder",
+        "send_message"
+      ],
+      "path": "main.py",
+      "sha256": "a7edf7a3b99437d04329201be44d7bace83668c1cd15edf7be720d529927ea59",
+      "symbols": []
+    },
+    {
+      "constants": [
+        {
+          "line": 20,
+          "value": 7
+        },
+        {
+          "line": 4780,
+          "value": 7
+        },
+        {
+          "line": 3918,
+          "value": 7
+        },
+        {
+          "line": 3920,
+          "value": 7
+        },
+        {
+          "line": 4569,
+          "value": 7
+        },
+        {
+          "line": 4570,
+          "value": 7
+        }
+      ],
+      "excerpts": [
+        {
+          "line": 583,
+          "text": "- ACTIVE after 7 days -> EXPIRED_UNCLAIMED"
+        }
+      ],
+      "keyword_hits": [
+        "7 days"
+      ],
+      "path": "systems/auction_house_system.py",
+      "sha256": "664cfe8a60f7728e7364f542c936d52328bc5ba89a022b686a6c3be1f3b1ab59",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 580,
+          "name": "update_expired_auction_lots"
+        }
+      ]
+    },
+    {
+      "constants": [
+        {
+          "line": 53,
+          "value": "event_inactive"
+        }
+      ],
+      "excerpts": [
+        {
+          "line": 53,
+          "text": "if not event_active or not module.config.ENABLED: return {\"success\":False,\"reason\":\"event_inactive\"}"
+        }
+      ],
+      "keyword_hits": [
+        "inactive"
+      ],
+      "path": "systems/event_shop_system.py",
+      "sha256": "569f7a833db0ae817d83fd9e5d805ace3ce21f6cfe3eaadba84733db6b2ae83c",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 50,
+          "name": "exchange_event_shop_offer"
+        }
+      ]
+    },
+    {
+      "constants": [
+        {
+          "line": 47,
+          "value": "guild_resource_spending_inactive"
+        }
+      ],
+      "excerpts": [
+        {
+          "line": 18,
+          "text": "GUILD_RESOURCE_INACTIVE_MESSAGE = ("
+        },
+        {
+          "line": 43,
+          "text": "def validate_guild_resource_feature_inactive():"
+        },
+        {
+          "line": 47,
+          "text": "\"code\": \"guild_resource_spending_inactive\","
+        },
+        {
+          "line": 48,
+          "text": "\"message\": GUILD_RESOURCE_INACTIVE_MESSAGE,"
+        },
+        {
+          "line": 54,
+          "text": "return validate_guild_resource_feature_inactive()"
+        },
+        {
+          "line": 59,
+          "text": "return validate_guild_resource_feature_inactive()"
+        }
+      ],
+      "keyword_hits": [
+        "inactive"
+      ],
+      "path": "systems/guild_resource_system.py",
+      "sha256": "af4298ef1de8e4c4a8dc46aed20d1d7f7ee66a04dc3587687d6ef8e33cdd6a8f",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 43,
+          "name": "validate_guild_resource_feature_inactive"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 52,
+          "name": "spend_guild_resource"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 57,
+          "name": "activate_guild_resource_sink"
+        }
+      ]
+    },
+    {
+      "constants": [
+        {
+          "line": 2,
+          "value": "Persistent one-attempt-per-cycle inactivity reminder policy."
+        },
+        {
+          "line": 8,
+          "value": 7
+        },
+        {
+          "line": 21,
+          "value": "CREATE TABLE IF NOT EXISTS inactivity_reminders(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,inactivity_started_at TEXT NOT NULL,eligible_at TEXT NOT NULL,attempted_at TEXT NOT NULL,delivery_status TEXT NOT NULL CHECK(delivery_status IN ('pending','sent','blocked','failed')),error_type TEXT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,UNIQUE(user_id,inactivity_started_at),FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE);CREATE INDEX IF NOT EXISTS idx_inactivity_reminders_user ON inactivity_reminders(user_id,id DESC);CREATE INDEX IF NOT EXISTS idx_inactivity_reminders_status ON inactivity_reminders(delivery_status,attempted_at);"
+        },
+        {
+          "line": 38,
+          "value": "INSERT OR IGNORE INTO inactivity_reminders(user_id,inactivity_started_at,eligible_at,attempted_at,delivery_status,error_type,created_at,updated_at) VALUES(?,?,?,?, 'pending',NULL,?,?)"
+        },
+        {
+          "line": 45,
+          "value": "UPDATE inactivity_reminders SET delivery_status=?,error_type=?,updated_at=? WHERE user_id=? AND inactivity_started_at=? AND delivery_status='pending'"
+        },
+        {
+          "line": 26,
+          "value": "SELECT u.user_id,u.last_activity_at,u.character_name,u.character_class FROM users u WHERE u.last_activity_at IS NOT NULL AND TRIM(COALESCE(u.character_name,''))<>'' AND TRIM(COALESCE(u.character_class,''))<>'' AND u.last_activity_at<=? AND NOT EXISTS(SELECT 1 FROM inactivity_reminders r WHERE r.user_id=u.user_id AND r.inactivity_started_at=u.last_activity_at) ORDER BY u.user_id"
+        }
+      ],
+      "excerpts": [
+        {
+          "line": 2,
+          "text": "\"\"\"Persistent one-attempt-per-cycle inactivity reminder policy.\"\"\""
+        },
+        {
+          "line": 10,
+          "text": "INACTIVITY_REMINDER_TEXT=\"💠 Руни знову кличуть вас!\\n\\nМинуло понад 7 днів від вашої останньої пригоди.\\n\\nСвіт продовжує змінюватися, а небезпечні землі все ще приховують здобич, руни та випробування.\\n\\nНатисніть /start, щоб повернутися до гри й продовжити свій шлях!\""
+        },
+        {
+          "line": 18,
+          "text": "def init_inactivity_reminder_system(db_path=None):"
+        },
+        {
+          "line": 21,
+          "text": "c.executescript(\"\"\"CREATE TABLE IF NOT EXISTS inactivity_reminders(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,inactivity_started_at TEXT NOT NULL,eligible_at TEXT NOT NULL,attempted_at TEXT NOT NULL,delivery_status TEXT NOT NULL CHECK(delivery_status IN ('pending','sent','blocked','failed')),error_type TEXT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL,UNIQUE(user_id,in"
+        },
+        {
+          "line": 26,
+          "text": "rows=c.execute(\"\"\"SELECT u.user_id,u.last_activity_at,u.character_name,u.character_class FROM users u WHERE u.last_activity_at IS NOT NULL AND TRIM(COALESCE(u.character_name,''))<>'' AND TRIM(COALESCE(u.character_class,''))<>'' AND u.last_activity_at<=? AND NOT EXISTS(SELECT 1 FROM inactivity_reminders r WHERE r.user_id=u.user_id AND r.inactivity_started_at=u.last_activity_at) ORDER BY u.user_id\"\""
+        },
+        {
+          "line": 28,
+          "text": "def claim_inactivity_reminder(user_id,inactivity_started_at,now=None,db_path=None):"
+        },
+        {
+          "line": 35,
+          "text": "c.execute('BEGIN IMMEDIATE');row=c.execute(\"SELECT last_activity_at,character_name,character_class FROM users WHERE user_id=?\",(int(user_id),)).fetchone()"
+        },
+        {
+          "line": 36,
+          "text": "if not row or str(row['last_activity_at'] or '')!=started or not str(row['character_name'] or '').strip() or not str(row['character_class'] or '').strip():c.rollback();return {'success':False,'claimed':False,'reason':'stale_or_ineligible'}"
+        },
+        {
+          "line": 38,
+          "text": "stamp=_stamp(current);cur=c.execute(\"INSERT OR IGNORE INTO inactivity_reminders(user_id,inactivity_started_at,eligible_at,attempted_at,delivery_status,error_type,created_at,updated_at) VALUES(?,?,?,?, 'pending',NULL,?,?)\",(int(user_id),started,eligible,stamp,stamp,stamp));claimed=cur.rowcount==1;c.commit();return {'success':True,'claimed':claimed,'reason':'claimed' if claimed else 'already_attempt"
+        },
+        {
+          "line": 41,
+          "text": "def finalize_inactivity_reminder(user_id,inactivity_started_at,status,error_type=None,now=None,db_path=None):"
+        },
+        {
+          "line": 45,
+          "text": "cur=c.execute(\"UPDATE inactivity_reminders SET delivery_status=?,error_type=?,updated_at=? WHERE user_id=? AND inactivity_started_at=? AND delivery_status='pending'\",(status,str(error_type or '')[:120] or None,_stamp(now),int(user_id),str(inactivity_started_at)));c.commit();return {'success':cur.rowcount==1,'updated':cur.rowcount}"
+        },
+        {
+          "line": 50,
+          "text": "def process_inactivity_reminders(bot,now=None,db_path=None):"
+        },
+        {
+          "line": 53,
+          "text": "result['eligible']+=1;claim=claim_inactivity_reminder(row['user_id'],row['last_activity_at'],current,db_path)"
+        },
+        {
+          "line": 56,
+          "text": "try:bot.send_message(int(row['user_id']),INACTIVITY_REMINDER_TEXT);status,error_type='sent',None"
+        },
+        {
+          "line": 58,
+          "text": "finalize_inactivity_reminder(row['user_id'],row['last_activity_at'],status,error_type,current,db_path);result[status]+=1"
+        }
+      ],
+      "keyword_hits": [
+        "inactivity reminder",
+        "inactivity_reminders",
+        "last_activity_at",
+        "reminder",
+        "send_message"
+      ],
+      "path": "systems/inactivity_reminder_system.py",
+      "sha256": "b07df95d3c6b3424cc79697bc55c194ec78a4fd86020e8027c638d8bc190d4cc",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 18,
+          "name": "init_inactivity_reminder_system"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 23,
+          "name": "get_eligible_inactivity_users"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 28,
+          "name": "claim_inactivity_reminder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 41,
+          "name": "finalize_inactivity_reminder"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 50,
+          "name": "process_inactivity_reminders"
+        }
+      ]
+    },
+    {
+      "constants": [
+        {
+          "line": 493,
+          "value": "INACTIVITY REMINDER SCAN: "
+        }
+      ],
+      "excerpts": [
+        {
+          "line": 12,
+          "text": "from systems.inactivity_reminder_system import process_inactivity_reminders, INACTIVITY_SCAN_INTERVAL_SECONDS"
+        },
+        {
+          "line": 14,
+          "text": "_INACTIVITY_REMINDER_NEXT_SCAN_MONOTONIC = 0.0"
+        },
+        {
+          "line": 424,
+          "text": "bot_instance.send_message("
+        },
+        {
+          "line": 445,
+          "text": "bot_instance.send_message("
+        },
+        {
+          "line": 487,
+          "text": "global _INACTIVITY_REMINDER_NEXT_SCAN_MONOTONIC"
+        },
+        {
+          "line": 489,
+          "text": "if _now_monotonic >= _INACTIVITY_REMINDER_NEXT_SCAN_MONOTONIC:"
+        },
+        {
+          "line": 490,
+          "text": "_result = process_inactivity_reminders(bot_instance)"
+        },
+        {
+          "line": 491,
+          "text": "_INACTIVITY_REMINDER_NEXT_SCAN_MONOTONIC = _now_monotonic + INACTIVITY_SCAN_INTERVAL_SECONDS"
+        },
+        {
+          "line": 493,
+          "text": "PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', f\"INACTIVITY REMINDER SCAN: {_result}\")"
+        },
+        {
+          "line": 925,
+          "text": "bot_instance.send_message("
+        }
+      ],
+      "keyword_hits": [
+        "inactivity reminder",
+        "inactivity_reminders",
+        "reminder",
+        "send_message"
+      ],
+      "path": "systems/notifications.py",
+      "sha256": "d2649d55e5f59eec2f0de6198e575e1818b607fd93ff295fc8e7a554a0867590",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 419,
+          "name": "notify_energy_full"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 440,
+          "name": "notify_hp_restored"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 476,
+          "name": "notification_worker"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 922,
+          "name": "notify_mp_restored_17_15_1"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 68,
+          "text": "if \"last_activity_at\" not in columns:"
+        },
+        {
+          "line": 69,
+          "text": "conn.execute(\"ALTER TABLE users ADD COLUMN last_activity_at TEXT NULL\")"
+        },
+        {
+          "line": 85,
+          "text": "CREATE INDEX IF NOT EXISTS idx_users_last_activity_at"
+        },
+        {
+          "line": 86,
+          "text": "ON users(last_activity_at);"
+        },
+        {
+          "line": 116,
+          "text": "cur = conn.execute(\"UPDATE users SET last_activity_at=? WHERE user_id=?\", (stamp, uid))"
+        },
+        {
+          "line": 124,
+          "text": "return {\"success\": True, \"updated\": True, \"last_activity_at\": stamp}"
+        },
+        {
+          "line": 130,
+          "text": "row = conn.execute(\"SELECT last_activity_at FROM users WHERE user_id=?\", (int(user_id),)).fetchone()"
+        },
+        {
+          "line": 356,
+          "text": "'last_activity_at IS NOT NULL AND last_activity_at>=? '"
+        },
+        {
+          "line": 412,
+          "text": "f'\"{location_col}\" AS current_location, last_activity_at '"
+        },
+        {
+          "line": 414,
+          "text": "f'AND last_activity_at IS NOT NULL AND last_activity_at>=? '"
+        },
+        {
+          "line": 462,
+          "text": "f'last_activity_at FROM users WHERE user_id=?',"
+        },
+        {
+          "line": 469,
+          "text": "last = _parse(target[\"last_activity_at\"])"
+        },
+        {
+          "line": 535,
+          "text": "f'\"{location_col}\" AS current_location, last_activity_at '"
+        },
+        {
+          "line": 542,
+          "text": "last = _parse(row[\"last_activity_at\"]) if row else None"
+        }
+      ],
+      "keyword_hits": [
+        "last_activity_at"
+      ],
+      "path": "systems/player_interaction_system.py",
+      "sha256": "7e0569317cab32cba42826dedfde2f804472c993b53250fc4497237d0004b171",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 56,
+          "name": "init_player_interaction_foundation"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 105,
+          "name": "touch_player_activity"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 127,
+          "name": "get_player_last_activity"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 326,
+          "name": "get_online_player_counts"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 378,
+          "name": "get_online_players_in_same_location"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 438,
+          "name": "get_public_player_interaction_profile"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 527,
+          "name": "_request_user_row"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 541,
+          "name": "_row_online"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 102,
+          "text": "try: bot.send_message(row['chat_id'],AUTO_ESCAPE_TEXT)"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "systems/pve_auto_escape_system.py",
+      "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 97,
+          "name": "expire_pve_encounters_once"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 24,
+          "text": "\"send_message\","
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "systems/telegram_rate_limit.py",
+      "sha256": "504e1e24a297fac1d24b9683c1b00fea832563418e839817cada8a0e5ab99690",
+      "symbols": []
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 147,
+          "text": "bot.send_message(int(result['user_id']),text,reply_markup=_arrival_keyboard(result['to_node']))"
+        },
+        {
+          "line": 148,
+          "text": "bot.send_message(int(result['user_id']),\"🗺️ Доступні напрямки:\",reply_markup=build_map_inline_kb(int(result['user_id'])))"
+        }
+      ],
+      "keyword_hits": [
+        "send_message"
+      ],
+      "path": "systems/travel_system.py",
+      "sha256": "09525cdc1a89ce78091d1f04429ec56a58ff8fda5235699b3ecac0d0c8edc687",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 142,
+          "name": "_send_arrival"
+        }
+      ]
+    },
+    {
+      "constants": [],
+      "excerpts": [
+        {
+          "line": 11,
+          "text": "def test_inactive_is_identity(self):"
+        }
+      ],
+      "keyword_hits": [
+        "inactive"
+      ],
+      "path": "tests_v2/test_premium_combat.py",
+      "sha256": "ffa7b2f4322d9addcafad74e1337a2fbce42e64a7c5fae9d5ea5f2e3ae8e7972",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 5,
+          "name": "PremiumCombatModifierTests"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 11,
+          "name": "test_inactive_is_identity"
+        }
+      ]
+    }
+  ],
+  "stage": "21.14.3a",
+  "status": "PASS",
+  "unresolved": []
+}
