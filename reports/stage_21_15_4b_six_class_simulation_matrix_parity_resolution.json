@@ -1,0 +1,708 @@
+{
+  "classes": [
+    {
+      "key": "warrior",
+      "label_uk": "Воїн"
+    },
+    {
+      "key": "knight",
+      "label_uk": "Лицар"
+    },
+    {
+      "key": "scout",
+      "label_uk": "Скаут"
+    },
+    {
+      "key": "rogue",
+      "label_uk": "Розбійник"
+    },
+    {
+      "key": "mage",
+      "label_uk": "Маг"
+    },
+    {
+      "key": "priest",
+      "label_uk": "Жрець"
+    }
+  ],
+  "decision": "PARITY_RESOLVED_IMPLEMENTATION_AUTHORIZED",
+  "environment_file_opened": false,
+  "game_db_wal_shm": "NOT_MANIPULATED",
+  "generated_at": "2026-10-27T23:35:27.051788+00:00",
+  "implementation_authorization": {
+    "allowed": [
+      "Flat API-ready six-class matrix contract and adapters.",
+      "Parameterized deterministic fixtures for all six classes.",
+      "Short bounded smoke scenarios and contract tests.",
+      "Production-domain service reuse through existing ports.",
+      "In-memory/sandbox repositories and explicit Unit of Work."
+    ],
+    "forbidden": [
+      "Long 1-to-target-level simulations.",
+      "Large Monte Carlo or balance-calibration batches.",
+      "Scout-only acceptance or a hard-coded default Scout path.",
+      "New class formulas, skills, equipment compatibility, runes, items or balance values.",
+      "Simulator-only copies of production formulas.",
+      "Production SQLite, Telegram or runtime wiring.",
+      "Nested rom_v2/domain package creation."
+    ],
+    "next_stage": "21.15.4c"
+  },
+  "long_simulation_executed": false,
+  "main_started": false,
+  "manual_verification": {
+    "reason": "Read-only parity resolution; no simulator execution.",
+    "required": false
+  },
+  "matrix_cardinality": 6,
+  "prerequisites": {
+    "audit": {
+      "path": "reports/stage_21_15_4_existing_six_class_simulation_matrix_audit.json",
+      "sha256": "8ec3664a1231db78875143fe2fcb1386b48fdbbf55e20b1f6ef2a68dacb95e86",
+      "status": "PASS"
+    },
+    "refinement": {
+      "decision": "REFINED_SIX_CLASS_PARITY_RESOLUTION_REQUIRED",
+      "path": "reports/stage_21_15_4a_six_class_simulation_matrix_contract_refinement.json",
+      "sha256": "37385d483346846fadfb18191b64e715baf788f764d2f6625fe74cfb3cc7fd61",
+      "status": "PASS"
+    }
+  },
+  "production_mutation": false,
+  "production_sqlite_opened": false,
+  "refinement_scope_checks": {
+    "deterministic_clock_rng": true,
+    "flat_domain_layout": true,
+    "no_long_simulation": true,
+    "production_domain_reuse": true,
+    "sandbox_isolation": true,
+    "six_class_matrix": true
+  },
+  "resolutions": [
+    {
+      "area": "matrix_scope",
+      "contract": "The canonical matrix contains exactly six classes: warrior, knight, scout, rogue, mage and priest. Scout is one row in the matrix, not the simulator default or sole acceptance subject.",
+      "evidence": [
+        "stage_21_15_4_existing_six_class_simulation_matrix_audit.json",
+        "stage_21_15_4a_six_class_simulation_matrix_contract_refinement.json",
+        "V2 six-class derived-stat coverage"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "execution_scope",
+      "contract": "Stage 21.15.4c prepares and contract-tests all six class adapters but must not execute long 1-to-target-level simulations, balance calibration, large trial batches or production-duration runs.",
+      "evidence": [
+        "stage_21_15_4a_six_class_simulation_matrix_contract_refinement.json"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "short_acceptance_matrix",
+      "contract": "Automated acceptance is a fast parameterized matrix: canonical character fixture, production stat snapshot, equipment compatibility, skill/loadout resolution, deterministic encounter construction, bounded combat turns and result serialization for each of the six classes.",
+      "evidence": [
+        "stage_21_15_4a_six_class_simulation_matrix_contract_refinement.json",
+        "systems/combat_actor_stats.py",
+        "systems/canonical_rules.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "canonical_class_identity",
+      "contract": "Class keys remain the existing canonical English identifiers. Ukrainian labels are presentation metadata only and must not alter identity, formulas or persistence keys.",
+      "evidence": [
+        "existing V1/V2 class contracts"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "stats_and_formulas",
+      "contract": "Simulation adapters must call existing production character creation, stat snapshot, HP, MP, PATK/MATK, PDEF/MDEF and combat services. Stage 21.15.4c may not copy or fork formulas into simulator-only code.",
+      "evidence": [
+        "systems/combat_actor_stats.py",
+        "systems/canonical_rules.py",
+        "data/stat_scaling.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "equipment_and_runes",
+      "contract": "Equipment slot, hand, class compatibility and class-rune decisions come from existing production policies and services. No six-class compatibility table may be invented inside the simulator adapter.",
+      "evidence": [
+        "production equipment generation/stat snapshot services"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "skills_and_mana",
+      "contract": "Skill availability, mana costs, cooldowns and combat decisions are resolved through existing production-domain contracts. Missing production evidence must fail closed rather than creating simulator-only skills or fallback rules.",
+      "evidence": [
+        "stage_21_15_4_existing_six_class_simulation_matrix_audit.json",
+        "stage_21_15_4a_six_class_simulation_matrix_contract_refinement.json"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "clock_and_rng",
+      "contract": "All short scenarios use injected Clock and seeded RandomSource/SimulationRng adapters. Wall-clock reads and unseeded module-global random calls are prohibited in acceptance paths.",
+      "evidence": [
+        "rom_v2/application/ports/clock.py",
+        "rom_v2/application/ports/random_source.py",
+        "systems/simulation/rng.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "sandbox_repositories",
+      "contract": "The matrix uses isolated in-memory/sandbox repositories and an explicit Unit of Work. It must not open production game.db, inherit local player state, or commit through production persistence adapters.",
+      "evidence": [
+        "stage_21_15_4_existing_six_class_simulation_matrix_audit.json",
+        "stage_21_15_4a_six_class_simulation_matrix_contract_refinement.json",
+        "rom_v2/application/ports/repositories.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "result_contract",
+      "contract": "Each class produces the same structural result schema with class key, fixture identity, deterministic seed, stat snapshot, equipment/skill resolution, bounded-turn trace summary and validation outcome. Numeric balance approval is explicitly out of scope.",
+      "evidence": [
+        "stage_21_15_4a_six_class_simulation_matrix_contract_refinement.json"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "flat_domain_layout",
+      "contract": "Implementation must preserve the flat domain layout. Any new domain contract belongs in a flat rom_v2/domain/*.py module; a nested six_class_simulation_matrix package is unauthorized.",
+      "evidence": [
+        "Stage 21.15.1d flat-domain remediation",
+        "stage_21_15_4a_six_class_simulation_matrix_contract_refinement.json"
+      ],
+      "status": "RESOLVED"
+    }
+  ],
+  "revision": "2026-10-28-r1-six-class-no-long-run",
+  "simulator_executed": false,
+  "source_evidence": [
+    {
+      "class_hits": [
+        "warrior",
+        "knight",
+        "scout",
+        "rogue",
+        "mage",
+        "priest"
+      ],
+      "exists": true,
+      "has_clock": false,
+      "has_direct_sql_candidate": false,
+      "has_matrix": true,
+      "has_production_reuse": false,
+      "has_seed": true,
+      "path": "systems/pvp_balance_simulator.py",
+      "sha256": "c4bd07f9e201ecbecb9c3937c63a64e5a25c0ec6117fa6a29ca12b3a58c434bc",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 28,
+          "name": "simulate_duel"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 45,
+          "name": "simulate_matchup"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 54,
+          "name": "simulate_matrix"
+        }
+      ]
+    },
+    {
+      "class_hits": [
+        "warrior",
+        "knight",
+        "scout",
+        "rogue",
+        "mage",
+        "priest"
+      ],
+      "exists": true,
+      "has_clock": false,
+      "has_direct_sql_candidate": false,
+      "has_matrix": true,
+      "has_production_reuse": true,
+      "has_seed": true,
+      "path": "systems/pvp_production_calibration.py",
+      "sha256": "ed0dd17745fb90e3dfbc4061a907af0044fe846d7a92747d0443339567bd324c",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 43,
+          "name": "_weighted_fixture_value"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 126,
+          "name": "matrix"
+        }
+      ]
+    },
+    {
+      "class_hits": [
+        "warrior",
+        "knight",
+        "scout",
+        "rogue",
+        "priest"
+      ],
+      "exists": true,
+      "has_clock": false,
+      "has_direct_sql_candidate": false,
+      "has_matrix": true,
+      "has_production_reuse": false,
+      "has_seed": true,
+      "path": "systems/pvp_production_fixture_audit.py",
+      "sha256": "439783778fe5d6c28fdbcafebdb968cf8015c9228402585f0402168ad6ef201e",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 10,
+          "name": "_actor_snapshot"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 24,
+          "name": "_matrix_integrity"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 37,
+          "name": "_combat_signature"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 47,
+          "name": "_slot_weighted_fixture_parity"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 58,
+          "name": "_fixture_warnings"
+        }
+      ]
+    },
+    {
+      "class_hits": [],
+      "exists": true,
+      "has_clock": true,
+      "has_direct_sql_candidate": false,
+      "has_matrix": false,
+      "has_production_reuse": false,
+      "has_seed": false,
+      "path": "systems/simulation/clock.py",
+      "sha256": "795429f079a86168e47952e3d1a4cf2c0dad332e65dfdbacb01d80c5dfc27d17",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 13,
+          "name": "SimulationClock"
+        }
+      ]
+    },
+    {
+      "class_hits": [],
+      "exists": true,
+      "has_clock": false,
+      "has_direct_sql_candidate": false,
+      "has_matrix": false,
+      "has_production_reuse": false,
+      "has_seed": true,
+      "path": "systems/simulation/rng.py",
+      "sha256": "c276dfb76a716b5964f5479db21dfd4b445fd96bf8884126d7c5209d908a90d9",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 11,
+          "name": "SimulationRng"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 22,
+          "name": "random"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 53,
+          "name": "snapshot"
+        }
+      ]
+    },
+    {
+      "class_hits": [],
+      "exists": true,
+      "has_clock": false,
+      "has_direct_sql_candidate": false,
+      "has_matrix": false,
+      "has_production_reuse": false,
+      "has_seed": true,
+      "path": "systems/simulation/rng_adapter.py",
+      "sha256": "da67d1fad41f9131671ac4f2df4ff47d554e0fa04d948ba88dd8aa513b8d1700",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 11,
+          "name": "RandomModuleAdapter"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 39,
+          "name": "inject_module_rng"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 17,
+          "name": "random"
+        }
+      ]
+    },
+    {
+      "class_hits": [
+        "warrior",
+        "knight",
+        "scout",
+        "rogue",
+        "mage",
+        "priest"
+      ],
+      "exists": true,
+      "has_clock": true,
+      "has_direct_sql_candidate": false,
+      "has_matrix": false,
+      "has_production_reuse": false,
+      "has_seed": true,
+      "path": "systems/simulation/parity_foundation.py",
+      "sha256": "48031062b3e44b94d3eb24c6fee02ae4f01f5802a921b7b481e18370e4fa9470",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 30,
+          "name": "SimulatorScenarioPolicy"
+        },
+        {
+          "kind": "ClassDef",
+          "line": 63,
+          "name": "SimulatorMetrics"
+        },
+        {
+          "kind": "ClassDef",
+          "line": 98,
+          "name": "IsolatedSimulatorState"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 89,
+          "name": "snapshot"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 153,
+          "name": "snapshot"
+        }
+      ]
+    },
+    {
+      "class_hits": [
+        "warrior",
+        "knight",
+        "scout",
+        "rogue",
+        "mage",
+        "priest"
+      ],
+      "exists": true,
+      "has_clock": false,
+      "has_direct_sql_candidate": false,
+      "has_matrix": false,
+      "has_production_reuse": false,
+      "has_seed": true,
+      "path": "systems/simulation/world_progression.py",
+      "sha256": "a8532f594dbb836c9fef79dc1ef27ab37316f3eab3c15967bb326972b834ba90",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 27,
+          "name": "WorldProgressionSimulator"
+        }
+      ]
+    },
+    {
+      "class_hits": [],
+      "exists": true,
+      "has_clock": false,
+      "has_direct_sql_candidate": false,
+      "has_matrix": false,
+      "has_production_reuse": false,
+      "has_seed": false,
+      "path": "systems/simulation/equipment_service.py",
+      "sha256": "2c0a4a1759dda4bd8d53f10ccd7126f7818f02d7e3a63a85f7a4a6d97e53153b",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 6,
+          "name": "SimulationEquipmentService"
+        }
+      ]
+    },
+    {
+      "class_hits": [],
+      "exists": true,
+      "has_clock": false,
+      "has_direct_sql_candidate": false,
+      "has_matrix": false,
+      "has_production_reuse": false,
+      "has_seed": false,
+      "path": "systems/simulation/inventory_engine.py",
+      "sha256": "04596ec44aae83e463194ecd6cea180b39efd86efd8f212f2caac67cc1eaf559",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 14,
+          "name": "SimulationInventoryEngine"
+        }
+      ]
+    },
+    {
+      "class_hits": [],
+      "exists": true,
+      "has_clock": false,
+      "has_direct_sql_candidate": false,
+      "has_matrix": false,
+      "has_production_reuse": false,
+      "has_seed": false,
+      "path": "systems/simulation/drop_inventory.py",
+      "sha256": "88d1a01123abf32d14ad48a1dbce886c292e30cbf025f5e8bdbf620c03141a34",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 9,
+          "name": "SimulationDropInventoryEngine"
+        }
+      ]
+    },
+    {
+      "class_hits": [
+        "warrior",
+        "knight",
+        "scout",
+        "rogue",
+        "mage",
+        "priest"
+      ],
+      "exists": true,
+      "has_clock": false,
+      "has_direct_sql_candidate": false,
+      "has_matrix": false,
+      "has_production_reuse": false,
+      "has_seed": false,
+      "path": "systems/simulation/meta_progression.py",
+      "sha256": "81b021b7088035c082bc0e63eb1bc7d3e0dc834a77508cbb58b99366aeb5141a",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 33,
+          "name": "GuildSimulationState"
+        },
+        {
+          "kind": "ClassDef",
+          "line": 37,
+          "name": "SimulationMetaState"
+        },
+        {
+          "kind": "ClassDef",
+          "line": 40,
+          "name": "SimulationMetaProgressionService"
+        }
+      ]
+    },
+    {
+      "class_hits": [
+        "mage",
+        "priest"
+      ],
+      "exists": true,
+      "has_clock": false,
+      "has_direct_sql_candidate": false,
+      "has_matrix": false,
+      "has_production_reuse": true,
+      "has_seed": false,
+      "path": "systems/simulation/survival_state.py",
+      "sha256": "cd7e848fbd0b7ac4559dacab0267437e07f7be366bf6c649200da876883689b4",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 13,
+          "name": "PersistentCombatState"
+        },
+        {
+          "kind": "ClassDef",
+          "line": 51,
+          "name": "SimulationSurvivalService"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 28,
+          "name": "restore_mp_after_combat"
+        }
+      ]
+    },
+    {
+      "class_hits": [],
+      "exists": false,
+      "path": "systems/combat_actor_stats.py",
+      "sha256": null,
+      "symbols": []
+    },
+    {
+      "class_hits": [],
+      "exists": false,
+      "path": "systems/canonical_rules.py",
+      "sha256": null,
+      "symbols": []
+    },
+    {
+      "class_hits": [
+        "warrior",
+        "knight",
+        "scout",
+        "rogue",
+        "mage",
+        "priest"
+      ],
+      "exists": true,
+      "has_clock": false,
+      "has_direct_sql_candidate": false,
+      "has_matrix": false,
+      "has_production_reuse": false,
+      "has_seed": false,
+      "path": "data/stat_scaling.py",
+      "sha256": "e9d60b9114e581b7fe026e1cc0227d8c0a23db504e11c70d6cee547d1f708790",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 62,
+          "name": "normalize_class_key"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 84,
+          "name": "validate_class_scaling"
+        }
+      ]
+    },
+    {
+      "class_hits": [],
+      "exists": true,
+      "has_clock": true,
+      "has_direct_sql_candidate": false,
+      "has_matrix": false,
+      "has_production_reuse": false,
+      "has_seed": false,
+      "path": "rom_v2/application/ports/clock.py",
+      "sha256": "a023e54dae514692a5b76a491d7aa86f502d338a980e34e3ea8712eff1c9b6ee",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 8,
+          "name": "Clock"
+        }
+      ]
+    },
+    {
+      "class_hits": [],
+      "exists": true,
+      "has_clock": false,
+      "has_direct_sql_candidate": false,
+      "has_matrix": false,
+      "has_production_reuse": false,
+      "has_seed": true,
+      "path": "rom_v2/application/ports/random_source.py",
+      "sha256": "91ee0496f217dd6f3c540936c224430fd8d1dcfb086f461dd9f3e8baaee11a5c",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 9,
+          "name": "RandomSource"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 12,
+          "name": "random"
+        }
+      ]
+    },
+    {
+      "class_hits": [],
+      "exists": true,
+      "has_clock": false,
+      "has_direct_sql_candidate": false,
+      "has_matrix": false,
+      "has_production_reuse": false,
+      "has_seed": false,
+      "path": "rom_v2/application/ports/repositories.py",
+      "sha256": "04c04f838b7326ae54159a2e4beca195bbd921009d71c6651e1609739044d8af",
+      "symbols": []
+    },
+    {
+      "class_hits": [],
+      "exists": true,
+      "has_clock": true,
+      "has_direct_sql_candidate": false,
+      "has_matrix": false,
+      "has_production_reuse": false,
+      "has_seed": true,
+      "path": "rom_v2/domain/simulator_adapters.py",
+      "sha256": "ee93b0caf451c32333ac241ebcac54d142f36583c6fabf588859ef5970ee7fd1",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 29,
+          "name": "ClockPort"
+        },
+        {
+          "kind": "ClassDef",
+          "line": 33,
+          "name": "RandomSourcePort"
+        },
+        {
+          "kind": "ClassDef",
+          "line": 41,
+          "name": "SimulationClockAdapter"
+        },
+        {
+          "kind": "ClassDef",
+          "line": 63,
+          "name": "SeededRandomAdapter"
+        },
+        {
+          "kind": "ClassDef",
+          "line": 160,
+          "name": "SimulatorAdapters"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 34,
+          "name": "random"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 77,
+          "name": "random"
+        }
+      ]
+    }
+  ],
+  "stage": "21.15.4b",
+  "status": "PASS",
+  "unresolved": []
+}
