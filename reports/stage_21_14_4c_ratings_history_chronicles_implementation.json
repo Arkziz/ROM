@@ -1,0 +1,49 @@
+{
+  "branch": "rewrite/rom-v2",
+  "contracts": {
+    "chronicle_page_size": 10,
+    "chronicle_retention": 100,
+    "history_limit_per_kind": 100,
+    "history_page_size": 10,
+    "ordering": "newest_first_with_stable_identity_tiebreak",
+    "rating_page_size": 20,
+    "rating_top_limit": 100
+  },
+  "decision": "API_READY_IMPLEMENTED",
+  "game_db_wal_shm": "NOT_MANIPULATED",
+  "generated_at": "2026-10-27T20:04:55.387352+00:00",
+  "head_before": "cf58949a75203782d78d651a9796e74cc0289903",
+  "manual_verification": {
+    "reason": "API-ready domain is not wired to runtime, Telegram or production persistence.",
+    "required": false
+  },
+  "parity": {
+    "decision": "PARITY_RESOLVED_IMPLEMENTATION_AUTHORIZED",
+    "path": "reports/stage_21_14_4b_ratings_history_chronicles_parity_resolution.json",
+    "sha256": "1e0bad371e358910c20297fd28e87da9f0f807ccf1010a1d6b191f764d0ead55"
+  },
+  "production_files": [
+    "rom_v2/domain/ratings_history_chronicles/__init__.py",
+    "rom_v2/domain/ratings_history_chronicles/models.py",
+    "rom_v2/domain/ratings_history_chronicles/ratings.py",
+    "rom_v2/domain/ratings_history_chronicles/history.py",
+    "rom_v2/domain/ratings_history_chronicles/chronicles.py"
+  ],
+  "production_persistence_connected": false,
+  "runtime_connected": false,
+  "stage": "21.14.4c",
+  "status": "PASS",
+  "telegram_connected": false,
+  "test_files": [
+    "tests/unit/ratings_history_chronicles/__init__.py",
+    "tests/unit/ratings_history_chronicles/test_ratings_history_chronicles.py"
+  ],
+  "tests": {
+    "py_compile": "PASS",
+    "smoke": "PASS",
+    "smoke_stdout": "PASS: Stage 21.14.4c ratings/history/chronicles API-ready contract\n",
+    "unit": "PASS",
+    "unit_stderr": "test_chronicle_tie_order_is_deterministic (tests.unit.ratings_history_chronicles.test_ratings_history_chronicles.ContractTests.test_chronicle_tie_order_is_deterministic) ... ok\ntest_chronicles_last_100_ten_per_page_newest_first (tests.unit.ratings_history_chronicles.test_ratings_history_chronicles.ContractTests.test_chronicles_last_100_ten_per_page_newest_first) ... ok\ntest_history_newest_first_and_limit (tests.unit.ratings_history_chronicles.test_ratings_history_chronicles.ContractTests.test_history_newest_first_and_limit) ... ok\ntest_history_only_completed_trade_and_result_pvp (tests.unit.ratings_history_chronicles.test_ratings_history_chronicles.ContractTests.test_history_only_completed_trade_and_result_pvp) ... ok\ntest_naive_timestamps_and_duplicate_ids_fail_closed (tests.unit.ratings_history_chronicles.test_ratings_history_chronicles.ContractTests.test_naive_timestamps_and_duplicate_ids_fail_closed) ... ok\ntest_pages_must_be_positive (tests.unit.ratings_history_chronicles.test_ratings_history_chronicles.ContractTests.test_pages_must_be_positive) ... ok\ntest_rating_boundary_page_and_duplicate_fail_closed (tests.unit.ratings_history_chronicles.test_ratings_history_chronicles.ContractTests.test_rating_boundary_page_and_duplicate_fail_closed) ... ok\ntest_ratings_top_100_page_20_and_stable_ties (tests.unit.ratings_history_chronicles.test_ratings_history_chronicles.ContractTests.test_ratings_top_100_page_20_and_stable_ties) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 0.012s\n\nOK\n",
+    "unit_stdout": ""
+  }
+}
