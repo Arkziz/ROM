@@ -1,0 +1,127 @@
+{
+  "branch": "rewrite/rom-v2",
+  "decision": "FLAT_DOMAIN_REMEDIATED",
+  "environment_file_opened": false,
+  "flat_files": [
+    "rom_v2/domain/events.py",
+    "rom_v2/domain/inactivity_reminders.py",
+    "rom_v2/domain/ratings_history_chronicles.py",
+    "rom_v2/domain/about_links_support.py",
+    "rom_v2/domain/dev_authorization.py"
+  ],
+  "flat_tests": [
+    "tests_v2/test_event_schedules_rewards.py",
+    "tests_v2/test_inactivity_reminders.py",
+    "tests_v2/test_ratings_history_chronicles.py",
+    "tests_v2/test_about_links_support.py",
+    "tests_v2/test_dev_authorization.py"
+  ],
+  "flattened": {
+    "about_links_support": {
+      "sha256": "4eeb04a030a8391b48de2a24e16beb38ff6925aff85739e4ccb558a02ea44dde",
+      "source_modules": [
+        "models.py",
+        "service.py"
+      ]
+    },
+    "dev_authorization": {
+      "sha256": "d0d5a8a9558717bde72cde7e69c3de64be6b7d9a9b446c656565eb0996096bb4",
+      "source_modules": [
+        "model.py",
+        "service.py"
+      ]
+    },
+    "events": {
+      "sha256": "52fafca5ab34813479021e73c624b139bff618e288cfa978717865d29eff3f20",
+      "source_modules": [
+        "rewards.py",
+        "schedule.py",
+        "service.py"
+      ]
+    },
+    "inactivity_reminders": {
+      "sha256": "9069f42df6597dfb28c9b75f2ac958df340006f7007393e5ff5c1758e5181ed4",
+      "source_modules": [
+        "model.py",
+        "service.py"
+      ]
+    },
+    "ratings_history_chronicles": {
+      "sha256": "e37db3441a4d60254533d9812c7837c3a0192553e55ef7cf2db9f1443d390d52",
+      "source_modules": [
+        "models.py",
+        "chronicles.py",
+        "history.py",
+        "ratings.py"
+      ]
+    }
+  },
+  "game_db_wal_shm": "NOT_MANIPULATED",
+  "generated_at": "2026-10-27T22:07:58.694064+00:00",
+  "head_before": "2efa0c7e80f468e0c0e1c809b99373c57d9bf294",
+  "manual_verification": {
+    "reason": "Structural API-ready remediation only.",
+    "required": false
+  },
+  "production_persistence_connected": false,
+  "production_sqlite_opened": false,
+  "removed_nested_directories": [
+    "rom_v2/domain/events",
+    "tests/unit/events",
+    "rom_v2/domain/inactivity_reminders",
+    "tests/unit/inactivity_reminders",
+    "rom_v2/domain/ratings_history_chronicles",
+    "tests/unit/ratings_history_chronicles",
+    "rom_v2/domain/about_links_support",
+    "tests/unit/about_links_support",
+    "rom_v2/domain/dev_authorization",
+    "tests/unit/dev_authorization"
+  ],
+  "removed_tracked_files": [
+    "rom_v2/domain/about_links_support/__init__.py",
+    "rom_v2/domain/about_links_support/models.py",
+    "rom_v2/domain/about_links_support/service.py",
+    "rom_v2/domain/dev_authorization/__init__.py",
+    "rom_v2/domain/dev_authorization/model.py",
+    "rom_v2/domain/dev_authorization/service.py",
+    "rom_v2/domain/events/__init__.py",
+    "rom_v2/domain/events/rewards.py",
+    "rom_v2/domain/events/schedule.py",
+    "rom_v2/domain/events/service.py",
+    "rom_v2/domain/inactivity_reminders/__init__.py",
+    "rom_v2/domain/inactivity_reminders/model.py",
+    "rom_v2/domain/inactivity_reminders/service.py",
+    "rom_v2/domain/ratings_history_chronicles/__init__.py",
+    "rom_v2/domain/ratings_history_chronicles/chronicles.py",
+    "rom_v2/domain/ratings_history_chronicles/history.py",
+    "rom_v2/domain/ratings_history_chronicles/models.py",
+    "rom_v2/domain/ratings_history_chronicles/ratings.py",
+    "tests/unit/about_links_support/__init__.py",
+    "tests/unit/about_links_support/test_about_links_support.py",
+    "tests/unit/dev_authorization/__init__.py",
+    "tests/unit/dev_authorization/test_dev_authorization.py",
+    "tests/unit/events/__init__.py",
+    "tests/unit/events/test_event_schedules_rewards.py",
+    "tests/unit/inactivity_reminders/__init__.py",
+    "tests/unit/inactivity_reminders/test_inactivity_reminders.py",
+    "tests/unit/ratings_history_chronicles/__init__.py",
+    "tests/unit/ratings_history_chronicles/test_ratings_history_chronicles.py"
+  ],
+  "runtime_connected": false,
+  "stage": "21.15.1d",
+  "status": "PASS",
+  "telegram_connected": false,
+  "updated_tools": [
+    "tools/check_stage_21_14_2c_event_schedules_rewards.py",
+    "tools/check_stage_21_14_3c_inactivity_reminders.py",
+    "tools/check_stage_21_14_4c_ratings_history_chronicles.py",
+    "tools/check_stage_21_14_5c_about_links_support.py",
+    "tools/check_stage_21_15_1c_dev_authorization.py"
+  ],
+  "validation": {
+    "py_compile": "PASS",
+    "smoke": "PASS",
+    "stderr": "test_disabled_event_is_not_eligible (tests_v2.test_event_schedules_rewards.EventScheduleRewardTests.test_disabled_event_is_not_eligible) ... ok\ntest_naive_time_and_invalid_window_fail_closed (tests_v2.test_event_schedules_rewards.EventScheduleRewardTests.test_naive_time_and_invalid_window_fail_closed) ... ok\ntest_reward_catalog_does_not_model_shop_or_drop_quantities (tests_v2.test_event_schedules_rewards.EventScheduleRewardTests.test_reward_catalog_does_not_model_shop_or_drop_quantities) ... ok\ntest_start_is_inclusive_and_end_is_exclusive (tests_v2.test_event_schedules_rewards.EventScheduleRewardTests.test_start_is_inclusive_and_end_is_exclusive) ... ok\ntest_timezone_aware_values_are_normalized_to_utc (tests_v2.test_event_schedules_rewards.EventScheduleRewardTests.test_timezone_aware_values_are_normalized_to_utc) ... ok\ntest_unknown_and_duplicate_event_keys_fail_closed (tests_v2.test_event_schedules_rewards.EventScheduleRewardTests.test_unknown_and_duplicate_event_keys_fail_closed) ... ok\ntest_upcoming_active_completed_are_clock_deterministic (tests_v2.test_event_schedules_rewards.EventScheduleRewardTests.test_upcoming_active_completed_are_clock_deterministic) ... ok\ntest_v1_parity_has_no_direct_test_event_reward (tests_v2.test_event_schedules_rewards.EventScheduleRewardTests.test_v1_parity_has_no_direct_test_event_reward) ... ok\ntest_cycle_key_is_stable_across_timezone_representation (tests_v2.test_inactivity_reminders.InactivityReminderTests.test_cycle_key_is_stable_across_timezone_representation) ... ok\ntest_evaluation_is_clock_deterministic (tests_v2.test_inactivity_reminders.InactivityReminderTests.test_evaluation_is_clock_deterministic) ... ok\ntest_naive_timestamps_fail_closed (tests_v2.test_inactivity_reminders.InactivityReminderTests.test_naive_timestamps_fail_closed) ... ok\ntest_new_activity_creates_new_cycle (tests_v2.test_inactivity_reminders.InactivityReminderTests.test_new_activity_creates_new_cycle) ... ok\ntest_noncanonical_threshold_is_rejected (tests_v2.test_inactivity_reminders.InactivityReminderTests.test_noncanonical_threshold_is_rejected) ... ok\ntest_receipt_requires_due_cycle_and_success_time (tests_v2.test_inactivity_reminders.InactivityReminderTests.test_receipt_requires_due_cycle_and_success_time) ... ok\ntest_same_cycle_is_suppressed_by_persistent_audit_key (tests_v2.test_inactivity_reminders.InactivityReminderTests.test_same_cycle_is_suppressed_by_persistent_audit_key) ... ok\ntest_service_contains_no_scheduler_message_or_transport (tests_v2.test_inactivity_reminders.InactivityReminderTests.test_service_contains_no_scheduler_message_or_transport) ... ok\ntest_threshold_is_exactly_seven_full_days (tests_v2.test_inactivity_reminders.InactivityReminderTests.test_threshold_is_exactly_seven_full_days) ... ok\ntest_chronicle_tie_order_is_deterministic (tests_v2.test_ratings_history_chronicles.ContractTests.test_chronicle_tie_order_is_deterministic) ... ok\ntest_chronicles_last_100_ten_per_page_newest_first (tests_v2.test_ratings_history_chronicles.ContractTests.test_chronicles_last_100_ten_per_page_newest_first) ... ok\ntest_history_newest_first_and_limit (tests_v2.test_ratings_history_chronicles.ContractTests.test_history_newest_first_and_limit) ... ok\ntest_history_only_completed_trade_and_result_pvp (tests_v2.test_ratings_history_chronicles.ContractTests.test_history_only_completed_trade_and_result_pvp) ... ok\ntest_naive_timestamps_and_duplicate_ids_fail_closed (tests_v2.test_ratings_history_chronicles.ContractTests.test_naive_timestamps_and_duplicate_ids_fail_closed) ... ok\ntest_pages_must_be_positive (tests_v2.test_ratings_history_chronicles.ContractTests.test_pages_must_be_positive) ... ok\ntest_rating_boundary_page_and_duplicate_fail_closed (tests_v2.test_ratings_history_chronicles.ContractTests.test_rating_boundary_page_and_duplicate_fail_closed) ... ok\ntest_ratings_top_100_page_20_and_stable_ties (tests_v2.test_ratings_history_chronicles.ContractTests.test_ratings_top_100_page_20_and_stable_ties) ... ok\ntest_catalog_preserves_authoritative_order_and_exact_content (tests_v2.test_about_links_support.AboutLinksSupportTests.test_catalog_preserves_authoritative_order_and_exact_content) ... ok\ntest_domain_has_no_provider_or_payment_destination_policy (tests_v2.test_about_links_support.AboutLinksSupportTests.test_domain_has_no_provider_or_payment_destination_policy) ... ok\ntest_https_links_are_visible_in_canonical_order (tests_v2.test_about_links_support.AboutLinksSupportTests.test_https_links_are_visible_in_canonical_order) ... ok\ntest_non_https_malformed_and_credential_urls_are_hidden (tests_v2.test_about_links_support.AboutLinksSupportTests.test_non_https_malformed_and_credential_urls_are_hidden) ... ok\ntest_partial_configuration_shows_only_valid_entries (tests_v2.test_about_links_support.AboutLinksSupportTests.test_partial_configuration_shows_only_valid_entries) ... ok\ntest_unconfigured_links_are_hidden (tests_v2.test_about_links_support.AboutLinksSupportTests.test_unconfigured_links_are_hidden) ... ok\ntest_unknown_and_duplicate_sections_fail_closed (tests_v2.test_about_links_support.AboutLinksSupportTests.test_unknown_and_duplicate_sections_fail_closed) ... ok\ntest_all_operation_classes_are_explicit (tests_v2.test_dev_authorization.DevAuthorizationTests.test_all_operation_classes_are_explicit) ... ok\ntest_authorized_operation_is_allowed (tests_v2.test_dev_authorization.DevAuthorizationTests.test_authorized_operation_is_allowed) ... ok\ntest_disabled_dev_mode_denies_before_identity (tests_v2.test_dev_authorization.DevAuthorizationTests.test_disabled_dev_mode_denies_before_identity) ... ok\ntest_domain_has_no_transport_database_or_environment_access (tests_v2.test_dev_authorization.DevAuthorizationTests.test_domain_has_no_transport_database_or_environment_access) ... ok\ntest_invalid_identity_and_empty_keys_fail_closed (tests_v2.test_dev_authorization.DevAuthorizationTests.test_invalid_identity_and_empty_keys_fail_closed) ... ok\ntest_require_allowed_fails_before_adapter_side_effect (tests_v2.test_dev_authorization.DevAuthorizationTests.test_require_allowed_fails_before_adapter_side_effect) ... ok\ntest_unauthorized_caller_is_blocked (tests_v2.test_dev_authorization.DevAuthorizationTests.test_unauthorized_caller_is_blocked) ... ok\ntest_unlisted_operation_is_blocked (tests_v2.test_dev_authorization.DevAuthorizationTests.test_unlisted_operation_is_blocked) ... ok\n\n----------------------------------------------------------------------\nRan 40 tests in 0.014s\n\nOK\n",
+    "stdout": "PASS: Stage 21.15.1d flat domain remediation\n"
+  }
+}

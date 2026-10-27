@@ -51,7 +51,7 @@ class DevAuthorizationTests(unittest.TestCase):
 
     def test_domain_has_no_transport_database_or_environment_access(self):
         import inspect
-        from rom_v2.domain.dev_authorization import service
+        import rom_v2.domain.dev_authorization as service
         source = inspect.getsource(service)
         for forbidden in ("sqlite3", "os.getenv", "aiogram", "telegram", "execute("):
             self.assertNotIn(forbidden, source)

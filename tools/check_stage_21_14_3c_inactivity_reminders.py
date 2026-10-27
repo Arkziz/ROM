@@ -9,7 +9,7 @@ FILES = (
     "rom_v2/domain/inactivity_reminders/__init__.py",
     "rom_v2/domain/inactivity_reminders/model.py",
     "rom_v2/domain/inactivity_reminders/service.py",
-    "tests/unit/inactivity_reminders/test_inactivity_reminders.py",
+    "tests_v2/test_inactivity_reminders.py",
 )
 
 
@@ -18,7 +18,7 @@ def main() -> int:
         if not (ROOT / relative).is_file():
             raise SystemExit(f"FAIL: missing {relative}")
     completed = subprocess.run(
-        [sys.executable, "-m", "unittest", "tests.unit.inactivity_reminders.test_inactivity_reminders", "-v"],
+        [sys.executable, "-m", "unittest", "tests_v2.test_inactivity_reminders", "-v"],
         cwd=ROOT,
         check=False,
     )
