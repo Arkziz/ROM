@@ -1,0 +1,50 @@
+{
+  "branch": "rewrite/rom-v2",
+  "contracts": {
+    "about_content": "authoritative_adapter_supplied",
+    "configured_link_kinds": [
+      "game_chat",
+      "news_channel",
+      "support"
+    ],
+    "provider_policy": "not_invented",
+    "url_policy": "absolute_https_fail_closed_hide_invalid_or_unconfigured"
+  },
+  "decision": "API_READY_IMPLEMENTED",
+  "environment_adapter_connected": false,
+  "environment_file_opened": false,
+  "game_db_wal_shm": "NOT_MANIPULATED",
+  "generated_at": "2026-10-27T20:36:49.508844+00:00",
+  "head_before": "31733539e7191079fbffda90c588ea1cc931d3df",
+  "manual_verification": {
+    "reason": "API-ready domain is not connected to runtime, Telegram or environment configuration.",
+    "required": false
+  },
+  "parity": {
+    "decision": "PARITY_RESOLVED_IMPLEMENTATION_AUTHORIZED",
+    "path": "reports/stage_21_14_5b_about_links_support_parity_resolution.json",
+    "sha256": "8473a5d06447bc79a6b69f78ff45f543d38f5dc1d328df530428ecb5acb50dfa"
+  },
+  "production_files": [
+    "rom_v2/domain/about_links_support/__init__.py",
+    "rom_v2/domain/about_links_support/models.py",
+    "rom_v2/domain/about_links_support/service.py"
+  ],
+  "production_persistence_connected": false,
+  "runtime_connected": false,
+  "stage": "21.14.5c",
+  "status": "PASS",
+  "telegram_connected": false,
+  "test_files": [
+    "tests/unit/about_links_support/__init__.py",
+    "tests/unit/about_links_support/test_about_links_support.py"
+  ],
+  "tests": {
+    "py_compile": "PASS",
+    "smoke": "PASS",
+    "smoke_stdout": "PASS: Stage 21.14.5c About/links/support API-ready contract\n",
+    "unit": "PASS",
+    "unit_stderr": "test_catalog_preserves_authoritative_order_and_exact_content (tests.unit.about_links_support.test_about_links_support.AboutLinksSupportTests.test_catalog_preserves_authoritative_order_and_exact_content) ... ok\ntest_domain_has_no_provider_or_payment_destination_policy (tests.unit.about_links_support.test_about_links_support.AboutLinksSupportTests.test_domain_has_no_provider_or_payment_destination_policy) ... ok\ntest_https_links_are_visible_in_canonical_order (tests.unit.about_links_support.test_about_links_support.AboutLinksSupportTests.test_https_links_are_visible_in_canonical_order) ... ok\ntest_non_https_malformed_and_credential_urls_are_hidden (tests.unit.about_links_support.test_about_links_support.AboutLinksSupportTests.test_non_https_malformed_and_credential_urls_are_hidden) ... ok\ntest_partial_configuration_shows_only_valid_entries (tests.unit.about_links_support.test_about_links_support.AboutLinksSupportTests.test_partial_configuration_shows_only_valid_entries) ... ok\ntest_unconfigured_links_are_hidden (tests.unit.about_links_support.test_about_links_support.AboutLinksSupportTests.test_unconfigured_links_are_hidden) ... ok\ntest_unknown_and_duplicate_sections_fail_closed (tests.unit.about_links_support.test_about_links_support.AboutLinksSupportTests.test_unknown_and_duplicate_sections_fail_closed) ... ok\n\n----------------------------------------------------------------------\nRan 7 tests in 0.002s\n\nOK\n",
+    "unit_stdout": ""
+  }
+}
