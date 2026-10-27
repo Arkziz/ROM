@@ -1,0 +1,43 @@
+{
+  "branch": "rewrite/rom-v2",
+  "classes": [
+    "warrior",
+    "knight",
+    "scout",
+    "rogue",
+    "mage",
+    "priest"
+  ],
+  "decision": "API_READY_IMPLEMENTED",
+  "flat_domain_file": "rom_v2/domain/six_class_simulation_matrix.py",
+  "game_db_wal_shm": "NOT_MANIPULATED",
+  "generated_at": "2026-10-27T23:38:51.891239+00:00",
+  "head_before": "9b439ea6a72cee89556f85262ddf25c51426fd53",
+  "long_run_executed": false,
+  "manual_verification": {
+    "reason": "API-ready short-probe matrix only; runtime and long simulation are not connected.",
+    "required": false
+  },
+  "maximum_controlled_turns_per_class": 3,
+  "new_formulas_added": false,
+  "parity": {
+    "decision": "PARITY_RESOLVED_IMPLEMENTATION_AUTHORIZED",
+    "path": "reports/stage_21_15_4b_six_class_simulation_matrix_parity_resolution.json",
+    "sha256": "3f1d85d841da07aa23361736a1305331289d792bdf0679ae0be73acce4ab3f85"
+  },
+  "production_persistence_connected": false,
+  "revision": "2026-10-28-r1-six-class-no-long-run",
+  "runtime_connected": false,
+  "simulator_executed": false,
+  "stage": "21.15.4c",
+  "status": "PASS",
+  "telegram_connected": false,
+  "tests": {
+    "py_compile": "PASS",
+    "smoke": "PASS",
+    "smoke_stdout": "PASS: Stage 21.15.4c six-class short-probe matrix; long run not executed\n",
+    "unit": "PASS",
+    "unit_stderr": "test_each_class_uses_same_production_adapter_boundary (tests_v2.test_six_class_simulation_matrix.MatrixTests.test_each_class_uses_same_production_adapter_boundary) ... ok\ntest_exact_six_class_order_and_no_long_run (tests_v2.test_six_class_simulation_matrix.MatrixTests.test_exact_six_class_order_and_no_long_run) ... ok\ntest_invalid_adapter_turn_count_fails_closed (tests_v2.test_six_class_simulation_matrix.MatrixTests.test_invalid_adapter_turn_count_fails_closed) ... ok\ntest_long_run_turn_count_is_rejected (tests_v2.test_six_class_simulation_matrix.MatrixTests.test_long_run_turn_count_is_rejected) ... ok\ntest_zero_turn_setup_probe (tests_v2.test_six_class_simulation_matrix.MatrixTests.test_zero_turn_setup_probe) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.002s\n\nOK\n",
+    "unit_stdout": ""
+  }
+}
