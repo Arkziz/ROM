@@ -1,0 +1,197 @@
+{
+  "audit": {
+    "conclusion": "PASS_REVIEW_REQUIRED",
+    "path": "reports/stage_21_14_5_existing_about_links_support_audit.json",
+    "sha256": null
+  },
+  "contracts": [
+    {
+      "area": "about_content",
+      "contract": "About content remains canonical source-owned ordered sections. V2 may model and navigate confirmed sections but must not rewrite, summarize, reorder or invent lore/content during this stage.",
+      "status": "REFINED"
+    },
+    {
+      "area": "useful_links",
+      "contract": "Useful links are optional configuration-backed entries for the game chat and news channel. An absent or invalid entry is hidden rather than rendered as a broken button.",
+      "status": "REFINED"
+    },
+    {
+      "area": "support",
+      "contract": "Support is one optional configuration-backed HTTPS URL entry. Provider, destination and payment semantics stay external configuration and are not embedded into the V2 domain.",
+      "status": "REFINED"
+    },
+    {
+      "area": "validation",
+      "contract": "Configured external links are accepted only as absolute HTTPS URLs with a non-empty network location; malformed, relative and non-HTTPS values fail closed and remain hidden.",
+      "status": "REFINED"
+    },
+    {
+      "area": "configuration",
+      "contract": "Domain input uses the three confirmed configuration names GAME_CHAT_URL, NEWS_CHANNEL_URL and SUPPORT_URL. The .env file and runtime secret values are not read, copied or persisted by the domain contract.",
+      "status": "REFINED"
+    },
+    {
+      "area": "navigation",
+      "contract": "About sections support deterministic section selection plus return to canonical account menu. Useful-links entry belongs beside About in the account-menu presentation, while callback identifiers and Telegram keyboards remain adapter concerns.",
+      "status": "REFINED"
+    },
+    {
+      "area": "availability",
+      "contract": "About remains available from canonical account navigation. Useful-links/support visibility is derived from validated configured entries and does not require database state.",
+      "status": "REFINED"
+    }
+  ],
+  "decision": "REFINED_CONTRACT_READY_FOR_PARITY_RESOLUTION",
+  "generated_at": "2026-10-27T20:20:05.182362+00:00",
+  "implementation_authorized": false,
+  "manual_verification": {
+    "reason": "Read-only semantic refinement.",
+    "required": false
+  },
+  "next_action": "GO_TO_PARITY_RESOLUTION",
+  "no_go": false,
+  "observed_constants": [
+    "ABOUT_GAME_SECTIONS",
+    "GAME_CHAT_URL",
+    "NEWS_CHANNEL_URL",
+    "SUPPORT_URL"
+  ],
+  "observed_markers": {
+    "account_menu": true,
+    "callbacks": true,
+    "hide_unconfigured": false,
+    "https": false
+  },
+  "observed_symbols": [
+    "_about_menu_kb",
+    "_return_account_menu",
+    "_validated_external_https_url",
+    "about_callback",
+    "build_about_game_section_text",
+    "get_about_game_section",
+    "get_external_links_config",
+    "open_about",
+    "register_about_game_handlers"
+  ],
+  "prohibitions": [
+    "Do not invent or modify About text or section order.",
+    "Do not hard-code runtime URL values, provider names or payment destinations.",
+    "Do not read or copy .env values.",
+    "Do not add Telegram handlers, callback IDs, runtime wiring or production persistence in refinement.",
+    "Do not manipulate game.db-wal or game.db-shm."
+  ],
+  "source_evidence": {
+    "config.py": {
+      "constants": [
+        {
+          "line": 56,
+          "name": "GAME_CHAT_URL",
+          "value_kind": "Call"
+        },
+        {
+          "line": 59,
+          "name": "NEWS_CHANNEL_URL",
+          "value_kind": "Call"
+        },
+        {
+          "line": 62,
+          "name": "SUPPORT_URL",
+          "value_kind": "Call"
+        }
+      ],
+      "markers": {
+        "account_menu": false,
+        "callbacks": false,
+        "hide_unconfigured": false,
+        "https": false
+      },
+      "sha256": "aae925e7e3e40c5b9bde60a4f9373df611b8a4ab4d36031b1b81b6f24e27d793",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 34,
+          "name": "_validated_external_https_url"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 67,
+          "name": "get_external_links_config"
+        }
+      ]
+    },
+    "data/about_game.py": {
+      "constants": [
+        {
+          "line": 6,
+          "name": "ABOUT_GAME_SECTIONS",
+          "value_kind": "Dict"
+        }
+      ],
+      "markers": {
+        "account_menu": false,
+        "callbacks": false,
+        "hide_unconfigured": false,
+        "https": false
+      },
+      "sha256": "417a9803f12c0b287802c433ac0d83e6be8a5996347e04a34916df44234c8a84",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 98,
+          "name": "get_about_game_section"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 99,
+          "name": "build_about_game_section_text"
+        }
+      ]
+    },
+    "handlers/about_game.py": {
+      "constants": [],
+      "markers": {
+        "account_menu": true,
+        "callbacks": true,
+        "hide_unconfigured": false,
+        "https": false
+      },
+      "sha256": "1e1afdb05824563428956ff1ac24e2f3a1df9802dae383e1de47a0f0f8d17501",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 8,
+          "name": "_about_menu_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 18,
+          "name": "_return_account_menu"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 23,
+          "name": "register_about_game_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 25,
+          "name": "open_about"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 29,
+          "name": "about_callback"
+        }
+      ]
+    }
+  },
+  "stage": "21.14.5a",
+  "status": "PASS",
+  "unresolved": [
+    {
+      "area": "https_validator_owner",
+      "blocking_for_implementation": true,
+      "reason": "HTTPS validation marker was not confirmed in the selected owners; parity resolution must identify the exact V1 validator."
+    }
+  ]
+}
