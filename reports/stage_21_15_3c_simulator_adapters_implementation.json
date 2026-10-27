@@ -1,0 +1,43 @@
+{
+  "branch": "rewrite/rom-v2",
+  "check": "tools/check_stage_21_15_3c_simulator_adapters.py",
+  "contracts": {
+    "clock": "injected_aware_utc_forward_only",
+    "gameplay_formulas": "production_domain_only_not_duplicated",
+    "repository": "deep_copy_in_memory_explicit_transaction",
+    "rng": "seeded_instance_no_global_reseed_with_draw_count"
+  },
+  "decision": "API_READY_IMPLEMENTED",
+  "environment_file_opened": false,
+  "flat_domain_module": "rom_v2/domain/simulator_adapters.py",
+  "game_db_wal_shm": "NOT_MANIPULATED",
+  "generated_at": "2026-10-27T23:06:38.311799+00:00",
+  "head_before": "90c5e0551e5791b8e078ee2f87976c767843524a",
+  "manual_verification": {
+    "reason": "API-ready adapters are not wired to runtime or production persistence.",
+    "required": false
+  },
+  "nested_package_authorized": false,
+  "parity": {
+    "decision": "PARITY_RESOLVED_IMPLEMENTATION_AUTHORIZED",
+    "path": "reports/stage_21_15_3b_simulator_adapters_parity_resolution.json",
+    "sha256": "6bb0b423fe5bcc4963257a98dd2210881e45441cc45884cd6035e3bcd52ec423"
+  },
+  "production_persistence_connected": false,
+  "production_sqlite_opened": false,
+  "revision": "2026-10-27-r1-flat-domain",
+  "runtime_connected": false,
+  "simulator_executed": false,
+  "stage": "21.15.3c",
+  "status": "PASS",
+  "telegram_connected": false,
+  "test": "tests_v2/test_simulator_adapters.py",
+  "tests": {
+    "py_compile": "PASS",
+    "smoke": "PASS",
+    "smoke_stdout": "PASS: Stage 21.15.3c flat simulator adapters\n",
+    "unit": "PASS",
+    "unit_stderr": "test_adapter_bundle_isolated_and_duplicate_repository_fails (tests_v2.test_simulator_adapters.SimulatorAdaptersTests.test_adapter_bundle_isolated_and_duplicate_repository_fails) ... ok\ntest_adapter_does_not_define_gameplay_formula_names (tests_v2.test_simulator_adapters.SimulatorAdaptersTests.test_adapter_does_not_define_gameplay_formula_names) ... ok\ntest_clock_is_deterministic_aware_utc_and_forward_only (tests_v2.test_simulator_adapters.SimulatorAdaptersTests.test_clock_is_deterministic_aware_utc_and_forward_only) ... ok\ntest_flat_module_contains_no_sqlite_or_production_paths (tests_v2.test_simulator_adapters.SimulatorAdaptersTests.test_flat_module_contains_no_sqlite_or_production_paths) ... ok\ntest_repository_commit_persists_only_inside_sandbox (tests_v2.test_simulator_adapters.SimulatorAdaptersTests.test_repository_commit_persists_only_inside_sandbox) ... ok\ntest_repository_requires_transaction_and_rolls_back_deep_copies (tests_v2.test_simulator_adapters.SimulatorAdaptersTests.test_repository_requires_transaction_and_rolls_back_deep_copies) ... ok\ntest_rng_supports_canonical_subset_and_fails_closed (tests_v2.test_simulator_adapters.SimulatorAdaptersTests.test_rng_supports_canonical_subset_and_fails_closed) ... ok\ntest_seeded_rng_replays_and_does_not_change_global_random_state (tests_v2.test_simulator_adapters.SimulatorAdaptersTests.test_seeded_rng_replays_and_does_not_change_global_random_state) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 0.018s\n\nOK\n",
+    "unit_stdout": ""
+  }
+}
