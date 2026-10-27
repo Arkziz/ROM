@@ -1,0 +1,1040 @@
+{
+  "decision": "PARITY_RESOLVED_IMPLEMENTATION_AUTHORIZED",
+  "dev_operations_executed": false,
+  "effective_operation_symbols": [
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 191,
+      "name": "give_item",
+      "owner": "handlers/dev.py",
+      "target_ids": [
+        "item_id",
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 257,
+      "name": "set_level",
+      "owner": "handlers/dev.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 291,
+      "name": "reset_level",
+      "owner": "handlers/dev.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 309,
+      "name": "reset_hero",
+      "owner": "handlers/dev.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 408,
+      "name": "set_energy",
+      "owner": "handlers/dev.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 454,
+      "name": "set_gold",
+      "owner": "handlers/dev.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 931,
+      "name": "give_class_reset_sphere",
+      "owner": "handlers/dev.py",
+      "target_ids": [
+        "item_id",
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 1062,
+      "name": "set_exp_17_14_1_1",
+      "owner": "handlers/dev.py",
+      "target_ids": [],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 1089,
+      "name": "crystal_credit_17_25_1",
+      "owner": "handlers/dev.py",
+      "target_ids": [],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 1101,
+      "name": "crystal_debit_17_25_1",
+      "owner": "handlers/dev.py",
+      "target_ids": [],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": true,
+      "idempotency": false,
+      "line": 120,
+      "name": "set_player_level_for_test",
+      "owner": "db_modules/dev_compat.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": true
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 204,
+      "name": "reset_player_level_for_test",
+      "owner": "db_modules/dev_compat.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": true,
+      "idempotency": false,
+      "line": 207,
+      "name": "set_gold_for_test",
+      "owner": "db_modules/dev_compat.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": true
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 258,
+      "name": "_get_dev_reset_hero_lock",
+      "owner": "db_modules/dev_compat.py",
+      "target_ids": [],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": true,
+      "idempotency": false,
+      "line": 265,
+      "name": "_dev_reset_table_exists",
+      "owner": "db_modules/dev_compat.py",
+      "target_ids": [],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": true,
+      "idempotency": false,
+      "line": 272,
+      "name": "_dev_reset_table_columns",
+      "owner": "db_modules/dev_compat.py",
+      "target_ids": [],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": true,
+      "idempotency": false,
+      "line": 277,
+      "name": "_dev_reset_delete_by_user_columns",
+      "owner": "db_modules/dev_compat.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": true,
+      "direct_sql": true,
+      "idempotency": false,
+      "line": 289,
+      "name": "reset_hero_for_test",
+      "owner": "db_modules/dev_compat.py",
+      "target_ids": [
+        "inventory_id",
+        "user_id"
+      ],
+      "transaction": true
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": true,
+      "idempotency": false,
+      "line": 735,
+      "name": "seed_class_reset_sphere_item",
+      "owner": "db_modules/dev_compat.py",
+      "target_ids": [],
+      "transaction": true
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": true,
+      "idempotency": false,
+      "line": 1589,
+      "name": "set_current_exp_for_test_17_14_1_1",
+      "owner": "db_modules/dev_compat.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": true
+    },
+    {
+      "async": false,
+      "audit": true,
+      "direct_sql": false,
+      "idempotency": true,
+      "line": 12,
+      "name": "init_admin_crystal_credit_system",
+      "owner": "systems/admin_crystal_credit_system.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": true
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": true,
+      "idempotency": false,
+      "line": 124,
+      "name": "can_grant_item_from_source",
+      "owner": "systems/premium_item_policy_system.py",
+      "target_ids": [
+        "item_id",
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": true,
+      "idempotency": false,
+      "line": 181,
+      "name": "_grant_stack",
+      "owner": "systems/premium_item_policy_system.py",
+      "target_ids": [
+        "item_id",
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": true,
+      "idempotency": true,
+      "line": 205,
+      "name": "grant_item_from_source",
+      "owner": "systems/premium_item_policy_system.py",
+      "target_ids": [
+        "inventory_id",
+        "item_id",
+        "user_id"
+      ],
+      "transaction": true
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": true,
+      "idempotency": false,
+      "line": 265,
+      "name": "get_premium_item_grants",
+      "owner": "systems/premium_item_policy_system.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 145,
+      "name": "reset_guild_browse_state",
+      "owner": "handlers/guild.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 153,
+      "name": "set_selected_guild",
+      "owner": "handlers/guild.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 180,
+      "name": "reset_guild_create_state",
+      "owner": "handlers/guild.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 876,
+      "name": "reset_guild_application_review_state",
+      "owner": "handlers/guild.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 1166,
+      "name": "reset_guild_member_manage_state",
+      "owner": "handlers/guild.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 1477,
+      "name": "_guild_safe_reset_other_states_for_members_v2",
+      "owner": "handlers/guild.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 2063,
+      "name": "_guild_progress_reset_navigation_states_v1",
+      "owner": "handlers/guild.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 2267,
+      "name": "reset_guild_logs_state",
+      "owner": "handlers/guild.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 2535,
+      "name": "_guild_contracts_reset_guild_states_v1",
+      "owner": "handlers/guild.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 2657,
+      "name": "reset_all_guild_ui_states",
+      "owner": "handlers/guild.py",
+      "target_ids": [
+        "user_id"
+      ],
+      "transaction": false
+    },
+    {
+      "async": false,
+      "audit": false,
+      "direct_sql": false,
+      "idempotency": false,
+      "line": 20,
+      "name": "dev_grant",
+      "owner": "handlers/fatigue_artifact.py",
+      "target_ids": [],
+      "transaction": false
+    }
+  ],
+  "environment_file_opened": false,
+  "game_db_wal_shm": "NOT_MANIPULATED",
+  "generated_at": "2026-10-27T22:24:45.266204+00:00",
+  "implementation_contract": {
+    "authorization_required_before_side_effects": true,
+    "direct_sql_authorized": false,
+    "module": "rom_v2/domain/dev_data_operations.py",
+    "nested_package_authorized": false,
+    "production_persistence_connected": false,
+    "runtime_connected": false,
+    "telegram_connected": false,
+    "unit_of_work_required": true
+  },
+  "input_unresolved_keys": [
+    "effective_operation_inventory",
+    "operation_target_matrix",
+    "give_validation_matrix",
+    "reset_scope_matrix",
+    "set_bounds_and_derived_state",
+    "service_repository_mapping",
+    "audit_idempotency_matrix",
+    "post_commit_notifications"
+  ],
+  "main_started": false,
+  "manual_verification": {
+    "reason": "Read-only parity resolution.",
+    "required": false
+  },
+  "prerequisites": {
+    "audit": {
+      "path": "reports/stage_21_15_2_existing_dev_data_operations_audit.json",
+      "sha256": "8c8aedc89e7a6b22cd7f9b7dfbb4c54acbc209d239339eec930c23be0c5349a5"
+    },
+    "refinement": {
+      "decision": "REFINED_PARITY_RESOLUTION_REQUIRED",
+      "path": "reports/stage_21_15_2a_dev_data_operations_contract_refinement.json",
+      "sha256": "7bdfdb7968e4019aa81e3779c74cdac9d20b7a922d7430995d39c0d2f610da53"
+    }
+  },
+  "production_sqlite_opened": false,
+  "prohibitions": [
+    "No direct SQL from handlers or domain module.",
+    "No compatibility helper as V2 authorization boundary.",
+    "No invented quantities, caps, reset scope or identities.",
+    "No runtime, Telegram, production repository or migration wiring in Stage 21.15.2c.",
+    "No game.db-wal/game.db-shm manipulation."
+  ],
+  "resolutions": [
+    {
+      "decision": "Only effective V1 Give/Reset/Set functions found in authoritative owners are parity inputs; broad keyword candidates and shadowed helpers are excluded.",
+      "key": "operation_inventory",
+      "status": "RESOLVED"
+    },
+    {
+      "decision": "Stage 21.15.1 authorization must succeed before target lookup and every observable side effect.",
+      "key": "authorization_order",
+      "status": "RESOLVED"
+    },
+    {
+      "decision": "V2 commands invoke application services/repositories through an explicit Unit of Work. Handler SQL and db_modules/dev_compat compatibility helpers are evidence only and are not authorized V2 mutation boundaries.",
+      "key": "application_boundary",
+      "status": "RESOLVED"
+    },
+    {
+      "decision": "Each command is one atomic application operation. Validation, repository failure, audit failure, or invariant failure rolls back the complete operation.",
+      "key": "transaction_and_rollback",
+      "status": "RESOLVED"
+    },
+    {
+      "decision": "Target identity is operation-specific and typed. account_id, user_id, character_id, item_id and inventory_id are not interchangeable.",
+      "key": "identity",
+      "status": "RESOLVED"
+    },
+    {
+      "decision": "V2 preserves only exact V1 validation, quantities, caps, floors and reset scope proven by its authoritative owner; missing evidence fails closed rather than inventing defaults.",
+      "key": "validation",
+      "status": "RESOLVED"
+    },
+    {
+      "decision": "Reset is character-scoped unless authoritative V1 evidence explicitly identifies account-level mutation. Account wallet, ledger and other account-owned state are preserved by default.",
+      "key": "reset_scope",
+      "status": "RESOLVED"
+    },
+    {
+      "decision": "Where V1 has an operation/idempotency key it is preserved. Otherwise API-ready V2 requires a caller operation key for mutation replay safety without inventing a new durable production schema.",
+      "key": "idempotency",
+      "status": "RESOLVED"
+    },
+    {
+      "decision": "Existing durable audit/ledger behavior is preserved per operation. No universal production ledger is invented for V1 operations without one.",
+      "key": "audit",
+      "status": "RESOLVED"
+    },
+    {
+      "decision": "Notifications and history append occur only after successful commit and are returned as application outcomes; Telegram transport is out of scope.",
+      "key": "notifications",
+      "status": "RESOLVED"
+    },
+    {
+      "decision": "Implementation owner is flat rom_v2/domain/dev_data_operations.py; nested domain package is forbidden.",
+      "key": "flat_domain",
+      "status": "RESOLVED"
+    }
+  ],
+  "revision": "2026-10-27-r1",
+  "source_evidence": [
+    {
+      "exists": true,
+      "operations": [
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 191,
+          "name": "give_item",
+          "target_ids": [
+            "item_id",
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 257,
+          "name": "set_level",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 291,
+          "name": "reset_level",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 309,
+          "name": "reset_hero",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 408,
+          "name": "set_energy",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 454,
+          "name": "set_gold",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 931,
+          "name": "give_class_reset_sphere",
+          "target_ids": [
+            "item_id",
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 1062,
+          "name": "set_exp_17_14_1_1",
+          "target_ids": [],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 1089,
+          "name": "crystal_credit_17_25_1",
+          "target_ids": [],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 1101,
+          "name": "crystal_debit_17_25_1",
+          "target_ids": [],
+          "transaction": false
+        }
+      ],
+      "path": "handlers/dev.py",
+      "sha256": "c161907aa3d965cbb3f2ce50d1b6f46c181027ff7a3b517ae852a026b5827352"
+    },
+    {
+      "exists": true,
+      "operations": [
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": true,
+          "idempotency": false,
+          "line": 120,
+          "name": "set_player_level_for_test",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": true
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 204,
+          "name": "reset_player_level_for_test",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": true,
+          "idempotency": false,
+          "line": 207,
+          "name": "set_gold_for_test",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": true
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 258,
+          "name": "_get_dev_reset_hero_lock",
+          "target_ids": [],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": true,
+          "idempotency": false,
+          "line": 265,
+          "name": "_dev_reset_table_exists",
+          "target_ids": [],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": true,
+          "idempotency": false,
+          "line": 272,
+          "name": "_dev_reset_table_columns",
+          "target_ids": [],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": true,
+          "idempotency": false,
+          "line": 277,
+          "name": "_dev_reset_delete_by_user_columns",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": true,
+          "direct_sql": true,
+          "idempotency": false,
+          "line": 289,
+          "name": "reset_hero_for_test",
+          "target_ids": [
+            "inventory_id",
+            "user_id"
+          ],
+          "transaction": true
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": true,
+          "idempotency": false,
+          "line": 735,
+          "name": "seed_class_reset_sphere_item",
+          "target_ids": [],
+          "transaction": true
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": true,
+          "idempotency": false,
+          "line": 1589,
+          "name": "set_current_exp_for_test_17_14_1_1",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": true
+        }
+      ],
+      "path": "db_modules/dev_compat.py",
+      "sha256": "c140072edbb338a6f7ca396d0b442f559962a8dc8d7aa1148f7e2d3314069741"
+    },
+    {
+      "exists": true,
+      "operations": [
+        {
+          "async": false,
+          "audit": true,
+          "direct_sql": false,
+          "idempotency": true,
+          "line": 12,
+          "name": "init_admin_crystal_credit_system",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": true
+        }
+      ],
+      "path": "systems/admin_crystal_credit_system.py",
+      "sha256": "20a3f7f402edaa2c269367813c63cb3d78dd8de932909fe7c29afd5949125e61"
+    },
+    {
+      "exists": true,
+      "operations": [
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": true,
+          "idempotency": false,
+          "line": 124,
+          "name": "can_grant_item_from_source",
+          "target_ids": [
+            "item_id",
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": true,
+          "idempotency": false,
+          "line": 181,
+          "name": "_grant_stack",
+          "target_ids": [
+            "item_id",
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": true,
+          "idempotency": true,
+          "line": 205,
+          "name": "grant_item_from_source",
+          "target_ids": [
+            "inventory_id",
+            "item_id",
+            "user_id"
+          ],
+          "transaction": true
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": true,
+          "idempotency": false,
+          "line": 265,
+          "name": "get_premium_item_grants",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        }
+      ],
+      "path": "systems/premium_item_policy_system.py",
+      "sha256": "76e66c69839815c79597703c49955d04156092861015e3e2032813ce23cb0fea"
+    },
+    {
+      "exists": true,
+      "operations": [
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 145,
+          "name": "reset_guild_browse_state",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 153,
+          "name": "set_selected_guild",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 180,
+          "name": "reset_guild_create_state",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 876,
+          "name": "reset_guild_application_review_state",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 1166,
+          "name": "reset_guild_member_manage_state",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 1477,
+          "name": "_guild_safe_reset_other_states_for_members_v2",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 2063,
+          "name": "_guild_progress_reset_navigation_states_v1",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 2267,
+          "name": "reset_guild_logs_state",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 2535,
+          "name": "_guild_contracts_reset_guild_states_v1",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        },
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 2657,
+          "name": "reset_all_guild_ui_states",
+          "target_ids": [
+            "user_id"
+          ],
+          "transaction": false
+        }
+      ],
+      "path": "handlers/guild.py",
+      "sha256": "de39b8627b59b33ad1500086b9862f775237c780d4718e8bc389e4ef88365d40"
+    },
+    {
+      "exists": true,
+      "operations": [
+        {
+          "async": false,
+          "audit": false,
+          "direct_sql": false,
+          "idempotency": false,
+          "line": 20,
+          "name": "dev_grant",
+          "target_ids": [],
+          "transaction": false
+        }
+      ],
+      "path": "handlers/fatigue_artifact.py",
+      "sha256": "aeeef7e11ddec5463dd7f8ac2003e75b04e69eb11db25839e98c79a044f88d5e"
+    }
+  ],
+  "stage": "21.15.2b",
+  "status": "PASS",
+  "unresolved": []
+}
