@@ -1,0 +1,52 @@
+{
+  "branch": "rewrite/rom-v2",
+  "command_keys_invented": false,
+  "decision": "API_READY_IMPLEMENTED",
+  "environment_file_opened": false,
+  "game_db_wal_shm": "NOT_MANIPULATED",
+  "generated_at": "2026-10-27T20:55:56.625862+00:00",
+  "guard_order": [
+    "dev_mode_enabled",
+    "caller_authorized",
+    "operation_allowed"
+  ],
+  "head_before": "80f749e6ed149c37ba37353e13c6d072eee16ce5",
+  "identity_values_invented": false,
+  "manual_verification": {
+    "reason": "API-ready domain is not wired to runtime, Telegram or production persistence.",
+    "required": false
+  },
+  "operation_classes": [
+    "read_only",
+    "controlled_mutation",
+    "destructive_reset",
+    "administrative"
+  ],
+  "parity": {
+    "decision": "PARITY_RESOLVED_IMPLEMENTATION_AUTHORIZED",
+    "path": "reports/stage_21_15_1b_dev_authorization_parity_resolution.json",
+    "sha256": "1acce6ce7e1e0488424e45d3a62c9ce00757a8c7ecc577d045836cd414458de3"
+  },
+  "production_files": [
+    "rom_v2/domain/dev_authorization/__init__.py",
+    "rom_v2/domain/dev_authorization/model.py",
+    "rom_v2/domain/dev_authorization/service.py"
+  ],
+  "production_persistence_connected": false,
+  "runtime_connected": false,
+  "stage": "21.15.1c",
+  "status": "PASS",
+  "telegram_connected": false,
+  "test_files": [
+    "tests/unit/dev_authorization/__init__.py",
+    "tests/unit/dev_authorization/test_dev_authorization.py"
+  ],
+  "tests": {
+    "py_compile": "PASS",
+    "smoke": "PASS",
+    "smoke_stdout": "PASS: Stage 21.15.1c DEV authorization API-ready contract\n",
+    "unit": "PASS",
+    "unit_stderr": "test_all_operation_classes_are_explicit (tests.unit.dev_authorization.test_dev_authorization.DevAuthorizationTests.test_all_operation_classes_are_explicit) ... ok\ntest_authorized_operation_is_allowed (tests.unit.dev_authorization.test_dev_authorization.DevAuthorizationTests.test_authorized_operation_is_allowed) ... ok\ntest_disabled_dev_mode_denies_before_identity (tests.unit.dev_authorization.test_dev_authorization.DevAuthorizationTests.test_disabled_dev_mode_denies_before_identity) ... ok\ntest_domain_has_no_transport_database_or_environment_access (tests.unit.dev_authorization.test_dev_authorization.DevAuthorizationTests.test_domain_has_no_transport_database_or_environment_access) ... ok\ntest_invalid_identity_and_empty_keys_fail_closed (tests.unit.dev_authorization.test_dev_authorization.DevAuthorizationTests.test_invalid_identity_and_empty_keys_fail_closed) ... ok\ntest_require_allowed_fails_before_adapter_side_effect (tests.unit.dev_authorization.test_dev_authorization.DevAuthorizationTests.test_require_allowed_fails_before_adapter_side_effect) ... ok\ntest_unauthorized_caller_is_blocked (tests.unit.dev_authorization.test_dev_authorization.DevAuthorizationTests.test_unauthorized_caller_is_blocked) ... ok\ntest_unlisted_operation_is_blocked (tests.unit.dev_authorization.test_dev_authorization.DevAuthorizationTests.test_unlisted_operation_is_blocked) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 0.002s\n\nOK\n",
+    "unit_stdout": ""
+  }
+}
