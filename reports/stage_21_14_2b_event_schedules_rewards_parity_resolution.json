@@ -1,0 +1,571 @@
+{
+  "checks": {
+    "aware_schedule": true,
+    "empty_direct_reward_catalog": true,
+    "enabled_gate": true,
+    "evaluation_on_access": true,
+    "half_open_window": true,
+    "kill_receipt_identity": true,
+    "kyiv_to_utc_config": true,
+    "shop_active_gate": true,
+    "shop_idempotency": true,
+    "shop_unique_idempotency": true
+  },
+  "decision": "PARITY_RESOLVED_IMPLEMENTATION_AUTHORIZED",
+  "failed_checks": [],
+  "generated_at": "2026-10-27T09:55:20.452658+00:00",
+  "manual_verification": {
+    "reason": "Read-only parity resolution.",
+    "required": false
+  },
+  "prerequisites": [
+    {
+      "path": "reports/stage_21_14_2_existing_event_schedules_rewards_audit.json",
+      "sha256": "a611861cc76d589c495acca6231f764d5f24c792fc2d82935877d5e04f2772ea"
+    },
+    {
+      "path": "reports/stage_21_14_2a_refined_event_schedules_rewards_contract.json",
+      "sha256": "c046f34383f4bc1bc9206207649ef69c98b3f8f33f54bb6082c0d25483e729a6"
+    }
+  ],
+  "prohibitions": [
+    "No invented scheduler or background worker.",
+    "No invented direct event reward.",
+    "No invented eligibility gate.",
+    "No runtime, Telegram or production persistence wiring in Stage 21.14.2c.",
+    "No game.db-wal/game.db-shm manipulation."
+  ],
+  "resolutions": [
+    {
+      "area": "identity",
+      "contract": "EVENT_KEY is canonical; registry/config identity must match and duplicate keys fail closed.",
+      "owners": [
+        "events/__init__.py",
+        "event config.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "schedule",
+      "contract": "START_AT and END_AT are timezone-aware instants normalized to UTC; START_AT < END_AT; active interval is start-inclusive and end-exclusive.",
+      "owners": [
+        "events/__init__.py",
+        "events/test_event_2026/config.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "clock",
+      "contract": "Activity is evaluated on access against supplied/current UTC. No event scheduler owner exists, so cron, APScheduler, worker cadence, auto-start/stop and restart catch-up must not be invented.",
+      "owners": [
+        "events/__init__.py",
+        "handlers/event_ui.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "timezone",
+      "contract": "Domain comparison uses aware UTC. Europe/Kyiv conversion belongs to test_event_2026 configuration and is not a global policy for future events.",
+      "owners": [
+        "events/test_event_2026/config.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "eligibility",
+      "contract": "Generic eligibility is ENABLED plus active window and matching event identity. No level, class, location, premium, guild or account-age gate is evidenced.",
+      "owners": [
+        "events/__init__.py",
+        "systems/event_shop_system.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "rewards",
+      "contract": "test_event_2026 EVENT_REWARDS is empty, so no direct scheduled/completion reward may be ported. Drops and shop offers are separate authoritative mechanisms.",
+      "owners": [
+        "events/test_event_2026/rewards.py",
+        "events/test_event_2026/shop.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "shop_exact_once",
+      "contract": "Exchange requires caller idempotency_key backed by persistent uniqueness; replay must not debit or grant twice.",
+      "owners": [
+        "systems/event_shop_system.py",
+        "migrations/051_event_shop_exchange.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "statistics_exact_once",
+      "contract": "Victory receipt is deduplicated by event_key plus terminal_event_id; one terminal encounter cannot increment aggregates twice.",
+      "owners": [
+        "systems/event_statistics_system.py",
+        "migrations/050_event_kill_statistics.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "announcements",
+      "contract": "V1 establishes pull/read event UI only. No push scheduler, recipient/retry policy or delivery exact-once contract is evidenced.",
+      "owners": [
+        "handlers/event_ui.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "area": "lifecycle",
+      "contract": "Derived states are upcoming before START_AT, active inside the enabled half-open window, and completed/read-only at or after END_AT.",
+      "owners": [
+        "handlers/event_ui.py"
+      ],
+      "status": "RESOLVED"
+    }
+  ],
+  "source_facts": {
+    "events/__init__.py": {
+      "constants": [],
+      "sha256": "c65d526d51b04f75b99e1ac8b1caba527a3bab48dfff1453cdf772fc843be62e",
+      "symbols": [
+        {
+          "kind": "ClassDef",
+          "line": 14,
+          "name": "EventRegistryError"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 17,
+          "name": "_utc"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 24,
+          "name": "validate_event_contract"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 43,
+          "name": "register_event"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 50,
+          "name": "load_event_modules"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 67,
+          "name": "get_registered_events"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 70,
+          "name": "get_enabled_events"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 73,
+          "name": "get_active_events"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 77,
+          "name": "reset_event_registry_for_tests"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 81,
+          "name": "_optional_tuple"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 90,
+          "name": "collect_event_mob_candidates"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 101,
+          "name": "collect_event_boss_candidates"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 112,
+          "name": "collect_event_drop_rules"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 123,
+          "name": "collect_registered_event_items"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 134,
+          "name": "register_event_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 148,
+          "name": "_optional_tuple_result"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 156,
+          "name": "get_validated_registered_event_items"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 161,
+          "name": "validate_event_mob_candidates"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 187,
+          "name": "select_event_mob_candidate"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 207,
+          "name": "validate_event_drop_rules"
+        }
+      ]
+    },
+    "events/_template/config.py": {
+      "constants": [
+        {
+          "line": 4,
+          "name": "EVENT_KEY",
+          "value": "_template"
+        },
+        {
+          "line": 5,
+          "name": "ENABLED",
+          "value": false
+        },
+        {
+          "line": 6,
+          "name": "START_AT",
+          "value": "datetime(2099, 1, 1, tzinfo=timezone.utc)"
+        },
+        {
+          "line": 7,
+          "name": "END_AT",
+          "value": "datetime(2099, 1, 2, tzinfo=timezone.utc)"
+        }
+      ],
+      "sha256": "ed8ff1da096548c7ee78b4e8de7b89454872f4194e38f052382acf9b6bd78fe1",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 8,
+          "name": "is_active"
+        }
+      ]
+    },
+    "events/test_event_2026/config.py": {
+      "constants": [
+        {
+          "line": 10,
+          "name": "EVENT_KEY",
+          "value": "test_event_2026"
+        },
+        {
+          "line": 12,
+          "name": "EVENT_NAME",
+          "value": "🧪 Тестовий івент"
+        },
+        {
+          "line": 16,
+          "name": "ENABLED",
+          "value": true
+        },
+        {
+          "line": 18,
+          "name": "EVER_LAUNCHED",
+          "value": false
+        },
+        {
+          "line": 67,
+          "name": "START_AT",
+          "value": "START_LOCAL_AT.astimezone(timezone.utc)"
+        },
+        {
+          "line": 68,
+          "name": "END_AT",
+          "value": "END_LOCAL_AT.astimezone(timezone.utc)"
+        }
+      ],
+      "sha256": "ee74bde1e1b18a212ef1070cb9954e4355fc753b6a2c8eaf7899943771714bbf",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 30,
+          "name": "_last_sunday"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 39,
+          "name": "_fallback_kyiv_timezone"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 49,
+          "name": "_parse_kyiv_local"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 74,
+          "name": "is_active"
+        },
+        {
+          "kind": "ClassDef",
+          "line": 7,
+          "name": "ZoneInfoNotFoundError"
+        }
+      ]
+    },
+    "events/test_event_2026/items.py": {
+      "constants": [
+        {
+          "line": 6,
+          "name": "EVENT_ITEMS",
+          "value": "({'event_key': EVENT_KEY, 'item_key': 'test_token', 'id': TEST_TOKEN_ITEM_ID, 'name': '🧪 Експериментальний жетон', 'type': 'test_event_token', 'rarity': 'common', 'category': 'material', 'max_stack': 999, 'sell_price': 0.0, 'stackable': True, 'tradeable': False, 'sellable': False, 'auctionable': False, 'character_bound': True, 'available_after_event': True}, {'event_key': EVENT_KEY, 'item_key': 'test_reward', 'id': TEST_REWARD_ITEM_ID, 'name': '🎁 Пам’ятний знак випробування', 'type': 'test_event_reward', 'rarity': 'uncommon', 'category': 'material', 'max_stack': 10, 'sell_price': 0.0, 'stackable': True, 'tradeable': False, 'sellable': False, 'auctionable': False, 'character_bound': True, 'available_after_event': True})"
+        }
+      ],
+      "sha256": "46fc14200ca9bda4ab2e5119189ae6f829890f6a769534ab2109560ca3b8fc8d",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 43,
+          "name": "get_item_definitions"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 46,
+          "name": "get_event_item_id"
+        }
+      ]
+    },
+    "events/test_event_2026/rewards.py": {
+      "constants": [
+        {
+          "line": 2,
+          "name": "EVENT_REWARDS",
+          "value": []
+        }
+      ],
+      "sha256": "c6b22d26e2f3d03ccf68edd03c2fb2d91e93f088f779d3b2ce27a19eadc78d1a",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 4,
+          "name": "get_rewards"
+        }
+      ]
+    },
+    "events/test_event_2026/shop.py": {
+      "constants": [],
+      "sha256": "e323fbaf07e8092017d3ac07ecc60ee5f6a31bd4fc8276e29d2eb82a5af6c8fb",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 19,
+          "name": "get_shop_offers"
+        }
+      ]
+    },
+    "handlers/event_ui.py": {
+      "constants": [],
+      "sha256": "6151dbc850e3b0b86254c0f4d0fb75aaa40ad3e9466e1994d5605bc7d001d5a7",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 8,
+          "name": "_active"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 11,
+          "name": "_scope_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 13,
+          "name": "_main_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 20,
+          "name": "_event_rows"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 31,
+          "name": "_paged"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 33,
+          "name": "_list_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 41,
+          "name": "_catalog"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 44,
+          "name": "_archive"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 48,
+          "name": "_main_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 50,
+          "name": "_back"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 52,
+          "name": "_delete"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 58,
+          "name": "_close"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 64,
+          "name": "_valid"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 67,
+          "name": "_edit"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 80,
+          "name": "_victory_count_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 95,
+          "name": "_rank_rows"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 104,
+          "name": "_rank_kb"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 110,
+          "name": "register_event_ui_handlers"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 112,
+          "name": "open_events"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 120,
+          "name": "event_reply_exit"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 124,
+          "name": "event_callback"
+        }
+      ]
+    },
+    "migrations/050_event_kill_statistics.py": {
+      "constants": [],
+      "sha256": "773e3bdd790598936e78fabe60074d50412371ceda69fdd56432d037904f943c",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 3,
+          "name": "up"
+        }
+      ]
+    },
+    "migrations/051_event_shop_exchange.py": {
+      "constants": [],
+      "sha256": "c4f2abc7eec52ac9a10361954604a39a29ba6bf6cdbab330dfe0a03cb2babcbe",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 3,
+          "name": "up"
+        }
+      ]
+    },
+    "systems/event_shop_system.py": {
+      "constants": [],
+      "sha256": "569f7a833db0ae817d83fd9e5d805ace3ce21f6cfe3eaadba84733db6b2ae83c",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 5,
+          "name": "_key"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 10,
+          "name": "_offer"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 20,
+          "name": "_reserved"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 27,
+          "name": "_consume"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 37,
+          "name": "_award"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 50,
+          "name": "exchange_event_shop_offer"
+        }
+      ]
+    },
+    "systems/event_statistics_system.py": {
+      "constants": [],
+      "sha256": "2581b7ba3e066dc047a66689b7a2e44a6e4bff6c873458e062ef73a5ea389d21",
+      "symbols": [
+        {
+          "kind": "FunctionDef",
+          "line": 5,
+          "name": "_text"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 10,
+          "name": "record_event_mob_victory"
+        },
+        {
+          "kind": "FunctionDef",
+          "line": 25,
+          "name": "get_event_kill_leaderboard"
+        }
+      ]
+    }
+  },
+  "stage": "21.14.2b",
+  "status": "PASS"
+}
