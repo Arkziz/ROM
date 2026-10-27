@@ -1,0 +1,257 @@
+{
+  "decision": "PARITY_RESOLVED_IMPLEMENTATION_AUTHORIZED",
+  "environment_file_opened": false,
+  "game_db_wal_shm": "NOT_MANIPULATED",
+  "generated_at": "2026-10-27T23:03:04.554520+00:00",
+  "implementation_contract": {
+    "direct_sql_authorized": false,
+    "existing_clock_port_required": true,
+    "existing_random_source_port_required": true,
+    "existing_repository_ports_required": true,
+    "global_random_default_authorized": false,
+    "module": "rom_v2/domain/simulator_adapters.py",
+    "nested_package_authorized": false,
+    "production_domain_reuse_required": true,
+    "production_persistence_connected": false,
+    "production_sqlite_authorized": false,
+    "runtime_connected": false,
+    "telegram_connected": false,
+    "unit_of_work_required": true
+  },
+  "input_unresolved_keys": [
+    "candidate_sandbox_separation",
+    "clock_adapter_mapping",
+    "fixture_contract",
+    "formula_reuse_matrix",
+    "rng_adapter_coverage",
+    "run_transaction_and_recovery",
+    "sandbox_repository_inventory"
+  ],
+  "main_started": false,
+  "manual_verification": {
+    "reason": "Read-only parity resolution.",
+    "required": false
+  },
+  "prerequisites": {
+    "audit": {
+      "path": "reports/stage_21_15_3_existing_simulator_adapters_audit.json",
+      "sha256": "9f9f50d682a439b9eb954ad8535eb8cc36d09a585593b1be38d715ad8c4d88fc"
+    },
+    "refinement": {
+      "decision": "REFINED_PARITY_RESOLUTION_REQUIRED",
+      "path": "reports/stage_21_15_3a_simulator_adapters_contract_refinement.json",
+      "sha256": "351f1f00ce46a4b61ec3fd7c8425bf2ae78f1f50ec0ba1660540379ce7e4ebab"
+    }
+  },
+  "production_sqlite_opened": false,
+  "prohibitions": [
+    "No duplicate production formulas.",
+    "No production SQLite or live repository fallback.",
+    "No implicit wall clock or unseeded global RNG.",
+    "No candidate fixture value promoted to live policy.",
+    "No runtime, Telegram, production persistence or migration wiring in Stage 21.15.3c.",
+    "No game.db-wal/game.db-shm manipulation."
+  ],
+  "resolutions": [
+    {
+      "contract": "Use the existing V2 Clock port through a deterministic aware-UTC simulator adapter with explicit non-negative advance. No implicit wall-clock reads are authorized.",
+      "key": "clock_adapter_mapping",
+      "owners": [
+        "rom_v2/application/ports/clock.py",
+        "systems/simulation/clock.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "contract": "One explicit seed owns one RandomSource-compatible stream and draw count. Global/module random injection is compatibility-only, scoped and restored, never the V2 default.",
+      "key": "rng_adapter_coverage",
+      "owners": [
+        "rom_v2/application/ports/random_source.py",
+        "systems/simulation/rng.py",
+        "systems/simulation/rng_adapter.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "contract": "Use explicit isolated in-memory/fake adapters satisfying existing V2 repository ports. Production SQLite, live Telegram state, shared mutable globals and implicit production fallback are forbidden.",
+      "key": "sandbox_repository_inventory",
+      "owners": [
+        "rom_v2/application/ports/repositories.py",
+        "systems/simulation/parity_foundation.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "contract": "Combat, stats, equipment, enhancement, loot, EXP, rewards, repair and survival must call authoritative production domain/application owners; simulator-local formula copies cannot become a second owner.",
+      "key": "formula_reuse_matrix",
+      "owners": [
+        "rom_v2/domain",
+        "rom_v2/application"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "contract": "Deterministic fixtures are explicit run/test inputs. Their values are parity samples, not live defaults, approved balance, or new content.",
+      "key": "fixture_contract",
+      "owners": [
+        "systems/simulation/config.py",
+        "systems/simulation/models.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "contract": "Each run starts from fresh isolated state. Success returns an immutable result; failure discards sandbox mutations. Retry rebuilds state from the same explicit seed, clock and config.",
+      "key": "run_transaction_and_recovery",
+      "owners": [
+        "systems/simulation/parity_foundation.py",
+        "systems/simulation/reporting.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "contract": "Candidate-only PvP/balance sandboxes remain non-production; their parameters and outcomes cannot become canonical live policy without a separate approved stage.",
+      "key": "candidate_sandbox_separation",
+      "owners": [
+        "systems/simulation"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "contract": "Candidate and balance sandboxes are explicitly outside production parity. Their fixtures, tuning inputs and outcomes remain isolated evidence and cannot mutate or redefine live-game policy.",
+      "key": "candidate_sandbox_boundary",
+      "owners": [
+        "systems/simulation",
+        "systems/simulation/parity_foundation.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "contract": "A run is reproducible only from explicit fixture state, an aware injected clock and one explicit seeded RNG stream with deterministic draw order. Wall-clock reads, unseeded global random and hidden mutable globals are forbidden.",
+      "key": "determinism_contract",
+      "owners": [
+        "systems/simulation/clock.py",
+        "systems/simulation/rng.py",
+        "systems/simulation/rng_adapter.py",
+        "rom_v2/application/ports/clock.py",
+        "rom_v2/application/ports/random_source.py"
+      ],
+      "status": "RESOLVED"
+    },
+    {
+      "contract": "Simulator adapters must use isolated in-memory or fake repositories implementing existing V2 ports. Production SQLite, live repositories, Telegram state and implicit fallback to production state are forbidden for reads and writes.",
+      "key": "production_state_isolation",
+      "owners": [
+        "systems/simulation/parity_foundation.py",
+        "rom_v2/application/ports/repositories.py"
+      ],
+      "status": "RESOLVED"
+    }
+  ],
+  "revision": "2026-10-27-r6-uow-contract-schema",
+  "simulator_executed": false,
+  "source_evidence": {
+    "rom_v2/application/ports/clock.py": {
+      "sha256": "a023e54dae514692a5b76a491d7aa86f502d338a980e34e3ea8712eff1c9b6ee",
+      "symbols": [
+        "Clock",
+        "monotonic_seconds",
+        "now_utc"
+      ]
+    },
+    "rom_v2/application/ports/random_source.py": {
+      "sha256": "91ee0496f217dd6f3c540936c224430fd8d1dcfb086f461dd9f3e8baaee11a5c",
+      "symbols": [
+        "RandomSource",
+        "choice",
+        "randint",
+        "random",
+        "shuffle"
+      ]
+    },
+    "rom_v2/application/ports/repositories.py": {
+      "sha256": "04c04f838b7326ae54159a2e4beca195bbd921009d71c6651e1609739044d8af",
+      "symbols": [
+        "AggregateRepository",
+        "add",
+        "exists",
+        "get",
+        "save"
+      ]
+    },
+    "systems/simulation/clock.py": {
+      "sha256": "795429f079a86168e47952e3d1a4cf2c0dad332e65dfdbacb01d80c5dfc27d17",
+      "symbols": [
+        "SimulationClock",
+        "__post_init__",
+        "active_window_end",
+        "advance",
+        "at_start",
+        "elapsed_regeneration_ticks",
+        "is_active",
+        "iso",
+        "jump_to_next_active_start",
+        "minute_of_day",
+        "next_active_start",
+        "now",
+        "today"
+      ]
+    },
+    "systems/simulation/parity_foundation.py": {
+      "sha256": "48031062b3e44b94d3eb24c6fee02ae4f01f5802a921b7b481e18370e4fa9470",
+      "symbols": [
+        "CanonicalOwnerResolver",
+        "CanonicalOwnerSpec",
+        "IsolatedSimulatorState",
+        "SimulatorMetrics",
+        "SimulatorScenarioPolicy",
+        "__init__",
+        "__post_init__",
+        "build_isolated_state",
+        "can_hunt",
+        "credit_gold",
+        "debit_gold",
+        "increment",
+        "record_hunt",
+        "recover_fatigue",
+        "resolve",
+        "snapshot",
+        "validate",
+        "validate_all",
+        "validate_parity_foundation"
+      ]
+    },
+    "systems/simulation/rng.py": {
+      "sha256": "c276dfb76a716b5964f5479db21dfd4b445fd96bf8884126d7c5209d908a90d9",
+      "symbols": [
+        "SimulationRng",
+        "__init__",
+        "_draw",
+        "choice",
+        "choices",
+        "randint",
+        "random",
+        "shuffle",
+        "snapshot",
+        "state_digest",
+        "uniform"
+      ]
+    },
+    "systems/simulation/rng_adapter.py": {
+      "sha256": "da67d1fad41f9131671ac4f2df4ff47d554e0fa04d948ba88dd8aa513b8d1700",
+      "symbols": [
+        "RandomModuleAdapter",
+        "__init__",
+        "choice",
+        "choices",
+        "inject_module_rng",
+        "randint",
+        "random",
+        "shuffle",
+        "uniform"
+      ]
+    }
+  },
+  "stage": "21.15.3b",
+  "status": "PASS",
+  "unresolved": []
+}
