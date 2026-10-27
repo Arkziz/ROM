@@ -1,0 +1,115 @@
+{
+  "branch": "rewrite/rom-v2",
+  "chronicles": {
+    "navigation": [
+      "PREVIOUS",
+      "NEXT",
+      "REFRESH",
+      "BACK"
+    ],
+    "newest_first": true,
+    "page_size": 10,
+    "retention_count": 100,
+    "stable_tie_break": "EVENT_ID_DESC"
+  },
+  "decision": "PARITY_RESOLVED_IMPLEMENTATION_AUTHORIZED",
+  "generated_at": "2026-10-27T19:55:16.476850+00:00",
+  "head_before": "445f238aa4e13031ff2f0120c4d46defd14e1f99",
+  "manual_verification": {
+    "reason": "Read-only parity resolution.",
+    "required": false
+  },
+  "prerequisites": {
+    "audit": {
+      "path": "reports/stage_21_14_4_existing_ratings_history_chronicles_audit.json",
+      "sha256": "c96aaa4619ccabd46ecc63174cbb5fc810bd1baedbd2f4f01d88b706a0d66b0c",
+      "status": "PASS"
+    },
+    "refinement": {
+      "path": "reports/stage_21_14_4a_ratings_history_chronicles_contract_refinement.json",
+      "sha256": "22c2f61ef201d748ba33253693e5075c9d21b1980e9a555ffd25c01b12d87cab",
+      "status": "PASS"
+    }
+  },
+  "profile_history": {
+    "included_types": [
+      "COMPLETED_TRADE",
+      "RESULT_BEARING_PVP"
+    ],
+    "minimum_retention_days": 60,
+    "newest_first": true,
+    "retention_count_per_type": 100
+  },
+  "prohibitions": [
+    "No invented rating category or score formula.",
+    "No invented history or chronicles event kind.",
+    "No Telegram/runtime wiring in Stage 21.14.4c.",
+    "No production persistence integration or migration in Stage 21.14.4c.",
+    "No game.db-wal/game.db-shm manipulation."
+  ],
+  "ratings": {
+    "category_count": 7,
+    "own_position_scope": "FULL_ORDERED_RATING",
+    "page_size": 20,
+    "read_only": true,
+    "score_order": "DESC",
+    "tie_break": "COPY_AUTHORITATIVE_V1_QUERY",
+    "top_limit": 100
+  },
+  "refinement_markers_consumed": [],
+  "resolutions": [
+    {
+      "area": "ratings_categories",
+      "contract": "Seven read-only rating categories are retained from V1. Category membership and score computation remain owned by their existing category-specific V1 queries; Stage 21.14.4b does not invent an eighth category or a new score formula.",
+      "status": "RESOLVED"
+    },
+    {
+      "area": "ratings_top_and_page",
+      "contract": "Each rating is limited to top 100 entries and presented in pages of 20. Requests outside the available page range are clamped or returned as an empty read-only page according to the implementation adapter, without changing ranking data.",
+      "status": "RESOLVED"
+    },
+    {
+      "area": "ratings_ordering",
+      "contract": "Primary ordering is category score descending. Existing V1 stable tie-break ordering must be copied from each authoritative query. Cumulative EXP remains the EXP rating score. No alphabetical or random tie-break may be introduced.",
+      "status": "RESOLVED"
+    },
+    {
+      "area": "ratings_own_position",
+      "contract": "The viewer's own position is calculated against the full ordered rating, independently of whether that position is inside the displayed top-100 page; ratings remain read-only.",
+      "status": "RESOLVED"
+    },
+    {
+      "area": "profile_history_scope",
+      "contract": "Profile history exposes only completed trades and result-bearing PvP battles. Pending/cancelled trades and PvP attempts without a result are excluded. PvP reasons remain localized through the existing canonical localization path.",
+      "status": "RESOLVED"
+    },
+    {
+      "area": "profile_history_retention",
+      "contract": "Trade history and PvP history each retain the last 100 records per user, with a minimum retention period of 60 days. Count pruning must not delete records younger than 60 days solely to reach 100.",
+      "status": "RESOLVED"
+    },
+    {
+      "area": "chronicles_scope",
+      "contract": "Chronicles retain the last 100 canonical events for the user and expose 10 records per page, newest first. Only event kinds already emitted by authoritative V1 producers may be represented.",
+      "status": "RESOLVED"
+    },
+    {
+      "area": "chronicles_ordering",
+      "contract": "Chronicles order by event timestamp descending and then by a stable unique event identity descending when timestamps are equal. Pagination must be deterministic and must not duplicate or skip entries between adjacent pages.",
+      "status": "RESOLVED"
+    },
+    {
+      "area": "chronicles_navigation",
+      "contract": "Presentation supports previous/next paging, refresh, and back navigation. These are presentation commands only; they do not mutate domain history.",
+      "status": "RESOLVED"
+    },
+    {
+      "area": "persistence_and_runtime_boundary",
+      "contract": "History and chronicles are persistent read models sourced from existing V1 records. Stage 21.14.4c may implement API-ready domain/query contracts only; Telegram handlers, runtime dispatch, migrations, and production persistence wiring remain out of scope unless separately authorized.",
+      "status": "RESOLVED"
+    }
+  ],
+  "stage": "21.14.4b",
+  "status": "PASS",
+  "unresolved_after_resolution": []
+}
