@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "stage": "21.16.2",
+  "purpose": "Reviewed pre-existing findings; new findings are blocking.",
+  "signatures": [
+    "rom_v2/infrastructure/persistence/connection_factory.py:93:MODULE_ATTRIBUTE_REBIND:row_factory",
+    "rom_v2/structured_logging.py:69:MODULE_ATTRIBUTE_REBIND:propagate"
+  ],
+  "findings": [
+    {
+      "path": "rom_v2/infrastructure/persistence/connection_factory.py",
+      "line": 93,
+      "code": "MODULE_ATTRIBUTE_REBIND",
+      "symbol": "row_factory"
+    },
+    {
+      "path": "rom_v2/structured_logging.py",
+      "line": 69,
+      "code": "MODULE_ATTRIBUTE_REBIND",
+      "symbol": "propagate"
+    }
+  ]
+}
