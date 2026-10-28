@@ -1,0 +1,1167 @@
+{
+  "schema_version": 1,
+  "stage": "21.16.1",
+  "title": "Read-only V1/V2 runtime readiness audit",
+  "generated_at_utc": "2026-10-28T20:31:47.559316+00:00",
+  "status": "PASS",
+  "conclusion": "GO_TO_PLAYABLE_SLICE_ARCHITECTURE_REFINEMENT",
+  "preflight": {
+    "branch": "rewrite/rom-v2",
+    "head": "3776d7992005656b6206e00c7de874760278113e",
+    "allowed_dirty": [
+      "ROM_FULL_DUMP.txt"
+    ]
+  },
+  "read_only_scope": true,
+  "runtime_executed": false,
+  "telegram_started": false,
+  "sqlite_opened": false,
+  "production_source_changed": false,
+  "wal_shm_manipulated": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "inventory": {
+    "tracked_python_files": 1460,
+    "v1_files": 274,
+    "v2_files": 152,
+    "test_files": 79,
+    "parse_errors": []
+  },
+  "summary": {
+    "BLOCKED": 0,
+    "CONTRACT_ONLY": 13,
+    "MISSING": 0,
+    "PARTIAL": 6,
+    "READY_FOR_UI": 0
+  },
+  "readiness_matrix": [
+    {
+      "key": "account_character",
+      "title": "Account, registration and character",
+      "status": "PARTIAL",
+      "v1_files": [
+        "data/player_combat_chances.py",
+        "data/player_hp.py",
+        "data/player_progression.py",
+        "data/story_quests/start_path_01_10.py",
+        "data/story_quests/start_path_11_20.py",
+        "data/story_quests/start_path_21_30.py",
+        "data/story_quests/start_path_31_40.py",
+        "data/story_quests/start_path_41_50.py",
+        "db_modules/character.py",
+        "db_modules/dev_compat.py",
+        "db_modules/generated_equipment.py",
+        "db_modules/inventory_compat.py",
+        "db_modules/migrations.py",
+        "db_modules/player.py",
+        "db_modules/systems_wrappers.py",
+        "handlers/auction_house.py",
+        "handlers/combat.py",
+        "handlers/guild.py",
+        "handlers/inventory.py",
+        "handlers/map.py",
+        "handlers/name_rune.py",
+        "handlers/player_interaction.py",
+        "handlers/player_rankings.py",
+        "handlers/profile.py",
+        "handlers/start.py",
+        "handlers/story_boss_invocation_wiring.py",
+        "handlers/story_quest_npc_runtime.py",
+        "migrations/043_existing_character_attribute_point_policy.py",
+        "systems/attribute_allocation_system.py",
+        "systems/boss_system.py",
+        "systems/character_system.py",
+        "systems/combat_system.py",
+        "systems/equipment_system.py",
+        "systems/guild_system.py",
+        "systems/notifications.py",
+        "systems/player_interaction_system.py",
+        "systems/player_rankings_system.py",
+        "systems/player_system.py",
+        "systems/pve_auto_escape_system.py",
+        "systems/pvp_round_engine.py",
+        "systems/pvp_system.py",
+        "systems/pvp_timer_service.py",
+        "systems/simulation/clock.py",
+        "systems/simulation/meta_progression.py",
+        "systems/simulation/models.py",
+        "systems/simulation/progression_provider.py",
+        "systems/simulation/pve_battle.py",
+        "systems/story_quest_player_level.py",
+        "systems/travel_system.py",
+        "systems/world_chronicle_system.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/account.py",
+        "rom_v2/domain/character.py",
+        "rom_v2/domain/class_catalog.py",
+        "rom_v2/domain/six_class_simulation_matrix.py"
+      ],
+      "v2_application_files": [
+        "rom_v2/application/account_ports.py",
+        "rom_v2/application/account_service.py",
+        "rom_v2/application/character_ports.py",
+        "rom_v2/application/character_service.py",
+        "rom_v2/application/premium_shop.py"
+      ],
+      "v2_persistence_files": [
+        "rom_v2/infrastructure/persistence/account_repository.py",
+        "rom_v2/infrastructure/persistence/account_unit_of_work.py",
+        "rom_v2/infrastructure/persistence/character_repository.py",
+        "rom_v2/infrastructure/persistence/character_unit_of_work.py"
+      ],
+      "v2_presentation_files": [],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_account_domain.py",
+        "tests_v2/test_character_lifecycle.py",
+        "tests_v2/test_premium_shop.py",
+        "tests_v2/test_six_class_simulation_matrix.py",
+        "tests_v2/test_v2_repository_base.py",
+        "tests_v2/test_v2_unit_of_work.py"
+      ],
+      "blockers": [
+        "V2_PRESENTER_OR_TYPED_PRESENTATION_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Close listed runtime gaps; do not hide them with presenter or handler overlays."
+    },
+    {
+      "key": "stats_profile",
+      "title": "Stats and profile",
+      "status": "PARTIAL",
+      "v1_files": [
+        "data/equipment_profiles.py",
+        "data/equipment_stat_policy.py",
+        "data/stat_system_config.py",
+        "db_modules/character.py",
+        "db_modules/dev_compat.py",
+        "db_modules/generated_equipment.py",
+        "db_modules/player.py",
+        "db_modules/shop.py",
+        "db_modules/systems_wrappers.py",
+        "handlers/attribute_allocation.py",
+        "handlers/guild.py",
+        "handlers/inventory.py",
+        "handlers/player_interaction.py",
+        "handlers/profile.py",
+        "handlers/story_quests.py",
+        "keyboards.py",
+        "migrations/042_attribute_points_foundation.py",
+        "migrations/043_existing_character_attribute_point_policy.py",
+        "migrations/044_attribute_respec_foundation.py",
+        "systems/attribute_allocation_system.py",
+        "systems/attribute_respec_system.py",
+        "systems/dynamic_equipment_system.py",
+        "systems/player_interaction_system.py",
+        "systems/profile_history_system.py",
+        "systems/simulation/config.py",
+        "systems/simulation/progression_models.py",
+        "systems/stat_system.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/derived_stats.py",
+        "rom_v2/domain/full_stat_snapshot.py",
+        "rom_v2/domain/primary_stats.py",
+        "rom_v2/domain/resource_lifecycle.py"
+      ],
+      "v2_application_files": [
+        "rom_v2/application/full_stat_snapshot_service.py"
+      ],
+      "v2_persistence_files": [
+        "rom_v2/infrastructure/persistence/migrations/v002_primary_stats_parity.py"
+      ],
+      "v2_presentation_files": [],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_derived_stats.py",
+        "tests_v2/test_full_stat_snapshot.py",
+        "tests_v2/test_primary_stats.py",
+        "tests_v2/test_resource_lifecycle.py"
+      ],
+      "blockers": [
+        "V2_PRESENTER_OR_TYPED_PRESENTATION_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Close listed runtime gaps; do not hide them with presenter or handler overlays."
+    },
+    {
+      "key": "inventory_equipment",
+      "title": "Inventory and equipment",
+      "status": "PARTIAL",
+      "v1_files": [
+        "data/equipment_identity_stat_policy.py",
+        "data/equipment_profiles.py",
+        "data/equipment_stat_policy.py",
+        "db_modules/dev_compat.py",
+        "db_modules/equipment.py",
+        "db_modules/generated_equipment.py",
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py",
+        "db_modules/refine.py",
+        "db_modules/shop.py",
+        "db_modules/systems_wrappers.py",
+        "handlers/auction_house.py",
+        "handlers/city.py",
+        "handlers/combat.py",
+        "handlers/inventory.py",
+        "handlers/name_rune.py",
+        "handlers/player_interaction.py",
+        "handlers/profile.py",
+        "handlers/refine.py",
+        "migrations/040_generated_equipment_namespace.py",
+        "systems/auction_house_system.py",
+        "systems/drop_system.py",
+        "systems/dynamic_equipment_system.py",
+        "systems/equipment_system.py",
+        "systems/name_rune_system.py",
+        "systems/player_interaction_system.py",
+        "systems/potion_system.py",
+        "systems/premium_item_policy_system.py",
+        "systems/pvp_real_equipment_fixture_audit.py",
+        "systems/reward_system.py",
+        "systems/rune_system.py",
+        "systems/simulation/drop_inventory.py",
+        "systems/simulation/equipment_policy.py",
+        "systems/simulation/equipment_service.py",
+        "systems/simulation/inventory_engine.py",
+        "systems/simulation/loot_equipment_city.py",
+        "systems/simulation/models.py",
+        "systems/simulation/potion_affordability.py",
+        "systems/simulation/progression_economy_reporting.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/central_loot.py",
+        "rom_v2/domain/direct_trade.py",
+        "rom_v2/domain/enhancement.py",
+        "rom_v2/domain/equipment.py",
+        "rom_v2/domain/equipment_generation.py",
+        "rom_v2/domain/item.py",
+        "rom_v2/domain/item_id_namespace.py",
+        "rom_v2/domain/primary_stats.py",
+        "rom_v2/domain/quest_item_store.py",
+        "rom_v2/domain/runes.py",
+        "rom_v2/domain/six_class_simulation_matrix.py"
+      ],
+      "v2_application_files": [
+        "rom_v2/application/auction_service.py",
+        "rom_v2/application/base_equipment_shop.py",
+        "rom_v2/application/daily_reward.py",
+        "rom_v2/application/enhancement_service.py",
+        "rom_v2/application/equipment_generation_ports.py",
+        "rom_v2/application/equipment_generation_service.py",
+        "rom_v2/application/equipment_ports.py",
+        "rom_v2/application/equipment_service.py",
+        "rom_v2/application/inventory_ports.py",
+        "rom_v2/application/inventory_service.py",
+        "rom_v2/application/item_id_namespace_service.py",
+        "rom_v2/application/overlevel_policy_service.py",
+        "rom_v2/application/potion_trading.py",
+        "rom_v2/application/quest_engine_service.py",
+        "rom_v2/application/quest_item_store_service.py",
+        "rom_v2/application/services/rune_lifecycle.py"
+      ],
+      "v2_persistence_files": [
+        "rom_v2/infrastructure/persistence/equipment_repository.py",
+        "rom_v2/infrastructure/persistence/equipment_unit_of_work.py",
+        "rom_v2/infrastructure/persistence/inventory_repository.py",
+        "rom_v2/infrastructure/persistence/inventory_unit_of_work.py",
+        "rom_v2/infrastructure/persistence/migrations/v003_item_identity_parity.py",
+        "rom_v2/infrastructure/persistence/migrations/v004_equipment_slots_parity.py"
+      ],
+      "v2_presentation_files": [
+        "rom_v2/presentation/item_dto.py"
+      ],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_base_equipment_shop.py",
+        "tests_v2/test_central_loot.py",
+        "tests_v2/test_daily_reward.py",
+        "tests_v2/test_direct_trade.py",
+        "tests_v2/test_equipment_generation_policy.py",
+        "tests_v2/test_equipment_slots.py",
+        "tests_v2/test_full_stat_snapshot.py",
+        "tests_v2/test_inventory_service.py",
+        "tests_v2/test_item_definition_instance.py",
+        "tests_v2/test_item_id_namespace.py",
+        "tests_v2/test_overlevel_policy.py",
+        "tests_v2/test_potion_trading.py",
+        "tests_v2/test_quest_item_store.py",
+        "tests_v2/test_rune_lifecycle.py",
+        "tests_v2/test_six_class_simulation_matrix.py"
+      ],
+      "blockers": [
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Close listed runtime gaps; do not hide them with presenter or handler overlays."
+    },
+    {
+      "key": "runes",
+      "title": "Runes",
+      "status": "PARTIAL",
+      "v1_files": [
+        "data/rune_drop_balance.py",
+        "data/runes.py",
+        "db_modules/systems_wrappers.py",
+        "handlers/auction_house.py",
+        "handlers/dev.py",
+        "handlers/inventory.py",
+        "handlers/name_rune.py",
+        "handlers/runes.py",
+        "keyboards.py",
+        "migrations/010_rune_system_data_model.py",
+        "systems/auction_house_system.py",
+        "systems/drop_system.py",
+        "systems/name_rune_system.py",
+        "systems/notifications.py",
+        "systems/rune_system.py",
+        "systems/simulation/excel_reporting.py",
+        "systems/simulation/meta_progression.py",
+        "systems/simulation/models.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/runes.py"
+      ],
+      "v2_application_files": [
+        "rom_v2/application/services/rune_lifecycle.py"
+      ],
+      "v2_persistence_files": [],
+      "v2_presentation_files": [
+        "rom_v2/presentation/item_dto.py"
+      ],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_full_stat_snapshot.py",
+        "tests_v2/test_rune_lifecycle.py"
+      ],
+      "blockers": [
+        "V2_PRODUCTION_PERSISTENCE_ADAPTER_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Close listed runtime gaps; do not hide them with presenter or handler overlays."
+    },
+    {
+      "key": "repair_enhancement",
+      "title": "Durability, repair and enhancement",
+      "status": "CONTRACT_ONLY",
+      "v1_files": [
+        "db_modules/equipment.py",
+        "db_modules/refine.py",
+        "handlers/blacksmith.py",
+        "handlers/blacksmith_repair_confirm.py",
+        "handlers/city.py",
+        "handlers/inventory.py",
+        "handlers/refine.py",
+        "keyboards.py",
+        "systems/auction_house_system.py",
+        "systems/drop_system.py",
+        "systems/equipment_system.py",
+        "systems/notifications.py",
+        "systems/player_system.py",
+        "systems/refine_system.py",
+        "systems/reward_system.py",
+        "systems/simulation/meta_progression.py",
+        "systems/simulation/survival_state.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/durability.py",
+        "rom_v2/domain/enhancement.py"
+      ],
+      "v2_application_files": [
+        "rom_v2/application/durability_service.py",
+        "rom_v2/application/enhancement_service.py"
+      ],
+      "v2_persistence_files": [],
+      "v2_presentation_files": [],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_full_stat_snapshot.py",
+        "tests_v2/test_rune_lifecycle.py"
+      ],
+      "blockers": [
+        "V2_PRODUCTION_PERSISTENCE_ADAPTER_MISSING",
+        "V2_PRESENTER_OR_TYPED_PRESENTATION_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Add application/persistence/composition/presentation wiring directly to canonical V2 owners before UI work."
+    },
+    {
+      "key": "combat",
+      "title": "Hunt and combat",
+      "status": "CONTRACT_ONLY",
+      "v1_files": [
+        "data/bosses.py",
+        "data/mana_policy.py",
+        "data/player_combat_chances.py",
+        "events/__init__.py",
+        "events/_template/bosses.py",
+        "events/test_event_2026/bosses.py",
+        "handlers/combat.py",
+        "handlers/story_boss_invocation_wiring.py",
+        "keyboards.py",
+        "systems/boss_system.py",
+        "systems/character_system.py",
+        "systems/combat_system.py",
+        "systems/equipment_system.py",
+        "systems/player_system.py",
+        "systems/pve_skill_action_state.py",
+        "systems/pvp_combat_log.py",
+        "systems/pvp_primary_stat_scaling_combat_pacing_sandbox.py",
+        "systems/pvp_production_fixture_audit.py",
+        "systems/simulation/combat_actor_stats.py",
+        "systems/simulation/survival_state.py",
+        "systems/story_boss_invocation_adapter.py",
+        "systems/story_quest_boss_call_system.py",
+        "systems/story_quest_boss_completion_system.py",
+        "systems/story_quest_combat_progress_system.py",
+        "systems/timed_exp_bonus_system.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/battle.py",
+        "rom_v2/domain/battle_persistence.py",
+        "rom_v2/domain/damage_engine.py",
+        "rom_v2/domain/effect_engine.py",
+        "rom_v2/domain/pvp.py",
+        "rom_v2/domain/skill_execution.py",
+        "rom_v2/domain/terminal_paths.py"
+      ],
+      "v2_application_files": [
+        "rom_v2/application/pvp_service.py"
+      ],
+      "v2_persistence_files": [],
+      "v2_presentation_files": [],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_battle_persistence.py",
+        "tests_v2/test_effect_engine.py",
+        "tests_v2/test_pvp.py",
+        "tests_v2/test_terminal_paths.py"
+      ],
+      "blockers": [
+        "V2_PRODUCTION_PERSISTENCE_ADAPTER_MISSING",
+        "V2_PRESENTER_OR_TYPED_PRESENTATION_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Add application/persistence/composition/presentation wiring directly to canonical V2 owners before UI work."
+    },
+    {
+      "key": "progression_rewards_loot",
+      "title": "Progression, rewards and loot",
+      "status": "CONTRACT_ONLY",
+      "v1_files": [
+        "data/drop_tables.py",
+        "data/rune_drop_balance.py",
+        "data/story_quest_definitions.py",
+        "db_modules/quests.py",
+        "db_modules/systems_wrappers.py",
+        "events/__init__.py",
+        "events/_template/drops.py",
+        "events/_template/rewards.py",
+        "events/test_event_2026/drops.py",
+        "events/test_event_2026/rewards.py",
+        "handlers/combat.py",
+        "handlers/daily.py",
+        "handlers/dev.py",
+        "systems/contract_system.py",
+        "systems/drop_system.py",
+        "systems/guild_system.py",
+        "systems/level_up_reward_system.py",
+        "systems/reward_system.py",
+        "systems/rune_system.py",
+        "systems/simulation/drop_inventory.py",
+        "systems/simulation/progression_provider.py",
+        "systems/story_quest_completion_system.py",
+        "systems/story_quest_item_drop_system.py",
+        "systems/story_quest_reward_system.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/central_loot.py",
+        "rom_v2/domain/mana_engine.py",
+        "rom_v2/domain/player_progression.py"
+      ],
+      "v2_application_files": [
+        "rom_v2/application/post_combat_hooks.py",
+        "rom_v2/application/reward_settlement.py"
+      ],
+      "v2_persistence_files": [],
+      "v2_presentation_files": [],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_central_loot.py",
+        "tests_v2/test_player_progression.py",
+        "tests_v2/test_post_combat_hooks.py",
+        "tests_v2/test_reward_settlement.py"
+      ],
+      "blockers": [
+        "V2_PRODUCTION_PERSISTENCE_ADAPTER_MISSING",
+        "V2_PRESENTER_OR_TYPED_PRESENTATION_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Add application/persistence/composition/presentation wiring directly to canonical V2 owners before UI work."
+    },
+    {
+      "key": "economy",
+      "title": "Economy and shops",
+      "status": "PARTIAL",
+      "v1_files": [
+        "db_modules/daily_compat.py",
+        "db_modules/quests.py",
+        "db_modules/shop.py",
+        "db_modules/systems_wrappers.py",
+        "db_modules/utils.py",
+        "events/_template/shop.py",
+        "events/test_event_2026/shop.py",
+        "handlers/admin_crystal_credit.py",
+        "handlers/auction_house.py",
+        "handlers/city.py",
+        "handlers/combat.py",
+        "handlers/crystal_shop.py",
+        "handlers/daily.py",
+        "handlers/dev.py",
+        "handlers/inventory.py",
+        "handlers/runes.py",
+        "keyboards.py",
+        "migrations/041_shop_preview_promotion_recovery.py",
+        "migrations/051_event_shop_exchange.py",
+        "systems/admin_crystal_credit_system.py",
+        "systems/auction_house_system.py",
+        "systems/contract_system.py",
+        "systems/crystal_bag_expansion_system.py",
+        "systems/crystal_shop_system.py",
+        "systems/crystal_wallet_system.py",
+        "systems/drop_system.py",
+        "systems/energy_system.py",
+        "systems/event_shop_system.py",
+        "systems/item_id_allocator_system.py",
+        "systems/notifications.py",
+        "systems/potion_system.py",
+        "systems/reward_system.py",
+        "systems/rune_system.py",
+        "systems/simulation/behavior_policy.py",
+        "systems/simulation/meta_progression.py",
+        "systems/simulation/models.py",
+        "systems/simulation/potion_affordability.py"
+      ],
+      "v2_domain_files": [],
+      "v2_application_files": [
+        "rom_v2/application/account_ports.py",
+        "rom_v2/application/bag_expansion.py",
+        "rom_v2/application/base_equipment_shop.py",
+        "rom_v2/application/crystal_wallet_ledger.py",
+        "rom_v2/application/daily_reward.py",
+        "rom_v2/application/equipment_generation_service.py",
+        "rom_v2/application/gold_wallet.py",
+        "rom_v2/application/potion_trading.py",
+        "rom_v2/application/premium_shop.py"
+      ],
+      "v2_persistence_files": [
+        "rom_v2/infrastructure/persistence/account_repository.py"
+      ],
+      "v2_presentation_files": [],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_bag_expansion.py",
+        "tests_v2/test_base_equipment_shop.py",
+        "tests_v2/test_crystal_wallet_ledger.py",
+        "tests_v2/test_daily_reward.py",
+        "tests_v2/test_equipment_generation_policy.py",
+        "tests_v2/test_event_schedules_rewards.py",
+        "tests_v2/test_gold_wallet.py",
+        "tests_v2/test_potion_trading.py",
+        "tests_v2/test_premium_shop.py"
+      ],
+      "blockers": [
+        "V2_PRESENTER_OR_TYPED_PRESENTATION_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Close listed runtime gaps; do not hide them with presenter or handler overlays."
+    },
+    {
+      "key": "world_travel",
+      "title": "World, map and travel",
+      "status": "CONTRACT_ONLY",
+      "v1_files": [
+        "data/bosses.py",
+        "data/location_graph.py",
+        "data/locations.py",
+        "data/mobs.py",
+        "data/story_quest_hierarchy.py",
+        "data/travel_presentation.py",
+        "db_modules/location.py",
+        "db_modules/migrations.py",
+        "db_modules/story_quests.py",
+        "db_modules/systems_wrappers.py",
+        "handlers/attribute_allocation.py",
+        "handlers/city.py",
+        "handlers/contracts.py",
+        "handlers/map.py",
+        "handlers/player_interaction.py",
+        "handlers/story_boss_invocation_wiring.py",
+        "keyboards.py",
+        "migrations/049_persistent_location_travel.py",
+        "systems/attribute_allocation_system.py",
+        "systems/boss_system.py",
+        "systems/item_id_allocator_system.py",
+        "systems/location_context_system.py",
+        "systems/player_interaction_system.py",
+        "systems/simulation/asset_valuation.py",
+        "systems/simulation/economic_ledger.py",
+        "systems/simulation/patch_regression.py",
+        "systems/simulation/progression_provider.py",
+        "systems/story_quest_location_presentation.py",
+        "systems/story_quest_overlevel_system.py",
+        "systems/story_quest_system.py",
+        "systems/travel_system.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/travel_aggregate.py"
+      ],
+      "v2_application_files": [
+        "rom_v2/application/map_presentation.py",
+        "rom_v2/application/travel_service.py"
+      ],
+      "v2_persistence_files": [],
+      "v2_presentation_files": [],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_location_catalog.py",
+        "tests_v2/test_map_presentation.py",
+        "tests_v2/test_travel_aggregate.py",
+        "tests_v2/test_world_graph.py"
+      ],
+      "blockers": [
+        "V2_PRODUCTION_PERSISTENCE_ADAPTER_MISSING",
+        "V2_PRESENTER_OR_TYPED_PRESENTATION_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Add application/persistence/composition/presentation wiring directly to canonical V2 owners before UI work."
+    },
+    {
+      "key": "guild",
+      "title": "Guild",
+      "status": "CONTRACT_ONLY",
+      "v1_files": [
+        "data/guild_resource_policy.py",
+        "db_modules/systems_wrappers.py",
+        "events/__init__.py",
+        "handlers/city.py",
+        "handlers/contracts.py",
+        "handlers/guild.py",
+        "keyboards.py",
+        "systems/contract_system.py",
+        "systems/energy_system.py",
+        "systems/guild_resource_system.py",
+        "systems/guild_system.py",
+        "systems/notifications.py",
+        "systems/reward_system.py",
+        "systems/simulation/class_progression.py",
+        "systems/simulation/economy_guild_acceptance.py",
+        "systems/simulation/guild_population.py",
+        "systems/simulation/meta_progression.py",
+        "systems/simulation/models.py",
+        "systems/simulation/population_reporting.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/guild_application.py",
+        "rom_v2/domain/guild_contract_history.py",
+        "rom_v2/domain/guild_core.py"
+      ],
+      "v2_application_files": [
+        "rom_v2/application/guild_contract_history_service.py",
+        "rom_v2/application/guild_core_service.py",
+        "rom_v2/application/guild_management_service.py"
+      ],
+      "v2_persistence_files": [],
+      "v2_presentation_files": [],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_guild_contract_history.py",
+        "tests_v2/test_guild_core.py",
+        "tests_v2/test_guild_management.py"
+      ],
+      "blockers": [
+        "V2_PRODUCTION_PERSISTENCE_ADAPTER_MISSING",
+        "V2_PRESENTER_OR_TYPED_PRESENTATION_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Add application/persistence/composition/presentation wiring directly to canonical V2 owners before UI work."
+    },
+    {
+      "key": "trade_auction",
+      "title": "Direct trade and auction",
+      "status": "CONTRACT_ONLY",
+      "v1_files": [
+        "db_modules/systems_wrappers.py",
+        "handlers/auction_house.py",
+        "handlers/player_interaction.py",
+        "systems/auction_house_system.py",
+        "systems/player_interaction_system.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/auction.py",
+        "rom_v2/domain/direct_trade.py"
+      ],
+      "v2_application_files": [
+        "rom_v2/application/auction_service.py",
+        "rom_v2/application/direct_trade_service.py"
+      ],
+      "v2_persistence_files": [],
+      "v2_presentation_files": [],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_auction.py",
+        "tests_v2/test_direct_trade.py"
+      ],
+      "blockers": [
+        "V2_PRODUCTION_PERSISTENCE_ADAPTER_MISSING",
+        "V2_PRESENTER_OR_TYPED_PRESENTATION_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Add application/persistence/composition/presentation wiring directly to canonical V2 owners before UI work."
+    },
+    {
+      "key": "pvp",
+      "title": "PvP",
+      "status": "CONTRACT_ONLY",
+      "v1_files": [
+        "handlers/dev.py",
+        "handlers/pvp_interaction.py",
+        "handlers/pvp_round_ui.py",
+        "systems/profile_history_system.py",
+        "systems/pvp_action_validation.py",
+        "systems/pvp_adaptive_balance_optimizer.py",
+        "systems/pvp_anti_stall_survivability_candidate_sandbox.py",
+        "systems/pvp_balance_simulator.py",
+        "systems/pvp_battle_factory.py",
+        "systems/pvp_combat_log.py",
+        "systems/pvp_completion_service.py",
+        "systems/pvp_config.py",
+        "systems/pvp_knight_judgement_terminal_audit.py",
+        "systems/pvp_models.py",
+        "systems/pvp_policy_balance_candidate_sandbox.py",
+        "systems/pvp_policy_metrics_audit.py",
+        "systems/pvp_primary_stat_scaling_combat_pacing_sandbox.py",
+        "systems/pvp_production_calibration.py",
+        "systems/pvp_production_fixture_audit.py",
+        "systems/pvp_real_actor_root_cause_audit.py",
+        "systems/pvp_real_actor_state_replay.py",
+        "systems/pvp_real_equipment_fixture_audit.py",
+        "systems/pvp_request_service.py",
+        "systems/pvp_root_cause_metric_semantics.py",
+        "systems/pvp_round_engine.py",
+        "systems/pvp_round_ui.py",
+        "systems/pvp_skill_adapter.py",
+        "systems/pvp_system.py",
+        "systems/pvp_targeted_mechanics_candidate_sandbox.py",
+        "systems/pvp_timer_service.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/pvp.py"
+      ],
+      "v2_application_files": [
+        "rom_v2/application/pvp_service.py"
+      ],
+      "v2_persistence_files": [],
+      "v2_presentation_files": [],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_pvp.py",
+        "tests_v2/test_ratings_history_chronicles.py",
+        "tests_v2/test_reward_settlement.py"
+      ],
+      "blockers": [
+        "V2_PRODUCTION_PERSISTENCE_ADAPTER_MISSING",
+        "V2_PRESENTER_OR_TYPED_PRESENTATION_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Add application/persistence/composition/presentation wiring directly to canonical V2 owners before UI work."
+    },
+    {
+      "key": "quests_story_npc",
+      "title": "Quests, NPC and story",
+      "status": "PARTIAL",
+      "v1_files": [
+        "data/story_quest_content.py",
+        "data/story_quest_definitions.py",
+        "data/story_quest_hierarchy.py",
+        "data/story_quest_item_identity.py",
+        "data/story_quest_npcs.py",
+        "data/story_quest_title_presentation.py",
+        "data/story_quests/__init__.py",
+        "data/story_quests/dark_forest_51_60.py",
+        "data/story_quests/dark_forest_61_70.py",
+        "data/story_quests/dark_forest_71_80.py",
+        "data/story_quests/dark_forest_81_90.py",
+        "data/story_quests/dark_forest_91_100.py",
+        "data/story_quests/start_path_01_10.py",
+        "data/story_quests/start_path_11_20.py",
+        "data/story_quests/start_path_21_30.py",
+        "data/story_quests/start_path_31_40.py",
+        "data/story_quests/start_path_41_50.py",
+        "db_modules/story_quests.py",
+        "handlers/combat.py",
+        "handlers/story_boss_invocation_wiring.py",
+        "handlers/story_quest_hierarchy_ui.py",
+        "handlers/story_quest_npc_runtime.py",
+        "handlers/story_quests.py",
+        "migrations/053_story_quest_persistence_schema.py",
+        "migrations/054_story_quest_kill_target_normalization.py",
+        "systems/story_boss_invocation_adapter.py",
+        "systems/story_quest_boss_call_system.py",
+        "systems/story_quest_boss_completion_system.py",
+        "systems/story_quest_combat_progress_system.py",
+        "systems/story_quest_completion_system.py",
+        "systems/story_quest_item_drop_system.py",
+        "systems/story_quest_location_presentation.py",
+        "systems/story_quest_npc_acceptance_system.py",
+        "systems/story_quest_overlevel_system.py",
+        "systems/story_quest_player_level.py",
+        "systems/story_quest_reward_system.py",
+        "systems/story_quest_system.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/central_loot.py",
+        "rom_v2/domain/damage_engine.py",
+        "rom_v2/domain/dev_authorization.py",
+        "rom_v2/domain/equipment_generation.py",
+        "rom_v2/domain/item.py",
+        "rom_v2/domain/item_id_namespace.py",
+        "rom_v2/domain/npc_dialogue_model.py",
+        "rom_v2/domain/overlevel_policy.py",
+        "rom_v2/domain/quest_engine.py",
+        "rom_v2/domain/quest_item_store.py",
+        "rom_v2/domain/ratings_history_chronicles.py",
+        "rom_v2/domain/skill_execution.py",
+        "rom_v2/domain/story_content.py",
+        "rom_v2/domain/story_navigation.py"
+      ],
+      "v2_application_files": [
+        "rom_v2/application/daily_reward.py",
+        "rom_v2/application/guild_contract_history_service.py",
+        "rom_v2/application/npc_dialogue_service.py",
+        "rom_v2/application/pvp_service.py",
+        "rom_v2/application/quest_engine_service.py",
+        "rom_v2/application/quest_item_store_service.py",
+        "rom_v2/application/story_navigation_service.py"
+      ],
+      "v2_persistence_files": [],
+      "v2_presentation_files": [
+        "rom_v2/presentation/story_navigation.py"
+      ],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_central_loot.py",
+        "tests_v2/test_daily_reward.py",
+        "tests_v2/test_dev_authorization.py",
+        "tests_v2/test_guild_contract_history.py",
+        "tests_v2/test_item_definition_instance.py",
+        "tests_v2/test_item_id_namespace.py",
+        "tests_v2/test_npc_dialogue_model.py",
+        "tests_v2/test_quest_engine.py",
+        "tests_v2/test_quest_item_store.py",
+        "tests_v2/test_ratings_history_chronicles.py",
+        "tests_v2/test_reward_settlement.py",
+        "tests_v2/test_story_content_11_20.py",
+        "tests_v2/test_story_content_1_10.py",
+        "tests_v2/test_story_content_21_30.py",
+        "tests_v2/test_story_content_31_40.py",
+        "tests_v2/test_story_content_41_50.py",
+        "tests_v2/test_story_content_51_60.py",
+        "tests_v2/test_story_content_61_70.py",
+        "tests_v2/test_story_content_71_80.py",
+        "tests_v2/test_story_content_81_90.py",
+        "tests_v2/test_story_content_91_100.py",
+        "tests_v2/test_story_navigation.py"
+      ],
+      "blockers": [
+        "V2_PRODUCTION_PERSISTENCE_ADAPTER_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Close listed runtime gaps; do not hide them with presenter or handler overlays."
+    },
+    {
+      "key": "events",
+      "title": "Events",
+      "status": "CONTRACT_ONLY",
+      "v1_files": [
+        "db_modules/systems_wrappers.py",
+        "events/__init__.py",
+        "events/_template/__init__.py",
+        "events/_template/bosses.py",
+        "events/_template/config.py",
+        "events/_template/drops.py",
+        "events/_template/handlers.py",
+        "events/_template/items.py",
+        "events/_template/mobs.py",
+        "events/_template/quests.py",
+        "events/_template/rewards.py",
+        "events/_template/shop.py",
+        "events/_template/statistics.py",
+        "events/item_namespace.py",
+        "events/test_event_2026/__init__.py",
+        "events/test_event_2026/bosses.py",
+        "events/test_event_2026/config.py",
+        "events/test_event_2026/drops.py",
+        "events/test_event_2026/handlers.py",
+        "events/test_event_2026/items.py",
+        "events/test_event_2026/mobs.py",
+        "events/test_event_2026/quests.py",
+        "events/test_event_2026/rewards.py",
+        "events/test_event_2026/shop.py",
+        "events/test_event_2026/statistics.py",
+        "handlers/combat.py",
+        "handlers/event_ui.py",
+        "handlers/world_chronicles.py",
+        "migrations/050_event_kill_statistics.py",
+        "migrations/051_event_shop_exchange.py",
+        "systems/drop_system.py",
+        "systems/event_item_catalog_system.py",
+        "systems/event_shop_system.py",
+        "systems/event_statistics_system.py",
+        "systems/guild_system.py",
+        "systems/player_interaction_system.py",
+        "systems/pvp_system.py",
+        "systems/reward_system.py",
+        "systems/simulation/balance_analyzer.py",
+        "systems/simulation/class_progression.py",
+        "systems/simulation/economy_analyzer.py",
+        "systems/simulation/guild_population.py",
+        "systems/simulation/metrics.py",
+        "systems/simulation/progression_models.py",
+        "systems/world_chronicle_system.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/events.py",
+        "rom_v2/domain/item_id_namespace.py"
+      ],
+      "v2_application_files": [
+        "rom_v2/application/guild_contract_history_service.py",
+        "rom_v2/application/item_id_namespace_service.py"
+      ],
+      "v2_persistence_files": [],
+      "v2_presentation_files": [],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_base_equipment_shop.py",
+        "tests_v2/test_event_schedules_rewards.py",
+        "tests_v2/test_item_id_namespace.py",
+        "tests_v2/test_terminal_paths.py"
+      ],
+      "blockers": [
+        "V2_PRODUCTION_PERSISTENCE_ADAPTER_MISSING",
+        "V2_PRESENTER_OR_TYPED_PRESENTATION_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Add application/persistence/composition/presentation wiring directly to canonical V2 owners before UI work."
+    },
+    {
+      "key": "inactivity",
+      "title": "Inactivity reminders",
+      "status": "CONTRACT_ONLY",
+      "v1_files": [
+        "db_modules/systems_wrappers.py",
+        "handlers/admin_crystal_credit.py",
+        "systems/energy_system.py",
+        "systems/inactivity_reminder_system.py",
+        "systems/notifications.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/inactivity_reminders.py"
+      ],
+      "v2_application_files": [],
+      "v2_persistence_files": [],
+      "v2_presentation_files": [],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_inactivity_reminders.py"
+      ],
+      "blockers": [
+        "V2_APPLICATION_SERVICE_OR_QUERY_MISSING",
+        "V2_PRODUCTION_PERSISTENCE_ADAPTER_MISSING",
+        "V2_PRESENTER_OR_TYPED_PRESENTATION_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Add application/persistence/composition/presentation wiring directly to canonical V2 owners before UI work."
+    },
+    {
+      "key": "ratings_history",
+      "title": "Ratings, history and chronicles",
+      "status": "CONTRACT_ONLY",
+      "v1_files": [
+        "db_modules/systems_wrappers.py",
+        "handlers/admin_crystal_credit.py",
+        "handlers/auction_house.py",
+        "handlers/dev.py",
+        "handlers/player_rankings.py",
+        "handlers/profile.py",
+        "handlers/world_chronicles.py",
+        "systems/admin_crystal_credit_system.py",
+        "systems/auction_house_system.py",
+        "systems/guild_system.py",
+        "systems/player_interaction_system.py",
+        "systems/player_rankings_system.py",
+        "systems/profile_history_system.py",
+        "systems/world_chronicle_system.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/ratings_history_chronicles.py"
+      ],
+      "v2_application_files": [],
+      "v2_persistence_files": [],
+      "v2_presentation_files": [],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_ratings_history_chronicles.py"
+      ],
+      "blockers": [
+        "V2_APPLICATION_SERVICE_OR_QUERY_MISSING",
+        "V2_PRODUCTION_PERSISTENCE_ADAPTER_MISSING",
+        "V2_PRESENTER_OR_TYPED_PRESENTATION_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Add application/persistence/composition/presentation wiring directly to canonical V2 owners before UI work."
+    },
+    {
+      "key": "about_links",
+      "title": "About, links and support",
+      "status": "CONTRACT_ONLY",
+      "v1_files": [
+        "config.py",
+        "data/about_game.py",
+        "handlers/about_game.py",
+        "handlers/external_links.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/about_links_support.py"
+      ],
+      "v2_application_files": [],
+      "v2_persistence_files": [],
+      "v2_presentation_files": [],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_about_links_support.py"
+      ],
+      "blockers": [
+        "V2_APPLICATION_SERVICE_OR_QUERY_MISSING",
+        "V2_PRESENTER_OR_TYPED_PRESENTATION_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Add application/persistence/composition/presentation wiring directly to canonical V2 owners before UI work."
+    },
+    {
+      "key": "dev_tools",
+      "title": "DEV tools",
+      "status": "CONTRACT_ONLY",
+      "v1_files": [
+        "db_modules/dev_compat.py",
+        "handlers/dev.py",
+        "handlers/fatigue_artifact.py",
+        "handlers/guild.py",
+        "systems/premium_item_policy_system.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/dev_authorization.py",
+        "rom_v2/domain/dev_data_operations.py"
+      ],
+      "v2_application_files": [],
+      "v2_persistence_files": [],
+      "v2_presentation_files": [],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_dev_authorization.py",
+        "tests_v2/test_dev_data_operations.py"
+      ],
+      "blockers": [
+        "V2_APPLICATION_SERVICE_OR_QUERY_MISSING",
+        "V2_PRODUCTION_PERSISTENCE_ADAPTER_MISSING",
+        "V2_PRESENTER_OR_TYPED_PRESENTATION_MISSING",
+        "V2_TELEGRAM_HANDLER_OR_ROUTER_WIRING_MISSING"
+      ],
+      "next_action": "Add application/persistence/composition/presentation wiring directly to canonical V2 owners before UI work."
+    },
+    {
+      "key": "simulator",
+      "title": "Simulator",
+      "status": "CONTRACT_ONLY",
+      "v1_files": [
+        "handlers/dev.py",
+        "systems/drop_system.py",
+        "systems/simulation/__init__.py",
+        "systems/simulation/asset_valuation.py",
+        "systems/simulation/balance_analyzer.py",
+        "systems/simulation/battle_models.py",
+        "systems/simulation/behavior_policy.py",
+        "systems/simulation/canonical_rules.py",
+        "systems/simulation/capacity_analysis.py",
+        "systems/simulation/class_progression.py",
+        "systems/simulation/clock.py",
+        "systems/simulation/combat_actor_stats.py",
+        "systems/simulation/config.py",
+        "systems/simulation/drop_inventory.py",
+        "systems/simulation/economic_ledger.py",
+        "systems/simulation/economic_progression.py",
+        "systems/simulation/economy_analyzer.py",
+        "systems/simulation/economy_guild_acceptance.py",
+        "systems/simulation/equipment_policy.py",
+        "systems/simulation/equipment_service.py",
+        "systems/simulation/excel_reporting.py",
+        "systems/simulation/guild_population.py",
+        "systems/simulation/inventory_engine.py",
+        "systems/simulation/loot_equipment_city.py",
+        "systems/simulation/meta_progression.py",
+        "systems/simulation/metrics.py",
+        "systems/simulation/models.py",
+        "systems/simulation/parity_foundation.py",
+        "systems/simulation/patch_regression.py",
+        "systems/simulation/population_cache.py",
+        "systems/simulation/population_reporting.py",
+        "systems/simulation/potion_affordability.py",
+        "systems/simulation/production_parity.py",
+        "systems/simulation/progression_economy_reporting.py",
+        "systems/simulation/progression_models.py",
+        "systems/simulation/progression_provider.py",
+        "systems/simulation/progression_reporting.py",
+        "systems/simulation/progression_wall_analyzer.py",
+        "systems/simulation/pve_battle.py",
+        "systems/simulation/reporting.py",
+        "systems/simulation/rng.py",
+        "systems/simulation/rng_adapter.py",
+        "systems/simulation/rng_percentiles.py",
+        "systems/simulation/skill_catalog.py",
+        "systems/simulation/survival_state.py",
+        "systems/simulation/world_progression.py"
+      ],
+      "v2_domain_files": [
+        "rom_v2/domain/simulator_adapters.py",
+        "rom_v2/domain/six_class_simulation_matrix.py"
+      ],
+      "v2_application_files": [],
+      "v2_persistence_files": [],
+      "v2_presentation_files": [],
+      "v2_telegram_files": [],
+      "tests": [
+        "tests_v2/test_simulator_adapters.py",
+        "tests_v2/test_six_class_simulation_matrix.py"
+      ],
+      "blockers": [
+        "V2_APPLICATION_SERVICE_OR_QUERY_MISSING"
+      ],
+      "next_action": "Add application/persistence/composition/presentation wiring directly to canonical V2 owners before UI work."
+    }
+  ],
+  "forbidden_v2_imports": [],
+  "overlay_candidates": [],
+  "architecture_decisions": [
+    "V1 is read-only audit/reference material only.",
+    "V2 runtime imports, calls, shared mutable state and fallbacks to V1 are forbidden.",
+    "Authoritative V2 code is edited directly; overlays, monkey patches and shadow owners are forbidden.",
+    "READY_FOR_UI requires application, persistence where applicable, presentation, Telegram wiring and tests.",
+    "Contract-only APIs are not evidence of a playable game."
+  ],
+  "next_stage": "21.16.1a",
+  "suggested_next_patch": "patch_21_16_1a_refine_playable_slice_architecture_contract.py",
+  "backups": {
+    "reports/stage_21_16_1_v1_v2_runtime_readiness_audit.json": null,
+    "MD/STAGE_21_16_1_V1_V2_RUNTIME_READINESS_AUDIT.md": null,
+    "reports/stage_21_16_1_failure.json": "backup/stage_21_16_1_20261028T203128Z/reports/stage_21_16_1_failure.json"
+  }
+}
