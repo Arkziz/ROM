@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "stage": "21.16.1a",
+  "status": "PASS",
+  "generated_at_utc": "2026-10-28T21:03:24.225446+00:00",
+  "base_commit": "e66a64bc32b6ca3c48407e274ffa8e2f0dcb3b9b",
+  "decision": "PLAYABLE_SLICE_ARCHITECTURE_CONTRACT_REFINED",
+  "canonical_vertical_path": [
+    "telegram",
+    "application",
+    "unit_of_work",
+    "repository",
+    "persistence",
+    "typed_result",
+    "presenter",
+    "response"
+  ],
+  "v1_runtime_dependency": "FORBIDDEN",
+  "overlay_shadow_fallback_policy": "FORBIDDEN",
+  "direct_authoritative_code_editing": "REQUIRED",
+  "ready_for_ui_requires_complete_vertical_path": true,
+  "architecture_contract_validation": "PASS",
+  "duplicate_gate_before": {
+    "duplicates": {
+      "aware_utc": [
+        {
+          "file": "rom_v2/domain/inactivity_reminders.py",
+          "kind": "FunctionDef",
+          "line": 15
+        },
+        {
+          "file": "rom_v2/domain/ratings_history_chronicles.py",
+          "kind": "FunctionDef",
+          "line": 13
+        }
+      ]
+    },
+    "name": "duplicate_scan",
+    "status": "FAIL",
+    "symbol_count": 607
+  },
+  "duplicate_gate_policy": "UNCHANGED_PRE_POST_REQUIRED",
+  "changed_files": [
+    "rom_v2/app/playable_slice_contract.json",
+    "reports/stage_21_16_1a_playable_slice_architecture_contract.json",
+    "MD/STAGE_21_16_1A_PLAYABLE_SLICE_ARCHITECTURE_CONTRACT.md"
+  ],
+  "runtime_telegram": "NOT_CONNECTED",
+  "sqlite": "NOT_OPENED",
+  "manual_game_check": "NOT_REQUIRED",
+  "wal_shm_manipulated": false,
+  "next_stage": "21.16.1b",
+  "suggested_next_patch": "patch_21_16_1b_close_foundational_runtime_gaps.py"
+}

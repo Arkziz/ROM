@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "contract_key": "rom_v2_playable_slice_architecture",
+  "vertical_path": [
+    "telegram",
+    "application",
+    "unit_of_work",
+    "repository",
+    "persistence",
+    "typed_result",
+    "presenter",
+    "response"
+  ],
+  "readiness_statuses": [
+    "READY_FOR_UI",
+    "PARTIAL",
+    "CONTRACT_ONLY",
+    "MISSING",
+    "BLOCKED"
+  ],
+  "required_evidence": [
+    "application",
+    "unit_of_work",
+    "repository",
+    "persistence",
+    "typed_result",
+    "presenter",
+    "telegram_handler",
+    "response_mapping",
+    "targeted_tests",
+    "composition_registration"
+  ],
+  "dependency_rank": {
+    "domain": 0,
+    "application": 1,
+    "infrastructure": 2,
+    "presentation": 2,
+    "app": 3
+  },
+  "forbidden_runtime_import_roots": [
+    "handlers",
+    "systems",
+    "data",
+    "db_modules",
+    "events",
+    "legacy"
+  ],
+  "forbidden_implementation_markers": [
+    "overlay",
+    "monkey_patch",
+    "runtime_rebind",
+    "shadow_owner",
+    "v1_fallback"
+  ],
+  "policy": {
+    "v1_runtime_dependency": "FORBIDDEN",
+    "overlay_or_shadow_owner": "FORBIDDEN",
+    "direct_authoritative_edit": "REQUIRED",
+    "missing_application_status": "MISSING",
+    "forbidden_dependency_status": "BLOCKED",
+    "no_ui_wiring_status": "CONTRACT_ONLY",
+    "complete_vertical_path_status": "READY_FOR_UI"
+  }
+}
