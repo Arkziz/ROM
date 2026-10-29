@@ -1,67 +1,22 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "stage": "21.16.3",
   "status": "PASS",
-  "generated_at_utc": "2026-10-29T10:31:15.773289+00:00",
+  "generated_at_utc": "2026-10-29T10:38:41.971909+00:00",
   "audit_mode": "READ_ONLY",
   "git": {
     "branch": "rewrite/rom-v2",
-    "head": "da1b5894523f97912ca5204a49dc84e6631fae60"
+    "head_before": "73c52c1c19151636c0580c205f37cb840e448aa3",
+    "commit_subject": "Stage 21.16.3: audit V1 reference isolation"
   },
   "source_prerequisite": "reports/stage_21_16_2a_direct_refactor_detected_v2_duplicates.json",
   "decision": "REFINEMENT_REQUIRED",
   "summary": {
     "runtime_blocker_count": 0,
-    "review_required_count": 5,
-    "finding_count": 5
+    "review_required_count": 0,
+    "finding_count": 0
   },
-  "findings": [
-    {
-      "path": "rom_v2/content/story_start_path_41_50.py",
-      "line": 13,
-      "kind": "textual_runtime_reference",
-      "target": "V2StoryQuestContentRecord('start_path_049_pack_leader', 49, 'Ватажок зграї', 'BOSS', 'start_path', 5, 'start_path_048_final_perimeter', 'mercenary_head', None, 1, 'Герой перемагає Ватажка через RNG encounter або гарантований виклик.', 'Пере",
-      "classification": "REVIEW_REQUIRED",
-      "blocking": false,
-      "reason": "Non-import V1/legacy reference requires contract review"
-    },
-    {
-      "path": "rom_v2/domain/full_stat_snapshot.py",
-      "line": 38,
-      "kind": "textual_runtime_reference",
-      "target": "\"\"\"Precomputed flat outputs owned by equipment/refinement subsystems.\"\"\"",
-      "classification": "REVIEW_REQUIRED",
-      "blocking": false,
-      "reason": "Non-import V1/legacy reference requires contract review"
-    },
-    {
-      "path": "rom_v2/infrastructure/telegram/adapter.py",
-      "line": 81,
-      "kind": "textual_runtime_reference",
-      "target": "handler = self._command_handlers.get(command_key)",
-      "classification": "REVIEW_REQUIRED",
-      "blocking": false,
-      "reason": "Non-import V1/legacy reference requires contract review"
-    },
-    {
-      "path": "rom_v2/infrastructure/telegram/callback_registry.py",
-      "line": 50,
-      "kind": "textual_runtime_reference",
-      "target": "handler = self._handlers.get(decoded.route)",
-      "classification": "REVIEW_REQUIRED",
-      "blocking": false,
-      "reason": "Non-import V1/legacy reference requires contract review"
-    },
-    {
-      "path": "rom_v2/structured_logging.py",
-      "line": 64,
-      "kind": "textual_runtime_reference",
-      "target": "logger.handlers.clear()",
-      "classification": "REVIEW_REQUIRED",
-      "blocking": false,
-      "reason": "Non-import V1/legacy reference requires contract review"
-    }
-  ],
+  "findings": [],
   "entrypoints": [
     {
       "path": "main.py",
@@ -175,6 +130,11 @@
     "audit_tool_source_read": "EXPLICIT_READ_ONLY_ALLOWED",
     "production_run_without_v1_on_sys_path": "REQUIRED"
   },
+  "artifact_paths": [
+    "reports/stage_21_16_3_v1_reference_isolation_audit.json",
+    "MD/STAGE_21_16_3_V1_REFERENCE_ISOLATION_AUDIT.md",
+    "tools/check_stage_21_16_3_v1_reference_isolation.py"
+  ],
   "production_mutation": false,
   "database_opened": false,
   "v1_wal_shm_manipulated": false,
