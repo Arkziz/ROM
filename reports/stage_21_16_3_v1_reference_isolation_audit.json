@@ -1,0 +1,184 @@
+{
+  "schema_version": 1,
+  "stage": "21.16.3",
+  "status": "PASS",
+  "generated_at_utc": "2026-10-29T10:31:15.773289+00:00",
+  "audit_mode": "READ_ONLY",
+  "git": {
+    "branch": "rewrite/rom-v2",
+    "head": "da1b5894523f97912ca5204a49dc84e6631fae60"
+  },
+  "source_prerequisite": "reports/stage_21_16_2a_direct_refactor_detected_v2_duplicates.json",
+  "decision": "REFINEMENT_REQUIRED",
+  "summary": {
+    "runtime_blocker_count": 0,
+    "review_required_count": 5,
+    "finding_count": 5
+  },
+  "findings": [
+    {
+      "path": "rom_v2/content/story_start_path_41_50.py",
+      "line": 13,
+      "kind": "textual_runtime_reference",
+      "target": "V2StoryQuestContentRecord('start_path_049_pack_leader', 49, 'Ватажок зграї', 'BOSS', 'start_path', 5, 'start_path_048_final_perimeter', 'mercenary_head', None, 1, 'Герой перемагає Ватажка через RNG encounter або гарантований виклик.', 'Пере",
+      "classification": "REVIEW_REQUIRED",
+      "blocking": false,
+      "reason": "Non-import V1/legacy reference requires contract review"
+    },
+    {
+      "path": "rom_v2/domain/full_stat_snapshot.py",
+      "line": 38,
+      "kind": "textual_runtime_reference",
+      "target": "\"\"\"Precomputed flat outputs owned by equipment/refinement subsystems.\"\"\"",
+      "classification": "REVIEW_REQUIRED",
+      "blocking": false,
+      "reason": "Non-import V1/legacy reference requires contract review"
+    },
+    {
+      "path": "rom_v2/infrastructure/telegram/adapter.py",
+      "line": 81,
+      "kind": "textual_runtime_reference",
+      "target": "handler = self._command_handlers.get(command_key)",
+      "classification": "REVIEW_REQUIRED",
+      "blocking": false,
+      "reason": "Non-import V1/legacy reference requires contract review"
+    },
+    {
+      "path": "rom_v2/infrastructure/telegram/callback_registry.py",
+      "line": 50,
+      "kind": "textual_runtime_reference",
+      "target": "handler = self._handlers.get(decoded.route)",
+      "classification": "REVIEW_REQUIRED",
+      "blocking": false,
+      "reason": "Non-import V1/legacy reference requires contract review"
+    },
+    {
+      "path": "rom_v2/structured_logging.py",
+      "line": 64,
+      "kind": "textual_runtime_reference",
+      "target": "logger.handlers.clear()",
+      "classification": "REVIEW_REQUIRED",
+      "blocking": false,
+      "reason": "Non-import V1/legacy reference requires contract review"
+    }
+  ],
+  "entrypoints": [
+    {
+      "path": "main.py",
+      "exists": true,
+      "sha256": "a7edf7a3b99437d04329201be44d7bace83668c1cd15edf7be720d529927ea59",
+      "imports": [
+        "config",
+        "db",
+        "events",
+        "handlers.about_game",
+        "handlers.admin_crystal_credit",
+        "handlers.auction_house",
+        "handlers.blacksmith",
+        "handlers.blacksmith_repair_confirm",
+        "handlers.city",
+        "handlers.combat",
+        "handlers.contracts",
+        "handlers.crystal_shop",
+        "handlers.daily",
+        "handlers.dev",
+        "handlers.event_ui",
+        "handlers.external_links",
+        "handlers.fatigue_artifact",
+        "handlers.guild",
+        "handlers.inventory",
+        "handlers.map",
+        "handlers.name_rune",
+        "handlers.player_interaction",
+        "handlers.player_rankings",
+        "handlers.profile",
+        "handlers.refine",
+        "handlers.runes",
+        "handlers.start",
+        "handlers.story_quest_npc_runtime",
+        "handlers.story_quests",
+        "handlers.timed_exp_bonus",
+        "handlers.world_chronicles",
+        "keyboards",
+        "logging",
+        "requests",
+        "systems.admin_crystal_credit_system",
+        "systems.crystal_bag_expansion_system",
+        "systems.crystal_shop_system",
+        "systems.fatigue_artifact_system",
+        "systems.fresh_database_bootstrap",
+        "systems.inactivity_reminder_system",
+        "systems.name_rune_system",
+        "systems.notifications",
+        "systems.player_interaction_system",
+        "systems.production_logging",
+        "systems.pve_auto_escape_system",
+        "systems.telegram_rate_limit",
+        "systems.timed_exp_bonus_system",
+        "systems.travel_system",
+        "telebot",
+        "time"
+      ]
+    },
+    {
+      "path": "rom_v2/main.py",
+      "exists": true,
+      "sha256": "f7bdb0b6e93ae3baa1aeff24ba1aed9d71201f72db20629d8e7e5818c82842e4",
+      "imports": [
+        "__future__",
+        "json",
+        "rom_v2.bootstrap"
+      ]
+    },
+    {
+      "path": "rom_v2/bootstrap.py",
+      "exists": true,
+      "sha256": "665d51e5c5846575f4898f45c31ac1cbc6b08c1e81c364db860b3c22ad27b9ef",
+      "imports": [
+        "__future__",
+        "rom_v2.config",
+        "rom_v2.container",
+        "rom_v2.lifecycle"
+      ]
+    },
+    {
+      "path": "rom_v2/lifecycle.py",
+      "exists": true,
+      "sha256": "2ca260696d716a52d020c99bb78536a1df4e5c24a465014fd3e88ec0eedd6eec",
+      "imports": [
+        "__future__",
+        "dataclasses",
+        "rom_v2.container"
+      ]
+    },
+    {
+      "path": "rom_v2/app/development_bot.py",
+      "exists": true,
+      "sha256": "163dc35597a2a54b99866516b980ab7b4bb9c2541bc0c1e1e9f69d163dbe739f",
+      "imports": [
+        "__future__",
+        "dataclasses",
+        "logging",
+        "rom_v2.infrastructure.telegram.bot_api",
+        "rom_v2.presentation.development_shell",
+        "threading",
+        "typing"
+      ]
+    }
+  ],
+  "isolation_contract": {
+    "v1_role": "READ_ONLY_AUDIT_AND_PARITY_REFERENCE",
+    "v2_runtime_import_v1": "FORBIDDEN",
+    "v2_runtime_call_v1": "FORBIDDEN",
+    "v2_fallback_to_v1": "FORBIDDEN",
+    "shared_mutable_runtime_state": "FORBIDDEN",
+    "audit_tool_source_read": "EXPLICIT_READ_ONLY_ALLOWED",
+    "production_run_without_v1_on_sys_path": "REQUIRED"
+  },
+  "production_mutation": false,
+  "database_opened": false,
+  "v1_wal_shm_manipulated": false,
+  "manual_game_check": "NOT_REQUIRED",
+  "next_stage": "21.16.3a",
+  "suggested_next_patch": "patch_21_16_3a_refine_v1_reference_isolation_contract.py"
+}
