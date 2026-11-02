@@ -1,0 +1,32 @@
+{
+  "stage": "21.4.4",
+  "revision": "1",
+  "status": "PASS",
+  "timestamp": "2026-11-02T21:54:05.857845+00:00",
+  "parent": "c27719dca7373bb5447b496cba3effa417c4c7f9",
+  "target_before_sha256": "a23b6558917037098873de61f79c45ab347cf7587a8c5a5977230fb69dd11a4b",
+  "target_after_sha256": "98808478a56707be91931d3b3c5363fe313d8b3ea55150327e9964d68fccb892",
+  "owner": "create_generated_equipment_item",
+  "invariants": {
+    "owner_line": 1006,
+    "persistence_start": 1181,
+    "persistence_end": 1271
+  },
+  "contract": {
+    "items_and_inventory_single_transaction": true,
+    "commit_on_success": true,
+    "rollback_on_exception": true,
+    "exception_propagates": true,
+    "unchanged_state_after_injected_failure": true
+  },
+  "automated_evidence": {
+    "verifier": "PASS: Stage 21.4.4 generated equipment commit/rollback ownership",
+    "smoke": "PASS: Stage 21.4.4 injected failure rolls back item and inventory rows"
+  },
+  "production_files_changed": [
+    "db_modules/generated_equipment.py"
+  ],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "REQUIRED"
+}

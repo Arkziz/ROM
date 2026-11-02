@@ -1178,97 +1178,101 @@ def create_generated_equipment_item(
             weapon_max_damage = max_dmg
 
     item_id = allocate_generated_item_id(conn)
-    cursor.execute("""
-    INSERT INTO items (
-        id,
-        name,
-        type,
-        rarity,
-        category,
-        slot_key,
-        weapon_hands,
-        max_stack,
-        sell_price,
-        bonus_str,
-        bonus_dex,
-        bonus_int,
-        bonus_wis,
-        bonus_sta,
-        pdef,
-        mdef,
-        item_level,
-        is_generated,
-        item_subtype,
-        weapon_min_damage,
-        weapon_max_damage,
-        weapon_min_magic_damage,
-        weapon_max_magic_damage,
-        weapon_attack_type,
-        armor_type
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        item_id,
-        name,
-        type_,
-        rarity,
-        "equipment",
-        slot_key,
-        weapon_hands,
-        1,
-        sell_price,
-        stats["bonus_str"],
-        stats["bonus_dex"],
-        stats["bonus_int"],
-        stats["bonus_wis"],
-        stats["bonus_sta"],
-        stats["pdef"],
-        stats["mdef"],
-        item_level,
-        1,
-        item_profile,
-        weapon_min_damage,
-        weapon_max_damage,
-        weapon_min_magic_damage,
-        weapon_max_magic_damage,
-        weapon_attack_type,
-        armor_type
-    ))
-
-
-    cursor.execute("""
-    INSERT INTO inventory (
-        user_id,
-        item_id,
-        quantity,
-        durability
-    )
-    VALUES (?, ?, ?, ?)
-    """, (
-        user_id,
-        item_id,
-        1,
-        100
-    ))
-
-    inventory_id = cursor.lastrowid
-
-    conn.commit()
-
-    return {
-        "success": True,
-        "lost": 0,
-        "name": name,
-        "rarity": rarity,
-        "rarity_name": rarity_name,
-        "slot_key": slot_key,
-        "item_id": item_id,
-        "inventory_id": inventory_id,
-        "armor_type": armor_type,
-        "item_subtype": item_profile,
-        "class_aware": is_class_aware,
-        "message": f"{name}"
-    }
+    try:
+        cursor.execute("""
+        INSERT INTO items (
+            id,
+            name,
+            type,
+            rarity,
+            category,
+            slot_key,
+            weapon_hands,
+            max_stack,
+            sell_price,
+            bonus_str,
+            bonus_dex,
+            bonus_int,
+            bonus_wis,
+            bonus_sta,
+            pdef,
+            mdef,
+            item_level,
+            is_generated,
+            item_subtype,
+            weapon_min_damage,
+            weapon_max_damage,
+            weapon_min_magic_damage,
+            weapon_max_magic_damage,
+            weapon_attack_type,
+            armor_type
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            item_id,
+            name,
+            type_,
+            rarity,
+            "equipment",
+            slot_key,
+            weapon_hands,
+            1,
+            sell_price,
+            stats["bonus_str"],
+            stats["bonus_dex"],
+            stats["bonus_int"],
+            stats["bonus_wis"],
+            stats["bonus_sta"],
+            stats["pdef"],
+            stats["mdef"],
+            item_level,
+            1,
+            item_profile,
+            weapon_min_damage,
+            weapon_max_damage,
+            weapon_min_magic_damage,
+            weapon_max_magic_damage,
+            weapon_attack_type,
+            armor_type
+        ))
+    
+    
+        cursor.execute("""
+        INSERT INTO inventory (
+            user_id,
+            item_id,
+            quantity,
+            durability
+        )
+        VALUES (?, ?, ?, ?)
+        """, (
+            user_id,
+            item_id,
+            1,
+            100
+        ))
+    
+        inventory_id = cursor.lastrowid
+    
+        conn.commit()
+    
+        return {
+            "success": True,
+            "lost": 0,
+            "name": name,
+            "rarity": rarity,
+            "rarity_name": rarity_name,
+            "slot_key": slot_key,
+            "item_id": item_id,
+            "inventory_id": inventory_id,
+            "armor_type": armor_type,
+            "item_subtype": item_profile,
+            "class_aware": is_class_aware,
+            "message": f"{name}"
+        }
+    except Exception:
+        conn.rollback()
+        raise
 
 def _character_system_v2():
     from systems import character_system as _mod
