@@ -1,0 +1,78 @@
+{
+  "stage": "21.3.3",
+  "revision": "1",
+  "status": "ACCEPTED",
+  "timestamp": "2026-11-02T21:14:46.108491+00:00",
+  "accepted_implementation_commit": "040bdd6cb8ccab1505ee6fbd4ff8732d506299a5",
+  "git": {
+    "branch": "develop",
+    "head": "040bdd6cb8ccab1505ee6fbd4ff8732d506299a5",
+    "origin_develop": "3269cffb853872d9e199f308275c71b7f91c57ea",
+    "origin_is_ancestor": true,
+    "patch": "patch/patch_21_3_3_sqlite_connection_policy_runtime_acceptance.py",
+    "status": [
+      {
+        "xy": " M",
+        "path": "ROM_FULL_DUMP.txt"
+      }
+    ],
+    "policy_sha256": "a666a61665df3d5ca69fb91b0b2e1c09145145c25f821debbe6868ef4b2f0d75"
+  },
+  "policy": {
+    "canonical_helper": "systems/sqlite_connection_policy.py",
+    "timeout_seconds": 30,
+    "busy_timeout_ms": 30000,
+    "foreign_keys_default": true,
+    "query_only_opt_in": true,
+    "journal_mode_managed": false,
+    "transaction_ownership_changed": false,
+    "connection_lifecycle_changed": false
+  },
+  "direct_connections": {
+    "systems/notifications.py": 1,
+    "systems/pvp_system.py": 2,
+    "systems/simulation/progression_economy_reporting.py": 1,
+    "systems/sqlite_connection_policy.py": 1
+  },
+  "automated_evidence": {
+    "verifier": "PASS: Stage 21.3.2 SQLite connection policy cohort and special-consumer allowlist",
+    "smoke": "PASS: Stage 21.3.2 isolated SQLite connection policy smoke",
+    "isolated_probe": {
+      "foreign_keys": 1,
+      "busy_timeout": 30000,
+      "query_only_default": 0,
+      "foreign_key_enforced": true,
+      "query_only_opt_in": 1
+    }
+  },
+  "manual_evidence": {
+    "startup": "PASS",
+    "migration_gate": "PASS",
+    "notification_worker_connection": "PASS",
+    "game_menu_check": "PASS",
+    "sqlite_lock_errors_observed": false,
+    "foreign_key_runtime_errors_observed": false,
+    "thread_affinity_errors_observed": false,
+    "module_import_errors_observed": false,
+    "shutdown": "PASS",
+    "restart_loop_observed": false,
+    "observed_markers": [
+      "DB MIGRATION GATE PASS: applied=0, skipped=20, total=20",
+      "NOTIFICATION WORKER DB CONNECTION READY",
+      "BOT STARTED",
+      "Infinity polling: polling exited",
+      "Break infinity polling"
+    ]
+  },
+  "acceptance_chain": {
+    "API_READY": true,
+    "ADAPTER_CONNECTED": true,
+    "RUNTIME_DISPATCH_VERIFIED": true,
+    "END_TO_END_ACCEPTED": true
+  },
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "PASS_COMPLETED",
+  "decision": "CLOSE_STAGE_21_3_SQLITE_CONNECTION_POLICY"
+}
