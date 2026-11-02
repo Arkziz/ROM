@@ -364,57 +364,61 @@ def archive_and_reset_guild_monthly_stats(guild_row, new_season_key=None):
 
     finished_at = now_iso()
 
-    cursor.execute("""
-    INSERT OR IGNORE INTO guild_season_history (
-        guild_id,
-        season_key,
-        monthly_exp,
-        monthly_resource,
-        monthly_kills,
-        monthly_contracts,
-        monthly_score,
-        finished_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        guild_id,
-        old_season_key,
-        int(guild_row["monthly_exp"] or 0),
-        int(guild_row["monthly_resource"] or 0),
-        int(guild_row["monthly_kills"] or 0),
-        int(guild_row["monthly_contracts"] or 0),
-        int(guild_row["monthly_score"] or 0),
-        finished_at,
-    ))
-
-    cursor.execute("""
-    UPDATE guilds
-    SET monthly_exp=0,
-        monthly_resource=0,
-        monthly_kills=0,
-        monthly_contracts=0,
-        monthly_score=0,
-        season_key=?,
-        updated_at=?
-    WHERE id=?
-    """, (
-        new_season_key,
-        finished_at,
-        guild_id,
-    ))
-
-    cursor.execute("""
-    UPDATE guild_members
-    SET monthly_contribution_exp=0,
-        monthly_contribution_resource=0,
-        monthly_contribution_kills=0,
-        monthly_contribution_contracts=0,
-        monthly_contribution_score=0
-    WHERE guild_id=?
-    """, (
-        guild_id,
-    ))
-
-    conn.commit()
+    try:
+        cursor.execute("""
+        INSERT OR IGNORE INTO guild_season_history (
+            guild_id,
+            season_key,
+            monthly_exp,
+            monthly_resource,
+            monthly_kills,
+            monthly_contracts,
+            monthly_score,
+            finished_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            guild_id,
+            old_season_key,
+            int(guild_row["monthly_exp"] or 0),
+            int(guild_row["monthly_resource"] or 0),
+            int(guild_row["monthly_kills"] or 0),
+            int(guild_row["monthly_contracts"] or 0),
+            int(guild_row["monthly_score"] or 0),
+            finished_at,
+        ))
+    
+        cursor.execute("""
+        UPDATE guilds
+        SET monthly_exp=0,
+            monthly_resource=0,
+            monthly_kills=0,
+            monthly_contracts=0,
+            monthly_score=0,
+            season_key=?,
+            updated_at=?
+        WHERE id=?
+        """, (
+            new_season_key,
+            finished_at,
+            guild_id,
+        ))
+    
+        cursor.execute("""
+        UPDATE guild_members
+        SET monthly_contribution_exp=0,
+            monthly_contribution_resource=0,
+            monthly_contribution_kills=0,
+            monthly_contribution_contracts=0,
+            monthly_contribution_score=0
+        WHERE guild_id=?
+        """, (
+            guild_id,
+        ))
+    
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     add_guild_log(
         guild_id=guild_id,
@@ -1162,36 +1166,40 @@ def cancel_guild_application(user_id, application_id):
 
     init_guild_system()
 
-    cursor.execute("""
-    SELECT *
-    FROM guild_applications
-    WHERE id=? AND user_id=? AND status=?
-    """, (
-        application_id,
-        user_id,
-        GUILD_APPLICATION_PENDING,
-    ))
-
-    app = cursor.fetchone()
-
-    if not app:
-        return {
-            "success": False,
-            "message": "❌ Активну заявку не знайдено."
-        }
-
-    cursor.execute("""
-    UPDATE guild_applications
-    SET status=?, processed_at=?, processed_by=?
-    WHERE id=?
-    """, (
-        GUILD_APPLICATION_CANCELLED,
-        now_iso(),
-        user_id,
-        application_id,
-    ))
-
-    conn.commit()
+    try:
+        cursor.execute("""
+        SELECT *
+        FROM guild_applications
+        WHERE id=? AND user_id=? AND status=?
+        """, (
+            application_id,
+            user_id,
+            GUILD_APPLICATION_PENDING,
+        ))
+    
+        app = cursor.fetchone()
+    
+        if not app:
+            return {
+                "success": False,
+                "message": "❌ Активну заявку не знайдено."
+            }
+    
+        cursor.execute("""
+        UPDATE guild_applications
+        SET status=?, processed_at=?, processed_by=?
+        WHERE id=?
+        """, (
+            GUILD_APPLICATION_CANCELLED,
+            now_iso(),
+            user_id,
+            application_id,
+        ))
+    
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     try:
         add_guild_log(
@@ -1549,18 +1557,22 @@ def reject_guild_application(actor_user_id, application_id):
 
     now = now_iso()
 
-    cursor.execute("""
-    UPDATE guild_applications
-    SET status=?, processed_at=?, processed_by=?
-    WHERE id=?
-    """, (
-        GUILD_APPLICATION_REJECTED,
-        now,
-        actor_user_id,
-        application_id,
-    ))
-
-    conn.commit()
+    try:
+        cursor.execute("""
+        UPDATE guild_applications
+        SET status=?, processed_at=?, processed_by=?
+        WHERE id=?
+        """, (
+            GUILD_APPLICATION_REJECTED,
+            now,
+            actor_user_id,
+            application_id,
+        ))
+    
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     applicant_name = f"user_id={applicant_user_id}"
     try:
@@ -1672,11 +1684,15 @@ def demote_guild_officer(actor_user_id, target_user_id):
     if target_member["role"] != GUILD_ROLE_OFFICER:
         return {"success": False, "message": "❌ Цей гравець не є заступником."}
 
-    cursor.execute(
-        "UPDATE guild_members SET role=? WHERE guild_id=? AND user_id=?",
-        (GUILD_ROLE_MEMBER, guild_id, target_user_id)
-    )
-    conn.commit()
+    try:
+        cursor.execute(
+            "UPDATE guild_members SET role=? WHERE guild_id=? AND user_id=?",
+            (GUILD_ROLE_MEMBER, guild_id, target_user_id)
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     target_name = get_character_name_by_user_id(target_user_id)
     add_guild_log(
@@ -2229,22 +2245,26 @@ def recalculate_guild_level(guild_id):
     total_exp = int(guild["total_exp"] or 0)
     new_level = calculate_guild_level_from_exp(total_exp)
 
-    if new_level != old_level:
-        cursor.execute(
-            "UPDATE guilds SET level=?, updated_at=? WHERE id=?",
-            (new_level, now_iso(), guild_id)
-        )
-        conn.commit()
-
-        if new_level > old_level:
-            try:
-                add_guild_log(
-                    guild_id=guild_id,
-                    event_type="guild_level_up",
-                    text=f"Гільдія піднялась до рівня {new_level}."
-                )
-            except Exception:
-                pass
+    try:
+        if new_level != old_level:
+            cursor.execute(
+                "UPDATE guilds SET level=?, updated_at=? WHERE id=?",
+                (new_level, now_iso(), guild_id)
+            )
+            conn.commit()
+    
+            if new_level > old_level:
+                try:
+                    add_guild_log(
+                        guild_id=guild_id,
+                        event_type="guild_level_up",
+                        text=f"Гільдія піднялась до рівня {new_level}."
+                    )
+                except Exception:
+                    pass
+    except Exception:
+        conn.rollback()
+        raise
 
     return new_level
 

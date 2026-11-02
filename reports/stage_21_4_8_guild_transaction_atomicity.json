@@ -1,0 +1,36 @@
+{
+  "stage": "21.4.8",
+  "revision": "2",
+  "status": "PASS",
+  "timestamp": "2026-11-02T23:00:25.724233+00:00",
+  "parent": "2c265809e730017611c5752d37965cd0c285f202",
+  "target_before_sha256": "e52c0fa05137c6eadca7493f18423c4451ff1db874858827d47d4a30f7d5aae2",
+  "target_after_sha256": "e670f456646eae69c28afb78d4f54480ea9d0c0dafc45357447acc54bb5e57f5",
+  "owners": [
+    "archive_and_reset_guild_monthly_stats",
+    "cancel_guild_application",
+    "reject_guild_application",
+    "demote_guild_officer",
+    "recalculate_guild_level"
+  ],
+  "deferred_boundary_review": [
+    "add_guild_progress"
+  ],
+  "contract": {
+    "commit_on_success": true,
+    "rollback_on_exception": true,
+    "exception_propagates": true,
+    "unchanged_state_after_injected_failure": true,
+    "existing_business_atomic_owners_preserved": true
+  },
+  "automated_evidence": {
+    "verifier": "PASS: Stage 21.4.8 guild owner rollback invariants",
+    "smoke": "PASS: Stage 21.4.8 injected failure rolls back guild application/progress writes"
+  },
+  "production_files_changed": [
+    "systems/guild_system.py"
+  ],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "REQUIRED"
+}
