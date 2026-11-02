@@ -1,0 +1,6055 @@
+{
+  "stage": "21.3.1",
+  "revision": "1",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-02T20:55:35.370563+00:00",
+  "git": {
+    "branch": "develop",
+    "head": "4b41a0796322630fdbd36d3d084ad2a658da547f",
+    "origin_develop": "3269cffb853872d9e199f308275c71b7f91c57ea",
+    "origin_is_ancestor": true,
+    "patch": "patch/patch_21_3_1_sqlite_connection_policy_runtime_audit.py",
+    "status": [
+      {
+        "xy": " M",
+        "path": "ROM_FULL_DUMP.txt"
+      }
+    ]
+  },
+  "source_inventory": {
+    "python_file_count": 957,
+    "syntax_errors": [],
+    "sqlite_connect_call_count": 211,
+    "sqlite_connect_calls_by_category": {
+      "production_runtime": 21,
+      "tool_or_test": 190
+    },
+    "sqlite_connect_calls_by_path": {
+      "db_modules/connection.py": 1,
+      "systems/admin_crystal_credit_system.py": 1,
+      "systems/crystal_bag_expansion_system.py": 1,
+      "systems/crystal_shop_system.py": 1,
+      "systems/crystal_wallet_system.py": 1,
+      "systems/fatigue_artifact_system.py": 1,
+      "systems/inactivity_reminder_system.py": 1,
+      "systems/item_id_allocator_system.py": 1,
+      "systems/name_rune_system.py": 1,
+      "systems/notifications.py": 1,
+      "systems/player_interaction_system.py": 1,
+      "systems/player_rankings_system.py": 1,
+      "systems/premium_item_policy_system.py": 1,
+      "systems/profile_history_system.py": 1,
+      "systems/pvp_system.py": 2,
+      "systems/refine_system.py": 1,
+      "systems/simulation/progression_economy_reporting.py": 1,
+      "systems/timed_exp_bonus_system.py": 1,
+      "systems/travel_system.py": 1,
+      "systems/world_chronicle_system.py": 1,
+      "tools/audit_9_0_13_final_closure.py": 2,
+      "tools/audit_canonical_character_creation_and_player_stats_18_30_5a.py": 1,
+      "tools/audit_central_drop_economy.py": 2,
+      "tools/audit_combat_mana_potion.py": 1,
+      "tools/audit_db_startup_mutations.py": 1,
+      "tools/audit_dynamic_equipment_compatibility_18_17_4.py": 1,
+      "tools/audit_equipment_stat_policy_18_17_0.py": 1,
+      "tools/audit_guild_actor_name_log.py": 1,
+      "tools/audit_guild_contract_target_log.py": 1,
+      "tools/audit_inline_map_and_travel_18_22_0.py": 1,
+      "tools/audit_inline_map_and_travel_closure_18_22_4.py": 1,
+      "tools/audit_legacy_class_shop_generator_18_17_5.py": 1,
+      "tools/audit_player_trade_precommit_architecture.py": 1,
+      "tools/audit_pve_auto_escape_18_18_0.py": 1,
+      "tools/audit_pve_effect_timing_18_19_0.py": 1,
+      "tools/audit_pve_player_hit_18_21_0.py": 1,
+      "tools/audit_pvp_architecture_skill_parity.py": 1,
+      "tools/audit_rebirth_sphere_distribution_18_16_10e.py": 1,
+      "tools/audit_refine_system_18_20_0.py": 1,
+      "tools/audit_registration_date_pipeline_18_31_3.py": 1,
+      "tools/audit_rune_system_architecture.py": 1,
+      "tools/audit_static_items_and_db_init.py": 1,
+      "tools/check_active_story_quest_boss_call.py": 1,
+      "tools/check_pve_cursor_and_stale_callback_containment.py": 1,
+      "tools/check_story_npc_level_probe.py": 1,
+      "tools/check_story_quest_active_view_and_journal_details.py": 1,
+      "tools/check_story_quest_batch_31_40_item_handoff.py": 1,
+      "tools/check_story_quest_boss_deferred_completion.py": 1,
+      "tools/check_story_quest_chained_item_retention.py": 1,
+      "tools/check_story_quest_cross_cutting_runtime_gaps.py": 1,
+      "tools/check_story_quest_evidence_handoff_flow.py": 1,
+      "tools/check_story_quest_exact_once_completion.py": 1,
+      "tools/check_story_quest_item_drop_hook.py": 1,
+      "tools/check_story_quest_item_drop_notification.py": 1,
+      "tools/check_story_quest_item_journal_progress.py": 1,
+      "tools/check_story_quest_lifecycle_engine.py": 1,
+      "tools/check_story_quest_location_names.py": 1,
+      "tools/check_story_quest_npc_acceptance.py": 1,
+      "tools/check_story_quest_npc_progress_and_actions.py": 1,
+      "tools/check_story_quest_overlevel_skip_hook.py": 1,
+      "tools/check_story_quest_persistence_api.py": 1,
+      "tools/check_story_quest_persistence_schema.py": 1,
+      "tools/check_story_quest_player_level_probe.py": 2,
+      "tools/check_story_quest_region_kill_hook.py": 1,
+      "tools/check_story_quest_rewards_and_transitions.py": 1,
+      "tools/check_story_quest_rng_boss_completion.py": 1,
+      "tools/check_story_quest_talk_conversation_flow.py": 1,
+      "tools/check_story_quest_turn_in_npc_actions.py": 1,
+      "tools/check_story_quest_unaccepted_objective_hidden.py": 1,
+      "tools/check_tuple_player_level_adapter.py": 2,
+      "tools/close_equipment_stat_policy_stage_18_17.py": 1,
+      "tools/close_pve_auto_escape_stage_18_18.py": 1,
+      "tools/close_pve_effect_timeline_stage_18_19.py": 1,
+      "tools/close_pve_normal_attack_hit_stage_18_21.py": 1,
+      "tools/close_refine_system_stage_18_20.py": 1,
+      "tools/manual_test_inactivity_reminder_18_6_1.py": 1,
+      "tools/reset_story_quest_item_for_retest.py": 1,
+      "tools/run_final_stage_18_closure_audit.py": 1,
+      "tools/smoke_test_actual_new_character_event_18_xx_13d.py": 3,
+      "tools/smoke_test_admin_crystal_credit_and_clamped_debit_18_3_1.py": 1,
+      "tools/smoke_test_admin_history_inline_details_and_character_names_18_3_1c.py": 2,
+      "tools/smoke_test_atomic_event_shop_exchange_18_29_3c.py": 1,
+      "tools/smoke_test_attribute_allocation_system_18_16_3.py": 1,
+      "tools/smoke_test_attribute_respec_domain_18_16_8.py": 1,
+      "tools/smoke_test_attribute_schema_foundation_18_16_1.py": 1,
+      "tools/smoke_test_auction_lifecycle_contracts.py": 1,
+      "tools/smoke_test_auction_rune_category_and_transfer_policy_alignment.py": 1,
+      "tools/smoke_test_canonical_trophy_localization_18_30_4e.py": 1,
+      "tools/smoke_test_central_drop_config_model.py": 1,
+      "tools/smoke_test_central_drop_refine_stone_migration.py": 1,
+      "tools/smoke_test_central_drop_rune_migration.py": 1,
+      "tools/smoke_test_connection_bag_default_sql_recovery_17_8_1_1.py": 1,
+      "tools/smoke_test_crystal_bag_expansion_17_32_1.py": 2,
+      "tools/smoke_test_crystal_shop_17_27_1.py": 2,
+      "tools/smoke_test_crystal_shop_prices_18_10_1.py": 2,
+      "tools/smoke_test_crystal_wallet_smoke_import_recovery_17_25_1_1.py": 2,
+      "tools/smoke_test_effective_attribute_integration_18_16_4.py": 1,
+      "tools/smoke_test_event_kill_statistics_18_29_3b.py": 1,
+      "tools/smoke_test_event_victory_statistics_integration_18_29_3f.py": 1,
+      "tools/smoke_test_existing_character_attribute_point_policy_18_16_7.py": 1,
+      "tools/smoke_test_fatigue_artifact_17_31_1_1.py": 3,
+      "tools/smoke_test_inactivity_reminder_policy_18_6_1.py": 4,
+      "tools/smoke_test_interaction_session_timeout_and_recovery.py": 9,
+      "tools/smoke_test_item_stack_limits_18_xx_5.py": 1,
+      "tools/smoke_test_level_up_attribute_points_18_16_2.py": 1,
+      "tools/smoke_test_map_location_player_discovery.py": 1,
+      "tools/smoke_test_name_rune_17_28_1_1.py": 3,
+      "tools/smoke_test_notification_resource_integration_18_16_5d.py": 2,
+      "tools/smoke_test_notification_worker_dynamic_rune_max_mp_recovery_17_15_1_1.py": 1,
+      "tools/smoke_test_notification_worker_refine_formula_16_1_23.py": 1,
+      "tools/smoke_test_notification_worker_rune_hp_16_1_22.py": 1,
+      "tools/smoke_test_online_player_counts_and_city_look_around_18_22_7.py": 1,
+      "tools/smoke_test_persistent_location_travel_18_22_1.py": 4,
+      "tools/smoke_test_player_interaction_requests.py": 1,
+      "tools/smoke_test_player_presence_and_activity_sessions.py": 2,
+      "tools/smoke_test_player_rankings_17_33_1.py": 1,
+      "tools/smoke_test_player_trade_database_and_history_foundation.py": 4,
+      "tools/smoke_test_player_trade_item_policy_and_reservations.py": 4,
+      "tools/smoke_test_player_trade_item_preview_and_wallet_ux.py": 2,
+      "tools/smoke_test_player_trade_lock_consolidation_and_startup_recovery.py": 3,
+      "tools/smoke_test_player_trade_navigation_lock_and_item_categories.py": 2,
+      "tools/smoke_test_player_trade_offer_editor.py": 3,
+      "tools/smoke_test_player_trade_offer_editor_ux.py": 2,
+      "tools/smoke_test_premium_item_smoke_path_recovery_17_26_1_1.py": 2,
+      "tools/smoke_test_pve_defeat_terminal_claim_18_xx_1.py": 1,
+      "tools/smoke_test_pve_encounter_history_recovery_18_18_1a.py": 1,
+      "tools/smoke_test_pvp_atomic_accept_recovery.py": 3,
+      "tools/smoke_test_pvp_data_model_sessions_recovery.py": 1,
+      "tools/smoke_test_pvp_duel_request_interaction_ui.py": 4,
+      "tools/smoke_test_rebirth_sphere_stack_limit_18_16_10d.py": 1,
+      "tools/smoke_test_registration_date_pipeline_18_31_4.py": 1,
+      "tools/smoke_test_rune_transactional_stack_capacity_17_4_1.py": 1,
+      "tools/smoke_test_special_material_drop_policy.py": 1,
+      "tools/smoke_test_sphere_stack_and_category_fix_18_16_10a.py": 1,
+      "tools/smoke_test_stack_compaction_after_consumption_18_xx_7.py": 1,
+      "tools/smoke_test_stage_20_5_4_premium_prices.py": 2,
+      "tools/smoke_test_stage_20_5_6_admin_crystal_schema.py": 2,
+      "tools/smoke_test_static_item_seed_contracts.py": 1,
+      "tools/smoke_test_success_rune_guaranteed_refine_17_29_1.py": 2,
+      "tools/smoke_test_test_event_item_catalog_18_29_3a.py": 1,
+      "tools/smoke_test_test_event_reward_material_18_29_4p.py": 1,
+      "tools/smoke_test_timed_exp_bonus_17_30_1.py": 2,
+      "tools/smoke_test_universal_drop_simulator.py": 1,
+      "tools/smoke_test_world_chronicles_foundation_18_xx_11.py": 1,
+      "tools/trace_canonical_player_stats_result.py": 1,
+      "tools/trace_live_player_stats_shape.py": 1,
+      "tools/trace_quest_11_runtime_resolver.py": 1,
+      "tools/validate_test_event_end_to_end_18_29_4q.py": 1,
+      "tools/verify_attribute_system_production_closure_18_16_11.py": 1,
+      "tools/verify_dynamic_equipment_behavioral_parity_18_17_7.py": 1,
+      "tools/verify_equipment_drop_shop_parity_18_17_3.py": 1,
+      "tools/verify_stage_19_34_2_atomic_location_story_skip.py": 1,
+      "tools/verify_stage_19_34_3_story_quest_item_identity.py": 2,
+      "tools/verify_stage_19_34_5_routes_and_kill_targets.py": 1,
+      "tools/verify_stage_20_2_6_class_combat_acceptance.py": 1
+    },
+    "sqlite_connect_calls": [
+      {
+        "path": "db_modules/connection.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 12,
+        "args": [
+          "game.db"
+        ],
+        "keywords": {
+          "check_same_thread": false
+        }
+      },
+      {
+        "path": "systems/admin_crystal_credit_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 10,
+        "args": [
+          "str(db_path or DB_PATH)"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "systems/crystal_bag_expansion_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 13,
+        "args": [
+          "str(path or DB_PATH)"
+        ],
+        "keywords": {
+          "timeout": 30
+        }
+      },
+      {
+        "path": "systems/crystal_shop_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 11,
+        "args": [
+          "str(path or DB_PATH)"
+        ],
+        "keywords": {
+          "timeout": 30
+        }
+      },
+      {
+        "path": "systems/crystal_wallet_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 12,
+        "args": [
+          "str(db_path or DB_PATH)"
+        ],
+        "keywords": {
+          "timeout": 30
+        }
+      },
+      {
+        "path": "systems/fatigue_artifact_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 8,
+        "args": [
+          "str(path or DB_PATH)"
+        ],
+        "keywords": {
+          "timeout": 30
+        }
+      },
+      {
+        "path": "systems/inactivity_reminder_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 17,
+        "args": [
+          "str(db_path or DB_PATH)"
+        ],
+        "keywords": {
+          "timeout": 30
+        }
+      },
+      {
+        "path": "systems/item_id_allocator_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 21,
+        "args": [
+          "db_path or 'game.db'"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "systems/name_rune_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 13,
+        "args": [
+          "str(path or DB_PATH)"
+        ],
+        "keywords": {
+          "timeout": 30
+        }
+      },
+      {
+        "path": "systems/notifications.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 42,
+        "args": [
+          "DB_PATH"
+        ],
+        "keywords": {
+          "check_same_thread": false,
+          "timeout": 30
+        }
+      },
+      {
+        "path": "systems/player_interaction_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 26,
+        "args": [
+          "str(path)"
+        ],
+        "keywords": {
+          "timeout": 30.0
+        }
+      },
+      {
+        "path": "systems/player_rankings_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 23,
+        "args": [
+          "str(path or DB_PATH)"
+        ],
+        "keywords": {
+          "timeout": 30
+        }
+      },
+      {
+        "path": "systems/premium_item_policy_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 55,
+        "args": [
+          "str(db_path or DB_PATH)"
+        ],
+        "keywords": {
+          "timeout": 30
+        }
+      },
+      {
+        "path": "systems/profile_history_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 27,
+        "args": [
+          "str(DB_PATH)"
+        ],
+        "keywords": {
+          "timeout": 30
+        }
+      },
+      {
+        "path": "systems/pvp_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 77,
+        "args": [
+          "str(root / 'game.db')"
+        ],
+        "keywords": {
+          "timeout": 30
+        }
+      },
+      {
+        "path": "systems/pvp_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 73,
+        "args": [
+          "str(declared_path)"
+        ],
+        "keywords": {
+          "timeout": 30
+        }
+      },
+      {
+        "path": "systems/refine_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 125,
+        "args": [
+          "str(path)"
+        ],
+        "keywords": {
+          "timeout": 30
+        }
+      },
+      {
+        "path": "systems/simulation/progression_economy_reporting.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 18,
+        "args": [
+          "f'file:{database.as_posix()}?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "systems/timed_exp_bonus_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 13,
+        "args": [
+          "str(path or DB_PATH)"
+        ],
+        "keywords": {
+          "timeout": 30
+        }
+      },
+      {
+        "path": "systems/travel_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 15,
+        "args": [
+          "str(db_path or DEFAULT_DB_PATH)"
+        ],
+        "keywords": {
+          "timeout": 30
+        }
+      },
+      {
+        "path": "systems/world_chronicle_system.py",
+        "category": "production_runtime",
+        "name": "sqlite3.connect",
+        "line": 22,
+        "args": [
+          "str(db_path or DB_PATH)"
+        ],
+        "keywords": {
+          "timeout": 30
+        }
+      },
+      {
+        "path": "tools/audit_9_0_13_final_closure.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 98,
+        "args": [
+          "path.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_9_0_13_final_closure.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 233,
+        "args": [
+          "DB_PATH.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_canonical_character_creation_and_player_stats_18_30_5a.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 38,
+        "args": [
+          "f'file:{db.as_posix()}?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_central_drop_economy.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 26,
+        "args": [
+          "f'file:{path.as_posix()}?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_central_drop_economy.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 44,
+        "args": [
+          "f'file:{path.as_posix()}?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_combat_mana_potion.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 220,
+        "args": [
+          "uri"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_db_startup_mutations.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 150,
+        "args": [
+          "str(path)"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/audit_dynamic_equipment_compatibility_18_17_4.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 56,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_equipment_stat_policy_18_17_0.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 24,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_guild_actor_name_log.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 193,
+        "args": [
+          "uri"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_guild_contract_target_log.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 70,
+        "args": [
+          "uri"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_inline_map_and_travel_18_22_0.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 71,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_inline_map_and_travel_closure_18_22_4.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 79,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_legacy_class_shop_generator_18_17_5.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 214,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_player_trade_precommit_architecture.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 82,
+        "args": [
+          "f'file:{p.as_posix()}?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_pve_auto_escape_18_18_0.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 54,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_pve_effect_timing_18_19_0.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 47,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_pve_player_hit_18_21_0.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 36,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_pvp_architecture_skill_parity.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 193,
+        "args": [
+          "uri"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_rebirth_sphere_distribution_18_16_10e.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 39,
+        "args": [
+          "(ROOT / 'game.db').resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_refine_system_18_20_0.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 27,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_registration_date_pipeline_18_31_3.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 39,
+        "args": [
+          "uri"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_rune_system_architecture.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 191,
+        "args": [
+          "DB_PATH.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/audit_static_items_and_db_init.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 303,
+        "args": [
+          "uri"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/check_active_story_quest_boss_call.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 18,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_pve_cursor_and_stale_callback_containment.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 22,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {
+          "check_same_thread": false
+        }
+      },
+      {
+        "path": "tools/check_story_npc_level_probe.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 11,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_active_view_and_journal_details.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 13,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_batch_31_40_item_handoff.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 20,
+        "args": [
+          "(ROOT / 'game.db').resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/check_story_quest_boss_deferred_completion.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 37,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_chained_item_retention.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 23,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_cross_cutting_runtime_gaps.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 21,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_evidence_handoff_flow.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 20,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_exact_once_completion.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 43,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_item_drop_hook.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 56,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_item_drop_notification.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 13,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_item_journal_progress.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 13,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_lifecycle_engine.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 71,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_location_names.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 40,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_npc_acceptance.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 61,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_npc_progress_and_actions.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 20,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_overlevel_skip_hook.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 38,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_persistence_api.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 44,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_persistence_schema.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 43,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_player_level_probe.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 17,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_player_level_probe.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 19,
+        "args": [
+          "(ROOT / 'game.db').resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/check_story_quest_region_kill_hook.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 47,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_rewards_and_transitions.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 18,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_rng_boss_completion.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 50,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_talk_conversation_flow.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 18,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_turn_in_npc_actions.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 15,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_story_quest_unaccepted_objective_hidden.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 17,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_tuple_player_level_adapter.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 24,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/check_tuple_player_level_adapter.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 27,
+        "args": [
+          "(ROOT / 'game.db').resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/close_equipment_stat_policy_stage_18_17.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 72,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/close_pve_auto_escape_stage_18_18.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 18,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/close_pve_effect_timeline_stage_18_19.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 18,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/close_pve_normal_attack_hit_stage_18_21.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 47,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/close_refine_system_stage_18_20.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 43,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/manual_test_inactivity_reminder_18_6_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 53,
+        "args": [
+          "str(root / 'game.db')"
+        ],
+        "keywords": {
+          "timeout": 30
+        }
+      },
+      {
+        "path": "tools/reset_story_quest_item_for_retest.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 13,
+        "args": [
+          "db_path"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/run_final_stage_18_closure_audit.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 37,
+        "args": [
+          "uri"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/smoke_test_actual_new_character_event_18_xx_13d.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 18,
+        "args": [
+          "database"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_actual_new_character_event_18_xx_13d.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 40,
+        "args": [
+          "database"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_actual_new_character_event_18_xx_13d.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 12,
+        "args": [
+          "path"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_admin_crystal_credit_and_clamped_debit_18_3_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 8,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_admin_history_inline_details_and_character_names_18_3_1c.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 9,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_admin_history_inline_details_and_character_names_18_3_1c.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 9,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_atomic_event_shop_exchange_18_29_3c.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 8,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_attribute_allocation_system_18_16_3.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 21,
+        "args": [
+          "path"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_attribute_respec_domain_18_16_8.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 8,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_attribute_schema_foundation_18_16_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 8,
+        "args": [
+          "(R / 'game.db').resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/smoke_test_auction_lifecycle_contracts.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 60,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_auction_rune_category_and_transfer_policy_alignment.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 22,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_canonical_trophy_localization_18_30_4e.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 6,
+        "args": [
+          "f'file:{db.resolve().as_posix()}?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/smoke_test_central_drop_config_model.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 29,
+        "args": [
+          "uri"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/smoke_test_central_drop_refine_stone_migration.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 37,
+        "args": [
+          "uri"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/smoke_test_central_drop_rune_migration.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 34,
+        "args": [
+          "uri"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/smoke_test_connection_bag_default_sql_recovery_17_8_1_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 15,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_crystal_bag_expansion_17_32_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 7,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_crystal_bag_expansion_17_32_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 16,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_crystal_shop_17_27_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 7,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_crystal_shop_17_27_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 10,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_crystal_shop_prices_18_10_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 27,
+        "args": [
+          "database"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_crystal_shop_prices_18_10_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 57,
+        "args": [
+          "database"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_crystal_wallet_smoke_import_recovery_17_25_1_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 7,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_crystal_wallet_smoke_import_recovery_17_25_1_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 15,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_effective_attribute_integration_18_16_4.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 27,
+        "args": [
+          "(ROOT / 'game.db').resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/smoke_test_event_kill_statistics_18_29_3b.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 9,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_event_victory_statistics_integration_18_29_3f.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 17,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_existing_character_attribute_point_policy_18_16_7.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 9,
+        "args": [
+          "str(Path(d) / 't.db')"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_fatigue_artifact_17_31_1_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 9,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_fatigue_artifact_17_31_1_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 9,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_fatigue_artifact_17_31_1_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 9,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_inactivity_reminder_policy_18_6_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 8,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_inactivity_reminder_policy_18_6_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 17,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_inactivity_reminder_policy_18_6_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 18,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_inactivity_reminder_policy_18_6_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 19,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_interaction_session_timeout_and_recovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 12,
+        "args": [
+          "path"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_interaction_session_timeout_and_recovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 34,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_interaction_session_timeout_and_recovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 46,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_interaction_session_timeout_and_recovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 52,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_interaction_session_timeout_and_recovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 57,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_interaction_session_timeout_and_recovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 66,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_interaction_session_timeout_and_recovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 77,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_interaction_session_timeout_and_recovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 82,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_interaction_session_timeout_and_recovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 89,
+        "args": [
+          "db"
+        ],
+        "keywords": {
+          "timeout": 1.0
+        }
+      },
+      {
+        "path": "tools/smoke_test_item_stack_limits_18_xx_5.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 19,
+        "args": [
+          "Path(tmp) / 'stack.sqlite3'"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_level_up_attribute_points_18_16_2.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 25,
+        "args": [
+          "(ROOT / 'game.db').resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/smoke_test_map_location_player_discovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 19,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_name_rune_17_28_1_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 7,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_name_rune_17_28_1_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 7,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_name_rune_17_28_1_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 8,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_notification_resource_integration_18_16_5d.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 9,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_notification_resource_integration_18_16_5d.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 14,
+        "args": [
+          "str(Path(d) / 't.db')"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_notification_worker_dynamic_rune_max_mp_recovery_17_15_1_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 34,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_notification_worker_refine_formula_16_1_23.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 7,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_notification_worker_rune_hp_16_1_22.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 7,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_online_player_counts_and_city_look_around_18_22_7.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 24,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_persistent_location_travel_18_22_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 15,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_persistent_location_travel_18_22_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 21,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_persistent_location_travel_18_22_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 26,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_persistent_location_travel_18_22_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 34,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_interaction_requests.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 15,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_presence_and_activity_sessions.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 26,
+        "args": [
+          "db_file"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_presence_and_activity_sessions.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 33,
+        "args": [
+          "db_file"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_rankings_17_33_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 8,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_database_and_history_foundation.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 12,
+        "args": [
+          "path"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_database_and_history_foundation.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 26,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_database_and_history_foundation.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 37,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_database_and_history_foundation.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 47,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_item_policy_and_reservations.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 18,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_item_policy_and_reservations.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 67,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_item_policy_and_reservations.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 71,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_item_policy_and_reservations.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 79,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_item_preview_and_wallet_ux.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 17,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_item_preview_and_wallet_ux.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 32,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_lock_consolidation_and_startup_recovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 39,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_lock_consolidation_and_startup_recovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 49,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_lock_consolidation_and_startup_recovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 54,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_navigation_lock_and_item_categories.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 17,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_navigation_lock_and_item_categories.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 32,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_offer_editor.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 26,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_offer_editor.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 44,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_offer_editor.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 66,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_offer_editor_ux.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 17,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_player_trade_offer_editor_ux.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 32,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_premium_item_smoke_path_recovery_17_26_1_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 7,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_premium_item_smoke_path_recovery_17_26_1_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 13,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_pve_defeat_terminal_claim_18_xx_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 29,
+        "args": [
+          "temp_db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_pve_encounter_history_recovery_18_18_1a.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 11,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_pvp_atomic_accept_recovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 12,
+        "args": [
+          "path"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_pvp_atomic_accept_recovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 16,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_pvp_atomic_accept_recovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 23,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_pvp_data_model_sessions_recovery.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 29,
+        "args": [
+          "str(path)"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_pvp_duel_request_interaction_ui.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 20,
+        "args": [
+          "path"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_pvp_duel_request_interaction_ui.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 36,
+        "args": [
+          "path"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_pvp_duel_request_interaction_ui.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 46,
+        "args": [
+          "path"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_pvp_duel_request_interaction_ui.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 36,
+        "args": [
+          "path"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_rebirth_sphere_stack_limit_18_16_10d.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 7,
+        "args": [
+          "str(Path(d) / 't.db')"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_registration_date_pipeline_18_31_4.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 15,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_rune_transactional_stack_capacity_17_4_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 31,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_special_material_drop_policy.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 107,
+        "args": [
+          "f\"file:{(ROOT / 'game.db').as_posix()}?mode=ro\""
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/smoke_test_sphere_stack_and_category_fix_18_16_10a.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 11,
+        "args": [
+          "str(Path(d) / 't.db')"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_stack_compaction_after_consumption_18_xx_7.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 6,
+        "args": [
+          "Path(tmp) / 'x.db'"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_stage_20_5_4_premium_prices.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 19,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_stage_20_5_4_premium_prices.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 34,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_stage_20_5_6_admin_crystal_schema.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 15,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_stage_20_5_6_admin_crystal_schema.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 33,
+        "args": [
+          "db"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_static_item_seed_contracts.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 68,
+        "args": [
+          "uri"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/smoke_test_success_rune_guaranteed_refine_17_29_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 9,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_success_rune_guaranteed_refine_17_29_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 9,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_test_event_item_catalog_18_29_3a.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 22,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_test_event_reward_material_18_29_4p.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 14,
+        "args": [
+          "f\"file:{(ROOT / 'game.db').as_posix()}?mode=ro\""
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/smoke_test_timed_exp_bonus_17_30_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 10,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_timed_exp_bonus_17_30_1.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 10,
+        "args": [
+          "p"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/smoke_test_universal_drop_simulator.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 10,
+        "args": [
+          "f\"file:{(ROOT / 'game.db').as_posix()}?mode=ro\""
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/smoke_test_world_chronicles_foundation_18_xx_11.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 21,
+        "args": [
+          "database"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/trace_canonical_player_stats_result.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 26,
+        "args": [
+          "(ROOT / 'game.db').resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/trace_live_player_stats_shape.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 57,
+        "args": [
+          "(ROOT / 'game.db').resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/trace_quest_11_runtime_resolver.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 46,
+        "args": [
+          "db_uri"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/validate_test_event_end_to_end_18_29_4q.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 29,
+        "args": [
+          "f\"file:{(ROOT / 'game.db').as_posix()}?mode=ro\""
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/verify_attribute_system_production_closure_18_16_11.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 60,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/verify_dynamic_equipment_behavioral_parity_18_17_7.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 42,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/verify_equipment_drop_shop_parity_18_17_3.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 44,
+        "args": [
+          "DB.resolve().as_uri() + '?mode=ro'"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      },
+      {
+        "path": "tools/verify_stage_19_34_2_atomic_location_story_skip.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 9,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/verify_stage_19_34_3_story_quest_item_identity.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 20,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/verify_stage_19_34_3_story_quest_item_identity.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 29,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/verify_stage_19_34_5_routes_and_kill_targets.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 24,
+        "args": [
+          ":memory:"
+        ],
+        "keywords": {}
+      },
+      {
+        "path": "tools/verify_stage_20_2_6_class_combat_acceptance.py",
+        "category": "tool_or_test",
+        "name": "sqlite3.connect",
+        "line": 121,
+        "args": [
+          "uri"
+        ],
+        "keywords": {
+          "uri": true
+        }
+      }
+    ],
+    "pragma_call_count": 264,
+    "pragma_calls": [
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 314,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 315,
+        "statement": "PRAGMA busy_timeout=30000"
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "cursor.execute",
+        "line": 275,
+        "statement": "f'PRAGMA table_info(\"{table_name}\")'"
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "cursor.execute",
+        "line": 470,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "db_modules/quests.py",
+        "category": "production_runtime",
+        "name": "cursor.execute",
+        "line": 235,
+        "statement": "PRAGMA table_info(user_daily_activity)"
+      },
+      {
+        "path": "db_modules/quests.py",
+        "category": "production_runtime",
+        "name": "cursor.execute",
+        "line": 240,
+        "statement": "PRAGMA table_info(user_daily_activity)"
+      },
+      {
+        "path": "db_modules/refine.py",
+        "category": "production_runtime",
+        "name": "cursor.execute",
+        "line": 34,
+        "statement": "f'PRAGMA table_info({table_name})'"
+      },
+      {
+        "path": "migrations/010_rune_system_data_model.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 6,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "migrations/020_fresh_database_schema_parity.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 6,
+        "statement": "f'PRAGMA table_info({table})'"
+      },
+      {
+        "path": "migrations/030_static_item_namespace.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 35,
+        "statement": "PRAGMA foreign_keys=OFF"
+      },
+      {
+        "path": "migrations/030_static_item_namespace.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 12,
+        "statement": "f'PRAGMA table_info({_q(table)})'"
+      },
+      {
+        "path": "migrations/030_static_item_namespace.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 76,
+        "statement": "f'PRAGMA foreign_keys={fk_before}'"
+      },
+      {
+        "path": "migrations/030_static_item_namespace.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 33,
+        "statement": "PRAGMA foreign_keys"
+      },
+      {
+        "path": "migrations/040_generated_equipment_namespace.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 16,
+        "statement": "PRAGMA foreign_keys=OFF"
+      },
+      {
+        "path": "migrations/040_generated_equipment_namespace.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 31,
+        "statement": "f'PRAGMA foreign_keys={int(fk)}'"
+      },
+      {
+        "path": "migrations/040_generated_equipment_namespace.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 6,
+        "statement": "'PRAGMA table_info(\"' + table + '\")'"
+      },
+      {
+        "path": "migrations/040_generated_equipment_namespace.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 16,
+        "statement": "PRAGMA foreign_keys"
+      },
+      {
+        "path": "migrations/042_attribute_points_foundation.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 8,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "migrations/043_existing_character_attribute_point_policy.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 15,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "migrations/044_attribute_respec_foundation.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 6,
+        "statement": "f'PRAGMA table_info({table})'"
+      },
+      {
+        "path": "migrations/045_new_path_sphere_class_change.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 4,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "migrations/048_rebirth_sphere_stack_limit.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 26,
+        "statement": "PRAGMA table_info(inventory)"
+      },
+      {
+        "path": "migrations/052_registration_date_pipeline.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 12,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "systems/auction_house_system.py",
+        "category": "production_runtime",
+        "name": "cursor.execute",
+        "line": 739,
+        "statement": "f'PRAGMA table_info({table_name})'"
+      },
+      {
+        "path": "systems/auction_house_system.py",
+        "category": "production_runtime",
+        "name": "cursor.execute",
+        "line": 4550,
+        "statement": "f'PRAGMA table_info({table_name})'"
+      },
+      {
+        "path": "systems/auction_house_system.py",
+        "category": "production_runtime",
+        "name": "cursor.execute",
+        "line": 4816,
+        "statement": "f'PRAGMA table_info({table_name})'"
+      },
+      {
+        "path": "systems/auction_house_system.py",
+        "category": "production_runtime",
+        "name": "cursor.execute",
+        "line": 5086,
+        "statement": "f'PRAGMA table_info({table_name})'"
+      },
+      {
+        "path": "systems/character_system.py",
+        "category": "production_runtime",
+        "name": "db.cursor.execute",
+        "line": 739,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "systems/crystal_bag_expansion_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 13,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "systems/crystal_bag_expansion_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 13,
+        "statement": "PRAGMA busy_timeout=30000"
+      },
+      {
+        "path": "systems/crystal_shop_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 11,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "systems/crystal_shop_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 11,
+        "statement": "PRAGMA busy_timeout=30000"
+      },
+      {
+        "path": "systems/crystal_wallet_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 12,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "systems/crystal_wallet_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 12,
+        "statement": "PRAGMA busy_timeout=30000"
+      },
+      {
+        "path": "systems/equipment_system.py",
+        "category": "production_runtime",
+        "name": "db.conn.execute",
+        "line": 1694,
+        "statement": "f'PRAGMA table_info({table_name})'"
+      },
+      {
+        "path": "systems/event_shop_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 22,
+        "statement": "PRAGMA table_info(inventory_reservations)"
+      },
+      {
+        "path": "systems/fatigue_artifact_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 8,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "systems/fatigue_artifact_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 8,
+        "statement": "PRAGMA busy_timeout=30000"
+      },
+      {
+        "path": "systems/fatigue_artifact_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 13,
+        "statement": "PRAGMA table_info(items)"
+      },
+      {
+        "path": "systems/fatigue_artifact_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 44,
+        "statement": "PRAGMA table_info(player_activity_sessions)"
+      },
+      {
+        "path": "systems/inactivity_reminder_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 17,
+        "statement": "PRAGMA busy_timeout=30000"
+      },
+      {
+        "path": "systems/item_id_allocator_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 65,
+        "statement": "PRAGMA table_info(items)"
+      },
+      {
+        "path": "systems/item_id_allocator_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 78,
+        "statement": "PRAGMA table_info(items)"
+      },
+      {
+        "path": "systems/item_id_allocator_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 84,
+        "statement": "'PRAGMA table_info(\"' + table + '\")'"
+      },
+      {
+        "path": "systems/level_up_reward_system.py",
+        "category": "production_runtime",
+        "name": "db.cursor.execute",
+        "line": 133,
+        "statement": "f'PRAGMA table_info({table_name})'"
+      },
+      {
+        "path": "systems/name_rune_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 13,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "systems/name_rune_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 13,
+        "statement": "PRAGMA busy_timeout=30000"
+      },
+      {
+        "path": "systems/name_rune_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 25,
+        "statement": "PRAGMA table_info(items)"
+      },
+      {
+        "path": "systems/notifications.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 49,
+        "statement": "PRAGMA journal_mode=WAL"
+      },
+      {
+        "path": "systems/notifications.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 50,
+        "statement": "PRAGMA busy_timeout=30000"
+      },
+      {
+        "path": "systems/notifications.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 564,
+        "statement": "f'PRAGMA table_info({table_name})'"
+      },
+      {
+        "path": "systems/notifications.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 838,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "systems/player_interaction_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 28,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "systems/player_interaction_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 29,
+        "statement": "PRAGMA busy_timeout=30000"
+      },
+      {
+        "path": "systems/player_interaction_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 2163,
+        "statement": "PRAGMA table_info(inventory)"
+      },
+      {
+        "path": "systems/player_interaction_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 64,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "systems/player_interaction_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 316,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "systems/player_interaction_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 1240,
+        "statement": "PRAGMA table_info(inventory)"
+      },
+      {
+        "path": "systems/player_interaction_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 1244,
+        "statement": "PRAGMA table_info(items)"
+      },
+      {
+        "path": "systems/player_interaction_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 1257,
+        "statement": "PRAGMA table_info(auction_lots)"
+      },
+      {
+        "path": "systems/player_interaction_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 1361,
+        "statement": "PRAGMA table_info(inventory_runes)"
+      },
+      {
+        "path": "systems/player_rankings_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 23,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "systems/player_rankings_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 23,
+        "statement": "PRAGMA busy_timeout=30000"
+      },
+      {
+        "path": "systems/potion_system.py",
+        "category": "production_runtime",
+        "name": "cursor.execute",
+        "line": 535,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "systems/premium_item_policy_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 55,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "systems/premium_item_policy_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 55,
+        "statement": "PRAGMA busy_timeout=30000"
+      },
+      {
+        "path": "systems/premium_item_policy_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 178,
+        "statement": "PRAGMA table_info(inventory)"
+      },
+      {
+        "path": "systems/pve_auto_escape_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 30,
+        "statement": "PRAGMA index_list('pve_encounters')"
+      },
+      {
+        "path": "systems/pve_auto_escape_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 33,
+        "statement": "f'PRAGMA index_info(\"{name}\")'"
+      },
+      {
+        "path": "systems/pvp_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 96,
+        "statement": "PRAGMA foreign_keys = ON"
+      },
+      {
+        "path": "systems/refine_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 127,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "systems/refine_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 128,
+        "statement": "PRAGMA busy_timeout=30000"
+      },
+      {
+        "path": "systems/regen_system.py",
+        "category": "production_runtime",
+        "name": "db.conn.execute",
+        "line": 33,
+        "statement": "f'PRAGMA table_info({table_name})'"
+      },
+      {
+        "path": "systems/rune_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 30,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "systems/rune_system.py",
+        "category": "production_runtime",
+        "name": "db.conn.execute",
+        "line": 62,
+        "statement": "PRAGMA table_info(items)"
+      },
+      {
+        "path": "systems/timed_exp_bonus_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 13,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "systems/timed_exp_bonus_system.py",
+        "category": "production_runtime",
+        "name": "c.execute",
+        "line": 13,
+        "statement": "PRAGMA busy_timeout=30000"
+      },
+      {
+        "path": "systems/timed_exp_bonus_system.py",
+        "category": "production_runtime",
+        "name": "connection.execute",
+        "line": 65,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "systems/travel_system.py",
+        "category": "production_runtime",
+        "name": "conn.execute",
+        "line": 17,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "systems/world_chronicle_system.py",
+        "category": "production_runtime",
+        "name": "connection.execute",
+        "line": 24,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "systems/world_chronicle_system.py",
+        "category": "production_runtime",
+        "name": "connection.execute",
+        "line": 25,
+        "statement": "PRAGMA busy_timeout=30000"
+      },
+      {
+        "path": "tools/audit_9_0_13_final_closure.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 100,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_9_0_13_final_closure.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 235,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_9_0_13_final_closure.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 240,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_9_0_13_final_closure.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 111,
+        "statement": "f'PRAGMA table_info({quoted})'"
+      },
+      {
+        "path": "tools/audit_canonical_character_creation_and_player_stats_18_30_5a.py",
+        "category": "tool_or_test",
+        "name": "con.execute",
+        "line": 40,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "tools/audit_central_drop_economy.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 28,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_central_drop_economy.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 46,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_central_drop_economy.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 47,
+        "statement": "PRAGMA table_info(items)"
+      },
+      {
+        "path": "tools/audit_combat_mana_potion.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 222,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_combat_mana_potion.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 230,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_combat_mana_potion.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 223,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "tools/audit_db_startup_mutations.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 173,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_db_startup_mutations.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 159,
+        "statement": "f'PRAGMA table_info({quote_ident(table)})'"
+      },
+      {
+        "path": "tools/audit_dynamic_equipment_compatibility_18_17_4.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 57,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_dynamic_equipment_compatibility_18_17_4.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 57,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/audit_dynamic_equipment_compatibility_18_17_4.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 57,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_equipment_stat_policy_18_17_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 26,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_equipment_stat_policy_18_17_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 26,
+        "statement": "PRAGMA table_info(items)"
+      },
+      {
+        "path": "tools/audit_equipment_stat_policy_18_17_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 39,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/audit_equipment_stat_policy_18_17_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 39,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_guild_actor_name_log.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 195,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_guild_actor_name_log.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 210,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_guild_actor_name_log.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 202,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "tools/audit_guild_contract_target_log.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 72,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_guild_contract_target_log.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 77,
+        "statement": "PRAGMA table_info(guild_logs)"
+      },
+      {
+        "path": "tools/audit_guild_contract_target_log.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 81,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_inline_map_and_travel_18_22_0.py",
+        "category": "tool_or_test",
+        "name": "con.execute",
+        "line": 73,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_inline_map_and_travel_18_22_0.py",
+        "category": "tool_or_test",
+        "name": "con.execute",
+        "line": 75,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/audit_inline_map_and_travel_18_22_0.py",
+        "category": "tool_or_test",
+        "name": "con.execute",
+        "line": 54,
+        "statement": "f'PRAGMA table_info(\"{name}\")'"
+      },
+      {
+        "path": "tools/audit_inline_map_and_travel_18_22_0.py",
+        "category": "tool_or_test",
+        "name": "con.execute",
+        "line": 74,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_inline_map_and_travel_closure_18_22_4.py",
+        "category": "tool_or_test",
+        "name": "con.execute",
+        "line": 81,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_inline_map_and_travel_closure_18_22_4.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 29,
+        "statement": "f'PRAGMA index_list(\"{table}\")'"
+      },
+      {
+        "path": "tools/audit_inline_map_and_travel_closure_18_22_4.py",
+        "category": "tool_or_test",
+        "name": "con.execute",
+        "line": 83,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/audit_inline_map_and_travel_closure_18_22_4.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 26,
+        "statement": "f'PRAGMA table_info(\"{name}\")'"
+      },
+      {
+        "path": "tools/audit_inline_map_and_travel_closure_18_22_4.py",
+        "category": "tool_or_test",
+        "name": "con.execute",
+        "line": 82,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_legacy_class_shop_generator_18_17_5.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 216,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_legacy_class_shop_generator_18_17_5.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 219,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/audit_legacy_class_shop_generator_18_17_5.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 218,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_player_trade_precommit_architecture.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 21,
+        "statement": "f'PRAGMA table_info(\"{name}\")'"
+      },
+      {
+        "path": "tools/audit_player_trade_precommit_architecture.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 24,
+        "statement": "f'PRAGMA index_list(\"{name}\")'"
+      },
+      {
+        "path": "tools/audit_player_trade_precommit_architecture.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 84,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/audit_player_trade_precommit_architecture.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 84,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_pve_auto_escape_18_18_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 56,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_pve_auto_escape_18_18_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 58,
+        "statement": "f'PRAGMA table_info(\"{table}\")'"
+      },
+      {
+        "path": "tools/audit_pve_auto_escape_18_18_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 60,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/audit_pve_auto_escape_18_18_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 60,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_pve_effect_timing_18_19_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 48,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_pve_effect_timing_18_19_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 48,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/audit_pve_effect_timing_18_19_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 48,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_pve_player_hit_18_21_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 37,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_pve_player_hit_18_21_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 37,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/audit_pve_player_hit_18_21_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 37,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_pvp_architecture_skill_parity.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 194,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_pvp_architecture_skill_parity.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 196,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/audit_pvp_architecture_skill_parity.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 195,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_rebirth_sphere_distribution_18_16_10e.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 40,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/audit_rebirth_sphere_distribution_18_16_10e.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 40,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_refine_system_18_20_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 29,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_refine_system_18_20_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 31,
+        "statement": "PRAGMA table_info('refine_attempts')"
+      },
+      {
+        "path": "tools/audit_refine_system_18_20_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 33,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/audit_refine_system_18_20_0.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 33,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_registration_date_pipeline_18_31_3.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 41,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "tools/audit_rune_system_architecture.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 193,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_rune_system_architecture.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 122,
+        "statement": "f'PRAGMA table_info({quoted})'"
+      },
+      {
+        "path": "tools/audit_rune_system_architecture.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 195,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/audit_static_items_and_db_init.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 305,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/audit_static_items_and_db_init.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 147,
+        "statement": "f'PRAGMA table_info({qident(table)})'"
+      },
+      {
+        "path": "tools/audit_static_items_and_db_init.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 310,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/check_active_story_quest_boss_call.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 18,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "tools/check_story_quest_exact_once_completion.py",
+        "category": "tool_or_test",
+        "name": "db.execute",
+        "line": 45,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "tools/check_story_quest_exact_once_completion.py",
+        "category": "tool_or_test",
+        "name": "db.execute",
+        "line": 128,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/check_story_quest_item_drop_hook.py",
+        "category": "tool_or_test",
+        "name": "db.execute",
+        "line": 57,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "tools/check_story_quest_lifecycle_engine.py",
+        "category": "tool_or_test",
+        "name": "db.execute",
+        "line": 73,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "tools/check_story_quest_lifecycle_engine.py",
+        "category": "tool_or_test",
+        "name": "db.execute",
+        "line": 139,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/check_story_quest_npc_acceptance.py",
+        "category": "tool_or_test",
+        "name": "db.execute",
+        "line": 63,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "tools/check_story_quest_npc_acceptance.py",
+        "category": "tool_or_test",
+        "name": "db.execute",
+        "line": 99,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/check_story_quest_overlevel_skip_hook.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 39,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "tools/check_story_quest_persistence_api.py",
+        "category": "tool_or_test",
+        "name": "db.execute",
+        "line": 46,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "tools/check_story_quest_persistence_api.py",
+        "category": "tool_or_test",
+        "name": "db.execute",
+        "line": 96,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/check_story_quest_persistence_schema.py",
+        "category": "tool_or_test",
+        "name": "database.execute",
+        "line": 44,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "tools/check_story_quest_persistence_schema.py",
+        "category": "tool_or_test",
+        "name": "database.execute",
+        "line": 84,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/check_story_quest_region_kill_hook.py",
+        "category": "tool_or_test",
+        "name": "db.execute",
+        "line": 48,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "tools/check_story_quest_rng_boss_completion.py",
+        "category": "tool_or_test",
+        "name": "db.execute",
+        "line": 51,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "tools/close_equipment_stat_policy_stage_18_17.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 74,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/close_equipment_stat_policy_stage_18_17.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 77,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/close_equipment_stat_policy_stage_18_17.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 76,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/close_pve_auto_escape_stage_18_18.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 20,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/close_pve_auto_escape_stage_18_18.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 20,
+        "statement": "PRAGMA index_list('pve_encounters')"
+      },
+      {
+        "path": "tools/close_pve_auto_escape_stage_18_18.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 20,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/close_pve_auto_escape_stage_18_18.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 20,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/close_pve_effect_timeline_stage_18_19.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 19,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/close_pve_effect_timeline_stage_18_19.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 19,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/close_pve_effect_timeline_stage_18_19.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 19,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/close_pve_normal_attack_hit_stage_18_21.py",
+        "category": "tool_or_test",
+        "name": "con.execute",
+        "line": 49,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/close_pve_normal_attack_hit_stage_18_21.py",
+        "category": "tool_or_test",
+        "name": "con.execute",
+        "line": 51,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/close_pve_normal_attack_hit_stage_18_21.py",
+        "category": "tool_or_test",
+        "name": "con.execute",
+        "line": 50,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/close_refine_system_stage_18_20.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 45,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/close_refine_system_stage_18_20.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 48,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/close_refine_system_stage_18_20.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 47,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/final_db_cleanup_closure_audit.py",
+        "category": "tool_or_test",
+        "name": "db.conn.execute",
+        "line": 89,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "tools/final_db_cleanup_closure_audit.py",
+        "category": "tool_or_test",
+        "name": "db.conn.execute",
+        "line": 133,
+        "statement": "f'PRAGMA table_info(\"{table}\")'"
+      },
+      {
+        "path": "tools/manual_test_inactivity_reminder_18_6_1.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 55,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "tools/manual_test_inactivity_reminder_18_6_1.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 56,
+        "statement": "PRAGMA busy_timeout=30000"
+      },
+      {
+        "path": "tools/manual_test_inactivity_reminder_18_6_1.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 196,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/manual_test_inactivity_reminder_18_6_1.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 244,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/manual_test_inactivity_reminder_18_6_1.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 66,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "tools/manual_test_inactivity_reminder_18_6_1.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 75,
+        "statement": "PRAGMA table_info(inactivity_reminders)"
+      },
+      {
+        "path": "tools/manual_test_inactivity_reminder_18_6_1.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 195,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/manual_test_inactivity_reminder_18_6_1.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 243,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/run_final_stage_18_closure_audit.py",
+        "category": "tool_or_test",
+        "name": "cur.execute",
+        "line": 38,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/run_final_stage_18_closure_audit.py",
+        "category": "tool_or_test",
+        "name": "cur.execute",
+        "line": 38,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/smoke_test_atomic_event_shop_exchange_18_29_3c.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 8,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "tools/smoke_test_attribute_respec_domain_18_16_8.py",
+        "category": "tool_or_test",
+        "name": "c.executescript",
+        "line": 12,
+        "statement": "PRAGMA foreign_keys=ON;CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_class TEXT,free_attribute_points INTEGER,total_attribute_points_earned INTEGER,allocated_strength INTEGER,allocated_dexterity INTEGER,allocated_intelligence INTEGER,allocated_wisdom INTEGER,allocated_stamina INTEGER,hp INTEGER,max_hp INTEGER,mp INTEGER,max_mp INTEGER);CREATE TABLE items(id INTEGER PRIMARY KEY,name TEXT,type TEXT,rarity TEXT,category TEXT,slot_key TEXT,weapon_hands INTEGER,max_stack INTEGER,sell_price"
+      },
+      {
+        "path": "tools/smoke_test_attribute_schema_foundation_18_16_1.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 10,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "tools/smoke_test_attribute_schema_foundation_18_16_1.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 16,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/smoke_test_attribute_schema_foundation_18_16_1.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 15,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/smoke_test_central_drop_config_model.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 31,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/smoke_test_central_drop_refine_stone_migration.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 39,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/smoke_test_central_drop_refine_stone_migration.py",
+        "category": "tool_or_test",
+        "name": "db.conn.execute",
+        "line": 69,
+        "statement": "f'PRAGMA table_info(\"{table}\")'"
+      },
+      {
+        "path": "tools/smoke_test_central_drop_rune_migration.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 36,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/smoke_test_contract_reward_direct_facade.py",
+        "category": "tool_or_test",
+        "name": "db.conn.execute",
+        "line": 25,
+        "statement": "f'PRAGMA table_info(\"{table}\")'"
+      },
+      {
+        "path": "tools/smoke_test_create_user_contracts.py",
+        "category": "tool_or_test",
+        "name": "db.conn.execute",
+        "line": 18,
+        "statement": "f'PRAGMA table_info(\"{table}\")'"
+      },
+      {
+        "path": "tools/smoke_test_crystal_bag_expansion_17_32_1.py",
+        "category": "tool_or_test",
+        "name": "c.executescript",
+        "line": 7,
+        "statement": "PRAGMA foreign_keys=ON;CREATE TABLE users(user_id INTEGER PRIMARY KEY,bag_slots INTEGER);CREATE TABLE crystal_wallets(user_id INTEGER PRIMARY KEY,balance INTEGER,created_at TEXT,updated_at TEXT);CREATE TABLE crystal_transactions(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,operation TEXT,amount INTEGER,reason_code TEXT,balance_before INTEGER,balance_after INTEGER,idempotency_key TEXT UNIQUE,external_reference TEXT,metadata_json TEXT,created_at TEXT);INSERT INTO users VALUES(1,60),(2,60),"
+      },
+      {
+        "path": "tools/smoke_test_crystal_shop_prices_18_10_1.py",
+        "category": "tool_or_test",
+        "name": "connection.executescript",
+        "line": 28,
+        "statement": "\n    PRAGMA foreign_keys=ON;\n    CREATE TABLE users(user_id INTEGER PRIMARY KEY,bag_slots INTEGER);\n    CREATE TABLE items(id INTEGER PRIMARY KEY,name TEXT,max_stack INTEGER);\n    CREATE TABLE inventory(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER,item_id INTEGER,quantity INTEGER,durability INTEGER);\n    CREATE TABLE crystal_wallets(user_id INTEGER PRIMARY KEY,balance INTEGER,created_at TEXT,updated_at TEXT);\n    CREATE TABLE crystal_transactions(id INTEGER PRIMARY KEY AUTOINCREMENT,user"
+      },
+      {
+        "path": "tools/smoke_test_crystal_shop_prices_18_10_1.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 66,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/smoke_test_crystal_shop_prices_18_10_1.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 65,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/smoke_test_crystal_wallet_smoke_import_recovery_17_25_1_1.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 15,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/smoke_test_crystal_wallet_smoke_import_recovery_17_25_1_1.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 15,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/smoke_test_dynamic_equipment_repair_contracts.py",
+        "category": "tool_or_test",
+        "name": "db.conn.execute",
+        "line": 26,
+        "statement": "f'PRAGMA table_info(\"{name}\")'"
+      },
+      {
+        "path": "tools/smoke_test_effective_attribute_integration_18_16_4.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 30,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/smoke_test_effective_attribute_integration_18_16_4.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 29,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/smoke_test_equipment_rune_slots.py",
+        "category": "tool_or_test",
+        "name": "db.conn.execute",
+        "line": 48,
+        "statement": "PRAGMA table_info(items)"
+      },
+      {
+        "path": "tools/smoke_test_event_kill_statistics_18_29_3b.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 9,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "tools/smoke_test_guild_leave_cooldown_17_21_1.py",
+        "category": "tool_or_test",
+        "name": "db.conn.execute",
+        "line": 10,
+        "statement": "PRAGMA table_info(guild_membership_history)"
+      },
+      {
+        "path": "tools/smoke_test_inactivity_reminder_policy_18_6_1.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 8,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "tools/smoke_test_interaction_session_timeout_and_recovery.py",
+        "category": "tool_or_test",
+        "name": "c.executescript",
+        "line": 13,
+        "statement": "\n      PRAGMA foreign_keys=ON;\n      CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT,current_location TEXT,last_activity_at TEXT);\n      CREATE TABLE player_activity_sessions(\n        id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL UNIQUE,\n        activity_type TEXT NOT NULL,reference_id INTEGER,status TEXT,\n        created_at TEXT,updated_at TEXT,expires_at TEXT);\n      CREATE TABLE player_interaction_requests(\n        id INTEGER PRIMARY KEY AUTOINCREMENT,reques"
+      },
+      {
+        "path": "tools/smoke_test_level_up_attribute_points_18_16_2.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 28,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/smoke_test_level_up_attribute_points_18_16_2.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 27,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/smoke_test_perfect_rune_extractor.py",
+        "category": "tool_or_test",
+        "name": "db.conn.execute",
+        "line": 51,
+        "statement": "PRAGMA table_info(items)"
+      },
+      {
+        "path": "tools/smoke_test_persistent_location_travel_18_22_1.py",
+        "category": "tool_or_test",
+        "name": "con.execute",
+        "line": 34,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/smoke_test_persistent_location_travel_18_22_1.py",
+        "category": "tool_or_test",
+        "name": "con.execute",
+        "line": 34,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/smoke_test_player_presence_and_activity_sessions.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 34,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "tools/smoke_test_player_trade_database_and_history_foundation.py",
+        "category": "tool_or_test",
+        "name": "c.executescript",
+        "line": 13,
+        "statement": "\n        PRAGMA foreign_keys=ON;\n        CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT,current_location TEXT,last_activity_at TEXT);\n        CREATE TABLE player_activity_sessions(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL UNIQUE,activity_type TEXT NOT NULL,reference_id INTEGER,status TEXT,created_at TEXT,updated_at TEXT,expires_at TEXT);\n        CREATE TABLE player_interaction_requests(id INTEGER PRIMARY KEY AUTOINCREMENT,request_type TEXT,initiator_user_i"
+      },
+      {
+        "path": "tools/smoke_test_player_trade_item_policy_and_reservations.py",
+        "category": "tool_or_test",
+        "name": "c.executescript",
+        "line": 19,
+        "statement": "\n            PRAGMA foreign_keys=ON;\n            CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT,current_location TEXT,last_activity_at TEXT);\n            CREATE TABLE items(id INTEGER PRIMARY KEY,name TEXT,category TEXT,tradeable INTEGER,bound_type TEXT,dev_only INTEGER,premium_bound INTEGER);\n            CREATE TABLE inventory(id INTEGER PRIMARY KEY,user_id INTEGER,item_id INTEGER,quantity INTEGER,durability INTEGER,max_durability INTEGER,refine_level INTEGER);\n            C"
+      },
+      {
+        "path": "tools/smoke_test_player_trade_item_preview_and_wallet_ux.py",
+        "category": "tool_or_test",
+        "name": "c.executescript",
+        "line": 18,
+        "statement": "\n            PRAGMA foreign_keys=ON;\n            CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT,current_location TEXT,gold REAL,last_activity_at TEXT);\n            CREATE TABLE items(id INTEGER PRIMARY KEY,name TEXT,category TEXT,rarity TEXT,tradeable INTEGER,bound_type TEXT,dev_only INTEGER,premium_bound INTEGER);\n            CREATE TABLE inventory(id INTEGER PRIMARY KEY,user_id INTEGER,item_id INTEGER,quantity INTEGER,durability INTEGER,max_durability INTEGER,refine_level I"
+      },
+      {
+        "path": "tools/smoke_test_player_trade_lock_consolidation_and_startup_recovery.py",
+        "category": "tool_or_test",
+        "name": "c.executescript",
+        "line": 40,
+        "statement": "\n            PRAGMA foreign_keys=ON;\n            CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT,current_location TEXT,gold REAL,last_activity_at TEXT);\n            CREATE TABLE inventory(id INTEGER PRIMARY KEY,user_id INTEGER,item_id INTEGER,quantity INTEGER);\n            CREATE TABLE player_interaction_requests(id INTEGER PRIMARY KEY,request_type TEXT,initiator_user_id INTEGER,recipient_user_id INTEGER,location_snapshot TEXT,status TEXT,revision INTEGER,created_at TEXT,updat"
+      },
+      {
+        "path": "tools/smoke_test_player_trade_navigation_lock_and_item_categories.py",
+        "category": "tool_or_test",
+        "name": "c.executescript",
+        "line": 18,
+        "statement": "\n            PRAGMA foreign_keys=ON;\n            CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT,current_location TEXT,gold REAL,last_activity_at TEXT);\n            CREATE TABLE items(id INTEGER PRIMARY KEY,name TEXT,category TEXT,rarity TEXT,tradeable INTEGER,bound_type TEXT,dev_only INTEGER,premium_bound INTEGER);\n            CREATE TABLE inventory(id INTEGER PRIMARY KEY,user_id INTEGER,item_id INTEGER,quantity INTEGER,durability INTEGER,max_durability INTEGER,refine_level I"
+      },
+      {
+        "path": "tools/smoke_test_player_trade_offer_editor.py",
+        "category": "tool_or_test",
+        "name": "c.executescript",
+        "line": 27,
+        "statement": "\n            PRAGMA foreign_keys=ON;\n            CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT,current_location TEXT,gold REAL,last_activity_at TEXT);\n            CREATE TABLE items(id INTEGER PRIMARY KEY,name TEXT,category TEXT,rarity TEXT,tradeable INTEGER,bound_type TEXT,dev_only INTEGER,premium_bound INTEGER);\n            CREATE TABLE inventory(id INTEGER PRIMARY KEY,user_id INTEGER,item_id INTEGER,quantity INTEGER,durability INTEGER,max_durability INTEGER,refine_level I"
+      },
+      {
+        "path": "tools/smoke_test_player_trade_offer_editor_ux.py",
+        "category": "tool_or_test",
+        "name": "c.executescript",
+        "line": 18,
+        "statement": "\n            PRAGMA foreign_keys=ON;\n            CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT,current_location TEXT,gold REAL,last_activity_at TEXT);\n            CREATE TABLE items(id INTEGER PRIMARY KEY,name TEXT,category TEXT,rarity TEXT,tradeable INTEGER,bound_type TEXT,dev_only INTEGER,premium_bound INTEGER);\n            CREATE TABLE inventory(id INTEGER PRIMARY KEY,user_id INTEGER,item_id INTEGER,quantity INTEGER,durability INTEGER,max_durability INTEGER,refine_level I"
+      },
+      {
+        "path": "tools/smoke_test_premium_item_smoke_path_recovery_17_26_1_1.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 13,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/smoke_test_pvp_data_model_sessions_recovery.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 31,
+        "statement": "PRAGMA foreign_keys = ON"
+      },
+      {
+        "path": "tools/smoke_test_pvp_data_model_sessions_recovery.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 114,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/smoke_test_registration_date_pipeline_18_31_4.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 19,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "tools/smoke_test_registration_date_pipeline_18_31_4.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 34,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/smoke_test_registration_date_pipeline_18_31_4.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 33,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/smoke_test_rune_character_stat_bonuses.py",
+        "category": "tool_or_test",
+        "name": "db.conn.execute",
+        "line": 48,
+        "statement": "PRAGMA table_info(items)"
+      },
+      {
+        "path": "tools/smoke_test_rune_data_model.py",
+        "category": "tool_or_test",
+        "name": "db.conn.execute",
+        "line": 30,
+        "statement": "PRAGMA table_info(inventory_runes)"
+      },
+      {
+        "path": "tools/smoke_test_rune_data_model.py",
+        "category": "tool_or_test",
+        "name": "db.conn.execute",
+        "line": 73,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/smoke_test_rune_equipment_display_names.py",
+        "category": "tool_or_test",
+        "name": "db.conn.execute",
+        "line": 46,
+        "statement": "PRAGMA table_info(items)"
+      },
+      {
+        "path": "tools/smoke_test_rune_master_insertion.py",
+        "category": "tool_or_test",
+        "name": "db.conn.execute",
+        "line": 51,
+        "statement": "PRAGMA table_info(items)"
+      },
+      {
+        "path": "tools/smoke_test_simple_rune_extractor.py",
+        "category": "tool_or_test",
+        "name": "db.conn.execute",
+        "line": 18,
+        "statement": "PRAGMA table_info(items)"
+      },
+      {
+        "path": "tools/smoke_test_special_material_drop_policy.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 109,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/smoke_test_stage_20_5_4_premium_prices.py",
+        "category": "tool_or_test",
+        "name": "c.executescript",
+        "line": 20,
+        "statement": "\n   PRAGMA foreign_keys=ON;\n   CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT);\n   CREATE TABLE crystal_wallets(user_id INTEGER PRIMARY KEY,balance INTEGER NOT NULL DEFAULT 0 CHECK(balance>=0),created_at TEXT NOT NULL,updated_at TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE RESTRICT);\n   CREATE TABLE crystal_transactions(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,operation TEXT NOT NULL CHECK(operation IN ('credit','debit')),amount "
+      },
+      {
+        "path": "tools/smoke_test_stage_20_5_6_admin_crystal_schema.py",
+        "category": "tool_or_test",
+        "name": "c.executescript",
+        "line": 16,
+        "statement": "\n   PRAGMA foreign_keys=ON;\n   CREATE TABLE users(user_id INTEGER PRIMARY KEY,character_name TEXT);\n   CREATE TABLE crystal_wallets(user_id INTEGER PRIMARY KEY,balance INTEGER NOT NULL DEFAULT 0 CHECK(balance>=0),created_at TEXT NOT NULL,updated_at TEXT NOT NULL,FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE RESTRICT);\n   CREATE TABLE crystal_transactions(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,operation TEXT NOT NULL CHECK(operation IN ('credit','debit')),amount "
+      },
+      {
+        "path": "tools/smoke_test_stage_20_5_6_admin_crystal_schema.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 33,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/smoke_test_stage_20_5_6_admin_crystal_schema.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 33,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/smoke_test_static_item_seed_contracts.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 70,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/smoke_test_static_item_seed_contracts.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 89,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/smoke_test_universal_drop_simulator.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 10,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/validate_test_event_end_to_end_18_29_4q.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 32,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/validate_test_event_end_to_end_18_29_4q.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 31,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/verify_attribute_system_production_closure_18_16_11.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 62,
+        "statement": "PRAGMA table_info(users)"
+      },
+      {
+        "path": "tools/verify_attribute_system_production_closure_18_16_11.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 83,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/verify_attribute_system_production_closure_18_16_11.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 82,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/verify_dynamic_equipment_behavioral_parity_18_17_7.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 44,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/verify_dynamic_equipment_behavioral_parity_18_17_7.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 47,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/verify_dynamic_equipment_behavioral_parity_18_17_7.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 46,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/verify_equipment_drop_shop_parity_18_17_3.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 46,
+        "statement": "PRAGMA query_only=ON"
+      },
+      {
+        "path": "tools/verify_equipment_drop_shop_parity_18_17_3.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 46,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/verify_equipment_drop_shop_parity_18_17_3.py",
+        "category": "tool_or_test",
+        "name": "c.execute",
+        "line": 46,
+        "statement": "PRAGMA quick_check"
+      },
+      {
+        "path": "tools/verify_stage_19_34_3_story_quest_item_identity.py",
+        "category": "tool_or_test",
+        "name": "conn.execute",
+        "line": 21,
+        "statement": "PRAGMA foreign_keys=ON"
+      },
+      {
+        "path": "tools/verify_stage_20_2_6_class_combat_acceptance.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 124,
+        "statement": "PRAGMA foreign_key_check"
+      },
+      {
+        "path": "tools/verify_stage_20_2_6_class_combat_acceptance.py",
+        "category": "tool_or_test",
+        "name": "connection.execute",
+        "line": 123,
+        "statement": "PRAGMA quick_check"
+      }
+    ],
+    "transaction_call_count": 716,
+    "transaction_call_examples": [
+      {
+        "path": "db_modules/character.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 174
+      },
+      {
+        "path": "db_modules/character.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 217
+      },
+      {
+        "path": "db_modules/connection.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 194
+      },
+      {
+        "path": "db_modules/connection.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 245
+      },
+      {
+        "path": "db_modules/daily_compat.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 49
+      },
+      {
+        "path": "db_modules/daily_compat.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 86
+      },
+      {
+        "path": "db_modules/daily_compat.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 109
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 172
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 188
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 247
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 533
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 829
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 1348
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 1543
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 1621
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 798
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 464
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "conn.rollback",
+        "line": 310
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "conn.rollback",
+        "line": 324
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "name": "conn.rollback",
+        "line": 501
+      },
+      {
+        "path": "db_modules/generated_equipment.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 161
+      },
+      {
+        "path": "db_modules/generated_equipment.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 538
+      },
+      {
+        "path": "db_modules/generated_equipment.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 576
+      },
+      {
+        "path": "db_modules/generated_equipment.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 1256
+      },
+      {
+        "path": "db_modules/inventory.py",
+        "category": "production_runtime",
+        "name": "conn.commit",
+        "line": 332
+      }
+    ],
+    "close_call_count": 263,
+    "close_call_examples": [
+      {
+        "path": "handlers/event_ui.py",
+        "category": "production_runtime",
+        "name": "_close",
+        "line": 122
+      },
+      {
+        "path": "handlers/event_ui.py",
+        "category": "production_runtime",
+        "name": "_close",
+        "line": 127
+      },
+      {
+        "path": "systems/admin_crystal_credit_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 16
+      },
+      {
+        "path": "systems/admin_crystal_credit_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 31
+      },
+      {
+        "path": "systems/admin_crystal_credit_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 54
+      },
+      {
+        "path": "systems/admin_crystal_credit_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 60
+      },
+      {
+        "path": "systems/admin_crystal_credit_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 71
+      },
+      {
+        "path": "systems/crystal_bag_expansion_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 18
+      },
+      {
+        "path": "systems/crystal_bag_expansion_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 27
+      },
+      {
+        "path": "systems/crystal_bag_expansion_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 63
+      },
+      {
+        "path": "systems/crystal_bag_expansion_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 67
+      },
+      {
+        "path": "systems/crystal_shop_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 16
+      },
+      {
+        "path": "systems/crystal_shop_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 30
+      },
+      {
+        "path": "systems/crystal_shop_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 61
+      },
+      {
+        "path": "systems/crystal_shop_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 65
+      },
+      {
+        "path": "systems/crystal_wallet_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 45
+      },
+      {
+        "path": "systems/crystal_wallet_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 55
+      },
+      {
+        "path": "systems/crystal_wallet_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 79
+      },
+      {
+        "path": "systems/crystal_wallet_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 86
+      },
+      {
+        "path": "systems/crystal_wallet_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 90
+      },
+      {
+        "path": "systems/crystal_wallet_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 97
+      },
+      {
+        "path": "systems/fatigue_artifact_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 20
+      },
+      {
+        "path": "systems/fatigue_artifact_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 30
+      },
+      {
+        "path": "systems/fatigue_artifact_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 34
+      },
+      {
+        "path": "systems/fatigue_artifact_system.py",
+        "category": "production_runtime",
+        "name": "c.close",
+        "line": 54
+      }
+    ],
+    "connection_factory_candidates": [
+      {
+        "path": "systems/admin_crystal_credit_system.py",
+        "category": "production_runtime",
+        "name": "_connect",
+        "line": 9
+      },
+      {
+        "path": "systems/crystal_bag_expansion_system.py",
+        "category": "production_runtime",
+        "name": "_connect",
+        "line": 12
+      },
+      {
+        "path": "systems/crystal_shop_system.py",
+        "category": "production_runtime",
+        "name": "_connect",
+        "line": 10
+      },
+      {
+        "path": "systems/crystal_wallet_system.py",
+        "category": "production_runtime",
+        "name": "_connect",
+        "line": 11
+      },
+      {
+        "path": "systems/fresh_database_bootstrap.py",
+        "category": "production_runtime",
+        "name": "run_fresh_database_schema_bootstrap",
+        "line": 25
+      },
+      {
+        "path": "systems/inactivity_reminder_system.py",
+        "category": "production_runtime",
+        "name": "_connection",
+        "line": 16
+      },
+      {
+        "path": "systems/notifications.py",
+        "category": "production_runtime",
+        "name": "create_worker_connection",
+        "line": 36
+      },
+      {
+        "path": "systems/player_interaction_system.py",
+        "category": "production_runtime",
+        "name": "_connect",
+        "line": 24
+      },
+      {
+        "path": "systems/player_interaction_system.py",
+        "category": "production_runtime",
+        "name": "_database_has_table",
+        "line": 856
+      },
+      {
+        "path": "systems/player_rankings_system.py",
+        "category": "production_runtime",
+        "name": "_connect",
+        "line": 22
+      },
+      {
+        "path": "systems/pvp_system.py",
+        "category": "production_runtime",
+        "name": "configure_pvp_connection_factory",
+        "line": 54
+      },
+      {
+        "path": "systems/pvp_system.py",
+        "category": "production_runtime",
+        "name": "_default_connection",
+        "line": 59
+      },
+      {
+        "path": "systems/pvp_system.py",
+        "category": "production_runtime",
+        "name": "_connection",
+        "line": 83
+      },
+      {
+        "path": "systems/travel_system.py",
+        "category": "production_runtime",
+        "name": "_connect",
+        "line": 14
+      },
+      {
+        "path": "systems/world_chronicle_system.py",
+        "category": "production_runtime",
+        "name": "_connect",
+        "line": 21
+      },
+      {
+        "path": "tools/audit_9_0_13_final_closure.py",
+        "category": "tool_or_test",
+        "name": "logical_database_snapshot",
+        "line": 96
+      },
+      {
+        "path": "tools/audit_db_startup_mutations.py",
+        "category": "tool_or_test",
+        "name": "database_snapshot",
+        "line": 149
+      },
+      {
+        "path": "tools/audit_legacy_class_shop_generator_18_17_5.py",
+        "category": "tool_or_test",
+        "name": "database_check",
+        "line": 212
+      },
+      {
+        "path": "tools/audit_player_trade_precommit_architecture.py",
+        "category": "tool_or_test",
+        "name": "database_audit",
+        "line": 79
+      },
+      {
+        "path": "tools/audit_pvp_architecture_skill_parity.py",
+        "category": "tool_or_test",
+        "name": "inspect_database",
+        "line": 187
+      },
+      {
+        "path": "tools/audit_static_items_and_db_init.py",
+        "category": "tool_or_test",
+        "name": "database_references",
+        "line": 160
+      },
+      {
+        "path": "tools/close_equipment_stat_policy_stage_18_17.py",
+        "category": "tool_or_test",
+        "name": "database_check",
+        "line": 70
+      },
+      {
+        "path": "tools/manual_test_inactivity_reminder_18_6_1.py",
+        "category": "tool_or_test",
+        "name": "connect",
+        "line": 52
+      },
+      {
+        "path": "tools/smoke_test_pvp_data_model_sessions_recovery.py",
+        "category": "tool_or_test",
+        "name": "connection",
+        "line": 28
+      }
+    ],
+    "sqlite_related_imports": [
+      {
+        "path": "db_modules/__init__.py",
+        "category": "production_runtime",
+        "line": 87,
+        "text": "from .connection import conn, cursor, SLOT_ORDER, DEFAULT_BAG_SLOTS, init_db, seed_items"
+      },
+      {
+        "path": "db_modules/character.py",
+        "category": "production_runtime",
+        "line": 50,
+        "text": "from .connection import cursor"
+      },
+      {
+        "path": "db_modules/character.py",
+        "category": "production_runtime",
+        "line": 132,
+        "text": "from .connection import conn, cursor"
+      },
+      {
+        "path": "db_modules/character.py",
+        "category": "production_runtime",
+        "line": 189,
+        "text": "from .connection import conn, cursor"
+      },
+      {
+        "path": "db_modules/connection.py",
+        "category": "production_runtime",
+        "line": 6,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "db_modules/daily_compat.py",
+        "category": "production_runtime",
+        "line": 3,
+        "text": "from .connection import conn, cursor, DEFAULT_BAG_SLOTS, SLOT_ORDER"
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "line": 6,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "line": 8,
+        "text": "from .connection import conn, cursor, DEFAULT_BAG_SLOTS, SLOT_ORDER"
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "category": "production_runtime",
+        "line": 17,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "db_modules/equipment.py",
+        "category": "production_runtime",
+        "line": 5,
+        "text": "from .connection import SLOT_ORDER"
+      },
+      {
+        "path": "db_modules/equipment.py",
+        "category": "production_runtime",
+        "line": 7,
+        "text": "from .connection import conn"
+      },
+      {
+        "path": "db_modules/equipment.py",
+        "category": "production_runtime",
+        "line": 86,
+        "text": "from .connection import cursor, SLOT_ORDER"
+      },
+      {
+        "path": "db_modules/generated_equipment.py",
+        "category": "production_runtime",
+        "line": 6,
+        "text": "from .connection import conn, cursor, DEFAULT_BAG_SLOTS, SLOT_ORDER"
+      },
+      {
+        "path": "db_modules/inventory.py",
+        "category": "production_runtime",
+        "line": 6,
+        "text": "from .connection import conn, cursor, DEFAULT_BAG_SLOTS"
+      },
+      {
+        "path": "db_modules/inventory_compat.py",
+        "category": "production_runtime",
+        "line": 9,
+        "text": "from .connection import conn, cursor, DEFAULT_BAG_SLOTS, SLOT_ORDER"
+      },
+      {
+        "path": "db_modules/location.py",
+        "category": "production_runtime",
+        "line": 5,
+        "text": "from .connection import conn, cursor"
+      },
+      {
+        "path": "db_modules/migrations.py",
+        "category": "production_runtime",
+        "line": 5,
+        "text": "from .connection import conn, cursor, DEFAULT_BAG_SLOTS"
+      },
+      {
+        "path": "db_modules/player.py",
+        "category": "production_runtime",
+        "line": 9,
+        "text": "from .connection import conn, cursor, DEFAULT_BAG_SLOTS"
+      },
+      {
+        "path": "db_modules/quests.py",
+        "category": "production_runtime",
+        "line": 5,
+        "text": "from .connection import conn, cursor"
+      },
+      {
+        "path": "db_modules/refine.py",
+        "category": "production_runtime",
+        "line": 5,
+        "text": "from .connection import conn, cursor"
+      },
+      {
+        "path": "db_modules/shop.py",
+        "category": "production_runtime",
+        "line": 8,
+        "text": "from .connection import conn, cursor, SLOT_ORDER"
+      },
+      {
+        "path": "db_modules/shop.py",
+        "category": "production_runtime",
+        "line": 723,
+        "text": "from .connection import DEFAULT_BAG_SLOTS"
+      },
+      {
+        "path": "db_modules/utils.py",
+        "category": "production_runtime",
+        "line": 5,
+        "text": "from .connection import conn, cursor"
+      },
+      {
+        "path": "handlers/combat.py",
+        "category": "production_runtime",
+        "line": 1973,
+        "text": "from db_modules.connection import conn as event_statistics_conn"
+      },
+      {
+        "path": "handlers/event_ui.py",
+        "category": "production_runtime",
+        "line": 96,
+        "text": "from db_modules.connection import conn"
+      },
+      {
+        "path": "handlers/event_ui.py",
+        "category": "production_runtime",
+        "line": 154,
+        "text": "from db_modules.connection import conn"
+      },
+      {
+        "path": "handlers/inventory.py",
+        "category": "production_runtime",
+        "line": 7424,
+        "text": "from db_modules.connection import cursor"
+      },
+      {
+        "path": "handlers/inventory.py",
+        "category": "production_runtime",
+        "line": 7819,
+        "text": "from db_modules.connection import cursor"
+      },
+      {
+        "path": "handlers/inventory.py",
+        "category": "production_runtime",
+        "line": 6073,
+        "text": "from db_modules.connection import cursor"
+      },
+      {
+        "path": "handlers/inventory.py",
+        "category": "production_runtime",
+        "line": 6201,
+        "text": "from db_modules.connection import cursor"
+      },
+      {
+        "path": "handlers/inventory.py",
+        "category": "production_runtime",
+        "line": 6369,
+        "text": "from db_modules.connection import cursor"
+      },
+      {
+        "path": "handlers/inventory.py",
+        "category": "production_runtime",
+        "line": 6533,
+        "text": "from db_modules.connection import cursor"
+      },
+      {
+        "path": "migrations/030_static_item_namespace.py",
+        "category": "production_runtime",
+        "line": 2,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "migrations/runner.py",
+        "category": "production_runtime",
+        "line": 27,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "systems/admin_crystal_credit_system.py",
+        "category": "production_runtime",
+        "line": 3,
+        "text": "import json, sqlite3"
+      },
+      {
+        "path": "systems/crystal_bag_expansion_system.py",
+        "category": "production_runtime",
+        "line": 4,
+        "text": "import json, sqlite3"
+      },
+      {
+        "path": "systems/crystal_shop_system.py",
+        "category": "production_runtime",
+        "line": 4,
+        "text": "import json, sqlite3"
+      },
+      {
+        "path": "systems/crystal_wallet_system.py",
+        "category": "production_runtime",
+        "line": 4,
+        "text": "import json, sqlite3"
+      },
+      {
+        "path": "systems/event_item_catalog_system.py",
+        "category": "production_runtime",
+        "line": 57,
+        "text": "from db_modules.connection import conn as connection"
+      },
+      {
+        "path": "systems/fatigue_artifact_system.py",
+        "category": "production_runtime",
+        "line": 3,
+        "text": "import json, math, sqlite3"
+      },
+      {
+        "path": "systems/guild_system.py",
+        "category": "production_runtime",
+        "line": 17,
+        "text": "import sqlite3 as _guild_sqlite3"
+      },
+      {
+        "path": "systems/inactivity_reminder_system.py",
+        "category": "production_runtime",
+        "line": 4,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "systems/item_id_allocator_system.py",
+        "category": "production_runtime",
+        "line": 4,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "systems/name_rune_system.py",
+        "category": "production_runtime",
+        "line": 3,
+        "text": "import re, sqlite3, unicodedata"
+      },
+      {
+        "path": "systems/notifications.py",
+        "category": "production_runtime",
+        "line": 10,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "systems/player_interaction_system.py",
+        "category": "production_runtime",
+        "line": 6,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "systems/player_rankings_system.py",
+        "category": "production_runtime",
+        "line": 4,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "systems/potion_system.py",
+        "category": "production_runtime",
+        "line": 177,
+        "text": "from db_modules.connection import conn, cursor"
+      },
+      {
+        "path": "systems/potion_system.py",
+        "category": "production_runtime",
+        "line": 564,
+        "text": "from db_modules.connection import cursor"
+      },
+      {
+        "path": "systems/potion_system.py",
+        "category": "production_runtime",
+        "line": 656,
+        "text": "from db_modules.connection import conn, cursor"
+      },
+      {
+        "path": "systems/potion_system.py",
+        "category": "production_runtime",
+        "line": 680,
+        "text": "from db_modules.connection import conn, cursor"
+      },
+      {
+        "path": "systems/potion_system.py",
+        "category": "production_runtime",
+        "line": 625,
+        "text": "from db_modules.connection import cursor as cursor_obj"
+      },
+      {
+        "path": "systems/potion_system.py",
+        "category": "production_runtime",
+        "line": 533,
+        "text": "from db_modules.connection import conn, cursor"
+      },
+      {
+        "path": "systems/premium_item_policy_system.py",
+        "category": "production_runtime",
+        "line": 10,
+        "text": "import json, os, sqlite3"
+      },
+      {
+        "path": "systems/profile_history_system.py",
+        "category": "production_runtime",
+        "line": 3,
+        "text": "import json, sqlite3"
+      },
+      {
+        "path": "systems/pve_auto_escape_system.py",
+        "category": "production_runtime",
+        "line": 7,
+        "text": "from db_modules.connection import conn"
+      },
+      {
+        "path": "systems/pvp_system.py",
+        "category": "production_runtime",
+        "line": 5,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "systems/refine_system.py",
+        "category": "production_runtime",
+        "line": 115,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "systems/simulation/progression_economy_reporting.py",
+        "category": "production_runtime",
+        "line": 4,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "systems/timed_exp_bonus_system.py",
+        "category": "production_runtime",
+        "line": 3,
+        "text": "import json, sqlite3"
+      },
+      {
+        "path": "systems/travel_system.py",
+        "category": "production_runtime",
+        "line": 3,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "systems/world_chronicle_system.py",
+        "category": "production_runtime",
+        "line": 6,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/acceptance_stage_20_5_7_premium_admin_crystals.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import ast, json, sqlite3, subprocess, sys, tempfile, shutil"
+      },
+      {
+        "path": "tools/audit_9_0_13_final_closure.py",
+        "category": "tool_or_test",
+        "line": 12,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/audit_canonical_character_creation_and_player_stats_18_30_5a.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import ast, hashlib, json, re, sqlite3, sys"
+      },
+      {
+        "path": "tools/audit_central_drop_economy.py",
+        "category": "tool_or_test",
+        "line": 10,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/audit_combat_mana_potion.py",
+        "category": "tool_or_test",
+        "line": 8,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/audit_db_startup_mutations.py",
+        "category": "tool_or_test",
+        "line": 15,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/audit_dynamic_equipment_compatibility_18_17_4.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, hashlib, json, sqlite3, sys"
+      },
+      {
+        "path": "tools/audit_equipment_stat_policy_18_17_0.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, hashlib, json, sqlite3, sys"
+      },
+      {
+        "path": "tools/audit_guild_actor_name_log.py",
+        "category": "tool_or_test",
+        "line": 9,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/audit_guild_contract_target_log.py",
+        "category": "tool_or_test",
+        "line": 7,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/audit_inline_map_and_travel_18_22_0.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, hashlib, json, sqlite3, sys"
+      },
+      {
+        "path": "tools/audit_inline_map_and_travel_closure_18_22_4.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, hashlib, json, sqlite3, sys"
+      },
+      {
+        "path": "tools/audit_legacy_class_shop_generator_18_17_5.py",
+        "category": "tool_or_test",
+        "line": 9,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/audit_player_trade_precommit_architecture.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import argparse, ast, hashlib, json, re, sqlite3"
+      },
+      {
+        "path": "tools/audit_pve_auto_escape_18_18_0.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, hashlib, json, sqlite3, sys"
+      },
+      {
+        "path": "tools/audit_pve_effect_timing_18_19_0.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, hashlib, json, sqlite3, sys"
+      },
+      {
+        "path": "tools/audit_pve_player_hit_18_21_0.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, hashlib, json, sqlite3"
+      },
+      {
+        "path": "tools/audit_pvp_architecture_skill_parity.py",
+        "category": "tool_or_test",
+        "line": 7,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/audit_rebirth_sphere_distribution_18_16_10e.py",
+        "category": "tool_or_test",
+        "line": 5,
+        "text": "import ast, json, math, sqlite3, sys"
+      },
+      {
+        "path": "tools/audit_refine_system_18_20_0.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, hashlib, json, sqlite3, sys"
+      },
+      {
+        "path": "tools/audit_registration_date_pipeline_18_31_3.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import ast, json, re, sqlite3, sys"
+      },
+      {
+        "path": "tools/audit_rune_system_architecture.py",
+        "category": "tool_or_test",
+        "line": 15,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/audit_static_items_and_db_init.py",
+        "category": "tool_or_test",
+        "line": 11,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/check_active_story_quest_boss_call.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, importlib.util, sqlite3, sys"
+      },
+      {
+        "path": "tools/check_pve_cursor_and_stale_callback_containment.py",
+        "category": "tool_or_test",
+        "line": 21,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/check_story_npc_level_probe.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import inspect, sqlite3, sys"
+      },
+      {
+        "path": "tools/check_story_quest_active_view_and_journal_details.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/check_story_quest_batch_31_40_item_handoff.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import json, sqlite3, sys"
+      },
+      {
+        "path": "tools/check_story_quest_boss_deferred_completion.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/check_story_quest_chained_item_retention.py",
+        "category": "tool_or_test",
+        "line": 5,
+        "text": "import argparse, json, sqlite3, sys"
+      },
+      {
+        "path": "tools/check_story_quest_cross_cutting_runtime_gaps.py",
+        "category": "tool_or_test",
+        "line": 5,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/check_story_quest_evidence_handoff_flow.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import json, sqlite3, sys"
+      },
+      {
+        "path": "tools/check_story_quest_exact_once_completion.py",
+        "category": "tool_or_test",
+        "line": 6,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/check_story_quest_item_drop_hook.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, importlib.util, sqlite3, sys"
+      },
+      {
+        "path": "tools/check_story_quest_item_drop_notification.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/check_story_quest_item_journal_progress.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/check_story_quest_lifecycle_engine.py",
+        "category": "tool_or_test",
+        "line": 6,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/check_story_quest_location_names.py",
+        "category": "tool_or_test",
+        "line": 5,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/check_story_quest_npc_acceptance.py",
+        "category": "tool_or_test",
+        "line": 6,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/check_story_quest_npc_progress_and_actions.py",
+        "category": "tool_or_test",
+        "line": 5,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/check_story_quest_overlevel_skip_hook.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, importlib.util, sqlite3, sys"
+      },
+      {
+        "path": "tools/check_story_quest_persistence_api.py",
+        "category": "tool_or_test",
+        "line": 6,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/check_story_quest_persistence_schema.py",
+        "category": "tool_or_test",
+        "line": 7,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/check_story_quest_player_level_probe.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/check_story_quest_region_kill_hook.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, importlib.util, sqlite3, sys"
+      },
+      {
+        "path": "tools/check_story_quest_rewards_and_transitions.py",
+        "category": "tool_or_test",
+        "line": 5,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/check_story_quest_rng_boss_completion.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, importlib.util, sqlite3, sys, types"
+      },
+      {
+        "path": "tools/check_story_quest_talk_conversation_flow.py",
+        "category": "tool_or_test",
+        "line": 5,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/check_story_quest_turn_in_npc_actions.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/check_story_quest_unaccepted_objective_hidden.py",
+        "category": "tool_or_test",
+        "line": 5,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/check_tuple_player_level_adapter.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/close_equipment_stat_policy_stage_18_17.py",
+        "category": "tool_or_test",
+        "line": 10,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/close_pve_auto_escape_stage_18_18.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, hashlib, json, sqlite3, subprocess, sys"
+      },
+      {
+        "path": "tools/close_pve_effect_timeline_stage_18_19.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, hashlib, json, sqlite3, subprocess, sys"
+      },
+      {
+        "path": "tools/close_pve_normal_attack_hit_stage_18_21.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, hashlib, json, sqlite3, subprocess, sys"
+      },
+      {
+        "path": "tools/close_refine_system_stage_18_20.py",
+        "category": "tool_or_test",
+        "line": 8,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/manual_test_inactivity_reminder_18_6_1.py",
+        "category": "tool_or_test",
+        "line": 17,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/reset_story_quest_item_for_retest.py",
+        "category": "tool_or_test",
+        "line": 5,
+        "text": "import argparse, json, sqlite3, sys"
+      },
+      {
+        "path": "tools/run_final_stage_18_closure_audit.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import ast, hashlib, json, sqlite3, subprocess, sys, tempfile, shutil"
+      },
+      {
+        "path": "tools/smoke_test_actual_new_character_event_18_xx_13d.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_admin_crystal_credit_and_clamped_debit_18_3_1.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import os, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_admin_history_inline_details_and_character_names_18_3_1c.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import ast, os, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_atomic_event_shop_exchange_18_29_3c.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import importlib.util, sqlite3, sys"
+      },
+      {
+        "path": "tools/smoke_test_attribute_allocation_system_18_16_3.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_attribute_respec_domain_18_16_8.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import importlib.util, sqlite3, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_attribute_schema_foundation_18_16_1.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_auction_lifecycle_contracts.py",
+        "category": "tool_or_test",
+        "line": 7,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_auction_rune_category_and_transfer_policy_alignment.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_canonical_trophy_localization_18_30_4e.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import json, sqlite3, subprocess, sys"
+      },
+      {
+        "path": "tools/smoke_test_central_drop_config_model.py",
+        "category": "tool_or_test",
+        "line": 8,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_central_drop_refine_stone_migration.py",
+        "category": "tool_or_test",
+        "line": 9,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_central_drop_rune_migration.py",
+        "category": "tool_or_test",
+        "line": 8,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_city_context_after_trade_18_22_3b.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_connection_bag_default_sql_recovery_17_8_1_1.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_crystal_bag_expansion_17_32_1.py",
+        "category": "tool_or_test",
+        "line": 1,
+        "text": "import ast, importlib.util, sqlite3, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_crystal_shop_17_27_1.py",
+        "category": "tool_or_test",
+        "line": 1,
+        "text": "import sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_crystal_shop_prices_18_10_1.py",
+        "category": "tool_or_test",
+        "line": 6,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_crystal_wallet_smoke_import_recovery_17_25_1_1.py",
+        "category": "tool_or_test",
+        "line": 1,
+        "text": "import sqlite3, tempfile, sys"
+      },
+      {
+        "path": "tools/smoke_test_default_bag_slots_import_recovery_17_13_1_1.py",
+        "category": "tool_or_test",
+        "line": 33,
+        "text": "from db_modules import connection, player"
+      },
+      {
+        "path": "tools/smoke_test_effective_attribute_integration_18_16_4.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_event_kill_statistics_18_29_3b.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/smoke_test_event_victory_statistics_integration_18_29_3f.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import ast, sqlite3, sys"
+      },
+      {
+        "path": "tools/smoke_test_existing_character_attribute_point_policy_18_16_7.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import importlib.util, sqlite3, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_explicit_db_startup_maintenance.py",
+        "category": "tool_or_test",
+        "line": 10,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_fatigue_artifact_17_31_1_1.py",
+        "category": "tool_or_test",
+        "line": 1,
+        "text": "import ast, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_inactivity_reminder_policy_18_6_1.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import os, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_interaction_session_timeout_and_recovery.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, importlib, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_item_stack_limits_18_xx_5.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_level_up_attribute_points_18_16_2.py",
+        "category": "tool_or_test",
+        "line": 5,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_map_location_player_discovery.py",
+        "category": "tool_or_test",
+        "line": 6,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_name_rune_17_28_1_1.py",
+        "category": "tool_or_test",
+        "line": 1,
+        "text": "import sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_notification_resource_integration_18_16_5d.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_notification_worker_dynamic_rune_max_mp_recovery_17_15_1_1.py",
+        "category": "tool_or_test",
+        "line": 5,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_notification_worker_refine_formula_16_1_23.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/smoke_test_notification_worker_rune_hp_16_1_22.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/smoke_test_online_player_counts_and_city_look_around_18_22_7.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import ast, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_persistent_location_travel_18_22_1.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import sqlite3, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_player_interaction_requests.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, importlib, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_player_presence_and_activity_sessions.py",
+        "category": "tool_or_test",
+        "line": 6,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_player_rankings_17_33_1.py",
+        "category": "tool_or_test",
+        "line": 1,
+        "text": "import ast, importlib.util, sqlite3, tempfile, sys"
+      },
+      {
+        "path": "tools/smoke_test_player_trade_database_and_history_foundation.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, importlib, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_player_trade_item_policy_and_reservations.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, importlib, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_player_trade_item_preview_and_wallet_ux.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_player_trade_lock_consolidation_and_startup_recovery.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_player_trade_navigation_lock_and_item_categories.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_player_trade_offer_editor.py",
+        "category": "tool_or_test",
+        "line": 5,
+        "text": "import ast, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_player_trade_offer_editor_ux.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_premium_item_smoke_path_recovery_17_26_1_1.py",
+        "category": "tool_or_test",
+        "line": 1,
+        "text": "import os, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_pve_auto_escape_18_18_1.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import ast, sqlite3, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_pve_defeat_terminal_claim_18_xx_1.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_pve_encounter_history_recovery_18_18_1a.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import ast, sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_pvp_atomic_accept_recovery.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import ast, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_pvp_data_model_sessions_recovery.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_pvp_duel_request_interaction_ui.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_rebirth_sphere_stack_limit_18_16_10d.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import importlib.util, sqlite3, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_registration_date_pipeline_18_31_4.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import ast, importlib.util, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_rune_data_model.py",
+        "category": "tool_or_test",
+        "line": 7,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_rune_transactional_stack_capacity_17_4_1.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_special_material_drop_policy.py",
+        "category": "tool_or_test",
+        "line": 6,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_sphere_stack_and_category_fix_18_16_10a.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import ast, sqlite3, tempfile, importlib.util, sys"
+      },
+      {
+        "path": "tools/smoke_test_stack_compaction_after_consumption_18_xx_7.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import sqlite3, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_stage_20_5_4_premium_prices.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import ast, sqlite3, tempfile, sys"
+      },
+      {
+        "path": "tools/smoke_test_stage_20_5_6_admin_crystal_schema.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import ast, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_static_item_seed_contracts.py",
+        "category": "tool_or_test",
+        "line": 6,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_success_rune_guaranteed_refine_17_29_1.py",
+        "category": "tool_or_test",
+        "line": 1,
+        "text": "import ast, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_test_event_item_catalog_18_29_3a.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/smoke_test_test_event_reward_material_18_29_4p.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/smoke_test_timed_exp_bonus_17_30_1.py",
+        "category": "tool_or_test",
+        "line": 1,
+        "text": "import ast, sqlite3, sys, tempfile"
+      },
+      {
+        "path": "tools/smoke_test_universal_drop_simulator.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import hashlib, json, sqlite3, sys"
+      },
+      {
+        "path": "tools/smoke_test_world_chronicles_foundation_18_xx_11.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/trace_canonical_player_stats_result.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import inspect, json, sqlite3, sys"
+      },
+      {
+        "path": "tools/trace_live_player_stats_shape.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import inspect, json, sqlite3, sys"
+      },
+      {
+        "path": "tools/trace_quest_11_runtime_resolver.py",
+        "category": "tool_or_test",
+        "line": 6,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/validate_test_event_end_to_end_18_29_4q.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/verify_attribute_system_production_closure_18_16_11.py",
+        "category": "tool_or_test",
+        "line": 5,
+        "text": "import importlib, json, sqlite3, subprocess, sys"
+      },
+      {
+        "path": "tools/verify_dynamic_equipment_behavioral_parity_18_17_7.py",
+        "category": "tool_or_test",
+        "line": 10,
+        "text": "import sqlite3"
+      },
+      {
+        "path": "tools/verify_equipment_drop_shop_parity_18_17_3.py",
+        "category": "tool_or_test",
+        "line": 4,
+        "text": "import ast, hashlib, json, random, sqlite3, sys"
+      },
+      {
+        "path": "tools/verify_stage_19_33_6_boss_call_quest_identity.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/verify_stage_19_34_2_atomic_location_story_skip.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/verify_stage_19_34_3_story_quest_item_identity.py",
+        "category": "tool_or_test",
+        "line": 3,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/verify_stage_19_34_5_routes_and_kill_targets.py",
+        "category": "tool_or_test",
+        "line": 2,
+        "text": "import sqlite3, sys"
+      },
+      {
+        "path": "tools/verify_stage_20_2_6_class_combat_acceptance.py",
+        "category": "tool_or_test",
+        "line": 6,
+        "text": "import sqlite3"
+      }
+    ]
+  },
+  "sqlite_snapshot": {
+    "production_connection_opened": false,
+    "copy_attempts": [
+      {
+        "attempt": 1,
+        "stable": true
+      }
+    ],
+    "production_baseline": {
+      "game.db": {
+        "exists": true,
+        "size": 1925120,
+        "mtime_ns": 1791928577995768700,
+        "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+      },
+      "game.db-wal": {
+        "exists": true,
+        "size": 4132392,
+        "mtime_ns": 1793652387468083900,
+        "sha256": "cced1fbbda6b9bb61a7042a6e6ef3e4eb4efde98ecf4e8839f788b99937f432e"
+      },
+      "game.db-shm": {
+        "exists": true,
+        "size": 32768,
+        "mtime_ns": 1793652325075198900,
+        "sha256": "a6af3d21be6b0999d27584f0d0f39bb092fd1de1b79b604514cf1d3d6bc93583"
+      }
+    },
+    "inspection": {
+      "quick_check": [
+        "ok"
+      ],
+      "foreign_key_check_count": 0,
+      "foreign_key_examples": [],
+      "pragmas": {
+        "journal_mode": "wal",
+        "foreign_keys": 0,
+        "busy_timeout": 30000,
+        "query_only": 0,
+        "user_version": 0,
+        "schema_version": 158,
+        "synchronous": 2
+      }
+    }
+  },
+  "findings": [
+    {
+      "area": "production_direct_connections",
+      "status": "REVIEW_REQUIRED",
+      "evidence": "production runtime sqlite3.connect calls=21"
+    },
+    {
+      "area": "tool_test_connections",
+      "status": "INVENTORIED",
+      "evidence": "tool/test sqlite3.connect calls=190"
+    },
+    {
+      "area": "connection_factory_candidates",
+      "status": "INVENTORIED",
+      "evidence": "factory-like definitions=24"
+    },
+    {
+      "area": "pragma_policy",
+      "status": "REVIEW_REQUIRED",
+      "evidence": "source PRAGMA calls=264; snapshot pragmas={'journal_mode': 'wal', 'foreign_keys': 0, 'busy_timeout': 30000, 'query_only': 0, 'user_version': 0, 'schema_version': 158, 'synchronous': 2}"
+    },
+    {
+      "area": "transaction_ownership",
+      "status": "REVIEW_REQUIRED",
+      "evidence": "commit/rollback/transaction-related calls=716"
+    },
+    {
+      "area": "database_integrity",
+      "status": "PASS",
+      "evidence": "quick_check=['ok']; foreign_key_rows=0"
+    }
+  ],
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "decision": "GO_TO_21_3_2_SQLITE_CONNECTION_POLICY_IMPLEMENTATION"
+}
