@@ -1,0 +1,86 @@
+{
+  "stage": "21.4.9",
+  "revision": "5",
+  "status": "PASS",
+  "timestamp": "2026-11-02T23:21:27.916634+00:00",
+  "parent": "b070f8a5d9d8c3a7662ebd22635aa014d9375371",
+  "source_hashes_before": {
+    "systems/equipment_system.py": "53e72297481aad38e9319bd69cee5a8a0056e46502bce78981b84686522836d4",
+    "systems/potion_system.py": "0528917e22044b8f4465190aaf93e0e80cd3be149ce164c9845f81253017d0d7",
+    "db_modules/inventory_compat.py": "e677a6b85bb25d2a8b28bde1d14a5023d755741e27476629777fdeb2a7460aa1"
+  },
+  "source_hashes_after": {
+    "systems/equipment_system.py": "c58f6d2eb9facd2a6148d8a80be099724c7f018476a5f795dd197cc390c54d81",
+    "systems/potion_system.py": "b80506cbed1c2fae9328518fe7285844253cd9415479fae8b1186e43abcd7041",
+    "db_modules/inventory_compat.py": "35ec0ccc2df63783a8cb3f25809fc5f264361d78ec46c5f73eab063428f230eb"
+  },
+  "selected_owners": {
+    "systems/equipment_system.py": [
+      "_equipment_write_ensure_slots_v5",
+      "_equipment_write_set_slot_v5",
+      "apply_random_durability_wear_on_victory",
+      "ensure_equipment_slots",
+      "set_inventory_item_durability"
+    ],
+    "systems/potion_system.py": [
+      "use_potion_from_inventory"
+    ],
+    "db_modules/inventory_compat.py": [
+      "seed_class_reset_sphere_item"
+    ]
+  },
+  "selected_owner_anchors": {
+    "systems/equipment_system.py": [
+      {
+        "name": "ensure_equipment_slots",
+        "line": 618
+      },
+      {
+        "name": "_equipment_write_ensure_slots_v5",
+        "line": 2103
+      },
+      {
+        "name": "_equipment_write_set_slot_v5",
+        "line": 2161
+      },
+      {
+        "name": "set_inventory_item_durability",
+        "line": 3131
+      },
+      {
+        "name": "apply_random_durability_wear_on_victory",
+        "line": 3427
+      }
+    ],
+    "systems/potion_system.py": [
+      {
+        "name": "use_potion_from_inventory",
+        "line": 525
+      }
+    ],
+    "db_modules/inventory_compat.py": [
+      {
+        "name": "seed_class_reset_sphere_item",
+        "line": 215
+      }
+    ]
+  },
+  "contract": {
+    "commit_on_success": true,
+    "rollback_on_exception": true,
+    "exception_propagates": true,
+    "unchanged_state_after_injected_failure": true
+  },
+  "automated_evidence": {
+    "verifier": "PASS: Stage 21.4.9 exact owner anchors and rollback invariants",
+    "smoke": "PASS: Stage 21.4.9 injected failure rolls back equipment/potion-shaped writes"
+  },
+  "production_files_changed": [
+    "systems/equipment_system.py",
+    "systems/potion_system.py",
+    "db_modules/inventory_compat.py"
+  ],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "REQUIRED"
+}

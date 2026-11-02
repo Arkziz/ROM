@@ -621,33 +621,37 @@ def ensure_equipment_slots(user_id):
 
     uid = int(user_id)
 
-    db.conn.execute(
-
-        "CREATE TABLE IF NOT EXISTS equipment_slots ("
-
-        "user_id INTEGER NOT NULL, "
-
-        "slot_key TEXT NOT NULL, "
-
-        "inventory_id INTEGER, "
-
-        "PRIMARY KEY (user_id, slot_key))"
-
-    )
-
-    for slot_key in _EQUIPMENT_SLOT_ORDER_REAL_V1:
-
+    try:
         db.conn.execute(
-
-            "INSERT OR IGNORE INTO equipment_slots "
-
-            "(user_id, slot_key, inventory_id) VALUES (?, ?, NULL)",
-
-            (uid, slot_key),
-
+    
+            "CREATE TABLE IF NOT EXISTS equipment_slots ("
+    
+            "user_id INTEGER NOT NULL, "
+    
+            "slot_key TEXT NOT NULL, "
+    
+            "inventory_id INTEGER, "
+    
+            "PRIMARY KEY (user_id, slot_key))"
+    
         )
-
-    db.conn.commit()
+    
+        for slot_key in _EQUIPMENT_SLOT_ORDER_REAL_V1:
+    
+            db.conn.execute(
+    
+                "INSERT OR IGNORE INTO equipment_slots "
+    
+                "(user_id, slot_key, inventory_id) VALUES (?, ?, NULL)",
+    
+                (uid, slot_key),
+    
+            )
+    
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
     return True
 
@@ -2102,29 +2106,33 @@ def _equipment_write_ensure_slots_v5(user_id):
 
     uid = int(user_id)
 
-    db.conn.execute(
-
-        "CREATE TABLE IF NOT EXISTS equipment_slots ("
-
-        "user_id INTEGER NOT NULL, slot_key TEXT NOT NULL, inventory_id INTEGER, "
-
-        "PRIMARY KEY (user_id, slot_key))"
-
-    )
-
-    for slot_key in _EQUIPMENT_WRITE_SLOT_ORDER_V5:
-
+    try:
         db.conn.execute(
-
-            "INSERT OR IGNORE INTO equipment_slots (user_id, slot_key, inventory_id) "
-
-            "VALUES (?, ?, NULL)",
-
-            (uid, slot_key),
-
+    
+            "CREATE TABLE IF NOT EXISTS equipment_slots ("
+    
+            "user_id INTEGER NOT NULL, slot_key TEXT NOT NULL, inventory_id INTEGER, "
+    
+            "PRIMARY KEY (user_id, slot_key))"
+    
         )
-
-    db.conn.commit()
+    
+        for slot_key in _EQUIPMENT_WRITE_SLOT_ORDER_V5:
+    
+            db.conn.execute(
+    
+                "INSERT OR IGNORE INTO equipment_slots (user_id, slot_key, inventory_id) "
+    
+                "VALUES (?, ?, NULL)",
+    
+                (uid, slot_key),
+    
+            )
+    
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
 
 
@@ -2156,15 +2164,19 @@ def _equipment_write_set_slot_v5(user_id, slot_key, inventory_id):
 
     db = _equipment_write_db_v5()
 
-    db.conn.execute(
-
-        "UPDATE equipment_slots SET inventory_id=? WHERE user_id=? AND slot_key=?",
-
-        (int(inventory_id) if inventory_id is not None else None, int(user_id), str(slot_key)),
-
-    )
-
-    db.conn.commit()
+    try:
+        db.conn.execute(
+    
+            "UPDATE equipment_slots SET inventory_id=? WHERE user_id=? AND slot_key=?",
+    
+            (int(inventory_id) if inventory_id is not None else None, int(user_id), str(slot_key)),
+    
+        )
+    
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
 
 
@@ -3124,25 +3136,29 @@ def set_inventory_item_durability(inventory_id, durability, user_id=None):
 
     durability = max(0, min(100, int(durability)))
 
-    if user_id is None:
-
-        owner = db.conn.execute("SELECT user_id FROM inventory WHERE id=?", (inventory_id,)).fetchone()
-
-        if not owner:
-
-            return {"success": False, "message": "❌ Предмет не знайдено."}
-
-        user_id = int(owner[0])
-
-    cur = db.conn.execute(
-
-        "UPDATE inventory SET durability=? WHERE id=? AND user_id=?",
-
-        (durability, inventory_id, int(user_id)),
-
-    )
-
-    db.conn.commit()
+    try:
+        if user_id is None:
+    
+            owner = db.conn.execute("SELECT user_id FROM inventory WHERE id=?", (inventory_id,)).fetchone()
+    
+            if not owner:
+    
+                return {"success": False, "message": "❌ Предмет не знайдено."}
+    
+            user_id = int(owner[0])
+    
+        cur = db.conn.execute(
+    
+            "UPDATE inventory SET durability=? WHERE id=? AND user_id=?",
+    
+            (durability, inventory_id, int(user_id)),
+    
+        )
+    
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
     _equipment_sync_hp_9_0_12h2(user_id)
 
@@ -3448,49 +3464,53 @@ def apply_random_durability_wear_on_victory(user_id, chance_percent=25, **kwargs
 
     db = _equipment_db_9_0_12h2()
 
-    rows = db.conn.execute(
-
-        "SELECT es.slot_key, inv.id, COALESCE(inv.durability,100), it.name "
-
-        "FROM equipment_slots es "
-
-        "JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id "
-
-        "JOIN items it ON it.id=inv.item_id "
-
-        "WHERE es.user_id=? AND es.inventory_id IS NOT NULL "
-
-        "AND COALESCE(inv.durability,100)>0",
-
-        (int(user_id),),
-
-    ).fetchall()
-
-
-
-    if not rows:
-
-        return {"triggered": False, "message": None}
-
-
-
-    slot_key, inventory_id, old_durability, base_name = random.choice(rows)
-
-    old_durability = max(0, min(100, int(old_durability or 0)))
-
-    new_durability = max(0, old_durability - 1)
-
-
-
-    db.conn.execute(
-
-        "UPDATE inventory SET durability=? WHERE id=? AND user_id=?",
-
-        (new_durability, int(inventory_id), int(user_id)),
-
-    )
-
-    db.conn.commit()
+    try:
+        rows = db.conn.execute(
+    
+            "SELECT es.slot_key, inv.id, COALESCE(inv.durability,100), it.name "
+    
+            "FROM equipment_slots es "
+    
+            "JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id "
+    
+            "JOIN items it ON it.id=inv.item_id "
+    
+            "WHERE es.user_id=? AND es.inventory_id IS NOT NULL "
+    
+            "AND COALESCE(inv.durability,100)>0",
+    
+            (int(user_id),),
+    
+        ).fetchall()
+    
+    
+    
+        if not rows:
+    
+            return {"triggered": False, "message": None}
+    
+    
+    
+        slot_key, inventory_id, old_durability, base_name = random.choice(rows)
+    
+        old_durability = max(0, min(100, int(old_durability or 0)))
+    
+        new_durability = max(0, old_durability - 1)
+    
+    
+    
+        db.conn.execute(
+    
+            "UPDATE inventory SET durability=? WHERE id=? AND user_id=?",
+    
+            (new_durability, int(inventory_id), int(user_id)),
+    
+        )
+    
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
     _equipment_sync_hp_9_0_12h2(user_id)
 
