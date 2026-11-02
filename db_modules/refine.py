@@ -120,8 +120,12 @@ def set_inventory_refine_level(inventory_id, refine_level):
     except Exception:
         refine_level = 0
     refine_level = max(0, refine_level)
-    cursor.execute("UPDATE inventory SET refine_level=? WHERE id=?", (refine_level, inventory_id))
-    conn.commit()
+    try:
+        cursor.execute("UPDATE inventory SET refine_level=? WHERE id=?", (refine_level, inventory_id))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     return refine_level
 
 
@@ -253,13 +257,17 @@ def ensure_refine_material_stack_sizes():
     except Exception:
         pass
     
-    cursor.execute("""
-    UPDATE items
-    SET max_stack=?
-    WHERE id IN (401, 402)
-    """, (REFINE_MATERIAL_MAX_STACK,))
-    
-    conn.commit()
+    try:
+        cursor.execute("""
+        UPDATE items
+        SET max_stack=?
+        WHERE id IN (401, 402)
+        """, (REFINE_MATERIAL_MAX_STACK,))
+        
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def get_refine_material_stack_debug():
