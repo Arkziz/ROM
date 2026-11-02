@@ -449,53 +449,57 @@ def create_auction_lot_record(
     now = now_iso()
     expires_at = iso_after_days(AUCTION_ACTIVE_DAYS)
 
-    cursor.execute("""
-    INSERT INTO auction_lots (
-        seller_user_id,
-        buyer_user_id,
-        item_type,
-        item_source,
-        item_ref_id,
-        item_snapshot_json,
-        item_name,
-        item_name_norm,
-        category,
-        rarity,
-        level,
-        enhancement_level,
-        durability_current,
-        durability_max,
-        quantity,
-        price,
-        status,
-        created_at,
-        expires_at,
-        updated_at
-    ) VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        seller_user_id,
-        str(item_type or ""),
-        str(item_source or ""),
-        item_ref_id,
-        safe_json_dumps(item_snapshot or {}),
-        item_name,
-        item_name.lower(),
-        category,
-        str(rarity or ""),
-        int(level or 0),
-        int(enhancement_level or 0),
-        durability_current,
-        durability_max,
-        quantity,
-        price_result["price"],
-        AUCTION_STATUS_ACTIVE,
-        now,
-        expires_at,
-        now,
-    ))
-
-    lot_id = cursor.lastrowid
-    conn.commit()
+    try:
+        cursor.execute("""
+        INSERT INTO auction_lots (
+            seller_user_id,
+            buyer_user_id,
+            item_type,
+            item_source,
+            item_ref_id,
+            item_snapshot_json,
+            item_name,
+            item_name_norm,
+            category,
+            rarity,
+            level,
+            enhancement_level,
+            durability_current,
+            durability_max,
+            quantity,
+            price,
+            status,
+            created_at,
+            expires_at,
+            updated_at
+        ) VALUES (?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            seller_user_id,
+            str(item_type or ""),
+            str(item_source or ""),
+            item_ref_id,
+            safe_json_dumps(item_snapshot or {}),
+            item_name,
+            item_name.lower(),
+            category,
+            str(rarity or ""),
+            int(level or 0),
+            int(enhancement_level or 0),
+            durability_current,
+            durability_max,
+            quantity,
+            price_result["price"],
+            AUCTION_STATUS_ACTIVE,
+            now,
+            expires_at,
+            now,
+        ))
+    
+        lot_id = cursor.lastrowid
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     add_auction_history(
         lot_id=lot_id,
@@ -540,21 +544,25 @@ def mark_auction_lot_status(lot_id, status_after, actor_user_id=None, event_type
     if status_after in [AUCTION_STATUS_EXPIRED_CLAIMED, AUCTION_STATUS_SOLD_CLAIMED]:
         claimed_at = now
 
-    cursor.execute("""
-    UPDATE auction_lots
-    SET status=?,
-        claimed_at=?,
-        delete_after=?,
-        updated_at=?
-    WHERE id=?
-    """, (
-        status_after,
-        claimed_at,
-        delete_after,
-        now,
-        lot_id,
-    ))
-    conn.commit()
+    try:
+        cursor.execute("""
+        UPDATE auction_lots
+        SET status=?,
+            claimed_at=?,
+            delete_after=?,
+            updated_at=?
+        WHERE id=?
+        """, (
+            status_after,
+            claimed_at,
+            delete_after,
+            now,
+            lot_id,
+        ))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     add_auction_history(
         lot_id=lot_id,

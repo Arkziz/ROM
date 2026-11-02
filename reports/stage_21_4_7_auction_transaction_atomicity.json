@@ -1,0 +1,30 @@
+{
+  "stage": "21.4.7",
+  "revision": "4",
+  "status": "PASS",
+  "timestamp": "2026-11-02T22:46:05.787880+00:00",
+  "parent": "03d0557ac3a73731a9509814460f89435a65c9f3",
+  "target_before_sha256": "664cfe8a60f7728e7364f542c936d52328bc5ba89a022b686a6c3be1f3b1ab59",
+  "target_after_sha256": "ecd31455245eb9984e0e882f3381fbbef0d73a2dbbee966719264d1d3828afbd",
+  "owners": [
+    "create_auction_lot_record",
+    "mark_auction_lot_status"
+  ],
+  "contract": {
+    "commit_on_success": true,
+    "rollback_on_exception": true,
+    "exception_propagates": true,
+    "unchanged_state_after_injected_failure": true,
+    "existing_business_atomic_owners_preserved": true
+  },
+  "automated_evidence": {
+    "verifier": "PASS: Stage 21.4.7 auction owner rollback invariants",
+    "smoke": "PASS: Stage 21.4.7 injected failures roll back auction create/status writes"
+  },
+  "production_files_changed": [
+    "systems/auction_house_system.py"
+  ],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "REQUIRED"
+}
