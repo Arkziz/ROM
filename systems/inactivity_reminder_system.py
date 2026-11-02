@@ -4,6 +4,7 @@ from __future__ import annotations
 import sqlite3
 from datetime import datetime,timezone,timedelta
 from pathlib import Path
+from systems.sqlite_connection_policy import connect_runtime
 DB_PATH=Path(__file__).resolve().parents[1]/"game.db"
 INACTIVITY_THRESHOLD_SECONDS=7*24*60*60
 INACTIVITY_SCAN_INTERVAL_SECONDS=60*60
@@ -14,7 +15,7 @@ def _utc(value=None):
  return value.astimezone(timezone.utc)
 def _stamp(value=None):return _utc(value).isoformat()
 def _connection(db_path=None):
- c=sqlite3.connect(str(db_path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute("PRAGMA busy_timeout=30000");return c
+ c=connect_runtime(str(db_path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute("PRAGMA busy_timeout=30000");return c
 def init_inactivity_reminder_system(db_path=None):
  c=_connection(db_path)
  try:

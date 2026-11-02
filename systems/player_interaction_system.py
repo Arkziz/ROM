@@ -9,6 +9,7 @@ import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterable
+from systems.sqlite_connection_policy import connect_runtime
 
 LOGGER = logging.getLogger(__name__)
 DEFAULT_DB_PATH = Path(__file__).resolve().parent.parent / "game.db"
@@ -23,7 +24,7 @@ _INSTALL_LOCK = threading.RLock()
 
 def _connect(db_path=None):
     path = Path(db_path) if db_path is not None else DEFAULT_DB_PATH
-    conn = sqlite3.connect(str(path), timeout=30.0)
+    conn = connect_runtime(str(path), timeout=30.0)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys=ON")
     conn.execute("PRAGMA busy_timeout=30000")

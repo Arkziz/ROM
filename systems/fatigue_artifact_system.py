@@ -3,9 +3,10 @@ from __future__ import annotations
 import json,math,sqlite3
 from datetime import datetime,timezone
 from pathlib import Path
+from systems.sqlite_connection_policy import connect_runtime
 FATIGUE_ARTIFACT_ITEM_ID=503;MAX_STACK=10;DB_PATH=Path(__file__).resolve().parents[1]/'game.db'
 def _conn(path=None):
- c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
+ c=connect_runtime(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
 def init_fatigue_artifact_system(db_path=None):
  c=_conn(db_path)
  try:

@@ -4,6 +4,7 @@ Rune Magic RPG - Refine System Core v1
 """
 
 import random
+from systems.sqlite_connection_policy import connect_runtime
 
 REFINE_STONE_ITEM_ID = 601
 SUCCESS_RUNE_ITEM_ID = 602
@@ -122,7 +123,7 @@ def perform_refine_attempt(user_id, inventory_id, use_success_rune=False, idempo
     if not key:
         return {"success": False, "message": "❌ Відсутній ключ операції заточки."}
     path = Path(db_path) if db_path is not None else Path(__file__).resolve().parents[1] / "game.db"
-    conn = sqlite3.connect(str(path), timeout=30)
+    conn = connect_runtime(str(path), timeout=30)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys=ON")
     conn.execute("PRAGMA busy_timeout=30000")

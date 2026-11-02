@@ -6,13 +6,14 @@ from pathlib import Path
 from data.location_graph import CITY_NODE, TRAVEL_SECONDS, WORLD_NODES, are_adjacent
 from data.travel_presentation import format_arrival_destination, get_route_presentation
 from data.locations import is_location_unlocked
+from systems.sqlite_connection_policy import connect_runtime
 
 ROOT=Path(__file__).resolve().parents[1]
 DEFAULT_DB_PATH=ROOT/'game.db'
 ACTIVE='active'; TERMINAL=('arrived','cancelled','failed')
 
 def _connect(db_path=None):
-    conn=sqlite3.connect(str(db_path or DEFAULT_DB_PATH), timeout=30)
+    conn=connect_runtime(str(db_path or DEFAULT_DB_PATH), timeout=30)
     conn.row_factory=sqlite3.Row
     conn.execute('PRAGMA foreign_keys=ON')
     return conn

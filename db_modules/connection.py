@@ -4,12 +4,13 @@ Database connection and initialization module.
 """
 
 import sqlite3
+from systems.sqlite_connection_policy import connect_runtime
 
 # ==============================
 # 🔌 ПІДКЛЮЧЕННЯ ДО БАЗИ
 # ==============================
 
-conn = sqlite3.connect("game.db", check_same_thread=False)
+conn = connect_runtime("game.db", check_same_thread=False)
 cursor = conn.cursor()
 
 

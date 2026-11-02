@@ -6,6 +6,7 @@ import json
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
+from systems.sqlite_connection_policy import connect_runtime
 
 DB_PATH = Path(__file__).resolve().parents[1] / "game.db"
 WORLD_CHRONICLE_RETENTION = 100
@@ -19,7 +20,7 @@ WORLD_CHRONICLE_EVENT_TYPES = {
 
 
 def _connect(db_path=None):
-    connection = sqlite3.connect(str(db_path or DB_PATH), timeout=30)
+    connection = connect_runtime(str(db_path or DB_PATH), timeout=30)
     connection.row_factory = sqlite3.Row
     connection.execute("PRAGMA foreign_keys=ON")
     connection.execute("PRAGMA busy_timeout=30000")

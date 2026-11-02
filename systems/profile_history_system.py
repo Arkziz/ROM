@@ -3,6 +3,7 @@
 import json, sqlite3
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from systems.sqlite_connection_policy import connect_runtime
 DB_PATH=Path(__file__).resolve().parents[1]/"game.db"
 HISTORY_PAGE_SIZE=5
 HISTORY_RETENTION_RECORDS_PER_USER=100
@@ -24,7 +25,7 @@ def localize_pvp_reason(reason, won=False):
  return PVP_REASON_UA.get(key,'бій завершено')
 
 def _conn():
- c=sqlite3.connect(str(DB_PATH),timeout=30);c.row_factory=sqlite3.Row;return c
+ c=connect_runtime(str(DB_PATH),timeout=30);c.row_factory=sqlite3.Row;return c
 def _loads(value,fallback):
  try:return json.loads(value or '')
  except Exception:return fallback

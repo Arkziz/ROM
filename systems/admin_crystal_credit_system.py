@@ -4,10 +4,11 @@ import json, sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 from config import ROM_ADMIN_USER_IDS, ROM_ADMIN_CRYSTAL_CREDIT_MAX, ROM_ADMIN_CRYSTAL_DEBIT_MAX
+from systems.sqlite_connection_policy import connect_runtime
 DB_PATH=Path(__file__).resolve().parents[1]/"game.db"
 def _utc():return datetime.now(timezone.utc).isoformat()
 def _connect(db_path=None):
- c=sqlite3.connect(str(db_path or DB_PATH));c.row_factory=sqlite3.Row;return c
+ c=connect_runtime(str(db_path or DB_PATH));c.row_factory=sqlite3.Row;return c
 def is_admin(user_id):return int(user_id) in ROM_ADMIN_USER_IDS
 def init_admin_crystal_credit_system(db_path=None):
  c=_connect(db_path)

@@ -4,12 +4,13 @@ from __future__ import annotations
 import json, sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
+from systems.sqlite_connection_policy import connect_runtime
 DB_PATH=Path(__file__).resolve().parents[1]/"game.db"
 CRYSTAL_HISTORY_PAGE_SIZE=10
 
 def _utc():return datetime.now(timezone.utc).isoformat()
 def _connect(db_path=None):
- c=sqlite3.connect(str(db_path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
+ c=connect_runtime(str(db_path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
 def init_crystal_wallet_system(db_path=None):
  c=_connect(db_path)
  try:

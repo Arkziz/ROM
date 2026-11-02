@@ -3,6 +3,7 @@
 from __future__ import annotations
 import sqlite3
 from datetime import datetime, timezone
+from systems.sqlite_connection_policy import connect_runtime
 
 PRIMARY_MIN=10000
 PRIMARY_MAX=5009999
@@ -18,7 +19,7 @@ class ItemIdPoolExhausted(RuntimeError):
 
 def init_item_id_allocator_system(db_path=None, conn=None):
     own=conn is None
-    if own: conn=sqlite3.connect(db_path or "game.db")
+    if own: conn=connect_runtime(db_path or "game.db")
     try:
         conn.execute("""CREATE TABLE IF NOT EXISTS item_id_allocator(
             namespace TEXT PRIMARY KEY,last_issued_id INTEGER NOT NULL,

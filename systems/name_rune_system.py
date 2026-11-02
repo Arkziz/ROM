@@ -3,6 +3,7 @@ from __future__ import annotations
 import re,sqlite3,unicodedata
 from datetime import datetime,timezone
 from pathlib import Path
+from systems.sqlite_connection_policy import connect_runtime
 DB_PATH=Path(__file__).resolve().parents[1]/'game.db';NAME_RUNE_ITEM_ID=502;NAME_RUNE_PRICE=50
 NAME_RUNE_DESCRIPTION = (
     "Дозволяє один раз змінити ім’я персонажа. "
@@ -10,7 +11,7 @@ NAME_RUNE_DESCRIPTION = (
     "Нове ім’я має відповідати чинним правилам і не може бути зайняте іншим персонажем."
 )
 def _conn(path=None):
- c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
+ c=connect_runtime(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');c.execute('PRAGMA busy_timeout=30000');return c
 def normalize_name(value):return unicodedata.normalize('NFKC',str(value or '').strip())
 def validate_name(value):
  name=normalize_name(value)

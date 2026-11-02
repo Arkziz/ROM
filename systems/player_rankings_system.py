@@ -4,6 +4,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 from data.player_progression import get_exp_to_next_level
+from systems.sqlite_connection_policy import connect_runtime
 DB_PATH=Path(__file__).resolve().parents[1]/'game.db'
 TOP_LIMIT=100
 PAGE_SIZE=20
@@ -20,7 +21,7 @@ def calculate_cumulative_player_exp(level,current_exp):
  level=max(1,int(level or 1));return sum(int(get_exp_to_next_level(n)) for n in range(1,level))+max(0,int(current_exp or 0))
 def get_player_ranking_categories():return {key:dict(value) for key,value in RANKING_CATEGORIES.items()}
 def _connect(path=None):
- c=sqlite3.connect(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA query_only=ON');c.execute('PRAGMA busy_timeout=30000');return c
+ c=connect_runtime(str(path or DB_PATH),timeout=30);c.row_factory=sqlite3.Row;c.execute('PRAGMA query_only=ON');c.execute('PRAGMA busy_timeout=30000');return c
 def _eligible(c):
  rows=c.execute("SELECT user_id,character_name,level,exp,gold,str,sta,dex,intelligence,wis FROM users WHERE TRIM(COALESCE(character_name,''))<>''").fetchall();result=[]
  for row in rows:
