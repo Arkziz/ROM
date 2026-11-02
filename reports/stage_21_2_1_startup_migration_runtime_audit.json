@@ -1,0 +1,2164 @@
+{
+  "stage": "21.2.1",
+  "revision": "1",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-02T20:29:48.365841+00:00",
+  "git": {
+    "branch": "develop",
+    "head": "b774fd68ceac9a4e393945735b398d107c45bd8c",
+    "origin_develop": "3269cffb853872d9e199f308275c71b7f91c57ea",
+    "patch": "patch/patch_21_2_1_startup_migration_runtime_audit.py",
+    "status": [
+      {
+        "xy": " M",
+        "path": "ROM_FULL_DUMP.txt"
+      }
+    ]
+  },
+  "source_inventory": {
+    "files": {
+      "main.py": {
+        "exists": true,
+        "sha256": "2ffbb5391365e0026203569d19e3a5d7b19b963e967cc33019296a1c3b72f79b",
+        "size": 13547,
+        "definitions": [
+          {
+            "path": "main.py",
+            "name": "_is_transient_polling_error",
+            "line": 34,
+            "end_line": 45
+          },
+          {
+            "path": "main.py",
+            "name": "_polling_retry_delay",
+            "line": 48,
+            "end_line": 53
+          },
+          {
+            "path": "main.py",
+            "name": "run_bot_polling_resilient",
+            "line": 56,
+            "end_line": 73
+          }
+        ],
+        "calls": [
+          {
+            "path": "main.py",
+            "name": "configure_production_logging",
+            "line": 5
+          },
+          {
+            "path": "main.py",
+            "name": "get_production_logger",
+            "line": 6
+          },
+          {
+            "path": "main.py",
+            "name": "telebot.TeleBot",
+            "line": 137
+          },
+          {
+            "path": "main.py",
+            "name": "init_db",
+            "line": 146
+          },
+          {
+            "path": "main.py",
+            "name": "run_fresh_database_schema_bootstrap",
+            "line": 149
+          },
+          {
+            "path": "main.py",
+            "name": "print",
+            "line": 150
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 151
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 153
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 155
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 157
+          },
+          {
+            "path": "main.py",
+            "name": "recover_active_player_trades_after_restart",
+            "line": 159
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 160
+          },
+          {
+            "path": "main.py",
+            "name": "run_db_startup_maintenance",
+            "line": 173
+          },
+          {
+            "path": "main.py",
+            "name": "_db_startup_maintenance_result.get",
+            "line": 174
+          },
+          {
+            "path": "main.py",
+            "name": "init_rune_system",
+            "line": 177
+          },
+          {
+            "path": "main.py",
+            "name": "_rune_system_init_result.get",
+            "line": 178
+          },
+          {
+            "path": "main.py",
+            "name": "seed_items",
+            "line": 181
+          },
+          {
+            "path": "main.py",
+            "name": "seed_location_trash_items",
+            "line": 182
+          },
+          {
+            "path": "main.py",
+            "name": "expand_bag_slots_to_40",
+            "line": 183
+          },
+          {
+            "path": "main.py",
+            "name": "init_character_class_system",
+            "line": 184
+          },
+          {
+            "path": "main.py",
+            "name": "init_class_reset_sphere",
+            "line": 185
+          },
+          {
+            "path": "main.py",
+            "name": "init_crystal_shop_system",
+            "line": 192
+          },
+          {
+            "path": "main.py",
+            "name": "init_crystal_bag_expansion_system",
+            "line": 193
+          },
+          {
+            "path": "main.py",
+            "name": "init_admin_crystal_credit_system",
+            "line": 194
+          },
+          {
+            "path": "main.py",
+            "name": "init_timed_exp_bonus_system",
+            "line": 195
+          },
+          {
+            "path": "main.py",
+            "name": "init_name_rune_system",
+            "line": 196
+          },
+          {
+            "path": "main.py",
+            "name": "init_fatigue_artifact_system",
+            "line": 197
+          },
+          {
+            "path": "main.py",
+            "name": "init_inactivity_reminder_system",
+            "line": 198
+          },
+          {
+            "path": "main.py",
+            "name": "seasonal_events.load_event_modules",
+            "line": 200
+          },
+          {
+            "path": "main.py",
+            "name": "seasonal_events.register_event_handlers",
+            "line": 201
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 202
+          },
+          {
+            "path": "main.py",
+            "name": "register_crystal_shop_handlers",
+            "line": 208
+          },
+          {
+            "path": "main.py",
+            "name": "register_admin_crystal_credit_handlers",
+            "line": 209
+          },
+          {
+            "path": "main.py",
+            "name": "register_player_rankings_handlers",
+            "line": 210
+          },
+          {
+            "path": "main.py",
+            "name": "register_timed_exp_bonus_handlers",
+            "line": 211
+          },
+          {
+            "path": "main.py",
+            "name": "register_world_chronicle_handlers",
+            "line": 212
+          },
+          {
+            "path": "main.py",
+            "name": "register_start_handlers",
+            "line": 213
+          },
+          {
+            "path": "main.py",
+            "name": "register_profile_handlers",
+            "line": 214
+          },
+          {
+            "path": "main.py",
+            "name": "register_story_quest_handlers",
+            "line": 215
+          },
+          {
+            "path": "main.py",
+            "name": "register_story_quest_npc_runtime_handlers",
+            "line": 216
+          },
+          {
+            "path": "main.py",
+            "name": "register_inventory_handlers",
+            "line": 217
+          },
+          {
+            "path": "main.py",
+            "name": "register_fatigue_artifact_handlers",
+            "line": 218
+          },
+          {
+            "path": "main.py",
+            "name": "register_combat_handlers",
+            "line": 219
+          },
+          {
+            "path": "main.py",
+            "name": "register_dev_handlers",
+            "line": 220
+          },
+          {
+            "path": "main.py",
+            "name": "register_map_handlers",
+            "line": 221
+          },
+          {
+            "path": "main.py",
+            "name": "register_blacksmith_repair_confirmation_handlers",
+            "line": 222
+          },
+          {
+            "path": "main.py",
+            "name": "register_blacksmith_repair_hotfix_handlers",
+            "line": 223
+          },
+          {
+            "path": "main.py",
+            "name": "register_about_game_handlers",
+            "line": 224
+          },
+          {
+            "path": "main.py",
+            "name": "register_event_ui_handlers",
+            "line": 226
+          },
+          {
+            "path": "main.py",
+            "name": "register_external_links_handlers",
+            "line": 227
+          },
+          {
+            "path": "main.py",
+            "name": "register_city_handlers",
+            "line": 228
+          },
+          {
+            "path": "main.py",
+            "name": "register_guild_handlers",
+            "line": 229
+          },
+          {
+            "path": "main.py",
+            "name": "register_auction_house_handlers",
+            "line": 230
+          },
+          {
+            "path": "main.py",
+            "name": "register_contract_handlers",
+            "line": 231
+          },
+          {
+            "path": "main.py",
+            "name": "register_daily_handlers",
+            "line": 232
+          },
+          {
+            "path": "main.py",
+            "name": "register_rune_handlers",
+            "line": 233
+          },
+          {
+            "path": "main.py",
+            "name": "register_rune_fusion_handlers",
+            "line": 234
+          },
+          {
+            "path": "main.py",
+            "name": "register_simple_rune_extractor_handlers",
+            "line": 235
+          },
+          {
+            "path": "main.py",
+            "name": "register_rune_master_shop_handlers",
+            "line": 236
+          },
+          {
+            "path": "main.py",
+            "name": "register_refine_handlers",
+            "line": 239
+          },
+          {
+            "path": "main.py",
+            "name": "register_name_rune_handlers",
+            "line": 240
+          },
+          {
+            "path": "main.py",
+            "name": "install_global_telegram_rate_limit_guard",
+            "line": 251
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 253
+          },
+          {
+            "path": "main.py",
+            "name": "register_player_interaction_handlers",
+            "line": 256
+          },
+          {
+            "path": "main.py",
+            "name": "_PLAYER_TRADE_RESTART_RECOVERY.get",
+            "line": 260
+          },
+          {
+            "path": "main.py",
+            "name": "start_notification_worker",
+            "line": 271
+          },
+          {
+            "path": "main.py",
+            "name": "recover_pve_encounters_after_restart",
+            "line": 273
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 274
+          },
+          {
+            "path": "main.py",
+            "name": "start_pve_auto_escape_worker",
+            "line": 275
+          },
+          {
+            "path": "main.py",
+            "name": "recover_travels_after_restart",
+            "line": 277
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 278
+          },
+          {
+            "path": "main.py",
+            "name": "start_travel_worker",
+            "line": 279
+          },
+          {
+            "path": "main.py",
+            "name": "logging.basicConfig",
+            "line": 289
+          },
+          {
+            "path": "main.py",
+            "name": "logging.getLogger",
+            "line": 294
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 295
+          },
+          {
+            "path": "main.py",
+            "name": "isinstance",
+            "line": 36
+          },
+          {
+            "path": "main.py",
+            "name": "__name__.lower",
+            "line": 42
+          },
+          {
+            "path": "main.py",
+            "name": "lower",
+            "line": 43
+          },
+          {
+            "path": "main.py",
+            "name": "any",
+            "line": 45
+          },
+          {
+            "path": "main.py",
+            "name": "max",
+            "line": 51
+          },
+          {
+            "path": "main.py",
+            "name": "min",
+            "line": 52
+          },
+          {
+            "path": "main.py",
+            "name": "min",
+            "line": 53
+          },
+          {
+            "path": "main.py",
+            "name": "init_player_interaction_foundation",
+            "line": 151
+          },
+          {
+            "path": "main.py",
+            "name": "cleanup_player_interaction_state",
+            "line": 153
+          },
+          {
+            "path": "main.py",
+            "name": "init_player_trade_foundation",
+            "line": 155
+          },
+          {
+            "path": "main.py",
+            "name": "init_player_trade_item_policy_and_reservations",
+            "line": 157
+          },
+          {
+            "path": "main.py",
+            "name": "_rom_db_for_migrations.run_pending_migrations",
+            "line": 167
+          },
+          {
+            "path": "main.py",
+            "name": "_migration_result.get",
+            "line": 168
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 175
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 179
+          },
+          {
+            "path": "main.py",
+            "name": "install_player_presence_tracking",
+            "line": 253
+          },
+          {
+            "path": "main.py",
+            "name": "run_bot_polling_resilient",
+            "line": 298
+          },
+          {
+            "path": "main.py",
+            "name": "isinstance",
+            "line": 40
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 169
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 171
+          },
+          {
+            "path": "main.py",
+            "name": "bot.send_message",
+            "line": 262
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 300
+          },
+          {
+            "path": "main.py",
+            "name": "logger.critical",
+            "line": 303
+          },
+          {
+            "path": "main.py",
+            "name": "str",
+            "line": 43
+          },
+          {
+            "path": "main.py",
+            "name": "int",
+            "line": 51
+          },
+          {
+            "path": "main.py",
+            "name": "uniform",
+            "line": 53
+          },
+          {
+            "path": "main.py",
+            "name": "bot.infinity_polling",
+            "line": 62
+          },
+          {
+            "path": "main.py",
+            "name": "len",
+            "line": 205
+          },
+          {
+            "path": "main.py",
+            "name": "len",
+            "line": 205
+          },
+          {
+            "path": "main.py",
+            "name": "int",
+            "line": 263
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 269
+          },
+          {
+            "path": "main.py",
+            "name": "type",
+            "line": 42
+          },
+          {
+            "path": "main.py",
+            "name": "_polling_retry_delay",
+            "line": 71
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 72
+          },
+          {
+            "path": "main.py",
+            "name": "sleeper",
+            "line": 73
+          },
+          {
+            "path": "main.py",
+            "name": "_player_trade_recovery_main_kb",
+            "line": 266
+          },
+          {
+            "path": "main.py",
+            "name": "_is_transient_polling_error",
+            "line": 67
+          },
+          {
+            "path": "main.py",
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 68
+          },
+          {
+            "path": "main.py",
+            "name": "_migration_result.get",
+            "line": 169
+          }
+        ],
+        "imports": [
+          {
+            "path": "main.py",
+            "line": 3,
+            "text": "from systems.production_logging import configure_production_logging, get_production_logger, production_log_print as PRODUCTION_LOG_PRINT"
+          },
+          {
+            "path": "main.py",
+            "line": 4,
+            "text": "from systems.fresh_database_bootstrap import run_fresh_database_schema_bootstrap"
+          },
+          {
+            "path": "main.py",
+            "line": 9,
+            "text": "import random as _rom_polling_random"
+          },
+          {
+            "path": "main.py",
+            "line": 10,
+            "text": "import time as _rom_polling_time"
+          },
+          {
+            "path": "main.py",
+            "line": 75,
+            "text": "import telebot"
+          },
+          {
+            "path": "main.py",
+            "line": 77,
+            "text": "from config import TOKEN"
+          },
+          {
+            "path": "main.py",
+            "line": 79,
+            "text": "from db import init_db, seed_items, seed_location_trash_items, expand_bag_slots_to_40, init_character_class_system, init_class_reset_sphere"
+          },
+          {
+            "path": "main.py",
+            "line": 87,
+            "text": "from db import run_db_startup_maintenance"
+          },
+          {
+            "path": "main.py",
+            "line": 88,
+            "text": "from db import init_rune_system"
+          },
+          {
+            "path": "main.py",
+            "line": 90,
+            "text": "import events as seasonal_events"
+          },
+          {
+            "path": "main.py",
+            "line": 92,
+            "text": "from handlers.start import register_start_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 93,
+            "text": "from handlers.profile import register_profile_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 94,
+            "text": "from handlers.story_quests import register_story_quest_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 95,
+            "text": "from handlers.story_quest_npc_runtime import register_story_quest_npc_runtime_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 96,
+            "text": "from handlers.inventory import register_inventory_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 97,
+            "text": "from handlers.fatigue_artifact import register_fatigue_artifact_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 98,
+            "text": "from systems.fatigue_artifact_system import init_fatigue_artifact_system"
+          },
+          {
+            "path": "main.py",
+            "line": 99,
+            "text": "from handlers.combat import register_combat_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 100,
+            "text": "from handlers.dev import register_dev_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 101,
+            "text": "from handlers.map import register_map_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 102,
+            "text": "from handlers.city import register_city_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 103,
+            "text": "from handlers.about_game import register_about_game_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 104,
+            "text": "from handlers.event_ui import register_event_ui_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 105,
+            "text": "from handlers.external_links import register_external_links_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 106,
+            "text": "from handlers.contracts import register_contract_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 107,
+            "text": "from handlers.daily import register_daily_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 108,
+            "text": "from handlers.refine import register_refine_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 109,
+            "text": "from handlers.runes import register_rune_handlers, register_rune_fusion_handlers, register_simple_rune_extractor_handlers, register_rune_master_shop_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 110,
+            "text": "from handlers.blacksmith import register_blacksmith_repair_hotfix_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 111,
+            "text": "from handlers.guild import register_guild_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 112,
+            "text": "from handlers.auction_house import register_auction_house_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 113,
+            "text": "from handlers.blacksmith_repair_confirm import register_blacksmith_repair_confirmation_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 114,
+            "text": "from handlers.crystal_shop import register_crystal_shop_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 115,
+            "text": "from handlers.admin_crystal_credit import register_admin_crystal_credit_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 116,
+            "text": "from systems.admin_crystal_credit_system import init_admin_crystal_credit_system"
+          },
+          {
+            "path": "main.py",
+            "line": 117,
+            "text": "from handlers.player_rankings import register_player_rankings_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 118,
+            "text": "from handlers.timed_exp_bonus import register_timed_exp_bonus_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 119,
+            "text": "from handlers.world_chronicles import register_world_chronicle_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 120,
+            "text": "from systems.timed_exp_bonus_system import init_timed_exp_bonus_system"
+          },
+          {
+            "path": "main.py",
+            "line": 121,
+            "text": "from handlers.name_rune import register_name_rune_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 122,
+            "text": "from systems.name_rune_system import init_name_rune_system"
+          },
+          {
+            "path": "main.py",
+            "line": 123,
+            "text": "from systems.crystal_shop_system import init_crystal_shop_system"
+          },
+          {
+            "path": "main.py",
+            "line": 124,
+            "text": "from systems.crystal_bag_expansion_system import init_crystal_bag_expansion_system"
+          },
+          {
+            "path": "main.py",
+            "line": 126,
+            "text": "from systems.notifications import start_notification_worker"
+          },
+          {
+            "path": "main.py",
+            "line": 127,
+            "text": "from systems.inactivity_reminder_system import init_inactivity_reminder_system"
+          },
+          {
+            "path": "main.py",
+            "line": 128,
+            "text": "from systems.telegram_rate_limit import install_global_telegram_rate_limit_guard"
+          },
+          {
+            "path": "main.py",
+            "line": 145,
+            "text": "from systems.player_interaction_system import init_player_interaction_foundation, install_player_presence_tracking, cleanup_player_interaction_state, init_player_trade_foundation, init_player_trade_item_policy_and_reservations, recover_active_player_trades_after_restart"
+          },
+          {
+            "path": "main.py",
+            "line": 255,
+            "text": "from handlers.player_interaction import register_player_interaction_handlers"
+          },
+          {
+            "path": "main.py",
+            "line": 259,
+            "text": "from keyboards import main_kb as _player_trade_recovery_main_kb"
+          },
+          {
+            "path": "main.py",
+            "line": 272,
+            "text": "from systems.pve_auto_escape_system import recover_pve_encounters_after_restart, start_pve_auto_escape_worker"
+          },
+          {
+            "path": "main.py",
+            "line": 276,
+            "text": "from systems.travel_system import recover_travels_after_restart, start_travel_worker"
+          },
+          {
+            "path": "main.py",
+            "line": 286,
+            "text": "import logging"
+          },
+          {
+            "path": "main.py",
+            "line": 13,
+            "text": "import requests as _rom_polling_requests"
+          },
+          {
+            "path": "main.py",
+            "line": 18,
+            "text": "from telebot import apihelper as _rom_polling_apihelper"
+          },
+          {
+            "path": "main.py",
+            "line": 166,
+            "text": "import db as _rom_db_for_migrations"
+          }
+        ],
+        "top_level_calls": [
+          {
+            "name": "configure_production_logging",
+            "line": 5
+          },
+          {
+            "name": "get_production_logger",
+            "line": 6,
+            "assigned": true
+          },
+          {
+            "name": "telebot.TeleBot",
+            "line": 137,
+            "assigned": true
+          },
+          {
+            "name": "init_db",
+            "line": 146
+          },
+          {
+            "name": "run_fresh_database_schema_bootstrap",
+            "line": 149,
+            "assigned": true
+          },
+          {
+            "name": "print",
+            "line": 150
+          },
+          {
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 151
+          },
+          {
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 153
+          },
+          {
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 155
+          },
+          {
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 157
+          },
+          {
+            "name": "recover_active_player_trades_after_restart",
+            "line": 159,
+            "assigned": true
+          },
+          {
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 160
+          },
+          {
+            "name": "_rom_db_for_migrations.run_pending_migrations",
+            "line": 167,
+            "inside_try": true
+          },
+          {
+            "name": "_migration_result.get",
+            "line": 168,
+            "inside_try": true
+          },
+          {
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 169,
+            "inside_try": true
+          },
+          {
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 171,
+            "inside_try": true
+          },
+          {
+            "name": "_migration_result.get",
+            "line": 169,
+            "inside_try": true
+          },
+          {
+            "name": "run_db_startup_maintenance",
+            "line": 173,
+            "assigned": true
+          },
+          {
+            "name": "init_rune_system",
+            "line": 177,
+            "assigned": true
+          },
+          {
+            "name": "seed_items",
+            "line": 181
+          },
+          {
+            "name": "seed_location_trash_items",
+            "line": 182
+          },
+          {
+            "name": "expand_bag_slots_to_40",
+            "line": 183
+          },
+          {
+            "name": "init_character_class_system",
+            "line": 184
+          },
+          {
+            "name": "init_class_reset_sphere",
+            "line": 185
+          },
+          {
+            "name": "init_crystal_shop_system",
+            "line": 192
+          },
+          {
+            "name": "init_crystal_bag_expansion_system",
+            "line": 193
+          },
+          {
+            "name": "init_admin_crystal_credit_system",
+            "line": 194
+          },
+          {
+            "name": "init_timed_exp_bonus_system",
+            "line": 195
+          },
+          {
+            "name": "init_name_rune_system",
+            "line": 196
+          },
+          {
+            "name": "init_fatigue_artifact_system",
+            "line": 197
+          },
+          {
+            "name": "init_inactivity_reminder_system",
+            "line": 198
+          },
+          {
+            "name": "seasonal_events.load_event_modules",
+            "line": 200,
+            "assigned": true
+          },
+          {
+            "name": "seasonal_events.register_event_handlers",
+            "line": 201,
+            "assigned": true
+          },
+          {
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 202
+          },
+          {
+            "name": "register_crystal_shop_handlers",
+            "line": 208
+          },
+          {
+            "name": "register_admin_crystal_credit_handlers",
+            "line": 209
+          },
+          {
+            "name": "register_player_rankings_handlers",
+            "line": 210
+          },
+          {
+            "name": "register_timed_exp_bonus_handlers",
+            "line": 211
+          },
+          {
+            "name": "register_world_chronicle_handlers",
+            "line": 212
+          },
+          {
+            "name": "register_start_handlers",
+            "line": 213
+          },
+          {
+            "name": "register_profile_handlers",
+            "line": 214
+          },
+          {
+            "name": "register_story_quest_handlers",
+            "line": 215
+          },
+          {
+            "name": "register_story_quest_npc_runtime_handlers",
+            "line": 216
+          },
+          {
+            "name": "register_inventory_handlers",
+            "line": 217
+          },
+          {
+            "name": "register_fatigue_artifact_handlers",
+            "line": 218
+          },
+          {
+            "name": "register_combat_handlers",
+            "line": 219
+          },
+          {
+            "name": "register_dev_handlers",
+            "line": 220
+          },
+          {
+            "name": "register_map_handlers",
+            "line": 221
+          },
+          {
+            "name": "register_blacksmith_repair_confirmation_handlers",
+            "line": 222
+          },
+          {
+            "name": "register_blacksmith_repair_hotfix_handlers",
+            "line": 223
+          },
+          {
+            "name": "register_about_game_handlers",
+            "line": 224
+          },
+          {
+            "name": "register_event_ui_handlers",
+            "line": 226
+          },
+          {
+            "name": "register_external_links_handlers",
+            "line": 227
+          },
+          {
+            "name": "register_city_handlers",
+            "line": 228
+          },
+          {
+            "name": "register_guild_handlers",
+            "line": 229
+          },
+          {
+            "name": "register_auction_house_handlers",
+            "line": 230
+          },
+          {
+            "name": "register_contract_handlers",
+            "line": 231
+          },
+          {
+            "name": "register_daily_handlers",
+            "line": 232
+          },
+          {
+            "name": "register_rune_handlers",
+            "line": 233
+          },
+          {
+            "name": "register_rune_fusion_handlers",
+            "line": 234
+          },
+          {
+            "name": "register_simple_rune_extractor_handlers",
+            "line": 235
+          },
+          {
+            "name": "register_rune_master_shop_handlers",
+            "line": 236
+          },
+          {
+            "name": "register_refine_handlers",
+            "line": 239
+          },
+          {
+            "name": "register_name_rune_handlers",
+            "line": 240
+          },
+          {
+            "name": "install_global_telegram_rate_limit_guard",
+            "line": 251
+          },
+          {
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 253
+          },
+          {
+            "name": "register_player_interaction_handlers",
+            "line": 256
+          },
+          {
+            "name": "start_notification_worker",
+            "line": 271
+          },
+          {
+            "name": "recover_pve_encounters_after_restart",
+            "line": 273,
+            "assigned": true
+          },
+          {
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 274
+          },
+          {
+            "name": "start_pve_auto_escape_worker",
+            "line": 275
+          },
+          {
+            "name": "recover_travels_after_restart",
+            "line": 277,
+            "assigned": true
+          },
+          {
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 278
+          },
+          {
+            "name": "start_travel_worker",
+            "line": 279
+          },
+          {
+            "name": "logging.basicConfig",
+            "line": 289
+          },
+          {
+            "name": "logging.getLogger",
+            "line": 294,
+            "assigned": true
+          },
+          {
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 295
+          },
+          {
+            "name": "run_bot_polling_resilient",
+            "line": 298,
+            "inside_try": true
+          },
+          {
+            "name": "PRODUCTION_LOG_PRINT",
+            "line": 300,
+            "inside_try": true
+          },
+          {
+            "name": "logger.critical",
+            "line": 303,
+            "inside_try": true
+          }
+        ]
+      },
+      "db.py": {
+        "exists": true,
+        "sha256": "3e0797cb4a8f41b9241a4f4cbc640f39d16eb57e7ad608e57c25aacbdd5ab5e2",
+        "size": 1861,
+        "definitions": [],
+        "calls": [],
+        "imports": [
+          {
+            "path": "db.py",
+            "line": 46,
+            "text": "from db_modules import *"
+          }
+        ],
+        "top_level_calls": []
+      },
+      "migrations/runner.py": {
+        "exists": true,
+        "sha256": "289fc45e1d870ed2858c79d82d2bdb88bddd692e6d74588cea7104ea53e2e744",
+        "size": 4602,
+        "definitions": [
+          {
+            "path": "migrations/runner.py",
+            "name": "get_project_root",
+            "line": 34,
+            "end_line": 35
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "ensure_migrations_table",
+            "line": 38,
+            "end_line": 48
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "get_applied_migrations",
+            "line": 51,
+            "end_line": 56
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "discover_migration_files",
+            "line": 59,
+            "end_line": 74
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "load_migration_callable",
+            "line": 77,
+            "end_line": 93
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "mark_migration_applied",
+            "line": 96,
+            "end_line": 101
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "run_pending_migrations",
+            "line": 104,
+            "end_line": 141
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "get_migration_status",
+            "line": 144,
+            "end_line": 158
+          }
+        ],
+        "calls": [
+          {
+            "path": "migrations/runner.py",
+            "name": "conn.execute",
+            "line": 39
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "conn.commit",
+            "line": 48
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "ensure_migrations_table",
+            "line": 52
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "fetchall",
+            "line": 53
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "migrations_dir.glob",
+            "line": 67
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "sorted",
+            "line": 74
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "importlib.util.spec_from_file_location",
+            "line": 79
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "importlib.util.module_from_spec",
+            "line": 84
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "spec.loader.exec_module",
+            "line": 85
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "hasattr",
+            "line": 87
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "hasattr",
+            "line": 90
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "RuntimeError",
+            "line": 93
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "conn.execute",
+            "line": 97
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "conn.commit",
+            "line": 101
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "ensure_migrations_table",
+            "line": 107
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "get_applied_migrations",
+            "line": 108
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "discover_migration_files",
+            "line": 109
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "ensure_migrations_table",
+            "line": 145
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "get_applied_migrations",
+            "line": 146
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "discover_migration_files",
+            "line": 147
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "migrations_dir.exists",
+            "line": 63
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "migrations_dir.mkdir",
+            "line": 64
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "path.name.startswith",
+            "line": 68
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "files.append",
+            "line": 72
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "RuntimeError",
+            "line": 82
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "getattr",
+            "line": 88
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "getattr",
+            "line": 91
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "len",
+            "line": 116
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "sorted",
+            "line": 154
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "len",
+            "line": 156
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "len",
+            "line": 157
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "resolve",
+            "line": 35
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "conn.execute",
+            "line": 53
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "get_project_root",
+            "line": 61
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "append",
+            "line": 123
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "load_migration_callable",
+            "line": 127
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "migration_func",
+            "line": 128
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "conn.commit",
+            "line": 129
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "mark_migration_applied",
+            "line": 130
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "append",
+            "line": 131
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "conn.rollback",
+            "line": 133
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "Path",
+            "line": 35
+          },
+          {
+            "path": "migrations/runner.py",
+            "name": "str",
+            "line": 137
+          }
+        ],
+        "imports": [
+          {
+            "path": "migrations/runner.py",
+            "line": 24,
+            "text": "from __future__ import annotations"
+          },
+          {
+            "path": "migrations/runner.py",
+            "line": 26,
+            "text": "import importlib.util"
+          },
+          {
+            "path": "migrations/runner.py",
+            "line": 27,
+            "text": "import sqlite3"
+          },
+          {
+            "path": "migrations/runner.py",
+            "line": 28,
+            "text": "from pathlib import Path"
+          },
+          {
+            "path": "migrations/runner.py",
+            "line": 29,
+            "text": "from typing import Callable, Iterable"
+          }
+        ],
+        "top_level_calls": []
+      },
+      "systems/fresh_database_bootstrap.py": {
+        "exists": true,
+        "sha256": "d360a1cb617977f8082335fe12326615fea9e509ad440a4d2b89493e643f1cb2",
+        "size": 2013,
+        "definitions": [
+          {
+            "path": "systems/fresh_database_bootstrap.py",
+            "name": "run_fresh_database_schema_bootstrap",
+            "line": 25,
+            "end_line": 49
+          }
+        ],
+        "calls": [
+          {
+            "path": "systems/fresh_database_bootstrap.py",
+            "name": "set",
+            "line": 27
+          },
+          {
+            "path": "systems/fresh_database_bootstrap.py",
+            "name": "getattr",
+            "line": 37
+          },
+          {
+            "path": "systems/fresh_database_bootstrap.py",
+            "name": "seen.add",
+            "line": 45
+          },
+          {
+            "path": "systems/fresh_database_bootstrap.py",
+            "name": "fn",
+            "line": 46
+          },
+          {
+            "path": "systems/fresh_database_bootstrap.py",
+            "name": "results.append",
+            "line": 47
+          },
+          {
+            "path": "systems/fresh_database_bootstrap.py",
+            "name": "importlib.import_module",
+            "line": 30
+          },
+          {
+            "path": "systems/fresh_database_bootstrap.py",
+            "name": "callable",
+            "line": 38
+          },
+          {
+            "path": "systems/fresh_database_bootstrap.py",
+            "name": "results.append",
+            "line": 39
+          },
+          {
+            "path": "systems/fresh_database_bootstrap.py",
+            "name": "results.append",
+            "line": 33
+          },
+          {
+            "path": "systems/fresh_database_bootstrap.py",
+            "name": "repr",
+            "line": 48
+          }
+        ],
+        "imports": [
+          {
+            "path": "systems/fresh_database_bootstrap.py",
+            "line": 7,
+            "text": "from __future__ import annotations"
+          },
+          {
+            "path": "systems/fresh_database_bootstrap.py",
+            "line": 9,
+            "text": "import importlib"
+          }
+        ],
+        "top_level_calls": []
+      },
+      "db_modules/migrations.py": {
+        "exists": true,
+        "sha256": "8c04af41529d2ed5c2f63560d397ae22ca13bf68be177e5ef47f0085b4b9bfe3",
+        "size": 6089,
+        "definitions": [
+          {
+            "path": "db_modules/migrations.py",
+            "name": "expand_bag_slots_to_60",
+            "line": 8,
+            "end_line": 21
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "expand_bag_slots_to_40",
+            "line": 24,
+            "end_line": 26
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "seed_location_trash_items",
+            "line": 29,
+            "end_line": 88
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "init_migration_system",
+            "line": 91,
+            "end_line": 94
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "run_pending_migrations",
+            "line": 97,
+            "end_line": 99
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "get_migration_status",
+            "line": 102,
+            "end_line": 104
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "run_db_startup_maintenance",
+            "line": 107,
+            "end_line": 154
+          }
+        ],
+        "calls": [
+          {
+            "path": "db_modules/migrations.py",
+            "name": "expand_bag_slots_to_60",
+            "line": 26
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "conn.commit",
+            "line": 88
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "ensure_migrations_table",
+            "line": 93
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "_run",
+            "line": 99
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "_status",
+            "line": 104
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "cursor.execute",
+            "line": 13
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "conn.commit",
+            "line": 19
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "cursor.execute",
+            "line": 61
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "cursor.execute",
+            "line": 121
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "conn.commit",
+            "line": 126
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "cursor.execute",
+            "line": 133
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "cursor.execute",
+            "line": 139
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "name": "conn.commit",
+            "line": 148
+          }
+        ],
+        "imports": [
+          {
+            "path": "db_modules/migrations.py",
+            "line": 5,
+            "text": "from .connection import conn, cursor, DEFAULT_BAG_SLOTS"
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "line": 92,
+            "text": "from migrations.runner import ensure_migrations_table"
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "line": 98,
+            "text": "from migrations.runner import run_pending_migrations as _run"
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "line": 103,
+            "text": "from migrations.runner import get_migration_status as _status"
+          },
+          {
+            "path": "db_modules/migrations.py",
+            "line": 111,
+            "text": "from data.balance import REFINE_MATERIAL_MAX_STACK"
+          }
+        ],
+        "top_level_calls": []
+      }
+    },
+    "main_startup_order": [
+      {
+        "path": "main.py",
+        "name": "bot.infinity_polling",
+        "line": 62
+      },
+      {
+        "path": "main.py",
+        "name": "_is_transient_polling_error",
+        "line": 67
+      },
+      {
+        "path": "main.py",
+        "name": "_polling_retry_delay",
+        "line": 71
+      },
+      {
+        "path": "main.py",
+        "name": "init_db",
+        "line": 146
+      },
+      {
+        "path": "main.py",
+        "name": "run_fresh_database_schema_bootstrap",
+        "line": 149
+      },
+      {
+        "path": "main.py",
+        "name": "recover_active_player_trades_after_restart",
+        "line": 159
+      },
+      {
+        "path": "main.py",
+        "name": "_rom_db_for_migrations.run_pending_migrations",
+        "line": 167
+      },
+      {
+        "path": "main.py",
+        "name": "_migration_result.get",
+        "line": 168
+      },
+      {
+        "path": "main.py",
+        "name": "_migration_result.get",
+        "line": 169
+      },
+      {
+        "path": "main.py",
+        "name": "run_db_startup_maintenance",
+        "line": 173
+      },
+      {
+        "path": "main.py",
+        "name": "_db_startup_maintenance_result.get",
+        "line": 174
+      },
+      {
+        "path": "main.py",
+        "name": "_PLAYER_TRADE_RESTART_RECOVERY.get",
+        "line": 260
+      },
+      {
+        "path": "main.py",
+        "name": "_player_trade_recovery_main_kb",
+        "line": 266
+      },
+      {
+        "path": "main.py",
+        "name": "start_notification_worker",
+        "line": 271
+      },
+      {
+        "path": "main.py",
+        "name": "recover_pve_encounters_after_restart",
+        "line": 273
+      },
+      {
+        "path": "main.py",
+        "name": "start_pve_auto_escape_worker",
+        "line": 275
+      },
+      {
+        "path": "main.py",
+        "name": "recover_travels_after_restart",
+        "line": 277
+      },
+      {
+        "path": "main.py",
+        "name": "start_travel_worker",
+        "line": 279
+      },
+      {
+        "path": "main.py",
+        "name": "run_bot_polling_resilient",
+        "line": 298
+      }
+    ],
+    "migration_definitions": [
+      {
+        "path": "migrations/runner.py",
+        "name": "ensure_migrations_table",
+        "line": 38,
+        "end_line": 48
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "get_applied_migrations",
+        "line": 51,
+        "end_line": 56
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "discover_migration_files",
+        "line": 59,
+        "end_line": 74
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "load_migration_callable",
+        "line": 77,
+        "end_line": 93
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "mark_migration_applied",
+        "line": 96,
+        "end_line": 101
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "run_pending_migrations",
+        "line": 104,
+        "end_line": 141
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "get_migration_status",
+        "line": 144,
+        "end_line": 158
+      },
+      {
+        "path": "db_modules/migrations.py",
+        "name": "init_migration_system",
+        "line": 91,
+        "end_line": 94
+      },
+      {
+        "path": "db_modules/migrations.py",
+        "name": "run_pending_migrations",
+        "line": 97,
+        "end_line": 99
+      },
+      {
+        "path": "db_modules/migrations.py",
+        "name": "get_migration_status",
+        "line": 102,
+        "end_line": 104
+      }
+    ],
+    "migration_related_calls": [
+      {
+        "path": "main.py",
+        "name": "_rom_db_for_migrations.run_pending_migrations",
+        "line": 167
+      },
+      {
+        "path": "main.py",
+        "name": "_migration_result.get",
+        "line": 168
+      },
+      {
+        "path": "main.py",
+        "name": "_migration_result.get",
+        "line": 169
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "ensure_migrations_table",
+        "line": 52
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "migrations_dir.glob",
+        "line": 67
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "ensure_migrations_table",
+        "line": 107
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "get_applied_migrations",
+        "line": 108
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "discover_migration_files",
+        "line": 109
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "ensure_migrations_table",
+        "line": 145
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "get_applied_migrations",
+        "line": 146
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "discover_migration_files",
+        "line": 147
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "migrations_dir.exists",
+        "line": 63
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "migrations_dir.mkdir",
+        "line": 64
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "load_migration_callable",
+        "line": 127
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "migration_func",
+        "line": 128
+      },
+      {
+        "path": "migrations/runner.py",
+        "name": "mark_migration_applied",
+        "line": 130
+      },
+      {
+        "path": "db_modules/migrations.py",
+        "name": "ensure_migrations_table",
+        "line": 93
+      }
+    ],
+    "worker_calls_in_main": [
+      {
+        "path": "main.py",
+        "name": "start_notification_worker",
+        "line": 271
+      },
+      {
+        "path": "main.py",
+        "name": "start_pve_auto_escape_worker",
+        "line": 275
+      },
+      {
+        "path": "main.py",
+        "name": "start_travel_worker",
+        "line": 279
+      }
+    ],
+    "polling_calls_in_main": [
+      {
+        "path": "main.py",
+        "name": "bot.infinity_polling",
+        "line": 62
+      },
+      {
+        "path": "main.py",
+        "name": "_is_transient_polling_error",
+        "line": 67
+      },
+      {
+        "path": "main.py",
+        "name": "_polling_retry_delay",
+        "line": 71
+      },
+      {
+        "path": "main.py",
+        "name": "run_bot_polling_resilient",
+        "line": 298
+      }
+    ],
+    "counts": {
+      "main_startup_calls": 19,
+      "migration_definitions": 10,
+      "migration_related_calls": 17,
+      "worker_calls": 3,
+      "polling_calls": 4
+    }
+  },
+  "sqlite_snapshot": {
+    "production_connection_opened": false,
+    "copy_attempts": [
+      {
+        "attempt": 1,
+        "stable": true
+      }
+    ],
+    "production_baseline": {
+      "game.db": {
+        "exists": true,
+        "size": 1925120,
+        "mtime_ns": 1791928577995768700,
+        "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+      },
+      "game.db-wal": {
+        "exists": true,
+        "size": 4132392,
+        "mtime_ns": 1793650911840677600,
+        "sha256": "2099d400f835ec90d015ed39c7c7504a10a1f236a0f15bb528210173acc09e54"
+      },
+      "game.db-shm": {
+        "exists": true,
+        "size": 32768,
+        "mtime_ns": 1793650789983229900,
+        "sha256": "5558cbaceacf2ec8c4faf73fd5eb861fb193884e3a966343cb8a1d3ce56b7136"
+      }
+    },
+    "inspection": {
+      "quick_check": [
+        "ok"
+      ],
+      "foreign_key_check_count": 0,
+      "foreign_key_examples": [],
+      "table_count": 53,
+      "migration_ledgers": {
+        "generated_item_id_migrations": {
+          "columns": [
+            "id",
+            "source_item_id",
+            "target_item_id",
+            "operation",
+            "migration_stage",
+            "created_at"
+          ],
+          "row_count": 24
+        },
+        "schema_migrations": {
+          "columns": [
+            "id",
+            "migration_name",
+            "applied_at"
+          ],
+          "row_count": 20
+        }
+      },
+      "pragmas": {
+        "journal_mode": "wal",
+        "foreign_keys": 0,
+        "busy_timeout": 30000,
+        "query_only": 0,
+        "user_version": 0,
+        "schema_version": 158
+      }
+    }
+  },
+  "findings": [
+    {
+      "area": "startup_bootstrap",
+      "status": "CONFIRMED",
+      "evidence": "run_fresh_database_schema_bootstrap call in main.py=True"
+    },
+    {
+      "area": "migration_runner_dispatch",
+      "status": "CONFIRMED",
+      "evidence": "run_pending_migrations call in main.py=True"
+    },
+    {
+      "area": "startup_workers",
+      "status": "INVENTORIED",
+      "evidence": "worker-related calls in main.py=3"
+    },
+    {
+      "area": "polling_after_startup",
+      "status": "INVENTORIED",
+      "evidence": "polling-related calls in main.py=4"
+    },
+    {
+      "area": "sqlite_integrity",
+      "status": "PASS",
+      "evidence": "quick_check=['ok']; foreign_keys=0"
+    }
+  ],
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "decision": "GO_TO_21_2_2_DETERMINISTIC_STARTUP_MIGRATION_GATE_IMPLEMENTATION"
+}
