@@ -159,16 +159,46 @@ PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER TRADE ITEM POLICY:',
 _PLAYER_TRADE_RESTART_RECOVERY = recover_active_player_trades_after_restart()
 PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', '✅ PLAYER TRADE RESTART RECOVERY:', _PLAYER_TRADE_RESTART_RECOVERY)
 
-# ==============================
-# ✅ REFACTOR 9.0.11: RUN MIGRATIONS ON STARTUP
-# ==============================
+# Stage 21.2.2: migrations are a fail-closed startup gate.
+def _validate_startup_migration_result(result):
+    """Validate the canonical migration runner contract before startup continues."""
+    if not isinstance(result, dict):
+        raise RuntimeError("Migration runner returned a non-dict result")
+    if result.get("success") is not True:
+        raise RuntimeError(f"Migration runner reported failure: {result.get('failed')!r}")
+    if result.get("failed") is not None:
+        raise RuntimeError(f"Migration runner returned failed evidence: {result.get('failed')!r}")
+    for field in ("applied", "skipped"):
+        if not isinstance(result.get(field), list):
+            raise RuntimeError(f"Migration runner field {field!r} must be a list")
+    if not isinstance(result.get("total_files"), int) or result["total_files"] < 0:
+        raise RuntimeError("Migration runner total_files must be a non-negative integer")
+    if len(result["applied"]) + len(result["skipped"]) != result["total_files"]:
+        raise RuntimeError("Migration runner counts do not cover every discovered migration")
+    return result
+
+
+import db as _rom_db_for_migrations
 try:
-    import db as _rom_db_for_migrations
-    _migration_result = _rom_db_for_migrations.run_pending_migrations()
-    if _migration_result.get("applied"):
-        PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', f"✅ DB MIGRATIONS APPLIED: {_migration_result.get('applied')}")
+    _migration_result = _validate_startup_migration_result(
+        _rom_db_for_migrations.run_pending_migrations()
+    )
 except Exception as migration_error:
-    PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ DB migrations skipped/error: {migration_error}")
+    PRODUCTION_LOG_PRINT(
+        PRODUCTION_LOGGER,
+        "critical",
+        f"DB migration gate failed; startup aborted before maintenance, workers, and polling: {migration_error}",
+    )
+    raise RuntimeError("ROM startup aborted by database migration gate") from migration_error
+
+PRODUCTION_LOG_PRINT(
+    PRODUCTION_LOGGER,
+    "info",
+    "DB MIGRATION GATE PASS: "
+    f"applied={len(_migration_result['applied'])}, "
+    f"skipped={len(_migration_result['skipped'])}, "
+    f"total={_migration_result['total_files']}",
+)
 
 _db_startup_maintenance_result = run_db_startup_maintenance()
 if _db_startup_maintenance_result.get("success"):
