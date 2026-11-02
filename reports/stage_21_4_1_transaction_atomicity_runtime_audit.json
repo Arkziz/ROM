@@ -1,0 +1,2059 @@
+{
+  "stage": "21.4.1",
+  "revision": "1",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-02T21:18:41.994244+00:00",
+  "git": {
+    "branch": "develop",
+    "head": "24d6b58ceaa3f06706876150dbce1276e1d5643e",
+    "origin_develop": "3269cffb853872d9e199f308275c71b7f91c57ea",
+    "origin_is_ancestor": true,
+    "patch": "patch/patch_21_4_1_transaction_atomicity_runtime_audit.py",
+    "status": [
+      {
+        "xy": " M",
+        "path": "ROM_FULL_DUMP.txt"
+      }
+    ]
+  },
+  "scope": [
+    "inventory",
+    "rewards_progression",
+    "currencies",
+    "trade",
+    "auction",
+    "guild",
+    "admin_credit"
+  ],
+  "source_inventory": {
+    "python_file_count": 208,
+    "syntax_errors": [],
+    "transaction_call_count": 555,
+    "transaction_call_examples": [
+      {
+        "path": "db_modules/character.py",
+        "name": "conn.commit",
+        "line": 174
+      },
+      {
+        "path": "db_modules/character.py",
+        "name": "conn.commit",
+        "line": 217
+      },
+      {
+        "path": "db_modules/connection.py",
+        "name": "conn.commit",
+        "line": 195
+      },
+      {
+        "path": "db_modules/connection.py",
+        "name": "conn.commit",
+        "line": 246
+      },
+      {
+        "path": "db_modules/daily_compat.py",
+        "name": "conn.commit",
+        "line": 49
+      },
+      {
+        "path": "db_modules/daily_compat.py",
+        "name": "conn.commit",
+        "line": 86
+      },
+      {
+        "path": "db_modules/daily_compat.py",
+        "name": "conn.commit",
+        "line": 109
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "name": "conn.commit",
+        "line": 172
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "name": "conn.commit",
+        "line": 188
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "name": "conn.commit",
+        "line": 247
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "name": "conn.commit",
+        "line": 533
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "name": "conn.commit",
+        "line": 829
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "name": "conn.commit",
+        "line": 1348
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "name": "conn.commit",
+        "line": 1543
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "name": "conn.commit",
+        "line": 1621
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "name": "conn.commit",
+        "line": 798
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "name": "conn.commit",
+        "line": 464
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "name": "conn.rollback",
+        "line": 310
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "name": "conn.rollback",
+        "line": 324
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "name": "conn.rollback",
+        "line": 501
+      },
+      {
+        "path": "db_modules/generated_equipment.py",
+        "name": "conn.commit",
+        "line": 161
+      },
+      {
+        "path": "db_modules/generated_equipment.py",
+        "name": "conn.commit",
+        "line": 538
+      },
+      {
+        "path": "db_modules/generated_equipment.py",
+        "name": "conn.commit",
+        "line": 576
+      },
+      {
+        "path": "db_modules/generated_equipment.py",
+        "name": "conn.commit",
+        "line": 1256
+      },
+      {
+        "path": "db_modules/inventory.py",
+        "name": "conn.commit",
+        "line": 332
+      }
+    ],
+    "sql_write_count": 497,
+    "sql_write_examples": [
+      {
+        "path": "db_modules/character.py",
+        "function": "spend_user_mp",
+        "line": 165,
+        "operation": "UPDATE",
+        "statement": "\n    UPDATE users\n    SET mp=?\n    WHERE user_id=?\n    "
+      },
+      {
+        "path": "db_modules/character.py",
+        "function": "restore_user_mp_to_full",
+        "line": 208,
+        "operation": "UPDATE",
+        "statement": "\n    UPDATE users\n    SET mp=?\n    WHERE user_id=?\n    "
+      },
+      {
+        "path": "db_modules/connection.py",
+        "function": "init_db",
+        "line": 42,
+        "operation": "CREATE",
+        "statement": "\n    CREATE TABLE IF NOT EXISTS users (\n        user_id INTEGER PRIMARY KEY,\n\n        hp INTEGER,\n        max_hp INTEGER,\n        level INTEGER,\n        exp INTEGER,\n        gold REAL,\n        kills INTEGER,\n        bag_slots INTEGER,\n        current_location TEXT DEFAULT 'start_path',\n\n        str "
+      },
+      {
+        "path": "db_modules/connection.py",
+        "function": "init_db",
+        "line": 67,
+        "operation": "CREATE",
+        "statement": "\n    CREATE TABLE IF NOT EXISTS inventory (\n        id INTEGER PRIMARY KEY AUTOINCREMENT,\n        user_id INTEGER,\n        item_id INTEGER,\n        quantity INTEGER,\n        durability INTEGER\n    ,\n        refine_level INTEGER DEFAULT 0\n    )\n    "
+      },
+      {
+        "path": "db_modules/connection.py",
+        "function": "init_db",
+        "line": 79,
+        "operation": "CREATE",
+        "statement": "\n    CREATE TABLE IF NOT EXISTS items (\n        id INTEGER PRIMARY KEY,\n        name TEXT,\n        type TEXT,\n        rarity TEXT,\n        category TEXT,\n\n        slot_key TEXT,\n        weapon_hands INTEGER,\n\n        max_stack INTEGER,\n        sell_price REAL,\n\n        bonus_str INTEGER,\n        bon"
+      },
+      {
+        "path": "db_modules/connection.py",
+        "function": "init_db",
+        "line": 122,
+        "operation": "CREATE",
+        "statement": "\n    CREATE TABLE IF NOT EXISTS equipment_slots (\n        user_id INTEGER,\n        slot_key TEXT,\n        inventory_id INTEGER,\n        PRIMARY KEY (user_id, slot_key)\n    )\n    "
+      },
+      {
+        "path": "db_modules/connection.py",
+        "function": "init_db",
+        "line": 171,
+        "operation": "UPDATE",
+        "statement": "UPDATE users SET gold = 0 WHERE gold IS NULL"
+      },
+      {
+        "path": "db_modules/connection.py",
+        "function": "init_db",
+        "line": 172,
+        "operation": "UPDATE",
+        "statement": "UPDATE users SET kills = 0 WHERE kills IS NULL"
+      },
+      {
+        "path": "db_modules/connection.py",
+        "function": "init_db",
+        "line": 173,
+        "operation": "UPDATE",
+        "statement": "UPDATE users SET bag_slots = ? WHERE bag_slots IS NULL"
+      },
+      {
+        "path": "db_modules/connection.py",
+        "function": "init_db",
+        "line": 178,
+        "operation": "UPDATE",
+        "statement": "\n    UPDATE users\n    SET current_location = 'start_path'\n    WHERE current_location IS NULL OR current_location = ''\n    "
+      },
+      {
+        "path": "db_modules/connection.py",
+        "function": "init_db",
+        "line": 184,
+        "operation": "UPDATE",
+        "statement": "UPDATE inventory SET quantity = 1 WHERE quantity IS NULL"
+      },
+      {
+        "path": "db_modules/connection.py",
+        "function": "init_db",
+        "line": 186,
+        "operation": "UPDATE",
+        "statement": "\n    UPDATE inventory\n    SET durability = 100\n    WHERE durability IS NULL\n      AND item_id IN (\n          SELECT id FROM items WHERE category = 'equipment'\n      )\n    "
+      },
+      {
+        "path": "db_modules/connection.py",
+        "function": "seed_items",
+        "line": 216,
+        "operation": "INSERT",
+        "statement": "\n        INSERT INTO items (\n            id, name, type, rarity, category,\n            slot_key, weapon_hands,\n            max_stack, sell_price,\n            bonus_str, bonus_dex, bonus_int, bonus_wis, bonus_sta,\n            pdef, mdef\n        )\n        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,"
+      },
+      {
+        "path": "db_modules/daily_compat.py",
+        "function": "init_daily_quest_system",
+        "line": 37,
+        "operation": "CREATE",
+        "statement": "\n    CREATE TABLE IF NOT EXISTS user_daily_quests (\n        user_id INTEGER PRIMARY KEY,\n        quest_date TEXT,\n        quest_id TEXT,\n        progress INTEGER,\n        target_count INTEGER,\n        completed INTEGER,\n        reward_claimed INTEGER\n    )\n    "
+      },
+      {
+        "path": "db_modules/daily_compat.py",
+        "function": "reset_daily_quest_if_needed",
+        "line": 65,
+        "operation": "INSERT",
+        "statement": "\n        INSERT INTO user_daily_quests (\n            user_id,\n            quest_date,\n            quest_id,\n            progress,\n            target_count,\n            completed,\n            reward_claimed\n        )\n        VALUES (?, ?, ?, ?, ?, ?, ?)\n        "
+      },
+      {
+        "path": "db_modules/daily_compat.py",
+        "function": "reset_daily_quest_if_needed",
+        "line": 92,
+        "operation": "UPDATE",
+        "statement": "\n        UPDATE user_daily_quests\n        SET\n            quest_date=?,\n            quest_id=?,\n            progress=0,\n            target_count=?,\n            completed=0,\n            reward_claimed=0\n        WHERE user_id=?\n        "
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "set_player_level_for_test",
+        "line": 151,
+        "operation": "UPDATE",
+        "statement": "\n    UPDATE users\n    SET\n        level=?,\n        exp=0,\n        str=?,\n        dex=?,\n        intelligence=?,\n        wis=?,\n        sta=?\n    WHERE user_id=?\n    "
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "set_player_level_for_test",
+        "line": 176,
+        "operation": "UPDATE",
+        "statement": "\n    UPDATE users\n    SET\n        max_hp=?,\n        hp=?\n    WHERE user_id=?\n    "
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "set_gold_for_test",
+        "line": 241,
+        "operation": "UPDATE",
+        "statement": "\n    UPDATE users\n    SET gold=?\n    WHERE user_id=?\n    "
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "reset_hero_for_test",
+        "line": 394,
+        "operation": "DELETE",
+        "statement": "DELETE FROM inventory_runes WHERE inventory_id IN (SELECT id FROM inventory WHERE user_id=?)"
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "reset_hero_for_test",
+        "line": 400,
+        "operation": "DELETE",
+        "statement": "DELETE FROM inventory_reservations WHERE user_id=? OR inventory_id IN (SELECT id FROM inventory WHERE user_id=?)"
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "reset_hero_for_test",
+        "line": 406,
+        "operation": "DELETE",
+        "statement": "DELETE FROM equipment_slots WHERE user_id=?"
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "reset_hero_for_test",
+        "line": 409,
+        "operation": "DELETE",
+        "statement": "DELETE FROM inventory WHERE user_id=?"
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "seed_class_reset_sphere_item",
+        "line": 743,
+        "operation": "INSERT",
+        "statement": "\n        INSERT INTO items (\n            id,\n            name,\n            type,\n            rarity,\n            category,\n            slot_key,\n            weapon_hands,\n            max_stack,\n            sell_price,\n            bonus_str,\n            bonus_dex,\n            bonus_int,\n            b"
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "create_dev_armor_item_for_test",
+        "line": 1273,
+        "operation": "INSERT",
+        "statement": "\n    INSERT INTO items (\n        id,\n        name,\n        type,\n        rarity,\n        category,\n        slot_key,\n        weapon_hands,\n        max_stack,\n        sell_price,\n        bonus_str,\n        bonus_dex,\n        bonus_int,\n        bonus_wis,\n        bonus_sta,\n        pdef,\n        mdef,"
+      }
+    ],
+    "connection_context_count": 1,
+    "connection_context_examples": [
+      {
+        "path": "systems/story_quest_boss_completion_system.py",
+        "line": 69,
+        "contexts": [
+          "connection"
+        ]
+      }
+    ],
+    "critical_function_count": 1849,
+    "critical_write_function_count": 136,
+    "critical_flagged_function_count": 34,
+    "critical_flagged_functions": [
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "set_player_level_for_test",
+        "line": 120,
+        "end_line": 202,
+        "domains": [
+          "rewards_progression"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 151,
+            "operation": "UPDATE",
+            "statement": "\n    UPDATE users\n    SET\n        level=?,\n        exp=0,\n        str=?,\n        dex=?,\n        intelligence=?,\n        wis=?,\n        sta=?\n    WHERE user_id=?\n    "
+          },
+          {
+            "line": 176,
+            "operation": "UPDATE",
+            "statement": "\n    UPDATE users\n    SET\n        max_hp=?,\n        hp=?\n    WHERE user_id=?\n    "
+          }
+        ],
+        "commit_lines": [
+          172,
+          188
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          123
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "set_gold_for_test",
+        "line": 207,
+        "end_line": 253,
+        "domains": [
+          "currencies"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 241,
+            "operation": "UPDATE",
+            "statement": "\n    UPDATE users\n    SET gold=?\n    WHERE user_id=?\n    "
+          }
+        ],
+        "commit_lines": [
+          247
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          218
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "seed_class_reset_sphere_item",
+        "line": 735,
+        "end_line": 800,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 743,
+            "operation": "INSERT",
+            "statement": "\n        INSERT INTO items (\n            id,\n            name,\n            type,\n            rarity,\n            category,\n            slot_key,\n            weapon_hands,\n            max_stack,\n            sell_price,\n            bonus_str,\n            bonus_dex,\n            bonus_int,\n            b"
+          }
+        ],
+        "commit_lines": [
+          798
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          799
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "create_dev_armor_item_for_test",
+        "line": 1194,
+        "end_line": 1365,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 1273,
+            "operation": "INSERT",
+            "statement": "\n    INSERT INTO items (\n        id,\n        name,\n        type,\n        rarity,\n        category,\n        slot_key,\n        weapon_hands,\n        max_stack,\n        sell_price,\n        bonus_str,\n        bonus_dex,\n        bonus_int,\n        bonus_wis,\n        bonus_sta,\n        pdef,\n        mdef,"
+          },
+          {
+            "line": 1331,
+            "operation": "INSERT",
+            "statement": "\n    INSERT INTO inventory (\n        user_id,\n        item_id,\n        quantity,\n        durability\n    )\n    VALUES (?, ?, ?, ?)\n    "
+          }
+        ],
+        "commit_lines": [
+          1348
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          1235
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "create_dev_weapon_item_for_test",
+        "line": 1367,
+        "end_line": 1560,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 1468,
+            "operation": "INSERT",
+            "statement": "\n    INSERT INTO items (\n        id,\n        name,\n        type,\n        rarity,\n        category,\n        slot_key,\n        weapon_hands,\n        max_stack,\n        sell_price,\n        bonus_str,\n        bonus_dex,\n        bonus_int,\n        bonus_wis,\n        bonus_sta,\n        pdef,\n        mdef,"
+          },
+          {
+            "line": 1526,
+            "operation": "INSERT",
+            "statement": "\n    INSERT INTO inventory (\n        user_id,\n        item_id,\n        quantity,\n        durability\n    )\n    VALUES (?, ?, ?, ?)\n    "
+          }
+        ],
+        "commit_lines": [
+          1543
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          1415
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/generated_equipment.py",
+        "function": "create_generated_equipment_item",
+        "line": 1006,
+        "end_line": 1271,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 1181,
+            "operation": "INSERT",
+            "statement": "\n    INSERT INTO items (\n        id,\n        name,\n        type,\n        rarity,\n        category,\n        slot_key,\n        weapon_hands,\n        max_stack,\n        sell_price,\n        bonus_str,\n        bonus_dex,\n        bonus_int,\n        bonus_wis,\n        bonus_sta,\n        pdef,\n        mdef,"
+          },
+          {
+            "line": 1239,
+            "operation": "INSERT",
+            "statement": "\n    INSERT INTO inventory (\n        user_id,\n        item_id,\n        quantity,\n        durability\n    )\n    VALUES (?, ?, ?, ?)\n    "
+          }
+        ],
+        "commit_lines": [
+          1256
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          1052
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/inventory.py",
+        "function": "consume_inventory_item",
+        "line": 270,
+        "end_line": 333,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 4,
+        "sql_write_examples": [
+          {
+            "line": 313,
+            "operation": "DELETE",
+            "statement": "DELETE FROM inventory WHERE id=?"
+          },
+          {
+            "line": 315,
+            "operation": "DELETE",
+            "statement": "DELETE FROM inventory WHERE id=? AND user_id=?"
+          },
+          {
+            "line": 322,
+            "operation": "UPDATE",
+            "statement": "UPDATE inventory SET quantity=? WHERE id=?"
+          },
+          {
+            "line": 327,
+            "operation": "UPDATE",
+            "statement": "UPDATE inventory SET quantity=? WHERE id=? AND user_id=?"
+          }
+        ],
+        "commit_lines": [
+          332
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          306
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/inventory.py",
+        "function": "consume_user_item_by_item_id",
+        "line": 352,
+        "end_line": 404,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 387,
+            "operation": "DELETE",
+            "statement": "\n            DELETE FROM inventory\n            WHERE id=?\n            "
+          },
+          {
+            "line": 392,
+            "operation": "UPDATE",
+            "statement": "\n            UPDATE inventory\n            SET quantity=?\n            WHERE id=?\n            "
+          }
+        ],
+        "commit_lines": [
+          402
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          358
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/inventory_compat.py",
+        "function": "seed_class_reset_sphere_item",
+        "line": 215,
+        "end_line": 345,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 231,
+            "operation": "INSERT",
+            "statement": "\n\n        INSERT INTO items (\n\n            id,\n\n            name,\n\n            type,\n\n            rarity,\n\n            category,\n\n            slot_key,\n\n            weapon_hands,\n\n            max_stack,\n\n            sell_price,\n\n            bonus_str,\n\n            bonus_dex,\n\n            bonus_int,\n"
+          }
+        ],
+        "commit_lines": [
+          341
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          343
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/refine.py",
+        "function": "init_refine_system",
+        "line": 20,
+        "end_line": 30,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 23,
+            "operation": "ALTER",
+            "statement": "\n        ALTER TABLE inventory\n        ADD COLUMN refine_level INTEGER DEFAULT 0\n        "
+          }
+        ],
+        "commit_lines": [
+          27
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          28
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/refine.py",
+        "function": "set_inventory_refine_level",
+        "line": 116,
+        "end_line": 125,
+        "domains": [
+          "inventory",
+          "rewards_progression"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 123,
+            "operation": "UPDATE",
+            "statement": "UPDATE inventory SET refine_level=? WHERE id=?"
+          }
+        ],
+        "commit_lines": [
+          124
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          120
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/refine.py",
+        "function": "ensure_refine_material_stack_sizes",
+        "line": 245,
+        "end_line": 262,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 256,
+            "operation": "UPDATE",
+            "statement": "\n    UPDATE items\n    SET max_stack=?\n    WHERE id IN (401, 402)\n    "
+          }
+        ],
+        "commit_lines": [
+          262
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          253
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/shop.py",
+        "function": "create_common_equipment_shop_preview",
+        "line": 190,
+        "end_line": 402,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 332,
+            "operation": "INSERT",
+            "statement": "\n    INSERT INTO items (\n        id,\n        name,\n        type,\n        rarity,\n        category,\n        slot_key,\n        weapon_hands,\n        max_stack,\n        sell_price,\n        bonus_str,\n        bonus_dex,\n        bonus_int,\n        bonus_wis,\n        bonus_sta,\n        pdef,\n        mdef,"
+          }
+        ],
+        "commit_lines": [
+          393
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          207
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/story_quests.py",
+        "function": "consume_story_quest_item_quantity",
+        "line": 161,
+        "end_line": 204,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 188,
+            "operation": "DELETE",
+            "statement": "DELETE FROM user_story_quest_items\n                WHERE user_id=? AND quest_id=? AND item_key=? AND quantity=?"
+          },
+          {
+            "line": 194,
+            "operation": "UPDATE",
+            "statement": "UPDATE user_story_quest_items SET quantity=quantity-?, updated_at=?\n                WHERE user_id=? AND quest_id=? AND item_key=? AND quantity=?"
+          }
+        ],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": [
+          "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+        ]
+      },
+      {
+        "path": "systems/admin_crystal_credit_system.py",
+        "function": "preview_admin_adjustment",
+        "line": 18,
+        "end_line": 35,
+        "domains": [
+          "currencies",
+          "admin_credit"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 31,
+            "operation": "INSERT",
+            "statement": "INSERT OR IGNORE INTO crystal_wallets(user_id,balance,created_at,updated_at) VALUES(?,0,?,?)"
+          }
+        ],
+        "commit_lines": [
+          31
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          21
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "systems/auction_house_system.py",
+        "function": "create_auction_lot_record",
+        "line": 395,
+        "end_line": 518,
+        "domains": [
+          "auction"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 452,
+            "operation": "INSERT",
+            "statement": "\n    INSERT INTO auction_lots (\n        seller_user_id,\n        buyer_user_id,\n        item_type,\n        item_source,\n        item_ref_id,\n        item_snapshot_json,\n        item_name,\n        item_name_norm,\n        category,\n        rarity,\n        level,\n        enhancement_level,\n        durab"
+          }
+        ],
+        "commit_lines": [
+          498
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          433
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "systems/crystal_shop_system.py",
+        "function": "_stack",
+        "line": 32,
+        "end_line": 39,
+        "domains": [
+          "currencies"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 36,
+            "operation": "UPDATE",
+            "statement": "UPDATE inventory SET quantity=quantity+? WHERE id=?"
+          },
+          {
+            "line": 38,
+            "operation": "INSERT",
+            "statement": "INSERT INTO inventory(user_id,item_id,quantity,durability) VALUES(?,?,?,NULL)"
+          }
+        ],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": [
+          "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+        ]
+      },
+      {
+        "path": "systems/equipment_system.py",
+        "function": "apply_random_durability_wear_on_victory",
+        "line": 3411,
+        "end_line": 3531,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 3485,
+            "operation": "UPDATE",
+            "statement": "UPDATE inventory SET durability=? WHERE id=? AND user_id=?"
+          }
+        ],
+        "commit_lines": [
+          3493
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          3433
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "systems/guild_system.py",
+        "function": "cancel_guild_application",
+        "line": 1157,
+        "end_line": 1208,
+        "domains": [
+          "guild"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 1183,
+            "operation": "UPDATE",
+            "statement": "\n    UPDATE guild_applications\n    SET status=?, processed_at=?, processed_by=?\n    WHERE id=?\n    "
+          }
+        ],
+        "commit_lines": [
+          1194
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          1202
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "systems/guild_system.py",
+        "function": "make_existing_guild_icons_unique",
+        "line": 1288,
+        "end_line": 1341,
+        "domains": [
+          "guild"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 1326,
+            "operation": "UPDATE",
+            "statement": "UPDATE guilds SET icon=?, updated_at=? WHERE id=?"
+          }
+        ],
+        "commit_lines": [
+          1329
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          1312,
+          1338
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "systems/guild_system.py",
+        "function": "accept_guild_application",
+        "line": 1422,
+        "end_line": 1525,
+        "domains": [
+          "guild"
+        ],
+        "sql_write_count": 4,
+        "sql_write_examples": [
+          {
+            "line": 1470,
+            "operation": "INSERT",
+            "statement": "\n    INSERT INTO guild_members (guild_id, user_id, role, joined_at)\n    VALUES (?, ?, ?, ?)\n    "
+          },
+          {
+            "line": 1480,
+            "operation": "UPDATE",
+            "statement": "\n    UPDATE guild_applications\n    SET status=?, processed_at=?, processed_by=?\n    WHERE id=?\n    "
+          },
+          {
+            "line": 1492,
+            "operation": "UPDATE",
+            "statement": "\n    UPDATE guild_applications\n    SET status=?, processed_at=?, processed_by=?\n    WHERE user_id=? AND status=? AND id != ?\n    "
+          },
+          {
+            "line": 1449,
+            "operation": "UPDATE",
+            "statement": "\n        UPDATE guild_applications\n        SET status=?, processed_at=?, processed_by=?\n        WHERE id=?\n        "
+          }
+        ],
+        "commit_lines": [
+          1505,
+          1459
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          1516,
+          1514
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "systems/guild_system.py",
+        "function": "reject_guild_application",
+        "line": 1528,
+        "end_line": 1583,
+        "domains": [
+          "guild"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 1552,
+            "operation": "UPDATE",
+            "statement": "\n    UPDATE guild_applications\n    SET status=?, processed_at=?, processed_by=?\n    WHERE id=?\n    "
+          }
+        ],
+        "commit_lines": [
+          1563
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          1574,
+          1572
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "systems/guild_system.py",
+        "function": "_guild_safe_set_application_status",
+        "line": 1916,
+        "end_line": 1951,
+        "domains": [
+          "guild"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 1931,
+            "operation": "UPDATE",
+            "statement": "\n        UPDATE guild_applications\n        SET status=?, processed_at=?, processed_by=?\n        WHERE id=?\n        "
+          },
+          {
+            "line": 1949,
+            "operation": "DELETE",
+            "statement": "DELETE FROM guild_applications WHERE id=?"
+          }
+        ],
+        "commit_lines": [
+          1941,
+          1950
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          1943
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "systems/guild_system.py",
+        "function": "accept_guild_application",
+        "line": 1987,
+        "end_line": 2097,
+        "domains": [
+          "guild"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 2061,
+            "operation": "INSERT",
+            "statement": "\n        INSERT INTO guild_members (guild_id, user_id, role, joined_at)\n        VALUES (?, ?, ?, ?)\n        "
+          }
+        ],
+        "commit_lines": [
+          2070
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          2071,
+          2094
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "systems/guild_system.py",
+        "function": "recalculate_guild_level",
+        "line": 2222,
+        "end_line": 2249,
+        "domains": [
+          "rewards_progression",
+          "guild"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 2233,
+            "operation": "UPDATE",
+            "statement": "UPDATE guilds SET level=?, updated_at=? WHERE id=?"
+          }
+        ],
+        "commit_lines": [
+          2237
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          2246
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "systems/level_up_reward_system.py",
+        "function": "_insert_new_reward_rows",
+        "line": 231,
+        "end_line": 297,
+        "domains": [
+          "rewards_progression"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 241,
+            "operation": "INSERT",
+            "statement": "INSERT OR IGNORE INTO level_up_rewards (\n\n                   user_id, reached_level, gold_amount,\n\n                   health_potion_quantity, simple_extractor_quantity,\n\n                   crystal_quantity, gold_claimed, items_claimed, created_at,\n\n                   small_mana_potion_quantity, refi"
+          },
+          {
+            "line": 279,
+            "operation": "UPDATE",
+            "statement": "UPDATE users SET gold=COALESCE(gold, 0)+? WHERE user_id=?"
+          }
+        ],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": [
+          "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+        ]
+      },
+      {
+        "path": "systems/player_interaction_system.py",
+        "function": "_trade_transfer_stack_12_7_0",
+        "line": 2156,
+        "end_line": 2169,
+        "domains": [
+          "trade"
+        ],
+        "sql_write_count": 3,
+        "sql_write_examples": [
+          {
+            "line": 2159,
+            "operation": "UPDATE",
+            "statement": "UPDATE inventory SET quantity=quantity-? WHERE id=?"
+          },
+          {
+            "line": 2169,
+            "operation": "DELETE",
+            "statement": "DELETE FROM inventory WHERE id=?"
+          },
+          {
+            "line": 2163,
+            "operation": "UPDATE",
+            "statement": "UPDATE inventory SET quantity=quantity+? WHERE id=?"
+          }
+        ],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": [
+          "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+        ]
+      },
+      {
+        "path": "systems/player_system.py",
+        "function": "add_gold",
+        "line": 1273,
+        "end_line": 1297,
+        "domains": [
+          "currencies"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 1291,
+            "operation": "UPDATE",
+            "statement": "UPDATE users SET gold=COALESCE(gold,0)+? WHERE user_id=?"
+          }
+        ],
+        "commit_lines": [
+          1294
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          1285
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "systems/potion_system.py",
+        "function": "use_potion_from_inventory",
+        "line": 525,
+        "end_line": 559,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 545,
+            "operation": "UPDATE",
+            "statement": "UPDATE users SET last_mp_regen_update=?, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?"
+          }
+        ],
+        "commit_lines": [
+          553
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          555
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "systems/refine_system.py",
+        "function": "consume",
+        "line": 172,
+        "end_line": 178,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 175,
+            "operation": "DELETE",
+            "statement": "DELETE FROM inventory WHERE id=? AND user_id=?"
+          },
+          {
+            "line": 176,
+            "operation": "UPDATE",
+            "statement": "UPDATE inventory SET quantity=quantity-1 WHERE id=? AND user_id=? AND quantity>1"
+          }
+        ],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": [
+          "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+        ]
+      },
+      {
+        "path": "systems/rune_system.py",
+        "function": "_apply_stack_plan",
+        "line": 290,
+        "end_line": 300,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 292,
+            "operation": "UPDATE",
+            "statement": "UPDATE inventory SET quantity=? WHERE id=? AND user_id=?"
+          },
+          {
+            "line": 297,
+            "operation": "INSERT",
+            "statement": "INSERT INTO inventory (user_id, item_id, quantity) VALUES (?, ?, ?)"
+          }
+        ],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": [
+          "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+        ]
+      },
+      {
+        "path": "systems/rune_system.py",
+        "function": "_consume_stack_quantity",
+        "line": 757,
+        "end_line": 786,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 771,
+            "operation": "UPDATE",
+            "statement": "UPDATE inventory SET quantity=? WHERE id=? AND user_id=?"
+          },
+          {
+            "line": 776,
+            "operation": "DELETE",
+            "statement": "DELETE FROM inventory WHERE id=? AND user_id=?"
+          }
+        ],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": [
+          "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+        ]
+      },
+      {
+        "path": "systems/rune_system.py",
+        "function": "_add_stack_quantity_in_transaction",
+        "line": 789,
+        "end_line": 872,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 857,
+            "operation": "INSERT",
+            "statement": "INSERT INTO inventory (user_id,item_id,quantity) VALUES (?,?,?)"
+          },
+          {
+            "line": 847,
+            "operation": "UPDATE",
+            "statement": "UPDATE inventory SET quantity=? WHERE id=? AND user_id=?"
+          }
+        ],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": [
+          "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+        ]
+      },
+      {
+        "path": "systems/rune_system.py",
+        "function": "_consume_extractor_stack",
+        "line": 1069,
+        "end_line": 1077,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 1073,
+            "operation": "DELETE",
+            "statement": "DELETE FROM inventory WHERE id=?"
+          },
+          {
+            "line": 1074,
+            "operation": "UPDATE",
+            "statement": "UPDATE inventory SET quantity=quantity-1 WHERE id=?"
+          }
+        ],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": [
+          "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+        ]
+      }
+    ],
+    "critical_function_examples": [
+      {
+        "path": "db_modules/connection.py",
+        "function": "seed_items",
+        "line": 202,
+        "end_line": 246,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 216,
+            "operation": "INSERT",
+            "statement": "\n        INSERT INTO items (\n            id, name, type, rarity, category,\n            slot_key, weapon_hands,\n            max_stack, sell_price,\n            bonus_str, bonus_dex, bonus_int, bonus_wis, bonus_sta,\n            pdef, mdef\n        )\n        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,"
+          }
+        ],
+        "commit_lines": [
+          246
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "get_inventory_used_slots",
+        "line": 51,
+        "end_line": 63,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "get_exp_to_next_level",
+        "line": 65,
+        "end_line": 67,
+        "domains": [
+          "rewards_progression"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "set_player_level_for_test",
+        "line": 120,
+        "end_line": 202,
+        "domains": [
+          "rewards_progression"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 151,
+            "operation": "UPDATE",
+            "statement": "\n    UPDATE users\n    SET\n        level=?,\n        exp=0,\n        str=?,\n        dex=?,\n        intelligence=?,\n        wis=?,\n        sta=?\n    WHERE user_id=?\n    "
+          },
+          {
+            "line": 176,
+            "operation": "UPDATE",
+            "statement": "\n    UPDATE users\n    SET\n        max_hp=?,\n        hp=?\n    WHERE user_id=?\n    "
+          }
+        ],
+        "commit_lines": [
+          172,
+          188
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          123
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "reset_player_level_for_test",
+        "line": 204,
+        "end_line": 205,
+        "domains": [
+          "rewards_progression"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "set_gold_for_test",
+        "line": 207,
+        "end_line": 253,
+        "domains": [
+          "currencies"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 241,
+            "operation": "UPDATE",
+            "statement": "\n    UPDATE users\n    SET gold=?\n    WHERE user_id=?\n    "
+          }
+        ],
+        "commit_lines": [
+          247
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          218
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "init_dynamic_equipment_system",
+        "line": 520,
+        "end_line": 533,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [
+          533
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          530
+        ],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "get_profile_for_generated_item",
+        "line": 553,
+        "end_line": 566,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "generate_dynamic_equipment_stats",
+        "line": 583,
+        "end_line": 733,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "seed_class_reset_sphere_item",
+        "line": 735,
+        "end_line": 800,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 1,
+        "sql_write_examples": [
+          {
+            "line": 743,
+            "operation": "INSERT",
+            "statement": "\n        INSERT INTO items (\n            id,\n            name,\n            type,\n            rarity,\n            category,\n            slot_key,\n            weapon_hands,\n            max_stack,\n            sell_price,\n            bonus_str,\n            bonus_dex,\n            bonus_int,\n            b"
+          }
+        ],
+        "commit_lines": [
+          798
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          799
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "init_class_equipment_restrictions_system",
+        "line": 811,
+        "end_line": 829,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [
+          829
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          826
+        ],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "normalize_equipment_restriction_value",
+        "line": 831,
+        "end_line": 835,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "get_item_subtype_label",
+        "line": 841,
+        "end_line": 843,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "create_dev_armor_item_for_test",
+        "line": 1194,
+        "end_line": 1365,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 1273,
+            "operation": "INSERT",
+            "statement": "\n    INSERT INTO items (\n        id,\n        name,\n        type,\n        rarity,\n        category,\n        slot_key,\n        weapon_hands,\n        max_stack,\n        sell_price,\n        bonus_str,\n        bonus_dex,\n        bonus_int,\n        bonus_wis,\n        bonus_sta,\n        pdef,\n        mdef,"
+          },
+          {
+            "line": 1331,
+            "operation": "INSERT",
+            "statement": "\n    INSERT INTO inventory (\n        user_id,\n        item_id,\n        quantity,\n        durability\n    )\n    VALUES (?, ?, ?, ?)\n    "
+          }
+        ],
+        "commit_lines": [
+          1348
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          1235
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "create_dev_weapon_item_for_test",
+        "line": 1367,
+        "end_line": 1560,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 2,
+        "sql_write_examples": [
+          {
+            "line": 1468,
+            "operation": "INSERT",
+            "statement": "\n    INSERT INTO items (\n        id,\n        name,\n        type,\n        rarity,\n        category,\n        slot_key,\n        weapon_hands,\n        max_stack,\n        sell_price,\n        bonus_str,\n        bonus_dex,\n        bonus_int,\n        bonus_wis,\n        bonus_sta,\n        pdef,\n        mdef,"
+          },
+          {
+            "line": 1526,
+            "operation": "INSERT",
+            "statement": "\n    INSERT INTO inventory (\n        user_id,\n        item_id,\n        quantity,\n        durability\n    )\n    VALUES (?, ?, ?, ?)\n    "
+          }
+        ],
+        "commit_lines": [
+          1543
+        ],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [
+          1415
+        ],
+        "risk_flags": [
+          "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+        ]
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "_equipment_system_ro_v1",
+        "line": 1569,
+        "end_line": 1571,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/dev_compat.py",
+        "function": "get_player_level",
+        "line": 1583,
+        "end_line": 1584,
+        "domains": [
+          "rewards_progression"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/equipment.py",
+        "function": "_equipment_system",
+        "line": 12,
+        "end_line": 14,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/equipment.py",
+        "function": "normalize_equipment_restriction_value",
+        "line": 46,
+        "end_line": 50,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/equipment.py",
+        "function": "is_armor_slot",
+        "line": 53,
+        "end_line": 55,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/equipment.py",
+        "function": "get_armor_type_label",
+        "line": 58,
+        "end_line": 61,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/equipment.py",
+        "function": "get_item_subtype_label",
+        "line": 64,
+        "end_line": 67,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/equipment.py",
+        "function": "ensure_equipment_slots",
+        "line": 74,
+        "end_line": 75,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/equipment.py",
+        "function": "get_all_equipped_items",
+        "line": 78,
+        "end_line": 79,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      },
+      {
+        "path": "db_modules/equipment.py",
+        "function": "get_all_equipped_slots",
+        "line": 82,
+        "end_line": 105,
+        "domains": [
+          "inventory"
+        ],
+        "sql_write_count": 0,
+        "sql_write_examples": [],
+        "commit_lines": [],
+        "rollback_lines": [],
+        "begin_lines": [],
+        "connection_calls": [],
+        "broad_exception_lines": [],
+        "risk_flags": []
+      }
+    ],
+    "domain_summary": {
+      "inventory": {
+        "functions": 770,
+        "write_functions": 69,
+        "flagged_functions": 19
+      },
+      "rewards_progression": {
+        "functions": 190,
+        "write_functions": 9,
+        "flagged_functions": 4
+      },
+      "currencies": {
+        "functions": 128,
+        "write_functions": 23,
+        "flagged_functions": 4
+      },
+      "trade": {
+        "functions": 188,
+        "write_functions": 19,
+        "flagged_functions": 1
+      },
+      "auction": {
+        "functions": 445,
+        "write_functions": 17,
+        "flagged_functions": 1
+      },
+      "guild": {
+        "functions": 346,
+        "write_functions": 24,
+        "flagged_functions": 7
+      },
+      "admin_credit": {
+        "functions": 26,
+        "write_functions": 3,
+        "flagged_functions": 1
+      }
+    }
+  },
+  "sqlite_snapshot": {
+    "production_connection_opened": false,
+    "copy_attempts": [
+      {
+        "attempt": 1,
+        "stable": true
+      }
+    ],
+    "production_baseline": {
+      "game.db": {
+        "exists": true,
+        "size": 1925120,
+        "mtime_ns": 1791928577995768700,
+        "sha256": "90d622e9f9ce8b22b29d5dc0d4f5fa3588a4d0a8539fa97cc286f37db01123ac"
+      },
+      "game.db-wal": {
+        "exists": true,
+        "size": 4132392,
+        "mtime_ns": 1793653933536742600,
+        "sha256": "c5c40b89412172dae541ef574ee305ece4a3405366f2eb8601463e7939cae365"
+      },
+      "game.db-shm": {
+        "exists": true,
+        "size": 32768,
+        "mtime_ns": 1793653872538111600,
+        "sha256": "849bd37c2b3aa91276252495677c52793c8475d5ba8fd0c4d1aba747a7bfbae7"
+      }
+    },
+    "inspection": {
+      "quick_check": [
+        "ok"
+      ],
+      "foreign_key_check_count": 0,
+      "foreign_key_examples": [],
+      "pragmas": {
+        "journal_mode": "wal",
+        "foreign_keys": 0,
+        "busy_timeout": 30000,
+        "query_only": 0,
+        "schema_version": 158
+      }
+    }
+  },
+  "findings": [
+    {
+      "area": "critical_write_paths",
+      "status": "INVENTORIED",
+      "evidence": "critical functions=1849; critical write functions=136"
+    },
+    {
+      "area": "static_atomicity_candidates",
+      "status": "REVIEW_REQUIRED",
+      "evidence": "flagged critical functions=34"
+    },
+    {
+      "area": "transaction_ownership",
+      "status": "REVIEW_REQUIRED",
+      "evidence": "commit/rollback/begin calls=555"
+    },
+    {
+      "area": "exact_once_and_idempotency",
+      "status": "REVIEW_REQUIRED",
+      "evidence": "AST cannot prove exact-once behavior; successor must map producers, retries, ledgers and unique constraints."
+    },
+    {
+      "area": "database_integrity",
+      "status": "PASS",
+      "evidence": "quick_check=['ok']; foreign_key_rows=0"
+    }
+  ],
+  "limitations": [
+    "Static AST findings are candidates, not confirmed defects.",
+    "Exact-once, retry and cross-function transaction behavior require successor runtime-shaped tests.",
+    "No gameplay, balance or user-facing policy conclusion is made in this audit."
+  ],
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "decision": "GO_TO_21_4_2_TRANSACTION_ATOMICITY_IMPLEMENTATION_SCOPE"
+}
