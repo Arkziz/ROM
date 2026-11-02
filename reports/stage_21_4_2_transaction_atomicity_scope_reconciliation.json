@@ -1,0 +1,1738 @@
+{
+  "stage": "21.4.2",
+  "revision": "1",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-02T21:23:32.648333+00:00",
+  "git": {
+    "branch": "develop",
+    "head": "8437b9859bae7c3b5496fc433868355aad577709",
+    "origin_develop": "3269cffb853872d9e199f308275c71b7f91c57ea",
+    "origin_is_ancestor": true,
+    "patch": "patch/patch_21_4_2_transaction_atomicity_scope_reconciliation.py",
+    "status": [
+      {
+        "xy": " M",
+        "path": "ROM_FULL_DUMP.txt"
+      }
+    ],
+    "prior_sha256": "c1718a8eb86720d086c8c22afedcabccb0af08af1e1b80e32eaa219d4dd0503f"
+  },
+  "prior_audit": {
+    "path": "reports/stage_21_4_1_transaction_atomicity_runtime_audit.json",
+    "sha256": "c1718a8eb86720d086c8c22afedcabccb0af08af1e1b80e32eaa219d4dd0503f",
+    "candidate_count": 34
+  },
+  "classification_counts": {
+    "CONFIRMED_ROLLBACK_GAP": 25,
+    "CALLER_OWNED_TRANSACTION": 1,
+    "CONFIRMED_BOUNDARY_GAP": 2,
+    "DELEGATED_TRANSACTION_HELPER": 6
+  },
+  "reconciled_candidates": [
+    {
+      "path": "db_modules/dev_compat.py",
+      "function": "set_player_level_for_test",
+      "line": 120,
+      "end_line": 202,
+      "domains": [
+        "rewards_progression"
+      ],
+      "sql_write_count": 2,
+      "sql_write_examples": [
+        {
+          "line": 151,
+          "operation": "UPDATE",
+          "statement": "\n    UPDATE users\n    SET\n        level=?,\n        exp=0,\n        str=?,\n        dex=?,\n        intelligence=?,\n        wis=?,\n        sta=?\n    WHERE user_id=?\n    "
+        },
+        {
+          "line": 176,
+          "operation": "UPDATE",
+          "statement": "\n    UPDATE users\n    SET\n        max_hp=?,\n        hp=?\n    WHERE user_id=?\n    "
+        }
+      ],
+      "commit_lines": [
+        172,
+        188
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        123
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "reset_player_level_for_test",
+          "line": 204,
+          "call_lines": [
+            205
+          ]
+        }
+      ],
+      "source_sha256": "c140072edbb338a6f7ca396d0b442f559962a8dc8d7aa1148f7e2d3314069741"
+    },
+    {
+      "path": "db_modules/dev_compat.py",
+      "function": "set_gold_for_test",
+      "line": 207,
+      "end_line": 253,
+      "domains": [
+        "currencies"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 241,
+          "operation": "UPDATE",
+          "statement": "\n    UPDATE users\n    SET gold=?\n    WHERE user_id=?\n    "
+        }
+      ],
+      "commit_lines": [
+        247
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        218
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "c140072edbb338a6f7ca396d0b442f559962a8dc8d7aa1148f7e2d3314069741"
+    },
+    {
+      "path": "db_modules/dev_compat.py",
+      "function": "seed_class_reset_sphere_item",
+      "line": 735,
+      "end_line": 800,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 743,
+          "operation": "INSERT",
+          "statement": "\n        INSERT INTO items (\n            id,\n            name,\n            type,\n            rarity,\n            category,\n            slot_key,\n            weapon_hands,\n            max_stack,\n            sell_price,\n            bonus_str,\n            bonus_dex,\n            bonus_int,\n            b"
+        }
+      ],
+      "commit_lines": [
+        798
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        799
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "c140072edbb338a6f7ca396d0b442f559962a8dc8d7aa1148f7e2d3314069741"
+    },
+    {
+      "path": "db_modules/dev_compat.py",
+      "function": "create_dev_armor_item_for_test",
+      "line": 1194,
+      "end_line": 1365,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 2,
+      "sql_write_examples": [
+        {
+          "line": 1273,
+          "operation": "INSERT",
+          "statement": "\n    INSERT INTO items (\n        id,\n        name,\n        type,\n        rarity,\n        category,\n        slot_key,\n        weapon_hands,\n        max_stack,\n        sell_price,\n        bonus_str,\n        bonus_dex,\n        bonus_int,\n        bonus_wis,\n        bonus_sta,\n        pdef,\n        mdef,"
+        },
+        {
+          "line": 1331,
+          "operation": "INSERT",
+          "statement": "\n    INSERT INTO inventory (\n        user_id,\n        item_id,\n        quantity,\n        durability\n    )\n    VALUES (?, ?, ?, ?)\n    "
+        }
+      ],
+      "commit_lines": [
+        1348
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        1235
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "c140072edbb338a6f7ca396d0b442f559962a8dc8d7aa1148f7e2d3314069741"
+    },
+    {
+      "path": "db_modules/dev_compat.py",
+      "function": "create_dev_weapon_item_for_test",
+      "line": 1367,
+      "end_line": 1560,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 2,
+      "sql_write_examples": [
+        {
+          "line": 1468,
+          "operation": "INSERT",
+          "statement": "\n    INSERT INTO items (\n        id,\n        name,\n        type,\n        rarity,\n        category,\n        slot_key,\n        weapon_hands,\n        max_stack,\n        sell_price,\n        bonus_str,\n        bonus_dex,\n        bonus_int,\n        bonus_wis,\n        bonus_sta,\n        pdef,\n        mdef,"
+        },
+        {
+          "line": 1526,
+          "operation": "INSERT",
+          "statement": "\n    INSERT INTO inventory (\n        user_id,\n        item_id,\n        quantity,\n        durability\n    )\n    VALUES (?, ?, ?, ?)\n    "
+        }
+      ],
+      "commit_lines": [
+        1543
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        1415
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "c140072edbb338a6f7ca396d0b442f559962a8dc8d7aa1148f7e2d3314069741"
+    },
+    {
+      "path": "db_modules/generated_equipment.py",
+      "function": "create_generated_equipment_item",
+      "line": 1006,
+      "end_line": 1271,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 2,
+      "sql_write_examples": [
+        {
+          "line": 1181,
+          "operation": "INSERT",
+          "statement": "\n    INSERT INTO items (\n        id,\n        name,\n        type,\n        rarity,\n        category,\n        slot_key,\n        weapon_hands,\n        max_stack,\n        sell_price,\n        bonus_str,\n        bonus_dex,\n        bonus_int,\n        bonus_wis,\n        bonus_sta,\n        pdef,\n        mdef,"
+        },
+        {
+          "line": 1239,
+          "operation": "INSERT",
+          "statement": "\n    INSERT INTO inventory (\n        user_id,\n        item_id,\n        quantity,\n        durability\n    )\n    VALUES (?, ?, ?, ?)\n    "
+        }
+      ],
+      "commit_lines": [
+        1256
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        1052
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "a23b6558917037098873de61f79c45ab347cf7587a8c5a5977230fb69dd11a4b"
+    },
+    {
+      "path": "db_modules/inventory.py",
+      "function": "consume_inventory_item",
+      "line": 270,
+      "end_line": 333,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 4,
+      "sql_write_examples": [
+        {
+          "line": 313,
+          "operation": "DELETE",
+          "statement": "DELETE FROM inventory WHERE id=?"
+        },
+        {
+          "line": 315,
+          "operation": "DELETE",
+          "statement": "DELETE FROM inventory WHERE id=? AND user_id=?"
+        },
+        {
+          "line": 322,
+          "operation": "UPDATE",
+          "statement": "UPDATE inventory SET quantity=? WHERE id=?"
+        },
+        {
+          "line": 327,
+          "operation": "UPDATE",
+          "statement": "UPDATE inventory SET quantity=? WHERE id=? AND user_id=?"
+        }
+      ],
+      "commit_lines": [
+        332
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        306
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "4b44ec514027e2c49e275a0230a7f9c3415739b722dd108e9bc232e2cb85ad51"
+    },
+    {
+      "path": "db_modules/inventory.py",
+      "function": "consume_user_item_by_item_id",
+      "line": 352,
+      "end_line": 404,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 2,
+      "sql_write_examples": [
+        {
+          "line": 387,
+          "operation": "DELETE",
+          "statement": "\n            DELETE FROM inventory\n            WHERE id=?\n            "
+        },
+        {
+          "line": 392,
+          "operation": "UPDATE",
+          "statement": "\n            UPDATE inventory\n            SET quantity=?\n            WHERE id=?\n            "
+        }
+      ],
+      "commit_lines": [
+        402
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        358
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "4b44ec514027e2c49e275a0230a7f9c3415739b722dd108e9bc232e2cb85ad51"
+    },
+    {
+      "path": "db_modules/inventory_compat.py",
+      "function": "seed_class_reset_sphere_item",
+      "line": 215,
+      "end_line": 345,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 231,
+          "operation": "INSERT",
+          "statement": "\n\n        INSERT INTO items (\n\n            id,\n\n            name,\n\n            type,\n\n            rarity,\n\n            category,\n\n            slot_key,\n\n            weapon_hands,\n\n            max_stack,\n\n            sell_price,\n\n            bonus_str,\n\n            bonus_dex,\n\n            bonus_int,\n"
+        }
+      ],
+      "commit_lines": [
+        341
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        343
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "is_class_reset_sphere_inventory_item",
+          "line": 349,
+          "call_lines": [
+            351
+          ]
+        },
+        {
+          "function": "use_class_reset_sphere_from_inventory",
+          "line": 397,
+          "call_lines": [
+            400
+          ]
+        }
+      ],
+      "source_sha256": "e677a6b85bb25d2a8b28bde1d14a5023d755741e27476629777fdeb2a7460aa1"
+    },
+    {
+      "path": "db_modules/refine.py",
+      "function": "init_refine_system",
+      "line": 20,
+      "end_line": 30,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 23,
+          "operation": "ALTER",
+          "statement": "\n        ALTER TABLE inventory\n        ADD COLUMN refine_level INTEGER DEFAULT 0\n        "
+        }
+      ],
+      "commit_lines": [
+        27
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        28
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "get_inventory_item_refine_info",
+          "line": 87,
+          "call_lines": [
+            88
+          ]
+        },
+        {
+          "function": "set_inventory_refine_level",
+          "line": 116,
+          "call_lines": [
+            117
+          ]
+        },
+        {
+          "function": "get_refine_total_armor_hp_bonus_percent",
+          "line": 140,
+          "call_lines": [
+            147
+          ]
+        },
+        {
+          "function": "ensure_refine_material_stack_sizes",
+          "line": 245,
+          "call_lines": [
+            252
+          ]
+        }
+      ],
+      "source_sha256": "fff3c35da75ae1fa0adceff00926950ab05b7c197b49c77b7d50190cf5e89279"
+    },
+    {
+      "path": "db_modules/refine.py",
+      "function": "set_inventory_refine_level",
+      "line": 116,
+      "end_line": 125,
+      "domains": [
+        "inventory",
+        "rewards_progression"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 123,
+          "operation": "UPDATE",
+          "statement": "UPDATE inventory SET refine_level=? WHERE id=?"
+        }
+      ],
+      "commit_lines": [
+        124
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        120
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "fff3c35da75ae1fa0adceff00926950ab05b7c197b49c77b7d50190cf5e89279"
+    },
+    {
+      "path": "db_modules/refine.py",
+      "function": "ensure_refine_material_stack_sizes",
+      "line": 245,
+      "end_line": 262,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 256,
+          "operation": "UPDATE",
+          "statement": "\n    UPDATE items\n    SET max_stack=?\n    WHERE id IN (401, 402)\n    "
+        }
+      ],
+      "commit_lines": [
+        262
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        253
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "get_refine_material_stack_debug",
+          "line": 265,
+          "call_lines": [
+            269
+          ]
+        }
+      ],
+      "source_sha256": "fff3c35da75ae1fa0adceff00926950ab05b7c197b49c77b7d50190cf5e89279"
+    },
+    {
+      "path": "db_modules/shop.py",
+      "function": "create_common_equipment_shop_preview",
+      "line": 190,
+      "end_line": 402,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 332,
+          "operation": "INSERT",
+          "statement": "\n    INSERT INTO items (\n        id,\n        name,\n        type,\n        rarity,\n        category,\n        slot_key,\n        weapon_hands,\n        max_stack,\n        sell_price,\n        bonus_str,\n        bonus_dex,\n        bonus_int,\n        bonus_wis,\n        bonus_sta,\n        pdef,\n        mdef,"
+        }
+      ],
+      "commit_lines": [
+        393
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        207
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "9da1260fa7b375485480cd9a06d93b485efff54bae2ec369e560aa8e384facc0"
+    },
+    {
+      "path": "db_modules/story_quests.py",
+      "function": "consume_story_quest_item_quantity",
+      "line": 161,
+      "end_line": 204,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 2,
+      "sql_write_examples": [
+        {
+          "line": 188,
+          "operation": "DELETE",
+          "statement": "DELETE FROM user_story_quest_items\n                WHERE user_id=? AND quest_id=? AND item_key=? AND quantity=?"
+        },
+        {
+          "line": 194,
+          "operation": "UPDATE",
+          "statement": "UPDATE user_story_quest_items SET quantity=quantity-?, updated_at=?\n                WHERE user_id=? AND quest_id=? AND item_key=? AND quantity=?"
+        }
+      ],
+      "commit_lines": [],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [],
+      "risk_flags": [
+        "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+      ],
+      "classification": "CALLER_OWNED_TRANSACTION",
+      "reason": "multiple writes use caller-provided DB object; caller scope must own commit/rollback",
+      "accepts_connection_parameter": true,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "cedc91f344f44dafc6daf35c6ba93d54e280f0f17b00709b32142abe503a4975"
+    },
+    {
+      "path": "systems/admin_crystal_credit_system.py",
+      "function": "preview_admin_adjustment",
+      "line": 18,
+      "end_line": 35,
+      "domains": [
+        "currencies",
+        "admin_credit"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 31,
+          "operation": "INSERT",
+          "statement": "INSERT OR IGNORE INTO crystal_wallets(user_id,balance,created_at,updated_at) VALUES(?,0,?,?)"
+        }
+      ],
+      "commit_lines": [
+        31
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        21
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "4756746078c08daab32ce0549e6f37fe5762b198f50535763a8b2935a579142c"
+    },
+    {
+      "path": "systems/auction_house_system.py",
+      "function": "create_auction_lot_record",
+      "line": 395,
+      "end_line": 518,
+      "domains": [
+        "auction"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 452,
+          "operation": "INSERT",
+          "statement": "\n    INSERT INTO auction_lots (\n        seller_user_id,\n        buyer_user_id,\n        item_type,\n        item_source,\n        item_ref_id,\n        item_snapshot_json,\n        item_name,\n        item_name_norm,\n        category,\n        rarity,\n        level,\n        enhancement_level,\n        durab"
+        }
+      ],
+      "commit_lines": [
+        498
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        433
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "664cfe8a60f7728e7364f542c936d52328bc5ba89a022b686a6c3be1f3b1ab59"
+    },
+    {
+      "path": "systems/crystal_shop_system.py",
+      "function": "_stack",
+      "line": 32,
+      "end_line": 39,
+      "domains": [
+        "currencies"
+      ],
+      "sql_write_count": 2,
+      "sql_write_examples": [
+        {
+          "line": 36,
+          "operation": "UPDATE",
+          "statement": "UPDATE inventory SET quantity=quantity+? WHERE id=?"
+        },
+        {
+          "line": 38,
+          "operation": "INSERT",
+          "statement": "INSERT INTO inventory(user_id,item_id,quantity,durability) VALUES(?,?,?,NULL)"
+        }
+      ],
+      "commit_lines": [],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [],
+      "risk_flags": [
+        "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+      ],
+      "classification": "CONFIRMED_BOUNDARY_GAP",
+      "reason": "multiple writes without visible boundary or caller-owned connection parameter",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "purchase_crystal_shop_item",
+          "line": 40,
+          "call_lines": [
+            59
+          ]
+        }
+      ],
+      "source_sha256": "15949a95285844dda75cc8a107efef24734b3b12eaf8c95ab1d64b146264f2f1"
+    },
+    {
+      "path": "systems/equipment_system.py",
+      "function": "apply_random_durability_wear_on_victory",
+      "line": 3411,
+      "end_line": 3531,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 3485,
+          "operation": "UPDATE",
+          "statement": "UPDATE inventory SET durability=? WHERE id=? AND user_id=?"
+        }
+      ],
+      "commit_lines": [
+        3493
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        3433
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "roll_equipment_wear_after_combat",
+          "line": 3349,
+          "call_lines": [
+            3351
+          ]
+        },
+        {
+          "function": "roll_equipment_wear_after_combat",
+          "line": 3537,
+          "call_lines": [
+            3539
+          ]
+        }
+      ],
+      "source_sha256": "53e72297481aad38e9319bd69cee5a8a0056e46502bce78981b84686522836d4"
+    },
+    {
+      "path": "systems/guild_system.py",
+      "function": "cancel_guild_application",
+      "line": 1157,
+      "end_line": 1208,
+      "domains": [
+        "guild"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 1183,
+          "operation": "UPDATE",
+          "statement": "\n    UPDATE guild_applications\n    SET status=?, processed_at=?, processed_by=?\n    WHERE id=?\n    "
+        }
+      ],
+      "commit_lines": [
+        1194
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        1202
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "e52c0fa05137c6eadca7493f18423c4451ff1db874858827d47d4a30f7d5aae2"
+    },
+    {
+      "path": "systems/guild_system.py",
+      "function": "make_existing_guild_icons_unique",
+      "line": 1288,
+      "end_line": 1341,
+      "domains": [
+        "guild"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 1326,
+          "operation": "UPDATE",
+          "statement": "UPDATE guilds SET icon=?, updated_at=? WHERE id=?"
+        }
+      ],
+      "commit_lines": [
+        1329
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        1312,
+        1338
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "init_guild_system",
+          "line": 212,
+          "call_lines": [
+            340
+          ]
+        },
+        {
+          "function": "ensure_unique_guild_icon_index",
+          "line": 1344,
+          "call_lines": [
+            1350
+          ]
+        }
+      ],
+      "source_sha256": "e52c0fa05137c6eadca7493f18423c4451ff1db874858827d47d4a30f7d5aae2"
+    },
+    {
+      "path": "systems/guild_system.py",
+      "function": "accept_guild_application",
+      "line": 1422,
+      "end_line": 1525,
+      "domains": [
+        "guild"
+      ],
+      "sql_write_count": 4,
+      "sql_write_examples": [
+        {
+          "line": 1470,
+          "operation": "INSERT",
+          "statement": "\n    INSERT INTO guild_members (guild_id, user_id, role, joined_at)\n    VALUES (?, ?, ?, ?)\n    "
+        },
+        {
+          "line": 1480,
+          "operation": "UPDATE",
+          "statement": "\n    UPDATE guild_applications\n    SET status=?, processed_at=?, processed_by=?\n    WHERE id=?\n    "
+        },
+        {
+          "line": 1492,
+          "operation": "UPDATE",
+          "statement": "\n    UPDATE guild_applications\n    SET status=?, processed_at=?, processed_by=?\n    WHERE user_id=? AND status=? AND id != ?\n    "
+        },
+        {
+          "line": 1449,
+          "operation": "UPDATE",
+          "statement": "\n        UPDATE guild_applications\n        SET status=?, processed_at=?, processed_by=?\n        WHERE id=?\n        "
+        }
+      ],
+      "commit_lines": [
+        1505,
+        1459
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        1516,
+        1514
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "e52c0fa05137c6eadca7493f18423c4451ff1db874858827d47d4a30f7d5aae2"
+    },
+    {
+      "path": "systems/guild_system.py",
+      "function": "reject_guild_application",
+      "line": 1528,
+      "end_line": 1583,
+      "domains": [
+        "guild"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 1552,
+          "operation": "UPDATE",
+          "statement": "\n    UPDATE guild_applications\n    SET status=?, processed_at=?, processed_by=?\n    WHERE id=?\n    "
+        }
+      ],
+      "commit_lines": [
+        1563
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        1574,
+        1572
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "e52c0fa05137c6eadca7493f18423c4451ff1db874858827d47d4a30f7d5aae2"
+    },
+    {
+      "path": "systems/guild_system.py",
+      "function": "_guild_safe_set_application_status",
+      "line": 1916,
+      "end_line": 1951,
+      "domains": [
+        "guild"
+      ],
+      "sql_write_count": 2,
+      "sql_write_examples": [
+        {
+          "line": 1931,
+          "operation": "UPDATE",
+          "statement": "\n        UPDATE guild_applications\n        SET status=?, processed_at=?, processed_by=?\n        WHERE id=?\n        "
+        },
+        {
+          "line": 1949,
+          "operation": "DELETE",
+          "statement": "DELETE FROM guild_applications WHERE id=?"
+        }
+      ],
+      "commit_lines": [
+        1941,
+        1950
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        1943
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "accept_guild_application",
+          "line": 1987,
+          "call_lines": [
+            2076,
+            2000,
+            2028,
+            2045
+          ]
+        },
+        {
+          "function": "cleanup_stale_guild_applications",
+          "line": 2100,
+          "call_lines": [
+            2126,
+            2129
+          ]
+        }
+      ],
+      "source_sha256": "e52c0fa05137c6eadca7493f18423c4451ff1db874858827d47d4a30f7d5aae2"
+    },
+    {
+      "path": "systems/guild_system.py",
+      "function": "accept_guild_application",
+      "line": 1987,
+      "end_line": 2097,
+      "domains": [
+        "guild"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 2061,
+          "operation": "INSERT",
+          "statement": "\n        INSERT INTO guild_members (guild_id, user_id, role, joined_at)\n        VALUES (?, ?, ?, ?)\n        "
+        }
+      ],
+      "commit_lines": [
+        2070
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        2071,
+        2094
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "e52c0fa05137c6eadca7493f18423c4451ff1db874858827d47d4a30f7d5aae2"
+    },
+    {
+      "path": "systems/guild_system.py",
+      "function": "recalculate_guild_level",
+      "line": 2222,
+      "end_line": 2249,
+      "domains": [
+        "rewards_progression",
+        "guild"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 2233,
+          "operation": "UPDATE",
+          "statement": "UPDATE guilds SET level=?, updated_at=? WHERE id=?"
+        }
+      ],
+      "commit_lines": [
+        2237
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        2246
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "add_guild_progress",
+          "line": 2258,
+          "call_lines": [
+            2281
+          ]
+        },
+        {
+          "function": "cleanup_recalculate_all_guild_levels",
+          "line": 2355,
+          "call_lines": [
+            2367
+          ]
+        }
+      ],
+      "source_sha256": "e52c0fa05137c6eadca7493f18423c4451ff1db874858827d47d4a30f7d5aae2"
+    },
+    {
+      "path": "systems/level_up_reward_system.py",
+      "function": "_insert_new_reward_rows",
+      "line": 231,
+      "end_line": 297,
+      "domains": [
+        "rewards_progression"
+      ],
+      "sql_write_count": 2,
+      "sql_write_examples": [
+        {
+          "line": 241,
+          "operation": "INSERT",
+          "statement": "INSERT OR IGNORE INTO level_up_rewards (\n\n                   user_id, reached_level, gold_amount,\n\n                   health_potion_quantity, simple_extractor_quantity,\n\n                   crystal_quantity, gold_claimed, items_claimed, created_at,\n\n                   small_mana_potion_quantity, refi"
+        },
+        {
+          "line": 279,
+          "operation": "UPDATE",
+          "statement": "UPDATE users SET gold=COALESCE(gold, 0)+? WHERE user_id=?"
+        }
+      ],
+      "commit_lines": [],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [],
+      "risk_flags": [
+        "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+      ],
+      "classification": "DELEGATED_TRANSACTION_HELPER",
+      "reason": "private/transaction helper accepts caller-owned DB object and does not commit",
+      "accepts_connection_parameter": true,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "apply_level_up_rewards_in_transaction",
+          "line": 417,
+          "call_lines": [
+            421
+          ]
+        }
+      ],
+      "source_sha256": "dca636a71be6f0b0a967647d9300269c2d0fce92f963814a87e1bebbc35d25fc"
+    },
+    {
+      "path": "systems/player_interaction_system.py",
+      "function": "_trade_transfer_stack_12_7_0",
+      "line": 2156,
+      "end_line": 2169,
+      "domains": [
+        "trade"
+      ],
+      "sql_write_count": 3,
+      "sql_write_examples": [
+        {
+          "line": 2159,
+          "operation": "UPDATE",
+          "statement": "UPDATE inventory SET quantity=quantity-? WHERE id=?"
+        },
+        {
+          "line": 2169,
+          "operation": "DELETE",
+          "statement": "DELETE FROM inventory WHERE id=?"
+        },
+        {
+          "line": 2163,
+          "operation": "UPDATE",
+          "statement": "UPDATE inventory SET quantity=quantity+? WHERE id=?"
+        }
+      ],
+      "commit_lines": [],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [],
+      "risk_flags": [
+        "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+      ],
+      "classification": "DELEGATED_TRANSACTION_HELPER",
+      "reason": "private/transaction helper accepts caller-owned DB object and does not commit",
+      "accepts_connection_parameter": true,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "_commit_player_trade_12_7_0",
+          "line": 2176,
+          "call_lines": [
+            2202
+          ]
+        }
+      ],
+      "source_sha256": "fe0f042fb7096b06d7b0a2638d20e73f07f466f4c6702aead9af32c0990415c7"
+    },
+    {
+      "path": "systems/player_system.py",
+      "function": "add_gold",
+      "line": 1273,
+      "end_line": 1297,
+      "domains": [
+        "currencies"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 1291,
+          "operation": "UPDATE",
+          "statement": "UPDATE users SET gold=COALESCE(gold,0)+? WHERE user_id=?"
+        }
+      ],
+      "commit_lines": [
+        1294
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        1285
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [],
+      "source_sha256": "b503e2514dd7b35136384561c873d03be27afb9cdd31325530e15a0df67c3571"
+    },
+    {
+      "path": "systems/potion_system.py",
+      "function": "use_potion_from_inventory",
+      "line": 525,
+      "end_line": 559,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 1,
+      "sql_write_examples": [
+        {
+          "line": 545,
+          "operation": "UPDATE",
+          "statement": "UPDATE users SET last_mp_regen_update=?, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?"
+        }
+      ],
+      "commit_lines": [
+        553
+      ],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [
+        555
+      ],
+      "risk_flags": [
+        "COMMIT_WITHOUT_ROLLBACK_ON_BROAD_FAILURE"
+      ],
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "reason": "writer commits locally, has broad failure handling, and no rollback call",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "use_first_hp_potion",
+          "line": 489,
+          "call_lines": [
+            513
+          ]
+        }
+      ],
+      "source_sha256": "0528917e22044b8f4465190aaf93e0e80cd3be149ce164c9845f81253017d0d7"
+    },
+    {
+      "path": "systems/refine_system.py",
+      "function": "consume",
+      "line": 172,
+      "end_line": 178,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 2,
+      "sql_write_examples": [
+        {
+          "line": 175,
+          "operation": "DELETE",
+          "statement": "DELETE FROM inventory WHERE id=? AND user_id=?"
+        },
+        {
+          "line": 176,
+          "operation": "UPDATE",
+          "statement": "UPDATE inventory SET quantity=quantity-1 WHERE id=? AND user_id=? AND quantity>1"
+        }
+      ],
+      "commit_lines": [],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [],
+      "risk_flags": [
+        "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+      ],
+      "classification": "CONFIRMED_BOUNDARY_GAP",
+      "reason": "multiple writes without visible boundary or caller-owned connection parameter",
+      "accepts_connection_parameter": false,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "perform_refine_attempt",
+          "line": 113,
+          "call_lines": [
+            183,
+            184
+          ]
+        }
+      ],
+      "source_sha256": "4e9e24c200bd06b26c119d2f892f2dad17650e7cdd178458342229f34a733a02"
+    },
+    {
+      "path": "systems/rune_system.py",
+      "function": "_apply_stack_plan",
+      "line": 290,
+      "end_line": 300,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 2,
+      "sql_write_examples": [
+        {
+          "line": 292,
+          "operation": "UPDATE",
+          "statement": "UPDATE inventory SET quantity=? WHERE id=? AND user_id=?"
+        },
+        {
+          "line": 297,
+          "operation": "INSERT",
+          "statement": "INSERT INTO inventory (user_id, item_id, quantity) VALUES (?, ?, ?)"
+        }
+      ],
+      "commit_lines": [],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [],
+      "risk_flags": [
+        "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+      ],
+      "classification": "DELEGATED_TRANSACTION_HELPER",
+      "reason": "private/transaction helper accepts caller-owned DB object and does not commit",
+      "accepts_connection_parameter": true,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "claim_daily_quest_reward_with_firius_tokens",
+          "line": 303,
+          "call_lines": [
+            362,
+            363
+          ]
+        }
+      ],
+      "source_sha256": "56e988aee115054422cf6277065c498777e0329a087f1088d7808e4fe7836a04"
+    },
+    {
+      "path": "systems/rune_system.py",
+      "function": "_consume_stack_quantity",
+      "line": 757,
+      "end_line": 786,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 2,
+      "sql_write_examples": [
+        {
+          "line": 771,
+          "operation": "UPDATE",
+          "statement": "UPDATE inventory SET quantity=? WHERE id=? AND user_id=?"
+        },
+        {
+          "line": 776,
+          "operation": "DELETE",
+          "statement": "DELETE FROM inventory WHERE id=? AND user_id=?"
+        }
+      ],
+      "commit_lines": [],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [],
+      "risk_flags": [
+        "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+      ],
+      "classification": "DELEGATED_TRANSACTION_HELPER",
+      "reason": "private/transaction helper accepts caller-owned DB object and does not commit",
+      "accepts_connection_parameter": true,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "fuse_runes_with_firius_token",
+          "line": 964,
+          "call_lines": [
+            974,
+            983
+          ]
+        }
+      ],
+      "source_sha256": "56e988aee115054422cf6277065c498777e0329a087f1088d7808e4fe7836a04"
+    },
+    {
+      "path": "systems/rune_system.py",
+      "function": "_add_stack_quantity_in_transaction",
+      "line": 789,
+      "end_line": 872,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 2,
+      "sql_write_examples": [
+        {
+          "line": 857,
+          "operation": "INSERT",
+          "statement": "INSERT INTO inventory (user_id,item_id,quantity) VALUES (?,?,?)"
+        },
+        {
+          "line": 847,
+          "operation": "UPDATE",
+          "statement": "UPDATE inventory SET quantity=? WHERE id=? AND user_id=?"
+        }
+      ],
+      "commit_lines": [],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [],
+      "risk_flags": [
+        "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+      ],
+      "classification": "DELEGATED_TRANSACTION_HELPER",
+      "reason": "private/transaction helper accepts caller-owned DB object and does not commit",
+      "accepts_connection_parameter": true,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "fuse_runes_with_firius_token",
+          "line": 964,
+          "call_lines": [
+            992
+          ]
+        },
+        {
+          "function": "use_simple_rune_extractor",
+          "line": 1080,
+          "call_lines": [
+            1096
+          ]
+        },
+        {
+          "function": "use_perfect_rune_extractor",
+          "line": 1206,
+          "call_lines": [
+            1254
+          ]
+        },
+        {
+          "function": "buy_simple_rune_extractor",
+          "line": 1418,
+          "call_lines": [
+            1478
+          ]
+        }
+      ],
+      "source_sha256": "56e988aee115054422cf6277065c498777e0329a087f1088d7808e4fe7836a04"
+    },
+    {
+      "path": "systems/rune_system.py",
+      "function": "_consume_extractor_stack",
+      "line": 1069,
+      "end_line": 1077,
+      "domains": [
+        "inventory"
+      ],
+      "sql_write_count": 2,
+      "sql_write_examples": [
+        {
+          "line": 1073,
+          "operation": "DELETE",
+          "statement": "DELETE FROM inventory WHERE id=?"
+        },
+        {
+          "line": 1074,
+          "operation": "UPDATE",
+          "statement": "UPDATE inventory SET quantity=quantity-1 WHERE id=?"
+        }
+      ],
+      "commit_lines": [],
+      "rollback_lines": [],
+      "begin_lines": [],
+      "connection_calls": [],
+      "broad_exception_lines": [],
+      "risk_flags": [
+        "MULTI_WRITE_WITHOUT_EXPLICIT_BOUNDARY"
+      ],
+      "classification": "DELEGATED_TRANSACTION_HELPER",
+      "reason": "private/transaction helper accepts caller-owned DB object and does not commit",
+      "accepts_connection_parameter": true,
+      "opens_connection": false,
+      "caller_examples": [
+        {
+          "function": "use_simple_rune_extractor",
+          "line": 1080,
+          "call_lines": [
+            1091
+          ]
+        },
+        {
+          "function": "use_perfect_rune_extractor",
+          "line": 1206,
+          "call_lines": [
+            1225
+          ]
+        }
+      ],
+      "source_sha256": "56e988aee115054422cf6277065c498777e0329a087f1088d7808e4fe7836a04"
+    }
+  ],
+  "confirmed_mutation_cohort": [
+    {
+      "path": "db_modules/dev_compat.py",
+      "function": "set_player_level_for_test",
+      "line": 120,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "db_modules/dev_compat.py",
+      "function": "set_gold_for_test",
+      "line": 207,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "db_modules/dev_compat.py",
+      "function": "seed_class_reset_sphere_item",
+      "line": 735,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "db_modules/dev_compat.py",
+      "function": "create_dev_armor_item_for_test",
+      "line": 1194,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "db_modules/dev_compat.py",
+      "function": "create_dev_weapon_item_for_test",
+      "line": 1367,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "db_modules/generated_equipment.py",
+      "function": "create_generated_equipment_item",
+      "line": 1006,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "db_modules/inventory.py",
+      "function": "consume_inventory_item",
+      "line": 270,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "db_modules/inventory.py",
+      "function": "consume_user_item_by_item_id",
+      "line": 352,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "db_modules/inventory_compat.py",
+      "function": "seed_class_reset_sphere_item",
+      "line": 215,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "db_modules/refine.py",
+      "function": "init_refine_system",
+      "line": 20,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "db_modules/refine.py",
+      "function": "set_inventory_refine_level",
+      "line": 116,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "db_modules/refine.py",
+      "function": "ensure_refine_material_stack_sizes",
+      "line": 245,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "db_modules/shop.py",
+      "function": "create_common_equipment_shop_preview",
+      "line": 190,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "systems/admin_crystal_credit_system.py",
+      "function": "preview_admin_adjustment",
+      "line": 18,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "systems/auction_house_system.py",
+      "function": "create_auction_lot_record",
+      "line": 395,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "systems/crystal_shop_system.py",
+      "function": "_stack",
+      "line": 32,
+      "classification": "CONFIRMED_BOUNDARY_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "systems/equipment_system.py",
+      "function": "apply_random_durability_wear_on_victory",
+      "line": 3411,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "systems/guild_system.py",
+      "function": "cancel_guild_application",
+      "line": 1157,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "systems/guild_system.py",
+      "function": "make_existing_guild_icons_unique",
+      "line": 1288,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "systems/guild_system.py",
+      "function": "accept_guild_application",
+      "line": 1422,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "systems/guild_system.py",
+      "function": "reject_guild_application",
+      "line": 1528,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "systems/guild_system.py",
+      "function": "_guild_safe_set_application_status",
+      "line": 1916,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "systems/guild_system.py",
+      "function": "accept_guild_application",
+      "line": 1987,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "systems/guild_system.py",
+      "function": "recalculate_guild_level",
+      "line": 2222,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "systems/player_system.py",
+      "function": "add_gold",
+      "line": 1273,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "systems/potion_system.py",
+      "function": "use_potion_from_inventory",
+      "line": 525,
+      "classification": "CONFIRMED_ROLLBACK_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    },
+    {
+      "path": "systems/refine_system.py",
+      "function": "consume",
+      "line": 172,
+      "classification": "CONFIRMED_BOUNDARY_GAP",
+      "required_test": "injected failure proves rollback and unchanged persistent state"
+    }
+  ],
+  "delegated_or_caller_owned_count": 7,
+  "unresolved_runtime_test_count": 0,
+  "rules": [
+    "No helper-level commit is added to caller-owned transaction helpers.",
+    "Only confirmed owner-level gaps may enter mutation scope.",
+    "Every mutated owner requires injected-failure rollback evidence.",
+    "No production DB/WAL/SHM mutation is permitted in this reconciliation patch."
+  ],
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "decision": "GO_TO_21_4_3_TRANSACTION_ATOMICITY_IMPLEMENTATION"
+}
