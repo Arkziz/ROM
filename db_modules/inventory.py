@@ -268,12 +268,7 @@ def compact_user_item_stacks(user_id, item_id, commit=False, connection=None):
 # ==============================
 
 def consume_inventory_item(user_id_or_inventory_id, inventory_id_or_amount=1, amount=None):
-    """Consume an inventory stack with both historical signatures.
-
-    Supported:
-    - consume_inventory_item(inventory_id, amount=1)
-    - consume_inventory_item(user_id, inventory_id, amount=1)
-    """
+    """Consume one inventory stack atomically with both historical signatures."""
     if amount is None:
         user_id = None
         inventory_id = int(user_id_or_inventory_id)
@@ -282,55 +277,45 @@ def consume_inventory_item(user_id_or_inventory_id, inventory_id_or_amount=1, am
         user_id = int(user_id_or_inventory_id)
         inventory_id = int(inventory_id_or_amount)
         amount = int(amount)
-
     if amount <= 0:
         return False
-
     if user_id is None:
         cursor.execute("SELECT user_id,item_id,quantity FROM inventory WHERE id=?", (inventory_id,))
     else:
-        cursor.execute(
-            "SELECT quantity FROM inventory WHERE id=? AND user_id=?",
-            (inventory_id, user_id),
-        )
+        cursor.execute("SELECT quantity FROM inventory WHERE id=? AND user_id=?", (inventory_id, user_id))
     row = cursor.fetchone()
     if not row:
         return False
-
     try:
         if user_id is None:
             user_id, item_id, raw_quantity = int(row[0]), int(row[1]), row[2]
         else:
-            item_id, raw_quantity = int(cursor.execute("SELECT item_id FROM inventory WHERE id=?", (inventory_id,)).fetchone()[0]), row[0]
+            item_id = int(cursor.execute("SELECT item_id FROM inventory WHERE id=?", (inventory_id,)).fetchone()[0])
+            raw_quantity = row[0]
         quantity = int(raw_quantity or 0)
     except Exception:
         quantity = 0
     if quantity < amount:
         return False
+    try:
+        if quantity == amount:
+            if user_id is None:
+                cursor.execute("DELETE FROM inventory WHERE id=?", (inventory_id,))
+            else:
+                cursor.execute("DELETE FROM inventory WHERE id=? AND user_id=?", (inventory_id, user_id))
+        else:
+            new_quantity = quantity - amount
+            if user_id is None:
+                cursor.execute("UPDATE inventory SET quantity=? WHERE id=?", (new_quantity, inventory_id))
+            else:
+                cursor.execute("UPDATE inventory SET quantity=? WHERE id=? AND user_id=?", (new_quantity, inventory_id, user_id))
+        compact_user_item_stacks(user_id, item_id, commit=False)
+        conn.commit()
+        return True
+    except Exception:
+        conn.rollback()
+        raise
 
-    if quantity == amount:
-        if user_id is None:
-            cursor.execute("DELETE FROM inventory WHERE id=?", (inventory_id,))
-        else:
-            cursor.execute(
-                "DELETE FROM inventory WHERE id=? AND user_id=?",
-                (inventory_id, user_id),
-            )
-    else:
-        new_quantity = quantity - amount
-        if user_id is None:
-            cursor.execute(
-                "UPDATE inventory SET quantity=? WHERE id=?",
-                (new_quantity, inventory_id),
-            )
-        else:
-            cursor.execute(
-                "UPDATE inventory SET quantity=? WHERE id=? AND user_id=?",
-                (new_quantity, inventory_id, user_id),
-            )
-    compact_user_item_stacks(user_id, item_id, commit=False)
-    conn.commit()
-    return True
 
 
 def count_user_item(user_id, item_id):
@@ -350,58 +335,44 @@ def count_user_item(user_id, item_id):
 
 
 def consume_user_item_by_item_id(user_id, item_id, quantity=1):
-    """
-    Споживає предмет за item_id (може бути в різних стаках).
-    """
+    """Consume a quantity across stacks atomically."""
     try:
         quantity = int(quantity)
     except Exception:
         quantity = 1
-    
     if quantity <= 0:
         return True
-    
     if count_user_item(user_id, item_id) < quantity:
         return False
-    
     remaining = quantity
-    
-    cursor.execute("""
-    SELECT id, quantity
-    FROM inventory
-    WHERE user_id=? AND item_id=?
-    ORDER BY id ASC
-    """, (user_id, item_id))
-    
-    rows = cursor.fetchall()
-    
-    for inventory_id, stack_quantity in rows:
-        if remaining <= 0:
-            break
-        
-        stack_quantity = int(stack_quantity or 0)
-        take = min(stack_quantity, remaining)
-        new_quantity = stack_quantity - take
-        
-        if new_quantity <= 0:
-            cursor.execute("""
-            DELETE FROM inventory
-            WHERE id=?
-            """, (inventory_id,))
-        else:
-            cursor.execute("""
-            UPDATE inventory
-            SET quantity=?
-            WHERE id=?
-            """, (new_quantity, inventory_id))
-        
-        remaining -= take
-    
-    if remaining <= 0:
+    try:
+        cursor.execute("""
+        SELECT id, quantity
+        FROM inventory
+        WHERE user_id=? AND item_id=?
+        ORDER BY id ASC
+        """, (user_id, item_id))
+        rows = cursor.fetchall()
+        for inventory_id, stack_quantity in rows:
+            if remaining <= 0:
+                break
+            stack_quantity = int(stack_quantity or 0)
+            take = min(stack_quantity, remaining)
+            new_quantity = stack_quantity - take
+            if new_quantity <= 0:
+                cursor.execute("DELETE FROM inventory WHERE id=?", (inventory_id,))
+            else:
+                cursor.execute("UPDATE inventory SET quantity=? WHERE id=?", (new_quantity, inventory_id))
+            remaining -= take
+        if remaining > 0:
+            raise RuntimeError("Inventory quantity changed during atomic consumption")
         compact_user_item_stacks(user_id, item_id, commit=False)
-    conn.commit()
-    
-    return remaining <= 0
+        conn.commit()
+        return True
+    except Exception:
+        conn.rollback()
+        raise
+
 
 
 # ==============================
