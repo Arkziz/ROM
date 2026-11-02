@@ -5,7 +5,8 @@ from systems.fresh_database_bootstrap import run_fresh_database_schema_bootstrap
 configure_production_logging()
 PRODUCTION_LOGGER=get_production_logger('rom.main')
 
-# ✅ TELEGRAM POLLING TIMEOUT RESILIENCE V3
+# Stage 21.1.2: one Telegram polling owner with bounded backoff.
+import random as _rom_polling_random
 import time as _rom_polling_time
 
 try:
@@ -25,40 +26,51 @@ if _rom_polling_apihelper is not None:
     except Exception:
         pass
 
+_ROM_POLLING_BACKOFF_BASE_SECONDS = 2.0
+_ROM_POLLING_BACKOFF_MAX_SECONDS = 30.0
+_ROM_POLLING_BACKOFF_JITTER_SECONDS = 1.0
 
-def run_bot_polling_resilient(bot):
-    """
-    Keeps Telegram polling alive after temporary network timeouts.
-    """
+
+def _is_transient_polling_error(error):
+    """Return True only for network/timeout failures safe to retry polling."""
+    if isinstance(error, (KeyboardInterrupt, SystemExit)):
+        return False
+    if _rom_polling_requests is not None:
+        request_errors = _rom_polling_requests.exceptions
+        if isinstance(error, (request_errors.Timeout, request_errors.ConnectionError)):
+            return True
+    error_name = type(error).__name__.lower()
+    error_text = str(error).lower()
+    markers = ("timeout", "timed out", "connectionerror", "connection reset", "connection aborted", "remote disconnected")
+    return any(marker in error_name or marker in error_text for marker in markers)
+
+
+def _polling_retry_delay(retry_number, *, random_uniform=None):
+    """Calculate bounded exponential delay with small jitter."""
+    uniform = random_uniform or _rom_polling_random.uniform
+    exponent = max(0, int(retry_number) - 1)
+    base_delay = min(_ROM_POLLING_BACKOFF_MAX_SECONDS, _ROM_POLLING_BACKOFF_BASE_SECONDS * (2 ** exponent))
+    return min(_ROM_POLLING_BACKOFF_MAX_SECONDS, base_delay + uniform(0.0, _ROM_POLLING_BACKOFF_JITTER_SECONDS))
+
+
+def run_bot_polling_resilient(bot, *, sleep_fn=None, random_uniform=None):
+    """Run the sole polling loop; retry transient failures and propagate fatal ones."""
+    sleeper = sleep_fn or _rom_polling_time.sleep
+    retry_number = 0
     while True:
         try:
-            run_bot_polling_resilient(bot)
+            bot.infinity_polling()
+            return
+        except (KeyboardInterrupt, SystemExit):
+            raise
         except Exception as error:
-            error_name = type(error).__name__
-            error_text = str(error)
-
-            is_timeout = False
-            is_connection = False
-
-            if _rom_polling_requests is not None:
-                try:
-                    is_timeout = isinstance(error, _rom_polling_requests.exceptions.ReadTimeout)
-                    is_connection = isinstance(error, _rom_polling_requests.exceptions.ConnectionError)
-                except Exception:
-                    pass
-
-            if is_timeout or "Read timed out" in error_text or "ReadTimeout" in error_name:
-                PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram polling read timeout, restarting polling in 5s: {error}")
-                _rom_polling_time.sleep(5)
-                continue
-
-            if is_connection or "Connection" in error_name or "connection" in error_text.lower():
-                PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram polling connection error, restarting polling in 10s: {error}")
-                _rom_polling_time.sleep(10)
-                continue
-
-            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram polling unexpected error, restarting polling in 10s: {error}")
-            _rom_polling_time.sleep(10)
+            if not _is_transient_polling_error(error):
+                PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, "critical", f"Telegram polling fatal error: {error}")
+                raise
+            retry_number += 1
+            delay = _polling_retry_delay(retry_number, random_uniform=random_uniform)
+            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, "warning", f"Telegram polling transient error; retry {retry_number} in {delay:.2f}s: {error}")
+            sleeper(delay)
 
 import telebot
 
@@ -283,7 +295,10 @@ logger = logging.getLogger(__name__)
 PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', "✅ BOT STARTED")
 
 try:
-    bot.infinity_polling()
+    run_bot_polling_resilient(bot)
+except (KeyboardInterrupt, SystemExit):
+    PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, "info", "Telegram polling shutdown requested")
+    raise
 except Exception as e:
     logger.critical(f"Помилка при запуску бота: {e}", exc_info=True)
     raise
