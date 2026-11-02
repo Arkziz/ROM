@@ -1,0 +1,36 @@
+{
+  "stage": "21.4.6",
+  "revision": "2",
+  "status": "PASS",
+  "timestamp": "2026-11-02T22:29:44.903192+00:00",
+  "parent": "1b5cfe1e8c6c6f4d5e855182e6a989e4110ff245",
+  "source_hashes_before": {
+    "systems/admin_crystal_credit_system.py": "4756746078c08daab32ce0549e6f37fe5762b198f50535763a8b2935a579142c",
+    "systems/crystal_wallet_system.py": "ef49c3f59e3658ed85f6fdd40e0c4d3ec84b0907095aee763db497fde6c2f68e"
+  },
+  "source_hashes_after": {
+    "systems/admin_crystal_credit_system.py": "373b2c6eebeb20bb4e8b5c27394b96addccb398cbc23750f6656fa700140e3fe",
+    "systems/crystal_wallet_system.py": "c781d7a09d513a544e612ad802c6d533de98428cecdb70dc215762ec59792d37"
+  },
+  "owners": {
+    "systems/admin_crystal_credit_system.py": [
+      "preview_admin_adjustment"
+    ],
+    "systems/crystal_wallet_system.py": [
+      "compensate_crystal_transaction"
+    ]
+  },
+  "preserved": [
+    "purchase_crystal_shop_item",
+    "execute_admin_adjustment",
+    "crystal_wallet_system._apply",
+    "crystal_shop_system._stack caller-owned transaction helper"
+  ],
+  "automated_evidence": {
+    "verifier": "PASS: Stage 21.4.6 crystal/currency owners rollback; caller-owned helper preserved",
+    "smoke": "PASS: Stage 21.4.6 injected commit failure leaves isolated currency state unchanged"
+  },
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "REQUIRED"
+}

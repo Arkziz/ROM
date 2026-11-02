@@ -87,13 +87,17 @@ def get_crystal_transactions(user_id,page=0,page_size=CRYSTAL_HISTORY_PAGE_SIZE,
  finally:c.close()
 def compensate_crystal_transaction(original_transaction_id,idempotency_key,reason_code='dev_compensation',db_path=None):
  c=_connect(db_path)
- try:row=c.execute('SELECT * FROM crystal_transactions WHERE id=?',(int(original_transaction_id),)).fetchone()
- finally:c.close()
- if not row:return {'success':False,'message':'Початкову транзакцію не знайдено.'}
- func=debit_crystals if row['operation']=='credit' else credit_crystals
- result=func(int(row['user_id']),int(row['amount']),reason_code,idempotency_key,external_reference=f"compensates:{int(row['id'])}",metadata={'original_transaction_id':int(row['id'])},db_path=db_path)
- if result.get('success') and not result.get('idempotent_replay'):
-  c=_connect(db_path)
-  try:c.execute('UPDATE crystal_transactions SET compensates_transaction_id=? WHERE id=? AND compensates_transaction_id IS NULL',(int(row['id']),int(result['transaction_id'])));c.commit()
-  finally:c.close()
+ try:
+     try:row=c.execute('SELECT * FROM crystal_transactions WHERE id=?',(int(original_transaction_id),)).fetchone()
+     finally:c.close()
+     if not row:return {'success':False,'message':'Початкову транзакцію не знайдено.'}
+     func=debit_crystals if row['operation']=='credit' else credit_crystals
+     result=func(int(row['user_id']),int(row['amount']),reason_code,idempotency_key,external_reference=f"compensates:{int(row['id'])}",metadata={'original_transaction_id':int(row['id'])},db_path=db_path)
+     if result.get('success') and not result.get('idempotent_replay'):
+      c=_connect(db_path)
+      try:c.execute('UPDATE crystal_transactions SET compensates_transaction_id=? WHERE id=? AND compensates_transaction_id IS NULL',(int(row['id']),int(result['transaction_id'])));c.commit()
+      finally:c.close()
+ except Exception:
+     conn.rollback()
+     raise
  return result

@@ -26,10 +26,14 @@ def preview_admin_adjustment(admin_user_id,target_user_id,operation,requested_am
  if not reason:return {'success':False,'message':'Причина є обов’язковою.'}
  c=_connect(db_path)
  try:
-  user=c.execute('SELECT user_id FROM users WHERE user_id=?',(target,)).fetchone()
-  if not user:return {'success':False,'message':'Користувача не знайдено.'}
-  c.execute('INSERT OR IGNORE INTO crystal_wallets(user_id,balance,created_at,updated_at) VALUES(?,0,?,?)',(target,_utc(),_utc()));c.commit();before=int(c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(target,)).fetchone()[0])
- finally:c.close()
+     try:
+      user=c.execute('SELECT user_id FROM users WHERE user_id=?',(target,)).fetchone()
+      if not user:return {'success':False,'message':'Користувача не знайдено.'}
+      c.execute('INSERT OR IGNORE INTO crystal_wallets(user_id,balance,created_at,updated_at) VALUES(?,0,?,?)',(target,_utc(),_utc()));c.commit();before=int(c.execute('SELECT balance FROM crystal_wallets WHERE user_id=?',(target,)).fetchone()[0])
+     finally:c.close()
+ except Exception:
+     conn.rollback()
+     raise
  actual=amount if op=='credit' else min(amount,before)
  if op=='debit' and actual==0:return {'success':False,'message':'У користувача немає кристалів для вилучення.','balance':0}
  return {'success':True,'admin_user_id':int(admin_user_id),'target_user_id':target,'operation':op,'requested_amount':amount,'actual_amount':actual,'balance_before':before,'balance_after':before+actual if op=='credit' else before-actual,'reason':reason,'clamped':op=='debit' and actual<amount}
