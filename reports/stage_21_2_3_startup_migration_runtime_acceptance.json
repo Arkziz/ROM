@@ -1,0 +1,74 @@
+{
+  "stage": "21.2.3",
+  "revision": "1",
+  "status": "ACCEPTED",
+  "timestamp": "2026-11-02T20:49:30.302506+00:00",
+  "accepted_implementation_commit": "c0ffac872ff7c7779ee47d8a9c868b0d76082718",
+  "git": {
+    "branch": "develop",
+    "head": "c0ffac872ff7c7779ee47d8a9c868b0d76082718",
+    "origin_develop": "3269cffb853872d9e199f308275c71b7f91c57ea",
+    "origin_is_ancestor": true,
+    "patch": "patch/patch_21_2_3_startup_migration_runtime_acceptance.py",
+    "status": [
+      {
+        "xy": " M",
+        "path": "ROM_FULL_DUMP.txt"
+      }
+    ],
+    "main_sha256": "39a30fb958db5ccc56d5a70b05affafbe1ebd0e05f996128efd50914a4e01a09"
+  },
+  "invariants": {
+    "validator_definitions": 1,
+    "migration_line": 184,
+    "maintenance_line": 203,
+    "worker_lines": [
+      301,
+      305,
+      309
+    ],
+    "polling_line": 328,
+    "strict_order": true,
+    "fail_closed_markers": true
+  },
+  "automated_evidence": {
+    "verifier": "PASS: Stage 21.2.2 deterministic startup migration gate",
+    "smoke": "PASS: Stage 21.2.2 isolated migration-result contract smoke"
+  },
+  "manual_evidence": {
+    "startup": "PASS",
+    "migration_gate": "PASS",
+    "migration_result": {
+      "applied": 0,
+      "skipped": 20,
+      "total": 20
+    },
+    "maintenance_after_gate": "PASS",
+    "workers_after_gate": "PASS",
+    "polling_after_gate": "PASS",
+    "game_menu_check": "PASS",
+    "shutdown": "PASS",
+    "restart_loop_observed": false,
+    "observed_markers": [
+      "DB MIGRATION GATE PASS: applied=0, skipped=20, total=20",
+      "DB STARTUP MAINTENANCE",
+      "NOTIFICATION WORKER STARTED",
+      "PVE AUTO ESCAPE RECOVERY",
+      "LOCATION TRAVEL RECOVERY",
+      "BOT STARTED",
+      "Infinity polling: polling exited",
+      "Break infinity polling"
+    ]
+  },
+  "acceptance_chain": {
+    "API_READY": true,
+    "ADAPTER_CONNECTED": true,
+    "RUNTIME_DISPATCH_VERIFIED": true,
+    "END_TO_END_ACCEPTED": true
+  },
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "PASS_COMPLETED",
+  "decision": "CLOSE_STAGE_21_2_DETERMINISTIC_STARTUP_MIGRATION_GATE"
+}
