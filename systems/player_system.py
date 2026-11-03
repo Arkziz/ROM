@@ -1288,10 +1288,14 @@ def add_gold(user_id: int, amount):
         amount = 0.0
 
 
-    db.cursor.execute("UPDATE users SET gold=COALESCE(gold,0)+? WHERE user_id=?", (amount, int(user_id)))
+    try:
+        db.cursor.execute("UPDATE users SET gold=COALESCE(gold,0)+? WHERE user_id=?", (amount, int(user_id)))
 
 
-    db.conn.commit()
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
 
     return None
@@ -1318,13 +1322,17 @@ def add_kill(user_id: int, amount: int = 1):
         amount = 1
 
 
-    if amount:
+    try:
+        if amount:
 
 
-        db.cursor.execute("UPDATE users SET kills=COALESCE(kills,0)+? WHERE user_id=?", (amount, int(user_id)))
+            db.cursor.execute("UPDATE users SET kills=COALESCE(kills,0)+? WHERE user_id=?", (amount, int(user_id)))
 
 
-        db.conn.commit()
+            db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
 
     return None

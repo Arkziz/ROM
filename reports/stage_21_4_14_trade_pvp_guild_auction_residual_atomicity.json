@@ -1,0 +1,127 @@
+{
+  "stage": "21.4.14",
+  "revision": "1",
+  "status": "PASS",
+  "timestamp": "2026-11-03T20:49:07.188252+00:00",
+  "parent": "848a02bb1447ee30e131ee71d56541dbaa298b3f",
+  "source_hashes_before": {
+    "systems/auction_house_system.py": "ecd31455245eb9984e0e882f3381fbbef0d73a2dbbee966719264d1d3828afbd",
+    "systems/guild_system.py": "e670f456646eae69c28afb78d4f54480ea9d0c0dafc45357447acc54bb5e57f5",
+    "systems/player_interaction_system.py": "fe0f042fb7096b06d7b0a2638d20e73f07f466f4c6702aead9af32c0990415c7",
+    "systems/player_system.py": "b503e2514dd7b35136384561c873d03be27afb9cdd31325530e15a0df67c3571",
+    "systems/pvp_system.py": "5055dd5f96e97eb20a5204681a12cf21cd8354c94292b8633f819d850901f8dc"
+  },
+  "source_hashes_after": {
+    "systems/auction_house_system.py": "cc4085ebb42398259f12e7e98a9b4f3e48e64df99c4e48848392de28ca12163e",
+    "systems/guild_system.py": "9fb84bc196764ebaa8dcc9251b920fc3aa2542f80fad0c1ea87a64128479b74e",
+    "systems/player_interaction_system.py": "d684c945b47df01b0dc48da4beb2375f1fbc251866139762a791d41051e95ef5",
+    "systems/player_system.py": "3477e50b6f9923c5ebd429642fd52fc1cdf469b7f26edc93c968cc44f9ceeff8",
+    "systems/pvp_system.py": "c0742a475dfda471fb72636f4668169671d3b92936944fa30d88bcbcf6cb9b68"
+  },
+  "selected_owner_anchors": {
+    "systems/auction_house_system.py": [
+      {
+        "name": "update_expired_auction_lots",
+        "line": 4848,
+        "receiver": "conn",
+        "commits": 1
+      }
+    ],
+    "systems/guild_system.py": [
+      {
+        "name": "make_existing_guild_icons_unique",
+        "line": 1296,
+        "receiver": "conn",
+        "commits": 1
+      },
+      {
+        "name": "_guild_cancel_other_pending_applications",
+        "line": 1970,
+        "receiver": "conn",
+        "commits": 1
+      },
+      {
+        "name": "accept_guild_application",
+        "line": 2003,
+        "receiver": "conn",
+        "commits": 1
+      },
+      {
+        "name": "create_guild_application",
+        "line": 2458,
+        "receiver": "conn",
+        "commits": 1
+      }
+    ],
+    "systems/player_interaction_system.py": [
+      {
+        "name": "release_trade_inventory_reservations",
+        "line": 1502,
+        "receiver": "conn",
+        "commits": 1
+      },
+      {
+        "name": "_commit_player_trade_12_7_0",
+        "line": 2176,
+        "receiver": "conn",
+        "commits": 1
+      }
+    ],
+    "systems/player_system.py": [
+      {
+        "name": "add_gold",
+        "line": 1273,
+        "receiver": "db.conn",
+        "commits": 1
+      },
+      {
+        "name": "add_kill",
+        "line": 1303,
+        "receiver": "db.conn",
+        "commits": 1
+      }
+    ],
+    "systems/pvp_system.py": [
+      {
+        "name": "claim_pvp_round_resolution",
+        "line": 407,
+        "receiver": "conn",
+        "commits": 1
+      },
+      {
+        "name": "release_pvp_round_resolution",
+        "line": 427,
+        "receiver": "conn",
+        "commits": 1
+      },
+      {
+        "name": "complete_pvp_battle",
+        "line": 450,
+        "receiver": "conn",
+        "commits": 1
+      },
+      {
+        "name": "recover_pvp_after_restart",
+        "line": 499,
+        "receiver": "conn",
+        "commits": 1
+      }
+    ]
+  },
+  "contract": {
+    "commit_on_success": true,
+    "rollback_on_exception": true,
+    "exception_propagates": true,
+    "unchanged_state_after_injected_failure": true
+  },
+  "production_files_changed": [
+    "systems/auction_house_system.py",
+    "systems/guild_system.py",
+    "systems/player_interaction_system.py",
+    "systems/player_system.py",
+    "systems/pvp_system.py"
+  ],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "REQUIRED"
+}

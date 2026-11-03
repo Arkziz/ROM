@@ -410,18 +410,22 @@ def claim_pvp_round_resolution(
     revision: int,
     connection: sqlite3.Connection | None = None,
 ) -> bool:
-    with _connection(connection) as conn:
-        cursor = conn.execute(
-            """
-            UPDATE pvp_battles
-               SET resolving = 1, status = 'resolving', updated_at = ?
-             WHERE id = ? AND status = 'active' AND resolving = 0
-               AND round_number = ? AND revision = ?
-            """,
-            (_iso(), int(battle_id), int(round_number), int(revision)),
-        )
-        conn.commit()
-        return cursor.rowcount == 1
+    try:
+        with _connection(connection) as conn:
+            cursor = conn.execute(
+                """
+                UPDATE pvp_battles
+                   SET resolving = 1, status = 'resolving', updated_at = ?
+                 WHERE id = ? AND status = 'active' AND resolving = 0
+                   AND round_number = ? AND revision = ?
+                """,
+                (_iso(), int(battle_id), int(round_number), int(revision)),
+            )
+            conn.commit()
+            return cursor.rowcount == 1
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def release_pvp_round_resolution(
@@ -431,20 +435,24 @@ def release_pvp_round_resolution(
     connection: sqlite3.Connection | None = None,
 ) -> bool:
     deadline = _iso(next_deadline or (_utc_now() + timedelta(seconds=PVP_ACTION_TIMEOUT_SECONDS)))
-    with _connection(connection) as conn:
-        cursor = conn.execute(
-            """
-            UPDATE pvp_battles
-               SET status = 'active', resolving = 0,
-                   round_number = round_number + 1,
-                   revision = revision + 1,
-                   action_deadline = ?, updated_at = ?
-             WHERE id = ? AND status = 'resolving' AND resolving = 1 AND revision = ?
-            """,
-            (deadline, _iso(), int(battle_id), int(expected_revision)),
-        )
-        conn.commit()
-        return cursor.rowcount == 1
+    try:
+        with _connection(connection) as conn:
+            cursor = conn.execute(
+                """
+                UPDATE pvp_battles
+                   SET status = 'active', resolving = 0,
+                       round_number = round_number + 1,
+                       revision = revision + 1,
+                       action_deadline = ?, updated_at = ?
+                 WHERE id = ? AND status = 'resolving' AND resolving = 1 AND revision = ?
+                """,
+                (deadline, _iso(), int(battle_id), int(expected_revision)),
+            )
+            conn.commit()
+            return cursor.rowcount == 1
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def complete_pvp_battle(
@@ -456,20 +464,24 @@ def complete_pvp_battle(
 ) -> bool:
     if status not in PVP_TERMINAL_STATUSES:
         raise ValueError("invalid terminal PvP status")
-    with _connection(connection) as conn:
-        cursor = conn.execute(
-            """
-            UPDATE pvp_battles
-               SET status = ?, resolving = 0, action_deadline = NULL,
-                   winner_id = ?, result_reason = ?, completed_at = ?, updated_at = ?
-             WHERE id = ? AND status IN ('waiting','active','resolving')
-            """,
-            (status, winner_id, str(result_reason), _iso(), _iso(), int(battle_id)),
-        )
-        if cursor.rowcount:
-            add_pvp_event(int(battle_id), "battle_finished", payload={"status": status, "reason": result_reason, "winner_id": winner_id}, connection=conn)
-        conn.commit()
-        return cursor.rowcount == 1
+    try:
+        with _connection(connection) as conn:
+            cursor = conn.execute(
+                """
+                UPDATE pvp_battles
+                   SET status = ?, resolving = 0, action_deadline = NULL,
+                       winner_id = ?, result_reason = ?, completed_at = ?, updated_at = ?
+                 WHERE id = ? AND status IN ('waiting','active','resolving')
+                """,
+                (status, winner_id, str(result_reason), _iso(), _iso(), int(battle_id)),
+            )
+            if cursor.rowcount:
+                add_pvp_event(int(battle_id), "battle_finished", payload={"status": status, "reason": result_reason, "winner_id": winner_id}, connection=conn)
+            conn.commit()
+            return cursor.rowcount == 1
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def get_pvp_recovery_plan(
@@ -501,20 +513,24 @@ def recover_pvp_after_restart(
     connection: sqlite3.Connection | None = None,
 ) -> dict[str, Any]:
     """Return a persisted recovery plan; Stage 14.4/14.5 will attach timers and AFK resolution."""
-    with _connection(connection) as conn:
-        init_pvp_foundation(conn)
-        plan = get_pvp_recovery_plan(now=now, connection=conn)
-        for battle_id in plan["resolving"]:
-            row=conn.execute("SELECT round_number,revision FROM pvp_battles WHERE id=? AND status='resolving'",(int(battle_id),)).fetchone()
-            if not row: continue
-            old_revision=int(row["revision"]); new_revision=old_revision+1
-            conn.execute("UPDATE pvp_round_actions SET revision=? WHERE battle_id=? AND round_number=? AND revision=?",(new_revision,int(battle_id),int(row["round_number"]),old_revision))
-            conn.execute("UPDATE pvp_battles SET status='active',resolving=0,revision=?,action_deadline=?,updated_at=? WHERE id=? AND status='resolving' AND revision=?",(new_revision,_iso((now or _utc_now())+timedelta(seconds=PVP_ACTION_TIMEOUT_SECONDS)),_iso(now or _utc_now()),int(battle_id),old_revision))
-            add_pvp_event(int(battle_id),"restart_resolution_released",payload={"old_revision":old_revision,"new_revision":new_revision},connection=conn)
-            add_pvp_event(int(battle_id),"restart_resolution_actions_rebased",payload={"round_number":int(row["round_number"])},connection=conn)
-        conn.commit()
-        plan["released_resolving"] = list(plan["resolving"])
-        return plan
+    try:
+        with _connection(connection) as conn:
+            init_pvp_foundation(conn)
+            plan = get_pvp_recovery_plan(now=now, connection=conn)
+            for battle_id in plan["resolving"]:
+                row=conn.execute("SELECT round_number,revision FROM pvp_battles WHERE id=? AND status='resolving'",(int(battle_id),)).fetchone()
+                if not row: continue
+                old_revision=int(row["revision"]); new_revision=old_revision+1
+                conn.execute("UPDATE pvp_round_actions SET revision=? WHERE battle_id=? AND round_number=? AND revision=?",(new_revision,int(battle_id),int(row["round_number"]),old_revision))
+                conn.execute("UPDATE pvp_battles SET status='active',resolving=0,revision=?,action_deadline=?,updated_at=? WHERE id=? AND status='resolving' AND revision=?",(new_revision,_iso((now or _utc_now())+timedelta(seconds=PVP_ACTION_TIMEOUT_SECONDS)),_iso(now or _utc_now()),int(battle_id),old_revision))
+                add_pvp_event(int(battle_id),"restart_resolution_released",payload={"old_revision":old_revision,"new_revision":new_revision},connection=conn)
+                add_pvp_event(int(battle_id),"restart_resolution_actions_rebased",payload={"round_number":int(row["round_number"])},connection=conn)
+            conn.commit()
+            plan["released_resolving"] = list(plan["resolving"])
+            return plan
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def get_pvp_events(battle_id: int, connection: sqlite3.Connection | None = None) -> list[dict[str, Any]]:

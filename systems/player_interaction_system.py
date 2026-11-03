@@ -1502,9 +1502,13 @@ def reserve_inventory_for_trade(trade_id, user_id, inventory_id, quantity=1, *, 
 def release_trade_inventory_reservations(trade_id, *, db_path=None):
     conn=_connect(db_path)
     try:
-        cur=conn.execute("DELETE FROM inventory_reservations WHERE reservation_type=? AND reference_id=?",(TRADE_RESERVATION_TYPE,int(trade_id)))
-        conn.commit(); return max(0,int(cur.rowcount))
-    finally: conn.close()
+        try:
+            cur=conn.execute("DELETE FROM inventory_reservations WHERE reservation_type=? AND reference_id=?",(TRADE_RESERVATION_TYPE,int(trade_id)))
+            conn.commit(); return max(0,int(cur.rowcount))
+        finally: conn.close()
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def assert_inventory_not_reserved(inventory_id, *, requested_quantity=1, exclude_trade_id=None, db_path=None):
@@ -2182,30 +2186,34 @@ def _commit_player_trade_12_7_0(conn, trade, offers, stamp):
         pair, error = _trade_commit_validate_item_12_7_0(conn, tid, offer)
         if error: return _trade_commit_fail_12_7_0(conn, "item_validation_failed", error)
         validated.append((offer, pair[0], pair[1]))
-    wallets = {int(r["user_id"]): round(float(r["gold"] or 0),2) for r in conn.execute("SELECT user_id,gold FROM users WHERE user_id IN (?,?)", (a,b))}
-    if wallets.get(a,0) < gold[a] or wallets.get(b,0) < gold[b]: return _trade_commit_fail_12_7_0(conn, "insufficient_gold", "Недостатньо золота для завершення обміну.")
-    # Conservative capacity check after outgoing full rows and incoming new slots.
-    for recipient in (a,b):
-        used = int(conn.execute("SELECT COUNT(*) FROM inventory WHERE user_id=?", (recipient,)).fetchone()[0]); cap = int(conn.execute("SELECT COALESCE(bag_slots,60) FROM users WHERE user_id=?", (recipient,)).fetchone()[0] or 60)  # ROM 17.8.1 BASE BAG CAPACITY 60
-        outgoing_full = sum(1 for offer, inv, item in validated if int(offer["owner_user_id"]) == recipient and int(inv["quantity"] or 0) == int(offer["quantity"]) and int(item.get("max_stack") or 1) <= 1)
-        incoming = 0
+    try:
+        wallets = {int(r["user_id"]): round(float(r["gold"] or 0),2) for r in conn.execute("SELECT user_id,gold FROM users WHERE user_id IN (?,?)", (a,b))}
+        if wallets.get(a,0) < gold[a] or wallets.get(b,0) < gold[b]: return _trade_commit_fail_12_7_0(conn, "insufficient_gold", "Недостатньо золота для завершення обміну.")
+        # Conservative capacity check after outgoing full rows and incoming new slots.
+        for recipient in (a,b):
+            used = int(conn.execute("SELECT COUNT(*) FROM inventory WHERE user_id=?", (recipient,)).fetchone()[0]); cap = int(conn.execute("SELECT COALESCE(bag_slots,60) FROM users WHERE user_id=?", (recipient,)).fetchone()[0] or 60)  # ROM 17.8.1 BASE BAG CAPACITY 60
+            outgoing_full = sum(1 for offer, inv, item in validated if int(offer["owner_user_id"]) == recipient and int(inv["quantity"] or 0) == int(offer["quantity"]) and int(item.get("max_stack") or 1) <= 1)
+            incoming = 0
+            for offer, inv, item in validated:
+                if int(offer["owner_user_id"]) == recipient: continue
+                if int(item.get("max_stack") or 1) <= 1: incoming += 1
+                else: incoming += _trade_stack_slots_needed_12_7_0(conn, recipient, int(inv["item_id"]), int(offer["quantity"]), max(1,int(item.get("max_stack") or 1)))
+            if used - outgoing_full + incoming > cap: return _trade_commit_fail_12_7_0(conn, "bag_full", "Недостатньо місця в сумці одного з учасників.")
+        conn.execute("UPDATE users SET gold=ROUND(COALESCE(gold,0)-?+?,2) WHERE user_id=?", (gold[a],gold[b],a)); conn.execute("UPDATE users SET gold=ROUND(COALESCE(gold,0)-?+?,2) WHERE user_id=?", (gold[b],gold[a],b))
         for offer, inv, item in validated:
-            if int(offer["owner_user_id"]) == recipient: continue
-            if int(item.get("max_stack") or 1) <= 1: incoming += 1
-            else: incoming += _trade_stack_slots_needed_12_7_0(conn, recipient, int(inv["item_id"]), int(offer["quantity"]), max(1,int(item.get("max_stack") or 1)))
-        if used - outgoing_full + incoming > cap: return _trade_commit_fail_12_7_0(conn, "bag_full", "Недостатньо місця в сумці одного з учасників.")
-    conn.execute("UPDATE users SET gold=ROUND(COALESCE(gold,0)-?+?,2) WHERE user_id=?", (gold[a],gold[b],a)); conn.execute("UPDATE users SET gold=ROUND(COALESCE(gold,0)-?+?,2) WHERE user_id=?", (gold[b],gold[a],b))
-    for offer, inv, item in validated:
-        owner=int(offer["owner_user_id"]); recipient=b if owner==a else a; quantity=int(offer["quantity"])
-        if int(item.get("max_stack") or 1) <= 1:
-            conn.execute("UPDATE inventory SET user_id=? WHERE id=? AND user_id=?", (recipient,int(inv["id"]),owner))
-        else: _trade_transfer_stack_12_7_0(conn, inv, recipient, quantity, item)
-    conn.execute("DELETE FROM inventory_reservations WHERE reservation_type=? AND reference_id=?", (TRADE_RESERVATION_TYPE,tid)); conn.execute("DELETE FROM player_activity_sessions WHERE activity_type='trade' AND reference_id=?", (str(tid),))
-    conn.execute("UPDATE player_trades SET status='completed',completed_at=?,updated_at=?,expires_at=?,initiator_confirmed=1,recipient_confirmed=1 WHERE id=?", (stamp,stamp,stamp,tid))
-    _trade_event(conn,tid,None,"completed",int(trade["revision"]),stamp,json.dumps({"gold":gold,"items":len(validated)},ensure_ascii=False))
-    _write_trade_history(conn,trade,"completed",stamp)
-    conn.execute("UPDATE player_trade_history SET initiator_offer_snapshot=?,recipient_offer_snapshot=?,summary_json=? WHERE trade_id=?", (_trade_offer_snapshot_12_7_0(offers,a),_trade_offer_snapshot_12_7_0(offers,b),json.dumps({"gold":gold,"item_offer_count":len(validated)},ensure_ascii=False),tid))
-    conn.commit(); return {"success":True,"completed":True,"trade_id":tid,"initiator_user_id":a,"recipient_user_id":b,"revision":int(trade["revision"])}
+            owner=int(offer["owner_user_id"]); recipient=b if owner==a else a; quantity=int(offer["quantity"])
+            if int(item.get("max_stack") or 1) <= 1:
+                conn.execute("UPDATE inventory SET user_id=? WHERE id=? AND user_id=?", (recipient,int(inv["id"]),owner))
+            else: _trade_transfer_stack_12_7_0(conn, inv, recipient, quantity, item)
+        conn.execute("DELETE FROM inventory_reservations WHERE reservation_type=? AND reference_id=?", (TRADE_RESERVATION_TYPE,tid)); conn.execute("DELETE FROM player_activity_sessions WHERE activity_type='trade' AND reference_id=?", (str(tid),))
+        conn.execute("UPDATE player_trades SET status='completed',completed_at=?,updated_at=?,expires_at=?,initiator_confirmed=1,recipient_confirmed=1 WHERE id=?", (stamp,stamp,stamp,tid))
+        _trade_event(conn,tid,None,"completed",int(trade["revision"]),stamp,json.dumps({"gold":gold,"items":len(validated)},ensure_ascii=False))
+        _write_trade_history(conn,trade,"completed",stamp)
+        conn.execute("UPDATE player_trade_history SET initiator_offer_snapshot=?,recipient_offer_snapshot=?,summary_json=? WHERE trade_id=?", (_trade_offer_snapshot_12_7_0(offers,a),_trade_offer_snapshot_12_7_0(offers,b),json.dumps({"gold":gold,"item_offer_count":len(validated)},ensure_ascii=False),tid))
+        conn.commit(); return {"success":True,"completed":True,"trade_id":tid,"initiator_user_id":a,"recipient_user_id":b,"revision":int(trade["revision"])}
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def confirm_player_trade(trade_id, user_id, *, expected_revision=None, now=None, db_path=None):

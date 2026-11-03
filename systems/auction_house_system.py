@@ -4881,109 +4881,45 @@ def update_expired_auction_lots(now_iso=None):
         return result
 
     # 1. ACTIVE -> EXPIRED_UNCLAIMED
-    cursor.execute("""
-    SELECT id, expires_at, delete_after
-    FROM auction_lots
-    WHERE status=?
-    """, (AUCTION_STATUS_ACTIVE_V2,))
-    active_rows = cursor.fetchall()
-
-    for row in active_rows:
-        expires_dt = _auction_parse_dt_v2(row["expires_at"])
-        if not expires_dt or expires_dt > now_dt:
-            continue
-
-        delete_after = row["delete_after"] if has_delete_after else None
-        if not delete_after:
-            delete_after = _auction_plus_days_iso_v2(now_iso, AUCTION_UNCLAIMED_RETENTION_DAYS_V2)
-
-        if has_delete_after and has_updated_at:
-            cursor.execute("""
-            UPDATE auction_lots
-            SET status=?, delete_after=?, updated_at=?
-            WHERE id=? AND status=?
-            """, (
-                AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,
-                delete_after,
-                now_iso,
-                row["id"],
-                AUCTION_STATUS_ACTIVE_V2,
-            ))
-        elif has_delete_after:
-            cursor.execute("""
-            UPDATE auction_lots
-            SET status=?, delete_after=?
-            WHERE id=? AND status=?
-            """, (
-                AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,
-                delete_after,
-                row["id"],
-                AUCTION_STATUS_ACTIVE_V2,
-            ))
-        else:
-            cursor.execute("""
-            UPDATE auction_lots
-            SET status=?
-            WHERE id=? AND status=?
-            """, (
-                AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,
-                row["id"],
-                AUCTION_STATUS_ACTIVE_V2,
-            ))
-
-        if cursor.rowcount:
-            result["expired_active"] += 1
-
-    # 2. Fix missing delete_after for unclaimed statuses.
-    if has_delete_after:
+    try:
         cursor.execute("""
-        SELECT id, status, sold_at, expires_at, created_at, delete_after
-        FROM auction_lots
-        WHERE status IN (?, ?)
-          AND (delete_after IS NULL OR delete_after='')
-        """, (
-            AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,
-            AUCTION_STATUS_SOLD_UNCLAIMED_V2,
-        ))
-        missing_rows = cursor.fetchall()
-
-        for row in missing_rows:
-            base_date = row["sold_at"] or row["expires_at"] or row["created_at"] or now_iso
-            delete_after = _auction_plus_days_iso_v2(base_date, AUCTION_UNCLAIMED_RETENTION_DAYS_V2)
-            cursor.execute("""
-            UPDATE auction_lots
-            SET delete_after=?
-            WHERE id=?
-            """, (delete_after, row["id"]))
-            if cursor.rowcount:
-                result["fixed_missing_delete_after"] += 1
-
-    # 3. EXPIRED_UNCLAIMED -> DELETED after retention.
-    if has_delete_after:
-        cursor.execute("""
-        SELECT id, delete_after
+        SELECT id, expires_at, delete_after
         FROM auction_lots
         WHERE status=?
-          AND delete_after IS NOT NULL
-          AND delete_after<>''
-        """, (AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,))
-        expired_unclaimed_rows = cursor.fetchall()
+        """, (AUCTION_STATUS_ACTIVE_V2,))
+        active_rows = cursor.fetchall()
 
-        for row in expired_unclaimed_rows:
-            delete_dt = _auction_parse_dt_v2(row["delete_after"])
-            if not delete_dt or delete_dt > now_dt:
+        for row in active_rows:
+            expires_dt = _auction_parse_dt_v2(row["expires_at"])
+            if not expires_dt or expires_dt > now_dt:
                 continue
 
-            if has_updated_at:
+            delete_after = row["delete_after"] if has_delete_after else None
+            if not delete_after:
+                delete_after = _auction_plus_days_iso_v2(now_iso, AUCTION_UNCLAIMED_RETENTION_DAYS_V2)
+
+            if has_delete_after and has_updated_at:
                 cursor.execute("""
                 UPDATE auction_lots
-                SET status=?, updated_at=?
+                SET status=?, delete_after=?, updated_at=?
                 WHERE id=? AND status=?
                 """, (
-                    AUCTION_STATUS_DELETED_V2,
+                    AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,
+                    delete_after,
                     now_iso,
                     row["id"],
+                    AUCTION_STATUS_ACTIVE_V2,
+                ))
+            elif has_delete_after:
+                cursor.execute("""
+                UPDATE auction_lots
+                SET status=?, delete_after=?
+                WHERE id=? AND status=?
+                """, (
                     AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,
+                    delete_after,
+                    row["id"],
+                    AUCTION_STATUS_ACTIVE_V2,
                 ))
             else:
                 cursor.execute("""
@@ -4991,55 +4927,123 @@ def update_expired_auction_lots(now_iso=None):
                 SET status=?
                 WHERE id=? AND status=?
                 """, (
-                    AUCTION_STATUS_DELETED_V2,
-                    row["id"],
                     AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,
+                    row["id"],
+                    AUCTION_STATUS_ACTIVE_V2,
                 ))
 
             if cursor.rowcount:
-                result["deleted_expired_unclaimed"] += 1
+                result["expired_active"] += 1
 
-        # 4. SOLD_UNCLAIMED -> DELETED after retention.
-        cursor.execute("""
-        SELECT id, delete_after
-        FROM auction_lots
-        WHERE status=?
-          AND delete_after IS NOT NULL
-          AND delete_after<>''
-        """, (AUCTION_STATUS_SOLD_UNCLAIMED_V2,))
-        sold_unclaimed_rows = cursor.fetchall()
+        # 2. Fix missing delete_after for unclaimed statuses.
+        if has_delete_after:
+            cursor.execute("""
+            SELECT id, status, sold_at, expires_at, created_at, delete_after
+            FROM auction_lots
+            WHERE status IN (?, ?)
+              AND (delete_after IS NULL OR delete_after='')
+            """, (
+                AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,
+                AUCTION_STATUS_SOLD_UNCLAIMED_V2,
+            ))
+            missing_rows = cursor.fetchall()
 
-        for row in sold_unclaimed_rows:
-            delete_dt = _auction_parse_dt_v2(row["delete_after"])
-            if not delete_dt or delete_dt > now_dt:
-                continue
-
-            if has_updated_at:
+            for row in missing_rows:
+                base_date = row["sold_at"] or row["expires_at"] or row["created_at"] or now_iso
+                delete_after = _auction_plus_days_iso_v2(base_date, AUCTION_UNCLAIMED_RETENTION_DAYS_V2)
                 cursor.execute("""
                 UPDATE auction_lots
-                SET status=?, updated_at=?
-                WHERE id=? AND status=?
-                """, (
-                    AUCTION_STATUS_DELETED_V2,
-                    now_iso,
-                    row["id"],
-                    AUCTION_STATUS_SOLD_UNCLAIMED_V2,
-                ))
-            else:
-                cursor.execute("""
-                UPDATE auction_lots
-                SET status=?
-                WHERE id=? AND status=?
-                """, (
-                    AUCTION_STATUS_DELETED_V2,
-                    row["id"],
-                    AUCTION_STATUS_SOLD_UNCLAIMED_V2,
-                ))
+                SET delete_after=?
+                WHERE id=?
+                """, (delete_after, row["id"]))
+                if cursor.rowcount:
+                    result["fixed_missing_delete_after"] += 1
 
-            if cursor.rowcount:
-                result["deleted_sold_unclaimed"] += 1
+        # 3. EXPIRED_UNCLAIMED -> DELETED after retention.
+        if has_delete_after:
+            cursor.execute("""
+            SELECT id, delete_after
+            FROM auction_lots
+            WHERE status=?
+              AND delete_after IS NOT NULL
+              AND delete_after<>''
+            """, (AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,))
+            expired_unclaimed_rows = cursor.fetchall()
 
-    conn.commit()
+            for row in expired_unclaimed_rows:
+                delete_dt = _auction_parse_dt_v2(row["delete_after"])
+                if not delete_dt or delete_dt > now_dt:
+                    continue
+
+                if has_updated_at:
+                    cursor.execute("""
+                    UPDATE auction_lots
+                    SET status=?, updated_at=?
+                    WHERE id=? AND status=?
+                    """, (
+                        AUCTION_STATUS_DELETED_V2,
+                        now_iso,
+                        row["id"],
+                        AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,
+                    ))
+                else:
+                    cursor.execute("""
+                    UPDATE auction_lots
+                    SET status=?
+                    WHERE id=? AND status=?
+                    """, (
+                        AUCTION_STATUS_DELETED_V2,
+                        row["id"],
+                        AUCTION_STATUS_EXPIRED_UNCLAIMED_V2,
+                    ))
+
+                if cursor.rowcount:
+                    result["deleted_expired_unclaimed"] += 1
+
+            # 4. SOLD_UNCLAIMED -> DELETED after retention.
+            cursor.execute("""
+            SELECT id, delete_after
+            FROM auction_lots
+            WHERE status=?
+              AND delete_after IS NOT NULL
+              AND delete_after<>''
+            """, (AUCTION_STATUS_SOLD_UNCLAIMED_V2,))
+            sold_unclaimed_rows = cursor.fetchall()
+
+            for row in sold_unclaimed_rows:
+                delete_dt = _auction_parse_dt_v2(row["delete_after"])
+                if not delete_dt or delete_dt > now_dt:
+                    continue
+
+                if has_updated_at:
+                    cursor.execute("""
+                    UPDATE auction_lots
+                    SET status=?, updated_at=?
+                    WHERE id=? AND status=?
+                    """, (
+                        AUCTION_STATUS_DELETED_V2,
+                        now_iso,
+                        row["id"],
+                        AUCTION_STATUS_SOLD_UNCLAIMED_V2,
+                    ))
+                else:
+                    cursor.execute("""
+                    UPDATE auction_lots
+                    SET status=?
+                    WHERE id=? AND status=?
+                    """, (
+                        AUCTION_STATUS_DELETED_V2,
+                        row["id"],
+                        AUCTION_STATUS_SOLD_UNCLAIMED_V2,
+                    ))
+
+                if cursor.rowcount:
+                    result["deleted_sold_unclaimed"] += 1
+
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     return result
 
 

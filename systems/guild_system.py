@@ -1304,37 +1304,41 @@ def make_existing_guild_icons_unique():
 
     init_guild_system_tables_only()
 
-    cursor.execute("SELECT id, icon, name, tag FROM guilds ORDER BY id ASC")
-    rows = cursor.fetchall()
+    try:
+        cursor.execute("SELECT id, icon, name, tag FROM guilds ORDER BY id ASC")
+        rows = cursor.fetchall()
 
-    seen = set()
-    used = set()
-    changes = []
+        seen = set()
+        used = set()
+        changes = []
 
-    for row in rows:
-        try:
-            guild_id = row["id"]
-            icon = normalize_guild_icon(row["icon"])
-            name = row["name"]
-            tag = row["tag"]
-        except Exception:
-            guild_id = row[0]
-            icon = normalize_guild_icon(row[1])
-            name = row[2] if len(row) > 2 else "Гільдія"
-            tag = row[3] if len(row) > 3 else "???"
+        for row in rows:
+            try:
+                guild_id = row["id"]
+                icon = normalize_guild_icon(row["icon"])
+                name = row["name"]
+                tag = row["tag"]
+            except Exception:
+                guild_id = row[0]
+                icon = normalize_guild_icon(row[1])
+                name = row[2] if len(row) > 2 else "Гільдія"
+                tag = row[3] if len(row) > 3 else "???"
 
-        if icon not in seen and icon not in used:
-            seen.add(icon)
-            used.add(icon)
-            continue
+            if icon not in seen and icon not in used:
+                seen.add(icon)
+                used.add(icon)
+                continue
 
-        new_icon = _pick_unique_guild_icon(used)
-        used.add(new_icon)
+            new_icon = _pick_unique_guild_icon(used)
+            used.add(new_icon)
 
-        cursor.execute("UPDATE guilds SET icon=?, updated_at=? WHERE id=?", (new_icon, now_iso(), guild_id))
-        changes.append((guild_id, icon, new_icon, name, tag))
+            cursor.execute("UPDATE guilds SET icon=?, updated_at=? WHERE id=?", (new_icon, now_iso(), guild_id))
+            changes.append((guild_id, icon, new_icon, name, tag))
 
-    conn.commit()
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     for guild_id, old_icon, new_icon, name, tag in changes:
         try:
@@ -1970,33 +1974,37 @@ def _guild_safe_set_application_status(application_id, status, processed_by=None
 def _guild_cancel_other_pending_applications(user_id, except_application_id=None, processed_by=None):
     now = now_iso()
 
-    if except_application_id is None:
-        cursor.execute("""
-        UPDATE guild_applications
-        SET status=?, processed_at=?, processed_by=?
-        WHERE user_id=? AND status=?
-        """, (
-            GUILD_APPLICATION_CANCELLED,
-            now,
-            processed_by,
-            user_id,
-            GUILD_APPLICATION_PENDING,
-        ))
-    else:
-        cursor.execute("""
-        UPDATE guild_applications
-        SET status=?, processed_at=?, processed_by=?
-        WHERE user_id=? AND status=? AND id != ?
-        """, (
-            GUILD_APPLICATION_CANCELLED,
-            now,
-            processed_by,
-            user_id,
-            GUILD_APPLICATION_PENDING,
-            except_application_id,
-        ))
+    try:
+        if except_application_id is None:
+            cursor.execute("""
+            UPDATE guild_applications
+            SET status=?, processed_at=?, processed_by=?
+            WHERE user_id=? AND status=?
+            """, (
+                GUILD_APPLICATION_CANCELLED,
+                now,
+                processed_by,
+                user_id,
+                GUILD_APPLICATION_PENDING,
+            ))
+        else:
+            cursor.execute("""
+            UPDATE guild_applications
+            SET status=?, processed_at=?, processed_by=?
+            WHERE user_id=? AND status=? AND id != ?
+            """, (
+                GUILD_APPLICATION_CANCELLED,
+                now,
+                processed_by,
+                user_id,
+                GUILD_APPLICATION_PENDING,
+                except_application_id,
+            ))
 
-    conn.commit()
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
 
 # FINAL OVERRIDE for 7.0.5 accept_guild_application.
@@ -2074,20 +2082,24 @@ def accept_guild_application(actor_user_id, application_id):
     now = now_iso()
 
     try:
-        cursor.execute("""
-        INSERT INTO guild_members (guild_id, user_id, role, joined_at)
-        VALUES (?, ?, ?, ?)
-        """, (
-            guild_id,
-            applicant_user_id,
-            GUILD_ROLE_MEMBER,
-            now,
-        ))
-        conn.commit()
-    except Exception as error:
-        # Якщо паралельно/раніше гравець уже був доданий — переводимо в idempotent branch.
-        if "UNIQUE constraint failed" not in str(error):
-            raise
+        try:
+            cursor.execute("""
+            INSERT INTO guild_members (guild_id, user_id, role, joined_at)
+            VALUES (?, ?, ?, ?)
+            """, (
+                guild_id,
+                applicant_user_id,
+                GUILD_ROLE_MEMBER,
+                now,
+            ))
+            conn.commit()
+        except Exception as error:
+            # Якщо паралельно/раніше гравець уже був доданий — переводимо в idempotent branch.
+            if "UNIQUE constraint failed" not in str(error):
+                raise
+    except Exception:
+        conn.rollback()
+        raise
 
     _guild_safe_set_application_status(
         application_id,
@@ -2490,32 +2502,36 @@ def create_guild_application(user_id, guild_id):
             "message": "❌ Гільдію не знайдено."
         }
 
-    cursor.execute("""
-    SELECT * FROM guild_applications
-    WHERE guild_id=? AND user_id=? AND status=?
-    """, (
-        guild_id,
-        user_id,
-        GUILD_APPLICATION_PENDING,
-    ))
+    try:
+        cursor.execute("""
+        SELECT * FROM guild_applications
+        WHERE guild_id=? AND user_id=? AND status=?
+        """, (
+            guild_id,
+            user_id,
+            GUILD_APPLICATION_PENDING,
+        ))
 
-    if cursor.fetchone():
-        return {
-            "success": False,
-            "message": "ℹ️ Ти вже подав заявку в цю гільдію."
-        }
+        if cursor.fetchone():
+            return {
+                "success": False,
+                "message": "ℹ️ Ти вже подав заявку в цю гільдію."
+            }
 
-    cursor.execute("""
-    INSERT INTO guild_applications (guild_id, user_id, status, created_at)
-    VALUES (?, ?, ?, ?)
-    """, (
-        guild_id,
-        user_id,
-        GUILD_APPLICATION_PENDING,
-        now_iso(),
-    ))
+        cursor.execute("""
+        INSERT INTO guild_applications (guild_id, user_id, status, created_at)
+        VALUES (?, ?, ?, ?)
+        """, (
+            guild_id,
+            user_id,
+            GUILD_APPLICATION_PENDING,
+            now_iso(),
+        ))
 
-    conn.commit()
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     applicant_name = get_character_name_by_user_id(user_id)
 
