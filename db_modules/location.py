@@ -23,10 +23,14 @@ def get_current_location(user_id):
     return row[0]
 
 def set_current_location(user_id, location_id):
-    cursor.execute("""
-    UPDATE users
-    SET current_location=?
-    WHERE user_id=?
-    """, (location_id, user_id))
+    try:
+        cursor.execute("""
+        UPDATE users
+        SET current_location=?
+        WHERE user_id=?
+        """, (location_id, user_id))
 
-    conn.commit()
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise

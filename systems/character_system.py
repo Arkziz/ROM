@@ -184,9 +184,13 @@ def set_character_name(user_id, name):
 
         return {"success": False, "message": "❌ Це ім’я вже зайняте іншим персонажем."}
 
-    db.cursor.execute("UPDATE users SET character_name=? WHERE user_id=?", (value, user_id))
+    try:
+        db.cursor.execute("UPDATE users SET character_name=? WHERE user_id=?", (value, user_id))
 
-    db.conn.commit()
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
     return {"success": True, "message": "✅ Ім’я персонажа збережено.", "character_name": value}
 
@@ -262,33 +266,37 @@ def refresh_user_mp(user_id):
 
     maximum = get_max_mp(user_id)
 
-    db.cursor.execute("SELECT mp, max_mp FROM users WHERE user_id=?", (user_id,))
+    try:
+        db.cursor.execute("SELECT mp, max_mp FROM users WHERE user_id=?", (user_id,))
 
-    row = db.cursor.fetchone()
+        row = db.cursor.fetchone()
 
-    if not row:
+        if not row:
 
-        return 0
+            return 0
 
-    current = int(row[0] or 0)
+        current = int(row[0] or 0)
 
-    old_max = int(row[1] or 0)
+        old_max = int(row[1] or 0)
 
-    if maximum <= 0:
+        if maximum <= 0:
 
-        current = 0
+            current = 0
 
-    elif old_max <= 0 and current <= 0:
+        elif old_max <= 0 and current <= 0:
 
-        current = maximum
+            current = maximum
 
-    else:
+        else:
 
-        current = min(current, maximum)
+            current = min(current, maximum)
 
-    db.cursor.execute("UPDATE users SET mp=?, max_mp=? WHERE user_id=?", (current, maximum, user_id))
+        db.cursor.execute("UPDATE users SET mp=?, max_mp=? WHERE user_id=?", (current, maximum, user_id))
 
-    db.conn.commit()
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
     return current
 
@@ -330,9 +338,13 @@ def set_user_mp(user_id, amount):
 
     value = max(0, min(value, maximum))
 
-    db.cursor.execute("UPDATE users SET mp=?, max_mp=? WHERE user_id=?", (value, maximum, user_id))
+    try:
+        db.cursor.execute("UPDATE users SET mp=?, max_mp=? WHERE user_id=?", (value, maximum, user_id))
 
-    db.conn.commit()
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
     return value
 
@@ -352,33 +364,37 @@ def set_character_class(user_id, class_key):
 
         return {"success": False, "message": "❌ Невідомий клас персонажа."}
 
-    db.cursor.execute(
+    try:
+        db.cursor.execute(
 
-        "SELECT character_class, class_selected_at FROM users WHERE user_id=?",
+            "SELECT character_class, class_selected_at FROM users WHERE user_id=?",
 
-        (user_id,),
+            (user_id,),
 
-    )
+        )
 
-    previous_row = db.cursor.fetchone()
+        previous_row = db.cursor.fetchone()
 
-    previous_class_selected_at = (
+        previous_class_selected_at = (
 
-        str(previous_row[1] or "").strip() if previous_row else ""
+            str(previous_row[1] or "").strip() if previous_row else ""
 
-    )
+        )
 
-    is_initial_class_selection = not previous_class_selected_at
+        is_initial_class_selection = not previous_class_selected_at
 
-    db.cursor.execute(
+        db.cursor.execute(
 
-        "UPDATE users SET character_class=?, class_selected_at=? WHERE user_id=?",
+            "UPDATE users SET character_class=?, class_selected_at=? WHERE user_id=?",
 
-        (key, datetime.now().isoformat(), user_id),
+            (key, datetime.now().isoformat(), user_id),
 
-    )
+        )
 
-    db.conn.commit()
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
     refresh_user_mp(user_id)
 
@@ -780,27 +796,31 @@ def reset_mp_regen_clock_17_15_1(user_id, paused=None):
 
     now = datetime.now().isoformat()
 
-    if paused is None:
+    try:
+        if paused is None:
 
-        db.cursor.execute(
+            db.cursor.execute(
 
-            "UPDATE users SET last_mp_regen_update=? WHERE user_id=?",
+                "UPDATE users SET last_mp_regen_update=? WHERE user_id=?",
 
-            (now, int(user_id)),
+                (now, int(user_id)),
 
-        )
+            )
 
-    else:
+        else:
 
-        db.cursor.execute(
+            db.cursor.execute(
 
-            "UPDATE users SET last_mp_regen_update=?, mp_regen_paused=? WHERE user_id=?",
+                "UPDATE users SET last_mp_regen_update=?, mp_regen_paused=? WHERE user_id=?",
 
-            (now, 1 if paused else 0, int(user_id)),
+                (now, 1 if paused else 0, int(user_id)),
 
-        )
+            )
 
-    db.conn.commit()
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
 
 

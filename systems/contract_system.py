@@ -93,59 +93,67 @@ def reset_daily_contracts_if_needed(user_id):
 
     today = get_today_str()
 
-    cursor.execute("""
-    SELECT daily_contract_date
-    FROM users
-    WHERE user_id=?
-    """, (user_id,))
-
-    row = cursor.fetchone()
-
-    if not row:
-        return
-
-    current_date = row[0] or ""
-
-    if current_date != today:
+    try:
         cursor.execute("""
-        UPDATE users
-        SET daily_contracts_completed=0,
-            daily_contract_date=?
-        WHERE user_id=?
-        """, (today, user_id))
-
-        cursor.execute("""
-        DELETE FROM user_active_contracts
+        SELECT daily_contract_date
+        FROM users
         WHERE user_id=?
         """, (user_id,))
 
-        conn.commit()
+        row = cursor.fetchone()
+
+        if not row:
+            return
+
+        current_date = row[0] or ""
+
+        if current_date != today:
+            cursor.execute("""
+            UPDATE users
+            SET daily_contracts_completed=0,
+                daily_contract_date=?
+            WHERE user_id=?
+            """, (today, user_id))
+
+            cursor.execute("""
+            DELETE FROM user_active_contracts
+            WHERE user_id=?
+            """, (user_id,))
+
+            conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
 def reset_daily_hunts_if_needed(user_id):
     today = get_today_str()
 
-    cursor.execute("""
-    SELECT daily_hunts_date
-    FROM users
-    WHERE user_id=?
-    """, (user_id,))
-
-    row = cursor.fetchone()
-
-    if not row:
-        return
-
-    current_date = row[0] or ""
-
-    if current_date != today:
+    try:
         cursor.execute("""
-        UPDATE users
-        SET daily_hunts=0,
-            daily_hunts_date=?
+        SELECT daily_hunts_date
+        FROM users
         WHERE user_id=?
-        """, (today, user_id))
+        """, (user_id,))
 
-        conn.commit()
+        row = cursor.fetchone()
+
+        if not row:
+            return
+
+        current_date = row[0] or ""
+
+        if current_date != today:
+            cursor.execute("""
+            UPDATE users
+            SET daily_hunts=0,
+                daily_hunts_date=?
+            WHERE user_id=?
+            """, (today, user_id))
+
+            conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
 def get_active_contract(user_id):
     reset_daily_contracts_if_needed(user_id)

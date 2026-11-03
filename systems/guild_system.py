@@ -1948,27 +1948,31 @@ def _guild_safe_set_application_status(application_id, status, processed_by=None
     now = now_iso()
 
     try:
-        cursor.execute("""
-        UPDATE guild_applications
-        SET status=?, processed_at=?, processed_by=?
-        WHERE id=?
-        """, (
-            status,
-            now,
-            processed_by,
-            application_id,
-        ))
-        conn.commit()
-        return True
-    except Exception as error:
-        if "UNIQUE constraint failed" not in str(error):
-            raise
+        try:
+            cursor.execute("""
+            UPDATE guild_applications
+            SET status=?, processed_at=?, processed_by=?
+            WHERE id=?
+            """, (
+                status,
+                now,
+                processed_by,
+                application_id,
+            ))
+            conn.commit()
+            return True
+        except Exception as error:
+            if "UNIQUE constraint failed" not in str(error):
+                raise
 
-        # Є інша заявка з таким самим guild_id/user_id/status.
-        # Поточний pending-запис більше не потрібен.
-        cursor.execute("DELETE FROM guild_applications WHERE id=?", (application_id,))
-        conn.commit()
-        return True
+            # Є інша заявка з таким самим guild_id/user_id/status.
+            # Поточний pending-запис більше не потрібен.
+            cursor.execute("DELETE FROM guild_applications WHERE id=?", (application_id,))
+            conn.commit()
+            return True
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def _guild_cancel_other_pending_applications(user_id, except_application_id=None, processed_by=None):

@@ -202,20 +202,24 @@ def reset_daily_hunts_if_needed(user_id):
     """Reset only the daily hunt counter when the calendar date changes."""
     init_energy_system()
     today = get_today_str()
-    row = cursor.execute(
-        "SELECT daily_hunts_date FROM users WHERE user_id=?",
-        (user_id,)
-    ).fetchone()
-    if not row:
-        return False
-    stored_date = row[0] or ""
-    if stored_date == today:
-        return False
-    cursor.execute(
-        "UPDATE users SET daily_hunts=0, daily_hunts_date=? WHERE user_id=?",
-        (today, user_id)
-    )
-    conn.commit()
+    try:
+        row = cursor.execute(
+            "SELECT daily_hunts_date FROM users WHERE user_id=?",
+            (user_id,)
+        ).fetchone()
+        if not row:
+            return False
+        stored_date = row[0] or ""
+        if stored_date == today:
+            return False
+        cursor.execute(
+            "UPDATE users SET daily_hunts=0, daily_hunts_date=? WHERE user_id=?",
+            (today, user_id)
+        )
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     return True
 
 

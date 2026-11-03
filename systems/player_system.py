@@ -1404,10 +1404,14 @@ def set_current_hp(user_id: int, hp: int):
         safe_hp = 0
 
 
-    db.cursor.execute("UPDATE users SET hp=? WHERE user_id=?", (safe_hp, int(user_id)))
+    try:
+        db.cursor.execute("UPDATE users SET hp=? WHERE user_id=?", (safe_hp, int(user_id)))
 
 
-    db.conn.commit()
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
 
     reset = getattr(db, "reset_hp_regen_timers_now", None)

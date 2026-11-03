@@ -53,60 +53,64 @@ def reset_daily_quest_if_needed(user_id):
 
     today = get_daily_today_str()
 
-    cursor.execute("""
-    SELECT quest_date
-    FROM user_daily_quests
-    WHERE user_id=?
-    """, (user_id,))
-
-    row = cursor.fetchone()
-
-    if not row:
+    try:
         cursor.execute("""
-        INSERT INTO user_daily_quests (
-            user_id,
-            quest_date,
-            quest_id,
-            progress,
-            target_count,
-            completed,
-            reward_claimed
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (
-            user_id,
-            today,
-            DAILY_QUEST_ID_KILL_MONSTERS,
-            0,
-            DAILY_QUEST_TARGET_KILLS,
-            0,
-            0
-        ))
-
-        conn.commit()
-        return
-
-    quest_date = row[0] or ""
-
-    if quest_date != today:
-        cursor.execute("""
-        UPDATE user_daily_quests
-        SET
-            quest_date=?,
-            quest_id=?,
-            progress=0,
-            target_count=?,
-            completed=0,
-            reward_claimed=0
+        SELECT quest_date
+        FROM user_daily_quests
         WHERE user_id=?
-        """, (
-            today,
-            DAILY_QUEST_ID_KILL_MONSTERS,
-            DAILY_QUEST_TARGET_KILLS,
-            user_id
-        ))
+        """, (user_id,))
 
-        conn.commit()
+        row = cursor.fetchone()
+
+        if not row:
+            cursor.execute("""
+            INSERT INTO user_daily_quests (
+                user_id,
+                quest_date,
+                quest_id,
+                progress,
+                target_count,
+                completed,
+                reward_claimed
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """, (
+                user_id,
+                today,
+                DAILY_QUEST_ID_KILL_MONSTERS,
+                0,
+                DAILY_QUEST_TARGET_KILLS,
+                0,
+                0
+            ))
+
+            conn.commit()
+            return
+
+        quest_date = row[0] or ""
+
+        if quest_date != today:
+            cursor.execute("""
+            UPDATE user_daily_quests
+            SET
+                quest_date=?,
+                quest_id=?,
+                progress=0,
+                target_count=?,
+                completed=0,
+                reward_claimed=0
+            WHERE user_id=?
+            """, (
+                today,
+                DAILY_QUEST_ID_KILL_MONSTERS,
+                DAILY_QUEST_TARGET_KILLS,
+                user_id
+            ))
+
+            conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
 def get_daily_quest_status(user_id):
     reset_daily_quest_if_needed(user_id)
