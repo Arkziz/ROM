@@ -1,0 +1,142 @@
+{
+  "stage": "21.4.20",
+  "revision": "5",
+  "status": "PASS_RUNTIME_ACCEPTED",
+  "timestamp": "2026-11-03T22:15:10.473809+00:00",
+  "parent": "381d7f872c78410b16d67bac091da9daed6418f7",
+  "git": {
+    "branch": "develop",
+    "head": "381d7f872c78410b16d67bac091da9daed6418f7",
+    "origin_develop": "381d4b1f8d06b418197a33161f933b9e7d6f11fa",
+    "patch": "patch/patch_21_4_20_transaction_atomicity_runtime_acceptance.py",
+    "zero_gap_sha256": "4ce7a00f04958000afca53e88c6149c08b712edde63625bc96da247d8c0afe15"
+  },
+  "zero_gap_evidence": "reports/stage_21_4_19_transaction_atomicity_zero_gap_audit.json",
+  "runtime_smoke": {
+    "entrypoint": "main.py",
+    "compile_status": "PASS",
+    "stdout": ""
+  },
+  "manual_runtime_evidence_chain": {
+    "stages": [
+      "21.4.3",
+      "21.4.4",
+      "21.4.5",
+      "21.4.6",
+      "21.4.7",
+      "21.4.8",
+      "21.4.9",
+      "21.4.12",
+      "21.4.13",
+      "21.4.14",
+      "21.4.15",
+      "21.4.18"
+    ],
+    "status": "PASS_REPORTED_AND_EVIDENCED"
+  },
+  "maintained_tool_count": 10,
+  "maintained_tools": [
+    {
+      "path": "tools/verify_stage_21_4_12_confirmed_residual_db_owners_atomicity.py",
+      "status": "PASS",
+      "stdout": "PASS: Stage 21.4.12 exact residual DB owner anchors and rollback invariants"
+    },
+    {
+      "path": "tools/smoke_test_stage_21_4_12_confirmed_residual_db_owners_atomicity.py",
+      "status": "PASS",
+      "stdout": "PASS: Stage 21.4.12 injected failure rolls back residual DB-owner-shaped writes"
+    },
+    {
+      "path": "tools/verify_stage_21_4_13_character_contract_energy_atomicity.py",
+      "status": "PASS",
+      "stdout": "PASS: Stage 21.4.13 exact character, contract and energy owner rollback invariants"
+    },
+    {
+      "path": "tools/smoke_test_stage_21_4_13_character_contract_energy_atomicity.py",
+      "status": "PASS",
+      "stdout": "PASS: Stage 21.4.13 injected failure rolls back character/contract/energy-shaped writes"
+    },
+    {
+      "path": "tools/verify_stage_21_4_14_trade_pvp_guild_auction_residual_atomicity.py",
+      "status": "PASS",
+      "stdout": "PASS: Stage 21.4.14 active trade, PvP, guild and auction rollback invariants"
+    },
+    {
+      "path": "tools/smoke_test_stage_21_4_14_trade_pvp_guild_auction_residual_atomicity.py",
+      "status": "PASS",
+      "stdout": "PASS: Stage 21.4.14 injected failure rolls back trade/PvP/guild/auction-shaped writes"
+    },
+    {
+      "path": "tools/verify_stage_21_4_15_regeneration_workers_atomicity.py",
+      "status": "PASS",
+      "stdout": "PASS: Stage 21.4.15 active regeneration-worker rollback invariants"
+    },
+    {
+      "path": "tools/smoke_test_stage_21_4_15_regeneration_workers_atomicity.py",
+      "status": "PASS",
+      "stdout": "PASS: Stage 21.4.15 injected worker failure rolls back values and timestamps"
+    },
+    {
+      "path": "tools/verify_stage_21_4_18_final_focused_owner_atomicity.py",
+      "status": "PASS",
+      "stdout": "PASS: Stage 21.4.18 final focused owner rollback invariants"
+    },
+    {
+      "path": "tools/smoke_test_stage_21_4_18_final_focused_owner_atomicity.py",
+      "status": "PASS",
+      "stdout": "PASS: Stage 21.4.18 injected failure restores focused gameplay state"
+    }
+  ],
+  "acceptance": {
+    "runtime_entrypoint_compile": true,
+    "manual_runtime_evidence_chain": true,
+    "maintained_atomicity_tools": true,
+    "zero_gap_audit": true,
+    "confirmed_production_owner_gaps": 0
+  },
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "3d3bc11e63440d4eab8113b849c9d6b45499ed1c791f31f11721b58f7de04897",
+      "size": 1998848,
+      "mtime_ns": 1793739516073362700
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "30f18e31625755c02c2480e7a15e74093423996c7e452fd013e798b194a11341",
+      "size": 4132392,
+      "mtime_ns": 1793743127274269300
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "6a5e08244d0ae63d27289de15f6f3a7ce29376ef6d8e28f770ae1297d4a6e4d1",
+      "size": 32768,
+      "mtime_ns": 1793742343214057900
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "3d3bc11e63440d4eab8113b849c9d6b45499ed1c791f31f11721b58f7de04897",
+      "size": 1998848,
+      "mtime_ns": 1793739516073362700
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "30f18e31625755c02c2480e7a15e74093423996c7e452fd013e798b194a11341",
+      "size": 4132392,
+      "mtime_ns": 1793743127274269300
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "6a5e08244d0ae63d27289de15f6f3a7ce29376ef6d8e28f770ae1297d4a6e4d1",
+      "size": 32768,
+      "mtime_ns": 1793742343214057900
+    }
+  },
+  "decision": "ACCEPT_STAGE_21_4_TRANSACTION_ATOMICITY",
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "PASS_FROM_RUNTIME_EVIDENCE"
+}
