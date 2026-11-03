@@ -142,69 +142,73 @@ def create_user(user_id):
     starting_max_hp = get_starting_max_hp()
     registered_at = datetime.now(timezone.utc).isoformat()
     
-    cursor.execute("""
-    INSERT OR IGNORE INTO users (
-        user_id,
-        hp,
-        max_hp,
-        level,
-        exp,
-        gold,
-        kills,
-        bag_slots,
-        current_location,
-        str,
-        dex,
-        intelligence,
-        wis,
-        sta,
-        equipped_weapon,
-        equipped_armor,
-        energy,
-        last_energy_update,
-        energy_full_notified,
-        registered_at
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        user_id,
-        starting_max_hp,
-        starting_max_hp,
-        1,
-        0,
-        0.0,
-        0,
-        DEFAULT_BAG_SLOTS,  # ROM 17.8.1 BASE BAG CAPACITY 60
-        "start_path",  # ROM 18.23.3 new characters start at Початок Шляху
-        10,
-        10,
-        10,
-        10,
-        10,
-        None,
-        None,
-        0,
-        datetime.now().isoformat(),
-        1,
-        registered_at
-    ))
-    
-    conn.commit()
-    
-    # Fix energy if needed
-    cursor.execute("""
-    UPDATE users
-    SET energy = 0,
-        last_energy_update = ?,
-        energy_full_notified = 1
-    WHERE user_id = ?
-      AND (energy IS NULL OR energy < 0 OR energy > 40)
-    """, (
-        datetime.now().isoformat(),
-        user_id,
-    ))
-    
-    conn.commit()
+    try:
+        cursor.execute("""
+        INSERT OR IGNORE INTO users (
+            user_id,
+            hp,
+            max_hp,
+            level,
+            exp,
+            gold,
+            kills,
+            bag_slots,
+            current_location,
+            str,
+            dex,
+            intelligence,
+            wis,
+            sta,
+            equipped_weapon,
+            equipped_armor,
+            energy,
+            last_energy_update,
+            energy_full_notified,
+            registered_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            user_id,
+            starting_max_hp,
+            starting_max_hp,
+            1,
+            0,
+            0.0,
+            0,
+            DEFAULT_BAG_SLOTS,  # ROM 17.8.1 BASE BAG CAPACITY 60
+            "start_path",  # ROM 18.23.3 new characters start at Початок Шляху
+            10,
+            10,
+            10,
+            10,
+            10,
+            None,
+            None,
+            0,
+            datetime.now().isoformat(),
+            1,
+            registered_at
+        ))
+        
+        conn.commit()
+        
+        # Fix energy if needed
+        cursor.execute("""
+        UPDATE users
+        SET energy = 0,
+            last_energy_update = ?,
+            energy_full_notified = 1
+        WHERE user_id = ?
+          AND (energy IS NULL OR energy < 0 OR energy > 40)
+        """, (
+            datetime.now().isoformat(),
+            user_id,
+        ))
+        
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     
     # Ensure equipment slots
     from systems.equipment_system import ensure_equipment_slots

@@ -329,68 +329,72 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
             weapon_max_damage = max_dmg
 
     item_id = allocate_shop_preview_item_id(conn)
-    cursor.execute("""
-    INSERT INTO items (
-        id,
-        name,
-        type,
-        rarity,
-        category,
-        slot_key,
-        weapon_hands,
-        max_stack,
-        sell_price,
-        bonus_str,
-        bonus_dex,
-        bonus_int,
-        bonus_wis,
-        bonus_sta,
-        pdef,
-        mdef,
-        item_level,
-        is_generated,
-        item_subtype,
-        weapon_min_damage,
-        weapon_max_damage,
-        weapon_min_magic_damage,
-        weapon_max_magic_damage,
-        weapon_attack_type,
-        armor_type,
-        shop_preview_owner,
-        shop_preview_price
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        item_id,
-        name,
-        type_,
-        rarity,
-        "equipment",
-        slot_key,
-        weapon_hands,
-        1,
-        sell_price,
-        stats["bonus_str"],
-        stats["bonus_dex"],
-        stats["bonus_int"],
-        stats["bonus_wis"],
-        stats["bonus_sta"],
-        stats["pdef"],
-        stats["mdef"],
-        item_level,
-        1,
-        item_profile,
-        weapon_min_damage,
-        weapon_max_damage,
-        weapon_min_magic_damage,
-        weapon_max_magic_damage,
-        weapon_attack_type,
-        armor_type,
-        user_id,
-        price
-    ))
-
-    conn.commit()
+    try:
+        cursor.execute("""
+        INSERT INTO items (
+            id,
+            name,
+            type,
+            rarity,
+            category,
+            slot_key,
+            weapon_hands,
+            max_stack,
+            sell_price,
+            bonus_str,
+            bonus_dex,
+            bonus_int,
+            bonus_wis,
+            bonus_sta,
+            pdef,
+            mdef,
+            item_level,
+            is_generated,
+            item_subtype,
+            weapon_min_damage,
+            weapon_max_damage,
+            weapon_min_magic_damage,
+            weapon_max_magic_damage,
+            weapon_attack_type,
+            armor_type,
+            shop_preview_owner,
+            shop_preview_price
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            item_id,
+            name,
+            type_,
+            rarity,
+            "equipment",
+            slot_key,
+            weapon_hands,
+            1,
+            sell_price,
+            stats["bonus_str"],
+            stats["bonus_dex"],
+            stats["bonus_int"],
+            stats["bonus_wis"],
+            stats["bonus_sta"],
+            stats["pdef"],
+            stats["mdef"],
+            item_level,
+            1,
+            item_profile,
+            weapon_min_damage,
+            weapon_max_damage,
+            weapon_min_magic_damage,
+            weapon_max_magic_damage,
+            weapon_attack_type,
+            armor_type,
+            user_id,
+            price
+        ))
+    
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     return {
         "success": True,
@@ -445,16 +449,20 @@ def cancel_common_equipment_shop_preview(user_id, item_id):
     """Скасовує preview покупки."""
     init_shop_preview_system()
 
-    cursor.execute("""
-    DELETE FROM items
-    WHERE id=?
-      AND shop_preview_owner=?
-      AND id NOT IN (
-          SELECT item_id FROM inventory
-      )
-    """, (item_id, user_id))
-
-    conn.commit()
+    try:
+        cursor.execute("""
+        DELETE FROM items
+        WHERE id=?
+          AND shop_preview_owner=?
+          AND id NOT IN (
+              SELECT item_id FROM inventory
+          )
+        """, (item_id, user_id))
+    
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     return {
         "success": True,

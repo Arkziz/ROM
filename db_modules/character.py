@@ -162,16 +162,20 @@ def spend_user_mp(user_id, amount):
 
     new_mp = current_mp - amount
 
-    cursor.execute("""
-    UPDATE users
-    SET mp=?
-    WHERE user_id=?
-    """, (
-        new_mp,
-        user_id
-    ))
-
-    conn.commit()
+    try:
+        cursor.execute("""
+        UPDATE users
+        SET mp=?
+        WHERE user_id=?
+        """, (
+            new_mp,
+            user_id
+        ))
+    
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     return {
         "success": True,
@@ -205,16 +209,20 @@ def restore_user_mp_to_full(user_id):
     mp_data = get_user_mp(user_id)
     max_mp = mp_data.get("max_mp", 0)
 
-    cursor.execute("""
-    UPDATE users
-    SET mp=?
-    WHERE user_id=?
-    """, (
-        max_mp,
-        user_id
-    ))
-
-    conn.commit()
+    try:
+        cursor.execute("""
+        UPDATE users
+        SET mp=?
+        WHERE user_id=?
+        """, (
+            max_mp,
+            user_id
+        ))
+    
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     return {
         "success": True,

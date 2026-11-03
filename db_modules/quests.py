@@ -44,33 +44,37 @@ def get_user_daily_quest(user_id):
     
     today = get_daily_today_str()
     
-    cursor.execute("""
-    SELECT user_id, daily_key, total_kills, elite_kills, pvp_kills, 
-           trades_completed, status, claimed_at
-    FROM user_daily_activity
-    WHERE user_id=? AND daily_key=?
-    """, (user_id, today))
-    
-    row = cursor.fetchone()
-    if not row:
-        # Create new quest for today
+    try:
         cursor.execute("""
-        INSERT INTO user_daily_activity 
-        (user_id, daily_key, total_kills, elite_kills, pvp_kills, trades_completed, status)
-        VALUES (?, ?, 0, 0, 0, 0, 'active')
+        SELECT user_id, daily_key, total_kills, elite_kills, pvp_kills, 
+               trades_completed, status, claimed_at
+        FROM user_daily_activity
+        WHERE user_id=? AND daily_key=?
         """, (user_id, today))
-        conn.commit()
         
-        return {
-            "user_id": user_id,
-            "daily_key": today,
-            "total_kills": 0,
-            "elite_kills": 0,
-            "pvp_kills": 0,
-            "trades_completed": 0,
-            "status": "active",
-            "claimed_at": None
-        }
+        row = cursor.fetchone()
+        if not row:
+            # Create new quest for today
+            cursor.execute("""
+            INSERT INTO user_daily_activity 
+            (user_id, daily_key, total_kills, elite_kills, pvp_kills, trades_completed, status)
+            VALUES (?, ?, 0, 0, 0, 0, 'active')
+            """, (user_id, today))
+            conn.commit()
+            
+            return {
+                "user_id": user_id,
+                "daily_key": today,
+                "total_kills": 0,
+                "elite_kills": 0,
+                "pvp_kills": 0,
+                "trades_completed": 0,
+                "status": "active",
+                "claimed_at": None
+            }
+    except Exception:
+        conn.rollback()
+        raise
     
     return {
         "user_id": row[0],
@@ -91,17 +95,21 @@ def add_daily_quest_progress(user_id, total_kills=0, elite_kills=0, pvp_kills=0,
     today = get_daily_today_str()
     quest = get_user_daily_quest(user_id)
     
-    cursor.execute("""
-    UPDATE user_daily_activity
-    SET total_kills = total_kills + ?,
-        elite_kills = elite_kills + ?,
-        pvp_kills = pvp_kills + ?,
-        trades_completed = trades_completed + ?,
-        updated_at = CURRENT_TIMESTAMP
-    WHERE user_id=? AND daily_key=?
-    """, (total_kills, elite_kills, pvp_kills, trades, user_id, today))
-    
-    conn.commit()
+    try:
+        cursor.execute("""
+        UPDATE user_daily_activity
+        SET total_kills = total_kills + ?,
+            elite_kills = elite_kills + ?,
+            pvp_kills = pvp_kills + ?,
+            trades_completed = trades_completed + ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE user_id=? AND daily_key=?
+        """, (total_kills, elite_kills, pvp_kills, trades, user_id, today))
+        
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
 
 def is_daily_quest_complete(user_id):
@@ -322,18 +330,22 @@ def process_daily_quest_progress_on_kill(user_id, mob=None):
     new_progress = min(target_count, progress + 1)
     completed = 1 if new_progress >= target_count else 0
 
-    cursor.execute("""
-    UPDATE user_daily_quests
-    SET progress=?,
-        completed=?
-    WHERE user_id=?
-    """, (
-        new_progress,
-        completed,
-        user_id
-    ))
-
-    conn.commit()
+    try:
+        cursor.execute("""
+        UPDATE user_daily_quests
+        SET progress=?,
+            completed=?
+        WHERE user_id=?
+        """, (
+            new_progress,
+            completed,
+            user_id
+        ))
+    
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     if completed:
         return {

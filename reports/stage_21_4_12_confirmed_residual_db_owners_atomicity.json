@@ -1,0 +1,127 @@
+{
+  "stage": "21.4.12",
+  "revision": "2",
+  "status": "PASS",
+  "timestamp": "2026-11-03T19:10:06.701861+00:00",
+  "parent": "381d4b1f8d06b418197a33161f933b9e7d6f11fa",
+  "source_hashes_before": {
+    "db_modules/character.py": "3def807ae505baaa1102da998012c419d3615695cdc8154f0a41a1cef6dff0ea",
+    "db_modules/generated_equipment.py": "98808478a56707be91931d3b3c5363fe313d8b3ea55150327e9964d68fccb892",
+    "db_modules/inventory.py": "460e91adc765da1e11bef2b9bf60d5a6b51ca664eaea9126d8f232d35411cb87",
+    "db_modules/player.py": "611815281e1169e7324285ea0d81f30f63e3d2f0834e8681a9de7c7c601d602a",
+    "db_modules/quests.py": "40219bf84d6cad04ee592f112583429458708cc97878cf83a9aa1462551a5f30",
+    "db_modules/shop.py": "9da1260fa7b375485480cd9a06d93b485efff54bae2ec369e560aa8e384facc0"
+  },
+  "source_hashes_after": {
+    "db_modules/character.py": "626c5383a783ef08d6b9296db91eb98a878f305b6227611ad44f2294eea61e6b",
+    "db_modules/generated_equipment.py": "fec0f3cbfbf42e8a7fe79b4c51accc25a0f1ac936cdddf70d70481dac87e4dbf",
+    "db_modules/inventory.py": "6b0bb2edcf306cced5eb90e4b4fc090a94e8822c9a56146d7ff294b23f4dc2e5",
+    "db_modules/player.py": "c6379944c3d41ce6fb225697be500f913570ee8412f8d354cffa838c5ea7aeed",
+    "db_modules/quests.py": "a4a37d73faed06a4daf419b144bfe538a0fe363dfad6388518b2fca82ece8958",
+    "db_modules/shop.py": "f3a4d3286a6888dfcde713d572fc4758fc2b7e4d1f1abf85caa56f4311b2aee1"
+  },
+  "selected_owners": {
+    "db_modules/character.py": [
+      "restore_user_mp_to_full",
+      "spend_user_mp"
+    ],
+    "db_modules/generated_equipment.py": [
+      "create_generated_equipment_item_for_slot"
+    ],
+    "db_modules/inventory.py": [
+      "compact_user_item_stacks",
+      "sell_all_trash"
+    ],
+    "db_modules/player.py": [
+      "create_user"
+    ],
+    "db_modules/quests.py": [
+      "add_daily_quest_progress",
+      "get_user_daily_quest",
+      "process_daily_quest_progress_on_kill"
+    ],
+    "db_modules/shop.py": [
+      "cancel_common_equipment_shop_preview",
+      "create_common_equipment_shop_preview"
+    ]
+  },
+  "selected_owner_anchors": {
+    "db_modules/character.py": [
+      {
+        "name": "spend_user_mp",
+        "line": 128
+      },
+      {
+        "name": "restore_user_mp_to_full",
+        "line": 187
+      }
+    ],
+    "db_modules/generated_equipment.py": [
+      {
+        "name": "create_generated_equipment_item_for_slot",
+        "line": 366
+      }
+    ],
+    "db_modules/inventory.py": [
+      {
+        "name": "compact_user_item_stacks",
+        "line": 226
+      },
+      {
+        "name": "sell_all_trash",
+        "line": 406
+      }
+    ],
+    "db_modules/player.py": [
+      {
+        "name": "create_user",
+        "line": 132
+      }
+    ],
+    "db_modules/quests.py": [
+      {
+        "name": "get_user_daily_quest",
+        "line": 41
+      },
+      {
+        "name": "add_daily_quest_progress",
+        "line": 91
+      },
+      {
+        "name": "process_daily_quest_progress_on_kill",
+        "line": 292
+      }
+    ],
+    "db_modules/shop.py": [
+      {
+        "name": "create_common_equipment_shop_preview",
+        "line": 190
+      },
+      {
+        "name": "cancel_common_equipment_shop_preview",
+        "line": 448
+      }
+    ]
+  },
+  "contract": {
+    "commit_on_success": true,
+    "rollback_on_exception": true,
+    "exception_propagates": true,
+    "unchanged_state_after_injected_failure": true
+  },
+  "automated_evidence": {
+    "verifier": "PASS: Stage 21.4.12 exact residual DB owner anchors and rollback invariants",
+    "smoke": "PASS: Stage 21.4.12 injected failure rolls back residual DB-owner-shaped writes"
+  },
+  "production_files_changed": [
+    "db_modules/character.py",
+    "db_modules/generated_equipment.py",
+    "db_modules/inventory.py",
+    "db_modules/player.py",
+    "db_modules/quests.py",
+    "db_modules/shop.py"
+  ],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "REQUIRED"
+}
