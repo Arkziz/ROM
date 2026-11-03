@@ -1,0 +1,58 @@
+{
+  "stage": "21.6.2",
+  "revision": "1",
+  "status": "PASS",
+  "timestamp": "2026-11-03T23:15:19.489464+00:00",
+  "parent": "4939f54b7c165195db158cc392181ee84eaae61c",
+  "audit": "reports/stage_21_6_1_programming_and_patch_regulation_audit.json",
+  "audit_sha256": "8457c383c73ec5f77066783f778a39908c2397b66b609517a09b6b57db1a1f43",
+  "regulation": "ROM_PROGRAMMING_AND_PATCH_REGULATION.docx",
+  "regulation_sha256": "4201d89d6ba70940d647b2f1481e3a40eb92a5bef1c7e7b1e6f10e979ac2113f",
+  "backup_path": "backup/stage_21_6_2_20261103T231517Z",
+  "finding_to_rule_mapping": {
+    "WAL_SHM_MUTATION_SIGNAL": [
+      "12",
+      "43",
+      "75"
+    ],
+    "FINAL_OVERRIDE_SIGNAL": [
+      "1",
+      "16",
+      "62"
+    ],
+    "DUPLICATE_TOP_LEVEL_DEFINITIONS": [
+      "7",
+      "16",
+      "52",
+      "62"
+    ],
+    "SETATTR_RUNTIME_PATCHING_SIGNAL": [
+      "1",
+      "16",
+      "53"
+    ],
+    "DIRECT_SQLITE_CONNECTION_SIGNAL": [
+      "12",
+      "43",
+      "64",
+      "75"
+    ]
+  },
+  "findings_resolved_as_policy_rules": [
+    "DIRECT_SQLITE_CONNECTION_SIGNAL",
+    "DUPLICATE_TOP_LEVEL_DEFINITIONS",
+    "FINAL_OVERRIDE_SIGNAL",
+    "SETATTR_RUNTIME_PATCHING_SIGNAL",
+    "WAL_SHM_MUTATION_SIGNAL"
+  ],
+  "production_files_changed": [
+    "ROM_PROGRAMMING_AND_PATCH_REGULATION.docx"
+  ],
+  "maintained_tools": [
+    "tools/verify_stage_21_6_2_programming_and_patch_regulation_update_12.py"
+  ],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "decision": "GO_TO_21_6_3_REGULATION_ACCEPTANCE_AND_CLOSURE"
+}
