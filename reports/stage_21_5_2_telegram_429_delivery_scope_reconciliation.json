@@ -1,0 +1,262 @@
+{
+  "stage": "21.5.2",
+  "revision": "2",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-03T22:34:13.543819+00:00",
+  "parent": "37e7803a0acb3b0a09af4b6582a26e158861f46a",
+  "git": {
+    "branch": "develop",
+    "head": "37e7803a0acb3b0a09af4b6582a26e158861f46a",
+    "origin_develop": "381d4b1f8d06b418197a33161f933b9e7d6f11fa",
+    "patch": "patch/patch_21_5_2_telegram_429_delivery_scope_reconciliation.py",
+    "audit_sha256": "013071b109de60c59cf86baa857726b0da608788aba600f9b9985288cddfe0f6"
+  },
+  "audit": "reports/stage_21_5_1_telegram_429_delivery_and_bounded_memory_audit.json",
+  "audit_sha256": "013071b109de60c59cf86baa857726b0da608788aba600f9b9985288cddfe0f6",
+  "mixed_owner_reconciliation": [
+    {
+      "path": "handlers/combat.py",
+      "function": "process_victory",
+      "line": 1964,
+      "mutation_lines": [
+        1982
+      ],
+      "commit_lines": [
+        1982
+      ],
+      "delivery_lines": [
+        1967,
+        2084,
+        2095,
+        2112,
+        2118
+      ],
+      "delivery_before_last_commit": true,
+      "delivery_after_last_commit": true,
+      "retry_after_terms": 0,
+      "classification": "DOMAIN_COMMIT_THEN_DELIVERY_REVIEW"
+    },
+    {
+      "path": "handlers/event_ui.py",
+      "function": "event_callback",
+      "line": 124,
+      "mutation_lines": [
+        157
+      ],
+      "commit_lines": [
+        157
+      ],
+      "delivery_lines": [
+        125,
+        126
+      ],
+      "delivery_before_last_commit": true,
+      "delivery_after_last_commit": false,
+      "retry_after_terms": 0,
+      "classification": "DELIVERY_BEFORE_DOMAIN_COMMIT_REVIEW"
+    },
+    {
+      "path": "systems/notifications.py",
+      "function": "notify_mp_restored_17_15_1",
+      "line": 946,
+      "mutation_lines": [
+        954,
+        955
+      ],
+      "commit_lines": [
+        955
+      ],
+      "delivery_lines": [
+        950
+      ],
+      "delivery_before_last_commit": true,
+      "delivery_after_last_commit": false,
+      "retry_after_terms": 0,
+      "classification": "DELIVERY_MARKER_AND_NOTIFICATION_MIXED_SCOPE"
+    }
+  ],
+  "rate_limit_reconciliation": {
+    "path": "systems/telegram_rate_limit.py",
+    "sha256": "504e1e24a297fac1d24b9683c1b00fea832563418e839817cada8a0e5ab99690",
+    "functions": [
+      "is_expired_callback_query_error",
+      "extract_retry_after",
+      "_extract_chat_id",
+      "_remaining_seconds",
+      "_register_flood_wait",
+      "_record_suppressed",
+      "_guard_method",
+      "install_global_telegram_rate_limit_guard",
+      "get_telegram_rate_limit_status"
+    ],
+    "state": {
+      "_BLOCKED_UNTIL_BY_CHAT": {
+        "declared": true,
+        "writes": 1,
+        "deletes": 0,
+        "clears": 0
+      },
+      "_SUPPRESSED_COUNTS": {
+        "declared": true,
+        "writes": 1,
+        "deletes": 0,
+        "clears": 0
+      }
+    },
+    "rlock_declared": true,
+    "with_lock_count": 5,
+    "cleanup_functions": [
+      {
+        "name": "is_expired_callback_query_error",
+        "line": 38
+      }
+    ],
+    "cap_signals": [],
+    "ttl_signals": [
+      "blocked_until"
+    ],
+    "bounded_memory_proven": false,
+    "active_cooldown_preservation_requires_tests": true
+  },
+  "relevant_tests": [
+    {
+      "path": "tools/smoke_test_combat_callback_rate_limit_hotfix.py",
+      "mentions": 9,
+      "send": false,
+      "edit": false,
+      "answer": false,
+      "retry_after": true,
+      "thousands_or_bounded": false
+    },
+    {
+      "path": "tools/smoke_test_critical_production_logging_print_contract_recovery_17_20_1_1.py",
+      "mentions": 2,
+      "send": false,
+      "edit": false,
+      "answer": false,
+      "retry_after": false,
+      "thousands_or_bounded": false
+    },
+    {
+      "path": "tools/smoke_test_global_telegram_rate_limit_guard.py",
+      "mentions": 19,
+      "send": true,
+      "edit": true,
+      "answer": true,
+      "retry_after": true,
+      "thousands_or_bounded": false
+    },
+    {
+      "path": "tools/smoke_test_guild_leave_cooldown_17_21_1.py",
+      "mentions": 1,
+      "send": false,
+      "edit": false,
+      "answer": false,
+      "retry_after": false,
+      "thousands_or_bounded": true
+    },
+    {
+      "path": "tools/smoke_test_map_player_discovery_refresh_and_keyboard.py",
+      "mentions": 2,
+      "send": false,
+      "edit": true,
+      "answer": false,
+      "retry_after": false,
+      "thousands_or_bounded": false
+    },
+    {
+      "path": "tools/smoke_test_player_trade_amount_cancel_and_lock_recovery.py",
+      "mentions": 1,
+      "send": false,
+      "edit": false,
+      "answer": false,
+      "retry_after": false,
+      "thousands_or_bounded": false
+    },
+    {
+      "path": "tools/smoke_test_player_trade_immediate_keyboard_and_lock_spam_hotfix.py",
+      "mentions": 1,
+      "send": false,
+      "edit": false,
+      "answer": false,
+      "retry_after": false,
+      "thousands_or_bounded": false
+    }
+  ],
+  "test_coverage": {
+    "send": true,
+    "edit": true,
+    "answer": true,
+    "retry_after": true,
+    "thousands_or_bounded": true
+  },
+  "confirmed_implementation_gaps": [
+    "BOUNDED_MEMORY_NOT_PROVEN",
+    "CRITICAL_DELIVERY_OUTBOX_NOT_FOUND"
+  ],
+  "confirmed_implementation_gap_count": 2,
+  "implementation_scope": {
+    "primary_files": [
+      "systems/telegram_rate_limit.py"
+    ],
+    "mixed_owner_review_files": [
+      "handlers/combat.py",
+      "handlers/event_ui.py",
+      "systems/notifications.py"
+    ],
+    "requirements": [
+      "bounded cleanup under the same lock",
+      "preserve active cooldowns",
+      "retry Telegram delivery only",
+      "do not repeat domain mutation on 429",
+      "maintained send/edit/answer/retry_after tests",
+      "thousands-of-chat-id bounded-memory test",
+      "explicit critical-delivery policy"
+    ]
+  },
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "3d3bc11e63440d4eab8113b849c9d6b45499ed1c791f31f11721b58f7de04897",
+      "size": 1998848,
+      "mtime_ns": 1793739516073362700
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "30f18e31625755c02c2480e7a15e74093423996c7e452fd013e798b194a11341",
+      "size": 4132392,
+      "mtime_ns": 1793743127274269300
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "6a5e08244d0ae63d27289de15f6f3a7ce29376ef6d8e28f770ae1297d4a6e4d1",
+      "size": 32768,
+      "mtime_ns": 1793742343214057900
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "3d3bc11e63440d4eab8113b849c9d6b45499ed1c791f31f11721b58f7de04897",
+      "size": 1998848,
+      "mtime_ns": 1793739516073362700
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "30f18e31625755c02c2480e7a15e74093423996c7e452fd013e798b194a11341",
+      "size": 4132392,
+      "mtime_ns": 1793743127274269300
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "6a5e08244d0ae63d27289de15f6f3a7ce29376ef6d8e28f770ae1297d4a6e4d1",
+      "size": 32768,
+      "mtime_ns": 1793742343214057900
+    }
+  },
+  "decision": "IMPLEMENT_21_5_3_RATE_LIMIT_BOUNDED_MEMORY_AND_DELIVERY_GUARDS",
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED"
+}
