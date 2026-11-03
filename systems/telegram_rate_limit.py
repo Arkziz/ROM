@@ -17,6 +17,31 @@ _BLOCKED_UNTIL_BY_CHAT = {}
 _GLOBAL_BLOCKED_UNTIL = 0.0
 _INSTALLED_BOTS = set()
 _SUPPRESSED_COUNTS = {}
+_STATE_LAST_UPDATED = {}
+_STATE_TTL_SECONDS = 3600.0
+_STATE_MAX_ENTRIES = 2048
+
+
+def _cleanup_rate_limit_state_locked(now=None):
+    """Bound process-local rate-limit memory without deleting active cooldowns."""
+    now = time.monotonic() if now is None else float(now)
+    expired_chats = [chat_id for chat_id, deadline in _BLOCKED_UNTIL_BY_CHAT.items() if float(deadline) <= now]
+    for chat_id in expired_chats:
+        _BLOCKED_UNTIL_BY_CHAT.pop(chat_id, None)
+    stale_keys = [key for key, updated in _STATE_LAST_UPDATED.items() if now - float(updated) > _STATE_TTL_SECONDS and key[1] not in _BLOCKED_UNTIL_BY_CHAT]
+    for key in stale_keys:
+        _SUPPRESSED_COUNTS.pop(key, None)
+        _STATE_LAST_UPDATED.pop(key, None)
+    if len(_SUPPRESSED_COUNTS) > _STATE_MAX_ENTRIES:
+        removable = sorted((updated, key) for key, updated in _STATE_LAST_UPDATED.items() if key[1] not in _BLOCKED_UNTIL_BY_CHAT)
+        for _, key in removable[:max(0, len(_SUPPRESSED_COUNTS) - _STATE_MAX_ENTRIES)]:
+            _SUPPRESSED_COUNTS.pop(key, None)
+            _STATE_LAST_UPDATED.pop(key, None)
+    if len(_BLOCKED_UNTIL_BY_CHAT) > _STATE_MAX_ENTRIES:
+        expired = sorted((deadline, chat_id) for chat_id, deadline in _BLOCKED_UNTIL_BY_CHAT.items() if float(deadline) <= now)
+        for _, chat_id in expired[:max(0, len(_BLOCKED_UNTIL_BY_CHAT) - _STATE_MAX_ENTRIES)]:
+            _BLOCKED_UNTIL_BY_CHAT.pop(chat_id, None)
+    return {"blocked": len(_BLOCKED_UNTIL_BY_CHAT), "suppressed": len(_SUPPRESSED_COUNTS)}
 
 # Methods that create or edit Telegram presentation. Game-state mutation must
 # occur before these calls only once; failed presentation is never replayed.
@@ -88,6 +113,7 @@ def _extract_chat_id(method_name, args, kwargs):
 def _remaining_seconds(chat_id=None, now=None):
     now = time.monotonic() if now is None else float(now)
     with _LOCK:
+        _cleanup_rate_limit_state_locked(now)
         deadline = float(_GLOBAL_BLOCKED_UNTIL)
         if chat_id is not None:
             deadline = max(deadline, float(_BLOCKED_UNTIL_BY_CHAT.get(chat_id, 0.0)))
@@ -103,6 +129,7 @@ def _register_flood_wait(chat_id, retry_after):
     # firing on the exact boundary due to clock granularity.
     deadline = now + int(retry_after) + 1.0
     with _LOCK:
+        _cleanup_rate_limit_state_locked(now)
         _GLOBAL_BLOCKED_UNTIL = max(float(_GLOBAL_BLOCKED_UNTIL), deadline)
         if chat_id is not None:
             _BLOCKED_UNTIL_BY_CHAT[chat_id] = max(
@@ -114,8 +141,12 @@ def _register_flood_wait(chat_id, retry_after):
 def _record_suppressed(method_name, chat_id, remaining):
     key = (method_name, chat_id)
     with _LOCK:
+        now = time.monotonic()
+        _cleanup_rate_limit_state_locked(now)
         count = int(_SUPPRESSED_COUNTS.get(key, 0)) + 1
         _SUPPRESSED_COUNTS[key] = count
+        _STATE_LAST_UPDATED[key] = now
+        _cleanup_rate_limit_state_locked(now)
     # Avoid console floods while still leaving periodic diagnostics.
     if count == 1 or count in (5, 10) or count % 25 == 0:
         PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Telegram cooldown active: suppressed {method_name} "
@@ -180,9 +211,16 @@ def install_global_telegram_rate_limit_guard(bot):
 
 def get_telegram_rate_limit_status(chat_id=None):
     """Read-only diagnostics for tests and future DEV tooling."""
+    remaining = _remaining_seconds(chat_id)
+    with _LOCK:
+        sizes = _cleanup_rate_limit_state_locked()
+        suppressed_total = sum(_SUPPRESSED_COUNTS.values())
     return {
-        "blocked": _remaining_seconds(chat_id) > 0,
-        "remaining_seconds": _remaining_seconds(chat_id),
+        "blocked": remaining > 0,
+        "remaining_seconds": remaining,
         "chat_id": chat_id,
-        "suppressed_total": sum(_SUPPRESSED_COUNTS.values()),
+        "suppressed_total": suppressed_total,
+        "state_sizes": sizes,
+        "state_max_entries": _STATE_MAX_ENTRIES,
+        "delivery_policy": "notification_only_no_domain_replay",
     }
