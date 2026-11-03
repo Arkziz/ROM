@@ -1,0 +1,111 @@
+{
+  "stage": "21.4.13",
+  "revision": "2",
+  "status": "PASS",
+  "timestamp": "2026-11-03T19:33:38.628464+00:00",
+  "parent": "a1fef8863f85e1469808f59d68386e4205602d04",
+  "source_hashes_before": {
+    "systems/character_system.py": "edb9128e33c5ce3e88c9cbc9a5c79a20bdd23bc721e461beacfb4a1a7e27468b",
+    "systems/contract_system.py": "4b8e73be52d59d3d8d897d94f9aa79430ce452a8c5cd972759846dacbd69e0e6",
+    "systems/energy_system.py": "b7d90b67c292d9076020b5a788db9ed37ff85e5e31ce71be11f49fb32cd6ceb4"
+  },
+  "source_hashes_after": {
+    "systems/character_system.py": "ae05a0af0f898cc70720d118bed46a411997ea99649f121ef7ef07adf7c85300",
+    "systems/contract_system.py": "0ca1e6a2d510d96860b14379401813a6eb5241c8360cdcb038c5a96ca26abdb6",
+    "systems/energy_system.py": "d9a8326b5f26fb192f7e586e361e02c5844a73ea978f0c5e7a724eb5bac902ca"
+  },
+  "selected_owner_anchors": {
+    "systems/character_system.py": [
+      {
+        "name": "grant_class_change_available",
+        "line": 415,
+        "receiver": "db.conn",
+        "commits": 1
+      },
+      {
+        "name": "consume_class_change_available",
+        "line": 445,
+        "receiver": "db.conn",
+        "commits": 1
+      },
+      {
+        "name": "confirm_character_class_change_17_13_1",
+        "line": 669,
+        "receiver": "db.conn",
+        "commits": 1
+      },
+      {
+        "name": "apply_lazy_mp_regeneration_17_15_1",
+        "line": 809,
+        "receiver": "db.conn",
+        "commits": 5
+      },
+      {
+        "name": "apply_post_combat_mp_floor_17_15_1",
+        "line": 931,
+        "receiver": "db.conn",
+        "commits": 1
+      }
+    ],
+    "systems/contract_system.py": [
+      {
+        "name": "create_daily_contract",
+        "line": 245,
+        "receiver": "conn",
+        "commits": 1
+      },
+      {
+        "name": "abandon_active_contract",
+        "line": 348,
+        "receiver": "conn",
+        "commits": 1
+      },
+      {
+        "name": "process_contract_progress_on_kill",
+        "line": 371,
+        "receiver": "conn",
+        "commits": 2
+      },
+      {
+        "name": "_claim_contract_reward_base",
+        "line": 483,
+        "receiver": "conn",
+        "commits": 1
+      }
+    ],
+    "systems/energy_system.py": [
+      {
+        "name": "consume_energy_for_hunt",
+        "line": 27,
+        "receiver": "conn",
+        "commits": 1
+      },
+      {
+        "name": "get_users_for_energy_full_notification",
+        "line": 103,
+        "receiver": "conn",
+        "commits": 1
+      },
+      {
+        "name": "get_user_energy",
+        "line": 214,
+        "receiver": "conn",
+        "commits": 2
+      }
+    ]
+  },
+  "contract": {
+    "commit_on_success": true,
+    "rollback_on_exception": true,
+    "exception_propagates": true,
+    "unchanged_state_after_injected_failure": true
+  },
+  "production_files_changed": [
+    "systems/character_system.py",
+    "systems/contract_system.py",
+    "systems/energy_system.py"
+  ],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "REQUIRED"
+}

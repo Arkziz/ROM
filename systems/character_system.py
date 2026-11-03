@@ -426,15 +426,19 @@ def grant_class_change_available(user_id, amount=1):
 
         amount = 1
 
-    db.cursor.execute(
+    try:
+        db.cursor.execute(
 
-        "UPDATE users SET class_change_available=COALESCE(class_change_available, 0)+? WHERE user_id=?",
+            "UPDATE users SET class_change_available=COALESCE(class_change_available, 0)+? WHERE user_id=?",
 
-        (amount, user_id),
+            (amount, user_id),
 
-    )
+        )
 
-    db.conn.commit()
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
     return get_class_change_available(user_id)
 
@@ -448,17 +452,21 @@ def consume_class_change_available(user_id):
 
     db = _db()
 
-    db.cursor.execute(
+    try:
+        db.cursor.execute(
 
-        "UPDATE users SET class_change_available=class_change_available-1 WHERE user_id=? AND COALESCE(class_change_available, 0)>0",
+            "UPDATE users SET class_change_available=class_change_available-1 WHERE user_id=? AND COALESCE(class_change_available, 0)>0",
 
-        (user_id,),
+            (user_id,),
 
-    )
+        )
 
-    changed = db.cursor.rowcount > 0
+        changed = db.cursor.rowcount > 0
 
-    db.conn.commit()
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
     return changed
 
@@ -678,42 +686,46 @@ def confirm_character_class_change_17_13_1(user_id, class_key):
 
         return {"success":False,"message":"❌ Невідомий клас персонажа."}
 
-    row = db.cursor.execute("""SELECT TRIM(COALESCE(character_class,'')),
-
-        COALESCE(class_change_available,0),pending_class_change_inventory_id
-
-        FROM users WHERE user_id=?""",(int(user_id),)).fetchone()
-
-    if not row:return {"success":False,"message":"❌ Персонажа не знайдено."}
-
-    if str(row[0] or "")==key:return {"success":False,"message":"ℹ️ Цей клас уже обрано."}
-
-    if int(row[1] or 0)<=0 or row[2] is None:return {"success":False,"message":"❌ Зміна класу недоступна."}
-
-    from systems.attribute_respec_system import reset_allocated_attributes,AttributeRespecError
-
-    from systems.player_system import get_max_hp
-    get_max_mp = globals()["get_max_mp"]
-
     try:
+        row = db.cursor.execute("""SELECT TRIM(COALESCE(character_class,'')),
 
-        result=reset_allocated_attributes(int(user_id),int(row[2]),
+            COALESCE(class_change_available,0),pending_class_change_inventory_id
 
-            f"class_change:{int(user_id)}:{int(row[2])}:{key}",operation_type="class_change",
+            FROM users WHERE user_id=?""",(int(user_id),)).fetchone()
 
-            new_class=key,expected_item_id=CLASS_RESET_SPHERE_ITEM_ID,db_module=db,
+        if not row:return {"success":False,"message":"❌ Персонажа не знайдено."}
 
-            max_hp_getter=get_max_hp,max_mp_getter=get_max_mp)
+        if str(row[0] or "")==key:return {"success":False,"message":"ℹ️ Цей клас уже обрано."}
 
-        db.cursor.execute("""UPDATE users SET class_selected_at=?,class_change_available=0,
+        if int(row[1] or 0)<=0 or row[2] is None:return {"success":False,"message":"❌ Зміна класу недоступна."}
 
-            pending_class_change_inventory_id=NULL WHERE user_id=?""",(datetime.now().isoformat(),int(user_id)))
+        from systems.attribute_respec_system import reset_allocated_attributes,AttributeRespecError
 
-        db.conn.commit()
+        from systems.player_system import get_max_hp
+        get_max_mp = globals()["get_max_mp"]
 
-    except AttributeRespecError as error:
+        try:
 
-        return {"success":False,"message":f"❌ Не вдалося підтвердити зміну класу: {error}"}
+            result=reset_allocated_attributes(int(user_id),int(row[2]),
+
+                f"class_change:{int(user_id)}:{int(row[2])}:{key}",operation_type="class_change",
+
+                new_class=key,expected_item_id=CLASS_RESET_SPHERE_ITEM_ID,db_module=db,
+
+                max_hp_getter=get_max_hp,max_mp_getter=get_max_mp)
+
+            db.cursor.execute("""UPDATE users SET class_selected_at=?,class_change_available=0,
+
+                pending_class_change_inventory_id=NULL WHERE user_id=?""",(datetime.now().isoformat(),int(user_id)))
+
+            db.conn.commit()
+
+        except AttributeRespecError as error:
+
+            return {"success":False,"message":f"❌ Не вдалося підтвердити зміну класу: {error}"}
+    except Exception:
+        db.conn.rollback()
+        raise
 
     return {"success":True,"message":f"✅ Обрано клас: {CLASS_CONFIGS[key]['name']}",
 
@@ -818,109 +830,113 @@ def apply_lazy_mp_regeneration_17_15_1(user_id, now=None):
 
     current_time = now or datetime.now()
 
-    row = db.cursor.execute(
-
-        "SELECT mp, max_mp, last_mp_regen_update, COALESCE(mp_regen_paused,0) FROM users WHERE user_id=?",
-
-        (int(user_id),),
-
-    ).fetchone()
-
-    if not row:
-
-        return {"success": False, "restored": 0, "mp": 0, "max_mp": maximum, "ticks": 0}
-
-    stored_current = max(0, int(row[0] or 0))
-
-    stored_maximum = max(0, int(row[1] or 0))
-
-    paused = bool(int(row[3] or 0))
-
-    if maximum <= 0:
-
-        db.cursor.execute(
-
-            "UPDATE users SET mp=0, max_mp=0, last_mp_regen_update=?, mp_full_notified=1 WHERE user_id=?",
-
-            (current_time.isoformat(), int(user_id)),
-
-        )
-
-        db.conn.commit()
-
-        return {"success": True, "restored": 0, "mp": 0, "max_mp": 0, "ticks": 0}
-
-    current = min(stored_current, maximum)
-
-    if maximum != stored_maximum:
-
-        db.cursor.execute(
-
-            "UPDATE users SET mp=?, max_mp=?, last_mp_regen_update=?, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE 1 END WHERE user_id=?",
-
-            (current, maximum, current_time.isoformat(), current, maximum, int(user_id)),
-
-        )
-
-        db.conn.commit()
-
-        return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0, "maximum_changed": True}
-
     try:
+        row = db.cursor.execute(
 
-        last = datetime.fromisoformat(str(row[2] or ""))
+            "SELECT mp, max_mp, last_mp_regen_update, COALESCE(mp_regen_paused,0) FROM users WHERE user_id=?",
 
-    except Exception:
+            (int(user_id),),
 
-        last = current_time
+        ).fetchone()
 
-        db.cursor.execute(
+        if not row:
 
-            "UPDATE users SET mp=?, max_mp=?, last_mp_regen_update=? WHERE user_id=?",
+            return {"success": False, "restored": 0, "mp": 0, "max_mp": maximum, "ticks": 0}
 
-            (current, maximum, last.isoformat(), int(user_id)),
+        stored_current = max(0, int(row[0] or 0))
 
-        )
+        stored_maximum = max(0, int(row[1] or 0))
 
-        db.conn.commit()
+        paused = bool(int(row[3] or 0))
 
-        return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0}
+        if maximum <= 0:
 
-    if paused or current >= maximum:
+            db.cursor.execute(
+
+                "UPDATE users SET mp=0, max_mp=0, last_mp_regen_update=?, mp_full_notified=1 WHERE user_id=?",
+
+                (current_time.isoformat(), int(user_id)),
+
+            )
+
+            db.conn.commit()
+
+            return {"success": True, "restored": 0, "mp": 0, "max_mp": 0, "ticks": 0}
+
+        current = min(stored_current, maximum)
+
+        if maximum != stored_maximum:
+
+            db.cursor.execute(
+
+                "UPDATE users SET mp=?, max_mp=?, last_mp_regen_update=?, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE 1 END WHERE user_id=?",
+
+                (current, maximum, current_time.isoformat(), current, maximum, int(user_id)),
+
+            )
+
+            db.conn.commit()
+
+            return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0, "maximum_changed": True}
+
+        try:
+
+            last = datetime.fromisoformat(str(row[2] or ""))
+
+        except Exception:
+
+            last = current_time
+
+            db.cursor.execute(
+
+                "UPDATE users SET mp=?, max_mp=?, last_mp_regen_update=? WHERE user_id=?",
+
+                (current, maximum, last.isoformat(), int(user_id)),
+
+            )
+
+            db.conn.commit()
+
+            return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0}
+
+        if paused or current >= maximum:
+
+            db.cursor.execute(
+
+                "UPDATE users SET mp=?, max_mp=?, last_mp_regen_update=?, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
+
+                (current, maximum, current_time.isoformat(), current, maximum, int(user_id)),
+
+            )
+
+            db.conn.commit()
+
+            return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0}
+
+        ticks = max(0, int((current_time - last).total_seconds() // 60))
+
+        if ticks <= 0:
+
+            return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0}
+
+        per_tick = calculate_passive_mp_regen_per_full_minute(maximum)
+
+        new_mp = min(maximum, current + per_tick * ticks)
+
+        new_stamp = datetime.fromtimestamp(last.timestamp() + ticks * 60).isoformat()
 
         db.cursor.execute(
 
             "UPDATE users SET mp=?, max_mp=?, last_mp_regen_update=?, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
 
-            (current, maximum, current_time.isoformat(), current, maximum, int(user_id)),
+            (new_mp, maximum, new_stamp, new_mp, maximum, int(user_id)),
 
         )
 
         db.conn.commit()
-
-        return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0}
-
-    ticks = max(0, int((current_time - last).total_seconds() // 60))
-
-    if ticks <= 0:
-
-        return {"success": True, "restored": 0, "mp": current, "max_mp": maximum, "ticks": 0}
-
-    per_tick = calculate_passive_mp_regen_per_full_minute(maximum)
-
-    new_mp = min(maximum, current + per_tick * ticks)
-
-    new_stamp = datetime.fromtimestamp(last.timestamp() + ticks * 60).isoformat()
-
-    db.cursor.execute(
-
-        "UPDATE users SET mp=?, max_mp=?, last_mp_regen_update=?, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
-
-        (new_mp, maximum, new_stamp, new_mp, maximum, int(user_id)),
-
-    )
-
-    db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
     return {"success": True, "restored": new_mp-current, "mp": new_mp, "max_mp": maximum, "ticks": ticks}
 
@@ -942,20 +958,24 @@ def apply_post_combat_mp_floor_17_15_1(user_id):
 
         return {"success": True, "restored": False, "mp": 0, "max_mp": 0}
 
-    row = db.cursor.execute("SELECT mp FROM users WHERE user_id=?", (int(user_id),)).fetchone()
+    try:
+        row = db.cursor.execute("SELECT mp FROM users WHERE user_id=?", (int(user_id),)).fetchone()
 
-    current = max(0, min(int((row[0] if row else 0) or 0), maximum))
+        current = max(0, min(int((row[0] if row else 0) or 0), maximum))
 
-    new_mp = apply_post_combat_mp_floor_value(current, maximum)
+        new_mp = apply_post_combat_mp_floor_value(current, maximum)
 
-    db.cursor.execute(
+        db.cursor.execute(
 
-        "UPDATE users SET mp=?, max_mp=?, last_mp_regen_update=?, mp_regen_paused=0, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
+            "UPDATE users SET mp=?, max_mp=?, last_mp_regen_update=?, mp_regen_paused=0, mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
 
-        (new_mp, maximum, datetime.now().isoformat(), new_mp, maximum, int(user_id)),
+            (new_mp, maximum, datetime.now().isoformat(), new_mp, maximum, int(user_id)),
 
-    )
+        )
 
-    db.conn.commit()
+        db.conn.commit()
+    except Exception:
+        db.conn.rollback()
+        raise
 
     return {"success": True, "restored": new_mp>current, "mp": new_mp, "max_mp": maximum}

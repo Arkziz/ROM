@@ -46,22 +46,26 @@ def consume_energy_for_hunt(user_id):
 
     new_energy = energy + 1
 
-    cursor.execute("""
-    UPDATE users
-    SET energy=?,
-        last_energy_update=?,
-        energy_full_notified=0,
-        daily_hunts=daily_hunts + 1,
-        daily_hunts_date=?
-    WHERE user_id=?
-    """, (
-        new_energy,
-        datetime.now().isoformat(),
-        get_today_str(),
-        user_id
-    ))
+    try:
+        cursor.execute("""
+        UPDATE users
+        SET energy=?,
+            last_energy_update=?,
+            energy_full_notified=0,
+            daily_hunts=daily_hunts + 1,
+            daily_hunts_date=?
+        WHERE user_id=?
+        """, (
+            new_energy,
+            datetime.now().isoformat(),
+            get_today_str(),
+            user_id
+        ))
 
-    conn.commit()
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     return {
         "success": True,
@@ -103,47 +107,51 @@ def restore_energy_for_test(user_id, amount=0):
 def get_users_for_energy_full_notification():
     init_energy_system()
 
-    cursor.execute("""
-    SELECT user_id
-    FROM users
-    """)
-
-    users = cursor.fetchall()
-    notify_users = []
-
-    for row in users:
-        user_id = row[0]
-
-        energy_data = get_user_energy(user_id)
-        energy = energy_data["energy"]
-        max_energy = energy_data["max_energy"]
-
+    try:
         cursor.execute("""
-        SELECT energy_full_notified
+        SELECT user_id
         FROM users
-        WHERE user_id=?
-        """, (user_id,))
+        """)
 
-        notified_row = cursor.fetchone()
-        notified = notified_row[0] if notified_row else 0
+        users = cursor.fetchall()
+        notify_users = []
 
-        if energy <= 0 and not notified:
-            notify_users.append(user_id)
+        for row in users:
+            user_id = row[0]
+
+            energy_data = get_user_energy(user_id)
+            energy = energy_data["energy"]
+            max_energy = energy_data["max_energy"]
 
             cursor.execute("""
-            UPDATE users
-            SET energy_full_notified=1
+            SELECT energy_full_notified
+            FROM users
             WHERE user_id=?
             """, (user_id,))
 
-        elif energy > 0 and notified:
-            cursor.execute("""
-            UPDATE users
-            SET energy_full_notified=0
-            WHERE user_id=?
-            """, (user_id,))
+            notified_row = cursor.fetchone()
+            notified = notified_row[0] if notified_row else 0
 
-    conn.commit()
+            if energy <= 0 and not notified:
+                notify_users.append(user_id)
+
+                cursor.execute("""
+                UPDATE users
+                SET energy_full_notified=1
+                WHERE user_id=?
+                """, (user_id,))
+
+            elif energy > 0 and notified:
+                cursor.execute("""
+                UPDATE users
+                SET energy_full_notified=0
+                WHERE user_id=?
+                """, (user_id,))
+
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     return notify_users
 
@@ -223,66 +231,70 @@ def get_user_energy(user_id, *args, **kwargs):
     init_energy_system()
     reset_daily_hunts_if_needed(user_id)
 
-    row = cursor.execute(
-        "SELECT energy, last_energy_update FROM users WHERE user_id=?",
-        (user_id,)
-    ).fetchone()
-
-    if not row:
-        return {
-            "success": False,
-            "energy": 0,
-            "max_energy": ENERGY_MAX,
-            "next_energy_minutes": ENERGY_REGEN_MINUTES,
-        }
-
     try:
-        energy = int(row[0] or 0)
-    except Exception:
-        energy = 0
-    energy = max(0, min(ENERGY_MAX, energy))
-    last_update = row[1] or ""
-    now = datetime.now()
+        row = cursor.execute(
+            "SELECT energy, last_energy_update FROM users WHERE user_id=?",
+            (user_id,)
+        ).fetchone()
 
-    if not last_update:
-        cursor.execute(
-            "UPDATE users SET energy=?, last_energy_update=? WHERE user_id=?",
-            (energy, now.isoformat(), user_id)
-        )
-        conn.commit()
-        return {
-            "success": True,
-            "energy": energy,
-            "max_energy": ENERGY_MAX,
-            "next_energy_minutes": ENERGY_REGEN_MINUTES,
-        }
+        if not row:
+            return {
+                "success": False,
+                "energy": 0,
+                "max_energy": ENERGY_MAX,
+                "next_energy_minutes": ENERGY_REGEN_MINUTES,
+            }
 
-    try:
-        last_dt = datetime.fromisoformat(last_update)
-    except Exception:
-        last_dt = now
+        try:
+            energy = int(row[0] or 0)
+        except Exception:
+            energy = 0
+        energy = max(0, min(ENERGY_MAX, energy))
+        last_update = row[1] or ""
+        now = datetime.now()
 
-    elapsed_seconds = max(0.0, (now - last_dt).total_seconds())
-    tick_seconds = ENERGY_REGEN_MINUTES * 60
-    ticks = int(elapsed_seconds // tick_seconds)
+        if not last_update:
+            cursor.execute(
+                "UPDATE users SET energy=?, last_energy_update=? WHERE user_id=?",
+                (energy, now.isoformat(), user_id)
+            )
+            conn.commit()
+            return {
+                "success": True,
+                "energy": energy,
+                "max_energy": ENERGY_MAX,
+                "next_energy_minutes": ENERGY_REGEN_MINUTES,
+            }
 
-    if energy > 0 and ticks > 0:
-        new_energy = max(0, energy - ticks)
-        consumed_ticks = energy - new_energy
-        new_last_dt = last_dt + timedelta(minutes=consumed_ticks * ENERGY_REGEN_MINUTES)
-        notified = 1 if new_energy <= 0 else 0
-        cursor.execute(
-            """
-            UPDATE users
-            SET energy=?, last_energy_update=?, energy_full_notified=?
-            WHERE user_id=?
-            """,
-            (new_energy, new_last_dt.isoformat(), notified, user_id)
-        )
-        conn.commit()
-        energy = new_energy
-        last_dt = new_last_dt
+        try:
+            last_dt = datetime.fromisoformat(last_update)
+        except Exception:
+            last_dt = now
+
         elapsed_seconds = max(0.0, (now - last_dt).total_seconds())
+        tick_seconds = ENERGY_REGEN_MINUTES * 60
+        ticks = int(elapsed_seconds // tick_seconds)
+
+        if energy > 0 and ticks > 0:
+            new_energy = max(0, energy - ticks)
+            consumed_ticks = energy - new_energy
+            new_last_dt = last_dt + timedelta(minutes=consumed_ticks * ENERGY_REGEN_MINUTES)
+            notified = 1 if new_energy <= 0 else 0
+            cursor.execute(
+                """
+                UPDATE users
+                SET energy=?, last_energy_update=?, energy_full_notified=?
+                WHERE user_id=?
+                """,
+                (new_energy, new_last_dt.isoformat(), notified, user_id)
+            )
+            conn.commit()
+            energy = new_energy
+            last_dt = new_last_dt
+            elapsed_seconds = max(0.0, (now - last_dt).total_seconds())
+    except Exception:
+        conn.rollback()
+        raise
 
     if energy <= 0:
         next_minutes = 0

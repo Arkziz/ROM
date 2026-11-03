@@ -301,38 +301,42 @@ def create_daily_contract(
     target_min_level = max(1, level - 1)
     target_max_level = level + 1
 
-    cursor.execute("""
-    INSERT INTO user_active_contracts (
-        user_id,
-        created_date,
-        player_level,
-        target_mob_name,
-        target_mob_level,
-        target_min_level,
-        target_max_level,
-        target_kills,
-        current_kills,
-        reward_exp,
-        completed,
-        reward_claimed
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (
-        user_id,
-        get_today_str(),
-        level,
-        target_mob_name,
-        int(target_mob_level),
-        target_min_level,
-        target_max_level,
-        int(target_kills),
-        0,
-        reward_exp,
-        0,
-        0
-    ))
+    try:
+        cursor.execute("""
+        INSERT INTO user_active_contracts (
+            user_id,
+            created_date,
+            player_level,
+            target_mob_name,
+            target_mob_level,
+            target_min_level,
+            target_max_level,
+            target_kills,
+            current_kills,
+            reward_exp,
+            completed,
+            reward_claimed
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            user_id,
+            get_today_str(),
+            level,
+            target_mob_name,
+            int(target_mob_level),
+            target_min_level,
+            target_max_level,
+            int(target_kills),
+            0,
+            reward_exp,
+            0,
+            0
+        ))
 
-    conn.commit()
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     return {
         "success": True,
@@ -356,12 +360,16 @@ def abandon_active_contract(user_id):
             "message": "📜 У тебе немає активного контракту."
         }
 
-    cursor.execute("""
-    DELETE FROM user_active_contracts
-    WHERE user_id=?
-    """, (user_id,))
+    try:
+        cursor.execute("""
+        DELETE FROM user_active_contracts
+        WHERE user_id=?
+        """, (user_id,))
 
-    conn.commit()
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     return {
         "success": True,
@@ -410,37 +418,41 @@ def process_contract_progress_on_kill(user_id, mob):
 
     new_progress = active_contract["current_kills"] + 1
 
-    if new_progress >= active_contract["target_kills"]:
+    try:
+        if new_progress >= active_contract["target_kills"]:
+            cursor.execute("""
+            UPDATE user_active_contracts
+            SET current_kills=?,
+                completed=1
+            WHERE id=?
+            """, (
+                active_contract["target_kills"],
+                active_contract["id"]
+            ))
+
+            conn.commit()
+
+            return {
+                "updated": True,
+                "completed": True,
+                "message": (
+                    f"📜 Контракт виконано!\n"
+                    f"🎯 Ціль: {target_name}\n"
+                    f"✅ Прогрес: {active_contract['target_kills']}/{active_contract['target_kills']}\n"
+                    f"🏛️ Поверніться до Гільдії Найманців, щоб здати контракт і отримати нагороду."
+                )
+            }
+
         cursor.execute("""
         UPDATE user_active_contracts
-        SET current_kills=?,
-            completed=1
+        SET current_kills=?
         WHERE id=?
-        """, (
-            active_contract["target_kills"],
-            active_contract["id"]
-        ))
+        """, (new_progress, active_contract["id"]))
 
         conn.commit()
-
-        return {
-            "updated": True,
-            "completed": True,
-            "message": (
-                f"📜 Контракт виконано!\n"
-                f"🎯 Ціль: {target_name}\n"
-                f"✅ Прогрес: {active_contract['target_kills']}/{active_contract['target_kills']}\n"
-                f"🏛️ Поверніться до Гільдії Найманців, щоб здати контракт і отримати нагороду."
-            )
-        }
-
-    cursor.execute("""
-    UPDATE user_active_contracts
-    SET current_kills=?
-    WHERE id=?
-    """, (new_progress, active_contract["id"]))
-
-    conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     elite_note = ""
 
@@ -511,24 +523,28 @@ def _claim_contract_reward_base(user_id):
 
     exp_result = add_exp(user_id, reward_exp)
 
-    cursor.execute("""
-    UPDATE users
-    SET daily_contracts_completed = daily_contracts_completed + 1
-    WHERE user_id=?
-    """, (user_id,))
+    try:
+        cursor.execute("""
+        UPDATE users
+        SET daily_contracts_completed = daily_contracts_completed + 1
+        WHERE user_id=?
+        """, (user_id,))
 
-    cursor.execute("""
-    UPDATE user_active_contracts
-    SET reward_claimed=1
-    WHERE id=?
-    """, (active_contract["id"],))
+        cursor.execute("""
+        UPDATE user_active_contracts
+        SET reward_claimed=1
+        WHERE id=?
+        """, (active_contract["id"],))
 
-    cursor.execute("""
-    DELETE FROM user_active_contracts
-    WHERE id=?
-    """, (active_contract["id"],))
+        cursor.execute("""
+        DELETE FROM user_active_contracts
+        WHERE id=?
+        """, (active_contract["id"],))
 
-    conn.commit()
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     message = (
         f"🎁 Контракт здано!\n\n"
