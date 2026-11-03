@@ -87,55 +87,59 @@ def apply_energy_regen(conn, user_id):
 
     init_energy_columns(conn)
 
-    row = conn.execute("""
-    SELECT energy, last_energy_update
-    FROM users
-    WHERE user_id=?
-    """, (user_id,)).fetchone()
+    try:
+        row = conn.execute("""
+        SELECT energy, last_energy_update
+        FROM users
+        WHERE user_id=?
+        """, (user_id,)).fetchone()
 
-    if not row:
-        return {
-            "energy": 0,
-            "max_energy": ENERGY_MAX
-        }
+        if not row:
+            return {
+                "energy": 0,
+                "max_energy": ENERGY_MAX
+            }
 
-    energy, last_update = row
+        energy, last_update = row
 
-    if energy is None:
-        energy = 0
+        if energy is None:
+            energy = 0
 
-    now = datetime.now()
+        now = datetime.now()
 
-    if not last_update:
-        last_update_dt = now
-    else:
-        try:
-            last_update_dt = datetime.fromisoformat(last_update)
-        except Exception:
+        if not last_update:
             last_update_dt = now
+        else:
+            try:
+                last_update_dt = datetime.fromisoformat(last_update)
+            except Exception:
+                last_update_dt = now
 
-    if energy > 0:
-        diff_seconds = (now - last_update_dt).total_seconds()
-        regen_units = int(diff_seconds // (ENERGY_REGEN_MINUTES * 60))
+        if energy > 0:
+            diff_seconds = (now - last_update_dt).total_seconds()
+            regen_units = int(diff_seconds // (ENERGY_REGEN_MINUTES * 60))
 
-        if regen_units > 0:
-            energy = max(0, energy - regen_units)
-            last_update_dt = last_update_dt + timedelta(
-                minutes=regen_units * ENERGY_REGEN_MINUTES
-            )
+            if regen_units > 0:
+                energy = max(0, energy - regen_units)
+                last_update_dt = last_update_dt + timedelta(
+                    minutes=regen_units * ENERGY_REGEN_MINUTES
+                )
 
-            conn.execute("""
-            UPDATE users
-            SET energy=?,
-                last_energy_update=?
-            WHERE user_id=?
-            """, (
-                energy,
-                last_update_dt.isoformat(),
-                user_id
-            ))
+                conn.execute("""
+                UPDATE users
+                SET energy=?,
+                    last_energy_update=?
+                WHERE user_id=?
+                """, (
+                    energy,
+                    last_update_dt.isoformat(),
+                    user_id
+                ))
 
-            conn.commit()
+                conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     # Коли energy == 0, не потрібно оновлювати таймер (він вже на 0)
 
@@ -153,45 +157,49 @@ def get_users_for_energy_full_notification_worker(conn):
 
     init_energy_columns(conn)
 
-    rows = conn.execute("""
-    SELECT user_id
-    FROM users
-    """).fetchall()
-
-    notify_users = []
-
-    for row in rows:
-        user_id = row[0]
-
-        energy_data = apply_energy_regen(conn, user_id)
-        energy = energy_data["energy"]
-        max_energy = energy_data["max_energy"]
-
-        notified_row = conn.execute("""
-        SELECT energy_full_notified
+    try:
+        rows = conn.execute("""
+        SELECT user_id
         FROM users
-        WHERE user_id=?
-        """, (user_id,)).fetchone()
+        """).fetchall()
 
-        notified = notified_row[0] if notified_row else 0
+        notify_users = []
 
-        if energy <= 0 and not notified:
-            notify_users.append(user_id)
+        for row in rows:
+            user_id = row[0]
 
-            conn.execute("""
-            UPDATE users
-            SET energy_full_notified=1
+            energy_data = apply_energy_regen(conn, user_id)
+            energy = energy_data["energy"]
+            max_energy = energy_data["max_energy"]
+
+            notified_row = conn.execute("""
+            SELECT energy_full_notified
+            FROM users
             WHERE user_id=?
-            """, (user_id,))
+            """, (user_id,)).fetchone()
 
-        elif energy > 0 and notified:
-            conn.execute("""
-            UPDATE users
-            SET energy_full_notified=0
-            WHERE user_id=?
-            """, (user_id,))
+            notified = notified_row[0] if notified_row else 0
 
-    conn.commit()
+            if energy <= 0 and not notified:
+                notify_users.append(user_id)
+
+                conn.execute("""
+                UPDATE users
+                SET energy_full_notified=1
+                WHERE user_id=?
+                """, (user_id,))
+
+            elif energy > 0 and notified:
+                conn.execute("""
+                UPDATE users
+                SET energy_full_notified=0
+                WHERE user_id=?
+                """, (user_id,))
+
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     return notify_users
 
@@ -369,45 +377,49 @@ def get_users_for_hp_full_notification_worker(conn):
 
     init_hp_columns(conn)
 
-    rows = conn.execute("""
-    SELECT user_id
-    FROM users
-    """).fetchall()
-
-    notify_users = []
-
-    for row in rows:
-        user_id = row[0]
-
-        hp_data = apply_hp_regen(conn, user_id)
-        hp = hp_data["hp"]
-        max_hp = hp_data["max_hp"]
-
-        notified_row = conn.execute("""
-        SELECT hp_full_notified
+    try:
+        rows = conn.execute("""
+        SELECT user_id
         FROM users
-        WHERE user_id=?
-        """, (user_id,)).fetchone()
+        """).fetchall()
 
-        notified = notified_row[0] if notified_row else 1
+        notify_users = []
 
-        if hp >= max_hp and not notified:
-            notify_users.append(user_id)
+        for row in rows:
+            user_id = row[0]
 
-            conn.execute("""
-            UPDATE users
-            SET hp_full_notified=1
+            hp_data = apply_hp_regen(conn, user_id)
+            hp = hp_data["hp"]
+            max_hp = hp_data["max_hp"]
+
+            notified_row = conn.execute("""
+            SELECT hp_full_notified
+            FROM users
             WHERE user_id=?
-            """, (user_id,))
+            """, (user_id,)).fetchone()
 
-        elif hp < max_hp and notified:
-            conn.execute("""
-            UPDATE users
-            SET hp_full_notified=0
-            WHERE user_id=?
-            """, (user_id,))
+            notified = notified_row[0] if notified_row else 1
 
-    conn.commit()
+            if hp >= max_hp and not notified:
+                notify_users.append(user_id)
+
+                conn.execute("""
+                UPDATE users
+                SET hp_full_notified=1
+                WHERE user_id=?
+                """, (user_id,))
+
+            elif hp < max_hp and notified:
+                conn.execute("""
+                UPDATE users
+                SET hp_full_notified=0
+                WHERE user_id=?
+                """, (user_id,))
+
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     return notify_users
 
@@ -654,33 +666,37 @@ def get_worker_equipped_rune_sta_bonus_v2(conn, user_id):
 
 def get_worker_max_hp(conn, user_id):
     """Calculate worker max HP from the shared canonical HP policy."""
-    row = conn.execute(
-        "SELECT level, sta, COALESCE(allocated_stamina, 0) FROM users WHERE user_id=?",
-        (user_id,),
-    ).fetchone()
-    if not row:
-        return get_starting_max_hp()
-    level = int(row[0] or 1)
-    base_sta = int(row[1] or 10) + int(row[2] or 0)
-    item_sta = int(get_equipped_stat_bonus(conn, user_id, "bonus_sta") or 0)
-    rune_sta = int(get_worker_equipped_rune_sta_bonus_v2(conn, user_id) or 0)
-    total_sta = base_sta + item_sta + rune_sta
-    base_hp = calculate_base_max_hp(level, total_sta)
-    bonus_percent = get_worker_armor_refine_hp_bonus_percent_v1(conn, user_id)
-    dynamic_max_hp = max(1, int(round(base_hp * (1 + bonus_percent / 100.0))))
     try:
-        user_cols = _worker_table_columns_v1(conn, "users")
-        if "max_hp" in user_cols:
-            current_row = conn.execute("SELECT hp FROM users WHERE user_id=?", (user_id,)).fetchone()
-            current_hp = int(current_row[0] or 0) if current_row else 0
-            clamped_hp = min(current_hp, dynamic_max_hp)
-            conn.execute(
-                "UPDATE users SET hp=?, max_hp=? WHERE user_id=?",
-                (clamped_hp, dynamic_max_hp, user_id),
-            )
-            conn.commit()
+        row = conn.execute(
+            "SELECT level, sta, COALESCE(allocated_stamina, 0) FROM users WHERE user_id=?",
+            (user_id,),
+        ).fetchone()
+        if not row:
+            return get_starting_max_hp()
+        level = int(row[0] or 1)
+        base_sta = int(row[1] or 10) + int(row[2] or 0)
+        item_sta = int(get_equipped_stat_bonus(conn, user_id, "bonus_sta") or 0)
+        rune_sta = int(get_worker_equipped_rune_sta_bonus_v2(conn, user_id) or 0)
+        total_sta = base_sta + item_sta + rune_sta
+        base_hp = calculate_base_max_hp(level, total_sta)
+        bonus_percent = get_worker_armor_refine_hp_bonus_percent_v1(conn, user_id)
+        dynamic_max_hp = max(1, int(round(base_hp * (1 + bonus_percent / 100.0))))
+        try:
+            user_cols = _worker_table_columns_v1(conn, "users")
+            if "max_hp" in user_cols:
+                current_row = conn.execute("SELECT hp FROM users WHERE user_id=?", (user_id,)).fetchone()
+                current_hp = int(current_row[0] or 0) if current_row else 0
+                clamped_hp = min(current_hp, dynamic_max_hp)
+                conn.execute(
+                    "UPDATE users SET hp=?, max_hp=? WHERE user_id=?",
+                    (clamped_hp, dynamic_max_hp, user_id),
+                )
+                conn.commit()
+        except Exception:
+            pass
     except Exception:
-        pass
+        conn.rollback()
+        raise
     return dynamic_max_hp
 
 
@@ -703,127 +719,131 @@ def apply_hp_regen(conn, user_id):
     if has_max_hp:
         select_cols.insert(1, "max_hp")
 
-    row = conn.execute(
-        f"SELECT {', '.join(select_cols)} FROM users WHERE user_id=?",
-        (user_id,)
-    ).fetchone()
+    try:
+        row = conn.execute(
+            f"SELECT {', '.join(select_cols)} FROM users WHERE user_id=?",
+            (user_id,)
+        ).fetchone()
 
-    if not row:
-        return {
-            "hp": 0,
-            "max_hp": 100,
-        }
+        if not row:
+            return {
+                "hp": 0,
+                "max_hp": 100,
+            }
 
-    if has_max_hp:
-        hp = row[0]
-        stored_max_hp = row[1]
-        last_update = row[2]
-    else:
-        hp = row[0]
-        stored_max_hp = None
-        last_update = row[1]
+        if has_max_hp:
+            hp = row[0]
+            stored_max_hp = row[1]
+            last_update = row[2]
+        else:
+            hp = row[0]
+            stored_max_hp = None
+            last_update = row[1]
 
-    max_hp = get_worker_max_hp(conn, user_id)
+        max_hp = get_worker_max_hp(conn, user_id)
 
-    if hp is None:
-        hp = max_hp
+        if hp is None:
+            hp = max_hp
 
-    hp = int(hp or 0)
+        hp = int(hp or 0)
 
-    now = datetime.now()
+        now = datetime.now()
 
-    last_update_dt = _worker_iso_to_dt_v1(last_update)
+        last_update_dt = _worker_iso_to_dt_v1(last_update)
 
-    if last_update_dt is None:
-        conn.execute("""
-        UPDATE users
-        SET last_hp_regen_update=?
-        WHERE user_id=?
-        """, (
-            now.isoformat(),
-            user_id,
-        ))
-        conn.commit()
+        if last_update_dt is None:
+            conn.execute("""
+            UPDATE users
+            SET last_hp_regen_update=?
+            WHERE user_id=?
+            """, (
+                now.isoformat(),
+                user_id,
+            ))
+            conn.commit()
 
-        return {
-            "hp": min(hp, max_hp),
-            "max_hp": max_hp,
-        }
+            return {
+                "hp": min(hp, max_hp),
+                "max_hp": max_hp,
+            }
 
-    # Clamp overheal / stale HP down to dynamic max.
-    if hp >= max_hp:
-        hp = max_hp
+        # Clamp overheal / stale HP down to dynamic max.
+        if hp >= max_hp:
+            hp = max_hp
+
+            conn.execute("""
+            UPDATE users
+            SET hp=?,
+                last_hp_regen_update=?,
+                hp_full_notified=1
+            WHERE user_id=?
+            """, (
+                max_hp,
+                now.isoformat(),
+                user_id,
+            ))
+            conn.commit()
+
+            return {
+                "hp": max_hp,
+                "max_hp": max_hp,
+            }
+
+        diff_seconds = (now - last_update_dt).total_seconds()
+
+        if diff_seconds < 0:
+            diff_seconds = 0
+
+        regen_ticks = int(diff_seconds // (HP_REGEN_MINUTES * 60))
+
+        if regen_ticks <= 0:
+            # Below dynamic max but not enough time has passed. Do not mark full.
+            if has_max_hp and stored_max_hp != max_hp:
+                try:
+                    conn.execute(
+                        "UPDATE users SET max_hp=?, hp_full_notified=0 WHERE user_id=?",
+                        (max_hp, user_id),
+                    )
+                    conn.commit()
+                except Exception:
+                    pass
+
+            return {
+                "hp": hp,
+                "max_hp": max_hp,
+            }
+
+        heal_per_tick = max(1, int(max_hp * HP_REGEN_PERCENT))
+        total_heal = heal_per_tick * regen_ticks
+        new_hp = min(max_hp, hp + total_heal)
+
+        new_update_dt = last_update_dt + timedelta(
+            minutes=regen_ticks * HP_REGEN_MINUTES
+        )
+
+        # If HP became full, keep hp_full_notified=0 so get_users_for_hp_full_notification_worker()
+        # can send one notification and then mark it as notified.
+        hp_full_notified = 0
 
         conn.execute("""
         UPDATE users
         SET hp=?,
+            max_hp=?,
             last_hp_regen_update=?,
-            hp_full_notified=1
+            hp_full_notified=?
         WHERE user_id=?
         """, (
+            new_hp,
             max_hp,
-            now.isoformat(),
+            new_update_dt.isoformat(),
+            hp_full_notified,
             user_id,
         ))
+
         conn.commit()
-
-        return {
-            "hp": max_hp,
-            "max_hp": max_hp,
-        }
-
-    diff_seconds = (now - last_update_dt).total_seconds()
-
-    if diff_seconds < 0:
-        diff_seconds = 0
-
-    regen_ticks = int(diff_seconds // (HP_REGEN_MINUTES * 60))
-
-    if regen_ticks <= 0:
-        # Below dynamic max but not enough time has passed. Do not mark full.
-        if has_max_hp and stored_max_hp != max_hp:
-            try:
-                conn.execute(
-                    "UPDATE users SET max_hp=?, hp_full_notified=0 WHERE user_id=?",
-                    (max_hp, user_id),
-                )
-                conn.commit()
-            except Exception:
-                pass
-
-        return {
-            "hp": hp,
-            "max_hp": max_hp,
-        }
-
-    heal_per_tick = max(1, int(max_hp * HP_REGEN_PERCENT))
-    total_heal = heal_per_tick * regen_ticks
-    new_hp = min(max_hp, hp + total_heal)
-
-    new_update_dt = last_update_dt + timedelta(
-        minutes=regen_ticks * HP_REGEN_MINUTES
-    )
-
-    # If HP became full, keep hp_full_notified=0 so get_users_for_hp_full_notification_worker()
-    # can send one notification and then mark it as notified.
-    hp_full_notified = 0
-
-    conn.execute("""
-    UPDATE users
-    SET hp=?,
-        max_hp=?,
-        last_hp_regen_update=?,
-        hp_full_notified=?
-    WHERE user_id=?
-    """, (
-        new_hp,
-        max_hp,
-        new_update_dt.isoformat(),
-        hp_full_notified,
-        user_id,
-    ))
-
-    conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
 
     return {
         "hp": new_hp,
@@ -862,47 +882,51 @@ def apply_mp_regen_worker_17_15_1(conn, user_id, now=None):
     """Worker regeneration with no banked ticks across Max MP changes."""
     init_mp_columns_worker_17_15_1(conn)
     current_time = now or datetime.now()
-    row = conn.execute(
-        "SELECT mp,max_mp,last_mp_regen_update,COALESCE(mp_regen_paused,0) FROM users WHERE user_id=?",
-        (int(user_id),),
-    ).fetchone()
-    if not row:
-        return {"mp": 0, "max_mp": 0, "became_full": False}
-    stored_current = max(0, int(row[0] or 0))
-    stored_maximum = max(0, int(row[1] or 0))
-    maximum = int(get_worker_max_mp_17_15_1(conn, user_id) or 0)
-    if maximum <= 0:
-        conn.execute("UPDATE users SET mp=0,max_mp=0,last_mp_regen_update=?,mp_full_notified=1 WHERE user_id=?", (current_time.isoformat(),int(user_id)))
-        conn.commit()
-        return {"mp":0,"max_mp":0,"became_full":False}
-    current = min(stored_current, maximum)
-    if maximum != stored_maximum:
-        conn.execute(
-            "UPDATE users SET mp=?,max_mp=?,last_mp_regen_update=?,mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE 1 END WHERE user_id=?",
-            (current,maximum,current_time.isoformat(),current,maximum,int(user_id)),
-        )
-        conn.commit()
-        return {"mp":current,"max_mp":maximum,"became_full":False,"maximum_changed":True}
     try:
-        last = datetime.fromisoformat(str(row[2] or ""))
-    except Exception:
-        last = current_time
-    if int(row[3] or 0) or current >= maximum:
+        row = conn.execute(
+            "SELECT mp,max_mp,last_mp_regen_update,COALESCE(mp_regen_paused,0) FROM users WHERE user_id=?",
+            (int(user_id),),
+        ).fetchone()
+        if not row:
+            return {"mp": 0, "max_mp": 0, "became_full": False}
+        stored_current = max(0, int(row[0] or 0))
+        stored_maximum = max(0, int(row[1] or 0))
+        maximum = int(get_worker_max_mp_17_15_1(conn, user_id) or 0)
+        if maximum <= 0:
+            conn.execute("UPDATE users SET mp=0,max_mp=0,last_mp_regen_update=?,mp_full_notified=1 WHERE user_id=?", (current_time.isoformat(),int(user_id)))
+            conn.commit()
+            return {"mp":0,"max_mp":0,"became_full":False}
+        current = min(stored_current, maximum)
+        if maximum != stored_maximum:
+            conn.execute(
+                "UPDATE users SET mp=?,max_mp=?,last_mp_regen_update=?,mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE 1 END WHERE user_id=?",
+                (current,maximum,current_time.isoformat(),current,maximum,int(user_id)),
+            )
+            conn.commit()
+            return {"mp":current,"max_mp":maximum,"became_full":False,"maximum_changed":True}
+        try:
+            last = datetime.fromisoformat(str(row[2] or ""))
+        except Exception:
+            last = current_time
+        if int(row[3] or 0) or current >= maximum:
+            conn.execute(
+                "UPDATE users SET mp=?,max_mp=?,last_mp_regen_update=?,mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
+                (current,maximum,current_time.isoformat(),current,maximum,int(user_id)),
+            )
+            conn.commit()
+            return {"mp":current,"max_mp":maximum,"became_full":False}
+        ticks=max(0,int((current_time-last).total_seconds()//60));new_mp=current;new_stamp=last
+        if ticks>0:
+            new_mp=min(maximum,current+max(1,int(maximum*MP_REGEN_PERCENT_PER_MINUTE_17_15_1))*ticks)
+            new_stamp=datetime.fromtimestamp(last.timestamp()+ticks*60)
         conn.execute(
             "UPDATE users SET mp=?,max_mp=?,last_mp_regen_update=?,mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
-            (current,maximum,current_time.isoformat(),current,maximum,int(user_id)),
+            (new_mp,maximum,new_stamp.isoformat(),new_mp,maximum,int(user_id)),
         )
         conn.commit()
-        return {"mp":current,"max_mp":maximum,"became_full":False}
-    ticks=max(0,int((current_time-last).total_seconds()//60));new_mp=current;new_stamp=last
-    if ticks>0:
-        new_mp=min(maximum,current+max(1,int(maximum*MP_REGEN_PERCENT_PER_MINUTE_17_15_1))*ticks)
-        new_stamp=datetime.fromtimestamp(last.timestamp()+ticks*60)
-    conn.execute(
-        "UPDATE users SET mp=?,max_mp=?,last_mp_regen_update=?,mp_full_notified=CASE WHEN ? < ? THEN 0 ELSE mp_full_notified END WHERE user_id=?",
-        (new_mp,maximum,new_stamp.isoformat(),new_mp,maximum,int(user_id)),
-    )
-    conn.commit()
+    except Exception:
+        conn.rollback()
+        raise
     return {"mp":new_mp,"max_mp":maximum,"became_full":current<maximum and new_mp>=maximum}
 
 
@@ -920,16 +944,20 @@ def get_users_for_mp_full_notification_worker_17_15_1(conn):
 
 
 def notify_mp_restored_17_15_1(bot_instance, conn):
-    for user_id in get_users_for_mp_full_notification_worker_17_15_1(conn):
-        try:
-            bot_instance.send_message(
-                user_id,
-                "🔵 Мана повністю відновлена!\n\nПерсонаж готовий використовувати всі магічні здібності.",
-            )
-            conn.execute("UPDATE users SET mp_full_notified=1 WHERE user_id=?", (user_id,))
-            conn.commit()
-        except Exception as send_error:
-            PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Не вдалося надіслати MP notification {user_id}: {send_error}")
+    try:
+        for user_id in get_users_for_mp_full_notification_worker_17_15_1(conn):
+            try:
+                bot_instance.send_message(
+                    user_id,
+                    "🔵 Мана повністю відновлена!\n\nПерсонаж готовий використовувати всі магічні здібності.",
+                )
+                conn.execute("UPDATE users SET mp_full_notified=1 WHERE user_id=?", (user_id,))
+                conn.commit()
+            except Exception as send_error:
+                PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Не вдалося надіслати MP notification {user_id}: {send_error}")
+    except Exception:
+        conn.rollback()
+        raise
 
 # Stage 17.15.1.1: match notification-worker max MP to production rune-aware logic.
 def get_worker_equipped_rune_int_wis_bonus_17_15_1_1(conn, user_id):
