@@ -1,0 +1,77 @@
+{
+  "stage": "21.4.21",
+  "revision": "1",
+  "status": "CLOSED_ACCEPTED",
+  "timestamp": "2026-11-03T22:18:50.593740+00:00",
+  "parent": "bbac1d89554327a1d995baf0eb08fcf4b29db6d9",
+  "git": {
+    "branch": "develop",
+    "head": "bbac1d89554327a1d995baf0eb08fcf4b29db6d9",
+    "origin_develop": "381d4b1f8d06b418197a33161f933b9e7d6f11fa",
+    "patch": "patch/patch_21_4_21_transaction_atomicity_closure.py",
+    "zero_sha256": "4ce7a00f04958000afca53e88c6149c08b712edde63625bc96da247d8c0afe15",
+    "accept_sha256": "b03640f000453a9c0c0f656d02c15595f98586ba87db856d755791db2c011a7b"
+  },
+  "evidence_chain": {
+    "zero_gap": "reports/stage_21_4_19_transaction_atomicity_zero_gap_audit.json",
+    "runtime_acceptance": "reports/stage_21_4_20_transaction_atomicity_runtime_acceptance.json",
+    "zero_gap_sha256": "4ce7a00f04958000afca53e88c6149c08b712edde63625bc96da247d8c0afe15",
+    "runtime_acceptance_sha256": "b03640f000453a9c0c0f656d02c15595f98586ba87db856d755791db2c011a7b"
+  },
+  "closure": {
+    "stage_21_4": "CLOSED_ACCEPTED",
+    "confirmed_unresolved_atomicity_gaps": 0,
+    "blocked_evidence": 0,
+    "runtime_acceptance": "PASS",
+    "maintained_atomicity_tools": "10_PASS",
+    "api_ready": true,
+    "adapter_connected": true,
+    "runtime_dispatch_verified": true,
+    "end_to_end_accepted": true
+  },
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "3d3bc11e63440d4eab8113b849c9d6b45499ed1c791f31f11721b58f7de04897",
+      "size": 1998848,
+      "mtime_ns": 1793739516073362700
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "30f18e31625755c02c2480e7a15e74093423996c7e452fd013e798b194a11341",
+      "size": 4132392,
+      "mtime_ns": 1793743127274269300
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "6a5e08244d0ae63d27289de15f6f3a7ce29376ef6d8e28f770ae1297d4a6e4d1",
+      "size": 32768,
+      "mtime_ns": 1793742343214057900
+    }
+  },
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED_CLOSURE_USES_ACCEPTED_EVIDENCE",
+  "next_formal_step": "GO_TO_NEXT_STAGE_21_ROADMAP_ITEM",
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "3d3bc11e63440d4eab8113b849c9d6b45499ed1c791f31f11721b58f7de04897",
+      "size": 1998848,
+      "mtime_ns": 1793739516073362700
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "30f18e31625755c02c2480e7a15e74093423996c7e452fd013e798b194a11341",
+      "size": 4132392,
+      "mtime_ns": 1793743127274269300
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "6a5e08244d0ae63d27289de15f6f3a7ce29376ef6d8e28f770ae1297d4a6e4d1",
+      "size": 32768,
+      "mtime_ns": 1793742343214057900
+    }
+  }
+}
