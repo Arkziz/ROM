@@ -1,0 +1,109 @@
+{
+  "stage": "21.8.4",
+  "revision": "1",
+  "status": "PASS",
+  "timestamp": "2026-11-04T19:43:38.062140+00:00",
+  "parent": "1790cd9957741e895bd3cf69a6ff0ae2690803d8",
+  "reconciliation": "reports/stage_21_8_3_combat_log_extraction_test_contract_reconciliation.json",
+  "reconciliation_sha256": "91c36b21790e15861114c1be58586fbd87b1bb3ab49acf5b1358048897bcf779",
+  "backup_path": "backup/stage_21_8_3_20261104T194333Z",
+  "extraction": {
+    "function": "build_lethal_combat_log",
+    "source_anchor": {
+      "line": 1703,
+      "end_line": 1767
+    },
+    "canonical_owner": "handlers/combat_formatting.py",
+    "compatibility_owner": "handlers/combat.py",
+    "duplicate_implementation_count": 0,
+    "signature_changed": false,
+    "user_facing_text_changed": false,
+    "behavior_changed": false
+  },
+  "byte_parity_fixtures": [
+    {
+      "fixture": "skill_miss",
+      "sha256": "3aa6c12d0dd99ef31ab5219452c3afc3f0b089579a6a4a5b936b74b49ff069d0",
+      "bytes": 453
+    },
+    {
+      "fixture": "skill_hit",
+      "sha256": "6b41fda52e251f88904d015ba4d1a1e0090c40af13be2a8aae842e6abfebb060",
+      "bytes": 423
+    },
+    {
+      "fixture": "no_damage",
+      "sha256": "e3aa09eb30903b4b4d0c761ac6cd6c13139fc8ba911ea6b3a5fca190c2f3a0c1",
+      "bytes": 393
+    },
+    {
+      "fixture": "normal_damage",
+      "sha256": "bad6e30c51d6be9f84e53ba14d03c078cc21cc658a9476c9dca0d69cf04a19cb",
+      "bytes": 354
+    },
+    {
+      "fixture": "deduplicated_parts",
+      "sha256": "b62291e18302d6b7a584bed9279626104ae07693d30f5acdab2618839bc6c63e",
+      "bytes": 326
+    }
+  ],
+  "registration_fingerprint_count": 17,
+  "registration_changed": false,
+  "production_mutations": [
+    "handlers/combat.py",
+    "handlers/combat_formatting.py"
+  ],
+  "maintained_tools": [
+    "tools/verify_stage_21_8_4_combat_log_formatting_extraction.py",
+    "tools/smoke_test_stage_21_8_4_combat_log_formatting_extraction.py"
+  ],
+  "updated_legacy_smoke": {
+    "path": "tools/smoke_test_pve_skill_miss_terminal_log_18_21_6a.py",
+    "status": "PASS",
+    "contract": "canonical owner cardinality plus preserved runtime output assertions"
+  },
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "639ee4e05fe8bf92f440d731b11a0663ea1444742407ca2557f4ecde41fa6eac",
+      "size": 4132392,
+      "mtime_ns": 1793804859985435600
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "ee07325e21b4890dbeefa9d0736e3628c680cca23d12582e135c68f93c8902a3",
+      "size": 32768,
+      "mtime_ns": 1793804798376566200
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "639ee4e05fe8bf92f440d731b11a0663ea1444742407ca2557f4ecde41fa6eac",
+      "size": 4132392,
+      "mtime_ns": 1793804859985435600
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "ee07325e21b4890dbeefa9d0736e3628c680cca23d12582e135c68f93c8902a3",
+      "size": 32768,
+      "mtime_ns": 1793804798376566200
+    }
+  },
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "REQUIRED",
+  "decision": "GO_TO_21_8_5_COMBAT_LOG_FORMATTING_RUNTIME_ACCEPTANCE"
+}

@@ -16,5 +16,10 @@ assert "Ти завдав 10 шкоди" in hit
 support=combat.build_lethal_combat_log({"skill":{"name":"🧱 Святий захист","no_damage":True},"skill_hit":True,"mob":mob},1,160,[])
 assert "Навичка застосована" in support
 source=(ROOT/"handlers/combat.py").read_text(encoding="utf-8-sig")
-assert source.count("💨 ПРОМАХ! Навичка «{}» не влучила в ціль.")==3
+combat_source = (ROOT / "handlers" / "combat.py").read_text(encoding="utf-8")
+formatting_source = (ROOT / "handlers" / "combat_formatting.py").read_text(encoding="utf-8")
+assert combat_source.count("from handlers.combat_formatting import build_lethal_combat_log") == 1
+assert combat_source.count("def build_lethal_combat_log(") == 0
+assert formatting_source.count("def build_lethal_combat_log(") == 1
+assert formatting_source.count("💨 ПРОМАХ! Навичка «{}» не влучила в ціль.") == 1
 print("PVE_SKILL_MISS_TERMINAL_LOG_18_21_6A_OK")
