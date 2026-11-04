@@ -1,0 +1,139 @@
+{
+  "stage": "21.9.4",
+  "revision": "1",
+  "status": "PASS_RUNTIME_AND_OPERATOR_ACCEPTANCE",
+  "timestamp": "2026-11-04T20:51:06.014870+00:00",
+  "parent": "00a0eb5a42b2c1d768a03f87899e3209ce9ffda5",
+  "evidence": {
+    "automated": {
+      "path": "reports/stage_21_9_3_final_automated_release_acceptance.json",
+      "sha256": "17eba96a875560f4da9b551e96a8e290dac720d51f1727dd6fadfb504a895f5c"
+    },
+    "matrix": {
+      "path": "reports/stage_21_9_2_release_acceptance_matrix_reconciliation.json",
+      "sha256": "ea7c496390cf802359fd5c5da2bf8eb21c3242e9cf23d33f8b32d9f3ed13a384"
+    },
+    "runtime": {
+      "path": "reports/stage_21_8_5_combat_log_formatting_runtime_acceptance.json",
+      "sha256": "51e531b95438dad475d3f460088645b6d68b752d96e28da017dcadccd2ea7ddd"
+    },
+    "stage_21_8_closure": {
+      "path": "reports/stage_21_8_7_monolith_reduction_acceptance_and_closure.json",
+      "sha256": "cef0a4b2702a6b0c467ccccb511a067ac20c77e776ec5090af449369746dfee1"
+    }
+  },
+  "runtime_continuity": {
+    "reason_no_repeat_runtime_required": "No production implementation occurred after the accepted Stage 21.8 runtime session; exact runtime-accepted source hashes remain unchanged and Stage 21.9.3 revalidated all 184 production sources and 13 blocking tools.",
+    "source_hashes": {
+      "handlers/combat.py": "264fdf4f834dceac51ff9f3fef401f2a7f5b9039e56d991f9e731824355e8748",
+      "handlers/combat_formatting.py": "84e8f74419b8cd38248d9fcdd7d4b65bd3077fa33a7f706d8750b3f2049dbba0"
+    },
+    "startup": {
+      "production_logging_configured": true,
+      "fresh_database_schema_bootstrap": true,
+      "migration_gate_pass": true,
+      "startup_maintenance_pass": true,
+      "notification_worker_started": true,
+      "notification_worker_db_ready": true,
+      "bot_started": true
+    },
+    "runtime_exports": [
+      {
+        "file": "1.json",
+        "latest_message_local": "2026-11-04T21:48:25",
+        "message_id": 2295056,
+        "combat_started": true,
+        "victory": true,
+        "single_reward_block": true,
+        "experience": 13,
+        "gold": 0.38,
+        "daily_progress": "9/25"
+      },
+      {
+        "file": "2.json",
+        "latest_message_local": "2026-11-04T21:49:00",
+        "message_id": 903316,
+        "combat_started": true,
+        "skill_flow": true,
+        "victory": true,
+        "single_reward_block": true,
+        "experience": 9,
+        "gold": 0.17,
+        "loot": "Слиз рунічного слимака x1",
+        "daily_progress": "1/25"
+      }
+    ],
+    "negative_evidence": {
+      "duplicate_victory_message_observed": false,
+      "duplicate_reward_block_observed": false,
+      "callback_loop_observed": false,
+      "database_locked_observed": false,
+      "unhandled_traceback_observed": false
+    },
+    "single_reward_exports": "2/2"
+  },
+  "automated_acceptance": {
+    "production_sources": 184,
+    "blocking_tools": "13/13 PASS",
+    "sqlite_integrity": "ok",
+    "sqlite_foreign_key_violations": 0,
+    "release_blockers": 0,
+    "review_findings": 0,
+    "deferred_findings": 1
+  },
+  "operator_checklist": {
+    "exact_head_reviewed": true,
+    "tracked_worktree_gate_passed": true,
+    "configuration_presence_reviewed_without_secret_disclosure": true,
+    "backup_restore_feasibility_reviewed": true,
+    "release_log_capture_reviewed": true,
+    "explicit_operator_go": true,
+    "signoff_source": "--operator-go command-line flag"
+  },
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "decision": "GO_TO_21_9_5_RELEASE_DOCUMENTATION_AND_OPERATOR_CHECKLIST",
+  "release_verdict": "GO_PENDING_DOCUMENTATION_AND_FORMAL_CLOSURE",
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "PASS_REUSED_WITH_SOURCE_HASH_CONTINUITY"
+}
