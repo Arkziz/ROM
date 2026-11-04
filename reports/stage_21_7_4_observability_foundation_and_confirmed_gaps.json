@@ -1,0 +1,156 @@
+{
+  "stage": "21.7.4",
+  "revision": "3",
+  "status": "PASS",
+  "timestamp": "2026-11-04T15:01:00.527035+00:00",
+  "parent": "1df0f21f13e500fef94dd0e7ec73a2e118ec592e",
+  "reconciliation": "reports/stage_21_7_3_logging_observability_blocked_evidence_reconciliation.json",
+  "reconciliation_sha256": "403f8c9a3479893ebfffabdda4e17e933e8cf4a04c4b5d8878b593da64ab7e26",
+  "backup_path": "backup/stage_21_7_4_20261104T150054Z",
+  "production_mutations": [
+    "systems/production_logging.py",
+    "db_modules/shop.py",
+    "handlers/combat.py",
+    "systems/notifications.py",
+    "systems/player_interaction_system.py",
+    "db_modules/migrations.py"
+  ],
+  "runtime_points": {
+    "handlers/combat.py": [
+      [
+        "safe_send_message",
+        3887,
+        "DELIVERY_FAILURE",
+        "combat.safe_send_message.primary"
+      ],
+      [
+        "safe_send_message",
+        3897,
+        "DELIVERY_FAILURE",
+        "combat.safe_send_message.fallback"
+      ]
+    ],
+    "systems/notifications.py": [
+      [
+        "notify_energy_full",
+        444,
+        "DELIVERY_FAILURE",
+        "notifications.energy_full"
+      ],
+      [
+        "notify_hp_restored",
+        464,
+        "DELIVERY_FAILURE",
+        "notifications.hp_restored"
+      ],
+      [
+        "notification_worker",
+        511,
+        "WORKER_FAILURE",
+        "notifications.worker.connect"
+      ],
+      [
+        "notify_mp_restored_17_15_1",
+        956,
+        "DELIVERY_FAILURE",
+        "notifications.mp_restored"
+      ],
+      [
+        "notification_worker",
+        516,
+        "WORKER_FAILURE",
+        "notifications.worker.fetch"
+      ],
+      [
+        "notification_worker",
+        522,
+        "WORKER_FAILURE",
+        "notifications.worker.dispatch"
+      ]
+    ],
+    "systems/player_interaction_system.py": [
+      [
+        "wrapped",
+        303,
+        "DOMAIN_FAILURE",
+        "player_interaction.decorator"
+      ]
+    ],
+    "db_modules/migrations.py": [
+      [
+        "run_db_startup_maintenance",
+        128,
+        "MIGRATION_FAILURE",
+        "migrations.startup.refine_stack"
+      ],
+      [
+        "run_db_startup_maintenance",
+        150,
+        "MIGRATION_FAILURE",
+        "migrations.startup.contract_targets"
+      ]
+    ]
+  },
+  "contracts": {
+    "stable_categories": [
+      "STARTUP_FAILURE",
+      "MIGRATION_FAILURE",
+      "DOMAIN_FAILURE",
+      "DELIVERY_FAILURE",
+      "WORKER_FAILURE",
+      "VALIDATION_FAILURE"
+    ],
+    "correlation_id": "generated UUID-backed operation_id",
+    "redaction": "nested key redaction plus existing formatter redaction",
+    "production_bare_exception_fixed": "db_modules/shop.py:create_common_equipment_shop_preview",
+    "initializer_mutations": 0
+  },
+  "maintained_tools": [
+    "tools/verify_stage_21_7_4_observability_foundation_and_confirmed_gaps.py",
+    "tools/smoke_test_stage_21_7_4_observability_foundation_and_confirmed_gaps.py"
+  ],
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "3d3bc11e63440d4eab8113b849c9d6b45499ed1c791f31f11721b58f7de04897",
+      "size": 1998848,
+      "mtime_ns": 1793739516073362700
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "c5bbbea076c86cde2b294d5fa77cd1859a3d628f423b1ff93febeac3cc4ada45",
+      "size": 4132392,
+      "mtime_ns": 1793746290889839000
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "55a8da9a09a2d5046a1e46b3d6c6de8eaac00113931c2c6e230ebd876a97d85a",
+      "size": 32768,
+      "mtime_ns": 1793745929575643200
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "3d3bc11e63440d4eab8113b849c9d6b45499ed1c791f31f11721b58f7de04897",
+      "size": 1998848,
+      "mtime_ns": 1793739516073362700
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "c5bbbea076c86cde2b294d5fa77cd1859a3d628f423b1ff93febeac3cc4ada45",
+      "size": 4132392,
+      "mtime_ns": 1793746290889839000
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "55a8da9a09a2d5046a1e46b3d6c6de8eaac00113931c2c6e230ebd876a97d85a",
+      "size": 32768,
+      "mtime_ns": 1793745929575643200
+    }
+  },
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "REQUIRED",
+  "decision": "GO_TO_21_7_5_OBSERVABILITY_RUNTIME_ACCEPTANCE"
+}

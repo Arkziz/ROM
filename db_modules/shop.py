@@ -204,7 +204,7 @@ def create_common_equipment_shop_preview(user_id, slot_key, item_profile=None):
     # Init systems
     try:
         dynamic_equipment_system.init_dynamic_equipment_system()
-    except:
+    except Exception:
         pass
     
     init_weapon_damage_system()

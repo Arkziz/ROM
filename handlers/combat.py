@@ -3885,6 +3885,8 @@ def patch_combat_bot_rate_limit_safe_send(bot):
             try:
                 retry_after = int(retry_after)
             except Exception:
+                from systems.production_logging import log_observability_exception
+                log_observability_exception("DELIVERY_FAILURE", "combat.safe_send_message.primary")
                 retry_after = 3
 
             retry_after = max(1, min(60, retry_after))
@@ -3895,6 +3897,8 @@ def patch_combat_bot_rate_limit_safe_send(bot):
                 time.sleep(retry_after + 1)
                 return original_send_message(chat_id, text, *args, **kwargs)
             except Exception as retry_error:
+                from systems.production_logging import log_observability_exception
+                log_observability_exception("DELIVERY_FAILURE", "combat.safe_send_message.fallback")
                 PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'error', f"❌ send_message retry failed after 429: {retry_error}")
                 return None
 

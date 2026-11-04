@@ -301,6 +301,8 @@ def install_player_presence_tracking(bot, db_path=None):
                 try:
                     touch_player_activity(uid, db_path=db_path)
                 except Exception as exc:
+                    from systems.production_logging import log_observability_exception
+                    log_observability_exception("DOMAIN_FAILURE", "player_interaction.decorator")
                     LOGGER.warning("Presence update failed for user %s: %s", uid, exc)
             return original(updates)
 

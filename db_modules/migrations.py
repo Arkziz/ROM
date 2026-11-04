@@ -126,6 +126,8 @@ def run_db_startup_maintenance():
         conn.commit()
         result["refine_material_stack_sizes"] = True
     except Exception:
+        from systems.production_logging import log_observability_exception
+        log_observability_exception("MIGRATION_FAILURE", "migrations.startup.refine_stack")
         result["refine_material_stack_sizes"] = False
 
     # Contract target kills migration
@@ -148,6 +150,8 @@ def run_db_startup_maintenance():
         conn.commit()
         result["contract_target_kills"] = True
     except Exception:
+        from systems.production_logging import log_observability_exception
+        log_observability_exception("MIGRATION_FAILURE", "migrations.startup.contract_targets")
         result["contract_target_kills"] = False
 
     result["success"] = True

@@ -442,6 +442,8 @@ def notify_energy_full(bot_instance, conn):
                 )
             )
         except Exception as send_error:
+            from systems.production_logging import log_observability_exception
+            log_observability_exception("DELIVERY_FAILURE", "notifications.energy_full")
             PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Не вдалося надіслати energy notification {user_id}: {send_error}")
 
 
@@ -462,6 +464,8 @@ def notify_hp_restored(bot_instance, conn):
                 )
             )
         except Exception as send_error:
+            from systems.production_logging import log_observability_exception
+            log_observability_exception("DELIVERY_FAILURE", "notifications.hp_restored")
             PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Не вдалося надіслати HP notification {user_id}: {send_error}")
 
 
@@ -509,17 +513,23 @@ def notification_worker(bot_instance):
             # notify_craft_or_repair_ready(bot_instance, conn)
 
         except Exception as error:
+            from systems.production_logging import log_observability_exception
+            log_observability_exception("WORKER_FAILURE", "notifications.worker.connect")
             PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ NOTIFICATION WORKER ERROR: {error}")
 
             try:
                 conn.close()
             except Exception:
+                from systems.production_logging import log_observability_exception
+                log_observability_exception("WORKER_FAILURE", "notifications.worker.fetch")
                 pass
 
             try:
                 conn = create_worker_connection()
                 PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'info', "✅ NOTIFICATION WORKER DB CONNECTION RECREATED")
             except Exception as reconnect_error:
+                from systems.production_logging import log_observability_exception
+                log_observability_exception("WORKER_FAILURE", "notifications.worker.dispatch")
                 PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'error', f"❌ NOTIFICATION WORKER DB RECONNECT ERROR: {reconnect_error}")
 
         time.sleep(NOTIFICATION_CHECK_INTERVAL_SECONDS)
@@ -954,6 +964,8 @@ def notify_mp_restored_17_15_1(bot_instance, conn):
                 conn.execute("UPDATE users SET mp_full_notified=1 WHERE user_id=?", (user_id,))
                 conn.commit()
             except Exception as send_error:
+                from systems.production_logging import log_observability_exception
+                log_observability_exception("DELIVERY_FAILURE", "notifications.mp_restored")
                 PRODUCTION_LOG_PRINT(PRODUCTION_LOGGER, 'warning', f"⚠️ Не вдалося надіслати MP notification {user_id}: {send_error}")
     except Exception:
         conn.rollback()

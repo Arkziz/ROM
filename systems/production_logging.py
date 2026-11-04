@@ -67,3 +67,47 @@ def production_log_print(logger, log_level, *values, sep=" ", end="\n", file=Non
   for handler in logging.getLogger().handlers:
    try:handler.flush()
    except Exception:pass
+
+# Stage 21.7.4: stable observability foundation.
+OBSERVABILITY_ERROR_CATEGORIES = frozenset({
+    "STARTUP_FAILURE", "MIGRATION_FAILURE", "DOMAIN_FAILURE",
+    "DELIVERY_FAILURE", "WORKER_FAILURE", "VALIDATION_FAILURE",
+})
+
+def normalize_error_category(value):
+    category = str(value or "DOMAIN_FAILURE").strip().upper()
+    if category not in OBSERVABILITY_ERROR_CATEGORIES:
+        return "DOMAIN_FAILURE"
+    return category
+
+def new_operation_id(prefix="op"):
+    import uuid
+    safe_prefix = re.sub(r"[^a-z0-9_.-]+", "_", str(prefix or "op").lower()).strip("_") or "op"
+    return f"{safe_prefix}:{uuid.uuid4().hex}"
+
+def _redact_observability_value(value):
+    if isinstance(value, dict):
+        cleaned = {}
+        for key, item in value.items():
+            key_text = str(key)
+            if re.search(r"(?i)(token|password|passwd|pwd|secret|authorization|private[_-]?key|payload|email|phone)", key_text):
+                cleaned[key_text] = "[REDACTED]"
+            else:
+                cleaned[key_text] = _redact_observability_value(item)
+        return cleaned
+    if isinstance(value, (list, tuple, set, frozenset)):
+        return [_redact_observability_value(item) for item in value]
+    return redact_log_text(value)
+
+def log_observability_exception(category, phase, operation_id=None, context=None, logger=None):
+    category = normalize_error_category(category)
+    phase = re.sub(r"[^a-zA-Z0-9_.:-]+", "_", str(phase or "unknown"))[:120]
+    operation_id = str(operation_id or new_operation_id(category.lower()))[:160]
+    safe_context = _redact_observability_value(context or {})
+    active_logger = logger or get_production_logger("observability")
+    active_logger.exception(
+        "operation_failed category=%s phase=%s operation_id=%s context=%s",
+        category, phase, operation_id, safe_context,
+    )
+    return {"category": category, "phase": phase, "operation_id": operation_id}
+
