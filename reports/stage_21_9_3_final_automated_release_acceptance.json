@@ -1,0 +1,254 @@
+{
+  "stage": "21.9.3",
+  "revision": "1",
+  "status": "PASS_AUTOMATED_RELEASE_ACCEPTANCE",
+  "timestamp": "2026-11-04T20:44:01.993563+00:00",
+  "parent": "7ca7b699042bc514ee56c744d283506d567e315d",
+  "audit": {
+    "path": "reports/stage_21_9_1_release_readiness_and_remaining_risk_audit.json",
+    "sha256": "4ae3ea6aa8d32c7e67dbb3a5c8248c05126100ffdb857b409ac930c10fb78ced"
+  },
+  "matrix": {
+    "path": "reports/stage_21_9_2_release_acceptance_matrix_reconciliation.json",
+    "sha256": "ea7c496390cf802359fd5c5da2bf8eb21c3242e9cf23d33f8b32d9f3ed13a384"
+  },
+  "automated_acceptance": {
+    "programming_regulation_update_12": "PASS",
+    "production_source_count": 184,
+    "production_hashes_and_compile": "PASS",
+    "closure_hashes": "PASS",
+    "blocking_tool_count": 13,
+    "blocking_tools": [
+      {
+        "path": "tools/verify_stage_21_1_2_polling_single_entrypoint.py",
+        "sha256": "3b0f7e7693b81db048bbe1015119636585b27da140c2d681890699df62ec51ea",
+        "returncode": 0,
+        "observed_marker": "PASS: Stage 21.1.2 single polling owner",
+        "stdout_tail": "PASS: Stage 21.1.2 single polling owner\n",
+        "stderr_tail": "",
+        "status": "PASS"
+      },
+      {
+        "path": "tools/smoke_test_stage_21_1_2_reliable_polling.py",
+        "sha256": "304cb9efc1918a16d12ae99d1fe4e369193a9c45981f09e5987d7cac061172bc",
+        "returncode": 0,
+        "observed_marker": "PASS: Stage 21.1.2 isolated no-network polling smoke",
+        "stdout_tail": "PASS: Stage 21.1.2 isolated no-network polling smoke\n",
+        "stderr_tail": "",
+        "status": "PASS"
+      },
+      {
+        "path": "tools/verify_stage_21_2_2_startup_migration_gate.py",
+        "sha256": "844034add4b24ae38a3b4ce3c1f47f4715ba709286ebfca21c1b470b4c953da4",
+        "returncode": 0,
+        "observed_marker": "PASS: Stage 21.2.2 deterministic startup migration gate",
+        "stdout_tail": "PASS: Stage 21.2.2 deterministic startup migration gate\n",
+        "stderr_tail": "",
+        "status": "PASS"
+      },
+      {
+        "path": "tools/smoke_test_stage_21_2_2_startup_migration_gate.py",
+        "sha256": "281f87f999ed524b643c9cb96646f87725b538cd1fcce80a0bffb6e079209bdc",
+        "returncode": 0,
+        "observed_marker": "PASS: Stage 21.2.2 isolated migration-result contract smoke",
+        "stdout_tail": "PASS: Stage 21.2.2 isolated migration-result contract smoke\n",
+        "stderr_tail": "",
+        "status": "PASS"
+      },
+      {
+        "path": "tools/verify_stage_21_3_2_sqlite_connection_policy.py",
+        "sha256": "37c9dca368045ca60f7dce605d6a27a166e4a30fcf3191d6926e5789c7e2922c",
+        "returncode": 0,
+        "observed_marker": "PASS: Stage 21.3.2 SQLite connection policy cohort and special-consumer allowlist",
+        "stdout_tail": "PASS: Stage 21.3.2 SQLite connection policy cohort and special-consumer allowlist\n",
+        "stderr_tail": "",
+        "status": "PASS"
+      },
+      {
+        "path": "tools/smoke_test_stage_21_3_2_sqlite_connection_policy.py",
+        "sha256": "13c6f1c529b483f2dabf8abc91624f1e031b0dc2ed24b9514dd170bf49f88b4d",
+        "returncode": 0,
+        "observed_marker": "PASS: Stage 21.3.2 isolated SQLite connection policy smoke",
+        "stdout_tail": "PASS: Stage 21.3.2 isolated SQLite connection policy smoke\n",
+        "stderr_tail": "",
+        "status": "PASS"
+      },
+      {
+        "path": "tools/verify_stage_21_5_3_rate_limit_bounded_memory_and_delivery_guards.py",
+        "sha256": "a729ab8aa3fecf26ca8d49c0df8e8caf9f2c9427b669387105adc2be0a3df150",
+        "returncode": 0,
+        "observed_marker": "PASS: Stage 21.5.3 bounded state and delivery policy invariants",
+        "stdout_tail": "PASS: Stage 21.5.3 bounded state and delivery policy invariants\n",
+        "stderr_tail": "",
+        "status": "PASS"
+      },
+      {
+        "path": "tools/smoke_test_stage_21_5_3_rate_limit_bounded_memory_and_delivery_guards.py",
+        "sha256": "12734a85879a492ef7384b9b427542951957a720008c783162b18e54d73a5537",
+        "returncode": 0,
+        "observed_marker": "PASS: Stage 21.5.3 preserves active cooldown and bounds 5000 chat keys",
+        "stdout_tail": "PASS: Stage 21.5.3 preserves active cooldown and bounds 5000 chat keys\n",
+        "stderr_tail": "",
+        "status": "PASS"
+      },
+      {
+        "path": "tools/verify_stage_21_7_4_observability_foundation_and_confirmed_gaps.py",
+        "sha256": "caaadcfbf93e9a957352b0de90116778db9caecede6eb7bc57d54d3486f15509",
+        "returncode": 0,
+        "observed_marker": "PASS: Stage 21.7.4 observability source contract",
+        "stdout_tail": "PASS: Stage 21.7.4 observability source contract\n",
+        "stderr_tail": "",
+        "status": "PASS"
+      },
+      {
+        "path": "tools/smoke_test_stage_21_7_4_observability_foundation_and_confirmed_gaps.py",
+        "sha256": "e7019a80392b788974afbc7d99777895becbf3752968f10ce260eb7b86ed5ea7",
+        "returncode": 0,
+        "observed_marker": "PASS: Stage 21.7.4 category, correlation and redaction smoke",
+        "stdout_tail": "PASS: Stage 21.7.4 category, correlation and redaction smoke\n",
+        "stderr_tail": "",
+        "status": "PASS"
+      },
+      {
+        "path": "tools/verify_stage_21_8_4_combat_log_formatting_extraction.py",
+        "sha256": "e1b3abd6817c8f071823bba7b2d1ab2b1608bc653f28eea0cf3cf9f3b76a3bed",
+        "returncode": 0,
+        "observed_marker": "PASS: Stage 21.8.4 canonical combat formatting owner",
+        "stdout_tail": "PASS: Stage 21.8.4 canonical combat formatting owner\n",
+        "stderr_tail": "",
+        "status": "PASS"
+      },
+      {
+        "path": "tools/smoke_test_stage_21_8_4_combat_log_formatting_extraction.py",
+        "sha256": "bdb8882f19abd9ea3d8acef94997b20a397f1259d6332cddb1e6c8cfecf93485",
+        "returncode": 0,
+        "observed_marker": "PASS: Stage 21.8.4 isolated combat formatting import and branch markers",
+        "stdout_tail": "PASS: Stage 21.8.4 isolated combat formatting import and branch markers\n",
+        "stderr_tail": "",
+        "status": "PASS"
+      },
+      {
+        "path": "tools/smoke_test_pve_skill_miss_terminal_log_18_21_6a.py",
+        "sha256": "66a57a6ccf4c64868ec9600f9978640c5ed260fa25991ec4bd4c88f2a9c98aca",
+        "returncode": 0,
+        "observed_marker": "PVE_SKILL_MISS_TERMINAL_LOG_18_21_6A_OK",
+        "stdout_tail": "PVE_SKILL_MISS_TERMINAL_LOG_18_21_6A_OK\n",
+        "stderr_tail": "2026-11-04 22:44:00.908 | INFO | rom.logging | MainThread | production_logging_configured level=INFO retention=14/30/30\n",
+        "status": "PASS"
+      }
+    ],
+    "sqlite_snapshot": {
+      "copy_status": "PASS",
+      "copied_files": [
+        {
+          "name": "game.db",
+          "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+          "size": 2015232
+        },
+        {
+          "name": "game.db-wal",
+          "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+          "size": 4132392
+        },
+        {
+          "name": "game.db-shm",
+          "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+          "size": 32768
+        }
+      ],
+      "integrity_check": [
+        "ok"
+      ],
+      "foreign_key_check": [],
+      "pragmas": {
+        "journal_mode": "wal",
+        "foreign_keys": 0,
+        "busy_timeout": 5000,
+        "query_only": 1,
+        "user_version": 0,
+        "schema_version": 158
+      },
+      "migration_ledger": {
+        "table_count": 2,
+        "tables": [
+          {
+            "name": "generated_item_id_migrations",
+            "columns": [
+              "id",
+              "source_item_id",
+              "target_item_id",
+              "operation",
+              "migration_stage",
+              "created_at"
+            ],
+            "row_count": 24,
+            "status_summary": null
+          },
+          {
+            "name": "schema_migrations",
+            "columns": [
+              "id",
+              "migration_name",
+              "applied_at"
+            ],
+            "row_count": 20,
+            "status_summary": null
+          }
+        ]
+      },
+      "production_stable_during_copy": true,
+      "snapshot_removed_after_validation": true
+    }
+  },
+  "release_findings": {
+    "blocking": 0,
+    "review": 0,
+    "deferred": 1,
+    "dev_wrapper_chain": "RELEASE_DEFERRED_NON_BLOCKING"
+  },
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "decision": "GO_TO_21_9_4_FINAL_RUNTIME_AND_OPERATOR_ACCEPTANCE",
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "REQUIRED_NEXT_STAGE"
+}
