@@ -1,0 +1,4523 @@
+{
+  "stage": "22.1.6a",
+  "revision": "1",
+  "status": "PASS_READ_ONLY_WITH_DEFERRED_BLOCKERS",
+  "timestamp": "2026-11-04T22:44:51.753233+00:00",
+  "parent": "1321b51958abead4e018dfc666deee1eebdbd75e",
+  "git": {
+    "branch": "develop",
+    "head": "1321b51958abead4e018dfc666deee1eebdbd75e",
+    "origin_develop": "56c18339c28df4f9e89c17d933572982e51aec79",
+    "origin_is_ancestor": true
+  },
+  "authority": {
+    "stage_22_1_6": {
+      "path": "reports/stage_22_1_6_canonical_owner_classification.json",
+      "sha256": "71060b0fc452d304618b968ce2f82cb4e2b3865e31d7c5bade5ed60619d287ee"
+    },
+    "programming_regulation": "Update 12 PASS",
+    "namespace_policy": "22.1.6a completes Stage 22.1.6 and does not consume planned Stage 22.1.7.",
+    "rules": [
+      "Python-effective last definition is runtime evidence within one module, but not sufficient alone for cross-file ownership.",
+      "Static rank never authorizes owner acceptance or deletion.",
+      "Deletion requires replacement tests and a later mutation patch."
+    ]
+  },
+  "summary": {
+    "symbols_reconciled": 12,
+    "definitions_reconciled": 44,
+    "python_effective_definitions": 30,
+    "owner_decisions_accepted": 11,
+    "owner_decisions_deferred": 1,
+    "accepted_owner_registry_prior": 47,
+    "accepted_owner_registry_total_candidate": 58,
+    "deletion_authorized": false,
+    "parent_stage": "22.1.6",
+    "sub_patch": "a"
+  },
+  "owner_decisions": [
+    {
+      "symbol": "apply_random_durability_wear_on_victory",
+      "decision": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "MEDIUM",
+      "accepted_owner": {
+        "path": "systems/equipment_system.py",
+        "line": 3427
+      },
+      "reason": "Current Python-effective topology has one implementation and only thin same-symbol delegates.",
+      "definitions": [
+        {
+          "path": "db_modules/equipment.py",
+          "line": 301,
+          "end_line": 308,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "chance_percent"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [
+              "25"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "d02fd7147de333d1161a2e3ca3c762a9427d378738ad801bd6554511b59ae415",
+          "statement_count": 2,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system().apply_random_durability_wear_on_victory"
+          ],
+          "loader_calls": [
+            "_equipment_system().apply_random_durability_wear_on_victory",
+            "_equipment_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 3315,
+          "end_line": 3359,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 2,
+          "python_effective_in_file": false,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "chance",
+              "amount"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [
+              "None",
+              "1"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "c3e4a65f7f3d839d850d8d3c747b667db7dd4f2a5a48fe6c1cf72c947f36f1b4",
+          "statement_count": 11,
+          "db_calls": [
+            "db.conn.execute('\\n\\n        SELECT inv.id\\n\\n        FROM equipment_slots es\\n\\n        JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id\\n\\n        WHERE es.user_id=? AND es.inventory_id IS NOT NULL AND COALESCE(inv.durability,100)>0\\n\\n        ', (int(user_id),)).fetchall",
+            "db.conn.execute"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 3,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 3427,
+          "end_line": 3551,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "chance_percent"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [
+              "25"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "523168b73ca1efbb1ef441521700230d71f31945015330d8217e422f45f3caed",
+          "statement_count": 14,
+          "db_calls": [
+            "db.conn.execute('SELECT es.slot_key, inv.id, COALESCE(inv.durability,100), it.name FROM equipment_slots es JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id JOIN items it ON it.id=inv.item_id WHERE es.user_id=? AND es.inventory_id IS NOT NULL AND COALESCE(inv.durability,100)>0', (int(user_id),)).fetchall",
+            "db.conn.execute",
+            "db.conn.commit",
+            "db.conn.rollback",
+            "db.conn.execute"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 3,
+          "raise_count": 1
+        }
+      ],
+      "python_effective_definitions": [
+        {
+          "path": "db_modules/equipment.py",
+          "line": 301,
+          "end_line": 308,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "chance_percent"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [
+              "25"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "d02fd7147de333d1161a2e3ca3c762a9427d378738ad801bd6554511b59ae415",
+          "statement_count": 2,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system().apply_random_durability_wear_on_victory"
+          ],
+          "loader_calls": [
+            "_equipment_system().apply_random_durability_wear_on_victory",
+            "_equipment_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 3427,
+          "end_line": 3551,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "chance_percent"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [
+              "25"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "523168b73ca1efbb1ef441521700230d71f31945015330d8217e422f45f3caed",
+          "statement_count": 14,
+          "db_calls": [
+            "db.conn.execute('SELECT es.slot_key, inv.id, COALESCE(inv.durability,100), it.name FROM equipment_slots es JOIN inventory inv ON inv.id=es.inventory_id AND inv.user_id=es.user_id JOIN items it ON it.id=inv.item_id WHERE es.user_id=? AND es.inventory_id IS NOT NULL AND COALESCE(inv.durability,100)>0', (int(user_id),)).fetchall",
+            "db.conn.execute",
+            "db.conn.commit",
+            "db.conn.rollback",
+            "db.conn.execute"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 3,
+          "raise_count": 1
+        }
+      ],
+      "signature_variant_count": 2,
+      "topology": {
+        "imports": [
+          {
+            "path": "db_modules/__init__.py",
+            "line": 118,
+            "module": "equipment",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 194,
+            "module": "db",
+            "alias": null,
+            "test": false
+          }
+        ],
+        "calls": [
+          {
+            "path": "db_modules/equipment.py",
+            "line": 305,
+            "target": "_equipment_system().apply_random_durability_wear_on_victory",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 1971,
+            "target": "apply_random_durability_wear_on_victory",
+            "test": false
+          },
+          {
+            "path": "systems/equipment_system.py",
+            "line": 3367,
+            "target": "apply_random_durability_wear_on_victory",
+            "test": false
+          },
+          {
+            "path": "systems/equipment_system.py",
+            "line": 3559,
+            "target": "apply_random_durability_wear_on_victory",
+            "test": false
+          },
+          {
+            "path": "tools/smoke_test_equipment_durability_contracts.py",
+            "line": 31,
+            "target": "equipment.apply_random_durability_wear_on_victory",
+            "test": true
+          }
+        ],
+        "external_production_calls": [
+          {
+            "path": "handlers/combat.py",
+            "line": 1971,
+            "target": "apply_random_durability_wear_on_victory",
+            "test": false
+          }
+        ],
+        "test_references": [
+          {
+            "path": "tools/smoke_test_equipment_durability_contracts.py",
+            "line": 31,
+            "target": "equipment.apply_random_durability_wear_on_victory",
+            "test": true
+          }
+        ]
+      },
+      "loader_targets": [
+        {
+          "path": "db_modules/equipment.py",
+          "loader": "_equipment_system",
+          "line": 12,
+          "body_hash": "af88d741947a63062575c237b4b0a48b818e7bac8954016ca4de427a0d7cb4b0",
+          "returns": [
+            "equipment_system"
+          ]
+        },
+        {
+          "path": "db_modules/equipment.py",
+          "loader": "_equipment_system()",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        }
+      ],
+      "replacement_test_matrix": {
+        "signature_parity": true,
+        "caller_import_parity": true,
+        "return_and_exception_parity": true,
+        "transaction_commit_rollback_parity": true,
+        "python_effective_definition_lock": true,
+        "loader_target_lock": true,
+        "focused_existing_tests": [
+          "tools/smoke_test_equipment_durability_contracts.py"
+        ],
+        "new_focused_test_required": false
+      },
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_auction_lot_public_details",
+      "decision": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "HIGH",
+      "accepted_owner": {
+        "path": "systems/auction_house_system.py",
+        "line": 2981
+      },
+      "reason": "Current Python-effective topology has one implementation and only thin same-symbol delegates.",
+      "definitions": [
+        {
+          "path": "db_modules/systems_wrappers.py",
+          "line": 481,
+          "end_line": 484,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "lot_id",
+              "viewer_user_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [
+              "None"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "d34ab181f95830274468bd4064ea5e3cb1afbdbee8d684ebe1a5b453b6914da4",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_auction_system().build_auction_lot_public_details"
+          ],
+          "loader_calls": [
+            "_auction_system().build_auction_lot_public_details",
+            "_auction_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/auction_house_system.py",
+          "line": 2013,
+          "end_line": 2057,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 4,
+          "python_effective_in_file": false,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "lot_id",
+              "viewer_user_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [
+              "None"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "f2241782f29543582f0ffca25e9ca4cb4bfb8d79e71a042983f64c88f6c390c1",
+          "statement_count": 17,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 3,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/auction_house_system.py",
+          "line": 2373,
+          "end_line": 2461,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 4,
+          "python_effective_in_file": false,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "lot_id",
+              "viewer_user_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [
+              "None"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "1c02628e1aeda561aca72fd309ee8f7542c36e57842e68a313c10bf4dcafeb40",
+          "statement_count": 26,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 3,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/auction_house_system.py",
+          "line": 2668,
+          "end_line": 2759,
+          "ordinal_in_file": 3,
+          "definitions_in_file": 4,
+          "python_effective_in_file": false,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "lot_id",
+              "viewer_user_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [
+              "None"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "4497c2cf15031a7479730366e8d8a0def8dc48acce779492f6008458ccaae077",
+          "statement_count": 26,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 3,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/auction_house_system.py",
+          "line": 2981,
+          "end_line": 3080,
+          "ordinal_in_file": 4,
+          "definitions_in_file": 4,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "lot_id",
+              "viewer_user_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [
+              "None"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "6ae350c1ede23a964ee84efbe57a8fe1b012d7dfd8ae310ae7f4e5a691baee40",
+          "statement_count": 25,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 3,
+          "raise_count": 0
+        }
+      ],
+      "python_effective_definitions": [
+        {
+          "path": "db_modules/systems_wrappers.py",
+          "line": 481,
+          "end_line": 484,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "lot_id",
+              "viewer_user_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [
+              "None"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "d34ab181f95830274468bd4064ea5e3cb1afbdbee8d684ebe1a5b453b6914da4",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_auction_system().build_auction_lot_public_details"
+          ],
+          "loader_calls": [
+            "_auction_system().build_auction_lot_public_details",
+            "_auction_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/auction_house_system.py",
+          "line": 2981,
+          "end_line": 3080,
+          "ordinal_in_file": 4,
+          "definitions_in_file": 4,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "lot_id",
+              "viewer_user_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [
+              "None"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "6ae350c1ede23a964ee84efbe57a8fe1b012d7dfd8ae310ae7f4e5a691baee40",
+          "statement_count": 25,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 3,
+          "raise_count": 0
+        }
+      ],
+      "signature_variant_count": 1,
+      "topology": {
+        "imports": [
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1820,
+            "module": "db",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1844,
+            "module": "db",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1248,
+            "module": "db",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1291,
+            "module": "db",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1282,
+            "module": "db",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1313,
+            "module": "db",
+            "alias": null,
+            "test": false
+          }
+        ],
+        "calls": [
+          {
+            "path": "db_modules/systems_wrappers.py",
+            "line": 482,
+            "target": "_auction_system().build_auction_lot_public_details",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1821,
+            "target": "build_auction_lot_public_details",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1845,
+            "target": "build_auction_lot_public_details",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1250,
+            "target": "build_auction_lot_public_details",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1292,
+            "target": "build_auction_lot_public_details",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1283,
+            "target": "build_auction_lot_public_details",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1314,
+            "target": "build_auction_lot_public_details",
+            "test": false
+          }
+        ],
+        "external_production_calls": [
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1821,
+            "target": "build_auction_lot_public_details",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1845,
+            "target": "build_auction_lot_public_details",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1250,
+            "target": "build_auction_lot_public_details",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1292,
+            "target": "build_auction_lot_public_details",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1283,
+            "target": "build_auction_lot_public_details",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1314,
+            "target": "build_auction_lot_public_details",
+            "test": false
+          }
+        ],
+        "test_references": []
+      },
+      "loader_targets": [
+        {
+          "path": "db_modules/systems_wrappers.py",
+          "loader": "_auction_system",
+          "line": 368,
+          "body_hash": "58e67cfc8d951f33c332c46aa155e04a6e7c471872d73d7ff0e06896caff2c50",
+          "returns": [
+            "auction_house_system"
+          ]
+        },
+        {
+          "path": "db_modules/systems_wrappers.py",
+          "loader": "_auction_system()",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        }
+      ],
+      "replacement_test_matrix": {
+        "signature_parity": true,
+        "caller_import_parity": true,
+        "return_and_exception_parity": true,
+        "transaction_commit_rollback_parity": false,
+        "python_effective_definition_lock": true,
+        "loader_target_lock": true,
+        "focused_existing_tests": [],
+        "new_focused_test_required": true
+      },
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "calculate_repair_cost",
+      "decision": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "MEDIUM",
+      "accepted_owner": {
+        "path": "systems/equipment_system.py",
+        "line": 2717
+      },
+      "reason": "Current Python-effective topology has one implementation and only thin same-symbol delegates.",
+      "definitions": [
+        {
+          "path": "db_modules/equipment.py",
+          "line": 289,
+          "end_line": 294,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "durability",
+              "sell_price",
+              "rarity"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "64ccabc9b2cc50505826785001a0a011e89d6250788437ab05f0a94e312519f3",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system().calculate_repair_cost"
+          ],
+          "loader_calls": [
+            "_equipment_system().calculate_repair_cost",
+            "_equipment_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 528,
+          "end_line": 534,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 2,
+          "python_effective_in_file": false,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": "args",
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "433675678b78f87ce981e782176ff7e9241529778bbf70a030914501ad0c8832",
+          "statement_count": 3,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [
+            "_call_legacy_repair_durability_sell"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 2717,
+          "end_line": 2733,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "durability",
+              "rarity"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "a2b73c7d6d802aa9182b5d4a23538cef4142017c38731f752171004dff1e61b7",
+          "statement_count": 4,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 2,
+          "raise_count": 0
+        }
+      ],
+      "python_effective_definitions": [
+        {
+          "path": "db_modules/equipment.py",
+          "line": 289,
+          "end_line": 294,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "durability",
+              "sell_price",
+              "rarity"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "64ccabc9b2cc50505826785001a0a011e89d6250788437ab05f0a94e312519f3",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system().calculate_repair_cost"
+          ],
+          "loader_calls": [
+            "_equipment_system().calculate_repair_cost",
+            "_equipment_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 2717,
+          "end_line": 2733,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "durability",
+              "rarity"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "a2b73c7d6d802aa9182b5d4a23538cef4142017c38731f752171004dff1e61b7",
+          "statement_count": 4,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 2,
+          "raise_count": 0
+        }
+      ],
+      "signature_variant_count": 2,
+      "topology": {
+        "imports": [
+          {
+            "path": "db_modules/__init__.py",
+            "line": 118,
+            "module": "equipment",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "tools/smoke_test_repair_and_durability_lifecycle_18_30_5h.py",
+            "line": 6,
+            "module": "systems.equipment_system",
+            "alias": null,
+            "test": true
+          }
+        ],
+        "calls": [
+          {
+            "path": "db_modules/equipment.py",
+            "line": 290,
+            "target": "_equipment_system().calculate_repair_cost",
+            "test": false
+          },
+          {
+            "path": "systems/equipment_system.py",
+            "line": 2981,
+            "target": "calculate_repair_cost",
+            "test": false
+          },
+          {
+            "path": "systems/equipment_system.py",
+            "line": 2907,
+            "target": "calculate_repair_cost",
+            "test": false
+          },
+          {
+            "path": "tools/smoke_test_equipment_durability_contracts.py",
+            "line": 16,
+            "target": "db.calculate_repair_cost",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_equipment_durability_contracts.py",
+            "line": 17,
+            "target": "db.calculate_repair_cost",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_equipment_durability_contracts.py",
+            "line": 18,
+            "target": "db.calculate_repair_cost",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_equipment_durability_contracts.py",
+            "line": 19,
+            "target": "db.calculate_repair_cost",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_repair_and_durability_lifecycle_18_30_5h.py",
+            "line": 25,
+            "target": "calculate_repair_cost",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_repair_and_durability_lifecycle_18_30_5h.py",
+            "line": 28,
+            "target": "calculate_repair_cost",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_repair_and_durability_lifecycle_18_30_5h.py",
+            "line": 32,
+            "target": "calculate_repair_cost",
+            "test": true
+          }
+        ],
+        "external_production_calls": [],
+        "test_references": [
+          {
+            "path": "tools/smoke_test_equipment_durability_contracts.py",
+            "line": 16,
+            "target": "db.calculate_repair_cost",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_equipment_durability_contracts.py",
+            "line": 17,
+            "target": "db.calculate_repair_cost",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_equipment_durability_contracts.py",
+            "line": 18,
+            "target": "db.calculate_repair_cost",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_equipment_durability_contracts.py",
+            "line": 19,
+            "target": "db.calculate_repair_cost",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_repair_and_durability_lifecycle_18_30_5h.py",
+            "line": 25,
+            "target": "calculate_repair_cost",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_repair_and_durability_lifecycle_18_30_5h.py",
+            "line": 28,
+            "target": "calculate_repair_cost",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_repair_and_durability_lifecycle_18_30_5h.py",
+            "line": 32,
+            "target": "calculate_repair_cost",
+            "test": true
+          }
+        ]
+      },
+      "loader_targets": [
+        {
+          "path": "db_modules/equipment.py",
+          "loader": "_equipment_system",
+          "line": 12,
+          "body_hash": "af88d741947a63062575c237b4b0a48b818e7bac8954016ca4de427a0d7cb4b0",
+          "returns": [
+            "equipment_system"
+          ]
+        },
+        {
+          "path": "db_modules/equipment.py",
+          "loader": "_equipment_system()",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "loader": "_call_legacy_repair_durability_sell",
+          "line": 436,
+          "body_hash": "66022349e9df02d2ddd996fe5207b339c16f61eee012e796efd24b4ba16d9d7f",
+          "returns": [
+            "legacy(*args, **kwargs)"
+          ]
+        }
+      ],
+      "replacement_test_matrix": {
+        "signature_parity": true,
+        "caller_import_parity": true,
+        "return_and_exception_parity": true,
+        "transaction_commit_rollback_parity": false,
+        "python_effective_definition_lock": true,
+        "loader_target_lock": true,
+        "focused_existing_tests": [
+          "tools/smoke_test_equipment_durability_contracts.py",
+          "tools/smoke_test_repair_and_durability_lifecycle_18_30_5h.py"
+        ],
+        "new_focused_test_required": false
+      },
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "calculate_weapon_damage_by_values",
+      "decision": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "MEDIUM",
+      "accepted_owner": {
+        "path": "systems/equipment_system.py",
+        "line": 1754
+      },
+      "reason": "Current Python-effective topology has one implementation and only thin same-symbol delegates.",
+      "definitions": [
+        {
+          "path": "db_modules/dev_compat.py",
+          "line": 1576,
+          "end_line": 1577,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": "args",
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "cb6eff0914a42999c776473bdae17c25835b937ef716113d31636f5213198bf9",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system_ro_v1().calculate_weapon_damage_by_values"
+          ],
+          "loader_calls": [
+            "_equipment_system_ro_v1().calculate_weapon_damage_by_values",
+            "_equipment_system_ro_v1"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "db_modules/equipment.py",
+          "line": 190,
+          "end_line": 195,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "item_level",
+              "rarity",
+              "weapon_hands"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "743a5f2f5e9d62cecb3bbf8c3426bb9e8d13c3497db1166a72ede9c8dd96b1f4",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system().calculate_weapon_damage_by_values"
+          ],
+          "loader_calls": [
+            "_equipment_system().calculate_weapon_damage_by_values",
+            "_equipment_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "db_modules/generated_equipment.py",
+          "line": 1295,
+          "end_line": 1296,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": "args",
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "cb6eff0914a42999c776473bdae17c25835b937ef716113d31636f5213198bf9",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system_ro_v1().calculate_weapon_damage_by_values"
+          ],
+          "loader_calls": [
+            "_equipment_system_ro_v1().calculate_weapon_damage_by_values",
+            "_equipment_system_ro_v1"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 152,
+          "end_line": 154,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 2,
+          "python_effective_in_file": false,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": "args",
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "8a102cfc88eca67d9462419b313d4b8fe30d8dca48443012b1e1cb3169a78e94",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [
+            "_call_legacy"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 1754,
+          "end_line": 1782,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "item_level",
+              "rarity",
+              "weapon_hands"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [
+              "1"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "c51bd674030ebcfa33e876531c02037aac243e41003df8bb02e8ac2e22342dbc",
+          "statement_count": 8,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 1,
+          "raise_count": 0
+        }
+      ],
+      "python_effective_definitions": [
+        {
+          "path": "db_modules/dev_compat.py",
+          "line": 1576,
+          "end_line": 1577,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": "args",
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "cb6eff0914a42999c776473bdae17c25835b937ef716113d31636f5213198bf9",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system_ro_v1().calculate_weapon_damage_by_values"
+          ],
+          "loader_calls": [
+            "_equipment_system_ro_v1().calculate_weapon_damage_by_values",
+            "_equipment_system_ro_v1"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "db_modules/equipment.py",
+          "line": 190,
+          "end_line": 195,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "item_level",
+              "rarity",
+              "weapon_hands"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "743a5f2f5e9d62cecb3bbf8c3426bb9e8d13c3497db1166a72ede9c8dd96b1f4",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system().calculate_weapon_damage_by_values"
+          ],
+          "loader_calls": [
+            "_equipment_system().calculate_weapon_damage_by_values",
+            "_equipment_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "db_modules/generated_equipment.py",
+          "line": 1295,
+          "end_line": 1296,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": "args",
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "cb6eff0914a42999c776473bdae17c25835b937ef716113d31636f5213198bf9",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system_ro_v1().calculate_weapon_damage_by_values"
+          ],
+          "loader_calls": [
+            "_equipment_system_ro_v1().calculate_weapon_damage_by_values",
+            "_equipment_system_ro_v1"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 1754,
+          "end_line": 1782,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "item_level",
+              "rarity",
+              "weapon_hands"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [
+              "1"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "c51bd674030ebcfa33e876531c02037aac243e41003df8bb02e8ac2e22342dbc",
+          "statement_count": 8,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 1,
+          "raise_count": 0
+        }
+      ],
+      "signature_variant_count": 3,
+      "topology": {
+        "imports": [
+          {
+            "path": "db_modules/__init__.py",
+            "line": 118,
+            "module": "equipment",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "db_modules/shop.py",
+            "line": 196,
+            "module": "equipment",
+            "alias": null,
+            "test": false
+          }
+        ],
+        "calls": [
+          {
+            "path": "db_modules/dev_compat.py",
+            "line": 1577,
+            "target": "_equipment_system_ro_v1().calculate_weapon_damage_by_values",
+            "test": false
+          },
+          {
+            "path": "db_modules/dev_compat.py",
+            "line": 1454,
+            "target": "calculate_weapon_damage_by_values",
+            "test": false
+          },
+          {
+            "path": "db_modules/equipment.py",
+            "line": 191,
+            "target": "_equipment_system().calculate_weapon_damage_by_values",
+            "test": false
+          },
+          {
+            "path": "db_modules/generated_equipment.py",
+            "line": 1296,
+            "target": "_equipment_system_ro_v1().calculate_weapon_damage_by_values",
+            "test": false
+          },
+          {
+            "path": "db_modules/generated_equipment.py",
+            "line": 451,
+            "target": "calculate_weapon_damage_by_values",
+            "test": false
+          },
+          {
+            "path": "db_modules/generated_equipment.py",
+            "line": 1171,
+            "target": "calculate_weapon_damage_by_values",
+            "test": false
+          },
+          {
+            "path": "db_modules/shop.py",
+            "line": 318,
+            "target": "calculate_weapon_damage_by_values",
+            "test": false
+          },
+          {
+            "path": "systems/equipment_system.py",
+            "line": 1965,
+            "target": "calculate_weapon_damage_by_values",
+            "test": false
+          },
+          {
+            "path": "systems/equipment_system.py",
+            "line": 1933,
+            "target": "calculate_weapon_damage_by_values",
+            "test": false
+          },
+          {
+            "path": "tools/smoke_test_weapon_damage_contracts.py",
+            "line": 20,
+            "target": "db.calculate_weapon_damage_by_values",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_weapon_damage_contracts.py",
+            "line": 21,
+            "target": "db.calculate_weapon_damage_by_values",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_weapon_damage_contracts.py",
+            "line": 65,
+            "target": "db.calculate_weapon_damage_by_values",
+            "test": true
+          }
+        ],
+        "external_production_calls": [
+          {
+            "path": "db_modules/shop.py",
+            "line": 318,
+            "target": "calculate_weapon_damage_by_values",
+            "test": false
+          }
+        ],
+        "test_references": [
+          {
+            "path": "tools/smoke_test_weapon_damage_contracts.py",
+            "line": 20,
+            "target": "db.calculate_weapon_damage_by_values",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_weapon_damage_contracts.py",
+            "line": 21,
+            "target": "db.calculate_weapon_damage_by_values",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_weapon_damage_contracts.py",
+            "line": 65,
+            "target": "db.calculate_weapon_damage_by_values",
+            "test": true
+          }
+        ]
+      },
+      "loader_targets": [
+        {
+          "path": "db_modules/dev_compat.py",
+          "loader": "_equipment_system_ro_v1",
+          "line": 1569,
+          "body_hash": "c1a323db482ad12ba7ecfdf96b2ffcba2322e869c2b8c302c863af93cfeb9539",
+          "returns": [
+            "equipment_system"
+          ]
+        },
+        {
+          "path": "db_modules/dev_compat.py",
+          "loader": "_equipment_system_ro_v1()",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        },
+        {
+          "path": "db_modules/equipment.py",
+          "loader": "_equipment_system",
+          "line": 12,
+          "body_hash": "af88d741947a63062575c237b4b0a48b818e7bac8954016ca4de427a0d7cb4b0",
+          "returns": [
+            "equipment_system"
+          ]
+        },
+        {
+          "path": "db_modules/equipment.py",
+          "loader": "_equipment_system()",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        },
+        {
+          "path": "db_modules/generated_equipment.py",
+          "loader": "_equipment_system_ro_v1",
+          "line": 1288,
+          "body_hash": "c1a323db482ad12ba7ecfdf96b2ffcba2322e869c2b8c302c863af93cfeb9539",
+          "returns": [
+            "equipment_system"
+          ]
+        },
+        {
+          "path": "db_modules/generated_equipment.py",
+          "loader": "_equipment_system_ro_v1()",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "loader": "_call_legacy",
+          "line": 64,
+          "body_hash": "82d2efca49377fcff6dfe5a7e25559136e38217b9eac926dfad672957726a7c9",
+          "returns": [
+            "legacy(*args, **kwargs)"
+          ]
+        }
+      ],
+      "replacement_test_matrix": {
+        "signature_parity": true,
+        "caller_import_parity": true,
+        "return_and_exception_parity": true,
+        "transaction_commit_rollback_parity": false,
+        "python_effective_definition_lock": true,
+        "loader_target_lock": true,
+        "focused_existing_tests": [
+          "tools/smoke_test_weapon_damage_contracts.py"
+        ],
+        "new_focused_test_required": false
+      },
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "create_equipment_auction_lot",
+      "decision": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "HIGH",
+      "accepted_owner": {
+        "path": "systems/auction_house_system.py",
+        "line": 2514
+      },
+      "reason": "Current Python-effective topology has one implementation and only thin same-symbol delegates.",
+      "definitions": [
+        {
+          "path": "db_modules/systems_wrappers.py",
+          "line": 449,
+          "end_line": 452,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "inventory_id",
+              "price"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "61c50017660023903ea29d13a6bac86d9336781e112dcbecc61274dd8f2fc8ae",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_auction_system().create_equipment_auction_lot"
+          ],
+          "loader_calls": [
+            "_auction_system().create_equipment_auction_lot",
+            "_auction_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/auction_house_system.py",
+          "line": 1189,
+          "end_line": 1336,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 2,
+          "python_effective_in_file": false,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "inventory_id",
+              "price"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "f7c93e26d4f02be5ba2b26a25c8469011442881e4eeb22eeadf9e185b6df656c",
+          "statement_count": 12,
+          "db_calls": [
+            "conn.execute",
+            "cursor.execute",
+            "cursor.execute",
+            "cursor.execute",
+            "conn.commit",
+            "conn.rollback",
+            "conn.rollback",
+            "conn.rollback"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 7,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/auction_house_system.py",
+          "line": 2514,
+          "end_line": 2665,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "inventory_id",
+              "price"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "e60c5ed79bb18921d18249fa47f7c6d93ff12b05883c6f9db2299ca39a048e4a",
+          "statement_count": 11,
+          "db_calls": [
+            "conn.execute",
+            "cursor.execute",
+            "cursor.execute",
+            "cursor.execute",
+            "conn.commit",
+            "conn.rollback",
+            "conn.rollback",
+            "conn.rollback"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 7,
+          "raise_count": 0
+        }
+      ],
+      "python_effective_definitions": [
+        {
+          "path": "db_modules/systems_wrappers.py",
+          "line": 449,
+          "end_line": 452,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "inventory_id",
+              "price"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "61c50017660023903ea29d13a6bac86d9336781e112dcbecc61274dd8f2fc8ae",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_auction_system().create_equipment_auction_lot"
+          ],
+          "loader_calls": [
+            "_auction_system().create_equipment_auction_lot",
+            "_auction_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/auction_house_system.py",
+          "line": 2514,
+          "end_line": 2665,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "inventory_id",
+              "price"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "e60c5ed79bb18921d18249fa47f7c6d93ff12b05883c6f9db2299ca39a048e4a",
+          "statement_count": 11,
+          "db_calls": [
+            "conn.execute",
+            "cursor.execute",
+            "cursor.execute",
+            "cursor.execute",
+            "conn.commit",
+            "conn.rollback",
+            "conn.rollback",
+            "conn.rollback"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 7,
+          "raise_count": 0
+        }
+      ],
+      "signature_variant_count": 1,
+      "topology": {
+        "imports": [
+          {
+            "path": "handlers/auction_house.py",
+            "line": 622,
+            "module": "db",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1031,
+            "module": "db",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1603,
+            "module": "db",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 2064,
+            "module": "db",
+            "alias": null,
+            "test": false
+          }
+        ],
+        "calls": [
+          {
+            "path": "db_modules/systems_wrappers.py",
+            "line": 450,
+            "target": "_auction_system().create_equipment_auction_lot",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 624,
+            "target": "create_equipment_auction_lot",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1032,
+            "target": "create_equipment_auction_lot",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1604,
+            "target": "create_equipment_auction_lot",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 2065,
+            "target": "create_equipment_auction_lot",
+            "test": false
+          }
+        ],
+        "external_production_calls": [
+          {
+            "path": "handlers/auction_house.py",
+            "line": 624,
+            "target": "create_equipment_auction_lot",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1032,
+            "target": "create_equipment_auction_lot",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 1604,
+            "target": "create_equipment_auction_lot",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 2065,
+            "target": "create_equipment_auction_lot",
+            "test": false
+          }
+        ],
+        "test_references": []
+      },
+      "loader_targets": [
+        {
+          "path": "db_modules/systems_wrappers.py",
+          "loader": "_auction_system",
+          "line": 368,
+          "body_hash": "58e67cfc8d951f33c332c46aa155e04a6e7c471872d73d7ff0e06896caff2c50",
+          "returns": [
+            "auction_house_system"
+          ]
+        },
+        {
+          "path": "db_modules/systems_wrappers.py",
+          "loader": "_auction_system()",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        }
+      ],
+      "replacement_test_matrix": {
+        "signature_parity": true,
+        "caller_import_parity": true,
+        "return_and_exception_parity": true,
+        "transaction_commit_rollback_parity": true,
+        "python_effective_definition_lock": true,
+        "loader_target_lock": true,
+        "focused_existing_tests": [],
+        "new_focused_test_required": true
+      },
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "create_guild_application",
+      "decision": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "HIGH",
+      "accepted_owner": {
+        "path": "systems/guild_system.py",
+        "line": 2474
+      },
+      "reason": "Current Python-effective topology has one implementation and only thin same-symbol delegates.",
+      "definitions": [
+        {
+          "path": "db_modules/systems_wrappers.py",
+          "line": 140,
+          "end_line": 141,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "guild_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "27206ed162a6111ffe3cefe160d6b91b99ee883d08e6f7c3864bb62c25a7d77d",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_guild_system().create_guild_application"
+          ],
+          "loader_calls": [
+            "_guild_system().create_guild_application",
+            "_guild_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/guild_system.py",
+          "line": 777,
+          "end_line": 830,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 2,
+          "python_effective_in_file": false,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "guild_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "75cc39c4745dd7f6d70e69488a0f1971b768a4f5c35af412aa6780c42ea64b46",
+          "statement_count": 10,
+          "db_calls": [
+            "cursor.execute",
+            "cursor.fetchone",
+            "cursor.execute",
+            "conn.commit"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 4,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/guild_system.py",
+          "line": 2474,
+          "end_line": 2551,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "guild_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "0abf4d3b56e234486638287b2d4748f30fd23559d909799d8bbf1df19a03be14",
+          "statement_count": 13,
+          "db_calls": [
+            "cursor.execute",
+            "cursor.fetchone",
+            "cursor.execute",
+            "conn.commit",
+            "conn.rollback"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 6,
+          "raise_count": 1
+        }
+      ],
+      "python_effective_definitions": [
+        {
+          "path": "db_modules/systems_wrappers.py",
+          "line": 140,
+          "end_line": 141,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "guild_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "27206ed162a6111ffe3cefe160d6b91b99ee883d08e6f7c3864bb62c25a7d77d",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_guild_system().create_guild_application"
+          ],
+          "loader_calls": [
+            "_guild_system().create_guild_application",
+            "_guild_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/guild_system.py",
+          "line": 2474,
+          "end_line": 2551,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "guild_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "0abf4d3b56e234486638287b2d4748f30fd23559d909799d8bbf1df19a03be14",
+          "statement_count": 13,
+          "db_calls": [
+            "cursor.execute",
+            "cursor.fetchone",
+            "cursor.execute",
+            "conn.commit",
+            "conn.rollback"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 6,
+          "raise_count": 1
+        }
+      ],
+      "signature_variant_count": 1,
+      "topology": {
+        "imports": [
+          {
+            "path": "handlers/guild.py",
+            "line": 9,
+            "module": "db",
+            "alias": null,
+            "test": false
+          }
+        ],
+        "calls": [
+          {
+            "path": "db_modules/systems_wrappers.py",
+            "line": 141,
+            "target": "_guild_system().create_guild_application",
+            "test": false
+          },
+          {
+            "path": "handlers/guild.py",
+            "line": 680,
+            "target": "create_guild_application",
+            "test": false
+          }
+        ],
+        "external_production_calls": [
+          {
+            "path": "handlers/guild.py",
+            "line": 680,
+            "target": "create_guild_application",
+            "test": false
+          }
+        ],
+        "test_references": []
+      },
+      "loader_targets": [
+        {
+          "path": "db_modules/systems_wrappers.py",
+          "loader": "_guild_system",
+          "line": 79,
+          "body_hash": "0c68f65b74251d0093db70d59a49ed69d7f8f0a745de5ef8629e4544d6941de1",
+          "returns": [
+            "guild_system"
+          ]
+        },
+        {
+          "path": "db_modules/systems_wrappers.py",
+          "loader": "_guild_system()",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        }
+      ],
+      "replacement_test_matrix": {
+        "signature_parity": true,
+        "caller_import_parity": true,
+        "return_and_exception_parity": true,
+        "transaction_commit_rollback_parity": true,
+        "python_effective_definition_lock": true,
+        "loader_target_lock": true,
+        "focused_existing_tests": [],
+        "new_focused_test_required": true
+      },
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_dynamic_sell_price",
+      "decision": "DEFERRED_RUNTIME_OR_TRANSACTION_EVIDENCE_REQUIRED",
+      "confidence": "BLOCKING",
+      "accepted_owner": null,
+      "reason": "Current static evidence does not prove one authoritative owner and transaction boundary.",
+      "definitions": [
+        {
+          "path": "db_modules/dev_compat.py",
+          "line": 109,
+          "end_line": 112,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "item_level",
+              "rarity"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "ea1d165837ef7fc2d0b7aee24e79904c58444e806a1b3f8f321085cc7d2edfff",
+          "statement_count": 2,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "db_modules/generated_equipment.py",
+          "line": 137,
+          "end_line": 140,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "item_level",
+              "rarity"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "ea1d165837ef7fc2d0b7aee24e79904c58444e806a1b3f8f321085cc7d2edfff",
+          "statement_count": 2,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/dynamic_equipment_system.py",
+          "line": 24,
+          "end_line": 25,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "item_level",
+              "rarity"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "345412bae979fb8411b754bccb9fb323b0953ced4643a8947cbda525e7b50a7c",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_canonical().get_dynamic_sell_price"
+          ],
+          "loader_calls": [],
+          "return_count": 1,
+          "raise_count": 0
+        }
+      ],
+      "python_effective_definitions": [
+        {
+          "path": "db_modules/dev_compat.py",
+          "line": 109,
+          "end_line": 112,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "item_level",
+              "rarity"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "ea1d165837ef7fc2d0b7aee24e79904c58444e806a1b3f8f321085cc7d2edfff",
+          "statement_count": 2,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "db_modules/generated_equipment.py",
+          "line": 137,
+          "end_line": 140,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "item_level",
+              "rarity"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "ea1d165837ef7fc2d0b7aee24e79904c58444e806a1b3f8f321085cc7d2edfff",
+          "statement_count": 2,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/dynamic_equipment_system.py",
+          "line": 24,
+          "end_line": 25,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "item_level",
+              "rarity"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "345412bae979fb8411b754bccb9fb323b0953ced4643a8947cbda525e7b50a7c",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_canonical().get_dynamic_sell_price"
+          ],
+          "loader_calls": [],
+          "return_count": 1,
+          "raise_count": 0
+        }
+      ],
+      "signature_variant_count": 1,
+      "topology": {
+        "imports": [],
+        "calls": [
+          {
+            "path": "db_modules/dev_compat.py",
+            "line": 1270,
+            "target": "get_dynamic_sell_price",
+            "test": false
+          },
+          {
+            "path": "db_modules/dev_compat.py",
+            "line": 1446,
+            "target": "get_dynamic_sell_price",
+            "test": false
+          },
+          {
+            "path": "db_modules/generated_equipment.py",
+            "line": 443,
+            "target": "get_dynamic_sell_price",
+            "test": false
+          },
+          {
+            "path": "db_modules/generated_equipment.py",
+            "line": 1163,
+            "target": "get_dynamic_sell_price",
+            "test": false
+          },
+          {
+            "path": "db_modules/shop.py",
+            "line": 310,
+            "target": "dynamic_equipment_system.get_dynamic_sell_price",
+            "test": false
+          },
+          {
+            "path": "systems/dynamic_equipment_system.py",
+            "line": 25,
+            "target": "_canonical().get_dynamic_sell_price",
+            "test": false
+          },
+          {
+            "path": "tools/smoke_test_dynamic_equipment_system_16_1_14.py",
+            "line": 12,
+            "target": "dynamic.get_dynamic_sell_price",
+            "test": true
+          }
+        ],
+        "external_production_calls": [
+          {
+            "path": "db_modules/shop.py",
+            "line": 310,
+            "target": "dynamic_equipment_system.get_dynamic_sell_price",
+            "test": false
+          }
+        ],
+        "test_references": [
+          {
+            "path": "tools/smoke_test_dynamic_equipment_system_16_1_14.py",
+            "line": 12,
+            "target": "dynamic.get_dynamic_sell_price",
+            "test": true
+          }
+        ]
+      },
+      "loader_targets": [],
+      "replacement_test_matrix": {
+        "signature_parity": true,
+        "caller_import_parity": true,
+        "return_and_exception_parity": true,
+        "transaction_commit_rollback_parity": false,
+        "python_effective_definition_lock": true,
+        "loader_target_lock": false,
+        "focused_existing_tests": [
+          "tools/smoke_test_dynamic_equipment_system_16_1_14.py"
+        ],
+        "new_focused_test_required": false
+      },
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_inventory_weapon_damage_display",
+      "decision": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "HIGH",
+      "accepted_owner": {
+        "path": "systems/equipment_system.py",
+        "line": 1995
+      },
+      "reason": "Current Python-effective topology has one implementation and only thin same-symbol delegates.",
+      "definitions": [
+        {
+          "path": "db_modules/equipment.py",
+          "line": 202,
+          "end_line": 203,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "inventory_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "78990f63439175c84a06034fe33ef6c82ecc33f7dc67faea26ad89922b7957e4",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system().get_inventory_weapon_damage_display"
+          ],
+          "loader_calls": [
+            "_equipment_system().get_inventory_weapon_damage_display",
+            "_equipment_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 164,
+          "end_line": 166,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 2,
+          "python_effective_in_file": false,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": "args",
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "736892c0ca89adfc77e0b79885ec9331f6c59d0dc838b47f6cc052c550e35ab0",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [
+            "_call_legacy"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 1995,
+          "end_line": 2003,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "inventory_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "9a417891b4c9665b4c992be3378802b7edac68589aee3d43809432311c1a896e",
+          "statement_count": 3,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 2,
+          "raise_count": 0
+        }
+      ],
+      "python_effective_definitions": [
+        {
+          "path": "db_modules/equipment.py",
+          "line": 202,
+          "end_line": 203,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "inventory_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "78990f63439175c84a06034fe33ef6c82ecc33f7dc67faea26ad89922b7957e4",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system().get_inventory_weapon_damage_display"
+          ],
+          "loader_calls": [
+            "_equipment_system().get_inventory_weapon_damage_display",
+            "_equipment_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 1995,
+          "end_line": 2003,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "inventory_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "9a417891b4c9665b4c992be3378802b7edac68589aee3d43809432311c1a896e",
+          "statement_count": 3,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 2,
+          "raise_count": 0
+        }
+      ],
+      "signature_variant_count": 1,
+      "topology": {
+        "imports": [
+          {
+            "path": "db_modules/__init__.py",
+            "line": 118,
+            "module": "equipment",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "handlers/inventory.py",
+            "line": 15,
+            "module": "db",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "handlers/profile.py",
+            "line": 7,
+            "module": "db",
+            "alias": null,
+            "test": false
+          }
+        ],
+        "calls": [
+          {
+            "path": "db_modules/equipment.py",
+            "line": 203,
+            "target": "_equipment_system().get_inventory_weapon_damage_display",
+            "test": false
+          },
+          {
+            "path": "handlers/inventory.py",
+            "line": 1539,
+            "target": "get_inventory_weapon_damage_display",
+            "test": false
+          },
+          {
+            "path": "handlers/inventory.py",
+            "line": 2847,
+            "target": "get_inventory_weapon_damage_display",
+            "test": false
+          },
+          {
+            "path": "handlers/profile.py",
+            "line": 655,
+            "target": "get_inventory_weapon_damage_display",
+            "test": false
+          },
+          {
+            "path": "tools/smoke_test_weapon_damage_contracts.py",
+            "line": 37,
+            "target": "db.get_inventory_weapon_damage_display",
+            "test": true
+          }
+        ],
+        "external_production_calls": [
+          {
+            "path": "handlers/inventory.py",
+            "line": 1539,
+            "target": "get_inventory_weapon_damage_display",
+            "test": false
+          },
+          {
+            "path": "handlers/inventory.py",
+            "line": 2847,
+            "target": "get_inventory_weapon_damage_display",
+            "test": false
+          },
+          {
+            "path": "handlers/profile.py",
+            "line": 655,
+            "target": "get_inventory_weapon_damage_display",
+            "test": false
+          }
+        ],
+        "test_references": [
+          {
+            "path": "tools/smoke_test_weapon_damage_contracts.py",
+            "line": 37,
+            "target": "db.get_inventory_weapon_damage_display",
+            "test": true
+          }
+        ]
+      },
+      "loader_targets": [
+        {
+          "path": "db_modules/equipment.py",
+          "loader": "_equipment_system",
+          "line": 12,
+          "body_hash": "af88d741947a63062575c237b4b0a48b818e7bac8954016ca4de427a0d7cb4b0",
+          "returns": [
+            "equipment_system"
+          ]
+        },
+        {
+          "path": "db_modules/equipment.py",
+          "loader": "_equipment_system()",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "loader": "_call_legacy",
+          "line": 64,
+          "body_hash": "82d2efca49377fcff6dfe5a7e25559136e38217b9eac926dfad672957726a7c9",
+          "returns": [
+            "legacy(*args, **kwargs)"
+          ]
+        }
+      ],
+      "replacement_test_matrix": {
+        "signature_parity": true,
+        "caller_import_parity": true,
+        "return_and_exception_parity": true,
+        "transaction_commit_rollback_parity": false,
+        "python_effective_definition_lock": true,
+        "loader_target_lock": true,
+        "focused_existing_tests": [
+          "tools/smoke_test_weapon_damage_contracts.py"
+        ],
+        "new_focused_test_required": false
+      },
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_weapon_damage_by_inventory_id",
+      "decision": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "HIGH",
+      "accepted_owner": {
+        "path": "systems/equipment_system.py",
+        "line": 1867
+      },
+      "reason": "Current Python-effective topology has one implementation and only thin same-symbol delegates.",
+      "definitions": [
+        {
+          "path": "db_modules/equipment.py",
+          "line": 198,
+          "end_line": 199,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "inventory_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "f28fd2376719d81803663e9170e445e5c440dfe0fb31cf49fba8f6836cac526e",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system().get_weapon_damage_by_inventory_id"
+          ],
+          "loader_calls": [
+            "_equipment_system().get_weapon_damage_by_inventory_id",
+            "_equipment_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 158,
+          "end_line": 160,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 2,
+          "python_effective_in_file": false,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": "args",
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "dbd891bf60b378e714083ac1a6311c284cc31dc61b8ec2b18428461430195d91",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [
+            "_call_legacy"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 1867,
+          "end_line": 1987,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "inventory_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "4a4340e150c540a4c084fbb6ef93ac85a09ddf78e2f1f2622111bcab61c406da",
+          "statement_count": 15,
+          "db_calls": [
+            "db.conn.execute(\"SELECT it.name, it.category, it.slot_key, COALESCE(it.weapon_hands,1), it.rarity, COALESCE(it.item_level,1), COALESCE(it.weapon_min_damage,0), COALESCE(it.weapon_max_damage,0), COALESCE(it.weapon_min_magic_damage,0), COALESCE(it.weapon_max_magic_damage,0), COALESCE(it.weapon_attack_type,''), COALESCE(it.item_subtype,''), COALESCE(inv.refine_level,0) FROM inventory inv JOIN items it ON it.id=inv.item_id WHERE inv.id=?\", (int(inventory_id),)).fetchone",
+            "db.conn.execute"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 4,
+          "raise_count": 0
+        }
+      ],
+      "python_effective_definitions": [
+        {
+          "path": "db_modules/equipment.py",
+          "line": 198,
+          "end_line": 199,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "inventory_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "f28fd2376719d81803663e9170e445e5c440dfe0fb31cf49fba8f6836cac526e",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system().get_weapon_damage_by_inventory_id"
+          ],
+          "loader_calls": [
+            "_equipment_system().get_weapon_damage_by_inventory_id",
+            "_equipment_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 1867,
+          "end_line": 1987,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "inventory_id"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "4a4340e150c540a4c084fbb6ef93ac85a09ddf78e2f1f2622111bcab61c406da",
+          "statement_count": 15,
+          "db_calls": [
+            "db.conn.execute(\"SELECT it.name, it.category, it.slot_key, COALESCE(it.weapon_hands,1), it.rarity, COALESCE(it.item_level,1), COALESCE(it.weapon_min_damage,0), COALESCE(it.weapon_max_damage,0), COALESCE(it.weapon_min_magic_damage,0), COALESCE(it.weapon_max_magic_damage,0), COALESCE(it.weapon_attack_type,''), COALESCE(it.item_subtype,''), COALESCE(inv.refine_level,0) FROM inventory inv JOIN items it ON it.id=inv.item_id WHERE inv.id=?\", (int(inventory_id),)).fetchone",
+            "db.conn.execute"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 4,
+          "raise_count": 0
+        }
+      ],
+      "signature_variant_count": 1,
+      "topology": {
+        "imports": [
+          {
+            "path": "db_modules/__init__.py",
+            "line": 118,
+            "module": "equipment",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "db_modules/player.py",
+            "line": 240,
+            "module": "equipment",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 2480,
+            "module": "db",
+            "alias": null,
+            "test": false
+          }
+        ],
+        "calls": [
+          {
+            "path": "db_modules/equipment.py",
+            "line": 199,
+            "target": "_equipment_system().get_weapon_damage_by_inventory_id",
+            "test": false
+          },
+          {
+            "path": "db_modules/player.py",
+            "line": 271,
+            "target": "get_weapon_damage_by_inventory_id",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 2481,
+            "target": "get_weapon_damage_by_inventory_id",
+            "test": false
+          },
+          {
+            "path": "systems/equipment_system.py",
+            "line": 1997,
+            "target": "get_weapon_damage_by_inventory_id",
+            "test": false
+          },
+          {
+            "path": "tools/smoke_test_weapon_damage_contracts.py",
+            "line": 36,
+            "target": "db.get_weapon_damage_by_inventory_id",
+            "test": true
+          }
+        ],
+        "external_production_calls": [
+          {
+            "path": "db_modules/player.py",
+            "line": 271,
+            "target": "get_weapon_damage_by_inventory_id",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 2481,
+            "target": "get_weapon_damage_by_inventory_id",
+            "test": false
+          }
+        ],
+        "test_references": [
+          {
+            "path": "tools/smoke_test_weapon_damage_contracts.py",
+            "line": 36,
+            "target": "db.get_weapon_damage_by_inventory_id",
+            "test": true
+          }
+        ]
+      },
+      "loader_targets": [
+        {
+          "path": "db_modules/equipment.py",
+          "loader": "_equipment_system",
+          "line": 12,
+          "body_hash": "af88d741947a63062575c237b4b0a48b818e7bac8954016ca4de427a0d7cb4b0",
+          "returns": [
+            "equipment_system"
+          ]
+        },
+        {
+          "path": "db_modules/equipment.py",
+          "loader": "_equipment_system()",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "loader": "_call_legacy",
+          "line": 64,
+          "body_hash": "82d2efca49377fcff6dfe5a7e25559136e38217b9eac926dfad672957726a7c9",
+          "returns": [
+            "legacy(*args, **kwargs)"
+          ]
+        }
+      ],
+      "replacement_test_matrix": {
+        "signature_parity": true,
+        "caller_import_parity": true,
+        "return_and_exception_parity": true,
+        "transaction_commit_rollback_parity": true,
+        "python_effective_definition_lock": true,
+        "loader_target_lock": true,
+        "focused_existing_tests": [
+          "tools/smoke_test_weapon_damage_contracts.py"
+        ],
+        "new_focused_test_required": false
+      },
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "init_weapon_damage_system",
+      "decision": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "MEDIUM",
+      "accepted_owner": {
+        "path": "systems/equipment_system.py",
+        "line": 1710
+      },
+      "reason": "Current Python-effective topology has one implementation and only thin same-symbol delegates.",
+      "definitions": [
+        {
+          "path": "db_modules/dev_compat.py",
+          "line": 1573,
+          "end_line": 1574,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": "args",
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "510679fb41e7e0c9a5dad541da68a877ef83e43d9365f3f824e07e27c6ac84b0",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system_ro_v1().init_weapon_damage_system"
+          ],
+          "loader_calls": [
+            "_equipment_system_ro_v1().init_weapon_damage_system",
+            "_equipment_system_ro_v1"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "db_modules/equipment.py",
+          "line": 186,
+          "end_line": 187,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "4198e431a8b51f0bb970259534166395d1fdfe2021a4e08e73da90aa624f4ff7",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system().init_weapon_damage_system"
+          ],
+          "loader_calls": [
+            "_equipment_system().init_weapon_damage_system",
+            "_equipment_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "db_modules/generated_equipment.py",
+          "line": 1292,
+          "end_line": 1293,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": "args",
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "510679fb41e7e0c9a5dad541da68a877ef83e43d9365f3f824e07e27c6ac84b0",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system_ro_v1().init_weapon_damage_system"
+          ],
+          "loader_calls": [
+            "_equipment_system_ro_v1().init_weapon_damage_system",
+            "_equipment_system_ro_v1"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "db_modules/inventory_compat.py",
+          "line": 630,
+          "end_line": 632,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": "args",
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "510679fb41e7e0c9a5dad541da68a877ef83e43d9365f3f824e07e27c6ac84b0",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system_ro_v1().init_weapon_damage_system"
+          ],
+          "loader_calls": [
+            "_equipment_system_ro_v1().init_weapon_damage_system",
+            "_equipment_system_ro_v1"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 146,
+          "end_line": 148,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 2,
+          "python_effective_in_file": false,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": "args",
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "7399dd89b0a914e85b071234f926d5fd2e5f5f1fdda560d28481a2cff9b70e2a",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [],
+          "loader_calls": [
+            "_call_legacy"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 1710,
+          "end_line": 1748,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "21f552589d6f65c50fef1c48e60d4e8c286e962d43537096acca297c44eef4f5",
+          "statement_count": 6,
+          "db_calls": [
+            "db.conn.commit",
+            "db.conn.execute"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 1,
+          "raise_count": 0
+        }
+      ],
+      "python_effective_definitions": [
+        {
+          "path": "db_modules/dev_compat.py",
+          "line": 1573,
+          "end_line": 1574,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": "args",
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "510679fb41e7e0c9a5dad541da68a877ef83e43d9365f3f824e07e27c6ac84b0",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system_ro_v1().init_weapon_damage_system"
+          ],
+          "loader_calls": [
+            "_equipment_system_ro_v1().init_weapon_damage_system",
+            "_equipment_system_ro_v1"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "db_modules/equipment.py",
+          "line": 186,
+          "end_line": 187,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "4198e431a8b51f0bb970259534166395d1fdfe2021a4e08e73da90aa624f4ff7",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system().init_weapon_damage_system"
+          ],
+          "loader_calls": [
+            "_equipment_system().init_weapon_damage_system",
+            "_equipment_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "db_modules/generated_equipment.py",
+          "line": 1292,
+          "end_line": 1293,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": "args",
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "510679fb41e7e0c9a5dad541da68a877ef83e43d9365f3f824e07e27c6ac84b0",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system_ro_v1().init_weapon_damage_system"
+          ],
+          "loader_calls": [
+            "_equipment_system_ro_v1().init_weapon_damage_system",
+            "_equipment_system_ro_v1"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "db_modules/inventory_compat.py",
+          "line": 630,
+          "end_line": 632,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": "args",
+            "kwonly": [],
+            "kwarg": "kwargs",
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "510679fb41e7e0c9a5dad541da68a877ef83e43d9365f3f824e07e27c6ac84b0",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_equipment_system_ro_v1().init_weapon_damage_system"
+          ],
+          "loader_calls": [
+            "_equipment_system_ro_v1().init_weapon_damage_system",
+            "_equipment_system_ro_v1"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "line": 1710,
+          "end_line": 1748,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "21f552589d6f65c50fef1c48e60d4e8c286e962d43537096acca297c44eef4f5",
+          "statement_count": 6,
+          "db_calls": [
+            "db.conn.commit",
+            "db.conn.execute"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 1,
+          "raise_count": 0
+        }
+      ],
+      "signature_variant_count": 2,
+      "topology": {
+        "imports": [
+          {
+            "path": "db_modules/__init__.py",
+            "line": 118,
+            "module": "equipment",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "db_modules/shop.py",
+            "line": 196,
+            "module": "equipment",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "db_modules/shop.py",
+            "line": 498,
+            "module": "equipment",
+            "alias": null,
+            "test": false
+          }
+        ],
+        "calls": [
+          {
+            "path": "db_modules/dev_compat.py",
+            "line": 1204,
+            "target": "init_weapon_damage_system",
+            "test": false
+          },
+          {
+            "path": "db_modules/dev_compat.py",
+            "line": 1378,
+            "target": "init_weapon_damage_system",
+            "test": false
+          },
+          {
+            "path": "db_modules/dev_compat.py",
+            "line": 1574,
+            "target": "_equipment_system_ro_v1().init_weapon_damage_system",
+            "test": false
+          },
+          {
+            "path": "db_modules/equipment.py",
+            "line": 187,
+            "target": "_equipment_system().init_weapon_damage_system",
+            "test": false
+          },
+          {
+            "path": "db_modules/generated_equipment.py",
+            "line": 368,
+            "target": "init_weapon_damage_system",
+            "test": false
+          },
+          {
+            "path": "db_modules/generated_equipment.py",
+            "line": 1035,
+            "target": "init_weapon_damage_system",
+            "test": false
+          },
+          {
+            "path": "db_modules/generated_equipment.py",
+            "line": 1293,
+            "target": "_equipment_system_ro_v1().init_weapon_damage_system",
+            "test": false
+          },
+          {
+            "path": "db_modules/inventory_compat.py",
+            "line": 498,
+            "target": "init_weapon_damage_system",
+            "test": false
+          },
+          {
+            "path": "db_modules/inventory_compat.py",
+            "line": 632,
+            "target": "_equipment_system_ro_v1().init_weapon_damage_system",
+            "test": false
+          },
+          {
+            "path": "db_modules/shop.py",
+            "line": 210,
+            "target": "init_weapon_damage_system",
+            "test": false
+          },
+          {
+            "path": "db_modules/shop.py",
+            "line": 501,
+            "target": "init_weapon_damage_system",
+            "test": false
+          },
+          {
+            "path": "systems/equipment_system.py",
+            "line": 1871,
+            "target": "init_weapon_damage_system",
+            "test": false
+          }
+        ],
+        "external_production_calls": [
+          {
+            "path": "db_modules/shop.py",
+            "line": 210,
+            "target": "init_weapon_damage_system",
+            "test": false
+          },
+          {
+            "path": "db_modules/shop.py",
+            "line": 501,
+            "target": "init_weapon_damage_system",
+            "test": false
+          }
+        ],
+        "test_references": []
+      },
+      "loader_targets": [
+        {
+          "path": "db_modules/dev_compat.py",
+          "loader": "_equipment_system_ro_v1",
+          "line": 1569,
+          "body_hash": "c1a323db482ad12ba7ecfdf96b2ffcba2322e869c2b8c302c863af93cfeb9539",
+          "returns": [
+            "equipment_system"
+          ]
+        },
+        {
+          "path": "db_modules/dev_compat.py",
+          "loader": "_equipment_system_ro_v1()",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        },
+        {
+          "path": "db_modules/equipment.py",
+          "loader": "_equipment_system",
+          "line": 12,
+          "body_hash": "af88d741947a63062575c237b4b0a48b818e7bac8954016ca4de427a0d7cb4b0",
+          "returns": [
+            "equipment_system"
+          ]
+        },
+        {
+          "path": "db_modules/equipment.py",
+          "loader": "_equipment_system()",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        },
+        {
+          "path": "db_modules/generated_equipment.py",
+          "loader": "_equipment_system_ro_v1",
+          "line": 1288,
+          "body_hash": "c1a323db482ad12ba7ecfdf96b2ffcba2322e869c2b8c302c863af93cfeb9539",
+          "returns": [
+            "equipment_system"
+          ]
+        },
+        {
+          "path": "db_modules/generated_equipment.py",
+          "loader": "_equipment_system_ro_v1()",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        },
+        {
+          "path": "db_modules/inventory_compat.py",
+          "loader": "_equipment_system_ro_v1",
+          "line": 616,
+          "body_hash": "c1a323db482ad12ba7ecfdf96b2ffcba2322e869c2b8c302c863af93cfeb9539",
+          "returns": [
+            "equipment_system"
+          ]
+        },
+        {
+          "path": "db_modules/inventory_compat.py",
+          "loader": "_equipment_system_ro_v1()",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        },
+        {
+          "path": "systems/equipment_system.py",
+          "loader": "_call_legacy",
+          "line": 64,
+          "body_hash": "82d2efca49377fcff6dfe5a7e25559136e38217b9eac926dfad672957726a7c9",
+          "returns": [
+            "legacy(*args, **kwargs)"
+          ]
+        }
+      ],
+      "replacement_test_matrix": {
+        "signature_parity": true,
+        "caller_import_parity": true,
+        "return_and_exception_parity": true,
+        "transaction_commit_rollback_parity": true,
+        "python_effective_definition_lock": true,
+        "loader_target_lock": true,
+        "focused_existing_tests": [],
+        "new_focused_test_required": true
+      },
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "set_current_hp",
+      "decision": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "HIGH",
+      "accepted_owner": {
+        "path": "systems/player_system.py",
+        "line": 1374
+      },
+      "reason": "Current Python-effective topology has one implementation and only thin same-symbol delegates.",
+      "definitions": [
+        {
+          "path": "db_modules/player.py",
+          "line": 120,
+          "end_line": 121,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "hp"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "1bd3bacc2d315b81b9383442ba75f04283dcf091813e561fe50d029790792aa7",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_player_system().set_current_hp"
+          ],
+          "loader_calls": [
+            "_player_system().set_current_hp",
+            "_player_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/player_system.py",
+          "line": 544,
+          "end_line": 568,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 3,
+          "python_effective_in_file": false,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "hp"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "7b66cb2d894bbe6a5cc6e3b88c0158e5c0884d12060c4dcd5e5468a9c42dbd79",
+          "statement_count": 6,
+          "db_calls": [
+            "_execute_commit"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [
+            "_legacy_function"
+          ],
+          "return_count": 2,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/player_system.py",
+          "line": 1114,
+          "end_line": 1147,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 3,
+          "python_effective_in_file": false,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "hp"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "cd6bb52af4b5575a60633f3af90780b18fe7433fbd328797f20cf87e1597dfd1",
+          "statement_count": 4,
+          "db_calls": [
+            "_execute_commit"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [
+            "_player_system_base_set_current_hp_before_hp_sync_v1"
+          ],
+          "return_count": 3,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/player_system.py",
+          "line": 1374,
+          "end_line": 1426,
+          "ordinal_in_file": 3,
+          "definitions_in_file": 3,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "hp"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "faba5c28abcd9719d10cd5696cc6663cda3506020239bb41c4e72ed05c6650af",
+          "statement_count": 8,
+          "db_calls": [
+            "db.cursor.execute",
+            "db.conn.commit",
+            "db.conn.rollback"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 1,
+          "raise_count": 1
+        }
+      ],
+      "python_effective_definitions": [
+        {
+          "path": "db_modules/player.py",
+          "line": 120,
+          "end_line": 121,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "hp"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "1bd3bacc2d315b81b9383442ba75f04283dcf091813e561fe50d029790792aa7",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_player_system().set_current_hp"
+          ],
+          "loader_calls": [
+            "_player_system().set_current_hp",
+            "_player_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/player_system.py",
+          "line": 1374,
+          "end_line": 1426,
+          "ordinal_in_file": 3,
+          "definitions_in_file": 3,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "user_id",
+              "hp"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "faba5c28abcd9719d10cd5696cc6663cda3506020239bb41c4e72ed05c6650af",
+          "statement_count": 8,
+          "db_calls": [
+            "db.cursor.execute",
+            "db.conn.commit",
+            "db.conn.rollback"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 1,
+          "raise_count": 1
+        }
+      ],
+      "signature_variant_count": 1,
+      "topology": {
+        "imports": [
+          {
+            "path": "db_modules/__init__.py",
+            "line": 90,
+            "module": "player",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 194,
+            "module": "db",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "systems/potion_system.py",
+            "line": 5,
+            "module": "db",
+            "alias": null,
+            "test": false
+          }
+        ],
+        "calls": [
+          {
+            "path": "db_modules/player.py",
+            "line": 121,
+            "target": "_player_system().set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 1859,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 604,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 632,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 2522,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 2932,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 3462,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 1887,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 2495,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 2906,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 3435,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 3733,
+            "target": "set_current_hp",
+            "test": false
+          }
+        ],
+        "external_production_calls": [
+          {
+            "path": "handlers/combat.py",
+            "line": 1859,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 604,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 632,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 2522,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 2932,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 3462,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 1887,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 2495,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 2906,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 3435,
+            "target": "set_current_hp",
+            "test": false
+          },
+          {
+            "path": "handlers/combat.py",
+            "line": 3733,
+            "target": "set_current_hp",
+            "test": false
+          }
+        ],
+        "test_references": []
+      },
+      "loader_targets": [
+        {
+          "path": "db_modules/player.py",
+          "loader": "_player_system",
+          "line": 19,
+          "body_hash": "b77def8374a150262e7680141b73b4f49c5a50c784943a3479fc2048e2645d91",
+          "returns": [
+            "player_system"
+          ]
+        },
+        {
+          "path": "db_modules/player.py",
+          "loader": "_player_system()",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        },
+        {
+          "path": "systems/player_system.py",
+          "loader": "_legacy_function",
+          "line": 82,
+          "body_hash": "bf695c8cf0b20fe19739b6048a67ae8da53709189533a2a0964a5ab58e903e8d",
+          "returns": [
+            "getattr(db, f'_legacy_{name}_before_player_system_v1', None)"
+          ]
+        },
+        {
+          "path": "systems/player_system.py",
+          "loader": "_player_system_base_set_current_hp_before_hp_sync_v1",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        }
+      ],
+      "replacement_test_matrix": {
+        "signature_parity": true,
+        "caller_import_parity": true,
+        "return_and_exception_parity": true,
+        "transaction_commit_rollback_parity": true,
+        "python_effective_definition_lock": true,
+        "loader_target_lock": true,
+        "focused_existing_tests": [],
+        "new_focused_test_required": true
+      },
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "update_expired_auction_lots",
+      "decision": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "HIGH",
+      "accepted_owner": {
+        "path": "systems/auction_house_system.py",
+        "line": 4848
+      },
+      "reason": "Current Python-effective topology has one implementation and only thin same-symbol delegates.",
+      "definitions": [
+        {
+          "path": "db_modules/systems_wrappers.py",
+          "line": 595,
+          "end_line": 596,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "now_iso"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [
+              "None"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "39a90bd557b92d6ecfb2779638dbff831b0c48240f2c5090bea61dd3f5f0c6ae",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_auction_system().update_expired_auction_lots"
+          ],
+          "loader_calls": [
+            "_auction_system().update_expired_auction_lots",
+            "_auction_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/auction_house_system.py",
+          "line": 588,
+          "end_line": 689,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 2,
+          "python_effective_in_file": false,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "5a85940d56e9a84ed30032f7e5af9f0ddb79c7aea7c0b6667f70d2631fb6f113",
+          "statement_count": 13,
+          "db_calls": [
+            "cursor.execute",
+            "cursor.fetchall",
+            "cursor.execute",
+            "cursor.fetchall",
+            "conn.commit",
+            "cursor.execute",
+            "cursor.execute"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/auction_house_system.py",
+          "line": 4848,
+          "end_line": 5047,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "now_iso"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [
+              "None"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "44f39dfbb4dd438acb0902e297bcebfea6f46e703b933b6feb6ab54703456fce",
+          "statement_count": 12,
+          "db_calls": [
+            "cursor.execute",
+            "cursor.fetchall",
+            "conn.commit",
+            "cursor.execute",
+            "cursor.fetchall",
+            "cursor.execute",
+            "cursor.fetchall",
+            "cursor.execute",
+            "cursor.fetchall",
+            "conn.rollback",
+            "cursor.execute",
+            "cursor.execute",
+            "cursor.execute",
+            "cursor.execute",
+            "cursor.execute",
+            "cursor.execute",
+            "cursor.execute",
+            "cursor.execute"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 2,
+          "raise_count": 1
+        }
+      ],
+      "python_effective_definitions": [
+        {
+          "path": "db_modules/systems_wrappers.py",
+          "line": 595,
+          "end_line": 596,
+          "ordinal_in_file": 1,
+          "definitions_in_file": 1,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "now_iso"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [
+              "None"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "39a90bd557b92d6ecfb2779638dbff831b0c48240f2c5090bea61dd3f5f0c6ae",
+          "statement_count": 1,
+          "db_calls": [],
+          "same_symbol_calls": [
+            "_auction_system().update_expired_auction_lots"
+          ],
+          "loader_calls": [
+            "_auction_system().update_expired_auction_lots",
+            "_auction_system"
+          ],
+          "return_count": 1,
+          "raise_count": 0
+        },
+        {
+          "path": "systems/auction_house_system.py",
+          "line": 4848,
+          "end_line": 5047,
+          "ordinal_in_file": 2,
+          "definitions_in_file": 2,
+          "python_effective_in_file": true,
+          "signature": {
+            "async": false,
+            "posonly": [],
+            "args": [
+              "now_iso"
+            ],
+            "vararg": null,
+            "kwonly": [],
+            "kwarg": null,
+            "defaults": [
+              "None"
+            ],
+            "kw_defaults": [],
+            "returns": null
+          },
+          "body_hash": "44f39dfbb4dd438acb0902e297bcebfea6f46e703b933b6feb6ab54703456fce",
+          "statement_count": 12,
+          "db_calls": [
+            "cursor.execute",
+            "cursor.fetchall",
+            "conn.commit",
+            "cursor.execute",
+            "cursor.fetchall",
+            "cursor.execute",
+            "cursor.fetchall",
+            "cursor.execute",
+            "cursor.fetchall",
+            "conn.rollback",
+            "cursor.execute",
+            "cursor.execute",
+            "cursor.execute",
+            "cursor.execute",
+            "cursor.execute",
+            "cursor.execute",
+            "cursor.execute",
+            "cursor.execute"
+          ],
+          "same_symbol_calls": [],
+          "loader_calls": [],
+          "return_count": 2,
+          "raise_count": 1
+        }
+      ],
+      "signature_variant_count": 1,
+      "topology": {
+        "imports": [
+          {
+            "path": "handlers/auction_house.py",
+            "line": 117,
+            "module": "db",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 4815,
+            "module": "db",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 4833,
+            "module": "db",
+            "alias": null,
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 5076,
+            "module": "db",
+            "alias": null,
+            "test": false
+          }
+        ],
+        "calls": [
+          {
+            "path": "db_modules/systems_wrappers.py",
+            "line": 596,
+            "target": "_auction_system().update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 184,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 4816,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 4835,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 5077,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 3456,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 3487,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 3572,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 3679,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 3710,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 3797,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 3951,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 4036,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 4164,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 4228,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 4332,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 4482,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 5054,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 5246,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "systems/auction_house_system.py",
+            "line": 5144,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "tools/smoke_test_auction_lifecycle_contracts.py",
+            "line": 82,
+            "target": "db.update_expired_auction_lots",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_auction_lifecycle_contracts.py",
+            "line": 103,
+            "target": "db.update_expired_auction_lots",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_auction_lifecycle_contracts.py",
+            "line": 109,
+            "target": "auction.update_expired_auction_lots",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_auction_lifecycle_contracts.py",
+            "line": 110,
+            "target": "db.update_expired_auction_lots",
+            "test": true
+          }
+        ],
+        "external_production_calls": [
+          {
+            "path": "handlers/auction_house.py",
+            "line": 184,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 4816,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 4835,
+            "target": "update_expired_auction_lots",
+            "test": false
+          },
+          {
+            "path": "handlers/auction_house.py",
+            "line": 5077,
+            "target": "update_expired_auction_lots",
+            "test": false
+          }
+        ],
+        "test_references": [
+          {
+            "path": "tools/smoke_test_auction_lifecycle_contracts.py",
+            "line": 82,
+            "target": "db.update_expired_auction_lots",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_auction_lifecycle_contracts.py",
+            "line": 103,
+            "target": "db.update_expired_auction_lots",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_auction_lifecycle_contracts.py",
+            "line": 109,
+            "target": "auction.update_expired_auction_lots",
+            "test": true
+          },
+          {
+            "path": "tools/smoke_test_auction_lifecycle_contracts.py",
+            "line": 110,
+            "target": "db.update_expired_auction_lots",
+            "test": true
+          }
+        ]
+      },
+      "loader_targets": [
+        {
+          "path": "db_modules/systems_wrappers.py",
+          "loader": "_auction_system",
+          "line": 368,
+          "body_hash": "58e67cfc8d951f33c332c46aa155e04a6e7c471872d73d7ff0e06896caff2c50",
+          "returns": [
+            "auction_house_system"
+          ]
+        },
+        {
+          "path": "db_modules/systems_wrappers.py",
+          "loader": "_auction_system()",
+          "line": null,
+          "body_hash": null,
+          "returns": [],
+          "status": "NOT_MODULE_LEVEL_DEFINITION"
+        }
+      ],
+      "replacement_test_matrix": {
+        "signature_parity": true,
+        "caller_import_parity": true,
+        "return_and_exception_parity": true,
+        "transaction_commit_rollback_parity": true,
+        "python_effective_definition_lock": true,
+        "loader_target_lock": true,
+        "focused_existing_tests": [
+          "tools/smoke_test_auction_lifecycle_contracts.py"
+        ],
+        "new_focused_test_required": false
+      },
+      "deletion_authorized": false
+    }
+  ],
+  "accepted_symbols": [
+    "apply_random_durability_wear_on_victory",
+    "build_auction_lot_public_details",
+    "calculate_repair_cost",
+    "calculate_weapon_damage_by_values",
+    "create_equipment_auction_lot",
+    "create_guild_application",
+    "get_inventory_weapon_damage_display",
+    "get_weapon_damage_by_inventory_id",
+    "init_weapon_damage_system",
+    "set_current_hp",
+    "update_expired_auction_lots"
+  ],
+  "deferred_symbols": [
+    "get_dynamic_sell_price"
+  ],
+  "next_stage_contract": {
+    "decision": "GO_TO_22_1_7_FOCUSED_RUNTIME_EVIDENCE",
+    "focused_runtime_evidence_required": true,
+    "replacement_test_matrix_required": true,
+    "production_mutation_prohibited": true,
+    "deletion_prohibited": true
+  },
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "decision": "GO_TO_22_1_7_FOCUSED_RUNTIME_EVIDENCE",
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED"
+}
