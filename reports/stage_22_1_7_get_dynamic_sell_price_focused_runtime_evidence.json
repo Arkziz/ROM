@@ -1,0 +1,238 @@
+{
+  "stage": "22.1.7",
+  "revision": "1",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-04T22:49:17.307103+00:00",
+  "parent": "49e42a98cfc3f78917daa008d6fc4cbba036bd3a",
+  "git": {
+    "branch": "develop",
+    "head": "49e42a98cfc3f78917daa008d6fc4cbba036bd3a",
+    "origin_develop": "56c18339c28df4f9e89c17d933572982e51aec79",
+    "origin_is_ancestor": true
+  },
+  "authority": {
+    "stage_22_1_6a": {
+      "path": "reports/stage_22_1_6a_owner_decision_reconciliation.json",
+      "sha256": "d24356b5931e0ec8d0a6cde142570f3e3f59b72748cd8ee939ff429cbebf5e5c"
+    },
+    "programming_regulation": "Update 12 PASS"
+  },
+  "symbol": "get_dynamic_sell_price",
+  "source_evidence": {
+    "dynamic_delegate": {
+      "path": "systems/dynamic_equipment_system.py",
+      "line": 24,
+      "end_line": 25,
+      "ast_hash": "345412bae979fb8411b754bccb9fb323b0953ced4643a8947cbda525e7b50a7c",
+      "calls": [
+        "_canonical().get_dynamic_sell_price",
+        "_canonical"
+      ],
+      "source_hash": "968ca97e45bbceba24573fa13c99f7916b6ef95ad239dabb99e834550fd57ad9",
+      "canonical_loader": {
+        "line": 15,
+        "ast_hash": "bbb0a71af8707eedd53dcd5fa510ae14e5a718aef750003836eda746c9be2484",
+        "returns": [
+          "import_module('db_modules.generated_equipment')"
+        ]
+      }
+    },
+    "dev_compat": {
+      "path": "db_modules/dev_compat.py",
+      "line": 109,
+      "end_line": 112,
+      "ast_hash": "ea1d165837ef7fc2d0b7aee24e79904c58444e806a1b3f8f321085cc7d2edfff",
+      "calls": [
+        "DYNAMIC_SELL_MULTIPLIERS.get",
+        "round",
+        "max"
+      ],
+      "source_hash": "8505f2333fa44875c1bf53eaa4a9bfe295bc5e3a1f0dba89222134b78be78d96"
+    },
+    "generated_equipment": {
+      "path": "db_modules/generated_equipment.py",
+      "line": 137,
+      "end_line": 140,
+      "ast_hash": "ea1d165837ef7fc2d0b7aee24e79904c58444e806a1b3f8f321085cc7d2edfff",
+      "calls": [
+        "DYNAMIC_SELL_MULTIPLIERS.get",
+        "round",
+        "max"
+      ],
+      "source_hash": "8505f2333fa44875c1bf53eaa4a9bfe295bc5e3a1f0dba89222134b78be78d96"
+    },
+    "shop_calls": [
+      {
+        "line": 310,
+        "target": "dynamic_equipment_system.get_dynamic_sell_price"
+      }
+    ]
+  },
+  "runtime_evidence": {
+    "canonical_file": "db_modules/generated_equipment.py",
+    "canonical_module": "db_modules.generated_equipment",
+    "dev_generated_same_code": true,
+    "dynamic_callable_module": "systems.dynamic_equipment_system",
+    "dynamic_delegates_to_owner_identity": true,
+    "dynamic_module": "systems.dynamic_equipment_system",
+    "owner_callable_module": "db_modules.generated_equipment",
+    "samples": [
+      {
+        "all_equal": true,
+        "item_level": 1,
+        "rarity": "COMMON",
+        "values": {
+          "canonical": 0.3,
+          "dev": 0.3,
+          "dynamic": 0.3,
+          "generated": 0.3
+        }
+      },
+      {
+        "all_equal": true,
+        "item_level": 10,
+        "rarity": "RARE",
+        "values": {
+          "canonical": 3.0,
+          "dev": 3.0,
+          "dynamic": 3.0,
+          "generated": 3.0
+        }
+      },
+      {
+        "all_equal": true,
+        "item_level": 50,
+        "rarity": "EPIC",
+        "values": {
+          "canonical": 15.0,
+          "dev": 15.0,
+          "dynamic": 15.0,
+          "generated": 15.0
+        }
+      },
+      {
+        "all_equal": true,
+        "item_level": 100,
+        "rarity": "LEGENDARY",
+        "values": {
+          "canonical": 30.0,
+          "dev": 30.0,
+          "dynamic": 30.0,
+          "generated": 30.0
+        }
+      }
+    ]
+  },
+  "accepted_owner": {
+    "path": "db_modules/generated_equipment.py",
+    "module": "db_modules.generated_equipment",
+    "symbol": "get_dynamic_sell_price",
+    "runtime_callable_module": "db_modules.generated_equipment"
+  },
+  "replacement_test_contract": {
+    "focused_smoke": "tools/smoke_test_dynamic_equipment_system_16_1_14.py",
+    "runtime_module_identity": true,
+    "canonical_loader_target_lock": true,
+    "shop_caller_lock": true,
+    "sample_parity_cases": [
+      {
+        "all_equal": true,
+        "item_level": 1,
+        "rarity": "COMMON",
+        "values": {
+          "canonical": 0.3,
+          "dev": 0.3,
+          "dynamic": 0.3,
+          "generated": 0.3
+        }
+      },
+      {
+        "all_equal": true,
+        "item_level": 10,
+        "rarity": "RARE",
+        "values": {
+          "canonical": 3.0,
+          "dev": 3.0,
+          "dynamic": 3.0,
+          "generated": 3.0
+        }
+      },
+      {
+        "all_equal": true,
+        "item_level": 50,
+        "rarity": "EPIC",
+        "values": {
+          "canonical": 15.0,
+          "dev": 15.0,
+          "dynamic": 15.0,
+          "generated": 15.0
+        }
+      },
+      {
+        "all_equal": true,
+        "item_level": 100,
+        "rarity": "LEGENDARY",
+        "values": {
+          "canonical": 30.0,
+          "dev": 30.0,
+          "dynamic": 30.0,
+          "generated": 30.0
+        }
+      }
+    ],
+    "duplicate_implementation_body_parity": true,
+    "deletion_requires_later_mutation_patch": true
+  },
+  "summary": {
+    "focused_symbols": 1,
+    "owner_decisions_accepted": 1,
+    "owner_decisions_deferred": 0,
+    "accepted_owner_registry_total_candidate": 59,
+    "deletion_authorized": false
+  },
+  "decision": "GO_TO_22_1_8_DOMAIN_OWNER_MAP",
+  "production_mutations": [],
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED"
+}
