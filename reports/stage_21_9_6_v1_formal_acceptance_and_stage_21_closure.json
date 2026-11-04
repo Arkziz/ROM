@@ -1,0 +1,122 @@
+{
+  "stage": "21.9.6",
+  "revision": "1",
+  "status": "CLOSED_ACCEPTED",
+  "timestamp": "2026-11-04T21:01:14.709407+00:00",
+  "parent": "653046af2bf1eacf78e2a111556b4c17a8a91bdb",
+  "git": {
+    "branch": "develop",
+    "head": "653046af2bf1eacf78e2a111556b4c17a8a91bdb",
+    "origin_develop": "f13d83b538f9dff2f9998aa3ff0f2ae753aaffcb",
+    "origin_is_ancestor": true
+  },
+  "evidence_chain": [
+    {
+      "path": "reports/stage_21_9_1_release_readiness_and_remaining_risk_audit.json",
+      "sha256": "4ae3ea6aa8d32c7e67dbb3a5c8248c05126100ffdb857b409ac930c10fb78ced"
+    },
+    {
+      "path": "reports/stage_21_9_2_release_acceptance_matrix_reconciliation.json",
+      "sha256": "ea7c496390cf802359fd5c5da2bf8eb21c3242e9cf23d33f8b32d9f3ed13a384"
+    },
+    {
+      "path": "reports/stage_21_9_3_final_automated_release_acceptance.json",
+      "sha256": "17eba96a875560f4da9b551e96a8e290dac720d51f1727dd6fadfb504a895f5c"
+    },
+    {
+      "path": "reports/stage_21_9_4_final_runtime_and_operator_acceptance.json",
+      "sha256": "cb8ec43d7f880c59b01f1d3f6172788f6c8bac51594aa9ca2970e8248803e1f9"
+    },
+    {
+      "path": "reports/stage_21_9_5_release_documentation_and_operator_checklist.json",
+      "sha256": "a458ebff81feff0167581bbc9af04c6348cc33e98b52ce4a87b651ae1a854295"
+    }
+  ],
+  "formal_acceptance": {
+    "rom_v1": "FORMALLY_ACCEPTED",
+    "stage_21": "CLOSED_ACCEPTED",
+    "stage_21_9": "CLOSED_ACCEPTED",
+    "release_verdict": "GO",
+    "release_blockers": 0,
+    "review_findings": 0,
+    "deferred_findings": 1,
+    "production_sources": "184/184 PASS",
+    "blocking_tools": "13/13 PASS",
+    "sqlite_integrity": "ok",
+    "sqlite_foreign_key_violations": 0,
+    "runtime_exports": 2,
+    "single_reward": "2/2",
+    "operator_go": true
+  },
+  "integration_evidence": {
+    "API_READY": true,
+    "ADAPTER_CONNECTED": true,
+    "RUNTIME_DISPATCH_VERIFIED": true,
+    "END_TO_END_ACCEPTED": true,
+    "RELEASE_AUTOMATED_ACCEPTED": true,
+    "RELEASE_OPERATOR_ACCEPTED": true
+  },
+  "deferred_scope": {
+    "handlers_dev_register_dev_handlers": "RELEASE_DEFERRED_NON_BLOCKING",
+    "policy": "No canonicalization without exact command-set and registration-order audit."
+  },
+  "release_boundaries": {
+    "merge_performed": false,
+    "rebase_performed": false,
+    "push_performed": false,
+    "force_push_performed": false,
+    "deployment_performed": false,
+    "release_tag_created": false,
+    "master_modified": false
+  },
+  "production_source_hashes": {
+    "handlers/combat.py": "264fdf4f834dceac51ff9f3fef401f2a7f5b9039e56d991f9e731824355e8748",
+    "handlers/combat_formatting.py": "84e8f74419b8cd38248d9fcdd7d4b65bd3077fa33a7f706d8750b3f2049dbba0",
+    "handlers/dev.py": "c161907aa3d965cbb3f2ce50d1b6f46c181027ff7a3b517ae852a026b5827352"
+  },
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED_CLOSURE_USES_ACCEPTED_EVIDENCE",
+  "next_formal_step": "STAGE_21_COMPLETE_OPERATOR_CONTROLLED_RELEASE_ACTIONS_ONLY"
+}
