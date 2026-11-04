@@ -1,0 +1,116 @@
+{
+  "stage": "21.8.7",
+  "revision": "1",
+  "status": "CLOSED_ACCEPTED",
+  "timestamp": "2026-11-04T20:10:43.782300+00:00",
+  "parent": "b9cc8264fec08d75f06fa70123f074b69ebb8a87",
+  "git": {
+    "branch": "develop",
+    "head": "b9cc8264fec08d75f06fa70123f074b69ebb8a87",
+    "origin_develop": "f13d83b538f9dff2f9998aa3ff0f2ae753aaffcb",
+    "origin_is_ancestor": true
+  },
+  "evidence_chain": [
+    {
+      "path": "reports/stage_21_8_1_monolith_reduction_scope_audit.json",
+      "sha256": "9913a882855f42d5bbff7dfb561afd6e0702dddadcc328ad5f4e7b6328e0289f"
+    },
+    {
+      "path": "reports/stage_21_8_2_monolith_owner_call_path_and_extraction_slices.json",
+      "sha256": "4fd39fbcbf86b900eea9d53c650ebadd93f9098af773ecd875fc2cf56e4e54f1"
+    },
+    {
+      "path": "reports/stage_21_8_3_combat_log_extraction_test_contract_reconciliation.json",
+      "sha256": "91c36b21790e15861114c1be58586fbd87b1bb3ab49acf5b1358048897bcf779"
+    },
+    {
+      "path": "reports/stage_21_8_4_combat_log_formatting_extraction_and_test_contract_update.json",
+      "sha256": "03599b8cf9e1e2fab5ab8a3fef19d751763dbf85f4e0f53f7d792088601bb07f"
+    },
+    {
+      "path": "reports/stage_21_8_5_combat_log_formatting_runtime_acceptance.json",
+      "sha256": "51e531b95438dad475d3f460088645b6d68b752d96e28da017dcadccd2ea7ddd"
+    },
+    {
+      "path": "reports/stage_21_8_6_monolith_reduction_post_extraction_audit.json",
+      "sha256": "73ec47bd84c98d4ab13502e6e290c6b4080611d41ee1d53d45f511f2c319003f"
+    }
+  ],
+  "closure": {
+    "accepted_slice": "build_lethal_combat_log",
+    "canonical_owner": "handlers/combat_formatting.py",
+    "compatibility_owner": "handlers/combat.py",
+    "combat_line_delta": -64,
+    "combat_function_delta": -1,
+    "byte_parity_fixtures": 5,
+    "runtime_acceptance": "PASS",
+    "single_reward_exports": "2/2",
+    "telegram_registration_changed": false,
+    "unresolved_blockers": 0
+  },
+  "integration_evidence": {
+    "API_READY": true,
+    "ADAPTER_CONNECTED": true,
+    "RUNTIME_DISPATCH_VERIFIED": true,
+    "END_TO_END_ACCEPTED": true
+  },
+  "deferred_findings": [
+    {
+      "finding": "register_dev_handlers duplicate historical wrapper chain",
+      "definition_count": 4,
+      "decision": "DEFERRED_OUT_OF_CLOSURE",
+      "reason": "No committed exact registration-order and command-set replacement contract; changing dev chain is independent higher-risk scope."
+    }
+  ],
+  "deferred_scope_policy": "Deferred independent higher-risk dev registration cleanup is not an unresolved blocker for the accepted minimal Stage 21.8 slice.",
+  "production_source_hashes": {
+    "handlers/combat.py": "264fdf4f834dceac51ff9f3fef401f2a7f5b9039e56d991f9e731824355e8748",
+    "handlers/combat_formatting.py": "84e8f74419b8cd38248d9fcdd7d4b65bd3077fa33a7f706d8750b3f2049dbba0",
+    "handlers/dev.py": "c161907aa3d965cbb3f2ce50d1b6f46c181027ff7a3b517ae852a026b5827352"
+  },
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED_CLOSURE_USES_ACCEPTED_EVIDENCE",
+  "next_formal_step": "GO_TO_STAGE_21_9_1"
+}
