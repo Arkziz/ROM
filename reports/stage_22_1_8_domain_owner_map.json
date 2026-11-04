@@ -1,0 +1,4882 @@
+{
+  "stage": "22.1.8",
+  "revision": "1",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-04T23:03:45.152209+00:00",
+  "parent": "5e0c5a04daf003df89fe00deeb7bddb76da86d90",
+  "git": {
+    "branch": "develop",
+    "head": "5e0c5a04daf003df89fe00deeb7bddb76da86d90",
+    "origin_develop": "56c18339c28df4f9e89c17d933572982e51aec79",
+    "origin_is_ancestor": true
+  },
+  "authority": {
+    "evidence_chain": [
+      {
+        "path": "reports/stage_22_1_1_canonical_owner_duplicate_and_monolith_scope_audit.json",
+        "sha256": "dd0fa5aa645f781796f4fc9d783cfcb7ce52478f7ab7c0e3368b2930f7873e9a"
+      },
+      {
+        "path": "reports/stage_22_1_4_same_file_duplicate_classification.json",
+        "sha256": "df1a087efb52ab8dc79ed0a85f49bb532b49a49826ded433bd3962ef33e27534"
+      },
+      {
+        "path": "reports/stage_22_1_5_cross_file_key_symbol_collision_reconciliation.json",
+        "sha256": "7741e3e5a74c87b08a12d2132357aa50c6f8089218573d09fffc7f26fcc8d21c"
+      },
+      {
+        "path": "reports/stage_22_1_6_canonical_owner_classification.json",
+        "sha256": "71060b0fc452d304618b968ce2f82cb4e2b3865e31d7c5bade5ed60619d287ee"
+      },
+      {
+        "path": "reports/stage_22_1_6a_owner_decision_reconciliation.json",
+        "sha256": "d24356b5931e0ec8d0a6cde142570f3e3f59b72748cd8ee939ff429cbebf5e5c"
+      },
+      {
+        "path": "reports/stage_22_1_7_get_dynamic_sell_price_focused_runtime_evidence.json",
+        "sha256": "9d99a48552c586c351678bdb5fd4941c1ac453385d4dcdb73a5f57d8fe146450"
+      },
+      {
+        "path": "reports/stage_22_1_7a_correct_rarity_runtime_evidence.json",
+        "sha256": "5fb91511129c812da24597fcfb9ecfeca41a6761fcf2f1a67433342af6051630"
+      }
+    ],
+    "current_checkout_is_authoritative": true,
+    "programming_regulation": "Update 12 PASS",
+    "corrected_rarity_keys": [
+      "common",
+      "uncommon",
+      "rare",
+      "epic"
+    ]
+  },
+  "summary": {
+    "accepted_owner_registry": 59,
+    "owner_registry_duplicate_symbols": 0,
+    "ownership_blockers": 0,
+    "same_file_effective_symbols": 123,
+    "compatibility_delegate_entries": 17,
+    "replacement_test_contracts": 12,
+    "no_delete_entries": 182,
+    "domain_counts": {
+      "auction": 17,
+      "combat": 5,
+      "equipment": 4,
+      "guild": 7,
+      "inventory": 7,
+      "player": 2,
+      "interaction": 13,
+      "startup_lifecycle": 0,
+      "city_world": 0,
+      "economy_shop": 0,
+      "quests_story": 0,
+      "runes": 0,
+      "database_compatibility": 0,
+      "shared_other": 4
+    },
+    "deletion_authorized": false,
+    "production_mutation_authorized": false
+  },
+  "accepted_owner_registry": [
+    {
+      "symbol": "apply_random_durability_wear_on_victory",
+      "owner_path": "systems/equipment_system.py",
+      "owner_line": 3427,
+      "domain": "combat",
+      "source_stage": "22.1.6a",
+      "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "MEDIUM",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_auction_buy_lot_details_v2",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 4222,
+      "domain": "auction",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_auction_lot_public_details",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 2981,
+      "domain": "auction",
+      "source_stage": "22.1.6a",
+      "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_auction_sell_item_review_text",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 3088,
+      "domain": "auction",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_blacksmith_repair_text",
+      "owner_path": "handlers/city.py",
+      "owner_line": null,
+      "domain": "equipment",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_user_auction_lot_details",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 3270,
+      "domain": "auction",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "calculate_repair_cost",
+      "owner_path": "systems/equipment_system.py",
+      "owner_line": 2717,
+      "domain": "equipment",
+      "source_stage": "22.1.6a",
+      "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "MEDIUM",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "calculate_weapon_damage_by_values",
+      "owner_path": "systems/equipment_system.py",
+      "owner_line": 1754,
+      "domain": "combat",
+      "source_stage": "22.1.6a",
+      "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "MEDIUM",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "create_auction_lot_record",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 395,
+      "domain": "auction",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "create_daily_contract",
+      "owner_path": "systems/contract_system.py",
+      "owner_line": 253,
+      "domain": "shared_other",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "create_equipment_auction_lot",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 2514,
+      "domain": "auction",
+      "source_stage": "22.1.6a",
+      "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "create_guild",
+      "owner_path": "systems/guild_system.py",
+      "owner_line": 665,
+      "domain": "guild",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "create_guild_application",
+      "owner_path": "systems/guild_system.py",
+      "owner_line": 2474,
+      "domain": "guild",
+      "source_stage": "22.1.6a",
+      "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "create_player_interaction_request",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "interaction",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "create_player_trade_from_accepted_request",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": 990,
+      "domain": "interaction",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "create_stack_auction_lot",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 1622,
+      "domain": "auction",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_active_player_trade",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "interaction",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_auction_house_stats",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 692,
+      "domain": "auction",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_auction_lot_by_id",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 295,
+      "domain": "auction",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_auction_lot_market_price_stats",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 4652,
+      "domain": "auction",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_auction_lots",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 335,
+      "domain": "auction",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_auction_lots_for_buy_filtered",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 4157,
+      "domain": "auction",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_auction_lots_for_buy_search",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 4472,
+      "domain": "auction",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_character_class",
+      "owner_path": "systems/character_system.py",
+      "owner_line": null,
+      "domain": "shared_other",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_dynamic_sell_price",
+      "owner_path": "db_modules/generated_equipment.py",
+      "owner_line": null,
+      "domain": "equipment",
+      "source_stage": "22.1.7a",
+      "classification": "RUNTIME_CANONICAL_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_exp_to_next_level",
+      "owner_path": "data/player_progression.py",
+      "owner_line": null,
+      "domain": "player",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_guild_application_by_id",
+      "owner_path": "systems/guild_system.py",
+      "owner_line": 1428,
+      "domain": "guild",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_guild_applications",
+      "owner_path": "systems/guild_system.py",
+      "owner_line": 833,
+      "domain": "guild",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_guild_pending_applications_count",
+      "owner_path": "systems/guild_system.py",
+      "owner_line": 2712,
+      "domain": "guild",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_interaction_request",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "interaction",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_inventory_weapon_damage_display",
+      "owner_path": "systems/equipment_system.py",
+      "owner_line": 1995,
+      "domain": "combat",
+      "source_stage": "22.1.6a",
+      "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_item_trade_policy",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "inventory",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_online_players_in_same_location",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "interaction",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_player_trade",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "interaction",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_player_trade_category_counts",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "inventory",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_player_trade_editor_state",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "interaction",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_player_trade_wallet_state",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "interaction",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_public_auction_lots_for_buyer",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 1960,
+      "domain": "auction",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_public_player_interaction_profile",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "interaction",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_total_repair_cost",
+      "owner_path": "systems/equipment_system.py",
+      "owner_line": 2921,
+      "domain": "equipment",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_trade_item_preview",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "inventory",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_trade_offer_entry",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "interaction",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_tradeable_inventory_for_trade",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "inventory",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_tradeable_inventory_for_trade_category",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "inventory",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_user_auction_lot_by_id",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 3261,
+      "domain": "auction",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_user_auction_lots",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 3226,
+      "domain": "auction",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_user_guild_applications",
+      "owner_path": "systems/guild_system.py",
+      "owner_line": 1108,
+      "domain": "guild",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_user_pending_applications_count",
+      "owner_path": "systems/guild_system.py",
+      "owner_line": 2725,
+      "domain": "guild",
+      "source_stage": "22.1.6",
+      "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_weapon_damage_by_inventory_id",
+      "owner_path": "systems/equipment_system.py",
+      "owner_line": 1867,
+      "domain": "combat",
+      "source_stage": "22.1.6a",
+      "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "init_player_interaction_foundation",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "interaction",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "init_player_trade_foundation",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "interaction",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "init_player_trade_item_policy_and_reservations",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "inventory",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "init_weapon_damage_system",
+      "owner_path": "systems/equipment_system.py",
+      "owner_line": 1710,
+      "domain": "combat",
+      "source_stage": "22.1.6a",
+      "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "MEDIUM",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "run_audit",
+      "owner_path": "systems/pvp_real_actor_root_cause_audit.py",
+      "owner_line": null,
+      "domain": "shared_other",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "save_report",
+      "owner_path": "systems/pvp_real_actor_root_cause_audit.py",
+      "owner_line": null,
+      "domain": "shared_other",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "set_current_hp",
+      "owner_path": "systems/player_system.py",
+      "owner_line": 1374,
+      "domain": "player",
+      "source_stage": "22.1.6a",
+      "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "set_player_trade_gold_offer",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "interaction",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "set_player_trade_item_offer",
+      "owner_path": "systems/player_interaction_system.py",
+      "owner_line": null,
+      "domain": "inventory",
+      "source_stage": "22.1.6",
+      "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "update_expired_auction_lots",
+      "owner_path": "systems/auction_house_system.py",
+      "owner_line": 4848,
+      "domain": "auction",
+      "source_stage": "22.1.6a",
+      "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+      "confidence": "HIGH",
+      "deletion_authorized": false
+    }
+  ],
+  "domain_owner_map": {
+    "auction": [
+      {
+        "symbol": "build_auction_buy_lot_details_v2",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 4222,
+        "domain": "auction",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "build_auction_lot_public_details",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 2981,
+        "domain": "auction",
+        "source_stage": "22.1.6a",
+        "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "build_auction_sell_item_review_text",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 3088,
+        "domain": "auction",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "build_user_auction_lot_details",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 3270,
+        "domain": "auction",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "create_auction_lot_record",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 395,
+        "domain": "auction",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "create_equipment_auction_lot",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 2514,
+        "domain": "auction",
+        "source_stage": "22.1.6a",
+        "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "create_stack_auction_lot",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 1622,
+        "domain": "auction",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_auction_house_stats",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 692,
+        "domain": "auction",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_auction_lot_by_id",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 295,
+        "domain": "auction",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_auction_lot_market_price_stats",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 4652,
+        "domain": "auction",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_auction_lots",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 335,
+        "domain": "auction",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_auction_lots_for_buy_filtered",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 4157,
+        "domain": "auction",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_auction_lots_for_buy_search",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 4472,
+        "domain": "auction",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_public_auction_lots_for_buyer",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 1960,
+        "domain": "auction",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_user_auction_lot_by_id",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 3261,
+        "domain": "auction",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_user_auction_lots",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 3226,
+        "domain": "auction",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "update_expired_auction_lots",
+        "owner_path": "systems/auction_house_system.py",
+        "owner_line": 4848,
+        "domain": "auction",
+        "source_stage": "22.1.6a",
+        "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      }
+    ],
+    "combat": [
+      {
+        "symbol": "apply_random_durability_wear_on_victory",
+        "owner_path": "systems/equipment_system.py",
+        "owner_line": 3427,
+        "domain": "combat",
+        "source_stage": "22.1.6a",
+        "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+        "confidence": "MEDIUM",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "calculate_weapon_damage_by_values",
+        "owner_path": "systems/equipment_system.py",
+        "owner_line": 1754,
+        "domain": "combat",
+        "source_stage": "22.1.6a",
+        "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+        "confidence": "MEDIUM",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_inventory_weapon_damage_display",
+        "owner_path": "systems/equipment_system.py",
+        "owner_line": 1995,
+        "domain": "combat",
+        "source_stage": "22.1.6a",
+        "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_weapon_damage_by_inventory_id",
+        "owner_path": "systems/equipment_system.py",
+        "owner_line": 1867,
+        "domain": "combat",
+        "source_stage": "22.1.6a",
+        "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "init_weapon_damage_system",
+        "owner_path": "systems/equipment_system.py",
+        "owner_line": 1710,
+        "domain": "combat",
+        "source_stage": "22.1.6a",
+        "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+        "confidence": "MEDIUM",
+        "deletion_authorized": false
+      }
+    ],
+    "equipment": [
+      {
+        "symbol": "build_blacksmith_repair_text",
+        "owner_path": "handlers/city.py",
+        "owner_line": null,
+        "domain": "equipment",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "calculate_repair_cost",
+        "owner_path": "systems/equipment_system.py",
+        "owner_line": 2717,
+        "domain": "equipment",
+        "source_stage": "22.1.6a",
+        "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+        "confidence": "MEDIUM",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_dynamic_sell_price",
+        "owner_path": "db_modules/generated_equipment.py",
+        "owner_line": null,
+        "domain": "equipment",
+        "source_stage": "22.1.7a",
+        "classification": "RUNTIME_CANONICAL_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_total_repair_cost",
+        "owner_path": "systems/equipment_system.py",
+        "owner_line": 2921,
+        "domain": "equipment",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      }
+    ],
+    "guild": [
+      {
+        "symbol": "create_guild",
+        "owner_path": "systems/guild_system.py",
+        "owner_line": 665,
+        "domain": "guild",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "create_guild_application",
+        "owner_path": "systems/guild_system.py",
+        "owner_line": 2474,
+        "domain": "guild",
+        "source_stage": "22.1.6a",
+        "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_guild_application_by_id",
+        "owner_path": "systems/guild_system.py",
+        "owner_line": 1428,
+        "domain": "guild",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_guild_applications",
+        "owner_path": "systems/guild_system.py",
+        "owner_line": 833,
+        "domain": "guild",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_guild_pending_applications_count",
+        "owner_path": "systems/guild_system.py",
+        "owner_line": 2712,
+        "domain": "guild",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_user_guild_applications",
+        "owner_path": "systems/guild_system.py",
+        "owner_line": 1108,
+        "domain": "guild",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_user_pending_applications_count",
+        "owner_path": "systems/guild_system.py",
+        "owner_line": 2725,
+        "domain": "guild",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      }
+    ],
+    "inventory": [
+      {
+        "symbol": "get_item_trade_policy",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "inventory",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_player_trade_category_counts",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "inventory",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_trade_item_preview",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "inventory",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_tradeable_inventory_for_trade",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "inventory",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_tradeable_inventory_for_trade_category",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "inventory",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "init_player_trade_item_policy_and_reservations",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "inventory",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "set_player_trade_item_offer",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "inventory",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      }
+    ],
+    "player": [
+      {
+        "symbol": "get_exp_to_next_level",
+        "owner_path": "data/player_progression.py",
+        "owner_line": null,
+        "domain": "player",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "set_current_hp",
+        "owner_path": "systems/player_system.py",
+        "owner_line": 1374,
+        "domain": "player",
+        "source_stage": "22.1.6a",
+        "classification": "ACCEPTED_EFFECTIVE_IMPLEMENTATION_WITH_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      }
+    ],
+    "interaction": [
+      {
+        "symbol": "create_player_interaction_request",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "interaction",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "create_player_trade_from_accepted_request",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": 990,
+        "domain": "interaction",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_active_player_trade",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "interaction",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_interaction_request",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "interaction",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_online_players_in_same_location",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "interaction",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_player_trade",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "interaction",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_player_trade_editor_state",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "interaction",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_player_trade_wallet_state",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "interaction",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_public_player_interaction_profile",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "interaction",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_trade_offer_entry",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "interaction",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "init_player_interaction_foundation",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "interaction",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "init_player_trade_foundation",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "interaction",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "set_player_trade_gold_offer",
+        "owner_path": "systems/player_interaction_system.py",
+        "owner_line": null,
+        "domain": "interaction",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      }
+    ],
+    "startup_lifecycle": [],
+    "city_world": [],
+    "economy_shop": [],
+    "quests_story": [],
+    "runes": [],
+    "database_compatibility": [],
+    "shared_other": [
+      {
+        "symbol": "create_daily_contract",
+        "owner_path": "systems/contract_system.py",
+        "owner_line": 253,
+        "domain": "shared_other",
+        "source_stage": "22.1.6",
+        "classification": "CANONICAL_IMPLEMENTATION_WITH_THIN_DELEGATES",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "get_character_class",
+        "owner_path": "systems/character_system.py",
+        "owner_line": null,
+        "domain": "shared_other",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "run_audit",
+        "owner_path": "systems/pvp_real_actor_root_cause_audit.py",
+        "owner_line": null,
+        "domain": "shared_other",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      },
+      {
+        "symbol": "save_report",
+        "owner_path": "systems/pvp_real_actor_root_cause_audit.py",
+        "owner_line": null,
+        "domain": "shared_other",
+        "source_stage": "22.1.6",
+        "classification": "ACCEPTED_EXPLICIT_IMPORT_OWNER",
+        "confidence": "HIGH",
+        "deletion_authorized": false
+      }
+    ]
+  },
+  "same_file_effective_registry": [
+    {
+      "symbol": "_auction_main_menu_text_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5187,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "_auction_main_menu_text_v2",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5193,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "auction_buy_category_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5152,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "auction_buy_confirm_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 3311,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "auction_buy_lot_view_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 4565,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "auction_buy_lots_inline_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 3248,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "auction_completed_sale_view_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 3929,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "auction_completed_sales_inline_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 3915,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "auction_my_lot_view_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 3865,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "auction_my_lots_inline_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 3851,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "auction_search_lot_view_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 4590,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "auction_sell_inline_category_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5122,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "auction_unclaimed_item_view_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 3897,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "auction_unclaimed_items_inline_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 3883,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_auction_buy_category_text_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5199,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_auction_house_text",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5180,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_auction_sell_inline_list_text_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5143,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_auction_sell_start_text_inline_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5130,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "register_auction_house_handlers",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5101,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 22,
+      "shadowed_definition_count": 21,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "register_blacksmith_handlers",
+      "path": "handlers/blacksmith.py",
+      "effective_line": 443,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "_get_item_name",
+      "path": "handlers/blacksmith_repair_confirm.py",
+      "effective_line": 251,
+      "classification": "PRIVATE_HELPER_OVERRIDE_CHAIN",
+      "priority": "P2",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "register_blacksmith_repair_confirmation_handlers",
+      "path": "handlers/blacksmith_repair_confirm.py",
+      "effective_line": 341,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_blacksmith_text",
+      "path": "handlers/city.py",
+      "effective_line": 1161,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_city_text",
+      "path": "handlers/city.py",
+      "effective_line": 1195,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_craft_district_text",
+      "path": "handlers/city.py",
+      "effective_line": 1199,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_main_menu_text",
+      "path": "handlers/city.py",
+      "effective_line": 1395,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 4,
+      "shadowed_definition_count": 3,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_tavern_text",
+      "path": "handlers/city.py",
+      "effective_line": 1212,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_townhall_text",
+      "path": "handlers/city.py",
+      "effective_line": 1158,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_item_by_inventory_id_full",
+      "path": "handlers/city.py",
+      "effective_line": 1108,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_sellable_equipment_items",
+      "path": "handlers/city.py",
+      "effective_line": 1096,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "register_blacksmith_repair_button_v2",
+      "path": "handlers/city.py",
+      "effective_line": 858,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "register_city_handlers",
+      "path": "handlers/city.py",
+      "effective_line": 1305,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "register_dev_handlers",
+      "path": "handlers/dev.py",
+      "effective_line": 1058,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 4,
+      "shadowed_definition_count": 3,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "_guild_progress_handle_global_guild_buttons_v1",
+      "path": "handlers/guild.py",
+      "effective_line": 2838,
+      "classification": "PRIVATE_HELPER_OVERRIDE_CHAIN",
+      "priority": "P2",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_guild_application_detail_text",
+      "path": "handlers/guild.py",
+      "effective_line": 1528,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_guild_applications_text",
+      "path": "handlers/guild.py",
+      "effective_line": 1501,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_guild_hall_member_text",
+      "path": "handlers/guild.py",
+      "effective_line": 3008,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_guild_hall_no_guild_text",
+      "path": "handlers/guild.py",
+      "effective_line": 3001,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_guild_logs_text",
+      "path": "handlers/guild.py",
+      "effective_line": 2475,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_guild_member_detail_text",
+      "path": "handlers/guild.py",
+      "effective_line": 3014,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "guild_hall_kb",
+      "path": "handlers/guild.py",
+      "effective_line": 1856,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "guild_list_kb",
+      "path": "handlers/guild.py",
+      "effective_line": 815,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "guild_member_detail_kb",
+      "path": "handlers/guild.py",
+      "effective_line": 1569,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "handle_guild_application_review_message",
+      "path": "handlers/guild.py",
+      "effective_line": 2207,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "handle_guild_creation_message",
+      "path": "handlers/guild.py",
+      "effective_line": 2239,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "handle_guild_list_message",
+      "path": "handlers/guild.py",
+      "effective_line": 2191,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "handle_guild_member_manage_message",
+      "path": "handlers/guild.py",
+      "effective_line": 2223,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "register_guild_handlers",
+      "path": "handlers/guild.py",
+      "effective_line": 2868,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 6,
+      "shadowed_definition_count": 5,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "show_guild_applications",
+      "path": "handlers/guild.py",
+      "effective_line": 1767,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "show_guild_members_manage",
+      "path": "handlers/guild.py",
+      "effective_line": 1673,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "_inject_refine_material_description",
+      "path": "handlers/inventory.py",
+      "effective_line": 5629,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_category_list",
+      "path": "handlers/inventory.py",
+      "effective_line": 5929,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_equipped_comparison_text",
+      "path": "handlers/inventory.py",
+      "effective_line": 6893,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_item_button_label",
+      "path": "handlers/inventory.py",
+      "effective_line": 5737,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_item_details",
+      "path": "handlers/inventory.py",
+      "effective_line": 7807,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 9,
+      "shadowed_definition_count": 8,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_category_count",
+      "path": "handlers/inventory.py",
+      "effective_line": 5375,
+      "classification": "IDENTICAL_SHADOW_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_category_items",
+      "path": "handlers/inventory.py",
+      "effective_line": 7773,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 7,
+      "shadowed_definition_count": 6,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_refine_material_description_text",
+      "path": "handlers/inventory.py",
+      "effective_line": 5589,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "register_inventory_handlers",
+      "path": "handlers/inventory.py",
+      "effective_line": 7622,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_rune_master_home",
+      "path": "handlers/runes.py",
+      "effective_line": 257,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_class_selection_kb",
+      "path": "handlers/start.py",
+      "effective_line": 488,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_class_selection_text",
+      "path": "handlers/start.py",
+      "effective_line": 499,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "register_start_handlers",
+      "path": "handlers/start.py",
+      "effective_line": 610,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "_markup",
+      "path": "handlers/story_quest_npc_runtime.py",
+      "effective_line": 192,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "_text",
+      "path": "handlers/story_quest_npc_runtime.py",
+      "effective_line": 186,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "_auction_buy_normalize_category",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 5531,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "_auction_get_inventory_row",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 1368,
+      "classification": "PRIVATE_HELPER_OVERRIDE_CHAIN",
+      "priority": "P2",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "_auction_inventory_style_weapon_type_line",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 5285,
+      "classification": "PRIVATE_HELPER_OVERRIDE_CHAIN",
+      "priority": "P2",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "_auction_stack_category_matches",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 5405,
+      "classification": "PRIVATE_HELPER_OVERRIDE_CHAIN",
+      "priority": "P2",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_auction_lot_public_details",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 2981,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 4,
+      "shadowed_definition_count": 3,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_user_unclaimed_auction_item_details",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 4030,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "build_user_unclaimed_auction_sale_details",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 3945,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "create_equipment_auction_lot",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 2514,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_user_sellable_stack_items_for_auction",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 5493,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "normalize_auction_category",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 5377,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "update_expired_auction_lots",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 4848,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "validate_inventory_stack_item_for_auction",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 5455,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_max_mp",
+      "path": "systems/character_system.py",
+      "effective_line": 561,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_user_mp",
+      "path": "systems/character_system.py",
+      "effective_line": 525,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "apply_random_durability_wear_on_victory",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3427,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "buy_common_equipment_from_trader",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3955,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "buy_item_for_gold",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3829,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "calculate_repair_cost",
+      "path": "systems/equipment_system.py",
+      "effective_line": 2717,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "calculate_weapon_damage_by_values",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1754,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "damage_equipped_items_on_death",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3383,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "ensure_equipment_slots",
+      "path": "systems/equipment_system.py",
+      "effective_line": 618,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "equip_inventory_item",
+      "path": "systems/equipment_system.py",
+      "effective_line": 2325,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "format_refined_item_name",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1428,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_all_equipped_items",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1132,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 5,
+      "shadowed_definition_count": 4,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_equipped_items_for_repair",
+      "path": "systems/equipment_system.py",
+      "effective_line": 2839,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_inventory_detailed",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1586,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_inventory_entry",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1622,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_inventory_refine_level",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1446,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_inventory_refined_display_name",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1454,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_inventory_weapon_damage_display",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1995,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_item_by_inventory_id",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1598,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_item_by_inventory_id_full",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1610,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_sellable_equipment_items",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3659,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_weapon_damage_by_inventory_id",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1867,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "init_weapon_damage_system",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1710,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "repair_all_equipped",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3059,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "repair_equipped_item",
+      "path": "systems/equipment_system.py",
+      "effective_line": 2939,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "roll_equipment_wear_after_combat",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3557,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "sell_inventory_item_to_trader",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3711,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "unequip_incompatible_items_after_class_change",
+      "path": "systems/equipment_system.py",
+      "effective_line": 2517,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "unequip_inventory_item",
+      "path": "systems/equipment_system.py",
+      "effective_line": 2411,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "accept_guild_application",
+      "path": "systems/guild_system.py",
+      "effective_line": 2015,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "add_guild_progress",
+      "path": "systems/guild_system.py",
+      "effective_line": 2294,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "create_guild_application",
+      "path": "systems/guild_system.py",
+      "effective_line": 2474,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "apply_hp_regen",
+      "path": "systems/notifications.py",
+      "effective_line": 713,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_worker_max_mp_17_15_1",
+      "path": "systems/notifications.py",
+      "effective_line": 1037,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "add_gold",
+      "path": "systems/player_system.py",
+      "effective_line": 1273,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "add_kill",
+      "path": "systems/player_system.py",
+      "effective_line": 1307,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_current_hp",
+      "path": "systems/player_system.py",
+      "effective_line": 1365,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_current_hp_raw",
+      "path": "systems/player_system.py",
+      "effective_line": 1344,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_player_level",
+      "path": "systems/player_system.py",
+      "effective_line": 1231,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_wallet",
+      "path": "systems/player_system.py",
+      "effective_line": 1252,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "set_current_hp",
+      "path": "systems/player_system.py",
+      "effective_line": 1374,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "use_potion_from_inventory",
+      "path": "systems/potion_system.py",
+      "effective_line": 525,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_equipment_rune_slot_info",
+      "path": "systems/rune_system.py",
+      "effective_line": 1162,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_extractor_equipment",
+      "path": "systems/rune_system.py",
+      "effective_line": 1175,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "get_extractor_preview",
+      "path": "systems/rune_system.py",
+      "effective_line": 1190,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    },
+    {
+      "symbol": "insert_rune_into_equipment",
+      "path": "systems/rune_system.py",
+      "effective_line": 707,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false
+    }
+  ],
+  "compatibility_delegate_map": [
+    {
+      "symbol": "apply_random_durability_wear_on_victory",
+      "owner_path": "systems/equipment_system.py",
+      "compatibility_path": "db_modules/equipment.py",
+      "same_symbol_calls": [
+        "_equipment_system().apply_random_durability_wear_on_victory"
+      ],
+      "loader_calls": [
+        "_equipment_system().apply_random_durability_wear_on_victory",
+        "_equipment_system"
+      ],
+      "removal_authorized": false
+    },
+    {
+      "symbol": "build_auction_lot_public_details",
+      "owner_path": "systems/auction_house_system.py",
+      "compatibility_path": "db_modules/systems_wrappers.py",
+      "same_symbol_calls": [
+        "_auction_system().build_auction_lot_public_details"
+      ],
+      "loader_calls": [
+        "_auction_system().build_auction_lot_public_details",
+        "_auction_system"
+      ],
+      "removal_authorized": false
+    },
+    {
+      "symbol": "calculate_repair_cost",
+      "owner_path": "systems/equipment_system.py",
+      "compatibility_path": "db_modules/equipment.py",
+      "same_symbol_calls": [
+        "_equipment_system().calculate_repair_cost"
+      ],
+      "loader_calls": [
+        "_equipment_system().calculate_repair_cost",
+        "_equipment_system"
+      ],
+      "removal_authorized": false
+    },
+    {
+      "symbol": "calculate_weapon_damage_by_values",
+      "owner_path": "systems/equipment_system.py",
+      "compatibility_path": "db_modules/dev_compat.py",
+      "same_symbol_calls": [
+        "_equipment_system_ro_v1().calculate_weapon_damage_by_values"
+      ],
+      "loader_calls": [
+        "_equipment_system_ro_v1().calculate_weapon_damage_by_values",
+        "_equipment_system_ro_v1"
+      ],
+      "removal_authorized": false
+    },
+    {
+      "symbol": "calculate_weapon_damage_by_values",
+      "owner_path": "systems/equipment_system.py",
+      "compatibility_path": "db_modules/equipment.py",
+      "same_symbol_calls": [
+        "_equipment_system().calculate_weapon_damage_by_values"
+      ],
+      "loader_calls": [
+        "_equipment_system().calculate_weapon_damage_by_values",
+        "_equipment_system"
+      ],
+      "removal_authorized": false
+    },
+    {
+      "symbol": "calculate_weapon_damage_by_values",
+      "owner_path": "systems/equipment_system.py",
+      "compatibility_path": "db_modules/generated_equipment.py",
+      "same_symbol_calls": [
+        "_equipment_system_ro_v1().calculate_weapon_damage_by_values"
+      ],
+      "loader_calls": [
+        "_equipment_system_ro_v1().calculate_weapon_damage_by_values",
+        "_equipment_system_ro_v1"
+      ],
+      "removal_authorized": false
+    },
+    {
+      "symbol": "create_equipment_auction_lot",
+      "owner_path": "systems/auction_house_system.py",
+      "compatibility_path": "db_modules/systems_wrappers.py",
+      "same_symbol_calls": [
+        "_auction_system().create_equipment_auction_lot"
+      ],
+      "loader_calls": [
+        "_auction_system().create_equipment_auction_lot",
+        "_auction_system"
+      ],
+      "removal_authorized": false
+    },
+    {
+      "symbol": "create_guild_application",
+      "owner_path": "systems/guild_system.py",
+      "compatibility_path": "db_modules/systems_wrappers.py",
+      "same_symbol_calls": [
+        "_guild_system().create_guild_application"
+      ],
+      "loader_calls": [
+        "_guild_system().create_guild_application",
+        "_guild_system"
+      ],
+      "removal_authorized": false
+    },
+    {
+      "symbol": "get_dynamic_sell_price",
+      "owner_path": "db_modules/generated_equipment.py",
+      "compatibility_path": "systems/dynamic_equipment_system.py",
+      "same_symbol_calls": [
+        "_canonical().get_dynamic_sell_price"
+      ],
+      "loader_calls": [
+        "_canonical"
+      ],
+      "removal_authorized": false
+    },
+    {
+      "symbol": "get_inventory_weapon_damage_display",
+      "owner_path": "systems/equipment_system.py",
+      "compatibility_path": "db_modules/equipment.py",
+      "same_symbol_calls": [
+        "_equipment_system().get_inventory_weapon_damage_display"
+      ],
+      "loader_calls": [
+        "_equipment_system().get_inventory_weapon_damage_display",
+        "_equipment_system"
+      ],
+      "removal_authorized": false
+    },
+    {
+      "symbol": "get_weapon_damage_by_inventory_id",
+      "owner_path": "systems/equipment_system.py",
+      "compatibility_path": "db_modules/equipment.py",
+      "same_symbol_calls": [
+        "_equipment_system().get_weapon_damage_by_inventory_id"
+      ],
+      "loader_calls": [
+        "_equipment_system().get_weapon_damage_by_inventory_id",
+        "_equipment_system"
+      ],
+      "removal_authorized": false
+    },
+    {
+      "symbol": "init_weapon_damage_system",
+      "owner_path": "systems/equipment_system.py",
+      "compatibility_path": "db_modules/dev_compat.py",
+      "same_symbol_calls": [
+        "_equipment_system_ro_v1().init_weapon_damage_system"
+      ],
+      "loader_calls": [
+        "_equipment_system_ro_v1().init_weapon_damage_system",
+        "_equipment_system_ro_v1"
+      ],
+      "removal_authorized": false
+    },
+    {
+      "symbol": "init_weapon_damage_system",
+      "owner_path": "systems/equipment_system.py",
+      "compatibility_path": "db_modules/equipment.py",
+      "same_symbol_calls": [
+        "_equipment_system().init_weapon_damage_system"
+      ],
+      "loader_calls": [
+        "_equipment_system().init_weapon_damage_system",
+        "_equipment_system"
+      ],
+      "removal_authorized": false
+    },
+    {
+      "symbol": "init_weapon_damage_system",
+      "owner_path": "systems/equipment_system.py",
+      "compatibility_path": "db_modules/generated_equipment.py",
+      "same_symbol_calls": [
+        "_equipment_system_ro_v1().init_weapon_damage_system"
+      ],
+      "loader_calls": [
+        "_equipment_system_ro_v1().init_weapon_damage_system",
+        "_equipment_system_ro_v1"
+      ],
+      "removal_authorized": false
+    },
+    {
+      "symbol": "init_weapon_damage_system",
+      "owner_path": "systems/equipment_system.py",
+      "compatibility_path": "db_modules/inventory_compat.py",
+      "same_symbol_calls": [
+        "_equipment_system_ro_v1().init_weapon_damage_system"
+      ],
+      "loader_calls": [
+        "_equipment_system_ro_v1().init_weapon_damage_system",
+        "_equipment_system_ro_v1"
+      ],
+      "removal_authorized": false
+    },
+    {
+      "symbol": "set_current_hp",
+      "owner_path": "systems/player_system.py",
+      "compatibility_path": "db_modules/player.py",
+      "same_symbol_calls": [
+        "_player_system().set_current_hp"
+      ],
+      "loader_calls": [
+        "_player_system().set_current_hp",
+        "_player_system"
+      ],
+      "removal_authorized": false
+    },
+    {
+      "symbol": "update_expired_auction_lots",
+      "owner_path": "systems/auction_house_system.py",
+      "compatibility_path": "db_modules/systems_wrappers.py",
+      "same_symbol_calls": [
+        "_auction_system().update_expired_auction_lots"
+      ],
+      "loader_calls": [
+        "_auction_system().update_expired_auction_lots",
+        "_auction_system"
+      ],
+      "removal_authorized": false
+    }
+  ],
+  "replacement_test_contracts": {
+    "get_dynamic_sell_price": {
+      "signature_parity": true,
+      "caller_import_parity": true,
+      "return_and_exception_parity": true,
+      "transaction_commit_rollback_parity": false,
+      "python_effective_definition_lock": true,
+      "loader_target_lock": false,
+      "focused_existing_tests": [
+        "tools/smoke_test_dynamic_equipment_system_16_1_14.py"
+      ],
+      "new_focused_test_required": false
+    },
+    "apply_random_durability_wear_on_victory": {
+      "signature_parity": true,
+      "caller_import_parity": true,
+      "return_and_exception_parity": true,
+      "transaction_commit_rollback_parity": true,
+      "python_effective_definition_lock": true,
+      "loader_target_lock": true,
+      "focused_existing_tests": [
+        "tools/smoke_test_equipment_durability_contracts.py"
+      ],
+      "new_focused_test_required": false
+    },
+    "build_auction_lot_public_details": {
+      "signature_parity": true,
+      "caller_import_parity": true,
+      "return_and_exception_parity": true,
+      "transaction_commit_rollback_parity": false,
+      "python_effective_definition_lock": true,
+      "loader_target_lock": true,
+      "focused_existing_tests": [],
+      "new_focused_test_required": true
+    },
+    "calculate_repair_cost": {
+      "signature_parity": true,
+      "caller_import_parity": true,
+      "return_and_exception_parity": true,
+      "transaction_commit_rollback_parity": false,
+      "python_effective_definition_lock": true,
+      "loader_target_lock": true,
+      "focused_existing_tests": [
+        "tools/smoke_test_equipment_durability_contracts.py",
+        "tools/smoke_test_repair_and_durability_lifecycle_18_30_5h.py"
+      ],
+      "new_focused_test_required": false
+    },
+    "calculate_weapon_damage_by_values": {
+      "signature_parity": true,
+      "caller_import_parity": true,
+      "return_and_exception_parity": true,
+      "transaction_commit_rollback_parity": false,
+      "python_effective_definition_lock": true,
+      "loader_target_lock": true,
+      "focused_existing_tests": [
+        "tools/smoke_test_weapon_damage_contracts.py"
+      ],
+      "new_focused_test_required": false
+    },
+    "create_equipment_auction_lot": {
+      "signature_parity": true,
+      "caller_import_parity": true,
+      "return_and_exception_parity": true,
+      "transaction_commit_rollback_parity": true,
+      "python_effective_definition_lock": true,
+      "loader_target_lock": true,
+      "focused_existing_tests": [],
+      "new_focused_test_required": true
+    },
+    "create_guild_application": {
+      "signature_parity": true,
+      "caller_import_parity": true,
+      "return_and_exception_parity": true,
+      "transaction_commit_rollback_parity": true,
+      "python_effective_definition_lock": true,
+      "loader_target_lock": true,
+      "focused_existing_tests": [],
+      "new_focused_test_required": true
+    },
+    "get_inventory_weapon_damage_display": {
+      "signature_parity": true,
+      "caller_import_parity": true,
+      "return_and_exception_parity": true,
+      "transaction_commit_rollback_parity": false,
+      "python_effective_definition_lock": true,
+      "loader_target_lock": true,
+      "focused_existing_tests": [
+        "tools/smoke_test_weapon_damage_contracts.py"
+      ],
+      "new_focused_test_required": false
+    },
+    "get_weapon_damage_by_inventory_id": {
+      "signature_parity": true,
+      "caller_import_parity": true,
+      "return_and_exception_parity": true,
+      "transaction_commit_rollback_parity": true,
+      "python_effective_definition_lock": true,
+      "loader_target_lock": true,
+      "focused_existing_tests": [
+        "tools/smoke_test_weapon_damage_contracts.py"
+      ],
+      "new_focused_test_required": false
+    },
+    "init_weapon_damage_system": {
+      "signature_parity": true,
+      "caller_import_parity": true,
+      "return_and_exception_parity": true,
+      "transaction_commit_rollback_parity": true,
+      "python_effective_definition_lock": true,
+      "loader_target_lock": true,
+      "focused_existing_tests": [],
+      "new_focused_test_required": true
+    },
+    "set_current_hp": {
+      "signature_parity": true,
+      "caller_import_parity": true,
+      "return_and_exception_parity": true,
+      "transaction_commit_rollback_parity": true,
+      "python_effective_definition_lock": true,
+      "loader_target_lock": true,
+      "focused_existing_tests": [],
+      "new_focused_test_required": true
+    },
+    "update_expired_auction_lots": {
+      "signature_parity": true,
+      "caller_import_parity": true,
+      "return_and_exception_parity": true,
+      "transaction_commit_rollback_parity": true,
+      "python_effective_definition_lock": true,
+      "loader_target_lock": true,
+      "focused_existing_tests": [
+        "tools/smoke_test_auction_lifecycle_contracts.py"
+      ],
+      "new_focused_test_required": false
+    }
+  },
+  "no_delete_registry": [
+    {
+      "scope": "accepted_owner",
+      "symbol": "apply_random_durability_wear_on_victory",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3427,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "build_auction_buy_lot_details_v2",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 4222,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "build_auction_lot_public_details",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 2981,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "build_auction_sell_item_review_text",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 3088,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "build_blacksmith_repair_text",
+      "path": "handlers/city.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "build_user_auction_lot_details",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 3270,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "calculate_repair_cost",
+      "path": "systems/equipment_system.py",
+      "effective_line": 2717,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "calculate_weapon_damage_by_values",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1754,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "create_auction_lot_record",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 395,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "create_daily_contract",
+      "path": "systems/contract_system.py",
+      "effective_line": 253,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "create_equipment_auction_lot",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 2514,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "create_guild",
+      "path": "systems/guild_system.py",
+      "effective_line": 665,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "create_guild_application",
+      "path": "systems/guild_system.py",
+      "effective_line": 2474,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "create_player_interaction_request",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "create_player_trade_from_accepted_request",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": 990,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "create_stack_auction_lot",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 1622,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_active_player_trade",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_auction_house_stats",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 692,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_auction_lot_by_id",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 295,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_auction_lot_market_price_stats",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 4652,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_auction_lots",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 335,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_auction_lots_for_buy_filtered",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 4157,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_auction_lots_for_buy_search",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 4472,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_character_class",
+      "path": "systems/character_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_dynamic_sell_price",
+      "path": "db_modules/generated_equipment.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_exp_to_next_level",
+      "path": "data/player_progression.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_guild_application_by_id",
+      "path": "systems/guild_system.py",
+      "effective_line": 1428,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_guild_applications",
+      "path": "systems/guild_system.py",
+      "effective_line": 833,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_guild_pending_applications_count",
+      "path": "systems/guild_system.py",
+      "effective_line": 2712,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_interaction_request",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_inventory_weapon_damage_display",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1995,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_item_trade_policy",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_online_players_in_same_location",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_player_trade",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_player_trade_category_counts",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_player_trade_editor_state",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_player_trade_wallet_state",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_public_auction_lots_for_buyer",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 1960,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_public_player_interaction_profile",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_total_repair_cost",
+      "path": "systems/equipment_system.py",
+      "effective_line": 2921,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_trade_item_preview",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_trade_offer_entry",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_tradeable_inventory_for_trade",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_tradeable_inventory_for_trade_category",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_user_auction_lot_by_id",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 3261,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_user_auction_lots",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 3226,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_user_guild_applications",
+      "path": "systems/guild_system.py",
+      "effective_line": 1108,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_user_pending_applications_count",
+      "path": "systems/guild_system.py",
+      "effective_line": 2725,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "get_weapon_damage_by_inventory_id",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1867,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "init_player_interaction_foundation",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "init_player_trade_foundation",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "init_player_trade_item_policy_and_reservations",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "init_weapon_damage_system",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1710,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "run_audit",
+      "path": "systems/pvp_real_actor_root_cause_audit.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "save_report",
+      "path": "systems/pvp_real_actor_root_cause_audit.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "set_current_hp",
+      "path": "systems/player_system.py",
+      "effective_line": 1374,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "set_player_trade_gold_offer",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "set_player_trade_item_offer",
+      "path": "systems/player_interaction_system.py",
+      "effective_line": null,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "accepted_owner",
+      "symbol": "update_expired_auction_lots",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 4848,
+      "deletion_authorized": false,
+      "reason": "Owner acceptance does not authorize deletion of compatibility or historical definitions."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "_auction_buy_normalize_category",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 5531,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "_auction_get_inventory_row",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 1368,
+      "classification": "PRIVATE_HELPER_OVERRIDE_CHAIN",
+      "priority": "P2",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "_auction_inventory_style_weapon_type_line",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 5285,
+      "classification": "PRIVATE_HELPER_OVERRIDE_CHAIN",
+      "priority": "P2",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "_auction_main_menu_text_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5187,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "_auction_main_menu_text_v2",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5193,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "_auction_stack_category_matches",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 5405,
+      "classification": "PRIVATE_HELPER_OVERRIDE_CHAIN",
+      "priority": "P2",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "_get_item_name",
+      "path": "handlers/blacksmith_repair_confirm.py",
+      "effective_line": 251,
+      "classification": "PRIVATE_HELPER_OVERRIDE_CHAIN",
+      "priority": "P2",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "_guild_progress_handle_global_guild_buttons_v1",
+      "path": "handlers/guild.py",
+      "effective_line": 2838,
+      "classification": "PRIVATE_HELPER_OVERRIDE_CHAIN",
+      "priority": "P2",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "_inject_refine_material_description",
+      "path": "handlers/inventory.py",
+      "effective_line": 5629,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "_markup",
+      "path": "handlers/story_quest_npc_runtime.py",
+      "effective_line": 192,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "_text",
+      "path": "handlers/story_quest_npc_runtime.py",
+      "effective_line": 186,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "accept_guild_application",
+      "path": "systems/guild_system.py",
+      "effective_line": 2015,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "add_gold",
+      "path": "systems/player_system.py",
+      "effective_line": 1273,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "add_guild_progress",
+      "path": "systems/guild_system.py",
+      "effective_line": 2294,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "add_kill",
+      "path": "systems/player_system.py",
+      "effective_line": 1307,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "apply_hp_regen",
+      "path": "systems/notifications.py",
+      "effective_line": 713,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "apply_random_durability_wear_on_victory",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3427,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "auction_buy_category_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5152,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "auction_buy_confirm_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 3311,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "auction_buy_lot_view_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 4565,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "auction_buy_lots_inline_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 3248,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "auction_completed_sale_view_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 3929,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "auction_completed_sales_inline_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 3915,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "auction_my_lot_view_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 3865,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "auction_my_lots_inline_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 3851,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "auction_search_lot_view_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 4590,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "auction_sell_inline_category_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5122,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "auction_unclaimed_item_view_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 3897,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "auction_unclaimed_items_inline_kb_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 3883,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_auction_buy_category_text_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5199,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_auction_house_text",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5180,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_auction_lot_public_details",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 2981,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 4,
+      "shadowed_definition_count": 3,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_auction_sell_inline_list_text_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5143,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_auction_sell_start_text_inline_v1",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5130,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_blacksmith_text",
+      "path": "handlers/city.py",
+      "effective_line": 1161,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_category_list",
+      "path": "handlers/inventory.py",
+      "effective_line": 5929,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_city_text",
+      "path": "handlers/city.py",
+      "effective_line": 1195,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_class_selection_kb",
+      "path": "handlers/start.py",
+      "effective_line": 488,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_class_selection_text",
+      "path": "handlers/start.py",
+      "effective_line": 499,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_craft_district_text",
+      "path": "handlers/city.py",
+      "effective_line": 1199,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_equipped_comparison_text",
+      "path": "handlers/inventory.py",
+      "effective_line": 6893,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_guild_application_detail_text",
+      "path": "handlers/guild.py",
+      "effective_line": 1528,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_guild_applications_text",
+      "path": "handlers/guild.py",
+      "effective_line": 1501,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_guild_hall_member_text",
+      "path": "handlers/guild.py",
+      "effective_line": 3008,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_guild_hall_no_guild_text",
+      "path": "handlers/guild.py",
+      "effective_line": 3001,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_guild_logs_text",
+      "path": "handlers/guild.py",
+      "effective_line": 2475,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_guild_member_detail_text",
+      "path": "handlers/guild.py",
+      "effective_line": 3014,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_item_button_label",
+      "path": "handlers/inventory.py",
+      "effective_line": 5737,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_item_details",
+      "path": "handlers/inventory.py",
+      "effective_line": 7807,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 9,
+      "shadowed_definition_count": 8,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_main_menu_text",
+      "path": "handlers/city.py",
+      "effective_line": 1395,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 4,
+      "shadowed_definition_count": 3,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_rune_master_home",
+      "path": "handlers/runes.py",
+      "effective_line": 257,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_tavern_text",
+      "path": "handlers/city.py",
+      "effective_line": 1212,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_townhall_text",
+      "path": "handlers/city.py",
+      "effective_line": 1158,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_user_unclaimed_auction_item_details",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 4030,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "build_user_unclaimed_auction_sale_details",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 3945,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "buy_common_equipment_from_trader",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3955,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "buy_item_for_gold",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3829,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "calculate_repair_cost",
+      "path": "systems/equipment_system.py",
+      "effective_line": 2717,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "calculate_weapon_damage_by_values",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1754,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "create_equipment_auction_lot",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 2514,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "create_guild_application",
+      "path": "systems/guild_system.py",
+      "effective_line": 2474,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "damage_equipped_items_on_death",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3383,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "ensure_equipment_slots",
+      "path": "systems/equipment_system.py",
+      "effective_line": 618,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "equip_inventory_item",
+      "path": "systems/equipment_system.py",
+      "effective_line": 2325,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "format_refined_item_name",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1428,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_all_equipped_items",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1132,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 5,
+      "shadowed_definition_count": 4,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_category_count",
+      "path": "handlers/inventory.py",
+      "effective_line": 5375,
+      "classification": "IDENTICAL_SHADOW_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_category_items",
+      "path": "handlers/inventory.py",
+      "effective_line": 7773,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 7,
+      "shadowed_definition_count": 6,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_current_hp",
+      "path": "systems/player_system.py",
+      "effective_line": 1365,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_current_hp_raw",
+      "path": "systems/player_system.py",
+      "effective_line": 1344,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_equipment_rune_slot_info",
+      "path": "systems/rune_system.py",
+      "effective_line": 1162,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_equipped_items_for_repair",
+      "path": "systems/equipment_system.py",
+      "effective_line": 2839,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_extractor_equipment",
+      "path": "systems/rune_system.py",
+      "effective_line": 1175,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_extractor_preview",
+      "path": "systems/rune_system.py",
+      "effective_line": 1190,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_inventory_detailed",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1586,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_inventory_entry",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1622,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_inventory_refine_level",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1446,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_inventory_refined_display_name",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1454,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_inventory_weapon_damage_display",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1995,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_item_by_inventory_id",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1598,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_item_by_inventory_id_full",
+      "path": "handlers/city.py",
+      "effective_line": 1108,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_item_by_inventory_id_full",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1610,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_max_mp",
+      "path": "systems/character_system.py",
+      "effective_line": 561,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_player_level",
+      "path": "systems/player_system.py",
+      "effective_line": 1231,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_refine_material_description_text",
+      "path": "handlers/inventory.py",
+      "effective_line": 5589,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_sellable_equipment_items",
+      "path": "handlers/city.py",
+      "effective_line": 1096,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_sellable_equipment_items",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3659,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_user_mp",
+      "path": "systems/character_system.py",
+      "effective_line": 525,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_user_sellable_stack_items_for_auction",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 5493,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_wallet",
+      "path": "systems/player_system.py",
+      "effective_line": 1252,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_weapon_damage_by_inventory_id",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1867,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "get_worker_max_mp_17_15_1",
+      "path": "systems/notifications.py",
+      "effective_line": 1037,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "guild_hall_kb",
+      "path": "handlers/guild.py",
+      "effective_line": 1856,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "guild_list_kb",
+      "path": "handlers/guild.py",
+      "effective_line": 815,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "guild_member_detail_kb",
+      "path": "handlers/guild.py",
+      "effective_line": 1569,
+      "classification": "PRESENTATION_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "handle_guild_application_review_message",
+      "path": "handlers/guild.py",
+      "effective_line": 2207,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "handle_guild_creation_message",
+      "path": "handlers/guild.py",
+      "effective_line": 2239,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "handle_guild_list_message",
+      "path": "handlers/guild.py",
+      "effective_line": 2191,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "handle_guild_member_manage_message",
+      "path": "handlers/guild.py",
+      "effective_line": 2223,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "init_weapon_damage_system",
+      "path": "systems/equipment_system.py",
+      "effective_line": 1710,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "insert_rune_into_equipment",
+      "path": "systems/rune_system.py",
+      "effective_line": 707,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "normalize_auction_category",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 5377,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "register_auction_house_handlers",
+      "path": "handlers/auction_house.py",
+      "effective_line": 5101,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 22,
+      "shadowed_definition_count": 21,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "register_blacksmith_handlers",
+      "path": "handlers/blacksmith.py",
+      "effective_line": 443,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "register_blacksmith_repair_button_v2",
+      "path": "handlers/city.py",
+      "effective_line": 858,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "register_blacksmith_repair_confirmation_handlers",
+      "path": "handlers/blacksmith_repair_confirm.py",
+      "effective_line": 341,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "register_city_handlers",
+      "path": "handlers/city.py",
+      "effective_line": 1305,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "register_dev_handlers",
+      "path": "handlers/dev.py",
+      "effective_line": 1058,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 4,
+      "shadowed_definition_count": 3,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "register_guild_handlers",
+      "path": "handlers/guild.py",
+      "effective_line": 2868,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 6,
+      "shadowed_definition_count": 5,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "register_inventory_handlers",
+      "path": "handlers/inventory.py",
+      "effective_line": 7622,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "register_start_handlers",
+      "path": "handlers/start.py",
+      "effective_line": 610,
+      "classification": "REGISTRATION_CHAIN",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "repair_all_equipped",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3059,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "repair_equipped_item",
+      "path": "systems/equipment_system.py",
+      "effective_line": 2939,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "roll_equipment_wear_after_combat",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3557,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "sell_inventory_item_to_trader",
+      "path": "systems/equipment_system.py",
+      "effective_line": 3711,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "set_current_hp",
+      "path": "systems/player_system.py",
+      "effective_line": 1374,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 3,
+      "shadowed_definition_count": 2,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "show_guild_applications",
+      "path": "handlers/guild.py",
+      "effective_line": 1767,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "show_guild_members_manage",
+      "path": "handlers/guild.py",
+      "effective_line": 1673,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "unequip_incompatible_items_after_class_change",
+      "path": "systems/equipment_system.py",
+      "effective_line": 2517,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "unequip_inventory_item",
+      "path": "systems/equipment_system.py",
+      "effective_line": 2411,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "update_expired_auction_lots",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 4848,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "use_potion_from_inventory",
+      "path": "systems/potion_system.py",
+      "effective_line": 525,
+      "classification": "TRANSACTION_SENSITIVE",
+      "priority": "P0",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    },
+    {
+      "scope": "same_file_chain",
+      "symbol": "validate_inventory_stack_item_for_auction",
+      "path": "systems/auction_house_system.py",
+      "effective_line": 5455,
+      "classification": "DOMAIN_LOGIC_OVERRIDE_CHAIN",
+      "priority": "P1",
+      "definition_count": 2,
+      "shadowed_definition_count": 1,
+      "deletion_authorized": false,
+      "reason": "Requires successor runtime/replacement tests and a guarded mutation patch."
+    }
+  ],
+  "stage_22_1_acceptance": {
+    "baseline_inventory": "PASS",
+    "same_file_classification": "PASS",
+    "cross_file_reconciliation": "PASS",
+    "canonical_owner_classification": "PASS",
+    "focused_runtime_evidence": "PASS_CORRECTED_BY_22_1_7A",
+    "accepted_owner_registry": "59/59",
+    "unresolved_ownership_blockers": 0,
+    "deletion_authorized": false
+  },
+  "decision": "GO_TO_22_2_REGISTRATION_AND_RUNTIME_DISPATCH_RECONCILIATION",
+  "production_mutations": [],
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED"
+}
