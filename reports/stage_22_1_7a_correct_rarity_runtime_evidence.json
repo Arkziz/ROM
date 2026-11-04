@@ -1,0 +1,323 @@
+{
+  "stage": "22.1.7a",
+  "revision": "2",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-04T22:59:29.326511+00:00",
+  "parent": "61e52eb058af9da077ff534b1b94334329282e59",
+  "git": {
+    "branch": "develop",
+    "head": "61e52eb058af9da077ff534b1b94334329282e59",
+    "origin_develop": "56c18339c28df4f9e89c17d933572982e51aec79",
+    "origin_is_ancestor": true
+  },
+  "authority": {
+    "stage_22_1_7_defective_evidence": {
+      "path": "reports/stage_22_1_7_get_dynamic_sell_price_focused_runtime_evidence.json",
+      "sha256": "9d99a48552c586c351678bdb5fd4941c1ac453385d4dcdb73a5f57d8fe146450",
+      "fixture_verdict": "INVALID_TEST_INPUT"
+    },
+    "programming_regulation": "Update 12 PASS",
+    "production_rarity_source": "DYNAMIC_SELL_MULTIPLIERS runtime dictionary"
+  },
+  "symbol": "get_dynamic_sell_price",
+  "source_evidence": {
+    "dynamic_delegate": {
+      "path": "systems/dynamic_equipment_system.py",
+      "line": 24,
+      "end_line": 25,
+      "ast_hash": "345412bae979fb8411b754bccb9fb323b0953ced4643a8947cbda525e7b50a7c",
+      "calls": [
+        "_canonical().get_dynamic_sell_price",
+        "_canonical"
+      ],
+      "source_hash": "968ca97e45bbceba24573fa13c99f7916b6ef95ad239dabb99e834550fd57ad9",
+      "canonical_loader": {
+        "line": 15,
+        "ast_hash": "bbb0a71af8707eedd53dcd5fa510ae14e5a718aef750003836eda746c9be2484",
+        "returns": [
+          "import_module('db_modules.generated_equipment')"
+        ]
+      }
+    },
+    "dev_compat": {
+      "path": "db_modules/dev_compat.py",
+      "line": 109,
+      "end_line": 112,
+      "ast_hash": "ea1d165837ef7fc2d0b7aee24e79904c58444e806a1b3f8f321085cc7d2edfff",
+      "calls": [
+        "DYNAMIC_SELL_MULTIPLIERS.get",
+        "round",
+        "max"
+      ],
+      "source_hash": "8505f2333fa44875c1bf53eaa4a9bfe295bc5e3a1f0dba89222134b78be78d96"
+    },
+    "generated_equipment": {
+      "path": "db_modules/generated_equipment.py",
+      "line": 137,
+      "end_line": 140,
+      "ast_hash": "ea1d165837ef7fc2d0b7aee24e79904c58444e806a1b3f8f321085cc7d2edfff",
+      "calls": [
+        "DYNAMIC_SELL_MULTIPLIERS.get",
+        "round",
+        "max"
+      ],
+      "source_hash": "8505f2333fa44875c1bf53eaa4a9bfe295bc5e3a1f0dba89222134b78be78d96"
+    },
+    "shop_calls": [
+      {
+        "line": 310,
+        "target": "dynamic_equipment_system.get_dynamic_sell_price"
+      }
+    ]
+  },
+  "runtime_evidence": {
+    "canonical_file": "db_modules/generated_equipment.py",
+    "canonical_module": "db_modules.generated_equipment",
+    "dynamic_callable_module": "systems.dynamic_equipment_system",
+    "dynamic_delegates_to_owner_identity": true,
+    "exact_key_set_match": true,
+    "expected_rarity_keys": [
+      "common",
+      "uncommon",
+      "rare",
+      "epic"
+    ],
+    "fallback": {
+      "all_equal_expected": true,
+      "expected": 3.0,
+      "input": "__invalid_rarity__",
+      "values": {
+        "canonical": 3.0,
+        "dev": 3.0,
+        "dynamic": 3.0,
+        "generated": 3.0
+      }
+    },
+    "owner_callable_module": "db_modules.generated_equipment",
+    "previous_fixture_defect": {
+      "classification": "INVALID_TEST_INPUT",
+      "invalid_inputs": [
+        "COMMON",
+        "RARE",
+        "EPIC",
+        "LEGENDARY"
+      ],
+      "reason": "Uppercase and nonexistent rarity values exercised fallback 0.30 instead of exact production rarity branches."
+    },
+    "rarity_key_sets": {
+      "canonical": [
+        "common",
+        "epic",
+        "rare",
+        "uncommon"
+      ],
+      "dev": [
+        "common",
+        "epic",
+        "rare",
+        "uncommon"
+      ],
+      "generated": [
+        "common",
+        "epic",
+        "rare",
+        "uncommon"
+      ]
+    },
+    "samples": [
+      {
+        "all_equal_expected": true,
+        "expected": 3.0,
+        "item_level": 10,
+        "multiplier": 0.3,
+        "rarity": "common",
+        "values": {
+          "canonical": 3.0,
+          "dev": 3.0,
+          "dynamic": 3.0,
+          "generated": 3.0
+        }
+      },
+      {
+        "all_equal_expected": true,
+        "expected": 9.0,
+        "item_level": 10,
+        "multiplier": 0.9,
+        "rarity": "uncommon",
+        "values": {
+          "canonical": 9.0,
+          "dev": 9.0,
+          "dynamic": 9.0,
+          "generated": 9.0
+        }
+      },
+      {
+        "all_equal_expected": true,
+        "expected": 22.5,
+        "item_level": 10,
+        "multiplier": 2.25,
+        "rarity": "rare",
+        "values": {
+          "canonical": 22.5,
+          "dev": 22.5,
+          "dynamic": 22.5,
+          "generated": 22.5
+        }
+      },
+      {
+        "all_equal_expected": true,
+        "expected": 60.0,
+        "item_level": 10,
+        "multiplier": 6.0,
+        "rarity": "epic",
+        "values": {
+          "canonical": 60.0,
+          "dev": 60.0,
+          "dynamic": 60.0,
+          "generated": 60.0
+        }
+      }
+    ]
+  },
+  "accepted_owner": {
+    "path": "db_modules/generated_equipment.py",
+    "module": "db_modules.generated_equipment",
+    "symbol": "get_dynamic_sell_price",
+    "runtime_callable_module": "db_modules.generated_equipment"
+  },
+  "replacement_test_contract": {
+    "focused_smoke": "tools/smoke_test_dynamic_equipment_system_16_1_14.py",
+    "runtime_module_identity": true,
+    "canonical_loader_target_lock": true,
+    "shop_caller_lock": true,
+    "exact_rarity_keys": [
+      "common",
+      "uncommon",
+      "rare",
+      "epic"
+    ],
+    "sample_parity_cases": [
+      {
+        "all_equal_expected": true,
+        "expected": 3.0,
+        "item_level": 10,
+        "multiplier": 0.3,
+        "rarity": "common",
+        "values": {
+          "canonical": 3.0,
+          "dev": 3.0,
+          "dynamic": 3.0,
+          "generated": 3.0
+        }
+      },
+      {
+        "all_equal_expected": true,
+        "expected": 9.0,
+        "item_level": 10,
+        "multiplier": 0.9,
+        "rarity": "uncommon",
+        "values": {
+          "canonical": 9.0,
+          "dev": 9.0,
+          "dynamic": 9.0,
+          "generated": 9.0
+        }
+      },
+      {
+        "all_equal_expected": true,
+        "expected": 22.5,
+        "item_level": 10,
+        "multiplier": 2.25,
+        "rarity": "rare",
+        "values": {
+          "canonical": 22.5,
+          "dev": 22.5,
+          "dynamic": 22.5,
+          "generated": 22.5
+        }
+      },
+      {
+        "all_equal_expected": true,
+        "expected": 60.0,
+        "item_level": 10,
+        "multiplier": 6.0,
+        "rarity": "epic",
+        "values": {
+          "canonical": 60.0,
+          "dev": 60.0,
+          "dynamic": 60.0,
+          "generated": 60.0
+        }
+      }
+    ],
+    "invalid_rarity_fallback_case": {
+      "all_equal_expected": true,
+      "expected": 3.0,
+      "input": "__invalid_rarity__",
+      "values": {
+        "canonical": 3.0,
+        "dev": 3.0,
+        "dynamic": 3.0,
+        "generated": 3.0
+      }
+    },
+    "supersedes_invalid_fixture_matrix_from_stage": "22.1.7",
+    "duplicate_implementation_body_parity": true,
+    "deletion_requires_later_mutation_patch": true
+  },
+  "summary": {
+    "focused_symbols": 1,
+    "corrected_rarity_cases": 4,
+    "fallback_cases": 1,
+    "invalid_prior_cases": 4,
+    "owner_decisions_accepted": 1,
+    "owner_decisions_deferred": 0,
+    "accepted_owner_registry_total_candidate": 59,
+    "deletion_authorized": false
+  },
+  "decision": "GO_TO_22_1_8_DOMAIN_OWNER_MAP",
+  "production_mutations": [],
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED"
+}
