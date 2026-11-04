@@ -1,0 +1,420 @@
+{
+  "stage": "21.9.2",
+  "revision": "1",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-04T20:38:12.771544+00:00",
+  "parent": "9c4b5223515280f0fb3c0829b4b8d9db5ab73a2f",
+  "audit": "reports/stage_21_9_1_release_readiness_and_remaining_risk_audit.json",
+  "audit_sha256": "4ae3ea6aa8d32c7e67dbb3a5c8248c05126100ffdb857b409ac930c10fb78ced",
+  "final_override_reconciliation": [
+    {
+      "path": "handlers/city.py",
+      "sha256": "a73373e0bf4ae90e2d7d4e6c7b417847d401c6b4555514431a3acfed3836b0c3",
+      "occurrences": [
+        {
+          "line": 927,
+          "text": "FINAL OVERRIDE:",
+          "syntax_role": "CODE_TOKEN",
+          "owner": "get_sellable_equipment_items",
+          "active_rebinding_evidence": false
+        },
+        {
+          "line": 939,
+          "text": "FINAL OVERRIDE:",
+          "syntax_role": "CODE_TOKEN",
+          "owner": "get_item_by_inventory_id_full",
+          "active_rebinding_evidence": false
+        },
+        {
+          "line": 1030,
+          "text": "FINAL OVERRIDE V2:",
+          "syntax_role": "CODE_TOKEN",
+          "owner": "get_sellable_equipment_items",
+          "active_rebinding_evidence": false
+        },
+        {
+          "line": 1042,
+          "text": "FINAL OVERRIDE V2:",
+          "syntax_role": "CODE_TOKEN",
+          "owner": "get_item_by_inventory_id_full",
+          "active_rebinding_evidence": false
+        }
+      ],
+      "occurrence_count": 4,
+      "classification": "HISTORICAL_LABEL_NO_ACTIVE_REBINDING"
+    },
+    {
+      "path": "handlers/inventory.py",
+      "sha256": "f0e43d3d2dcc22bf8f28be61e0e843698b1337ca928d5d42034ebc49d8d3b95b",
+      "occurrences": [
+        {
+          "line": 4299,
+          "text": "FINAL OVERRIDE:",
+          "syntax_role": "CODE_TOKEN",
+          "owner": "get_category_items",
+          "active_rebinding_evidence": false
+        }
+      ],
+      "occurrence_count": 1,
+      "classification": "HISTORICAL_LABEL_NO_ACTIVE_REBINDING"
+    },
+    {
+      "path": "handlers/player_interaction.py",
+      "sha256": "799e9ad6e745b3995886c6e504019b7c1b01073c917a0ae1b9ccc05b8948b0b9",
+      "occurrences": [
+        {
+          "line": 1108,
+          "text": "# Final override of the add-list keyboard. It preserves 12.6.2 preview routing",
+          "syntax_role": "COMMENT_OR_STRING",
+          "owner": "<module>",
+          "active_rebinding_evidence": false
+        }
+      ],
+      "occurrence_count": 1,
+      "classification": "HISTORICAL_LABEL_NO_ACTIVE_REBINDING"
+    },
+    {
+      "path": "systems/guild_system.py",
+      "sha256": "1ea1e40f9fe543dfc98d2aa98578bb438e8542a84718af5c714c4b8143ac958f",
+      "occurrences": [
+        {
+          "line": 2014,
+          "text": "# FINAL OVERRIDE for 7.0.5 accept_guild_application.",
+          "syntax_role": "COMMENT_OR_STRING",
+          "owner": "<module>",
+          "active_rebinding_evidence": false
+        },
+        {
+          "line": 2296,
+          "text": "FINAL OVERRIDE:",
+          "syntax_role": "CODE_TOKEN",
+          "owner": "add_guild_progress",
+          "active_rebinding_evidence": false
+        },
+        {
+          "line": 2476,
+          "text": "FINAL OVERRIDE:",
+          "syntax_role": "CODE_TOKEN",
+          "owner": "create_guild_application",
+          "active_rebinding_evidence": false
+        }
+      ],
+      "occurrence_count": 3,
+      "classification": "HISTORICAL_LABEL_NO_ACTIVE_REBINDING"
+    },
+    {
+      "path": "systems/regen_system.py",
+      "sha256": "2dd353552bf72dfcc6a6fed7cc5353c5071a5e136ceb008a70e1a96a7d1a6f3a",
+      "occurrences": [
+        {
+          "line": 238,
+          "text": "character_system and the historical final override returned mp_restored=0.",
+          "syntax_role": "CODE_TOKEN",
+          "owner": "process_passive_regeneration",
+          "active_rebinding_evidence": false
+        }
+      ],
+      "occurrence_count": 1,
+      "classification": "HISTORICAL_LABEL_NO_ACTIVE_REBINDING"
+    }
+  ],
+  "dev_wrapper_reconciliation": {
+    "path": "handlers/dev.py",
+    "sha256": "c161907aa3d965cbb3f2ce50d1b6f46c181027ff7a3b517ae852a026b5827352",
+    "function": "register_dev_handlers",
+    "definitions": [
+      {
+        "line": 184,
+        "end_line": 981,
+        "kind": "FunctionDef"
+      },
+      {
+        "line": 1019,
+        "end_line": 1022,
+        "kind": "FunctionDef"
+      },
+      {
+        "line": 1049,
+        "end_line": 1052,
+        "kind": "FunctionDef"
+      },
+      {
+        "line": 1058,
+        "end_line": 1132,
+        "kind": "FunctionDef"
+      }
+    ],
+    "definition_count": 4,
+    "classification": "RELEASE_DEFERRED_NON_BLOCKING",
+    "release_condition": "No evidence of release-critical defect; no mutation without exact command-set and registration-order contract.",
+    "post_release_action": "Focused read-only command-set and registration-order audit before any canonicalization."
+  },
+  "blocking_tool_cohort": [
+    {
+      "path": "C:/Users/Oleh/OneDrive/Документи/ROM/tools/verify_stage_21_1_2_polling_single_entrypoint.py",
+      "sha256": "3b0f7e7693b81db048bbe1015119636585b27da140c2d681890699df62ec51ea",
+      "success_marker_candidates": [
+        "print(\"PASS: Stage 21.1.2 single polling owner\")"
+      ],
+      "classification": "BLOCKING_CORE"
+    },
+    {
+      "path": "C:/Users/Oleh/OneDrive/Документи/ROM/tools/smoke_test_stage_21_1_2_reliable_polling.py",
+      "sha256": "304cb9efc1918a16d12ae99d1fe4e369193a9c45981f09e5987d7cac061172bc",
+      "success_marker_candidates": [
+        "print(\"PASS: Stage 21.1.2 isolated no-network polling smoke\")"
+      ],
+      "classification": "BLOCKING_CORE"
+    },
+    {
+      "path": "C:/Users/Oleh/OneDrive/Документи/ROM/tools/verify_stage_21_2_2_startup_migration_gate.py",
+      "sha256": "844034add4b24ae38a3b4ce3c1f47f4715ba709286ebfca21c1b470b4c953da4",
+      "success_marker_candidates": [
+        "print(\"PASS: Stage 21.2.2 deterministic startup migration gate\")"
+      ],
+      "classification": "BLOCKING_CORE"
+    },
+    {
+      "path": "C:/Users/Oleh/OneDrive/Документи/ROM/tools/smoke_test_stage_21_2_2_startup_migration_gate.py",
+      "sha256": "281f87f999ed524b643c9cb96646f87725b538cd1fcce80a0bffb6e079209bdc",
+      "success_marker_candidates": [
+        "print(\"PASS: Stage 21.2.2 isolated migration-result contract smoke\")"
+      ],
+      "classification": "BLOCKING_CORE"
+    },
+    {
+      "path": "C:/Users/Oleh/OneDrive/Документи/ROM/tools/verify_stage_21_3_2_sqlite_connection_policy.py",
+      "sha256": "37c9dca368045ca60f7dce605d6a27a166e4a30fcf3191d6926e5789c7e2922c",
+      "success_marker_candidates": [
+        "print(\"PASS: Stage 21.3.2 SQLite connection policy cohort and special-consumer allowlist\")"
+      ],
+      "classification": "BLOCKING_CORE"
+    },
+    {
+      "path": "C:/Users/Oleh/OneDrive/Документи/ROM/tools/smoke_test_stage_21_3_2_sqlite_connection_policy.py",
+      "sha256": "13c6f1c529b483f2dabf8abc91624f1e031b0dc2ed24b9514dd170bf49f88b4d",
+      "success_marker_candidates": [
+        "print(\"PASS: Stage 21.3.2 isolated SQLite connection policy smoke\")"
+      ],
+      "classification": "BLOCKING_CORE"
+    },
+    {
+      "path": "C:/Users/Oleh/OneDrive/Документи/ROM/tools/verify_stage_21_5_3_rate_limit_bounded_memory_and_delivery_guards.py",
+      "sha256": "a729ab8aa3fecf26ca8d49c0df8e8caf9f2c9427b669387105adc2be0a3df150",
+      "success_marker_candidates": [
+        "print(\"PASS: Stage 21.5.3 bounded state and delivery policy invariants\")"
+      ],
+      "classification": "BLOCKING_CORE"
+    },
+    {
+      "path": "C:/Users/Oleh/OneDrive/Документи/ROM/tools/smoke_test_stage_21_5_3_rate_limit_bounded_memory_and_delivery_guards.py",
+      "sha256": "12734a85879a492ef7384b9b427542951957a720008c783162b18e54d73a5537",
+      "success_marker_candidates": [
+        "print(\"PASS: Stage 21.5.3 preserves active cooldown and bounds 5000 chat keys\")"
+      ],
+      "classification": "BLOCKING_CORE"
+    },
+    {
+      "path": "C:/Users/Oleh/OneDrive/Документи/ROM/tools/verify_stage_21_7_4_observability_foundation_and_confirmed_gaps.py",
+      "sha256": "caaadcfbf93e9a957352b0de90116778db9caecede6eb7bc57d54d3486f15509",
+      "success_marker_candidates": [
+        "print(\"PASS: Stage 21.7.4 observability source contract\")"
+      ],
+      "classification": "BLOCKING_CORE"
+    },
+    {
+      "path": "C:/Users/Oleh/OneDrive/Документи/ROM/tools/smoke_test_stage_21_7_4_observability_foundation_and_confirmed_gaps.py",
+      "sha256": "e7019a80392b788974afbc7d99777895becbf3752968f10ce260eb7b86ed5ea7",
+      "success_marker_candidates": [
+        "print(\"PASS: Stage 21.7.4 category, correlation and redaction smoke\")"
+      ],
+      "classification": "BLOCKING_CORE"
+    },
+    {
+      "path": "C:/Users/Oleh/OneDrive/Документи/ROM/tools/verify_stage_21_8_4_combat_log_formatting_extraction.py",
+      "sha256": "e1b3abd6817c8f071823bba7b2d1ab2b1608bc653f28eea0cf3cf9f3b76a3bed",
+      "success_marker_candidates": [
+        "print(\"PASS: Stage 21.8.4 canonical combat formatting owner\")"
+      ],
+      "classification": "BLOCKING_CORE"
+    },
+    {
+      "path": "C:/Users/Oleh/OneDrive/Документи/ROM/tools/smoke_test_stage_21_8_4_combat_log_formatting_extraction.py",
+      "sha256": "bdb8882f19abd9ea3d8acef94997b20a397f1259d6332cddb1e6c8cfecf93485",
+      "success_marker_candidates": [
+        "print(\"PASS: Stage 21.8.4 isolated combat formatting import and branch markers\")"
+      ],
+      "classification": "BLOCKING_CORE"
+    },
+    {
+      "path": "C:/Users/Oleh/OneDrive/Документи/ROM/tools/smoke_test_pve_skill_miss_terminal_log_18_21_6a.py",
+      "sha256": "66a57a6ccf4c64868ec9600f9978640c5ed260fa25991ec4bd4c88f2a9c98aca",
+      "success_marker_candidates": [
+        "print(\"PVE_SKILL_MISS_TERMINAL_LOG_18_21_6A_OK\")"
+      ],
+      "classification": "BLOCKING_CORE"
+    }
+  ],
+  "blocking_tool_groups": {
+    "polling": [
+      "tools/verify_stage_21_1_2_polling_single_entrypoint.py",
+      "tools/smoke_test_stage_21_1_2_reliable_polling.py"
+    ],
+    "startup_migrations": [
+      "tools/verify_stage_21_2_2_startup_migration_gate.py",
+      "tools/smoke_test_stage_21_2_2_startup_migration_gate.py"
+    ],
+    "sqlite_policy": [
+      "tools/verify_stage_21_3_2_sqlite_connection_policy.py",
+      "tools/smoke_test_stage_21_3_2_sqlite_connection_policy.py"
+    ],
+    "telegram_429": [
+      "tools/verify_stage_21_5_3_rate_limit_bounded_memory_and_delivery_guards.py",
+      "tools/smoke_test_stage_21_5_3_rate_limit_bounded_memory_and_delivery_guards.py"
+    ],
+    "observability": [
+      "tools/verify_stage_21_7_4_observability_foundation_and_confirmed_gaps.py",
+      "tools/smoke_test_stage_21_7_4_observability_foundation_and_confirmed_gaps.py"
+    ],
+    "combat_formatting": [
+      "tools/verify_stage_21_8_4_combat_log_formatting_extraction.py",
+      "tools/smoke_test_stage_21_8_4_combat_log_formatting_extraction.py",
+      "tools/smoke_test_pve_skill_miss_terminal_log_18_21_6a.py"
+    ]
+  },
+  "release_acceptance_matrix": {
+    "automated_blocking": [
+      "Update 12 verifier",
+      "184 production source hashes and AST/compile from 21.9.1",
+      "13 selected maintained core tools",
+      "closure evidence hashes for 21.6, 21.7 and 21.8",
+      "isolated SQLite snapshot integrity/schema/migration-ledger checks"
+    ],
+    "runtime_blocking": [
+      "startup reaches BOT STARTED",
+      "notification worker DB connection ready",
+      "normal menu/profile navigation",
+      "one normal PvE combat",
+      "one skill PvE combat",
+      "single reward and persistent progress",
+      "no duplicate response, callback loop, database lock or unhandled traceback"
+    ],
+    "operator_blocking": [
+      "exact HEAD and clean tracked worktree",
+      "configuration presence without secret disclosure",
+      "backup/restore feasibility",
+      "release log capture",
+      "explicit GO or NO-GO sign-off"
+    ],
+    "non_blocking_deferred": [
+      "four-definition register_dev_handlers wrapper chain",
+      "historical FINAL OVERRIDE labels with no active rebinding"
+    ]
+  },
+  "sqlite_snapshot_contract": {
+    "source_files": [
+      "game.db",
+      "game.db-wal",
+      "game.db-shm"
+    ],
+    "copy_rule": "Create a byte-for-byte isolated snapshot while bot is stopped; never open or mutate production SQLite during automated acceptance.",
+    "snapshot_checks": [
+      "PRAGMA integrity_check",
+      "PRAGMA foreign_key_check",
+      "PRAGMA journal_mode",
+      "PRAGMA foreign_keys",
+      "PRAGMA busy_timeout",
+      "PRAGMA query_only",
+      "PRAGMA user_version",
+      "PRAGMA schema_version",
+      "migration ledger row/count/status inventory"
+    ],
+    "production_fingerprint_gate": [
+      "sha256",
+      "size",
+      "mtime_ns"
+    ],
+    "forbidden": [
+      "production checkpoint",
+      "production WAL/SHM deletion",
+      "production VACUUM",
+      "production schema mutation"
+    ]
+  },
+  "go_no_go_rules": {
+    "GO": [
+      "all automated blocking checks PASS",
+      "runtime acceptance PASS",
+      "operator checklist PASS",
+      "release blockers=0"
+    ],
+    "NO_GO": [
+      "any source/hash drift",
+      "any blocking tool failure",
+      "SQLite snapshot integrity or FK failure",
+      "startup or runtime blocker",
+      "secret/configuration blocker",
+      "production DB/WAL/SHM drift during acceptance"
+    ]
+  },
+  "finding_mapping": [
+    {
+      "finding": "5 FINAL OVERRIDE review findings across 10 occurrences",
+      "resolution": "Historical labels/comments only; no active rebinding evidence",
+      "replacement_test": "AST owner inventory plus exact source hashes"
+    },
+    {
+      "finding": "register_dev_handlers four-definition wrapper chain",
+      "resolution": "Release-deferred non-blocking",
+      "replacement_test": "Current source hash and definition cardinality; separate future command-set/registration-order audit"
+    }
+  ],
+  "blocking_finding_count": 0,
+  "review_finding_count": 0,
+  "deferred_finding_count": 1,
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "decision": "IMPLEMENT_21_9_3_FINAL_AUTOMATED_RELEASE_ACCEPTANCE",
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED"
+}
