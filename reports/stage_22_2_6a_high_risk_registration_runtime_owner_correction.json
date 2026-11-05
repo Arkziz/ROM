@@ -1,0 +1,1258 @@
+{
+  "stage": "22.2.6a",
+  "patch_revision": 1,
+  "patch_filename": "patch_22_2_6a_high_risk_registration_runtime_owner_correction.py",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-05T20:19:23.423808+00:00",
+  "git": {
+    "branch": "develop",
+    "head": "0922e95da57d3591f94103718556ac1055e2eea6",
+    "origin_develop": "f6b8a87033641b796ceeb401d321ab4f1e229bf5",
+    "origin_is_ancestor": true,
+    "status": [
+      {
+        "xy": " M",
+        "path": "ROM_FULL_DUMP.txt"
+      }
+    ],
+    "staged": []
+  },
+  "authority": {
+    "stage_22_2_5a_sha256": "eba925b6628f2657b14f916288a3c59a130d256b77373bbf6150f5e0e3ad2269",
+    "stage_22_2_2_sha256": "bd036d62293ae48ea95b2c6e097cbfa974c0cefa3c1adec8b804daf033fbcee8",
+    "stage_22_2_5a_commit": "0922e95da57d3591f94103718556ac1055e2eea6"
+  },
+  "summary": {
+    "python_files": 1038,
+    "target_symbols": 4,
+    "definitions_found": 35,
+    "imports_found": 1933,
+    "assignments_found": 0,
+    "call_sites_found": 4,
+    "canonical_runtime_owners": 4,
+    "review_required_targets": 0,
+    "shadowed_definitions": 31,
+    "production_mutation_authorized": false,
+    "deletion_authorized": false
+  },
+  "target_symbols": [
+    "register_auction_house_handlers",
+    "register_inventory_handlers",
+    "register_guild_handlers",
+    "register_dev_handlers"
+  ],
+  "runtime_owner_registry": [
+    {
+      "symbol": "register_auction_house_handlers",
+      "definitions": [
+        {
+          "path": "handlers/auction_house.py",
+          "line": 237,
+          "end_line": 319,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "0a7317983909fe05700ac49afc5fb0ca3b11f9d42a69496e5998e9c64254f026",
+          "delegates_to_targets": [],
+          "registration_calls": 7
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 669,
+          "end_line": 675,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "905b5b6e568ec9b83514e6d3b89a4337c7d738a58948a7fca2b50418870643b7",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 1088,
+          "end_line": 1093,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "b6ee82c5ef44821ca19d9fb05cde6d2135d9a639cfa5d4086553c116004ba6f2",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 1361,
+          "end_line": 1366,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "9219138afd37fb5b14579b4753bbfa54f37cf4954c444eabca17ecd018cbc6de",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 1897,
+          "end_line": 1903,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "63b41c3eba2bab764a83db36e33b9e27e99a153ba9163a7bb2a228cad513bdac",
+          "delegates_to_targets": [],
+          "registration_calls": 3
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 2190,
+          "end_line": 2195,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "c5f8f6952113917c12986ea52412da752ae1d06789180de02c0570522e366f0a",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 2387,
+          "end_line": 2392,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "19a8888c2bcc34a1b3c05ed9a2596c3a51e124cb93aba15640881014d0afefd7",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 2582,
+          "end_line": 2587,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "06283cc3a7668d3f3c793e64b32ed9d191ccd4ece855c0339fcdff0eed58081f",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 2777,
+          "end_line": 2782,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "4d4fe6534312cb8eac8e0c5f6b092afc5244f3f7934390a3dbfce350f0600fdd",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 3071,
+          "end_line": 3076,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "3e53ab0bd3862ff3aa942ae4d664e8c214ee7be3621d446409f3cb5e9953b1d8",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 3172,
+          "end_line": 3177,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "fb88949a3ed42db4dd70470ffd92b487e6a85db3f292fdda82dde8631826c13e",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 3342,
+          "end_line": 3347,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "71834d51531ffaaff25ee15378a9ca53f263f9e720e218f54376eabe34e37543",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 3436,
+          "end_line": 3441,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "28e658daba90391e2599388c4060aaa334c55371ffd39ceed211fcf834819df1",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 3699,
+          "end_line": 3704,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "4d6a94c27fee77e2810718d2202dfb138f3262fe0bdceac1921dc452096fb3f4",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 3769,
+          "end_line": 3786,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "38db5e5ee32b209a94c54c20b7f0eee4ba9c30d561b7d9a33a60c510c3797a5c",
+          "delegates_to_targets": [],
+          "registration_calls": 4
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 4003,
+          "end_line": 4008,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "a1cf9d79ae23df798e3ba1ec1730e9dbae71fd21ca619083294a23ce677cdb6d",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 4364,
+          "end_line": 4369,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "2e214301b7a952484c119736345e28c25bca8c97174b027a02b75f76afe93ad1",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 4705,
+          "end_line": 4710,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "3f66bab5e6b93543f2d744ac7dbab942b9af1fb7b4df63fd3361e4f36b4f717f",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 4773,
+          "end_line": 4779,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "6e93f89c9e5341af0c4d920b2dbdbdee48d0d97a71ca4b9127f54801ed60b293",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 4861,
+          "end_line": 4865,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "c1c143c539f472bc5de1de49f85bdb5d482e56ec1b95bbd297e16e47085e8480",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 4953,
+          "end_line": 4957,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "6daac850e9ad76a31c4abe352ca6fc2ee2ba0817fc1d7378f2d8ee004efffe63",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 5101,
+          "end_line": 5107,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "7b1daa70278cb0db68303236806f5f5e574e667dfd97c173153f61556b7b3766",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        }
+      ],
+      "python_effective_per_file": [
+        {
+          "path": "handlers/auction_house.py",
+          "line": 5101,
+          "end_line": 5107,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "7b1daa70278cb0db68303236806f5f5e574e667dfd97c173153f61556b7b3766",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        }
+      ],
+      "shadowed_definitions": [
+        {
+          "path": "handlers/auction_house.py",
+          "line": 237,
+          "end_line": 319,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "0a7317983909fe05700ac49afc5fb0ca3b11f9d42a69496e5998e9c64254f026",
+          "delegates_to_targets": [],
+          "registration_calls": 7
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 669,
+          "end_line": 675,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "905b5b6e568ec9b83514e6d3b89a4337c7d738a58948a7fca2b50418870643b7",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 1088,
+          "end_line": 1093,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "b6ee82c5ef44821ca19d9fb05cde6d2135d9a639cfa5d4086553c116004ba6f2",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 1361,
+          "end_line": 1366,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "9219138afd37fb5b14579b4753bbfa54f37cf4954c444eabca17ecd018cbc6de",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 1897,
+          "end_line": 1903,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "63b41c3eba2bab764a83db36e33b9e27e99a153ba9163a7bb2a228cad513bdac",
+          "delegates_to_targets": [],
+          "registration_calls": 3
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 2190,
+          "end_line": 2195,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "c5f8f6952113917c12986ea52412da752ae1d06789180de02c0570522e366f0a",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 2387,
+          "end_line": 2392,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "19a8888c2bcc34a1b3c05ed9a2596c3a51e124cb93aba15640881014d0afefd7",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 2582,
+          "end_line": 2587,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "06283cc3a7668d3f3c793e64b32ed9d191ccd4ece855c0339fcdff0eed58081f",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 2777,
+          "end_line": 2782,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "4d4fe6534312cb8eac8e0c5f6b092afc5244f3f7934390a3dbfce350f0600fdd",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 3071,
+          "end_line": 3076,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "3e53ab0bd3862ff3aa942ae4d664e8c214ee7be3621d446409f3cb5e9953b1d8",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 3172,
+          "end_line": 3177,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "fb88949a3ed42db4dd70470ffd92b487e6a85db3f292fdda82dde8631826c13e",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 3342,
+          "end_line": 3347,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "71834d51531ffaaff25ee15378a9ca53f263f9e720e218f54376eabe34e37543",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 3436,
+          "end_line": 3441,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "28e658daba90391e2599388c4060aaa334c55371ffd39ceed211fcf834819df1",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 3699,
+          "end_line": 3704,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "4d6a94c27fee77e2810718d2202dfb138f3262fe0bdceac1921dc452096fb3f4",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 3769,
+          "end_line": 3786,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "38db5e5ee32b209a94c54c20b7f0eee4ba9c30d561b7d9a33a60c510c3797a5c",
+          "delegates_to_targets": [],
+          "registration_calls": 4
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 4003,
+          "end_line": 4008,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "a1cf9d79ae23df798e3ba1ec1730e9dbae71fd21ca619083294a23ce677cdb6d",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 4364,
+          "end_line": 4369,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "2e214301b7a952484c119736345e28c25bca8c97174b027a02b75f76afe93ad1",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 4705,
+          "end_line": 4710,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "3f66bab5e6b93543f2d744ac7dbab942b9af1fb7b4df63fd3361e4f36b4f717f",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 4773,
+          "end_line": 4779,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "6e93f89c9e5341af0c4d920b2dbdbdee48d0d97a71ca4b9127f54801ed60b293",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 4861,
+          "end_line": 4865,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "c1c143c539f472bc5de1de49f85bdb5d482e56ec1b95bbd297e16e47085e8480",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/auction_house.py",
+          "line": 4953,
+          "end_line": 4957,
+          "symbol": "register_auction_house_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "6daac850e9ad76a31c4abe352ca6fc2ee2ba0817fc1d7378f2d8ee004efffe63",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        }
+      ],
+      "imports": [
+        {
+          "path": "main.py",
+          "line": 112,
+          "kind": "from_import",
+          "module": "handlers.auction_house",
+          "level": 0,
+          "symbol": "register_auction_house_handlers",
+          "alias": null
+        }
+      ],
+      "assignments": [],
+      "call_sites": [
+        {
+          "path": "main.py",
+          "line": 260,
+          "column": 0,
+          "context_chain": [],
+          "callee": "register_auction_house_handlers",
+          "symbol": "register_auction_house_handlers",
+          "call_mode": "direct",
+          "argument_count": 1,
+          "keyword_names": []
+        }
+      ],
+      "registration_routes_owned": [],
+      "canonical_owner": {
+        "path": "handlers/auction_house.py",
+        "line": 5101,
+        "end_line": 5107,
+        "symbol": "register_auction_house_handlers",
+        "scope_chain": [],
+        "module_level": true,
+        "async": false,
+        "signature": "arguments(args=[arg(arg='bot')])",
+        "body_sha256": "7b1daa70278cb0db68303236806f5f5e574e667dfd97c173153f61556b7b3766",
+        "delegates_to_targets": [],
+        "registration_calls": 2
+      },
+      "verdict": "CANONICAL_RUNTIME_OWNER",
+      "confidence": "MEDIUM",
+      "deletion_authorized": false,
+      "production_mutation_authorized": false,
+      "required_replacement_tests": [
+        "exact invocation count",
+        "exact registration order",
+        "handler count parity",
+        "command/callback/content/state filter parity",
+        "single-response fixture",
+        "public symbol import parity",
+        "no sibling registration regression"
+      ]
+    },
+    {
+      "symbol": "register_inventory_handlers",
+      "definitions": [
+        {
+          "path": "handlers/inventory.py",
+          "line": 3179,
+          "end_line": 4171,
+          "symbol": "register_inventory_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "49fb04a023feb3bb485368940f7066c50b23bec033d0c6786be2efeba4572f99",
+          "delegates_to_targets": [],
+          "registration_calls": 8
+        },
+        {
+          "path": "handlers/inventory.py",
+          "line": 7137,
+          "end_line": 7341,
+          "symbol": "register_inventory_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "64176f24d5ac07cd99ab55fd2ab5f320e5f837bcaf0721b2f67d8be969593d0e",
+          "delegates_to_targets": [],
+          "registration_calls": 1
+        },
+        {
+          "path": "handlers/inventory.py",
+          "line": 7622,
+          "end_line": 7763,
+          "symbol": "register_inventory_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "a520ea51003a0cdc6f8f61fd6fd097e3d628a63c7a6ab11792806da4572c6481",
+          "delegates_to_targets": [],
+          "registration_calls": 1
+        }
+      ],
+      "python_effective_per_file": [
+        {
+          "path": "handlers/inventory.py",
+          "line": 7622,
+          "end_line": 7763,
+          "symbol": "register_inventory_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "a520ea51003a0cdc6f8f61fd6fd097e3d628a63c7a6ab11792806da4572c6481",
+          "delegates_to_targets": [],
+          "registration_calls": 1
+        }
+      ],
+      "shadowed_definitions": [
+        {
+          "path": "handlers/inventory.py",
+          "line": 3179,
+          "end_line": 4171,
+          "symbol": "register_inventory_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "49fb04a023feb3bb485368940f7066c50b23bec033d0c6786be2efeba4572f99",
+          "delegates_to_targets": [],
+          "registration_calls": 8
+        },
+        {
+          "path": "handlers/inventory.py",
+          "line": 7137,
+          "end_line": 7341,
+          "symbol": "register_inventory_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "64176f24d5ac07cd99ab55fd2ab5f320e5f837bcaf0721b2f67d8be969593d0e",
+          "delegates_to_targets": [],
+          "registration_calls": 1
+        }
+      ],
+      "imports": [
+        {
+          "path": "main.py",
+          "line": 96,
+          "kind": "from_import",
+          "module": "handlers.inventory",
+          "level": 0,
+          "symbol": "register_inventory_handlers",
+          "alias": null
+        }
+      ],
+      "assignments": [],
+      "call_sites": [
+        {
+          "path": "main.py",
+          "line": 247,
+          "column": 0,
+          "context_chain": [],
+          "callee": "register_inventory_handlers",
+          "symbol": "register_inventory_handlers",
+          "call_mode": "direct",
+          "argument_count": 1,
+          "keyword_names": []
+        }
+      ],
+      "registration_routes_owned": [],
+      "canonical_owner": {
+        "path": "handlers/inventory.py",
+        "line": 7622,
+        "end_line": 7763,
+        "symbol": "register_inventory_handlers",
+        "scope_chain": [],
+        "module_level": true,
+        "async": false,
+        "signature": "arguments(args=[arg(arg='bot')])",
+        "body_sha256": "a520ea51003a0cdc6f8f61fd6fd097e3d628a63c7a6ab11792806da4572c6481",
+        "delegates_to_targets": [],
+        "registration_calls": 1
+      },
+      "verdict": "CANONICAL_RUNTIME_OWNER",
+      "confidence": "MEDIUM",
+      "deletion_authorized": false,
+      "production_mutation_authorized": false,
+      "required_replacement_tests": [
+        "exact invocation count",
+        "exact registration order",
+        "handler count parity",
+        "command/callback/content/state filter parity",
+        "single-response fixture",
+        "public symbol import parity",
+        "no sibling registration regression"
+      ]
+    },
+    {
+      "symbol": "register_guild_handlers",
+      "definitions": [
+        {
+          "path": "handlers/guild.py",
+          "line": 697,
+          "end_line": 772,
+          "symbol": "register_guild_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "ccd6519291c6aec3163ecb7f8851af670bb479ee38d1b5c945fc4663d2d52627",
+          "delegates_to_targets": [],
+          "registration_calls": 14
+        },
+        {
+          "path": "handlers/guild.py",
+          "line": 1107,
+          "end_line": 1122,
+          "symbol": "register_guild_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "fb3eb91c4e80c4119dd8c86f6713d2c215ed163a7c755bbb94b94cd9ff202b4e",
+          "delegates_to_targets": [],
+          "registration_calls": 3
+        },
+        {
+          "path": "handlers/guild.py",
+          "line": 1436,
+          "end_line": 1446,
+          "symbol": "register_guild_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "785d1d4fcf61fe41ca67354c628599cd052840bbe344effceeec43afa69c77d7",
+          "delegates_to_targets": [],
+          "registration_calls": 3
+        },
+        {
+          "path": "handlers/guild.py",
+          "line": 1989,
+          "end_line": 2044,
+          "symbol": "register_guild_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "d6e025a0ef18d66f9bb4e37bd1d8c2e6666b904bb2aa0501cbee1999408eaa64",
+          "delegates_to_targets": [],
+          "registration_calls": 6
+        },
+        {
+          "path": "handlers/guild.py",
+          "line": 2425,
+          "end_line": 2435,
+          "symbol": "register_guild_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "dcf2fbba42335dc65b94a7d4b5c4181a252e629ea7eb09f1b503bdb0e7491520",
+          "delegates_to_targets": [],
+          "registration_calls": 3
+        },
+        {
+          "path": "handlers/guild.py",
+          "line": 2868,
+          "end_line": 2978,
+          "symbol": "register_guild_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "4fe4b5ca3d054111d585daa97b49a0b987ee410e0bd0e0cc80bbca820d5e2163",
+          "delegates_to_targets": [],
+          "registration_calls": 8
+        }
+      ],
+      "python_effective_per_file": [
+        {
+          "path": "handlers/guild.py",
+          "line": 2868,
+          "end_line": 2978,
+          "symbol": "register_guild_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "4fe4b5ca3d054111d585daa97b49a0b987ee410e0bd0e0cc80bbca820d5e2163",
+          "delegates_to_targets": [],
+          "registration_calls": 8
+        }
+      ],
+      "shadowed_definitions": [
+        {
+          "path": "handlers/guild.py",
+          "line": 697,
+          "end_line": 772,
+          "symbol": "register_guild_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "ccd6519291c6aec3163ecb7f8851af670bb479ee38d1b5c945fc4663d2d52627",
+          "delegates_to_targets": [],
+          "registration_calls": 14
+        },
+        {
+          "path": "handlers/guild.py",
+          "line": 1107,
+          "end_line": 1122,
+          "symbol": "register_guild_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "fb3eb91c4e80c4119dd8c86f6713d2c215ed163a7c755bbb94b94cd9ff202b4e",
+          "delegates_to_targets": [],
+          "registration_calls": 3
+        },
+        {
+          "path": "handlers/guild.py",
+          "line": 1436,
+          "end_line": 1446,
+          "symbol": "register_guild_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "785d1d4fcf61fe41ca67354c628599cd052840bbe344effceeec43afa69c77d7",
+          "delegates_to_targets": [],
+          "registration_calls": 3
+        },
+        {
+          "path": "handlers/guild.py",
+          "line": 1989,
+          "end_line": 2044,
+          "symbol": "register_guild_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "d6e025a0ef18d66f9bb4e37bd1d8c2e6666b904bb2aa0501cbee1999408eaa64",
+          "delegates_to_targets": [],
+          "registration_calls": 6
+        },
+        {
+          "path": "handlers/guild.py",
+          "line": 2425,
+          "end_line": 2435,
+          "symbol": "register_guild_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "dcf2fbba42335dc65b94a7d4b5c4181a252e629ea7eb09f1b503bdb0e7491520",
+          "delegates_to_targets": [],
+          "registration_calls": 3
+        }
+      ],
+      "imports": [
+        {
+          "path": "main.py",
+          "line": 111,
+          "kind": "from_import",
+          "module": "handlers.guild",
+          "level": 0,
+          "symbol": "register_guild_handlers",
+          "alias": null
+        }
+      ],
+      "assignments": [],
+      "call_sites": [
+        {
+          "path": "main.py",
+          "line": 259,
+          "column": 0,
+          "context_chain": [],
+          "callee": "register_guild_handlers",
+          "symbol": "register_guild_handlers",
+          "call_mode": "direct",
+          "argument_count": 1,
+          "keyword_names": []
+        }
+      ],
+      "registration_routes_owned": [],
+      "canonical_owner": {
+        "path": "handlers/guild.py",
+        "line": 2868,
+        "end_line": 2978,
+        "symbol": "register_guild_handlers",
+        "scope_chain": [],
+        "module_level": true,
+        "async": false,
+        "signature": "arguments(args=[arg(arg='bot')])",
+        "body_sha256": "4fe4b5ca3d054111d585daa97b49a0b987ee410e0bd0e0cc80bbca820d5e2163",
+        "delegates_to_targets": [],
+        "registration_calls": 8
+      },
+      "verdict": "CANONICAL_RUNTIME_OWNER",
+      "confidence": "MEDIUM",
+      "deletion_authorized": false,
+      "production_mutation_authorized": false,
+      "required_replacement_tests": [
+        "exact invocation count",
+        "exact registration order",
+        "handler count parity",
+        "command/callback/content/state filter parity",
+        "single-response fixture",
+        "public symbol import parity",
+        "no sibling registration regression"
+      ]
+    },
+    {
+      "symbol": "register_dev_handlers",
+      "definitions": [
+        {
+          "path": "handlers/dev.py",
+          "line": 184,
+          "end_line": 981,
+          "symbol": "register_dev_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "24a8a3dcbf1970efc1796efd26e5f8b1d5d0be9f59786db510fa96d6a0a17acf",
+          "delegates_to_targets": [],
+          "registration_calls": 22
+        },
+        {
+          "path": "handlers/dev.py",
+          "line": 1019,
+          "end_line": 1022,
+          "symbol": "register_dev_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "084569de2162e604ea0c3213cae7ce88815586a91ec491f71cbe8865a9b423d7",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/dev.py",
+          "line": 1049,
+          "end_line": 1052,
+          "symbol": "register_dev_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "d3e83b7d0a065a8573c4ff9203e630097b7b1732b878504687fcdbe414ec657b",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/dev.py",
+          "line": 1058,
+          "end_line": 1132,
+          "symbol": "register_dev_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "99ab47a79e0f31ae140470e75b68ea25db6734103a7c3d9ede31dcb6a3bd5ea1",
+          "delegates_to_targets": [],
+          "registration_calls": 6
+        }
+      ],
+      "python_effective_per_file": [
+        {
+          "path": "handlers/dev.py",
+          "line": 1058,
+          "end_line": 1132,
+          "symbol": "register_dev_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "99ab47a79e0f31ae140470e75b68ea25db6734103a7c3d9ede31dcb6a3bd5ea1",
+          "delegates_to_targets": [],
+          "registration_calls": 6
+        }
+      ],
+      "shadowed_definitions": [
+        {
+          "path": "handlers/dev.py",
+          "line": 184,
+          "end_line": 981,
+          "symbol": "register_dev_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "24a8a3dcbf1970efc1796efd26e5f8b1d5d0be9f59786db510fa96d6a0a17acf",
+          "delegates_to_targets": [],
+          "registration_calls": 22
+        },
+        {
+          "path": "handlers/dev.py",
+          "line": 1019,
+          "end_line": 1022,
+          "symbol": "register_dev_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "084569de2162e604ea0c3213cae7ce88815586a91ec491f71cbe8865a9b423d7",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        },
+        {
+          "path": "handlers/dev.py",
+          "line": 1049,
+          "end_line": 1052,
+          "symbol": "register_dev_handlers",
+          "scope_chain": [],
+          "module_level": true,
+          "async": false,
+          "signature": "arguments(args=[arg(arg='bot')])",
+          "body_sha256": "d3e83b7d0a065a8573c4ff9203e630097b7b1732b878504687fcdbe414ec657b",
+          "delegates_to_targets": [],
+          "registration_calls": 2
+        }
+      ],
+      "imports": [
+        {
+          "path": "main.py",
+          "line": 100,
+          "kind": "from_import",
+          "module": "handlers.dev",
+          "level": 0,
+          "symbol": "register_dev_handlers",
+          "alias": null
+        }
+      ],
+      "assignments": [],
+      "call_sites": [
+        {
+          "path": "main.py",
+          "line": 250,
+          "column": 0,
+          "context_chain": [],
+          "callee": "register_dev_handlers",
+          "symbol": "register_dev_handlers",
+          "call_mode": "direct",
+          "argument_count": 1,
+          "keyword_names": []
+        }
+      ],
+      "registration_routes_owned": [],
+      "canonical_owner": {
+        "path": "handlers/dev.py",
+        "line": 1058,
+        "end_line": 1132,
+        "symbol": "register_dev_handlers",
+        "scope_chain": [],
+        "module_level": true,
+        "async": false,
+        "signature": "arguments(args=[arg(arg='bot')])",
+        "body_sha256": "99ab47a79e0f31ae140470e75b68ea25db6734103a7c3d9ede31dcb6a3bd5ea1",
+        "delegates_to_targets": [],
+        "registration_calls": 6
+      },
+      "verdict": "CANONICAL_RUNTIME_OWNER",
+      "confidence": "MEDIUM",
+      "deletion_authorized": false,
+      "production_mutation_authorized": false,
+      "required_replacement_tests": [
+        "exact invocation count",
+        "exact registration order",
+        "handler count parity",
+        "command/callback/content/state filter parity",
+        "single-response fixture",
+        "public symbol import parity",
+        "no sibling registration regression"
+      ]
+    }
+  ],
+  "limitations": [
+    "Static call-site presence does not prove live invocation without startup-path linkage.",
+    "Dynamic getattr/globals dispatch remains review-required unless source-resolved.",
+    "No shadowed definition is deletion-authorized by this audit."
+  ],
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "production_sqlite_opened": false,
+  "production_mutation_authorized": false,
+  "deletion_authorized": false,
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "stale_error_artifacts": {
+    "detected": [],
+    "removed": [],
+    "removal_verified": true
+  },
+  "manual_game_check": "NOT_REQUIRED",
+  "decision": "GO_TO_22_2_7A_REPLACEMENT_TEST_MATRIX_CORRECTION"
+}
