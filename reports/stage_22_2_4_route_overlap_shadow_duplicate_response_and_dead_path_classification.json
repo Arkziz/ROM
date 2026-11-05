@@ -1,0 +1,5848 @@
+{
+  "stage": "22.2.4",
+  "patch_revision": 1,
+  "patch_filename": "patch_22_2_4_route_overlap_shadow_duplicate_response_and_dead_path_classification.py",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-05T19:40:59.136470+00:00",
+  "git": {
+    "branch": "develop",
+    "head": "1599a54afa9e391e1d2670b55231854ad4541327",
+    "origin_develop": "f6b8a87033641b796ceeb401d321ab4f1e229bf5",
+    "origin_is_ancestor": true,
+    "status": [
+      {
+        "xy": " M",
+        "path": "ROM_FULL_DUMP.txt"
+      }
+    ],
+    "staged": []
+  },
+  "authority": {
+    "stage_22_2_3_sha256": "c2f815f3ba6c397f76f719cdfe6ba465f92241f4ebb7f3fbec10156d00729392",
+    "stage_22_2_2_sha256": "bd036d62293ae48ea95b2c6e097cbfa974c0cefa3c1adec8b804daf033fbcee8",
+    "stage_22_2_3_commit": "1599a54afa9e391e1d2670b55231854ad4541327"
+  },
+  "summary": {
+    "registrations": 375,
+    "pair_space": 70125,
+    "classified_route_pairs": 42,
+    "exact_static_duplicate_pairs": 37,
+    "overlap_candidates": 5,
+    "shadow_pairs": 42,
+    "duplicate_response_risk_pairs": 42,
+    "dead_path_candidates": 364,
+    "dead_paths_proven": 0
+  },
+  "classification_policy": {
+    "PROVEN_STATIC": "Identical source registration/filter domain.",
+    "CANDIDATE": "Static intersection requires production-shaped dispatch verification.",
+    "NOT_PROVEN": "Insufficient evidence; no dead/shadow claim.",
+    "deletion_policy": "No classification authorizes deletion."
+  },
+  "exact_static_duplicate_pairs": [
+    {
+      "earlier_order": 13,
+      "later_order": 20,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_buy_placeholder",
+      "later_context": "auction_buy_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 13,
+      "later_order": 26,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_buy_placeholder",
+      "later_context": "auction_buy_start_inline_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 14,
+      "later_order": 35,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_my_lots_placeholder",
+      "later_context": "auction_my_lots_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 14,
+      "later_order": 68,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_my_lots_placeholder",
+      "later_context": "auction_my_lots_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 15,
+      "later_order": 40,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_unclaimed_items_placeholder",
+      "later_context": "auction_unclaimed_items_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 15,
+      "later_order": 69,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_unclaimed_items_placeholder",
+      "later_context": "auction_unclaimed_items_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 16,
+      "later_order": 45,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_sold_placeholder",
+      "later_context": "auction_completed_sales_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 16,
+      "later_order": 70,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_sold_placeholder",
+      "later_context": "auction_completed_sales_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 17,
+      "later_order": 71,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_history_placeholder",
+      "later_context": "auction_history_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 17,
+      "later_order": 80,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_history_placeholder",
+      "later_context": "auction_history_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 20,
+      "later_order": 26,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_buy_start_v1",
+      "later_context": "auction_buy_start_inline_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 23,
+      "later_order": 56,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_inline_menu_callback_v1",
+      "later_context": "auction_back_to_menu_callback_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 25,
+      "later_order": 32,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_sell_inline_item_callback_v1",
+      "later_context": "auction_sell_review_item_callback_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast",
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 35,
+      "later_order": 68,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_my_lots_start_v1",
+      "later_context": "auction_my_lots_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 40,
+      "later_order": 69,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_unclaimed_items_start_v1",
+      "later_context": "auction_unclaimed_items_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 45,
+      "later_order": 70,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_completed_sales_start_v1",
+      "later_context": "auction_completed_sales_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 51,
+      "later_order": 59,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_buy_categories_callback_v1",
+      "later_context": "auction_buy_categories_restore_reply_keyboard_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 71,
+      "later_order": 80,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_history_start_section_cleanup_v1",
+      "later_context": "auction_history_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 83,
+      "later_order": 86,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_market_price_back_history_v1",
+      "later_context": "auction_history_back_restore_keyboard_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 87,
+      "later_order": 94,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_cleanup_command_v2",
+      "later_context": "auction_cleanup_admin_guard_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "shared_command"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 88,
+      "later_order": 92,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_debug_command_v2",
+      "later_context": "auction_debug_admin_guard_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "shared_command"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 89,
+      "later_order": 91,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_sanity_command_v1",
+      "later_context": "auction_sanity_admin_guard_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "shared_command"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 90,
+      "later_order": 93,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_fix_command_v1",
+      "later_context": "auction_fix_admin_guard_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "shared_command"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 96,
+      "later_order": 101,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith.py",
+      "earlier_context": "blacksmith_repair_all_confirm_prompt_v2",
+      "later_context": "blacksmith_repair_all_confirm_prompt_v3",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 97,
+      "later_order": 102,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith.py",
+      "earlier_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v2",
+      "later_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v3",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast",
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 106,
+      "later_order": 111,
+      "earlier_path": "handlers/blacksmith_repair_confirm.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_one",
+      "later_context": "blacksmith_repair_prompt_one_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast",
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 107,
+      "later_order": 112,
+      "earlier_path": "handlers/blacksmith_repair_confirm.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_all",
+      "later_context": "blacksmith_repair_prompt_all_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 108,
+      "later_order": 113,
+      "earlier_path": "handlers/blacksmith_repair_confirm.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_confirm_one",
+      "later_context": "blacksmith_repair_confirm_one_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast",
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 109,
+      "later_order": 114,
+      "earlier_path": "handlers/blacksmith_repair_confirm.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_confirm_all",
+      "later_context": "blacksmith_repair_confirm_all_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 110,
+      "later_order": 115,
+      "earlier_path": "handlers/blacksmith_repair_confirm.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_cancel",
+      "later_context": "blacksmith_repair_cancel_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 148,
+      "later_order": 334,
+      "earlier_path": "handlers/city.py",
+      "later_path": "handlers/profile.py",
+      "earlier_context": "back_to_main",
+      "later_context": "back_from_profile",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 149,
+      "later_order": 150,
+      "earlier_path": "handlers/city.py",
+      "later_path": "handlers/city.py",
+      "earlier_context": "blacksmith_repair_button_v2",
+      "later_context": "blacksmith_repair_button_v2",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 163,
+      "later_order": 329,
+      "earlier_path": "handlers/combat.py",
+      "later_path": "handlers/profile.py",
+      "earlier_context": "show_skills",
+      "later_context": "skills",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 233,
+      "later_order": 244,
+      "earlier_path": "handlers/guild.py",
+      "later_path": "handlers/guild.py",
+      "earlier_context": "guild_members_message",
+      "later_context": "guild_members_message_v2",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 239,
+      "later_order": 242,
+      "earlier_path": "handlers/guild.py",
+      "later_path": "handlers/guild.py",
+      "earlier_context": "guild_applications_message",
+      "later_context": "guild_applications_message_v2",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 240,
+      "later_order": 251,
+      "earlier_path": "handlers/guild.py",
+      "later_path": "handlers/guild.py",
+      "earlier_context": "guild_logs_message",
+      "later_context": "guild_logs_message_v2",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 288,
+      "later_order": 336,
+      "earlier_path": "handlers/player_interaction.py",
+      "later_path": "handlers/pvp_interaction.py",
+      "earlier_context": "duel_placeholder",
+      "later_context": "pvp_duel_request",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast",
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    }
+  ],
+  "overlap_candidates": [
+    {
+      "earlier_order": 97,
+      "later_order": 106,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v2",
+      "later_context": "blacksmith_repair_prompt_one",
+      "kind": "callback_decorator",
+      "reasons": [
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "CANDIDATE",
+      "shadow_classification": "CANDIDATE",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 97,
+      "later_order": 111,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v2",
+      "later_context": "blacksmith_repair_prompt_one_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "CANDIDATE",
+      "shadow_classification": "CANDIDATE",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 102,
+      "later_order": 106,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v3",
+      "later_context": "blacksmith_repair_prompt_one",
+      "kind": "callback_decorator",
+      "reasons": [
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "CANDIDATE",
+      "shadow_classification": "CANDIDATE",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 102,
+      "later_order": 111,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v3",
+      "later_context": "blacksmith_repair_prompt_one_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "CANDIDATE",
+      "shadow_classification": "CANDIDATE",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 281,
+      "later_order": 317,
+      "earlier_path": "handlers/player_interaction.py",
+      "later_path": "handlers/player_interaction.py",
+      "earlier_context": "cancel_trade_foundation",
+      "later_context": "trade_cancel_with_keyboard_restore",
+      "kind": "callback_decorator",
+      "reasons": [
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "CANDIDATE",
+      "shadow_classification": "CANDIDATE",
+      "duplicate_response_risk": "CANDIDATE"
+    }
+  ],
+  "shadow_pairs": [
+    {
+      "earlier_order": 13,
+      "later_order": 20,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_buy_placeholder",
+      "later_context": "auction_buy_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 13,
+      "later_order": 26,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_buy_placeholder",
+      "later_context": "auction_buy_start_inline_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 14,
+      "later_order": 35,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_my_lots_placeholder",
+      "later_context": "auction_my_lots_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 14,
+      "later_order": 68,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_my_lots_placeholder",
+      "later_context": "auction_my_lots_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 15,
+      "later_order": 40,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_unclaimed_items_placeholder",
+      "later_context": "auction_unclaimed_items_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 15,
+      "later_order": 69,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_unclaimed_items_placeholder",
+      "later_context": "auction_unclaimed_items_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 16,
+      "later_order": 45,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_sold_placeholder",
+      "later_context": "auction_completed_sales_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 16,
+      "later_order": 70,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_sold_placeholder",
+      "later_context": "auction_completed_sales_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 17,
+      "later_order": 71,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_history_placeholder",
+      "later_context": "auction_history_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 17,
+      "later_order": 80,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_history_placeholder",
+      "later_context": "auction_history_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 20,
+      "later_order": 26,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_buy_start_v1",
+      "later_context": "auction_buy_start_inline_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 23,
+      "later_order": 56,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_inline_menu_callback_v1",
+      "later_context": "auction_back_to_menu_callback_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 25,
+      "later_order": 32,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_sell_inline_item_callback_v1",
+      "later_context": "auction_sell_review_item_callback_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast",
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 35,
+      "later_order": 68,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_my_lots_start_v1",
+      "later_context": "auction_my_lots_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 40,
+      "later_order": 69,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_unclaimed_items_start_v1",
+      "later_context": "auction_unclaimed_items_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 45,
+      "later_order": 70,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_completed_sales_start_v1",
+      "later_context": "auction_completed_sales_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 51,
+      "later_order": 59,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_buy_categories_callback_v1",
+      "later_context": "auction_buy_categories_restore_reply_keyboard_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 71,
+      "later_order": 80,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_history_start_section_cleanup_v1",
+      "later_context": "auction_history_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 83,
+      "later_order": 86,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_market_price_back_history_v1",
+      "later_context": "auction_history_back_restore_keyboard_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 87,
+      "later_order": 94,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_cleanup_command_v2",
+      "later_context": "auction_cleanup_admin_guard_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "shared_command"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 88,
+      "later_order": 92,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_debug_command_v2",
+      "later_context": "auction_debug_admin_guard_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "shared_command"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 89,
+      "later_order": 91,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_sanity_command_v1",
+      "later_context": "auction_sanity_admin_guard_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "shared_command"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 90,
+      "later_order": 93,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_fix_command_v1",
+      "later_context": "auction_fix_admin_guard_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "shared_command"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 96,
+      "later_order": 101,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith.py",
+      "earlier_context": "blacksmith_repair_all_confirm_prompt_v2",
+      "later_context": "blacksmith_repair_all_confirm_prompt_v3",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 97,
+      "later_order": 102,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith.py",
+      "earlier_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v2",
+      "later_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v3",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast",
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 97,
+      "later_order": 106,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v2",
+      "later_context": "blacksmith_repair_prompt_one",
+      "kind": "callback_decorator",
+      "reasons": [
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "CANDIDATE",
+      "shadow_classification": "CANDIDATE",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 97,
+      "later_order": 111,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v2",
+      "later_context": "blacksmith_repair_prompt_one_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "CANDIDATE",
+      "shadow_classification": "CANDIDATE",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 102,
+      "later_order": 106,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v3",
+      "later_context": "blacksmith_repair_prompt_one",
+      "kind": "callback_decorator",
+      "reasons": [
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "CANDIDATE",
+      "shadow_classification": "CANDIDATE",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 102,
+      "later_order": 111,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v3",
+      "later_context": "blacksmith_repair_prompt_one_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "CANDIDATE",
+      "shadow_classification": "CANDIDATE",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 106,
+      "later_order": 111,
+      "earlier_path": "handlers/blacksmith_repair_confirm.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_one",
+      "later_context": "blacksmith_repair_prompt_one_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast",
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 107,
+      "later_order": 112,
+      "earlier_path": "handlers/blacksmith_repair_confirm.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_all",
+      "later_context": "blacksmith_repair_prompt_all_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 108,
+      "later_order": 113,
+      "earlier_path": "handlers/blacksmith_repair_confirm.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_confirm_one",
+      "later_context": "blacksmith_repair_confirm_one_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast",
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 109,
+      "later_order": 114,
+      "earlier_path": "handlers/blacksmith_repair_confirm.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_confirm_all",
+      "later_context": "blacksmith_repair_confirm_all_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 110,
+      "later_order": 115,
+      "earlier_path": "handlers/blacksmith_repair_confirm.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_cancel",
+      "later_context": "blacksmith_repair_cancel_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 148,
+      "later_order": 334,
+      "earlier_path": "handlers/city.py",
+      "later_path": "handlers/profile.py",
+      "earlier_context": "back_to_main",
+      "later_context": "back_from_profile",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 149,
+      "later_order": 150,
+      "earlier_path": "handlers/city.py",
+      "later_path": "handlers/city.py",
+      "earlier_context": "blacksmith_repair_button_v2",
+      "later_context": "blacksmith_repair_button_v2",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 163,
+      "later_order": 329,
+      "earlier_path": "handlers/combat.py",
+      "later_path": "handlers/profile.py",
+      "earlier_context": "show_skills",
+      "later_context": "skills",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 233,
+      "later_order": 244,
+      "earlier_path": "handlers/guild.py",
+      "later_path": "handlers/guild.py",
+      "earlier_context": "guild_members_message",
+      "later_context": "guild_members_message_v2",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 239,
+      "later_order": 242,
+      "earlier_path": "handlers/guild.py",
+      "later_path": "handlers/guild.py",
+      "earlier_context": "guild_applications_message",
+      "later_context": "guild_applications_message_v2",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 240,
+      "later_order": 251,
+      "earlier_path": "handlers/guild.py",
+      "later_path": "handlers/guild.py",
+      "earlier_context": "guild_logs_message",
+      "later_context": "guild_logs_message_v2",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 281,
+      "later_order": 317,
+      "earlier_path": "handlers/player_interaction.py",
+      "later_path": "handlers/player_interaction.py",
+      "earlier_context": "cancel_trade_foundation",
+      "later_context": "trade_cancel_with_keyboard_restore",
+      "kind": "callback_decorator",
+      "reasons": [
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "CANDIDATE",
+      "shadow_classification": "CANDIDATE",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 288,
+      "later_order": 336,
+      "earlier_path": "handlers/player_interaction.py",
+      "later_path": "handlers/pvp_interaction.py",
+      "earlier_context": "duel_placeholder",
+      "later_context": "pvp_duel_request",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast",
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    }
+  ],
+  "duplicate_response_risk_pairs": [
+    {
+      "earlier_order": 13,
+      "later_order": 20,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_buy_placeholder",
+      "later_context": "auction_buy_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 13,
+      "later_order": 26,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_buy_placeholder",
+      "later_context": "auction_buy_start_inline_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 14,
+      "later_order": 35,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_my_lots_placeholder",
+      "later_context": "auction_my_lots_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 14,
+      "later_order": 68,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_my_lots_placeholder",
+      "later_context": "auction_my_lots_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 15,
+      "later_order": 40,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_unclaimed_items_placeholder",
+      "later_context": "auction_unclaimed_items_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 15,
+      "later_order": 69,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_unclaimed_items_placeholder",
+      "later_context": "auction_unclaimed_items_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 16,
+      "later_order": 45,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_sold_placeholder",
+      "later_context": "auction_completed_sales_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 16,
+      "later_order": 70,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_sold_placeholder",
+      "later_context": "auction_completed_sales_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 17,
+      "later_order": 71,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_history_placeholder",
+      "later_context": "auction_history_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 17,
+      "later_order": 80,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_history_placeholder",
+      "later_context": "auction_history_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 20,
+      "later_order": 26,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_buy_start_v1",
+      "later_context": "auction_buy_start_inline_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 23,
+      "later_order": 56,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_inline_menu_callback_v1",
+      "later_context": "auction_back_to_menu_callback_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 25,
+      "later_order": 32,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_sell_inline_item_callback_v1",
+      "later_context": "auction_sell_review_item_callback_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast",
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 35,
+      "later_order": 68,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_my_lots_start_v1",
+      "later_context": "auction_my_lots_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 40,
+      "later_order": 69,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_unclaimed_items_start_v1",
+      "later_context": "auction_unclaimed_items_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 45,
+      "later_order": 70,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_completed_sales_start_v1",
+      "later_context": "auction_completed_sales_start_section_cleanup_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 51,
+      "later_order": 59,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_buy_categories_callback_v1",
+      "later_context": "auction_buy_categories_restore_reply_keyboard_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 71,
+      "later_order": 80,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_history_start_section_cleanup_v1",
+      "later_context": "auction_history_start_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 83,
+      "later_order": 86,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_market_price_back_history_v1",
+      "later_context": "auction_history_back_restore_keyboard_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 87,
+      "later_order": 94,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_cleanup_command_v2",
+      "later_context": "auction_cleanup_admin_guard_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "shared_command"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 88,
+      "later_order": 92,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_debug_command_v2",
+      "later_context": "auction_debug_admin_guard_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "shared_command"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 89,
+      "later_order": 91,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_sanity_command_v1",
+      "later_context": "auction_sanity_admin_guard_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "shared_command"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 90,
+      "later_order": 93,
+      "earlier_path": "handlers/auction_house.py",
+      "later_path": "handlers/auction_house.py",
+      "earlier_context": "auction_fix_command_v1",
+      "later_context": "auction_fix_admin_guard_v1",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "shared_command"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 96,
+      "later_order": 101,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith.py",
+      "earlier_context": "blacksmith_repair_all_confirm_prompt_v2",
+      "later_context": "blacksmith_repair_all_confirm_prompt_v3",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 97,
+      "later_order": 102,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith.py",
+      "earlier_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v2",
+      "later_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v3",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast",
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 97,
+      "later_order": 106,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v2",
+      "later_context": "blacksmith_repair_prompt_one",
+      "kind": "callback_decorator",
+      "reasons": [
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "CANDIDATE",
+      "shadow_classification": "CANDIDATE",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 97,
+      "later_order": 111,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v2",
+      "later_context": "blacksmith_repair_prompt_one_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "CANDIDATE",
+      "shadow_classification": "CANDIDATE",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 102,
+      "later_order": 106,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v3",
+      "later_context": "blacksmith_repair_prompt_one",
+      "kind": "callback_decorator",
+      "reasons": [
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "CANDIDATE",
+      "shadow_classification": "CANDIDATE",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 102,
+      "later_order": 111,
+      "earlier_path": "handlers/blacksmith.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v3",
+      "later_context": "blacksmith_repair_prompt_one_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "CANDIDATE",
+      "shadow_classification": "CANDIDATE",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 106,
+      "later_order": 111,
+      "earlier_path": "handlers/blacksmith_repair_confirm.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_one",
+      "later_context": "blacksmith_repair_prompt_one_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast",
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 107,
+      "later_order": 112,
+      "earlier_path": "handlers/blacksmith_repair_confirm.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_prompt_all",
+      "later_context": "blacksmith_repair_prompt_all_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 108,
+      "later_order": 113,
+      "earlier_path": "handlers/blacksmith_repair_confirm.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_confirm_one",
+      "later_context": "blacksmith_repair_confirm_one_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast",
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 109,
+      "later_order": 114,
+      "earlier_path": "handlers/blacksmith_repair_confirm.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_confirm_all",
+      "later_context": "blacksmith_repair_confirm_all_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 110,
+      "later_order": 115,
+      "earlier_path": "handlers/blacksmith_repair_confirm.py",
+      "later_path": "handlers/blacksmith_repair_confirm.py",
+      "earlier_context": "blacksmith_repair_cancel",
+      "later_context": "blacksmith_repair_cancel_v1",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 148,
+      "later_order": 334,
+      "earlier_path": "handlers/city.py",
+      "later_path": "handlers/profile.py",
+      "earlier_context": "back_to_main",
+      "later_context": "back_from_profile",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 149,
+      "later_order": 150,
+      "earlier_path": "handlers/city.py",
+      "later_path": "handlers/city.py",
+      "earlier_context": "blacksmith_repair_button_v2",
+      "later_context": "blacksmith_repair_button_v2",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 163,
+      "later_order": 329,
+      "earlier_path": "handlers/combat.py",
+      "later_path": "handlers/profile.py",
+      "earlier_context": "show_skills",
+      "later_context": "skills",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 233,
+      "later_order": 244,
+      "earlier_path": "handlers/guild.py",
+      "later_path": "handlers/guild.py",
+      "earlier_context": "guild_members_message",
+      "later_context": "guild_members_message_v2",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 239,
+      "later_order": 242,
+      "earlier_path": "handlers/guild.py",
+      "later_path": "handlers/guild.py",
+      "earlier_context": "guild_applications_message",
+      "later_context": "guild_applications_message_v2",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 240,
+      "later_order": 251,
+      "earlier_path": "handlers/guild.py",
+      "later_path": "handlers/guild.py",
+      "earlier_context": "guild_logs_message",
+      "later_context": "guild_logs_message_v2",
+      "kind": "message_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 281,
+      "later_order": 317,
+      "earlier_path": "handlers/player_interaction.py",
+      "later_path": "handlers/player_interaction.py",
+      "earlier_context": "cancel_trade_foundation",
+      "later_context": "trade_cancel_with_keyboard_restore",
+      "kind": "callback_decorator",
+      "reasons": [
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "CANDIDATE",
+      "shadow_classification": "CANDIDATE",
+      "duplicate_response_risk": "CANDIDATE"
+    },
+    {
+      "earlier_order": 288,
+      "later_order": 336,
+      "earlier_path": "handlers/player_interaction.py",
+      "later_path": "handlers/pvp_interaction.py",
+      "earlier_context": "duel_placeholder",
+      "later_context": "pvp_duel_request",
+      "kind": "callback_decorator",
+      "reasons": [
+        "identical_source_filter_domain",
+        "identical_predicate_ast",
+        "callback_prefix_intersection"
+      ],
+      "overlap_classification": "PROVEN_STATIC",
+      "shadow_classification": "PROVEN_STATIC",
+      "duplicate_response_risk": "CANDIDATE"
+    }
+  ],
+  "dead_path_classification": [
+    {
+      "order": 1,
+      "path": "handlers/about_game.py",
+      "context": "open_about",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 2,
+      "path": "handlers/about_game.py",
+      "context": "about_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 3,
+      "path": "handlers/admin_crystal_credit.py",
+      "context": "open_admin",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 4,
+      "path": "handlers/admin_crystal_credit.py",
+      "context": "choose",
+      "verdict": "NOT_PROVEN",
+      "evidence": [],
+      "deletion_authorized": false
+    },
+    {
+      "order": 5,
+      "path": "handlers/admin_crystal_credit.py",
+      "context": "history",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 6,
+      "path": "handlers/admin_crystal_credit.py",
+      "context": "close",
+      "verdict": "NOT_PROVEN",
+      "evidence": [],
+      "deletion_authorized": false
+    },
+    {
+      "order": 7,
+      "path": "handlers/admin_crystal_credit.py",
+      "context": "callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 8,
+      "path": "handlers/admin_crystal_credit.py",
+      "context": "input_router",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 9,
+      "path": "handlers/attribute_allocation.py",
+      "context": "open_attribute_allocation",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 10,
+      "path": "handlers/attribute_allocation.py",
+      "context": "attribute_allocation_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 11,
+      "path": "handlers/auction_house.py",
+      "context": "show_auction_house",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 12,
+      "path": "handlers/auction_house.py",
+      "context": "auction_back_to_city",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 13,
+      "path": "handlers/auction_house.py",
+      "context": "auction_buy_placeholder",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 14,
+      "path": "handlers/auction_house.py",
+      "context": "auction_my_lots_placeholder",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 15,
+      "path": "handlers/auction_house.py",
+      "context": "auction_unclaimed_items_placeholder",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 16,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sold_placeholder",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 17,
+      "path": "handlers/auction_house.py",
+      "context": "auction_history_placeholder",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 18,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sell_state_router_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 19,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sell_state_router_v2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 20,
+      "path": "handlers/auction_house.py",
+      "context": "auction_buy_start_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 21,
+      "path": "handlers/auction_house.py",
+      "context": "auction_buy_state_router_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 22,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sell_inline_state_message_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 23,
+      "path": "handlers/auction_house.py",
+      "context": "auction_inline_menu_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 24,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sell_inline_page_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 25,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sell_inline_item_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 26,
+      "path": "handlers/auction_house.py",
+      "context": "auction_buy_start_inline_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 27,
+      "path": "handlers/auction_house.py",
+      "context": "auction_buy_inline_page_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 28,
+      "path": "handlers/auction_house.py",
+      "context": "auction_buy_inline_lot_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 29,
+      "path": "handlers/auction_house.py",
+      "context": "auction_buy_inline_confirm_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 30,
+      "path": "handlers/auction_house.py",
+      "context": "auction_buy_inline_execute_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 31,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sell_review_message_router_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 32,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sell_review_item_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 33,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sell_review_price_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 34,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sell_review_quantity_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 35,
+      "path": "handlers/auction_house.py",
+      "context": "auction_my_lots_start_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 36,
+      "path": "handlers/auction_house.py",
+      "context": "auction_my_lots_page_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 37,
+      "path": "handlers/auction_house.py",
+      "context": "auction_my_lot_view_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 38,
+      "path": "handlers/auction_house.py",
+      "context": "auction_my_lot_cancel_confirm_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 39,
+      "path": "handlers/auction_house.py",
+      "context": "auction_my_lot_cancel_do_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 40,
+      "path": "handlers/auction_house.py",
+      "context": "auction_unclaimed_items_start_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 41,
+      "path": "handlers/auction_house.py",
+      "context": "auction_unclaimed_items_page_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 42,
+      "path": "handlers/auction_house.py",
+      "context": "auction_unclaimed_item_view_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 43,
+      "path": "handlers/auction_house.py",
+      "context": "auction_unclaimed_claim_confirm_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 44,
+      "path": "handlers/auction_house.py",
+      "context": "auction_unclaimed_claim_do_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 45,
+      "path": "handlers/auction_house.py",
+      "context": "auction_completed_sales_start_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 46,
+      "path": "handlers/auction_house.py",
+      "context": "auction_completed_sales_page_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 47,
+      "path": "handlers/auction_house.py",
+      "context": "auction_completed_sale_view_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 48,
+      "path": "handlers/auction_house.py",
+      "context": "auction_completed_sale_claim_confirm_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 49,
+      "path": "handlers/auction_house.py",
+      "context": "auction_completed_sale_claim_do_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 50,
+      "path": "handlers/auction_house.py",
+      "context": "auction_buy_start_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 51,
+      "path": "handlers/auction_house.py",
+      "context": "auction_buy_categories_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 52,
+      "path": "handlers/auction_house.py",
+      "context": "auction_buy_page_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 53,
+      "path": "handlers/auction_house.py",
+      "context": "auction_buy_lot_view_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 54,
+      "path": "handlers/auction_house.py",
+      "context": "auction_buy_confirm_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 55,
+      "path": "handlers/auction_house.py",
+      "context": "auction_buy_do_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 56,
+      "path": "handlers/auction_house.py",
+      "context": "auction_back_to_menu_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 57,
+      "path": "handlers/auction_house.py",
+      "context": "auction_reply_back_to_house_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 58,
+      "path": "handlers/auction_house.py",
+      "context": "auction_buy_category_selected_clean_keyboard_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 59,
+      "path": "handlers/auction_house.py",
+      "context": "auction_buy_categories_restore_reply_keyboard_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 60,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sell_start_categories_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 61,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sell_category_equipment_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 62,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sell_category_potion_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 63,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sell_category_material_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 64,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sell_category_rune_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 65,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sell_category_consumable_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 66,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sell_back_to_categories_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 67,
+      "path": "handlers/auction_house.py",
+      "context": "auction_reply_back_to_house_restore_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 68,
+      "path": "handlers/auction_house.py",
+      "context": "auction_my_lots_start_section_cleanup_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 69,
+      "path": "handlers/auction_house.py",
+      "context": "auction_unclaimed_items_start_section_cleanup_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 70,
+      "path": "handlers/auction_house.py",
+      "context": "auction_completed_sales_start_section_cleanup_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 71,
+      "path": "handlers/auction_house.py",
+      "context": "auction_history_start_section_cleanup_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 72,
+      "path": "handlers/auction_house.py",
+      "context": "auction_search_start_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 73,
+      "path": "handlers/auction_house.py",
+      "context": "auction_search_new_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 74,
+      "path": "handlers/auction_house.py",
+      "context": "auction_search_back_to_categories_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 75,
+      "path": "handlers/auction_house.py",
+      "context": "auction_search_query_router_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 76,
+      "path": "handlers/auction_house.py",
+      "context": "auction_search_page_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 77,
+      "path": "handlers/auction_house.py",
+      "context": "auction_search_lot_view_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 78,
+      "path": "handlers/auction_house.py",
+      "context": "auction_search_confirm_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 79,
+      "path": "handlers/auction_house.py",
+      "context": "auction_search_do_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 80,
+      "path": "handlers/auction_house.py",
+      "context": "auction_history_start_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 81,
+      "path": "handlers/auction_house.py",
+      "context": "auction_history_page_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 82,
+      "path": "handlers/auction_house.py",
+      "context": "auction_market_price_search_start_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 83,
+      "path": "handlers/auction_house.py",
+      "context": "auction_market_price_back_history_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 84,
+      "path": "handlers/auction_house.py",
+      "context": "auction_market_price_search_query_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 85,
+      "path": "handlers/auction_house.py",
+      "context": "auction_lot_price_history_callback_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 86,
+      "path": "handlers/auction_house.py",
+      "context": "auction_history_back_restore_keyboard_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 87,
+      "path": "handlers/auction_house.py",
+      "context": "auction_cleanup_command_v2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 88,
+      "path": "handlers/auction_house.py",
+      "context": "auction_debug_command_v2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 89,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sanity_command_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 90,
+      "path": "handlers/auction_house.py",
+      "context": "auction_fix_command_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 91,
+      "path": "handlers/auction_house.py",
+      "context": "auction_sanity_admin_guard_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 92,
+      "path": "handlers/auction_house.py",
+      "context": "auction_debug_admin_guard_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 93,
+      "path": "handlers/auction_house.py",
+      "context": "auction_fix_admin_guard_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 94,
+      "path": "handlers/auction_house.py",
+      "context": "auction_cleanup_admin_guard_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 95,
+      "path": "handlers/blacksmith.py",
+      "context": "blacksmith_repair_hotfix",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 96,
+      "path": "handlers/blacksmith.py",
+      "context": "blacksmith_repair_all_confirm_prompt_v2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 97,
+      "path": "handlers/blacksmith.py",
+      "context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 98,
+      "path": "handlers/blacksmith.py",
+      "context": "blacksmith_repair_all_do_v2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 99,
+      "path": "handlers/blacksmith.py",
+      "context": "blacksmith_repair_prompt_one_v3_do_v2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 100,
+      "path": "handlers/blacksmith.py",
+      "context": "blacksmith_repair_cancel_v2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 101,
+      "path": "handlers/blacksmith.py",
+      "context": "blacksmith_repair_all_confirm_prompt_v3",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 102,
+      "path": "handlers/blacksmith.py",
+      "context": "blacksmith_repair_prompt_one_v3_confirm_prompt_v3",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 103,
+      "path": "handlers/blacksmith.py",
+      "context": "blacksmith_repair_all_do_v3",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 104,
+      "path": "handlers/blacksmith.py",
+      "context": "blacksmith_repair_prompt_one_v3_do_v3",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 105,
+      "path": "handlers/blacksmith.py",
+      "context": "blacksmith_repair_cancel_v3",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 106,
+      "path": "handlers/blacksmith_repair_confirm.py",
+      "context": "blacksmith_repair_prompt_one",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 107,
+      "path": "handlers/blacksmith_repair_confirm.py",
+      "context": "blacksmith_repair_prompt_all",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 108,
+      "path": "handlers/blacksmith_repair_confirm.py",
+      "context": "blacksmith_repair_confirm_one",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 109,
+      "path": "handlers/blacksmith_repair_confirm.py",
+      "context": "blacksmith_repair_confirm_all",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 110,
+      "path": "handlers/blacksmith_repair_confirm.py",
+      "context": "blacksmith_repair_cancel",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 111,
+      "path": "handlers/blacksmith_repair_confirm.py",
+      "context": "blacksmith_repair_prompt_one_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 112,
+      "path": "handlers/blacksmith_repair_confirm.py",
+      "context": "blacksmith_repair_prompt_all_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 113,
+      "path": "handlers/blacksmith_repair_confirm.py",
+      "context": "blacksmith_repair_confirm_one_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 114,
+      "path": "handlers/blacksmith_repair_confirm.py",
+      "context": "blacksmith_repair_confirm_all_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 115,
+      "path": "handlers/blacksmith_repair_confirm.py",
+      "context": "blacksmith_repair_cancel_v1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 116,
+      "path": "handlers/city.py",
+      "context": "show_city",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 117,
+      "path": "handlers/city.py",
+      "context": "look_around",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 118,
+      "path": "handlers/city.py",
+      "context": "back_to_city",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 119,
+      "path": "handlers/city.py",
+      "context": "show_trade_district",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 120,
+      "path": "handlers/city.py",
+      "context": "show_craft_district",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 121,
+      "path": "handlers/city.py",
+      "context": "show_guild_district",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 122,
+      "path": "handlers/city.py",
+      "context": "show_townhall",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 123,
+      "path": "handlers/city.py",
+      "context": "show_tavern",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 124,
+      "path": "handlers/city.py",
+      "context": "back_to_trade_district_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 125,
+      "path": "handlers/city.py",
+      "context": "back_to_craft_district_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 126,
+      "path": "handlers/city.py",
+      "context": "back_to_guild_district_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 127,
+      "path": "handlers/city.py",
+      "context": "sell_trash",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 128,
+      "path": "handlers/city.py",
+      "context": "show_sell_equipment",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 129,
+      "path": "handlers/city.py",
+      "context": "sell_equipment_page",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 130,
+      "path": "handlers/city.py",
+      "context": "sell_equipment_confirm",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 131,
+      "path": "handlers/city.py",
+      "context": "sell_equipment_do",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 132,
+      "path": "handlers/city.py",
+      "context": "show_common_equipment_shop",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 133,
+      "path": "handlers/city.py",
+      "context": "common_equipment_back_to_slots",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 134,
+      "path": "handlers/city.py",
+      "context": "common_equipment_slot_choice",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 135,
+      "path": "handlers/city.py",
+      "context": "preview_common_equipment",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 136,
+      "path": "handlers/city.py",
+      "context": "confirm_common_shop_purchase",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 137,
+      "path": "handlers/city.py",
+      "context": "cancel_common_shop_purchase",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 138,
+      "path": "handlers/city.py",
+      "context": "back_to_trade_district",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 139,
+      "path": "handlers/city.py",
+      "context": "back_to_trader_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 140,
+      "path": "handlers/city.py",
+      "context": "show_alchemist",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 141,
+      "path": "handlers/city.py",
+      "context": "alchemist_trade_17_19_3",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 142,
+      "path": "handlers/city.py",
+      "context": "alchemist_buy_message_17_19_3_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 143,
+      "path": "handlers/city.py",
+      "context": "alchemist_sell_message_17_19_3_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 144,
+      "path": "handlers/city.py",
+      "context": "alchemist_exact_quantity_17_19_3",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 145,
+      "path": "handlers/city.py",
+      "context": "show_blacksmith",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 146,
+      "path": "handlers/city.py",
+      "context": "repair_all",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 147,
+      "path": "handlers/city.py",
+      "context": "repair_one",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 148,
+      "path": "handlers/city.py",
+      "context": "back_to_main",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 149,
+      "path": "handlers/city.py",
+      "context": "blacksmith_repair_button_v2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 150,
+      "path": "handlers/city.py",
+      "context": "blacksmith_repair_button_v2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 151,
+      "path": "handlers/city.py",
+      "context": "location_description_toggle_17_11_2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 152,
+      "path": "handlers/city.py",
+      "context": "show_story_elder",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 153,
+      "path": "handlers/city.py",
+      "context": "show_story_mercenary_head",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 154,
+      "path": "handlers/city.py",
+      "context": "show_story_bartender",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 155,
+      "path": "handlers/city.py",
+      "context": "back_to_story_townhall",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 156,
+      "path": "handlers/city.py",
+      "context": "back_to_story_mercenary_guild",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 157,
+      "path": "handlers/city.py",
+      "context": "back_to_story_tavern",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 158,
+      "path": "handlers/city.py",
+      "context": "open_main_menu_17_30_1_3",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 159,
+      "path": "handlers/combat.py",
+      "context": "call_active_story_boss",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 160,
+      "path": "handlers/combat.py",
+      "context": "hunt",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 161,
+      "path": "handlers/combat.py",
+      "context": "combat_placeholder",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 162,
+      "path": "handlers/combat.py",
+      "context": "attack",
+      "verdict": "NOT_PROVEN",
+      "evidence": [],
+      "deletion_authorized": false
+    },
+    {
+      "order": 163,
+      "path": "handlers/combat.py",
+      "context": "show_skills",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 164,
+      "path": "handlers/combat.py",
+      "context": "skill_locked",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 165,
+      "path": "handlers/combat.py",
+      "context": "combat_attack_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 166,
+      "path": "handlers/combat.py",
+      "context": "combat_potion_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 167,
+      "path": "handlers/combat.py",
+      "context": "combat_flee_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 168,
+      "path": "handlers/combat.py",
+      "context": "combat_skill_locked_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 169,
+      "path": "handlers/combat.py",
+      "context": "combat_use_skill_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 170,
+      "path": "handlers/combat.py",
+      "context": "choose_potion_in_combat",
+      "verdict": "NOT_PROVEN",
+      "evidence": [],
+      "deletion_authorized": false
+    },
+    {
+      "order": 171,
+      "path": "handlers/combat.py",
+      "context": "combat_back",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 172,
+      "path": "handlers/combat.py",
+      "context": "use_selected_potion_in_combat",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 173,
+      "path": "handlers/combat.py",
+      "context": "escape",
+      "verdict": "NOT_PROVEN",
+      "evidence": [],
+      "deletion_authorized": false
+    },
+    {
+      "order": 174,
+      "path": "handlers/combat.py",
+      "context": "escape_yes",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 175,
+      "path": "handlers/combat.py",
+      "context": "escape_no",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 176,
+      "path": "handlers/contracts.py",
+      "context": "show_contracts",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 177,
+      "path": "handlers/contracts.py",
+      "context": "take_contract",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 178,
+      "path": "handlers/contracts.py",
+      "context": "claim_contract",
+      "verdict": "NOT_PROVEN",
+      "evidence": [],
+      "deletion_authorized": false
+    },
+    {
+      "order": 179,
+      "path": "handlers/contracts.py",
+      "context": "abandon_contract",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 180,
+      "path": "handlers/crystal_shop.py",
+      "context": "shop",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 181,
+      "path": "handlers/crystal_shop.py",
+      "context": "back",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 182,
+      "path": "handlers/crystal_shop.py",
+      "context": "bag_expansion",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 183,
+      "path": "handlers/crystal_shop.py",
+      "context": "bag_expansion_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 184,
+      "path": "handlers/crystal_shop.py",
+      "context": "choose",
+      "verdict": "NOT_PROVEN",
+      "evidence": [],
+      "deletion_authorized": false
+    },
+    {
+      "order": 185,
+      "path": "handlers/crystal_shop.py",
+      "context": "callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 186,
+      "path": "handlers/daily.py",
+      "context": "show_daily_quest",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 187,
+      "path": "handlers/daily.py",
+      "context": "claim_daily_reward",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 188,
+      "path": "handlers/dev.py",
+      "context": "give_item",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 189,
+      "path": "handlers/dev.py",
+      "context": "set_level",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 190,
+      "path": "handlers/dev.py",
+      "context": "reset_level",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 191,
+      "path": "handlers/dev.py",
+      "context": "reset_hero",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 192,
+      "path": "handlers/dev.py",
+      "context": "progress",
+      "verdict": "NOT_PROVEN",
+      "evidence": [],
+      "deletion_authorized": false
+    },
+    {
+      "order": 193,
+      "path": "handlers/dev.py",
+      "context": "set_energy",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 194,
+      "path": "handlers/dev.py",
+      "context": "set_gold",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 195,
+      "path": "handlers/dev.py",
+      "context": "generate_drop",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 196,
+      "path": "handlers/dev.py",
+      "context": "my_id",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 197,
+      "path": "handlers/dev.py",
+      "context": "dev_armor",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 198,
+      "path": "handlers/dev.py",
+      "context": "dev_weapon",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 199,
+      "path": "handlers/dev.py",
+      "context": "dev_rune",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 200,
+      "path": "handlers/dev.py",
+      "context": "dev_firius",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 201,
+      "path": "handlers/dev.py",
+      "context": "dev_extractor",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 202,
+      "path": "handlers/dev.py",
+      "context": "dev_extractor_perfect",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 203,
+      "path": "handlers/dev.py",
+      "context": "dev_drop_sim",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 204,
+      "path": "handlers/dev.py",
+      "context": "dev_rune_drop_sim",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 205,
+      "path": "handlers/dev.py",
+      "context": "dev_pvp",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 206,
+      "path": "handlers/dev.py",
+      "context": "dev_pvp_all",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 207,
+      "path": "handlers/dev.py",
+      "context": "dev_pvp_audit",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 208,
+      "path": "handlers/dev.py",
+      "context": "dev_help",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 209,
+      "path": "handlers/dev.py",
+      "context": "give_class_reset_sphere",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 210,
+      "path": "handlers/dev.py",
+      "context": "dev_pvp_prod_14_6_2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 211,
+      "path": "handlers/dev.py",
+      "context": "dev_pvp_prod_all_14_6_2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 212,
+      "path": "handlers/dev.py",
+      "context": "dev_pvp_calibrate_14_6_2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 213,
+      "path": "handlers/dev.py",
+      "context": "dev_pvp_fixture_audit_14_6_2a",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 214,
+      "path": "handlers/dev.py",
+      "context": "set_exp_17_14_1_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 215,
+      "path": "handlers/dev.py",
+      "context": "crystal_balance_17_25_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 216,
+      "path": "handlers/dev.py",
+      "context": "crystal_credit_17_25_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 217,
+      "path": "handlers/dev.py",
+      "context": "crystal_debit_17_25_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 218,
+      "path": "handlers/dev.py",
+      "context": "crystal_history_17_25_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 219,
+      "path": "handlers/dev.py",
+      "context": "dev_premium_item_17_26_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 220,
+      "path": "handlers/event_ui.py",
+      "context": "open_events",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 221,
+      "path": "handlers/event_ui.py",
+      "context": "event_reply_exit",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 222,
+      "path": "handlers/event_ui.py",
+      "context": "event_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 223,
+      "path": "handlers/external_links.py",
+      "context": "open_external_links",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 224,
+      "path": "handlers/external_links.py",
+      "context": "close_external_links",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 225,
+      "path": "handlers/fatigue_artifact.py",
+      "context": "callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 226,
+      "path": "handlers/fatigue_artifact.py",
+      "context": "dev_grant",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 227,
+      "path": "handlers/guild.py",
+      "context": "guild_creation_state_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 228,
+      "path": "handlers/guild.py",
+      "context": "guild_browse_state_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 229,
+      "path": "handlers/guild.py",
+      "context": "guild_hall_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 230,
+      "path": "handlers/guild.py",
+      "context": "guild_back_to_hall_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 231,
+      "path": "handlers/guild.py",
+      "context": "guild_back_to_city_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 232,
+      "path": "handlers/guild.py",
+      "context": "guild_info_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 233,
+      "path": "handlers/guild.py",
+      "context": "guild_members_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 234,
+      "path": "handlers/guild.py",
+      "context": "guild_monthly_ranking_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 235,
+      "path": "handlers/guild.py",
+      "context": "guild_total_ranking_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 236,
+      "path": "handlers/guild.py",
+      "context": "guild_create_start_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 237,
+      "path": "handlers/guild.py",
+      "context": "guild_list_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 238,
+      "path": "handlers/guild.py",
+      "context": "guild_my_applications_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 239,
+      "path": "handlers/guild.py",
+      "context": "guild_applications_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 240,
+      "path": "handlers/guild.py",
+      "context": "guild_logs_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 241,
+      "path": "handlers/guild.py",
+      "context": "guild_application_review_state_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 242,
+      "path": "handlers/guild.py",
+      "context": "guild_applications_message_v2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 243,
+      "path": "handlers/guild.py",
+      "context": "guild_member_manage_state_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 244,
+      "path": "handlers/guild.py",
+      "context": "guild_members_message_v2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 245,
+      "path": "handlers/guild.py",
+      "context": "guild_progress_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 246,
+      "path": "handlers/guild.py",
+      "context": "guild_contribution_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 247,
+      "path": "handlers/guild.py",
+      "context": "guild_contribution_monthly_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 248,
+      "path": "handlers/guild.py",
+      "context": "guild_contribution_total_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 249,
+      "path": "handlers/guild.py",
+      "context": "guild_add_progress_command",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 250,
+      "path": "handlers/guild.py",
+      "context": "guild_logs_state_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 251,
+      "path": "handlers/guild.py",
+      "context": "guild_logs_message_v2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 252,
+      "path": "handlers/guild.py",
+      "context": "guild_leave_prompt_17_21_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 253,
+      "path": "handlers/guild.py",
+      "context": "guild_leave_callback_17_21_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 254,
+      "path": "handlers/guild.py",
+      "context": "guild_leadership_start_17_22_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 255,
+      "path": "handlers/guild.py",
+      "context": "guild_leadership_callback_17_22_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 256,
+      "path": "handlers/guild.py",
+      "context": "guild_debug_command",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 257,
+      "path": "handlers/guild.py",
+      "context": "guild_fix_states_command",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 258,
+      "path": "handlers/guild.py",
+      "context": "guild_kick_confirmation_callback_17_21_3_2",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 259,
+      "path": "handlers/inventory.py",
+      "context": "show_inventory",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 260,
+      "path": "handlers/inventory.py",
+      "context": "inventory_home_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 261,
+      "path": "handlers/inventory.py",
+      "context": "inventory_profile_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 262,
+      "path": "handlers/inventory.py",
+      "context": "inventory_category_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 263,
+      "path": "handlers/inventory.py",
+      "context": "item_details_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 264,
+      "path": "handlers/inventory.py",
+      "context": "equip_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 265,
+      "path": "handlers/inventory.py",
+      "context": "unequip_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 266,
+      "path": "handlers/inventory.py",
+      "context": "use_potion_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 267,
+      "path": "handlers/inventory.py",
+      "context": "equipment_comparison_callback_18_11_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 268,
+      "path": "handlers/inventory.py",
+      "context": "rebirth_sphere_callbacks_18_16_10",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 269,
+      "path": "handlers/map.py",
+      "context": "show_map",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 270,
+      "path": "handlers/map.py",
+      "context": "collapse_map",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 271,
+      "path": "handlers/map.py",
+      "context": "block_city_actions_during_travel",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 272,
+      "path": "handlers/map.py",
+      "context": "map_callbacks",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 273,
+      "path": "handlers/name_rune.py",
+      "context": "start",
+      "verdict": "NOT_PROVEN",
+      "evidence": [],
+      "deletion_authorized": false
+    },
+    {
+      "order": 274,
+      "path": "handlers/name_rune.py",
+      "context": "inventory_use",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 275,
+      "path": "handlers/name_rune.py",
+      "context": "callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 276,
+      "path": "handlers/player_interaction.py",
+      "context": "show_location_players",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 277,
+      "path": "handlers/player_interaction.py",
+      "context": "location_players_page",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 278,
+      "path": "handlers/player_interaction.py",
+      "context": "location_player_profile",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 279,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_request",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 280,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_request_response",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 281,
+      "path": "handlers/player_interaction.py",
+      "context": "cancel_trade_foundation",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 282,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_editor_open",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 283,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_editor_list",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 284,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_editor_item",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 285,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_editor_set_item",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 286,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_editor_remove_item",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 287,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_editor_gold",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 288,
+      "path": "handlers/player_interaction.py",
+      "context": "duel_placeholder",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 289,
+      "path": "handlers/player_interaction.py",
+      "context": "back_to_map",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 290,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_ux_list",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 291,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_ux_add",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 292,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_ux_mine",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 293,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_ux_edit",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 294,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_ux_set",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 295,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_ux_all",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 296,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_ux_remove",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 297,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_ux_gold",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 298,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_preview_view",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 299,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_preview_add_one",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 300,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_preview_set",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 301,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_preview_all",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 302,
+      "path": "handlers/player_interaction.py",
+      "context": "open_gold",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 303,
+      "path": "handlers/player_interaction.py",
+      "context": "gold_delta",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 304,
+      "path": "handlers/player_interaction.py",
+      "context": "gold_clear",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 305,
+      "path": "handlers/player_interaction.py",
+      "context": "gold_input",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 306,
+      "path": "handlers/player_interaction.py",
+      "context": "quantity_input",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 307,
+      "path": "handlers/player_interaction.py",
+      "context": "amount_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 308,
+      "path": "handlers/player_interaction.py",
+      "context": "_install_player_trade_handler_level_navigation_guard_12_6_6",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 309,
+      "path": "handlers/player_interaction.py",
+      "context": "_install_player_trade_handler_level_navigation_guard_12_6_6",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 310,
+      "path": "handlers/player_interaction.py",
+      "context": "_install_player_trade_handler_level_navigation_guard_12_6_6",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 311,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_categories",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 312,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_category_list",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 313,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_category_preview",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 314,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_category_add_one",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 315,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_category_set",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 316,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_category_all",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 317,
+      "path": "handlers/player_interaction.py",
+      "context": "trade_cancel_with_keyboard_restore",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 318,
+      "path": "handlers/player_interaction.py",
+      "context": "ready",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 319,
+      "path": "handlers/player_interaction.py",
+      "context": "refresh_confirmation",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 320,
+      "path": "handlers/player_interaction.py",
+      "context": "edit",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 321,
+      "path": "handlers/player_interaction.py",
+      "context": "confirm",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 322,
+      "path": "handlers/player_rankings.py",
+      "context": "rankings_menu",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 323,
+      "path": "handlers/player_rankings.py",
+      "context": "rankings_back",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 324,
+      "path": "handlers/player_rankings.py",
+      "context": "ranking_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 325,
+      "path": "handlers/profile.py",
+      "context": "profile_history_reply_message_17_24_1_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 326,
+      "path": "handlers/profile.py",
+      "context": "profile",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 327,
+      "path": "handlers/profile.py",
+      "context": "stats",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 328,
+      "path": "handlers/profile.py",
+      "context": "equipment",
+      "verdict": "NOT_PROVEN",
+      "evidence": [],
+      "deletion_authorized": false
+    },
+    {
+      "order": 329,
+      "path": "handlers/profile.py",
+      "context": "skills",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 330,
+      "path": "handlers/profile.py",
+      "context": "profile_character_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 331,
+      "path": "handlers/profile.py",
+      "context": "profile_stats_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 332,
+      "path": "handlers/profile.py",
+      "context": "profile_equipment_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 333,
+      "path": "handlers/profile.py",
+      "context": "profile_skills_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 334,
+      "path": "handlers/profile.py",
+      "context": "back_from_profile",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 335,
+      "path": "handlers/profile.py",
+      "context": "profile_history_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 336,
+      "path": "handlers/pvp_interaction.py",
+      "context": "pvp_duel_request",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 337,
+      "path": "handlers/pvp_interaction.py",
+      "context": "pvp_duel_response",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 338,
+      "path": "handlers/pvp_round_ui.py",
+      "context": "pvp_status_message",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 339,
+      "path": "handlers/pvp_round_ui.py",
+      "context": "pvp_round_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 340,
+      "path": "handlers/pvp_round_ui.py",
+      "context": "pvp_surrender_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 341,
+      "path": "handlers/refine.py",
+      "context": "refine_command",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 342,
+      "path": "handlers/refine.py",
+      "context": "refine_text_button",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 343,
+      "path": "handlers/refine.py",
+      "context": "refine_menu_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 344,
+      "path": "handlers/refine.py",
+      "context": "refine_page_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 345,
+      "path": "handlers/refine.py",
+      "context": "refine_item_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 346,
+      "path": "handlers/refine.py",
+      "context": "refine_do_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 347,
+      "path": "handlers/refine.py",
+      "context": "refine_exec_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 348,
+      "path": "handlers/refine.py",
+      "context": "refine_noop_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 349,
+      "path": "handlers/refine.py",
+      "context": "refine_close_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 350,
+      "path": "handlers/runes.py",
+      "context": "show_rune_master",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 351,
+      "path": "handlers/runes.py",
+      "context": "show_rune_insertion",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 352,
+      "path": "handlers/runes.py",
+      "context": "show_rune_fusion",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 353,
+      "path": "handlers/runes.py",
+      "context": "rune_master_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 354,
+      "path": "handlers/runes.py",
+      "context": "rune_fusion_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 355,
+      "path": "handlers/runes.py",
+      "context": "show_extractor",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 356,
+      "path": "handlers/runes.py",
+      "context": "extractor_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 357,
+      "path": "handlers/runes.py",
+      "context": "show_rune_master_shop",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 358,
+      "path": "handlers/runes.py",
+      "context": "rune_master_shop_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 359,
+      "path": "handlers/runes.py",
+      "context": "rune_master_shop_quantity_input",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 360,
+      "path": "handlers/start.py",
+      "context": "start",
+      "verdict": "NOT_PROVEN",
+      "evidence": [],
+      "deletion_authorized": false
+    },
+    {
+      "order": 361,
+      "path": "handlers/start.py",
+      "context": "receive_character_name",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 362,
+      "path": "handlers/start.py",
+      "context": "select_class",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 363,
+      "path": "handlers/start.py",
+      "context": "change_class",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 364,
+      "path": "handlers/start.py",
+      "context": "class_preview_17_13_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 365,
+      "path": "handlers/start.py",
+      "context": "class_back_17_13_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 366,
+      "path": "handlers/start.py",
+      "context": "class_confirm_17_13_1",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 367,
+      "path": "handlers/story_boss_invocation_wiring.py",
+      "context": "story_boss_invocation_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 368,
+      "path": "handlers/story_quest_npc_runtime.py",
+      "context": "callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 369,
+      "path": "handlers/story_quests.py",
+      "context": "story_quest_hierarchy_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 370,
+      "path": "handlers/story_quests.py",
+      "context": "story_quest_profile_reply",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 371,
+      "path": "handlers/story_quests.py",
+      "context": "story_quest_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 372,
+      "path": "handlers/timed_exp_bonus.py",
+      "context": "open_bonus",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 373,
+      "path": "handlers/timed_exp_bonus.py",
+      "context": "callbacks",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 374,
+      "path": "handlers/world_chronicles.py",
+      "context": "open_world_chronicles",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    },
+    {
+      "order": 375,
+      "path": "handlers/world_chronicles.py",
+      "context": "world_chronicles_callback",
+      "verdict": "CANDIDATE",
+      "evidence": [
+        "no_static_direct_call_site"
+      ],
+      "deletion_authorized": false
+    }
+  ],
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "production_sqlite_opened": false,
+  "deletion_authorized": false,
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "stale_error_artifacts": {
+    "detected": [],
+    "removed": [],
+    "removal_verified": true
+  },
+  "manual_game_check": "NOT_REQUIRED",
+  "decision": "GO_TO_22_2_5_PRODUCTION_SHAPED_DISPATCH_AND_DUPLICATE_RESPONSE_VERIFICATION"
+}
