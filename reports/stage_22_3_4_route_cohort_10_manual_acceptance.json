@@ -1,0 +1,114 @@
+{
+  "stage": "22.3.4",
+  "patch_revision": 2,
+  "patch_filename": "patch_22_3_4_route_cohort_10_manual_acceptance.py",
+  "status": "PASS_READ_ONLY_ACCEPTANCE",
+  "timestamp": "2026-11-06T19:31:37.801489+00:00",
+  "git": {
+    "branch": "develop",
+    "head": "753e8de612d1fca09ca446ee67e3a609ed05678c",
+    "origin_develop": "f6b8a87033641b796ceeb401d321ab4f1e229bf5",
+    "origin_is_ancestor": true,
+    "status": [
+      {
+        "xy": " M",
+        "path": "ROM_FULL_DUMP.txt"
+      }
+    ],
+    "staged": []
+  },
+  "authority": {
+    "stage_22_3_3_sha256": "d7bfd2338c4823704f55e87d37aaa5d11f27b5ad6725c90d1e2a9a0caca76be6",
+    "stage_22_3_3_commit": "753e8de612d1fca09ca446ee67e3a609ed05678c"
+  },
+  "summary": {
+    "manual_game_check": "PASS",
+    "cohort": "route_cohort_10",
+    "acceptance_level": "END_TO_END_ACCEPTED",
+    "production_mutations": 0,
+    "database_mutations": 0
+  },
+  "manual_acceptance": {
+    "evidence_mode": "OPERATOR_ATTESTATION_FROM_ACCEPTED_CHAT_RECORD",
+    "raw_exports_required": false,
+    "raw_exports_committed": false,
+    "observed_window": "2026-11-06T21:12:50..21:13:15",
+    "battle_number": 4,
+    "attested_events": [
+      "player interaction screen opened",
+      "duel challenge sent",
+      "duel accepted",
+      "PvP battle #4 created",
+      "both participants entered round 1",
+      "round completed",
+      "victory delivered to initiator",
+      "defeat delivered to recipient"
+    ],
+    "assertions": {
+      "duel_callback_reached_canonical_owner": true,
+      "duel_request_visible_result_exactly_once": true,
+      "silent_callback": false,
+      "duplicate_request_message": false,
+      "duplicate_terminal_message_per_participant": false,
+      "both_participants_entered_pvp": true,
+      "round_completed": true,
+      "terminal_result_delivered_to_both": true,
+      "observed_trade_regression": false,
+      "observed_other_player_interaction_regression": false
+    },
+    "privacy_note": "No Telegram export, user payload, message text, message ID, username, or personal identifier is read or committed."
+  },
+  "source_postconditions": {
+    "target_sha256": "24c1d89bcf3bef92eade71334a20f800daf1412a41619aa72908691a79c21baf",
+    "sibling_sha256": "64e76770501b76d4fe82b8c11786a7a6bddaa9b9e453aa0f71f1177439fa0235",
+    "target_matches_committed_mutation": true,
+    "sibling_byte_identical": true
+  },
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "9355952221129e697da68ebb6ab74cd5424742e50e464da48f66b7acb206b554",
+      "size": 4132392,
+      "mtime_ns": 1793993045663093000
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "59345adead9bd17df9cf0c3048d6909fe12c00f124fce7bf2168138a809e3139",
+      "size": 32768,
+      "mtime_ns": 1793992323472363200
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "9355952221129e697da68ebb6ab74cd5424742e50e464da48f66b7acb206b554",
+      "size": 4132392,
+      "mtime_ns": 1793993045663093000
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "59345adead9bd17df9cf0c3048d6909fe12c00f124fce7bf2168138a809e3139",
+      "size": 32768,
+      "mtime_ns": 1793992323472363200
+    }
+  },
+  "production_sqlite_opened": false,
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "PASS",
+  "cohort_10_status": "END_TO_END_ACCEPTED",
+  "decision": "GO_TO_22_3_5_NEXT_COHORT_REBASELINE"
+}
