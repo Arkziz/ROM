@@ -1,0 +1,161 @@
+{
+  "stage": "22.3.3",
+  "patch_revision": 1,
+  "patch_filename": "patch_22_3_3_guarded_route_cohort_10_mutation.py",
+  "status": "PASS_MUTATION",
+  "timestamp": "2026-11-06T19:08:40.892120+00:00",
+  "git": {
+    "branch": "develop",
+    "head": "ee108ef98d3f7beec0d5f47c72beb92cefeee28f",
+    "origin_develop": "f6b8a87033641b796ceeb401d321ab4f1e229bf5",
+    "origin_is_ancestor": true,
+    "status": [
+      {
+        "xy": " M",
+        "path": "ROM_FULL_DUMP.txt"
+      }
+    ],
+    "staged": []
+  },
+  "authority": {
+    "stage_22_3_2_sha256": "9df59466cc23a10ee0032d4697e37a11df13ed5975717a9a01ff93c92906231e",
+    "stage_22_3_2_commit": "ee108ef98d3f7beec0d5f47c72beb92cefeee28f"
+  },
+  "summary": {
+    "files_mutated": 1,
+    "routes_retired": 1,
+    "canonical_routes_preserved": 1,
+    "fixture_cases": 7,
+    "fixture_cases_passed": 7,
+    "production_mutation_authorized": true,
+    "deletion_authorized": true
+  },
+  "mutation": {
+    "file": "handlers/player_interaction.py",
+    "before_sha256": "799e9ad6e745b3995886c6e504019b7c1b01073c917a0ae1b9ccc05b8948b0b9",
+    "after_sha256": "24c1d89bcf3bef92eade71334a20f800daf1412a41619aa72908691a79c21baf",
+    "retired_symbol": "duel_placeholder",
+    "retired_registration_order": 288,
+    "preserved_symbol": "pvp_duel_request",
+    "preserved_registration_order": 336,
+    "start_line": 498,
+    "end_line": 500,
+    "removed_line_count": 3,
+    "before_prefix_registrations": 1,
+    "after_prefix_registrations": 0,
+    "before_ast_sha256": "3e667dd17dd498c0fab8162a689ca35913f02f979c513439e1ee5e9c5996a745",
+    "after_ast_sha256": "3f8c5b6e5e7bb3e0d818b7c411a5aabaef63ff8291ac1c7e30999d781ef5b2c0"
+  },
+  "backup": {
+    "path": ".git\\rom_scoped_backups\\22.3.3\\handlers\\player_interaction.py",
+    "relative_path": "handlers/player_interaction.py",
+    "existed": true,
+    "sha256": "799e9ad6e745b3995886c6e504019b7c1b01073c917a0ae1b9ccc05b8948b0b9",
+    "verified": true
+  },
+  "rollback_proof": {
+    "status": "PASS",
+    "restored_original_sha256": "799e9ad6e745b3995886c6e504019b7c1b01073c917a0ae1b9ccc05b8948b0b9",
+    "validated_future_sha256": "24c1d89bcf3bef92eade71334a20f800daf1412a41619aa72908691a79c21baf"
+  },
+  "fixtures": [
+    {
+      "callback_data": "pi:duel:42",
+      "expected_later_owner_match": true,
+      "observed": true,
+      "pass": true
+    },
+    {
+      "callback_data": "pi:duel:",
+      "expected_later_owner_match": true,
+      "observed": true,
+      "pass": true
+    },
+    {
+      "callback_data": "pi:duel",
+      "expected_later_owner_match": false,
+      "observed": false,
+      "pass": true
+    },
+    {
+      "callback_data": "pi:duelx:42",
+      "expected_later_owner_match": false,
+      "observed": false,
+      "pass": true
+    },
+    {
+      "callback_data": "pi:trade:42",
+      "expected_later_owner_match": false,
+      "observed": false,
+      "pass": true
+    },
+    {
+      "callback_data": "",
+      "expected_later_owner_match": false,
+      "observed": false,
+      "pass": true
+    },
+    {
+      "callback_data": null,
+      "expected_later_owner_match": false,
+      "observed": false,
+      "pass": true
+    }
+  ],
+  "sibling": {
+    "file": "handlers/pvp_interaction.py",
+    "sha256": "64e76770501b76d4fe82b8c11786a7a6bddaa9b9e453aa0f71f1177439fa0235",
+    "byte_identical": true
+  },
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "production_sqlite_opened": false,
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "stale_error_artifacts": {
+    "detected": [],
+    "removed": [],
+    "removal_verified": true
+  },
+  "manual_game_check": "REQUIRED",
+  "manual_acceptance_status": "PENDING",
+  "decision": "MANUAL_GAME_CHECK_REQUIRED_BEFORE_COHORT_10_ACCEPTANCE"
+}

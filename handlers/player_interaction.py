@@ -495,9 +495,6 @@ def _register_player_interaction_base_handlers_12_6_8(bot):
         _safe_answer(bot, call, "Золото у пропозиції оновлено.")
         _send_trade_editor(bot, call.message.chat.id, int(call.from_user.id), trade_id, call.message.message_id)
 
-    @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")).startswith("pi:duel:"))
-    def duel_placeholder(call):
-        _safe_answer(bot, call, "🔒 Дуелі будуть доступні в майбутньому PvP-етапі.", True)
 
     @bot.callback_query_handler(func=lambda call: str(getattr(call, "data", "")) == "pi:back:map")
     def back_to_map(call):
