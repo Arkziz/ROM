@@ -1,0 +1,272 @@
+{
+  "stage": "22.3.10",
+  "patch_revision": 1,
+  "patch_filename": "patch_22_3_10_route_cohort_09_transaction_owner_reconciliation.py",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-06T22:03:38.032345+00:00",
+  "git": {
+    "branch": "develop",
+    "head": "c6624426d342fe924ec1419f757edd7961bce302",
+    "origin_develop": "f6b8a87033641b796ceeb401d321ab4f1e229bf5",
+    "origin_is_ancestor": true,
+    "status": [
+      {
+        "xy": " M",
+        "path": "ROM_FULL_DUMP.txt"
+      }
+    ]
+  },
+  "authority": {
+    "stage_22_3_9_sha256": "669543666c77d9ecd1122cb0f5aef3f9de87ff9069a9bc5d05035e93b3aa7588",
+    "stage_22_3_9_commit": "c6624426d342fe924ec1419f757edd7961bce302",
+    "target_sha256": "24c1d89bcf3bef92eade71334a20f800daf1412a41619aa72908691a79c21baf"
+  },
+  "summary": {
+    "required_symbols": 4,
+    "registration_paths": 1,
+    "transaction_calls": 2,
+    "fixture_cases": 5,
+    "production_mutation_authorized": false,
+    "deletion_authorized": false
+  },
+  "symbols": {
+    "_register_player_interaction_base_handlers_12_6_8": {
+      "line": 224,
+      "end_line": 503,
+      "ast_sha256": "1ad712e5d8361d1d886d1138614e12aa0a244e39e945c797a60db3997bb799c2"
+    },
+    "_register_trade_navigation_and_categories_12_6_4": {
+      "line": 1561,
+      "end_line": 1682,
+      "ast_sha256": "dafc32bb382d601ac36a17b828f7797d376f415249718bd39237d5aab15f933b"
+    },
+    "cancel_trade_foundation": {
+      "line": 391,
+      "end_line": 407,
+      "ast_sha256": "8434dc25db5e8c08f39e982cc42b8cd49ee9591ea873462c3ba95f9af43445af"
+    },
+    "trade_cancel_with_keyboard_restore": {
+      "line": 1650,
+      "end_line": 1682,
+      "ast_sha256": "b474fdea2370ecd8b9c7987b5baedf03e7bab89fa893b354c3d9ac4e8d2b8beb"
+    }
+  },
+  "relevant_calls": [
+    {
+      "line": 2023,
+      "callee": "_register_trade_navigation_and_categories_12_6_4",
+      "scope": [
+        "register_player_interaction_handlers"
+      ]
+    },
+    {
+      "line": 2027,
+      "callee": "_register_player_interaction_base_handlers_12_6_8",
+      "scope": [
+        "register_player_interaction_handlers"
+      ]
+    },
+    {
+      "line": 397,
+      "callee": "cancel_player_trade",
+      "scope": [
+        "_register_player_interaction_base_handlers_12_6_8",
+        "cancel_trade_foundation"
+      ]
+    },
+    {
+      "line": 1654,
+      "callee": "cancel_player_trade",
+      "scope": [
+        "_register_trade_navigation_and_categories_12_6_4",
+        "trade_cancel_with_keyboard_restore"
+      ]
+    }
+  ],
+  "registration_call_paths": [
+    {
+      "scope": [
+        "register_player_interaction_handlers"
+      ],
+      "calls": [
+        {
+          "line": 2023,
+          "callee": "_register_trade_navigation_and_categories_12_6_4",
+          "scope": [
+            "register_player_interaction_handlers"
+          ]
+        },
+        {
+          "line": 2027,
+          "callee": "_register_player_interaction_base_handlers_12_6_8",
+          "scope": [
+            "register_player_interaction_handlers"
+          ]
+        }
+      ],
+      "order": [
+        "_register_trade_navigation_and_categories_12_6_4",
+        "_register_player_interaction_base_handlers_12_6_8"
+      ]
+    }
+  ],
+  "transaction_owner": {
+    "symbol": "cancel_player_trade",
+    "route_calls": [
+      {
+        "line": 397,
+        "callee": "cancel_player_trade",
+        "scope": [
+          "_register_player_interaction_base_handlers_12_6_8",
+          "cancel_trade_foundation"
+        ]
+      },
+      {
+        "line": 1654,
+        "callee": "cancel_player_trade",
+        "scope": [
+          "_register_trade_navigation_and_categories_12_6_4",
+          "trade_cancel_with_keyboard_restore"
+        ]
+      }
+    ],
+    "canonicality": "Both overlapping routes delegate their state transition to this shared domain function."
+  },
+  "isolated_exact_once_fixture": [
+    {
+      "case": "active",
+      "results": [
+        {
+          "success": true,
+          "initiator_user_id": 1,
+          "recipient_user_id": 2
+        }
+      ],
+      "effects": 1,
+      "expected_effects": 1,
+      "pass": true
+    },
+    {
+      "case": "terminal",
+      "results": [
+        {
+          "success": false,
+          "reason": "not_active"
+        }
+      ],
+      "effects": 0,
+      "expected_effects": 0,
+      "pass": true
+    },
+    {
+      "case": "missing",
+      "results": [
+        {
+          "success": false,
+          "reason": "not_active"
+        }
+      ],
+      "effects": 0,
+      "expected_effects": 0,
+      "pass": true
+    },
+    {
+      "case": "foreign_user",
+      "results": [
+        {
+          "success": false,
+          "reason": "foreign_user"
+        }
+      ],
+      "effects": 0,
+      "expected_effects": 0,
+      "pass": true
+    },
+    {
+      "case": "repeated_after_commit",
+      "results": [
+        {
+          "success": true,
+          "initiator_user_id": 1,
+          "recipient_user_id": 2
+        },
+        {
+          "success": false,
+          "reason": "not_active"
+        }
+      ],
+      "effects": 1,
+      "expected_effects": 1,
+      "pass": true
+    }
+  ],
+  "fixture_limit": "Synthetic isolated state-machine contract only; production SQLite was not opened or copied.",
+  "verdict": {
+    "verdict": "READY_FOR_GUARDED_EXACT_ROUTE_RETIREMENT",
+    "confidence": "HIGH",
+    "common_registration_call_path": true,
+    "transaction_owner": "cancel_player_trade",
+    "transaction_calls": 2,
+    "isolated_exact_once_fixture": "PASS",
+    "production_mutation_authorized": false,
+    "deletion_authorized": false
+  },
+  "successor_contract": {
+    "mutation_allowed_only_if_ready_verdict": true,
+    "retire_only": "cancel_trade_foundation",
+    "preserve": "trade_cancel_with_keyboard_restore",
+    "preserve_exact_once": true,
+    "preserve_terminal_panels_and_keyboards": true,
+    "scoped_backup_required": true,
+    "rollback_required": true,
+    "manual_game_check": "REQUIRED_AFTER_MUTATION"
+  },
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "9355952221129e697da68ebb6ab74cd5424742e50e464da48f66b7acb206b554",
+      "size": 4132392,
+      "mtime_ns": 1793993045663093000
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "59345adead9bd17df9cf0c3048d6909fe12c00f124fce7bf2168138a809e3139",
+      "size": 32768,
+      "mtime_ns": 1793992323472363200
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "9355952221129e697da68ebb6ab74cd5424742e50e464da48f66b7acb206b554",
+      "size": 4132392,
+      "mtime_ns": 1793993045663093000
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "59345adead9bd17df9cf0c3048d6909fe12c00f124fce7bf2168138a809e3139",
+      "size": 32768,
+      "mtime_ns": 1793992323472363200
+    }
+  },
+  "production_sqlite_opened": false,
+  "production_mutation_authorized": false,
+  "deletion_authorized": false,
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "decision": "GO_TO_22_3_11_GUARDED_ROUTE_COHORT_09_MUTATION"
+}
