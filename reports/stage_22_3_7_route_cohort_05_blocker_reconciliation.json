@@ -1,0 +1,1132 @@
+{
+  "stage": "22.3.7",
+  "patch_revision": 1,
+  "patch_filename": "patch_22_3_7_route_cohort_05_blocker_reconciliation.py",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-06T21:50:03.562469+00:00",
+  "git": {
+    "branch": "develop",
+    "head": "2fe10ea6e060cda2d7eb1405cd0fe0c88d8c7d3b",
+    "origin_develop": "f6b8a87033641b796ceeb401d321ab4f1e229bf5",
+    "origin_is_ancestor": true,
+    "status": [
+      {
+        "xy": " M",
+        "path": "ROM_FULL_DUMP.txt"
+      }
+    ]
+  },
+  "authority": {
+    "stage_22_3_6_sha256": "f3b5b84a0413503983f25ee255448f7752b0da16e2cda0d60306c3686ef67406",
+    "stage_22_3_6_commit": "2fe10ea6e060cda2d7eb1405cd0fe0c88d8c7d3b",
+    "target_sha256": "a73373e0bf4ae90e2d7d4e6c7b417847d401c6b4555514431a3acfed3836b0c3"
+  },
+  "summary": {
+    "python_files_parsed": 3261,
+    "definitions": 140,
+    "imports": 0,
+    "aliases": 0,
+    "call_sites": 0,
+    "attribute_accesses": 0,
+    "production_mutation_authorized": false,
+    "deletion_authorized": false
+  },
+  "checkout_symbol_evidence": {
+    "python_files_parsed": 3261,
+    "definitions": [
+      {
+        "path": "backup/18_29_4c_20260918_230152/handlers/city.py",
+        "line": 753,
+        "end_line": 757,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/18_29_4c_20260918_230152/handlers/city.py",
+        "line": 777,
+        "end_line": 783,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/18_29_4d_20260918_231439/handlers/city.py",
+        "line": 753,
+        "end_line": 757,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/18_29_4d_20260918_231439/handlers/city.py",
+        "line": 777,
+        "end_line": 783,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/about_game_18_4_1_20260904_143827/handlers/city.py",
+        "line": 1617,
+        "end_line": 1624,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/about_game_18_4_1_20260904_143827/handlers/city.py",
+        "line": 1667,
+        "end_line": 1677,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/about_game_18_4_1_20260904_144641/handlers/city.py",
+        "line": 1617,
+        "end_line": 1624,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/about_game_18_4_1_20260904_144641/handlers/city.py",
+        "line": 1667,
+        "end_line": 1677,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/account_menu_submenu_17_30_1_4_20260828_234058/handlers/city.py",
+        "line": 1617,
+        "end_line": 1624,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/account_menu_submenu_17_30_1_4_20260828_234058/handlers/city.py",
+        "line": 1667,
+        "end_line": 1677,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/alchemist_buy_return_stack_normalization_17_19_3_5_20260825_000104/handlers/city.py",
+        "line": 1562,
+        "end_line": 1569,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/alchemist_buy_return_stack_normalization_17_19_3_5_20260825_000104/handlers/city.py",
+        "line": 1612,
+        "end_line": 1622,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/alchemist_catalog_order_and_db_recovery_17_19_3_4_20260824_234952/handlers/city.py",
+        "line": 1512,
+        "end_line": 1519,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/alchemist_catalog_order_and_db_recovery_17_19_3_4_20260824_234952/handlers/city.py",
+        "line": 1562,
+        "end_line": 1572,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/alchemist_potion_buy_sell_17_19_3_20260824_232844/handlers/city.py",
+        "line": 1475,
+        "end_line": 1482,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/alchemist_potion_buy_sell_17_19_3_20260824_232844/handlers/city.py",
+        "line": 1525,
+        "end_line": 1535,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/alchemist_reply_keyboard_smoke_recovery_17_19_3_3_20260824_234759/handlers/city.py",
+        "line": 1512,
+        "end_line": 1519,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/alchemist_reply_keyboard_smoke_recovery_17_19_3_3_20260824_234759/handlers/city.py",
+        "line": 1562,
+        "end_line": 1572,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/alchemist_reply_navigation_anchor_recovery_17_19_3_2_20260824_234624/handlers/city.py",
+        "line": 1512,
+        "end_line": 1519,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/alchemist_reply_navigation_anchor_recovery_17_19_3_2_20260824_234624/handlers/city.py",
+        "line": 1562,
+        "end_line": 1572,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/alchemist_sell_quantity_controls_17_19_3_6_20260825_000903/handlers/city.py",
+        "line": 1569,
+        "end_line": 1576,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/alchemist_sell_quantity_controls_17_19_3_6_20260825_000903/handlers/city.py",
+        "line": 1619,
+        "end_line": 1629,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/base_equipment_context_navigation_recovery_17_11_1_1_20260821_020753/handlers/city.py",
+        "line": 1454,
+        "end_line": 1461,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/base_equipment_context_navigation_recovery_17_11_1_1_20260821_020753/handlers/city.py",
+        "line": 1504,
+        "end_line": 1514,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/blacksmith_return_contract_18_31_1e_20260922_001402/handlers/city.py",
+        "line": 762,
+        "end_line": 766,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/blacksmith_return_contract_18_31_1e_20260922_001402/handlers/city.py",
+        "line": 792,
+        "end_line": 798,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/city_context_after_trade_18_22_3b_20260913_020910/handlers/city.py",
+        "line": 1617,
+        "end_line": 1624,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/city_context_after_trade_18_22_3b_20260913_020910/handlers/city.py",
+        "line": 1667,
+        "end_line": 1677,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/city_context_after_trade_18_22_3b_20260913_021109/handlers/city.py",
+        "line": 1617,
+        "end_line": 1624,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/city_context_after_trade_18_22_3b_20260913_021109/handlers/city.py",
+        "line": 1667,
+        "end_line": 1677,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/city_craft_tavern_text_cleanup_17_11_2_1_20260821_023554/handlers/city.py",
+        "line": 1474,
+        "end_line": 1481,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/city_craft_tavern_text_cleanup_17_11_2_1_20260821_023554/handlers/city.py",
+        "line": 1524,
+        "end_line": 1534,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/city_craft_tavern_text_cleanup_17_11_2_1_20260821_023808/handlers/city.py",
+        "line": 1474,
+        "end_line": 1481,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/city_craft_tavern_text_cleanup_17_11_2_1_20260821_023808/handlers/city.py",
+        "line": 1524,
+        "end_line": 1534,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/city_service_texts_18_31_1d_20260921_235938/handlers/city.py",
+        "line": 753,
+        "end_line": 757,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/city_service_texts_18_31_1d_20260921_235938/handlers/city.py",
+        "line": 777,
+        "end_line": 783,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/city_service_texts_18_31_1d_20260922_000044/handlers/city.py",
+        "line": 753,
+        "end_line": 757,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/city_service_texts_18_31_1d_20260922_000044/handlers/city.py",
+        "line": 777,
+        "end_line": 783,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/city_service_texts_18_31_1d_20260922_000151/handlers/city.py",
+        "line": 753,
+        "end_line": 757,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/city_service_texts_18_31_1d_20260922_000151/handlers/city.py",
+        "line": 777,
+        "end_line": 783,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/city_service_texts_18_31_1d_20260922_000452/handlers/city.py",
+        "line": 753,
+        "end_line": 757,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/city_service_texts_18_31_1d_20260922_000452/handlers/city.py",
+        "line": 777,
+        "end_line": 783,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/city_service_texts_18_31_1d_20260922_000554/handlers/city.py",
+        "line": 753,
+        "end_line": 757,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/city_service_texts_18_31_1d_20260922_000554/handlers/city.py",
+        "line": 777,
+        "end_line": 783,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/compact_text_location_description_17_11_2_20260821_021946/handlers/city.py",
+        "line": 1473,
+        "end_line": 1480,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/compact_text_location_description_17_11_2_20260821_021946/handlers/city.py",
+        "line": 1523,
+        "end_line": 1533,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/exp_bonus_status_17_30_1_1_20260828_231127/handlers/city.py",
+        "line": 1617,
+        "end_line": 1624,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/exp_bonus_status_17_30_1_1_20260828_231127/handlers/city.py",
+        "line": 1667,
+        "end_line": 1677,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/external_links_18_5_1_20260904_150733/handlers/city.py",
+        "line": 1617,
+        "end_line": 1624,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/external_links_18_5_1_20260904_150733/handlers/city.py",
+        "line": 1667,
+        "end_line": 1677,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/item_quantity_display_format_17_10_1_20260821_011621/handlers/city.py",
+        "line": 1455,
+        "end_line": 1462,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/item_quantity_display_format_17_10_1_20260821_011621/handlers/city.py",
+        "line": 1505,
+        "end_line": 1515,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/item_quantity_display_format_17_10_1_20260821_011854/handlers/city.py",
+        "line": 1455,
+        "end_line": 1462,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/item_quantity_display_format_17_10_1_20260821_011854/handlers/city.py",
+        "line": 1505,
+        "end_line": 1515,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/item_quantity_display_format_17_10_1_20260821_012135/handlers/city.py",
+        "line": 1455,
+        "end_line": 1462,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/item_quantity_display_format_17_10_1_20260821_012135/handlers/city.py",
+        "line": 1505,
+        "end_line": 1515,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/main_menu_explicit_handler_17_30_1_3_20260828_232522/handlers/city.py",
+        "line": 1617,
+        "end_line": 1624,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/main_menu_explicit_handler_17_30_1_3_20260828_232522/handlers/city.py",
+        "line": 1667,
+        "end_line": 1677,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/online_player_counts_18_22_7_20260913_205755/handlers/city.py",
+        "line": 1626,
+        "end_line": 1633,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/online_player_counts_18_22_7_20260913_205755/handlers/city.py",
+        "line": 1676,
+        "end_line": 1686,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/online_player_counts_18_22_7_20260913_210248/handlers/city.py",
+        "line": 1626,
+        "end_line": 1633,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/online_player_counts_18_22_7_20260913_210248/handlers/city.py",
+        "line": 1676,
+        "end_line": 1686,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/player_rankings_17_33_1_1_20260830_002251/handlers/city.py",
+        "line": 1617,
+        "end_line": 1624,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/player_rankings_17_33_1_1_20260830_002251/handlers/city.py",
+        "line": 1667,
+        "end_line": 1677,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/player_rankings_17_33_1_20260830_002107/handlers/city.py",
+        "line": 1617,
+        "end_line": 1624,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/player_rankings_17_33_1_20260830_002107/handlers/city.py",
+        "line": 1667,
+        "end_line": 1677,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/registration_date_kyiv_18_31_4a_20260922_021311/handlers/city.py",
+        "line": 762,
+        "end_line": 766,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/registration_date_kyiv_18_31_4a_20260922_021311/handlers/city.py",
+        "line": 792,
+        "end_line": 798,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/registration_date_kyiv_18_31_4a_20260922_021432/handlers/city.py",
+        "line": 762,
+        "end_line": 766,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/registration_date_kyiv_18_31_4a_20260922_021432/handlers/city.py",
+        "line": 792,
+        "end_line": 798,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/remaining_city_ui_texts_18_31_1f_20260922_003946/handlers/city.py",
+        "line": 762,
+        "end_line": 766,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/remaining_city_ui_texts_18_31_1f_20260922_003946/handlers/city.py",
+        "line": 792,
+        "end_line": 798,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_18_2_2_20260902_003839/handlers/city.py",
+        "line": 1617,
+        "end_line": 1624,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_18_2_2_20260902_003839/handlers/city.py",
+        "line": 1667,
+        "end_line": 1677,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_18_2_2_20260902_004042/handlers/city.py",
+        "line": 1617,
+        "end_line": 1624,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_18_2_2_20260902_004042/handlers/city.py",
+        "line": 1667,
+        "end_line": 1677,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_12_create_missing_story_quest_npc_routes/handlers/city.py",
+        "line": 783,
+        "end_line": 787,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_12_create_missing_story_quest_npc_routes/handlers/city.py",
+        "line": 813,
+        "end_line": 819,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_20_active_story_boss_call/handlers/city.py",
+        "line": 783,
+        "end_line": 787,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_20_active_story_boss_call/handlers/city.py",
+        "line": 813,
+        "end_line": 819,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_23_3_story_quests_1_10_activation/handlers/city.py",
+        "line": 783,
+        "end_line": 787,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_23_3_story_quests_1_10_activation/handlers/city.py",
+        "line": 813,
+        "end_line": 819,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_23_3d_story_quest_callback_tokens_and_npc_fallback/handlers/city.py",
+        "line": 785,
+        "end_line": 789,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_23_3d_story_quest_callback_tokens_and_npc_fallback/handlers/city.py",
+        "line": 815,
+        "end_line": 821,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_23_3j_story_quest_turn_in_npc_actions/handlers/city.py",
+        "line": 788,
+        "end_line": 792,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_23_3j_story_quest_turn_in_npc_actions/handlers/city.py",
+        "line": 818,
+        "end_line": 824,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_23_3n_multifunction_npc_story_message_order/handlers/city.py",
+        "line": 788,
+        "end_line": 792,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_23_3n_multifunction_npc_story_message_order/handlers/city.py",
+        "line": 818,
+        "end_line": 824,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_24_13_20260929T205552Z/handlers/city.py",
+        "line": 789,
+        "end_line": 793,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_24_13_20260929T205552Z/handlers/city.py",
+        "line": 819,
+        "end_line": 825,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_24_13_20260929T205913Z/handlers/city.py",
+        "line": 789,
+        "end_line": 793,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_24_13_20260929T205913Z/handlers/city.py",
+        "line": 819,
+        "end_line": 825,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_24_13_20260929T210050Z/handlers/city.py",
+        "line": 789,
+        "end_line": 793,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_24_13_20260929T210050Z/handlers/city.py",
+        "line": 819,
+        "end_line": 825,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_24_13_20260929T210222Z/handlers/city.py",
+        "line": 789,
+        "end_line": 793,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_24_13_20260929T210222Z/handlers/city.py",
+        "line": 819,
+        "end_line": 825,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_24_13_20260929T210330Z/handlers/city.py",
+        "line": 789,
+        "end_line": 793,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_24_13_20260929T210330Z/handlers/city.py",
+        "line": 819,
+        "end_line": 825,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_25_4_20260930T094900Z/handlers/city.py",
+        "line": 791,
+        "end_line": 795,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_25_4_20260930T094900Z/handlers/city.py",
+        "line": 821,
+        "end_line": 827,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_25_5_20260930T101704Z/handlers/city.py",
+        "line": 791,
+        "end_line": 795,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_25_5_20260930T101704Z/handlers/city.py",
+        "line": 821,
+        "end_line": 827,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_25_5_20260930T101856Z/handlers/city.py",
+        "line": 791,
+        "end_line": 795,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_25_5_20260930T101856Z/handlers/city.py",
+        "line": 821,
+        "end_line": 827,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_25_5a_20260930T102424Z/handlers/city.py",
+        "line": 793,
+        "end_line": 797,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_25_5a_20260930T102424Z/handlers/city.py",
+        "line": 823,
+        "end_line": 829,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_25_9_20260930T174104Z/handlers/city.py",
+        "line": 794,
+        "end_line": 798,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_25_9_20260930T174104Z/handlers/city.py",
+        "line": 824,
+        "end_line": 830,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_27_13/handlers/city.py",
+        "line": 796,
+        "end_line": 800,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_27_13/handlers/city.py",
+        "line": 826,
+        "end_line": 832,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_19_32_3_20261007T191051Z/handlers/city.py",
+        "line": 813,
+        "end_line": 817,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_19_32_3_20261007T191051Z/handlers/city.py",
+        "line": 843,
+        "end_line": 849,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_20_5_2_20261012_210255/handlers/city.py",
+        "line": 813,
+        "end_line": 817,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_20_5_2_20261012_210255/handlers/city.py",
+        "line": 843,
+        "end_line": 849,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_20_5_2_20261012_210657/handlers/city.py",
+        "line": 813,
+        "end_line": 817,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_20_5_2_20261012_210657/handlers/city.py",
+        "line": 843,
+        "end_line": 849,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_20_5_2_20261012_210935/handlers/city.py",
+        "line": 813,
+        "end_line": 817,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_20_5_2_20261012_210935/handlers/city.py",
+        "line": 843,
+        "end_line": 849,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_20_5_2_20261012_211154/handlers/city.py",
+        "line": 813,
+        "end_line": 817,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_20_5_2_20261012_211154/handlers/city.py",
+        "line": 843,
+        "end_line": 849,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_20_5_2_20261012_211346/handlers/city.py",
+        "line": 813,
+        "end_line": 817,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_20_5_2_20261012_211346/handlers/city.py",
+        "line": 843,
+        "end_line": 849,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_20_5_2a_20261012_215243/handlers/city.py",
+        "line": 813,
+        "end_line": 817,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_20_5_2a_20261012_215243/handlers/city.py",
+        "line": 843,
+        "end_line": 849,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_20_5_2a_20261012_215745/handlers/city.py",
+        "line": 813,
+        "end_line": 817,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_20_5_2a_20261012_215745/handlers/city.py",
+        "line": 843,
+        "end_line": 849,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_20_5_2b_20261012_220406/handlers/city.py",
+        "line": 813,
+        "end_line": 817,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_20_5_2b_20261012_220406/handlers/city.py",
+        "line": 843,
+        "end_line": 849,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/stage_20_5_2c_20261012_220901/handlers/city.py",
+        "line": 822,
+        "end_line": 826,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/stage_20_5_2c_20261012_220901/handlers/city.py",
+        "line": 852,
+        "end_line": 858,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/trade_district_text_navigation_17_11_1_20260821_015449/handlers/city.py",
+        "line": 1456,
+        "end_line": 1463,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/trade_district_text_navigation_17_11_1_20260821_015449/handlers/city.py",
+        "line": 1506,
+        "end_line": 1516,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/trade_district_text_navigation_17_11_1_20260821_015705/handlers/city.py",
+        "line": 1456,
+        "end_line": 1463,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/trade_district_text_navigation_17_11_1_20260821_015705/handlers/city.py",
+        "line": 1506,
+        "end_line": 1516,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/trade_district_text_navigation_17_11_1_20260821_015912/handlers/city.py",
+        "line": 1456,
+        "end_line": 1463,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/trade_district_text_navigation_17_11_1_20260821_015912/handlers/city.py",
+        "line": 1506,
+        "end_line": 1516,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "backup/trade_submenu_city_button_recovery_17_11_1_2_20260821_021213/handlers/city.py",
+        "line": 1472,
+        "end_line": 1479,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "backup/trade_submenu_city_button_recovery_17_11_1_2_20260821_021213/handlers/city.py",
+        "line": 1522,
+        "end_line": 1532,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      },
+      {
+        "path": "handlers/city.py",
+        "line": 828,
+        "end_line": 832,
+        "scope": [],
+        "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+      },
+      {
+        "path": "handlers/city.py",
+        "line": 858,
+        "end_line": 864,
+        "scope": [],
+        "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+      }
+    ],
+    "imports": [],
+    "aliases": [],
+    "calls": [],
+    "attribute_accesses": []
+  },
+  "city_register_definitions": [
+    {
+      "line": 828,
+      "end_line": 832,
+      "nested_line": 831,
+      "nested_end_line": 832,
+      "delegates": [
+        "blacksmith_kb",
+        "bot.message_handler",
+        "bot.send_message",
+        "build_blacksmith_repair_text"
+      ],
+      "responses": [
+        {
+          "line": 832,
+          "callee": "bot.send_message"
+        }
+      ],
+      "python_effective": false,
+      "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+    },
+    {
+      "line": 858,
+      "end_line": 864,
+      "nested_line": 861,
+      "nested_end_line": 864,
+      "delegates": [
+        "_normalize_text_kb_result",
+        "blacksmith_kb",
+        "bot.message_handler",
+        "bot.send_message",
+        "build_blacksmith_repair_text"
+      ],
+      "responses": [
+        {
+          "line": 864,
+          "callee": "bot.send_message"
+        }
+      ],
+      "python_effective": true,
+      "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+    }
+  ],
+  "runtime_verdict": {
+    "verdict": "DORMANT_SYMBOL_NO_MUTATION_VALUE",
+    "confidence": "HIGH",
+    "dormant": true,
+    "external_call_sites": [],
+    "import_count": 0,
+    "alias_count": 0,
+    "attribute_access_count": 0,
+    "python_effective_definition_line": 858,
+    "candidate_retire": null,
+    "canonical_keep": null,
+    "production_mutation_authorized": false,
+    "deletion_authorized": false
+  },
+  "policy": {
+    "dormant_symbol_rule": "No deletion solely for line-count reduction when no runtime value or replacement benefit is proven.",
+    "future_action": "Close dormant cohort without mutation, or mutate only after exact runtime call path and replacement fixture are proven."
+  },
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "9355952221129e697da68ebb6ab74cd5424742e50e464da48f66b7acb206b554",
+      "size": 4132392,
+      "mtime_ns": 1793993045663093000
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "59345adead9bd17df9cf0c3048d6909fe12c00f124fce7bf2168138a809e3139",
+      "size": 32768,
+      "mtime_ns": 1793992323472363200
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "9355952221129e697da68ebb6ab74cd5424742e50e464da48f66b7acb206b554",
+      "size": 4132392,
+      "mtime_ns": 1793993045663093000
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "59345adead9bd17df9cf0c3048d6909fe12c00f124fce7bf2168138a809e3139",
+      "size": 32768,
+      "mtime_ns": 1793992323472363200
+    }
+  },
+  "production_sqlite_opened": false,
+  "production_mutation_authorized": false,
+  "deletion_authorized": false,
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "decision": "GO_TO_22_3_8_ROUTE_COHORT_05_DORMANT_CLOSURE_AND_NEXT_COHORT_REBASELINE"
+}
