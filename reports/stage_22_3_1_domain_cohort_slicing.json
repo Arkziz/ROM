@@ -1,0 +1,2004 @@
+{
+  "stage": "22.3.1",
+  "patch_revision": 2,
+  "patch_filename": "patch_22_3_1_domain_cohort_slicing.py",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-06T18:44:36.725969+00:00",
+  "git": {
+    "branch": "develop",
+    "head": "332bcc8f99c2b7c66f9071f7129c100241783fe7",
+    "origin_develop": "f6b8a87033641b796ceeb401d321ab4f1e229bf5",
+    "origin_is_ancestor": true,
+    "status": [
+      {
+        "xy": " M",
+        "path": "ROM_FULL_DUMP.txt"
+      }
+    ],
+    "staged": []
+  },
+  "authority": {
+    "stage_22_2_7a_sha256": "06d47be90d51c725802af524c3228e29c56b3a7bae3cea1fa56ecff148799178",
+    "stage_22_2_7a_commit": "332bcc8f99c2b7c66f9071f7129c100241783fe7",
+    "roadmap_scope": "22.3.1 split duplicate removal into domain cohorts; no repository-wide deletion"
+  },
+  "summary": {
+    "cohorts_sliced": 16,
+    "domain_groups": 12,
+    "ready_source_cohorts": 1,
+    "blocked_source_cohorts": 15,
+    "target_files_hashed": 112,
+    "production_mutation_authorized": false,
+    "deletion_authorized": false
+  },
+  "domain_groups": {
+    "auction": [
+      "route_cohort_01"
+    ],
+    "city_navigation": [
+      "route_cohort_05",
+      "route_cohort_06"
+    ],
+    "combat_profile": [
+      "route_cohort_07"
+    ],
+    "database_transactions_exact_once": [
+      "db_exact_once"
+    ],
+    "equipment_repair": [
+      "route_cohort_02",
+      "route_cohort_03",
+      "route_cohort_04"
+    ],
+    "guild": [
+      "route_cohort_08"
+    ],
+    "player_interaction": [
+      "route_cohort_10",
+      "route_cohort_09"
+    ],
+    "startup_lifecycle": [
+      "startup_lifecycle"
+    ],
+    "telegram_registration_auction_house": [
+      "register_auction_house_handlers"
+    ],
+    "telegram_registration_dev": [
+      "register_dev_handlers"
+    ],
+    "telegram_registration_guild": [
+      "register_guild_handlers"
+    ],
+    "telegram_registration_inventory": [
+      "register_inventory_handlers"
+    ]
+  },
+  "cohort_plan": [
+    {
+      "sequence": 1,
+      "cohort_id": "route_cohort_10",
+      "domain": "player_interaction",
+      "source_readiness": "READY_FOR_GUARDED_MUTATION",
+      "exact_source_files": [
+        "handlers/player_interaction.py",
+        "handlers/pvp_interaction.py"
+      ],
+      "source_fingerprints": {
+        "handlers/player_interaction.py": {
+          "exists": true,
+          "sha256": "799e9ad6e745b3995886c6e504019b7c1b01073c917a0ae1b9ccc05b8948b0b9",
+          "size": 106829,
+          "mtime_ns": 1790033528449617700
+        },
+        "handlers/pvp_interaction.py": {
+          "exists": true,
+          "sha256": "64e76770501b76d4fe82b8c11786a7a6bddaa9b9e453aa0f71f1177439fa0235",
+          "size": 8068,
+          "mtime_ns": 1790033528455276300
+        }
+      },
+      "canonical_owner": {
+        "pair_count": 1
+      },
+      "planned_mutation": "REMOVE_OR_REORDER_ONLY_AFTER_PRODUCTION_SHAPED_FIXTURE",
+      "blocking_evidence": [],
+      "required_tests": [
+        "AST parse and py_compile",
+        "exact target-file hash precondition",
+        "exact staging allowlist",
+        "scoped backup with existed flags and SHA-256",
+        "rollback restores exact hashes",
+        "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+        "matching synthetic message/callback",
+        "first-match owner assertion",
+        "single send/edit/answer accounting",
+        "state and content-type parity",
+        "callback prefix boundary cases",
+        "no sibling-route regression"
+      ],
+      "next_action": "FOCUSED_READ_ONLY_ROUTE_OWNER_AND_FIXTURE_CONFIRMATION",
+      "backup_contract": {
+        "required_before_first_write": true,
+        "relative_paths": [
+          "handlers/player_interaction.py",
+          "handlers/pvp_interaction.py"
+        ],
+        "record_existed_flags": true,
+        "record_sha256": true
+      },
+      "rollback_contract": {
+        "restore_exact_files": true,
+        "verify_sha256": true,
+        "scoped_git_reset": true,
+        "no_main_after_recovery_fail": true
+      },
+      "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+      "production_mutation_authorized": false,
+      "deletion_authorized": false
+    },
+    {
+      "sequence": 20,
+      "cohort_id": "startup_lifecycle",
+      "domain": "startup_lifecycle",
+      "source_readiness": "BLOCKED_STARTUP_ORDER",
+      "exact_source_files": [
+        "main.py"
+      ],
+      "source_fingerprints": {
+        "main.py": {
+          "exists": true,
+          "sha256": "39a30fb958db5ccc56d5a70b05affafbe1ebd0e05f996128efd50914a4e01a09",
+          "size": 14856,
+          "mtime_ns": 1793652209374789600
+        }
+      },
+      "canonical_owner": "main.py startup owner",
+      "planned_mutation": "KEEP_OR_GUARDED_ORDER_FIX",
+      "blocking_evidence": [
+        "polling_precedes_registrations",
+        "polling_precedes_workers"
+      ],
+      "required_tests": [
+        "AST parse and py_compile",
+        "exact target-file hash precondition",
+        "exact staging allowlist",
+        "scoped backup with existed flags and SHA-256",
+        "rollback restores exact hashes",
+        "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+        "migration gate precedes recovery",
+        "recovery precedes handler registration",
+        "all registrations precede workers and polling",
+        "single effective polling entrypoint",
+        "fail-closed migration/recovery fixture",
+        "shutdown cleanup order"
+      ],
+      "next_action": "STARTUP_ORDER_PRODUCTION_SHAPED_RECONCILIATION",
+      "backup_contract": {
+        "required_before_first_write": true,
+        "relative_paths": [
+          "main.py"
+        ],
+        "record_existed_flags": true,
+        "record_sha256": true
+      },
+      "rollback_contract": {
+        "restore_exact_files": true,
+        "verify_sha256": true,
+        "scoped_git_reset": true,
+        "no_main_after_recovery_fail": true
+      },
+      "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+      "production_mutation_authorized": false,
+      "deletion_authorized": false
+    },
+    {
+      "sequence": 30,
+      "cohort_id": "db_exact_once",
+      "domain": "database_transactions_exact_once",
+      "source_readiness": "BLOCKED_TRANSACTION_CONTRACT",
+      "exact_source_files": [
+        "db_modules/connection.py",
+        "db_modules/dev_compat.py",
+        "db_modules/generated_equipment.py",
+        "db_modules/inventory.py",
+        "db_modules/inventory_compat.py",
+        "db_modules/migrations.py",
+        "db_modules/quests.py",
+        "db_modules/shop.py",
+        "db_modules/story_quests.py",
+        "migrations/020_fresh_database_schema_parity.py",
+        "migrations/040_generated_equipment_namespace.py",
+        "migrations/045a_seed_new_path_sphere_dependency.py",
+        "migrations/047_sphere_stack_and_category_fix.py",
+        "migrations/048_rebirth_sphere_stack_limit.py",
+        "systems/admin_crystal_credit_system.py",
+        "systems/attribute_respec_system.py",
+        "systems/auction_house_system.py",
+        "systems/character_system.py",
+        "systems/contract_system.py",
+        "systems/crystal_bag_expansion_system.py",
+        "systems/crystal_shop_system.py",
+        "systems/crystal_wallet_system.py",
+        "systems/energy_system.py",
+        "systems/equipment_system.py",
+        "systems/event_shop_system.py",
+        "systems/event_statistics_system.py",
+        "systems/fatigue_artifact_system.py",
+        "systems/guild_system.py",
+        "systems/inactivity_reminder_system.py",
+        "systems/item_id_allocator_system.py",
+        "systems/level_up_reward_system.py",
+        "systems/name_rune_system.py",
+        "systems/player_interaction_system.py",
+        "systems/potion_system.py",
+        "systems/premium_item_policy_system.py",
+        "systems/profile_history_system.py",
+        "systems/pve_auto_escape_system.py",
+        "systems/pvp_request_service.py",
+        "systems/pvp_system.py",
+        "systems/refine_system.py",
+        "systems/rune_system.py",
+        "systems/story_quest_completion_system.py",
+        "systems/timed_exp_bonus_system.py",
+        "systems/travel_system.py",
+        "tools/audit_static_items_and_db_init.py",
+        "tools/check_active_story_quest_boss_call.py",
+        "tools/check_story_quest_active_view_and_journal_details.py",
+        "tools/check_story_quest_chained_item_retention.py",
+        "tools/check_story_quest_cross_cutting_runtime_gaps.py",
+        "tools/check_story_quest_evidence_handoff_flow.py",
+        "tools/check_story_quest_exact_once_completion.py",
+        "tools/check_story_quest_item_drop_notification.py",
+        "tools/check_story_quest_item_journal_progress.py",
+        "tools/check_story_quest_lifecycle_engine.py",
+        "tools/check_story_quest_location_names.py",
+        "tools/check_story_quest_npc_progress_and_actions.py",
+        "tools/check_story_quest_persistence_schema.py",
+        "tools/check_story_quest_rewards_and_transitions.py",
+        "tools/check_story_quest_talk_conversation_flow.py",
+        "tools/check_story_quest_turn_in_npc_actions.py",
+        "tools/check_story_quest_unaccepted_objective_hidden.py",
+        "tools/manual_test_inactivity_reminder_18_6_1.py",
+        "tools/smoke_test_admin_crystal_credit_and_clamped_debit_18_3_1.py",
+        "tools/smoke_test_admin_history_inline_details_and_character_names_18_3_1c.py",
+        "tools/smoke_test_atomic_event_shop_exchange_18_29_3c.py",
+        "tools/smoke_test_contract_reward_direct_facade.py",
+        "tools/smoke_test_crystal_shop_17_27_1.py",
+        "tools/smoke_test_daily_firius_token_reward.py",
+        "tools/smoke_test_dynamic_equipment_repair_contracts.py",
+        "tools/smoke_test_equipment_rune_slots.py",
+        "tools/smoke_test_event_victory_statistics_integration_18_29_3f.py",
+        "tools/smoke_test_fatigue_artifact_17_31_1_1.py",
+        "tools/smoke_test_interaction_session_timeout_and_recovery.py",
+        "tools/smoke_test_name_rune_17_28_1_1.py",
+        "tools/smoke_test_notification_resource_integration_18_16_5d.py",
+        "tools/smoke_test_notification_worker_dynamic_rune_max_mp_recovery_17_15_1_1.py",
+        "tools/smoke_test_notification_worker_refine_formula_16_1_23.py",
+        "tools/smoke_test_notification_worker_rune_hp_16_1_22.py",
+        "tools/smoke_test_perfect_rune_extractor.py",
+        "tools/smoke_test_player_interaction_requests.py",
+        "tools/smoke_test_player_trade_database_and_history_foundation.py",
+        "tools/smoke_test_player_trade_item_policy_and_reservations.py",
+        "tools/smoke_test_player_trade_lock_consolidation_and_startup_recovery.py",
+        "tools/smoke_test_premium_item_smoke_path_recovery_17_26_1_1.py",
+        "tools/smoke_test_rebirth_sphere_stack_limit_18_16_10d.py",
+        "tools/smoke_test_rune_character_stat_bonuses.py",
+        "tools/smoke_test_rune_equipment_display_names.py",
+        "tools/smoke_test_rune_master_insertion.py",
+        "tools/smoke_test_rune_transactional_stack_capacity_17_4_1.py",
+        "tools/smoke_test_simple_rune_extractor.py",
+        "tools/smoke_test_sphere_stack_and_category_fix_18_16_10a.py",
+        "tools/smoke_test_stack_compaction_after_consumption_18_xx_7.py",
+        "tools/smoke_test_stage_21_3_2_sqlite_connection_policy.py",
+        "tools/smoke_test_stage_21_4_4_generated_equipment_transaction_atomicity.py",
+        "tools/smoke_test_stage_21_4_5_refine_transaction_atomicity.py",
+        "tools/smoke_test_stage_21_4_8_guild_transaction_atomicity.py",
+        "tools/smoke_test_success_rune_guaranteed_refine_17_29_1.py",
+        "tools/smoke_test_timed_exp_bonus_17_30_1.py",
+        "tools/verify_stage_19_34_2_atomic_location_story_skip.py",
+        "tools/verify_stage_19_34_3_story_quest_item_identity.py"
+      ],
+      "source_fingerprints": {
+        "db_modules/connection.py": {
+          "exists": true,
+          "sha256": "c45dc6562031bceba4f57f53dd36e46b14dc8c81c2b26726579063ed9a658efb",
+          "size": 7202,
+          "mtime_ns": 1793653694162482500
+        },
+        "db_modules/dev_compat.py": {
+          "exists": true,
+          "sha256": "c140072edbb338a6f7ca396d0b442f559962a8dc8d7aa1148f7e2d3314069741",
+          "size": 51643,
+          "mtime_ns": 1790033528312758600
+        },
+        "db_modules/generated_equipment.py": {
+          "exists": true,
+          "sha256": "fec0f3cbfbf42e8a7fe79b4c51accc25a0f1ac936cdddf70d70481dac87e4dbf",
+          "size": 37217,
+          "mtime_ns": 1793733005918645100
+        },
+        "db_modules/inventory.py": {
+          "exists": true,
+          "sha256": "6b0bb2edcf306cced5eb90e4b4fc090a94e8822c9a56146d7ff294b23f4dc2e5",
+          "size": 16256,
+          "mtime_ns": 1793733005922129500
+        },
+        "db_modules/inventory_compat.py": {
+          "exists": true,
+          "sha256": "35ec0ccc2df63783a8cb3f25809fc5f264361d78ec46c5f73eab063428f230eb",
+          "size": 10873,
+          "mtime_ns": 1793661686314966300
+        },
+        "db_modules/migrations.py": {
+          "exists": true,
+          "sha256": "f0b1abc9e468cd7621430df9278c9ecb7b2842cb1bc325235381909c7e0e7651",
+          "size": 6427,
+          "mtime_ns": 1793804454798275900
+        },
+        "db_modules/quests.py": {
+          "exists": true,
+          "sha256": "a4a37d73faed06a4daf419b144bfe538a0fe363dfad6388518b2fca82ece8958",
+          "size": 12505,
+          "mtime_ns": 1793733005928174800
+        },
+        "db_modules/shop.py": {
+          "exists": true,
+          "sha256": "1bae8b4d723f0cdd0d4f8e3a5385648e093c62ea30760c8b8db037d179ef1bfd",
+          "size": 28981,
+          "mtime_ns": 1793804454785680100
+        },
+        "db_modules/story_quests.py": {
+          "exists": true,
+          "sha256": "cedc91f344f44dafc6daf35c6ba93d54e280f0f17b00709b32142abe503a4975",
+          "size": 13494,
+          "mtime_ns": 1792001059643886800
+        },
+        "migrations/020_fresh_database_schema_parity.py": {
+          "exists": true,
+          "sha256": "859907a3938c985b52f517c424a0050057d00ba376acbfcc165d0b88305049ab",
+          "size": 1621,
+          "mtime_ns": 1790033528473605500
+        },
+        "migrations/040_generated_equipment_namespace.py": {
+          "exists": true,
+          "sha256": "54b746737f665fa4b075491b0c1122ed8f09726c840796c614b46d6f990995b6",
+          "size": 2491,
+          "mtime_ns": 1790033528479188800
+        },
+        "migrations/045a_seed_new_path_sphere_dependency.py": {
+          "exists": true,
+          "sha256": "5d61076ca90b1055caf8d9109c0a1662d6ef67c341d4f1de3c7f7e0363cb58dd",
+          "size": 2147,
+          "mtime_ns": 1790033528495610300
+        },
+        "migrations/047_sphere_stack_and_category_fix.py": {
+          "exists": true,
+          "sha256": "4ee72f6be8936b42e10b1d201f9c88711beaa417a0d859779afc801b598d6f71",
+          "size": 2161,
+          "mtime_ns": 1790033528502942200
+        },
+        "migrations/048_rebirth_sphere_stack_limit.py": {
+          "exists": true,
+          "sha256": "ba3b2b8062cb306dd413c1d11e336e0836e23a038fe208eb05bd54ee9c3182f7",
+          "size": 2658,
+          "mtime_ns": 1790033528505706300
+        },
+        "systems/admin_crystal_credit_system.py": {
+          "exists": true,
+          "sha256": "373b2c6eebeb20bb4e8b5c27394b96addccb398cbc23750f6656fa700140e3fe",
+          "size": 8294,
+          "mtime_ns": 1793658584216008200
+        },
+        "systems/attribute_respec_system.py": {
+          "exists": true,
+          "sha256": "b53fa3d60119429332fccb3ce7607a55ae9dc0e0425fee63bca30c99bdd5cdd2",
+          "size": 5569,
+          "mtime_ns": 1790033528590482300
+        },
+        "systems/auction_house_system.py": {
+          "exists": true,
+          "sha256": "cc4085ebb42398259f12e7e98a9b4f3e48e64df99c4e48848392de28ca12163e",
+          "size": 177092,
+          "mtime_ns": 1793738946616658600
+        },
+        "systems/character_system.py": {
+          "exists": true,
+          "sha256": "21f3f90684901d45583372b64e5a54349c34cd59eae43b852aeaef38f202d34e",
+          "size": 20761,
+          "mtime_ns": 1793742109675259100
+        },
+        "systems/contract_system.py": {
+          "exists": true,
+          "sha256": "fd7d91ac3b60266af3f06a2c4b6dcf28ba460c4aba1c653886d1014c11d3ba7a",
+          "size": 17131,
+          "mtime_ns": 1793742109681289800
+        },
+        "systems/crystal_bag_expansion_system.py": {
+          "exists": true,
+          "sha256": "f44f1f070a52d03e1d4da34183a96343e72856560a7fcb5e609a1b0a6765a76c",
+          "size": 6932,
+          "mtime_ns": 1793653694169541000
+        },
+        "systems/crystal_shop_system.py": {
+          "exists": true,
+          "sha256": "15949a95285844dda75cc8a107efef24734b3b12eaf8c95ab1d64b146264f2f1",
+          "size": 8483,
+          "mtime_ns": 1793653694171554100
+        },
+        "systems/crystal_wallet_system.py": {
+          "exists": true,
+          "sha256": "c781d7a09d513a544e612ad802c6d533de98428cecdb70dc215762ec59792d37",
+          "size": 7517,
+          "mtime_ns": 1793658584220034100
+        },
+        "systems/energy_system.py": {
+          "exists": true,
+          "sha256": "c20d88f459e371a170c1b8e48d0b2643a9d607f5a993222d05fd1361338a8a1c",
+          "size": 8701,
+          "mtime_ns": 1793742109687317700
+        },
+        "systems/equipment_system.py": {
+          "exists": true,
+          "sha256": "c58f6d2eb9facd2a6148d8a80be099724c7f018476a5f795dd197cc390c54d81",
+          "size": 77850,
+          "mtime_ns": 1793661686306962900
+        },
+        "systems/event_shop_system.py": {
+          "exists": true,
+          "sha256": "569f7a833db0ae817d83fd9e5d805ace3ce21f6cfe3eaadba84733db6b2ae83c",
+          "size": 4827,
+          "mtime_ns": 1790033528621866800
+        },
+        "systems/event_statistics_system.py": {
+          "exists": true,
+          "sha256": "2581b7ba3e066dc047a66689b7a2e44a6e4bff6c873458e062ef73a5ea389d21",
+          "size": 3019,
+          "mtime_ns": 1790033528624638600
+        },
+        "systems/fatigue_artifact_system.py": {
+          "exists": true,
+          "sha256": "e8c3704315a49ac7ee5db975cab67eb4954ae9813cd002a28de0a5f1ebbee3a3",
+          "size": 6071,
+          "mtime_ns": 1793653694179848100
+        },
+        "systems/guild_system.py": {
+          "exists": true,
+          "sha256": "1ea1e40f9fe543dfc98d2aa98578bb438e8542a84718af5c714c4b8143ac958f",
+          "size": 97013,
+          "mtime_ns": 1793742109691340600
+        },
+        "systems/inactivity_reminder_system.py": {
+          "exists": true,
+          "sha256": "133d3f442fa724b10714ff70e9534ccbee19f4fd1059c42f0fb5cc5f35406436",
+          "size": 5713,
+          "mtime_ns": 1793653694183373000
+        },
+        "systems/item_id_allocator_system.py": {
+          "exists": true,
+          "sha256": "07089f061f6a12d05a928f4b87a07a5e3ad853c01059e59d43b846cc025152d5",
+          "size": 5944,
+          "mtime_ns": 1793653694187396000
+        },
+        "systems/level_up_reward_system.py": {
+          "exists": true,
+          "sha256": "dca636a71be6f0b0a967647d9300269c2d0fce92f963814a87e1bebbc35d25fc",
+          "size": 11743,
+          "mtime_ns": 1792001059817996100
+        },
+        "systems/name_rune_system.py": {
+          "exists": true,
+          "sha256": "4027e2da365e5c57a9d57795a2e7ebcd8dc5935c79245601c3178e6813606b2e",
+          "size": 6853,
+          "mtime_ns": 1793653694189408700
+        },
+        "systems/player_interaction_system.py": {
+          "exists": true,
+          "sha256": "476921f51629c17a4503e6b036969944d0394912137d26a168a24b9a0f0756e4",
+          "size": 112232,
+          "mtime_ns": 1793804454795127300
+        },
+        "systems/potion_system.py": {
+          "exists": true,
+          "sha256": "b80506cbed1c2fae9328518fe7285844253cd9415479fae8b1186e43abcd7041",
+          "size": 20372,
+          "mtime_ns": 1793661686310979400
+        },
+        "systems/premium_item_policy_system.py": {
+          "exists": true,
+          "sha256": "09999a9de7e0dba433ce599925ac82c506a3548b2bd3cd69193a3816c951a980",
+          "size": 7981,
+          "mtime_ns": 1793653694200232700
+        },
+        "systems/profile_history_system.py": {
+          "exists": true,
+          "sha256": "52dd34aff9cc456ca304617f37c5ea7325e9c07b06269fbfa00275aa24bb2702",
+          "size": 7566,
+          "mtime_ns": 1793653694202246600
+        },
+        "systems/pve_auto_escape_system.py": {
+          "exists": true,
+          "sha256": "d2cb6d4d3a2b2eab1c905d456e2fa1a6caf399245d2195376f8b006f6257f507",
+          "size": 8225,
+          "mtime_ns": 1792001059824031000
+        },
+        "systems/pvp_request_service.py": {
+          "exists": true,
+          "sha256": "436957b218d7afbb030cf49a2ce9040a41bdc7ec575bda4c2955bd39ebb9bb6f",
+          "size": 2654,
+          "mtime_ns": 1786048875100068000
+        },
+        "systems/pvp_system.py": {
+          "exists": true,
+          "sha256": "c0742a475dfda471fb72636f4668169671d3b92936944fa30d88bcbcf6cb9b68",
+          "size": 28742,
+          "mtime_ns": 1793738946632870700
+        },
+        "systems/refine_system.py": {
+          "exists": true,
+          "sha256": "4e9e24c200bd06b26c119d2f892f2dad17650e7cdd178458342229f34a733a02",
+          "size": 11775,
+          "mtime_ns": 1793653694205268600
+        },
+        "systems/rune_system.py": {
+          "exists": true,
+          "sha256": "56e988aee115054422cf6277065c498777e0329a087f1088d7808e4fe7836a04",
+          "size": 60272,
+          "mtime_ns": 1790033528689916400
+        },
+        "systems/story_quest_completion_system.py": {
+          "exists": true,
+          "sha256": "3c37522e1314eff641b32d70df0b45a21f8101c8a689c7bb3001142d86c14e5c",
+          "size": 7964,
+          "mtime_ns": 1792001059900283400
+        },
+        "systems/timed_exp_bonus_system.py": {
+          "exists": true,
+          "sha256": "d9ca23cebab2927aa418ff3ac8e0ea30a8995280011a85dcda14d27b50d032da",
+          "size": 8211,
+          "mtime_ns": 1793653694209296100
+        },
+        "systems/travel_system.py": {
+          "exists": true,
+          "sha256": "7986562a294e2c95725b8f28f8d200ab47249cfcfda2cbe97eae51355f31f77b",
+          "size": 10462,
+          "mtime_ns": 1793653694215561000
+        },
+        "tools/audit_static_items_and_db_init.py": {
+          "exists": true,
+          "sha256": "24592030aeafcb2ce1f6260d8683ffb12ae2829d0b30bf050289f9ee809d7f67",
+          "size": 18737,
+          "mtime_ns": 1785355405325892600
+        },
+        "tools/check_active_story_quest_boss_call.py": {
+          "exists": true,
+          "sha256": "76d80502cec9dbb239666ba3aab67784e61227232af00a00d60c4c06eb85bd6f",
+          "size": 3199,
+          "mtime_ns": 1792001059930921900
+        },
+        "tools/check_story_quest_active_view_and_journal_details.py": {
+          "exists": true,
+          "sha256": "fbc98fbbe0a0f45c7f96e43ab0bc5e244419a2a3ce84e925f20999ba65902a6e",
+          "size": 2517,
+          "mtime_ns": 1792001060016933400
+        },
+        "tools/check_story_quest_chained_item_retention.py": {
+          "exists": true,
+          "sha256": "12aeac4ca5a8dd9a341241398e408635b405fe2ff99358916396a352feb3e09b",
+          "size": 3275,
+          "mtime_ns": 1792001060096169800
+        },
+        "tools/check_story_quest_cross_cutting_runtime_gaps.py": {
+          "exists": true,
+          "sha256": "68493c54233d95a06ce4b393c9fb1de27c4a388562ec1058d483af2f89f65be7",
+          "size": 4089,
+          "mtime_ns": 1792001060100186200
+        },
+        "tools/check_story_quest_evidence_handoff_flow.py": {
+          "exists": true,
+          "sha256": "ccd9be96085507d911ffbfd1d7eab6772b78a0257a33de870a0312c3e00ac36e",
+          "size": 3481,
+          "mtime_ns": 1792001060104207400
+        },
+        "tools/check_story_quest_exact_once_completion.py": {
+          "exists": true,
+          "sha256": "9524a48fb03aff25a359dcc102167491edd1dd996bd3b35e2f10ff6a55552802",
+          "size": 5394,
+          "mtime_ns": 1792001060105959300
+        },
+        "tools/check_story_quest_item_drop_notification.py": {
+          "exists": true,
+          "sha256": "63fa34457fd1d5b016203513643fff849729a1808a7a9b8e2c9de38fc8419efd",
+          "size": 2357,
+          "mtime_ns": 1792001060127856600
+        },
+        "tools/check_story_quest_item_journal_progress.py": {
+          "exists": true,
+          "sha256": "664426a1f89f86a5d6fc2494740a42db39ae90d06b3fcbbbd7ebc3d089297154",
+          "size": 2860,
+          "mtime_ns": 1792001060129873800
+        },
+        "tools/check_story_quest_lifecycle_engine.py": {
+          "exists": true,
+          "sha256": "a2465c248a6e12935a934aeeac2a3f4533fa10e378396954d23fa99508e01bc6",
+          "size": 5550,
+          "mtime_ns": 1792001060141716000
+        },
+        "tools/check_story_quest_location_names.py": {
+          "exists": true,
+          "sha256": "b8af619d7e5d6f629832515918557cafa92cc6c29a1aba73fa9903fcc40c945f",
+          "size": 2509,
+          "mtime_ns": 1792001060145756000
+        },
+        "tools/check_story_quest_npc_progress_and_actions.py": {
+          "exists": true,
+          "sha256": "02bdd2d3f5200ba953387b8d147e133c7bfe927d618e5eccf196a117d892e029",
+          "size": 2872,
+          "mtime_ns": 1792001060151822100
+        },
+        "tools/check_story_quest_persistence_schema.py": {
+          "exists": true,
+          "sha256": "464cef8f5a9c206e93241ef065162665bd7173b29de4b9208eac440e561928d7",
+          "size": 3428,
+          "mtime_ns": 1792001060157615700
+        },
+        "tools/check_story_quest_rewards_and_transitions.py": {
+          "exists": true,
+          "sha256": "24e534f7e06f508669566e0a27df01012e14be62e31cda6fbdb55180e804ef9a",
+          "size": 5094,
+          "mtime_ns": 1792001060169454600
+        },
+        "tools/check_story_quest_talk_conversation_flow.py": {
+          "exists": true,
+          "sha256": "66a3069542a8c8d27e49074c829879ccb3aa835ff5748f7554415e3a35876f40",
+          "size": 2736,
+          "mtime_ns": 1792001060181578800
+        },
+        "tools/check_story_quest_turn_in_npc_actions.py": {
+          "exists": true,
+          "sha256": "06307a40b4a6c5a7cd9f9a0b39fb5ff5abc043c70b69c183bee97b1f5a28b261",
+          "size": 3766,
+          "mtime_ns": 1792001060185351400
+        },
+        "tools/check_story_quest_unaccepted_objective_hidden.py": {
+          "exists": true,
+          "sha256": "d62799abe57314ebf4c852e1941043785179a8d378957b5fab8019d21d825b6e",
+          "size": 2864,
+          "mtime_ns": 1792001060191417100
+        },
+        "tools/manual_test_inactivity_reminder_18_6_1.py": {
+          "exists": true,
+          "sha256": "fdc52aab02ca4be3aadba3565eb9f1da4884e73176003cea54279e2000e85ae9",
+          "size": 10781,
+          "mtime_ns": 1790033528798399700
+        },
+        "tools/smoke_test_admin_crystal_credit_and_clamped_debit_18_3_1.py": {
+          "exists": true,
+          "sha256": "ba4b03d3bd1659f1cb02d10423299f5bf486d278d95a4fae59ed302044a3a5c4",
+          "size": 1531,
+          "mtime_ns": 1790033528817943200
+        },
+        "tools/smoke_test_admin_history_inline_details_and_character_names_18_3_1c.py": {
+          "exists": true,
+          "sha256": "ff75745c18e194368768f9f9590af93f69780a7051129e2afc3afd880d983ad7",
+          "size": 1901,
+          "mtime_ns": 1790033528820510800
+        },
+        "tools/smoke_test_atomic_event_shop_exchange_18_29_3c.py": {
+          "exists": true,
+          "sha256": "276f71ab37a7f960da732473a776a0a3a9e8a65862c04b15d639816a8e99e2cd",
+          "size": 1803,
+          "mtime_ns": 1790033528835201300
+        },
+        "tools/smoke_test_contract_reward_direct_facade.py": {
+          "exists": true,
+          "sha256": "ffa102ae918deed2479b33af205c65c61667a4915eae8ad94e675e2b53bf96a6",
+          "size": 7695,
+          "mtime_ns": 1785351620750381100
+        },
+        "tools/smoke_test_crystal_shop_17_27_1.py": {
+          "exists": true,
+          "sha256": "50ac1df7e986bde43e0badb3849f2df2bb57e1a49f920e26923bc174e3b347f7",
+          "size": 2076,
+          "mtime_ns": 1787866742029253500
+        },
+        "tools/smoke_test_daily_firius_token_reward.py": {
+          "exists": true,
+          "sha256": "4f72648bc8bbf00de0f382f3c92ba4f3e1a5ae77d519f524d24a8e4d14240532",
+          "size": 6849,
+          "mtime_ns": 1790033528921048100
+        },
+        "tools/smoke_test_dynamic_equipment_repair_contracts.py": {
+          "exists": true,
+          "sha256": "4ec5fc9d7c72fc23b51824604b6789bd115fede0079850418cb79965341927bf",
+          "size": 8977,
+          "mtime_ns": 1785270463352124900
+        },
+        "tools/smoke_test_equipment_rune_slots.py": {
+          "exists": true,
+          "sha256": "5cd5304ef9e5a9837af3845ff5460e85892240a6039439c2609b120f3b70dd2c",
+          "size": 5528,
+          "mtime_ns": 1785438942809383900
+        },
+        "tools/smoke_test_event_victory_statistics_integration_18_29_3f.py": {
+          "exists": true,
+          "sha256": "8121d4d212d449cea1ba7c612d2c47447312a7e7c7e6bedac885f9b31c934d90",
+          "size": 1766,
+          "mtime_ns": 1790033528979620700
+        },
+        "tools/smoke_test_fatigue_artifact_17_31_1_1.py": {
+          "exists": true,
+          "sha256": "f94fa2d782a8fcc9d8d843bbee2074934ee38ff050171c53d3f89ea2ede658da",
+          "size": 1811,
+          "mtime_ns": 1787952382240111900
+        },
+        "tools/smoke_test_interaction_session_timeout_and_recovery.py": {
+          "exists": true,
+          "sha256": "ed1c937dbbe77ca8fbd2b3a23505dceead0a2d673788a12fbd72833fc97f7ebd",
+          "size": 7229,
+          "mtime_ns": 1785705217680153700
+        },
+        "tools/smoke_test_name_rune_17_28_1_1.py": {
+          "exists": true,
+          "sha256": "0ef50efb2bf9c6b33dd4b63b2c441c3f439230d23819ab14b1cf42eb8ab81389",
+          "size": 1485,
+          "mtime_ns": 1787939524906782600
+        },
+        "tools/smoke_test_notification_resource_integration_18_16_5d.py": {
+          "exists": true,
+          "sha256": "9ab1d5da1e91d66088504010baad9b51eab17d85e838dfad547aca1822f98b1a",
+          "size": 2058,
+          "mtime_ns": 1790033529310394600
+        },
+        "tools/smoke_test_notification_worker_dynamic_rune_max_mp_recovery_17_15_1_1.py": {
+          "exists": true,
+          "sha256": "6d04e6b89ff6cae65655b63ffad79d28ac8a4db96743c57992bda02305d2d4bb",
+          "size": 2904,
+          "mtime_ns": 1787428684145843600
+        },
+        "tools/smoke_test_notification_worker_refine_formula_16_1_23.py": {
+          "exists": true,
+          "sha256": "8bcba674b97ae6bafe2d09387d59193ba73959642fa7eba35ce6524cbf83c092",
+          "size": 1627,
+          "mtime_ns": 1787083263300799400
+        },
+        "tools/smoke_test_notification_worker_rune_hp_16_1_22.py": {
+          "exists": true,
+          "sha256": "7330b7e8b9f8718f6aed86aa24ca5fb4173183776dd0f478210db7c8687da0fa",
+          "size": 1442,
+          "mtime_ns": 1787082462270794300
+        },
+        "tools/smoke_test_perfect_rune_extractor.py": {
+          "exists": true,
+          "sha256": "973a6ff47f385f3df85ca11b920a8f411d51f3152321baf46dc484af552b5496",
+          "size": 6951,
+          "mtime_ns": 1785445966705189600
+        },
+        "tools/smoke_test_player_interaction_requests.py": {
+          "exists": true,
+          "sha256": "4901fa1fe1d6d35aa2b4248700a4d5b3f93c7908b4d408cea8569bb289be6720",
+          "size": 4125,
+          "mtime_ns": 1785702928554449400
+        },
+        "tools/smoke_test_player_trade_database_and_history_foundation.py": {
+          "exists": true,
+          "sha256": "0f264284d4fa669bccc92ec67660f7151dabe76655b75ad1ac62c4d0b1935dcf",
+          "size": 5064,
+          "mtime_ns": 1785705217678505100
+        },
+        "tools/smoke_test_player_trade_item_policy_and_reservations.py": {
+          "exists": true,
+          "sha256": "cb03645b4a8b32ce5108896c117706cebe99c46d396d8d0a3149e3ae3b6b280c",
+          "size": 7779,
+          "mtime_ns": 1785748565034571200
+        },
+        "tools/smoke_test_player_trade_lock_consolidation_and_startup_recovery.py": {
+          "exists": true,
+          "sha256": "b4449bfc288bf2a1d73f8e8ea1b015b4ecf4090f5657d0429548e78c719c6bb0",
+          "size": 6134,
+          "mtime_ns": 1785767292406037500
+        },
+        "tools/smoke_test_premium_item_smoke_path_recovery_17_26_1_1.py": {
+          "exists": true,
+          "sha256": "77c2c6bbcd5fcdd4c6d7d1d8ab4520a00cc8d99b9d45640f79175efaf8abeafc",
+          "size": 1640,
+          "mtime_ns": 1787864873485803300
+        },
+        "tools/smoke_test_rebirth_sphere_stack_limit_18_16_10d.py": {
+          "exists": true,
+          "sha256": "0e2b8e643c071192c954e40107fd8c09e2f1d46004cd9218cb55650d89e0396c",
+          "size": 1342,
+          "mtime_ns": 1790033529604790400
+        },
+        "tools/smoke_test_rune_character_stat_bonuses.py": {
+          "exists": true,
+          "sha256": "5565a7d678605fb1f88828bf47b185b223cf68842b2db7d2f9cc797eebc7cc91",
+          "size": 6537,
+          "mtime_ns": 1785441056690249300
+        },
+        "tools/smoke_test_rune_equipment_display_names.py": {
+          "exists": true,
+          "sha256": "42e522782ed476f4e960f808a458040b44f8a3f5610eb197572da606d4a9bf30",
+          "size": 5269,
+          "mtime_ns": 1785445418751265600
+        },
+        "tools/smoke_test_rune_master_insertion.py": {
+          "exists": true,
+          "sha256": "07375471fb41f1678345b41ffde50e71a5bb852a969a141c28137435077a7054",
+          "size": 5710,
+          "mtime_ns": 1785439726518598800
+        },
+        "tools/smoke_test_rune_transactional_stack_capacity_17_4_1.py": {
+          "exists": true,
+          "sha256": "fcd35707a7395ce1fabc73a22deb97c9524e5d5edad93f5f3dcc5a8e0316db91",
+          "size": 3511,
+          "mtime_ns": 1787177596894280700
+        },
+        "tools/smoke_test_simple_rune_extractor.py": {
+          "exists": true,
+          "sha256": "93e24318574d345dbae56c675c07fcfdd4808c613af9c766d0ac76e6cbb06fef",
+          "size": 2953,
+          "mtime_ns": 1785444148439810600
+        },
+        "tools/smoke_test_sphere_stack_and_category_fix_18_16_10a.py": {
+          "exists": true,
+          "sha256": "bd39ec8555c349f2598e085ee233a927ae2cce3e307ef44ef33f1adea6187a6b",
+          "size": 1498,
+          "mtime_ns": 1790033530130349900
+        },
+        "tools/smoke_test_stack_compaction_after_consumption_18_xx_7.py": {
+          "exists": true,
+          "sha256": "bf426ac9454fbdc6b4aa2e95750c0a620ed03c9138c5d7bb2f2174281cc79c44",
+          "size": 1435,
+          "mtime_ns": 1790033530136449200
+        },
+        "tools/smoke_test_stage_21_3_2_sqlite_connection_policy.py": {
+          "exists": true,
+          "sha256": "13c6f1c529b483f2dabf8abc91624f1e031b0dc2ed24b9514dd170bf49f88b4d",
+          "size": 1557,
+          "mtime_ns": 1793653694227712000
+        },
+        "tools/smoke_test_stage_21_4_4_generated_equipment_transaction_atomicity.py": {
+          "exists": true,
+          "sha256": "5f25606b5c40937eae3c9a4abcd964928a7639527be767d0812809ccb060d501",
+          "size": 1354,
+          "mtime_ns": 1793656444573161300
+        },
+        "tools/smoke_test_stage_21_4_5_refine_transaction_atomicity.py": {
+          "exists": true,
+          "sha256": "8a8571f6850454971c05ed21bf7990b6c17695293b83a9cdcb08c0c960cdefcf",
+          "size": 2104,
+          "mtime_ns": 1793657525511834700
+        },
+        "tools/smoke_test_stage_21_4_8_guild_transaction_atomicity.py": {
+          "exists": true,
+          "sha256": "7ce513f7f76dd9c395db794eb1cb54b2d2ea33f21e399ea661e336b99334427f",
+          "size": 1124,
+          "mtime_ns": 1793660424938761000
+        },
+        "tools/smoke_test_success_rune_guaranteed_refine_17_29_1.py": {
+          "exists": true,
+          "sha256": "dc01000bcdf4f29719377905eef5b56a94645b6543bc45bc992c5dfb2ec33673",
+          "size": 2131,
+          "mtime_ns": 1787944291768610200
+        },
+        "tools/smoke_test_timed_exp_bonus_17_30_1.py": {
+          "exists": true,
+          "sha256": "972b701cc4093673f60ec7217f103d70ce19a38c0bb51cd93fcc714e28fbfc38",
+          "size": 1691,
+          "mtime_ns": 1787946479545674500
+        },
+        "tools/verify_stage_19_34_2_atomic_location_story_skip.py": {
+          "exists": true,
+          "sha256": "6911f85bb3546adaa7697612742d018597f9098d660af22a354b528be8a69dc6",
+          "size": 3467,
+          "mtime_ns": 1792001060373352500
+        },
+        "tools/verify_stage_19_34_3_story_quest_item_identity.py": {
+          "exists": true,
+          "sha256": "ac818edae21e05107c82e6f90af88f661385c9d78fe2cb89d586c2be024e1f45",
+          "size": 2850,
+          "mtime_ns": 1792001060381877600
+        }
+      },
+      "canonical_owner": "transaction_owner_registry",
+      "planned_mutation": "KEEP_UNTIL_ISOLATED_FIXTURE",
+      "blocking_evidence": [
+        "review_required_paths:178"
+      ],
+      "required_tests": [
+        "AST parse and py_compile",
+        "exact target-file hash precondition",
+        "exact staging allowlist",
+        "scoped backup with existed flags and SHA-256",
+        "rollback restores exact hashes",
+        "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+        "isolated SQLite snapshot only",
+        "first invocation success",
+        "pre-commit failure rollback",
+        "retry after committed success is idempotent",
+        "row-count and ledger exact-once assertions",
+        "multi-table atomicity"
+      ],
+      "next_action": "SPLIT_TRANSACTION_PATHS_BY_CANONICAL_OWNER_AND_BUILD_ISOLATED_FIXTURES",
+      "backup_contract": {
+        "required_before_first_write": true,
+        "relative_paths": [
+          "db_modules/connection.py",
+          "db_modules/dev_compat.py",
+          "db_modules/generated_equipment.py",
+          "db_modules/inventory.py",
+          "db_modules/inventory_compat.py",
+          "db_modules/migrations.py",
+          "db_modules/quests.py",
+          "db_modules/shop.py",
+          "db_modules/story_quests.py",
+          "migrations/020_fresh_database_schema_parity.py",
+          "migrations/040_generated_equipment_namespace.py",
+          "migrations/045a_seed_new_path_sphere_dependency.py",
+          "migrations/047_sphere_stack_and_category_fix.py",
+          "migrations/048_rebirth_sphere_stack_limit.py",
+          "systems/admin_crystal_credit_system.py",
+          "systems/attribute_respec_system.py",
+          "systems/auction_house_system.py",
+          "systems/character_system.py",
+          "systems/contract_system.py",
+          "systems/crystal_bag_expansion_system.py",
+          "systems/crystal_shop_system.py",
+          "systems/crystal_wallet_system.py",
+          "systems/energy_system.py",
+          "systems/equipment_system.py",
+          "systems/event_shop_system.py",
+          "systems/event_statistics_system.py",
+          "systems/fatigue_artifact_system.py",
+          "systems/guild_system.py",
+          "systems/inactivity_reminder_system.py",
+          "systems/item_id_allocator_system.py",
+          "systems/level_up_reward_system.py",
+          "systems/name_rune_system.py",
+          "systems/player_interaction_system.py",
+          "systems/potion_system.py",
+          "systems/premium_item_policy_system.py",
+          "systems/profile_history_system.py",
+          "systems/pve_auto_escape_system.py",
+          "systems/pvp_request_service.py",
+          "systems/pvp_system.py",
+          "systems/refine_system.py",
+          "systems/rune_system.py",
+          "systems/story_quest_completion_system.py",
+          "systems/timed_exp_bonus_system.py",
+          "systems/travel_system.py",
+          "tools/audit_static_items_and_db_init.py",
+          "tools/check_active_story_quest_boss_call.py",
+          "tools/check_story_quest_active_view_and_journal_details.py",
+          "tools/check_story_quest_chained_item_retention.py",
+          "tools/check_story_quest_cross_cutting_runtime_gaps.py",
+          "tools/check_story_quest_evidence_handoff_flow.py",
+          "tools/check_story_quest_exact_once_completion.py",
+          "tools/check_story_quest_item_drop_notification.py",
+          "tools/check_story_quest_item_journal_progress.py",
+          "tools/check_story_quest_lifecycle_engine.py",
+          "tools/check_story_quest_location_names.py",
+          "tools/check_story_quest_npc_progress_and_actions.py",
+          "tools/check_story_quest_persistence_schema.py",
+          "tools/check_story_quest_rewards_and_transitions.py",
+          "tools/check_story_quest_talk_conversation_flow.py",
+          "tools/check_story_quest_turn_in_npc_actions.py",
+          "tools/check_story_quest_unaccepted_objective_hidden.py",
+          "tools/manual_test_inactivity_reminder_18_6_1.py",
+          "tools/smoke_test_admin_crystal_credit_and_clamped_debit_18_3_1.py",
+          "tools/smoke_test_admin_history_inline_details_and_character_names_18_3_1c.py",
+          "tools/smoke_test_atomic_event_shop_exchange_18_29_3c.py",
+          "tools/smoke_test_contract_reward_direct_facade.py",
+          "tools/smoke_test_crystal_shop_17_27_1.py",
+          "tools/smoke_test_daily_firius_token_reward.py",
+          "tools/smoke_test_dynamic_equipment_repair_contracts.py",
+          "tools/smoke_test_equipment_rune_slots.py",
+          "tools/smoke_test_event_victory_statistics_integration_18_29_3f.py",
+          "tools/smoke_test_fatigue_artifact_17_31_1_1.py",
+          "tools/smoke_test_interaction_session_timeout_and_recovery.py",
+          "tools/smoke_test_name_rune_17_28_1_1.py",
+          "tools/smoke_test_notification_resource_integration_18_16_5d.py",
+          "tools/smoke_test_notification_worker_dynamic_rune_max_mp_recovery_17_15_1_1.py",
+          "tools/smoke_test_notification_worker_refine_formula_16_1_23.py",
+          "tools/smoke_test_notification_worker_rune_hp_16_1_22.py",
+          "tools/smoke_test_perfect_rune_extractor.py",
+          "tools/smoke_test_player_interaction_requests.py",
+          "tools/smoke_test_player_trade_database_and_history_foundation.py",
+          "tools/smoke_test_player_trade_item_policy_and_reservations.py",
+          "tools/smoke_test_player_trade_lock_consolidation_and_startup_recovery.py",
+          "tools/smoke_test_premium_item_smoke_path_recovery_17_26_1_1.py",
+          "tools/smoke_test_rebirth_sphere_stack_limit_18_16_10d.py",
+          "tools/smoke_test_rune_character_stat_bonuses.py",
+          "tools/smoke_test_rune_equipment_display_names.py",
+          "tools/smoke_test_rune_master_insertion.py",
+          "tools/smoke_test_rune_transactional_stack_capacity_17_4_1.py",
+          "tools/smoke_test_simple_rune_extractor.py",
+          "tools/smoke_test_sphere_stack_and_category_fix_18_16_10a.py",
+          "tools/smoke_test_stack_compaction_after_consumption_18_xx_7.py",
+          "tools/smoke_test_stage_21_3_2_sqlite_connection_policy.py",
+          "tools/smoke_test_stage_21_4_4_generated_equipment_transaction_atomicity.py",
+          "tools/smoke_test_stage_21_4_5_refine_transaction_atomicity.py",
+          "tools/smoke_test_stage_21_4_8_guild_transaction_atomicity.py",
+          "tools/smoke_test_success_rune_guaranteed_refine_17_29_1.py",
+          "tools/smoke_test_timed_exp_bonus_17_30_1.py",
+          "tools/verify_stage_19_34_2_atomic_location_story_skip.py",
+          "tools/verify_stage_19_34_3_story_quest_item_identity.py"
+        ],
+        "record_existed_flags": true,
+        "record_sha256": true
+      },
+      "rollback_contract": {
+        "restore_exact_files": true,
+        "verify_sha256": true,
+        "scoped_git_reset": true,
+        "no_main_after_recovery_fail": true
+      },
+      "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+      "production_mutation_authorized": false,
+      "deletion_authorized": false
+    },
+    {
+      "sequence": 40,
+      "cohort_id": "register_auction_house_handlers",
+      "domain": "telegram_registration_auction_house",
+      "source_readiness": "BLOCKED_FIXTURE_REQUIRED",
+      "exact_source_files": [
+        "handlers/auction_house.py"
+      ],
+      "source_fingerprints": {
+        "handlers/auction_house.py": {
+          "exists": true,
+          "sha256": "9cd9b0ccccae8ea2f0bfb24abdc6428ae5691ba78a33a60d9b3fed84c4215f7a",
+          "size": 212433,
+          "mtime_ns": 1790033528411691000
+        }
+      },
+      "canonical_owner": {
+        "path": "handlers/auction_house.py",
+        "line": 5101,
+        "end_line": 5107,
+        "symbol": "register_auction_house_handlers",
+        "scope_chain": [],
+        "module_level": true,
+        "async": false,
+        "signature": "arguments(args=[arg(arg='bot')])",
+        "body_sha256": "7b1daa70278cb0db68303236806f5f5e574e667dfd97c173153f61556b7b3766",
+        "delegates_to_targets": [],
+        "registration_calls": 2
+      },
+      "planned_mutation": "REMOVE_ONLY_PROVEN_SHADOWED_DEFINITIONS_IN_SEPARATE_COHORTS",
+      "blocking_evidence": [
+        "owner_confidence:MEDIUM"
+      ],
+      "required_tests": [
+        "AST parse and py_compile",
+        "exact target-file hash precondition",
+        "exact staging allowlist",
+        "scoped backup with existed flags and SHA-256",
+        "rollback restores exact hashes",
+        "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+        "exact invocation count from main.py",
+        "registration count and order parity",
+        "commands/callback/content/state filter parity",
+        "single user-visible response",
+        "keyboard parity",
+        "public import and signature parity",
+        "sibling registration regression"
+      ],
+      "next_action": "BUILD_PRODUCTION_SHAPED_REPLACEMENT_FIXTURE",
+      "backup_contract": {
+        "required_before_first_write": true,
+        "relative_paths": [
+          "handlers/auction_house.py"
+        ],
+        "record_existed_flags": true,
+        "record_sha256": true
+      },
+      "rollback_contract": {
+        "restore_exact_files": true,
+        "verify_sha256": true,
+        "scoped_git_reset": true,
+        "no_main_after_recovery_fail": true
+      },
+      "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+      "production_mutation_authorized": false,
+      "deletion_authorized": false
+    },
+    {
+      "sequence": 40,
+      "cohort_id": "register_dev_handlers",
+      "domain": "telegram_registration_dev",
+      "source_readiness": "BLOCKED_FIXTURE_REQUIRED",
+      "exact_source_files": [
+        "handlers/dev.py"
+      ],
+      "source_fingerprints": {
+        "handlers/dev.py": {
+          "exists": true,
+          "sha256": "c161907aa3d965cbb3f2ce50d1b6f46c181027ff7a3b517ae852a026b5827352",
+          "size": 43985,
+          "mtime_ns": 1790033528427233500
+        }
+      },
+      "canonical_owner": {
+        "path": "handlers/dev.py",
+        "line": 1058,
+        "end_line": 1132,
+        "symbol": "register_dev_handlers",
+        "scope_chain": [],
+        "module_level": true,
+        "async": false,
+        "signature": "arguments(args=[arg(arg='bot')])",
+        "body_sha256": "99ab47a79e0f31ae140470e75b68ea25db6734103a7c3d9ede31dcb6a3bd5ea1",
+        "delegates_to_targets": [],
+        "registration_calls": 6
+      },
+      "planned_mutation": "REMOVE_ONLY_PROVEN_SHADOWED_DEFINITIONS_IN_SEPARATE_COHORTS",
+      "blocking_evidence": [
+        "owner_confidence:MEDIUM"
+      ],
+      "required_tests": [
+        "AST parse and py_compile",
+        "exact target-file hash precondition",
+        "exact staging allowlist",
+        "scoped backup with existed flags and SHA-256",
+        "rollback restores exact hashes",
+        "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+        "exact invocation count from main.py",
+        "registration count and order parity",
+        "commands/callback/content/state filter parity",
+        "single user-visible response",
+        "keyboard parity",
+        "public import and signature parity",
+        "sibling registration regression"
+      ],
+      "next_action": "BUILD_PRODUCTION_SHAPED_REPLACEMENT_FIXTURE",
+      "backup_contract": {
+        "required_before_first_write": true,
+        "relative_paths": [
+          "handlers/dev.py"
+        ],
+        "record_existed_flags": true,
+        "record_sha256": true
+      },
+      "rollback_contract": {
+        "restore_exact_files": true,
+        "verify_sha256": true,
+        "scoped_git_reset": true,
+        "no_main_after_recovery_fail": true
+      },
+      "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+      "production_mutation_authorized": false,
+      "deletion_authorized": false
+    },
+    {
+      "sequence": 40,
+      "cohort_id": "register_guild_handlers",
+      "domain": "telegram_registration_guild",
+      "source_readiness": "BLOCKED_FIXTURE_REQUIRED",
+      "exact_source_files": [
+        "handlers/guild.py"
+      ],
+      "source_fingerprints": {
+        "handlers/guild.py": {
+          "exists": true,
+          "sha256": "de39b8627b59b33ad1500086b9862f775237c780d4718e8bc389e4ef88365d40",
+          "size": 115894,
+          "mtime_ns": 1792001059659729500
+        }
+      },
+      "canonical_owner": {
+        "path": "handlers/guild.py",
+        "line": 2868,
+        "end_line": 2978,
+        "symbol": "register_guild_handlers",
+        "scope_chain": [],
+        "module_level": true,
+        "async": false,
+        "signature": "arguments(args=[arg(arg='bot')])",
+        "body_sha256": "4fe4b5ca3d054111d585daa97b49a0b987ee410e0bd0e0cc80bbca820d5e2163",
+        "delegates_to_targets": [],
+        "registration_calls": 8
+      },
+      "planned_mutation": "REMOVE_ONLY_PROVEN_SHADOWED_DEFINITIONS_IN_SEPARATE_COHORTS",
+      "blocking_evidence": [
+        "owner_confidence:MEDIUM"
+      ],
+      "required_tests": [
+        "AST parse and py_compile",
+        "exact target-file hash precondition",
+        "exact staging allowlist",
+        "scoped backup with existed flags and SHA-256",
+        "rollback restores exact hashes",
+        "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+        "exact invocation count from main.py",
+        "registration count and order parity",
+        "commands/callback/content/state filter parity",
+        "single user-visible response",
+        "keyboard parity",
+        "public import and signature parity",
+        "sibling registration regression"
+      ],
+      "next_action": "BUILD_PRODUCTION_SHAPED_REPLACEMENT_FIXTURE",
+      "backup_contract": {
+        "required_before_first_write": true,
+        "relative_paths": [
+          "handlers/guild.py"
+        ],
+        "record_existed_flags": true,
+        "record_sha256": true
+      },
+      "rollback_contract": {
+        "restore_exact_files": true,
+        "verify_sha256": true,
+        "scoped_git_reset": true,
+        "no_main_after_recovery_fail": true
+      },
+      "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+      "production_mutation_authorized": false,
+      "deletion_authorized": false
+    },
+    {
+      "sequence": 40,
+      "cohort_id": "register_inventory_handlers",
+      "domain": "telegram_registration_inventory",
+      "source_readiness": "BLOCKED_FIXTURE_REQUIRED",
+      "exact_source_files": [
+        "handlers/inventory.py"
+      ],
+      "source_fingerprints": {
+        "handlers/inventory.py": {
+          "exists": true,
+          "sha256": "f0e43d3d2dcc22bf8f28be61e0e843698b1337ca928d5d42034ebc49d8d3b95b",
+          "size": 89675,
+          "mtime_ns": 1792001059663768000
+        }
+      },
+      "canonical_owner": {
+        "path": "handlers/inventory.py",
+        "line": 7622,
+        "end_line": 7763,
+        "symbol": "register_inventory_handlers",
+        "scope_chain": [],
+        "module_level": true,
+        "async": false,
+        "signature": "arguments(args=[arg(arg='bot')])",
+        "body_sha256": "a520ea51003a0cdc6f8f61fd6fd097e3d628a63c7a6ab11792806da4572c6481",
+        "delegates_to_targets": [],
+        "registration_calls": 1
+      },
+      "planned_mutation": "REMOVE_ONLY_PROVEN_SHADOWED_DEFINITIONS_IN_SEPARATE_COHORTS",
+      "blocking_evidence": [
+        "owner_confidence:MEDIUM"
+      ],
+      "required_tests": [
+        "AST parse and py_compile",
+        "exact target-file hash precondition",
+        "exact staging allowlist",
+        "scoped backup with existed flags and SHA-256",
+        "rollback restores exact hashes",
+        "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+        "exact invocation count from main.py",
+        "registration count and order parity",
+        "commands/callback/content/state filter parity",
+        "single user-visible response",
+        "keyboard parity",
+        "public import and signature parity",
+        "sibling registration regression"
+      ],
+      "next_action": "BUILD_PRODUCTION_SHAPED_REPLACEMENT_FIXTURE",
+      "backup_contract": {
+        "required_before_first_write": true,
+        "relative_paths": [
+          "handlers/inventory.py"
+        ],
+        "record_existed_flags": true,
+        "record_sha256": true
+      },
+      "rollback_contract": {
+        "restore_exact_files": true,
+        "verify_sha256": true,
+        "scoped_git_reset": true,
+        "no_main_after_recovery_fail": true
+      },
+      "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+      "production_mutation_authorized": false,
+      "deletion_authorized": false
+    },
+    {
+      "sequence": 50,
+      "cohort_id": "route_cohort_01",
+      "domain": "auction",
+      "source_readiness": "BLOCKED_FIXTURE_REQUIRED",
+      "exact_source_files": [
+        "handlers/auction_house.py"
+      ],
+      "source_fingerprints": {
+        "handlers/auction_house.py": {
+          "exists": true,
+          "sha256": "9cd9b0ccccae8ea2f0bfb24abdc6428ae5691ba78a33a60d9b3fed84c4215f7a",
+          "size": 212433,
+          "mtime_ns": 1790033528411691000
+        }
+      },
+      "canonical_owner": {
+        "pair_count": 23
+      },
+      "planned_mutation": "REMOVE_OR_REORDER_ONLY_AFTER_PRODUCTION_SHAPED_FIXTURE",
+      "blocking_evidence": [
+        "pair_13_20:MEDIUM",
+        "pair_13_26:MEDIUM",
+        "pair_14_35:MEDIUM",
+        "pair_14_68:MEDIUM",
+        "pair_15_40:MEDIUM",
+        "pair_15_69:MEDIUM",
+        "pair_16_45:MEDIUM",
+        "pair_16_70:MEDIUM",
+        "pair_17_71:MEDIUM",
+        "pair_17_80:MEDIUM",
+        "pair_20_26:MEDIUM",
+        "pair_23_56:MEDIUM",
+        "pair_25_32:MEDIUM",
+        "pair_35_68:MEDIUM",
+        "pair_40_69:MEDIUM",
+        "pair_45_70:MEDIUM",
+        "pair_51_59:MEDIUM",
+        "pair_71_80:MEDIUM",
+        "pair_87_94:MEDIUM",
+        "pair_88_92:MEDIUM",
+        "pair_89_91:MEDIUM",
+        "pair_90_93:MEDIUM"
+      ],
+      "required_tests": [
+        "AST parse and py_compile",
+        "exact target-file hash precondition",
+        "exact staging allowlist",
+        "scoped backup with existed flags and SHA-256",
+        "rollback restores exact hashes",
+        "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+        "matching synthetic message/callback",
+        "first-match owner assertion",
+        "single send/edit/answer accounting",
+        "state and content-type parity",
+        "callback prefix boundary cases",
+        "no sibling-route regression"
+      ],
+      "next_action": "BUILD_PRODUCTION_SHAPED_REPLACEMENT_FIXTURE",
+      "backup_contract": {
+        "required_before_first_write": true,
+        "relative_paths": [
+          "handlers/auction_house.py"
+        ],
+        "record_existed_flags": true,
+        "record_sha256": true
+      },
+      "rollback_contract": {
+        "restore_exact_files": true,
+        "verify_sha256": true,
+        "scoped_git_reset": true,
+        "no_main_after_recovery_fail": true
+      },
+      "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+      "production_mutation_authorized": false,
+      "deletion_authorized": false
+    },
+    {
+      "sequence": 50,
+      "cohort_id": "route_cohort_02",
+      "domain": "equipment_repair",
+      "source_readiness": "BLOCKED_FIXTURE_REQUIRED",
+      "exact_source_files": [
+        "handlers/blacksmith.py"
+      ],
+      "source_fingerprints": {
+        "handlers/blacksmith.py": {
+          "exists": true,
+          "sha256": "8a6a64840f8b5a600d19d632114736af18824a02fd44b0651237d389e2897ad7",
+          "size": 16946,
+          "mtime_ns": 1784925045991673000
+        }
+      },
+      "canonical_owner": {
+        "pair_count": 2
+      },
+      "planned_mutation": "REMOVE_OR_REORDER_ONLY_AFTER_PRODUCTION_SHAPED_FIXTURE",
+      "blocking_evidence": [
+        "pair_96_101:MEDIUM",
+        "pair_97_102:MEDIUM"
+      ],
+      "required_tests": [
+        "AST parse and py_compile",
+        "exact target-file hash precondition",
+        "exact staging allowlist",
+        "scoped backup with existed flags and SHA-256",
+        "rollback restores exact hashes",
+        "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+        "matching synthetic message/callback",
+        "first-match owner assertion",
+        "single send/edit/answer accounting",
+        "state and content-type parity",
+        "callback prefix boundary cases",
+        "no sibling-route regression"
+      ],
+      "next_action": "BUILD_PRODUCTION_SHAPED_REPLACEMENT_FIXTURE",
+      "backup_contract": {
+        "required_before_first_write": true,
+        "relative_paths": [
+          "handlers/blacksmith.py"
+        ],
+        "record_existed_flags": true,
+        "record_sha256": true
+      },
+      "rollback_contract": {
+        "restore_exact_files": true,
+        "verify_sha256": true,
+        "scoped_git_reset": true,
+        "no_main_after_recovery_fail": true
+      },
+      "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+      "production_mutation_authorized": false,
+      "deletion_authorized": false
+    },
+    {
+      "sequence": 50,
+      "cohort_id": "route_cohort_03",
+      "domain": "equipment_repair",
+      "source_readiness": "BLOCKED_FIXTURE_REQUIRED",
+      "exact_source_files": [
+        "handlers/blacksmith.py",
+        "handlers/blacksmith_repair_confirm.py"
+      ],
+      "source_fingerprints": {
+        "handlers/blacksmith.py": {
+          "exists": true,
+          "sha256": "8a6a64840f8b5a600d19d632114736af18824a02fd44b0651237d389e2897ad7",
+          "size": 16946,
+          "mtime_ns": 1784925045991673000
+        },
+        "handlers/blacksmith_repair_confirm.py": {
+          "exists": true,
+          "sha256": "16803c5d5bad701d626846156e5942b8a6edd64dc36aeb758c4ba790c44414c0",
+          "size": 15629,
+          "mtime_ns": 1784926229555911700
+        }
+      },
+      "canonical_owner": {
+        "pair_count": 4
+      },
+      "planned_mutation": "REMOVE_OR_REORDER_ONLY_AFTER_PRODUCTION_SHAPED_FIXTURE",
+      "blocking_evidence": [
+        "pair_97_106:MEDIUM",
+        "pair_97_111:MEDIUM",
+        "pair_102_106:MEDIUM",
+        "pair_102_111:MEDIUM"
+      ],
+      "required_tests": [
+        "AST parse and py_compile",
+        "exact target-file hash precondition",
+        "exact staging allowlist",
+        "scoped backup with existed flags and SHA-256",
+        "rollback restores exact hashes",
+        "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+        "matching synthetic message/callback",
+        "first-match owner assertion",
+        "single send/edit/answer accounting",
+        "state and content-type parity",
+        "callback prefix boundary cases",
+        "no sibling-route regression"
+      ],
+      "next_action": "BUILD_PRODUCTION_SHAPED_REPLACEMENT_FIXTURE",
+      "backup_contract": {
+        "required_before_first_write": true,
+        "relative_paths": [
+          "handlers/blacksmith.py",
+          "handlers/blacksmith_repair_confirm.py"
+        ],
+        "record_existed_flags": true,
+        "record_sha256": true
+      },
+      "rollback_contract": {
+        "restore_exact_files": true,
+        "verify_sha256": true,
+        "scoped_git_reset": true,
+        "no_main_after_recovery_fail": true
+      },
+      "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+      "production_mutation_authorized": false,
+      "deletion_authorized": false
+    },
+    {
+      "sequence": 50,
+      "cohort_id": "route_cohort_04",
+      "domain": "equipment_repair",
+      "source_readiness": "BLOCKED_FIXTURE_REQUIRED",
+      "exact_source_files": [
+        "handlers/blacksmith_repair_confirm.py"
+      ],
+      "source_fingerprints": {
+        "handlers/blacksmith_repair_confirm.py": {
+          "exists": true,
+          "sha256": "16803c5d5bad701d626846156e5942b8a6edd64dc36aeb758c4ba790c44414c0",
+          "size": 15629,
+          "mtime_ns": 1784926229555911700
+        }
+      },
+      "canonical_owner": {
+        "pair_count": 5
+      },
+      "planned_mutation": "REMOVE_OR_REORDER_ONLY_AFTER_PRODUCTION_SHAPED_FIXTURE",
+      "blocking_evidence": [
+        "pair_106_111:MEDIUM",
+        "pair_107_112:MEDIUM",
+        "pair_108_113:MEDIUM",
+        "pair_109_114:MEDIUM",
+        "pair_110_115:MEDIUM"
+      ],
+      "required_tests": [
+        "AST parse and py_compile",
+        "exact target-file hash precondition",
+        "exact staging allowlist",
+        "scoped backup with existed flags and SHA-256",
+        "rollback restores exact hashes",
+        "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+        "matching synthetic message/callback",
+        "first-match owner assertion",
+        "single send/edit/answer accounting",
+        "state and content-type parity",
+        "callback prefix boundary cases",
+        "no sibling-route regression"
+      ],
+      "next_action": "BUILD_PRODUCTION_SHAPED_REPLACEMENT_FIXTURE",
+      "backup_contract": {
+        "required_before_first_write": true,
+        "relative_paths": [
+          "handlers/blacksmith_repair_confirm.py"
+        ],
+        "record_existed_flags": true,
+        "record_sha256": true
+      },
+      "rollback_contract": {
+        "restore_exact_files": true,
+        "verify_sha256": true,
+        "scoped_git_reset": true,
+        "no_main_after_recovery_fail": true
+      },
+      "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+      "production_mutation_authorized": false,
+      "deletion_authorized": false
+    },
+    {
+      "sequence": 50,
+      "cohort_id": "route_cohort_05",
+      "domain": "city_navigation",
+      "source_readiness": "BLOCKED_FIXTURE_REQUIRED",
+      "exact_source_files": [
+        "handlers/city.py"
+      ],
+      "source_fingerprints": {
+        "handlers/city.py": {
+          "exists": true,
+          "sha256": "a73373e0bf4ae90e2d7d4e6c7b417847d401c6b4555514431a3acfed3836b0c3",
+          "size": 80917,
+          "mtime_ns": 1792001059647913200
+        }
+      },
+      "canonical_owner": {
+        "pair_count": 1
+      },
+      "planned_mutation": "REMOVE_OR_REORDER_ONLY_AFTER_PRODUCTION_SHAPED_FIXTURE",
+      "blocking_evidence": [
+        "pair_149_150:no_reconciliation"
+      ],
+      "required_tests": [
+        "AST parse and py_compile",
+        "exact target-file hash precondition",
+        "exact staging allowlist",
+        "scoped backup with existed flags and SHA-256",
+        "rollback restores exact hashes",
+        "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+        "matching synthetic message/callback",
+        "first-match owner assertion",
+        "single send/edit/answer accounting",
+        "state and content-type parity",
+        "callback prefix boundary cases",
+        "no sibling-route regression"
+      ],
+      "next_action": "BUILD_PRODUCTION_SHAPED_REPLACEMENT_FIXTURE",
+      "backup_contract": {
+        "required_before_first_write": true,
+        "relative_paths": [
+          "handlers/city.py"
+        ],
+        "record_existed_flags": true,
+        "record_sha256": true
+      },
+      "rollback_contract": {
+        "restore_exact_files": true,
+        "verify_sha256": true,
+        "scoped_git_reset": true,
+        "no_main_after_recovery_fail": true
+      },
+      "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+      "production_mutation_authorized": false,
+      "deletion_authorized": false
+    },
+    {
+      "sequence": 50,
+      "cohort_id": "route_cohort_06",
+      "domain": "city_navigation",
+      "source_readiness": "BLOCKED_FIXTURE_REQUIRED",
+      "exact_source_files": [
+        "handlers/city.py",
+        "handlers/profile.py"
+      ],
+      "source_fingerprints": {
+        "handlers/city.py": {
+          "exists": true,
+          "sha256": "a73373e0bf4ae90e2d7d4e6c7b417847d401c6b4555514431a3acfed3836b0c3",
+          "size": 80917,
+          "mtime_ns": 1792001059647913200
+        },
+        "handlers/profile.py": {
+          "exists": true,
+          "sha256": "9546e06670a5bf830671d69b8006b0630edf9a95cb9365a9dff05630acf0524d",
+          "size": 23194,
+          "mtime_ns": 1792001059675589400
+        }
+      },
+      "canonical_owner": {
+        "pair_count": 1
+      },
+      "planned_mutation": "REMOVE_OR_REORDER_ONLY_AFTER_PRODUCTION_SHAPED_FIXTURE",
+      "blocking_evidence": [
+        "pair_148_334:MEDIUM"
+      ],
+      "required_tests": [
+        "AST parse and py_compile",
+        "exact target-file hash precondition",
+        "exact staging allowlist",
+        "scoped backup with existed flags and SHA-256",
+        "rollback restores exact hashes",
+        "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+        "matching synthetic message/callback",
+        "first-match owner assertion",
+        "single send/edit/answer accounting",
+        "state and content-type parity",
+        "callback prefix boundary cases",
+        "no sibling-route regression"
+      ],
+      "next_action": "BUILD_PRODUCTION_SHAPED_REPLACEMENT_FIXTURE",
+      "backup_contract": {
+        "required_before_first_write": true,
+        "relative_paths": [
+          "handlers/city.py",
+          "handlers/profile.py"
+        ],
+        "record_existed_flags": true,
+        "record_sha256": true
+      },
+      "rollback_contract": {
+        "restore_exact_files": true,
+        "verify_sha256": true,
+        "scoped_git_reset": true,
+        "no_main_after_recovery_fail": true
+      },
+      "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+      "production_mutation_authorized": false,
+      "deletion_authorized": false
+    },
+    {
+      "sequence": 50,
+      "cohort_id": "route_cohort_07",
+      "domain": "combat_profile",
+      "source_readiness": "BLOCKED_FIXTURE_REQUIRED",
+      "exact_source_files": [
+        "handlers/combat.py",
+        "handlers/profile.py"
+      ],
+      "source_fingerprints": {
+        "handlers/combat.py": {
+          "exists": true,
+          "sha256": "264fdf4f834dceac51ff9f3fef401f2a7f5b9039e56d991f9e731824355e8748",
+          "size": 135185,
+          "mtime_ns": 1793821413248867400
+        },
+        "handlers/profile.py": {
+          "exists": true,
+          "sha256": "9546e06670a5bf830671d69b8006b0630edf9a95cb9365a9dff05630acf0524d",
+          "size": 23194,
+          "mtime_ns": 1792001059675589400
+        }
+      },
+      "canonical_owner": {
+        "pair_count": 1
+      },
+      "planned_mutation": "REMOVE_OR_REORDER_ONLY_AFTER_PRODUCTION_SHAPED_FIXTURE",
+      "blocking_evidence": [
+        "pair_163_329:MEDIUM"
+      ],
+      "required_tests": [
+        "AST parse and py_compile",
+        "exact target-file hash precondition",
+        "exact staging allowlist",
+        "scoped backup with existed flags and SHA-256",
+        "rollback restores exact hashes",
+        "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+        "matching synthetic message/callback",
+        "first-match owner assertion",
+        "single send/edit/answer accounting",
+        "state and content-type parity",
+        "callback prefix boundary cases",
+        "no sibling-route regression"
+      ],
+      "next_action": "BUILD_PRODUCTION_SHAPED_REPLACEMENT_FIXTURE",
+      "backup_contract": {
+        "required_before_first_write": true,
+        "relative_paths": [
+          "handlers/combat.py",
+          "handlers/profile.py"
+        ],
+        "record_existed_flags": true,
+        "record_sha256": true
+      },
+      "rollback_contract": {
+        "restore_exact_files": true,
+        "verify_sha256": true,
+        "scoped_git_reset": true,
+        "no_main_after_recovery_fail": true
+      },
+      "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+      "production_mutation_authorized": false,
+      "deletion_authorized": false
+    },
+    {
+      "sequence": 50,
+      "cohort_id": "route_cohort_08",
+      "domain": "guild",
+      "source_readiness": "BLOCKED_FIXTURE_REQUIRED",
+      "exact_source_files": [
+        "handlers/guild.py"
+      ],
+      "source_fingerprints": {
+        "handlers/guild.py": {
+          "exists": true,
+          "sha256": "de39b8627b59b33ad1500086b9862f775237c780d4718e8bc389e4ef88365d40",
+          "size": 115894,
+          "mtime_ns": 1792001059659729500
+        }
+      },
+      "canonical_owner": {
+        "pair_count": 3
+      },
+      "planned_mutation": "REMOVE_OR_REORDER_ONLY_AFTER_PRODUCTION_SHAPED_FIXTURE",
+      "blocking_evidence": [
+        "pair_233_244:MEDIUM",
+        "pair_239_242:MEDIUM",
+        "pair_240_251:MEDIUM"
+      ],
+      "required_tests": [
+        "AST parse and py_compile",
+        "exact target-file hash precondition",
+        "exact staging allowlist",
+        "scoped backup with existed flags and SHA-256",
+        "rollback restores exact hashes",
+        "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+        "matching synthetic message/callback",
+        "first-match owner assertion",
+        "single send/edit/answer accounting",
+        "state and content-type parity",
+        "callback prefix boundary cases",
+        "no sibling-route regression"
+      ],
+      "next_action": "BUILD_PRODUCTION_SHAPED_REPLACEMENT_FIXTURE",
+      "backup_contract": {
+        "required_before_first_write": true,
+        "relative_paths": [
+          "handlers/guild.py"
+        ],
+        "record_existed_flags": true,
+        "record_sha256": true
+      },
+      "rollback_contract": {
+        "restore_exact_files": true,
+        "verify_sha256": true,
+        "scoped_git_reset": true,
+        "no_main_after_recovery_fail": true
+      },
+      "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+      "production_mutation_authorized": false,
+      "deletion_authorized": false
+    },
+    {
+      "sequence": 50,
+      "cohort_id": "route_cohort_09",
+      "domain": "player_interaction",
+      "source_readiness": "BLOCKED_FIXTURE_REQUIRED",
+      "exact_source_files": [
+        "handlers/player_interaction.py"
+      ],
+      "source_fingerprints": {
+        "handlers/player_interaction.py": {
+          "exists": true,
+          "sha256": "799e9ad6e745b3995886c6e504019b7c1b01073c917a0ae1b9ccc05b8948b0b9",
+          "size": 106829,
+          "mtime_ns": 1790033528449617700
+        }
+      },
+      "canonical_owner": {
+        "pair_count": 1
+      },
+      "planned_mutation": "REMOVE_OR_REORDER_ONLY_AFTER_PRODUCTION_SHAPED_FIXTURE",
+      "blocking_evidence": [
+        "pair_281_317:MEDIUM"
+      ],
+      "required_tests": [
+        "AST parse and py_compile",
+        "exact target-file hash precondition",
+        "exact staging allowlist",
+        "scoped backup with existed flags and SHA-256",
+        "rollback restores exact hashes",
+        "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+        "matching synthetic message/callback",
+        "first-match owner assertion",
+        "single send/edit/answer accounting",
+        "state and content-type parity",
+        "callback prefix boundary cases",
+        "no sibling-route regression"
+      ],
+      "next_action": "BUILD_PRODUCTION_SHAPED_REPLACEMENT_FIXTURE",
+      "backup_contract": {
+        "required_before_first_write": true,
+        "relative_paths": [
+          "handlers/player_interaction.py"
+        ],
+        "record_existed_flags": true,
+        "record_sha256": true
+      },
+      "rollback_contract": {
+        "restore_exact_files": true,
+        "verify_sha256": true,
+        "scoped_git_reset": true,
+        "no_main_after_recovery_fail": true
+      },
+      "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+      "production_mutation_authorized": false,
+      "deletion_authorized": false
+    }
+  ],
+  "dependency_order": [
+    "confirm_current_checkout_and_exact_hashes",
+    "resolve_cohort_specific_owner_and_fixture_blockers",
+    "build_future_source_in_memory",
+    "AST_compile_isolated_import",
+    "create_scoped_backup_before_write",
+    "apply_one_guarded_cohort",
+    "run_replacement_tests_and_rollback_proof",
+    "exact_stage_and_commit"
+  ],
+  "first_safe_slice": {
+    "sequence": 1,
+    "cohort_id": "route_cohort_10",
+    "domain": "player_interaction",
+    "source_readiness": "READY_FOR_GUARDED_MUTATION",
+    "exact_source_files": [
+      "handlers/player_interaction.py",
+      "handlers/pvp_interaction.py"
+    ],
+    "source_fingerprints": {
+      "handlers/player_interaction.py": {
+        "exists": true,
+        "sha256": "799e9ad6e745b3995886c6e504019b7c1b01073c917a0ae1b9ccc05b8948b0b9",
+        "size": 106829,
+        "mtime_ns": 1790033528449617700
+      },
+      "handlers/pvp_interaction.py": {
+        "exists": true,
+        "sha256": "64e76770501b76d4fe82b8c11786a7a6bddaa9b9e453aa0f71f1177439fa0235",
+        "size": 8068,
+        "mtime_ns": 1790033528455276300
+      }
+    },
+    "canonical_owner": {
+      "pair_count": 1
+    },
+    "planned_mutation": "REMOVE_OR_REORDER_ONLY_AFTER_PRODUCTION_SHAPED_FIXTURE",
+    "blocking_evidence": [],
+    "required_tests": [
+      "AST parse and py_compile",
+      "exact target-file hash precondition",
+      "exact staging allowlist",
+      "scoped backup with existed flags and SHA-256",
+      "rollback restores exact hashes",
+      "DB/WAL/SHM fingerprints unchanged unless separately authorized",
+      "matching synthetic message/callback",
+      "first-match owner assertion",
+      "single send/edit/answer accounting",
+      "state and content-type parity",
+      "callback prefix boundary cases",
+      "no sibling-route regression"
+    ],
+    "next_action": "FOCUSED_READ_ONLY_ROUTE_OWNER_AND_FIXTURE_CONFIRMATION",
+    "backup_contract": {
+      "required_before_first_write": true,
+      "relative_paths": [
+        "handlers/player_interaction.py",
+        "handlers/pvp_interaction.py"
+      ],
+      "record_existed_flags": true,
+      "record_sha256": true
+    },
+    "rollback_contract": {
+      "restore_exact_files": true,
+      "verify_sha256": true,
+      "scoped_git_reset": true,
+      "no_main_after_recovery_fail": true
+    },
+    "manual_game_check": "DECIDE_IN_MUTATION_COHORT",
+    "production_mutation_authorized": false,
+    "deletion_authorized": false
+  },
+  "first_safe_slice_guard": "READ_ONLY_OWNER_AND_FIXTURE_CONFIRMATION_ONLY",
+  "global_mutation_gates": [
+    "one exact cohort per guarded mutation unless shared owner/invariants justify grouping",
+    "current HEAD and exact target hashes",
+    "scoped backup before first production write",
+    "future source AST parse and py_compile",
+    "production-shaped fixtures without polling/external actions",
+    "exact staging allowlist",
+    "post-commit HEAD/subject/index verification",
+    "manual game check decision per cohort"
+  ],
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "production_sqlite_opened": false,
+  "production_mutation_authorized": false,
+  "deletion_authorized": false,
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "stale_error_artifacts": {
+    "detected": [],
+    "removed": [],
+    "removal_verified": true
+  },
+  "manual_game_check": "NOT_REQUIRED",
+  "decision": "GO_TO_22_3_2_ROUTE_COHORT_10_OWNER_AND_FIXTURE_CONFIRMATION"
+}
