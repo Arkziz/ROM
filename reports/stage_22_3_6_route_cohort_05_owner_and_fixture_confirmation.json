@@ -1,0 +1,178 @@
+{
+  "stage": "22.3.6",
+  "patch_revision": 1,
+  "patch_filename": "patch_22_3_6_route_cohort_05_owner_and_fixture_confirmation.py",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-06T21:44:50.103722+00:00",
+  "git": {
+    "branch": "develop",
+    "head": "d1ee02d30edb23ddce3e4c251fdfecc5467d38cd",
+    "origin_develop": "f6b8a87033641b796ceeb401d321ab4f1e229bf5",
+    "origin_is_ancestor": true,
+    "status": [
+      {
+        "xy": " M",
+        "path": "ROM_FULL_DUMP.txt"
+      }
+    ]
+  },
+  "authority": {
+    "stage_22_3_5_sha256": "000e54f3c0f93626c762169256a9af43c2af8415c1475a5656a325f5cc17a81d",
+    "stage_22_3_5_commit": "d1ee02d30edb23ddce3e4c251fdfecc5467d38cd",
+    "target_sha256": "a73373e0bf4ae90e2d7d4e6c7b417847d401c6b4555514431a3acfed3836b0c3"
+  },
+  "summary": {
+    "register_definitions": 2,
+    "nested_handlers": 2,
+    "call_sites": 0,
+    "fixture_cases": 5,
+    "production_mutation_authorized": false,
+    "deletion_authorized": false
+  },
+  "register_definitions": [
+    {
+      "line": 828,
+      "end_line": 832,
+      "ast_sha256": "e30fc321373a00087eec43458e0c3595eb18569c4747d12ab2493365ed130ab9"
+    },
+    {
+      "line": 858,
+      "end_line": 864,
+      "ast_sha256": "188a7b508ca57b2ddf5d12c3ec4da2fc67d18c73ff4e4fecdcee99f78a9d79ea"
+    }
+  ],
+  "nested_handlers": [
+    {
+      "line": 831,
+      "end_line": 832,
+      "owner_register": "register_blacksmith_repair_button_v2",
+      "decorators": [
+        "Call(func=Attribute(value=Name(id='bot', ctx=Load()), attr='message_handler', ctx=Load()), keywords=[keyword(arg='func', value=Lambda(args=arguments(args=[arg(arg='message')]), body=Compare(left=Attribute(value=Name(id='message', ctx=Load()), attr='text', ctx=Load()), ops=[Eq()], comparators=[Constant(value='🛠️ Ремонт')])))])"
+      ],
+      "response_calls": [
+        {
+          "line": 832,
+          "callee": "bot.send_message"
+        }
+      ],
+      "body_sha256": "ce4861bdba846bb05921c7b5fa0ce6742fc1c33ce837ff21e9d21e6ab74f94aa"
+    },
+    {
+      "line": 861,
+      "end_line": 864,
+      "owner_register": "register_blacksmith_repair_button_v2",
+      "decorators": [
+        "Call(func=Attribute(value=Name(id='bot', ctx=Load()), attr='message_handler', ctx=Load()), keywords=[keyword(arg='func', value=Lambda(args=arguments(args=[arg(arg='message')]), body=Compare(left=Attribute(value=Name(id='message', ctx=Load()), attr='text', ctx=Load()), ops=[Eq()], comparators=[Constant(value='🛠️ Ремонт')])))])"
+      ],
+      "response_calls": [
+        {
+          "line": 864,
+          "callee": "bot.send_message"
+        }
+      ],
+      "body_sha256": "34900e3797c8ec97c329af88524f4335119f48baccf5a2c9d8aa4b04cd482093"
+    }
+  ],
+  "call_sites": [],
+  "message_fixture": [
+    {
+      "message_text": "🛠️ Ремонт",
+      "expected": true,
+      "observed": true,
+      "pass": true
+    },
+    {
+      "message_text": "🛠 Ремонт",
+      "expected": false,
+      "observed": false,
+      "pass": true
+    },
+    {
+      "message_text": "Ремонт",
+      "expected": false,
+      "observed": false,
+      "pass": true
+    },
+    {
+      "message_text": "",
+      "expected": false,
+      "observed": false,
+      "pass": true
+    },
+    {
+      "message_text": null,
+      "expected": false,
+      "observed": false,
+      "pass": true
+    }
+  ],
+  "owner_verdict": {
+    "verdict": "BLOCKED_NO_UNAMBIGUOUS_OWNER",
+    "confidence": "NONE",
+    "python_effective_register_line": 858,
+    "candidate_retire": null,
+    "canonical_keep": null,
+    "handler_bodies_identical": false,
+    "register_definition_count": 2,
+    "nested_handler_count": 2,
+    "call_site_count": 0,
+    "production_mutation_authorized": false,
+    "deletion_authorized": false
+  },
+  "future_mutation_contract": {
+    "scope": "retire only the earlier complete register_blacksmith_repair_button_v2 definition if READY verdict is retained at fresh preflight",
+    "preserve_python_effective_definition": true,
+    "preserve_message_text_and_visible_output": true,
+    "require_registration_count_delta_one": true,
+    "require_scoped_backup_and_rollback": true,
+    "manual_game_check": "REQUIRED_AFTER_MUTATION"
+  },
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "9355952221129e697da68ebb6ab74cd5424742e50e464da48f66b7acb206b554",
+      "size": 4132392,
+      "mtime_ns": 1793993045663093000
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "59345adead9bd17df9cf0c3048d6909fe12c00f124fce7bf2168138a809e3139",
+      "size": 32768,
+      "mtime_ns": 1793992323472363200
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "9355952221129e697da68ebb6ab74cd5424742e50e464da48f66b7acb206b554",
+      "size": 4132392,
+      "mtime_ns": 1793993045663093000
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "59345adead9bd17df9cf0c3048d6909fe12c00f124fce7bf2168138a809e3139",
+      "size": 32768,
+      "mtime_ns": 1793992323472363200
+    }
+  },
+  "production_sqlite_opened": false,
+  "production_mutation_authorized": false,
+  "deletion_authorized": false,
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "decision": "GO_TO_22_3_7_ROUTE_COHORT_05_BLOCKER_RECONCILIATION"
+}
