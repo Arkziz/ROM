@@ -1,0 +1,258 @@
+{
+  "stage": "22.3.2",
+  "patch_revision": 1,
+  "patch_filename": "patch_22_3_2_route_cohort_10_owner_and_fixture_confirmation.py",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-06T18:52:43.867797+00:00",
+  "git": {
+    "branch": "develop",
+    "head": "f4856a3006f895a08554f5f335f898a40b000a92",
+    "origin_develop": "f6b8a87033641b796ceeb401d321ab4f1e229bf5",
+    "origin_is_ancestor": true,
+    "status": [
+      {
+        "xy": " M",
+        "path": "ROM_FULL_DUMP.txt"
+      }
+    ],
+    "staged": []
+  },
+  "authority": {
+    "stage_22_3_1_sha256": "c8e18e626990c8355020fac561f9ff17d836adbf240b5dddf3cd58f22111a08e",
+    "stage_22_3_1_commit": "f4856a3006f895a08554f5f335f898a40b000a92",
+    "route_classification_sha256": "e4c0e63b2405010b62b8c8c5719743ff2806629095de92252daf04378f4e3179",
+    "focused_owner_sha256": "f4b39002fb5cf23f3d05c226270fffe653cc31da1f4209e749be2986d90e9851"
+  },
+  "summary": {
+    "exact_pairs_confirmed": 1,
+    "fixture_cases": 7,
+    "fixture_cases_passed": 7,
+    "canonical_response_owners": 1,
+    "retirement_candidates": 1,
+    "production_mutation_authorized": false,
+    "deletion_authorized": false
+  },
+  "confirmed_pair": {
+    "earlier_order": 288,
+    "later_order": 336,
+    "earlier_path": "handlers/player_interaction.py",
+    "later_path": "handlers/pvp_interaction.py",
+    "earlier_context": "duel_placeholder",
+    "later_context": "pvp_duel_request",
+    "kind": "callback_decorator",
+    "reasons": [
+      "identical_source_filter_domain",
+      "identical_predicate_ast",
+      "callback_prefix_intersection"
+    ],
+    "overlap_classification": "PROVEN_STATIC",
+    "shadow_classification": "PROVEN_STATIC",
+    "duplicate_response_risk": "CANDIDATE"
+  },
+  "current_earlier_node": {
+    "path": "handlers/player_interaction.py",
+    "name": "duel_placeholder",
+    "line": 499,
+    "end_line": 500,
+    "scope_chain": [
+      "_register_player_interaction_base_handlers_12_6_8"
+    ],
+    "responses": [],
+    "delegates": [
+      "_safe_answer",
+      "bot.callback_query_handler",
+      "getattr",
+      "startswith",
+      "str"
+    ],
+    "body_sha256": "fd0c06417ab7ce9caa2c8693caa65106529b0a7d7e1a917f0614f23638662d43"
+  },
+  "current_later_node": {
+    "path": "handlers/pvp_interaction.py",
+    "name": "pvp_duel_request",
+    "line": 56,
+    "end_line": 87,
+    "scope_chain": [
+      "register_pvp_interaction_handlers"
+    ],
+    "responses": [
+      {
+        "line": 67,
+        "callee": "bot.send_message"
+      },
+      {
+        "line": 74,
+        "callee": "bot.send_message"
+      },
+      {
+        "line": 82,
+        "callee": "bot.send_message"
+      }
+    ],
+    "delegates": [
+      "_answer",
+      "_failure",
+      "bot.callback_query_handler",
+      "bot.send_message",
+      "create_pvp_duel_request",
+      "getattr",
+      "int",
+      "is_user_travelling",
+      "kb.row",
+      "result.get",
+      "rsplit",
+      "startswith",
+      "str",
+      "types.InlineKeyboardButton",
+      "types.InlineKeyboardMarkup"
+    ],
+    "body_sha256": "65edac83b8909b803d082219454003a31c7e5793fbf7a11447fb9e1ac1115b2a"
+  },
+  "fixture": {
+    "cases": [
+      {
+        "callback_data": "pi:duel:42",
+        "expected": true,
+        "earlier_matches": true,
+        "later_matches": true,
+        "parity": true
+      },
+      {
+        "callback_data": "pi:duel:",
+        "expected": true,
+        "earlier_matches": true,
+        "later_matches": true,
+        "parity": true
+      },
+      {
+        "callback_data": "pi:duel",
+        "expected": false,
+        "earlier_matches": false,
+        "later_matches": false,
+        "parity": true
+      },
+      {
+        "callback_data": "pi:duelx:42",
+        "expected": false,
+        "earlier_matches": false,
+        "later_matches": false,
+        "parity": true
+      },
+      {
+        "callback_data": "pi:trade:42",
+        "expected": false,
+        "earlier_matches": false,
+        "later_matches": false,
+        "parity": true
+      },
+      {
+        "callback_data": "",
+        "expected": false,
+        "earlier_matches": false,
+        "later_matches": false,
+        "parity": true
+      },
+      {
+        "callback_data": null,
+        "expected": false,
+        "earlier_matches": false,
+        "later_matches": false,
+        "parity": true
+      }
+    ],
+    "matching_filter_parity": "PASS",
+    "registration_first_match": "earlier_duel_placeholder",
+    "intended_response_owner": "later_pvp_duel_request",
+    "earlier_direct_response_count": 0,
+    "later_direct_response_count": 3,
+    "single_response_risk": "EARLIER_ROUTE_SHADOWS_LATER_RESPONSE_OWNER",
+    "state_filter_parity": "NO_EXPLICIT_STATE_FILTER_ON_EITHER_ROUTE",
+    "content_type_parity": "CALLBACK_QUERY_DOMAIN",
+    "external_actions_executed": false,
+    "polling_started": false
+  },
+  "owner_verdict": {
+    "canonical_response_owner": "handlers/pvp_interaction.py:pvp_duel_request",
+    "canonical_keep_order": 336,
+    "candidate_retire_owner": "handlers/player_interaction.py:duel_placeholder",
+    "candidate_retire_order": 288,
+    "owner_decision": "LATER_RESPONSE_OWNER",
+    "owner_confidence": "HIGH",
+    "mutation_readiness": "READY_FOR_GUARDED_EXACT_ROUTE_RETIREMENT",
+    "mutation_scope": "remove only decorator plus duel_placeholder function at current lines 498-500 after fresh exact-hash preflight",
+    "production_mutation_authorized": false,
+    "deletion_authorized": false
+  },
+  "guarded_successor_contract": {
+    "exact_target_file": "handlers/player_interaction.py",
+    "unchanged_sibling_file": "handlers/pvp_interaction.py",
+    "expected_target_hash": "799e9ad6e745b3995886c6e504019b7c1b01073c917a0ae1b9ccc05b8948b0b9",
+    "expected_sibling_hash": "64e76770501b76d4fe82b8c11786a7a6bddaa9b9e453aa0f71f1177439fa0235",
+    "future_source_checks": [
+      "remove exact decorator and duel_placeholder only",
+      "AST parse",
+      "py_compile",
+      "registration fingerprint removes only order 288",
+      "order 336 remains and becomes first-match owner",
+      "seven callback boundary fixtures pass",
+      "single response accounting",
+      "sibling routes unchanged"
+    ],
+    "backup_required": true,
+    "rollback_required_if_commit_not_created": true,
+    "manual_game_check": "REQUIRED_AFTER_GUARDED_MUTATION"
+  },
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "7c5fb5e395a9616be19ceae413f59d92358f9a1ce54e4ba9af5a2330235f3bfd",
+      "size": 4132392,
+      "mtime_ns": 1793822013596821400
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "99e9199f7896c96afd46435418c50cd9af01a88f6ba8c27702ec4cd69c761fff",
+      "size": 32768,
+      "mtime_ns": 1793821651976872900
+    }
+  },
+  "production_sqlite_opened": false,
+  "production_mutation_authorized": false,
+  "deletion_authorized": false,
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "stale_error_artifacts": {
+    "detected": [],
+    "removed": [],
+    "removal_verified": true
+  },
+  "manual_game_check": "NOT_REQUIRED",
+  "decision": "GO_TO_22_3_3_GUARDED_ROUTE_COHORT_10_MUTATION"
+}
