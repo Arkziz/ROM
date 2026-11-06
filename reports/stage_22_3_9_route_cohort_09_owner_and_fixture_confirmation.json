@@ -1,0 +1,455 @@
+{
+  "stage": "22.3.9",
+  "patch_revision": 2,
+  "patch_filename": "patch_22_3_9_route_cohort_09_owner_and_fixture_confirmation.py",
+  "status": "PASS_READ_ONLY",
+  "timestamp": "2026-11-06T21:59:20.044499+00:00",
+  "git": {
+    "branch": "develop",
+    "head": "9655ad7b7210d7acf35b56e84d6899e66908d7d1",
+    "origin_develop": "f6b8a87033641b796ceeb401d321ab4f1e229bf5",
+    "origin_is_ancestor": true,
+    "status": [
+      {
+        "xy": " M",
+        "path": "ROM_FULL_DUMP.txt"
+      }
+    ]
+  },
+  "authority": {
+    "stage_22_3_8_sha256": "1a926d3e8ce1a7d36ced8d2164f6560d673024fb99273d9952017b13c3f0203d",
+    "stage_22_3_8_commit": "9655ad7b7210d7acf35b56e84d6899e66908d7d1",
+    "target_sha256": "24c1d89bcf3bef92eade71334a20f800daf1412a41619aa72908691a79c21baf"
+  },
+  "summary": {
+    "pairs_confirmed": 1,
+    "fixture_cases": 7,
+    "fixture_cases_passed": 7,
+    "production_mutation_authorized": false,
+    "deletion_authorized": false
+  },
+  "pair": {
+    "historical_orders": [
+      281,
+      317
+    ],
+    "rebased_orders": [
+      281,
+      316
+    ],
+    "callback_prefix": "pi:trade:cancel:"
+  },
+  "earlier_node": {
+    "line": 391,
+    "end_line": 407,
+    "owner_register": "_register_player_interaction_base_handlers_12_6_8",
+    "decorators": [
+      "Call(func=Attribute(value=Name(id='bot', ctx=Load()), attr='callback_query_handler', ctx=Load()), keywords=[keyword(arg='func', value=Lambda(args=arguments(args=[arg(arg='call')]), body=Call(func=Attribute(value=Call(func=Name(id='str', ctx=Load()), args=[Call(func=Name(id='getattr', ctx=Load()), args=[Name(id='call', ctx=Load()), Constant(value='data'), Constant(value='')])]), attr='startswith', ctx=Load()), args=[Constant(value='pi:trade:cancel:')])))])"
+    ],
+    "calls": [
+      {
+        "line": 390,
+        "callee": "bot.callback_query_handler",
+        "ast": "Call(func=Attribute(value=Name(id='bot', ctx=Load()), attr='callback_query_handler', ctx=Load()), keywords=[keyword(arg='func', value=Lambda(args=arguments(args=[arg(arg='call')]), body=Call(func=Attribute(value=Call(func=Name(id='str', ctx=Load()), args=[Call(func=Name(id='getattr', ctx=Load()), args=[Name(id='call', ctx=Load()), Constant(value='data'), Constant(value='')])]), attr='startswith', ctx=Load()), args=[Constant(value='pi:trade:cancel:')])))])"
+      },
+      {
+        "line": 392,
+        "callee": "_safe_answer",
+        "ast": "Call(func=Name(id='_safe_answer', ctx=Load()), args=[Name(id='bot', ctx=Load()), Name(id='call', ctx=Load())])"
+      },
+      {
+        "line": 397,
+        "callee": "cancel_player_trade",
+        "ast": "Call(func=Name(id='cancel_player_trade', ctx=Load()), args=[Name(id='trade_id', ctx=Load()), Call(func=Name(id='int', ctx=Load()), args=[Attribute(value=Attribute(value=Name(id='call', ctx=Load()), attr='from_user', ctx=Load()), attr='id', ctx=Load())])])"
+      },
+      {
+        "line": 402,
+        "callee": "_safe_edit_message_text",
+        "ast": "Call(func=Name(id='_safe_edit_message_text', ctx=Load()), args=[Name(id='bot', ctx=Load()), Name(id='own_text', ctx=Load()), Attribute(value=Attribute(value=Attribute(value=Name(id='call', ctx=Load()), attr='message', ctx=Load()), attr='chat', ctx=Load()), attr='id', ctx=Load()), Attribute(value=Attribute(value=Name(id='call', ctx=Load()), attr='message', ctx=Load()), attr='message_id', ctx=Load())])"
+      },
+      {
+        "line": 394,
+        "callee": "int",
+        "ast": "Call(func=Name(id='int', ctx=Load()), args=[Subscript(value=Call(func=Attribute(value=Call(func=Name(id='str', ctx=Load()), args=[Attribute(value=Name(id='call', ctx=Load()), attr='data', ctx=Load())]), attr='rsplit', ctx=Load()), args=[Constant(value=':'), Constant(value=1)]), slice=Constant(value=1), ctx=Load())])"
+      },
+      {
+        "line": 397,
+        "callee": "int",
+        "ast": "Call(func=Name(id='int', ctx=Load()), args=[Attribute(value=Attribute(value=Name(id='call', ctx=Load()), attr='from_user', ctx=Load()), attr='id', ctx=Load())])"
+      },
+      {
+        "line": 398,
+        "callee": "result.get",
+        "ast": "Call(func=Attribute(value=Name(id='result', ctx=Load()), attr='get', ctx=Load()), args=[Constant(value='success')])"
+      },
+      {
+        "line": 399,
+        "callee": "bot.send_message",
+        "ast": "Call(func=Attribute(value=Name(id='bot', ctx=Load()), attr='send_message', ctx=Load()), args=[Attribute(value=Attribute(value=Attribute(value=Name(id='call', ctx=Load()), attr='message', ctx=Load()), attr='chat', ctx=Load()), attr='id', ctx=Load()), Constant(value='ℹ️ Обмін уже неактивний або був скасований раніше.')])"
+      },
+      {
+        "line": 403,
+        "callee": "int",
+        "ast": "Call(func=Name(id='int', ctx=Load()), args=[Subscript(value=Name(id='result', ctx=Load()), slice=Constant(value='recipient_user_id'), ctx=Load())])"
+      },
+      {
+        "line": 403,
+        "callee": "int",
+        "ast": "Call(func=Name(id='int', ctx=Load()), args=[Subscript(value=Name(id='result', ctx=Load()), slice=Constant(value='initiator_user_id'), ctx=Load())])"
+      },
+      {
+        "line": 405,
+        "callee": "bot.send_message",
+        "ast": "Call(func=Attribute(value=Name(id='bot', ctx=Load()), attr='send_message', ctx=Load()), args=[Name(id='other', ctx=Load()), Constant(value='❌ Інший гравець скасував обмін.\\n\\n✅ Знову можна надсилати й отримувати запити на обмін.')])"
+      },
+      {
+        "line": 403,
+        "callee": "int",
+        "ast": "Call(func=Name(id='int', ctx=Load()), args=[Attribute(value=Attribute(value=Name(id='call', ctx=Load()), attr='from_user', ctx=Load()), attr='id', ctx=Load())])"
+      },
+      {
+        "line": 403,
+        "callee": "int",
+        "ast": "Call(func=Name(id='int', ctx=Load()), args=[Subscript(value=Name(id='result', ctx=Load()), slice=Constant(value='initiator_user_id'), ctx=Load())])"
+      },
+      {
+        "line": 390,
+        "callee": "startswith",
+        "ast": "Call(func=Attribute(value=Call(func=Name(id='str', ctx=Load()), args=[Call(func=Name(id='getattr', ctx=Load()), args=[Name(id='call', ctx=Load()), Constant(value='data'), Constant(value='')])]), attr='startswith', ctx=Load()), args=[Constant(value='pi:trade:cancel:')])"
+      },
+      {
+        "line": 394,
+        "callee": "rsplit",
+        "ast": "Call(func=Attribute(value=Call(func=Name(id='str', ctx=Load()), args=[Attribute(value=Name(id='call', ctx=Load()), attr='data', ctx=Load())]), attr='rsplit', ctx=Load()), args=[Constant(value=':'), Constant(value=1)])"
+      },
+      {
+        "line": 390,
+        "callee": "str",
+        "ast": "Call(func=Name(id='str', ctx=Load()), args=[Call(func=Name(id='getattr', ctx=Load()), args=[Name(id='call', ctx=Load()), Constant(value='data'), Constant(value='')])])"
+      },
+      {
+        "line": 394,
+        "callee": "str",
+        "ast": "Call(func=Name(id='str', ctx=Load()), args=[Attribute(value=Name(id='call', ctx=Load()), attr='data', ctx=Load())])"
+      },
+      {
+        "line": 390,
+        "callee": "getattr",
+        "ast": "Call(func=Name(id='getattr', ctx=Load()), args=[Name(id='call', ctx=Load()), Constant(value='data'), Constant(value='')])"
+      }
+    ],
+    "body_sha256": "8434dc25db5e8c08f39e982cc42b8cd49ee9591ea873462c3ba95f9af43445af"
+  },
+  "later_node": {
+    "line": 1650,
+    "end_line": 1682,
+    "owner_register": "_register_trade_navigation_and_categories_12_6_4",
+    "decorators": [
+      "Call(func=Attribute(value=Name(id='bot', ctx=Load()), attr='callback_query_handler', ctx=Load()), keywords=[keyword(arg='func', value=Lambda(args=arguments(args=[arg(arg='c')]), body=Call(func=Attribute(value=Call(func=Name(id='str', ctx=Load()), args=[Call(func=Name(id='getattr', ctx=Load()), args=[Name(id='c', ctx=Load()), Constant(value='data'), Constant(value='')])]), attr='startswith', ctx=Load()), args=[Constant(value='pi:trade:cancel:')])))])"
+    ],
+    "calls": [
+      {
+        "line": 1649,
+        "callee": "bot.callback_query_handler",
+        "ast": "Call(func=Attribute(value=Name(id='bot', ctx=Load()), attr='callback_query_handler', ctx=Load()), keywords=[keyword(arg='func', value=Lambda(args=arguments(args=[arg(arg='c')]), body=Call(func=Attribute(value=Call(func=Name(id='str', ctx=Load()), args=[Call(func=Name(id='getattr', ctx=Load()), args=[Name(id='c', ctx=Load()), Constant(value='data'), Constant(value='')])]), attr='startswith', ctx=Load()), args=[Constant(value='pi:trade:cancel:')])))])"
+      },
+      {
+        "line": 1651,
+        "callee": "_safe_answer",
+        "ast": "Call(func=Name(id='_safe_answer', ctx=Load()), args=[Name(id='bot', ctx=Load()), Name(id='call', ctx=Load())])"
+      },
+      {
+        "line": 1654,
+        "callee": "cancel_player_trade",
+        "ast": "Call(func=Name(id='cancel_player_trade', ctx=Load()), args=[Name(id='trade_id', ctx=Load()), Call(func=Name(id='int', ctx=Load()), args=[Attribute(value=Attribute(value=Name(id='call', ctx=Load()), attr='from_user', ctx=Load()), attr='id', ctx=Load())])])"
+      },
+      {
+        "line": 1658,
+        "callee": "pop",
+        "ast": "Call(func=Attribute(value=Call(func=Attribute(value=Call(func=Name(id='globals', ctx=Load())), attr='get', ctx=Load()), args=[Constant(value='TRADE_AMOUNT_INPUT_STATE_12_6_3'), Dict()]), attr='pop', ctx=Load()), args=[Call(func=Name(id='int', ctx=Load()), args=[Attribute(value=Attribute(value=Name(id='call', ctx=Load()), attr='from_user', ctx=Load()), attr='id', ctx=Load())]), Constant(value=None)])"
+      },
+      {
+        "line": 1659,
+        "callee": "int",
+        "ast": "Call(func=Name(id='int', ctx=Load()), args=[Attribute(value=Attribute(value=Name(id='call', ctx=Load()), attr='from_user', ctx=Load()), attr='id', ctx=Load())])"
+      },
+      {
+        "line": 1661,
+        "callee": "_remember_player_trade_panel_18_22_6",
+        "ast": "Call(func=Name(id='_remember_player_trade_panel_18_22_6', ctx=Load()), args=[Name(id='trade_id', ctx=Load()), Name(id='actor', ctx=Load()), Attribute(value=Attribute(value=Attribute(value=Name(id='call', ctx=Load()), attr='message', ctx=Load()), attr='chat', ctx=Load()), attr='id', ctx=Load()), Attribute(value=Attribute(value=Name(id='call', ctx=Load()), attr='message', ctx=Load()), attr='message_id', ctx=Load())])"
+      },
+      {
+        "line": 1662,
+        "callee": "_terminalize_player_trade_panel_18_22_6",
+        "ast": "Call(func=Name(id='_terminalize_player_trade_panel_18_22_6', ctx=Load()), args=[Name(id='bot', ctx=Load()), Name(id='trade_id', ctx=Load()), Name(id='actor', ctx=Load()), Name(id='own', ctx=Load())])"
+      },
+      {
+        "line": 1663,
+        "callee": "bot.send_message",
+        "ast": "Call(func=Attribute(value=Name(id='bot', ctx=Load()), attr='send_message', ctx=Load()), args=[Attribute(value=Attribute(value=Attribute(value=Name(id='call', ctx=Load()), attr='message', ctx=Load()), attr='chat', ctx=Load()), attr='id', ctx=Load()), Call(func=Name(id='get_location_context_return_text', ctx=Load()), args=[Name(id='actor', ctx=Load())])], keywords=[keyword(arg='reply_markup', value=Call(func=Name(id='get_location_context_kb', ctx=Load()), args=[Name(id='actor', ctx=Load())]))])"
+      },
+      {
+        "line": 1669,
+        "callee": "pop",
+        "ast": "Call(func=Attribute(value=Call(func=Attribute(value=Call(func=Name(id='globals', ctx=Load())), attr='get', ctx=Load()), args=[Constant(value='TRADE_AMOUNT_INPUT_STATE_12_6_3'), Dict()]), attr='pop', ctx=Load()), args=[Name(id='other', ctx=Load()), Constant(value=None)])"
+      },
+      {
+        "line": 1671,
+        "callee": "_terminalize_player_trade_panel_18_22_6",
+        "ast": "Call(func=Name(id='_terminalize_player_trade_panel_18_22_6', ctx=Load()), args=[Name(id='bot', ctx=Load()), Name(id='trade_id', ctx=Load()), Name(id='other', ctx=Load()), Name(id='other_text', ctx=Load())], keywords=[keyword(arg='fallback', value=Constant(value='❌ Інший гравець скасував обмін.\\n\\n✅ Персонаж знову доступний для інших дій.'))])"
+      },
+      {
+        "line": 1652,
+        "callee": "int",
+        "ast": "Call(func=Name(id='int', ctx=Load()), args=[Subscript(value=Call(func=Attribute(value=Call(func=Name(id='str', ctx=Load()), args=[Attribute(value=Name(id='call', ctx=Load()), attr='data', ctx=Load())]), attr='rsplit', ctx=Load()), args=[Constant(value=':'), Constant(value=1)]), slice=Constant(value=1), ctx=Load())])"
+      },
+      {
+        "line": 1654,
+        "callee": "int",
+        "ast": "Call(func=Name(id='int', ctx=Load()), args=[Attribute(value=Attribute(value=Name(id='call', ctx=Load()), attr='from_user', ctx=Load()), attr='id', ctx=Load())])"
+      },
+      {
+        "line": 1655,
+        "callee": "result.get",
+        "ast": "Call(func=Attribute(value=Name(id='result', ctx=Load()), attr='get', ctx=Load()), args=[Constant(value='success')])"
+      },
+      {
+        "line": 1656,
+        "callee": "bot.send_message",
+        "ast": "Call(func=Attribute(value=Name(id='bot', ctx=Load()), attr='send_message', ctx=Load()), args=[Attribute(value=Attribute(value=Attribute(value=Name(id='call', ctx=Load()), attr='message', ctx=Load()), attr='chat', ctx=Load()), attr='id', ctx=Load()), Constant(value='ℹ️ Обмін уже неактивний.')], keywords=[keyword(arg='reply_markup', value=Call(func=Name(id='main_kb', ctx=Load())))])"
+      },
+      {
+        "line": 1658,
+        "callee": "int",
+        "ast": "Call(func=Name(id='int', ctx=Load()), args=[Attribute(value=Attribute(value=Name(id='call', ctx=Load()), attr='from_user', ctx=Load()), attr='id', ctx=Load())])"
+      },
+      {
+        "line": 1665,
+        "callee": "get_location_context_return_text",
+        "ast": "Call(func=Name(id='get_location_context_return_text', ctx=Load()), args=[Name(id='actor', ctx=Load())])"
+      },
+      {
+        "line": 1668,
+        "callee": "int",
+        "ast": "Call(func=Name(id='int', ctx=Load()), args=[Subscript(value=Name(id='result', ctx=Load()), slice=Constant(value='recipient_user_id'), ctx=Load())])"
+      },
+      {
+        "line": 1668,
+        "callee": "int",
+        "ast": "Call(func=Name(id='int', ctx=Load()), args=[Subscript(value=Name(id='result', ctx=Load()), slice=Constant(value='initiator_user_id'), ctx=Load())])"
+      },
+      {
+        "line": 1676,
+        "callee": "bot.send_message",
+        "ast": "Call(func=Attribute(value=Name(id='bot', ctx=Load()), attr='send_message', ctx=Load()), args=[Name(id='other', ctx=Load()), Call(func=Name(id='get_location_context_return_text', ctx=Load()), args=[Name(id='other', ctx=Load())])], keywords=[keyword(arg='reply_markup', value=Call(func=Name(id='get_location_context_kb', ctx=Load()), args=[Name(id='other', ctx=Load())]))])"
+      },
+      {
+        "line": 1658,
+        "callee": "get",
+        "ast": "Call(func=Attribute(value=Call(func=Name(id='globals', ctx=Load())), attr='get', ctx=Load()), args=[Constant(value='TRADE_AMOUNT_INPUT_STATE_12_6_3'), Dict()])"
+      },
+      {
+        "line": 1666,
+        "callee": "get_location_context_kb",
+        "ast": "Call(func=Name(id='get_location_context_kb', ctx=Load()), args=[Name(id='actor', ctx=Load())])"
+      },
+      {
+        "line": 1668,
+        "callee": "int",
+        "ast": "Call(func=Name(id='int', ctx=Load()), args=[Subscript(value=Name(id='result', ctx=Load()), slice=Constant(value='initiator_user_id'), ctx=Load())])"
+      },
+      {
+        "line": 1669,
+        "callee": "get",
+        "ast": "Call(func=Attribute(value=Call(func=Name(id='globals', ctx=Load())), attr='get', ctx=Load()), args=[Constant(value='TRADE_AMOUNT_INPUT_STATE_12_6_3'), Dict()])"
+      },
+      {
+        "line": 1678,
+        "callee": "get_location_context_return_text",
+        "ast": "Call(func=Name(id='get_location_context_return_text', ctx=Load()), args=[Name(id='other', ctx=Load())])"
+      },
+      {
+        "line": 1649,
+        "callee": "startswith",
+        "ast": "Call(func=Attribute(value=Call(func=Name(id='str', ctx=Load()), args=[Call(func=Name(id='getattr', ctx=Load()), args=[Name(id='c', ctx=Load()), Constant(value='data'), Constant(value='')])]), attr='startswith', ctx=Load()), args=[Constant(value='pi:trade:cancel:')])"
+      },
+      {
+        "line": 1652,
+        "callee": "rsplit",
+        "ast": "Call(func=Attribute(value=Call(func=Name(id='str', ctx=Load()), args=[Attribute(value=Name(id='call', ctx=Load()), attr='data', ctx=Load())]), attr='rsplit', ctx=Load()), args=[Constant(value=':'), Constant(value=1)])"
+      },
+      {
+        "line": 1656,
+        "callee": "main_kb",
+        "ast": "Call(func=Name(id='main_kb', ctx=Load()))"
+      },
+      {
+        "line": 1679,
+        "callee": "get_location_context_kb",
+        "ast": "Call(func=Name(id='get_location_context_kb', ctx=Load()), args=[Name(id='other', ctx=Load())])"
+      },
+      {
+        "line": 1658,
+        "callee": "globals",
+        "ast": "Call(func=Name(id='globals', ctx=Load()))"
+      },
+      {
+        "line": 1669,
+        "callee": "globals",
+        "ast": "Call(func=Name(id='globals', ctx=Load()))"
+      },
+      {
+        "line": 1649,
+        "callee": "str",
+        "ast": "Call(func=Name(id='str', ctx=Load()), args=[Call(func=Name(id='getattr', ctx=Load()), args=[Name(id='c', ctx=Load()), Constant(value='data'), Constant(value='')])])"
+      },
+      {
+        "line": 1652,
+        "callee": "str",
+        "ast": "Call(func=Name(id='str', ctx=Load()), args=[Attribute(value=Name(id='call', ctx=Load()), attr='data', ctx=Load())])"
+      },
+      {
+        "line": 1649,
+        "callee": "getattr",
+        "ast": "Call(func=Name(id='getattr', ctx=Load()), args=[Name(id='c', ctx=Load()), Constant(value='data'), Constant(value='')])"
+      }
+    ],
+    "body_sha256": "b474fdea2370ecd8b9c7987b5baedf03e7bab89fa893b354c3d9ac4e8d2b8beb"
+  },
+  "callback_fixture": [
+    {
+      "callback_data": "pi:trade:cancel:42",
+      "expected": true,
+      "earlier_matches": true,
+      "later_matches": true,
+      "pass": true
+    },
+    {
+      "callback_data": "pi:trade:cancel:",
+      "expected": true,
+      "earlier_matches": true,
+      "later_matches": true,
+      "pass": true
+    },
+    {
+      "callback_data": "pi:trade:cancel",
+      "expected": false,
+      "earlier_matches": false,
+      "later_matches": false,
+      "pass": true
+    },
+    {
+      "callback_data": "pi:trade:cancelled:42",
+      "expected": false,
+      "earlier_matches": false,
+      "later_matches": false,
+      "pass": true
+    },
+    {
+      "callback_data": "pi:trade:open:42",
+      "expected": false,
+      "earlier_matches": false,
+      "later_matches": false,
+      "pass": true
+    },
+    {
+      "callback_data": "",
+      "expected": false,
+      "earlier_matches": false,
+      "later_matches": false,
+      "pass": true
+    },
+    {
+      "callback_data": null,
+      "expected": false,
+      "earlier_matches": false,
+      "later_matches": false,
+      "pass": true
+    }
+  ],
+  "registration_owner_relation": {
+    "same_registration_owner": false,
+    "earlier_registration_owner": "_register_player_interaction_base_handlers_12_6_8",
+    "later_registration_owner": "_register_trade_navigation_and_categories_12_6_4",
+    "interpretation": "DISTINCT_REGISTRATION_PHASES_REQUIRE_TRANSACTION_OWNER_RECONCILIATION"
+  },
+  "responsibility_matrix": {
+    "both_call_cancel_player_trade_once": true,
+    "both_answer_callback": true,
+    "earlier_edits_own_panel": true,
+    "later_terminalizes_trade_panels": true,
+    "later_restores_location_keyboard": true,
+    "later_clears_amount_input_state": true,
+    "earlier_restores_location_keyboard": false
+  },
+  "owner_verdict": {
+    "verdict": "BLOCKED_TRANSACTION_OWNER_UNRESOLVED",
+    "confidence": "NONE",
+    "earlier_registration_owner": "_register_player_interaction_base_handlers_12_6_8",
+    "later_registration_owner": "_register_trade_navigation_and_categories_12_6_4",
+    "transaction_owner_candidate": "cancel_player_trade",
+    "reason": "The overlapping routes are installed by distinct registration phases. Predicate parity and a shared domain call do not prove that retiring the earlier route preserves phase wiring, exact-once cancellation, terminal panels, and keyboard restoration.",
+    "production_mutation_authorized": false,
+    "deletion_authorized": false
+  },
+  "guarded_successor_contract": {
+    "exact_target_file": "handlers/player_interaction.py",
+    "expected_target_sha256": "24c1d89bcf3bef92eade71334a20f800daf1412a41619aa72908691a79c21baf",
+    "retire_only_complete_decorator_and_function": "cancel_trade_foundation",
+    "preserve_route": "trade_cancel_with_keyboard_restore",
+    "preserve_cancel_player_trade_exact_once": true,
+    "preserve_terminal_panel_updates": true,
+    "preserve_location_context_keyboard_for_both_participants": true,
+    "require_active_terminal_missing_foreign_user_fixtures": true,
+    "require_scoped_backup_and_rollback": true,
+    "manual_game_check": "REQUIRED_AFTER_MUTATION"
+  },
+  "database_before": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "9355952221129e697da68ebb6ab74cd5424742e50e464da48f66b7acb206b554",
+      "size": 4132392,
+      "mtime_ns": 1793993045663093000
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "59345adead9bd17df9cf0c3048d6909fe12c00f124fce7bf2168138a809e3139",
+      "size": 32768,
+      "mtime_ns": 1793992323472363200
+    }
+  },
+  "database_after": {
+    "game.db": {
+      "exists": true,
+      "sha256": "7a7528989ab069674627ea9543db847b648ad84d3ca2c878bd1b973e597d3f26",
+      "size": 2015232,
+      "mtime_ns": 1793804859918917900
+    },
+    "game.db-wal": {
+      "exists": true,
+      "sha256": "9355952221129e697da68ebb6ab74cd5424742e50e464da48f66b7acb206b554",
+      "size": 4132392,
+      "mtime_ns": 1793993045663093000
+    },
+    "game.db-shm": {
+      "exists": true,
+      "sha256": "59345adead9bd17df9cf0c3048d6909fe12c00f124fce7bf2168138a809e3139",
+      "size": 32768,
+      "mtime_ns": 1793992323472363200
+    }
+  },
+  "production_sqlite_opened": false,
+  "production_mutation_authorized": false,
+  "deletion_authorized": false,
+  "production_mutations": [],
+  "database_mutations": [],
+  "wal_shm_mutations": [],
+  "manual_game_check": "NOT_REQUIRED",
+  "decision": "GO_TO_22_3_10_ROUTE_COHORT_09_TRANSACTION_OWNER_RECONCILIATION"
+}
